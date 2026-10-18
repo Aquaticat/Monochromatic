@@ -5,13 +5,10 @@
  THE FIXTURES COME FIRST, so the "FINDS NOTHING IN THIS PACKAGE'S SOURCE" case
  is read against a
  scan shown able to find each fault (ledger M21: a check that could not fail).
- Fixtures are cat-themed; the package case reads this package's own source.
+ Fixtures are cat-themed; the package case reads the source of every family package.
 
  @module
  */
-
-import { readdir, readFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
 
 import {
   describe,
@@ -19,6 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import { exampleFindingsOf, } from './tsdoc-example-scan.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
@@ -142,28 +140,21 @@ await describe({
         + 'required keys (ledger D9 listed 29 that did not, and this scan first read 42)',
       fn: async () => {
         /**
-         The package's source directory.
+         Every source file of every family package other than tests, fixtures included.
          */
-        const srcDir = new URL('.', import.meta.url,).pathname;
-
-        /**
-         Every source file other than tests.
-         */
-        const files = (await readdir(srcDir, { recursive: true, },))
-          .filter(function isSource(path,): boolean {
-            return path.endsWith('.ts',) && (!path.endsWith('.test.ts',)) && (!path.endsWith('.d.ts',));
-          },)
-          .toSorted();
+        const files = (await readPackageSource()).filter(function isSource({ path, },): boolean {
+          return (!path.endsWith('.test.ts',)) && (!path.endsWith('.d.ts',));
+        },);
 
         /**
          Findings across them, each named by file.
          */
-        const findings = (await Promise.all(files.map(async function scan(path,): Promise<readonly string[]> {
-          return exampleFindingsOf({ text: await readFile(join(srcDir, path,), 'utf8',), },)
+        const findings = files.flatMap(function scan({ path, text, },): readonly string[] {
+          return exampleFindingsOf({ text, },)
             .map(function named(finding,): string {
               return `${path}:${String(finding.line,)} ${finding.name} ${finding.problem}`;
             },);
-        },),)).flat();
+        },).toSorted();
         expectNoFindings({ findings, },);
       },
     },),
