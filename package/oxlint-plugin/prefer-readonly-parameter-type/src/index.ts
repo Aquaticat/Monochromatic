@@ -91,10 +91,19 @@ initializeExternalImplementationApi();
  @internal
  */
 export {
+  readonlyTypeOriginEvidence,
   readonlyTypeOriginEvidenceFromResolution,
   type ReadonlyTypeOriginEvidence,
   type ReadonlyTypeOriginResolution,
 } from './prefer-readonly-parameter-types/readonly-type-origin.ts';
+
+/**
+ Guidance text chosen from origin evidence,
+ exported for the built-artifact origin classification test.
+
+ @internal
+ */
+export { readonlyPreferenceGuidance, } from './prefer-readonly-parameter-types/readonly-preference-guidance.ts';
 
 /**
  Oxlint plugin separating readonly preference, mutation, opacity, and contract policies.
