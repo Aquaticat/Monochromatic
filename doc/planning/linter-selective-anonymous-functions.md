@@ -147,6 +147,51 @@ Fetched on 2026-10-18 by a research agent; the owner's oxlint setup was read by 
 - rust-analyzer offers no supported custom semantic check; its `ide` API is documented as unstable.
   The linter's `BuildGenerated` mode exists (`src/rust_workspace.rs`) but the executable only requests `SourceOnly`.
 
+## Round two results
+
+Measured on 2026-10-18 on the spike branch (local commits `fad1074bd2` and `37bcb6f5b3`), on the IDE snapshot of
+the 67 closures, with the full dependency graph (a copy of the `ide-cargo` volume as `CARGO_HOME`).
+These figures supersede "14 of 67" and "63 of 67" above.
+
+- **Test sidecars:** the 11 unanalysable sites are 10 `*_tests.rs` files plus `src/native/inspect.rs`, which is
+  `#[cfg(debug_assertions)]`, not a test file. The loader uses `CargoConfig::default()` (`set_test` false) and
+  reads the release cfg. Enabling `set_test` plus `debug_assertions` through `cfg_overrides` recovers all 11 and
+  about 105 files in total, with no change in load time (the extra analysis costs 1.6 s, near the spread).
+  A package with `cfg(not(test))` items would lose coverage under that cfg; not measured.
+- **Dependency graph:** without the full graph the loader falls back to a no-dependencies graph (88 crates
+  against 612), and `Timer::start` and the two `tree_house` calls do not resolve. A no-dependencies graph also gives
+  silent wrong verdicts: closures that do capture report zero captures, so allowed sites flip to reported (the
+  conservative direction). On this machine the graph needs `CARGO_HOME` pointed at a copy of the volume.
+- **`tree_house` 0.4.0:** `read_query` and `configure` take `impl FnMut`, with no `'static`, `Send` or `Sync`; their
+  callbacks borrow caller locals, so they are correctly reported and need a directive or a restructure.
+- **Generated Slint setters:** under `SourceOnly` the 37 `on_*` sites (30 in sources, 7 in tests) do not resolve.
+  `WorkspacePreparation::BuildGenerated` resolves them on a probe crate (5 of 5 runs) but it runs
+  `cargo check --workspace`, which executes the build script of every crate in the graph (59 for the IDE) and
+  compiles proc macros, unsandboxed. The IDE as written does not resolve even then, because
+  `slint::slint! { export { .. } from "../ui/app.slint"; }` takes a file-relative path that the proc-macro server
+  resolves outside the package (reading `slint-macros-1.18.1/lib.rs:399-411`; mechanism not proven). With that
+  line replaced by `slint::include_modules!()` in a disposable snapshot: 62 allow and 5 reports (the 2
+  `catch_unwind`, the 2 `tree_house`, one let-bound closure at `src/native/language/actions.rs:134`).
+- **Wrappers:** `Arc::new(closure)`, `Some(closure)`, struct fields, `Option<F>` and fn-trait values are not
+  recognised (7 gaps); async closures and `Holder::new(Box::new(closure))` are. The final IDE snapshot has none of
+  these shapes, so they do not affect the 67; the repository elsewhere has `Arc::new(closure)` 8 times
+  (`package/music-player`) and `Box::new(closure)` 37 times.
+- **Cost, closure rule alone on the IDE package:** syntax only 0.063 s; semantic `SourceOnly` on the full graph
+  22 to 24 s (lazy hir initialisation 8.8 s, classification 12.4 s, load 0.8 s); `BuildGenerated` about 39 s warm
+  and 46 s cold (n=1). Skipping files without a direct-call-argument closure saves about 2 s (noise).
+  The existing explicit-types rule alone costs about 25 s on this package, and adding the closure rule to it costs
+  about 4.4 s more, since inference is shared. Round one's 5.9 s came from the fallback graph and was not
+  reproduced (3.9 s now).
+- **Loader hazard:** a failed workspace load is not cached, so every file retries it (411 loads, 485 s, one
+  error repeated) in both modes.
+- **Environment trap:** inside `systemd-run` units `rustc` resolves to toolchain 1.98.1 without `rust-src`, so the
+  semantic load fails for every file unless `RUSTUP_TOOLCHAIN` names the nightly.
+
+Verdict: the type criterion needs no allow-list only with three conditions together: the full dependency graph,
+`cfg(test)` plus `cfg(debug_assertions)`, and `BuildGenerated` (build scripts and proc macros run by the linter,
+a prepared IDE runtime, and the `slint!` to `include_modules!()` change in the IDE).
+Under `SourceOnly` it resolves 25 of the 67.
+
 ## Rejected for now
 
 - Allowing every `move` closure that is a call argument: coarse, and adding `move` is an easy escape.
