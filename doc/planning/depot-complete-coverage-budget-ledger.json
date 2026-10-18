@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-10-18T13:02:58.232Z",
+  "measuredAt": "2026-10-18T13:12:12.383Z",
   "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "guardUsd": 5,
   "pricingSource": {
@@ -20,6 +20,37 @@
     "rateUsdPerMinute": 0
   },
   "rows": [
+    {
+      "id": 117682601781,
+      "name": "Actual frozen packing and consumers (a)",
+      "status": "completed",
+      "conclusion": "failure",
+      "labels": [
+        "depot-ubuntu-24.04-8"
+      ],
+      "runner": "depot-h4j6smfg0n",
+      "startedAt": "2026-10-18T13:03:03Z",
+      "completedAt": "2026-10-18T13:06:01Z",
+      "seconds": 178,
+      "rateUsdPerMinute": 0.024,
+      "nominalElapsedUsd": 0.0712,
+      "conservativeRoundedMinuteUsd": 0.07200000000000001,
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39129851779:attempt:1:job:117682601781",
+      "provider": "depot-github-runner",
+      "run": 39129851779,
+      "attempt": 1,
+      "workflowSha": "0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabel": [
+          "depot-ubuntu-24.04-8"
+        ],
+        "vcpu": 8,
+        "memoryGiB": 32
+      },
+      "reservationUsd": 0,
+      "invoice": false
+    },
     {
       "id": 117675260634,
       "name": "Actual finite compiler conformance and mutation fixture (a)",
@@ -1086,9 +1117,9 @@
     }
   ],
   "activeReservation": {
-    "profile": "packed-install",
+    "profile": "packed-install-corrected",
     "provider": "depot-github-runner",
-    "workflowSha": "0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f",
+    "workflowSha": "d7447847d5d7c38e6d08164bba6f9fadd841564e",
     "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "resourceShape": {
       "vcpu": 8,
@@ -1104,10 +1135,10 @@
     },
     "reservationUsd": 0.36
   },
-  "nominalMeasuredGithubElapsedUsd": 1.0500000000000003,
-  "conservativeCompletedGithubRoundedMinuteUsd": 1.3200000000000007,
+  "nominalMeasuredGithubElapsedUsd": 1.1212000000000002,
+  "conservativeCompletedGithubRoundedMinuteUsd": 1.3920000000000008,
   "conservativeCompletedNativeReservedUpperBoundUsd": 2.16,
-  "guardCommittedAndReservedUsd": 3.8400000000000007,
+  "guardCommittedAndReservedUsd": 3.912000000000001,
   "limits": [
     "Source-bound campaign compute only",
     "No account usage or invoice inspected",

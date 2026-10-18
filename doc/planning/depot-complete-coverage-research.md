@@ -1187,3 +1187,23 @@ The campaign guard conservatively retains USD1.32 rounded GitHub time plus USD2.
 for USD3.84 committed and reserved against USD5.
 These are source-bound published-rate bounds and proxies,
 not invoices or account-wide usage.
+
+## packed-install-corrected admission
+
+The first proper packed-install profile,
+`39129851779` at `0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f`,
+passes its 42 prerequisite builds but stops in the research source-byte inventory before packing begins.
+Git emits `error: unknown option `null``.
+The harness used unsupported `git ls-files --null`;
+a local actual Git invocation verifies the supported `-z` form and its NUL-delimited output.
+No package packing,
+isolated install,
+or installed consumer is credited to that failed harness.
+The corrected immutable harness is `d7447847d5d7c38e6d08164bba6f9fadd841564e`.
+Its original resource and assertion bounds are retained.
+The refreshed deduplicated ledger records 36 completed owned job rows,
+USD1.3920 rounded completed GitHub compute,
+USD2.16 conservative completed native maxima,
+and a USD0.36 finite next reservation.
+The committed and reserved compute guard is USD3.9120 against USD5,
+with invoice and account-wide usage explicitly uninspected.
