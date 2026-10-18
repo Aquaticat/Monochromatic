@@ -1,6 +1,6 @@
 /** Verify immutable file reuse across actual mount boundaries. @module */
 import { strict as assert } from 'node:assert';
-import { cp, link, mkdir, mkdtemp, readFile, readdir, realpath, stat, symlink, writeFile } from 'node:fs/promises';
+import { cp, link, mkdir, mkdtemp, open, readFile, readdir, realpath, stat, symlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import spawn from 'nano-spawn';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
@@ -19,14 +19,20 @@ import { describe, it } from '@monochromatic-dev/module-test/ts';
  ```
  */
 async function buildRelease(packageRoot: string): Promise<string> {
+  /** Every invocation retains its complete bytes, including a failed child's final newline. */
+  const output = await mkdtemp(join(packageRoot, 'build-output-'));
+  /** File descriptors receive bytes directly before the subprocess can exit or throw. */
+  await using stdout = await open(join(output, 'stdout'), 'wx', 0o600);
+  /** Independent stderr remains available after failures and subsequent builds. */
+  await using stderr = await open(join(output, 'stderr'), 'wx', 0o600);
   /** Generation and CLI loading share the package task's bounded heap. */
-  const result = await spawn(process.execPath, [join(packageRoot, 'native/build.ts'), '--owned'], {
+  await spawn(process.execPath, [join(packageRoot, 'native/build.ts'), '--owned'], {
     cwd: packageRoot,
     env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=512' },
+    stdout: stdout.fd,
+    stderr: stderr.fd,
   });
-  await writeFile(join(packageRoot, 'last-build.stdout'), result.stdout);
-  await writeFile(join(packageRoot, 'last-build.stderr'), result.stderr);
-  return result.stdout;
+  return await readFile(join(output, 'stdout'), 'utf8');
 }
 
 /**
