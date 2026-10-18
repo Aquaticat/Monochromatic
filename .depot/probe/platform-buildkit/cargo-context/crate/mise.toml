@@ -1,0 +1,42 @@
+# Both apps enable the `service` and `fingerprint` features. The crate's own tasks build and test
+# the WHOLE crate, `--all-features`, so the Turso-backed decision cache and the fingerprint are
+# covered here; `build:default` builds the feature-less surface (meter, gain, window math, policy
+# identity and resolver) that has no Turso or hashing dependency.
+[tasks.build]
+description = "Build the truepeak-core library in release mode (all features)"
+run = "cargo build --release --all-features"
+
+[tasks."build:debug"]
+description = "Build the truepeak-core library in debug mode (all features)"
+run = "cargo build --all-features"
+
+[tasks."build:default"]
+description = "Build the default surface without the service and fingerprint features"
+run = "cargo build --release"
+
+[tasks.lint]
+description = "cargo check (no codegen, all features)"
+run = "cargo check --all-features"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied (all features)"
+run = "cargo clippy --release --all-features --all-targets -- -D warnings"
+
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+run = "cargo clippy --fix --allow-dirty --allow-staged --all-features --all-targets"
+
+[tasks.test]
+description = "cargo nextest run (all features)"
+run = "cargo nextest run --release --all-features"
+
+[tasks."bench:cache"]
+description = "Time storing a first analysis in the decision cache (set CACHE_BENCH_DIR to a directory on a real disk)"
+# CACHE_BENCH_MODE picks the write path and CACHE_BENCH_ROWS the row count; see `bench_cold_write` in
+# src/cache_tests.rs. Wrap the task in `strace --follow-forks --summary-only --trace=fsync,fdatasync` to count
+# disk flushes.
+run = "cargo nextest run --release --all-features --run-ignored only --no-capture cache::tests::bench_cold_write"
+
+[tasks."test:debug"]
+description = "cargo nextest run in debug mode for fast TDD iteration (all features)"
+run = "cargo nextest run --all-features"

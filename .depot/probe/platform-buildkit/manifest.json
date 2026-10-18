@@ -24,7 +24,7 @@
     "buildTimeoutMinutes": 5,
     "campaignWallClockMinutes": 8,
     "publishedComputeRatePerBuilderMinuteUsd": 0.04,
-    "timestampComputeCeilingUsd": 1
+    "timestampComputeCeilingUsd": 2
   },
   "sharedImage": {
     "holdUntilParentConsumersFinish": true,
@@ -81,5 +81,46 @@
       "corrected": "Separate CI_IMAGE_HARNESS_SHA argument identifies the derived build; original base environment stays inherited",
       "remoteAllocationBeforeCorrection": false
     }
+  },
+  "cargoCacheMountCampaign": {
+    "rustBase": "docker.io/library/rust@sha256:2775a09d208ff0d7c1f50490c45b62db929e87ba1dcbc3f2132ac71a704bcdd3",
+    "rustVersion": "1.97.1",
+    "nodeBase": "docker.io/library/node@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a:package/music-player/truepeak-core",
+    "archiveSha256": "2f54f974d19ff6cb2dd7196e666f69cb8e43825ded282c7621e41cd1c9a03826",
+    "lockSha256": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+    "phases": [
+      "empty-offline",
+      "seed",
+      "warm",
+      "target-reset",
+      "flags"
+    ],
+    "maximumRequestMilliseconds": 120000,
+    "platforms": [
+      "linux/amd64"
+    ],
+    "cargoJobs": 2,
+    "features": "--no-default-features",
+    "profile": "release",
+    "registryMount": "/usr/local/cargo/registry",
+    "targetMount": "/targetcache",
+    "sharing": "locked",
+    "forceFreshRunNonce": true,
+    "trust": "Mutable project cache; IDs are namespace controls, not access boundaries",
+    "unitTestsExecuted": false
+  },
+  "updatedBudgetForecast": {
+    "observedRequestMilliseconds": 139103,
+    "conservativeBuilders": 2,
+    "ratePerBuilderMinuteUsd": 0.04,
+    "additionalCargoCases": 5,
+    "cargoGuardMilliseconds": 120000,
+    "additionalForwardingGraphCases": 1,
+    "additionalGitControlCases": 2,
+    "otherGuardMilliseconds": 120000,
+    "cumulativeWorstCaseTimestampComputeUsd": 1.4654706666666666,
+    "ceilingUsd": 2,
+    "excludes": "Unseen account charges; invoice or hard-cap enforcement is not proven"
   }
 }
