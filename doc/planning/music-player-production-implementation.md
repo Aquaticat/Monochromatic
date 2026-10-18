@@ -591,6 +591,12 @@ before saying it matches, QAB):
   name, kind and parent folder but not the D77 action wording (Select track, Play track), which needs the Auto-play
   setting threaded into `search_view_of`; `PlayerError` now prints the wrapped error text twice in a full chain.
 
+In flight 2026-10-18 after 0.1.6: agent `af163cdecb7b58458` (Sonnet), branch `fix/music-player-license-polish`,
+worktree `music-player-licpolish`: the "Made with Slint" badge in the release notes (license section 2(b)), the
+Android Licenses icon changed to `license` to match the desktop, and the design record D132 for the About group and
+Licenses rows. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto trace for the 10,000-track jank
+(p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI failures, another thread owns them).
+
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
 - Android large library (written 2026-10-18, branch `fix/music-player-android-large-library`, not merged): the media
