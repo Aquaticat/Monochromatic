@@ -46,7 +46,8 @@ On 2026-10-18 the owner answered three questions through the question tool, and 
 The package therefore has no `rust-toolchain.toml` and no `RUSTUP_TOOLCHAIN` override;
 it uses the root toolchain and its aggregate tasks are named `build` and `lint` again,
 so the root fan-out reaches them.
-Still not approved: any other change to the root toolchain declaration,
+Still not approved:
+any other change to the root toolchain declaration,
 a pin of the nightly,
 an edit to the IDE package,
 a push,
