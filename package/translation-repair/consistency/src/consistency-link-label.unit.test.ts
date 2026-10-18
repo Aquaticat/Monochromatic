@@ -318,7 +318,7 @@ await describe({
 
          @returns The emphasis node
          */
-        function emphasisOf({ values, }: { readonly values: readonly string[]; },): TreeNode {
+        function emphasisOf({ values, }: { readonly values: readonly string[]; },): Extract<TreeNode, { readonly type: 'emphasis'; }> {
           return {
             type: 'emphasis',
             children: values.map(function textOf(value,): { readonly type: 'text'; readonly value: string; } {
