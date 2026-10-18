@@ -99,14 +99,14 @@ jobs:
               node: process.version,
             },
           };
-          writeFileSync('routing-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+          writeFileSync('routing-receipt-' + receipt.selectedPool + '.json', JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
 
       - name: Upload source-bound receipt before the failure control
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: 'routing-receipt-${{ github.run_id }}-${{ matrix.pool }}'
-          path: routing-receipt.json
+          path: 'routing-receipt-${{ matrix.pool }}.json'
           if-no-files-found: error
           retention-days: 7
 
@@ -132,6 +132,7 @@ jobs:
         with:
           pattern: 'routing-receipt-${{ github.run_id }}-*'
           path: receipts
+          merge-multiple: true
 
       - name: Require all selected jobs and their original receipts
         shell: node {0}
@@ -141,12 +142,12 @@ jobs:
           WORKERS_RESULT: ${{ needs.workers.result }}
         run: |
           const { readdirSync, readFileSync, appendFileSync } = require('node:fs');
-          const { join } = require('node:path');
           const { strict: assert } = require('node:assert');
           assert.equal(process.env.PLAN_RESULT, 'success');
           const expected = JSON.parse(process.env.EXPECTED_POOLS).sort();
-          const receipts = readdirSync('receipts').map(directory =>
-            JSON.parse(readFileSync(join('receipts', directory, 'routing-receipt.json'), 'utf8')));
+          const files = readdirSync('receipts').sort();
+          assert.deepEqual(files, expected.map(pool => 'routing-receipt-' + pool + '.json').sort());
+          const receipts = files.map(file => JSON.parse(readFileSync('receipts/' + file, 'utf8')));
           assert.deepEqual(receipts.map(r => r.selectedPool).sort(), expected);
           for (const receipt of receipts) {
             assert.equal(receipt.sourceSha, process.env.GITHUB_SHA);
