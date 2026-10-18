@@ -6,7 +6,7 @@ const { execFileSync } = await import('node:child_process');
 const { setTimeout } = await import('node:timers/promises');
 class ResearchGateFailure extends Error {}
 const control = JSON.parse(fs.readFileSync('pr-control.json', 'utf8'));
-if (!['pass', 'fail'].includes(control.result) || ![0, 90000].includes(control.holdMilliseconds)) throw new ResearchGateFailure('Unexpected research gate control');
+if (!['pass', 'fail'].includes(control.result) || ![0, 90000, 180000].includes(control.holdMilliseconds)) throw new ResearchGateFailure('Unexpected research gate control');
 if (process.env.GITHUB_EVENT_NAME !== 'pull_request') throw new ResearchGateFailure('This fixture requires an actual pull_request event');
 const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
 const pull = event.pull_request;

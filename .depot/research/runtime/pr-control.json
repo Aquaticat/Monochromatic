@@ -1,5 +1,5 @@
 {
   "result": "pass",
-  "holdMilliseconds": 0,
-  "revision": 4
+  "holdMilliseconds": 180000,
+  "revision": 5
 }
