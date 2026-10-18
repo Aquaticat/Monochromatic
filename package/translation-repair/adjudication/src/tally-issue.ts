@@ -1,16 +1,14 @@
 import { textsInCodePointOrder, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import type {
-  AdjudicatedIssue,
-  AdjudicationStatus,
-  AggregatedClaim,
-  ClaimPanelReading,
-  VoteTally,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
+  type AdjudicatedIssue,
+  type AdjudicationStatus,
+  type AggregatedClaim,
+  type ClaimPanelReading,
   ISSUE_SEVERITIES,
   type IssueSeverity,
+  type VoteTally,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Graded issue assembly

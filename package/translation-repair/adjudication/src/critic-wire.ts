@@ -1,14 +1,12 @@
 import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  DocumentSide,
-  IssueClaim,
-  SpanAnchor,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type AnchorTarget,
+  type DocumentSide,
   isIssueCategory,
   isIssueSeverity,
+  type IssueClaim,
   remapCategoryLeaf,
+  type SpanAnchor,
   validateIssueClaim,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {

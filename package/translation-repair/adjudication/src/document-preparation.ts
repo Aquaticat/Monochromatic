@@ -28,21 +28,19 @@ import type {
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { AttestedDetail, } from '@monochromatic-dev/translation-repair-reference/ts';
-import type {
-  FrontMatterAuthority,
-  PreparedDocumentPair,
-  UnclaimedTargetBlock,
-} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { leadingMarkWidth, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   archiveOriginalSpansOf,
   assertPlacementLayout,
   chunkSealedTargets,
   declinedLessSealed,
+  type FrontMatterAuthority,
+  type PreparedDocumentPair,
   sealedFinding,
   unclaimedFinding,
   unclaimedInAlignedPair,
   unclaimedOutsideAlignment,
+  type UnclaimedTargetBlock,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   SLICE_CHAR_BUDGET,

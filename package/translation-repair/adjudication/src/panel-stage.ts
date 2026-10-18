@@ -24,10 +24,10 @@ import {
   gatherStageVoices,
   mapOverlapped,
   type OverlappedRow,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { logBallotIrregularities, } from './ballot-irregularity-log.ts';
 import { tallyVotes, } from './tally-votes.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Cluster-local panel
 

@@ -2,14 +2,12 @@ import {
   type AdjudicatedIssue,
   type AdjudicationConfig,
   type AdjudicationStatus,
+  type AggregatedClaim,
+  type ClaimCluster,
   DEFAULT_ADJUDICATION_CONFIG,
+  type IssueSeverity,
   type PanelBallot,
   type VoteTally,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  AggregatedClaim,
-  ClaimCluster,
-  IssueSeverity,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { panelReadingForClaim, } from './tally-claim.ts';
 import {

@@ -22,8 +22,10 @@ import {
   screenIntroducedDefects,
 } from './introduced-defect-screen.ts';
 import type { RepairRegion, } from './repair-region.ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Introduced-defect probe stage
 // Asks whether the repair broke anything nobody had raised.

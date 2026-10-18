@@ -1,6 +1,5 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   communityRenderingsBlock,
@@ -19,6 +18,7 @@ import {
   MEASUREMENT_POLICY_BLOCK,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
+  type AdjudicatedIssue,
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';

@@ -1,13 +1,11 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
-import type {
-  ClaimCluster,
-  SpanAnchor,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   APPARATUS_KINDS,
+  type ClaimCluster,
   ISSUE_SEVERITIES,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+  type SpanAnchor,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   ACCURACY_CATEGORY_SCOPE,
