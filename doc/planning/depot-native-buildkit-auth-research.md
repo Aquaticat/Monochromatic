@@ -56,6 +56,47 @@ This follow-up does not create a GitHub trust relationship or qualify the GitHub
 
 ## Planned consumer and evidence
 
+### Preventing account listing on an authentication failure
+
+The complete `pkg/helpers/build.go:BeginBuild` error path calls onboarding on `NotFound`.
+`pkg/helpers/project.go:InitializeProject` retrieves the project list before checking terminal mode.
+That catch also surrounds existing-build attachment,
+so precreating a build would not itself prevent a later listing.
+
+The current fixture therefore retains the normal CLI credential path and uses the source-supported
+`DEPOT_API_URL` override from `pkg/api/rpc.go` with an owned loopback HTTP/2 relay.
+Only `CreateBuild`, `GetBuildKitConnection`, `ReportBuildHealth`, `ReportStatusStream`, and `FinishBuild`
+may reach `https://api.depot.dev`.
+The relay admits one creation containing the exact owned project identifier and requires its authorization
+header to match the injected job credential.
+Project, organization, and list operations are rejected before forwarding.
+Builder connections still use the ordinary returned BuildKit credentials.
+The relay is a research boundary, not an adopted production API proxy.
+
+Local preflight at `2026-10-18T14:45:16.436Z` retained these controls:
+
+- The actual installed CLI received a local `NotFound` response and reached its onboarding branch.
+  The relay rejected `ProjectsService/ListProjects` with `403`;
+  no request reached Depot.
+- Wrong credential, wrong project, and duplicate creation inputs were rejected.
+- Local HTTP/2 unary and streamed bodies passed through the actual relay unchanged,
+  with the expected authorization header.
+  These controls used a loopback fixture, not Depot infrastructure.
+- A network-disabled, mount-free `2 CPU`, `2 GiB` container executed the copied first-party queue consumer
+  under the exact retained Node `24.22.0` image.
+  FIFO execution, clearing, rejection, and the source hash passed.
+  The owned preflight image was removed and its absence verified.
+- The actual Mise workload prefix rejected the local non-native profile before running any command or API,
+  and its saved JSON parsed successfully.
+
+The preflight source is `1f5f9f51da475543beca0fe6e80116e484422cfa`.
+The initial local generator failed during Mise template rendering before creating a worktree or resource.
+It now uses the recorded
+[GitHub-expression delimiter workaround](../troubleshooting/mise-task-github-expression-templating.md).
+Neither the local relay controls nor the local Node consumer establish native job-token authorization.
+
+### Native consumer
+
 The producer will copy the exact frozen first-party
 `package/module/p-limit-fork/src/task-queue.ts` into a bounded context.
 A pinned Node base will execute a queue consumer and export its source binding and observed results.
