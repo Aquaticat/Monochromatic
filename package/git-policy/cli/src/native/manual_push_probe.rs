@@ -237,6 +237,20 @@ fn create_private_directory(path: &Path) -> std::io::Result<()> {
 }
 
 /// What:
+///  Whether a capture holds more update text than the limit allows.
+/// Why:
+///   The hook reads one byte past the limit, so exactly the limit is complete input and one more byte is proof
+///  that input was cut short.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const exceedsCaptureLimit = (length: number) => length > MAX_HOOK_INPUT_BYTES;
+/// ```
+pub fn exceeds_capture_limit(length: usize) -> bool {
+    return length as u64 > MAX_HOOK_INPUT_BYTES;
+}
+
+/// What:
 ///  Run the private dry-run push and read back the updates its hook captured.
 /// Why:
 ///   Git may exit non-zero after the hook has captured the negotiated updates, so the captures decide,
@@ -314,7 +328,7 @@ pub fn capture_probed_updates(
         let remote_name = lines.next().unwrap_or_default();
         let remote_location = lines.next().unwrap_or_default();
         let input = lines.next().unwrap_or_default();
-        if input.len() as u64 > MAX_HOOK_INPUT_BYTES {
+        if exceeds_capture_limit(input.len()) {
             return Err(probe_error(
                 "Pre-push input exceeded capture limit.".to_owned(),
             ));

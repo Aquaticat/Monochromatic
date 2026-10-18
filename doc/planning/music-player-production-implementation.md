@@ -557,6 +557,60 @@ before saying it matches, QAB):
   0.1.4 and older verify with `--owner Aquaticat`, 0.1.5 with `--repo Aquaticats/Monochromatic` (README and runbook
   corrected). Not run by me: any Windows or macOS binary (so the normal-close fix is proven by CI only on forced
   paths, not by closing a window on Windows), arm64 binaries, anything on a real device.
+  RELEASED `music-player-v0.1.6` on 2026-10-18 (bump commit after `b9d5c4e8d7`, run `39108583307`, all jobs green,
+  after a green dry run on main, `39107058640`): the Licenses rows on both platforms (desktop opens `ui/licenses.slint`
+  with the `AboutSlint` widget; Android opens a LazyColumn page of the notices from an APK asset), the desktop
+  programs under the Slint Royalty-free license 2.0 (owner decision 2026-10-18), and Android unplayable-file routing
+  (D131: moves walk past the file and post one system notification, a tap keeps the in-app message). Eleven files;
+  `sha256sum --check` passed for all eleven, attestation exit 0 for all eleven with
+  `--repo Aquaticats/Monochromatic`, APK certificate `9de6e9a4...6926`, Linux x64 and musl x64 (in `alpine:3.24`)
+  print `music-player 0.1.6`, `--licenses` names the Slint royalty-free license, the APK asset starts with the
+  Android notices, `pefile` shows Subsystem 2 on the three Windows exes. Not run by me: any Windows or macOS binary,
+  arm64 binaries, a real device, TalkBack. Merged earlier the same day: Android licenses row (1,334 tests), the
+  load-failure routing (1,361 tests), desktop licenses row (nextest 1,546 passed, 1 skipped). Open for the human
+  (veto): whether the Licenses page counts as the "About screen accessible from the top level menu" of Slint's
+  license section 2(a) (adding the "Made with Slint" badge to the release notes would satisfy 2(b) as well); the
+  two platforms use different icons (`license` desktop, `description` Android); `design/decisions.md` has D131 but
+  no entry for the About heading and Licenses rows; the Android channel is still named "Analysis problems". The
+  repo cache was at 10.28 GB; a real `cache-prune` run (`39109951532`) deleted four superseded entries (2.33 GB), now
+  7.95 GB.
+  RELEASED `music-player-v0.1.7` on 2026-10-18 (run `39116435211`, first attempt, green): the "Made with Slint" badge
+  at the top of the release notes (Slint license section 2(b); also in the published body, checked with `gh release
+  view`), the `license` icon on the Android Licenses row, and D132 in `design/decisions.md`. Eleven files;
+  `sha256sum --check` passed for all eleven, attestation exit 0 for all eleven, APK certificate `9de6e9a4...6926`,
+  Linux x64 and musl x64 (in `alpine:3.24`) print `music-player 0.1.7`, `pefile` shows Subsystem 2 on the three
+  Windows exes. Fresh verification before the bump: nextest 1,546 passed, 1 skipped; Android 1,361 unit tests,
+  detekt and lintDebug clean. Not seen: the new Android icon in the running app (the emulator crashed on three
+  launches, gfxstream SIGSEGV, SIGABRT and a crash-consent dialog; the vector path equals upstream
+  `license_24px.svg` byte for byte), any Windows or macOS binary, a real device. A push of merge commits was blocked
+  once by the forbidden-strings guard on another thread's evidence file (`hashicorp-tf-password` on a fixture token
+  in `doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json`, not mine and not bypassed); the same
+  commits reached `origin/main` on a later automatic retry.
+
+- 2026-10-18, license polish after 0.1.6, branch `fix/music-player-license-polish`, worktree `music-player-licpolish`;
+  not merged to `main`, no version bump. Three commits: the Slint attribution badge (`#MadeWithSlint`, the
+  `MadeWithSlint-logo-whitebg.png` file the license links, image URL pinned to Slint commit `7577a165d1`, linked to
+  slint.dev) is the first element of the release notes template in `music-player-release.yml`, so the release page
+  meets section 2(b) as well as the in-app widget (2(a)); the same notes no longer say Android has no screen for the
+  notices; the Android Licenses row draws Material Symbols `license` like the desktop row (was `description`); D132 in
+  `design/decisions.md` records the About group and Licenses row on both platforms (the human's no-mockup decision).
+  Badge facts, licence of the badge file (CC-BY-ND-4.0, linked and not copied) and the render checks are in
+  `doc/decision/music-player-third-party-licenses.md`, section "The badge on the release page". Verified: actionlint
+  1.7.12 clean, pandoc and `gh api markdown` render the badge as an image link, release dry run `39110239882` green at
+  `5b4576aa63` (all jobs; its log's "Write the release notes" step prints the badge line; the template is unchanged
+  since), and at `f060a41113`, before the merge of `main` and the later commits, which touch only docs (the merge
+  changed nothing under `package` or `.github`): desktop `lint:slint`, nextest 1546 passed and 1 skipped, clippy,
+  Android detekt, 1361 unit tests with 0 failures in 132 result files, `lintDebug`. Not done: the new icon was not
+  seen in the app. Emulator launches of a private copy of the owned AVD: a gfxstream SIGSEGV (`TextureResize`), then a
+  relaunch that aborted in the documented gRPC `CallbackWithSuccessTag::Proceed` frame, then a second relaunch that
+  stayed blocked at the crash consent dialog (`Showing crashdialog to get consent.`, no console port) because
+  `/tmp/android-user/emu-crash-37.2.12.db` holds those two reports; the next launch on this host meets the same dialog
+  until the human dismisses it. The two-relaunch limit was spent. The only emulator screenshots show the launcher: the
+  debug APK built with `raw::app:assembleDebug` has no native library (`UnsatisfiedLinkError`), because only the mise
+  `build` task depends on `build:native` (run `mise run //package/music-player/android-app:build:native` first, 2
+  minutes). Instead the committed path data was rendered with ImageMagick and equals the upstream `license_24px.svg`
+  path byte for byte. Open for the human (veto): whether the badge placement at the top of the notes is wanted, and
+  the Android icon change. The dry run's caches (gradle 654 MB, notices 128 MB) were deleted.
 
 - 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
   `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
@@ -573,6 +627,11 @@ before saying it matches, QAB):
   whether one window should sit at the end (chosen, per the module contract) or at frame 0; the Search row announces
   name, kind and parent folder but not the D77 action wording (Select track, Play track), which needs the Auto-play
   setting threaded into `search_view_of`; `PlayerError` now prints the wrapped error text twice in a full chain.
+
+In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
+"2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
+trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
+failures, another thread owns them).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 

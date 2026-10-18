@@ -3,7 +3,9 @@
 
  @module
  */
-import { writeFileSync } from 'node:fs';
+import { appendFile } from 'node:fs/promises';
+
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 //region Fixture-only setup loads Pi's original fetch snapshot before overriding it.
 
@@ -25,24 +27,10 @@ if (process.env
 /**
  Private receipt distinguishes local classification from an unexercised network guard.
  */
-const receiptPath = process.env.PI_AUTO_MODE_CLI_FIXTURE_REQUESTS;
-if (!receiptPath)
+const receiptPath = process.env
+  .PI_AUTO_MODE_CLI_FIXTURE_REQUESTS;
+if ((receiptPath === undefined) || (receiptPath === ''))
   throw new NativeCliFixtureNetworkError('Native CLI fixture requires its disposable request receipt path');
-
-/**
- Only intercepted classification requests enter the receipt; no real fetch is called.
- */
-const requests: { readonly url: string; readonly questions: number }[] = [];
-
-/**
- Synchronous exit output completes before the parent observes the child closing.
- */
-function retainRequestReceipt(): void {
-  if (!receiptPath)
-    throw new NativeCliFixtureNetworkError('Native CLI fixture lost its disposable request receipt path');
-  writeFileSync(receiptPath, JSON.stringify(requests), { mode: 0o600 });
-}
-process.once('exit', retainRequestReceipt);
 
 // Pi preserves overrides installed after its dispatcher module captured the original fetch.
 await import(new URL(
@@ -53,34 +41,81 @@ await import(new URL(
 /**
  Answer the actual startup classifier locally without admitting another network route.
 
+ Every accepted request enters the private JSONL receipt before its response returns,
+ so the parent can prove local classification after the child closes.
+
  @param input - actual transport route remains inside the disposable fixture
+
  @param init - serialized classifier request supplies names for bound local answers
+
  @returns local response accepted by the existing assessment parser
+
  @throws NativeCliFixtureNetworkError when a request differs from the isolated classifier contract
  */
-async function answerFixtureNetwork(
+globalThis.fetch = async function answerFixtureNetwork(
   input: Parameters<typeof globalThis.fetch>[0],
-  init?: Parameters<typeof globalThis.fetch>[1]
+  init?: ForeignBorrowed<RequestInit>
 ): Promise<Response> {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-  if (url !== 'https://api.llmgateway.io/v1/decisions' || init?.method !== 'POST'
-    || typeof init.body !== 'string')
+  /**
+   Resolved request target; every route except the exact serialized classifier is refused.
+   */
+  const url = (typeof input) === 'string' ? input : input instanceof URL ? input.href : input.url;
+  if ((url !== 'https://api.llmgateway.io/v1/decisions') || (init?.method !== 'POST')
+    || ((typeof init.body) !== 'string'))
     throw new NativeCliFixtureNetworkError('External fetch is disabled in the native CLI process fixture');
-  if (process.env.AUTO_MODE_LLMGATEWAY_API_KEY !== 'synthetic-local-fixture-only')
+  if (process.env
+    .AUTO_MODE_LLMGATEWAY_API_KEY
+    !== 'synthetic-local-fixture-only')
     throw new NativeCliFixtureNetworkError('Native CLI classifier requires its synthetic fixture credential');
+  /**
+   Serialized classifier request; shape-checked before any local answer is bound.
+   */
   const request: unknown = JSON.parse(init.body);
-  if (!request || typeof request !== 'object' || !('model' in request) || typeof request.model !== 'string'
-    || !('questions' in request) || !Array.isArray(request.questions))
+  if ((request === null) || ((typeof request) !== 'object')
+    || (!('model' in request))
+    || ((typeof request.model) !== 'string')
+    || (!('questions' in request))
+    || (!Array.isArray(request.questions)))
     throw new NativeCliFixtureNetworkError('Native CLI classifier requires its actual serialized questions');
-  requests.push({ url, questions: request.questions.length });
-  const answers = request.questions.map(function answer(question: unknown) {
-    if (!question || typeof question !== 'object' || !('name' in question) || typeof question.name !== 'string')
+  /**
+   Local answers preserving every original model and question name.
+   */
+  const answers = request.questions
+    .map(function answer(question: unknown) {
+    if ((question === null) || ((typeof question) !== 'object')
+      || (!('name' in question))
+      || ((typeof question.name) !== 'string'))
       throw new NativeCliFixtureNetworkError('Native CLI classifier requires named original questions');
-    return { name: question.name, type: 'predicate', probability: 0.9 };
+    return {
+      name: question.name,
+      type: 'predicate',
+      probability: 0.9
+    };
   });
-  return Response.json({ model: request.model, answers, usage: { input_tokens: 0, output_tokens: 0 } });
-}
-
-globalThis.fetch = answerFixtureNetwork;
+  /**
+   Receipt entry for this local classification, appended before its response returns.
+   */
+  const receiptEntry = {
+    url,
+    questions: request.questions
+      .length
+  };
+  await appendFile(
+    receiptPath,
+    `${JSON.stringify(receiptEntry)}\n`,
+    {
+      encoding: 'utf8',
+      mode: 0o600
+    }
+  );
+  return Response.json({
+    model: request.model,
+    answers,
+    usage: {
+      input_tokens: 0,
+      output_tokens: 0
+    }
+  });
+};
 
 //endregion

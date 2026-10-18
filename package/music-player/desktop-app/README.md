@@ -703,8 +703,9 @@ No `.slint` file may call `mix`, `brighter`, `darker` or `transparentize` (a tes
 
 ## Settings page
 
-Settings (`ui/settings.slint`, D87, D99, D109, D110, D129) lists the two templates, Track rows and Playing track, under
-a Templates heading, and the Auto-play on select switch row under a Playback heading.
+Settings (`ui/settings.slint`, D87, D99, D109, D110, D129, D132) lists the two templates, Track rows and Playing track,
+under a Templates heading, the Auto-play on select switch row under a Playback heading,
+and the Licenses row under an About heading (D132; the row opens the Licenses page of `ui/licenses.slint`).
 The whole page is drawn on the one canvas colour (pure white in light, pure black in dark): no page tint, card fill,
 header band, border or divider line, so the header, the heading and the rows are separated by spacing alone.
 Only state carries a fill: the hover and pressed layers, the 40 px icon circle (the secondary container role) and the

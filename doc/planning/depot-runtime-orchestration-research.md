@@ -1,5 +1,103 @@
 # Depot runtime and orchestration research
 
+## Current execution boundary on 2026-10-18 at 11:38 UTC
+
+Native single-job retry now has actual transport evidence:
+attempt two of `xgq2429hqv` downloaded the producer archives,
+then rejected the old fixture's failed assertion.
+The corrected fresh run `1jqm5wjmlj` passed the final consumer at source
+`bf3c4a98b32826c1c16e8755b8775256340fab79`.
+The consumer bound each receipt's raw SHA256 to its producer output and passed rejection controls.
+Its full workflow rerun exposed a distinct boundary:
+the download Action returned the first attempt's `allrun` ZIP with current state/default ZIPs,
+and the hash guard rejected that mixed result.
+All seven archives across both attempts are retained and integrity checked.
+The deciding SDK sorts same-name artifacts by descending numeric ID.
+The older observed artifact has the larger ID;
+both IDs are safe integers.
+The [source trace and controls](../troubleshooting/depot-rerun-artifact-id-order.md)
+establish the selector vulnerability without establishing the backend ID-construction mechanism.
+The failing Action's raw pre-filter response was not captured;
+a visibility race is not excluded as the specific incident mechanism.
+Content-bound names at `46fab80ef500e7d857cdb822085c03f899e266ff`
+passed the first fresh consumer in `w9jdpj5f1l`.
+Its real complete workflow rerun passed all current-output and rejection controls,
+with ten distinct API sandbox IDs across the five jobs and two attempts.
+The [public orchestration receipt](../audit/depot-native-orchestration-2026-10-18.evidence.json)
+retains fifteen original evidence ZIPs.
+The raw aggregate status also includes intentionally failed parallel jobs and a cancelled timeout job.
+The isolated ordinary comparison now has a [public receipt](../audit/depot-job-policy-history-2026-10-18.evidence.json).
+Native `kjf78stmkb` and GitHub `39122132487` both normalize the allowed failure's dependency result to success.
+Native's aggregate and GitHub App suite still conclude failure,
+while the GitHub workflow concludes success.
+No cancelled timeout job explains that isolated difference.
+The separate default downstream control `pfzfjrqdpq` passed without an explicit `always()` condition;
+its native aggregate still failed.
+The separate step-level control `lrhfzwrwl2` passed its observer,
+job and workflow while preserving outcome `failure` and conclusion `success` on the advisory step.
+These controls use source `714a3cad36c20da75969454fe33f28dab7770e9b`
+and extend the public paired receipt to eight original ZIPs.
+Cumulative conservative semantics reservations are USD 0.960 under the USD 1 guard.
+
+The [earlier Tests trial](../audit/depot-test-feature-2026-10-16.md)
+already proves actual physical binary-level splitting and report/history controls.
+The current profile adds individual-test granularity on the frozen source:
+34 exact selectors,
+unchanged-input seed repeats,
+two physical shards and a downstream identity consumer.
+The first run `b7zbgvws7h` failed before application execution:
+its child Mise command inherited the repository root,
+where explicit configuration roots exclude `.depot/research/test-shards`.
+The [verified directory remedy](../troubleshooting/mise-excluded-research-task-discovery.md)
+passed actual run `fm9d4wkbj9` at `e1b2f76f62fbb7fea99eef4fca88443d54308455`.
+Three 34-case seed runs and two 17-case physical shards passed,
+and the downstream consumer verified the exact disjoint 34-case union.
+Attempt-scoped APIs independently returned 136 passing case events,
+with four distinct provider sandbox IDs joined to the source-bound receipts.
+Both physical commands reported zero timed candidates.
+The later read-only controls established that the harness supplied full test-name values as class-name candidates,
+while every actual JUnit classname is `monochromatic-git-policy-cli`.
+That real class has historical timing data under both timing granularities;
+the full test-name controls and absent-class negative do not.
+The [current documentation](https://depot.dev/docs/ci/how-to-guides/split-tests.md)
+requires candidate values to match JUnit file/class fields;
+`testname` timing granularity does not introduce a test-name candidate identity.
+This corrects the earlier unresolved-availability interpretation.
+The per-test physical partition remains an untimed execution/ingestion result,
+not a timing-balanced per-test result.
+The [public receipt](../audit/depot-physical-test-shards-2026-10-18.evidence.json)
+retains stored rows and five original evidence ZIPs,
+excluding the binary input wrapper and signed transport URL.
+The two full profile reservations total USD 0.348 under the USD 1 guard.
+The exact temporary secret variant was removed after positive lookup,
+with absence verified.
+The prior repeated-upload defect remains open in issue `1046`;
+current protocol source still documents the duplicate response flag as always false.
+
+The raw KVM diagnostic `39115506319` passed QEMU `q35` KVM as an ordinary user
+after scoped device-access repair.
+Its later `none` machine user probe failed with device-open permission denied,
+while the root control passed and libvirt still rejected KVM capability.
+This is a changing access boundary,
+not evidence that GitHub-hosted runners categorically lack KVM.
+Per-probe access-state diagnosis and publication remain open.
+The inspected Libvirt `qemu_process.c:9538` capability launcher selects machine `none`
+for its KVM probe,
+which matches the failing machine choice but does not identify the changing access cause.
+The follow-up `39123865841`,
+source `fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef`,
+captures per-probe device stat,
+ACL and effective caller access through repeated machine,
+privilege,
+idle and ACL-grant controls.
+Its live paused-TCG positive control validates process discovery before cleanup absence is trusted.
+The maximum is one paused 128 MiB QEMU process,
+one vCPU,
+eight job minutes and six inner minutes,
+with no application guest.
+The measured five prior intervals plus the new full reservation total nominal proxy USD 0.1796,
+under the unchanged USD 1 campaign guard.
+
 ## Scope and execution manifest
 
 The reopened research uses repository source `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
@@ -263,7 +361,7 @@ The current-source `mvm` campaign is admitted as a separate functional qualifica
 - Every host uses a disposable home and private libvirt session.
   GitHub-hosted KVM access may receive a recorded per-user ACL change inside its owned ephemeral VM.
   No local host daemon or Hetzner resource is used.
-- The bounded campaign permits at most three functional jobs,
+- The initial admission permitted at most three functional jobs,
   at most two simultaneous jobs,
   a 20-minute job timeout,
   and a 16-minute inner lifecycle deadline that reserves cleanup time.
@@ -332,8 +430,216 @@ previously measured primary-group mismatch and its verified owned-process relaun
 The follow-up must record actual process and passwd identities,
 retain daemon logs before cleanup,
 and apply that workaround only when its measured prerequisite is present.
-The VM campaign now permits four total functional jobs within the same USD 1 guard:
+The subsequent admission permitted four total functional jobs within the same USD 1 guard:
 the first failed native job,
 one diagnostic native follow-up,
 and the two GitHub controls.
 Four full 20-minute windows at USD 0.012 per minute would total USD 0.96.
+All four are now terminal.
+The fifth-allocation diagnostic admission retains 358 request-to-terminal seconds
+for those completed jobs,
+modeled conservatively at USD 0.0716.
+One further ten-minute GitHub-hosted QEMU/libvirt capability diagnostic reserves USD 0.12,
+for a USD 0.1916 forecast under the unchanged USD 1 guard.
+The diagnostic workflow at harness `0a2fd7678b` runs TCG positive controls,
+unprivileged and root KVM attempts,
+and libvirt capability queries;
+it does not boot an application guest.
+Explicit owned-daemon cleanup remains required.
+
+### Successful diagnostic VM consumer
+
+Native run `zg88jz25gb`,
+at harness `6b3c75517e798161e79ddb7e496b78cf1ffc4240`,
+completed the actual current-source VM consumer.
+QMP reported a running guest with KVM enabled and present.
+The guest returned the expected stdout nonce,
+reported the deliberately missing path on stderr with exit status 2,
+and round-tripped 51 bytes with SHA256
+`d769bca01c70c838e1234308623c7fedaf6630250a786758abf8f9090f208047`.
+Its retained metadata names Ubuntu,
+the `ubuntu` user,
+`/bin/bash`,
+and the virtiofs transfer route.
+Explicit cleanup left no domains,
+both owned libvirt daemon PIDs were gone,
+and the cleanup error list was empty.
+The group-normalized diagnostic fixture and retained daemon logs distinguish this result
+from the first failed final guest.
+The matched GitHub controls completed in run `39110201120`
+at harness `1438ecde4b643a606e0a75f85067e3d0153e9bb5`.
+Depot's four-CPU GitHub runner passed the complete guest consumer and explicit daemon/domain cleanup.
+Its 51-byte roundtrip SHA256 was
+`9b4c766cc6c5c13b1b4ad52e30fd62ee726026e55e33be9e70cdc3b85fda8165`.
+GitHub-hosted Ubuntu passed the scoped KVM-device permission adjustment,
+then libvirt rejected guest definition with
+`Emulator '/usr/bin/qemu-system-x86_64' does not support virt type 'kvm'`.
+That failed consumer also completed explicit daemon/domain cleanup.
+Filesystem access to `/dev/kvm` is not a successful KVM API or guest-start control.
+A raw QEMU/libvirt capability diagnostic was completed in GitHub run `39115506319`,
+at harness `0a2fd7678b719d9039df318003a43bbc4713cd7c`.
+After the scoped ACL grant,
+raw q35 KVM passed as UID 1001 and as root,
+with QMP reporting KVM present and enabled.
+TCG positives reported KVM present but disabled.
+The later unprivileged `machine=none` probe failed with
+`Could not access KVM kernel module: Permission denied`,
+while its root control passed.
+Private libvirt still rejected KVM domain capabilities;
+its TCG capabilities query passed.
+Both owned daemon PIDs were observed gone and cleanup errors were empty.
+This establishes raw KVM availability in the tested GitHub allocation,
+not a completed GitHub-hosted application guest.
+The fixture did not snapshot device permissions before every probe,
+so it does not establish why access differed across that sequence.
+Do not infer a GitHub-wide lack of nested virtualization from libvirt's diagnostic.
+
+### Container and Android consumer progress
+
+The completed local Android consumer is retained in
+[`depot-android-consumer-2026-10-18.evidence.json`](../audit/depot-android-consumer-2026-10-18.evidence.json).
+It installed the matching debug and AndroidTest APKs from native producer `1jxc80q7q7`,
+with producer harness `8256d8bb9dd20b8c9b373c2c08b0a73560d93564`.
+The headful private emulator reported Android API 37,
+`x86_64`,
+and 16,384-byte pages.
+The test catalog was derived from frozen application commit
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+All 16 catalog identities were reported:
+14 passed,
+two failed,
+and none skipped.
+Both failing `SessionStoreTest` methods encountered a null-context `getSharedPreferences` call,
+matching the still-open fixture problem described in
+[issue 1002](https://github.com/Aquaticats/Monochromatic/issues/1002).
+This does not establish a production storage defect.
+The report preserves the failed aggregate and compressed raw instrumentation output.
+The private emulator and ADB server stopped,
+their owned ports had no listeners,
+and the original device configuration still matched its preflight content.
+New instrumentation classes added to main after the frozen source are outside this cohort.
+
+The first derived CI-image repair completed in native run `rvvg2kv0jk`
+and GitHub run `39112162357`,
+both at harness `9779cb896b92969b84f45e2737117231638aa700`.
+The HTTP service still uses its original immutable image.
+Job containers use the separate derived image
+`registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346`.
+The derived image contains Git 2.39.5 and the measured Mise-action prerequisite tools.
+All its job-container checkouts passed,
+then the actual locked Node 26.12.0 loader failed because `libatomic.so.1` was absent.
+An image-local Node 24 probe did not qualify the repository's locked runtime.
+Its actual tool-receipt bytes and architecture must match the builder's retained hashes.
+The original build's read-only token fetched both new architecture layers;
+an empty owned registry upload initiation returned 403 after authenticated GET positives.
+Those controls establish the observed token scope without inferring its closed server implementation.
+
+The corrected derived image is
+`registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`,
+with builder harness `7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f`.
+It adds measured `libatomic1` version `12.2.0-14+deb12u1`.
+Native run `g02lgcbfgq` and GitHub run `39113547458`,
+both at consumer harness `5485cc0d12805f330d568b358e5ff0bb988d4d37`,
+completed successfully.
+All four native and all six GitHub host/job-container jobs passed their actual HTTP consumer.
+Job-container consumers additionally verify builder/tool receipt hashes,
+the actual locked Node 26 executable hash,
+and a loaded `libatomic` mapping.
+This separates the base image's Node 24 identity from the repository runtime actually exercised.
+The completed public receipt is
+[`depot-service-containers-2026-10-18.evidence.json`](../audit/depot-service-containers-2026-10-18.evidence.json),
+with all ten original ZIPs retained in its linked compressed archive.
+All six GitHub archive hashes match the server's artifact digests;
+the four native archives have verified local SHA256,
+CRC and API-size checks without a server-digest claim.
+Commit `0a8a2979e0` retains this evidence and scoped dprint passed.
+
+GitHub run `39109462308`,
+at harness `1438ecde4b643a606e0a75f85067e3d0153e9bb5`,
+passed its host-to-service HTTP consumers on GitHub-hosted AMD64,
+Depot AMD64,
+and Depot Arm64.
+Its original-image job containers timed out in checkout's REST fallback without Git;
+the separately identified derived-image results qualify the corrected consumer instead.
+The original invalid workflow run `39108872769` is a fixture failure:
+job-level `env` cannot reference `job.services` in the inspected GitHub runner schema.
+The corrected workflow puts that expression in the consuming step's `env`.
+
+Native secret-presence run `c8lwr60rdm` used the same harness.
+It observed an empty pull-secret value and empty `GITHUB_REF` and `GITHUB_REF_NAME`.
+This explains the missing credential at that consumer boundary,
+but does not establish the closed backend's selector mechanism.
+Repository-only presence control `3s4ctdsn8f` observed the same owned secret as present,
+and host run `kl548vchg7` passed both native architecture consumers.
+These observations qualify the tested repository-only binding,
+without identifying the closed backend's branch-selector mechanism.
+The short-lived read-only credential was refreshed only in the existing owned GitHub secret
+and repository-only native variant for the final image consumers.
+Both exact native variants and the exact GitHub secret were deleted after retention.
+Positive pre-removal lookups and negative post-removal lookups were retained.
+This removes those secret bindings;
+it does not establish token revocation.
+The builder's consumer hold has been released.
+Do not inspect account-wide secrets or mint broader credentials.
+
+### Actual retry and physical-test follow-up
+
+The second native semantics run `xgq2429hqv`,
+at harness `9779cb896b92969b84f45e2737117231638aa700`,
+passed its corrected state job.
+The default-parallel block returned before its eight-second sibling completed,
+but the nine-second observer still saw the sibling's completion file.
+The fixture's stronger sibling-absence assertion therefore failed.
+Block-return behavior and descendant lifetime are separate boundaries;
+the next fixture must record the latter without inventing a termination guarantee.
+Its consumer has an additional unresolved boundary:
+the failed job's retained log stops after successful Node installation,
+without a download-action diagnostic.
+The pinned download Action commit exists;
+an invalid commit or log-limit explanation has not been established.
+
+After retaining the original job metadata and three producer archives,
+the parent submitted an actual single-job retry for consumer `nw4mdr6b68`.
+The API returned attempt 2 queued.
+Its added reservation is USD 0.03 for one two-CPU/eight-GB/five-minute allocation,
+within the existing USD 1 semantics guard.
+The unchanged source still contains the failed sibling-absence assertion,
+so this retry tests lineage and the separate transport boundary,
+not a passing aggregate.
+The corrected consumer,
+an actual workflow rerun,
+and original/current download-action controls remain queued.
+
+The physical Depot Tests profile will use actual per-test Nextest JUnit from the retained,
+source-bound 34-case lock diagnostic cohort.
+An explicitly owned tmpfs environment is a diagnostic condition,
+not a production source repair or whole-suite qualification.
+The planned selection uses runnable test-name units,
+with `--candidate-type classname --timings-type testname`;
+the inspected CLI source explicitly permits test-name timing identity for either candidate identity.
+Execution still must verify disjoint physical shards and their exact union,
+source/archive admission,
+historical timing lookup,
+real failure/skip and report freshness/duplicate controls,
+and downstream artifact consumption.
+These are research tasks,
+not requests for the user to specify measurable facts.
+
+The local Android consumer uses a private reflink AVD,
+a separate adb server,
+and systemd unit `mono-depot-ci-android-20261018`.
+The unit reports `MemoryMax=12884901888`,
+with four guest cores,
+4096 MiB guest memory,
+host GPU,
+and a visible window.
+Only the private copy is factory-reset;
+its copied SD card is disabled to avoid inherited media.
+The owned AVD remains unchanged.
+Initial preparation hit Node's `EINVAL` copying a measured `No_COW` temporary adb file.
+The existing verified cold-boot selection excludes `snapshots` and `tmpAdbCmds`;
+the corrected private copy and headful launch succeeded.
+Actual device settings,
+APK installation,
+foreground activity,
+and instrumentation results remain separate consumer evidence.

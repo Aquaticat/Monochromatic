@@ -6,6 +6,9 @@ import { access, copyFile, cp, mkdir, mkdtemp, rm, stat, writeFile } from 'node:
 import { tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 
+// The generator controls run in the build image with the runner the git-policy/cli gate pins by version and checksum.
+import { copyNextest, nextestCopyLines } from '../../cli/bin/native-nextest-snapshot.mjs';
+
 /** Same installed Rust runtime image as the linter's fuzz sidecar; the targets are pure and need no Git. */
 const baseImage = '62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884';
 /** Concurrent worktrees set GIT_POLICY_NATIVE_IMAGE_TAG so one snapshot never runs another's image. */
@@ -144,6 +147,7 @@ async function main() {
     await writeFile(join(context, '.cargo/config.toml'), config);
     const cargoFuzz = await executable('cargo-fuzz');
     await copyFile(cargoFuzz, join(context, 'cargo-fuzz'));
+    await copyNextest({ context });
     await writeFile(join(context, 'Containerfile'), [
       '# Installed Rust runtime image; the compiler is a separate read-only input.',
       `FROM ${baseImage}`,
@@ -152,6 +156,7 @@ async function main() {
       'COPY .cargo /work/.cargo',
       'COPY cargo-fuzz /usr/local/cargo/bin/cargo-fuzz',
       'RUN ["cargo-fuzz", "--version"]',
+      ...nextestCopyLines(),
       'WORKDIR /work/package/git-policy/cli.fuzz',
       'ENV CARGO_BUILD_JOBS=2 CARGO_NET_OFFLINE=true CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
       'ENV PATH="/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"',
@@ -163,7 +168,7 @@ async function main() {
     // Only build containers disable label isolation; fuzz execution has no host mounts and keeps it enabled.
     const compilerMount = ['--security-opt', 'label=disable', '--volume', `${compiler}:/toolchain:ro`];
     // Generator controls prove the invariants are reached before any fuzzing result is trusted.
-    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
+    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'nextest', 'run', '--lib', '--offline', '--locked'] });
     execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'clippy', '--lib', '--offline', '--locked', '--', '-D', 'warnings'] });
     const buildContainer = execute({ command: 'podman', args: [
       'create', ...limits, ...compilerMount, buildImage,

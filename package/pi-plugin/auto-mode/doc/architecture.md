@@ -16,8 +16,19 @@ The former extension pipeline and duplicated execution protocols are removed.
 The complete units,
 type check,
 affected native matrix and configured replay pass on `native-release-mmaT8k`.
-Additional real session-action verification exposes a separate native cancellation-signal capture defect.
-That regression must pass before the directly supervised MiMo lint worker receives editing scope.
+Additional real session-action verification exposes native input boundaries repaired after that baseline:
+cancellation controls,
+confirmed parallel-group progress,
+persisted assistant content,
+compaction file sets and growing streaming snapshots.
+The current native artifact is `native-release-EWv4wy`.
+Its committed-source type check,
+content-storage consumers,
+compaction and persistence consumers,
+and full progress/fallback catalog pass.
+The directly supervised MiMo worker has actual editing scope for the CLI fixture and network unit.
+The complete units currently fail on that unit's stale missing request-receipt path;
+the worker must repair it before full-unit success can be claimed again.
 Lint cleanup remains an unfinished measured task.
 
 The 2026-10-18 post-cleanup snapshot measures 22,933,936 regular-file bytes
@@ -95,6 +106,11 @@ and executable verification.
 An existing implementation is evidence of a responsibility,
 not sufficient justification for its current decomposition.
 
+The [dependency footprint](dependency-footprint.md) follows shared installed packages beyond package symlinks,
+separates optional peers and platform variants,
+and identifies retained parser and host responsibilities.
+Its installed-directory counts are distinct from a deployment or executed-import size.
+
 ## Historical extension consolidation measurements
 
 The [retired extension pipeline](retired-extension.md) no longer supplies another execution-permission path.
@@ -138,10 +154,17 @@ including release publication and native lifecycle regressions.
 Both complete configured replays exercise 52 original calls and 62 actual Luna requests with zero selectors.
 Actual transmitted requests pass positive-controlled required and excluded payload checks.
 The logger dependency's completion and file ownership repair is published and registry-consumer-verified as `0.4.2`.
-The additional `session_before_tree` and `session_before_compact` control boundary remains under repair:
-their valid `AbortSignal` fields are not ordinary message or tool data.
-Successful native navigation alone does not prove complete captured evidence;
-the regression also reads the manager's retained original event source.
+The additional `session_before_tree` and `session_before_compact` control boundary is repaired:
+their valid `AbortSignal` fields retain opaque emission-local references.
+Declared compaction file-operation Sets retain complete ordinary path snapshots.
+The regression also reads the manager's retained original event source;
+successful native navigation alone does not establish that evidence.
+Growing serialized streaming prefixes share immutable storage without merging original publications.
+The current escaped-text,
+SDK-message-clone stress case retains 10,544,896 heap bytes against its 342,565,888-byte prior result.
+Actual configured compaction and subsequent reviewed tools pass on `q83LlN`;
+their complete captured provider requests pass required and excluded data checks.
+The subsequent `EWv4wy` worker still needs its completed actual editing and final configured replay evidence.
 Current maintained lint scope and remaining debt are recorded in `compact-review-design.md`.
 Historical lint totals in investigation records describe their named source snapshots.
 

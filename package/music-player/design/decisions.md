@@ -3798,6 +3798,60 @@ The human's rulings are applied here; the readings below are the implementer's, 
   `AnalysisFailureNotification.kt` (`postUnplayableFilesNotification`) and the wiring in `PlaybackService`.
   Tests: `PlayerControllerUnplayableWalkTest`, `AnalysisFailureNoticeTest`, `AnalysisFailureNotificationTest`.
 
+### D132. Settings gets an About group with one Licenses row on both platforms, designed without mockups (2026-10-18)
+
+The human decided through the agent's question tool: "add a licenses row to settings, doesn't need mockups, just do it,
+this one is pretty simple and low-impact in terms of design".
+The owner decision of the same day to use Slint under its Royalty-free license
+(`doc/decision/music-player-third-party-licenses.md`) is why the row exists:
+that license asks for the AboutSlint widget in an About screen.
+No mockup, candidate set or native study was made, by that decision; this record and the built screens are the whole
+design.
+It adds a row to a page whose rows D87, D97, D99 and D129 name, so it is recorded here as the next row of the page.
+The readings below are the implementer's, open to a veto.
+
+- The Settings page ends with a third group, headed "About", after Templates and Playback.
+  The heading has the form of the other two group headings.
+  The group holds one row, Licenses, in the stock 72 px or dp row form, with the 40 px or dp icon circle of the other
+  rows and group rounding at all four corners.
+  Like the Playback switch row it is never a selection: the selected template and the editor beside it stay as they
+  are.
+- The icon is the Material Symbols Outlined `license` (weight 400, grade 0, size 24), from the same pinned commit as
+  the other Settings icons, on both platforms.
+  The first builds drew `license` on desktop and `description` on Android; the agent unified them on `license` on
+  2026-10-18, which the human has not been asked about and may veto.
+- The supporting line is each platform's own wording, not unified: "Third-party notices" on desktop and "Open-source
+  libraries used by this app" on Android.
+- The row is a button for assistive technology and the last keyboard stop of the list, after the Playback switch;
+  Enter and Space open it on both platforms.
+  The focus ring follows the row's group rounding (D117).
+- The desktop page (`ui/licenses.slint`) covers the whole window in both the narrow and the wide form, drawn on the
+  one canvas color with no band, card or divider.
+  Its header holds the Back arrow (spoken "Back") and the title Licenses.
+  Under the header sits the Slint "Made with Slint" widget (`AboutSlint`, 112 px band, the light or dark logo by scheme,
+  a click opens slint.dev), then a "Notices" heading, then the notice text in a list that builds only the lines in view.
+  Back and Escape return to Settings, which reopens with the Licenses row as the keyboard position.
+  The arrow keys, Page Up, Page Down, Home and End scroll the text; the keys that hold a modifier pass on.
+- The Android page (`LicensesPage.kt`) takes the window on every width, also on the unfolded screen where Settings has
+  two panes and a row shows its content in the right pane (D110).
+  The text is a 1.7 MB document, not a setting, and it takes the window (the right half of a creased screen, so no text
+  crosses the fold).
+  Putting it in the right pane instead is an open choice.
+  The header is the Settings header with a Back button spoken "Back to Settings" and the title Licenses.
+  A `LazyColumn` draws the notices in blocks: titles carry the heading role and differ by size, weight and color,
+  wrapped prose is joined into paragraphs, other lines keep a monospace face.
+  A spinner with "Loading licenses" shows while the asset loads, and a message shows if it cannot be read.
+  Back (the button or the system gesture) returns to Settings, and on the unfolded screen Escape does too.
+  The list is one keyboard stop; Up, Down, Page Up, Page Down, Home and End scroll it.
+- Not decided here: whether the row should carry the name About, or the page a title that includes it; and whether
+  the desktop page counts as the "About" screen "accessible from the top level menu" of section 2(a) of the Slint
+  license (the release notes carry the Slint badge for section 2(b) so the answer does not decide whether the license
+  is met).
+- Code: `desktop-app/ui/settings.slint` (the About heading and `licenses-row`), `desktop-app/ui/licenses.slint`,
+  `desktop-app/src/ui_licenses.rs`; `SettingsPage.kt`, `SettingsIcons.kt` (`SETTINGS_LICENSES_ICON`),
+  `LicensesPage.kt` and `core/LicenseNoticeBlocks.kt` on Android.
+  Facts, measurements and the license reading: `doc/decision/music-player-third-party-licenses.md`.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

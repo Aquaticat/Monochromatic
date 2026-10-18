@@ -702,10 +702,18 @@ the items after it are the record of 2026-10-05 and older.
     found by `mise which monochromatic-lint` (the PATH of a stale shell finds 0.1.1, which rejects the config), counts
     2654 `markdown/semantic-line-breaks` errors (1291 in `README.md` and `design/README.md`, the rest in Markdown
     inside Rust doc comments, which the rule checks too and `--fix` repairs) and 1135 `rust/no-anonymous-functions`
-    warnings (not fixable by the tool) in `package/desktop-app/ide`. Order: after both splits land, run
-    `monochromatic-lint --fix` over the IDE package, gate, commit on `main`; then name the closures in a separate
-    commit after a gate (a Sonnet agent), because both edit the files the splits move. Cosmetic and open: hover text
-    shows raw Markdown links (`[Date](file:///...)`).
+    warnings (not fixable by the tool) in `package/desktop-app/ide`. Done on 2026-10-18: `monochromatic-lint --fix`
+    over the IDE package (86 files, zero `markdown/semantic-line-breaks`, `rust/max-lines` and `rust/require-rustdoc`
+    findings left; the 28 gates passed on the merged tree, IDE tree `3145c409fc`) and landed on `main`. In flight:
+    branch `refactor/ide-closures` (an agent): first the IDE container lint gets the root `clippy.toml` (issue 1756;
+    about 64 `Result::unwrap` sites must be fixed first), then the 1135 `rust/no-anonymous-functions` warnings.
+    Landed on 2026-10-18 from open issues: the nested compositor 0.6.1 (owner-only control socket bound through a
+    private staging directory and a rename, so no instant of wider access; startup and frame failures reported as
+    errors instead of eight panics; root `clippy.toml` in its container lint; nextest for its container tests;
+    issues 1239 and 1755 closed), the IDE test tasks on nextest (distinct passing names equal before and after: 783,
+    64 and 379), and the regex in `bin/nested-compositor.mjs` replaced by a cursor scan (issue 838). Issues 1756 and
+    1757 stay open for other packages. Cosmetic and open: hover text shows raw Markdown links
+    (`[Date](file:///...)`).
     Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
     a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
     `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`

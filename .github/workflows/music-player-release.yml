@@ -1343,6 +1343,8 @@ jobs:
 
         Built by CI from commit @SHA@ ([workflow run](@RUN_URL@)). Source: [@TAG@](https://github.com/@REPO@/tree/@TAG@).
 
+        [![#MadeWithSlint](https://raw.githubusercontent.com/slint-ui/slint/7577a165d15b7a097789cb7c417691ed3f8c1bcf/logo/MadeWithSlint-logo-whitebg.png)](https://slint.dev)
+
         ## Downloads
 
         - Windows: `music-player-@VERSION@-windows-x64.exe` and `music-player-@VERSION@-windows-arm64.exe`, one standalone program each.
@@ -1377,12 +1379,12 @@ jobs:
         ## Licenses
 
         Music Player is licensed under the [GNU Lesser General Public License, version 3 or later](https://github.com/@REPO@/blob/@TAG@/LICENSE).
-        The desktop programs are built with the [Slint](https://slint.dev) toolkit, which this project uses under the [Slint Royalty-free Desktop, Mobile, and Web Applications License, version 2.0](https://slint.dev/terms-and-conditions#royalty-free); the Licenses page in Settings shows the "Made with Slint" widget that license asks for, and its text is in the desktop notices. The code of this repository stays LGPL-3.0-or-later.
+        The desktop programs are built with the [Slint](https://slint.dev) toolkit, which this project uses under the [Slint Royalty-free Desktop, Mobile, and Web Applications License, version 2.0](https://slint.dev/terms-and-conditions#royalty-free); the Licenses page in Settings shows the "Made with Slint" widget that license asks for, this page shows the #MadeWithSlint badge at the top (the license accepts either; this project does both), and the license text is in the desktop notices. The code of this repository stays LGPL-3.0-or-later.
         The complete source code of this release is the tree at [@TAG@](https://github.com/@REPO@/tree/@TAG@); every Rust crate it uses is published on crates.io under the name and version its notices give.
 
         Each program carries the license notices of everything built into it: the program's own license texts, the bundled typeface (desktop) and icons, the Rust standard library, every Rust crate and, for Android, every Android library.
         - Desktop: `music-player --licenses` prints them; the Licenses row of Settings shows them in the app; the Linux and Alpine archives hold them as `THIRD-PARTY-LICENSES.txt`, and the disk image beside the app and inside it (`Contents/Resources`). The Windows programs are single files, so their notices are `music-player-@VERSION@-desktop-third-party-licenses.txt` here and `--licenses` (in PowerShell, `music-player.exe --licenses | Out-File licenses.txt`; `>` leaves an empty file there, as for every Windows program without a console).
-        - Android: inside the APK as `assets/THIRD-PARTY-LICENSES.txt`, and `music-player-@VERSION@-android-third-party-licenses.txt` here. The app has no screen that shows them yet.
+        - Android: inside the APK as `assets/THIRD-PARTY-LICENSES.txt`, and `music-player-@VERSION@-android-third-party-licenses.txt` here. The Licenses row under the About heading of Settings shows them in the app.
 
         ## Verify a download
 

@@ -1,14 +1,16 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T06:50:13.355Z",
+  "updatedAt": "2026-10-18T11:12:23.385Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
     "path": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz",
-    "bytes": 3413884,
-    "sha256": "2b2179b7ac68599084603cf8c2749bea14b07977e0bb463e17630bbeffbb7061",
+    "bytes": 3883626,
+    "sha256": "d3d907ba12236df20900f65ef7109ac2b90c9a9a1ad71a03f1ae3b1bad2ca890",
     "pinnedRepositories": 28,
-    "retrievedSourceFiles": 542
+    "retrievedSourceFiles": 542,
+    "supplementalRepositoryRootFiles": 142,
+    "publicDocumentationMdxFiles": 117
   },
   "indexes": {
     "llmIndexCount": 642,
@@ -3914,8 +3916,8 @@
           "description": "List test results"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3925,8 +3927,8 @@
       "status": 0,
       "sha256": "a6b59d20cb3fd00619f9d8e07641b1855123f1e945735d3b8c31251bf2ce607a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3941,8 +3943,8 @@
           "description": "Get the latest blog post from Depot's RSS feed"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3952,8 +3954,8 @@
       "status": 0,
       "sha256": "e207ee7d7eea46f68215cd384c2395ae05ca036693d0457ce47c03bdbf45e74e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3968,8 +3970,8 @@
           "description": "Reset the cache for a project"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3978,8 +3980,8 @@
       ],
       "status": 1,
       "diagnostic": "sccache not found in PATH: exec: \"sccache\": executable file not found in $PATH\n\nPlease install sccache: cargo install sccache\n",
-      "statusInterpretation": "Cargo wrapper prerequisite failure; not a remote cache result",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Preserved wrapper prerequisite failure; no remote result",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4054,8 +4056,8 @@
           "description": "Manage CI workflows"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4065,8 +4067,8 @@
       "status": 0,
       "sha256": "6da9aaa39729f828248e86f94439e8df58acdd1f9d66934127994d07a8e4ccec",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4093,8 +4095,8 @@
           "description": "Generate the autocompletion script for zsh"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4104,8 +4106,8 @@
       "status": 0,
       "sha256": "a3db0dc18bdf8d4ff820ec905d8a64d4e0dcca53d49aa05c9ba0c26c3799f8ba",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4124,8 +4126,8 @@
           "description": "Remove images from the registry by tag"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4135,8 +4137,8 @@
       "status": 0,
       "sha256": "01607782971e2c129eb262cccbb45825a83cbe01d1927aff20d9e1bc8204f470",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4155,8 +4157,8 @@
           "description": "List depot projects"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4171,8 +4173,8 @@
           "description": "Print the stored Depot API token"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4182,8 +4184,8 @@
       "status": 0,
       "sha256": "bd221f17e81c494f31817cb8edf6327b5df0cf1bb974390bdde5002c933aa7ec",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4206,8 +4208,8 @@
           "description": "Set the current organization in global Depot settings"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4238,8 +4240,8 @@
           "description": "Update project details"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4249,8 +4251,8 @@
       "status": 0,
       "sha256": "612cb5471bcf2c4387d0e34fd03529bca89a90e371f435cc9bd9d485abceb571",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4260,8 +4262,8 @@
       "status": 0,
       "sha256": "36532ed11ba1944c06bf7175fa1d0eeceadbea098665b9a8bdd9ccb9c6458abe",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4271,8 +4273,8 @@
       "status": 0,
       "sha256": "1200185b146be094f3aaa751e4779c35091ce5c6f020c47e729625f902afb0fb",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4295,8 +4297,8 @@
           "description": "Open a pseudo-terminal within the compute"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4323,8 +4325,8 @@
           "description": "Print candidates assigned to a test shard"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4335,8 +4337,8 @@
       "status": 0,
       "sha256": "1df7c2455fed0513cb1038506ffa25195c6e6540f03a9da9ad6f35e82e5c465c",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4347,8 +4349,8 @@
       "status": 0,
       "sha256": "a64b58b76743a09b6dbf4a8d73d0b34e1a396e01d9d57e8234c196abeeacbe2b",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4368,8 +4370,8 @@
           "description": "List artifacts for a CI run"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4380,8 +4382,8 @@
       "status": 0,
       "sha256": "78d88edae2309ebd7dda6ac9994a4c5083feb770d82d60320da27e7ea3649fc3",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4392,8 +4394,8 @@
       "status": 0,
       "sha256": "bded2f82c9d1bf8686a98ade077c25c57925daf59624bc026b020055c3087be9",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4404,8 +4406,8 @@
       "status": 0,
       "sha256": "93c1b5dec401d6eadf7148108e76a2b5c13ad1390c7b2899dee0c51572eb583a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4416,8 +4418,8 @@
       "status": 0,
       "sha256": "86fe9a439a6214d2d3c330f0d8ad8a6b800c381a49ef1301a52f8ac79a7bee05",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4428,8 +4430,8 @@
       "status": 0,
       "sha256": "7b8912cdcab31738e568cdaf304fe79f441d8636d6f4e151a0a0a924ef9a097f",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4445,12 +4447,16 @@
           "description": "Check authentication and repository access for migration"
         },
         {
+          "name": "secrets-and-vars",
+          "description": "Import GitHub Actions secrets and variables into Depot CI"
+        },
+        {
           "name": "workflows",
           "description": "Migrate and transform GitHub Actions workflows to .depot/workflows/"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4461,8 +4467,8 @@
       "status": 0,
       "sha256": "518762fc306596c3d2d51bc04d24dc6739454dda1a8c134f23e49af6a0e9c366",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4473,8 +4479,8 @@
       "status": 0,
       "sha256": "ac40065a13e3cc07289b1cdcaf49308c84cfb6f71d5e366e5b9d3ebb4fd69854",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4494,8 +4500,8 @@
           "description": "Show a CI run"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4531,8 +4537,8 @@
           "description": "Create or update a CI secret variant"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4543,8 +4549,8 @@
       "status": 0,
       "sha256": "07b3e7432311763059223c253ed27c6d9b3aeee5833993ba9b7901cc5f5d59ae",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4555,8 +4561,8 @@
       "status": 0,
       "sha256": "18a1e9e9711cf8ed9ef4ac19dc76198374dede1ee0816a930ee2f5b9125108c3",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4567,8 +4573,8 @@
       "status": 0,
       "sha256": "76cf4f0749b31a54853b404f1a1514ca44f528aa945abcfd529fa1edb5b04758",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4596,8 +4602,8 @@
           "description": "Create or update a CI variable variant"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4617,8 +4623,8 @@
           "description": "Show a CI workflow"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4629,8 +4635,8 @@
       "status": 0,
       "sha256": "c996c59e9b7e015a31ca0b41928a85538018a02bfc93489fa05e0676170cc14e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4641,8 +4647,8 @@
       "status": 0,
       "sha256": "9f9e4f25eb2058df295b6c618a3e761e944f7de2338a26b89a948013c902dde1",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4653,8 +4659,8 @@
       "status": 0,
       "sha256": "3418cd155bb73a809e385f427b33a90b4c03fb9b8ebe3e922130f31cd2c6b50a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4665,8 +4671,8 @@
       "status": 0,
       "sha256": "4cf9ce80e708b2e5338270644d41c97dccc17922cdf79a71d9c7194d56bccb34",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4677,8 +4683,8 @@
       "status": 0,
       "sha256": "eed6e1644b096252599e883af38808e5bda07cd4d9b05c8d23dc2ea8a83de35b",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4689,8 +4695,8 @@
       "status": 0,
       "sha256": "c6a716aa22e6eae1f490664f370967b5c9aaa8a0a815c5dc123090fcbc7a4f01",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4701,8 +4707,8 @@
       "status": 0,
       "sha256": "76dc4e9b6e5b8f9590772aed6b88eda334c65742ae0609515a05c42de6d94b24",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4713,8 +4719,8 @@
       "status": 0,
       "sha256": "12b04034a94b9717e9650f1ce504dca1f36cbd45095f76a887219da5ef50601a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4725,8 +4731,8 @@
       "status": 0,
       "sha256": "f9fc478a21b23982dac5de059b36828bca4b15d5258209af9e1839065406b519",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4737,8 +4743,8 @@
       "status": 0,
       "sha256": "a26769f950f2a9d8b1f65c581254364bddd2f1448ab30a384dfb5b2c99556525",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4749,8 +4755,8 @@
       "status": 0,
       "sha256": "991cc35dec6357d013b355b44d6d14bfbde3b857f476c1a9448647099cade3df",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4761,8 +4767,8 @@
       "status": 0,
       "sha256": "ad76937d63b9f423fc89dd1d668d8b870b115a606643906e59d98fe51f93f9f6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4773,8 +4779,8 @@
       "status": 0,
       "sha256": "a4df78b6bff7de22ecd7e4f4ab043d648beb656194cb7f85676da10b1df8522e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4785,8 +4791,8 @@
       "status": 0,
       "sha256": "1bb548bd140718e0d938ae7fb580bac3b333f99ad8f4b83e31691bf1a8583c41",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4797,8 +4803,8 @@
       "status": 0,
       "sha256": "46a899e2c730ad01d037dd66a8d12dcf761c81b9945fc69e0890f8f57e58d9fe",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4809,8 +4815,8 @@
       "status": 0,
       "sha256": "72ec558a3f5291e4c5b5011eedb477b8b78e6b62400f0188edbf78d85ecd6313",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4821,8 +4827,8 @@
       "status": 0,
       "sha256": "c6c145d8c7b1e85862ed00518fe9283d71e9fe4d837163c676be5ca3c844749c",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4833,8 +4839,8 @@
       "status": 0,
       "sha256": "58830c69a18509d0d44136951cbe478fd2d6f4914a9ef6bbd3bd6b34aa8bfaa6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4845,8 +4851,8 @@
       "status": 0,
       "sha256": "862a839b712fd574f797ec6f27ad3723dc1c56dcdb4e78c35559bad25118657c",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4857,8 +4863,8 @@
       "status": 0,
       "sha256": "8bc2ebf24db585a0c38d1cc8030a5a4794a2938e3fd8a7b0ca6bd8a686a85650",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4869,8 +4875,8 @@
       "status": 0,
       "sha256": "ab7abfd5e3501fda2440a57b4848a117cb9358dca481cd42e72e4eb496006392",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4881,8 +4887,8 @@
       "status": 0,
       "sha256": "26aba8d0db42987cdafd20fa964c06a668b0ec345db8fac21be1413dee34ce4e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4893,8 +4899,8 @@
       "status": 0,
       "sha256": "1133adac6c34b2648550fe39f4c556733b3e1d81508cacd9e8f6345dc5a1547a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4905,8 +4911,8 @@
       "status": 0,
       "sha256": "fb2bb4b960442a3abadb8af0805e94abaf83bbae813c98fc3acf287a374de5be",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4918,8 +4924,8 @@
       "status": 0,
       "sha256": "e004be59ae0b23493667f9f3289839e697184bf8412302e3097829bc4a9efd28",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4931,8 +4937,8 @@
       "status": 0,
       "sha256": "30658a34797789a70fbaea2dd9c60c0f5a5f103bec2463bc7348dca07b9cd65a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4944,8 +4950,8 @@
       "status": 0,
       "sha256": "e476e58cc22be504d9395400b9accbd66671b0fca6a39ad6fcd32eaf4dea46a5",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4957,8 +4963,8 @@
       "status": 0,
       "sha256": "79c0f93711178e163e3da68545e795db1d4431de24546970bc5a37bd90a720cd",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4970,8 +4976,8 @@
       "status": 0,
       "sha256": "facc4a3f67fb6906c2ed2f58225c64cb4b321ffe54b515a6d7b59ee05bcfa638",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4983,8 +4989,8 @@
       "status": 0,
       "sha256": "4cebb1a520a4a3368ca5c47d0330e14bf82d5a46daaf9f2fe193ec7d99b8e61f",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4996,8 +5002,8 @@
       "status": 0,
       "sha256": "6793515cae68bbfac666c0710c007ccf6d7aad85bc2b516d787a5d8ef068b168",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5009,8 +5015,8 @@
       "status": 0,
       "sha256": "4cd2a64d4d1614882e5fe1d94132189b2698cb878531380f642998bd0a5ed454",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5022,8 +5028,8 @@
       "status": 0,
       "sha256": "6558d883cf7343d1acefa4fb8ac0f0a90cbe97c694c0f18757524231b6b3e4c0",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5035,8 +5041,8 @@
       "status": 0,
       "sha256": "f1b688d0076b77db7c43662c0a4c08f72764a63b153b8166155490fc7ab1837d",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5048,8 +5054,8 @@
       "status": 0,
       "sha256": "c0e2dfb7d73d01c4854737389ba1a6683a7e4f46c1103e322513e39611cb94d5",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5061,8 +5067,8 @@
       "status": 0,
       "sha256": "4d7831a5fd30a9a4f58bc1ecc57609904ba0c0c5c87ff000ea9053fd1400d6e6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5074,8 +5080,8 @@
       "status": 0,
       "sha256": "100215a74ac179433b8d8fdf55ea11afbd1710d7a9873a5655c8bf2588b730a6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5087,8 +5093,8 @@
       "status": 0,
       "sha256": "3904bf3074e0867ef906acd2a54b7a52daeafdf5a75079d0ddf36c5718da1d65",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5100,8 +5106,8 @@
       "status": 0,
       "sha256": "cd1f1c234d859bc7098f09d17bf485ea88784183b57d81825275245156cbe72b",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5113,8 +5119,8 @@
       "status": 0,
       "sha256": "a8eb60cc1a50ad22e7625a05ac54ad17cdaecd0960042ceaa7ad673b6a63b64d",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5126,8 +5132,8 @@
       "status": 0,
       "sha256": "83be5ec65a19662a593acdcd8542111f99bc97089eb6eb91377ff017d7f313ec",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5139,8 +5145,8 @@
       "status": 0,
       "sha256": "294e482d73bd946d62aaf3087312c9ae603655df270bae52370b39cf341a2895",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5150,8 +5156,8 @@
       "status": 0,
       "sha256": "f2b118def44f90b05f839607b57ed3caa56355d1753a7d2cc80963f03b2bc6e6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5161,8 +5167,8 @@
       "status": 0,
       "sha256": "eb72dbd5ef4d2a8d90a78691ca1f47ce0f00fd570d017d89e781681e0b5a358e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5173,8 +5179,8 @@
       "status": 0,
       "sha256": "fdbcd8372877c9cc7770f7fed671afba0b7fb00ac49b38c8ebcbe7407b3354f3",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5184,9 +5190,30 @@
       ],
       "status": 0,
       "sha256": "e719f5cdb194c4e8e4e91a79f74cc6935616113ff8dff0ad2d841e331648e9f4",
-      "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "children": [
+        {
+          "name": "add",
+          "description": "Add a new secret"
+        },
+        {
+          "name": "completion",
+          "description": "Generate the autocompletion script for the specified shell"
+        },
+        {
+          "name": "help",
+          "description": "Help about any command"
+        },
+        {
+          "name": "list",
+          "description": "List all secrets"
+        },
+        {
+          "name": "remove",
+          "description": "Remove a secret"
+        }
+      ],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5198,8 +5225,8 @@
       "status": 0,
       "sha256": "3ffd7cb2771f10a29a28630cdd01b7c9401439096af784ececfaabb08585a4bf",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5211,8 +5238,8 @@
       "status": 0,
       "sha256": "432203cdd3849948689bc40b1fa43407495eaf0a862605c02a41ebb99d229dab",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5224,8 +5251,8 @@
       "status": 0,
       "sha256": "e9f6bef9a119d8727064001d87bffef34df91ad882b5fe3caa71822703f247f4",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5235,8 +5262,8 @@
       "status": 0,
       "sha256": "79e6f5e0437ddad24cb1ca6b1c71621fe26058d96b0a375ea6286ac77cce0004",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5246,8 +5273,8 @@
       "status": 0,
       "sha256": "2dff8f001c6e6855511c60193b79cb1ef0c7089bc0dbfa34a2097a5bc60850ac",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5257,15 +5284,180 @@
       "status": 0,
       "sha256": "88b65f2b01664be784cc7bd9f0498f73c1c214fee9ae349c7fcfdd6ad9a7f2ac",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "ci",
+        "migrate",
+        "secrets-and-vars"
+      ],
+      "status": 0,
+      "sha256": "c4efc4f8f1fbe0a198548dc02556912d5ad864d7e99e3f8e3fa9fbc2895f4233",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion"
+      ],
+      "status": 0,
+      "sha256": "a144fab348895e3e67e048aa6591e01dd61ac47d609cfa782684beed18493804",
+      "children": [
+        {
+          "name": "bash",
+          "description": "Generate the autocompletion script for bash"
+        },
+        {
+          "name": "fish",
+          "description": "Generate the autocompletion script for fish"
+        },
+        {
+          "name": "powershell",
+          "description": "Generate the autocompletion script for powershell"
+        },
+        {
+          "name": "zsh",
+          "description": "Generate the autocompletion script for zsh"
+        }
+      ],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "help"
+      ],
+      "status": 0,
+      "sha256": "8959169061e034fe8ec5272a0ef42a95ac6efb357e54b07a7abb1c20101e378e",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "bash"
+      ],
+      "status": 0,
+      "sha256": "0c16cccb570d332db42a04bef7f80200f0283e6b0232e777d242a22e337ee685",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "fish"
+      ],
+      "status": 0,
+      "sha256": "83f39d4d991753f031440eca5d6b56fe0265cac460af78361c0fc28cad1d6836",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "powershell"
+      ],
+      "status": 0,
+      "sha256": "23cbfd9439638b857a6e2b13163e2a90cb48197ea87ac716db4a7fc97a0b1600",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "zsh"
+      ],
+      "status": 0,
+      "sha256": "86cbd4f1771f2b12fa8c5de3182a69ac27f13663c9148c927743206121fa8603",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     }
   ],
   "cliParserControl": {
     "previouslyMissedSingleSpaceColumn": "configure-docker",
     "correctedRootChildCount": 23,
     "missingRootCommands": [],
-    "limit": "Forwarding wrappers can hide subcommands; source and reference reconciliation still required"
+    "limit": "Native help and hidden source registrations are reconciled; forwarding tools still have their own external command surfaces",
+    "correctedEveryCachedNode": true,
+    "previousHelpRecords": 92,
+    "currentHelpRecords": 99,
+    "newlyDiscovered": [
+      [
+        "depot",
+        "ci",
+        "migrate",
+        "secrets-and-vars"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "help"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "bash"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "fish"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "powershell"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "zsh"
+      ]
+    ],
+    "syntheticSingleAndMultipleSpaceColumnControlPassed": true,
+    "flagSectionNegativeControlPassed": true
   },
   "officialRepositories": [
     {
@@ -9823,9 +10015,11 @@
   "openGaps": [
     "Each indexed page and command needs claim-level repository applicability and evidence reconciliation; retrieved is not reviewed",
     "Additional official backend/integration repositories need deciding-source review",
-    "Advanced BuildKit consumer campaign is being prepared on frozen-source worktree with explicit resource configuration",
     "Current native CI orchestration, test splitting and device/guest consumers are coordinated by parent; no readiness claim",
-    "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation"
+    "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation",
+    "Source inventory is complete for captured indexes/help but page/command semantic reconciliation is incomplete; source capture does not establish feature qualification",
+    "BuildKit current-scanner comparison and empty image-list JSON source diagnosis remain active",
+    "SDK custom thin-image success must remain separate from unexercised named/ordinary-OCI runtimes, snapshot persistence, secrets and detached log contracts"
   ],
   "apiInventory": {
     "collectedAt": "2026-10-18T06:27:53.629Z",
@@ -14386,10 +14580,1197 @@
   "runtimeCampaigns": {
     "advancedBuildkit": {
       "receipt": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
-      "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "immutableFixtureSources": [
+        "eb915fccbefd9601f038c8a851a7861d2c7b3ea4",
+        "d9cf7458443c5c4b7d169ba18cdb80a7fcf34cbf",
+        "b00f8c834b51bed8ba619dddb15b24274f4350ad",
+        "898e2fdd6aac05471cf340231a50042ba6e43bc7",
+        "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+        "aa89e372f09c82286695d80cddf7f86b602051c9",
+        "0b471538cd549cb2181088803c1e0a6d542d791e",
+        "b0e3247a279507c759964162ec9eb816e3dcc402",
+        "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+        "004e1b1b0cb2e4a0fd68db4de367508663762393",
+        "7f22f25adbb05e0c1add22211b12f1d275a29c17",
+        "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
+      ],
       "projectId": "27m5m3vjlv",
-      "buildId": "fxzj58r8m2",
-      "status": "Save, registry and HTTP consumers exercised; embedded Podman healthcheck failed; other cases active"
+      "status": "Bounded BuildKit campaign and actual consumers complete; solely owned project/tags deleted with registry absence checks; source and local scanner diagnosis continues",
+      "limits": [
+        "No full Rust test-suite claim from the truepeak-core release producer",
+        "No external registry push, autoscaling execution or measured lazy-pull startup advantage",
+        "OCI empty attestation subjects and Docker/Podman healthcheck divergence retained",
+        "Dockerfile Semgrep positive control remains under diagnosis"
+      ],
+      "cleanup": [
+        {
+          "receipt": "owned-project-cleanup.json",
+          "startedAt": "2026-10-18T10:04:26.600Z",
+          "projectId": "27m5m3vjlv",
+          "ownershipReceipt": "project-create.json",
+          "parentHoldReleased": true,
+          "parentOwnedSecretCleanupVerified": true,
+          "completeGraphHashValidation": true,
+          "operations": [],
+          "manifestControls": [
+            {
+              "phase": "before",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 401,
+              "bytes": 73,
+              "bodySha256": "89a052af62c612d0e05d2596f03edba77d7d904c4478b387a5dc6305821fe0a1",
+              "dockerContentDigest": null
+            }
+          ],
+          "physicalErasureAsserted": false,
+          "accountOrInvoiceInspection": false,
+          "fixtureRecovery": "Initial local precondition used id instead of recorded projectId and failed before any cleanup request"
+        },
+        {
+          "receipt": "owned-project-cleanup-v2.json",
+          "startedAt": "2026-10-18T10:05:27.958Z",
+          "projectId": "27m5m3vjlv",
+          "ownershipReceipt": "project-create.json",
+          "parentHoldReleased": true,
+          "parentOwnedSecretCleanupVerified": true,
+          "completeGraphHashValidation": true,
+          "operations": [
+            {
+              "label": "before-image-list",
+              "args": [
+                "image",
+                "list",
+                "--project",
+                "27m5m3vjlv",
+                "--output",
+                "json"
+              ],
+              "exitCode": 0,
+              "stdout": "[\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:1ng4qs1pmq-ci-node26\",\n    \"digest\": \"sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31\",\n    \"size_bytes\": 119894530,\n    \"pushed_at\": \"2026-10-18T08:51:29.93Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:monochromatic-platform-ci-node26-20261018-v1-ci-node26\",\n    \"digest\": \"sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31\",\n    \"size_bytes\": 119894530,\n    \"pushed_at\": \"2026-10-18T08:51:29.93Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:6hb1g0j21b-ci\",\n    \"digest\": \"sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346\",\n    \"size_bytes\": 119789508,\n    \"pushed_at\": \"2026-10-18T08:20:22.955Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:monochromatic-platform-ci-20261018-v1-ci\",\n    \"digest\": \"sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346\",\n    \"size_bytes\": 119789508,\n    \"pushed_at\": \"2026-10-18T08:20:22.955Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:fxzj58r8m2-service\",\n    \"digest\": \"sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7\",\n    \"size_bytes\": 81019905,\n    \"pushed_at\": \"2026-10-18T07:26:11.813Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:monochromatic-platform-buildkit-20261018-v1-service\",\n    \"digest\": \"sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7\",\n    \"size_bytes\": 81019905,\n    \"pushed_at\": \"2026-10-18T07:26:11.813Z\"\n  }\n]\n",
+              "stderr": "",
+              "elapsedMilliseconds": 592
+            },
+            {
+              "label": "delete-owned-tags",
+              "args": [
+                "image",
+                "rm",
+                "--project",
+                "27m5m3vjlv",
+                "1ng4qs1pmq-ci-node26",
+                "monochromatic-platform-ci-node26-20261018-v1-ci-node26",
+                "6hb1g0j21b-ci",
+                "monochromatic-platform-ci-20261018-v1-ci",
+                "fxzj58r8m2-service",
+                "monochromatic-platform-buildkit-20261018-v1-service"
+              ],
+              "exitCode": 0,
+              "stdout": "Successfully deleted 6 images\n",
+              "stderr": "",
+              "elapsedMilliseconds": 1106
+            },
+            {
+              "label": "after-tag-image-list",
+              "args": [
+                "image",
+                "list",
+                "--project",
+                "27m5m3vjlv",
+                "--output",
+                "json"
+              ],
+              "exitCode": 0,
+              "stdout": "No images found\n",
+              "stderr": "",
+              "elapsedMilliseconds": 588
+            }
+          ],
+          "manifestControls": [
+            {
+              "phase": "before",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 200,
+              "bytes": 1609,
+              "bodySha256": "4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "dockerContentDigest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7"
+            },
+            {
+              "phase": "before",
+              "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "status": 200,
+              "bytes": 1609,
+              "bodySha256": "aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "dockerContentDigest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346"
+            },
+            {
+              "phase": "before",
+              "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "status": 200,
+              "bytes": 1609,
+              "bodySha256": "853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "dockerContentDigest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31"
+            }
+          ],
+          "physicalErasureAsserted": false,
+          "accountOrInvoiceInspection": false,
+          "fixtureRecovery": "Initial local precondition used id instead of recorded projectId; first network preflight used raw pull-token Bearer instead of the already captured Basic x-token challenge, and got401 before any cleanup request",
+          "retainedFailedPreflight": "owned-project-cleanup.json",
+          "ownedTags": [
+            "1ng4qs1pmq-ci-node26",
+            "monochromatic-platform-ci-node26-20261018-v1-ci-node26",
+            "6hb1g0j21b-ci",
+            "monochromatic-platform-ci-20261018-v1-ci",
+            "fxzj58r8m2-service",
+            "monochromatic-platform-buildkit-20261018-v1-service"
+          ]
+        },
+        {
+          "receipt": "owned-project-cleanup-terminal.json",
+          "startedAt": "2026-10-18T10:08:07.034Z",
+          "projectId": "27m5m3vjlv",
+          "priorTagDeletionReceipt": "owned-project-cleanup-v2.json",
+          "tagDeletionRepeated": false,
+          "ownedTagsAbsent": true,
+          "emptyListOutputContract": {
+            "exitCode": 0,
+            "stdout": "No images found\n",
+            "despiteOutputJson": true,
+            "source": "pkg/cmd/image/list.go:66"
+          },
+          "operations": [
+            {
+              "label": "delete-owned-project",
+              "args": [
+                "projects",
+                "delete",
+                "--project-id",
+                "27m5m3vjlv",
+                "--yes"
+              ],
+              "exitCode": 0,
+              "stdout": "Successfully deleted project 27m5m3vjlv\n",
+              "stderr": ""
+            },
+            {
+              "label": "after-project-image-list",
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "failed to list images: not_found: Project not found\n"
+            }
+          ],
+          "manifestControls": [
+            {
+              "phase": "after-tags",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "1bb933f2581f52e730bb36085b41cb476e514596f0c08cb5ed76c98ec6753f88",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-tags",
+              "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "480d85e27bde9647a38afe9755d7946ceda62df228f0f8e9288aa93d93fd705b",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-tags",
+              "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "787d1b6d56341299905a495c8387e3ed7c3f9f12b8781701903c329ba85fbb1c",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-project",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "1bb933f2581f52e730bb36085b41cb476e514596f0c08cb5ed76c98ec6753f88",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-project",
+              "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "480d85e27bde9647a38afe9755d7946ceda62df228f0f8e9288aa93d93fd705b",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-project",
+              "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "787d1b6d56341299905a495c8387e3ed7c3f9f12b8781701903c329ba85fbb1c",
+              "dockerContentDigest": null
+            }
+          ],
+          "physicalErasureAsserted": false,
+          "accountOrInvoiceInspection": false,
+          "projectDeletionRequestAccepted": true,
+          "finishedAt": "2026-10-18T10:08:10.023Z"
+        }
+      ]
+    },
+    "sdkCustomRuntime": {
+      "receipt": "doc/audit/depot-sdk-custom-runtime-2026-10-18.evidence.json",
+      "sdk": "@depot/sandbox@0.1.0-beta.7",
+      "runtime": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256",
+      "manifest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd",
+      "status": "Owned amd64 thin snapshot admitted; absolute Git execution, small-file read/write/unlink and synthetic exclusions passed; all three owned sandboxes stopped and fresh Get confirmed terminal",
+      "limits": [
+        "Plain node depended on missing PATH entry; this did not establish absent binary",
+        "Second collector omitted syscall/path and cannot identify whether stat or full binary read timed out",
+        "No arbitrary OCI runtime, named-runtime, runtime full Git binary hash, persistent snapshot or detached-log replay qualification",
+        "No fourth create, restart or extension was performed"
+      ],
+      "scopedCumulativeReservationUsd": 0.574584,
+      "invoiceOrAggregateCapProven": false
     }
+  },
+  "publicDocumentationReconciliation": {
+    "repository": "depot/docs",
+    "commit": "e40bfe1683ae561156d415513f2a648f89e82f12",
+    "sourcePages": 117,
+    "sourceOnly": [],
+    "deployedOnly": [
+      {
+        "url": "https://depot.dev/docs/api/github-actions-api.md",
+        "title": "GitHub Actions API"
+      },
+      {
+        "url": "https://depot.dev/docs/cache/integrations/nx.md",
+        "title": "Configure Nx to use Depot Cache"
+      },
+      {
+        "url": "https://depot.dev/docs/cache/integrations/xcode.md",
+        "title": "Configure Xcode compilation caching to use Depot Cache"
+      }
+    ],
+    "status": "Route coverage recorded; deciding content differences still under review"
+  },
+  "officialRepositoryRootPass": {
+    "repositories": 93,
+    "additionalRootFiles": 142,
+    "fullImplementationAudits": 28,
+    "status": "Root metadata/readmes/licenses/manifests retrieved; supplementary implementation relevance review ongoing"
+  },
+  "cliPassThroughBoundary": {
+    "command": "depot cargo",
+    "helpEnumerationStatus": "Failed: installed sccache prerequisite absent",
+    "sourceCommit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+    "actualBoundaryProbe": "depot-cargo-wrapper-boundary.json inside doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
+    "classification": "Local Cargo with sccache/WebDAV configuration, not remote compilation execution",
+    "automaticJobCacheTokenFallback": "Exercised with synthetic token markers; real backend acceptance is separate"
+  },
+  "livePublicPricing": {
+    "observedAt": "2026-10-18T09:35:35.469Z",
+    "url": "https://depot.dev/pricing",
+    "accountAccess": false,
+    "source": {
+      "path": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "bytes": 8976,
+      "sha256": "c52a7c7cbbbae7719035a881194bdda8a07e1810f3743b83893cef6323095825"
+    },
+    "features": [
+      {
+        "feature": "Users",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "1 user"
+          },
+          {
+            "plan": "Startup",
+            "value": "Unlimited"
+          },
+          {
+            "plan": "Business",
+            "value": "Unlimited"
+          }
+        ]
+      },
+      {
+        "feature": "Build concurrency",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "Unlimited"
+          },
+          {
+            "plan": "Startup",
+            "value": "Unlimited"
+          },
+          {
+            "plan": "Business",
+            "value": "Unlimited"
+          }
+        ]
+      },
+      {
+        "feature": "Docker build minutes included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "500"
+          },
+          {
+            "plan": "Startup",
+            "value": "5,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "GitHub Actions minutes included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "2,000"
+          },
+          {
+            "plan": "Startup",
+            "value": "20,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Depot CI minutes included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "2,000"
+          },
+          {
+            "plan": "Startup",
+            "value": "20,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Cache and registry storage included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "25 GB"
+          },
+          {
+            "plan": "Startup",
+            "value": "250 GB"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Multi-platform builds",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Build Insights",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "API Access",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Integrations",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Depot Registry",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Windows Runners",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Docker build autoscaling",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Agent Sandboxes",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Usage caps",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "macOS M2 Runners",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "GPU enabled builds",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Depot Cloud",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "US & EU regions",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Custom regions",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Dedicated infrastructure",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Static outbound IPs",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Network firewall rules",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "AWS PrivateLink",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Deploy in your AWS account",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "Available"
+          }
+        ]
+      },
+      {
+        "feature": "GitHub Actions",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Docker",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Bazel",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Go",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Gradle",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Pants",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Turborepo",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Nx",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "sccache",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Test reporting and analytics",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Included passing test results",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "1,000,000"
+          },
+          {
+            "plan": "Startup",
+            "value": "1,000,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Additional passing tests",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "$0.000001 each"
+          },
+          {
+            "plan": "Startup",
+            "value": "$0.000001 each"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Failed, errored, and skipped tests",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "Free"
+          },
+          {
+            "plan": "Startup",
+            "value": "Free"
+          },
+          {
+            "plan": "Business",
+            "value": "Free"
+          }
+        ]
+      },
+      {
+        "feature": "OIDC",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Egress Filtering",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "RBAC",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "SSO (SAML & SCIM)",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "Optional ($500/mo)"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Audit Logging",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Discord Community",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Email support",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Slack Connect",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "AWS Marketplace",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Invoice / ACH payment",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "question": "Which plan is right for me?",
+        "answer": "The Developer plan is perfect for solo developers, side-projects, and experiments. It includes 500 Docker build minutes, 2,000 GitHub Actions minutes, 2,000 Depot CI minutes, and 1 user, with additional usage billed monthly.\nThe Startup plan is great for teams building production applications. It includes 5,000 Docker build minutes, 20,000 GitHub Actions minutes, 20,000 Depot CI minutes, and unlimited users, with additional usage billed monthly.\nThe Business plan is for dev teams looking to scale, and includes additional security controls and deployment models."
+      },
+      {
+        "question": "What is Depot Cloud?",
+        "answer": "Depot Cloud is fully managed remote build infrastructure, including both compute and cache. With Depot Cloud, we handle the infrastructure and orchestration, with no need to manage your own build infrastructure. Depot Cloud runs on AWS, and is available in the us-east-1 and eu-central-1 regions."
+      },
+      {
+        "question": "What is the usage granularity?",
+        "answer": "Docker build minutes and GitHub Actions minutes are billed on a per-minute basis, tracked per second. Depot CI usage is billed per second based on vCPU-seconds. We don't enforce a one-minute minimum, so if you run a 30-second Docker or GitHub Actions build, you'll only be billed for 30 seconds. Test results are billed per individual passing test."
+      },
+      {
+        "question": "Can I self-host Depot? What is bring-your-own-compute?",
+        "answer": "You can connect an AWS account to your Depot account and Depot will use that account for build compute and cache storage. This ensures that your build data is entirely under your control and allows you to access any private services in your account during the build. Additionally you can customize the types of machines used for your builds.\n\nBring your own compute is available on the Business plan.\n\nRead more in our Depot Managed documentation"
+      },
+      {
+        "question": "Am I charged for build usage and storage?",
+        "answer": "You are charged monthly for build usage and storage. See usage granularity above for how build time is measured.\n\nStorage is a single combined total that covers your container build cache, Depot Cache, and Depot Registry. All three draw from your plan's included storage, and anything above that amount is billed at $0.20 per GB per month. Storage is billed as the average storage used over the month, sampled hourly.\n\nData transfer into and out of Depot Registry is free on the default Standard CDN speed. If you switch your organization to Fast CDN speed, data served out of the registry is billed at $0.10 per GB, from the first GB. Read more in our registry documentation."
+      },
+      {
+        "question": "When will I be billed?",
+        "answer": "Depot bills monthly on the 1st. If you sign up partway through a month, your first charge is prorated for the remaining days. Usage-based charges accrue through the month and appear on your next invoice on the 1st along with your plan charge for that month."
+      },
+      {
+        "question": "How are test results billed?",
+        "answer": "The Developer and Startup plans each include 1,000,000 passing test results per month at no charge. After that, it's $0.000001 per passing test, or $1 per 1 million tests. Failed, errored, and skipped tests are free.\n\nRead more in our test results documentation"
+      },
+      {
+        "question": "Are there discounts for non-profits or open-source?",
+        "answer": "Yes! Please contact us with more information about your project and for more details."
+      },
+      {
+        "question": "Do you offer credits for startups?",
+        "answer": "Yes, through our startup partner programs. Y Combinator companies can claim Depot credits from the YC deals page.\n\nStartups approved for PostHog for Startups receive a partner code worth $5,000 in Depot credits. See our PostHog for Startups documentation for how to redeem it and what it covers."
+      },
+      {
+        "question": "Can I cap my usage so my bill doesn't run over?",
+        "answer": "Yes, you can set self-imposed usage caps to control monthly usage. If you reach a cap, Depot will stop running builds until the next month or until you raise the cap. You can change these limits at any time."
+      },
+      {
+        "question": "What payment methods are accepted?",
+        "answer": "For the Developer and Startup plans, we support monthly payments via credit card using Stripe. For the Business plan, we additionally support invoice billing, ACH, and AWS Marketplace."
+      },
+      {
+        "question": "Can I pay through the AWS Marketplace?",
+        "answer": "Yes! We support AWS Marketplace billing on the Business plan. Contact us for more details."
+      }
+    ],
+    "compute": [
+      {
+        "name": "Depot CI",
+        "text": "Sandbox label\n\n\t\n\nCPUs\n\n\t\n\nMemory\n\n\t\n\nSize\n\n\t\n\nPrice per second\n\n\n\ndepot-ubuntu-24.04\n\t\n\n2\n\n\t\n\n8 GB\n\n\t\n\n2x8\n\n\t\n\n$0.0001\n\n\n\ndepot-ubuntu-24.04-4\n\t\n\n4\n\n\t\n\n16 GB\n\n\t\n\n4x16\n\n\t\n\n$0.0002\n\n\n\ndepot-ubuntu-24.04-8\n\t\n\n8\n\n\t\n\n32 GB\n\n\t\n\n8x32\n\n\t\n\n$0.0004\n\n\n\ndepot-ubuntu-24.04-16\n\t\n\n16\n\n\t\n\n64 GB\n\n\t\n\n16x64\n\n\t\n\n$0.0008\n\n\n\ndepot-ubuntu-24.04-32\n\t\n\n32\n\n\t\n\n128 GB\n\n\t\n\n32x128\n\n\t\n\n$0.0016\n\n\n\ndepot-ubuntu-24.04-64\n\t\n\n64\n\n\t\n\n256 GB\n\n\t\n\n64x256\n\n\t\n\n$0.0032\n\nDEPOT CI MINUTES INCLUDED WITH THE BASE PLAN CAN BE USED FOR ANY SANDBOX SIZE, CONSUMED AT THE VCPU MULTIPLE RATE.\n\nDepot CI sandboxes can use from 2 vCPUs and 8 GB of memory up to 64 vCPUs and 256 GB, with support for Intel and Arm. Billed per second per vCPU with no one minute minimum.\n\nSEE ALL SANDBOX SIZES"
+      },
+      {
+        "name": "GitHub Actions Runners",
+        "text": "Actions runner label\n\n\t\n\nCPUs\n\n\t\n\nMemory\n\n\t\n\nMinute Multiple\n\n\t\n\nPrice per minute\n\n\n\ndepot-ubuntu-24.04\n\t\n\n2\n\n\t\n\n8 GB\n\n\t\n\n1x\n\n\t\n\n$0.006\n\n\n\ndepot-ubuntu-24.04-4\n\t\n\n4\n\n\t\n\n16 GB\n\n\t\n\n2x\n\n\t\n\n$0.012\n\n\n\ndepot-ubuntu-24.04-8\n\t\n\n8\n\n\t\n\n32 GB\n\n\t\n\n4x\n\n\t\n\n$0.024\n\n\n\ndepot-ubuntu-24.04-16\n\t\n\n16\n\n\t\n\n64 GB\n\n\t\n\n8x\n\n\t\n\n$0.048\n\n\n\ndepot-ubuntu-24.04-32\n\t\n\n32\n\n\t\n\n128 GB\n\n\t\n\n16x\n\n\t\n\n$0.096\n\n\n\ndepot-ubuntu-24.04-64\n\t\n\n64\n\n\t\n\n256 GB\n\n\t\n\n32x\n\n\t\n\n$0.192\n\nGITHUB ACTIONS MINUTES INCLUDED WITH THE BASE PLAN CAN BE USED FOR ANY MACHINE TYPE, CONSUMED AT THE MINUTE MULTIPLE RATE.\n\nGitHub Actions builds can use from 2 vCPUs and 8 GB of memory up to 64 vCPUs and 256 GB. With support for Intel, Arm, and macOS runners. Billed per minute, tracked per second.\n\nSEE ALL RUNNER TYPES"
+      },
+      {
+        "name": "Container Builds",
+        "text": "Container builder size\n\n\t\n\nCPUs\n\n\t\n\nMemory\n\n\t\n\nMinute Multiple\n\n\t\n\nPrice per minute\n\n\n\n\nDefault\n\n\t\n\n16\n\n\t\n\n32 GB\n\n\t\n\n1x\n\n\t\n\n$0.04\n\n\n\n\nLarge\n\n\t\n\n32\n\n\t\n\n64 GB\n\n\t\n\n2x\n\n\t\n\n$0.08\n\n\n\n\nExtra large\n\n\t\n\n64\n\n\t\n\n128 GB\n\n\t\n\n4x\n\n\t\n\n$0.16\n\nDocker builds can use from 16 vCPUs and 32 GB of memory up to 64 vCPUs and 128 GB, allowing for efficient, parallel computation of the Dockerfile graph. Billed per minute, tracked per second.\n\nSEE CONTAINER BUILD DOCS"
+      }
+    ],
+    "interpretation": "Availability decoded from retained DOM SVG check/cross paths, not missing text. Current docs github-actions/overview Pricing independently confirms Developer Linux/Windows versus Startup macOS."
+  },
+  "autoscalingBoundary": {
+    "deployedDoc": "https://depot.dev/docs/container-builds/how-to-guides/autoscaling",
+    "decidingSchema": "source/proto/proto/depot/core/v1/project.proto in the primary source archive",
+    "field": "max_concurrent_builds",
+    "meaning": "Concurrent builds per instance before scale-out, not maximum instances",
+    "totalInstanceLimitExposed": false,
+    "actualScaleOutExercised": false,
+    "settingChanged": false,
+    "reason": "No total-instance ceiling is exposed by the audited Create/UpdateProject schema; keep autoscaling off under the strict max2-builder campaign bound",
+    "bakeCounting": "One Bake command counts as one build per project regardless of target count",
+    "cache": "Additional builders clone the main cache without writing new layers back; cross-builder work is not deduplicated",
+    "cacheSize": "CachePolicy.keep_gb is per architecture; minimum25 each is not the total project allowance"
   }
 }

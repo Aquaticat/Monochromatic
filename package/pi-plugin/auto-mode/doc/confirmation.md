@@ -25,6 +25,13 @@ Stop,
 dismissal,
 and absent UI withhold execution.
 Historical verdict records remain visible audit data rather than current authorization.
+Automatic approval and confirmation of an automatic Ask share the same original-source retention handoff.
+The collector then permits append-only,
+authenticated event receipts from execution while retaining its governing-source,
+tool-input,
+runner and cancellation checks.
+Confirmation after automatic source capture fails has no captured source set to retain;
+its original operation and exact approval checks remain separate.
 Established denials cannot reach another generic Allow prompt.
 An established review that becomes stale remains withheld.
 Source checks used inside an existing compiler operation call its original dependency check directly,
@@ -56,5 +63,45 @@ and `test:native:bypass` exercise the UI outcome,
 fresh context,
 fallback routes,
 and fixed protection during bypass.
+
+The fallback fixture registers an original asynchronous `tool_execution_update` observer
+and emits tracked progress from each proposed tool.
+Its automatic and confirmed approvals must both execute every member.
+The committed pre-repair `unknown` run executes one member and fails with `1 !== 2`,
+while the automatic approval control executes both.
+The `allow-stale` and `allow-abort` modes change governing policy or cancel inside the selector
+before returning Allow;
+neither may execute a member.
+This distinguishes ordinary execution receipts from lost approval eligibility.
+
+## Configured-host progress verification
+
+The 2026-10-18 `native-release-EWv4wy` consumer loads the configured extensions,
+skills and MCP catalogs,
+plus a disposable asynchronous progress observer.
+A private project-policy overlay requires fresh confirmation for the complete group.
+The primary stream supplies a controlled pair of original Bash calls;
+the real Luna service evaluates the actual review requests.
+One RPC Allow executes both commands,
+and their original updates both reach the observer.
+
+The paired controls change the governing policy before returning Allow,
+or abort at the confirmation dialog.
+Both controls withhold both members and produce no execution updates for them.
+Each case reaches one selector,
+receives four successful provider responses,
+and closes with exit zero.
+Every captured request passes complete-group and original-ID checks,
+selected-source checks,
+and excluded structured thinking/signature/raw-command checks.
+The payload audit detects omitted members and substituted IDs,
+and its exclusion detector has positive controls.
+
+Fixtures remain under `${HOME}/temp/agent/pi-configured-progress-*`;
+helper scripts and audit receipts remain under
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
+The fixture uses Bash for both members;
+it does not replace the full original process/Bash replay or final post-lint verification.
+Raw stderr remains retained separately from the tool-result assertions.
 
 Task names use `mise run //package/pi-plugin/auto-mode:<task>`.

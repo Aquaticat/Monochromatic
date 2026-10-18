@@ -425,7 +425,62 @@ and the Licenses page is one row under Settings, below an "About" heading.
 That is the nearest thing the app has to an About screen reachable from its top level;
 whether it counts as the license's "About screen or dialog" is the owner's call
 (see [Decisions left to the owner](#decisions-left-to-the-owner)).
-Option (b), the badge on the release page, is not used.
+Option (b) is used as well since 2026-10-18 (see [The badge on the release page](#the-badge-on-the-release-page)).
+It was added so that the doubt about the word "top level menu" does not decide whether the license is met.
+
+### The badge on the release page
+
+Added on 2026-10-18, with the Licenses page kept.
+Section 2(b) asks for the Slint attribution badge "on a public webpage, preferably where the binaries of your
+Application can be downloaded from, in such a way that it can be easily found by any visitor to that page".
+The binaries are downloaded from the GitHub release page, whose text is the notes that the "Write the release notes"
+step of `.github/workflows/music-player-release.yml` writes (one template, `notes.md`, for every release).
+The badge is the first element of the notes after the two paragraphs that name the version, the commit and the tag, above the Downloads
+heading, so it is on the screen when the page opens.
+
+What Slint publishes, read on 2026-10-18 and not recalled:
+
+- The license (slint.dev, `https://slint.dev/terms-and-conditions#royalty-free`, section 2(b), and the same sentence in
+  the repository's `FAQ.md`) links the words "Slint attribution badge" to
+  `https://github.com/slint-ui/slint/tree/master/logo/MadeWithSlint-logo-whitebg.png`.
+  Neither says how the badge is embedded or where it links.
+- `logo/README.md` of the Slint repository (blob `d7ae82c8cfd8`) says: "Use the #MadeWithSlint logo for attributions to
+  Slint (e.g. when using Slint under the Royalty-Free License)",
+  "If the background switched between dark and light mode, but only one logo can be shown, use the versions with
+  whitebg", and "Do not modify the logo by changing the colors, changing of the aspect ration, or other alterations".
+  A GitHub release page switches between light and dark, so the `whitebg` file is the one used.
+- The `AboutSlint` widget (the 1.19.0 source, `internal/compiler/widgets/common/about-slint.slint`) draws the
+  `MadeWithSlint-logo-light.svg` or `-dark.svg` image with the accessible label "#MadeWithSlint" and opens
+  `https://slint.dev` on a click.
+  The notes use the same label as the alt text and the same link target.
+- `https://slint.dev/madewithslint` answers 404; the page of the community showcase is `https://madewithslint.com`,
+  which is not the badge page.
+  The widget's documentation page (`docs.slint.dev/latest/docs/slint/reference/std-widgets/misc/aboutslint/`) says only
+  "This element displays a Made with Slint badge".
+- The license of the badge file: all logos in `logo/` are CC-BY-ND-4.0 (`logo/README.md`; `REUSE.toml` annotates
+  `**/MadeWithSlint-**.png` with `CC-BY-ND-4.0` and "Copyright © SixtyFPS GmbH").
+  The release notes link the file and do not copy, resize or alter it, which the no-derivatives term allows.
+  Nothing of it enters the repository or the release files.
+
+The embed form in the notes (GitHub-flavored Markdown, one line):
+
+```md
+[![#MadeWithSlint](https://raw.githubusercontent.com/slint-ui/slint/7577a165d15b7a097789cb7c417691ed3f8c1bcf/logo/MadeWithSlint-logo-whitebg.png)](https://slint.dev)
+```
+
+The image URL names the commit of the Slint `master` head of 2026-10-18 (`7577a165d15b7a097789cb7c417691ed3f8c1bcf`)
+instead of `master`, so a release page keeps its badge after Slint renames or moves the file.
+The file at that commit and at `master` are the same bytes (SHA-256
+`6edb9b815f94ff9065edbf062a4d1756d43eb3778f94310315259e413260bab6`, PNG, 424 by 194 pixels).
+The same notes sentence under Licenses names the badge,
+and the "The app has no screen that shows them yet" sentence for Android was corrected to name the Licenses row, which
+exists since 0.1.6.
+
+Checks: the workflow text passes `actionlint` 1.7.12, the notes template rendered with pandoc (`--from gfm`) and with
+GitHub's own renderer (`gh api markdown`, mode `gfm`) gives an `<a href="https://slint.dev">` around an `<img>` with
+the alt text `#MadeWithSlint`, and a dry run of the release workflow prints the notes with the line.
+A new Slint release can change the badge name or the license's section 2(b); the runbook says to reread both
+(see `doc/runbook/release-the-music-player.md`).
 
 ### The SPDX expression of the desktop programs
 
@@ -510,9 +565,9 @@ Measured on 2026-10-18 with release builds that embed their own notice file, `ma
 
 ### Decisions left to the owner
 
-- Whether the Licenses page counts as the "About screen or dialog accessible from the top level menu" of section 2(a),
-  or whether to also satisfy section 2(b) with the Slint badge in the release notes.
-  Both together would remove the doubt; the badge is one image line in the notes of `music-player-release.yml`.
+- Whether the Licenses page counts as the "About screen or dialog accessible from the top level menu" of section 2(a).
+  Section 2(b) is met as well by the badge in the release notes, so the answer no longer decides whether the
+  license is met.
 - Whether the Licenses row should carry the name About, or the page a title that includes it.
 
 ## Measurements
@@ -603,8 +658,8 @@ Re-run on 2026-10-18 at the branch head after merging `main` (each number from a
 The human decided through the question tool on 2026-10-18:
 add a Licenses row to Settings in both apps,
 "doesn't need mockups, just do it, this one is pretty simple and low-impact in terms of design".
-No design record (`package/music-player/design/decisions.md`) was written for it,
-and no mockup was made; this section is the record.
+No mockup was made, by that decision; the design record is D132 in `package/music-player/design/decisions.md`
+(written 2026-10-18, after the rows were built), and this section holds the build facts.
 
 The Android app (branch `feat/music-player-android-licenses-row`) does this:
 
@@ -613,7 +668,8 @@ The Android app (branch `feat/music-player-android-licenses-row`) does this:
   Its one row is Licenses,
   with the supporting line "Open-source libraries used by this app",
   the 72 dp row form, the 40 dp icon circle and the same group rounding as the other rows,
-  and the Material Symbols `description` icon (same pinned commit as the other Settings icons).
+  and the Material Symbols `license` icon (same pinned commit as the other Settings icons;
+  it was `description` until 2026-10-18, when it became `license` to match the desktop row).
   The row is a button (role Button), a Tab stop after the Playback switch, and Enter and Space open it.
 - The row opens a page of its own on every window width,
   also on the unfolded screen where Settings has two panes:
@@ -640,7 +696,8 @@ The Android app (branch `feat/music-player-android-licenses-row`) does this:
   a build with `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` (the release workflow) still fails on a missing file.
   Checked on 2026-10-18: `:app:thirdPartyLicensesAsset` with the variable and no file failed,
   and `assembleDebug` without the variable and without the file packed the 258 byte note.
-- `desktop-app/bin/third-party-notices.mjs` names the `description` icon in the Android notice.
+- `desktop-app/bin/third-party-notices.mjs` names the `license` icon in both notices
+  (the Android notice named `description` until 2026-10-18).
 
 Measurements on 2026-10-18 (debug APK, Pixel 9 Pro Fold emulator on the host GPU, the real 1,748,364 character file,
 5 repeats each, run from logcat and `dumpsys gfxinfo`):

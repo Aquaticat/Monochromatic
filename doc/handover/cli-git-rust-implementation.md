@@ -1634,6 +1634,27 @@ that is verification, not a decision for the user.
   `bin/test-container.mjs`, `bin/mutate-container.mjs` with `--cargo-test-arg` filters); `wg-quicker-exempt` and
   `ide` belong to other owners. Next: release-artifact performance gates (the harness is gone, a new one is
   needed) and the scanner Windows pathname mutation rerun (task 23, needs a Windows VM).
+  Later on 2026-10-18: the nextest gate passed 1951 tests and all 78 planted controls were noticed on `main` after the
+  matcher accepted nextest's `FAIL + LEAK` line (`480c6a768a`). Fuzzing found a scratch leak in the manual push
+  probe: the cleanup guard was created after early error returns, so a probe whose Git could not start, or whose
+  hook captured nothing, left `cli-git-push-facts-<uuid>` (ref names and tips) in the temp directory, and the leaked
+  directories made a later fuzz run stall in `mkdir`; fixed in `f8cd9595c6` with a test that fails on the old
+  code. The scoped mutation run over `manual_push_probe.rs` left two survivors, `>` replaced by `==` or `>=` in the
+  capture size check; the check is now `exceeds_capture_limit`, tested at the limit and one byte past it
+  (`f28643eb9e`). The `wrapper_controls` fuzz target then crashed on `commit --l`: Git 2.56.0 accepts `--l` for
+  `--long`, a dry run, so the wrapper was right and the oracle's start list said `--lo`; fixed in `0537053603`
+  with a fixed case that failed first. Results after those fixes: the gate passed 1952 tests with all 78 planted
+  controls noticed, the probe mutation run caught 9 of 9 viable mutants (3 unviable), the `wrapper_controls` rerun
+  ran 2,182,521 executions with exit 0, and both fuzz crates' planted controls were noticed under nextest (29 and 6).
+  Release 0.1.6 of `monochromatic-git-policy-cli` is published (crates.io, GitHub release with both archives; the
+  x86_64 archive job needed one rerun after a Sigstore Rekor timeout) and installed; its glibc floor is still 2.39.
+  `cargo publish --dry-run` failed to connect to `index.crates.io` from inside the tool shell (curl worked) and
+  passed from a `systemd-run --user` unit. The nextest worktree, branch and image tags are removed. The
+  `monochromatic-lint` container gate, mutation flows, processor snapshot and both fuzz build images now call
+  nextest, and were validated: the container gate passed 415 tests, the single-filter run 5, the rust-style
+  mutation scope caught 38 of 41 mutants (3 unviable) and the executable scope over `path_inputs.rs` caught 24 of 25
+  (1 unviable) after the second `--` was restored before nextest's `--skip` filters. Issue 1757 has a progress
+  comment; `wg-quicker-exempt` and `ide` belong to others and keep it open.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers

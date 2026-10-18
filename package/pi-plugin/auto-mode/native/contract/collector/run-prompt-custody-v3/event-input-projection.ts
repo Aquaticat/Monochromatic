@@ -1,5 +1,5 @@
 /**
- Represent native cancellation handles without inspecting executable platform state.
+ Represent declared native fields without inspecting executable cancellation state.
 
  @module
  */
@@ -7,6 +7,7 @@ import { types } from 'node:util';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type { NativeEventInput } from '../../integration/native-batch/event-observer-types.ts';
 import { SourceCollectionError } from '../errors.ts';
+import {projectNativeCompactionFilePaths} from './compaction-file-paths.ts';
 
 //region Native control references belong to one original event emission
 
@@ -27,7 +28,7 @@ const l = tagged({ tag: 'auto-mode-native-event-controls' });
 
  @throws SourceCollectionError when a declared control field cannot retain an opaque reference
  */
-export function createNativeEventControlProjection(): (
+export function createNativeEventInputProjection(): (
   input: Pick<NativeEventInput, 'kind' | 'phase' | 'value'>
 ) => unknown {
   /**
@@ -41,7 +42,7 @@ export function createNativeEventControlProjection(): (
   /**
    Emission diagnostics inherit module ownership.
    */
-  const rl = tagged({ tag: createNativeEventControlProjection.name, l });
+  const rl = tagged({ tag: createNativeEventInputProjection.name, l });
   rl.debug('created original native event control projection');
 
   /**
@@ -53,7 +54,7 @@ export function createNativeEventControlProjection(): (
    @returns original value or descriptor-preserving control projection for the strict copier
    @throws SourceCollectionError when a native control field is unsupported
    */
-  function project({ kind, phase, value }: Pick<NativeEventInput, 'kind' | 'phase' | 'value'>): unknown {
+  function project({ kind, phase, value:borrowed }: Pick<NativeEventInput, 'kind' | 'phase' | 'value'>): unknown {
     /**
      Capture diagnostics retain the emission's logger tags.
      */
@@ -62,8 +63,9 @@ export function createNativeEventControlProjection(): (
     if ((phase !== 'input' && phase !== 'after')
       || (kind !== 'session_before_tree' && kind !== 'session_before_compact')) {
       pl.debug('native value retains the ordinary-data profile');
-      return value;
+      return borrowed;
     }
+    const value=kind==='session_before_compact'?projectNativeCompactionFilePaths(borrowed):borrowed;
     if (value === null || typeof value !== 'object' || types.isProxy(value)
       || Object.getPrototypeOf(value) !== Object.prototype) {
       pl.debug('non-record input retains its existing data validation');

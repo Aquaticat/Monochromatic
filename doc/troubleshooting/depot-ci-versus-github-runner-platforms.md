@@ -121,7 +121,88 @@ and retain documentation conflicts explicitly rather than turning the page into 
 No upstream message was sent.
 The mismatch is documented locally while actual KVM initialization and guest verification proceed separately.
 
+## Standard GitHub KVM access disappears after successful QEMU controls
+
+The fifth raw diagnostic,
+GitHub run `39115506319`,
+passed ordinary-user `q35` KVM after a named device ACL grant,
+then failed a later `none` probe with:
+
+```text
+Could not access KVM kernel module: Permission denied
+qemu-system-x86_64: failed to initialize kvm: Permission denied
+```
+
+The [per-probe follow-up][github-kvm-access-run],
+harness `fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef`,
+records the actual boundary on standard GitHub `ubuntu-24.04`.
+Its 46 snapshots show that `/dev/kvm` retains inode `434`,
+owner `0` and group `993`,
+while the named `user:1001:rw-` entry disappears after successful QEMU execution.
+Both `q35` and `none` report KVM enabled when the ACL is regranted before each probe.
+Neither machine type establishes a general KVM absence.
+The grant also survives an idle interval before the next successful probe.
+The root identity control does not restore ordinary-user access.
+
+QEMU `8.2.2`,
+source `11aa0b1ff`,
+opens the device before the KVM ioctl stage in `accel/kvm/kvm-all.c:2363`:
+
+```text
+# qemu/qemu, accel/kvm/kvm-all.c
+s->fd = qemu_open_old("/dev/kvm", O_RDWR);
+```
+
+The observed failure occurs at that device-open boundary.
+Installed device metadata has `seat` and `uaccess` tags,
+but the ACL writer and triggering event are not yet isolated.
+Stat,
+ACL and access reads are sequential observations rather than an atomic snapshot.
+Do not attribute the change to PAM,
+udev or a private provider mechanism from temporal correlation alone.
+
+The bounded raw workaround is a fresh named ACL grant before each QEMU invocation.
+Its tradeoff is that this does not protect a libvirt operation that opens the device repeatedly.
+A supplementary device-group control and the actual repository VM consumer are the next isolated experiment.
+The proposed group applies only to the disposable child process;
+it does not change the runner account or group database.
+
+The first group-profile run `39124932077` passed its descriptor controls:
+idle,
+read-only open/close and read-write open/close all retained the named ACL.
+Simple descriptor open/close alone therefore does not reproduce the QEMU-linked loss in this scope.
+The supplementary child actually acquired group `993` while retaining UID/GID `1001`.
+Its repository consumer then stopped at CLI import,
+before any guest or KVM initialization:
+
+```text
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@monochromatic-dev/module-caught-value'
+```
+
+The diagnostic-only workflow had omitted the original full VM workflow's workspace setup.
+The source-backed harness correction restores `mise install node pnpm`
+and `mise run prepare:pnpm:install -- --frozen-lockfile` from harness `1438ecde4b`.
+The dependency omission is separate from the device ACL incident.
+The failed group profile's private domains are empty and both owned daemon PIDs exited;
+no passing repository guest result follows from it.
+
+The process-discovery positive control found its actual live paused TCG process,
+then found it absent after QMP quit.
+The final control reports no remaining QEMU process.
+This was a raw capability diagnosis with no application guest,
+not a passing repository VM lifecycle result.
+
+No upstream report was sent.
+The client-open boundary is source-backed,
+but responsibility for the ACL mutation is unresolved.
+No public backend patch is claimed;
+the directly verified regrant control is the minimal current remedy.
+Standard GitHub KVM use is measured here rather than inferred from a vendor promise.
+Contribution-policy and maintainer-intent conclusions await an identified component;
+no upstream fault is assigned to an unidentified writer.
+
 [gha-kvm-doc]: https://depot.dev/docs/github-actions/troubleshooting
 [gha-kvm-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39104064329
 [gha-kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
 [gha-metal-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
+[github-kvm-access-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39123865841

@@ -539,3 +539,27 @@ Either:
 - ext4 / btrfs target filesystem
 - File size 10 KB
 ```
+
+## Separate Node handover staging failure, 2026-10-18
+
+A handover refresh stages its replacement body under `${HOME}/temp/agent`,
+then calls Node `fs.rename` into `doc/handover/pi-auto-mode-current-frontier.md`.
+That operation emits `EXDEV: cross-device link not permitted, rename`.
+The historical archive has already been written,
+but the current checkpoint remains its original content.
+This observed Node failure is separate from the Claude Code fallback incident.
+
+The completion stages an exclusively created temporary sibling beside the destination,
+preserves the original mode,
+then renames that sibling over the current checkpoint.
+That rename succeeds.
+The result is a 268-line current checkpoint and a 14,624-line historical archive;
+the archived original body is verified byte for byte.
+The developer utility itself remains in the normal agent scratch directory.
+Its destination sibling exists only for the final replacement.
+
+Commit `e85023fb09` preserves the archive before the current replacement completes.
+Commit `2faf1b2298` completes the replacement,
+and a corrective comment on the initial commit records that partial state.
+`frontier-archive-receipt.json` in
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018` retains the original hash and preservation result.

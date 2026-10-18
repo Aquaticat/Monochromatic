@@ -1,5 +1,354 @@
 # Depot trial interview
 
+## Execution checkpoint on 2026-10-18 at 11:38 UTC
+
+The actual single-job retry of native run `xgq2429hqv` completed artifact download on attempt two.
+Its consumer then correctly rejected the old fixture's failed assertion.
+The corrected fresh run `1jqm5wjmlj`,
+harness `bf3c4a98b32826c1c16e8755b8775256340fab79`,
+passed its downstream consumer with the current producer hashes and rejection controls.
+The subsequent full workflow rerun regenerated passing producer receipts,
+but its downloader selected the first attempt's `allrun` archive alongside current state/default archives.
+The consumer rejected the current-output hash mismatch.
+All seven producer/consumer archives across both attempts are retained privately with CRC and SHA checks.
+The published SDK selector sorts same-name artifacts by numeric ID,
+and the actual older `allrun` ID is larger than the rerun's ID.
+Both IDs are safe integers;
+precision loss does not explain this pair.
+The backend's ID-construction mechanism remains unknown.
+The Action's raw pre-filter response was not captured;
+the selector vulnerability is proven but a visibility race is not excluded as the incident mechanism.
+The source trace and controls are in
+[`depot-rerun-artifact-id-order.md`](../troubleshooting/depot-rerun-artifact-id-order.md).
+Content-bound names at `46fab80ef500e7d857cdb822085c03f899e266ff`
+passed their first fresh consumer in `w9jdpj5f1l`,
+with all current producer hashes and six source/hash rejection controls.
+Its full workflow rerun passed the same current-output and rejection controls.
+Both attempts join their current producer archives and ten distinct provider sandbox identities.
+The [public receipt](../audit/depot-native-orchestration-2026-10-18.evidence.json)
+retains fifteen original ZIPs.
+Do not infer passing aggregate workflow status from that consumer:
+the same diagnostic workflow contains intentionally failed parallel jobs and a cancelled timeout job.
+The isolated ordinary job-level comparison completed as native `kjf78stmkb` and GitHub `39122132487`:
+both expose `needs.allowed_failure.result` as `success`,
+while native aggregate and GitHub App suite report failure and the GitHub workflow reports success.
+There is no cancelled timeout in that isolated workflow.
+Default downstream eligibility and an isolated step-level workaround are now verified controls.
+Their runs are `pfzfjrqdpq` and `lrhfzwrwl2`,
+at `714a3cad36c20da75969454fe33f28dab7770e9b`.
+The default-condition downstream ran successfully without `always()`;
+the native aggregate still failed.
+The separate one-operation step-level workaround finished its job and workflow successfully,
+retaining step outcome `failure` and conclusion `success`.
+The public paired policy/history receipt now contains all eight original ZIPs,
+including these controls.
+The semantics campaign's cumulative full-window reservations are USD 0.960 under the USD 1 guard.
+
+The earlier [Depot Tests trial](../audit/depot-test-feature-2026-10-16.md)
+already qualifies physical binary-level sharding,
+failure/skip retrieval,
+retry history and analytics on its own source.
+The new current-source profile extends that evidence to 34 individual test names,
+with unchanged-input seed repeats and separate physical shards.
+Its exact Nextest selector controls and local CLI `2.102.23` preflight passed.
+The first run `b7zbgvws7h` failed before Nextest because the child command inherited a directory
+outside its explicitly discoverable Mise configuration.
+The source-backed correction at `e1b2f76f62fbb7fea99eef4fca88443d54308455`
+passed actual run `fm9d4wkbj9`.
+Three seed executions passed 34 cases each;
+two physical shards passed 17 cases each;
+their downstream consumer verified the exact disjoint 34-case union.
+Attempt-scoped result APIs independently returned all 136 passing events,
+with 34 unique case names and four distinct provider sandbox identities.
+Both shard commands found timings for zero candidates.
+Physical execution and ingestion passed.
+The later read-only control established a harness identity error:
+the full test-name candidates do not match their JUnit classname,
+`monochromatic-git-policy-cli`.
+Depot found timings for that actual classname under both test-name and class-name timing granularity;
+all full test-name candidate controls and the absent-class negative found zero.
+Changing report-key variants did not change that observed identity distinction.
+The current [splitting documentation](https://depot.dev/docs/ci/how-to-guides/split-tests.md)
+requires file/class candidates even when timing granularity is `testname`.
+The original zero result does not establish unavailable historical data or a vendor history defect.
+The [paired policy/history receipt](../audit/depot-job-policy-history-2026-10-18.evidence.json)
+retains all eight read-only requests and their actual outputs.
+The two full profile reservations total USD 0.348 under the USD 1 campaign guard.
+Original evidence ZIPs,
+stored result rows and positive/negative transport-secret cleanup are public in
+[`depot-physical-test-shards-2026-10-18.evidence.json`](../audit/depot-physical-test-shards-2026-10-18.evidence.json).
+The first failure and verified directory remedy are in
+[`mise-excluded-research-task-discovery.md`](../troubleshooting/mise-excluded-research-task-discovery.md).
+Do not repeat the prior failure/skip/duplicate trials as though those capabilities were untested.
+Issue `1046` remains open;
+the current public service protocol still says `duplicate_invocation` is always false.
+
+The broader Rust work executed 336 passing core cases with 13 skips among 349 enumerated cases.
+The current-source Rust linter executed 415 passing cases with one skip among 416 enumerated cases.
+Its standalone compiler consumer passed in `zxlt43t7g1`,
+using Cargo's JSON-emitted matching rlib/rmeta paths.
+That consumer remains separate from the 415 passing unit cases.
+The actual frozen-source `wg-quicker-exempt` producer was consumed by GitHub run `39118628603`:
+all 44 owning invocations passed,
+including the formerly missing companion-presence boundary.
+Those tests verify the actual sibling ELF's presence and hash,
+not execution of the privileged BPF program.
+The exact transport secret was removed and HTTP 404 verified.
+The original missing-producer fixture remains retained.
+
+The raw GitHub-hosted KVM diagnostic completed as run `39115506319`.
+QEMU `q35` with KVM passed as the ordinary user after scoped device access was granted;
+the later `none` machine user probe failed opening `/dev/kvm`,
+while the root probe passed.
+Libvirt's KVM capability probe still failed.
+This disproves a GitHub-wide KVM-absence claim;
+the access change between probes is not yet explained.
+The parent owns its public receipt and deciding-source note.
+The installed Libvirt source launches its KVM capability probe with machine `none`;
+the changing ordinary-user access still needs per-probe state evidence before assigning a cause.
+The bounded follow-up is GitHub `39123865841`,
+at `fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef`.
+It captures device inode,
+mode,
+owner,
+ACL and actual caller access around each raw QEMU control,
+including root identity,
+root QEMU,
+idle and repeated ACL-grant controls.
+Its process-discovery check must find a live paused TCG process before trusting cleanup absence.
+Only one 128 MiB paused QEMU process may exist at a time;
+there is no application guest.
+The job has eight minutes,
+with a six-minute inner deadline.
+The measured five prior intervals plus its full reservation have nominal proxy cost USD 0.1796,
+under the unchanged USD 1 campaign guard.
+
+The default/step continuation notes and their updated rendered checks pass.
+The disposable PR cleanup is public and freshly reverified:
+the research base returns HTTP 404 and production branch protection still matches its baseline.
+The remaining parent queue includes the latest KVM-note verification and evidence publication,
+VM/process public receipts,
+container Git/libatomic prerequisite notes,
+job-environment recurrence documentation,
+PR cleanup publication,
+the provider/cost/critical-path model and the six-section evaluation report.
+The routing researcher owns finite fuzz,
+coverage,
+conformance,
+mutation-container and three-engine browser waves.
+The Rust researcher owns GNU/ASan fuzz,
+actual deterministic Codex host completion,
+all-features Truepeak Nextest,
+and source-qualified benchmark/privileged-BPF applicability.
+The deterministic Codex host now has forty real successful command outputs in `1h6qf8j86f`;
+Bubblewrap was installed in the disposable job without changing the signed Codex binary.
+The TypeScript property/coverage/conformance wave reached all 69 owning invocations,
+with 64 passing and five retained domain or baseline failures.
+The routing researcher also owns the actual three-engine browser wave `39123458425`
+at `6328647d8b7113a920d777044944612f3bc47a58`.
+The platform researcher owns command/doc inventory reconciliation,
+the stopped-SDK evidence and the per-test JUnit identity adapter with physical consumer checks.
+Its adapter run is `st40hvmw90`,
+source `c6d25d092678b0933f1e3b43765fc46c02593a9e`,
+with one VM at a time and the unchanged USD 0.534 cumulative full-window admission.
+After that campaign and source-ledger reconciliation,
+the platform researcher owns an actual frozen Linux ARM64 repository CI check,
+or reconciliation of sufficient existing immutable evidence.
+The multi-platform BuildKit Node/ELF probe alone does not establish repository ARM CI execution.
+The initial separate guard is USD 1,
+one VM,
+eight CPUs and fifteen minutes;
+it provides functional evidence unless unchanged repetitions justify a performance comparison.
+That adapter may use one parent VM slot;
+the KVM follow-up reserves the other.
+
+The raw KVM access follow-up completed successfully with 46 sequential snapshots.
+The named runner ACL disappears after successful QEMU use,
+and regranting restores both machine types.
+The process-discovery positive and final cleanup controls passed.
+Its deciding device-open source and the unknown ACL-writer boundary are recorded in
+[`depot-ci-versus-github-runner-platforms.md`](../troubleshooting/depot-ci-versus-github-runner-platforms.md).
+The separate descriptor/group lifecycle control is GitHub `39124932077`,
+at `bafc75bb388a9f92dfc056f0bb409d86d48cc1ee`.
+Its full reservation plus six measured intervals is nominal USD 0.3938 under the unchanged USD 1 guard.
+It has a twenty-five-minute outer control envelope,
+a four-minute permission step and an eighteen-minute actual VM step.
+The actual guest remains four vCPUs and 8192 MiB;
+the original application manifest's twenty-minute reference is retained separately from the new outer envelope.
+Supplementary device-group access affects only the disposable child process,
+with no group database edit.
+Daemon log capture is now isolated from lifecycle cleanup before this full guest retry.
+
+The broader Rust work now has completed bounded ASan execution for all 35 frozen fuzz targets.
+Truepeak's actual all-features owning Nextest invocation passed 89 cases with two expected skips,
+separate from the earlier build/cache-only zero-test result.
+Git-policy planted faults were all detected,
+with exact JUnit identities corrected by independent XML parsing.
+The remaining benchmark and privileged WG campaigns remain active in the Rust-owned ledger.
+The fresh native artifact consumer verified all 1036 declared compiled hashes,
+including the formerly omitted hidden manifest,
+then failed its first actual domain import before any permission/prohibition/none cases ran.
+Its runtime topology diagnosis remains the routing researcher's active task;
+artifact membership success does not establish runtime portability.
+Independent sufficiency review precedes the interview.
+
+Research remains open;
+do not resume the interview or declare readiness from the completed module sample.
+The frozen application source is `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Later main changes do not silently enlarge a frozen cohort.
+
+The exact cloud APK pair now has a completed local headful consumer in
+[`depot-android-consumer-2026-10-18.evidence.json`](../audit/depot-android-consumer-2026-10-18.evidence.json).
+All 16 source-derived cases were reported:
+14 passed,
+two retained the known `SessionStoreTest` context-fixture failure,
+and none skipped.
+Private emulator/ADB cleanup completed.
+The successful producer and its matching certificates remain distinct from the first APK-only launch.
+
+Both native Depot and Depot's GitHub runner completed the frozen `mvm` Linux lifecycle.
+GitHub-hosted Ubuntu failed libvirt's KVM capability boundary after a successful device-access adjustment.
+The parent owns a further bounded raw QEMU/libvirt diagnostic,
+the public VM/process receipts,
+PR cleanup receipt completion,
+and the associated source-backed troubleshooting notes.
+
+The repaired container consumers completed successfully in native run `g02lgcbfgq`
+and GitHub run `39113547458`,
+at harness `5485cc0d12805f330d568b358e5ff0bb988d4d37`.
+Native AMD64/Arm64 host and job-container jobs passed;
+GitHub-hosted AMD64 and Depot AMD64/Arm64 host and job-container jobs passed.
+The job image digest is
+`sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`.
+The actual consumer checks the locked Node 26 binary hash and its loaded `libatomic` mapping,
+separately from the image's base Node 24.
+Earlier Git-absent and `libatomic.so.1`-absent fixtures stay retained as failed prerequisite controls.
+The public receipt and all ten original ZIPs are retained in
+[`depot-service-containers-2026-10-18.evidence.json`](../audit/depot-service-containers-2026-10-18.evidence.json)
+and its linked compressed archive.
+Commit `0a8a2979e0` retains them;
+scoped dprint passed.
+The exact GitHub secret and both owned native variants were removed,
+with absence verified after positive lookup controls.
+The builder researcher has been told the consumer hold is released.
+This is secret-binding cleanup,
+not proof of token revocation.
+
+The matched lock/evidence campaign is complete on native Depot,
+GitHub-hosted Ubuntu and Depot GitHub runners.
+Every ordinary-directory repeat failed within the same 34-case cohort;
+all nine tmpfs repeats passed 34 of 34.
+Provider-labelled receipts and deciding source are in the cache report and
+[`git-policy-replaced-lock-filesystem.md`](../troubleshooting/git-policy-replaced-lock-filesystem.md).
+Do not attribute these failures to Depot alone.
+The exact temporary signed-URL secrets were deleted and absence verified.
+The cache audit now has 21 job-attempt records across 20 workflow runs,
+with a conservative USD 1.407 request-to-job-terminal proxy,
+not allocated CPU time or an invoice.
+
+After finishing that evidence's lint/render and owned cleanup,
+the cache researcher owns the broader frozen Rust/current-source linter and Rust fuzz area.
+It must classify all 23 standalone Cargo manifests,
+compare exact prior source/dependency/toolchain evidence for valid carryover,
+and prepare documented bounded profiles before launches.
+Its unchanged cumulative USD 5 proxy guard includes the completed USD 1.407;
+at most two of its jobs may be active.
+Main remains docs/evidence only;
+heavy work stays in isolated cloud jobs or bounded containers.
+
+The parent still owns physical Depot Tests shards/report consumers,
+native retry/rerun and corrected state-artifact consumption,
+the raw GitHub-hosted KVM diagnostic,
+the cost/critical-path model,
+and the approved final report.
+The frozen inventory contains five Rust fuzz sidecars,
+not only the two `rust-module` sidecars:
+`cli/forbidden-strings.fuzz`,
+`git-policy/cli.fuzz`,
+`linter/monochromatic-lint.fuzz`,
+`rust-module/forbidden-regex.fuzz`,
+and `rust-module/jsonc-edit.fuzz` under `package/`.
+Inspect each owning task before running;
+some already implement container bounds and planted controls,
+and some dual-corpus commands can mutate committed seed inputs.
+The cache researcher owns their source preservation and explicit ASan/GNU target evidence.
+
+The KVM follow-up completed as a fifth allocation after four terminal guest jobs.
+The retained admission measures 358 preceding request-to-terminal seconds,
+models them at USD 0.0716,
+and reserves USD 0.12 for one ten-minute GitHub-hosted diagnostic.
+The USD 0.1916 forecast stays under the unchanged USD 1 campaign guard.
+Harness `0a2fd7678b` calls the source-bound raw QEMU/libvirt capability task;
+it does not execute an application guest.
+GitHub run `39115506319` completed at full harness
+`0a2fd7678b719d9039df318003a43bbc4713cd7c`.
+Both raw q35 KVM probes passed,
+including the unprivileged process after the scoped ACL grant;
+QMP reported KVM present and enabled.
+Later unprivileged `machine=none` failed opening KVM with `Permission denied`,
+while its root control passed and private libvirt rejected KVM capability.
+The diagnostic retained TCG positives and observed both owned daemon PIDs gone.
+This disproves a platform-wide absence-of-KVM conclusion.
+Per-probe device permission snapshots were not captured,
+so the changing access boundary and libvirt failure still need qualification.
+The first dispatch's immediate run lookup failed after successful creation;
+recovery adopted the existing run rather than dispatching another.
+
+Native consumer retry was actually submitted for `xgq2429hqv` job `nw4mdr6b68`.
+The API returned attempt 2 queued.
+The original failed attempt and three original producer artifacts were retained first.
+One additional two-CPU/eight-GB/five-minute job reserves USD 0.03
+within the existing USD 1 semantics campaign guard.
+Do not expect a passing aggregate from this unchanged source:
+its default-parallel assertion assumes sibling absence,
+which the stronger observation did not establish.
+The retry qualifies lineage and the separate unexplained download-action boundary.
+
+For physical Depot Tests,
+the parent is preparing actual Nextest per-test JUnit from the source-bound 34-case lock diagnostic cohort,
+using the retained executable/archive producer and explicitly owned tmpfs environment.
+This will not disguise an owning-task wrapper row as an inner test case,
+claim a filesystem source repair,
+or qualify the whole Git policy suite.
+Candidate selection,
+report freshness,
+history,
+fail/skip/duplicate controls,
+physical job identities and the artifact consumer remain required execution work.
+
+The current-source Rust linter run `j50kf2jlqx` actually ran 415 passing tests,
+with one ignored case among 416 enumerated cases across three binaries.
+Its real CLI help/rule controls passed.
+The aggregate remains red because the separate direct-rustc consumer encountered an rlib metadata-stub diagnostic;
+that is not a linter test failure or a completed binary handoff.
+The standalone Rust run `lwp0vbb2vq` is active,
+including the frozen `wg-quicker-exempt` release producer needed by the routing researcher's actual default test.
+The process/transport wave `39114552347` completed all 131 invocations:
+128 passed and three default tasks failed.
+Real compositor lookup/ImageMagick prerequisites and the CPU-cap watcher assertion are being qualified separately.
+
+The capability researcher's additional admission is USD 2 cumulative timestamp compute,
+with its existing two-builder/sixteen-CPU/thirty-two-GB bounds unchanged.
+Actual Bake,
+secret/SSH forwarding,
+real Cargo cache mounts,
+and remote-source controls remain its owned work.
+Captured docs/repository enumeration is not complete substantive feature review.
+Current source confirms `depot cargo` is a local Cargo wrapper for the same remote sccache backend,
+not a separate remote Rust compiler.
+The capability researcher is verifying its prerequisite,
+authentication precedence and environment-forwarding boundaries.
+The substantive chronology pass also covers Dockerfile lint,
+Cache Explorer/export,
+builder networking and Datadog's current availability.
+Current project source defines `max_concurrent_builds` per builder instance,
+not as a total-builder cap;
+autoscaling stays off under the campaign's hard allocation bound.
+Cache-policy `keep_gb` is per architecture,
+so its configured value must not be described as whole-project storage usage or a shared-allowance guarantee.
+The current Dockerfile-lint campaign has a working Hadolint positive and clean control,
+but its missing Semgrep positive remains unqualified.
+
 ## Research reopened and interview withdrawn on 2026-10-18
 
 The user rejected the readiness claim:
@@ -2949,6 +3298,79 @@ No account settings were changed.
 Production deployment remains outside the trial's authorization.
 
 ## Interview process correction
+
+### Reopened research execution queue, October 18
+
+The user rejected research readiness.
+Do not resume grilling until the expanded repository and vendor coverage has actual evidence.
+The parent owns native retry and parallel semantics,
+physical test shards,
+service and job-container consumers,
+the current-source VM controls,
+the local Android artifact consumer,
+and the integrated decision and cost report.
+The active coverage researcher owns the remaining non-module Node profiles
+and the corrected Android APK pair producer.
+The cache researcher owns the paired cache-off,
+warm,
+fault,
+and invalidation consumers.
+The platform researcher owns BuildKit exports,
+cache mounts,
+and reconciliation of deployed documentation with the first-party source repositories.
+
+The native VM consumer `zg88jz25gb` passed guest execution,
+the nonzero-stderr control,
+byte transfer,
+and explicit domain and daemon cleanup.
+GitHub runner VM controls are next after service consumers release a parent cloud slot.
+GitHub service run `39109462308` passed host HTTP consumers on its three declared platforms;
+job-container results remain pending.
+Native secret control `c8lwr60rdm` observed an absent branch-scoped secret
+and empty ref context in this manual run.
+Run the repository-only variant control before interpreting native container compatibility.
+
+The private Android unit is `mono-depot-ci-android-20261018`.
+Its private launch metadata is in the parent's scratch `android-local/launch.json`.
+The exact debug APK from `qvsjm5hmdp` is being installed and launched;
+the corrected Android producer must supply the instrumentation APK.
+Finish with the documented sync,
+eight-second wait,
+sync,
+and private-HOME `adb emu kill` sequence.
+Stop only the owned adb server after the emulator exits.
+
+Retain public hash-bound receipts for the VM,
+matched process timeout controls,
+service containers,
+and PR cleanup;
+render and review the updated documents.
+The corrected retry fixture must record late descendants independently of retry timeout renewal.
+Run its actual artifact consumer and the delayed parallel cancellation observer.
+Review the broader Rust workspace and current-source linter coverage after the Node inventory wave;
+the lock-bound published linter prerequisite does not prove a current-source linter build.
+Reconcile the final six approved report sections and measured expanded-workload cost paths.
+
+Remove the exact owned GitHub pull secret and native variants after service consumers finish,
+then tell the platform researcher to release the shared image and project.
+The temporary PR protection and disposable PR base are already removed;
+the private cleanup receipt confirms main protection still matches its baseline.
+
+The Codex maintenance clarification is complete in `.out-of-scope/codex-harness.md` only.
+The global search/fetch MCP configuration and fresh-client verification are recorded in
+[`codex-search-fetch-mcp.md`](../troubleshooting/codex-search-fetch-mcp.md).
+No general `AUT` clarification was accepted for that Codex correction.
+
+The proposed research-gap clarification remains pending:
+"Usage/migration advice:
+enumerate vendor features;
+inspect usage/config,
+parallel code,
+TODOs/workarounds,
+suppressions,
+policies;
+map desired workloads to source and runtime proof before readiness."
+Do not edit `AGENTS.md` without the user's acceptance.
 
 The user clarified that the migration is not apples to apples.
 The reports now distinguish controlled allocation measurements from the value and cost of expanded CI capabilities.

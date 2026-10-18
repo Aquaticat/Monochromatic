@@ -246,9 +246,9 @@ if (options.product === 'desktop') {
     '',
   );
 }
-// The Android Licenses row draws description and the desktop one draws license.
+// Both products draw license in their Licenses row; only the order of the names differs.
 const iconNames = options.product === 'android'
-  ? 'queue_music, play_circle, autoplay, description, check and close'
+  ? 'queue_music, play_circle, autoplay, license, check and close'
   : 'queue_music, play_circle, autoplay, check, close and license';
 bundled.push(
   subheading('Material Symbols icons, Apache License 2.0'),

@@ -165,6 +165,16 @@ fn the_hook_writes_an_exclusive_capture_of_bounded_input() {
     );
 }
 
+/// The limit itself is complete input; the one extra byte the hook reads is proof that input was cut short.
+#[test]
+fn only_input_past_the_limit_exceeds_the_capture_limit() {
+    let limit = usize::try_from(MAX_HOOK_INPUT_BYTES).expect("the limit fits in memory");
+    assert!(!exceeds_capture_limit(0));
+    assert!(!exceeds_capture_limit(limit - 1));
+    assert!(!exceeds_capture_limit(limit));
+    assert!(exceeds_capture_limit(limit + 1));
+}
+
 /// A new branch pushed by the probe is one update: a local object, no remote object, the named remote.
 #[test]
 fn a_new_branch_is_one_update_with_no_remote_object() {

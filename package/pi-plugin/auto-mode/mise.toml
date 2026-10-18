@@ -648,6 +648,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Verify that native dispatcher setup preserves the isolated CLI fixture fetch blocker"
 run = "node src/native-process-network.unit.test.ts"
 
+[tasks."test:native:process-network-receipts"]
+description = "Verify original classifier names, complete JSONL before responses, and receipt write failures"
+run = "node --max-old-space-size=512 src/native-process-network-receipts.test.mjs"
+
 [tasks."test:native:session-result"]
 description = "Verify built native SDK result identity, descriptor reads, optional presence, and accessor rejection"
 run = "node src/native-session-result.unit.test.ts"
@@ -943,6 +947,8 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs prohibition",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deadline",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs fresh",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs allow-stale",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs allow-abort",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-approve",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-unknown",
@@ -954,6 +960,33 @@ run = [
 description = "Exercise one actual native decision fallback mode"
 usage = 'arg "<mode>" help="Native decision fallback fixture mode"'
 run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs "$usage_mode"'
+
+[tasks."test:native:loaded-message-content"]
+description = "Verify persisted and live native message blocks retain the same content and validation"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-loaded-message-content.test.mjs"
+
+[tasks."test:native:compaction-inputs"]
+description = "Verify native SDK compaction file sets cross only their declared input boundary"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-compaction-inputs.test.mjs"
+
+[tasks."test:native:streaming-context-capacity"]
+description = "Retain exact original streamed snapshots without complete-prefix storage growth"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-streaming-context-capacity.test.mjs"
+
+[tasks."test:native:input-content"]
+description = "Verify exact shared text and producer-bound source content accessors"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-input-content.test.mjs"
+
+[tasks."test:native:session-inputs"]
+description = "Exercise native session actions, opaque controls, persisted content, compaction sets, and shared text"
+run = [
+  "mise run //package/pi-plugin/auto-mode:test:native:session-actions",
+  "mise run //package/pi-plugin/auto-mode:test:native:event-controls",
+  "mise run //package/pi-plugin/auto-mode:test:native:loaded-message-content",
+  "mise run //package/pi-plugin/auto-mode:test:native:compaction-inputs",
+  "mise run //package/pi-plugin/auto-mode:test:native:input-content",
+  "mise run //package/pi-plugin/auto-mode:test:native:streaming-context-capacity",
+]
 
 [tasks."test:native:retained-context-capacity"]
 description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"

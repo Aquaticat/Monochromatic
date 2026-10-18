@@ -6,6 +6,9 @@ import { access, copyFile, cp, mkdir, mkdtemp, rm, stat, writeFile } from 'node:
 import { tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 
+// The generator controls run in the build image with the runner the git-policy/cli gate pins by version and checksum.
+import { copyNextest, nextestCopyLines } from '../../../git-policy/cli/bin/native-nextest-snapshot.mjs';
+
 /** Concurrent worktrees and agents set MONOCHROMATIC_LINT_IMAGE_TAG so one campaign never runs another's image. */
 const imageTag = process.env.MONOCHROMATIC_LINT_IMAGE_TAG ?? 'development';
 /** Instrumented build image: package inputs, vendored dependencies and cargo-fuzz. */
@@ -88,6 +91,7 @@ async function main() {
     await writeFile(join(context, '.cargo/config.toml'), config);
     const cargoFuzz = await executable('cargo-fuzz');
     await copyFile(cargoFuzz, join(context, 'cargo-fuzz'));
+    await copyNextest({ context });
     await writeFile(join(context, 'Containerfile'), [
       '# Same installed Rust runtime image as the subject container tests; compiler is a separate read-only input.',
       'FROM 62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884',
@@ -96,6 +100,7 @@ async function main() {
       'COPY .cargo /work/.cargo',
       'COPY cargo-fuzz /usr/local/cargo/bin/cargo-fuzz',
       'RUN ["cargo-fuzz", "--version"]',
+      ...nextestCopyLines(),
       'WORKDIR /work/package/linter/monochromatic-lint.fuzz',
       // The optimized HIR ASAN build was SIGKILLed under the 2 GiB cap with two compiler jobs.
       'ENV CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
@@ -107,7 +112,7 @@ async function main() {
     // Compiler files retain their host labels. Do not relabel a shared Rust installation with :Z.
     // Only build containers disable label isolation; fuzz execution has no host mounts and keeps it enabled.
     const compilerMount = ['--security-opt', 'label=disable', '--volume', `${compiler}:/toolchain:ro`];
-    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
+    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'nextest', 'run', '--lib', '--offline', '--locked'] });
     // Type/lint the property helpers in the same bounded compiler context as their generator controls.
     execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, buildImage, 'cargo', 'clippy', '--lib', '--offline', '--locked', '--', '-D', 'warnings'] });
     const buildContainer = execute({ command: 'podman', args: [

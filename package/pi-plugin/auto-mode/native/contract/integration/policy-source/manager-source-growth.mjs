@@ -4,6 +4,7 @@ import {
 } from 'node:util';
 import {SourceCollectionError} from '../../collector/collector.mjs';
 import {isCustomDataInput} from '../../collector/run-prompt-custody-v3/custom-data-input.mjs';
+import {isInputContentDescriptor} from '../../collector/run-prompt-custody-v3/input-content.ts';
 
 /** Shape-check already-owned records without invoking caller accessors or proxy traps. */
 function frozenRecord(value){
@@ -16,6 +17,7 @@ function frozenRecord(value){
     value,
     key
   );
+  if(field&&isInputContentDescriptor({record:value,key,field}))continue;
   if(((typeof key)!=='string')||(!field?.enumerable)
     ||(!Object.hasOwn(
     field,

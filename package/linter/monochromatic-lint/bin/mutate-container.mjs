@@ -48,7 +48,7 @@ function exclusionArguments(pattern) {
   return ['--exclude-re', pattern];
 }
 
-/** One libtest `--skip` option pair, which excludes every test whose name contains the text. */
+/** One nextest `--skip` option pair, which excludes every test whose name contains the text. */
 function skipArguments(name) {
   return ['--skip', name];
 }
@@ -62,14 +62,15 @@ function fileArguments(glob) {
  * Every scope, keyed by its command-line option. `select` decides which mutants exist (it is all `--list` needs),
  * `run` decides how each mutant is built and tested and comes last because it may end with libtest arguments,
  * and `timeoutSeconds` is the per-mutant test limit when it differs from the default.
- * cargo-mutants copies everything after its own `--` into the `cargo test` command line, where Cargo accepts
- * one test name only; a second `--` hands the remaining arguments to the test binary, which accepts several.
+ * cargo-mutants copies everything after its own `--` into the `cargo nextest run` command line, where nextest
+ * accepts several test-name filters; a second `--` hands the remaining arguments to nextest's own filter
+ * position, the only place it accepts `--skip` (probed: a `--skip` before it is an unexpected argument).
  */
 const scopes = new Map([
   ['--rust-style', {
     description: 'the anonymous-function and sidecar test rules against their own tests',
     select: ['src/rust_no_anonymous_functions.rs', 'src/rust_tests_in_sidecars.rs'].flatMap(fileArguments),
-    run: ['--', '--', 'rust_no_anonymous_functions', 'rust_tests_in_sidecars'],
+    run: ['--', 'rust_no_anonymous_functions', 'rust_tests_in_sidecars'],
   }],
   // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
   // Every test the `markdown` filter selects is a library test: the baseline at c184147f ran 136 library tests
@@ -99,7 +100,7 @@ const scopes = new Map([
   ['--inferred-constants', {
     description: 'generic constant-slot resolution against its slot controls and the semantic conformance suite',
     select: fileArguments('src/rust_inferred_constants.rs'),
-    run: ['--', '--', 'rust_inferred_constants', 'rust_explicit_types'],
+    run: ['--', 'rust_inferred_constants', 'rust_explicit_types'],
   }],
   // The executable's own modules: orchestration, the binary entry point, Rust rule selection, and the input
   // expansion and fix loop it drives. Its Markdown modules (`markdown_lfs_*`, dispatch and rule settings) are under
@@ -228,7 +229,8 @@ async function campaign({ scope, shard, examine }) {
       'cargo', 'mutants', '--in-place', '--baseline', 'run',
       // The combined semantic/Markdown consumer build took 83 seconds in the bounded container.
       '--build-timeout', '300', '--timeout', String(timeoutSeconds),
-      '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
+      // The baseline and every mutant run through the runner of the gate image.
+      '--no-config', '--no-shuffle', '--test-tool', 'nextest', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
       ...excludedMutantPatterns.flatMap(exclusionArguments),
       // cargo-mutants numbers shards from 0; every shard runs the same arguments and its own baseline.

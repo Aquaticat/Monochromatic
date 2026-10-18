@@ -65,12 +65,31 @@ The expanded checkpoint contains 542 source files from those repositories,
 including the complete installed CLI implementation and additional SDK and integration source.
 Retrieval state and substantive review state are separate fields.
 
+A further source pass captures metadata for all 93 enumerated official repositories
+and 142 additional root README,
+license,
+policy,
+and dependency-manifest files.
+The public `depot/docs` repository at `e40bfe1683ae561156d415513f2a648f89e82f12` contains 117 MDX pages.
+Every public-source route matched a deployed page.
+The deployed GitHub Actions API,
+Nx Cache,
+and Xcode Cache pages are absent from that public source tree.
+The compressed receipt preserves this route map and the exact public MDX source.
+Claim-level content differences and supplementary implementation relevance remain under review.
+
 The installed CLI is audited against release `v2.102.23`,
 source commit `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
 Visible help traversal initially missed a single-space command column;
 the `configure-docker` control exposed that parser defect and the inventory was corrected.
+That correction initially covered only the root.
+Re-parsing every cached node found `ci migrate secrets-and-vars`
+and generated completion/help descendants of the manually dispatched Claude secrets command.
+The recursive parser now has single-space,
+multiple-space,
+and flag-section controls.
 Source inspection then exposed hidden root commands and manually dispatched Claude subcommands.
-The expanded inventory contains 92 help invocations,
+The expanded inventory contains 99 help invocations,
 including the failed Cargo-wrapper help invocation described in the source gaps.
 
 No count establishes exhaustive understanding by itself.
@@ -228,6 +247,156 @@ an observed terminal job,
 and stopped billing remain distinct facts.
 No excluded account-wide analytics method is invoked here.
 
+### Nondefault SDK runtimes need an execution environment contract
+
+The [custom-runtime receipt](../audit/depot-sdk-custom-runtime-2026-10-18.evidence.json)
+admits the exact existing `tools-r2-git256` reference using registry challenge authentication,
+manifest and configuration hashes,
+and the snapshot owner's permission for read-only use.
+Its Depot thin configuration describes a 150 GiB logical disk;
+the descriptor and layer sizes alone do not establish that value.
+This is a Depot block snapshot,
+not an ordinary OCI root filesystem image.
+
+SDK sandbox `6m8d0p0pvnrqlb8` accepted that reference and reached `running`
+with the requested AMD64 architecture,
+2 CPUs,
+4 GiB memory,
+150 GiB disk,
+and two-minute expiry.
+The first actual command failed with
+`exec: "node": executable file not found in $PATH`.
+Native CI's Mise environment cannot be assumed to accompany an SDK runtime.
+The cleanup request completed,
+and a fresh `Get` confirmed `finished`.
+This proves reference admission and terminal cleanup,
+not execution of the intended Git consumer.
+
+One replacement sandbox is admitted with the same resource and lifetime limits.
+Its consumer uses the independently measured absolute Git executable path
+and SDK filesystem operations.
+The added compute proxy reservation is USD 0.012,
+bringing the original BuildKit proxy plus both full sandbox reservations to USD 0.562584
+under the USD 2 research ceiling.
+That proxy uses the documented SDK two-CPU CI rate;
+it does not confirm actual invoiced compute quantities,
+storage charges,
+included-allowance accounting,
+or an aggregate account cap.
+Replacement `b2f4z72r3951f5k` also accepted the same runtime and resource limits.
+Its consumer failed with `FileSystemError: the operation timed out`
+before the intended absolute Git command ran.
+The harness attempted `stat` and a full 20,315,448-byte executable download first;
+its error collector omitted the SDK error's `syscall` and `path` fields.
+The retained receipt therefore cannot establish which filesystem operation timed out.
+Cleanup again completed,
+and a fresh `Get` confirmed `finished`.
+Custom-image command execution and filesystem transfer remained unqualified by those attempts.
+The prior default-image command and small-file consumers remain separate positive controls.
+The next diagnostic must execute Git first,
+retain operation boundaries and the SDK error fields,
+and test a small file independently of executable transfer.
+A third sandbox executed the absolute Git command first
+and retained separate small-file operation results with ten-second filesystem RPC deadlines.
+The local error-collector positive control proves that the SDK preserves operation and path fields;
+the previous collector lost them.
+No full executable download or fourth allocation is admitted.
+Reserving the third full lifetime raises the scoped compute proxy to USD 0.574584.
+Sandbox `dmdwcf07jzx2rxj` passed the primary consumer:
+absolute Git reported `git version 2.56.0`,
+the 15,557-byte image manifest was read,
+the two named synthetic exclusions were absent,
+and a 124-byte nonce artifact survived filesystem write/read/hash verification and deletion.
+Both registry reads matched the admitted immutable snapshot digest.
+No full executable hash was measured in this sandbox.
+A fresh `Get` confirmed `finished` after cleanup.
+
+The optional detached-command log stream hit its five-second abort.
+The fixture did not retain partial stream rows and did not reach its later historical fetch;
+this is not proof that detached output was absent or unretained.
+One later read-only fetch targeted only that stopped sandbox,
+its detached command,
+and the 19.719-second creation-to-stop window.
+It returned no rows;
+no create,
+restart,
+or timeout extension occurred.
+The SDK's asynchronous capture and indexing contract means this empty result does not prove absent output.
+Log replay remains unqualified.
+There is no fourth allocation.
+
+The deployed SDK reference explicitly bills sandboxes per vCPU-second at the Depot CI compute rate.
+It also contains a material contract contradiction:
+the creation section accepts `runtime.imageRef`,
+but its `Coming soon` section says custom runtimes are unavailable and all sandboxes use the default image.
+The successful owned thin-snapshot consumer disproves that blanket default-only statement.
+It does not qualify arbitrary public OCI images or named runtimes.
+Installed SDK source directs detached consumers to `sandbox.logs.fetch()` and `sandbox.logs.stream()`,
+while the deployed page describes detached retrieval as future work.
+The timed-out optional probe does not settle that narrower discrepancy.
+
+## Live plan eligibility and autoscaling boundary
+
+The [live public pricing capture](../audit/depot-live-public-pricing-2026-10-18.evidence.json.gz)
+retains every feature row's SVG,
+every FAQ answer,
+and each compute tab from an isolated unauthenticated browser session.
+Text-only fetching omitted the availability icons and collapsed FAQ answers.
+The capture did not inspect account state,
+cookies,
+invoices,
+or subscriptions.
+
+Developer includes Linux and Windows GitHub runners,
+multi-platform builds,
+Build Insights,
+API access,
+autoscaling,
+agent sandboxes,
+test reporting,
+OIDC,
+egress filtering,
+and community support.
+macOS runners require Startup or Business;
+the [GitHub runner overview][github-runners] independently confirms this plan boundary.
+A successful Startup-trial macOS job does not establish Developer eligibility.
+GPU builds,
+custom regions,
+dedicated infrastructure,
+static outbound IPs,
+PrivateLink,
+and AWS deployment are Business features in this capture.
+This eligibility statement is separate from ordinary CI device probes and their lack of GPU devices.
+The managed GPU documentation requires customer AWS capacity and a provider-prepared custom runner AMI;
+it does not expose a Developer GPU sandbox label.
+
+The FAQ defines storage billing as the month's average combined build-cache,
+Depot Cache,
+and registry storage,
+sampled hourly.
+Developer's 25 GB is shared among those products.
+The project schema's minimum `keep_gb: 25` applies per architecture,
+not to total project storage or a reserved allocation.
+The pricing page lists usage caps but does not document one aggregate dollar cap covering all products.
+The older cap announcements separately describe build minutes and GitHub Actions minutes.
+
+The [autoscaling documentation][build-autoscaling]
+and the captured `depot/core/v1/project.proto` agree that `max_concurrent_builds`
+means builds per instance before adding an instance.
+It does not limit the total instance count.
+The audited create/update schemas expose no total-instance ceiling.
+Autoscaling remains off under this campaign's maximum-builder bound;
+there is no actual scale-out claim.
+The executed Bake graph counts as one build per project,
+regardless of its target count.
+
+Additional builders clone the main cache but do not merge their new layers back.
+Work on different builders is not deduplicated.
+The docs exclude temporary clones from cache storage charges while retaining normal compute charges.
+These consequences make project separation,
+larger builders,
+and scale-out distinct CI architecture choices.
+
 ## Registry lifecycle and export surface
 
 [Registry v2][registry] supports arbitrary OCI artifacts,
@@ -308,6 +477,100 @@ component identities,
 and published uptime denominators remain under audit.
 No availability percentage is inferred from an incomplete incident count.
 
+## Network integrations and dependency automation
+
+The deployed [egress-filtering contract][egress] permits Linux runner rules for IPs,
+CIDRs,
+and hostnames.
+It documents automatic control-plane allowances,
+loopback access,
+deny-before-allow ordering,
+and DNS results pinned in `/etc/hosts`.
+These filters are incompatible with Tailscale,
+and a root process can change them.
+They are not an isolation boundary against privileged untrusted build code.
+No organization network setting is read or changed in this audit.
+
+The [Tailscale integration][tailscale] covers GitHub runners,
+container builders,
+and native CI jobs as ephemeral nodes.
+It excludes Windows runners.
+Connection requires tailnet ACL changes,
+an OAuth client with auth-key write permission,
+and organization configuration.
+Disconnecting prevents future joins but leaves in-flight jobs connected until completion;
+immediate disconnection requires removing those nodes in Tailscale.
+The custom SDK controls explicitly disabled tailnet joining and do not exercise this integration.
+
+[Private-resource access][private-resources] offers VPN routes as alternatives to static addressing.
+VPC peering and dedicated static outbound addresses require Business deployments.
+Its blanket description of default public addresses as AWS addresses must be reconciled
+with the later Metal rollout before being used as an allowlist specification.
+No current origin-IP inventory or successful private-network consumer is established here.
+
+The current [Dagger integration page][dagger] explicitly marks its engine integration deprecated
+and scheduled for removal.
+Its described implementation creates a separate persistent-cache engine VM,
+requires a Dagger Cloud token,
+and charges USD 0.04 per minute in addition to runner time.
+This is a documented integration with a deprecation notice,
+not an executed Dagger consumer or a reason to create another paid service account.
+
+The [Dependabot integration][dependabot] documents a GitHub self-hosted-runner setting
+and automatic `depot-ubuntu-latest` routing.
+It specifically requires token authentication when Dependabot jobs invoke Depot builds,
+and says their OIDC authentication is unavailable.
+The frozen `.github` tree has workflows but no Dependabot configuration.
+No dependency-update job,
+GitHub setting change,
+or token provision is exercised.
+This page does not establish equivalent behavior for every pull-request workflow authored by a bot.
+
+The [account documentation][account] also exposes a role-contract discrepancy:
+its Member role can manage projects,
+whereas the security page describes a User role that can view projects and build,
+with project management reserved to Owners.
+Those differently named role descriptions must not be collapsed into a proven permission matrix.
+Account and organization deletion are documented as manual support requests.
+No account deletion,
+member change,
+or authenticated role inspection is performed.
+
+## Test candidate and upload identities
+
+The deployed [test-splitting guide][test-split] requires each candidate to match a JUnit `file`
+or `classname` value.
+`timings-type: testname` calculates each candidate's duration from individual test cases;
+it does not document test names as a third candidate identity.
+The guide's Go example therefore supplies package candidates while using individual-case timings.
+
+`split-key` distinguishes independent logical suites and must agree across shards of one suite.
+`report-key` distinguishes multiple report uploads within one job;
+ordinary matrix jobs do not require per-shard report keys.
+The deployed [reporting guide][test-results] describes report keys as upload-invocation deduplication,
+while suites are derived from JUnit content.
+
+Pinned CLI `pkg/cmd/tests/run.go` forwards the split key into candidate selection
+and the report key separately into report upload.
+`proto/depot/testresults/v1/test_results.proto` exposes `split_key`,
+candidate identity,
+and timing identity in `SplitTestsRequest`,
+but no report key.
+It also requires identical candidate sets across shard requests sharing the authenticated execution,
+split key,
+shard count,
+and identity choices.
+This public client source does not decide the private backend's cross-upload history lookup scope.
+
+The [current physical Nextest cohort](../audit/depot-physical-test-shards-2026-10-18.evidence.json)
+reports test-specific `testName` values
+but the same `className`,
+`monochromatic-git-policy-cli`.
+Submitting the test names as `classname` candidates does not satisfy the documented JUnit mapping.
+The parent experiment retains the passing physical partitions separately from the zero-timing result
+and is checking the actual binary classname as a positive control.
+No history-weighted per-test Nextest qualification follows from report ingestion alone.
+
 ## Owned BuildKit campaign and exporter boundaries
 
 The [BuildKit checkpoint receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
@@ -382,8 +645,9 @@ Anonymous manifest access returned 401.
 The temporary pull token used the observed Basic authentication challenge and successfully read the image.
 Cross-origin signed blob redirects were followed without forwarding the Authorization header.
 The token value is excluded from committed evidence.
-The CLI reference describes a build-ID form while the registry overview describes project-path read access;
-the narrowness of that build-ID form still needs a distinct-artifact control.
+The CLI reference describes a build-ID form while the registry overview describes project-path read access.
+The token's successful read of the subsequently created CI image establishes cross-build project access.
+Cross-project isolation remains unexercised.
 
 Podman 5.8.7 pulled the immutable remote image and ran its unmodified entrypoint and command.
 The health,
@@ -393,14 +657,344 @@ and controlled stop exited zero.
 However,
 `podman healthcheck run` returned 125 with `has no defined healthcheck`,
 even though the raw OCI configuration contains the Docker `Healthcheck` extension.
-The aggregate consumer therefore remains failed pending format and runtime controls.
+The aggregate consumer remains failed.
+The [pinned Podman source diagnosis](../troubleshooting/podman-oci-healthchecks.md)
+now explains the omitted metadata;
+the parent-run Docker consumer honored the same original image's check.
 
 The expired initial eight-minute wall-clock window is retained.
 The authorized recovery used a fresh five-minute request guard,
 the same builder sizes,
 and the same USD 1 timestamp-compute ceiling.
 That model is not proof of an invoice cap or aggregate account expenditure.
-The shared image and project remain held for independent native CI and GitHub consumers.
+The shared images and project were held for independent native CI and GitHub consumers.
+The parent's final consumer cohort completed and released that hold on 2026-10-18.
+The builder project remains solely for the remaining bounded source/lifecycle probes,
+followed by exact owned-resource cleanup.
+
+Build `d0xtstnptt` exercised a multi-node local filesystem exporter with the base stage forced to execute.
+The exported x64 identity reports 16 CPUs,
+32,997,220,352 memory bytes,
+and AMD EPYC 9R45.
+The ARM identity reports 16 CPUs,
+33,020,604,416 memory bytes,
+and Neoverse-V2.
+Both report Node 24.22.0 and the exact committed harness and frozen repository source.
+This is actual builder geometry and local-export evidence.
+
+Build `31w6c0wlvk` produced a native single-architecture OCI archive without `--save`.
+Skopeo separately copied the saved multi-architecture registry image into an OCI archive with all digests preserved.
+Archive consumers verified every reachable blob's size and digest,
+the runtime program,
+the healthcheck configuration,
+and platform identities.
+Native OCI statements contain empty `subject` arrays;
+their descriptor annotations associate the attestation manifest with the AMD64 runtime digest.
+The registry-derived archive retains SPDX and provenance statements whose subjects match both runtime digests.
+These representations are not equivalent for consumers that require in-toto subject fields.
+The deciding exporter source and consequences remain under research.
+
+## Derived CI image consumer control
+
+A separate campaign built an ordinary OCI job image from the exact owned service index.
+The original service image stays unchanged and retained for active consumers.
+Parent-run GitHub job `117622633314` in workflow run `39109462308` retained the service's healthcheck,
+reached healthy state,
+then encountered checkout's GitHub REST download fallback because the job image lacked Git.
+The job reached its five-minute guard during archive-download retries.
+This differs from the local Podman healthcheck loss and does not establish a shared runtime limitation.
+
+Derived build `6hb1g0j21b` passed with AMD64 and ARM64 outputs at source
+`0b471538cd549cb2181088803c1e0a6d542d791e`.
+Its distinct immutable index digest is
+`sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346`.
+Actual local build and runtime Git controls passed before remote allocation.
+The derived image adds Git 2.39.5,
+curl 7.88.1,
+CA certificates,
+GNU tar 1.34,
+gzip 1.12,
+xz 5.4.1,
+and zstd 1.5.4.
+Git meets checkout's minimum;
+Git-policy tests still require their separate Git 2.56 toolchain.
+Both derived configurations use `CMD ["bash"]` and have no active service healthcheck.
+`/opt/depot-research/image-tools.json` records each platform's actual tools,
+Debian package versions,
+immutable base,
+and derived source identity.
+The audited action inputs are `jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c`,
+Mise `2026.10.9`,
+`install: false`,
+and `cache: false`.
+Checkout is pinned to `de0fac2e4500dabe0009e67214ff5f5447ce83dd`.
+The consumer harness source is `1438ecde4b643a606e0a75f85067e3d0153e9bb5`.
+The local control caught the original service's inherited `BUILD_HARNESS_SHA` environment value
+overriding a derived argument with the same name.
+The corrected fixture uses a distinct `CI_IMAGE_HARNESS_SHA` argument to identify the derived build.
+The original service's environment remains inherited and separately identified.
+
+Independent registry reads verified both derived configurations and their SPDX/provenance subject bindings.
+The token issued for original build `fxzj58r8m2` before the derived build existed
+successfully read the derived index,
+configurations,
+attestations,
+and final filesystem layers.
+This proves cross-build read access inside the same project;
+cross-project isolation remains unexercised.
+After positive authenticated reads,
+an owned empty blob-upload initiation returned HTTP 403 with registry error `DENIED`.
+No upload was created.
+
+That checkpoint preceded the Node26 correction and the completed Cargo/forwarding controls.
+The timestamp-compute model covers 139,103 milliseconds across native requests,
+giving USD 0.1854707 at the declared two-builder rate.
+This is a request-window estimate,
+not billed usage or an aggregate invoice guarantee.
+No account-wide billing or usage query is authorized or required by this campaign.
+
+## Repository Node26 image prerequisite correction
+
+The subsequent cloud job-image consumers reached checkout,
+then the frozen Node `26.12.0` loader failed with a missing `libatomic.so.1`.
+The base Node `24.22.0` check did not exercise the repository's different runtime.
+The failed CI image remains retained.
+A further owned derivative adds Debian `libatomic1`
+and executes both exact architecture archives from the frozen root `mise.lock` during its build.
+The archive hashes,
+ELF machine identifiers,
+dynamic-library resolution,
+TypeScript execution,
+and runtime versions must pass before that derivative receives consumer credit.
+The second Node installation is removed within the same build step.
+
+The isolated source `7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f` contains the executed correction.
+Build `1ng4qs1pmq` completed in 31,529 milliseconds and produced immutable index
+`sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`.
+The actual Node `26.12.0` module executed on both AMD64 and Arm64 builders
+after SHA256 verification against the frozen lock.
+The probes exercised TypeScript,
+crypto,
+and top-level `await`,
+and verified ELF machine 62 or 183 and resolved `libatomic.so.1`.
+Both architectures report Debian `libatomic1` version `12.2.0-14+deb12u1`.
+Base Node remains `24.22.0`.
+The temporary repository Node installation was removed in the same step
+and does not appear in the final filesystem layer.
+
+Independent registry reads verified the corrected configurations and their attestation subject bindings.
+The original-build token read the new index and both final layers;
+an empty blob-upload initiation again returned HTTP 403 `DENIED`.
+The corrected `/opt/depot-research/image-tools.json` hashes are
+`53d2d2c340ef8214c8b9caf2da0b94c38327c63655d4656729a3b54c5d1e7f96` for AMD64
+and `1229b983f4c529867d6a0fb1d0b1f1c1ba00f8b941c04d599ecd3d6845f3afa2` for Arm64.
+They contain 4,154 and 4,179 bytes respectively.
+The [BuildKit receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+records this derivative separately from the retained missing-library image.
+The parent owns the subsequent full checkout and Mise consumers.
+
+The same research branch now includes the frozen firstparty `truepeak-core` Cargo cache-mount fixture
+from source `7f22f25adb`.
+Its mount controls distinguish an empty offline failure,
+an online seed,
+offline target reuse,
+offline registry reuse with a fresh target,
+and changed-flag invalidation.
+Remote build `lskskmk4hn` exercised the empty-cache offline negative control.
+Cargo returned its expected exit 101 in 27 milliseconds,
+with no compiler artifacts and absent registry and target markers.
+The outer guarded build passed in 19,670 milliseconds.
+The coherent continuation used the same harness and frozen crate for every case:
+
+- Seed `12139n3wbg`:
+  12 Cargo compiler-artifact records,
+  none fresh;
+  Cargo 3,120 milliseconds and outer build 17,147 milliseconds.
+- Offline warm `x33zr9szff`:
+  all 12 records fresh;
+  Cargo 376 milliseconds and outer build 13,781 milliseconds.
+- Offline target reset `x98z3btb21`:
+  all 12 records recompiled using the retained registry cache;
+  Cargo 3,005 milliseconds and outer build 16,755 milliseconds.
+- Offline changed flags `71x7kn2wqr`:
+  all 12 records recompiled using the original target mount;
+  Cargo 3,096 milliseconds and outer build 18,193 milliseconds.
+
+Each case consumed a new run nonce,
+so the warm result executed Cargo rather than returning a cached Docker layer.
+The mount markers prove the registry/target reuse and the separate empty target.
+The lock hash stayed unchanged.
+These are Cargo artifact records,
+not the prior sccache request counter.
+This cohort proves the narrow firstparty compilation/cache mechanism;
+it does not run nextest or the optional service/fingerprint graph.
+There is only one sample per case,
+so the recorded durations do not establish a speedup ratio or run-to-run spread.
+The actual local prerequisite control started pinned Node `24.22.0`,
+Rust `1.97.1`,
+and Cargo `1.97.1`
+with the frozen lock hash under a two-CPU,
+two-GiB,
+network-disabled runtime.
+
+The parent-authorized cumulative timestamp-compute model ceiling is now USD 2.
+Its fresh forecast includes the seven observed request intervals,
+the Cargo cohort,
+the forwarding graph,
+and the immutable remote-Git controls.
+The owned project remains `HARDWARE_16X32`,
+with at most two architecture builders and a five-minute server build timeout.
+This model does not inspect or constrain unseen account charges.
+
+## Current Cargo wrapper and historical feature chronology
+
+The installed root CLI exposes `depot cargo`.
+Its help invocation entered the command and failed because sccache was absent;
+the command-tree inventory retains that failure.
+The [current-source diagnosis](../troubleshooting/depot-cargo-cache-wrapper.md)
+and real isolated CLI controls establish a local Cargo/sccache wrapper,
+including its automatic job-token fallback,
+credential precedence,
+argument forwarding,
+and removal of inherited `SCCACHE_*` tuning.
+It is not a separate remote Rust execution pool.
+
+The full captured changelog also exposes Cache Explorer downloads,
+Dockerfile Hadolint/Semgrep integration,
+builder CNI isolation,
+separate historical build-minute and GitHub-minute caps,
+and Datadog's transition to general availability.
+Their applicability and deciding-current-source reconciliation are active work.
+The secret/SSH and multi-target Bake controls are now exercised in the forwarding campaign.
+Immutable remote Git contexts are exercised in the source-selection controls.
+
+## Actual immutable Git and local-overlay controls
+
+The same committed Bake source,
+`b0e3247a279507c759964162ec9eb816e3dcc402`,
+was used for a local context and a remote Git context pinned to that full commit and fixture subdirectory.
+The local filesystem contained an invented overlay marker during both requests.
+Build `4tlgnm8sgp` exported that local marker and its exact content hash.
+Build `m62041tlnr` exported the committed marker and committed content hash instead.
+The fixture was restored byte-for-byte after the controls.
+Both actual consumers passed.
+This qualifies source selection for the tested immutable Git build context;
+it does not qualify loading Bake's HCL graph itself from a remote repository.
+
+## Dockerfile lint qualification and current gaps
+
+The installed CLI's `--lint` integration injects the Dockerfile into scanner images.
+Its source configures Hadolint `2.12.0`
+and Semgrep `1.34.1`
+with the dynamically fetched `p/dockerfile` rulepack.
+It does not scan the repository's TypeScript or Rust sources.
+Build `h6vjhtznxb` rejected the explicit-root fixture with `DL3002`;
+build `5l1vftdxsk` accepted the non-root fixture and exported the exact bound file.
+
+The Semgrep-specific missing-user fixture did not qualify:
+build `pjlxhhkvxh` accepted `Dockerfile.semgrep`,
+and canonical-filename control `1ktx2jdfqg` also accepted the same JSON-form `CMD`
+without the expected finding.
+Both results remain failed positive controls in the receipt,
+rather than being counted as security coverage.
+The source-configured tags were independently resolved for local diagnosis;
+the native lint log does not report the runtime scanner digest.
+
+A mount-free local container using the resolved Semgrep image reproduced the canonical non-detection.
+Its positive single-pattern controls matched `FROM $BASE` and `CMD ...`,
+while the current rule's `CMD $...VARS` pattern did not match the same file.
+The scanned file's bytes were independently checked inside that container.
+The pinned engine's source represents JSON argv and shell commands differently.
+A separate current-scanner control now detects the same missing-user input with the exact fixed rule pack:
+official Semgrep `1.181.0`,
+image digest `sha256:81474464c1f07483ba0682a44787fd93c91397419762a04abe2bafaae396304b`,
+reports one finding and no errors.
+The `CMD $...VARS` control also changes from no match to one match,
+while `FROM $BASE` matches in both versions.
+The current image resolves `semgrep` through its configured `PATH`;
+the old integration's absolute `/usr/local/bin/semgrep` path fails with exit 127 in that image.
+That fixture failure is retained separately from the corrected consumer.
+Updating only the image version is therefore not a qualified integration fix.
+The precise upstream engine change and the complete Depot integration upgrade remain unqualified.
+Separately,
+the suffix filename was excluded from Semgrep's scanned paths.
+The CLI's source also discards scanner process-wait errors and silently skips malformed JSON output.
+Those source error-handling boundaries are distinct from the reproduced pattern non-detection.
+
+All native cases and bounded local controls are retained in the
+[BuildKit evidence](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+and its compressed source archive.
+The local scanner containers used two CPUs,
+two GiB of memory,
+and no host mounts;
+their terminal absence was checked.
+
+## Owned OCI retention before cleanup
+
+The independent native CI and GitHub image consumers are terminal;
+their [service and job-container evidence](../audit/depot-service-containers-2026-10-18.evidence.json)
+preserves the prerequisite failures and corrected consumers.
+The parent released the image/project hold after removing and checking its exact owned secrets.
+
+The original service,
+Git-capable derivative,
+and Node-26-qualified derivative were then copied into a private OCI layout with
+`skopeo copy --all --preserve-digests`.
+All three original index digests were retained.
+Every reachable descriptor size and SHA256 was checked:
+57 unique blobs totaling 260,363,228 bytes.
+The complete source and output graphs were preserved before deleting the solely owned registry tags and project.
+All six exact owned tags were removed,
+then authenticated requests for each original index returned `404`.
+The explicit project-deletion request succeeded;
+the same digest requests again returned `404`.
+The receipt retains the initial collector errors without repeating tag deletion.
+No physical-erasure or unseen-storage-billing conclusion follows from logical deletion.
+
+An empty installed-CLI `depot image list --output json` result is plain `No images found` with exit status zero.
+The source returns that message before selecting its JSON formatter.
+The JSON-only cleanup collector therefore stopped after its successful tag deletion.
+Recovery checked the retained operation and source-defined empty result,
+then continued with the remaining project deletion.
+The failed preflight used the opaque pull token as a raw Bearer credential;
+the already captured registry challenge requires Basic authentication with username `x-token`.
+That caller defect did not indicate token expiry or revocation.
+
+## Actual Bake graph, mount lifetime and CNI controls
+
+Build `tf3tp8b4tx`,
+source `b0e3247a279507c759964162ec9eb816e3dcc402`,
+ran the reviewed `forwarding-graph` Bake group rather than only printing its configuration.
+Its source and named-context evidence targets executed on AMD64 and Arm64.
+Both architectures consumed the expected synthetic secret hash and forwarded SSH-agent identity.
+The following `RUN` had no secret file and no `SSH_AUTH_SOCK`.
+The owned keyless agent answered only identity-list requests and closed without errors.
+No private key or SSH signing operation was used;
+authenticated Git-over-SSH is outside this result.
+
+Separate terminal controls rejected the missing required mounts:
+
+- Build `c92mvpvs0t`:
+  `secret fixture: not found`.
+- Build `mqpxcrcbgn`:
+  `unset ssh forward key fixture`.
+  The initial assertion expected different wording;
+  the retained terminal log was reconciled without another allocation.
+
+The graph's independent AMD64 network targets each bound loopback port `38429`.
+Their successful bind intervals overlapped by 20,008 milliseconds,
+their hashed kernel boot identities matched,
+and their network-namespace identities differed.
+A local same-namespace collision first produced `EADDRINUSE`.
+This is actual concurrent build-container network-isolation evidence.
+It does not establish separate hardware per target,
+host-escape resistance,
+or cross-organization cache isolation.
+
+The graph finished in 34,293 milliseconds.
+The generated programs passed an annotated-input syntax preflight,
+with the [Node check-path correction](../troubleshooting/node-eval-module-detection.md) retained separately.
+The positive and rejected-mount receipts are in the BuildKit evidence archive.
 
 ## Unreleased CLI changes expose additional research cases
 
@@ -424,24 +1018,27 @@ The installed Docker configuration uninstall path will not be exercised against 
   bundled CLI schemas,
   SDK exports,
   and source release dates method by method.
-- Follow advanced BuildKit and Bake features into implementation:
-  remote Git contexts,
-  named contexts,
-  native architectures,
-  SSH and secret forwarding,
-  cache export/import,
-  local exports,
-  provenance,
-  SBOMs,
-  OCI lazy-pull formats,
-  deduplication,
-  and builder lifecycle.
-- Qualify service containers,
-  reusable workflow current-source behavior,
-  retry side effects,
-  parallel state,
-  event supersession,
-  and status attempts with bounded real probes coordinated with the parent investigation.
+- Reconcile the executed BuildKit graph,
+  Git contexts,
+  mounts,
+  exports,
+  and image consumers against each documented feature.
+  Preserve the native OCI empty attestation subject-array distinction,
+  unexecuted autoscaling,
+  and lack of measured lazy-pull startup improvement.
+- Finish the built-in Dockerfile lint diagnosis:
+  Hadolint has a working positive control,
+  but the configured old Semgrep image did not match the selected missing-user control.
+  The separate current pinned scanner detects the same control.
+  Finish source and upstream recording without counting it as a repaired built-in integration.
+- Document the verified empty image-catalog `--output json` plaintext branch
+  and complete its upstream contribution gate.
+- Keep the successful service/job-container receipts separate from the remaining
+  cross-attempt artifact identity,
+  job-level continued-failure,
+  timeout/cancellation,
+  and aggregate-status controls.
+  An intentionally cancelled job confounds the current job-level continuation observation.
 - The Cargo wrapper checks for local `sccache` before providing delegated help.
   This machine's help invocation failed with `sccache not found in PATH`.
   That is a local prerequisite failure,
@@ -451,10 +1048,31 @@ The installed Docker configuration uninstall path will not be exercised against 
   artifact deletion,
   exports,
   and support commitments.
-- Keep SDK lifecycle smoke tests distinct from prepared-image,
-  agent configuration,
-  snapshot,
-  and real repository consumers.
+- Reconcile SDK custom thin-image success and default-image lifecycle controls
+  with the conflicting deployed reference,
+  separate file-snapshot semantics,
+  secret authorization,
+  retained-log gaps,
+  and unexercised ordinary OCI or named runtimes.
+- Replace generic page and command states with cited applicability and evidence boundaries,
+  including source-only network,
+  Code,
+  Agents,
+  managed AWS,
+  external CI integrations,
+  and language recipes.
+- Finish public status-history pagination and component coverage before interpreting reliability;
+  no uptime denominator is currently established.
+- Qualify a per-test Nextest identity adapter after checking for a built-in classname control.
+  Preserve raw JUnit and frozen application input,
+  derive explicitly labeled identities only if needed,
+  and test positive and rejected mappings before an owned serial physical-shard profile.
+  The parent admitted one concurrent VM,
+  unchanged seeds,
+  separate physical shards,
+  a consumer,
+  and a bounded read-only history follow-up under the shared USD 1 physical-campaign ceiling.
+  No production reporting or routing change follows from that admission.
 
 The source/evidence ledger will distinguish discovered,
 retrieved,
@@ -474,6 +1092,8 @@ No completion or interview-readiness conclusion is made.
 [metal-launch]: https://depot.dev/blog/announcing-depot-metal
 [metal-gha-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
 [metal-autoscaler]: https://depot.dev/blog/autoscaling-depot-metal
+[github-runners]: https://depot.dev/docs/github-actions/overview
+[build-autoscaling]: https://depot.dev/docs/container-builds/how-to-guides/autoscaling
 [manage-runs]: https://depot.dev/docs/ci/how-to-guides/manage-workflow-runs
 [retry]: https://depot.dev/docs/ci/how-to-guides/retry-steps
 [parallel]: https://depot.dev/docs/ci/how-to-guides/parallel-steps
@@ -493,3 +1113,11 @@ No completion or interview-readiness conclusion is made.
 [ai]: https://depot.dev/docs/ai-at-depot
 [terms]: https://depot.dev/terms-of-service
 [status]: https://status.depot.dev/
+[account]: https://depot.dev/docs/account
+[egress]: https://depot.dev/docs/github-actions/how-to-guides/egress-filtering
+[tailscale]: https://depot.dev/docs/integrations/tailscale
+[private-resources]: https://depot.dev/docs/github-actions/how-to-guides/access-private-resources
+[dagger]: https://depot.dev/docs/github-actions/integrations/dagger
+[dependabot]: https://depot.dev/docs/github-actions/integrations/dependabot
+[test-split]: https://depot.dev/docs/ci/how-to-guides/split-tests
+[test-results]: https://depot.dev/docs/ci/observability/depot-ci-test-results

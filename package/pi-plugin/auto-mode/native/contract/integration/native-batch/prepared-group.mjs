@@ -97,6 +97,12 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
     state.context=Object.freeze({...original,executions});
     return state.context;
   }
+  /** Both resolved approval routes retain original dependencies before execution can append receipts. */
+  function retainApprovedDependencies(reviewed){
+    tagged({tag:retainApprovedDependencies.name,l}).debug('checking resolved approval source retention');
+    if(reviewed.outcome.state!=='resolved'||reviewed.outcome.verdict!=='approve')return;
+    retainSources();reviewed.assertCurrent();
+  }
   /** Scoped user confirmation uses the same original prepared membership. */
   async function requestManual(error,members){
     tagged({tag:requestManual.name,l}).debug('requesting complete-group confirmation');
@@ -121,9 +127,11 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
     const outcome=state.answer.decision.block||!state.automaticReview
       ?Object.freeze({state:'resolved',verdict:state.answer.decision.block?'deny':'approve',reason:state.answer.decision.reason})
       :resolveConfirmedOutcome({program:state.automaticReview.compiledPolicy,reconsideredOutcome:state.automaticReview.operationDecision?.outcome});
-    return Object.freeze({...state.automaticReview,manualFallback:state.automaticReview===undefined,approval:state.answer,
+    const reviewed=Object.freeze({...state.automaticReview,manualFallback:state.automaticReview===undefined,approval:state.answer,
       automaticOutcome:state.automaticReview?.outcome,outcome,
       assertCurrent:current});
+    if(state.automaticReview)retainApprovedDependencies(reviewed);
+    return reviewed;
   }
   /** Complete native preparation precedes either review route and never allocates alternate execution records. */
   async function assess({members}){
@@ -138,9 +146,7 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
           preparePrograms(state.scope);
           state.reviewed=await reviewSource();
           state.reviewed.assertCurrent();
-          if(state.reviewed.outcome.state==='resolved'&&state.reviewed.outcome.verdict==='approve'){
-            retainSources();state.reviewed.assertCurrent();
-          }
+          retainApprovedDependencies(state.reviewed);
         }
       }catch(error){
         if(error instanceof EstablishedPolicyDecisionError)throw error;

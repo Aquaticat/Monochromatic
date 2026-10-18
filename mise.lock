@@ -512,7 +512,7 @@ backend = "cargo:monochromatic-lint"
 specifiers = ["latest"]
 
 [[tools."cargo:monochromatic-nested-wayland-session"]]
-version = "0.6.0"
+version = "0.6.1"
 backend = "cargo:monochromatic-nested-wayland-session"
 specifiers = ["latest"]
 

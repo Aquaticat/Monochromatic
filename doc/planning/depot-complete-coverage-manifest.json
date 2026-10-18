@@ -23,7 +23,313 @@
       "Computed imports, resource call candidates, README features, and missing assertion heuristics require semantic review.",
       "Static it/describe call sites are not runtime-discovered test-case counts.",
       "All dependency fields remain present, including development cycles."
-    ]
+    ],
+    "containerGitCredentialControl": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "sourcePath": "package/dev-script/file-enforcer/generator/Containerfile",
+      "sourceSha256": "16c174c71e32066baa7e8cd9de77c774fe89f32ec8b450533ad00ca94e43f7ef",
+      "evidence": "depot-complete-coverage-file-enforcer-git-config.json.gz",
+      "troubleshooting": "../troubleshooting/git-url-rewrite-cleanup-key.md",
+      "syntheticOnly": true,
+      "actualImageOrLayerConsumer": false,
+      "wrongKeyStatus": 5,
+      "authoredShellStatus": 0,
+      "liveRewriteSurvives": true,
+      "matchingKeyAndSectionPositiveControls": true
+    },
+    "hostSdkAdmission": {
+      "originalRun": 39118106788,
+      "correctedRun": 39119985290,
+      "initialFailureWasHarnessLookup": true,
+      "orderingFailureClaimWithdrawn": true,
+      "actualCause": "Snapshot helper searched direct auto-mode/root node_modules links for a transitive coding-agent dependency; successful pnpm installation preceded the check",
+      "allFiveVersions": "1.2.0",
+      "regularFiles": 2412,
+      "descendantNodeModulesAndSymlinksExcluded": true
+    },
+    "packagedTransitiveNativePayloads": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "artifactRun": 39119985290,
+      "entries": [
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-coding-agent/examples/extensions/doom-overlay/doom/build/doom.wasm",
+          "bytes": 380169,
+          "sha256": "571d161956593508cf4ade732ae93753f00484bb526667a8676571cca14dec7d",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node",
+          "bytes": 52024,
+          "sha256": "36e909adf35c2734a2a52b3d65b7dbfb83f2278f306d51b7e32c5045516dfb7f",
+          "format": "Mach-O64",
+          "machine": 16777228,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-x64/darwin-platform.node",
+          "bytes": 22784,
+          "sha256": "7ec59a02fff9562f6354274ad070ba35f8e0998b3b111eb27ad3de579ffb6c65",
+          "format": "Mach-O64",
+          "machine": 16777223,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-arm64/linux-platform-x11.node",
+          "bytes": 67240,
+          "sha256": "63d4545349a25b5c97e352ea6d254cea50ff3c14161212ad3ddb3fc28022ddb5",
+          "format": "ELF",
+          "machine": 183,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-x64/linux-platform-x11.node",
+          "bytes": 18008,
+          "sha256": "522d2550f7fa5d0d5bd204f45983f786ce2be9cf80f27f00179640d31d0689d6",
+          "format": "ELF",
+          "machine": 62,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-arm64/win32-platform.node",
+          "bytes": 9216,
+          "sha256": "0e5671ab39ef577940483ced58fdf29ecdf5f864f368d90a771eec4aeeae11b8",
+          "format": "PE",
+          "machine": 43620,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-x64/win32-platform.node",
+          "bytes": 8704,
+          "sha256": "51bee02bcb73b165ab92af75ae15b88aba3f5d99f072e63ef60af92ffdc4d565",
+          "format": "PE",
+          "machine": 34404,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm",
+          "bytes": 1881634,
+          "sha256": "10468181565c56004c867f3a4af96f89a0ef5a63a72f2b5fb12c1f1992a3615c",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/crypto/crypto.so",
+          "bytes": 120228,
+          "sha256": "fa26b6fafda251c3b1442dcc4c876b3ac73689639519f4ddfc2c410ebdb5b7c2",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/encoding/encoding.so",
+          "bytes": 7715,
+          "sha256": "d501aa2a8410ee07c196103f0d169b226ec61c922883713510fd723fe14036c3",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/headers/headers.so",
+          "bytes": 8896,
+          "sha256": "42c847104d6aa8d4666fa41bb74d324c2ee9a4d15c2492fca013b1631232b011",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/structured-clone/structured-clone.so",
+          "bytes": 6007,
+          "sha256": "0ac5a36c0545c659ba6f9f8de5af11862df84546d151d0f15ec5184c95fd6cb3",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/url/url.so",
+          "bytes": 397332,
+          "sha256": "af780a79f1fb131b5e6fa1d6fedc481e265420cf2f254fe966255230f4c1bc62",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/quickjs.wasm",
+          "bytes": 637405,
+          "sha256": "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-coding-agent/examples/extensions/doom-overlay/doom/build/doom.wasm",
+          "bytes": 380169,
+          "sha256": "571d161956593508cf4ade732ae93753f00484bb526667a8676571cca14dec7d",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node",
+          "bytes": 52024,
+          "sha256": "36e909adf35c2734a2a52b3d65b7dbfb83f2278f306d51b7e32c5045516dfb7f",
+          "format": "Mach-O64",
+          "machine": 16777228,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-x64/darwin-platform.node",
+          "bytes": 22784,
+          "sha256": "7ec59a02fff9562f6354274ad070ba35f8e0998b3b111eb27ad3de579ffb6c65",
+          "format": "Mach-O64",
+          "machine": 16777223,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-arm64/linux-platform-x11.node",
+          "bytes": 67240,
+          "sha256": "63d4545349a25b5c97e352ea6d254cea50ff3c14161212ad3ddb3fc28022ddb5",
+          "format": "ELF",
+          "machine": 183,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-x64/linux-platform-x11.node",
+          "bytes": 18008,
+          "sha256": "522d2550f7fa5d0d5bd204f45983f786ce2be9cf80f27f00179640d31d0689d6",
+          "format": "ELF",
+          "machine": 62,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-arm64/win32-platform.node",
+          "bytes": 9216,
+          "sha256": "0e5671ab39ef577940483ced58fdf29ecdf5f864f368d90a771eec4aeeae11b8",
+          "format": "PE",
+          "machine": 43620,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-x64/win32-platform.node",
+          "bytes": 8704,
+          "sha256": "51bee02bcb73b165ab92af75ae15b88aba3f5d99f072e63ef60af92ffdc4d565",
+          "format": "PE",
+          "machine": 34404,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm",
+          "bytes": 1881634,
+          "sha256": "10468181565c56004c867f3a4af96f89a0ef5a63a72f2b5fb12c1f1992a3615c",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/crypto/crypto.so",
+          "bytes": 120228,
+          "sha256": "fa26b6fafda251c3b1442dcc4c876b3ac73689639519f4ddfc2c410ebdb5b7c2",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/encoding/encoding.so",
+          "bytes": 7715,
+          "sha256": "d501aa2a8410ee07c196103f0d169b226ec61c922883713510fd723fe14036c3",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/headers/headers.so",
+          "bytes": 8896,
+          "sha256": "42c847104d6aa8d4666fa41bb74d324c2ee9a4d15c2492fca013b1631232b011",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/structured-clone/structured-clone.so",
+          "bytes": 6007,
+          "sha256": "0ac5a36c0545c659ba6f9f8de5af11862df84546d151d0f15ec5184c95fd6cb3",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/url/url.so",
+          "bytes": 397332,
+          "sha256": "af780a79f1fb131b5e6fa1d6fedc481e265420cf2f254fe966255230f4c1bc62",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/quickjs.wasm",
+          "bytes": 637405,
+          "sha256": "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9",
+          "format": "WebAssembly",
+          "machine": null,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
+        }
+      ],
+      "scope": "Actual shipped-header inventory, not architecture runtime qualification; no first-party WASM source is not an exclusion of this transitive capability"
+    },
+    "activeBoundedTypescriptFuzz": {
+      "state": "terminal_failure",
+      "run": 39120929405,
+      "invocations": 69,
+      "passed": 64,
+      "failed": 5,
+      "evidence": "doc/planning/depot-complete-coverage-typescript-fuzz-receipts.json.gz"
+    }
   },
   "coverageReviewComplete": false,
   "executionComplete": false,
@@ -129,6 +435,209 @@
       "rawSha256": "6fc7c31c49ee4da1fb3b416f4bcf3e29cac1d5dcd263d0f95f49a638c60c24aa",
       "bytes": 282355,
       "sha256": "404f23b4383b66949d0fee790cb715b48745ac0379e36e095c016bce0a049470"
+    },
+    {
+      "path": "depot-complete-coverage-matched-12129071058.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 283582,
+      "sha256": "624cea56d39c4b5dd10a38b3f00618e13de3c4387fba6d4b964fc665fa177254",
+      "sourceArtifactId": 12129071058,
+      "sourceArtifactDigest": "sha256:624cea56d39c4b5dd10a38b3f00618e13de3c4387fba6d4b964fc665fa177254"
+    },
+    {
+      "path": "depot-complete-coverage-matched-12127814164.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 283403,
+      "sha256": "83163ac9274414e736478531ea56bca6d001b22f1b8a019901c37b5058a54d67",
+      "sourceArtifactId": 12127814164,
+      "sourceArtifactDigest": "sha256:83163ac9274414e736478531ea56bca6d001b22f1b8a019901c37b5058a54d67"
+    },
+    {
+      "path": "depot-complete-coverage-matched-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 263704,
+      "sha256": "12fa72bf11bfbfa44d59927c928e0a3284f8ac762b887944a67ad28104c263b1",
+      "rawBytes": 3650397,
+      "rawSha256": "cb2b201648bc236a00ce5c8cf7db6437e970951cbf0421f9e83fc1d67df998f0"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129992871.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 694654,
+      "sha256": "9d091206bc138fa79238c33a1c2549b1053f523cb388de76627ba802b9cafbd0",
+      "sourceArtifactId": 12129992871,
+      "sourceArtifactDigest": "sha256:9d091206bc138fa79238c33a1c2549b1053f523cb388de76627ba802b9cafbd0"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129804795.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 661231,
+      "sha256": "5779436f80e77811d8f0bc702a9128589e47212479fca5c0636d65ea5b5b37a9",
+      "sourceArtifactId": 12129804795,
+      "sourceArtifactDigest": "sha256:5779436f80e77811d8f0bc702a9128589e47212479fca5c0636d65ea5b5b37a9"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129764494.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 878520,
+      "sha256": "337e24c8a54e655a56547b21ae5db7426d86481d9947243ac306112531c9485c",
+      "sourceArtifactId": 12129764494,
+      "sourceArtifactDigest": "sha256:337e24c8a54e655a56547b21ae5db7426d86481d9947243ac306112531c9485c"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129574586.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 1472088,
+      "sha256": "0813cca85cb87526d76479a600a8502cdc656130438b343f270e9b9fde647aa7",
+      "sourceArtifactId": 12129574586,
+      "sourceArtifactDigest": "sha256:0813cca85cb87526d76479a600a8502cdc656130438b343f270e9b9fde647aa7"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 568755,
+      "sha256": "c82ed36cfcf5c5653727a191d5f939c9f79257edb39a1cd3601581dbf9eb9420",
+      "rawBytes": 7642884,
+      "rawSha256": "e8a755dc83dd944b6096886d0df20ea8e351414bd779bac712b12fbd413718eb"
+    },
+    {
+      "path": "depot-complete-coverage-node-default-pure-12130643908.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 467590,
+      "sha256": "c58ea57a791771e71c688ec6c1d139920226b0eb23ebbde71e3ed4abeb07a273",
+      "sourceArtifactId": 12130643908,
+      "sourceArtifactDigest": "sha256:c58ea57a791771e71c688ec6c1d139920226b0eb23ebbde71e3ed4abeb07a273"
+    },
+    {
+      "path": "depot-complete-coverage-node-default-pure-12130024032.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 323469,
+      "sha256": "942c1f3bb48bb7193042bd851eca936582f61099c51941652952d5ee6365ac85",
+      "sourceArtifactId": 12130024032,
+      "sourceArtifactDigest": "sha256:942c1f3bb48bb7193042bd851eca936582f61099c51941652952d5ee6365ac85"
+    },
+    {
+      "path": "depot-complete-coverage-node-default-pure-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 269643,
+      "sha256": "21b922f16581e24940d44bc7e42f7f46296ae0ccbbe6899d1ba8d7fb1aba0e8e",
+      "rawBytes": 3677269,
+      "rawSha256": "91279fd7b3295d87b176474997abfb209247c828a70551860d14d9209b1a3a3b"
+    },
+    {
+      "path": "depot-complete-coverage-harnesses.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 189868,
+      "sha256": "be7f1316c675028655c2f1c7f84a119043732f4fcde21fb867d9849131050b83",
+      "rawBytes": 930229,
+      "rawSha256": "f701d8c886a03ae8734b6e1f95d325001a6512ed38aac2ff688f8bbf7e30d961"
+    },
+    {
+      "path": "depot-complete-coverage-android-reproducibility.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 18889,
+      "sha256": "04d241cdbe765a92c434dd808dd9c13a96931e92ca4d806fca66decf3fe1b57e",
+      "rawBytes": 154338,
+      "rawSha256": "b9248d6f59ecb715ba622d17199b4405d7d29b42128e60e66e3ea6c57e06b913"
+    },
+    {
+      "path": "depot-complete-coverage-android-junit-execution.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 19294,
+      "sha256": "3014921f12d9ca8f84927c93e633376e8ee698118d82630b3846307f6cab758d",
+      "rawBytes": 115562,
+      "rawSha256": "483ad65476a8b70bac9fbd571d4671f899aa7f7516218cf03a3cf823ff48ae75"
+    },
+    {
+      "path": "depot-complete-coverage-android-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 96498,
+      "sha256": "b517d9c2ff726f96c1afedc8c5bbb5ed2a389125ccc41913a1c3292bcf7d85e1",
+      "rawBytes": 873837,
+      "rawSha256": "f957cebd7c534b50c0a379f86807b18742ae4510432f2e3ddaf87f7ec5c86d82"
+    },
+    {
+      "path": "../audit/depot-android-consumer-2026-10-18.evidence.json",
+      "encoding": "JSON",
+      "bytes": 14442,
+      "sha256": "b1e40d416698756af81b035d9ef817bbf0a8f6dd502d18f89edf49117b7f7ca1",
+      "sourceCommit": "81aee7750c9a909ddf54feda3f39266d4a169ed2"
+    },
+    {
+      "path": "depot-complete-coverage-node-process-12131308314.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 853811,
+      "sha256": "f54995cbfd17b37f75947ce8921c1d3ea8360f4df391ddacb77640a28d21e433",
+      "sourceArtifactId": 12131308314,
+      "sourceArtifactDigest": "sha256:f54995cbfd17b37f75947ce8921c1d3ea8360f4df391ddacb77640a28d21e433"
+    },
+    {
+      "path": "depot-complete-coverage-node-process-12130894667.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 854996,
+      "sha256": "fc86829147a0f861c8d31bc4f07b5ffe41746116d12d7ac7b751c224b553d806",
+      "sourceArtifactId": 12130894667,
+      "sourceArtifactDigest": "sha256:fc86829147a0f861c8d31bc4f07b5ffe41746116d12d7ac7b751c224b553d806"
+    },
+    {
+      "path": "depot-complete-coverage-node-process-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 284172,
+      "sha256": "4cdd02706562f9dc7d30db96cb41561374e793712b7c02bc3eb6e33bde4b5211",
+      "rawBytes": 3801090,
+      "rawSha256": "314691134ab341934cb9943e3b939b43bf7fde966911384ec3a15e10acc52999"
+    },
+    {
+      "path": "depot-complete-coverage-wg-companion-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 138936,
+      "sha256": "a31c47e47dcae8ea4619eb3c8b14e6eda24a67b4815b028b9976797a71344dae",
+      "rawBytes": 1908799,
+      "rawSha256": "cd4f8d02efd75167ea2a9898f32e99d95736602e4a236aff4e15741be2abf95a"
+    },
+    {
+      "path": "depot-complete-coverage-file-enforcer-git-config.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 70499,
+      "sha256": "559172ce0a2c8ebee3e4acb320eba40b259ca25d72440d15e9fa2a9e3834b251",
+      "rawBytes": 300983,
+      "rawSha256": "46dad14461c6d03f314d14497046abde5b1ec974573ef466e35cbb070ff5672d"
+    },
+    {
+      "path": "depot-complete-coverage-node-host-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 2320902,
+      "sha256": "cb941774b973a6faae6ec9f3f78ee0f65ab7a85a377d2f58e19cacb7046cf412",
+      "rawBytes": 17723526,
+      "rawSha256": "f26a7d5454ec851a4bfccfbd300320b6a9ffc0bdfb116747080d1555e20f5f07"
+    },
+    {
+      "path": "depot-complete-coverage-node-host-12133191644.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 132753,
+      "sha256": "9fcb7a0185590d9527b8fb2aea3b7c78e0a1a86b2d6bdda3f31539e69dd17e98"
+    },
+    {
+      "path": "depot-complete-coverage-node-host-12133008592.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 1130359,
+      "sha256": "93c619710d1c7d5e65f5d69f6f098d3e6e45dc45a8746c7f575b0276ae59ca12"
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-typescript-fuzz-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 163263,
+      "sha256": "7fde34982edba1b1086cd1a8c3a1e80da2461dc7231ba171b17bce1d8e180bfb",
+      "rawBytes": 2199538,
+      "rawSha256": "77527a79d5a56937601b62223483c5185e225505462464ef6b035225953d6f94"
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-typescript-fuzz-12134106934.zip",
+      "encoding": "original GitHub artifact ZIP",
+      "bytes": 183724,
+      "sha256": "0f8a23ad24fc94ef3fac95ec8be759566f7ddf52132a5e93de3d57b82e2a63fa",
+      "artifact": 12134106934,
+      "run": 39120929405
     }
   ],
   "execution": [
@@ -211,6 +720,467 @@
             "command_failed_requires_classification": 11
           },
           "changedTrackedFiles": []
+        }
+      ]
+    },
+    {
+      "profile": "matched",
+      "run": 39106784923,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39106784923",
+      "workflowCommit": "a6292671a136a9552f9deeca6b005c2a826731c9",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "shards": [
+        {
+          "shard": "github",
+          "runner": "GitHub Actions 1000001960",
+          "cpuCount": 4,
+          "memoryBytes": 16766414848,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 45,
+            "command_failed_requires_classification": 6
+          },
+          "changedTrackedFiles": []
+        },
+        {
+          "shard": "depot",
+          "runner": "depot-69lzzr396x",
+          "cpuCount": 4,
+          "memoryBytes": 16779534336,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 45,
+            "command_failed_requires_classification": 6
+          },
+          "changedTrackedFiles": []
+        }
+      ]
+    },
+    {
+      "profile": "node-static",
+      "run": 39109937957,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39109937957",
+      "workflowCommit": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "shards": [
+        {
+          "shard": "c",
+          "runner": "depot-xm1r3wxxm0",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 100,
+            "command_failed_requires_classification": 9
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/claude-spawn/bundle/node/index.d.mts",
+            "package/claude-code-plugin/claude-spawn/bundle/node/index.mjs",
+            "package/claude-code-plugin/prompt-time/bundle/node/index.d.mts",
+            "package/claude-code-plugin/prompt-time/bundle/node/index.mjs",
+            "package/claude-code-plugin/stop-reminder/bundle/node/index.mjs"
+          ]
+        },
+        {
+          "shard": "d",
+          "runner": "depot-mj8flzsb51",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 111,
+            "command_failed_requires_classification": 9
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/correction-reminder/bundle/node/index.d.mts",
+            "package/claude-code-plugin/correction-reminder/bundle/node/index.mjs",
+            "package/claude-code-plugin/session-start-housekeeping/bundle/node/index.d.mts",
+            "package/claude-code-plugin/terminal-title/bundle/node/index.d.mts",
+            "package/claude-code-plugin/terminal-title/bundle/node/index.mjs",
+            "package/intellij-plugin/islands-black/islands-black.jar"
+          ]
+        },
+        {
+          "shard": "b",
+          "runner": "depot-s5qw7b411p",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 105,
+            "command_failed_requires_classification": 16
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/bash-output-filter/bundle/node/filter.d.mts",
+            "package/claude-code-plugin/bash-output-filter/bundle/node/filter.mjs",
+            "package/claude-code-plugin/bash-output-filter/bundle/node/index.d.mts",
+            "package/claude-code-plugin/bash-output-filter/bundle/node/index.mjs"
+          ]
+        },
+        {
+          "shard": "a",
+          "runner": "depot-nrfjhx4f2s",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 102,
+            "command_failed_requires_classification": 13
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/guardrail/bundle/node/index.d.mts",
+            "package/claude-code-plugin/guardrail/bundle/node/index.mjs"
+          ]
+        }
+      ]
+    },
+    {
+      "profile": "node-default-pure",
+      "run": 39112145763,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39112145763",
+      "workflowCommit": "588275a55c7efefef93dbbc529078d31fdcfafd8",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "shards": [
+        {
+          "shard": "b",
+          "runner": "depot-w17mbb064z",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 62,
+            "command_failed_requires_classification": 1
+          },
+          "changedTrackedFiles": []
+        },
+        {
+          "shard": "a",
+          "runner": "depot-sc7z94h09z",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 64
+          },
+          "changedTrackedFiles": []
+        }
+      ]
+    },
+    {
+      "profile": "android_debug_pair_and_jvm_consumers",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "runs": [
+        {
+          "run": "qvsjm5hmdp",
+          "workflowCommit": "941caae67e4013757b97e310bf5043791747dac5",
+          "actualJvmTestTaskExecuted": true,
+          "reports": 127,
+          "tests": 1289,
+          "allXmlTimestampsInsideActualCommand": true,
+          "restoredTestTasks": 0,
+          "artifactPairComplete": false
+        },
+        {
+          "run": "1jxc80q7q7",
+          "workflowCommit": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
+          "actualJvmTestTaskExecuted": true,
+          "reports": 127,
+          "tests": 1289,
+          "allXmlTimestampsInsideActualCommand": true,
+          "restoredTestTasks": 0,
+          "artifactPairComplete": true
+        }
+      ],
+      "deviceConsumer": {
+        "evidencePath": "../audit/depot-android-consumer-2026-10-18.evidence.json",
+        "sourceCommit": "81aee7750c9a909ddf54feda3f39266d4a169ed2",
+        "executed": 16,
+        "passed": 14,
+        "failed": 2,
+        "skipped": 0,
+        "cohort": "Frozen source four instrumentation files only",
+        "acceptance": "red_due_to_two_source_failures"
+      }
+    },
+    {
+      "profile": "node-process",
+      "run": 39114552347,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39114552347",
+      "workflowCommit": "8fa5b508c061e9caec82847037a40a5ef414aa7b",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "plannedCommands": 131,
+      "passedCommands": 128,
+      "failedCommands": 3,
+      "owningDefaultTasks": 17,
+      "sourceCandidateFiles": 191,
+      "allExpectedFilesystemDiscoveryMatched": true,
+      "shards": [
+        {
+          "shard": "b",
+          "runner": "depot-0ct9tnl5hk",
+          "uid": 1001,
+          "gid": 117,
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 64,
+            "command_failed_requires_classification": 1
+          },
+          "changedTrackedFiles": []
+        },
+        {
+          "shard": "a",
+          "runner": "depot-1v8f043g75",
+          "uid": 1001,
+          "gid": 117,
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 64,
+            "command_failed_requires_classification": 2
+          },
+          "changedTrackedFiles": []
+        }
+      ],
+      "failureBoundaries": [
+        {
+          "task": "//package/cli/wg-quicker:test:unit",
+          "classification": "required_current_source_release_artifact_missing",
+          "newConsumer": "Prepared separate companion profile with actual frozen Rust ELF"
+        },
+        {
+          "task": "//package/dev-script/claude-cpu-cap:test:unit",
+          "classification": "source_assertion_failed_cause_not_yet_attributed",
+          "actual": "3000000 100000",
+          "expected": "2800000 100000"
+        },
+        {
+          "task": "//package/music-player/desktop-e2e:test:unit",
+          "classification": "installed_compositor_missing_and_decoder_command_unqualified",
+          "compositor": "cargo:monochromatic-nested-wayland-session@0.6.0 not installed",
+          "decoder": "Actual ImageMagick-producing command returned status -1; missing executable is not yet separately proven"
+        }
+      ]
+    },
+    {
+      "profile": "wg-companion",
+      "run": 39118628603,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39118628603",
+      "workflowCommit": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "passedCommands": 44,
+      "failedCommands": 0,
+      "owningDefaultTasks": 1,
+      "repeatedCandidateFiles": 14,
+      "repeatReason": "Actual prerequisite release now supplied after the original missing-producer failure",
+      "consumerUid": 1001,
+      "actualSiblingLookupPositiveLine": "[info] [2026-10-18T10:18:07.518Z] [resolveApplicationExemptionCommand] [PASS] uses exact configured executable, rejects unavailable configured executable, resolves configured bare name through captured caller path, finds repository sibling release outside secure path (21ms)",
+      "producerRun": "lwp0vbb2vq",
+      "producerHarness": "3a7e85d395cb67a5d189224963782c9b45527c71",
+      "sourceFilesVerified": 23,
+      "binarySha256": "02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921",
+      "consumerExecutesElf": false,
+      "secretDeleted": true,
+      "exactSecretNameAbsent": true
+    },
+    {
+      "profile": "guarded-node-hosts",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39118106788,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39118106788",
+      "workflowCommit": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "invocations": 108,
+      "passed": 105,
+      "failed": 3,
+      "newDefaultOwners": 34,
+      "newCandidateFiles": 262,
+      "otherShard": {
+        "commandsStarted": 0,
+        "commandsNotStarted": 79,
+        "state": "harness_dependency_location_preflight_failed",
+        "diagnostic": "Installed qualified SDK package is absent: pi-agent-core",
+        "intermediateOrderingHypothesisWithdrawn": true
+      }
+    },
+    {
+      "profile": "corrected-five-sdk-host",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39119985290,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39119985290",
+      "workflowCommit": "47aef8d403e4151593725943456fa3b0a8bce626",
+      "invocations": 79,
+      "passed": 78,
+      "failed": 1,
+      "newDefaultOwners": 1,
+      "newCandidateFiles": 162,
+      "actualDefaultTaskPassed": true,
+      "actualNativeBuildPassed": true,
+      "subsequentTypecheckPassed": true,
+      "nativeSyntaxPassed": true,
+      "domain": {
+        "permission": "passed, zero HTTP/provider requests",
+        "prohibition": "passed, zero HTTP/provider requests",
+        "none": "source assertion: unresolved versus unspecified"
+      },
+      "sdkRegularFilesCompared": 2412,
+      "sdkRegularFilesUnchanged": true,
+      "changedTrackedFiles": [
+        "package/claude-code-plugin/stop-reminder/bundle/node/index.mjs"
+      ],
+      "declaredArtifactAbsences": [
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/ai/dist/providers/data/.manifest.json",
+          "bytes": 3762,
+          "sha256": "a4c0a81f2cc4323b81d4c5d3886b343dc226939168f33e8eb731c928a81cfce9"
+        }
+      ],
+      "restoredArtifactConsumerPassed": false
+    },
+    {
+      "profile": "bounded-typescript-properties",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39120929405,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39120929405",
+      "workflowCommit": "7e1b030e7e6898a7d1e7876cd0723dd61292c65a",
+      "invocations": 69,
+      "passed": 64,
+      "failed": 5,
+      "requestedFuzzOwners": 12,
+      "propertyFiles": 28,
+      "coverageGates": 13,
+      "jsoncConformanceTasks": 2,
+      "allCommandsReached": true,
+      "allExpectedDiscoveryMatched": true,
+      "changedTrackedFiles": [],
+      "failureBoundaries": [
+        {
+          "task": "//package/module/conf-fork.fuzz:fuzz:coverage",
+          "classification": "frozen_baseline_file_absent",
+          "diagnostic": "ENOENT coverage-baseline.json"
+        },
+        {
+          "task": "//package/module/jsonc-edit.fuzz:fuzz:coverage",
+          "classification": "authored_coverage_assertion_red_cause_unattributed",
+          "regressions": {
+            "edit-comment.ts": [
+              14,
+              12
+            ],
+            "edit-set.ts": [
+              10,
+              8
+            ],
+            "emit-value.ts": [
+              3,
+              2
+            ],
+            "parse-jsonc.ts": [
+              4,
+              2
+            ]
+          }
+        },
+        {
+          "task": "//package/module/logger.fuzz:fuzz:coverage",
+          "classification": "authored_coverage_assertion_red_cause_unattributed",
+          "regressions": {
+            "src/sink/console.ts": [
+              456,
+              453
+            ]
+          }
+        },
+        {
+          "task": "//package/module/matcher-fork.fuzz:fuzz",
+          "classification": "actual_fork_upstream_isMatch_parity_counterexample",
+          "seed": 565212679,
+          "path": "70:2:3:2:2:3:5:5:5:5:6:6",
+          "counterexample": {
+            "inputs": [
+              "",
+              "a"
+            ],
+            "patterns": [
+              "!",
+              "!"
+            ],
+            "options": {
+              "caseSensitive": false,
+              "allPatterns": true
+            }
+          },
+          "actual": false,
+          "expected": true,
+          "testsBeforeFailure": 71,
+          "shrinks": 11
+        },
+        {
+          "task": "//package/module/p-map-fork.fuzz:fuzz",
+          "classification": "actual_error_message_parity_assertions",
+          "cases": [
+            {
+              "kind": "streaming-map",
+              "seed": -1937990163,
+              "path": "7:0:0",
+              "inputKind": "null",
+              "testsBeforeFailure": 8,
+              "shrinks": 2
+            },
+            {
+              "kind": "concurrent-map",
+              "seed": 286397235,
+              "path": "17:0:0",
+              "inputKind": "undefined",
+              "testsBeforeFailure": 18,
+              "shrinks": 2
+            }
+          ]
         }
       ]
     }
@@ -9083,7 +10053,22 @@
       "apiDeclarationCount": 200,
       "importEdgeCount": 183,
       "resourceCandidateCount": 3,
-      "fullEvidence": "depot-complete-coverage-packages.json.gz"
+      "fullEvidence": "depot-complete-coverage-packages.json.gz",
+      "artifactConsumerEvidence": [
+        {
+          "producerTask": "//package/cli/wg-quicker-exempt:build",
+          "consumerTask": "//package/cli/wg-quicker:test:unit",
+          "sourceImplementation": "package/cli/wg-quicker/src/application-exemption-command.ts",
+          "sourceTest": "package/cli/wg-quicker/src/application-exemption-command.unit.test.ts",
+          "requiredArtifact": "package/cli/wg-quicker-exempt/target/release/wg-quicker-exempt",
+          "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+          "producerRun": "lwp0vbb2vq",
+          "consumerRun": 39118628603,
+          "binarySha256": "02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921",
+          "scope": "Actual unprivileged repository-sibling lookup; compiled helper execution occurs in the separate native producer, not this Node test",
+          "evidence": "depot-complete-coverage-wg-companion-receipts.json.gz"
+        }
+      ]
     },
     {
       "root": "package/cli/wg-quicker-exempt",
@@ -42628,5 +43613,6 @@
       "resourceCandidateCount": 0,
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
-  ]
+  ],
+  "latestEvidenceAt": "2026-10-18T11:34:24.277Z"
 }

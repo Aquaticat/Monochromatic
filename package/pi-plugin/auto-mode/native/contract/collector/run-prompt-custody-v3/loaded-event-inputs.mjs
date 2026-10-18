@@ -2,14 +2,14 @@ import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
 import {copyToolMetadata} from "../run-prompt-custody/messages.mjs";
 import {dataField} from './loaded-fields.mjs';
-import {createNativeEventControlProjection} from './event-controls.ts';
+import {createNativeEventInputProjection} from './event-input-projection.ts';
 //region Account for pending callback observations without imposing a capture ceiling.
 /** Account for pending callback observations without imposing a capture ceiling. */
 export function createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
 /** Group one native emission while copying each callback phase before its borrowed value can change. */
 function createEventHandlerCapture(){
-   const projectControls=createNativeEventControlProjection();
+   const projectEventInput=createNativeEventInputProjection();
    const eventState={records:[],values:[],valueOrdinals:new Map(),retainedBytes:0,part:0,closed:false};
    const envelopeBytes=Buffer.byteLength(JSON.stringify({records:[],values:[]}));
    
@@ -37,7 +37,7 @@ function createEventHandlerCapture(){
     if(poolState.failure)return;
     try{
      if(eventState.closed)throw new SourceCollectionError('Native event source was already completed');
-     const value=Object.freeze({value:copyToolMetadata({value:projectControls(input)})});
+     const value=Object.freeze({value:copyToolMetadata({value:projectEventInput(input)})});
      const serialized=JSON.stringify(value);
      const previous=eventState.valueOrdinals.get(serialized);
      const valueOrdinal=previous??eventState.values.length;

@@ -450,7 +450,100 @@ failure/skip counts,
 source identities,
 and command logs accompany the APKs for the parent's headful device consumer.
 
+### Successful Android artifacts and JVM consumers
+
+The corrected run `1jxc80q7q7` finished successfully at workflow `8256d8bb9d`,
+still checking out the identical frozen application source.
+Its [retained receipts and actual JUnit case index][android-receipts]
+are 96,498 compressed bytes,
+with SHA-256 `b517d9c2ff726f96c1afedc8c5bbb5ed2a389125ccc41913a1c3292bcf7d85e1`.
+The downloaded ZIP matches the provider's 68,983,121-byte metadata.
+Native CI metadata did not provide a server archive digest;
+the local archive digest and all captured APK,
+native payload,
+JUnit,
+and command-log hashes are retained and checked.
+
+The pair passed signature,
+ZIP,
+package,
+instrumentation-target,
+runner,
+and certificate-agreement checks:
+
+- Debug APK:
+  164,612,582 bytes,
+  SHA-256 `96c1c48857fc6d6acf0f8bb488586cfefb39fd2950cb202685f15c7520c82eca`.
+- AndroidTest APK:
+  491,989 bytes,
+  SHA-256 `f1e75619b158d07ce3fdec9af1cd6fa084e4645acec2aff9af7f83865cd4aa49`.
+
+The APKs are retained privately and handed to the parent device lane as a matching pair.
+Their common certificate differs from the first run's certificate.
+No installed-device compatibility is inferred from APK signatures alone.
+The complete debug ZIP contains 10 native libraries:
+AndroidX graphics-path libraries for all 4 advertised ABIs,
+and the engine plus Turso SDK/sync libraries for the 2 declared 64-bit build targets.
+Both engine libraries expose 27 Java JNI symbols.
+Every packaged library matches its corresponding Gradle stripped-native intermediate.
+Every applicable ELF LOAD and RELRO check passes the corrected classifier.
+No native libraries are packaged in the AndroidTest APK.
+The extra 32-bit graphics-path libraries do not establish a working 32-bit engine.
+
+The second JVM run again produced 127 reports and 1,289 passing cases,
+with zero skipped cases,
+failures,
+or errors.
+The case-identity multiset matches the first run.
+The [task-level execution proof][android-jvm-execution]
+retains both complete Gradle logs,
+every task outcome,
+and each XML report's timestamp and hash.
+Both invocations show `:app:testDebugUnitTest` executing without `FROM-CACHE` or `UP-TO-DATE`.
+Every report timestamp falls inside its actual test command's recorded interval.
+Each invocation separately restores `:app:javaPreCompileDebugUnitTest` from cache;
+that compilation-cache result is distinct from test execution.
+Tracked source remained unchanged.
+The byte comparison is narrower:
+the 4 AndroidX payloads match between builds,
+while the 6 engine/Turso payloads differ.
+The [section-level comparison and original-source controls][android-reproducibility]
+show matching `.text` bytes for all 8 inspected 64-bit libraries.
+Each differing engine/Turso library contains the corresponding build's clock timestamp in `.rodata`;
+the isolated unchanged `turso_core` build script reproduces deterministic output with `SOURCE_DATE_EPOCH`.
+Symbol-table and string-table differences are retained separately.
+The [timestamp diagnosis][android-timestamp-diagnosis] describes the verified seed control
+and the absence of a complete normalized native or APK rebuild comparison.
+Source identity is not being promoted into a whole-artifact bit-reproducibility claim.
+
+The parent consumed the exact second-run pair on a private headful API 37,
+`x86_64` device using emulator `37.2.12` and host GPU rendering.
+Its actual page size was 16,384 bytes.
+APK hashes and installation passed,
+the invented FLAC/Opus/MP3 fixture rows were indexed,
+and `MainActivity` became the actual top-resumed activity.
+The frozen source's 4 instrumentation Kotlin files declare 16 cases;
+the source-derived catalog matched all 16 executed identities.
+Of those,
+14 passed,
+2 failed,
+and zero were skipped.
+The runner completed normally and the parent retained the raw failures and verified cleanup.
+The [public device receipt][android-device-consumer] retains the exact failure identities:
+`SessionStoreTest#migratesEveryLegacyCombination`
+and `SessionStoreTest#currentPlaybackModeWinsOverLegacyKeys`.
+Both report a null-context `getSharedPreferences` call,
+matching the parent's freshly checked open issue `1002`.
+These are consumer assertion failures,
+separate from successful APK assembly and host-JVM tests.
+The newer main checkout's 3 additional instrumentation classes are outside the frozen cohort.
+
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
+[android-receipts]: depot-complete-coverage-android-receipts.json.gz
+[android-jvm-execution]: depot-complete-coverage-android-junit-execution.json.gz
+[android-reproducibility]: depot-complete-coverage-android-reproducibility.json.gz
+[android-timestamp-diagnosis]: ../troubleshooting/turso-android-native-build-timestamps.md
+[android-device-consumer]: ../audit/depot-android-consumer-2026-10-18.evidence.json
 
 ## Remaining Node static and build campaign
 
@@ -495,26 +588,182 @@ then cancellation was requested.
 It is excluded from static-wave coverage.
 The corrected dispatch occurs only after the push completes and `git ls-remote` verifies the expected head.
 Cancellation acknowledgement and terminal job states remain separate evidence.
+The stale run is terminal `cancelled`,
+including both jobs.
+The intended static wave is run `39109937957`,
+whose actual API record binds head `82ea6108c57c9ef9cf6880e6d4506679812a6776`
+and workflow name `Research remaining Linux Node quality and build graph`.
+That run is now terminal.
+All 465 scheduled commands ran:
+418 succeeded and 47 failed.
+The failures comprise a product build,
+39 Oxlint tasks,
+and 7 type-check tasks.
+The Doodle Widget build reports `Could not resolve 'canvg'` from its `jspdf` consumer.
+Type failures involving an absent Auto Mode build remain prerequisite failures pending the owning build;
+they are not being counted wholesale as source type defects.
+All cloud inventories match the frozen 2,425-task names hash.
+The builds also regenerated 17 tracked derived outputs,
+including Claude plugin bundles and the IntelliJ JAR.
+Those paths are retained explicitly;
+this wave does not support an unchanged-tracked-tree claim.
+
+The next default-test profile selects 24 roots with 75 tracked default-shaped files.
+It runs the owning tasks and reviewed build prerequisites in 2 sequential 8 CPU/32 GB jobs,
+with a 15-minute job cap,
+90-second command cap,
+and 9-minute campaign cap.
+Its 127 scheduled invocations include shared build prerequisites.
+Reviewed Electron cases import the produced app domain modules or perform disposable dry-run staging;
+they do not establish a launched Electron application.
+The terminal-launch test only checks the exported function's type,
+and KWin cases exercise pure command selection.
+The VM builder's default task has zero tracked default-shaped files;
+its exit is a discovery control,
+not credit for executed tests or a VM consumer.
+Agent-host,
+transport,
+process,
+and native-prerequisite profiles remain separate pending work.
+The profile is dispatched as run `39112145763`,
+with the API-confirmed workflow head `588275a55c7efefef93dbbc529078d31fdcfafd8`.
+It is now terminal:
+126 of 127 invocations passed.
+The `unused-export` default task fails 2 real consumer cases with
+`TypeError: analyzer.addFile is not a function`.
+Its frozen type-check also reports `TS2339` for `addFile`,
+`referencesOf`,
+and the diagnostic's `module` property.
+The locked `yuku-analyzer` `0.19.0` declarations and implementation instead expose `setFile`.
+The VM-builder discovery control exits successfully with zero default-shaped files,
+so it receives no executed-test credit.
+
+The reviewed process profile is dispatched as run `39114552347`,
+with API-confirmed harness commit `8fa5b508c061e9caec82847037a40a5ef414aa7b`.
+Its 17 owning default tasks have 191 files confirmed by the actual filesystem glob,
+with a source hash for each discovered file.
+It invokes 131 commands across 2 sequential Depot `8CPU/32GB` jobs,
+with a 15-minute job cap,
+3-minute command cap,
+and 9-minute campaign cap.
+Both shards build the reviewed cross-package prerequisites before their assigned default tasks.
+The CPU-cap and desktop-E2E owning configurations declare no build task.
+The initial characterization of desktop-E2E as only pure and stand-in-socket helpers was incomplete:
+`compositor-path.unit.test.ts` actually queries the installed Mise compositor,
+and `image.unit.test.ts` invokes ImageMagick for PNG decoding.
+Neither check starts a GUI,
+but both require separately qualified installed tools.
+The WireGuard companion lookup also requires the real `wg-quicker-exempt` release artifact.
+The profile uses injected provider transports,
+temporary Git repositories,
+temporary file-enforcer configurations,
+fake `sudo`,
+fixture hardware paths,
+and an invalid VM backend sentinel.
+Actual paid provisioning,
+physical compositor control,
+and host hardware writes are outside these fixture tests.
+The completed run invoked all 131 commands:
+128 passed,
+and the WireGuard,
+CPU-cap,
+and desktop-E2E default tasks failed.
+Both workers used UID `1001`,
+so the WireGuard fixture did enter its intended nonroot privilege path.
+Both source receipts retain unchanged tracked files.
+The missing native companion,
+compositor lookup,
+decoder prerequisite,
+and CPU-cap assertion remain distinct diagnoses;
+they are not assigned collectively to a provider.
+
+Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
+They are not covered by the Cargo campaign.
+Its source owner checks installed Pi `1.2.0`
+and the external upstream revision `06a466935536f8c9bcacb2d5efc0fc021be1bdff`
+before emitting the host graph.
+This qualified external checkout is an additional build input,
+distinct from the frozen first-party tree.
+The build already rejects recursive invocation through `PI_AUTO_MODE_NATIVE_BUILD`.
+The guarded host/default profile is now dispatched as run `39118106788`,
+using pushed and API-verified harness `3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2`.
+Its 35 remaining non-module Node default owners have 424 source-hashed candidate files.
+The distinct `package/cli/wg-allowedips` owner is included;
+the previous module failures concerned `package/module/wg-allowedips`.
+The profile plans 187 owning invocations across 2 sequential `8CPU/32GB` jobs,
+with the same 15-minute job,
+3-minute command,
+and 9-minute campaign bounds.
+It builds the actual qualified original Pi source before Auto Mode's defaults,
+then runs the finite `permission`,
+`prohibition`,
+and `none` domain profile,
+the maintained native syntax task,
+and a type check after the native artifact prerequisite exists.
+Installed SDK regular-file bytes are snapshotted before and after;
+descendant `node_modules` and symbolic links are outside that byte snapshot.
+Its test transports use finite synthetic responses and explicit fixture recursion/network guards.
+This is a dispatched campaign,
+not a passing host or whole-graph coverage claim.
+Capacity profiles remain separate bounded work.
+
+The process receipts,
+original GitHub ZIPs,
+and exact executed harness are now linked from the immutable coverage manifest.
+The CPU watcher assertion expected `2800000 100000`
+and observed `3000000 100000` after its fixture-path smoke run.
+No provider cause is assigned from that single failure.
+The decoder-producing command returned status `-1`;
+the exact executable/setup cause still needs a positive tool probe.
+
+The actual frozen `wg-quicker-exempt` release is admitted from native producer `lwp0vbb2vq`.
+Its ELF SHA is `02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921`.
+Admission verified 23 original source-file hashes,
+the root Mise lock,
+and the producer manifest hash.
+The producer exercised 15 ordinary Nextest cases;
+11 privileged ignored cases remain unexecuted.
+The separate 44-invocation `wg-companion` profile completed successfully as run `39118628603`,
+using the same immutable `3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2` harness.
+Its UID `1001` worker passed all 44 owning invocations.
+The exact `finds repository sibling release outside secure path` case appears in the passing receipt.
+All 14 owning-template candidate file hashes matched before execution.
+The download admitted the original ZIP,
+the producer's 23 source files,
+root Mise lock,
+manifest,
+and exact ELF hash.
+This closes the missing-producer lookup boundary without changing source.
+The Node case resolves the real ELF path;
+it does not execute that helper or exercise privileged BPF behavior.
+The separate native producer's real usage/zero-mark controls remain distinct evidence.
+The one-object signed URL was scoped to one exact owned repository Actions secret and one download step.
+Terminal logs and normal artifacts were retained and verified before secret deletion;
+the final exact-name API probe returned HTTP `404`.
+The signed URL was never a dispatch input.
+No ELF,
+ELF-bearing ZIP,
+or signed URL was committed.
+The public compressed JSON receipt retains admission,
+the actual passing line,
+source provenance,
+artifact digests,
+and secret cleanup metadata.
+The proposed untracked Git-transport copies were removed before publication.
 
 The active queue remains independently verifiable:
 
-- Review and execute the frozen Android product's SDK/NDK setup,
-  debug APK build,
-  AndroidTest APK build,
-  and applicable host JVM unit tests.
-  Use a single 8 CPU/32 GB cloud job capped at 30 minutes.
-  Preserve actual tool,
-  ABI,
-  layout,
-  source,
-  and APK hashes for the parent's local headful device consumer.
-  No emulator runs in this lane.
+- Keep the completed source-bound device consumer's 2 failed assertions
+  and current-main source drift visible in aggregate acceptance.
+  The isolated Turso build-script seed controls are complete;
+  full normalized native-library or APK rebuild equivalence remains unmeasured.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
   and native/Kotlin/Slint/build-tool consumers.
-- Complete the matched provider repeat and filesystem-watch positive control
-  for the four failed default suites.
+- Classify the published static,
+  matched-provider,
+  and default-task receipts against the exact first-party source assertions.
 - Execute remaining applicable Node quality,
   product,
   plugin,
@@ -543,8 +792,190 @@ The active queue remains independently verifiable:
 
 ## Current next action
 
-Complete the immutable package/feature/command manifest,
-inspect the first wave's terminal receipts,
-and use measured setup,
-execution,
-and failure evidence to form subsequent applicable Linux shards.
+Retain terminal output from guarded host/default run `39118106788`.
+The actual sibling-release consumer and exact owned-secret cleanup are complete;
+retain that passing boundary alongside the original missing-producer failure.
+While cloud commands run,
+qualify the desktop lookup/decoder prerequisites,
+execute the isolated file-enforcer Git-config control,
+and prepare actual bounded fuzz/conformance/browser/product consumers.
+The immutable feature and consumer manifest remains under semantic review.
+
+## Generator Git credential cleanup control
+
+The frozen file-enforcer generator configures a credential-bearing Git URL subsection,
+then removes a different token-free subsection.
+The actual invented-token Git 2.56.0 control reproduced a live rewrite after the authored cleanup;
+its shell returned `0` while a direct wrong-key unset returned `5`.
+Matching-key and matching-section positive controls each removed the rewrite.
+[The source trace and retained receipt](../troubleshooting/git-url-rewrite-cleanup-key.md)
+cover only this live-configuration boundary.
+No real credential,
+complete generator image,
+or exported image layer was used.
+Expanded CI must preserve that limit when qualifying this existing image consumer.
+
+## Guarded host terminal results and artifact boundary
+
+Run `39118106788` invoked all 108 commands in shard `a`:
+105 passed and 3 default owners failed.
+Those failures are spread-rule assertions in `no-restricted-syntax`,
+retirement-table characterization (`570` actual versus `551` expected),
+and OpenAI Fast nested-option identity.
+Its 34 default owners discovered and hash-matched 262 files.
+Shard `b` invoked no commands because my admission helper searched only direct dependency links.
+An intermediate ordering hypothesis was wrong:
+the actual pnpm dependency install had already completed.
+The incumbent coding-agent realpath/sibling lookup resolves the transitive SDK packages.
+
+Corrected immutable harness `47aef8d403e4151593725943456fa3b0a8bce626`
+ran as `39119985290`:
+78 of 79 owning invocations passed.
+The actual native build,
+subsequent type check,
+native syntax check,
+and default unit task passed;
+all 162 expected default files matched actual discovery.
+The additional finite domain task passed permission and prohibition with zero HTTP/provider requests,
+then failed its `none` assertion with actual `unresolved` versus expected `unspecified`.
+This source assertion remains red.
+The earlier missing-native-artifact type failure is closed by this qualified prerequisite build.
+
+All 2,412 regular files across the five actual SDK 1.2.0 roots had identical before/after hashes.
+Descendant `node_modules` and symlinks were outside that snapshot.
+Original Pi source was pinned to `06a466935536f8c9bcacb2d5efc0fc021be1bdff`;
+its reported unstaged tracked-file diff was empty.
+One generated Claude stop-reminder bundle changed in the application checkout,
+so this is not an unchanged-tree claim.
+
+The normal native artifact is 65,588,732 compressed bytes and 198,624,683 expanded bytes.
+All 33,912 actual ZIP members matched independent streamed decompression hashes
+in a network-disabled read-only container capped at 2 GiB and 2 CPUs;
+a deliberately corrupted extracted fixture was rejected.
+Its actual payload includes WebAssembly and platform-native dependency files;
+header presence is not runtime qualification for another OS or architecture.
+The compiled payload stays in normal cloud artifact storage,
+not Git history.
+The public compressed receipt retains actual task logs,
+all member hashes,
+source admission,
+and native header inventory.
+
+The archive omits a declared producer output;
+its runtime effect on a fresh consumer is unmeasured:
+the producer declared `pi/ai/dist/providers/data/.manifest.json`,
+3,762 bytes with SHA-256 `a4c0a81f2cc4323b81d4c5d3886b343dc226939168f33e8eb731c928a81cfce9`,
+but that resource is absent from the actual ZIP.
+The pinned uploader defaults `include-hidden-files` to `false`
+and passes `excludeHiddenFiles: true` to its globber.
+A follow-up must retain this failed boundary,
+qualify explicit hidden-resource inclusion,
+and run a fresh restored-artifact consumer before portability is credited.
+
+## Bounded properties and remaining consumers
+
+Run `39120929405`,
+immutable harness `7e1b030e7e6898a7d1e7876cd0723dd61292c65a`,
+dispatched the same frozen application source.
+Its 69 planned invocations comprise 42 shared builds,
+12 bounded fuzz owners over 28 actual property files,
+13 authored deterministic coverage checks,
+and JSONC conformance plus the shared Rust-fixture digest check.
+Ten fuzz owners request 100 runs per property;
+logger and TOML request 1,000 ms per property.
+Actual successful trial counts are not exported by every owning task,
+so requested budgets are not reported as observed trial counts.
+The frozen tree contains only 12 matching coverage-baseline files;
+the conf-fork baseline is absent.
+No baseline refreeze or intentionally infinite deepmerge campaign is invoked.
+The job has 8 CPUs,
+32 GiB,
+a 15-minute job bound,
+a 9-minute command campaign,
+and a 180-second per-task bound.
+All 69 owning invocations reached a terminal outcome:
+64 passed and 5 failed,
+without a campaign-budget omission.
+The receipt's declared artifact set is complete,
+and it reports no changed tracked files.
+
+The failed boundaries are:
+
+- Conf-fork's coverage gate cannot read its absent frozen `coverage-baseline.json`.
+- JSONC's gate reports covered-line counts 12 versus 14 for `edit-comment.ts`,
+  8 versus 10 for `edit-set.ts`,
+  2 versus 3 for `emit-value.ts`,
+  and 2 versus 4 for `parse-jsonc.ts`.
+- Logger's gate reports 453 versus 456 covered lines in `src/sink/console.ts`.
+  These are actual coverage assertions;
+  their cause has not been attributed to the source or the runtime version.
+- Matcher's actual `isMatch` differential property shrank to inputs `['', 'a']`,
+  patterns `['!', '!']`,
+  and `{ caseSensitive: false, allPatterns: true }`.
+  The fork returned `false` while the locked upstream returned `true`.
+  The retained replay identity is seed `565212679`,
+  path `70:2:3:2:2:3:5:5:5:5:6:6`,
+  after 71 tests and 11 shrinks.
+- P-map's streaming and concurrent differential properties report error-message parity failures
+  for null and undefined iterable inputs respectively.
+  Both exact seeds,
+  paths,
+  inputs,
+  and nested assertions are retained.
+
+The original ZIP and source-bound logs are recorded in
+`depot-complete-coverage-typescript-fuzz-receipts.json.gz`.
+No gate was waived or refrozen.
+
+The finite deepmerge/compiler consumer,
+TOML Go conformance,
+mutation-container lifecycle,
+actual Chromium/Firefox/WebKit consumers,
+qualified desktop compositor/ImageMagick lookup and PNG decoding,
+proper packed installs,
+and complete product feature/assertion mapping remain tracked work.
+The complete-coverage and execution-complete flags remain false.
+
+## Actual browser owner baseline dispatched
+
+Run `39123458425`,
+immutable harness `6328647d8b7113a920d777044944612f3bc47a58`,
+keeps the same frozen application source and original Playwright recipe.
+Its 45 owning invocations comprise 42 shared builds plus the neutral module-test browser owner
+separately for Chromium,
+Firefox,
+and WebKit.
+That owner caps each actual Podman test container at 2 GiB and 2 CPUs with one worker.
+This named profile uses no retries,
+a 15-second test limit,
+and a 90-second suite limit.
+The original image declares Playwright 1.63.0 while the source lock declares 1.64.0;
+the run preserves that baseline instead of changing the recipe.
+No browser runtime result is claimed until its receipt is collected.
+Other browser and E2E specifications remain separate tracked profiles.
+
+## Fresh compiled-host artifact consumer dispatched
+
+Run `39124269347`,
+immutable harness `28bf38b0281f3bcace40b70d8b989d6e0ef7f875`,
+retains the frozen application source and original failed artifact-membership evidence.
+Its producer has 8 CPUs,
+32 GiB,
+and a 15-minute bound;
+it executes the shared builds and actual auto-mode JavaScript and native host producers.
+The uploader explicitly includes hidden files inside the reviewed receipt path.
+Its dependent fresh consumer has 4 CPUs,
+16 GiB,
+and a separate 15-minute bound.
+It admits one exact source-bound artifact,
+checks its digest and declared output hashes,
+restores only compiled output,
+and executes the actual native domain owner without rebuilding application source.
+The known `none` frontier assertion remains an expected preserved source failure,
+while permission and prohibition remain actual positive controls.
+The consumer verifies the installed SDK snapshot against the producer before host execution.
+Only the artifact download step receives its read-only workflow token;
+no new repository secret was created.
+
+The source diagnosis and outstanding membership/runtime boundaries are recorded in
+[`github-artifact-hidden-sdk-resources.md`](../troubleshooting/github-artifact-hidden-sdk-resources.md).

@@ -1,5 +1,55 @@
 # Instruction collection
 
+## Retained native input storage
+
+Every native input keeps its original occurrence,
+publication and complete immutable content.
+Streaming callbacks repeatedly receive growing versions of the same mutable message.
+Keeping a flat JSON string for every version retains the sum of all prefixes.
+The native streaming regression reproduces 331,029,264 retained heap bytes for 1,600 observations.
+
+`input-content.ts` owns a manager-local content store;
+`input-content-chunks.ts` splits generated JSON at string-token boundaries and bounded intervals.
+Resetting chunk alignment at each string token lets both copies of a growing message share storage,
+even when another preceding string changes its length.
+Escaped quotes remain inside their original token.
+Explicit UTF-16 copies preserve unpaired surrogates and avoid relying on substring storage behavior.
+An encoded sequence of chunk identities establishes exact content equality;
+the existing UTF-8 digest does not replace that comparison.
+Identical digests can occur for distinct unpaired surrogate inputs after UTF-8 replacement.
+
+The public source still returns its complete original string through a pure,
+producer-created content accessor.
+The manager-growth guard accepts that accessor only for the exact registered frozen source and descriptor.
+Copying the accessor onto another source does not qualify it;
+foreign getters are rejected without invocation.
+This storage check grants no source authority:
+the caller must still authenticate the original manager,
+source occurrence and publication before comparing growth.
+Callback inputs,
+ordinary metadata and every other source field keep their existing strict descriptor rules.
+
+`test:native:streaming-context-capacity` checks original callback identities,
+distinct publications,
+independent earlier/later snapshots and hashes,
+with a 32-MiB retained-storage ceiling.
+`test:native:input-content` checks exact code units,
+JSON boundaries,
+the surrogate digest control and rejection of borrowed or foreign accessors.
+Source commit `0666bd3dcb` builds as `native-release-EWv4wy` and passes the package type check.
+The escaped-text streaming consumer reproduces the SDK's shallow message clone
+while retaining its shared content array and original partial-message identity.
+It retains 10,544,896 heap bytes,
+against 342,565,888 bytes on the prior artifact,
+while preserving the checked original snapshots and identities.
+The exact-content and accessor-rejection consumer passes.
+Rebuilt removal tests fail for JSON string-token alignment,
+exact source/accessor recognition and UTF-16 code-unit preservation.
+These removal tests also pass detection with the escaped-text consumer.
+The private variant omitting explicit chunk copies passes this capacity case on the measured Node runtime;
+that case does not prove copying is necessary for its corpus.
+Complete configured-host verification remains a separate completion check.
+
 ## Purpose and callers
 
 `native/contract/integration/policy-source` binds readable project policy and visible conversation
@@ -118,6 +168,104 @@ nested emission,
 and cancellation cases.
 The full-session heap failure remains under investigation;
 these measurements establish callback sharing rather than complete-session capacity.
+
+## Native cancellation controls
+
+`native/contract/collector/run-prompt-custody-v3/event-input-projection.ts`
+owns the declared top-level `signal` field on input and after snapshots of
+`session_before_tree` and `session_before_compact`.
+The ordinary copier remains strict for messages,
+tool metadata,
+nested controls,
+extension outputs and every other event kind.
+
+A projection factory belongs to one original emission.
+Its weak map represents handle continuity as
+`{nativeControl: 'cancellation-signal', reference}`:
+the same handle reuses its reference after replacement and restoration.
+This marker records identity within the emission;
+it provides no instruction or permission authority.
+Original callbacks still receive the original event and live signal.
+
+The projection reads own descriptors,
+preserves all unrelated fields and never invokes a signal accessor.
+It does not read `aborted`,
+`reason`,
+listeners or internal symbols.
+Exact prototype compatibility limits this representation to the declared platform-control shape;
+it does not authenticate construction.
+Compatible lookalikes remain authority-free references.
+The Node v26.12.0 probe accepts a copied prototype and copied internal descriptors through its intrinsic getter,
+so that getter cannot supply the proposed authentication proof.
+The measured behavior and rejected design are retained in
+the repository's [Pi SDK troubleshooting record](../../../../doc/troubleshooting/pi-sdk-staging.md).
+
+`test:native:event-controls` exercises the original runner and retained manager receipt,
+including replacement,
+restoration,
+pre-aborted signals,
+accessors,
+proxies,
+ordinary signal values and the strict boundaries.
+Private source-copy rebuilds remove each scope,
+identity,
+field-preservation,
+proxy or opacity guard and make the maintained consumer fail.
+
+The factory was named `createNativeEventControlProjection` in `event-controls.ts`
+before its 2026-10-18 extension to declared compaction data.
+Its current name is `createNativeEventInputProjection` in `event-input-projection.ts`.
+The cancellation reference map remains scoped to one original emission.
+
+## Native compaction file collections
+
+The SDK's `CompactionPreparation.fileOps` contains native string sets for
+`read`,
+`written` and `edited`.
+`compaction-file-paths.ts` projects only those fields in input and after snapshots
+of `session_before_compact`.
+Each set becomes `{nativeCollection: 'file-path-set', values}`,
+preserving insertion order and every string path.
+The callback keeps its original event,
+preparation and mutable sets.
+The existing copier then owns independent snapshot validation and freezing.
+
+This representation retains collection contents rather than opaque handle identity.
+The marker grants no source or permission authority.
+The helper uses the captured native values method,
+checks native set storage and refuses extra own properties,
+proxies and non-string members.
+It does not invoke instance iterators or preparation accessors.
+Unrelated descriptors and ordinary field values remain with the existing copier.
+Sets in ordinary message/tool metadata,
+other event kinds and extension outputs keep their strict rejection.
+
+The actual RPC compaction on `native-release-hGuAfo` reaches this field profile
+and retains the unsupported-prototype capture failure.
+The committed `test:native:compaction-inputs` regression reproduces it with the SDK's actual `createFileOps`
+and an original native event runner after an ordinary-data positive control.
+It also covers callback mutation,
+independent before/after snapshots,
+wrong roles,
+extra properties,
+proxy traps and accessors.
+The repaired projection still needs its built consumer verification at this checkpoint.
+
+## Loaded and appended message content
+
+Loaded history and live manager appends share `assertManagerMessageContent`.
+Both preserve supported native text signatures,
+thinking and tool-call blocks locally.
+The provider boundary separately excludes thinking,
+signatures and raw structured shell commands.
+Applying the text-only custom-message validator to all loaded history rejects normal persisted assistants.
+
+`test:native:loaded-message-content` fails against that mismatch before the repair.
+After the rebuild,
+actual SDK persistence and reopen pass,
+and live/load source comparisons cover supported and rejected content catalogs.
+A private source-copy rebuild restoring only the text-only validator makes the maintained regression fail.
+Successful compaction or navigation alone cannot clear a retained capture error.
 
 ## Source-binding ownership
 
