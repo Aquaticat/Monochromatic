@@ -59,7 +59,9 @@ release entry,
 and context-index entry.
 The [compressed source receipt](../audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz)
 retains exact public responses and pinned integration source.
-Its first checkpoint contains 295 source files from 28 official repositories.
+Its first checkpoint contained 295 source files from 28 official repositories.
+The expanded checkpoint contains 542 source files from those repositories,
+including the complete installed CLI implementation and additional SDK and integration source.
 Retrieval state and substantive review state are separate fields.
 
 The installed CLI is audited against release `v2.102.23`,
@@ -305,6 +307,112 @@ component identities,
 and published uptime denominators remain under audit.
 No availability percentage is inferred from an incomplete incident count.
 
+## Owned BuildKit campaign and exporter boundaries
+
+The [BuildKit checkpoint receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+binds the isolated project,
+immutable fixture source,
+native build results,
+registry content,
+and actual consumers.
+The new service fixture supplies no repository performance comparison.
+
+Reading the historical project with the existing user login was rejected:
+`This endpoint requires an organization token, but a user token was provided`.
+No organization token was created.
+The separately authorized research project `27m5m3vjlv` was created with explicit `HARDWARE_16X32`,
+five-minute build timeout,
+25 GB cache retention target,
+one-day cache retention,
+and no autoscaling request.
+The public schema rejects a retention target smaller than 25 GB.
+The create response proves these initial bounds without account-wide inspection.
+
+Request `7wjrw9szj0` failed with `multiple outputs currently unsupported`.
+Installed CLI source appends an image exporter for `--save`,
+then rejects an exporter list containing multiple entries.
+The [exporter troubleshooting record](../troubleshooting/depot-buildkit-exporters.md)
+contains the deciding source and verified single-export workaround.
+
+Two subsequent fixture failures remain separate evidence:
+`xj1l6kmvbg` rejected an uppercase unresolved named-context reference,
+and `xm26rbm5kt` reached Node 24.22.0 on both architectures but rejected malformed generated TypeScript.
+The generator had placed a literal newline inside a JavaScript quoted string.
+The previous local serialization repair was wrong and is withdrawn.
+The corrected harness JSON-decodes every exec-form Node program,
+checks its TypeScript and JavaScript syntax with a deliberately invalid control,
+then runs the actual service under the pinned Node image before another remote build.
+
+The pinned local service returned `/health` 200,
+`/nonce` 200,
+and a missing-path control 404.
+Responses matched the runtime nonce,
+frozen repository source,
+harness commit,
+and Node 24.22.0.
+The container had two CPUs,
+512 MiB memory,
+64 processes,
+no network,
+and no host bind mounts.
+Controlled server closure and container removal passed.
+
+Single-export save build `fxzj58r8m2` then passed in 28.003 seconds at fixture source
+`5cfc1d90f92154cf62fa95789fad9bd7deeda208`.
+The exact registry index digest is
+`sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7`.
+Independent registry reads verified the index,
+its `linux/amd64` and `linux/arm64` child manifests,
+their configuration hashes,
+and their gzip layer media types.
+SPDX and SLSA v0.2 in-toto statement subjects match the corresponding runtime-manifest digests.
+Signature verification and policy enforcement remain separate surfaces.
+
+The image-list API returns full registry references in its `tag` field.
+The post-build harness initially compared that field to a bare tag and failed.
+A scoped read reconciled the already successful build.
+The service was not rebuilt to repair that assertion.
+The CLI's intermediate `containerimage.descriptor.digest` also differs from its final
+`containerimage.digest` for this multi-platform result.
+The final digest was independently checked against actual registry bytes.
+
+Anonymous manifest access returned 401.
+The temporary pull token used the observed Basic authentication challenge and successfully read the image.
+Cross-origin signed blob redirects were followed without forwarding the Authorization header.
+The token value is excluded from committed evidence.
+The CLI reference describes a build-ID form while the registry overview describes project-path read access;
+the narrowness of that build-ID form still needs a distinct-artifact control.
+
+Podman 5.8.7 pulled the immutable remote image and ran its unmodified entrypoint and command.
+The health,
+nonce,
+and missing-path HTTP assertions passed,
+and controlled stop exited zero.
+However,
+`podman healthcheck run` returned 125 with `has no defined healthcheck`,
+even though the raw OCI configuration contains the Docker `Healthcheck` extension.
+The aggregate consumer therefore remains failed pending format and runtime controls.
+
+The expired initial eight-minute wall-clock window is retained.
+The authorized recovery used a fresh five-minute request guard,
+the same builder sizes,
+and the same USD 1 timestamp-compute ceiling.
+That model is not proof of an invoice cap or aggregate account expenditure.
+The shared image and project remain held for independent native CI and GitHub consumers.
+
+## Unreleased CLI changes expose additional research cases
+
+The open [CLI upgrade pull request][cli-upgrade] documents differences from the installed release:
+remote Bake handling,
+source-policy enforcement,
+metadata merging,
+combined load and output behavior,
+context isolation,
+and Docker driver cleanup selection.
+These are upstream author's claims until reconciled with deciding source and applicable controls.
+An unmerged change receives no deployed capability credit.
+The installed Docker configuration uninstall path will not be exercised against shared state.
+
 ## Active source and runtime gaps
 
 - Reconcile every indexed page and command with a concrete repository use,
@@ -357,6 +465,7 @@ No completion or interview-readiness conclusion is made.
 [llms]: https://depot.dev/llms.txt
 [sitemap]: https://depot.dev/sitemap.xml
 [bundle]: https://depot.dev/llms-all.txt
+[cli-upgrade]: https://github.com/depot/cli/pull/627
 [gha-troubleshooting]: https://depot.dev/docs/github-actions/troubleshooting
 [kvm-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39104064329
 [kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
