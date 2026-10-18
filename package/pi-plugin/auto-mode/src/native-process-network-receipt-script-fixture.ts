@@ -1,20 +1,39 @@
-/** Original subprocess programs retain serialized request boundaries. @module */
+/**
+ Original subprocess programs retain serialized request boundaries. @module
+ */
 
 //region Programs cross the JavaScript boundary only through complete JSON string literals.
 /**
  Preserve original adversarial names while preparing the real child programs.
+ 
  @param route - classifier endpoint accepted by the isolated process fixture
+ 
  @param request - original model and complete original question names
+ 
  @returns executable child programs for successful and failed receipt admission
+ 
  @example createReceiptProbeScripts({ route, request });
  */
-export function createReceiptProbeScripts({route,request}:Readonly<{
+export function createReceiptProbeScripts({
+  route,
+  request
+}:Readonly<{
  route:string;
- request:Readonly<{model:string;questions:readonly Readonly<{name:string}>[]}>;
-}>):Readonly<{acceptedScript:string;failureScript:string}>{
- /** Encode the complete original request at its final JavaScript interpolation boundary. */
+ request:Readonly<{
+   model:string;
+   questions:readonly Readonly<{name:string}>[]
+ }>;
+}>):Readonly<{
+  acceptedScript:string;
+  failureScript:string
+}>{
+ /**
+  Encode the complete original request at its final JavaScript interpolation boundary.
+  */
  const requestJSON=JSON.stringify(request);
- /** Real child assertions retain all accepted and rejected request boundaries. */
+ /**
+  Real child assertions retain all accepted and rejected request boundaries.
+  */
 const acceptedScript=`
 import assert from 'node:assert/strict';
 import {readFile,stat} from 'node:fs/promises';
@@ -56,12 +75,17 @@ await assert.rejects(()=>fetch(route,{method:'POST',body}),{name:'NativeCliFixtu
 assert.deepEqual(await readFile(receipt),before,'Rejected requests must not append a successful receipt');
 console.log('accepted-original-names-and-standard-jsonl-before-response');
 `;
-/** A failed receipt append must precede any successful response. */
+/**
+ A failed receipt append must precede any successful response.
+ */
 const failureScript=`
 import assert from 'node:assert/strict';
 await assert.rejects(()=>fetch(${JSON.stringify(route)},{method:'POST',body:${JSON.stringify(requestJSON)}}),function receiptWriteFailed(error){return error instanceof Error&&['EISDIR','EPERM'].includes(error.code);});
 console.log('receipt-write-failure-prevents-local-response');
 `;
- return Object.freeze({acceptedScript,failureScript});
+ return Object.freeze({
+   acceptedScript,
+   failureScript
+ });
 }
 //endregion

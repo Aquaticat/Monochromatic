@@ -5,7 +5,9 @@ import assert from 'node:assert/strict';
 import { groupContextModule } from './native-group-context-module-fixture.ts';
 import type { ConstructorFixtureInput } from './native-constructor-module-fixture.ts';
 
-/** Original tool-call data exposes getter timing without supplying a replacement runtime owner. */
+/**
+ Original tool-call data exposes getter timing without supplying a replacement runtime owner.
+ */
 type ConstructorToolCall = Readonly<{
   type: 'toolCall';
   id: string;
