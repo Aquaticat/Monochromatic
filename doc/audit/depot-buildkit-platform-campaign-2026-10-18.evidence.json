@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T09:07:51.225Z",
+  "collectedAt": "2026-10-18T09:12:32.166Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research ongoing: native exports, registry bridge and Node26-qualified OCI derivative exercised; forwarding, immutable Git and remaining Cargo mount cases active",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 2973276,
-    "sha256": "5bd21b9c23397c457c3b6b9330abb711673c93feff3010f5eca78d36a372082f"
+    "bytes": 2977023,
+    "sha256": "00460cc5c738a0dae5d4e36887795ce42237a506ab1fc584c39a42dfd037adcf"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -289,6 +289,19 @@
       "elapsedMilliseconds": 13781,
       "guardFired": false,
       "phase": "cargo-warm",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "cargo-cache-target-reset.json",
+      "buildId": "x98z3btb21",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:08:55.997Z",
+      "finishedAt": "2026-10-18T09:09:12.752Z",
+      "elapsedMilliseconds": 16755,
+      "guardFired": false,
+      "phase": "cargo-target-reset",
       "projectId": "27m5m3vjlv"
     }
   ],
@@ -2274,8 +2287,351 @@
         "unitTestsExecuted": false
       },
       "rawCompilerOutputPreservedInCompressedArchive": true
+    },
+    {
+      "receipt": "cargo-cache-target-reset.json",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "consumerVerified": true,
+      "elapsedMilliseconds": 16755,
+      "consumer": {
+        "phase": "target-reset",
+        "nonce": "target-reset-826f9508-985c-4227-8f05-541c8ecb44b1",
+        "harnessCommit": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+        "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "architecture": "x64",
+        "nodeVersion": "v24.22.0",
+        "cpuCount": 16,
+        "memoryBytes": 32997228544,
+        "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+        "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)\n",
+        "registryCacheId": "monochromatic-platform-buildkit-20261018-v1-cargo-r1-registry-amd64",
+        "targetCacheId": "monochromatic-platform-buildkit-20261018-v1-cargo-r1-target-reset-amd64",
+        "markerBefore": {
+          "registry": "warm-56916315-5970-43b1-8bed-e34ab1e766a9",
+          "target": null
+        },
+        "markerAfter": "target-reset-826f9508-985c-4227-8f05-541c8ecb44b1",
+        "registryTopLevel": [
+          ".mono-cache-probe-marker",
+          "CACHEDIR.TAG",
+          "cache",
+          "index",
+          "src"
+        ],
+        "startedAt": "2026-10-18T09:09:08.096Z",
+        "finishedAt": "2026-10-18T09:09:11.110Z",
+        "cargoElapsedMilliseconds": 3005,
+        "args": [
+          "build",
+          "--manifest-path",
+          "/src/crate/Cargo.toml",
+          "--release",
+          "--no-default-features",
+          "--locked",
+          "--jobs",
+          "2",
+          "--message-format=json",
+          "--offline"
+        ],
+        "rustflags": "--cfg=depot_buildkit_flags_base",
+        "exitCode": 0,
+        "signal": null,
+        "expectedFailure": false,
+        "compilerArtifacts": [
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.26",
+            "target": "unicode_ident",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libunicode_ident-007eb354dbb7c137.rlib",
+              "/targetcache/release/deps/libunicode_ident-007eb354dbb7c137.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+            "target": "build-script-build",
+            "kind": [
+              "custom-build"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/build/quote-9ef6282e71a1938e/build-script-build"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+            "target": "build-script-build",
+            "kind": [
+              "custom-build"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/build/proc-macro2-265ce737ecc8d08c/build-script-build"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+            "target": "once_cell",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libonce_cell-3cef9693efac77a7.rlib",
+              "/targetcache/release/deps/libonce_cell-3cef9693efac77a7.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+            "target": "proc_macro2",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libproc_macro2-3a09d604b4524e13.rlib",
+              "/targetcache/release/deps/libproc_macro2-3a09d604b4524e13.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+            "target": "quote",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libquote-70f916fb5807abbb.rlib",
+              "/targetcache/release/deps/libquote-70f916fb5807abbb.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#tracing-core@0.1.36",
+            "target": "tracing_core",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libtracing_core-93f67187af8f6dee.rlib",
+              "/targetcache/release/deps/libtracing_core-93f67187af8f6dee.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+            "target": "pin_project_lite",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libpin_project_lite-cbdfbcc0dfd672f8.rlib",
+              "/targetcache/release/deps/libpin_project_lite-cbdfbcc0dfd672f8.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+            "target": "syn",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libsyn-5d05a61a2685e522.rlib",
+              "/targetcache/release/deps/libsyn-5d05a61a2685e522.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#tracing-attributes@0.1.31",
+            "target": "tracing_attributes",
+            "kind": [
+              "proc-macro"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libtracing_attributes-9531ae0033dc4a4c.so"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#tracing@0.1.44",
+            "target": "tracing",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libtracing-1fe99313d2b87c19.rlib",
+              "/targetcache/release/deps/libtracing-1fe99313d2b87c19.rmeta"
+            ]
+          },
+          {
+            "packageId": "path+file:///src/crate#truepeak-core@0.1.0",
+            "target": "truepeak_core",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/libtruepeak_core.rlib",
+              "/targetcache/release/deps/libtruepeak_core-c77a423832a6cf14.rmeta"
+            ]
+          }
+        ],
+        "artifactFiles": [
+          {
+            "path": "/targetcache/release/libtruepeak_core.rlib",
+            "sha256": "70867739b764348412d67bbab0350eea57cd822ff2617ee1e8086184c5aa0009"
+          },
+          {
+            "path": "/targetcache/release/deps/libtruepeak_core-c77a423832a6cf14.rmeta",
+            "sha256": "3c01b82bb4cacc5de76186cd44fd46daf366eb647d51d142b59dcc32c3816d58"
+          }
+        ],
+        "lockBefore": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+        "lockAfter": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+        "unitTestsExecuted": false
+      },
+      "rawCompilerOutputPreservedInCompressedArchive": true
     }
   ],
+  "localCargoWrapper": {
+    "verifiedAt": "2026-10-18T09:10:26.823Z",
+    "depotVersion": "depot version 2.102.23 (2026-10-15)\nhttps://github.com/depot/cli/releases/tag/v2.102.23",
+    "sourceCommit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+    "missingSccacheHelp": {
+      "exitCode": 1,
+      "stderr": "sccache not found in PATH: exec: \"sccache\": executable file not found in $PATH\n\nPlease install sccache: cargo install sccache\n"
+    },
+    "cases": [
+      {
+        "name": "explicit-precedence",
+        "args": [
+          "cargo",
+          "--org",
+          "fixture-owned-org"
+        ],
+        "exitCode": 0,
+        "selectedSyntheticToken": "fixture-explicit-token",
+        "forwarded": {
+          "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
+          "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
+          "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
+          "SCCACHE_WEBDAV_PASSWORD": "fixture-explicit-token"
+        },
+        "inheritedCacheTuningRemoved": true
+      },
+      {
+        "name": "saved-precedence",
+        "args": [
+          "cargo",
+          "--org",
+          "fixture-owned-org"
+        ],
+        "exitCode": 0,
+        "selectedSyntheticToken": "fixture-saved-token",
+        "forwarded": {
+          "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
+          "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
+          "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
+          "SCCACHE_WEBDAV_PASSWORD": "fixture-saved-token"
+        },
+        "inheritedCacheTuningRemoved": true
+      },
+      {
+        "name": "jit-precedence",
+        "args": [
+          "cargo",
+          "--org",
+          "fixture-owned-org"
+        ],
+        "exitCode": 0,
+        "selectedSyntheticToken": "fixture-jit-token",
+        "forwarded": {
+          "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
+          "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
+          "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
+          "SCCACHE_WEBDAV_PASSWORD": "fixture-jit-token"
+        },
+        "inheritedCacheTuningRemoved": true
+      },
+      {
+        "name": "automatic-job-cache-token",
+        "args": [
+          "cargo",
+          "--org",
+          "fixture-owned-org"
+        ],
+        "exitCode": 0,
+        "selectedSyntheticToken": "fixture-job-token",
+        "forwarded": {
+          "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
+          "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
+          "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
+          "SCCACHE_WEBDAV_PASSWORD": "fixture-job-token"
+        },
+        "inheritedCacheTuningRemoved": true
+      },
+      {
+        "name": "missing-auth-noninteractive",
+        "args": [
+          "cargo",
+          "--org",
+          "fixture-owned-org"
+        ],
+        "exitCode": 0,
+        "selectedSyntheticToken": "",
+        "forwarded": {
+          "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
+          "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
+          "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
+          "SCCACHE_WEBDAV_PASSWORD": ""
+        },
+        "inheritedCacheTuningRemoved": true
+      },
+      {
+        "name": "token-only-without-org",
+        "args": [
+          "cargo"
+        ],
+        "exitCode": 0,
+        "selectedSyntheticToken": "fixture-job-token",
+        "forwarded": {
+          "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
+          "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
+          "SCCACHE_WEBDAV_TOKEN": "fixture-job-token"
+        },
+        "inheritedCacheTuningRemoved": true
+      }
+    ],
+    "argumentForwarding": {
+      "exitCode": 0,
+      "stdout": "argument one|--literal-flag"
+    },
+    "childFailureExitCode": 1,
+    "realCredentialsUsed": false,
+    "realCargoCompilation": false,
+    "cloudAllocation": false,
+    "boundary": "Real installed Depot CLI with isolated synthetic executable/config/token fixtures; cache backend acceptance not exercised",
+    "decidingSourceFiles": [
+      {
+        "path": "pkg/cmd/cargo/cargo.go",
+        "sha256": "3c59e26e8ea79dc16d49834a967a06e88694ecb8ed1b1723cb0d6d984b585fc0"
+      },
+      {
+        "path": "pkg/helpers/token.go",
+        "sha256": "31a0786bcf4a572fb0a25415b8680157ae12a9a3cacfcdb214be821a55da3d03"
+      },
+      {
+        "path": "pkg/config/config.go",
+        "sha256": "93e10c923d2b08caacb5d607fff1d59028e0fb5647098f103342e4ebdcbf1c30"
+      }
+    ],
+    "decidingSourceBodiesPreservedInCompressedArchive": true
+  },
   "registry": {
     "complete": true,
     "anonymousStatus": 401,
@@ -2467,12 +2823,12 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 221230,
+    "observedNativeRequestMilliseconds": 237985,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.29497333333333337,
+    "nominalWindowEstimateUsd": 0.31731333333333334,
     "ceilingUsd": 2,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true

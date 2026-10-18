@@ -14420,5 +14420,13 @@
     "additionalRootFiles": 142,
     "fullImplementationAudits": 28,
     "status": "Root metadata/readmes/licenses/manifests retrieved; supplementary implementation relevance review ongoing"
+  },
+  "cliPassThroughBoundary": {
+    "command": "depot cargo",
+    "helpEnumerationStatus": "Failed: installed sccache prerequisite absent",
+    "sourceCommit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+    "actualBoundaryProbe": "depot-cargo-wrapper-boundary.json inside doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
+    "classification": "Local Cargo with sccache/WebDAV configuration, not remote compilation execution",
+    "automaticJobCacheTokenFallback": "Exercised with synthetic token markers; real backend acceptance is separate"
   }
 }
