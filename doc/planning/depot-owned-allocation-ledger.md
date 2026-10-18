@@ -47,12 +47,18 @@ Invoices,
 actual VM billing and missing architecture-builder intervals remain unmeasured unless exact retained evidence says otherwise.
 No account-wide totals or historical unrelated source cohorts will be inferred.
 
-## Separate pending review
+## Separate guest review
 
-The independent three-ZIP guest-transformation review remains queued after publication:
-GitHub run `39132577785`,
-harness `3829831039cc43aa717c6c927f835b867e9313b6`.
-This is separate from the allocation normalization and admits no duplicate allocation.
+The initial queue named GitHub run `39132577785`
+and harness `3829831039cc43aa717c6c927f835b867e9313b6`.
+That attribution is corrected:
+these identify the cancelled corrupt-runner-expression control,
+which never reached an assigned runner.
+The successful new guest cohort is native `25jpltfpkq` and GitHub `39134227406`
+at immutable harness `1373e624739fbc93502b0c8ca502820c6ff99b45`.
+Its independent original three-ZIP and actual guest-command review passed;
+see the [independent review](../audit/depot-independent-policy-process-mvm-review-2026-10-18.md).
+It admits no duplicate allocation.
 
 ## Source qualifications recorded during normalization
 
@@ -67,4 +73,4 @@ A GitHub `started_at` value is insufficient to identify allocated compute.
 The coordinator's queued corrupt-expression control has that timestamp with empty runner assignments.
 The normalizer requires positive runner assignment and an actually started step before pricing execution.
 Skipped or setup-rejected records retain their missing execution boundaries explicitly.
-The later guest cohort remains uncredited pending its separate original-archive review.
+The new guest cohort now has separate original-archive qualification.

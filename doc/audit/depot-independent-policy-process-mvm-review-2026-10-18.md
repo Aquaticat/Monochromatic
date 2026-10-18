@@ -283,11 +283,11 @@ No other material overstatement was established in this document-level review.
 This is not a second independent execution of every linked application suite.
 
 The MVM qualification finding was accepted and its current report wording rechecked.
-The coordinator is separately executing a finite three-pool consumer that reads pushed bytes in the guest,
+The coordinator subsequently executed a finite three-pool consumer that reads pushed bytes in the guest,
 creates a distinct initially absent output and pulls the guest-transformed result.
 Independent decoding,
-CRC/hash/outcome joins and credential inspection of those three new ZIPs are queued
-after publication.
+CRC/hash/outcome joins and credential inspection of those three new ZIPs were queued at this checkpoint
+and are now complete in the Actual guest-transformation review section.
 They must remain a separate cohort from the original eight MVM ZIPs.
 
 The original-cohort review checkpoint `7d743ae989` passed the targeted
@@ -315,7 +315,8 @@ The coordinator assigned and this reviewer completed checks of these additional 
 
 This work uses published/local evidence and read-only source inspection.
 It admits no cloud allocation or repository/billing settings change.
-The separate three-ZIP guest-transformation review remains queued after publication.
+The separate three-ZIP guest-transformation review was queued at this checkpoint
+and is now complete in the Actual guest-transformation review section.
 
 ### Original additional archives
 
@@ -476,10 +477,15 @@ The source workflow SHA-256 is `374acbf649e114477522738da6bbf9c2335841458d2838ff
 the applied result is `4183e80c7f9bdbfd6bfd7dc8e0b7df068bf4fca5ad48a184843a5112ad60eb6a`.
 Only the disposable fixture was patched.
 
-The separate three-ZIP guest-transformation review remains queued after publication.
-The coordinator reports GitHub run `39132577785`
+At this publication checkpoint,
+the separate three-ZIP guest-transformation review was queued.
+Its initial attribution named GitHub run `39132577785`
 at harness `3829831039cc43aa717c6c927f835b867e9313b6`.
-These new consumers have not been credited by this review.
+Attribution correction on 2026-10-18:
+those identify the cancelled generator control.
+The successful cohort is native `25jpltfpkq` and GitHub `39134227406`
+at harness `1373e624739fbc93502b0c8ca502820c6ff99b45`,
+qualified in the Actual guest-transformation review section.
 The original eight-ZIP qualification and unchanged bytes remain authoritative for their original boundary.
 The coordinator also received the exact frozen-source scanner/Truepeak profile handoff,
 recorded in `doc/planning/depot-rust-coverage-research.md`,

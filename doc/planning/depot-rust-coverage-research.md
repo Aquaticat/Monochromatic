@@ -884,7 +884,8 @@ CRC/hash/outcome joins,
 credential inspection and fresh allowance/source checks.
 It identified the accepted original MVM shared-directory qualification correction;
 no additional material correction was found in the service/PR cohorts.
-The newly allocated guest-transformation cohort remains a separate pending review after publication.
+The independently reviewed new three-ZIP guest-transformation cohort passes its exact original-byte,
+guest-command and cleanup joins without upgrading the original host shared-directory assertion.
 No new cloud allocation is admitted for this reviewer.
 
 ## Reusable immutable Rust profile handoff
@@ -989,10 +990,16 @@ not only aggregate counts.
 
 The independent evidence review is published in
 [`depot-independent-policy-process-mvm-review-2026-10-18.md`](../audit/depot-independent-policy-process-mvm-review-2026-10-18.md).
-The separately requested three-ZIP guest-transformation review remains queued after publication:
-GitHub run `39132577785`,
-harness `3829831039cc43aa717c6c927f835b867e9313b6`.
-This queue item admits no allocation by the reviewer.
+The initial queue attributed the three-ZIP guest-transformation work to GitHub run `39132577785`
+and harness `3829831039cc43aa717c6c927f835b867e9313b6`.
+Attribution correction on 2026-10-18:
+those identify the cancelled corrupt-label generator control,
+which has no assigned runner or actual step execution.
+The completed independent review instead qualifies native `25jpltfpkq`
+and GitHub `39134227406` at `1373e624739fbc93502b0c8ca502820c6ff99b45`.
+All 198 members and 85 command records join their original archives and source;
+all three pools reconstruct exact 51-byte guest input and 57-byte transformed output hashes.
+No allocation was performed by the reviewer.
 
 ### Installed Nextest fail-fast source handoff
 
