@@ -29,7 +29,6 @@ import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import { writeScoreArtifacts, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/score-artifacts.test-fixture.ts';
 import { builtPipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts/corpus-run/built-pipeline-digest.test-fixture.ts';
-import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import {
   probeArtifactText,
   probedRecord,
@@ -48,7 +47,7 @@ import {
 /**
  What the pool prints as the pipeline that read it.
  */
-const POOL_STAMP = await builtPipelineDigest({ packageEntry: PROBE_ENTRY, },);
+const POOL_STAMP = await builtPipelineDigest({ packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-artifact-pool',), },);
 
 /**
  Draw seed every fixture sheet declares.

@@ -25,7 +25,7 @@ import {
 import { REVIEWED_FIDELITY_REFERENCES, } from '../dist/final/node/index.mjs';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
-import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
+import { PROBE_ENTRY, } from './corpus-run/built-entry.test-fixture.ts';
 import { refusalMessage, } from './fidelity-reference.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';

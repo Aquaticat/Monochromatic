@@ -30,7 +30,6 @@ import {
   writeScoreArtifacts,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/score-artifacts.test-fixture.ts';
 import { builtPipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts/corpus-run/built-pipeline-digest.test-fixture.ts';
-import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import {
   NO_POOL_POLICY,
   UNASKED_REPOSITORY,
@@ -39,7 +38,7 @@ import {
 /**
  What the pool prints as the pipeline that read it.
  */
-const POOL_STAMP = await builtPipelineDigest({ packageEntry: PROBE_ENTRY, },);
+const POOL_STAMP = await builtPipelineDigest({ packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-artifact-pool',), },);
 
 /**
  The two critic rows of the attributed fixture, ordered by model id.

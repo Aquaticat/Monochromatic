@@ -47,7 +47,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
-import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { readPlacement, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import { lockRunsDir, } from '@monochromatic-dev/translation-repair-run';
 import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
@@ -88,6 +87,9 @@ type CommandStreams = {
 
  @param command - built command to run
 
+ @param packageEntry - URL of the built index of the package that owns the command, as `import.meta.resolve` gives it
+ for that package's name
+
  @param args - arguments the command receives after its script
 
  @returns Both streams as the command left them
@@ -96,15 +98,17 @@ type CommandStreams = {
 
  @example
  ```ts
- const { stderr, } = await streamsOf({ command: STANDING_COMMAND, args: [dir,], },);
+ const { stderr, } = await streamsOf({ command: STANDING_COMMAND, packageEntry: BENCH_ENTRY, args: [dir,], },);
  ```
  */
 async function streamsOf(
   {
     command,
+    packageEntry,
     args,
   }: {
     readonly command: string;
+    readonly packageEntry: string;
     readonly args: readonly string[];
   },
 ): Promise<CommandStreams> {
@@ -113,7 +117,7 @@ async function streamsOf(
    */
   const finished = await runBuiltCommand({
     command,
-    packageEntry: PROBE_ENTRY,
+    packageEntry,
     args,
   },);
 
@@ -140,6 +144,11 @@ const LOCK_FILE = 'pass.lock';
  meets it.
  */
 const STANDING_COMMAND = 'editor-standing-read';
+
+/**
+ Built index of the bench package, which owns the standing-read command.
+ */
+const BENCH_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-bench',);
 
 /**
  Opening a filesystem error used to print, which must appear nowhere.
@@ -509,6 +518,7 @@ await describe({
          */
         const { stderr, } = await streamsOf({
           command: STANDING_COMMAND,
+          packageEntry: BENCH_ENTRY,
           args: [scratch.path,],
         },);
 

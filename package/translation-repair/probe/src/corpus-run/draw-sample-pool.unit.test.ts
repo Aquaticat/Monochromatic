@@ -24,6 +24,7 @@ import {
 
 import { digestPipeline, } from '@monochromatic-dev/translation-repair-glossary';
 import { readDrawPool, } from '../../dist/final/node/index.mjs';
+import { builtDirectoryOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/built-package-directory.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
@@ -87,10 +88,9 @@ await describe({
             return await Promise.resolve('猫猫在窗台上睡觉。\n',);
           },
         },);
-        const { digest, } = await digestPipeline({ dir: join(
-          import.meta.dirname,
-          '../../dist/final/node',
-        ), },);
+        const { digest, } = await digestPipeline({
+          dir: builtDirectoryOf({ packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-artifact-pool',), },),
+        },);
 
         expect(pool.names,).toEqual([
           'mittens.json',

@@ -31,6 +31,7 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary';
 import { drawGradingSample, } from '../../dist/final/node/index.mjs';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
+import { builtDirectoryOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/built-package-directory.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
@@ -115,10 +116,9 @@ async function censusLines(
   /**
    Digest of the built output this suite runs the pool census from.
    */
-  const { digest, } = await digestPipeline({ dir: join(
-    import.meta.dirname,
-    '../../dist/final/node',
-  ), },);
+  const { digest, } = await digestPipeline({
+    dir: builtDirectoryOf({ packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-artifact-pool',), },),
+  },);
   return [
     `POOL read by pipeline ${digest}`,
     `POOL ${entries} across 1 pipeline generation`,
