@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T11:12:23.385Z",
+  "updatedAt": "2026-10-18T12:55:51.647Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -343,10 +343,13 @@
         "Documentation Index"
       ],
       "family": "api",
-      "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
+      "applicability": "Programmatic owned test/tool sandboxes with finite lifecycle and filesystem consumers",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Installed SDK/schema and deployed reference reviewed; default lifecycle and one AMD64 block-image absolute-Git/small-files consumer passed; arbitrary OCI/named runtimes, snapshot persistence, secrets and detached-log completeness remain unqualified",
+      "runtimeEvidence": [
+        "doc/audit/depot-sdk-custom-runtime-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Depot SDK Reference",
@@ -1178,10 +1181,14 @@
         "Documentation Index"
       ],
       "family": "ci",
-      "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
+      "applicability": "Split runnable Nextest candidates against their actual JUnit classname; selected classname adapter physically qualified",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Candidate identity, timing granularity and split/report-key semantics source-reviewed; ordinary passing single-binary adapter exercised; complete suites and arbitrary report shapes remain unqualified",
+      "runtimeEvidence": [
+        "doc/audit/depot-tests-identity-adapter-2026-10-18.evidence.json",
+        "doc/audit/depot-job-policy-history-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Origin",
@@ -1408,10 +1415,14 @@
         "Documentation Index"
       ],
       "family": "ci",
-      "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
+      "applicability": "Native Linux workflow execution, sizing, architecture labels and separate included CI allowance",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Current deployed source explicitly establishes2CPU/8GB included-minute baseline and CPU multipliers; actual orchestration receipts linked separately; repository ARM functional profile remains queued",
+      "runtimeEvidence": [
+        "doc/audit/depot-native-orchestration-2026-10-18.evidence.json",
+        "doc/audit/depot-included-allowance-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Quickstart for Depot CI",
@@ -1882,10 +1893,13 @@
         "Documentation Index"
       ],
       "family": "container-builds",
-      "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
+      "applicability": "Build shared multi-target research/CI images and architecture outputs without conflating targets with VMs",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Dedicated architecture builders, shared same-architecture cache and Bake graph source-reviewed; actual graph and overlapping isolated network consumers passed; billing interval apportionment remains source-limited",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Docker Arm images",
@@ -1906,10 +1920,14 @@
         "Documentation Index"
       ],
       "family": "container-builds",
-      "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
+      "applicability": "Produce architecture-specific reusable service/job images; distinguish that from repository ARM CI",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Actual Node/ELF and consumer-bound AMD64/ARM64 image outputs exercised; no Rust/TypeScript ARM repository workload credit until the queued real profile",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+        "doc/audit/depot-service-containers-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Build autoscaling",
@@ -1939,10 +1957,11 @@
         "Documentation Index"
       ],
       "family": "container-builds",
-      "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
+      "applicability": "Potential later BuildKit throughput; keep this research within an enforceable maximum builder count",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Deciding Project.max_concurrent_builds is a per-instance scale-out threshold, not total instance cap; schemas reviewed; autoscaling kept off; no executed scale-out claim",
+      "runtimeEvidence": [],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Continuous Integration",
@@ -2028,10 +2047,13 @@
         "Documentation Index"
       ],
       "family": "container-builds",
-      "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
+      "applicability": "Review and execute a pinned shared-base image graph with named contexts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Actual reviewed graph executed; local print and rejected-target controls do not substitute for the retained native build consumers",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Docker",
@@ -3386,10 +3408,13 @@
         "Documentation Index"
       ],
       "family": "github-runners",
-      "applicability": "GitHub complementary orchestration and native runner capabilities",
+      "applicability": "Retain GitHub workflow orchestration with additional Depot Linux/Windows compute and separate platform gates",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Current tier and allowance wording source-reviewed; trial availability does not establish Developer Mac eligibility; no shared native/GHA credit or Mac exclusion invented",
+      "runtimeEvidence": [
+        "doc/audit/depot-included-allowance-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Quickstart for GitHub Actions runners",
@@ -3443,10 +3468,14 @@
         "Documentation Index"
       ],
       "family": "github-runners",
-      "applicability": "GitHub complementary orchestration and native runner capabilities",
+      "applicability": "Select Linux/Windows/macOS runner classes for expanded host and device gates",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Current per-class cash rates and multipliers source-reviewed; Linux/Windows normalized rates differ; Mac Startup/Business eligibility established but Mac credit and normalized debit unresolved",
+      "runtimeEvidence": [
+        "doc/audit/depot-included-allowance-2026-10-18.evidence.json",
+        "doc/audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Troubleshooting GitHub Actions runners",
@@ -3682,10 +3711,13 @@
         "Documentation Index"
       ],
       "family": "registry",
-      "applicability": "Prepared images, OCI metadata, retention, export and deletion",
+      "applicability": "Own immutable service/job-image artifacts with read-only pull and logical cleanup",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Conventional OCI image pull/auth/health/architecture consumers and owned tag/digest cleanup exercised; source retention and delayed garbage collection remain separate from physical erasure",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Pull-through cache",
@@ -3709,10 +3741,11 @@
         "Documentation Index"
       ],
       "family": "registry",
-      "applicability": "Prepared images, OCI metadata, retention, export and deletion",
+      "applicability": "Optional dependency-image mirror for future CI consumers",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Source-reviewed registry mirror/cache mechanism; no authenticated mirror mapping or dependency routing change exercised; do not conflate with already exercised owned OCI registry images",
+      "runtimeEvidence": [],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Quickstart for Depot Registry",
@@ -3745,10 +3778,13 @@
         "Documentation Index"
       ],
       "family": "registry",
-      "applicability": "Prepared images, OCI metadata, retention, export and deletion",
+      "applicability": "Authenticate exact owned image consumers and avoid broad registry credentials",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Existing local auth obtained scoped read-only temporary credentials; positive GET precedes rejected write control; secrets and solely owned project/images cleaned",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
+      ],
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
     },
     {
       "title": "Security",
@@ -10015,7 +10051,7 @@
   "openGaps": [
     "Each indexed page and command needs claim-level repository applicability and evidence reconciliation; retrieved is not reviewed",
     "Additional official backend/integration repositories need deciding-source review",
-    "Current native CI orchestration, test splitting and device/guest consumers are coordinated by parent; no readiness claim",
+    "Parent orchestration and identity-adapter results are now linked; complete producer/report-format and ARM workload applicability remain separate",
     "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation",
     "Source inventory is complete for captured indexes/help but page/command semantic reconciliation is incomplete; source capture does not establish feature qualification",
     "BuildKit current-scanner comparison and empty image-list JSON source diagnosis remain active",
@@ -14830,6 +14866,21 @@
       ],
       "scopedCumulativeReservationUsd": 0.574584,
       "invoiceOrAggregateCapProven": false
+    },
+    "nextestIdentityAdapter": {
+      "state": "scoped physical consumer passed and exact transport variant removed",
+      "evidence": "doc/audit/depot-tests-identity-adapter-2026-10-18.evidence.json",
+      "research": "doc/planning/depot-tests-identity-adapter-research.md",
+      "diagnosis": "doc/troubleshooting/depot-nextest-test-identity.md",
+      "run": "st40hvmw90",
+      "source": "c6d25d092678b0933f1e3b43765fc46c02593a9e",
+      "applicationBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "storedPassingRows": 136,
+      "uniqueRunnableNames": 34,
+      "timedCandidatesPerPhysicalShard": 34,
+      "providerSandboxIdsDistinct": true,
+      "physicalHostsClaimed": false,
+      "completeSuiteOrSpeedBenefitClaimed": false
     }
   },
   "publicDocumentationReconciliation": {
@@ -15772,5 +15823,17 @@
     "bakeCounting": "One Bake command counts as one build per project regardless of target count",
     "cache": "Additional builders clone the main cache without writing new layers back; cross-builder work is not deduplicated",
     "cacheSize": "CachePolicy.keep_gb is per architecture; minimum25 each is not the total project allowance"
+  },
+  "pricingReconciliation": {
+    "evidence": "doc/audit/depot-included-allowance-2026-10-18.evidence.json",
+    "research": "doc/planning/depot-included-allowance-reconciliation.md",
+    "separateNamedMonthlyEntitlementsDocumented": true,
+    "creditTransferabilityUnproven": true,
+    "mixedOperatingSystemCreditApportionment": "undocumented",
+    "nativeBase": "2CPU/8GB",
+    "macosDeveloperEligible": false,
+    "macosStartupCreditTreatment": "unresolved; earlier categorical exclusion withdrawn",
+    "buildkitReservation": "Existing model is request-window milliseconds times maximum2 builders times USD0.04/builder-minute; not USD0.08 per single builder",
+    "aggregateAllProductCapProven": false
   }
 }
