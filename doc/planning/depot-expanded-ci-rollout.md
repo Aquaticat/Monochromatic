@@ -70,6 +70,7 @@ ARM,
 container and VM profiles where the particular workload qualifies.
 Provide explicit manual or agent-requested profile dispatch for investigation and qualification.
 Keep private personal fixtures local.
+Use deterministic model fixtures rather than paid model/API calls.
 No recurring local desktop,
 emulator or device service is installed by this rollout.
 
@@ -137,6 +138,11 @@ Select caches by owner and cache system rather than enabling one blanket cache p
 
 Respect the existing [CI caching policy](../decision/ci-caching.md),
 including the prohibition on caching artifacts a workflow ships.
+Untrusted PR source uses a secret-free GitHub-hosted profile.
+Shared cache writers,
+paid execution and privileged artifact consumers retain explicit trust boundaries.
+Cache-key prefixes do not establish isolation.
+Retain existing publishing issuer and workflow bindings.
 Validate cache-off execution,
 invalidation and stale-output rejection before enabling each format.
 Keep release producers fresh under their owning policy.
