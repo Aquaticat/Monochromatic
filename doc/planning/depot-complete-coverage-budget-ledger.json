@@ -1357,10 +1357,10 @@
           "macos-15"
         ],
         "documentedVcpu": 3,
-        "documentedMemoryGiB": 7,
         "actualCpuAndMemoryReceiptNotUploaded": true,
         "jobMinutes": 30,
-        "maxParallel": 1
+        "maxParallel": 1,
+        "documentedMemoryGB": 7
       },
       "runner": "GitHub Actions 1000002712",
       "startedAt": "2026-10-18T15:35:17Z",
@@ -1390,10 +1390,10 @@
           "windows-2025"
         ],
         "documentedVcpu": 4,
-        "documentedMemoryGiB": 16,
         "actualCpuAndMemoryReceiptNotUploaded": true,
         "jobMinutes": 30,
-        "maxParallel": 1
+        "maxParallel": 1,
+        "documentedMemoryGB": 16
       },
       "runner": "GitHub Actions 1000002796",
       "startedAt": "2026-10-18T16:04:16Z",
@@ -1423,10 +1423,10 @@
           "macos-latest"
         ],
         "documentedVcpu": 3,
-        "documentedMemoryGiB": 7,
         "actualCpuAndMemoryReceiptNotUploaded": true,
         "jobMinutes": 30,
-        "maxParallel": 1
+        "maxParallel": 1,
+        "documentedMemoryGB": 7
       },
       "runner": "GitHub Actions 1000002767",
       "startedAt": "2026-10-18T15:54:05Z",
@@ -1456,10 +1456,10 @@
           "windows-2025"
         ],
         "documentedVcpu": 4,
-        "documentedMemoryGiB": 16,
         "actualCpuAndMemoryReceiptNotUploaded": true,
         "jobMinutes": 30,
-        "maxParallel": 1
+        "maxParallel": 1,
+        "documentedMemoryGB": 16
       },
       "runner": "GitHub Actions 1000002725",
       "startedAt": "2026-10-18T15:42:23Z",
@@ -1489,10 +1489,10 @@
           "windows-11-arm"
         ],
         "documentedVcpu": 4,
-        "documentedMemoryGiB": 16,
         "actualCpuAndMemoryReceiptNotUploaded": true,
         "jobMinutes": 30,
-        "maxParallel": 1
+        "maxParallel": 1,
+        "documentedMemoryGB": 16
       },
       "runner": "GitHub Actions 1000002772",
       "startedAt": "2026-10-18T15:55:12Z",

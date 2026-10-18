@@ -43908,5 +43908,37 @@
     "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz",
     "evidenceSha256": "3a050fdd4e1dc025c0cff57efd77f056504b7fada677e25158f6b50b233a467b",
     "qualification": "25 runtime imports,5 functional controls,and1 separate types-only compiler positive/negative consumer; neither whole-package branch coverage nor mutation execution claimed"
+  },
+  "desktopMetadataOnlySeal": {
+    "evidence": {
+      "path": "doc/audit/depot-complete-coverage-desktop-receipts.json.gz",
+      "bytes": 22756,
+      "sha256": "8b9be6f1b2cfb29540226d0a8c4b520d867d8d6a24b0eddda516198b26b26885"
+    },
+    "wideObservedPassed": 69,
+    "wideAuthoredSkipped": 1,
+    "wideUncaughtPreconditionFailures": 1,
+    "continuationStructuredPassed": 41,
+    "continuationStructuredFailed": 1,
+    "continuationStructuredSkipped": 0,
+    "pngIdentityMembers": 110,
+    "pngBytesPublished": false,
+    "uniqueCaseTotalNotInferred": true
+  },
+  "sourceAssertionIdentityInventory": {
+    "evidence": {
+      "path": "doc/audit/depot-complete-coverage-source-feature-assertions.json.gz",
+      "bytes": 3341685,
+      "sha256": "11e25bc960076fd330bb923c3bd0aa586b52ec47824c7633198d1a9bd7910204"
+    },
+    "scriptFiles": 5878,
+    "actualScriptBytes": 30611062,
+    "assertionCandidates": 20692,
+    "importedCallsWithinStaticScopes": 44812,
+    "branchCandidates": 32931,
+    "generatorSites": 1045,
+    "customDesktopRecorderDeclarations": 106,
+    "runtimeCoverageNotInferred": true,
+    "packageSemanticJoin": "draft complete; cross-lane and failure-boundary enrichment pending"
   }
 }

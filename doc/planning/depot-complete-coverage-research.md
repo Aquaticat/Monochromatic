@@ -1583,3 +1583,69 @@ The immutable first-handoff evidence is [`depot-current-host-first-handoff-2026-
 121319 bytes, SHA-256 `c7d97ade72711bc3386591871419757f97f05afb5055f03b8e671dfeadd1cf85`.
 The finite queue still owns matched Depot Mac/Windows execution,
 the per-package semantic assertion manifest, and the desktop screenshot publication audit.
+
+## Desktop publication boundary and source assertion identities
+
+The desktop receipt is now metadata-only.
+It preserves the actual producer binaries, source/tool identities, archive identities,
+69 default-wide passing observations and one authored skip before the retained folder-wait exception,
+and the separate continuation result of 41 passed and one failed structured outcome.
+Repeated stdout emitted 82 pass and two fail lines for those same continuation outcomes;
+those duplicate emissions are not additional cases.
+The authored dialog failure and the trailing undefined cleanup-task failure remain separate.
+The in-task cleanup proves no retained application/compositor process, test unit or owned container,
+and restored sink identities.
+The requested nested Node26.12 runtime was not independently observed;
+the producer outer Node22.23.2 observation is retained without widening it to the nested owner.
+
+The published evidence snapshots retain PNG identities only.
+The bounded audit read 188 tracked Depot JSON/gzip/ZIP/tgz files,
+167,250,283 actual bytes,
+and decoded 251 nested containers with 746,820,806 expanded bytes.
+It found zero matching original desktop ZIP payloads and zero matching captured PNG payloads,
+with 836 identity references.
+Its actual positive control nested both private original ZIPs inside gzip, JSON and base64,
+and detected both archives and all 110 PNG member occurrences,
+20 default-wide and 90 continuation members.
+The audit records each actual input file hash and its exact scope.
+Original PNG/ZIP bytes remain in private artifacts and controller evidence.
+No public image-inspection, masking or publication claim follows from this identities-only receipt.
+
+The unchanged external generator was also executed locally with bounded resources.
+Its seed-7 preset produced 1,000 unique materialized paths and deterministic repeated path bytes.
+A second finite control used 64 artists and 16 tracks per artist,
+1,024 paths,
+covering all six script categories and the source subfolder branches.
+All extension variants still contain the same FLAC bytes.
+No player consumer, mixed-codec decoder result or large-library performance claim follows.
+Private corpus contents, generated names, path lists and input script payload are omitted.
+
+The source parser measured 5,878 exact frozen script files,
+30,611,062 actual bytes and zero parser failures.
+Its controlled static map retains 20,692 assertion candidates,
+44,812 imported calls inside static test scopes,
+32,931 branch candidates,
+1,045 generator sites and 106 authored desktop recorder declarations.
+These are source identities, not runtime cases or measured branch coverage.
+The per-package join covers all 227 package roots and is being enriched with the sealed Rust projection
+and the actual failure-log boundaries before the semantic seal.
+
+The first public handoff used a misleading `documentedMemoryGiB` field for catalog GB values.
+That field is retracted as a unit label; the corrected owned rows use `documentedMemoryGB`,
+with actual CPU/memory observation still unmeasured for that handoff.
+The original sealed handoff is preserved; the corrected row projection is in the desktop receipt.
+
+- [`depot-complete-coverage-desktop-receipts.json.gz`](../audit/depot-complete-coverage-desktop-receipts.json.gz): 22756 bytes,
+  SHA-256 `8b9be6f1b2cfb29540226d0a8c4b520d867d8d6a24b0eddda516198b26b26885`.
+- [`depot-complete-coverage-external-generation-receipts.json.gz`](../audit/depot-complete-coverage-external-generation-receipts.json.gz): 1910 bytes,
+  SHA-256 `899467f33d5eccfb01a1f053db71c773bf4406db86887131698ab59193f67c6b`.
+- [`depot-complete-coverage-source-feature-assertions.json.gz`](../audit/depot-complete-coverage-source-feature-assertions.json.gz): 3341685 bytes,
+  SHA-256 `11e25bc960076fd330bb923c3bd0aa586b52ec47824c7633198d1a9bd7910204`.
+
+The remaining finite factual queue is independently owned:
+
+- Complete the active corrected public Mac/Windows matrix and preserve actual owner bodies and failures.
+- Execute the matched admitted Depot Mac/Windows matrix under its separate USD2 guard.
+- Seal the per-package source feature/assertion and observed execution manifest,
+  retaining counts, missing reach, cross-lane contexts and historical hash boundaries separately.
+- Finish source-backed troubleshooting notes and rendered Markdown checks.
