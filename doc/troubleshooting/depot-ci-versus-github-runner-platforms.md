@@ -167,6 +167,25 @@ A supplementary device-group control and the actual repository VM consumer are t
 The proposed group applies only to the disposable child process;
 it does not change the runner account or group database.
 
+The first group-profile run `39124932077` passed its descriptor controls:
+idle,
+read-only open/close and read-write open/close all retained the named ACL.
+Simple descriptor open/close alone therefore does not reproduce the QEMU-linked loss in this scope.
+The supplementary child actually acquired group `993` while retaining UID/GID `1001`.
+Its repository consumer then stopped at CLI import,
+before any guest or KVM initialization:
+
+```text
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@monochromatic-dev/module-caught-value'
+```
+
+The diagnostic-only workflow had omitted the original full VM workflow's workspace setup.
+The source-backed harness correction restores `mise install node pnpm`
+and `mise run prepare:pnpm:install -- --frozen-lockfile` from harness `1438ecde4b`.
+The dependency omission is separate from the device ACL incident.
+The failed group profile's private domains are empty and both owned daemon PIDs exited;
+no passing repository guest result follows from it.
+
 The process-discovery positive control found its actual live paused TCG process,
 then found it absent after QMP quit.
 The final control reports no remaining QEMU process.
