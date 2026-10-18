@@ -239,7 +239,13 @@ The first collection-consumer run preserves values and callback mutation snapsho
 then reveals that the test checks freezing after its receipt reader has JSON-decoded the snapshot.
 That test now checks freezing on the actual copier result;
 its runner still checks independent retained before/after data.
+The next run reaches the ordinary-data catalog and exposes another test-reader mismatch:
+JSON receipts omit undefined object properties.
+That catalog now compares the expected serialized data.
 The corrected collection-consumer rerun is pending.
+The MiMo CLI worker `JTeYFr` has exited with code 139 after V8 heap exhaustion;
+it leaves formatting edits in its assigned pair and no completed repair commit.
+Preserve its original session, stderr and captured requests while diagnosing this separate incident.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.

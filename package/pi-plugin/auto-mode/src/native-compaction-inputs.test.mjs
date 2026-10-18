@@ -73,7 +73,7 @@ for(const preparation of [undefined,null,false,[],{note:'ordinary'},{fileOps:nul
  const ordinaryInput={type:'session_before_compact',preparation};
  const retained=fixture({kind:ordinaryInput.type,handlers:[function preserveOrdinaryFields(){}]});
  await retained.runner.emit(ordinaryInput);
- assert.deepEqual(retained.records()[0][0].value.value,ordinaryInput);
+ assert.deepEqual(retained.records()[0][0].value.value,JSON.parse(JSON.stringify(ordinaryInput)));
 }
 for(const value of [undefined,null,false,'ordinary',[],new Set()])assert.equal(projectNativeCompactionFilePaths(value),value);
 console.log(JSON.stringify({complete:true,actualSdkFileOperations:true,callbackIdentityPreserved:true,phaseSnapshotsIndependent:true,ordinarySetRejection:true}));
