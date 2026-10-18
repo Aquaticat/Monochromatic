@@ -144,7 +144,7 @@ await describe({
           caught instanceof QuotaShapeError
             ? caught.message
             : '',
-        ).toBe('Synthetic /quotas body violated expectations: body is not a JSON object',);
+        ).toBe('Synthetic /quotas body violated expectations: body is not a JSON object; received array',);
       },
     },),
 
@@ -166,7 +166,8 @@ await describe({
           caught instanceof QuotaShapeError
             ? caught.message
             : '',
-        ).toBe('Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object',);
+        ).toBe('Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received '
+          + 'rollingFiveHourLimit:object, weeklyTokenLimit:string',);
       },
     },),
 
@@ -183,15 +184,18 @@ await describe({
         }[] = [
           {
             bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":"640","limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
-            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.max is not a number',
+            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.max is not a number; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
           },
           {
             bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":"false","nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
-            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.limited is not a boolean',
+            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.limited is not a boolean; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
           },
           {
             bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":5},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
-            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.nextTickAt is not a string',
+            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.nextTickAt is not a string; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
           },
         ];
         for (const { bodyText, message, } of variants) {
@@ -226,11 +230,13 @@ await describe({
         }[] = [
           {
             bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":"87.5","nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
-            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.percentRemaining is not a number',
+            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.percentRemaining is not a number; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
           },
           {
             bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":5}}',
-            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.nextRegenAt is not a string',
+            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.nextRegenAt is not a string; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
           },
         ];
         for (const { bodyText, message, } of variants) {
@@ -281,6 +287,38 @@ await describe({
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received weeklyTokenLimit:object',
           'Synthetic /quotas body violated expectations: body is not valid JSON',
         ],);
+      },
+    },),
+    it({
+      name: 'BOUNDS WHAT A REFUSED BODY CAN PUT IN THE MESSAGE: key names are cut to forty characters of printable ASCII, each other '
+        + 'character shown as a question mark, and more than twenty keys are listed as twenty and a count of the rest',
+      fn: async () => {
+        /**
+         The message a body is refused with.
+         */
+        function refusalOf({ body, }: { readonly body: unknown; },): string {
+          try {
+            parseQuotaSnapshot({ bodyText: JSON.stringify(body,), },);
+          }
+          catch (error) {
+            return (error instanceof QuotaShapeError) ? error.message : 'not a shape error';
+          }
+          return '';
+        }
+        /**
+         A body of twenty-two keys, the first of them longer than the bound and the second written in another script.
+         */
+        const wide: Record<string, unknown> = {
+          ['a'.repeat(45,)]: 1,
+          '\u732B\u0000': 'x',
+        };
+        for (let at = 0; at < 20; at += 1)
+          wide[`k${String(at,)}`] = at;
+        expect(refusalOf({ body: wide, },),).toBe(
+          `Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received ${'a'.repeat(40,)}:number, `
+          + '??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, k7:number, k8:number, k9:number, '
+          + 'k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, k17:number, and 2 more',
+        );
       },
     },),
   ],

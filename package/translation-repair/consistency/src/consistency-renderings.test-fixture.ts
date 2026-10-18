@@ -129,7 +129,14 @@ export function renderingsOf(
         kind: 'present',
         text: chosen.english,
       },
-      ...((chosen.page === undefined) ? {} : { page: { text: chosen.page, offset: 0, }, }),
+      ...((chosen.page === undefined)
+        ? {}
+        : {
+          page: {
+            text: chosen.page,
+            offset: 0,
+          },
+        }),
     },
     {
       label: 'OCCURRENCE 2',
@@ -137,7 +144,14 @@ export function renderingsOf(
         kind: 'present',
         text: receiving.english,
       },
-      ...((receiving.page === undefined) ? {} : { page: { text: receiving.page, offset: 0, }, }),
+      ...((receiving.page === undefined)
+        ? {}
+        : {
+          page: {
+            text: receiving.page,
+            offset: 0,
+          },
+        }),
     },
   ];
   /**
