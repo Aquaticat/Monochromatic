@@ -586,6 +586,8 @@ Part of [the family README](../README.md).
   The sheet of a carry choice's run-off says that a first round was split and the judge is asked again (B657).
   The pass stamps artifact generation 18 for this rule,
   and the readers of generation 17 and earlier keep the rule they were written under, ties only (B664).
+  A carry whose choice split and names finalists must record its run-off from generation 18 (B666).
+  A located place of a frame also records the page definitions that move its slot from generation 18 (B665).
   It is the lead's rule,
   open to the owner's veto,
   extending the owner's run-off rule of 2026-10-11 ("Run off the tied finalists"),

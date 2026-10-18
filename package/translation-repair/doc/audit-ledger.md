@@ -368,6 +368,12 @@ named for that subject and listed here.
   a chosen place that no quote located,
   an abandonment line that counted the wire,
   and the two defects that n171 found in its own span agreement.
+- [Audit ledger: the consistency pass, page definitions recorded and carries gated by generation](audit-ledger-consistency-pass-page-definitions-recorded-and-carries-gated.md):
+  What the review of B656 to B664 left open:
+  the page definitions a slot needs,
+  which artifact generation 18 records,
+  the carry run-off that generation 18 requires,
+  and a refusal text that named the wrong quotes.
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
   What the split of the package into 36 found in the moved code and its tooling:
   a build config that lacked a plugin,
@@ -753,6 +759,7 @@ Filed in:
 - [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md)
 - [Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md)
 - [Audit ledger: the consistency pass, voices lost and places left unlocated](audit-ledger-consistency-pass-voices-lost-and-places-left-unlocated.md)
+- [Audit ledger: the consistency pass, page definitions recorded and carries gated by generation](audit-ledger-consistency-pass-page-definitions-recorded-and-carries-gated.md)
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md)
 
 ## Process mistakes in this audit

@@ -26,7 +26,8 @@ the seat sent a `max_tokens` of 10,822 and was cut with no answer and 40,377,
 46,009 and 41,654 characters of reasoning,
 and the vote was lost to the label rule on the re-ask and not to the truncation.
 
-A later finding of the same pass, from the lead's replay of the run's decisions on the n171 build,
+A later finding of the same pass,
+from the lead's replay of the run's decisions on the n171 build,
 is filed here too:
 a first round or a carry choice with a lone leader and no strict majority was kept and not run off (B656).
 
@@ -533,7 +534,8 @@ Recurrence:
 
 ## B657: the carry run-off sent the first ask's sheet when every candidate was a finalist
 
-Found on 2026-10-18 by an independent review of the n166 to n173 production diff (finding R1, medium).
+Found on 2026-10-18 by an independent review of the n166 to n173 production diff (finding R1,
+medium).
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f`,
@@ -590,7 +592,8 @@ Recurrence:
 
 ## B658: the slot of a frame was agreed only beside a quote equal to the located words
 
-Found on 2026-10-18 by the same review (finding R2, medium-low).
+Found on 2026-10-18 by the same review (finding R2,
+medium-low).
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f`,
@@ -622,7 +625,8 @@ and a section of generation 18 with `containing-quote`.
 The five stored run directories read accepted under the new build (see B664).
 
 Test:
-a nested-quote case in `consistency-span-agreement.unit.test.ts` (slot `naps`, expected at 4)
+a nested-quote case in `consistency-span-agreement.unit.test.ts` (slot `naps`,
+expected at 4)
 and a pin that a non-containing quote shares no slot,
 the two agreement modes in `consistency-majority.unit.test.ts`,
 and the generation split in `artifact-two-lane-read-consistency-span.unit.test.ts`.
@@ -634,7 +638,8 @@ Recurrence:
 
 ## B659: the proof read no link twin, so it disagreed with the cut about the same apostrophe
 
-Found on 2026-10-18 by the same review (finding R3, low).
+Found on 2026-10-18 by the same review (finding R3,
+low).
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f`,
@@ -655,7 +660,8 @@ Its TSDoc says that it makes the reading `closingJointsOf` makes.
 The proof reads one English alone,
 so it holds that English's own links and none of the page's definitions,
 and a reference defined in another slice is plain text to it
-(the same limit as B661, stated in the header of the new file).
+(the same limit as B661,
+stated in the header of the new file).
 
 Test:
 two `readProof` cases in `consistency-fold-apostrophes.unit.test.ts`:
@@ -670,7 +676,8 @@ Recurrence:
 
 ## B660: a link with any label counted as a closing bracket before an apostrophe
 
-Found on 2026-10-18 by the same review (finding R4, low).
+Found on 2026-10-18 by the same review (finding R4,
+low).
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f`,
@@ -709,7 +716,8 @@ Recurrence:
 
 ## B661: the artifact recount hands the slot readers no page definitions
 
-Found on 2026-10-18 by the same review (finding R5, low).
+Found on 2026-10-18 by the same review (finding R5,
+low).
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f` (a pin that passes),
@@ -724,12 +732,15 @@ which records no slot,
 and a word `b` with a slot for the recount,
 which then expects a slot the pass could not find.
 
-Decision, made by the lead:
+Decision,
+made by the lead:
 the limitation is written down and pinned,
 and the readers are not changed.
 The choice was between rebuilding the definitions and accepting the limit,
 and the definitions cannot be rebuilt from the file:
-the section reader is handed only the section, its path, its generation and the slice indexes,
+the section reader is handed only the section,
+its path,
+its generation and the slice indexes,
 the `slices` rows of the consistency section hold only the slices the pass changed (as they ended),
 the comparison rows hold each lane's text from before the consolidation,
 and the consolidated English the pass read is recorded nowhere,
@@ -744,9 +755,14 @@ The shape needs a definition in another slice and a slot at a word joint.
 If a reader of whole runs (with the corpus at hand) ever needs it,
 the definitions would be passed there and not through the section reader.
 
+Superseded for generation 18 by B665:
+the pass records the definitions that move a slot and the recount reads them,
+so this limit and its pin remain for generation 17 and earlier only.
+
 ## B662: five TSDoc contradictions of the consistency package
 
-Found on 2026-10-18 by the same review (finding R6, low).
+Found on 2026-10-18 by the same review (finding R6,
+low).
 
 Outcome written on 2026-10-18.
 Fixed in `c351d52644`,
@@ -769,22 +785,26 @@ as the code and its test do.
 both say eight.
 `consistency-link-label.ts` said that `marks` holds no letter or digit,
 and the test is the Latin letters and digits and the forms that fold to them,
-so a Han, Cyrillic or Greek label is `marks`:
+so a Han,
+Cyrillic or Greek label is `marks`:
 the wording says so.
 The `joinedMarksOf` TSDoc is B659.
 The phrases "tied for first" and "tie for first" were reworded where they meant the finalists of a split
-(the headers and fixtures of the run-off tests, the artifact generation docs);
+(the headers and fixtures of the run-off tests,
+the artifact generation docs);
 they stay where a scene really is a tie.
 
-Left as it is:
+Left as it is,
+then corrected in B667:
 the refusal text in `artifact-two-lane-read-consistency-span.ts`
 ("words that a strict majority of the quotes naming the place contain")
-is pinned by two tests,
-so it was not reworded.
+was pinned by two tests,
+so it was not reworded here.
 
 ## B663: a pinned bench start was not checked
 
-Found on 2026-10-18 by the same review (finding R7, low).
+Found on 2026-10-18 by the same review (finding R7,
+low).
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f`,
@@ -822,7 +842,8 @@ Recurrence:
 
 ## B664: artifact generation 18 and the readers that keep the earlier rules
 
-Decided on 2026-10-18 by the lead, when the findings of the review were repaired.
+Decided on 2026-10-18 by the lead,
+when the findings of the review were repaired.
 
 Outcome written on 2026-10-18.
 Red `9684e3e00f`,
@@ -850,7 +871,10 @@ Reader check:
 `TianqiChen66623`,
 `corpus-pass-TianqiChen66624` and `corpus-pass-TianqiChen66625`,
 with this build,
-accepted all five artifacts (generations 14, 14, 15, 17 and 17).
+accepted all five artifacts (generations 14,
+14,
+15,
+17 and 17).
 The group of `TianqiChen66624` with a lone leader and no run-off,
 which the previous reader refused,
 reads as it was written.
@@ -868,15 +892,17 @@ A pass refuses to resume into a directory of generation 17 artifacts (`SchemaGen
 which names the artifacts and the ways forward,
 so a run in progress is moved aside or finished with the build that began it.
 
-Carry reader, tolerance left as it is:
-the carry recount reads a split recorded with no run-off as written,
+Carry reader,
+tolerance left as it is,
+then gated in B666:
+the carry recount read a split recorded with no run-off as written,
 and requires a recorded run-off's finalists to equal `runOffChoiceFinalistsOf`.
-It should be gated by generation too:
-a generation 18 carry with a split and no run-off is accepted today,
-and the pass of that generation always asks one.
 It was left as the brief said,
-since the carry recount is not handed the generation,
-and the change is small once it is.
+since the carry recount was not handed the generation.
+B666 hands it the generation:
+a generation 18 carry with a split and no run-off is refused,
+and generation 17 and earlier keep the tolerance.
+B665 adds the page definitions to the generation 18 record.
 
 Test:
 `corpus-pass-guards.unit.test.ts` refuses a generation 17 directory,
