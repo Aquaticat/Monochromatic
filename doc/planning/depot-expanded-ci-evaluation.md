@@ -213,6 +213,30 @@ not a result for every job inheriting a cache step
 Depot's checkout also changed between those phases,
 so its whole-job decrease does not isolate pnpm caching.
 
+The Kotlin linter plugin's repeated Gradle `test --rerun jar` comparison exercises six fresh JUnit cases per job.
+Depot's generic HTTP remote task cache restores compilation outputs;
+the tests still execute.
+The two warm commands took 17.550 and 15.836 seconds,
+versus 21.435 and 20.262 seconds with both remote and local task-output caching disabled.
+The within-condition spreads were 1.714 and 1.172 seconds.
+The observed mean reduction is about 19.9 percent for that command boundary,
+which includes JVM startup,
+compilation or restoration,
+tests and JAR production.
+Whole warm jobs took 162 and 177 seconds versus 146 and 153 seconds without task caching;
+variable pnpm import/link time prevents a whole-job benefit claim
+([unchanged-input controls and exact receipts](depot-reuse-strategy-research.md#repeated-gradle-task-output-comparison)).
+
+The forbidden-strings release CLI's compiled-target archive also has a real fresh consumer:
+all 237 owned Nextest cases passed in producer and reader.
+The reader's CLI build took 0.070 seconds versus the seed's 52.228 seconds,
+but archive extraction alone adds 0.334 seconds,
+and the reader's full Nextest command took 45.200 seconds versus 39.233 seconds in the seed.
+Those commands include 22.506 and 21.449 seconds of actual test execution respectively.
+This single reader proves compatible target reuse;
+it does not establish a job or provider speed multiplier
+([target-archive controls](depot-reuse-strategy-research.md)).
+
 Prepared dependencies,
 Gradle remote task outputs,
 sccache,
