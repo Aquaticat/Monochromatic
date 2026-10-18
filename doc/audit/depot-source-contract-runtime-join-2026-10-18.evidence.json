@@ -15872,6 +15872,13 @@
           "passedSourceLeafLabels": 15,
           "failedSourceLeafLabels": 0,
           "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "derived-fixture-path-counterfactual",
+          "evidence": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json",
+          "passedSourceLeafLabels": 4,
+          "originalSourceTopologyQualified": false,
+          "negativePlainImportBehaviorQualified": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -18107,5 +18114,6 @@
     "limits": "No named package test task does not establish no tests: source-owned external consumers, host hooks, fixtures and shared Rust owners remain separate; smoke/verify candidates are retained without reclassifying them as tests"
   },
   "localFigmaSourceConsumerEvidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json",
-  "remainingLocalUnitEvidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json"
+  "remainingLocalUnitEvidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+  "localCaptureCorrection": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json"
 }

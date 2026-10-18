@@ -44339,7 +44339,7 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T22:01:59.142Z",
+  "latestEvidenceAt": "2026-10-18T22:04:35.541Z",
   "packedConsumerQualification": {
     "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "producerRun": 39130630504,
@@ -44793,5 +44793,11 @@
       "negativeControls": "Existing assertions verify caught failures, unexpected passes, timeouts and repeat termination; nested deliberate attempts are not added as owner case counts"
     },
     "compiledProductArtifactAssertions": false
+  },
+  "localNodeCounterfactuals": {
+    "evidence": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json",
+    "derivedTopologyIntegrationPasses": 4,
+    "originalTopologyIntegrationFailures": 4,
+    "successChildStderrUnobserved": true
   }
 }
