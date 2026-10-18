@@ -303,6 +303,10 @@ run = """
 runCargo(['test', '--test', 'cli_args', '--test', 'cli_process'])
 """
 
+[tasks."test:bin"]
+description = "Check the compositor version reader of the bin scripts with node:test"
+run = "node --test bin/nested-compositor.test.mjs"
+
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
 shell = "node --input-type=module-typescript -e"
