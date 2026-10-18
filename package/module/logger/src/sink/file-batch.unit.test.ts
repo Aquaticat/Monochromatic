@@ -11,6 +11,7 @@ import type { Sink, } from '../../dist/final/neutral/index.mjs';
 /** Persisted records expose serialization or append boundaries without inspecting filesystem calls. */
 async function withFileSink(run: (input: {
   readonly sink: Sink;
+  readonly directory: string;
   readonly readRecords: () => Promise<unknown[]>;
 }) => Promise<void>,): Promise<void> {
   /** Fixture parent lives in the injected home rather than the real shared log destination. */
@@ -42,12 +43,38 @@ async function withFileSink(run: (input: {
       return JSON.parse(row,);
     },);
   }
-  await run({ sink, readRecords, },);
+  await run({ sink, readRecords, directory, },);
 }
 
 await describe({
   name: 'file sink batch completion',
+  concurrency: 1,
   children: [
+    it({
+      name: 'isolates same-millisecond sinks so multi-write records cannot interleave',
+      fn: async ({ sinon, },) => {
+        sinon.useFakeTimers({ now: 1_800_000_000_000, toFake: ['Date',], },);
+        await withFileSink(async function checkSeparateOwners({ sink, directory, },): Promise<void> {
+          const other = createFileSink({ directory, },);
+          expect(await other.verify(),).toBe(true,);
+          const first = { level: 'info' as const, timestamp: 1, message: `first${'"\\\n世界'.repeat(150_000,)}`, };
+          const second = { level: 'info' as const, timestamp: 2, message: `second${'"\\\n世界'.repeat(150_000,)}`, };
+          await Promise.all([sink.write(first,), other.write(second,),],);
+          const filenames = await readdir(directory,);
+          const contents = await Promise.all(filenames.map(function readLog(filename,) {
+            return readFile(join(directory, filename,), 'utf8',);
+          },),);
+          const records = contents.flatMap(function parseLog(content,) {
+            return content.trimEnd().split('\n',).map(function parseRecord(row,): unknown {
+              return JSON.parse(row,);
+            },);
+          },);
+          expect(records,).toContainEqual(first,);
+          expect(records,).toContainEqual(second,);
+          expect(filenames,).toHaveLength(2,);
+        },);
+      },
+    },),
     it({
       name: 'captures same-frame records before their shared append completion',
       fn: async () => {
