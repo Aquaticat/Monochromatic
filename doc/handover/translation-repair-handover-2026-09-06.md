@@ -479,7 +479,10 @@ before the other queued work.
     all five stored TianqiChen666 artifacts accepted, `w184-notes/reader-check.txt`);
     a follow-up triple there records the page definitions in generation 18 so the recount reads them (R5),
     gates the carry reader's "no run-off read as written" tolerance to generation 17 and earlier,
-    and corrects a refusal string; then a gate, landing in order (`w177`, `w180`, `w184`) and the relaunch;
+    and corrects a refusal string, done (`f5dc1482dc`, `7410c9948f`, `6939a15e33`, ledger B665 to B667,
+    still 5 of 5 stored artifacts accepted, `w184-notes/reader-check-2.txt`);
+    gate g103 runs on `6939a15e33` in `w185` (`s245/split/g103/`);
+    then landing in order (`w177`, `w180`, `w184`) and the relaunch;
     resuming into a generation-17 runs directory is refused, so the relaunch uses a fresh throwaway directory);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
