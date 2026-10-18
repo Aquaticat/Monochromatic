@@ -73,6 +73,27 @@ Equal text does not merge provenance,
 and receipt accounting still counts every occurrence.
 The capacity fixture checks distinct publications and a later changed input as separate boundaries.
 
+The pool stages appended origins in its own private array and publishes a cached frozen snapshot on read.
+Appending invalidates only that cache;
+existing published arrays remain unchanged and repeated reads preserve identity until another append.
+This avoids copying every retained prefix for every native query observation.
+Three 50,000-input baseline probes consume 9,125,882 to 9,450,071 process CPU microseconds.
+Three private snapshot probes consume 441,879 to 543,405 microseconds.
+The committed CPU regression fails at 9,989,359 microseconds against a 4,000,000-microsecond budget,
+then passes on the maintained snapshot implementation at 483,453 microseconds.
+These CPU measurements describe the bounded Node 26 Linux fixture.
+The private snapshot probe retains more final heap than its baseline,
+about 95.6 MB against 90.8 MB;
+the measured benefit is append work, not a retained-memory reduction.
+
+Input-only publication views share a function that always rejects message-payload eligibility.
+They retain their distinct occurrence and publication identities without retaining the full text-projection owner.
+Live aliases still hold their original owner for native copy propagation;
+actual message and system/tool contribution validation keep their existing paths.
+The capacity fixture's input-only publications retain 3,607,008 to 3,608,432 bytes before this change.
+Its committed memory guard fails at 3,607,384 bytes against a 3,200,000-byte budget;
+the private shared-function probe passes at 2,753,832 bytes with the same receipt and root checks.
+
 Native event snapshots keep an ordered phase list and a per-emission dictionary of copied values.
 Each phase retains its kind,
 input/output position,

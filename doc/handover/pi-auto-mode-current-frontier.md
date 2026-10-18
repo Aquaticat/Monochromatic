@@ -22,9 +22,11 @@ The measured logger version is `0.4.1`; no logger repair is applied in the curre
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
 There is no adopted 13k line target.
 
-The active output is `native-release-6z61x7`, verified through `dist/native` on 2026-10-18.
-Both complete configured-host replays still exit 134 from Node heap exhaustion.
-The immediate work is source-binding memory ownership, followed by complete consumer verification.
+The active output is `native-release-XGbh0H`, verified through `dist/native` on 2026-10-18.
+Its complete configured-host replays and affected verification matrix are running.
+Earlier outputs still exit 134 from Node heap exhaustion;
+the private retirement-only replay instead reaches its 600-second driver limit after 58 live assessments.
+The immediate work is final consumer verification of the retained-input ownership repairs.
 Private experiments are not production repairs.
 
 ### Incident and completed repairs
@@ -229,6 +231,42 @@ An independent private probe measures the pool's immutable whole-array copy on e
 It compares genuine manager append CPU and memory against publication of cached frozen snapshots on read.
 It must preserve prior frozen snapshots, stable repeated reads, every occurrence, and distinct publications.
 No pool append implementation change is applied yet.
+
+The append implementation is now committed as `80803f87db` and rebuilt in `native-release-CV2Wga`.
+The committed red CPU guard fails at 9,989,359 microseconds;
+the maintained implementation passes at 483,453 microseconds.
+Three original 50,000-input probes measure 9,125,882 to 9,450,071 microseconds;
+three private cached-snapshot probes measure 441,879 to 543,405.
+The snapshot probe has higher final retained heap, about 95.6 MB versus 90.8 MB;
+its established benefit is append CPU work.
+
+Input-only publication storage is also repaired in `1edb75d52c`.
+Its baseline retains 3,607,008 to 3,608,432 bytes across three unchanged capacity runs.
+The committed red guard fails at 3,607,384 bytes;
+the private shared-function probe passes at 2,753,832 bytes.
+Actual message-payload, system/tool contribution, original occurrence, and native-root checks remain required.
+
+The combined output is `native-release-XGbh0H`.
+Final controllers are `final-faithful-replay.ts` and `final-fragmented-replay.ts`;
+their logs are `faithful-retention-final.log` and `fragmented-retention-final.log`.
+The complete affected matrix is `retention-final-matrix.log`.
+These finite RPC replays retain the 2 GiB/two-CPU bounds,
+add Podman's 1,200-second native container bound,
+and set the parent driver to 1,260 seconds so client termination is distinguishable from the container result.
+The earlier private fixture `pi-mimo-failure-rpc-9dEcRp` ends with SIGKILL after about 601 seconds,
+matching its driver's 600-second bound;
+captured stderr has no heap-abort diagnostic.
+A subsequent Podman inventory contains no container mounted to that completed fixture.
+This is separate from the exit-134 failures.
+
+Final receiver, native-root, completed-review, and input-only-owner mutation controls are running privately.
+The live process/Bash prohibition control is running on the combined output.
+No full-session success has been established yet.
+Final payload audits, full-package lint inventory, rendered docs, reviewed artifact cleanup,
+footprint/source inventory, and remote commit verification remain in the completion queue.
+An auto-push lock-wait message occurred during commit landing;
+a subsequent remote check contains the replayed append-test commit `7747823556`.
+The latest final commits still need a concluding remote check.
 
 Next, measure shared methods within each governing snapshot,
 using a private `WeakSet` to authenticate the original frozen plain binding records.
