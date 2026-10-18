@@ -780,6 +780,69 @@ in a fresh keyless worktree:
   match the pre-split outputs byte for byte except for labels;
 - full-family lint time and single-package lint time are measured and recorded here.
 
+### Measured after the move
+
+All at `8d09e8e092` in the keyless worktree `w165`,
+by the family gate g101 (`s245/split/gate-family.ts`)
+and the controls after it (`s245/split/control/run-controls.ts`);
+a path written `s245/...` is under `/var/home/user/temp/agent/tr-fan`.
+
+- Every step of g101 exited 0:
+  install,
+  34 builds,
+  and each of the 36 packages' `lint:oxlint`,
+  `lint:types` and `test:unit`,
+  then `source-scans`.
+- The suites printed 2506 `[PASS]` lines and no `[FAIL]` line,
+  against 2484 in g100.
+  A `[PASS]` line names a top-level describe with its cases,
+  so the case-name comparison is by line,
+  as multisets (`s245/split/compare-names.ts`):
+  6 lines of g100 are gone and 28 are new.
+  Each gone line is still there in another shape:
+  three gained a case the split added
+  (the start guard names its owner's task,
+  every runner has an owner,
+  the audit finds a version set before the split),
+  and three were divided between the packages whose runners or files they test
+  (the 17 unreadable-corpus-commit refusals into four lines that hold all 17,
+  the unopenable-file cases into two,
+  the keyless-child cases into two).
+  The other new lines test code the split added:
+  the census's family reading,
+  the audit's family sources and the command-owner table.
+- The coverage census and the cache-account audit,
+  read against the single package at `2083d7bec1`
+  (`s245/split/control/census-audit-control.ts`,
+  output in `s245/split/control/out2/control-output.txt`):
+  runner sources 43 before and 43 after,
+  and the 43 the build-entry lists name by owner are the 43 the bundles carry;
+  library sources 1310 before and 1319 after,
+  every after file mapped or new by construction
+  (the build-entry lists,
+  the family reading,
+  the cache-account sources and the command-owner table);
+  the audit reads 1639 files before and after,
+  with none missing;
+  the 8 cache-version constants read the same declarations and values.
+  The first run of this control said DIFFER for the audit:
+  it read git's renames end to end,
+  and two fixtures moved as exact renames by `4bd1aea8d5` were edited afterwards below git's rename threshold;
+  read at the move commit,
+  the audit matches.
+- The TianqiChen66625 decisions replay,
+  run against the family's library builds
+  (every function it calls comes from `consistency`),
+  is byte-identical to the pre-split replay except for its label.
+- The corpus measure over the 92 pinned pages,
+  the pre-split build against the family's builds
+  (1237 slices,
+  55,605 word-locator comparisons),
+  finds no difference in any corpus row;
+  its typography control,
+  which hands the new side different definitions,
+  shows its difference.
+
 ## Order of work
 
 1.  Commit this document and the map.
