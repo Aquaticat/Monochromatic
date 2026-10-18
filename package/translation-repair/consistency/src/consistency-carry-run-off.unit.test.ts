@@ -19,7 +19,7 @@ import {
 import {
   carryRunOffFinalistsOf,
   type ConsistencyChoiceVoice,
-  tiedChoicesOf,
+  runOffChoiceFinalistsOf,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -53,15 +53,15 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: tiedChoicesOf.name,
+      name: runOffChoiceFinalistsOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
           name: 'NAMES THE LABELS TIED FOR FIRST, in the order of the sheet, when no label has more than half of the usable choices',
           fn: async () => {
             expect([
-              tiedChoicesOf({ voices: votesFor({ choices: ['CANDIDATE 3', 'CANDIDATE 5', 'CANDIDATE 1',], },), labels: LABELS, },),
-              tiedChoicesOf({
+              runOffChoiceFinalistsOf({ voices: votesFor({ choices: ['CANDIDATE 3', 'CANDIDATE 5', 'CANDIDATE 1',], },), labels: LABELS, },),
+              runOffChoiceFinalistsOf({
                 voices: votesFor({ choices: ['CANDIDATE 2', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 1',], },),
                 labels: LABELS,
               },),
@@ -76,15 +76,15 @@ await describe({
             + 'the sheet',
           fn: async () => {
             expect([
-              tiedChoicesOf({
+              runOffChoiceFinalistsOf({
                 voices: votesFor({ choices: ['CANDIDATE 2', 'CANDIDATE 1', 'CANDIDATE 3', 'CANDIDATE 2',], },),
                 labels: LABELS,
               },),
-              tiedChoicesOf({
+              runOffChoiceFinalistsOf({
                 voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3', 'CANDIDATE 4',], },),
                 labels: LABELS,
               },),
-              tiedChoicesOf({
+              runOffChoiceFinalistsOf({
                 voices: votesFor({
                   choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 2', 'CANDIDATE 3', 'CANDIDATE 4',],
                 },),
@@ -101,19 +101,19 @@ await describe({
           name: 'NAMES NONE WHEN A LABEL HAS A STRICT MAJORITY OR WHEN NOTHING COUNTED',
           fn: async () => {
             expect([
-              tiedChoicesOf({ voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2',], },), labels: LABELS, },),
-              tiedChoicesOf({
+              runOffChoiceFinalistsOf({ voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2',], },), labels: LABELS, },),
+              runOffChoiceFinalistsOf({
                 voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },),
                 labels: LABELS,
               },),
-              tiedChoicesOf({ voices: votesFor({ choices: ['CANDIDATE 9', 'nothing',], },), labels: LABELS, },),
+              runOffChoiceFinalistsOf({ voices: votesFor({ choices: ['CANDIDATE 9', 'nothing',], },), labels: LABELS, },),
             ],).toEqual([[], [], [],],);
           },
         },),
         it({
           name: 'READS THE FORMS OF A LABEL AS THE LABEL, so a tie is a tie whichever way the seats wrote it',
           fn: async () => {
-            expect(tiedChoicesOf({ voices: votesFor({ choices: ['Candidate 1', '2', 'candidate 1', ' 2',], },), labels: LABELS, },),)
+            expect(runOffChoiceFinalistsOf({ voices: votesFor({ choices: ['Candidate 1', '2', 'candidate 1', ' 2',], },), labels: LABELS, },),)
               .toEqual(['CANDIDATE 1', 'CANDIDATE 2',],);
           },
         },),

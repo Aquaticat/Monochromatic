@@ -31,8 +31,8 @@ import type {
 } from './pass-consistency-types.ts';
 
 //region Pass consistency settle
-// WHAT A GROUP COMES TO once its ballots are counted and a tie for first is run
-// off: a verdict, a rendering and a provisional outcome for each place, and the
+// WHAT A GROUP COMES TO once its ballots are counted and a split with no strict majority is run
+// off among its finalists: a verdict, a rendering and a provisional outcome for each place, and the
 // places the chosen rendering is still to be carried to (`receivers`). The carry
 // (`pass-consistency-carry.ts`) turns the receivers of each block into a record
 // for every one of them and, when the bench chooses a text other than the block's
@@ -71,18 +71,18 @@ function recordedBallot(
 }
 
 /**
- Why the bench was asked once more: the places that tied for first and how many
- of the usable ballots named each.
+ Why the bench was asked once more: the choices reached no strict majority, and the finalists
+ are named with how many of the usable ballots named each.
 
  @param count - what the first round's ballots came to, with finalists
 
  @param asked - the ballots heard
 
- @returns One sentence naming the tied places and their ballots, empty when the choices did not tie
+ @returns One sentence naming the finalists and their ballots, empty when the choices have no finalists
 
  @example
  ```ts
- const reason = runOffReasonOf({ count, asked, },); // 'the choices tied for first between OCCURRENCE 3 (2 ballots) and OCCURRENCE 4 (2 ballots), of 4 usable in all'
+ const reason = runOffReasonOf({ count, asked, },); // 'the choices reached no strict majority, so the finalists are OCCURRENCE 3 (2 ballots) and OCCURRENCE 4 (2 ballots), of 4 usable in all'
  ```
  */
 export function runOffReasonOf(
@@ -112,7 +112,7 @@ export function runOffReasonOf(
       },),
   },);
   /**
-   Each tied place with the ballots that named it.
+   Each finalist with the ballots that named it.
    */
   const named = count.finalists
     .map(function namedOf(label,): string {
@@ -129,7 +129,15 @@ export function runOffReasonOf(
         many: 'ballots',
       },)})`;
     },);
-  return `the choices tied for first between ${named.join(' and ',)}, of ${String(usable.length,)} usable in all`;
+  /**
+   Every finalist but the last.
+   */
+  const beforeLast = named.toSpliced(-1,);
+  /**
+   The finalists as a list in prose: "A and B", or "A, B and C".
+   */
+  const listed = (beforeLast.length === 0) ? (named[0] ?? '') : `${beforeLast.join(', ',)} and ${named.at(-1,) ?? ''}`;
+  return `the choices reached no strict majority, so the finalists are ${listed}, of ${String(usable.length,)} usable in all`;
 }
 
 /**
@@ -141,7 +149,7 @@ export function runOffReasonOf(
 
  @param asked - the ballots heard, the quorum and the gather's findings
 
- @returns What the usable ballots come to, the finalists of a tie for first included
+ @returns What the usable ballots come to, the finalists of a split with no strict majority included
 
  @example
  ```ts
@@ -195,7 +203,7 @@ export function countAsked(
 
  @param asked - the ballots heard, the quorum and the gather's findings
 
- @param runOff - what the run-off heard when the choices tied for first
+ @param runOff - what the run-off heard when the choices had finalists
 
  @returns The group with its verdict, renderings and provisional outcomes, and the places the chosen rendering is still to be carried to
 

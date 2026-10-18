@@ -28,7 +28,7 @@ import {
   majorityChoiceOf,
   markEvidenceOf,
   quotesByLabelOf,
-  tiedForFirstOf,
+  runOffFinalistsOf,
   usableVoicesOf,
 } from '../dist/final/node/index.mjs';
 import { countedList, } from '@monochromatic-dev/translation-repair-test-fixture/ts/element-reads.test-fixture.ts';
@@ -292,7 +292,7 @@ await describe({
       ],
     },),
     describe({
-      name: tiedForFirstOf.name,
+      name: runOffFinalistsOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
@@ -301,12 +301,12 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 4, },);
             expect([
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({
+              runOffFinalistsOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              runOffFinalistsOf({
                 voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2',], },),
                 labels,
               },),
-              tiedForFirstOf({
+              runOffFinalistsOf({
                 voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',], },),
                 labels,
               },),
@@ -323,11 +323,11 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 4, },);
             expect([
-              tiedForFirstOf({
+              runOffFinalistsOf({
                 voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 1',], },),
                 labels,
               },),
-              tiedForFirstOf({
+              runOffFinalistsOf({
                 voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], },),
                 labels,
               },),
@@ -344,17 +344,17 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 4, },);
             expect([
-              tiedForFirstOf({
+              runOffFinalistsOf({
                 voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',], },),
                 labels,
               },),
-              tiedForFirstOf({
+              runOffFinalistsOf({
                 voices: choosing({
                   choices: ['OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 3',],
                 },),
                 labels,
               },),
-              tiedForFirstOf({
+              runOffFinalistsOf({
                 voices: choosing({
                   choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',],
                 },),
@@ -373,14 +373,14 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 3, },);
             expect([
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({
+              runOffFinalistsOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              runOffFinalistsOf({
                 voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 1',], },),
                 labels,
               },),
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({ voices: [], labels, },),
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 9', 'OCCURRENCE 9',], },), labels, },),
+              runOffFinalistsOf({ voices: choosing({ choices: ['OCCURRENCE 2',], },), labels, },),
+              runOffFinalistsOf({ voices: [], labels, },),
+              runOffFinalistsOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 9', 'OCCURRENCE 9',], },), labels, },),
             ],).toEqual([[], [], [], [], [],],);
           },
         },),

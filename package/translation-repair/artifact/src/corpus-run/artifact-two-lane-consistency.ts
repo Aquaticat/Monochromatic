@@ -25,7 +25,7 @@ import type { UnplacedReason, } from '@monochromatic-dev/translation-repair-corp
 // as written. GENERATION SIXTEEN is the second shape: ballots
 // agree when their quotes locate one span of the place's own English, a located
 // place carries the words and the offset the English holds, a slot is no
-// condition of being located, a tie for first is run off among the finalists
+// condition of being located, a split with no strict majority is run off among the finalists
 // (`verdict.runOff`), and the chosen rendering is carried by writers and a
 // choice among candidates (`group.carries`). It stays readable as written too.
 // GENERATION SEVENTEEN is the section the pass writes now: the second shape,
@@ -397,7 +397,7 @@ export type ArtifactConsistencyChoiceBallot = {
 };
 
 /**
- The bench asked once more among the places that tied for first.
+ The bench asked once more among the finalists of a first round that gave no strict majority.
 
  @example
  ```ts
@@ -406,7 +406,7 @@ export type ArtifactConsistencyChoiceBallot = {
  */
 export type ArtifactConsistencyRunOff = {
   /**
-   Labels of the places that tied, in sheet order, the only places the run-off's
+   Labels of the finalists, in sheet order, the only places the run-off's
    sheet showed.
    */
   readonly finalists: readonly string[];
@@ -585,7 +585,7 @@ export type ArtifactConsistencyCarry = {
   readonly quorum: number;
 
   /**
-   The bench asked once more among the candidates that tied for first, present only when the first ballots reached their quorum
+   The bench asked once more among the finalists, present only when the first ballots reached their quorum
    and no candidate had a strict majority (the lead's adoption of 2026-10-15 of the owner's rule of 2026-10-11 for this ask,
    open to the owner's veto); its finalists are those candidates, its ballots are the second ask's, and `decision` is then
    what the run-off decided. A carry recorded before the rule has none, and a split it recorded stays as recorded.
@@ -652,14 +652,14 @@ export type ArtifactConsistencyVerdict =
     readonly quorum: number;
 
     /**
-     The place every place followed, or why none. When the choices tied for
-     first, the place the run-off chose, or the run-off's reason for none.
+     The place every place followed, or why none. When the choices had
+     finalists, the place the run-off chose, or the run-off's reason for none.
      */
     readonly winner: ConsistencyWinner;
 
     /**
-     Generation sixteen: the bench asked once more among the places that tied
-     for first; absent when the choices did not tie.
+     Generation sixteen: the bench asked once more among the finalists;
+     absent when the choices had none.
      */
     readonly runOff?: ArtifactConsistencyRunOff;
   };

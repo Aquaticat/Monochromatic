@@ -46,21 +46,21 @@ The groups that follow name the main ones.
   and `consistency-occurrences.ts`.
 - Choice among renderings:
   the reply of a judge who only chooses,
-  as the run-off among tied places and the choice among a receiving place's candidate texts both ask it:
+  as the run-off among finalists and the choice among a receiving place's candidate texts both ask it:
   its response format,
   the label it names,
   the choices that can be counted,
-  the labels tied for first
+  the finalists of a split
   and the tally.
   Names:
   `canonicalChoiceOf`,
   `choiceTallyOf`,
   `consistencyChoiceResponseFormat`,
   `usableChoicesOf`,
-  `tiedChoicesOf`.
+  `runOffChoiceFinalistsOf`.
   Declared in `consistency-choice.ts`.
 - Run-off:
-  ask the bench once more when the choices tie for first.
+  ask the bench once more when the choices give no strict majority.
   Names:
   `buildConsistencyRunOffMessages`,
   `runOffWinnerOf`.

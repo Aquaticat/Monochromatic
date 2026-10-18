@@ -44,7 +44,7 @@ import {
 
 //region Pass consistency bench decide
 // ASKING THE JUDGE BENCH ABOUT ONE GROUP AND DECIDING IT: the first round's
-// ballots, a run-off among the places that tied for first, and the counting that
+// ballots, a run-off among the finalists, and the counting that
 // names the chosen place and the places the chosen rendering is still to reach.
 // The carry of the chosen rendering is a later step (`pass-consistency-bench.ts`),
 // which waits until every group is decided so each carry can be told the located
@@ -229,7 +229,7 @@ export async function decideAskedGroup(
       stageSettings,
     },);
     /**
-     What they come to, and the places that tied for first when they tie.
+     What they come to, and the finalists when no place has a strict majority.
      */
     const count = countAsked({
       repeat,
@@ -245,7 +245,7 @@ export async function decideAskedGroup(
       },)}`,);
     }
     /**
-     The bench asked once more among the places that tied for first, absent when none tied.
+     The bench asked once more among the finalists, absent when there are none.
      */
     const runOff = (count.finalists
       .length

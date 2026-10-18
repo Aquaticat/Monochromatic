@@ -1,7 +1,7 @@
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
   carryChoiceOf,
-  tiedChoicesOf,
+  runOffChoiceFinalistsOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type {
   ArtifactConsistencyCarry,
@@ -218,7 +218,7 @@ function assertCarryRecounts(
     return;
   }
   /**
-   The bench asked once more among the candidates that tied for first.
+   The bench asked once more among the finalists.
    */
   const { runOff, } = carry;
   if ((choice.kind !== 'none') || (choice.reason !== 'no-majority')) {
@@ -228,9 +228,9 @@ function assertCarryRecounts(
     },);
   }
   /**
-   The candidates the first ballots tied for first.
+   The finalists the first ballots give.
    */
-  const tied = tiedChoicesOf({
+  const expected = runOffChoiceFinalistsOf({
     voices: carry.ballots,
     labels,
   },);
@@ -238,7 +238,7 @@ function assertCarryRecounts(
    The finalists the run-off records.
    */
   const { finalists, } = runOff;
-  if ((tied.length !== finalists.length) || tied.some(function differs(
+  if ((expected.length !== finalists.length) || expected.some(function differs(
     label,
     at,
   ): boolean {
@@ -246,7 +246,7 @@ function assertCarryRecounts(
   },)) {
     throw new ArtifactParseError({
       path: `${path}.runOff.finalists`,
-      reason: 'the candidates tied for first among the first ballots, in sheet order, and at least two',
+      reason: 'the finalists of the first ballots, in sheet order, and at least two',
     },);
   }
   if (runOff.quorum < 1) {

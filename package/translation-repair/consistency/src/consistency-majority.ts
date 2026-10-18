@@ -438,22 +438,25 @@ export function majorityChoiceOf(
 }
 
 /**
- The labels that tie for first among the usable ballots' choices: two or more
- labels share the highest count and no label has more than half of the ballots.
- A unique plurality without a majority is no tie, and neither is a majority.
+ The finalists of a run-off among the usable ballots' choices, when no label has more
+ than half of the ballots (the lead's rule, open to the owner's veto, extending the owner's rule of 2026-10-11).
+ The leaders are the labels with the highest count. When two or more labels share it, they are the finalists, as a
+ tie for first has always been. When exactly one label leads, the labels with the second-highest count (the highest
+ count below the leader's, among the labels with a ballot) join it, so a leader that fell short of a majority is
+ run off against every label that was next behind it. A strict majority has no run-off.
 
  @param voices - usable ballots
 
  @param labels - labels the sheet showed, in sheet order
 
- @returns The tied labels in sheet order, none when no two labels share the top count or a label has a majority
+ @returns The finalists in sheet order, none when a label has a strict majority or when fewer than two labels drew a ballot
 
  @example
  ```ts
- const finalists = tiedForFirstOf({ voices, labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
+ const finalists = runOffFinalistsOf({ voices, labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
  ```
  */
-export function tiedForFirstOf(
+export function runOffFinalistsOf(
   {
     voices,
     labels,
@@ -483,13 +486,31 @@ export function tiedForFirstOf(
   /**
    Labels with the highest count.
    */
-  const tied = labels.filter(function isTop(
+  const leaders = labels.filter(function isTop(
     _label,
     position,
   ): boolean {
     return counts[position] === top;
   },);
-  return (tied.length >= 2) ? tied : [];
+  if (leaders.length >= 2)
+    return leaders;
+  /**
+   The highest count below the leader's, zero when no other label drew a ballot.
+   */
+  const second = Math.max(
+    0,
+    ...counts.filter(function isBehind(count,): boolean {
+      return count < top;
+    },),
+  );
+  if (second === 0)
+    return [];
+  return labels.filter(function isLeaderOrSecond(
+    _label,
+    position,
+  ): boolean {
+    return (counts[position] === top) || (counts[position] === second);
+  },);
 }
 
 /**

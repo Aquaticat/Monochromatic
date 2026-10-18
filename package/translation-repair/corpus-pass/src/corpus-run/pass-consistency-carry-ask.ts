@@ -265,7 +265,7 @@ export async function askCarryWriters(
 
  @param stageSettings - straggler windows the entry file read for this launch
 
- @param runOff - whether this is the run-off among the candidates that tied for first, whose sheet shows those candidates only
+ @param runOff - whether this is the run-off among the finalists, whose sheet shows those candidates only
  and whose answer is kept under a key of its own; the first ask among all of them where absent
 
  @returns The choices heard, the quorum the gather closed on and its findings

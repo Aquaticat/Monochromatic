@@ -1,7 +1,7 @@
 import {
   choiceTallyOf,
   type ConsistencyChoiceVoice,
-  tiedChoicesOf,
+  runOffChoiceFinalistsOf,
 } from './consistency-choice.ts';
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -288,9 +288,9 @@ export function carryChoiceOf(
 
 /**
  The candidates a carry choice runs off: when the choices reached the quorum and no candidate has a strict majority, the
- candidates tied for first, as the first round runs off among the places that tied (the lead's adoption of 2026-10-15 of the
- owner's rule of 2026-10-11 for this ask, open to the owner's veto). A single leader without a majority is no tie, and a choice
- that missed its quorum or was won is not run off.
+ finalists the first round names (the leaders, and the candidates next behind a lone leader), as the first round runs off among
+ its places (the lead's adoption of 2026-10-15 of the owner's rule of 2026-10-11 for this ask, extended on 2026-10-18 to a lone
+ leader, both open to the owner's veto). A choice that missed its quorum or was won is not run off.
 
  @param voices - every heard choice with its seat
 
@@ -298,7 +298,7 @@ export function carryChoiceOf(
 
  @param quorum - voices the gather closed on, which the usable choices must reach
 
- @returns The tied candidates in sheet order, none when the choice is not run off
+ @returns The finalists in sheet order, none when the choice is not run off
 
  @example
  ```ts
@@ -325,7 +325,7 @@ export function carryRunOffFinalistsOf(
     quorum,
   },);
   return ((choice.kind === 'none') && (choice.reason === 'no-majority'))
-    ? tiedChoicesOf({
+    ? runOffChoiceFinalistsOf({
       voices,
       labels,
     },)

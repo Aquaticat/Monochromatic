@@ -54,7 +54,7 @@ export {
   type ConsistencyChoiceWire,
   isConsistencyChoiceWire,
   isUsableChoice,
-  tiedChoicesOf,
+  runOffChoiceFinalistsOf,
   usableChoiceFor,
   usableChoicesOf,
 } from './consistency-choice.ts';
@@ -144,7 +144,7 @@ export {
   markEvidenceOf,
   type QuotesByLabel,
   quotesByLabelOf,
-  tiedForFirstOf,
+  runOffFinalistsOf,
   usableVoicesOf,
 } from './consistency-majority.ts';
 export {

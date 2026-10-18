@@ -226,8 +226,9 @@ export async function choose(
     quorum: asked.quorum,
   },);
   /**
-   The candidates tied for first when the choices reached the quorum and none has a strict majority, whose run-off the owner's
-   rule of 2026-10-11 asks for among contests (the lead's adoption of 2026-10-15 for this ask, open to the owner's veto).
+   The finalists when the choices reached the quorum and none has a strict majority, whose run-off the owner's rule of
+   2026-10-11 asks for among contests (the lead's adoption of 2026-10-15 for this ask, extended to a lone leader, open to the
+   owner's veto).
    */
   const finalists = carryRunOffFinalistsOf({
     voices: asked.voices,
@@ -236,13 +237,13 @@ export async function choose(
   },);
   if (finalists.length > 0) {
     cl.info(
-      `the choice among the candidates had no strict majority (${String(firstUsable,)} usable); asking the bench once more among the tied ${
+      `the choice among the candidates had no strict majority (${String(firstUsable,)} usable); asking the bench once more among the finalists ${
         finalists.join(' and ',)
       }`,
     );
   }
   /**
-   The bench asked once more among the candidates that tied, absent when none tied. Its sheet shows those candidates only,
+   The bench asked once more among the finalists, absent when there are none. Its sheet shows those candidates only,
    under the labels they had, and its answer is kept under a key of its own.
    */
   const runOffAsked = (finalists.length === 0)

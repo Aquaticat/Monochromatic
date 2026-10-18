@@ -46,8 +46,8 @@ export {
 
 //region Pass consistency bench
 // ASKING THE JUDGE BENCH ABOUT EVERY GROUP THAT NEEDS IT, side by side, and
-// settling what it says: the first round's ballots, a run-off among the places
-// that tied for first, and the carry of the chosen rendering to each receiving
+// settling what it says: the first round's ballots, a run-off among the finalists
+// of a split with no strict majority, and the carry of the chosen rendering to each receiving
 // place by the writer bench and a choice among candidates. EVERY GROUP IS DECIDED
 // BEFORE ANY IS CARRIED, so each carry is told the located words of the other
 // groups it must not rewrite away. The seats are read

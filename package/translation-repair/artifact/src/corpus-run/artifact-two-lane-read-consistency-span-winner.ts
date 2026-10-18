@@ -6,7 +6,7 @@ import {
   type ConsistencyWinner,
   majorityChoiceOf,
   runOffWinnerOf,
-  tiedForFirstOf,
+  runOffFinalistsOf,
   usableVoicesOf,
   winnerOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
@@ -14,9 +14,9 @@ import type { ArtifactConsistencyGroup, } from './artifact-two-lane-consistency.
 
 //region Artifact consistency span winner
 // THE WINNER A RECORDED GROUP OF THE SIXTEENTH SHAPE MUST HAVE, from its ballots:
-// the strict majority of the first round, or, when the choices tied for first,
-// the winner of the run-off that settled the tie. A run-off recorded for choices
-// that did not tie, missing for choices that did, among other finalists, or
+// the strict majority of the first round, or, when the choices had finalists,
+// the winner of the run-off that settled the split. A run-off recorded for choices
+// that had no finalists, missing for choices that had, among other finalists, or
 // counted otherwise than its ballots give is refused.
 
 /**
@@ -74,7 +74,7 @@ export function sameWinner(
 }
 
 /**
- The winner the ballots give, after the run-off when the choices tied for first,
+ The winner the ballots give, after the run-off when the choices had finalists,
  and a refusal where the run-off recorded is not the one the ballots call for.
 
  @param group - the group, asked of the bench
@@ -85,7 +85,7 @@ export function sameWinner(
 
  @returns The winner the ballots, the quorum and the run-off give
 
- @throws {@link ArtifactParseError} when a run-off is recorded for choices that did not tie, is missing for choices that did, names other finalists, or counts otherwise than its ballots give
+ @throws {@link ArtifactParseError} when a run-off is recorded for choices that had no finalists, is missing for choices that had, names other finalists, or counts otherwise than its ballots give
 
  @example
  ```ts
@@ -121,11 +121,11 @@ export function expectedWinnerOf(
    */
   const { quorum, } = group.verdict;
   /**
-   The places that tied for first, which are run off when the ballots reach the quorum.
+   The finalists, which are run off when the ballots reach the quorum.
    */
   const finalists = ((voices.length === 0) || (voices.length < quorum))
     ? []
-    : tiedForFirstOf({
+    : runOffFinalistsOf({
       voices,
       labels,
     },);
@@ -137,7 +137,7 @@ export function expectedWinnerOf(
     if (runOff !== undefined) {
       throw new ArtifactParseError({
         path: `${path}.verdict.runOff`,
-        reason: 'no run-off, since the usable ballots did not tie for first',
+        reason: 'no run-off, since the usable ballots left no finalists',
       },);
     }
     return winnerOf({
@@ -153,7 +153,7 @@ export function expectedWinnerOf(
     !== finalists.join('\n',))) {
     throw new ArtifactParseError({
       path: `${path}.verdict.runOff`,
-      reason: `a run-off among ${finalists.join(', ',)}, which tied for first`,
+      reason: `a run-off among ${finalists.join(', ',)}, the finalists of ballots with no strict majority`,
     },);
   }
   /**

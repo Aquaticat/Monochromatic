@@ -30,17 +30,17 @@ import type {
 // receiver. `pass-consistency-settle.ts` assembles these into the group.
 
 /**
- The winner and the run-off's record, after a tie for first is run off.
+ The winner and the run-off's record, after the finalists of a split with no strict majority are run off.
 
  @param count - what the first round's ballots came to
 
  @param labels - labels of the places, in order
 
- @param runOff - what the run-off heard, as a list of zero or one: none when the choices did not tie
+ @param runOff - what the run-off heard, as a list of zero or one: none when the choices had no finalists
 
  @returns The winner, and the run-off as the artifact records it when there was one, as a list of zero or one
 
- @throws {@link ConsistencyInvariantError} when a run-off was heard for choices that did not tie, or the choices tied and no run-off was heard
+ @throws {@link ConsistencyInvariantError} when a run-off was heard for choices that had no finalists, or the choices had finalists and no run-off was heard
 
  @example
  ```ts
@@ -70,7 +70,7 @@ export function afterRunOff(
       .length
       > 0) {
       throw new ConsistencyInvariantError({ invariant:
-        'the choices tied for first and the bench was not asked again, and a tie is run off before the group is settled', },);
+        'the choices had finalists and the bench was not asked again, and finalists are run off before the group is settled', },);
     }
     return {
       winner: count.winner,
@@ -81,7 +81,7 @@ export function afterRunOff(
     .length
     === 0) {
     throw new ConsistencyInvariantError({ invariant:
-      'a run-off was heard for choices that did not tie for first, and the bench is asked again only on a tie', },);
+      'a run-off was heard for choices that had no finalists, and the bench is asked again only when the choices have finalists', },);
   }
   /**
    What the run-off's choices come to.

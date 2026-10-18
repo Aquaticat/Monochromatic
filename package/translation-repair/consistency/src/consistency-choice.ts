@@ -2,14 +2,14 @@ import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-r
 import { shownLabelOf, } from './consistency-label-form.ts';
 import {
   majorityChoiceOf,
-  tiedForFirstOf,
+  runOffFinalistsOf,
 } from './consistency-majority.ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Consistency choice
-// THE REPLY OF A JUDGE WHO ONLY CHOOSES: the run-off among the places that tied
-// for first, and the choice among the candidate texts of a receiving place. The
+// THE REPLY OF A JUDGE WHO ONLY CHOOSES: the run-off among the finalists
+// of a first round that gave no strict majority, and the choice among the candidate texts of a receiving place. The
 // first round asks for quotes too; these two ask for a reason and a choice, in
 // that order (REASON BEFORE CHOICE, the owner's ruling of 2026-10-11), the
 // reason declared first in the reply schema and written first on the sheet.
@@ -242,21 +242,22 @@ export function usableChoicesOf(
 }
 
 /**
- The labels that tie for first among the choices that can be counted: two or more labels share the highest count and no label
- has more than half of the usable choices. A single leader without a majority is no tie, and neither is a majority.
+ The finalists of a run-off among the choices that can be counted, when no label has more than half of the usable choices:
+ the labels sharing the highest count, or, when one label leads alone, that label and the labels with the second-highest count.
+ A majority has no finalists.
 
  @param voices - every heard choice with its seat
 
  @param labels - labels the sheet showed, in sheet order
 
- @returns The tied labels in sheet order, none when no tie
+ @returns The finalists in sheet order, none when a label has a majority or fewer than two labels drew a choice
 
  @example
  ```ts
- const tied = tiedChoicesOf({ voices, labels: ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },);
+ const finalists = runOffChoiceFinalistsOf({ voices, labels: ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },);
  ```
  */
-export function tiedChoicesOf(
+export function runOffChoiceFinalistsOf(
   {
     voices,
     labels,
@@ -265,7 +266,7 @@ export function tiedChoicesOf(
     readonly labels: readonly string[];
   },
 ): readonly string[] {
-  return tiedForFirstOf({
+  return runOffFinalistsOf({
     voices: usableChoicesOf({
       voices,
       labels,

@@ -24,10 +24,10 @@ import {
 import { gatherThroughCache, } from './pass-consistency-gather.ts';
 
 //region Pass consistency run-off
-// ASKING THE BENCH ONCE MORE among the places that tied for first, or resuming
+// ASKING THE BENCH ONCE MORE among the finalists, or resuming
 // what it said. The sheet shows only the finalists (`consistency-run-off.ts`);
 // the gather, the cache and the quorum are the first round's, under a key that
-// names the run-off, so a resumed page runs off the same tie the same way.
+// names the run-off, so a resumed page runs off the same finalists the same way.
 
 /**
  What the run-off produced: the choices, the quorum and what the gather
@@ -127,7 +127,7 @@ export function choiceRecordOf(
 }
 
 /**
- Asks the bench to settle a tie for first, or reads its earlier answer.
+ Asks the bench to settle a split among the finalists, or reads its earlier answer.
 
  @param client - provider client
 
@@ -135,7 +135,7 @@ export function choiceRecordOf(
 
  @param subject - the repeated wording and every place it stands
 
- @param finalists - labels of the places that tied, the only places the sheet shows
+ @param finalists - labels of the finalists, the only places the sheet shows
 
  @param renderings - each place's rendering as the first round located it, in the order of the places
 

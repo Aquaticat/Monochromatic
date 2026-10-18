@@ -24,6 +24,13 @@
  that stands once and that a strict majority of the quotes naming the place contain, is
  not stored and moves no key.
 
+ The finalists of a run-off moved no number either (the lead's rule, open to the owner's veto, extending the owner's
+ rule of 2026-10-11): a first round or a carry choice with no strict majority and a lone leader is now run off among
+ the leader and the labels next behind it, where it was kept. Which labels are the finalists is counted from the stored
+ ballots and is not stored, and the sheet of a run-off shows only its finalists under a key that digests the sheet, so
+ a run-off among three labels asks a question under a key of its own, and a run-off among the tied labels keeps its
+ key byte for byte. The wording of the sheets is the same.
+
  Version four (the review of 2026-10-13): what the writers and the judges are
  shown changed again, before any pass wrote version three. The words of every
  place of every other group that stand in a block are listed to keep, not only

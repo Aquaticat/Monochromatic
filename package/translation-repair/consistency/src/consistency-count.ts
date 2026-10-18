@@ -12,7 +12,7 @@ import {
   markEvidenceOf,
   type QuotesByLabel,
   quotesByLabelOf,
-  tiedForFirstOf,
+  runOffFinalistsOf,
   usableVoicesOf,
 } from './consistency-majority.ts';
 import { slotInSpan, } from './consistency-slot-in-span.ts';
@@ -49,8 +49,9 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
 // it, the unit being kept or cut as the character it shows would be). A ballot whose quote stands nowhere or twice is one of the
 // usable ballots that did not agree. Otherwise the place is unlocated and stays
 // as it stands. THE CHOICE WINS ON A STRICT MAJORITY and only with the quorum
-// the gather closed on, and only if its own span is located; two or more labels
-// tied for first are named as the finalists of a run-off, which the pass asks
+// the gather closed on, and only if its own span is located; with no strict
+// majority, the labels with the highest count (and, when one label leads alone, the labels
+// next behind it) are named as the finalists of a run-off, which the pass asks
 // once (`finalists`). A PLACE IS KEPT when a strict majority list it.
 //
 // WORDS THAT STAND MORE THAN ONCE ARE TOLD APART BY THE MARKS THE BALLOTS COPIED.
@@ -466,7 +467,7 @@ export function countConsistency(
     },),
     finalists: ((usableVoices.length === 0) || (usableVoices.length < quorum))
       ? []
-      : tiedForFirstOf({
+      : runOffFinalistsOf({
         voices: usableVoices,
         labels,
       },),

@@ -126,7 +126,7 @@ export type ConsistencyRendering =
 
 /**
  Why the group has no winner. The two run-off reasons are given only after the
- bench was asked again among the places that tied for first: the run-off's
+ bench was asked again among the finalists: the run-off's
  gather missed its quorum, or the run-off tied or reached no majority too.
  */
 export type NoWinnerReason =
@@ -198,9 +198,10 @@ export type ConsistencyCount = {
   readonly winner: ConsistencyWinner;
 
   /**
-   Labels that tie for first among the choices when the ballots reach the
-   quorum and no label has a majority, in sheet order; the bench is asked once
-   more among them. None when the choices do not tie.
+   Labels that lead the choices when the ballots reach the quorum and no label
+   has a majority, in sheet order: the labels sharing the highest count, or a
+   lone leader with the labels next behind it. The bench is asked once more
+   among them. None when a label has a majority or the ballots miss the quorum.
    */
   readonly finalists: readonly string[];
 };

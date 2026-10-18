@@ -23,7 +23,7 @@ import { parseConsistencyChoiceBallot, } from './artifact-two-lane-read-consiste
 
 //region Artifact consistency carry reading
 // Reading the records of the sixteenth shape that the first round does not
-// hold: the run-off among the places that tied for first, and the carry of the
+// hold: the run-off among the finalists, and the carry of the
 // chosen rendering to a receiving place (the candidates, the ballots that chose
 // among them and what they decided), every key checked. What a carry says
 // about its own ballots is recounted in

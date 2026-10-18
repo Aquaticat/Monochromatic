@@ -44,7 +44,7 @@ const NO_WINNER_REASONS: Readonly<Record<NoWinnerReason, true>> = {
 
 /**
  Reasons only generation sixteen gives, after the bench was asked again among
- the places that tied for first.
+ the finalists.
  */
 const RUN_OFF_REASONS: ReadonlySet<NoWinnerReason> = new Set<NoWinnerReason>([
   'run-off-no-quorum',
