@@ -104,6 +104,9 @@ The rule:
 a new sheet is rendered by the rendered-sheets fixtures in the commit that adds it,
 and sheet text is built by a named function or constant,
 never inline where it is sent.
+A sheet asked again of the same bench in a second round has text of its own,
+since a client that answers a repeated model and prompt from its first payload replays the first round
+and the second round is a copy of it (ledger B657).
 
 What enforces it:
 `rendered-sheets-census.unit.test.ts` fails when a `build…Messages` function goes unrendered;

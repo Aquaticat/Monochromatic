@@ -971,6 +971,10 @@ A search that can be given an empty text is guarded before its loop,
 since an empty text is found at every offset and is contained only in another empty text (ledger B644),
 and a word edge reads a combining mark as part of the word,
 as the locator does (ledger B645).
+The slot a judge gives beside a quote is evidence for every quote that contains the located words,
+as the quotes themselves are (ledger B658).
+Two readers of one apostrophe read one twin of the English a reader sees,
+and a link counts as a closing bracket only when its label ends in a closing mark (ledger B659, B660).
 
 What enforces it:
 the consistency pass's own tests,

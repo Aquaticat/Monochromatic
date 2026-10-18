@@ -530,3 +530,360 @@ a lone leader names no finalists.
 Recurrence:
 `mistake-prevention-sheets-quorums-and-outcome-rules.md`,
 "Which seats a quorum counts".
+
+## B657: the carry run-off sent the first ask's sheet when every candidate was a finalist
+
+Found on 2026-10-18 by an independent review of the n166 to n173 production diff (finding R1, medium).
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f`,
+fixed in `c351d52644`.
+
+What the review showed:
+a carry choice with two candidates can only fail to have a strict majority by splitting evenly,
+and a three-way split makes all three candidates finalists,
+so `carryRunOffFinalistsOf` named every candidate and the run-off sheet was the first ask's sheet byte for byte.
+The production client (`promptUniqueClient`) answers a repeated model and prompt from the first payload,
+in memory and from the store,
+so every seat replayed its first ballot,
+the tie recurred,
+and the artifact and the log recorded a second round that was a copy of the first.
+The sheet of the run-off among places already differed from its first round's,
+so only the carry choice had the gap.
+
+Fixed in `c351d52644`.
+`buildCarryChoiceMessages` in `consistency-carry-choice-sheet.ts` takes `runOff`,
+and its rules then say that a first round of judges was split between the candidates in the fenced content,
+that none had more than half of the choices,
+that the judge is asked again between these candidates only,
+and that the choices of the first round are not shown and bind no one.
+`askCarryChoice` passes the flag it already held.
+The user message is unchanged.
+The rendered-sheets fixture holds the run-off sheet with every candidate a finalist
+(`rendered-sheets-carry.test-fixture.ts`),
+and the places the carry sheets share moved to `rendered-sheets-carry-places.test-fixture.ts`
+so the fixture stays under the line limit.
+
+Cache version:
+stays at 5.
+The sheet of the first ask is byte for byte what version 5 has,
+so no first-ask key moves.
+The sheet of the run-off changed,
+and its key (`choice-run-off`) digests the sheet,
+so a carry run-off stored by an earlier build is asked afresh under a new key,
+which is the intended effect:
+the stored one was a replay of the first round whenever every candidate was a finalist.
+The reason is recorded in `consistency-cache-version.ts`.
+
+Test:
+three cases in `pass-consistency-carry-run-off.unit.test.ts`
+(the sheets of the first ask and of the run-off differ in a three-way split,
+a tie breaks when the seats answer a new sheet anew,
+and behind `promptUniqueClient` the provider is called six times and not three)
+and a builder case in `consistency-carry-choice-sheet.unit.test.ts`.
+All three corpus-pass cases failed at the red commit,
+and the guard demo (reverting the rules in the sheet builder only) fails them again together with the builder case.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Sheets every model reads".
+
+## B658: the slot of a frame was agreed only beside a quote equal to the located words
+
+Found on 2026-10-18 by the same review (finding R2, medium-low).
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f`,
+fixed in `c351d52644`.
+
+What the review showed:
+the place is located by the longest quote that stands once and that more than half of all the usable ballots' quotes contain,
+but `agreedSlotWordsOf` counted a slot only beside a quote equal to the located words.
+Three judges who quoted three nested spans of one refrain and gave the same slot beside their own quotes
+produced one slot against three usable ballots,
+so the place was located with no slot and left to the writers.
+
+Fixed in `c351d52644`.
+`agreedSlotWordsOf` counts a slot given beside any usable quote that contains the located words,
+with the same test as the locator (`containsWords`,
+moved to `consistency-contains-words.ts` so both read one test).
+The denominator is still every usable ballot.
+`markEvidenceOf` stays exact,
+since a mark beside `the cat naps` is not beside `the cat`.
+The header of `consistency-slot-in-span.ts` says so.
+
+Stored artifacts:
+the recount reads the same rule through `slotInSpan`,
+and it would have read a stored artifact differently,
+so the rule is gated by generation (B664):
+a section of generation 17 or earlier is recounted with `exact-quote`,
+as it was written,
+and a section of generation 18 with `containing-quote`.
+The five stored run directories read accepted under the new build (see B664).
+
+Test:
+a nested-quote case in `consistency-span-agreement.unit.test.ts` (slot `naps`, expected at 4)
+and a pin that a non-containing quote shares no slot,
+the two agreement modes in `consistency-majority.unit.test.ts`,
+and the generation split in `artifact-two-lane-read-consistency-span.unit.test.ts`.
+The nested-quote case failed at the red commit.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Quotes a judge gives back".
+
+## B659: the proof read no link twin, so it disagreed with the cut about the same apostrophe
+
+Found on 2026-10-18 by the same review (finding R3, low).
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f`,
+fixed in `c351d52644`.
+
+What the review showed:
+the cut of a word reads the twin of the English a reader sees (`closingJointsOf`),
+in which a link that shows nothing is not there,
+but `joinedMarksOf` read the raw fold,
+so `see [](u)'kit here` recorded the apostrophe as joined and the proof treated it as inert,
+where the same text with no link reads as a leading mark.
+
+Fixed in `c351d52644`.
+`joinedMarksOf` moved to `consistency-joined-marks.ts` and builds the folded links of the English
+and calls `closingJointsOf`,
+so the proof and the cut read one unit alike.
+Its TSDoc says that it makes the reading `closingJointsOf` makes.
+The proof reads one English alone,
+so it holds that English's own links and none of the page's definitions,
+and a reference defined in another slice is plain text to it
+(the same limit as B661, stated in the header of the new file).
+
+Test:
+two `readProof` cases in `consistency-fold-apostrophes.unit.test.ts`:
+`see [](u)'kit here` joins nothing and reads as a leading mark,
+and `see [\]](u)'kit here` is a joint (a pin that passed at the red commit),
+and the cases moved with the function to `consistency-joined-marks.unit.test.ts`.
+The first failed at the red commit.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Words inside words".
+
+## B660: a link with any label counted as a closing bracket before an apostrophe
+
+Found on 2026-10-18 by the same review (finding R4, low).
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f`,
+fixed in `c351d52644`.
+
+What the review showed:
+`[kit!](u)'s bowl`,
+`[Kit.](u)'s` and `[kit ](u)'s` read in plain text as `kit!'s`,
+where `!` closes nothing,
+yet `afterBracket` in `consistency-word-joints.ts` took the `)` of the destination as a closing bracket
+because only links of marks alone were excluded,
+and the forward reading (`closingJointsOf`) stepped the destination back to the `]` that closes.
+A stand that ends at `kit!` or begins at `s bowl` was cut that the same text without a link does not cut.
+
+Fixed in `c351d52644`.
+A link with a label is a closing bracket before an apostrophe only when its label ends in a closing mark.
+`linkLabelEndsOpenOf` names the label that ends in neither a closing mark nor a Latin letter or digit,
+`labelledLinksOf` records it (`endsOpen`),
+and `foldedLinksOf` carries `openLabelEnds` (the backward reading)
+and `openLabelStretches` (the forward one,
+which `linkTwinOf` removes like an empty link's stretches).
+A label that ends in a closing mark (`[kit)](u)'s`) still joins,
+and a label that ends in a letter keeps its reading.
+
+Test:
+`consistency-closing-links.unit.test.ts` holds the joints of the three open-label links against their unlinked twins,
+the joints of `[kit)](u)'s bowl`,
+and `locateWords` for `s bowl` on the linked and plain forms;
+`consistency-joined-marks.unit.test.ts` holds the proof's reading.
+The two cases of `consistency-closing-links.unit.test.ts` failed at the red commit,
+and the guard demo (switching off the backward and forward readings only) fails them again with the proof case.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Words inside words".
+
+## B661: the artifact recount hands the slot readers no page definitions
+
+Found on 2026-10-18 by the same review (finding R5, low).
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f` (a pin that passes),
+limitation recorded in `c351d52644`.
+
+What the review showed:
+the pass reads a slot with the link and footnote definitions of the whole page,
+and the recount (`slotInSpan` in `artifact-two-lane-read-consistency-span.ts`)
+and `locateWords` in `artifact-two-lane-read-consistency-span-located.ts` read it over the span alone.
+A span `a[b]c` whose `[b]` is a link only under a definition in another slice is one word for the pass,
+which records no slot,
+and a word `b` with a slot for the recount,
+which then expects a slot the pass could not find.
+
+Decision, made by the lead:
+the limitation is written down and pinned,
+and the readers are not changed.
+The choice was between rebuilding the definitions and accepting the limit,
+and the definitions cannot be rebuilt from the file:
+the section reader is handed only the section, its path, its generation and the slice indexes,
+the `slices` rows of the consistency section hold only the slices the pass changed (as they ended),
+the comparison rows hold each lane's text from before the consolidation,
+and the consolidated English the pass read is recorded nowhere,
+so rebuilding it takes the corpus files at the artifact's commit (`rebuildPreparation`),
+which a reader of one file does not have.
+
+Recorded in `c351d52644`:
+the head of both readers says so,
+and the case `a[b]c` with slot `b` and no recorded slot is refused with the slot refusal is pinned
+in `artifact-two-lane-read-consistency-span.unit.test.ts`.
+The shape needs a definition in another slice and a slot at a word joint.
+If a reader of whole runs (with the corpus at hand) ever needs it,
+the definitions would be passed there and not through the section reader.
+
+## B662: five TSDoc contradictions of the consistency package
+
+Found on 2026-10-18 by the same review (finding R6, low).
+
+Outcome written on 2026-10-18.
+Fixed in `c351d52644`,
+no test (wording).
+
+What the review showed and what changed:
+the version 5 paragraph of `consistency-cache-version.ts` said both that no stored answer of version 4 replies to the question
+and that a version 4 record of the choice stands for the first ask:
+the key hashes the number,
+so no version 4 record is read,
+and the paragraph says so.
+The same paragraph said a run-off among the tied labels keeps its key and that the wording of the sheets is the same,
+which stopped being true for the carry run-off (B657).
+"A strict majority of the quotes naming the place" in `consistency-cache-version.ts`,
+`consistency-count.ts`,
+`consistency-span-agreement.ts`
+and the artifact recount says that more than half of all the usable ballots' quotes contain the span,
+as the code and its test do.
+`consistency-markup-ranges.ts` said five kinds of markup in its header and three in the type's doc and holds eight fields:
+both say eight.
+`consistency-link-label.ts` said that `marks` holds no letter or digit,
+and the test is the Latin letters and digits and the forms that fold to them,
+so a Han, Cyrillic or Greek label is `marks`:
+the wording says so.
+The `joinedMarksOf` TSDoc is B659.
+The phrases "tied for first" and "tie for first" were reworded where they meant the finalists of a split
+(the headers and fixtures of the run-off tests, the artifact generation docs);
+they stay where a scene really is a tie.
+
+Left as it is:
+the refusal text in `artifact-two-lane-read-consistency-span.ts`
+("words that a strict majority of the quotes naming the place contain")
+is pinned by two tests,
+so it was not reworded.
+
+## B663: a pinned bench start was not checked
+
+Found on 2026-10-18 by the same review (finding R7, low).
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f`,
+fixed in `c351d52644`.
+
+What the review showed:
+`editorBenchStart` and `benchStart` are documented as a whole number below the size of the bench,
+and `rotatedBench` handed them to `slice`,
+so `-1` counted from the end,
+`NaN` and the size itself left the bench unrotated,
+and `1.5` truncated,
+and a fixture that pinned a seat got another seating than it named.
+
+Fixed in `c351d52644`.
+`assertBenchStart` in `stage-bench-start.ts` refuses a pinned start that is not a whole number from 0 to the size less one
+with `StageBenchStartError`,
+which names the value,
+the last seat and the size of the bench and is marked as naming only numbers.
+`rotatedBench` asks once,
+where the value and the bench are both in hand,
+so `StageSettings.editorBenchStart` and `gatherStageVoices` (`benchStart`) are covered by one check,
+and their TSDoc says so.
+The source scans' inventories name the new class and its message parts.
+
+Test:
+`stage-fanout-window.unit.test.ts` refuses `-1`,
+`NaN`,
+`1.5` and the size and accepts 0 and the size less one,
+and `stage-bench-start.unit.test.ts` holds the check and the error.
+The refusal case failed at the red commit.
+
+Recurrence:
+`mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
+"Numbers read back from text".
+
+## B664: artifact generation 18 and the readers that keep the earlier rules
+
+Decided on 2026-10-18 by the lead, when the findings of the review were repaired.
+
+Outcome written on 2026-10-18.
+Red `9684e3e00f`,
+fixed in `c351d52644`.
+
+What moved:
+the pass stamps generation 18 (`ARTIFACT_SCHEMA_VERSION_V18`).
+Two recounts changed from generation 17.
+The finalists of a run-off are the labels with the top count and,
+for a lone leader without a majority,
+the labels with the second-highest count (`runOffFinalistsOf`),
+where generation 17 and earlier ran off only the labels tied for the highest count (`runOffTiedFinalistsOf`).
+The slot of a frame counts beside any quote that contains the located words (`containing-quote`),
+where generation 17 and earlier counted only beside a quote equal to them (`exact-quote`).
+The predicates `artifactGenerationRunsOffLoneLeader` and `artifactGenerationReadsSlotsBesideContainingQuotes` gate both,
+and `expectedWinnerOf` and `assertSpanRenderingAgrees` take the generation.
+No blanket tolerance was added to the group reader:
+a generation 18 group with a lone leader and no run-off is refused,
+and a generation 17 group with a run-off recorded for a lone leader is refused,
+which no pass of that generation wrote.
+
+Reader check:
+`read-all.ts` over the `artifacts` directories of `TianqiChen66621`,
+`TianqiChen66622`,
+`TianqiChen66623`,
+`corpus-pass-TianqiChen66624` and `corpus-pass-TianqiChen66625`,
+with this build,
+accepted all five artifacts (generations 14, 14, 15, 17 and 17).
+The group of `TianqiChen66624` with a lone leader and no run-off,
+which the previous reader refused,
+reads as it was written.
+
+Side effects:
+no cache key reads the schema constant,
+and the consistency cache hashes the sheet and its own version,
+which did not move,
+so the bump changes no key.
+No page is rewritten:
+the page republisher and the published-run checks read the generation only to choose how to read the entry,
+and every predicate they use is a `>=` that 18 satisfies,
+so the published-run checks print `read-at-generation=18` for artifacts the pass settles and 17 for those it did not.
+A pass refuses to resume into a directory of generation 17 artifacts (`SchemaGenerationError`),
+which names the artifacts and the ways forward,
+so a run in progress is moved aside or finished with the build that began it.
+
+Carry reader, tolerance left as it is:
+the carry recount reads a split recorded with no run-off as written,
+and requires a recorded run-off's finalists to equal `runOffChoiceFinalistsOf`.
+It should be gated by generation too:
+a generation 18 carry with a split and no run-off is accepted today,
+and the pass of that generation always asks one.
+It was left as the brief said,
+since the carry recount is not handed the generation,
+and the change is small once it is.
+
+Test:
+`corpus-pass-guards.unit.test.ts` refuses a generation 17 directory,
+the generation split of the recount is in `artifact-two-lane-read-consistency-span.unit.test.ts`,
+the finalists of both rules in `consistency-majority.unit.test.ts`,
+and the generation printed by the published-run checks in the `run` package tests.
+
+Recurrence:
+`mistake-prevention-stored-files-and-cached-decisions.md`,
+"Files a later run reads back".

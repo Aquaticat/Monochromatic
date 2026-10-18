@@ -583,6 +583,9 @@ Part of [the family README](../README.md).
   A tie for first behaves as before,
   and a second split keeps the page as it stands.
   The rule covers the first round of a group and a carry choice alike.
+  The sheet of a carry choice's run-off says that a first round was split and the judge is asked again (B657).
+  The pass stamps artifact generation 18 for this rule,
+  and the readers of generation 17 and earlier keep the rule they were written under, ties only (B664).
   It is the lead's rule,
   open to the owner's veto,
   extending the owner's run-off rule of 2026-10-11 ("Run off the tied finalists"),
