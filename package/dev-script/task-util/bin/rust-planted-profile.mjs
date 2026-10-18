@@ -19,6 +19,7 @@ try {
   const bridge = join(owned, 'bridge');
   mkdirSync(bridge, { recursive: true, mode: 0o700 });
   copyFileSync(join(root, 'package/dev-script/task-util/bin/rust-planted-cargo.mjs'), join(bridge, 'cargo'));
+  copyFileSync(join(root, 'package/dev-script/task-util/bin/rust-planted-junit.mjs'), join(bridge, 'rust-planted-junit.mjs'));
   chmodSync(join(bridge, 'cargo'), 0o700);
   environment.RESEARCH_REAL_CARGO = cargoPath;
   environment.RESEARCH_PLANT_RECEIPTS = join(evidence, 'actual-nextest');

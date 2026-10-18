@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
+import { parseCases } from './rust-planted-junit.mjs';
 
 //region Preserve existing planted-control assertions while executing Rust cases through Nextest
 const args = process.argv.slice(2);
@@ -24,13 +25,7 @@ const report = join(directory, 'default/actual.xml');
 const cases = [];
 if (existsSync(report)) {
   const xml = readFileSync(report, 'utf8');
-  for (const match of xml.matchAll(/<testcase\b([^>]*)(?:\/>|>([\s\S]*?)<\/testcase>)/gu)) {
-    const name = /\bname="([^"]+)"/u.exec(match[1])?.[1];
-    assert(name && /^[A-Za-z0-9_:]+$/u.test(name), 'Only actual Rust identifier test names may enter the owner parser');
-    const body = match[2] ?? '';
-    const status = /<(?:failure|error)\b/u.test(body) ? 'FAILED' : /<skipped\b/u.test(body) ? 'ignored' : 'ok';
-    cases.push({ name, status });
-  }
+  cases.push(...parseCases(xml));
 }
 writeFileSync(join(directory, 'adapter.json'), JSON.stringify({ input: args, actualCommand: [process.env.RESEARCH_REAL_CARGO, ...nextestArgs], status: result.status, signal: result.signal, cwd: process.cwd(), parsedCases: cases, originalOwnerThreads: 2, nextestConcurrency: 'default', applicationSourceEditedByAdapter: false }, null, 2) + '\n');
 process.stdout.write(output);

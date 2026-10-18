@@ -234,3 +234,9 @@ run = "node bin/rust-wg-privileged.mjs"
 
 [tasks."research:rust:benchmarks"]
 run = "node bin/rust-benchmarks.mjs"
+
+[tasks."research:rust:planted-parser"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const{strict:assert}=await import('node:assert');const{parseCases}=await import('./bin/rust-planted-junit.mjs');const xml='<testsuites><testcase name="before"/><testcase name="actual_failure"><failure message="guard">failed</failure></testcase><testcase name="after"/><testcase name="skipped"><skipped/></testcase></testsuites>';assert.deepEqual(parseCases(xml),[{name:'before',status:'ok'},{name:'actual_failure',status:'FAILED'},{name:'after',status:'ok'},{name:'skipped',status:'ignored'}]);assert.deepEqual(parseCases('<testsuites/>'),[]);assert.throws(()=>parseCases('<testcase name="bad&lt;name"/>'));console.log('JUnit identity, self-closing success, failure, skipped and empty compile-failure controls passed');
+'''
