@@ -70,7 +70,14 @@ Its later project `ng17dl3xrn` was created at `14:47:45.122 UTC`
 and native run `dzsf27t0xx` was reported dispatched at `14:54:05.816 UTC`,
 after the baseline inventory capture.
 Those exact identities remain explicit follow-ons until terminal measurement is appended.
-The coordinator's independent arithmetic review remains a separate completion gate for adopting these totals.
+The coordinator's independent arithmetic review passes at `2026-10-18T15:41:16.033Z`.
+It rehashes all 411 original bodies and both archive encodings,
+rejects duplicate allocation identities,
+and recomputes all 195 priced intervals from timestamps,
+CPU identities and exact rational rates.
+The known subtotal is exactly `61999959/10000000` dollars;
+the separate BuildKit request proxy is exactly `67323/125000` dollars.
+Post-baseline attempts still require measured appendices before a final combined total.
 
 The new guest cohort's
 [independent review](../audit/depot-independent-policy-process-mvm-review-2026-10-18.md)
@@ -90,4 +97,4 @@ Original-byte checks cover all 411 retained source bodies;
 all 1118 source-pointer joins and six actual PR-checkout joins resolve.
 Exact Decimal/Fraction recomputation matches all 195 priced intervals and the separate BuildKit proxy.
 Credential-pattern candidates classify as public Rust cfg names or normalized workflow filenames.
-The coordinator's independent arithmetic review is still required before adopting the totals.
+The independent coordinator review matches those baseline totals and preserves all 28 unknown-price records.
