@@ -724,6 +724,14 @@ explained. The new rows are about 3.9 hours, mostly from before the fan curve fi
 measured, and paste, board, fan removal and cooler height changed together, so no single change can be credited.
 Repeat the comparison after a few hours of normal use, using rows after the fan curve fix.
 
+Queued rerun (user, 2026-10-18: "do the rerun, whenever it makes sense"): at 2026-10-18 05:00 UTC the rows after the
+fan curve fix (taken as 04:30 UTC, about 00:30 EDT) covered 0.7 hours with 3 settled samples, which is too little.
+Run `node ~/temp/agent/before-after-swap.ts [fix-time-utc]` (a scratch script, not in the repo; it splits at the
+last row with `board1_c` filled and at the fix time, and prints the settled medians of three eras). Report when the
+after-fix era has at least 100 settled samples in the 120 to 140 W bucket (the old board pinned at 95 degrees there)
+and in the 180 to 200 W bucket; if the user has not run heavy work by then, wait for it instead of reporting thin data.
+A session-only cron job also fires the check; the job dies with the session, so this paragraph is the durable record.
+
 Decision (user, 2026-10-18): switch the sample log to the motherboard fans. The watcher no longer reads CoolerControl;
 the seven Corsair columns stay in the header as empty slots so older rows keep their positions, and eleven columns
 were appended (eight `nct6687` fan speeds and its System, VRM MOS and PCH temperatures). Rejected: keeping the
