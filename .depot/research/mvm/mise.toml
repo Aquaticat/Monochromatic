@@ -348,6 +348,10 @@ requireSuccess(run('capability-qemu-accelerators', '/usr/bin/qemu-system-x86_64'
 const qmpInput = ['qmp_capabilities', 'query-kvm', 'query-status', 'quit'].map((execute, index) => JSON.stringify({ execute, id: ['caps', 'kvm', 'status', 'quit'][index] })).join('\n') + '\n';
 const snapshots = [];
 const probes = [];
+const qemuRows = text => String(text).split('\n').map(line => /^\s*(\d+)\s+(\d+)\s+(\S+)\s+([\s\S]*)$/u.exec(line)).filter(value => value && ['qemu-system-x86', 'qemu-system-x86_64'].includes(value[3])).map(value => ({ pid: Number(value[1]), ppid: Number(value[2]), comm: value[3], args: value[4] }));
+const { spawn } = await import('node:child_process');
+const { once } = await import('node:events');
+let processDiscoveryControl;
 const optionalRead = path => { try { return { text: fs.readFileSync(path, 'utf8') }; } catch (error) { return { error: { code: error.code, message: error.message } }; } };
 const snapshot = label => {
   let stat;
@@ -369,6 +373,26 @@ const probe = (label, machine, accelerator, privilege) => {
 };
 const grant = label => { const beforeGrant = snapshot(label + '-before'); const result = requireSuccess(run(label, 'sudo', ['--non-interactive', 'setfacl', '--modify', 'u:' + process.getuid() + ':rw', '/dev/kvm'])); const afterGrant = snapshot(label + '-after'); save(); return { beforeGrant, afterGrant, status: result.status }; };
 try {
+  const controlled = spawn('/usr/bin/qemu-system-x86_64', ['-machine', 'none,accel=tcg', '-m', '128', '-smp', '1', '-nodefaults', '-display', 'none', '-S', '-qmp', 'stdio'], { timeout: 8000, killSignal: 'SIGKILL', stdio: ['pipe', 'pipe', 'pipe'] });
+  const completed = once(controlled, 'exit');
+  const stderr = [];
+  controlled.stderr.on('data', value => stderr.push(value));
+  controlled.stdout.resume();
+  controlled.stdin.on('error', error => stderr.push(Buffer.from(String(error))));
+  try {
+    await setTimeout(300);
+    const live = run('process-discovery-live-positive', 'ps', ['--user', String(process.getuid()), '--format', 'pid,ppid,comm,args']);
+    const detected = qemuRows(live.stdout);
+    if (!detected.some(value => value.pid === controlled.pid)) throw new CapabilityDiagnosticFailure('Raw QEMU process discovery did not find its live positive control');
+    controlled.stdin.end(qmpInput);
+    const [code, signal] = await completed;
+    const afterControl = run('process-discovery-after-quit', 'ps', ['--user', String(process.getuid()), '--format', 'pid,ppid,comm,args']);
+    processDiscoveryControl = { pid: controlled.pid, detected, status: code, signal, stderr: Buffer.concat(stderr).toString('utf8'), absentAfterQuit: !qemuRows(afterControl.stdout).some(value => value.pid === controlled.pid) };
+    fs.writeFileSync(join(evidence, 'process-discovery-control.json'), JSON.stringify(processDiscoveryControl, null, 2) + '\n');
+    if (code !== 0 || !processDiscoveryControl.absentAfterQuit) throw new CapabilityDiagnosticFailure('Raw QEMU positive control did not exit cleanly');
+  } finally {
+    if (controlled.exitCode === null && controlled.signalCode === null) { controlled.kill('SIGKILL'); await completed; }
+  }
   snapshot('initial-after-packages');
   run('owned-pam-sudo-config', 'cat', ['/etc/pam.d/sudo', '/etc/pam.d/common-session-noninteractive']);
   run('owned-device-udev-info', 'udevadm', ['info', '--query', 'property', '--name', '/dev/kvm']);
@@ -398,8 +422,8 @@ try {
 } finally {
   const processState = run('owned-qemu-process-state', 'ps', ['--user', String(process.getuid()), '--format', 'pid,ppid,comm,args'], { cleanup: true });
   const rootProcessState = run('owned-root-qemu-process-state', 'sudo', ['--non-interactive', 'ps', '--user', 'root', '--format', 'pid,ppid,comm,args'], { cleanup: true });
-  const liveQemu = [processState.stdout, rootProcessState.stdout].flatMap(value => String(value).split('\n')).filter(line => /\bqemu-system-x86\b/u.test(line) && !/sudo.*ps|mise|node --input/u.test(line));
-  fs.writeFileSync(join(evidence, 'cleanup.json'), JSON.stringify({ liveQemu, qemuProcessesAbsent: liveQemu.length === 0, systemServicesStarted: false, privateLibvirtStarted: false, noGuestLaunched: true, at: new Date().toISOString() }, null, 2) + '\n');
+  const liveQemu = [processState.stdout, rootProcessState.stdout].flatMap(qemuRows);
+  fs.writeFileSync(join(evidence, 'cleanup.json'), JSON.stringify({ liveQemu, qemuProcessesAbsent: liveQemu.length === 0, processDiscoveryPositiveControlPassed: processDiscoveryControl?.absentAfterQuit === true, ownedServicesExplicitlyStarted: false, privateLibvirtStarted: false, noGuestLaunched: true, at: new Date().toISOString() }, null, 2) + '\n');
   save();
   if (liveQemu.length) throw new CapabilityDiagnosticFailure('Owned raw QEMU remains after diagnostic; do not claim cleanup');
 }
