@@ -22014,12 +22014,19 @@
     ]
   },
   "nativeSshAcceptanceProposal": {
-    "status": "Source and local controls qualified; no provider SSH runtime qualified; Root admission pending",
-    "source": "c3c694593e6a3a3cdd622aaeff00c4329305ec74",
+    "status": "Three transports source/local qualified; Root final admission pending; no native SSH allocation",
+    "source": "b6a60493c16087043a7043f50cd31d8aebf4bdee",
     "evidence": "doc/audit/depot-native-ssh-acceptance-2026-10-18.evidence.json",
     "sourceArchive": "doc/audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz",
     "nominalMaximumUsd": 0.036,
     "cloudAllocations": [],
-    "nextAction": "Root source/admission review; do not dispatch before review"
+    "nextAction": "Root final source/controller/helper review and admission; no dispatch",
+    "controllerSha256": "bdf3bbbe455f1c0692aebb2cf6926ca19c6b6890bb89bab4491932edbd25975f",
+    "helperSha256": "28cad73e5b02cb1062539741407446a373be17fbc099ec094dd68ae8f0f86626",
+    "transports": [
+      "direct-openssh",
+      "native-cli-openpty-rpc",
+      "paused-tmate"
+    ]
   }
 }

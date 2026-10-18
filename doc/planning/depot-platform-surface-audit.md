@@ -1347,19 +1347,22 @@ No native SSH job has been allocated under this proposal.
 The deployed debugger guide distinguishes raw sandbox access from a paused workflow environment.
 The CLI interactive terminal uses `OpenPtySession`;
 its noninteractive `--info --output json` returns connection metadata.
-The proposed actual SSH controls therefore use native OpenSSH shells with bounded stdin commands.
+The proposed actual controls use OpenSSH for direct and paused shells,
+and a genuine local PTY for the native CLI RPC transport.
 The pinned tmate action is equivalent to the CLI injection source,
 without claiming execution of the mutable `--ssh-after-step` injection.
 
 The isolated fixture preserves application `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
 Its native job requests `2` CPU and `8` GiB,
-has a `3` minute job limit and a `1` minute paused-step limit.
+has a `3` minute job limit and a `2` minute paused-step limit.
 The source-gated controller requests cancellation after `150` seconds,
-bounds each SSH leg to `15` seconds and verifies fresh exact-run terminal status.
+starts bounded TERM/KILL cleanup at each `15` second leg deadline,
+reaps its owned clients and verifies fresh exact-run terminal status.
 One correction after terminal cleanup would reserve `USD 0.036` across both jobs at the documented list rate.
 This reservation is scoped arithmetic,
 not an invoice or aggregate account cap.
-Root source/admission review remains pending.
+Root final source/admission review remains pending.
+The admission also pins the exact controller and owned-process helper hashes.
 
 Local controls validate synthetic askpass delivery and prompt rejection,
 source/challenge file consumers,
@@ -1368,6 +1371,12 @@ A mount-free network-disabled local container proves a UID `0` writer can restor
 before a workflow reader consumes the `0600` result.
 The unrepaired root-owned `0600` control returns `EACCES`.
 The local container is terminal and absent.
+Local `script` controls prove actual stdin/stdout TTY identity,
+challenge response and propagation of child exits `0` and `7`.
+TERM-ignoring direct and separate-session children are killed and reaped;
+every recorded owned PID is absent.
+A lost dispatch response is recorded as potentially allocated,
+with exact repository/source/time and workflow/job reconciliation before a correction.
 These are local fixture controls,
 not native SSH runtime qualifications.
 
