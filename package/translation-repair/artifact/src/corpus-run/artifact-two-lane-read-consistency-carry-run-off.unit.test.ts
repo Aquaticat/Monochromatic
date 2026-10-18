@@ -262,11 +262,131 @@ await describe({
             const besideNoQuorum = recountRefusalOf({
               carry: { ...RUN_OFF_CARRY, ballots: [ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 1', },),], usable: 1, },
             },);
-            expect([
-              wrongFinalists.includes('cat.carries[0].runOff.finalists',),
-              besideMajority.includes('cat.carries[0].runOff',),
-              besideNoQuorum.includes('cat.carries[0].runOff',),
-            ],).toEqual([true, true, true,],);
+            // Each is refused at the very check that names its fault, not at a later one that would refuse it for another.
+            expect([wrongFinalists, besideMajority, besideNoQuorum,],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.carries[0].runOff.finalists: '
+              + 'expected the finalists of the first ballots, in sheet order, and at least two.',
+              'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: '
+              + 'expected a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority.',
+              'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: '
+              + 'expected a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority.',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES FINALISTS THAT ARE MORE THAN THE TIED LEADERS WHEN THE LABELS IT NAMES ARE THE LEADERS, and finalists that '
+            + 'are as many as the tied leaders and other labels, each at the finalists, whichever check would have refused it',
+          fn: async () => {
+            /**
+             A carry whose first ballots tie the first and the third candidate, so those are the finalists.
+             */
+            const tie: ArtifactConsistencyCarry = {
+              ...RUN_OFF_CARRY,
+              ballots: [
+                ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 1', },),
+                ballotOf({ seat: 'bedrock-cat', choice: 'CANDIDATE 3', },),
+              ],
+              usable: 2,
+            };
+            /**
+             A run-off over the given finalists whose ballots and decision are what they give, so only the finalists can be refused.
+             */
+            function runOffOver(
+              { finalists, last, }: { readonly finalists: readonly string[]; readonly last: string; },
+            ): ArtifactConsistencyCarry {
+              return {
+                ...tie,
+                runOff: {
+                  finalists,
+                  ballots: [
+                    ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 1', },),
+                    ballotOf({ seat: 'bedrock-cat', choice: 'CANDIDATE 1', },),
+                    ballotOf({ seat: 'vision-cat', choice: last, },),
+                  ],
+                  usable: 3,
+                  quorum: 2,
+                },
+                decision: { kind: 'chosen', label: 'CANDIDATE 1', },
+              };
+            }
+            /**
+             The refusal of finalists that are not the tied leaders.
+             */
+            const wrongFinalists = 'ArtifactParseError: artifact parse failed at cat.carries[0].runOff.finalists: '
+              + 'expected the finalists of the first ballots, in sheet order, and at least two.';
+            expect({
+              accepted: assertCarriesRecount({
+                carries: [runOffOver({ finalists: ['CANDIDATE 1', 'CANDIDATE 3',], last: 'CANDIDATE 3', },),],
+                path: 'cat.carries',
+                generation: GENERATION_EIGHTEEN,
+              },),
+              longer: recountRefusalOf({
+                carry: runOffOver({ finalists: ['CANDIDATE 1', 'CANDIDATE 3', 'CANDIDATE 2',], last: 'CANDIDATE 3', },),
+              },),
+              otherLabels: recountRefusalOf({
+                carry: runOffOver({ finalists: ['CANDIDATE 1', 'CANDIDATE 2',], last: 'CANDIDATE 2', },),
+              },),
+              shorter: recountRefusalOf({
+                carry: runOffOver({ finalists: ['CANDIDATE 1',], last: 'CANDIDATE 1', },),
+              },),
+            },).toEqual({
+              accepted: undefined,
+              longer: wrongFinalists,
+              otherLabels: wrongFinalists,
+              shorter: wrongFinalists,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES A RUN-OFF QUORUM BELOW ONE, since the bench was asked among the finalists, though the choices it counts '
+            + 'give the decision recorded',
+          fn: async () => {
+            expect(recountRefusalOf({
+              carry: { ...RUN_OFF_CARRY, runOff: { ...RUN_OFF, quorum: 0, }, },
+            },),).toBe(
+              'ArtifactParseError: artifact parse failed at cat.carries[0].runOff.quorum: '
+                + 'expected a quorum of one at least, since the bench was asked among the finalists.',
+            );
+          },
+        },),
+        it({
+          name: 'COUNTS THE RUN-OFF AGAINST THE FINALISTS ONLY, so a choice that names a candidate which was not a finalist is not '
+            + 'counted, and a usable count that counts it is refused',
+          fn: async () => {
+            /**
+             A carry whose first ballots tie the first and the third candidate, and whose run-off heard two choices of the second
+             candidate, which was not a finalist, and one of the first.
+             */
+            const strayingRunOff: NonNullable<ArtifactConsistencyCarry['runOff']> = {
+              finalists: ['CANDIDATE 1', 'CANDIDATE 3',],
+              ballots: [
+                ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 2', },),
+                ballotOf({ seat: 'bedrock-cat', choice: 'CANDIDATE 2', },),
+                ballotOf({ seat: 'vision-cat', choice: 'CANDIDATE 1', },),
+              ],
+              usable: 1,
+              quorum: 2,
+            };
+            const straying: ArtifactConsistencyCarry = {
+              ...RUN_OFF_CARRY,
+              ballots: [
+                ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 1', },),
+                ballotOf({ seat: 'bedrock-cat', choice: 'CANDIDATE 3', },),
+              ],
+              usable: 2,
+              runOff: strayingRunOff,
+              decision: { kind: 'none', reason: 'no-quorum', },
+            };
+            expect({
+              accepted: assertCarriesRecount({ carries: [straying,], path: 'cat.carries', generation: GENERATION_EIGHTEEN, },),
+              countedAll: recountRefusalOf({
+                carry: { ...straying, runOff: { ...strayingRunOff, usable: 3, }, decision: { kind: 'chosen', label: 'CANDIDATE 2', }, },
+              },),
+            },).toEqual({
+              accepted: undefined,
+              countedAll: 'ArtifactParseError: artifact parse failed at cat.carries[0].runOff.usable: '
+                + 'expected the number of run-off ballots that can be counted against the finalists.',
+            },);
           },
         },),
         it({

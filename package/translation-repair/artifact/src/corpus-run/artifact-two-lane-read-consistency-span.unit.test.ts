@@ -894,6 +894,121 @@ await describe({
           },
         },),
         it({
+          name: 'ALLOWS A REASON THE EARLIER READING OF THE BALLOTS ALLOWED, though the spans the quotes contain contradict it: three '
+            + 'quotes of one place that no one text is a strict majority of, but that a shorter quote is inside all of, leave the '
+            + 'place unlocated for no agreement in a file written before the spans were located by containment',
+          fn: async () => {
+            /**
+             The group in which the second place is unlocated for the reason, its three ballots quoting it as given.
+             */
+            function unlocatedFor(
+              { reason, quotes, }: { readonly reason: 'no-agreement'; readonly quotes: readonly string[]; },
+            ): AskedGroup {
+              return groupOf({
+                over: {
+                  verdict: verdictWith({
+                    ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotFor(seat, at,): ArtifactConsistencyBallot {
+                      return ballotOf({
+                        seat,
+                        over: {
+                          quotes: [
+                            { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
+                            { label: 'OCCURRENCE 2', quote: quotes[at] ?? '', },
+                          ],
+                        },
+                      },);
+                    },),
+                  },),
+                  occurrences: [
+                    placeOf({ position: 0, },),
+                    placeOf({ position: 1, over: { rendering: { kind: 'unlocated', reason, }, outcome: 'unlocated', }, },),
+                  ],
+                  carries: [],
+                },
+              },);
+            }
+            expect({
+              nestedQuotes: assertSpanGroupCoherent({
+                group: unlocatedFor({ reason: 'no-agreement', quotes: ['the kitten naps', 'kitten naps', 'the kitten naps in the sun',], }),
+                path: GROUP,
+                generation: 17,
+              },),
+              oneText: coherenceRefusal({
+                group: unlocatedFor({ reason: 'no-agreement', quotes: ['the kitten naps', 'the kitten naps', 'the kitten naps',], }),
+              },),
+            },).toEqual({
+              nestedQuotes: undefined,
+              oneText: `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering.reason: `
+                + 'expected a reason the usable ballots do not contradict.',
+            },);
+          },
+        },),
+        it({
+          name: 'READS A REASON AGAINST THE FIRST CANDIDATE THAT SHOWS A READER SOMETHING, and a located rendering against the '
+            + 'candidates that do: a longer candidate that shows nothing (a lone variation selector twice) is neither the words an '
+            + 'empty reason is read against nor words a place can be located by',
+          fn: async () => {
+            /**
+             Three quotes of the second place: two selectors alone, a letter alone, and the letter beside the two selectors.
+             The first and the second are each inside two of the three quotes, so both are candidates, and the longer of them
+             shows a reader nothing.
+             */
+            const quotes = ['\u{FE0F}\u{FE0F}', 'x', 'x \u{FE0F}\u{FE0F}',];
+            /**
+             The group in which the second place has the rendering, its three ballots quoting it as given.
+             */
+            function renderedAs(
+              { rendering, outcome, carries = [], }: {
+                readonly rendering: ArtifactConsistencyOccurrence['rendering'];
+                readonly outcome: ArtifactConsistencyOccurrence['outcome'];
+                readonly carries?: readonly ArtifactConsistencyCarry[];
+              },
+            ): AskedGroup {
+              return groupOf({
+                over: {
+                  verdict: verdictWith({
+                    ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotFor(seat, at,): ArtifactConsistencyBallot {
+                      return ballotOf({
+                        seat,
+                        over: {
+                          quotes: [
+                            { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
+                            { label: 'OCCURRENCE 2', quote: quotes[at] ?? '', },
+                          ],
+                        },
+                      },);
+                    },),
+                  },),
+                  occurrences: [placeOf({ position: 0, },), placeOf({ position: 1, over: { rendering, outcome, }, },),],
+                  carries,
+                },
+              },);
+            }
+            expect({
+              emptyReason: coherenceRefusal({
+                group: renderedAs({ rendering: { kind: 'unlocated', reason: 'empty', }, outcome: 'unlocated', }),
+              },),
+              locatedBySelectors: coherenceRefusal({
+                group: renderedAs({
+                  rendering: { kind: 'located', quote: '\u{FE0F}\u{FE0F}', start: 6, },
+                  outcome: 'replaced',
+                }),
+              },),
+              locatedByLetter: assertSpanGroupCoherent({
+                group: renderedAs({ rendering: { kind: 'located', quote: 'x', start: 6, }, outcome: 'replaced', carries: [CARRY,], }),
+                path: GROUP,
+                generation: 17,
+              },),
+            },).toEqual({
+              emptyReason: `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering.reason: `
+                + 'expected a reason the usable ballots do not contradict.',
+              locatedBySelectors: `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
+                + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
+              locatedByLetter: undefined,
+            },);
+          },
+        },),
+        it({
           name: 'REFUSES A SLOT IN A REPEATED RUN\'S RENDERING AND A WINNER THAT IS NOT THE MAJORITY\'S CHOICE',
           fn: async () => {
             expect([
