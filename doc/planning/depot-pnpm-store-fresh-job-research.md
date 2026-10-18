@@ -54,14 +54,30 @@ cache-size guarding and artifact export remain visible in complete-job timing.
 
 Repository-scoped `gh api repos/Aquaticats/Monochromatic/actions/cache/usage`
 reported `9,113,717,494` active bytes across `14` caches before this experiment.
-The producer is blocked if repository usage exceeds `9,300,000,000` bytes.
+Usage had reached `10,843,494,612` bytes by the first dispatch,
+because concurrent production caches were added.
+The repository storage-limit endpoint returned HTTP `402` with
+`Please ensure your account has a valid payment method on file to access this service.`
+No payment method or account setting is changed to inspect that endpoint.
+The actual repository limit remains unverified.
+
+Remove only the completed native experiment's cache `9109200675`,
+whose `942,152,318` bytes belong to
+`refs/heads/trial/depot-native-long-path-20261018T035939491Z`.
+The retained [native cleanup receipt](../audit/depot-native-worktree-cleanup-2026-10-18.evidence.json)
+establishes that branch's experiment ownership.
+Record the exact entry before deletion and confirm that identifier is absent afterward.
+This is temporary experiment data,
+not a production cache.
+After that cleanup,
+the new producer is blocked if repository usage exceeds `10,000,000,000` bytes.
 A temporary compression check limits the single GitHub experiment archive to `500,000,000` bytes
 before it can be saved.
 The check's temporary file is removed;
 the Actions cache stores the original pnpm-store directory.
-The unique prefix is `research-20261018-pnpm-cache-v1`.
+The corrected harness's unique prefix is `research-20261018-pnpm-cache-v2`.
 
-No existing cache entry may be deleted for this experiment.
+No production or unrelated cache entry may be deleted for this experiment.
 After evidence capture,
 remove only this experiment's GitHub cache entry by its recorded key and identifier.
 Depot's experimental dependency archive remains subject to its documented retention policy.
@@ -70,6 +86,12 @@ Do not claim a cache deletion API without verifying it.
 ## Evidence status
 
 The harness is committed on its isolated branch.
+The initial run `39099461826` failed at tool installation,
+before dependency setup or cache measurement.
+Mise `2026.10.9` reported `No lockfile URL found` for explicitly versioned requests,
+although the frozen lock contains their URLs under the configured `latest` specifiers.
+The corrected harness requests `mise install node pnpm` under `MISE_LOCKED=1`
+and asserts the resulting exact versions before measuring anything.
 Cold,
 seed,
 warm and branch results have not yet been established.
