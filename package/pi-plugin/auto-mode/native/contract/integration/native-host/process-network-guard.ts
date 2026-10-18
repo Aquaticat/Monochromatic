@@ -29,7 +29,7 @@ if (process.env
  */
 const receiptPath = process.env
   .PI_AUTO_MODE_CLI_FIXTURE_REQUESTS;
-if (receiptPath === undefined)
+if ((receiptPath === undefined) || (receiptPath === ''))
   throw new NativeCliFixtureNetworkError('Native CLI fixture requires its disposable request receipt path');
 
 // Pi preserves overrides installed after its dispatcher module captured the original fetch.

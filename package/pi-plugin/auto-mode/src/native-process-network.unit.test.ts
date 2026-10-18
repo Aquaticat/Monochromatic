@@ -4,8 +4,8 @@
  @module
  */
 import { fail } from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { chmod, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
@@ -52,8 +52,12 @@ await describe({
     it({
       name: 'retains the fixture blocker through initial and repeated native dispatcher configuration',
       fn: async function retainsFixtureBlocker() {
+        /** Private agent scratch root beneath the runtime home directory. */
+        const scratch = join(homedir(), 'temp/agent');
+        await mkdir(scratch, { recursive: true, mode: 0o700 });
+        await chmod(scratch, 0o700);
         /** Disposable directory holding the guard's private request receipt. */
-        const receiptDir = await mkdtemp(join(tmpdir(), 'native-cli-network-guard-'));
+        const receiptDir = await mkdtemp(join(scratch, 'native-cli-network-guard-'));
         await using _receiptCleanup = {
           async [Symbol.asyncDispose]() {
             await rm(receiptDir, { recursive: true, force: true });
@@ -93,6 +97,40 @@ await describe({
           return;
         }
         fail('The native CLI fixture guard accepted an unmarked process');
+      },
+    }),
+    it({
+      name: 'refuses to install the fixture blocker without its disposable request receipt path',
+      fn: async function rejectsMissingReceiptPath() {
+        /**
+         Assert the guard stops at setup for a child run with the supplied fixture environment.
+
+         @param environment - disposable fixture environment exercising one setup refusal
+         */
+        async function expectReceiptPathRejection(environment: Record<string, string>) {
+          try {
+            await spawn(process.execPath, [
+              '--import', guard.href, '--input-type=module', '--eval', 'throw new Error("Unexpected fixture entry");',
+            ], {
+              cwd,
+              env: environment,
+              signal: AbortSignal.timeout(CHILD_DEADLINE_MS),
+            });
+          }
+          catch (error) {
+            expect(error).toBeInstanceOf(SubprocessError);
+            if (!(error instanceof SubprocessError)) throw error;
+            expect(error.stderr).toContain('Native CLI fixture requires its disposable request receipt path');
+            expect(error.stderr).not.toContain('Unexpected fixture entry');
+            return;
+          }
+          fail('The native CLI fixture guard accepted a child without its request receipt path');
+        }
+        await expectReceiptPathRejection({ PI_AUTO_MODE_CLI_FIXTURE_CHILD: '1' });
+        await expectReceiptPathRejection({
+          PI_AUTO_MODE_CLI_FIXTURE_CHILD: '1',
+          PI_AUTO_MODE_CLI_FIXTURE_REQUESTS: ''
+        });
       },
     }),
   ],
