@@ -28,7 +28,6 @@ jobs:
       COVERAGE_TASK_NAMES_SHA256: 149afd917a4fa10f4b5846fc2c02a4ed69f89401ab9230c4869ff34c3cd76e7c
       GOMAXPROCS: "2"
       GOMEMLIMIT: 768MiB
-      TMPDIR: ${{ runner.temp }}/coverage-a/runtime
     steps:
       - name: Checkout immutable application source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -256,6 +255,8 @@ jobs:
           const wrapper='#!/usr/bin/env node\nconst {spawnSync}=require("node:child_process");const args=process.argv.slice(2);if(args[0]==="run")args.splice(1,0,"--label",'+JSON.stringify(label)+');const result=spawnSync('+JSON.stringify(realPodman)+',args,{stdio:"inherit"});if(result.error)throw result.error;process.exitCode=result.status??1;\n';writeFileSync(bin+'/podman',wrapper,{mode:0o700});require('node:fs').appendFileSync(process.env.GITHUB_PATH,bin+'\n');
       - name: Execute owning frozen tasks with bounded command budgets
         run: mise run //package/dev-script/coverage-research:campaign
+        env:
+          TMPDIR: ${{ runner.temp }}/coverage-a/runtime
       - name: Retain and remove only this research run owned containers
         if: always()
         shell: node {0}
