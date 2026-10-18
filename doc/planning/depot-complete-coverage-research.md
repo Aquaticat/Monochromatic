@@ -216,7 +216,8 @@ Successful commands also do not prove that every case or branch was reached.
 
 ## Expanded module wave and tracked follow-up
 
-The next reviewed wave covers all 58 active `package/module/*` roots,
+Run [`39105587003`](https://github.com/Aquaticats/Monochromatic/actions/runs/39105587003)
+completed the reviewed wave covering all 58 active `package/module/*` roots,
 split into 29 roots per worker.
 Its explicit plans contain 125 and 129 owning invocations.
 Both plans first build the harness,
@@ -240,13 +241,91 @@ Fixture subprocess,
 disposable Git,
 and `unzip` prerequisites were inspected.
 
+Of 254 invocations,
+232 passed.
+Every module build and type command passed.
+The failures comprise 18 Oxlint invocations and four default-test invocations.
+The two source-filtered cloud inventories each contain 2,425 repository tasks,
+no outside tasks,
+and the expected task-name SHA-256:
+`149afd917a4fa10f4b5846fc2c02a4ed69f89401ab9230c4869ff34c3cd76e7c`.
+Both final receipts report no changed tracked files.
+Job intervals were 176 seconds and 213 seconds.
+These measurements are not a provider speed comparison.
+
+The failed default suites require separate investigation:
+
+- `conf-fork`:
+  its cache-watch case did not meet a condition within 25,000 milliseconds.
+- `logger`:
+  its file-batch suite reports shared-Promise identity and malformed JSON assertions
+  during reentrant writes.
+  A later sink verification timeout is a separate logged event,
+  not the identified failing suite boundary.
+- `p-map-fork.fuzz`:
+  its differential property reports a different error message for a null input.
+- `wg-allowedips`:
+  its input suite reports warning-count and exact error-message mismatches.
+
+The source is retained unchanged.
+These are observed test/fixture failures;
+they do not establish provider causation or a stable source defect without controls.
+
+## Durable source and execution evidence
+
+The [coverage manifest](depot-complete-coverage-manifest.json)
+indexes all 227 canonical active and inactive roots,
+their declared APIs,
+task families,
+Node/Cargo manifests,
+test candidates,
+descriptors,
+and source language counts.
+It explicitly marks semantic coverage review and execution incomplete.
+Its compressed JSON sidecars preserve all source-level import/export evidence,
+static test declarations,
+exact task bodies and root templates,
+frozen workflow definitions,
+and tracked tree identities.
+They retain development dependency cycles.
+Static declarations and task counts are not runtime case coverage.
+
+The manifest records compressed and uncompressed SHA-256 hashes and sizes.
+Every compressed JSON file was decompressed and compared byte for byte before publication.
+Source-bound receipts preserve actual runners,
+tools,
+command outcomes,
+log hashes,
+and distribution hashes.
+The original GitHub artifact ZIPs are also preserved in the repository,
+so their evidence does not depend on GitHub's artifact retention window.
+Their SHA-256 values match GitHub's artifact API digests.
+
+The local ancestor config contains only unrelated tasks.
+The user-global Mise config additionally supplies tools,
+an environment key named `GH_PATH`,
+and settings named `experimental`,
+`auto_update`,
+`pipx`,
+and `npm`.
+It declares no tasks,
+task templates,
+variables,
+or hooks.
+The frozen configuration and TypeScript/JavaScript/YAML sources contain no `GH_PATH` reference.
+The optional `.env.local.json` path appears in Mise's config listing,
+but the worktree file is absent.
+The cloud inventory comparison and observed tool versions provide execution evidence;
+broader local and cloud environment equivalence is not assumed.
+
 The active queue remains independently verifiable:
 
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
   and native/Kotlin/Slint/build-tool consumers.
-- Execute the expanded module wave and classify its terminal evidence.
+- Complete the matched provider repeat and filesystem-watch positive control
+  for the four failed default suites.
 - Execute remaining applicable Node quality,
   product,
   plugin,
