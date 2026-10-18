@@ -87,6 +87,33 @@ Syntax-checking the JavaScript alone cannot validate the preceding Mise template
 No third-party source,
 global setting or unrelated task template was modified.
 
+### Silent runner-label corruption recurrence
+
+The 2026-10-18 guest-file generator used an opening delimiter containing adjacent braces
+inside its JavaScript expression helper.
+Mise accepted that input but replaced the quoted template content before Node evaluated it.
+The generated workflow contained literal `$ + value + ` fields instead of GitHub expressions.
+Run `39132577785`,
+source `3829831039cc43aa717c6c927f835b867e9313b6`,
+remained queued with both job labels reported as `$ + value +`,
+empty runner assignments and no execution result.
+It is not a measured VM consumer.
+
+The corrected generator constructs both delimiters without adjacent braces in the task source:
+
+```javascript
+// Private research controller, repair-mvm-expression-generator task
+const expression = value => String.fromCharCode(36, 123, 123)
+  + ' ' + value + ' ' + String.fromCharCode(125, 125);
+```
+
+The resulting workflow requires a separate destination-field check before dispatch.
+JavaScript syntax validation and task discovery alone passed the faulty generator;
+neither checks the final runner label,
+provider fields or artifact-name expressions.
+The new `validate:workflow` owner checks all six destination expressions and the finite matrix settings.
+The corrected cloud replay remains distinct from the queued attempt.
+
 ## Upstream filing decision
 
 Nothing to add upstream.

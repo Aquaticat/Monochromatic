@@ -1351,7 +1351,8 @@ with a dropped-identity positive control.
 Their summaries report one skip without naming that skipped identity;
 the source-declared ignored benchmark remains separately identified.
 Native Windows is source-compile-blocked before test execution.
-The native macOS first attempt adds an untracked `measure::tests::two_sweeps_of_one_load_decode_a_track_only_once` failure:
+The native macOS first attempt adds an untracked
+`measure::tests::two_sweeps_of_one_load_decode_a_track_only_once` failure:
 the decode count was two instead of one.
 Its separately verified issue `#1178` is open without a cause claim;
 the unchanged-source retry passed that case and retains the first-attempt failure without a cause claim.
@@ -3068,7 +3069,8 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   no recurring dispatch or billing setting has been enabled.
   The user subsequently pasted the dashboard banner:
   seven days remain and billing details are required to continue builds after the trial.
-- GitHub reference run `38812935669` failed before starting a job because organization policy allowed local actions only.
+- GitHub reference run `38812935669` failed before starting a job
+  because organization policy allowed local actions only.
   The user approved the pinned action exceptions and then deliberately saved broader organization patterns:
   `actions/*`,
   `jdx/*`,
@@ -3536,6 +3538,41 @@ Use standard public-GitHub runners sequentially,
 with maximum thirty-minute jobs and a retained admission ledger;
 record actual runtime versus compile-only boundaries and preserve source failures.
 The root lane retains ownership of the coherent Linux graph and repeated whole-graph timing comparison.
+
+## Remaining execution ownership, 2026-10-18 13:55 UTC
+
+The ARM lane completed native `p4xj5dsh3s`:
+89 Truepeak passes and two deliberate skips match all 91 AMD64 result identities,
+and the actual `p-limit-fork` owner matches all eleven runtime groups.
+Its source and archive checks are published in
+[`depot-arm64-workload-research.md`](../planning/depot-arm64-workload-research.md).
+The platform lane continues substantive applicability/source-ledger reconciliation without new allocations.
+
+The independent reviewer completed the ten service and eleven disposable-PR original archives,
+with fresh App identity,
+merge-parent,
+base-absence and unchanged-main-policy checks.
+That lane now owns a separate all-product normalized allocation ledger,
+deduplicated by actual provider/product/run/job/attempt or VM/build identity.
+Missing billing boundaries and conservative reservations remain explicit.
+The new guest-transformation archives remain in its review queue after publication.
+
+Root's guest-file GitHub run `39132577785` did not reach a runner:
+the generated label was silently templated into `$ + value +`.
+The exact owned-run API showed queued jobs and empty runner assignments.
+Root is cancelling that attempt,
+retaining it as a generator failure,
+and correcting the generator with a final-workflow-field guard before the bounded replay.
+The lifecycle's frozen application source remains unchanged.
+
+Root created isolated branch `research/depot-expanded-graph-20261018` at the frozen expanded source.
+It owns the shared Node producer,
+actual module/browser consumers,
+Rust owner and final aggregation graph,
+with unchanged repetitions and retained end-to-end completion times.
+No graph allocation has been dispatched yet.
+The coverage lane retains the corrected desktop,
+proper packed-install and current-source Mac/Windows queue.
 
 [release-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/38785821860
 [runner-docs]: https://depot.dev/docs/github-actions/overview
