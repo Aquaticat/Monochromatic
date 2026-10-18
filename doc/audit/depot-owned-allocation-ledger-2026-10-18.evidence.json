@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "status": "in_progress",
+  "scope": {
+    "frozenApplicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "campaigns": [
+      "root runtime/process/MVM/policy/PR/service",
+      "coverage",
+      "Rust/reuse",
+      "platform/BuildKit/SDK"
+    ],
+    "ownedIdsOnly": true,
+    "accountWideUsageBillingSettingsInspected": false,
+    "allocationsCreatedByReviewer": 0,
+    "forthcomingCoherentGraphRows": "Excluded until separately measured and added by coordinator"
+  },
+  "identityPolicy": "One provider/product/run/job/attempt or VM/build identity; retain all overlapping source pointers without duplicate rows",
+  "arithmeticPolicy": {
+    "execution": "Observed execution timestamps only; missing boundaries explicit",
+    "nominalCompute": "List-price arithmetic, not invoice or observed VM billing",
+    "standardPublicGitHubActions": "Separate zero-compute category",
+    "reservations": "Separate maximum bounds, not added to observed nominal compute",
+    "buildKit": "Request/multiarch wall time does not identify per-architecture builder billing"
+  },
+  "workAreas": [
+    {
+      "area": "root campaigns",
+      "status": "source reconciliation pending"
+    },
+    {
+      "area": "coverage",
+      "status": "canonical inventory requested"
+    },
+    {
+      "area": "Rust/reuse",
+      "status": "owned source inventory available; normalization pending"
+    },
+    {
+      "area": "platform/BuildKit/SDK",
+      "status": "canonical inventory requested"
+    }
+  ],
+  "sources": [],
+  "rows": [],
+  "totals": null,
+  "pendingIndependentGuestReview": {
+    "githubRunId": "39132577785",
+    "harnessSha": "3829831039cc43aa717c6c927f835b867e9313b6",
+    "status": "queued after publication; separate from allocation normalization"
+  }
+}
