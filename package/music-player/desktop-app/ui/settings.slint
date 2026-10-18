@@ -1,5 +1,6 @@
-// Settings page that lists the two template rows under a Templates heading and the Auto-play on select switch row under a
-// Playback heading (D87, D99, D109, D110, D129). The whole page is
+// Settings page that lists the two template rows under a Templates heading, the Auto-play on select switch row under a
+// Playback heading and the Licenses row under an About heading (D87, D99, D109, D110, D129, and the Licenses row of
+// doc/decision/music-player-third-party-licenses.md). The whole page is
 // drawn on the one canvas color: no page tint, no card fill, no header band and no divider, so the header, the heading
 // and the rows are separated by spacing alone. Only state carries a fill: the hover and pressed layers, the 40 px icon
 // circle, and in the wide form the selected row's pill (all derived from the accent under D108).
@@ -7,6 +8,7 @@
 // Wide window (two panes): the page is the list pane only, a row reports `select-template`, and the host shows the
 // editor of the selected row in the other pane, so selecting never navigates. Back is the header arrow in both forms.
 // The switch row toggles in place in both forms: it opens no editor and never changes the selected template row (D129).
+// The Licenses row opens the Licenses page in both forms and likewise never changes the selected template row.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
 import { Focus, FocusStop, FocusRing, Keys } from "focus.slint";
@@ -122,6 +124,10 @@ export component SettingsPage inherits Rectangle {
     in property <string> auto-play-text: "";
     // Fires when the switch row is clicked, or Space or Enter is pressed on it; the host flips and saves the setting.
     callback toggle-auto-play();
+    // Fires when the Licenses row is clicked, or Space or Enter is pressed on it; the host opens the Licenses page.
+    callback open-licenses();
+    // True when the page opens with the keyboard on the Licenses row, as when the Licenses page was just closed.
+    in property <bool> start-on-licenses: false;
     // True when the list should take keyboard focus: when the page opens and each time `focus-tick` changes (Escape out
     // of the template field returns here).
     in property <bool> wants-focus: false;
@@ -150,6 +156,8 @@ export component SettingsPage inherits Rectangle {
     property <string> autoplay-path: "M 9.5 16.5 L 9.5 7.5 L 16.5 12 Z M 12 23 Q 9.3 23 6.9375 21.7625 Q 4.575 20.525 3 18.3 L 3 21 L 1 21 L 1 15 L 7 15 L 7 17 L 4.55 17 Q 5.825 18.875 7.7875 19.9375 Q 9.75 21 12 21 Q 14.875 21 17.2125 19.35 Q 19.55 17.7 20.5 14.975 L 22.45 15.425 Q 21.325 18.825 18.45 20.9125 Q 15.575 23 12 23 Z M 1.05 11 Q 1.225 9.325 1.85 7.7875 Q 2.475 6.25 3.575 4.95 L 5 6.375 Q 4.2 7.4 3.7 8.5625 Q 3.2 9.725 3.075 11 Z M 6.4 4.975 L 4.975 3.55 Q 6.3 2.45 7.825 1.8125 Q 9.35 1.175 11 1.05 L 11 3.05 Q 9.725 3.175 8.575 3.675 Q 7.425 4.175 6.4 4.975 Z M 17.625 4.975 Q 16.6 4.175 15.4375 3.675 Q 14.275 3.175 13 3.05 L 13 1.05 Q 14.675 1.2 16.2125 1.825 Q 17.75 2.45 19.05 3.55 Z M 20.95 11 Q 20.825 9.725 20.325 8.5625 Q 19.825 7.4 19.025 6.375 L 20.45 4.95 Q 21.55 6.25 22.175 7.7875 Q 22.8 9.325 22.95 11 Z";
     property <string> check-path: "M 9.55 18 L 3.85 12.3 L 5.275 10.875 L 9.55 15.15 L 18.725 5.975 L 20.15 7.4 Z";
     property <string> close-path: "M 6.4 19 L 5 17.6 L 10.6 12 L 5 6.4 L 6.4 5 L 12 10.6 L 17.6 5 L 19 6.4 L 13.4 12 L 19 17.6 L 17.6 19 L 12 13.4 Z";
+    // The Licenses row's icon, `license`, from the same commit and converted the same way (symbols/web/license).
+    property <string> license-path: "M 12 13 Q 10.75 13 9.875 12.125 Q 9 11.25 9 10 Q 9 8.75 9.875 7.875 Q 10.75 7 12 7 Q 13.25 7 14.125 7.875 Q 15 8.75 15 10 Q 15 11.25 14.125 12.125 Q 13.25 13 12 13 Z M 6 23 L 6 15.275 Q 5.05 14.225 4.525 12.875 Q 4 11.525 4 10 Q 4 6.65 6.325 4.325 Q 8.65 2 12 2 Q 15.35 2 17.675 4.325 Q 20 6.65 20 10 Q 20 11.525 19.475 12.875 Q 18.95 14.225 18 15.275 L 18 23 L 12 21 Z M 12 16 Q 14.5 16 16.25 14.25 Q 18 12.5 18 10 Q 18 7.5 16.25 5.75 Q 14.5 4 12 4 Q 9.5 4 7.75 5.75 Q 6 7.5 6 10 Q 6 12.5 7.75 14.25 Q 9.5 16 12 16 Z M 8 20.025 L 12 19 L 16 20.025 L 16 16.925 Q 15.125 17.425 14.1125 17.7125 Q 13.1 18 12 18 Q 10.9 18 9.8875 17.7125 Q 8.875 17.425 8 16.925 Z M 12 18.475 Z";
     property <string> play-circle-path: "M 9.5 16.5 L 16.5 12 L 9.5 7.5 Z M 12 22 Q 9.925 22 8.1 21.2125 Q 6.275 20.425 4.925 19.075 Q 3.575 17.725 2.7875 15.9 Q 2 14.075 2 12 Q 2 9.925 2.7875 8.1 Q 3.575 6.275 4.925 4.925 Q 6.275 3.575 8.1 2.7875 Q 9.925 2 12 2 Q 14.075 2 15.9 2.7875 Q 17.725 3.575 19.075 4.925 Q 20.425 6.275 21.2125 8.1 Q 22 9.925 22 12 Q 22 14.075 21.2125 15.9 Q 20.425 17.725 19.075 19.075 Q 17.725 20.425 15.9 21.2125 Q 14.075 22 12 22 Z M 12 20 Q 15.35 20 17.675 17.675 Q 20 15.35 20 12 Q 20 8.65 17.675 6.325 Q 15.35 4 12 4 Q 8.65 4 6.325 6.325 Q 4 8.65 4 12 Q 4 15.35 6.325 17.675 Q 8.65 20 12 20 Z M 12 12 Z";
 
     // Measured layout (the stock Android Settings, D109), where one logical pixel is one dp. The header is 64 px, the
@@ -172,11 +180,11 @@ export component SettingsPage inherits Rectangle {
     // changes the box (the same device as the Folders panel).
     property <int> bold-weight: 700;
 
-    // Row that the keyboard acts on: the template rows, then the switch row at index `rows.length`. In the two-pane form it
-    // follows the selection while it is on a template row.
+    // Row that the keyboard acts on: the template rows, then the switch row at index `rows.length` and the Licenses row
+    // after it. In the two-pane form it follows the selection while it is on a template row.
     property <int> focus-index: 0;
-    // Number of rows the keyboard can reach: the template rows and the switch row.
-    property <int> stop-count: root.rows.length + 1;
+    // Number of rows the keyboard can reach: the template rows, the switch row and the Licenses row.
+    property <int> stop-count: root.rows.length + 2;
     // Space between the text and the switch beside it (Material 3), on top of the 12 px every gap of the row has.
     property <length> switch-gap: 16px;
     // Row width under which the switch moves under the text: beside it the switch takes 68 px of the text's width.
@@ -187,13 +195,18 @@ export component SettingsPage inherits Rectangle {
 
     // Takes keyboard focus when the page opens, so Up, Down and Enter act on the list at once.
     init => {
+        if (root.start-on-licenses) {
+            root.focus-index = root.rows.length + 1;
+        }
         list-focus.focus();
     }
 
-    // Activates a row: the switch row toggles the setting in place; a template row opens its editor page in the single
-    // form and is selected in the two-pane form.
+    // Activates a row: the Licenses row opens its page; the switch row toggles the setting in place; a template row opens
+    // its editor page in the single form and is selected in the two-pane form.
     function activate(index: int) {
-        if (index >= root.rows.length) {
+        if (index > root.rows.length) {
+            root.open-licenses();
+        } else if (index == root.rows.length) {
             root.toggle-auto-play();
         } else if (root.wide) {
             root.select-template(index);
@@ -580,6 +593,107 @@ export component SettingsPage inherits Rectangle {
                                 // A click takes keyboard focus from the editor's text field, so Escape closes Settings.
                                 list-focus.focus();
                                 root.toggle-auto-play();
+                            }
+                        }
+                    }
+                }
+
+                // Section heading of the About group, the same 44 px as the other two.
+                Rectangle {
+                    height: 44px;
+                    Text {
+                        x: 24px;
+                        y: 16px;
+                        width: parent.width - 48px;
+                        height: 20px;
+                        text: "About";
+                        font-size: Theme.label-large;
+                        font-weight: 500;
+                        color: Theme.primary;
+                    }
+                }
+
+                // The About group: one row that opens the Licenses page, with the group rounding at all four corners. Like the
+                // switch row it is never a selection, so the selected template and the editor beside it stay as they are.
+                VerticalLayout {
+                    padding-left: root.side-margin;
+                    padding-right: root.side-margin;
+
+                    licenses-row := Rectangle {
+                        property <bool> keyboard-focused: list-focus.ring && root.focus-index == root.rows.length + 1;
+                        height: root.row-height;
+
+                        // Hover and pressed layer over the row, in the group rounding.
+                        licenses-pill := RowShape {
+                            tint: Theme.on-surface;
+                            hovered: licenses-touch.has-hover;
+                            pressed: licenses-touch.pressed;
+                            radius-top: root.group-radius;
+                            radius-bottom: root.group-radius;
+                        }
+                        // The ring follows the row's own corner radii like every other row (D117).
+                        FocusRing {
+                            active: parent.keyboard-focused;
+                            radius-tl: root.group-radius;
+                            radius-tr: root.group-radius;
+                            radius-bl: root.group-radius;
+                            radius-br: root.group-radius;
+                        }
+                        // Icon circle in the secondary role with the glyph in the on-secondary role, placed as in a template row.
+                        licenses-icon := Rectangle {
+                            x: root.icon-x;
+                            y: (root.row-height - root.icon-circle) / 2;
+                            width: root.icon-circle;
+                            height: root.icon-circle;
+                            border-radius: root.icon-circle / 2;
+                            background: Theme.secondary;
+                            Path {
+                                x: (parent.width - 24px) / 2;
+                                y: (parent.height - 24px) / 2;
+                                width: 24px;
+                                height: 24px;
+                                viewbox-width: 24;
+                                viewbox-height: 24;
+                                commands: root.license-path;
+                                fill: Theme.on-secondary;
+                            }
+                        }
+                        licenses-title := Text {
+                            x: root.title-x;
+                            y: 14px;
+                            width: parent.width - root.title-x - 16px;
+                            height: 24px;
+                            text: "Licenses";
+                            font-size: Theme.body-large;
+                            color: Theme.on-surface;
+                            overflow: elide;
+                        }
+                        Text {
+                            x: root.title-x;
+                            y: 38px;
+                            width: parent.width - root.title-x - 16px;
+                            height: 20px;
+                            text: "Notices of the software built into Music Player";
+                            font-size: Theme.body-medium;
+                            color: Theme.on-surface-variant;
+                            overflow: elide;
+                        }
+                        licenses-touch := TouchArea {
+                            x: 0px;
+                            y: 0px;
+                            width: parent.width;
+                            height: parent.height;
+                            mouse-cursor: pointer;
+                            accessible-role: button;
+                            accessible-label: "Licenses";
+                            accessible-description: "Notices of the software built into Music Player";
+                            accessible-action-default => { root.open-licenses(); }
+                            clicked => {
+                                Focus.ring-visible = false;
+                                root.focus-index = root.rows.length + 1;
+                                // A click takes keyboard focus from the editor's text field, so Escape closes Settings.
+                                list-focus.focus();
+                                root.open-licenses();
                             }
                         }
                     }

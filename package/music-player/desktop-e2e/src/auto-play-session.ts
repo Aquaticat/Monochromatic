@@ -318,7 +318,7 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
 
   await recorder.check({
     id: 'auto-play/switch-turns-it-on',
-    title: 'End and Space on the Auto-play on select row of Settings turn the setting on and leave Settings open (D129)',
+    title: 'End, Up and Space on the Auto-play on select row of Settings turn the setting on and leave Settings open (D129)',
     body: async function switchTurnsItOn(): Promise<string> {
       await press({
         session,
@@ -335,7 +335,16 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
         until: function noChange(state: UiState,): boolean {
           return isSettingsPage(state,) && !state.auto_play_on_select;
         },
-        what: 'the keyboard position on the last row with nothing toggled',
+        what: 'the keyboard position on the last row, the Licenses row, with nothing toggled',
+      },);
+      // The Licenses row is the last stop; the switch row is the one above it.
+      await press({
+        session,
+        act: tapKey('up',),
+        until: function noChangeAfterUp(state: UiState,): boolean {
+          return isSettingsPage(state,) && !state.auto_play_on_select;
+        },
+        what: 'the keyboard position on the switch row with nothing toggled',
       },);
       /**
        The state after Space on the switch row.

@@ -24,6 +24,7 @@ fn request_for_row(binding: &Binding, platform: KeyboardPlatform, key: &str) -> 
         Scope::SettingsIdle | Scope::EditorOrSettings => (KeyRoute::Settings, FocusZone::SettingsList, false, false),
         Scope::SettingsField => (KeyRoute::Settings, FocusZone::TextField, false, false),
         Scope::EditorPage => (KeyRoute::EditorPage, FocusZone::TextField, false, false),
+        Scope::LicensesPage => (KeyRoute::Licenses, FocusZone::Button, false, false),
     };
     return ShortcutRequest {
         platform,

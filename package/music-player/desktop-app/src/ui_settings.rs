@@ -110,6 +110,7 @@ pub(crate) fn wire_callbacks(app: &AppWindow) {
             layout_changed(&window, wide);
         }
     });
+    crate::ui_licenses::wire_callbacks(app);
     wire_editor(app);
 }
 
@@ -186,6 +187,7 @@ pub(crate) fn build_editor(state: &ScreenState) -> TemplateEditorState {
 /// What: `open_settings` opens the Settings route with the template rows.
 /// Why: Settings shows the applied line of each template, so the editor value is built from the saved texts.
 pub(crate) fn open_settings(window: &AppWindow) {
+    window.set_settings_start_on_licenses(false);
     update_state(|state| {
         state.editor = Some(build_editor(state));
         state.route = Route::Settings;

@@ -168,7 +168,7 @@ pub enum ShortcutOwner {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type KeyRoute = "player" | "search" | "settings" | "editor-page";
+/// type KeyRoute = "player" | "search" | "settings" | "editor-page" | "licenses";
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyRoute {
@@ -182,6 +182,8 @@ pub enum KeyRoute {
     Settings,
     /// The full-width template editor page of a narrow window.
     EditorPage,
+    /// The Licenses page that the Licenses row of Settings opens.
+    Licenses,
 }
 
 /// What:
@@ -740,6 +742,7 @@ pub(crate) fn scope_allows(scope: Scope, request: &ShortcutRequest) -> bool {
         Scope::SettingsIdle => request.route == KeyRoute::Settings && request.zone != FocusZone::TextField,
         Scope::SettingsField => request.route == KeyRoute::Settings && request.zone == FocusZone::TextField,
         Scope::EditorPage => request.route == KeyRoute::EditorPage,
+        Scope::LicensesPage => request.route == KeyRoute::Licenses,
         Scope::EditorOrSettings => matches!(request.route, KeyRoute::Settings | KeyRoute::EditorPage),
     };
 }
