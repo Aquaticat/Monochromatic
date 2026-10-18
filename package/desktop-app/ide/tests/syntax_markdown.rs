@@ -5,7 +5,9 @@
 /// Shared assertions over the application engine.
 mod syntax_support;
 
-/// Recognition, role, and visible text assertion that lists every painted interval on failure.
+/// Recognition,
+/// role,
+/// and visible text assertion that lists every painted interval on failure.
 use syntax_support::{assert_reads_as, painted};
 
 /// A Markdown file with every construct that has a role.

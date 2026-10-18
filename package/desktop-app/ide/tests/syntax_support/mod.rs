@@ -138,9 +138,11 @@ pub fn assert_reads_as(path: &str, source: &str, language: &str, role: &str, fra
 /// What:
 ///  `pub fn painted(path: &str, source: &str) -> Vec<(&'static str, String)>` returns every painted interval of
 ///       one sample as its role name and its text with trailing line ends removed.
-///  `&'static str` is a borrowed name that lives for the whole program, here an entry of `ROLES`.
+///  `&'static str` is a borrowed name that lives for the whole program,
+/// here an entry of `ROLES`.
 /// Why:
-///   Markdown paints whole nodes, and a node can end with its line end,
+///   Markdown paints whole nodes,
+/// and a node can end with its line end,
 ///  so tests compare the visible text of an interval.
 ///
 /// In TS you'd write (pseudocode):

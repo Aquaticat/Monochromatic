@@ -9,6 +9,115 @@ Updated 2026-10-18.
 
 ## Reopened MiMo preparation failure on 2026-10-18
 
+### Current status and user instructions
+
+The MiMo lint handoff is **not ready**.
+The user reports at least five premature readiness claims and explicitly requires continuing until the work is done.
+Treat passing narrow catalogs as evidence for their exercised boundaries only.
+Inspect actual Pi, Node, Linux, dependencies, and the configured consumer wherever the evidence points.
+The user clarified that their concern is platform behavior exposing defects in our code,
+not suspected defects in Pi, Node, or Linux themselves.
+The user authorizes shared logger repairs and requires a version bump to trigger auto-publish if it changes.
+The logger version is bumped to `0.4.2` after its build, full units, types, lint and guard-mutation checks pass.
+The user authorizes invoking and monitoring MiMo directly through Pi RPC.
+After readiness verification, run that agent and monitor the lint work rather than returning a manual handoff.
+The direct RPC connectivity pilot passed on 2026-10-18:
+configured `llmgateway-devpass/mimo-v2.6-pro` replied `READY`,
+dispatched no tools, and exited normally inside a 2-GiB, 2-CPU disposable container.
+Evidence: `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018/mimo-rpc-pilot.log`
+and fixture `pi-mimo-rpc-preflight-WNIl6a`.
+The controller resolves the repository's Mise environment without printing credentials,
+and launches the maintained command from the repository root.
+Calling the package `native:cli` task instead changes cwd to the package,
+whose absent `AGENTS.md` makes this policy bootstrap fail before RPC starts.
+Initial container probes also corrected a missing canonical home mount and disabled automatic tool installation.
+
+The logger's final source build, all units and type check pass.
+Its complete Oxlint sweep reports zero warnings and zero errors across 63 files.
+Logs in the current scratch are `logger-release-build.log`, `logger-release-units.log`,
+`logger-release-types.log` and `logger-release-lint-final.log`.
+The unchanged 100,000-record burst retained 48,304 heap bytes in the preceding capacity verification.
+The same-millisecond, separate-sink regression first fails with malformed JSONL at position 349544;
+a serializer returning `undefined` separately produces invalid JSONL.
+Both committed regressions pass after unique, exclusively created files and serialization validation.
+The final suite also covers admission during an issued append and recovery after a real filesystem error.
+Private source-copy guard mutations pass:
+completion deduplication, missing JSON validation, filename identity and issued-batch admission each rebuild,
+then produce the expected regression failure when weakened.
+Production source and emitted entry hashes remain unchanged.
+The receipt is `logger-guard-mutations-receipt.json` in the current scratch.
+Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
+There is no adopted 13k line target.
+
+The active output is `native-release-mmaT8k`, rebuilt through `dist/native` on 2026-10-18
+after a fresh JavaScript build against logger `0.4.2`.
+The emitted policy bundle is `native-policy-api-CtuEfa81.mjs`.
+The logger publishing commit `3befa69c14` is on `origin/main`;
+automatic npm release run `39104844467` has started.
+The new complete configured-host replays are running with explicit artifact receipts:
+faithful fixture `pi-mimo-failure-rpc-7vxnGu` and fragmented fixture `pi-mimo-failure-rpc-LD83ST`.
+Their logs are `faithful-logger042-mmaT8k.log` and `fragmented-logger042-mmaT8k.log` in the current scratch.
+The final native verification matrix is also running as `native-logger042-matrix.log`.
+The corrected process-consumer audit detects both live `/fixture-node` hosts by Pi title and fixture inode.
+Cleanup must wait for every consumer to terminate.
+
+The preceding `native-release-XGbh0H` affected verification matrix passes.
+Its faithful configured-host replay completes all 52 original calls,
+including both reported failures,
+with no selectors and host exit 0.
+All 62 actual Luna requests pass the structured-payload audit.
+The driver initially rejects successful inspection output containing the diagnostic phrase;
+the corrected saved-event audit detects both original real failures and excludes that successful read.
+Its evidence is `pi-mimo-failure-rpc-WHbepQ/terminal-audit.json` in private agent scratch.
+The fragmented-stream replay `pi-mimo-failure-rpc-2nQOZg` still exits 134 after 56 live assessments.
+Current full Oxlint inventory is 13,834 warnings and 83 errors across 818 files;
+the new retirement fixture's six errors are fixed.
+Independent current fragmented probes profile retained allocations and replace only private log append completion.
+Their fixtures are `pi-mimo-failure-rpc-3umw1N` and `pi-mimo-failure-rpc-ekAFp9` respectively.
+Both remain bounded to two CPUs and 2 GiB and preserve every original callback and log record.
+Both private fragmented controls terminate with exit 134.
+The append control changes the policy bundle,
+but allocation frames point to the separately loaded logger TypeScript source;
+its application receipt does not prove it changed the active append path.
+Do not use that control to rule out the logger.
+The collected heap `pi-mimo-failure-rpc-bUKHKw/retainers.heapsnapshot` contains a large logger pending-write set.
+Its private analysis completes under the same 2 GiB bound.
+An isolated logger burst delivers 100,000 records while retaining 93,858,312 to 93,859,232 bytes
+across three unchanged runs.
+A private promise-deduplication change retains 37,120 to 37,152 bytes across three runs,
+with all 100,000 sink invocations preserved.
+That ownership repair is implemented with asynchronous file batching and shared synchronous-sink completions.
+Actual-host verification remains required after the logger's publishing bump and consumer rebuild.
+No compressed receipt representation is justified by the current retainer evidence.
+The maintained built-artifact burst regression fails at 93,863,816 retained bytes before the repair.
+The file regression also reproduces corrupted JSONL when a record's `toJSON` calls the same sink reentrantly.
+Source repairs now share pending observations,
+reuse synchronous sink completions,
+and batch captured complete file records under a 64 KiB aggregation bound.
+The logger's package-local explanation is `package/module/logger/doc/write-completion.md`.
+The source directory test now uses built artifacts and captures actual child stderr through clean shutdown.
+The required publishing bump is `0.4.2`.
+The remaining independently verifiable work is:
+
+- Verify the logger `0.4.2` publishing commit reaches the remote.
+- Rebuild auto-mode JavaScript, then its owned native output against the repaired logger.
+- Run both complete configured-host replay variants with corrected terminal validators.
+- Audit actual Luna payloads and exercise prohibition, Stop, cancellation and cleanup boundaries.
+- Render the package and canonical documents; update the architecture and handoff measurements to the final artifact.
+- Complete the positive-control consumer audit, cleanup dry run, reviewed inactive-artifact removal and footprint measurement.
+- Invoke MiMo through Pi RPC, monitor the lint repair, and validate its resulting changes.
+
+Earlier outputs still exit 134 from Node heap exhaustion;
+the private retirement-only replay instead reaches its 600-second driver limit after 58 live assessments.
+The immediate work is diagnosing the remaining fragmented-stream retention,
+then complete consumer verification,
+artifact cleanup and measurement,
+durable package documentation,
+and the corrected MiMo handoff.
+Private experiments are not production repairs.
+
+### Incident and completed repairs
+
 The user supplied later MiMo calls that return `Complete group preparation or assessment failed`.
 The readiness claim applies only to the earlier replay corpus and does not establish readiness for these calls.
 The actual session is `2026-10-17T15-47-34-073Z_01a14a8c-0a38-760f-aca3-aa17ebd2a725`.
@@ -17,7 +126,8 @@ and `call_8cacc98bebf7433a9945f1d3`.
 They belong to one parallel group.
 Earlier Python heredocs in the same session succeed,
 including `call_fe5cc4c2d73542b097c79140`.
-The installed output remains `native-release-qWSxFz`.
+The incident used `native-release-qWSxFz`;
+the active output changed to `native-release-6z61x7` on 2026-10-18.
 Private evidence and the active reproduction work live in
 `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
 The original log retains a `RangeError: Invalid string length` in run prompt owner `charge()`
@@ -97,7 +207,7 @@ mutation,
 output,
 or source occurrence is discarded.
 The existing native receipt fixture expands this lossless representation before checking all original assertions.
-The source is committed but still needs a native rebuild and verification.
+The source is committed and rebuilt as `native-release-6z61x7` on 2026-10-18.
 
 The rebuilt output is `native-release-6z61x7`.
 The event-sharing regression retains all 60 phases from 30 callbacks in 36,476 bytes,
@@ -136,9 +246,128 @@ the probe shares their false matcher without changing distinct occurrences or na
 A separate faithful replay removes only private diagnostic module rewrites,
 to check whether the recorder's stack tracing contributes to the heap failure.
 
+The clean replay also exits 134,
+so removing private diagnostic rewrites is insufficient.
+The private input-view probe lowers the existing 600-input fixture's retained heap to 2,753,896 bytes;
+this is not a complete-session repair and is not applied to production.
+An inspector sampling profile at 20,000 original receipts retains its explicit 2,097,168-byte
+positive control and attributes the largest sampled allocation group to queued file-log writes.
+The sampled profile and its paths are private incident artifacts.
+A separate configured-host control changes only the bundled logger's append completion to synchronous I/O,
+preserving all records and native callbacks.
+Fixture `pi-mimo-failure-rpc-YW5iY2` confirms that the early loader hook applies and still exits 134.
+The earlier late-hook attempt has no application receipt and is not causal evidence.
+Production logger source remains unchanged.
+
+### Latest allocation evidence and immediate next action
+
+`allocation-summary.json` in the incident scratch summarizes fixture `pi-mimo-failure-rpc-e8GtWu`
+at 100,000 original receipts.
+Its retained 2,097,168-byte positive control is present.
+The largest sampled allocation is 476,526,736 bytes attributed to `bindOriginalRunMessage`
+in `native/contract/integration/policy-source/run-messages.mjs`.
+`createMessagePublication` accounts for another 153,547,688 sampled bytes.
+Total sampled live allocation is 1,150,318,896 bytes.
+The earlier 20,000-receipt logger profile was a startup snapshot, not the complete-session cause.
+
+Each original source currently receives its own frozen view plus closures for identity and freshness checks.
+A private class experiment measures 120,000 genuine source bindings across twelve governing snapshots.
+It reduces a measured 48,741,184-byte retained-heap result to 20,186,064 bytes.
+This is preliminary evidence, not an accepted implementation:
+the class changes the plain-record prototype and constructor surface.
+The scratch harness also emits a read-only default-log-directory error;
+set `MONOCHROMATIC_LOG_DIRECTORY` to its disposable writable home before trusting repeated measurements.
+
+The old bundled policy lacks that environment support;
+the corrected probe mounts its discovered log directory writable and preserves every diagnostic.
+Three unchanged runs retain 48,742,376 to 48,742,952 bytes.
+The plain-record shared-method probe retains 30,762,600 to 30,763,960 bytes across three runs.
+The committed red test `c6ece26944` fails at 48,724,128 bytes against its 36 MiB budget.
+Source repair `23f24480de` preserves plain records and checks receiver membership through a per-snapshot weak set.
+Both JavaScript policy and native ownership output are rebuilt as `native-release-2vxGY8`.
+Its source-binding regression passes at 30,747,064 retained bytes,
+including forged receivers, cross-snapshot methods, substituted sources, and retired parents.
+Complete faithful and fragmented configured-host replays are running against that output.
+The isolated memory reduction does not establish complete-session repair.
+
+Both `native-release-2vxGY8` replays subsequently exit 134:
+fragmented fixture `pi-mimo-failure-rpc-XYDlO0` reaches 34 live assessments;
+faithful fixture `pi-mimo-failure-rpc-7osKnn` reaches 42.
+The original target corpus contains 31 assistant proposal groups and 52 tool calls.
+The complete native lifecycle/fallback/freshness/execution catalogs, units, and type check pass.
+Final formatted source-binding and event-sharing regressions pass;
+both receiver and native-root private mutations fail their intended assertions without changing production hashes.
+
+Immediate investigation now follows completed group ownership:
+`native-batch/prepared-group.mjs` closes by setting only `state.closed`.
+Its retained context callbacks still reference the full review and its request-bound input views.
+A private retirement counterfactual will replace only closed-group review references with the terminal outcome,
+while the runtime still retains the actual latest full review for diagnostics.
+This is not applied to production and needs live consumer proof plus lifecycle/freshness regression coverage.
+The user was told that the fragmented replay still fails; readiness remains withdrawn.
+
+The committed native review-retirement regression `eeef4291d1` retains 96,805,456 bytes on the old output.
+Its private retirement probe retains 8,792,696 bytes while preserving the actual latest full diagnostic,
+terminal outcomes, source checks, and rejection of execution after closure.
+Maintained repair `8ad0d4725b` releases completed review references and rejects closed-group execution checks.
+The rebuilt output is `native-release-qEBKwW`.
+Fresh faithful and fragmented host replays plus the complete affected verification matrix are running.
+The earlier private full retirement counterfactual continues separately on its original artifact.
+
+An independent private probe measures the pool's immutable whole-array copy on every appended receipt.
+It compares genuine manager append CPU and memory against publication of cached frozen snapshots on read.
+It must preserve prior frozen snapshots, stable repeated reads, every occurrence, and distinct publications.
+No pool append implementation change is applied yet.
+
+The append implementation is now committed as `80803f87db` and rebuilt in `native-release-CV2Wga`.
+The committed red CPU guard fails at 9,989,359 microseconds;
+the maintained implementation passes at 483,453 microseconds.
+Three original 50,000-input probes measure 9,125,882 to 9,450,071 microseconds;
+three private cached-snapshot probes measure 441,879 to 543,405.
+The snapshot probe has higher final retained heap, about 95.6 MB versus 90.8 MB;
+its established benefit is append CPU work.
+
+Input-only publication storage is also repaired in `1edb75d52c`.
+Its baseline retains 3,607,008 to 3,608,432 bytes across three unchanged capacity runs.
+The committed red guard fails at 3,607,384 bytes;
+the private shared-function probe passes at 2,753,832 bytes.
+Actual message-payload, system/tool contribution, original occurrence, and native-root checks remain required.
+
+The combined output is `native-release-XGbh0H`.
+Final controllers are `final-faithful-replay.ts` and `final-fragmented-replay.ts`;
+their logs are `faithful-retention-final.log` and `fragmented-retention-final.log`.
+The complete affected matrix is `retention-final-matrix.log`.
+These finite RPC replays retain the 2 GiB/two-CPU bounds,
+add Podman's 1,200-second native container bound,
+and set the parent driver to 1,260 seconds so client termination is distinguishable from the container result.
+The earlier private fixture `pi-mimo-failure-rpc-9dEcRp` ends with SIGKILL after about 601 seconds,
+matching its driver's 600-second bound;
+captured stderr has no heap-abort diagnostic.
+A subsequent Podman inventory contains no container mounted to that completed fixture.
+This is separate from the exit-134 failures.
+
+Final receiver, native-root, completed-review, and input-only-owner mutation controls are running privately.
+The live process/Bash prohibition control is running on the combined output.
+No full-session success has been established yet.
+Final payload audits, full-package lint inventory, rendered docs, reviewed artifact cleanup,
+footprint/source inventory, and remote commit verification remain in the completion queue.
+An auto-push lock-wait message occurred during commit landing;
+a subsequent remote check contains the replayed append-test commit `7747823556`.
+The latest final commits still need a concluding remote check.
+
+Next, measure shared methods within each governing snapshot,
+using a private `WeakSet` to authenticate the original frozen plain binding records.
+Preserve every source occurrence, request identity, original ordering, and parent freshness check.
+Exercise wrong-member, forged-receiver, cross-snapshot, substituted-source, and retired-parent cases.
+Commit a genuine failing memory regression before applying the production repair.
+Use the existing private `binding-capacity.mjs`,
+`prepare-binding-probe.ts`,
+and bounded binding runners as experiment scaffolding, not production source.
+
 Next actions:
 
-- Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
+- Repair source-binding allocation with measured baseline spread and a genuine red regression.
+  Rebuild the maintained native contract after the source change.
 - Repeat full native units,
   both configured-host replays,
   outgoing-payload audits,
@@ -149,8 +378,21 @@ Next actions:
   update package/troubleshooting/handoff docs,
   render Markdown,
   and review inactive generated releases before final footprint measurement.
+- If shared logger source changes, verify it and bump its package version for auto-publish.
+- Consolidate final handover and package-local ownership lessons;
+  verify the final scoped commits reached the remote before reporting readiness.
 
-## Verified MiMo lint handoff on 2026-10-17
+Replay harness cautions:
+
+- Concurrent controllers overwrite `latest-fixture.txt`; pass explicit fixture paths to auditors.
+- The live bridge permits 128 requests;
+  `prepare-replay.ts` can restore an obsolete 30-request bridge if regenerated carelessly.
+- Parent recorders omit transient `message_update` events to avoid their own output cap;
+  the actual host consumes every streamed delta and terminal results remain recorded.
+- The bounded native owner rebuild copies existing `dist/final/node` policy output.
+  TypeScript policy or logger changes require a fresh JavaScript build before that rebuild.
+
+## Historical MiMo lint handoff on 2026-10-17
 
 The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).
 The prepared group now owns automatic and manual review and execution membership.

@@ -286,8 +286,10 @@ impl Annotations {
     ///  in line order.
     ///  `&mut TextShaper` is
     ///       lent to pack hint rows of lines not packed yet at `scale` and `wrap`,
-    ///  the width of the text area in logical pixels, or nothing while the source view has none;
-    ///  `focus` is the range of lines near the view, the only ones that are packed again for a new width;
+    ///  the width of the text area in logical pixels,
+    /// or nothing while the source view has none;
+    ///  `focus` is the range of lines near the view,
+    /// the only ones that are packed again for a new width;
     ///  `&Document` lends the displayed text.
     /// Why:
     ///  This is the single source of block heights for the vertical mapping and of the rows a frame

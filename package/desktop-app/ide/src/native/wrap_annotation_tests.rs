@@ -3,11 +3,14 @@
 //!  the map puts the next line under the last visual row,
 //!  a press on the block or on a continuation row resolves the right line and row,
 //!  and a new window width breaks the blocks again.
-//! Nothing here waits on the window thread: every wait advances timers and lets the workers answer.
+//! Nothing here waits on the window thread:
+//! every wait advances timers and lets the workers answer.
 
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
-/// Fixture records, the injected pair of snapshots, and the pointer helpers of the annotation tests.
+/// Fixture records,
+/// the injected pair of snapshots,
+/// and the pointer helpers of the annotation tests.
 use super::annotation_tests::{TEXT_TOP, above, block, click, hint, painted, problem};
 /// The caret position the presses leave behind.
 use super::caret_tests::position;
@@ -21,7 +24,9 @@ use super::rewrap::REWRAP_LINES;
 use super::sidebar_tests::{TEXT_LEFT, minimap_beside, resize};
 /// The worker's build gate.
 use super::tile_build::{BUILD_GATE, PASS_GATE};
-/// Wrapped fixtures, the open reader, and bounded waits.
+/// Wrapped fixtures,
+/// the open reader,
+/// and bounded waits.
 use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::{
@@ -39,13 +44,17 @@ use slint::{ComponentHandle, LogicalPosition, platform::update_timers_and_animat
 /// Snapshots are shared values.
 use std::sync::Arc;
 
-/// The line every test annotates; the earlier lines are wrapped too, so its place depends on their heights.
+/// The line every test annotates;
+/// the earlier lines are wrapped too,
+/// so its place depends on their heights.
 const LINE: usize = 3;
 
 /// A message long enough to need rows of its own at any window width.
 const MESSAGE: &str = "expected `u32`, found `&str` because the argument named first_item is a string slice here, so convert it first";
 
-/// Install one hint early on `LINE`, one far along it (on a later visual row), and an error with `MESSAGE`.
+/// Install one hint early on `LINE`,
+/// one far along it (on a later visual row),
+/// and an error with `MESSAGE`.
 fn annotate_line(opened: &Reader) {
     let (stamp, start) = {
         let current = opened.source.borrow();
@@ -80,7 +89,8 @@ fn annotate_line(opened: &Reader) {
     );
 }
 
-/// The window point on visual row `visual` of `line`, `x` logical pixels into the text.
+/// The window point on visual row `visual` of `line`,
+/// `x` logical pixels into the text.
 fn on_row(opened: &Reader, line: usize, visual: usize, x: f32) -> LogicalPosition {
     let top = opened.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
@@ -89,8 +99,11 @@ fn on_row(opened: &Reader, line: usize, visual: usize, x: f32) -> LogicalPositio
     );
 }
 
-/// The block stands above the first visual row, the next line starts under the last one, the block is as tall as its
-///  rows, and every row of text the frame paints is inside the text area.
+/// The block stands above the first visual row,
+/// the next line starts under the last one,
+/// the block is as tall as its
+///  rows,
+/// and every row of text the frame paints is inside the text area.
 #[test]
 fn a_block_stands_above_the_first_row_and_wraps_to_the_text_area() {
     let (_project, opened) = open(&long_text(8));
@@ -154,8 +167,11 @@ fn a_block_stands_above_the_first_row_and_wraps_to_the_text_area() {
     opened.window.hide().expect("close wrap window");
 }
 
-/// A press on the block of a wrapped line acts on that line's first row; a press on a continuation row of the same
-///  line lands in that row; hover treats the block as over no character, and the line below keeps its rows.
+/// A press on the block of a wrapped line acts on that line's first row;
+/// a press on a continuation row of the same
+///  line lands in that row;
+/// hover treats the block as over no character,
+/// and the line below keeps its rows.
 #[test]
 fn presses_on_a_wrapped_block_and_its_rows_resolve_the_right_line_and_row() {
     let (_project, opened) = open(&long_text(8));
@@ -300,8 +316,10 @@ fn a_new_window_width_breaks_the_block_again() {
     window.hide().expect("close wrap window");
 }
 
-/// A width the window thread's allowance does not cover is left to the worker although the blocks changed with it: the
-///  window thread paints no tile for it, and the tile that arrives holds the blocks broken for the new width.
+/// A width the window thread's allowance does not cover is left to the worker although the blocks changed with it:
+/// the
+///  window thread paints no tile for it,
+/// and the tile that arrives holds the blocks broken for the new width.
 #[test]
 fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_tile_arrives() {
     let (_project, opened) = open(&tabbed_text(60));
@@ -345,7 +363,9 @@ fn until_build_started(message: &str) {
     });
 }
 
-/// Short lines with a tab, so many that a tile of them is more work than the window thread's allowance covers, and
+/// Short lines with a tab,
+/// so many that a tile of them is more work than the window thread's allowance covers,
+/// and
 ///  short enough that no line changes its rows when the width changes a little.
 fn short_tabbed_text(count: usize) -> String {
     let mut text = String::new();
@@ -357,10 +377,15 @@ fn short_tabbed_text(count: usize) -> String {
     return text;
 }
 
-/// A tile the worker builds for a new width goes stale when the text on screen changes during its build, and the window
-///  asks for another tile at once, because the displayed tile stays on screen meanwhile and no later event is certain
-///  to ask. No line changes its rows at the new width, so the discard moves nothing and only the wanted tile calls for
-///  a render; the change is made in the state directly so that nothing else renders.
+/// A tile the worker builds for a new width goes stale when the text on screen changes during its build,
+/// and the window
+///  asks for another tile at once,
+/// because the displayed tile stays on screen meanwhile and no later event is certain
+///  to ask.
+/// No line changes its rows at the new width,
+/// so the discard moves nothing and only the wanted tile calls for
+///  a render;
+/// the change is made in the state directly so that nothing else renders.
 #[test]
 fn a_tile_discarded_while_the_window_waits_for_one_is_asked_for_again() {
     let (_project, opened) = open(&short_tabbed_text(300));
@@ -420,8 +445,10 @@ fn a_tile_discarded_while_the_window_waits_for_one_is_asked_for_again() {
     window.hide().expect("close wrap window");
 }
 
-/// Hints far from the view keep the packing of the width they were made for after a resize, so the window thread packs
-///  only the lines near the view, and they are packed again for the new width once the view comes near them.
+/// Hints far from the view keep the packing of the width they were made for after a resize,
+/// so the window thread packs
+///  only the lines near the view,
+/// and they are packed again for the new width once the view comes near them.
 #[test]
 fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
     const FAR: usize = 250;

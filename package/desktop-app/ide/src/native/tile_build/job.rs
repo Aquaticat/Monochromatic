@@ -9,21 +9,29 @@ use crate::native::tile_pass::PassKey;
 use anyhow::Result;
 /// Visible hints and diagnostic marks are paint inputs of the tile.
 use ide_app::annotation::Visible;
-/// Hint and diagnostic inks, and the lay-out that places them beside the rows.
+/// Hint and diagnostic inks,
+/// and the lay-out that places them beside the rows.
 use ide_app::annotation_layout::{AnnotationColors, lay_out};
-/// Canonical source text, cloned as a rope snapshot.
+/// Canonical source text,
+/// cloned as a rope snapshot.
 use ide_app::document::Document;
-/// In-file find ranges and the active match, painted from the same rows as selection.
+/// In-file find ranges and the active match,
+/// painted from the same rows as selection.
 use ide_app::find::{FindRange, FindRanges};
 /// Match rectangles of the materialized rows.
 use ide_app::find_paint::rectangles;
-/// The one vertical mapping, copied into each job.
+/// The one vertical mapping,
+/// copied into each job.
 use ide_app::row_map::RowMap;
-/// Shared shaping, the viewport description, and the frame's rows.
+/// Shared shaping,
+/// the viewport description,
+/// and the frame's rows.
 use ide_app::shaped_text::{ShapedView, TextShaper, Viewport};
-/// Paint identity of a tile, compared again when its result arrives.
+/// Paint identity of a tile,
+/// compared again when its result arrives.
 use ide_app::source_frame::FrameStamp;
-/// Syntax classifications, compared by shared identity.
+/// Syntax classifications,
+/// compared by shared identity.
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
@@ -34,26 +42,32 @@ use slint::{Rgba8Pixel, SharedPixelBuffer};
 
 /// What:
 ///  `struct` groups named fields into one owned value;
-///  every field here is owned, so the whole job moves to another thread.
+///  every field here is owned,
+/// so the whole job moves to another thread.
 /// Why:
-///  The worker must not borrow native state, which lives on the window thread.
+///  The worker must not borrow native state,
+/// which lives on the window thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type TileJob = { bounds: Bounds; document: Document; styles: Styles; /* paint inputs */ };
 /// ```
 pub(in crate::native) struct TileJob {
-    /// Tile bounds this job builds, echoed back in the result.
+    /// Tile bounds this job builds,
+    /// echoed back in the result.
     pub(in crate::native) bounds: TileBounds,
     /// File-open generation the snapshot belongs to.
     pub(in crate::native) file: u64,
     /// Rope snapshot at the revision the job was taken from.
     pub(in crate::native) document: Document,
-    /// Syntax classifications, shared by identity.
+    /// Syntax classifications,
+    /// shared by identity.
     pub(in crate::native) styles: SourceStyles,
     /// Shaping choices the worker shaper must match.
     pub(in crate::native) typography: SourceTypography,
-    /// Materialized lines, width, and scale.
+    /// Materialized lines,
+    /// width,
+    /// and scale.
     pub(in crate::native) viewport: Viewport,
     /// Vertical mapping the rows are placed by.
     pub(in crate::native) map: RowMap,
@@ -72,9 +86,12 @@ pub(in crate::native) struct TileJob {
 }
 
 /// What:
-///  A finished tile: the shaped rows and rectangles, and the pixels to show.
+///  A finished tile:
+/// the shaped rows and rectangles,
+/// and the pixels to show.
 /// Why:
-///  The window thread swaps all of them in together, so the image and its offset always belong to one tile.
+///  The window thread swaps all of them in together,
+/// so the image and its offset always belong to one tile.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,7 +102,9 @@ pub(in crate::native) struct TileBuilt {
     pub(in crate::native) bounds: TileBounds,
     /// File-open generation the tile was built for.
     pub(in crate::native) file: u64,
-    /// Shaped rows, rectangles, and annotation positions.
+    /// Shaped rows,
+    /// rectangles,
+    /// and annotation positions.
     pub(in crate::native) view: ShapedView,
     /// Premultiplied pixels of the tile.
     pub(in crate::native) pixels: SharedPixelBuffer<Rgba8Pixel>,
@@ -95,18 +114,22 @@ pub(in crate::native) struct TileBuilt {
     pub(in crate::native) active: Option<FindRange>,
     /// What the visual rows measured while shaping the tile's lines are valid for.
     pub(in crate::native) key: PassKey,
-    /// Visual rows of each line of the tile, exact for the wrap width of its key.
+    /// Visual rows of each line of the tile,
+    /// exact for the wrap width of its key.
     pub(in crate::native) measured: Vec<(usize, usize)>,
-    /// Source rows shaped while building this tile, counted in debug builds for the structural tests.
+    /// Source rows shaped while building this tile,
+    /// counted in debug builds for the structural tests.
     #[cfg(debug_assertions)]
     pub(in crate::native) rows_shaped: u64,
 }
 
 /// What:
-///  `fn` declares a function; `&mut` lends the shaper and raster for this call only;
+///  `fn` declares a function;
+/// `&mut` lends the shaper and raster for this call only;
 ///  `Result<TileBuilt>` is the built tile or the reason it could not be built.
 /// Why:
-///  The same code paints a tile on the window thread and on the worker, so both produce the same pixels.
+///  The same code paints a tile on the window thread and on the worker,
+/// so both produce the same pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -3,7 +3,8 @@
 Durable visual records for the read-only Slint IDE in `package/desktop-app/ide`:
 comparison pages that put built UI options side by side,
 and the screenshots those pages show.
-A comparison page is a question for the user, not shipped behavior.
+A comparison page is a question for the user,
+not shipped behavior.
 Answers are given in the chat and then recorded here and in `doc/handover/slint-ide-0x.md`.
 Frames of the built result are stored beside the frames of the question they answer.
 
@@ -22,21 +23,26 @@ Frames of the built result are stored beside the frames of the question they ans
 
 ### 2026-10-05 UI batch 3
 
-- Page: [`questions/2026-10-06-ui-batch-3.html`](questions/2026-10-06-ui-batch-3.html),
+- Page:
+  [`questions/2026-10-06-ui-batch-3.html`](questions/2026-10-06-ui-batch-3.html),
   built by the coordinating session from these frames and this entry's analysis.
-- Screenshots: `screenshots/2026-10-05-ui-batch-3/`
-- Status: answered by the user on 2026-10-06;
+- Screenshots:
+  `screenshots/2026-10-05-ui-batch-3/`
+- Status:
+  answered by the user on 2026-10-06;
   every answer matches what the build ships:
   `hint-look` `a`,
   `hint-labels` `a`,
-  `hint-packing` `a` (editord's packing, not the `b` ranked first:
+  `hint-packing` `a` (editord's packing,
+  not the `b` ranked first:
   "first row with room" cannot make readers immediately realize two things are not one thing
   under the constraints we chose),
   `diagnostic-rows` `a`,
   `diagnostic-text` `b`.
   The user also kept the three-digit minimum of the line-number column.
   `doc/decision/slint-ide-0x-scope.md` records the answers under "Interface decisions (UI batch 3)".
-- How the frames were made: section "How the 2026-10-05 UI batch 3 screenshots were produced".
+- How the frames were made:
+  section "How the 2026-10-05 UI batch 3 screenshots were produced".
 
 Every option is a real build.
 `<question>-<option>-<scheme>.png` is a whole 1400 by 1000 window of the `annotations` scene,
@@ -45,68 +51,107 @@ cut at the same rectangle for every option of a question.
 Line numbers in the list name the scene's source lines.
 Every build shows each severity letter 4 px before its own line number:
 on 2026-10-06 the user asked for a shorter space between letter and number,
-and the 4 px gap was chosen for that; the frames were rebuilt after the change.
+and the 4 px gap was chosen for that;
+the frames were rebuilt after the change.
 
 #### Hint row look (`hint-look`)
 
-- `a`, shipped: Inter at 13 px in the source ink at 70 percent, without a box, as editord draws hints.
-  Gains: the user's stated reference;
+- `a`,
+  shipped:
+  Inter at 13 px in the source ink at 70 percent,
+  without a box,
+  as editord draws hints.
+  Gains:
+  the user's stated reference;
   the narrower proportional face lets more hints share a row
-  (line 3 takes 2 hint rows, line 4 takes 5);
-  typeface, size, and row already set hints apart from code.
-  Costs: type names are not shown in the code's typeface.
-- `b`: the source family's real italic at 13 px in the same ink,
+  (line 3 takes 2 hint rows,
+  line 4 takes 5);
+  typeface,
+  size,
+  and row already set hints apart from code.
+  Costs:
+  type names are not shown in the code's typeface.
+- `b`:
+  the source family's real italic at 13 px in the same ink,
   each label in a box of the source ink at 8 percent with 5 px padding,
   as the end-of-line build drew hints.
-  Gains: types read in the code's family;
+  Gains:
+  types read in the code's family;
   the box marks a label as inserted text.
-  Costs: wider labels and box padding put line 3 on 4 hint rows and line 4 on 6,
+  Costs:
+  wider labels and box padding put line 3 on 4 hint rows and line 4 on 6,
   so line 4 stands 48 px lower and line 14 leaves the window;
   stacked boxes form a dense block over short calls.
 
-Ranking: `a` > `b`,
+Ranking:
+`a` > `b`,
 because `a` is the reference the user named and needs fewer rows for the same hints,
 while the box of `b` repeats a distinction the row placement already makes.
 
 #### Hint labels (`hint-labels`)
 
-- `a`, shipped: labels as the server sent them, such as `: number` and `width:`.
-  Gains: the colon tells a type from a parameter name,
+- `a`,
+  shipped:
+  labels as the server sent them,
+  such as `: number` and `width:`.
+  Gains:
+  the colon tells a type from a parameter name,
   which matters more on a row of its own than inside a line;
   no rewriting that depends on a hint kind some servers leave out.
-  Costs: one or two characters more per label.
-- `b`: editord's stripping of a type hint's leading `: ` and a parameter hint's trailing `:`.
-  Gains: shorter, quieter labels, as in editord.
-  Costs: `number` (a type) and `width` (a parameter) look alike;
+  Costs:
+  one or two characters more per label.
+- `b`:
+  editord's stripping of a type hint's leading `: ` and a parameter hint's trailing `:`.
+  Gains:
+  shorter,
+  quieter labels,
+  as in editord.
+  Costs:
+  `number` (a type) and `width` (a parameter) look alike;
   a server that leaves the kind out gets unstripped labels next to stripped ones.
   In this scene the shorter labels saved no row.
 
-Ranking: `a` > `b`,
+Ranking:
+`a` > `b`,
 because the colon is the only sign of what a hint names once it stands on its own row,
 and stripping saved no row in the measured scene.
 
 #### Hint packing (`hint-packing`)
 
-- `a`, shipped: editord's packing.
+- `a`,
+  shipped:
+  editord's packing.
   A hint stays on the current row when it starts 8 px after the previous hint's end,
   otherwise it opens a new row that later hints continue.
-  Gains: rows read in source order, top to bottom;
+  Gains:
+  rows read in source order,
+  top to bottom;
   the brief named editord's packing.
-  Costs: a call with several short arguments takes a row per argument:
+  Costs:
+  a call with several short arguments takes a row per argument:
   line 4 takes 5 hint rows.
-- `b`: each hint takes the first row with room.
-  Gains: line 4 takes 2 hint rows,
+- `b`:
+  each hint takes the first row with room.
+  Gains:
+  line 4 takes 2 hint rows,
   so line 5 stands 48 px higher,
   and hints arriving move later lines less.
-  Costs: rows no longer follow source order
-  (on line 4 the first row holds `shape:`, `height:`, `dx:`, and `dy:`, the second `width:` and `scale:`);
+  Costs:
+  rows no longer follow source order
+  (on line 4 the first row holds `shape:`,
+  `height:`,
+  `dx:`,
+  and `dy:`,
+  the second `width:` and `scale:`);
   differs from editord.
 
-Ranking: `b` > `a`,
+Ranking:
+`b` > `a`,
 because every hint stands at the x of its own character in both,
 so source order on rows adds little,
 while `b` saves rows exactly where blocks grow tallest.
-The default stays `a` until the user answers, because the brief asked for editord's packing.
+The default stays `a` until the user answers,
+because the brief asked for editord's packing.
 
 #### The caret card beside message rows and gutter letters (`diagnostic-rows`)
 
@@ -116,19 +161,27 @@ so the lettered box after the line end that this question first offered is gone.
 What is left is whether the earlier caret card stays beside them.
 The frames show the caret inside the string of line 7.
 
-- `a`, shipped: message rows and gutter letters only.
-  Gains: one place for every message;
+- `a`,
+  shipped:
+  message rows and gutter letters only.
+  Gains:
+  one place for every message;
   nothing covers code or changes with the caret.
-  Costs: the full text of a message cut by the row caps is reachable only through the accessible description.
-- `b`: the same plus the card listing the problems at the caret,
+  Costs:
+  the full text of a message cut by the row caps is reachable only through the accessible description.
+- `b`:
+  the same plus the card listing the problems at the caret,
   under the caret's line or over it when the view ends first.
-  Gains: shows the full text of every problem at the caret,
+  Gains:
+  shows the full text of every problem at the caret,
   also of a message cut by the caps.
-  Costs: covers the lines under the caret line and their rows while the caret is in a range,
+  Costs:
+  covers the lines under the caret line and their rows while the caret is in a range,
   in the frames the first message rows of line 8;
   repeats the rows for every message that was not cut.
 
-Ranking: `a` > `b`,
+Ranking:
+`a` > `b`,
 because `a` covers nothing and repeats nothing,
 while the text `b` adds is already on screen except for messages cut by a cap.
 A narrower `b` that opens the card only for a message cut by a cap would keep that gain at a smaller cost;
@@ -136,26 +189,40 @@ it is not built.
 
 #### Message row text (`diagnostic-text`)
 
-- `a`: editord's wording, `error(ts): Type 'string' is not assignable to type 'number'.`
-  Gains: shorter;
+- `a`:
+  editord's wording,
+  `error(ts): Type 'string' is not assignable to type 'number'.`
+  Gains:
+  shorter;
   line 8's information message fits one row instead of two in this scene.
-  Costs: drops the code (`2322`), which people search for;
+  Costs:
+  drops the code (`2322`),
+  which people search for;
   the lower-case severity word reads less as a label.
-- `b`, shipped: the wording of the earlier caret card,
+- `b`,
+  shipped:
+  the wording of the earlier caret card,
   `Error 2322 (ts): Type 'string' is not assignable to type 'number'.`
-  Gains: keeps the code;
+  Gains:
+  keeps the code;
   the capitalized severity word is the row's second channel besides ink;
   the same text starts the accessible description.
-  Costs: a few characters longer, so long messages wrap a little sooner.
+  Costs:
+  a few characters longer,
+  so long messages wrap a little sooner.
 
-Ranking: `b` > `a`,
+Ranking:
+`b` > `a`,
 because the code is the one part a reader cannot reconstruct from the message,
 and the length difference cost one row in the scene.
 
 ### 2026-10-05 hint rows
 
-- Screenshots: `screenshots/2026-10-05-hint-rows/`
-- Status: a record of built behavior on the branch `feat/ide-hint-rows`, not a question.
+- Screenshots:
+  `screenshots/2026-10-05-hint-rows/`
+- Status:
+  a record of built behavior on the branch `feat/ide-hint-rows`,
+  not a question.
   On 2026-10-05 the user rejected the end-of-line placement the entry "2026-10-05 annotations as built" shows
   and decided that inlay hints and diagnostic messages stand on virtual rows over their line,
   as editord draws them,
@@ -172,7 +239,9 @@ and the length difference cost one row in the scene.
 What the frames show.
 `<scene>-<scheme>-<scale>.png` is a whole window:
 
-- `overview`: the first lines of the `annotations` scene, one case per line group:
+- `overview`:
+  the first lines of the `annotations` scene,
+  one case per line group:
   several hints on one row (line 2),
   hints that would touch on a second row (line 3),
   the hard case of one row per short argument (line 4),
@@ -184,25 +253,48 @@ What the frames show.
   a range over three lines (lines 11 to 13),
   and hints together with messages (line 14).
   `overview-<scheme>-2x-crop-hints.png` and `overview-<scheme>-2x-crop-messages.png` are parts of the scale 2 frame.
-- `selection`: lines 2 to 5 selected with Shift+Down across three blocks; only code rows are filled.
-- `find`: the find bar with `area`; matches are boxed on code rows of hinted lines.
-- `bottom`: the last lines of the 239-line file, with rows on the last line.
-- `narrow`: the task's default 1100 by 660 window, scale 1 only;
+- `selection`:
+  lines 2 to 5 selected with Shift+Down across three blocks;
+  only code rows are filled.
+- `find`:
+  the find bar with `area`;
+  matches are boxed on code rows of hinted lines.
+- `bottom`:
+  the last lines of the 239-line file,
+  with rows on the last line.
+- `narrow`:
+  the task's default 1100 by 660 window,
+  scale 1 only;
   message rows that start far right run past the window edge.
-- `typescript`: a disposable project analyzed by a real TypeScript 7.0.2 server, no injection.
-- `arrival-1-before`, `arrival-2-hints`, `arrival-3-diagnostics` (dark, scale 1):
+- `typescript`:
+  a disposable project analyzed by a real TypeScript 7.0.2 server,
+  no injection.
+- `arrival-1-before`,
+  `arrival-2-hints`,
+  `arrival-3-diagnostics` (dark,
+  scale 1):
   the three distinct frames of a recording in which hints and then diagnostics arrive.
-- `reload-1-before`, `reload-2-held`, `reload-3-hints`, `reload-4-diagnostics` (dark, scale 1):
+- `reload-1-before`,
+  `reload-2-held`,
+  `reload-3-hints`,
+  `reload-4-diagnostics` (dark,
+  scale 1):
   an external change;
   the second frame shows the new text with the space of the old rows held open.
-- `wheel-1-scrolling-ended`, `wheel-2-rows-shown` (dark, scale 1):
+- `wheel-1-scrolling-ended`,
+  `wheel-2-rows-shown` (dark,
+  scale 1):
   consecutive recorded frames after wheel scrolling during which hints and diagnostics had arrived;
-  lines 96 and 97, the first visible lines, stay where they are.
+  lines 96 and 97,
+  the first visible lines,
+  stay where they are.
 
 ### 2026-10-05 annotations as built
 
-- Screenshots: `screenshots/2026-10-05-annotations-as-built/`
-- Status: history.
+- Screenshots:
+  `screenshots/2026-10-05-annotations-as-built/`
+- Status:
+  history.
   The user saw these frames and rejected the end-of-line hint placement on 2026-10-05:
   hints move to virtual rows above the code line,
   like editord,
@@ -216,7 +308,8 @@ on branch `feat/ide-lsp-annotations` at `112dbd955`:
   the first source lines enlarged.
   Inlay hints sit in boxes after the end of their line,
   in source order;
-  a lettered severity marker (`E`, `W`) follows the text of a line where a diagnostic starts;
+  a lettered severity marker (`E`,
+  `W`) follows the text of a line where a diagnostic starts;
   each diagnostic is underlined in a style that differs by severity.
 - `window-dark.png` and `window-light.png`:
   the whole window with the same annotations.
@@ -231,19 +324,30 @@ The tree's selected row and the wide divider gutter in these frames predate the 
 
 ### 2026-10-05 UI batch 2
 
-- Page: [`questions/2026-10-05-ui-batch-2.html`](questions/2026-10-05-ui-batch-2.html)
-- Screenshots: `screenshots/2026-10-05-ui-batch-2/`
-- Status: answered by the user on 2026-10-05 and applied.
+- Page:
+  [`questions/2026-10-05-ui-batch-2.html`](questions/2026-10-05-ui-batch-2.html)
+- Screenshots:
+  `screenshots/2026-10-05-ui-batch-2/`
+- Status:
+  answered by the user on 2026-10-05 and applied.
   The applied frames are in `screenshots/2026-10-05-ui-batch-2-applied/`;
   see [Applied frames of the 2026-10-05 UI batch 2](#applied-frames-of-the-2026-10-05-ui-batch-2).
 
-Questions on the page, with the slug used in file names:
+Questions on the page,
+with the slug used in file names:
 
-- `divider-gap`: how the sidebar divider spends its 48 px minimum grab width.
-- `divider-tab`: whether the divider is a keyboard Tab stop.
-- `clear-icon`: whether the find and search inputs keep the toolkit's clear icon.
-- `find-buttons`: whether the find bar gets previous, next, and close buttons.
-- `selected-ink`: whether selected rows draw white text on the selection fill in both schemes.
+- `divider-gap`:
+  how the sidebar divider spends its 48 px minimum grab width.
+- `divider-tab`:
+  whether the divider is a keyboard Tab stop.
+- `clear-icon`:
+  whether the find and search inputs keep the toolkit's clear icon.
+- `find-buttons`:
+  whether the find bar gets previous,
+  next,
+  and close buttons.
+- `selected-ink`:
+  whether selected rows draw white text on the selection fill in both schemes.
 
 #### Answers of 2026-10-05
 
@@ -282,18 +386,28 @@ Questions on the page, with the slug used in file names:
 
 ### 2026-10-05 packaged application check
 
-- Screenshots: `screenshots/2026-10-05-packaged-check/`
-- Status: evidence of a check, not a question; it has no page.
+- Screenshots:
+  `screenshots/2026-10-05-packaged-check/`
+- Status:
+  evidence of a check,
+  not a question;
+  it has no page.
 
 The frames show the assembled application directory of the package's `bundle` task
 running from a copy outside the repository.
 [Its production section](#how-the-2026-10-05-packaged-check-screenshots-were-produced)
-gives the build, the sessions, and what each frame shows.
+gives the build,
+the sessions,
+and what each frame shows.
 
 ### 2026-10-06 single-file check
 
-- Screenshots: `screenshots/2026-10-06-single-file-check/`
-- Status: evidence of a check, not a question; it has no page.
+- Screenshots:
+  `screenshots/2026-10-06-single-file-check/`
+- Status:
+  evidence of a check,
+  not a question;
+  it has no page.
 
 The frames show the single executable of the package's `bundle` task,
 run alone from a scratch folder or installed with its launcher entry in a disposable home folder:
@@ -302,38 +416,55 @@ the start without a folder,
 "open with" on a folder,
 and a damaged embedded part.
 [Its production section](#how-the-2026-10-06-single-file-check-screenshots-were-produced)
-gives the build, the sessions, and what each frame shows.
+gives the build,
+the sessions,
+and what each frame shows.
 
 ### 2026-10-06 UI batch 3b
 
-- Page: [`questions/2026-10-06-ui-batch-3b.html`](questions/2026-10-06-ui-batch-3b.html)
-- Screenshots: `screenshots/2026-10-06-ui-batch-3b/`
-- Status: answered by the user on 2026-10-06 and applied.
+- Page:
+  [`questions/2026-10-06-ui-batch-3b.html`](questions/2026-10-06-ui-batch-3b.html)
+- Screenshots:
+  `screenshots/2026-10-06-ui-batch-3b/`
+- Status:
+  answered by the user on 2026-10-06 and applied.
   The applied frames are in `screenshots/2026-10-06-ui-batch-3b-applied/`;
   see [Applied frames of the 2026-10-06 UI batch 3b](#applied-frames-of-the-2026-10-06-ui-batch-3b).
   The comparison frames and builds are described in the
   [production notes](#how-the-2026-10-06-ui-batch-3b-screenshots-were-produced).
 
-The open choices of the applied UI batch 2 and one new question, with the slug used in file names.
+The open choices of the applied UI batch 2 and one new question,
+with the slug used in file names.
 Option `a` is what the application does now.
 
-- `zone-width`: the divider's pointer zone,
-  5 px (`a`), 7 px (`b`), 4 px (`c`), or 13 px (`d`).
-- `query-selection-ink`: selected text inside the find and search boxes
+- `zone-width`:
+  the divider's pointer zone,
+  5 px (`a`),
+  7 px (`b`),
+  4 px (`c`),
+  or 13 px (`d`).
+- `query-selection-ink`:
+  selected text inside the find and search boxes
   in the toolkit's colors (`a`) or in the ink chosen from the selection fill (`b`).
-- `selected-row-tint`: a hovered or keyboard-focused selected tree row
+- `selected-row-tint`:
+  a hovered or keyboard-focused selected tree row
   tinted away from its ink (`a`) or not tinted (`b`).
-- `trailing-cell`: the box's trailing cell
+- `trailing-cell`:
+  the box's trailing cell
   shrinks to 12 px of padding while the clear control is hidden (`a`) or always keeps 48 px (`b`).
-- `divider-focus`: the keyboard-focused divider
+- `divider-focus`:
+  the keyboard-focused divider
   with three accent columns and a 5 px by 48 px handle (`a`),
   a 5 px by 96 px handle (`b`),
   or five accent columns over the whole height and no handle (`c`).
-- `clear-plate`: the clear control's hover and press
+- `clear-plate`:
+  the clear control's hover and press
   on a 32 px plate inside the 48 px cell (`a`) or on the whole cell (`b`).
-- `padding-click`: a click on the search panel's padding
+- `padding-click`:
+  a click on the search panel's padding
   keeps keyboard focus in the query box (`a`) or moves it to the panel and hides the clear control (`b`).
-- `watch-limit`: when the system's inotify watch limit is reached,
+- `watch-limit`:
+  when the system's inotify watch limit is reached,
   the application only logs it (`a`) or also shows a one-line message (`b`).
 
 #### Answers of 2026-10-06
@@ -344,7 +475,8 @@ Option `a` is what the application does now.
   as built.
 - `query-selection-ink`:
   option `b`,
-  "white, like the rest".
+  "white,
+  like the rest".
   Selected text in the find and search boxes takes the ink chosen from the selection fill,
   white on the fluent fill in both schemes.
 - `selected-row-tint`:
@@ -363,7 +495,10 @@ Option `a` is what the application does now.
   centered and never taller than the divider.
 - `clear-plate`:
   option `b` with a change,
-  "Whole cell, it's more honest. And you don't have to compromise here: Use transparency."
+  "Whole cell,
+  it's more honest.
+  And you don't have to compromise here:
+  Use transparency."
   The plate covers the whole cell,
   and its fill and boundary are the foreground ink at reduced opacity.
 - `padding-click`:
@@ -411,9 +546,13 @@ Option `a` is always the `main` build.
 
 Every option is a real build of the application.
 Option `a` of every question is `main` at `a630b237b`.
-While the page was made, `main` gained language navigation.
+While the page was made,
+`main` gained language navigation.
 On `main` at `2c64f0229`,
-`ui/divider.slint`, `ui/tree.slint`, `ui/find.slint`, and `ui/search.slint` are identical to `a630b237b`;
+`ui/divider.slint`,
+`ui/tree.slint`,
+`ui/find.slint`,
+and `ui/search.slint` are identical to `a630b237b`;
 `ui/app.slint` differs only by language navigation and an outside-project label,
 and `ui/hover.slint` and `ui/references.slint` are new.
 None of those additions appears in the captured scenes.
@@ -423,21 +562,33 @@ The tree of each commit is `a630b237b` plus only that option
 so checking one commit out builds that option alone.
 The branch is throwaway prototype code and is never merged.
 
-- `divider-gap` `b`, `5de82698c`:
+- `divider-gap` `b`,
+  `5de82698c`:
   a 1 px divider cell with a 48 px grab area overlapping tree and source.
-- `divider-gap` `c`, `106ab1ea4`:
+- `divider-gap` `c`,
+  `106ab1ea4`:
   the line on the tree-side edge of the 48 px cell.
-- `divider-gap` `d`, `6b74bf6c4`:
+- `divider-gap` `d`,
+  `6b74bf6c4`:
   a Material 3 style drag handle in the 48 px cell.
-- `divider-tab` `b`, `4133d984b`:
-  no Tab stop; Alt+Shift+Left and Alt+Shift+Right resize.
-- `divider-tab` `c`, `b1cc52b81`:
+- `divider-tab` `b`,
+  `4133d984b`:
+  no Tab stop;
+  Alt+Shift+Left and Alt+Shift+Right resize.
+- `divider-tab` `c`,
+  `b1cc52b81`:
   no Tab stop and no keyboard resizing.
-- `clear-icon` `b`, `a79ac704f`:
-  find and search inputs built on `TextInput`, without the clear icon.
-- `find-buttons` `b`, `d8d28717a`:
-  previous, next, and close buttons in the find bar.
-- `selected-ink` `b`, `c1e3a8d2f`:
+- `clear-icon` `b`,
+  `a79ac704f`:
+  find and search inputs built on `TextInput`,
+  without the clear icon.
+- `find-buttons` `b`,
+  `d8d28717a`:
+  previous,
+  next,
+  and close buttons in the find bar.
+- `selected-ink` `b`,
+  `c1e3a8d2f`:
   white ink on the selection fill in the tree and the search list.
 
 Options `c` and `d` of `divider-gap` and the whole `selected-ink` question were not in the original request.
@@ -454,25 +605,41 @@ IDE_NATIVE_MCP_PORT=9378 mise run //package/desktop-app/ide:inspect:native dark 
 IDE_NATIVE_MCP_PORT=9379 mise run //package/desktop-app/ide:inspect:native light scroll
 ```
 
-- Fixture: `scroll`, a 203-line `fixture.ts` opened at start.
-- Window: the task's default 1100 by 660 nested screen at scale factor 1;
+- Fixture:
+  `scroll`,
+  a 203-line `fixture.ts` opened at start.
+- Window:
+  the task's default 1100 by 660 nested screen at scale factor 1;
   every session asserts that size before its first frame and every frame is checked to be 1100 by 660 pixels.
-- Project contents: each session adds the same entries to its disposable project before any frame
-  (`src/index.ts`, `README.md`, `package.json`, `an-extremely-long-file-name-that-reaches-the-divider.ts`)
+- Project contents:
+  each session adds the same entries to its disposable project before any frame
+  (`src/index.ts`,
+  `README.md`,
+  `package.json`,
+  `an-extremely-long-file-name-that-reaches-the-divider.ts`)
   and asserts the resulting tree order.
-- Sessions: one per question, option, and scheme, each quit through the compositor control socket.
+- Sessions:
+  one per question,
+  option,
+  and scheme,
+  each quit through the compositor control socket.
 
 ### Input and capture
 
 - Keys and clicks are seat input through the compositor control socket
-  (`key`, `type`, `click` of `package/cli/nested-wayland-session`).
-- Hover uses the Slint MCP tool `move_pointer`, which moves the toolkit pointer,
+  (`key`,
+  `type`,
+  `click` of `package/cli/nested-wayland-session`).
+- Hover uses the Slint MCP tool `move_pointer`,
+  which moves the toolkit pointer,
   because the control protocol has no plain pointer move.
   Its `wheel` command with zero notches moved the seat pointer,
   but the divider did not show hover afterwards in a control run.
-- A frame is the compositor's `screenshot`, saved once two screenshots 250 ms apart are byte-identical.
+- A frame is the compositor's `screenshot`,
+  saved once two screenshots 250 ms apart are byte-identical.
 - Frames with a focused text input are picked from 12 samples taken 120 ms apart:
-  among samples seen at least twice, the one with the caret drawn.
+  among samples seen at least twice,
+  the one with the caret drawn.
   Every option therefore shows the caret in the same blink phase.
 - The compositor writes nearly uncompressed PNG files.
   The stored files are re-encoded losslessly with ImageMagick and stripped of metadata;
@@ -480,14 +647,21 @@ IDE_NATIVE_MCP_PORT=9379 mise run //package/desktop-app/ide:inspect:native light
 
 ### Scenes
 
-Every scene starts from the state right after launch: `fixture.ts` open and selected in the tree,
-the source focused, the sidebar 256 px wide.
+Every scene starts from the state right after launch:
+`fixture.ts` open and selected in the tree,
+the source focused,
+the sidebar 256 px wide.
 
 - `divider-gap`:
-  `idle` at start with the pointer parked at 1000, 450;
-  `pointer-tree` with the pointer at 244, 152, on the `README.md` row 12 px left of the tree edge;
-  `pointer-gap` with the pointer at 268, 152;
-  `focus` after parking the pointer and pressing Tab twice (source to tree, tree to divider).
+  `idle` at start with the pointer parked at 1000,
+  450;
+  `pointer-tree` with the pointer at 244,
+  152,
+  on the `README.md` row 12 px left of the tree edge;
+  `pointer-gap` with the pointer at 268,
+  152;
+  `focus` after parking the pointer and pressing Tab twice (source to tree,
+  tree to divider).
 - `divider-tab`:
   `tree` after one Tab;
   `tab-1` after one more Tab;
@@ -507,12 +681,15 @@ the source focused, the sidebar 256 px wide.
 
 ### What the frames do not show
 
-- The mouse cursor: the screenshot holds the application surface only.
-- Drags: the control protocol has no held-button drag.
+- The mouse cursor:
+  the screenshot holds the application surface only.
+- Drags:
+  the control protocol has no held-button drag.
 - The right-click menu and input-method preedit of the `clear-icon` option `b` input,
   which the prototype does not rebuild.
 - The references list from the language-navigation work:
-  it is not in `a630b237b`, and showing it needs a running language server.
+  it is not in `a630b237b`,
+  and showing it needs a running language server.
   On `main` at `2c64f0229` its selected row uses the same palette ink as the tree and the search list.
 
 ## Applied frames of the 2026-10-05 UI batch 2
@@ -640,7 +817,9 @@ The binary's SHA-256 starts with `522415c723cc2156`.
 It was built with a 10 s safety sweep,
 a 150 ms quiet time for an open write,
 and a 250 ms limit on that wait
-(`SAFETY_SWEEP`, `WRITE_QUIET`, and `WRITE_WAIT_LIMIT` in `src/refresh_policy.rs`).
+(`SAFETY_SWEEP`,
+`WRITE_QUIET`,
+and `WRITE_WAIT_LIMIT` in `src/refresh_policy.rs`).
 The directory was copied to a scratch directory below `~/temp/agent`,
 outside the repository,
 and every session ran that copy.
@@ -660,7 +839,9 @@ at 1100 by 660 and scale factor 1,
 with `--color-scheme dark` or `--color-scheme light`,
 started as `monochromatic-ide PROJECT --file src/main.ts` or `src/main.rs`.
 The environment held no `HELIX_RUNTIME` and no Cargo variable,
-and the configuration, cache, and data directories were empty scratch directories.
+and the configuration,
+cache,
+and data directories were empty scratch directories.
 The TypeScript sessions also hid the system copies of Inter and JetBrains Mono,
 as the `inspect:native` task does;
 the Rust sessions used the host's own font configuration.
@@ -670,7 +851,9 @@ the project's own TypeScript 7 server and the host's `rust-analyzer`.
 ### Input and capture
 
 - The release binary has no inspection server,
-  so every key, click, and pointer move is seat input through the compositor control socket,
+  so every key,
+  click,
+  and pointer move is seat input through the compositor control socket,
   and nothing is read from inside the application.
 - What the application did is read from three places:
   its own log lines,
@@ -695,7 +878,8 @@ and a step from this list,
 in the order of the check:
 
 - `open-highlighted`:
-  the first file, highlighted from the copy's own `runtime`.
+  the first file,
+  highlighted from the copy's own `runtime`.
 - `select-line`:
   one line selected with Shift+End;
   the nested clipboard then held exactly that line.
@@ -757,7 +941,9 @@ IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-ap
 IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-app/ide:inspect:native light annotations
 ```
 
-- Fixture: `annotations`, a 239-line `fixture.ts` with 92 hints and 23 diagnostics from the inspection file.
+- Fixture:
+  `annotations`,
+  a 239-line `fixture.ts` with 92 hints and 23 diagnostics from the inspection file.
 - Scale 1 frames are 1400 by 1000 pixels.
   Scale 2 frames are 2800 by 2000 pixels,
   taken in a session of the same command after the compositor's `scale 2` control command.
@@ -765,7 +951,9 @@ IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-ap
   so it was not used.
 - `narrow` frames follow the control command `resize 1100 660`.
 - Input is seat input through the compositor control socket:
-  `click`, `key`, and `type` of `package/cli/nested-wayland-session`.
+  `click`,
+  `key`,
+  and `type` of `package/cli/nested-wayland-session`.
   The selection is a click on line 2 and Shift with Down three times and End;
   find is Ctrl+F and `type area`;
   the bottom is Ctrl+End.
@@ -779,7 +967,10 @@ IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-ap
 - The stored files are re-encoded losslessly without ancillary chunks.
 
 The `typescript` frames come from a project written below the system temporary directory
-(`src/main.ts`, `src/shape.ts`, `tsconfig.json`, and a copy of `typescript@7.0.2` with its native binary):
+(`src/main.ts`,
+`src/shape.ts`,
+`tsconfig.json`,
+and a copy of `typescript@7.0.2` with its native binary):
 
 ```sh
 # package/desktop-app/ide/mise.toml, task inspect:native
@@ -815,7 +1006,8 @@ IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 IDE_NATIVE_ANNOTATION_DELAYS=
   written to the fixture file while the session runs,
   so every annotated line stays where it was in the text.
 - The wheel recording sends one `wheel 700 400 0 1` notch every 240 ms for 10 s.
-- The arrival was recorded for 18 s in a session of its own, because the slow start under host load
+- The arrival was recorded for 18 s in a session of its own,
+  because the slow start under host load
   left the first 9 s recording without the arrival.
 - Recorded frames:
   arrival 327 kept and 700 dropped;
@@ -825,11 +1017,13 @@ IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 IDE_NATIVE_ANNOTATION_DELAYS=
   TypeScript arrival 287 kept and 63 dropped;
   TypeScript reload 108 kept and 87 dropped.
   Dropped frames came from host load (a load average of 45 to 100 from other sessions);
-  times below come from the application's log, not from frame counts.
+  times below come from the application's log,
+  not from frame counts.
 
 ### Measurement
 
-A code row is found by the ink of its gutter, letter or line number.
+A code row is found by the ink of its gutter,
+letter or line number.
 Its pixels from x 340 on,
 right of every severity letter,
 are then searched for in the next recorded frame,
@@ -837,31 +1031,59 @@ and the difference of the two positions is that line's movement.
 For the wheel recording only a row found again pixel for pixel counts,
 because neighbouring fixture lines look alike.
 
-- Arrival: after the text and its syntax colors, two frames differ from the frame before them.
-  Hints: line 1 moved 0 px, line 2 26 px, line 3 68 px, line 4 158 px, lines 5 to 13 184 px, lines 14 to 20 210 px.
-  Diagnostics, 2.92 s later by the log: lines 1 to 4 moved 0 px, lines 5 and 6 16 px, line 7 42 px, line 8 164 px;
+- Arrival:
+  after the text and its syntax colors,
+  two frames differ from the frame before them.
+  Hints:
+  line 1 moved 0 px,
+  line 2 26 px,
+  line 3 68 px,
+  line 4 158 px,
+  lines 5 to 13 184 px,
+  lines 14 to 20 210 px.
+  Diagnostics,
+  2.92 s later by the log:
+  lines 1 to 4 moved 0 px,
+  lines 5 and 6 16 px,
+  line 7 42 px,
+  line 8 164 px;
   later lines left the window.
-- Reload within the hold: three frames differ (the new text, hints back, diagnostics back);
+- Reload within the hold:
+  three frames differ (the new text,
+  hints back,
+  diagnostics back);
   no code row moved in any of them.
-- Reload with late diagnostics: by the log, message space was given up 1.01 s after the reload
+- Reload with late diagnostics:
+  by the log,
+  message space was given up 1.01 s after the reload
   and taken again with the diagnostics 3.16 s after it.
   The recording shows the first of the two
-  (lines 5 and 6 moved up 16 px, line 7 42 px, line 8 164 px);
+  (lines 5 and 6 moved up 16 px,
+  line 7 42 px,
+  line 8 164 px);
   it kept no frame after the second.
-- TypeScript 7.0.2, first open: by the application's log hints and diagnostics were stored within 1 ms of each other,
+- TypeScript 7.0.2,
+  first open:
+  by the application's log hints and diagnostics were stored within 1 ms of each other,
   2.03 s after the file was announced to the server,
-  and lines moved once, in one recorded frame.
-  External change: the rows were back 0.04 s after the reload by the application's log,
+  and lines moved once,
+  in one recorded frame.
+  External change:
+  the rows were back 0.04 s after the reload by the application's log,
   two recorded frames differ,
   and no code row moved.
-- Wheel: 42 notches were sent;
+- Wheel:
+  42 notches were sent;
   by the log the view came to rest at a scroll offset of 2280 px.
   In 30 kept frames every code row found again moved by one common amount,
   never backwards
-  (at most 119 px between two kept frames, because frames were dropped).
+  (at most 119 px between two kept frames,
+  because frames were dropped).
   Hints and diagnostics that arrived meanwhile were shown in one frame,
   0.32 s after the last render that deferred them by the log;
-  in it lines 96 and 97, the first visible lines, did not move,
+  in it lines 96 and 97,
+  the first visible lines,
+  did not move,
   line 98 moved 26 px by its own new block,
   and later lines 52 to 256 px,
   each by the blocks that appeared before it inside the window.
@@ -884,18 +1106,35 @@ The tree of each commit is `4438d8028` plus only that option
 so checking one commit out builds that option alone.
 The branch is throwaway prototype code and is never merged.
 
-- `diagnostic-text` `a`, `06b8a3b09`: editord wording without the code.
-- `hint-look` `b`, `a5ee2671f`: the source family italic in a box.
-- `hint-labels` `b`, `70851ccc1`: editord label stripping.
-- `hint-packing` `b`, `89a24c0ff`: each hint on the first row with room.
-- `diagnostic-rows` `b`, `5e46c5d18`: rows and gutter letters plus the caret card.
+- `diagnostic-text` `a`,
+  `06b8a3b09`:
+  editord wording without the code.
+- `hint-look` `b`,
+  `a5ee2671f`:
+  the source family italic in a box.
+- `hint-labels` `b`,
+  `70851ccc1`:
+  editord label stripping.
+- `hint-packing` `b`,
+  `89a24c0ff`:
+  each hint on the first row with room.
+- `diagnostic-rows` `b`,
+  `5e46c5d18`:
+  rows and gutter letters plus the caret card.
 
-The same options were built twice before, and their frames were replaced by the frames of these builds:
-first on `fb0824037`, together with a lettered box after the line end that the user's decision of 2026-10-06 retired
+The same options were built twice before,
+and their frames were replaced by the frames of these builds:
+first on `fb0824037`,
+together with a lettered box after the line end that the user's decision of 2026-10-06 retired
 (commits `46704e4c2` to `9d24ffcca`),
-then on `c1edfcf40`, with the letters in a 16 px column at the gutter's left edge,
+then on `c1edfcf40`,
+with the letters in a 16 px column at the gutter's left edge,
 which the user found too far from the line numbers
-(commits `ad6a6fac0`, `c9873c837`, `65184fbff`, `d5736b7ed`, and `fce7a8852`).
+(commits `ad6a6fac0`,
+`c9873c837`,
+`65184fbff`,
+`d5736b7ed`,
+and `fce7a8852`).
 
 ### Command, fixture, and window size
 
@@ -908,22 +1147,43 @@ IDE_NATIVE_MCP_PORT=9424 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-ap
 IDE_NATIVE_MCP_PORT=9425 IDE_NATIVE_SIZE=1400x1000 mise run //package/desktop-app/ide:inspect:native light annotations
 ```
 
-- Fixture: `annotations`, the 239-line scene with 92 injected hints and 23 diagnostics
+- Fixture:
+  `annotations`,
+  the 239-line scene with 92 injected hints and 23 diagnostics
   that the entry "2026-10-05 hint rows" describes.
-- Window: 1400 by 1000 at scale 1; every frame is checked to be 1400 by 1000 pixels.
-- Sessions: one per build and scheme, each quit through the compositor control socket.
+- Window:
+  1400 by 1000 at scale 1;
+  every frame is checked to be 1400 by 1000 pixels.
+- Sessions:
+  one per build and scheme,
+  each quit through the compositor control socket.
 
 ### Input and capture
 
 - Input is seat input through the compositor control socket (`click` and `key`).
   The first frame of a session follows a click on line 1 and Ctrl+Home;
-  `diagnostic-rows` uses the second frame, after a click inside the string of line 7.
+  `diagnostic-rows` uses the second frame,
+  after a click inside the string of line 7.
 - A frame is kept once three screenshots 1.2 s apart are byte-identical.
 - The stored files are re-encoded losslessly without ancillary chunks.
-- Crop rectangles, in pixels of the whole frame (left, top, right, bottom):
-  `hint-look`, `hint-labels`, and `hint-packing` 300, 30, 1100, 350;
-  `diagnostic-rows` 300, 290, 1400, 790;
-  `diagnostic-text` 300, 380, 1400, 950.
+- Crop rectangles,
+  in pixels of the whole frame (left,
+  top,
+  right,
+  bottom):
+  `hint-look`,
+  `hint-labels`,
+  and `hint-packing` 300,
+  30,
+  1100,
+  350;
+  `diagnostic-rows` 300,
+  290,
+  1400,
+  790;
+  `diagnostic-text` 300,
+  380,
+  1400, 950.
 - Measured on the frames by the ink of the gutter's line numbers,
   the code row of line 5 stands at y 339 in the shipped build,
   387 with `hint-look` `b`,
@@ -955,14 +1215,19 @@ so newer builds look different there.
   each in dark and in light,
   hosted in the release build of `package/cli/nested-wayland-session` at 1100 by 660 and scale factor 1,
   started as `monochromatic-ide PROJECT --file src/main.ts` or `src/main.rs`,
-  with empty configuration, cache, and data homes and no `HELIX_RUNTIME`.
+  with empty configuration,
+  cache,
+  and data homes and no `HELIX_RUNTIME`.
   Each parser library was loaded from the session's own cache home,
   `cache/monochromatic-ide/runtime/c47e913b79bf6a42/grammars/`,
   which the executable filled itself.
 - Home-folder sessions in a disposable home of 283,450 files,
   with the executable and the launcher entry installed there by `bin/install.mjs`
-  and the session's `HOME`, `PATH`, and XDG defaults pointing into it:
-  a start through the entry with no folder (`gio launch` with the entry alone, as an application menu does),
+  and the session's `HOME`,
+  `PATH`,
+  and XDG defaults pointing into it:
+  a start through the entry with no folder (`gio launch` with the entry alone,
+  as an application menu does),
   in dark and in light;
   "open with" on a folder through GLib (`gio launch` with the entry and the folder)
   and through KIO (`kioclient exec` with the folder URL,
@@ -1043,7 +1308,8 @@ The other frames:
 `-crop.png` is the same frame cut at the rectangle listed for its question under
 [Crop rectangles](#crop-rectangles-of-the-2026-10-06-ui-batch-3b),
 the same rectangle for every option,
-and enlarged by a whole factor without smoothing, so each screen pixel stays a square block.
+and enlarged by a whole factor without smoothing,
+so each screen pixel stays a square block.
 
 ### Builds
 
@@ -1053,7 +1319,9 @@ its `package/desktop-app/ide` is identical to `066b14ec5`,
 where the branch `feat/ide-accessibility-tests` starts.
 Option `a` of a question is the base build,
 except for `zone-width`:
-there every option, `a` included, is a prototype commit,
+there every option,
+`a` included,
+is a prototype commit,
 because the zone is invisible and only the prototype draws it.
 Every other option is one commit on the branch `prototype/ide-batch-2-choices`.
 The tree of each commit is the base plus only that option
@@ -1061,38 +1329,59 @@ The tree of each commit is the base plus only that option
 so checking one commit out builds that option alone.
 The branch is throwaway prototype code and is never merged.
 
-- `zone-width` `a`, `3dfe71e4e`:
-  the current 5 px zone, two columns on each side of the line, drawn as a translucent magenta overlay.
-- `zone-width` `b`, `9655769d8`:
-  a 7 px zone, three columns on each side.
-- `zone-width` `c`, `f1c4c4d48`:
-  a 4 px zone, one column on the tree side and two on the source side.
+- `zone-width` `a`,
+  `3dfe71e4e`:
+  the current 5 px zone,
+  two columns on each side of the line,
+  drawn as a translucent magenta overlay.
+- `zone-width` `b`,
+  `9655769d8`:
+  a 7 px zone,
+  three columns on each side.
+- `zone-width` `c`,
+  `f1c4c4d48`:
+  a 4 px zone,
+  one column on the tree side and two on the source side.
   4 px cannot be centered on a 1 px line;
   the tree side gets the single column because the tree's scroll bar lies on that side.
-- `zone-width` `d`, `f05226ea6`:
-  a 13 px zone, six columns on each side.
-- `query-selection-ink` `b`, `bf446cf9c`:
+- `zone-width` `d`,
+  `f05226ea6`:
+  a 13 px zone,
+  six columns on each side.
+- `query-selection-ink` `b`,
+  `bf446cf9c`:
   selected text in both boxes in the ink chosen from the selection fill,
   the ink of selected rows and of selected source text.
-- `selected-row-tint` `b`, `3e5c35d38`:
+- `selected-row-tint` `b`,
+  `3e5c35d38`:
   a selected tree row is never tinted.
-- `trailing-cell` `b`, `5c4493fb6`:
+- `trailing-cell` `b`,
+  `5c4493fb6`:
   the clear cell keeps its 48 px while the clear control is hidden.
-- `divider-focus` `b`, `d74bc6728`:
+- `divider-focus` `b`,
+  `d74bc6728`:
   a 5 px by 96 px focus handle.
-- `divider-focus` `c`, `2f74ed887`:
+- `divider-focus` `c`,
+  `2f74ed887`:
   keyboard focus draws five accent columns over the whole height and no handle.
-- `clear-plate` `b`, `061bcdf5d`:
+- `clear-plate` `b`,
+  `061bcdf5d`:
   the hover and press plate fills the whole 48 px cell.
-- `padding-click` `b`, `e393926fe`:
-  the search panel's key scope is a focus owner again, as before 2026-10-05.
-- `watch-limit` `b`, `a7ff27343`:
+- `padding-click` `b`,
+  `e393926fe`:
+  the search panel's key scope is a focus owner again,
+  as before 2026-10-05.
+- `watch-limit` `b`,
+  `a7ff27343`:
   a row along the bottom edge with the warning letter `W`,
   `File-watch limit reached:` in bold,
   and `changes may show up to 1 s late. Raise it with sudo sysctl fs.inotify.max_user_watches=1048576`.
   The environment variable `IDE_PROTOTYPE_WATCH_LIMIT` stands in for the watch thread reporting the limit.
-  The option's first commit, `587b1475a`, centered the shortened main layout and so moved it 16 px down;
-  `a7ff27343` on top of it keeps the layout at the top edge, and only that build is in the frames.
+  The option's first commit,
+  `587b1475a`,
+  centered the shortened main layout and so moved it 16 px down;
+  `a7ff27343` on top of it keeps the layout at the top edge,
+  and only that build is in the frames.
 
 In the zone-width prototypes the focus handle keeps its 5 px width centered on the line at every zone width.
 
@@ -1107,9 +1396,18 @@ IDE_NATIVE_MCP_PORT=9394 mise run //package/desktop-app/ide:inspect:native dark 
 IDE_NATIVE_MCP_PORT=9395 mise run //package/desktop-app/ide:inspect:native light scroll
 ```
 
-The `watch-limit` sessions add `IDE_PROTOTYPE_WATCH_LIMIT=1`, which the base build ignores.
-Fixture, window size, project contents, seat input, pointer hover, settled frames, caret phase,
-held presses, scale switches, and lossless re-encoding are those of
+The `watch-limit` sessions add `IDE_PROTOTYPE_WATCH_LIMIT=1`,
+which the base build ignores.
+Fixture,
+window size,
+project contents,
+seat input,
+pointer hover,
+settled frames,
+caret phase,
+held presses,
+scale switches,
+and lossless re-encoding are those of
 [How the 2026-10-05 UI batch 2 screenshots were produced](#how-the-2026-10-05-ui-batch-2-screenshots-were-produced)
 and [How the applied frames were produced](#how-the-applied-frames-were-produced).
 The `zone-width` sessions add 20 files to the project,
@@ -1118,16 +1416,24 @@ so the tree overflows and shows its scroll bar beside the zone.
 
 ### Scenes
 
-Every scene starts from the state right after launch: `fixture.ts` open and selected in the tree,
-the source focused, the sidebar 256 px wide, so the divider's line is pixel column 256.
+Every scene starts from the state right after launch:
+`fixture.ts` open and selected in the tree,
+the source focused,
+the sidebar 256 px wide,
+so the divider's line is pixel column 256.
 
 - `zone-width`:
   `idle` with the pointer parked over the source;
   `hovered` with the pointer on the zone's outermost source-side column.
   Each session also checked that the pointer one column further out leaves the line at rest.
 - `query-selection-ink`:
-  `find-selected` after Ctrl+F, typing `Latin`, and Ctrl+A;
-  `search-selected` after Escape, two Shift taps, typing `fixture`, and Ctrl+A.
+  `find-selected` after Ctrl+F,
+  typing `Latin`,
+  and Ctrl+A;
+  `search-selected` after Escape,
+  two Shift taps,
+  typing `fixture`,
+  and Ctrl+A.
 - `selected-row-tint`:
   `hovered` with the pointer on the selected row;
   `focused` after Tab from the source and Home and Down onto the selected row.
@@ -1135,37 +1441,83 @@ the source focused, the sidebar 256 px wide, so the divider's line is pixel colu
   `focused-empty` after Ctrl+F;
   `typing` after typing `Latin`;
   `unfocused-text` after a seat click in the source;
-  `empty` after Ctrl+F, Delete, and another click in the source;
-  `long-typing` after Ctrl+F and typing 130 letters, longer than the box;
+  `empty` after Ctrl+F,
+  Delete,
+  and another click in the source;
+  `long-typing` after Ctrl+F and typing 130 letters,
+  longer than the box;
   `long-unfocused` after another click in the source.
 - `divider-focus`:
-  after Tab twice from the source, at scale 1 and at scale 2.
+  after Tab twice from the source,
+  at scale 1 and at scale 2.
 - `clear-plate`:
   `hovered` with the pointer on the find box's clear control after typing `Latin`
-  and waiting for the count, which decides where the cell is;
+  and waiting for the count,
+  which decides where the cell is;
   `pressed` during a held press that is released outside the cell.
 - `padding-click`:
   `before` after two Shift taps,
   typing `fixture`,
   and waiting for the results;
-  `after` a seat click at 156, 122, in the search panel's left padding beside the query box.
+  `after` a seat click at 156,
+  122,
+  in the search panel's left padding beside the query box.
 - `watch-limit`:
   the window after start.
 
 ### Crop rectangles of the 2026-10-06 UI batch 3b
 
-Rectangles are left, top, width, and height in logical pixels;
+Rectangles are left,
+top,
+width,
+and height in logical pixels;
 a `-2x` frame is cut at the doubled rectangle and enlarged by half the factor.
 
-- `zone-width`: 196, 32, 120 by 240, enlarged 4 times.
-- `query-selection-ink` `find-selected`: 257, 604, 843 by 56, enlarged twice.
-- `query-selection-ink` `search-selected`: 150, 50, 800 by 110, enlarged twice.
-- `selected-row-tint`: 0, 32, 257 by 248, enlarged twice.
-- `trailing-cell`: 600, 604, 500 by 56, enlarged twice.
-- `divider-focus`: 216, 200, 80 by 260, enlarged 4 times.
-- `clear-plate`: 940, 600, 160 by 60, enlarged 4 times.
-- `padding-click`: 150, 50, 800 by 110, enlarged twice.
-- `watch-limit`: 0, 560, 1100 by 100, not enlarged.
+- `zone-width`:
+  196,
+  32,
+  120 by 240,
+  enlarged 4 times.
+- `query-selection-ink` `find-selected`:
+  257,
+  604,
+  843 by 56,
+  enlarged twice.
+- `query-selection-ink` `search-selected`:
+  150,
+  50,
+  800 by 110,
+  enlarged twice.
+- `selected-row-tint`:
+  0,
+  32,
+  257 by 248,
+  enlarged twice.
+- `trailing-cell`:
+  600,
+  604,
+  500 by 56,
+  enlarged twice.
+- `divider-focus`:
+  216,
+  200,
+  80 by 260,
+  enlarged 4 times.
+- `clear-plate`:
+  940,
+  600,
+  160 by 60,
+  enlarged 4 times.
+- `padding-click`:
+  150,
+  50,
+  800 by 110,
+  enlarged twice.
+- `watch-limit`:
+  0,
+  560,
+  1100 by 100,
+  not enlarged.
 
 ### What the frames do not show
 
@@ -1178,7 +1530,8 @@ a `-2x` frame is cut at the doubled rectangle and enlarged by half the factor.
   `Cannot watch <directory>: the inotify watch limit is reached; raise fs.inotify.max_user_watches`
   (`src/change_watch/watch_thread.rs`).
 - A real watch limit:
-  `b` shows the message from the injected trigger, not from exhausted inotify watches.
+  `b` shows the message from the injected trigger,
+  not from exhausted inotify watches.
 
 ### What the frames show
 
@@ -1186,7 +1539,9 @@ a `-2x` frame is cut at the doubled rectangle and enlarged by half the factor.
   the magenta band is the zone.
   With 25 rows the tree shows its scroll bar,
   whose thumb is drawn in columns 250 and 251 at rest.
-  Options `a`, `b`, and `c` end left of the thumb;
+  Options `a`,
+  `b`,
+  and `c` end left of the thumb;
   `d`'s band covers it (`zone-width-d-light-idle-crop.png` shows the thumb inside the band).
   The `hovered` frames show the line's three hover columns lit inside the band.
 - `query-selection-ink`:
@@ -1202,7 +1557,10 @@ a `-2x` frame is cut at the doubled rectangle and enlarged by half the factor.
   in `b` the hovered row looks like the row at rest,
   and keyboard focus is marked by the boundary alone.
 - `trailing-cell`:
-  the short-text states (`focused-empty`, `typing`, `unfocused-text`, `empty`) are identical in both options,
+  the short-text states (`focused-empty`,
+  `typing`,
+  `unfocused-text`,
+  `empty`) are identical in both options,
   because the trailing cell is empty space whenever the clear control is hidden.
   The options differ only for a text longer than the box without focus:
   in `long-unfocused` the text of `a` runs to 12 px from the box's end
@@ -1216,7 +1574,8 @@ a `-2x` frame is cut at the doubled rectangle and enlarged by half the factor.
   `b`'s plate fills the cell,
   so its boundary lies on the box's border.
   The focus line is drawn after the plate and stays whole
-  (corrected on 2026-10-06; this entry first said the plate covers the focus line).
+  (corrected on 2026-10-06;
+  this entry first said the plate covers the focus line).
 - `padding-click`:
   in `a` the `after` frame still shows the caret,
   the clear control,
@@ -1327,7 +1686,8 @@ for the always-on soft wrap.
 ### File names of the 2026-10-12 frames
 
 - `wrap-<scheme>.png`:
-  the sample file just after it opens, caret in the first column of the first line.
+  the sample file just after it opens,
+  caret in the first column of the first line.
 - `wrap-<scheme>-selection.png`:
   a click on the second visual row of the first line,
   then a Shift+click on the sixth line,
@@ -1339,7 +1699,9 @@ Every frame is 1100 by 660 pixels at scale 1.
 
 `soft-wrap-shots.mjs` in this directory writes a sample Rust file into a disposable project,
 hosts the built `monochromatic-ide` in the nested compositor
-(`package/cli/nested-wayland-session`, `--size 1100x660`, `--color-scheme light` and `dark`),
+(`package/cli/nested-wayland-session`,
+`--size 1100x660`,
+`--color-scheme light` and `dark`),
 and takes each screenshot once two captures in a row are identical and the window is drawn.
 The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
 
@@ -1348,31 +1710,41 @@ The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland se
 node design/soft-wrap-shots.mjs target/release/monochromatic-ide "${HOME}/temp/agent/soft-wrap-frames"
 ```
 
-The compositor's `button down`, `move`, and `button up` sequence did not start a drag selection in this session,
+The compositor's `button down`,
+`move`,
+and `button up` sequence did not start a drag selection in this session,
 so the selection frames use the Shift+click path instead.
 
 A probe on 2026-10-12 found why a held-button drag can fail to start.
-`button down` presses where the compositor's pointer already is, and a pointer that was never moved has no surface
+`button down` presses where the compositor's pointer already is,
+and a pointer that was never moved has no surface
 under it.
-With `move 400 56`, then `button down`, then `move` to two points further down, the application logged the press
+With `move 400 56`,
+then `button down`,
+then `move` to two points further down,
+the application logged the press
 and the screenshot with the button held showed a selection from the first wrapped row across the rows below it.
-With `button down` first and the same two `move` commands after it, the application logged no press and no selection
+With `button down` first and the same two `move` commands after it,
+the application logged no press and no selection
 appeared.
 So the application drags correctly and the driver needs a `move` to the starting point before `button down`.
-The sequence of the earlier session was not recorded, so whether it lacked that first `move` is not known.
+The sequence of the earlier session was not recorded,
+so whether it lacked that first `move` is not known.
 The headless native test `a_drag_selects_across_visual_rows` drags across wrapped rows through real window events.
 
 ### What the 2026-10-12 frames show
 
 - Wrapped lines carry their number on the first visual row only.
-  Every continuation row shows the wrap indicator in the gutter, in the same gray in both schemes.
+  Every continuation row shows the wrap indicator in the gutter,
+  in the same gray in both schemes.
 - A continuation row starts at the indent of its line,
   and a line whose indent is a tab breaks back to the tab's width.
 - A token with no break opportunity (the line of `x` characters) breaks at the width of the text area,
   and the last glyph of each row stands whole inside the pane.
 - There is no horizontal scrollbar and no horizontal scroll range.
 - The selection in the `-selection` frames covers each visual row from its first selected glyph to its end,
-  and the caret of the click stands on the second visual row of the first line, not at the end of the first.
+  and the caret of the click stands on the second visual row of the first line,
+  not at the end of the first.
 
 ## Applied frames of the 2026-10-12 hints and messages on wrapped lines
 
@@ -1384,13 +1756,15 @@ The user decided on 2026-10-05 that hints and messages stand on rows over the co
 (see the 2026-10-05 UI batch 3 above);
 the frames show that decision on lines that wrap,
 and the one place where the built behavior differs from IntelliJ's:
-a block stands over the first visual row of its line, and IntelliJ's block inlay over the visual row that holds its
+a block stands over the first visual row of its line,
+and IntelliJ's block inlay over the visual row that holds its
 offset.
 
 ### File names of the hints and messages frames
 
 - `wrap-annotations-<scheme>-<size>.png`:
-  the sample file just after it opens, with its hints and diagnostics injected.
+  the sample file just after it opens,
+  with its hints and diagnostics injected.
   `<scheme>` is `light` or `dark`,
   and `<size>` is `wide` (1100 by 660 pixels) or `narrow` (760 by 660 pixels).
   Every frame is at scale 1.
@@ -1400,10 +1774,13 @@ offset.
 `wrap-annotation-shots.mjs` in this directory writes a sample Rust file into a disposable project,
 writes the hints and diagnostics of the scene as the inspection file,
 and hosts a debug build of `monochromatic-ide` in the nested compositor
-(`package/cli/nested-wayland-session`, `--color-scheme light` and `dark`, both sizes).
+(`package/cli/nested-wayland-session`,
+`--color-scheme light` and `dark`,
+both sizes).
 It takes each screenshot once two captures in a row are identical and the window is drawn.
 The hints and diagnostics come from the debug-only inspection path (`IDE_INSPECT_ANNOTATIONS`,
-`src/native/inspect.rs`), which release builds do not contain,
+`src/native/inspect.rs`),
+which release builds do not contain,
 so the application must be a debug build (`mise run //package/desktop-app/ide:build:debug`).
 The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
 
@@ -1415,14 +1792,23 @@ node design/wrap-annotation-shots.mjs target/debug/monochromatic-ide "${HOME}/te
 ### What the hints and messages frames show
 
 - A hint stands over the first visual row of its line at the x of its character on the visual row that character is on:
-  in `wide`, the hint `second:` over line 3 stands at the x of `second_value`, which is on the second visual row.
-  The blocks of lines 3 and 5 stand over their first rows, and the line after a wrapped line starts under its last
+  in `wide`,
+  the hint `second:` over line 3 stands at the x of `second_value`,
+  which is on the second visual row.
+  The blocks of lines 3 and 5 stand over their first rows,
+  and the line after a wrapped line starts under its last
   visual row.
-- A message whose widest row would pass the text area from the x of its diagnostic moves left, as a whole:
-  in `wide`, the error message of line 3 starts left of `second_value`, so that its widest row ends inside the pane.
+- A message whose widest row would pass the text area from the x of its diagnostic moves left,
+  as a whole:
+  in `wide`,
+  the error message of line 3 starts left of `second_value`,
+  so that its widest row ends inside the pane.
 - A message row wider than the text area is broken again at the width of the text area,
   the first row of a message using all of it and the rows after it standing 16 px in:
-  the same messages take one more row or two in `narrow`, and the rows are filled, not cut at the pane edge.
+  the same messages take one more row or two in `narrow`,
+  and the rows are filled,
+  not cut at the pane edge.
 - The underlines stand under the characters they mark on their own visual rows,
   and the severity letters stand beside the first visual row of each line.
-- The wrap indicator stands in the gutter on every continuation row, as in the 2026-10-12 soft wrap frames.
+- The wrap indicator stands in the gutter on every continuation row,
+  as in the 2026-10-12 soft wrap frames.

@@ -672,9 +672,10 @@ async function runPlantedControl({
     allowFailure: true,
   });
   const output = `${run.stdout}\n${run.stderr}`;
-  // nextest prints `FAIL [ 0.012s] <binary id> <test name>`; the name is the last token of the line.
+  // nextest prints `FAIL [ 0.012s] <binary id> <test name>`, or `FAIL + LEAK [` when the failed test left a child
+  // running; the name is the last token of the line.
   const noticed = (run.status !== 0) && output.split('\n').some(function failedLine(line) {
-    return /^\s*FAIL \[/u.test(line) && line.trimEnd().endsWith(` ${control.failing}`);
+    return /^\s*FAIL\b[^[]*\[/u.test(line) && line.trimEnd().endsWith(` ${control.failing}`);
   });
   await writeFile(
     join(

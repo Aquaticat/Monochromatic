@@ -10,6 +10,12 @@ so fan out general-purpose subagents only in interactive sessions where the user
 Rationale:
 `doc/decision/general-purpose-subagent-ban.md`.
 
+Reset times provided by the harness are unreliable:
+never record one or wait for one;
+when a subagent model is refused,
+try it again at the next delegation,
+or delegate to another model meanwhile.
+
 Use `spawn-claude` outside sandbox to launch a steerable child Claude Code session in a visible terminal window.
 The child runs independently,
 but result forwarding back to the parent is unreliable (a Claude Code limitation),

@@ -445,6 +445,25 @@ pub(crate) struct Control {
     /// normGainBits: SharedU32; // raw bits of an f32 normalization gain
     /// ```
     pub(crate) norm_gain_bits: AtomicU32,
+    /// What:
+    ///      `pub(crate) failed_load: AtomicU64`.
+    ///  The 1-based sequence number of the most recent `Command::Load` whose
+    ///           file the worker could NOT open for playback (it did not decode, had no rate or
+    ///           channels, or no output could be built), or 0 when none has failed.
+    ///  Written by the worker,
+    ///  read by Kotlin.
+    /// Why:
+    ///       `nativeEngineLoad` returns as soon as the load is queued,
+    ///  so a decode that fails later on the
+    ///           worker thread has no other way back to Kotlin;
+    ///  the sequence number lets Kotlin tell the load it
+    ///           is waiting for from an older one.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// failedLoad: SharedU64; // 0 = none failed
+    /// ```
+    pub(crate) failed_load: AtomicU64,
 }
 
 /// What:
@@ -588,6 +607,15 @@ impl Control {
             // normGainBits: makeSharedU32(f32ToBits(1.0)),
             // ```
             norm_gain_bits: AtomicU32::new(1.0f32.to_bits()),
+            // What:     `failed_load: AtomicU64::new(0)`. Wrapper constructor: an atomic counter
+            //           starting at 0.
+            // Why:      No load has failed yet.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // failedLoad: makeSharedU64(0),
+            // ```
+            failed_load: AtomicU64::new(0),
         }
     }
 
@@ -1430,6 +1458,31 @@ impl Engine {
         // return Atomics.load(this.control.ended, 0);
         // ```
         return self.control.ended.load(Ordering::Acquire)
+    }
+
+    /// What:
+    ///      `pub fn failed_load(&self) -> u64`.
+    ///  A read-only-borrow poller returning the sequence number of the most
+    ///           recent queued load that the worker could not open for playback,
+    ///  or 0 when none has failed.
+    /// Why:
+    ///       Kotlin compares it with the number of loads it has queued,
+    ///  and reports the load failure
+    ///           when the failed one is the load it is still waiting for.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// failedLoad(): number { ... }
+    /// ```
+    pub fn failed_load(&self) -> u64 {
+        // What:     `self.control.failed_load.load(Ordering::Acquire)`. One atomic load; tail expression.
+        // Why:      Report the worker's last load failure.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return Atomics.load(this.control.failedLoad, 0);
+        // ```
+        return self.control.failed_load.load(Ordering::Acquire)
     }
 
     /// What:

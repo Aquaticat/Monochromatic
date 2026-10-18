@@ -41,7 +41,8 @@ use parley::{FontContext, FontFeature, LayoutContext};
 ///  and rebasing.
 mod view;
 
-/// Whole-file passes: bringing rows into the cache for a wrap width,
+/// Whole-file passes:
+/// bringing rows into the cache for a wrap width,
 ///  and breaking kept rows again at a new width.
 mod pass;
 /// What:
@@ -123,9 +124,11 @@ pub struct TextShaper {
     /// Shaped rows by line for the last synced text revision and scale;
     ///  `prepare_rows` reads and fills it.
     rows: RowCache,
-    /// Source rows shaped by this shaper, never reset.
+    /// Source rows shaped by this shaper,
+    /// never reset.
     shaped_rows: u64,
-    /// Kept rows broken again at a new wrap width instead of being shaped again, never reset.
+    /// Kept rows broken again at a new wrap width instead of being shaped again,
+    /// never reset.
     rebroken_rows: u64,
     /// Corrective shaping passes of tab-bearing wrapped lines since this shaper was made.
     tab_passes: u64,
@@ -184,7 +187,8 @@ impl TextShaper {
 
     /// Shape one source line with syntax roles on a given common baseline.
     /// `place` pairs the line with the top of its code row in logical pixels;
-    ///  `wrap` is the wrap width in logical pixels, or nothing for an unbroken line.
+    ///  `wrap` is the wrap width in logical pixels,
+    /// or nothing for an unbroken line.
     fn shape_row(
         &mut self,
         document: &Document,
@@ -263,7 +267,8 @@ impl TextShaper {
     ///  Shape one arbitrary source line broken at a wrap width,
     ///  as the source view would show it when wrapping is on.
     /// Why:
-    ///  A line with several visual rows needs its row geometry, and this is the only path that makes one.
+    ///  A line with several visual rows needs its row geometry,
+    /// and this is the only path that makes one.
     ///  A width that is not positive shapes the unbroken line.
     ///
     /// In TS you'd write (pseudocode):
@@ -340,14 +345,18 @@ impl TextShaper {
         return self.tab_passes;
     }
 
-    /// Typography this shaper was built with, so a second shaper can produce the same glyphs.
+    /// Typography this shaper was built with,
+    /// so a second shaper can produce the same glyphs.
     pub fn typography(&self) -> &SourceTypography {
         return &self.typography;
     }
 
     /// A shaper with this one's fonts and typography and its own layout context and empty caches.
-    /// What: `FontContext::clone` copies the scanned font registry instead of discovering system fonts again.
-    /// Why: A second font discovery takes as long as the first, and a worker would otherwise pay it on its first tile.
+    /// What:
+    /// `FontContext::clone` copies the scanned font registry instead of discovering system fonts again.
+    /// Why:
+    /// A second font discovery takes as long as the first,
+    /// and a worker would otherwise pay it on its first tile.
     pub fn fork(&self) -> Self {
         return Self {
             fonts: self.fonts.clone(),
@@ -361,7 +370,9 @@ impl TextShaper {
         };
     }
 
-    /// Forget the cached rows, after a change the cache key does not describe, such as new syntax styles.
+    /// Forget the cached rows,
+    /// after a change the cache key does not describe,
+    /// such as new syntax styles.
     pub fn forget_rows(&mut self) {
         self.rows.clear();
     }

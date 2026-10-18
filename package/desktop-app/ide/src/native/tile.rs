@@ -3,19 +3,23 @@
 
 /// Frame paint inputs and the frame presentation the swap hands over.
 use super::render::{Frame, Paint, render, show, stamp_for};
-/// The vertical mapping's side of the window: measured rows and keeping the view still.
+/// The vertical mapping's side of the window:
+/// measured rows and keeping the view still.
 use super::rows;
 /// The tile worker and its result type.
 use super::tile_build::{TileBuilt, TileJob, TileWorker};
 /// How much of the pass's output one poll takes.
 use super::tile_pass::TAKE_LIMIT;
-/// Parent state, the window, and the viewport's hold rule.
+/// Parent state,
+/// the window,
+/// and the viewport's hold rule.
 use super::{AppWindow, State, viewport::holds};
 /// The part of a tall tile's lines its raster holds.
 use ide_app::shaped_text::Clip;
 /// Timer and toolkit-string bridges for the poll and the error message.
 use slint::{ComponentHandle, SharedString, TimerMode};
-/// Poll period of the worker's reply slot, the same as the other background pollers.
+/// Poll period of the worker's reply slot,
+/// the same as the other background pollers.
 use std::{
     cell::RefCell,
     rc::Rc,
@@ -35,7 +39,9 @@ pub(super) use pass::{current_key, sync_pass};
 
 /// What:
 ///  Position and width of one materialized tile:
-///  its first line, its line count, the wrap width its lines are broken at,
+///  its first line,
+/// its line count,
+/// the wrap width its lines are broken at,
 ///  and the part of those lines its raster holds when they are too tall for one.
 /// Why:
 ///  The requested tile and the displayed tile are both values of this type,
@@ -51,13 +57,17 @@ pub(super) struct TileBounds {
     pub(super) first: usize,
     /// Number of materialized source lines.
     pub(super) count: usize,
-    /// Wrap width in logical pixels, or zero while the view has no width yet.
+    /// Wrap width in logical pixels,
+    /// or zero while the view has no width yet.
     pub(super) width: f32,
-    /// The rows of those lines the raster holds, below the top of the first line's block; nothing for all of them.
+    /// The rows of those lines the raster holds,
+    /// below the top of the first line's block;
+    /// nothing for all of them.
     pub(super) clip: Option<Clip>,
 }
 
-/// The tile the reader's view needs next, as last placed.
+/// The tile the reader's view needs next,
+/// as last placed.
 pub(super) fn requested(current: &State) -> TileBounds {
     return TileBounds {
         first: current.first,
@@ -67,7 +77,10 @@ pub(super) fn requested(current: &State) -> TileBounds {
     };
 }
 
-/// Forget any tile still wanted: its result, when it arrives, is discarded.
+/// Forget any tile still wanted:
+/// its result,
+/// when it arrives,
+/// is discarded.
 pub(super) fn cancel(current: &mut State) {
     // What: `tile_job` is `None` when no worker result is wanted; `take`-like resets are plain assignments.
     // Why: The result of a cancelled job is dropped by `accepts` instead of being shown.
@@ -78,7 +91,8 @@ pub(super) fn cancel(current: &mut State) {
     }
 }
 
-/// Queue `job` on the worker, starting the worker and its poll timer on first use.
+/// Queue `job` on the worker,
+/// starting the worker and its poll timer on first use.
 pub(super) fn submit(
     window: &AppWindow,
     state: &Rc<RefCell<State>>,
@@ -102,9 +116,13 @@ pub(super) fn submit(
     return Ok(());
 }
 
-/// Start the tile worker with a shaper forked from the window's own, if none is running.
-/// What: The fork shares the font registry the window already scanned, so no font discovery runs on the worker.
-/// Why: Starting the worker when the first tile is shown keeps its start-up off the scroll path.
+/// Start the tile worker with a shaper forked from the window's own,
+/// if none is running.
+/// What:
+/// The fork shares the font registry the window already scanned,
+/// so no font discovery runs on the worker.
+/// Why:
+/// Starting the worker when the first tile is shown keeps its start-up off the scroll path.
 pub(super) fn warm(
     window: &AppWindow,
     state: &Rc<RefCell<State>>,
@@ -136,9 +154,15 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
         });
 }
 
-/// Whether a finished tile still describes what is displayed, wanted, and the current view.
-/// Stale inputs are rejected here, so a result from before an edit, a file change, or a theme change is never shown.
-/// The tile's own lines must have the heights the map has for them, which `apply` makes so before asking.
+/// Whether a finished tile still describes what is displayed,
+/// wanted,
+/// and the current view.
+/// Stale inputs are rejected here,
+/// so a result from before an edit,
+/// a file change,
+/// or a theme change is never shown.
+/// The tile's own lines must have the heights the map has for them,
+/// which `apply` makes so before asking.
 fn accepts(current: &State, paint: &Paint, built: &TileBuilt, height: f32) -> bool {
     return current.tile_job.is_some()
         && built.file == current.file_generation
@@ -152,7 +176,8 @@ fn accepts(current: &State, paint: &Paint, built: &TileBuilt, height: f32) -> bo
         && stamp_for(current, built.bounds, paint) == built.stamp;
 }
 
-/// Take at most one finished tile from the worker and what the pass measured, and apply them when they are valid.
+/// Take at most one finished tile from the worker and what the pass measured,
+/// and apply them when they are valid.
 pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let (polled, pass) = {
         let mut current = state.borrow_mut();
@@ -207,9 +232,14 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     }
 }
 
-/// Stop the poll timer when no re-center is queued and the worker has nothing in flight; `submit` starts it again.
-/// What: `Timer::stop` ends the repeated callback; the timer is restarted on the next submission.
-/// Why: A cancelled job's reply is still unread while the worker is busy, so the timer must keep polling until it is taken.
+/// Stop the poll timer when no re-center is queued and the worker has nothing in flight;
+/// `submit` starts it again.
+/// What:
+/// `Timer::stop` ends the repeated callback;
+/// the timer is restarted on the next submission.
+/// Why:
+/// A cancelled job's reply is still unread while the worker is busy,
+/// so the timer must keep polling until it is taken.
 fn stop_when_idle(current: &mut State) {
     let in_flight = current
         .tile_worker
@@ -220,8 +250,10 @@ fn stop_when_idle(current: &mut State) {
     }
 }
 
-/// Swap a finished tile in, or count it as discarded.
-/// A failed build keeps the displayed tile on screen and names the failure, never falling back to a synchronous build.
+/// Swap a finished tile in,
+/// or count it as discarded.
+/// A failed build keeps the displayed tile on screen and names the failure,
+/// never falling back to a synchronous build.
 fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<TileBuilt>) {
     let built = match reply {
         Ok(built) => built,

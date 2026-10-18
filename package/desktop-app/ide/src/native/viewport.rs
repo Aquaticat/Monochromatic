@@ -22,9 +22,13 @@ use slint::ComponentHandle;
 use std::{cell::RefCell, rc::Rc};
 
 /// What:
-///  The materialized tile spans this many view heights: one above the view, the view, and one below.
+///  The materialized tile spans this many view heights:
+/// one above the view,
+/// the view,
+/// and one below.
 /// Why:
-///  A view inside the tile's middle band needs no new pixels, so scrolling inside it does no source work.
+///  A view inside the tile's middle band needs no new pixels,
+/// so scrolling inside it does no source work.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,10 +37,14 @@ use std::{cell::RefCell, rc::Rc};
 const TILE_VIEWS: f32 = 3.0;
 
 /// What:
-///  How close, in view heights, the view's edge may come to the tile's edge before the tile is re-centered.
+///  How close,
+/// in view heights,
+/// the view's edge may come to the tile's edge before the tile is re-centered.
 /// Why:
-///  The view starts a re-center with one view height of room on each side, so it may scroll
-///  `1 - RECENTER_EDGE_VIEWS` = 0.75 view heights before the next re-center: about one view height,
+///  The view starts a re-center with one view height of room on each side,
+/// so it may scroll
+///  `1 - RECENTER_EDGE_VIEWS` = 0.75 view heights before the next re-center:
+/// about one view height,
 ///  and the tile edge never reaches the view.
 ///
 /// In TS you'd write (pseudocode):
@@ -46,7 +54,8 @@ const TILE_VIEWS: f32 = 3.0;
 const RECENTER_EDGE_VIEWS: f32 = 0.25;
 
 /// What:
-///  Lines materialized past the last line of the tile's bottom edge, as a margin against rounding.
+///  Lines materialized past the last line of the tile's bottom edge,
+/// as a margin against rounding.
 /// Why:
 ///  A line's block can be taller than one code row when it carries virtual rows,
 ///  so the line count of the tile is not the tile's pixel height divided by one code row.
@@ -63,7 +72,8 @@ const TILE_SPARE_LINES: usize = 2;
 ///  and its bottom edge is as far above the tile's bottom edge.
 ///  A side that touches the first or last line of the text is always held.
 /// Why:
-///  Edges come from the live vertical mapping, so rows that appear above the tile move them with the rows.
+///  Edges come from the live vertical mapping,
+/// so rows that appear above the tile move them with the rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -81,11 +91,14 @@ pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32)
 }
 
 /// What:
-///  The top and bottom edge of the raster a tile at `bounds` holds, in logical pixels from the top of the text:
-///  the clip below the first line's block when there is one, otherwise the blocks of its first and last lines.
+///  The top and bottom edge of the raster a tile at `bounds` holds,
+/// in logical pixels from the top of the text:
+///  the clip below the first line's block when there is one,
+/// otherwise the blocks of its first and last lines.
 ///  `end` is the line after the tile's last.
 /// Why:
-///  The view must stay clear of these edges, and they move with the live vertical mapping.
+///  The view must stay clear of these edges,
+/// and they move with the live vertical mapping.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -100,11 +113,15 @@ fn tile_edges(current: &State, bounds: TileBounds, end: usize) -> (f32, f32) {
 }
 
 /// What:
-///  Room kept at the right edge of the text area, in logical pixels, for a caret standing after the last glyph
+///  Room kept at the right edge of the text area,
+/// in logical pixels,
+/// for a caret standing after the last glyph
 ///  of a full row.
 /// Why:
-///  There is no horizontal scrolling, so the caret bar (2 px wide) must fit inside the view;
-///  the view has no scrollbar element, so this is the only term besides the gutter.
+///  There is no horizontal scrolling,
+/// so the caret bar (2 px wide) must fit inside the view;
+///  the view has no scrollbar element,
+/// so this is the only term besides the gutter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,7 +135,8 @@ pub(super) const CARET_ROOM: f32 = 2.0;
 ///  or nothing when that is not positive.
 /// Why:
 ///  A width of zero or less means the view is not laid out yet;
-///  wrapping then waits and the last width is kept, as IntelliJ's `SoftWrapApplianceManager` does.
+///  wrapping then waits and the last width is kept,
+/// as IntelliJ's `SoftWrapApplianceManager` does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,7 +153,8 @@ pub(super) fn wrap_width(viewport_width: f32) -> Option<f32> {
 /// the `bool` answer says whether the materialized tile changed.
 /// Why:
 ///  Native scrolling and programmatic reveal must agree on which rows are materialized;
-///  the wrap width joins the tile's identity, so a resize asks for a new tile.
+///  the wrap width joins the tile's identity,
+/// so a resize asks for a new tile.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -216,11 +235,15 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
 /// What:
 ///  The part of the lines just chosen for the tile that its raster holds:
 ///  nothing while the lines fit one raster,
-///  otherwise the rows of `band`, the three view heights around the view, cut down to the raster limit.
+///  otherwise the rows of `band`,
+/// the three view heights around the view,
+/// cut down to the raster limit.
 ///  The edges are whole code rows below the first line's block.
 /// Why:
-///  A tile holds whole lines, and a line wrapped to thousands of rows would pass the raster limit.
-///  The band is where the view can go before the next re-center, so the rows outside it are never needed.
+///  A tile holds whole lines,
+/// and a line wrapped to thousands of rows would pass the raster limit.
+///  The band is where the view can go before the next re-center,
+/// so the rows outside it are never needed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -247,12 +270,20 @@ fn clip_for(current: &State, band: (f32, f32)) -> Option<Clip> {
 
 /// What:
 ///  The clip of lines that span `first_top` to `bottom` (logical pixels from the top of the text) for a view whose
-///  three-height `band` is given, when a raster may be `cap` pixels tall at most; nothing while the lines fit.
-///  The edges are whole code rows below `first_top`, and the clip is never taller than `cap`.
+///  three-height `band` is given,
+/// when a raster may be `cap` pixels tall at most;
+/// nothing while the lines fit.
+///  The edges are whole code rows below `first_top`,
+/// and the clip is never taller than `cap`.
 /// Why:
-///  The rounding to whole code rows adds up to two rows, and the cap leaves only one, so the height is cut back to the
-///  rows the cap allows; a view taller than the cap can never be held by such a tile, so it is placed again at every
-///  scroll step, as a window that tall has no better answer.
+///  The rounding to whole code rows adds up to two rows,
+/// and the cap leaves only one,
+/// so the height is cut back to the
+///  rows the cap allows;
+/// a view taller than the cap can never be held by such a tile,
+/// so it is placed again at every
+///  scroll step,
+/// as a window that tall has no better answer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -281,14 +312,19 @@ pub(super) fn band_clip(first_top: f32, bottom: f32, band: (f32, f32), cap: f32)
 }
 
 /// What:
-///  `place` for the view's own reports: a tile it changes for the same width is a scroll re-center,
+///  `place` for the view's own reports:
+/// a tile it changes for the same width is a scroll re-center,
 ///  which the worker may build while the displayed tile stays on screen,
-///  and a tile it changes for a new width is built by the window thread before the next frame, within an allowance.
+///  and a tile it changes for a new width is built by the window thread before the next frame,
+/// within an allowance.
 /// Why:
-///  Keyboard, pointer, and reveal moves call `place` directly and keep the synchronous path.
+///  Keyboard,
+/// pointer,
+/// and reveal moves call `place` directly and keep the synchronous path.
 ///  A frame of the old width's text in a window of the new width overflows its edge or stops short of it,
 ///  so the render that follows a new width paints the tile for it (`rewrap::begin`) and leaves only the lines
-///  far from the view to the worker; a tile that does not fit the allowance is queued for the worker as before.
+///  far from the view to the worker;
+/// a tile that does not fit the allowance is queued for the worker as before.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -382,7 +418,8 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
 ///  on the side of a soft wrap `affinity` names.
 ///  A line outside the materialized rows is shaped on the spot.
 /// Why:
-///  Keeping the caret in view means keeping its visual row in view, not only its line.
+///  Keeping the caret in view means keeping its visual row in view,
+/// not only its line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

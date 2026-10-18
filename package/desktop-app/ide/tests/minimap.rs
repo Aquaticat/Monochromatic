@@ -1,12 +1,21 @@
 //! The minimap without a window:
-//!  its geometry (the picture's scale, the viewport box, the maps between a minimap position, a scroll offset,
-//!  and a visual row) and its picture (size, rows, ink, sampling, and the work bound).
+//!  its geometry (the picture's scale,
+//! the viewport box,
+//! the maps between a minimap position,
+//! a scroll offset,
+//!  and a visual row) and its picture (size,
+//! rows,
+//! ink,
+//! sampling,
+//! and the work bound).
 
 /// Canonical source of the texts under test.
 use ide_app::document::Document;
 /// The visual row counts and the map built from them.
 use ide_app::line_rows::LineRows;
-/// The geometry, the picture build, and their constants.
+/// The geometry,
+/// the picture build,
+/// and their constants.
 use ide_app::minimap::{
     Built, FULL_WORK, Geometry, IMAGE_ALPHA, Input, MIN_BOX, NARROWEST, QUICK_WORK, Target, WIDTH,
     build, width_for,
@@ -39,7 +48,8 @@ fn never() -> bool {
     return false;
 }
 
-/// A text of `lines` lines of ordinary code, the last without a terminator.
+/// A text of `lines` lines of ordinary code,
+/// the last without a terminator.
 fn code(lines: usize) -> String {
     let mut text = String::new();
     for number in 0..lines {
@@ -56,7 +66,9 @@ fn plain_map(document: &Document) -> RowMap {
     return RowMap::plain(document.text().len_lines());
 }
 
-/// The picture of `document` at `scale`, in a view `view` pixels tall, with the given palette and budget.
+/// The picture of `document` at `scale`,
+/// in a view `view` pixels tall,
+/// with the given palette and budget.
 fn picture(
     document: &Document,
     map: &RowMap,
@@ -96,7 +108,8 @@ fn inked(built: &Built, row: usize) -> bool {
     return (0..built.width as usize).any(|column| return pixel(built, column, row)[3] > 0);
 }
 
-/// The leftmost column of picture row `row` with ink, if any.
+/// The leftmost column of picture row `row` with ink,
+/// if any.
 fn first_ink(built: &Built, row: usize) -> Option<usize> {
     return (0..built.width as usize).find(|column| return pixel(built, *column, row)[3] > 0);
 }
@@ -113,7 +126,8 @@ fn premultiplied(rgb: [u8; 4], class: f32, band: f32) -> [u8; 4] {
     ];
 }
 
-/// The minimap is as wide as CodeGlance's 110 pixels, and shrinks to a sixth of a narrow view down to 15.
+/// The minimap is as wide as CodeGlance's 110 pixels,
+/// and shrinks to a sixth of a narrow view down to 15.
 #[test]
 fn the_width_follows_the_view_down_to_fifteen_pixels() {
     assert_eq!(width_for(1000.0), WIDTH);
@@ -124,7 +138,8 @@ fn the_width_follows_the_view_down_to_fifteen_pixels() {
     assert_eq!(width_for(0.0), NARROWEST);
 }
 
-/// A text that fits the view at four pixels a row is drawn at that scale, and the box covers the view's share.
+/// A text that fits the view at four pixels a row is drawn at that scale,
+/// and the box covers the view's share.
 #[test]
 fn a_text_that_fits_is_drawn_at_four_pixels_a_row() {
     // 100 code rows, 2,400 px, in a view of 600: 400 px of picture, a box of 100 px.
@@ -140,7 +155,8 @@ fn a_text_that_fits_is_drawn_at_four_pixels_a_row() {
     assert_eq!(geometry.box_top(1800.0), 300.0);
 }
 
-/// A text that fits the view itself is drawn in full, and the box covers all of it at the top.
+/// A text that fits the view itself is drawn in full,
+/// and the box covers all of it at the top.
 #[test]
 fn a_text_shorter_than_the_view_is_covered_by_the_box() {
     let geometry = Geometry::new(10.0 * CODE_ROW, 600.0);
@@ -157,7 +173,8 @@ fn a_text_shorter_than_the_view_is_covered_by_the_box() {
     assert_eq!(tiny.box_height(), 12.0);
 }
 
-/// A text with more rows than the track has pixels is squeezed to the view, and the box keeps its least height.
+/// A text with more rows than the track has pixels is squeezed to the view,
+/// and the box keeps its least height.
 #[test]
 fn a_text_with_more_rows_than_pixels_is_squeezed_and_the_box_keeps_a_floor() {
     let content = 50_000.0 * CODE_ROW;
@@ -220,7 +237,8 @@ fn a_minimap_position_and_its_text_position_are_each_others_inverse() {
     }
 }
 
-/// Dragging the box by a distance moves the view by that distance over the box's room, times the scroll range,
+/// Dragging the box by a distance moves the view by that distance over the box's room,
+/// times the scroll range,
 ///  and the box follows the pointer exactly except where the range stops it.
 #[test]
 fn dragging_the_box_moves_it_with_the_pointer() {
@@ -240,8 +258,10 @@ fn dragging_the_box_moves_it_with_the_pointer() {
     }
 }
 
-/// A position on the minimap shows the visual row of the vertical mapping it lies on, wrapped rows and blocks
-///  included, and the row's own position shows that row again.
+/// A position on the minimap shows the visual row of the vertical mapping it lies on,
+/// wrapped rows and blocks
+///  included,
+/// and the row's own position shows that row again.
 #[test]
 fn a_position_names_the_visual_row_it_shows_and_the_row_names_its_position_back() {
     let mut rows = LineRows::plain(100);
@@ -272,7 +292,9 @@ fn a_position_names_the_visual_row_it_shows_and_the_row_names_its_position_back(
     assert_eq!(geometry.target(&map, 1e6), Target { line: 99, row: 0 });
 }
 
-/// In a squeezed minimap many rows share a pixel; the position names one of them, and it is on that pixel.
+/// In a squeezed minimap many rows share a pixel;
+/// the position names one of them,
+/// and it is on that pixel.
 #[test]
 fn in_a_squeezed_minimap_a_position_names_a_row_that_lies_on_it() {
     let map = RowMap::plain(50_000);
@@ -330,7 +352,8 @@ fn a_short_text_is_drawn_with_the_first_pixel_of_each_row_empty() {
     assert_eq!(pixel(&built, 3, 1)[3], 0);
 }
 
-/// The ink of a glyph is the source palette's ink for its syntax class, in both schemes.
+/// The ink of a glyph is the source palette's ink for its syntax class,
+/// in both schemes.
 #[test]
 fn glyphs_take_the_syntax_ink_of_the_scheme() {
     let document = Document::new("let x = 1;\n");
@@ -357,7 +380,9 @@ fn glyphs_take_the_syntax_ink_of_the_scheme() {
     );
 }
 
-/// A tab moves four columns, a glyph other than printable ASCII weighs half, and control characters draw nothing.
+/// A tab moves four columns,
+/// a glyph other than printable ASCII weighs half,
+/// and control characters draw nothing.
 #[test]
 fn tabs_move_four_columns_and_other_glyphs_weigh_half() {
     let document = Document::new("\tx\n\u{e9}\u{1}x\n");
@@ -379,7 +404,8 @@ fn tabs_move_four_columns_and_other_glyphs_weigh_half() {
     );
 }
 
-/// A line is cut at the width of the picture, and a line far longer than it costs the build no shaping.
+/// A line is cut at the width of the picture,
+/// and a line far longer than it costs the build no shaping.
 #[test]
 fn a_line_is_cut_at_the_width_and_costs_no_shaping() {
     let document = Document::new(&format!("{}\n", "x".repeat(200_000)));
@@ -403,8 +429,10 @@ fn a_line_is_cut_at_the_width_and_costs_no_shaping() {
     assert_eq!(built.stats.work, 0);
 }
 
-/// A wrapped line gets one band of pixel rows for each visual row the map holds, a continuation row starts one
-///  column past the line's indent, and a block above a line is blank.
+/// A wrapped line gets one band of pixel rows for each visual row the map holds,
+/// a continuation row starts one
+///  column past the line's indent,
+/// and a block above a line is blank.
 #[test]
 fn wrapped_lines_draw_one_band_for_each_visual_row() {
     let line = "    let value = compute_total(first_item, second_item); // a long comment that keeps going and going";
@@ -462,8 +490,11 @@ fn a_block_of_virtual_rows_leaves_a_blank_stretch() {
     assert!(inked(&built, 13), "line 1 follows the block");
 }
 
-/// A text with far more rows than the track has pixels is sampled: the lines drawn and the shaping are bounded by
-///  the track's height, whatever the text's length, and the work stays inside the budget.
+/// A text with far more rows than the track has pixels is sampled:
+/// the lines drawn and the shaping are bounded by
+///  the track's height,
+/// whatever the text's length,
+/// and the work stays inside the budget.
 #[test]
 fn a_long_text_is_sampled_within_the_track_and_the_budget() {
     let document = Document::new(&code(50_000));
@@ -501,8 +532,12 @@ fn a_long_text_is_sampled_within_the_track_and_the_budget() {
     assert!(inked(&built, 1398) || inked(&built, 1399) || inked(&built, 1397));
 }
 
-/// With no work to spend, wrapped lines are cut into rows of equal width: nothing is shaped, the bands are still
-///  there, and a build with enough work reports no rough line.
+/// With no work to spend,
+/// wrapped lines are cut into rows of equal width:
+/// nothing is shaped,
+/// the bands are still
+///  there,
+/// and a build with enough work reports no rough line.
 #[test]
 fn a_line_the_budget_cannot_pay_is_cut_into_equal_rows() {
     let line = "word ".repeat(80);
@@ -528,7 +563,8 @@ fn a_line_the_budget_cannot_pay_is_cut_into_equal_rows() {
     assert!(quick.stats.work > 0 && quick.stats.work <= QUICK_WORK);
 }
 
-/// A build asked to stop stops, and answers nothing.
+/// A build asked to stop stops,
+/// and answers nothing.
 #[test]
 fn a_cancelled_build_answers_nothing() {
     let document = Document::new(&code(100));

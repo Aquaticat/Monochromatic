@@ -26,7 +26,8 @@ use super::annotation_tests::{TEXT_LEFT, TEXT_TOP, hint, problem};
 ///  its opener,
 ///  and its bounded wait.
 use super::find_tests::{Reader, eventually, reader};
-/// The clock the scrolling rule reads, which a test holds and moves.
+/// The clock the scrolling rule reads,
+/// which a test holds and moves.
 use super::rows::hold_clock;
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
@@ -54,7 +55,8 @@ use slint::{Rgba8Pixel, SharedPixelBuffer, platform::update_timers_and_animation
 /// Disposable fixtures and shared snapshot pointers.
 use std::{fs, sync::Arc, time::Duration};
 
-/// More than the 200 ms of stillness after which rows may move the view; a test moves its held clock by this.
+/// More than the 200 ms of stillness after which rows may move the view;
+/// a test moves its held clock by this.
 const QUIET_PASSED: Duration = Duration::from_millis(250);
 
 /// Characters per line of the numbered fixture:

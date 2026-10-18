@@ -8895,8 +8895,10 @@ Passing measured boundaries:
   single-call catalogs,
   and type checking with a disposable writable package cache.
 
-The configured full-conversation replay of `native-release-iQw5fd` remains in progress at this record.
-The lint handoff remains reopened until that replay and its negative controls complete.
+The configured full-conversation replay of `native-release-iQw5fd` subsequently exhausts the heap.
+The later callback-sharing build `native-release-6z61x7` also exits 134 in both full replays.
+Those results supersede the pending status recorded on 2026-10-18.
+The lint handoff remains reopened until complete replay and negative controls pass on the final output.
 
 Reproduction tasks:
 
@@ -8938,6 +8940,69 @@ The existing type-check task removes its own build-info cache before checking.
 Mounting a disposable writable package cache makes that same task pass.
 This harness filesystem error is distinct from the product's capture and Stop failures.
 
+### Full-session source-binding allocation
+
+The original capture failure and later heap failures are distinct observed boundaries.
+Removing dead aggregate serialization repairs the original `RangeError`,
+but complete configured-host replays still expose retained allocation growth.
+The callback-sharing build preserves all ordered callback phases with per-emission value sharing;
+it still exhausts the heap after 28 fragmented-stream or 34 faithful-stream live assessments.
+
+Private pool profiling reaches 103,200 original occurrences and 61,899,464 unique content characters.
+The sampled heap reaches 1,396,560,032 bytes.
+An inspector allocation sample at 100,000 receipts retains its explicit 2,097,168-byte positive control.
+It attributes 476,526,736 sampled bytes to `bindOriginalRunMessage`
+and 153,547,688 to `createMessagePublication`.
+Its total sampled live allocation is 1,150,318,896 bytes.
+These are allocation samples, not exact object counts or exclusive proof of a complete-session cause.
+The private source is `allocation-summary.json` for fixture `pi-mimo-failure-rpc-e8GtWu`
+in the incident scratch.
+
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:33`
+now owns shared checking methods within each governing snapshot.
+A private weak set authenticates the original frozen plain binding before its view is read.
+The source view, request, occurrence, ordering, and parent freshness remain independently checked.
+This removes checking closures per source while preserving separate records and original publications.
+
+Three unchanged 120,000-binding probes retain 48,742,376 to 48,742,952 bytes.
+Three shared-method probes retain 30,762,600 to 30,763,960 bytes.
+The committed capacity regression fails on the old output at 48,724,128 bytes,
+against a 36 MiB budget.
+The rebuilt `native-release-2vxGY8` passes at 30,747,064 bytes,
+including foreign receivers, cross-snapshot borrowing, substituted sources, and retired parents.
+A private receiver-guard mutation makes the forged-receiver assertion fail;
+the production owner hash remains `0ad7cf1e86d17bcde704bb0d610b986eef81d1b7132bb948a965bca8e43724e7`.
+Complete configured-host replay remains required after this isolated improvement.
+
+The earlier 20,000-receipt allocation sample emphasizes queued log writes.
+A synchronous-append counterfactual still exits 134.
+The conclusion that this excluded logger append retention is withdrawn on 2026-10-18:
+the hook changed the bundled logger,
+while configured extensions also loaded a separate TypeScript logger instance.
+The hook receipt proves bundle loading,
+not replacement of that source instance's append path.
+The private input-only publication probe reduces its separate capacity fixture to 2,753,896 bytes;
+it is not applied to production and does not establish a full-session repair.
+The class-based binding probe is also rejected:
+it changes the existing plain-record prototype and constructor surface.
+
+### Disposable build and logging controls
+
+The first binding probes discover a default file-log destination outside their writable mounts
+and emit `logger internal error: file sink verification failed: EROFS: read-only file system`.
+Setting the new logger directory environment variable cannot repair an older bundled policy
+that lacks that implementation.
+The corrected probe mounts its discovered diagnostic directory writable and preserves the records.
+Its repeated measurements contain no corresponding file-sink error.
+
+The owned native rebuild copies existing JavaScript policy output.
+A fresh `build:js` precedes the `native-release-2vxGY8` rebuild;
+the emitted policy now contains `MONOCHROMATIC_LOG_DIRECTORY` support.
+The disposable JavaScript build initially fails with `Error: spawnSync mise ENOENT`
+because the parent task invokes child tasks by executable name.
+Adding the mounted `/fixture-bin` to the container's `PATH` makes the same task complete.
+Neither harness filesystem error nor missing executable establishes a product preparation failure.
+
 ### Upstream filing decision
 
 - Ownership: unused aggregate accounting and retained input storage belong to this repository.
@@ -8949,3 +9014,85 @@ This harness filesystem error is distinct from the product's capture and Stop fa
   final full-consumer verification is still pending.
 
 There is nothing to file upstream for these owned implementation defects.
+
+## Logger completion retention and file ownership on 2026-10-18
+
+### Separate measured failures
+
+A completed faithful configured-host replay exercises all 52 saved calls and captures 62 actual Luna requests.
+Its fragmented-stream stress counterpart still exits 134 before the logger repairs.
+The active artifact for that checkpoint is `native-release-XGbh0H`.
+Successful original-boundary replay and unfinished streaming-memory repair remain separate conclusions.
+
+A collected heap snapshot exposes a large logger `pendingWrites` set through the module-local default instance.
+The original retained graph is not a computed dominator proof.
+An isolated consumer supplies the stronger capacity control:
+100,000 sink deliveries returning one shared fulfilled completion retain 93,863,816 heap bytes
+in the committed built-artifact regression before the repair.
+The subsequent repaired verification retains 48,304 bytes and still delivers all records.
+
+The logger originally created tracking and cleanup continuations for each record.
+Its producer can synchronously emit records faster than the JavaScript microtask queue can drain those continuations.
+`src/pending-writes.ts` now observes each active sink completion once,
+without skipping sink deliveries.
+Synchronous backends reuse a fulfilled completion,
+and the file sink shares completion across bounded append batches.
+Flush deadlines retain their observation-abandonment behavior;
+the same unfinished operation can be observed again after a deadline.
+
+Independent file regressions reveal additional ownership defects:
+
+- A record's `toJSON` hook reenters the same sink.
+  Capturing the predecessor before serialization lets the inner and outer append operations overlap.
+  The original output fails JSON parsing at position 349536.
+- Separate sinks initialized in one frozen millisecond choose the same timestamp-only filename.
+  Their separate serial queues still overlap on the shared file.
+  The unchanged artifact fails JSON parsing at position 349544.
+- A valid record object whose `toJSON` returns `undefined` inserts the literal `undefined` into JSONL.
+  The unchanged artifact emits `SyntaxError: "undefined" is not valid JSON` during read-back.
+
+The repairs finish serialization before queue admission,
+reject serialization without a JSON value,
+use a UUID in each sink filename,
+create the probe file exclusively,
+and publish an append queue only after successful probe read-back.
+Batch appends remain serial and preserve whole records.
+All corrected file cases pass the runtime suite;
+final types and lint verification remain recorded in the canonical frontier.
+These file controls do not establish the cause of the original auto-mode preparation failure.
+
+### Consumer and environment verification
+
+The host imports logger source through configured extensions and also loads a bundled logger.
+Those module-local defaults have independent state.
+Both consumer outputs need rebuilding before replay can establish the memory repair at the Pi boundary.
+The logger package's
+[write completion and file ownership explanation](../../package/module/logger/doc/write-completion.md)
+records the roles,
+alternatives,
+completion limits,
+and maintained regressions.
+
+The direct MiMo RPC pilot selects `llmgateway-devpass/mimo-v2.6-pro`,
+receives `READY` without tool execution,
+and exits normally under a 2-GiB memory and 2-CPU limit.
+Its disposable home copies configured resources and credentials privately.
+The controller resolves the repository's Mise environment without printing its values.
+An initial pilot lacking that environment emits
+`AssessmentTransportError: AUTO_MODE_LLMGATEWAY_API_KEY is unavailable for the assessment request`.
+The corrected environment resolves that startup failure.
+
+The package `native:cli` task changes cwd to the package directory.
+The current policy bootstrap then attempts that directory's absent `AGENTS.md` and emits `ENOENT` before RPC starts.
+Launching the maintained Pi command from the repository root exercises the intended reported consumer.
+The disposable mount setup also preserves both home aliases and disables automatic Mise installation.
+These controller corrections do not change the package's tool-review policy.
+
+No Node,
+JavaScript,
+Pi,
+or Linux defect is established by these controls.
+The failures belong to our completion accounting,
+serialization ordering,
+file ownership,
+and invocation setup.

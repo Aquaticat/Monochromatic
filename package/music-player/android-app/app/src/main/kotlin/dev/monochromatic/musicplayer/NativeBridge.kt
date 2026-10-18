@@ -470,6 +470,24 @@ object NativeBridge {
      */
     external fun nativeEngineIsEnded(handle: Long): Boolean
 
+    // What:     `external fun nativeEngineFailedLoad(handle: Long): Long` is a JNI native function taking the
+    //           `handle` and returning a `Long`.
+    // Why:      `nativeEngineLoad` returns once the load is queued, so a file that opens but does not decode fails
+    //           later on the engine worker; this is the sequence number of the last queued load that failed, or zero
+    //           when none did, and the poller turns a new number into a load failure.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeEngineFailedLoad(handle: bigint): bigint;
+    // ```
+    /**
+     * Sequence number of the last queued load that the engine worker could not open for playback, or zero when
+     * none failed.
+     *
+     * @param handle engine handle from `nativeEngineCreate`
+     */
+    external fun nativeEngineFailedLoad(handle: Long): Long
+
     // What:     `external fun nativeEnginePlayWhenReady(handle: Long): Boolean` is a JNI native
     //           function taking the `handle` and returning a `Boolean`.
     // Why:      Query the engine's intended play state ("should play once ready"), the value the

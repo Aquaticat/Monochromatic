@@ -232,7 +232,8 @@ pub fn resolve_executable(command: &str, root: &Path) -> Option<PathBuf> {
 
 /// The private state directory rules and the preparation of a launch's directories.
 mod state;
-/// Re-exported: the confining policy and the worker use them through the seam.
+/// Re-exported:
+/// the confining policy and the worker use them through the seam.
 pub use state::{check_state_directory, prepare, resolve_existing};
 
 /// Executable lookup,

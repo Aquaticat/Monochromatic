@@ -1,16 +1,24 @@
-//! A line wrapped to more rows than one raster holds, in the real window:
-//!  the tile holds a clip of the line around the view, the gutter lists only the rows of the clip,
+//! A line wrapped to more rows than one raster holds,
+//! in the real window:
+//!  the tile holds a clip of the line around the view,
+//! the gutter lists only the rows of the clip,
 //!  the clip follows the view through the line with re-centers on the worker,
-//!  and scrolling inside an already built tile of a wrapped file does no shaping, painting, or image work.
-//! Nothing here waits on the window thread: every wait advances timers and lets the workers answer.
+//!  and scrolling inside an already built tile of a wrapped file does no shaping,
+//! painting,
+//! or image work.
+//! Nothing here waits on the window thread:
+//! every wait advances timers and lets the workers answer.
 
 /// Counters and scrolling helpers of the overscan tests.
 use super::overscan_tile_tests::{counts, reset, scroll_to, worker_counts};
 /// The raster limit and the size rule of a tile that is derived from it.
 use super::render::tile_cap;
-/// The clip rule, which does not depend on a window.
+/// The clip rule,
+/// which does not depend on a window.
 use super::viewport::band_clip;
-/// The reader fixture, bounded waits, and the pixels of the shown image.
+/// The reader fixture,
+/// bounded waits,
+/// and the pixels of the shown image.
 use super::wrap_tests::{long_text, open, settled, shown, until};
 /// Library types that give the expected values.
 use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
@@ -34,7 +42,9 @@ fn tall_file() -> String {
     return format!("first line\n{}\nlast line\n", words(100_000));
 }
 
-/// Wait until no re-center is queued, shown late, or on the worker.
+/// Wait until no re-center is queued,
+/// shown late,
+/// or on the worker.
 fn settled_tile(opened: &super::find_tests::Reader) {
     until("the tile worker did not finish the re-center", || {
         let current = opened.source.borrow();
@@ -42,13 +52,15 @@ fn settled_tile(opened: &super::find_tests::Reader) {
     });
 }
 
-/// Whether any pixel of the visible band of the image has ink; a window with no image yet has none.
+/// Whether any pixel of the visible band of the image has ink;
+/// a window with no image yet has none.
 fn has_ink(window: &super::AppWindow) -> bool {
     return window.get_source_image().to_rgba8().is_some()
         && shown(window).iter().any(|pixel| return pixel[3] > 0);
 }
 
-/// Wait until the first tile is painted or the window names a failure, then fail on the failure.
+/// Wait until the first tile is painted or the window names a failure,
+/// then fail on the failure.
 fn painted_without_error(opened: &super::find_tests::Reader) {
     let window = &opened.window;
     until("the window neither painted nor named a failure", || {
@@ -61,8 +73,10 @@ fn painted_without_error(opened: &super::find_tests::Reader) {
     );
 }
 
-/// A line past the raster limit is painted in a clip; the clip follows the view through the line from its top to
-///  the lines after it, and the gutter lists only the rows of the clip.
+/// A line past the raster limit is painted in a clip;
+/// the clip follows the view through the line from its top to
+///  the lines after it,
+/// and the gutter lists only the rows of the clip.
 #[test]
 fn a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view() {
     let (_project, opened) = open(&tall_file());
@@ -140,8 +154,13 @@ fn a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view() {
     window.hide().expect("close wrap window");
 }
 
-/// The clip never passes the raster limit, for the sizes that matter: ordinary windows at both scales, a window so tall
-///  that three views pass the limit, and a very wide one; its edges are whole code rows inside the lines.
+/// The clip never passes the raster limit,
+/// for the sizes that matter:
+/// ordinary windows at both scales,
+/// a window so tall
+///  that three views pass the limit,
+/// and a very wide one;
+/// its edges are whole code rows inside the lines.
 #[test]
 fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
     for (width, scale, height) in [
@@ -173,7 +192,9 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
     assert!(band_clip(0.0, 1000.0, (0.0, 3000.0), tile_cap(782.0, 1.0)).is_none());
 }
 
-/// Opening the file shapes each of its lines once on the window thread, and the clip, not the whole line,
+/// Opening the file shapes each of its lines once on the window thread,
+/// and the clip,
+/// not the whole line,
 ///  is what the first raster holds.
 #[test]
 fn opening_a_hundred_thousand_character_line_shapes_it_once_and_paints_a_clip() {
@@ -192,8 +213,12 @@ fn opening_a_hundred_thousand_character_line_shapes_it_once_and_paints_a_clip() 
     opened.window.hide().expect("close wrap window");
 }
 
-/// Scrolling inside an already built tile of a wrapped file enters no render, shapes no row, paints no tile, and
-///  sets no image, whether the tile holds many short lines or a clip of one tall line.
+/// Scrolling inside an already built tile of a wrapped file enters no render,
+/// shapes no row,
+/// paints no tile,
+/// and
+///  sets no image,
+/// whether the tile holds many short lines or a clip of one tall line.
 #[test]
 fn scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work() {
     for text in [long_text(400), tall_file()] {
@@ -231,7 +256,9 @@ fn scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work() {
 }
 
 /// A range on a late row of a wrapped last line is revealed in full even when the background measurement has not
-///  reached that line: the map counts such a line as one row, and the offset must not be limited by that count.
+///  reached that line:
+/// the map counts such a line as one row,
+/// and the offset must not be limited by that count.
 #[test]
 fn revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view() {
     let text = format!("{}{}", "short line\n".repeat(200), "word ".repeat(600));

@@ -14,11 +14,16 @@
 use helix_core::{Rope, RopeSlice, graphemes::next_grapheme_boundary};
 
 /// What:
-///  Longest line, in bytes, whose caret stops are found by walking the line as one flat string.
+///  Longest line,
+/// in bytes,
+/// whose caret stops are found by walking the line as one flat string.
 /// Why:
-///  A string viewed as a rope slice is one chunk, and finding a character in a chunk scans the chunk,
-///  so a walk over a long line would scan it once for every grapheme: work that grows with the square of the length.
-///  A line past this length is copied into a rope, whose chunks are about a kilobyte,
+///  A string viewed as a rope slice is one chunk,
+/// and finding a character in a chunk scans the chunk,
+///  so a walk over a long line would scan it once for every grapheme:
+/// work that grows with the square of the length.
+///  A line past this length is copied into a rope,
+/// whose chunks are about a kilobyte,
 ///  so each lookup scans one chunk.
 ///
 /// In TS you'd write (pseudocode):
@@ -72,7 +77,8 @@ fn caret_stops(source: &str, visible: usize) -> Vec<usize> {
 }
 
 /// What:
-///  The caret stops of `source`, calling `visit` with the rope view and the position before each lookup.
+///  The caret stops of `source`,
+/// calling `visit` with the rope view and the position before each lookup.
 ///  The production caller passes a closure that does nothing.
 /// Why:
 ///  The structural test counts the bytes each lookup has to scan through this hook,

@@ -149,7 +149,8 @@ fn state_inside_the_project_is_bound_writable_after_the_read_only_project() {
 }
 
 /// Tool directories of mise below a replaced location exist inside only if they are bound again,
-/// after the replacements and before the state bind, and never writable.
+/// after the replacements and before the state bind,
+/// and never writable.
 #[test]
 fn read_only_directories_below_replaced_locations_are_bound_back_read_only() {
     let mut wanted = request("/work/project", &[]);

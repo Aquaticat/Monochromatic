@@ -292,6 +292,48 @@ Decision:
 The durable value is this document plus the `mise current` check it names,
  not a tracker entry.
 
+## Explicit requests can miss a configured lock binding
+
+On 2026-10-18,
+the fresh-job cache harness ran Mise `2026.10.9` with `MISE_LOCKED=1`.
+The frozen `mise.lock` contains Node `26.12.0` and pnpm `12.14.0`,
+including Linux x64 URLs and checksums.
+Both entries bind `specifiers = ["latest"]`,
+matching their declarations in the repository configuration.
+
+The initial command `mise install node@26.12.0 pnpm@12.14.0` failed in every job of
+[run `39099461826`](https://github.com/Aquaticats/Monochromatic/actions/runs/39099461826):
+
+```text
+# Mise 2026.10.9, exact diagnostic for the Node request
+No lockfile URL found for node@26.12.0 on platform linux-x64 (--locked mode)
+```
+
+pnpm emitted the same diagnostic for `pnpm@12.14.0`.
+This happened before dependency installation,
+so these jobs are not cold-cache timing samples.
+
+The source at Mise tag `v2026.10.9`,
+`src/lockfile.rs:4753`,
+implements `matching_request_bindings`.
+Its `specifiers.contains(specifier)` check at line 4762 rejects a different request binding,
+even when its resolved version text is identical.
+The presence of a platform URL alone therefore does not establish that an arbitrary explicit request can use it.
+
+The verified harness repair is `mise install node pnpm` with locked mode retained.
+That uses the configured requests and their committed resolutions.
+The harness asserts `process.version === 'v26.12.0'` and pnpm's reported version `12.14.0`
+before cache or installation measurements.
+[Run `39099920300`](https://github.com/Aquaticats/Monochromatic/actions/runs/39099920300)
+passed in separate GitHub and Depot allocations,
+including workspace installation and all existing semantic-bridge artifact consumers.
+No lockfile or application source was changed for this repair.
+
+This is a request-binding boundary,
+not evidence of a missing download or a provider-specific installer failure.
+Removing locked mode or editing the lockfile by hand is unnecessary for the demonstrated case.
+No upstream defect is established or filed.
+
 ## Related
 
 - `doc/troubleshooting/pnpm-allow-builds-workspace-rewrite.md`,

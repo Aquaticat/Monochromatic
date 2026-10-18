@@ -1,33 +1,165 @@
 # Depot trial interview
 
+## Research reopened and interview withdrawn on 2026-10-18
+
+The user rejected the readiness claim:
+"Not enough research.
+You're missing so much that it's hard to name them all."
+They will return in the morning to inspect further research.
+The parent withdrew the readiness claim and the three pending operating questions.
+Do not wait for answers,
+ask the user to enumerate omissions,
+or restart grilling before adequate research.
+The earlier independent review of selected evidence remains valid only for its checked boundaries;
+its sufficiency conclusion is withdrawn.
+
+New frozen source:
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The [reopened plan](../planning/depot-developer-additional-pool-research.md)
+records independently verifiable platform-surface,
+complete-coverage,
+reuse,
+orchestration,
+runtime,
+Test,
+economics and operations work.
+The three research agents are active again.
+Their new owned notes are `depot-platform-surface-audit.md`,
+`depot-reuse-strategy-research.md` and `depot-complete-coverage-research.md`
+in `doc/planning/`.
+The parent owns actual event/status/gate probes,
+runtime feasibility and integration.
+All executable mutations remain isolated;
+main receives documentation and evidence only.
+Prior account-wide-access,
+subscription,
+production routing and external-provider restrictions persist.
+
+Next action:
+record and inspect the missing source/runtime surfaces,
+execute the applicable current-source graph and deeper reuse/orchestration experiments,
+and reconcile actual outcomes without declaring selected passing probes comprehensive.
+
 ## Active Developer additional-pool research on 2026-10-18
 
 The user requested Depot Developer as an additional pool alongside GitHub,
 then required comprehensive research before grilling.
+They clarified that migration is the wrong framing:
+use Depot's full capabilities and greatly expand the current lackluster CI setup.
+The research now covers all CI-relevant Depot capabilities and desired repository coverage,
+not only placement of existing jobs.
+Developer remains the intended base plan;
+record eligibility gaps rather than excluding capabilities from discovery.
 Depot and GitHub Actions research experiments are authorized.
 The [research plan](../planning/depot-developer-additional-pool-research.md)
 tracks independently verifiable areas and the stop condition for beginning the interview.
 Developer plus continued GitHub availability is settled;
 pool placement and operational preferences will be grilled after factual research.
 
-Current work:
-primary-source provider and billing research,
-repository routing and trust inventory,
-cache integration research,
-fresh-job cache measurements and orchestration probes.
+The capability and repository-routing research notes are complete.
+Actual routing probes cover both pools,
+single-pool selection,
+intentional worker failure and cancellation propagation through a stable gate.
+Fresh standalone Depot jobs verified automatic cache credentials,
+compiler reuse and changed-flag invalidation,
+plus concurrent persistent-disk consumers.
+Historical standalone KVM guest execution has been reverified from its retained artifact.
+SDK command and file consumers passed;
+every created sandbox was independently confirmed finished.
+
+The repeated fresh-job pnpm-store comparison is complete.
+An initial cold cohort passed,
+but seed run `39100149452` stalled in the parent-authored archive-size guard before saving.
+Both old seed jobs and the workflow are confirmed `cancelled` at `05:32:36Z`.
+This establishes terminal workflow state,
+not VM destruction or stopped billing.
+The corrected harness is `2a155eec49` on `research/depot-pnpm-cache-20261018`.
+Its real success and intentional-failure controls pass.
+The final cohort adds explicit cache-disabled controls,
+uses unique scope `20261018-pnpm-cache-v3`
+and has a 5-minute job timeout.
+Parent monitor session `14886` completed all sequential phases successfully and retained terminal receipts
+under private `depot-developer-pool-research/receipts-v3`.
+The superseded seed monitor `59066` stopped on cancellation without dispatching warm consumers.
+Initial v3 dispatch returned HTTP `422` for the unquoted `off` choice before allocating a job.
+Its failed receipt is retained;
+the quoted choice was accepted as run `39101112370`,
+which passed all cache-disabled jobs.
+Explicit-miss `39101194478`,
+seed `39101280802`,
+warm `39101349744` and branch probe `39101439840` also passed every job.
+The [verified parent receipt](../audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json)
+retains all 16 final-cohort jobs and verified artifact ZIP digests.
+Restore plus install takes 11 to 12 seconds warm versus 9 to 10 seconds disabled on GitHub,
+and 4 to 5 seconds warm versus 3 seconds disabled on Depot.
+The apparent Depot whole-job improvement also includes checkout falling from 15 to 16 seconds
+to 3 to 4 seconds before restore;
+do not attribute that complete-job change to the pnpm archive.
+The branch probe verifies a GitHub miss and Depot hit from a different branch at the same source.
+It deliberately executes no installer or application consumer.
+The GitHub archive was already absent before cleanup;
+an exact key/ref query confirms zero entries.
+No deletion command ran for that entry and no disappearance cause is established.
+The worktree is safely removed and both pushed source branches remain.
+The [pnpm research note](../planning/depot-pnpm-store-fresh-job-research.md)
+records protocol,
+storage ownership and failure details.
+The independent review is complete and identifies no additional universal research prerequisite.
+The operating frontier is spending authority,
+qualified-check enforcement and infrastructure-recovery autonomy.
+Use the [frontier review](../planning/depot-developer-interview-frontier-review.md)
+for its option costs and rankings.
+Final parent verification passed:
+scoped Markdown lint,
+rendered inspection,
+JSON formatting,
+source and cleanup assertions,
+and 11 local links in the new parent notes.
+The independent cache review verified 16 ZIPs,
+67 member hashes,
+224 step intervals and 42 successful build/consumer task invocations.
+Its fresh GitHub API reads independently confirmed every artifact digest.
+
+The entire first post-research frontier was asked together in the question tool on 2026-10-18:
+
+- Q1:
+  standing monthly owner-reserved headroom or approval of each paid batch.
+- Q2:
+  qualify new checks and then enforce them at publication boundaries,
+  or keep them advisory.
+- Q3:
+  bounded automatic infrastructure retry and eligible-provider fallback,
+  or require an explicit rerun.
+
+The recommended choices are standing headroom,
+qualified enforcement and bounded automatic recovery.
+Answers are pending;
+preselected options are not answers or authorization.
+Recompute dependent decisions after the response.
+Do not implement production routing until shared understanding is confirmed.
 The main agent owns experiment harnesses and the combined decision tree.
 The research agents own separate cited capability,
 routing and cache notes.
 Do not begin the interview while factual prerequisites remain investigable.
 Do not change production routing or the subscription before shared understanding is reached.
 Prior account-wide-access exclusions remain in force.
+The user also requires performance claims to name the exact jobs and cache system.
+The measured pnpm-store regression is GitHub `actions/cache`
+in `readonly-semantic-bridge.yml`'s semantic-bridge jobs,
+not Depot Cache and not separately measured logger/TOML regressions.
+The cache decision now names that boundary.
+The research plan retains a concrete proposed `QNB` tightening outside the Depot interview;
+`AGENTS.md` is unchanged.
 
 ## Cache benefit clarification on 2026-10-18
 
 The user asked how caching changes the performance assessment.
 The approximately `3.26` GitHub/Depot elapsed-time ratio described cold compilation,
 not the repeat-workload cache benefit.
-No complete-graph cached speedup or fresh-job warm GitHub/Depot comparison has been established.
+No complete-graph cached speedup has been established.
+The [fresh-job pnpm comparison](../planning/depot-pnpm-store-fresh-job-research.md)
+has now completed for its named workload;
+its restore overhead consumes the observed pnpm-command saving on both pools.
 
 The corrected [default container builder trial](../audit/depot-runner-sizing-2026-10-15.md)
 records two cold samples of `268.558` and `265.417` seconds,

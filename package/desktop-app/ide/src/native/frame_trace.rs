@@ -7,7 +7,9 @@
 use super::AppWindow;
 /// The winit window events and the hook that sees them before the toolkit does.
 use i_slint_backend_winit::{EventResult, WinitWindowAccessor, winit::event::WindowEvent};
-/// The toolkit's window, rendering stages, and graphics API.
+/// The toolkit's window,
+/// rendering stages,
+/// and graphics API.
 use slint::{ComponentHandle, GraphicsAPI, RenderingState, Window};
 
 /// What:
@@ -76,7 +78,8 @@ fn log_rendering_stage(state: RenderingState, _graphics_api: &GraphicsAPI<'_>) {
 ///  Log the size events and redraw requests the windowing system delivers,
 ///  and the stages of each draw.
 /// Why:
-///  The stamp of a size event, of the draw that follows it,
+///  The stamp of a size event,
+/// of the draw that follows it,
 ///  and of the buffer the compositor receives are the three moments that say where a one-frame delay comes from.
 ///  Both hooks only read and log;
 ///  the event always goes on to the toolkit.

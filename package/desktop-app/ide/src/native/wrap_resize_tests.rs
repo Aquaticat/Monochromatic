@@ -1,7 +1,12 @@
-//! A new window width in the real window: the window thread breaks the lines near the view again and paints the tile for
-//!  the new width before the next frame, within a counted allowance, and what does not fit the allowance goes to the
+//! A new window width in the real window:
+//! the window thread breaks the lines near the view again and paints the tile for
+//!  the new width before the next frame,
+//! within a counted allowance,
+//! and what does not fit the allowance goes to the
 //!  tile worker.
-//! Nothing here waits on the window thread: every wait advances timers and lets the workers answer, and the tests that
+//! Nothing here waits on the window thread:
+//! every wait advances timers and lets the workers answer,
+//! and the tests that
 //!  look at the first frame hold the worker's measurement still so that only the window thread can have produced it.
 
 /// The production setter and the stamp of the displayed text.
@@ -24,7 +29,9 @@ use super::sidebar_tests::{TEXT_LEFT, minimap_beside};
 use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// The wrap width rule.
 use super::viewport::wrap_width;
-/// Wrapped fixtures, the open reader, and bounded waits.
+/// Wrapped fixtures,
+/// the open reader,
+/// and bounded waits.
 use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
 /// Library types that give the expected values.
 use ide_app::{
@@ -52,7 +59,8 @@ const LINE: usize = 3;
 /// A message long enough to need rows of its own at any width.
 const MESSAGE: &str = "expected `u32`, found `&str` because the argument named first_item is a string slice here, so convert it first";
 
-/// What the window thread did since the last `reset`, read from the debug counters.
+/// What the window thread did since the last `reset`,
+/// read from the debug counters.
 #[derive(Debug)]
 struct Spent {
     /// Tiles painted on the window thread.
@@ -75,7 +83,8 @@ struct Spent {
     charged: (usize, usize),
 }
 
-/// Zero the counters, including those only the width change keeps.
+/// Zero the counters,
+/// including those only the width change keeps.
 fn start_counting(reader: &Reader) {
     reset(&reader.source);
     let mut current = reader.source.borrow_mut();
@@ -104,7 +113,8 @@ fn spent(reader: &Reader) -> Spent {
 }
 
 /// Report the window width that leaves a text area `text_width` wide (the minimap takes its own share) to the toolkit
-///  and run the change handlers once: the render the new width causes.
+///  and run the change handlers once:
+/// the render the new width causes.
 fn change_width(reader: &Reader, text_width: f32, height: f32) {
     reader.window.window().dispatch_event(WindowEvent::Resized {
         size: LogicalSize::new(TEXT_LEFT + text_width + minimap_beside(text_width), height),
@@ -124,7 +134,9 @@ fn start_of(reader: &Reader, line: usize) -> usize {
     return reader.source.borrow().document.text().line_to_char(line);
 }
 
-/// Inject one hint early on `LINE`, one far along it, and an error with `MESSAGE`.
+/// Inject one hint early on `LINE`,
+/// one far along it,
+/// and an error with `MESSAGE`.
 fn annotate_line(reader: &Reader) {
     let stamp = displayed(&reader.source.borrow());
     let start = start_of(reader, LINE);
@@ -156,7 +168,8 @@ fn annotate_line(reader: &Reader) {
     );
 }
 
-/// Rows of `view` whose visible advance passes `width`, other than a row of one character (the one-token fallback).
+/// Rows of `view` whose visible advance passes `width`,
+/// other than a row of one character (the one-token fallback).
 fn overflowing(view: &ShapedView, width: f32) -> Vec<String> {
     let scale = view.viewport.scale;
     let mut found = Vec::new();
@@ -175,7 +188,10 @@ fn overflowing(view: &ShapedView, width: f32) -> Vec<String> {
     return found;
 }
 
-/// A fresh build of the displayed tile by a shaper that has never seen the text: rows, selection, and matches.
+/// A fresh build of the displayed tile by a shaper that has never seen the text:
+/// rows,
+/// selection,
+/// and matches.
 fn fresh_view(reader: &Reader) -> ShapedView {
     let current = reader.source.borrow();
     let paint = Paint::new(&reader.window, &current);
@@ -224,8 +240,15 @@ fn ink_past(window: &super::AppWindow, limit: f32) -> Option<usize> {
     return None;
 }
 
-/// The first render after a new width holds a tile wrapped to it, and everything the frame shows agrees with it:
-///  the image, the selection, the find rectangles, the caret, the gutter, the hint, and the message.
+/// The first render after a new width holds a tile wrapped to it,
+/// and everything the frame shows agrees with it:
+///  the image,
+/// the selection,
+/// the find rectangles,
+/// the caret,
+/// the gutter,
+/// the hint,
+/// and the message.
 #[test]
 fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
     let (_project, opened) = open(&long_text(80));
@@ -404,7 +427,8 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
     window.hide().expect("close wrap window");
 }
 
-/// A press right after a new width resolves against the new rows, before the worker has answered anything.
+/// A press right after a new width resolves against the new rows,
+/// before the worker has answered anything.
 #[test]
 fn a_press_right_after_a_new_width_lands_on_the_new_rows() {
     let (_project, opened) = open(&long_text(40));
@@ -448,7 +472,8 @@ fn a_press_right_after_a_new_width_lands_on_the_new_rows() {
     window.hide().expect("close wrap window");
 }
 
-/// A file of fifty thousand lines costs the window thread what a tile costs, and no more.
+/// A file of fifty thousand lines costs the window thread what a tile costs,
+/// and no more.
 #[test]
 fn a_new_width_on_fifty_thousand_lines_costs_a_bounded_amount() {
     let mut text = String::new();
@@ -495,7 +520,10 @@ fn a_new_width_on_fifty_thousand_lines_costs_a_bounded_amount() {
     window.hide().expect("close wrap window");
 }
 
-/// Lines of six hundred characters, two thousand of them: a tile holds few lines, each paid for by its length.
+/// Lines of six hundred characters,
+/// two thousand of them:
+/// a tile holds few lines,
+/// each paid for by its length.
 #[test]
 fn a_new_width_on_two_thousand_long_lines_costs_a_bounded_amount() {
     let mut text = String::new();
@@ -537,9 +565,15 @@ fn a_new_width_on_two_thousand_long_lines_costs_a_bounded_amount() {
     window.hide().expect("close wrap window");
 }
 
-/// Two lines of twelve thousand characters, one with a hint, are more work than the allowance covers: the window
-///  thread brings in at most the first before it gives up, paints nothing, and the worker's tile is swapped in
-///  later; the heights the whole-file pass ends at are those of a fresh shaping.
+/// Two lines of twelve thousand characters,
+/// one with a hint,
+/// are more work than the allowance covers:
+/// the window
+///  thread brings in at most the first before it gives up,
+/// paints nothing,
+/// and the worker's tile is swapped in
+///  later;
+/// the heights the whole-file pass ends at are those of a fresh shaping.
 #[test]
 fn lines_over_the_work_allowance_are_left_to_the_worker() {
     let mut text = String::from("first line\n");
@@ -630,8 +664,11 @@ fn lines_over_the_work_allowance_are_left_to_the_worker() {
     window.hide().expect("close wrap window");
 }
 
-/// Lines with a tab are charged for the corrective passes of their tabs: a view of ordinary short tabbed lines is more
-///  work than the allowance covers, goes to the worker, and the lines the old tile held and the new one does not are
+/// Lines with a tab are charged for the corrective passes of their tabs:
+/// a view of ordinary short tabbed lines is more
+///  work than the allowance covers,
+/// goes to the worker,
+/// and the lines the old tile held and the new one does not are
 ///  measured at the new width by the pass that follows.
 #[test]
 fn tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker() {
@@ -687,8 +724,10 @@ fn tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker()
     window.hide().expect("close wrap window");
 }
 
-/// One line of two hundred thousand characters is not shaped or broken on the window thread: the change goes to the
-///  worker, and its tile is swapped in when it arrives.
+/// One line of two hundred thousand characters is not shaped or broken on the window thread:
+/// the change goes to the
+///  worker,
+/// and its tile is swapped in when it arrives.
 #[test]
 fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
     let mut line = String::new();
@@ -734,7 +773,8 @@ fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
 }
 
 /// A view so tall that its tile holds more lines than the allowance covers is left to the worker without any
-///  shaping on the window thread, and a view taller than one raster is left to it by the allowance of lines or by
+///  shaping on the window thread,
+/// and a view taller than one raster is left to it by the allowance of lines or by
 ///  the bound on the raster.
 #[test]
 fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
@@ -806,7 +846,8 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
     window.hide().expect("close wrap window");
 }
 
-/// A tile whose raster passes the bound is left to the worker although its lines are few and cheap, and the bound
+/// A tile whose raster passes the bound is left to the worker although its lines are few and cheap,
+/// and the bound
 ///  admits the tile of a common window.
 #[test]
 fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
@@ -853,7 +894,8 @@ fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
     window.hide().expect("close wrap window");
 }
 
-/// After a width taken at once, the worker's whole-file re-break ends at the heights a fresh shaping gives.
+/// After a width taken at once,
+/// the worker's whole-file re-break ends at the heights a fresh shaping gives.
 #[test]
 fn the_workers_re_break_converges_after_a_width_taken_at_once() {
     let (_project, opened) = open(&long_text(300));
@@ -884,9 +926,13 @@ fn the_workers_re_break_converges_after_a_width_taken_at_once() {
     window.hide().expect("close wrap window");
 }
 
-/// The worker's measurement of a new width is applied before the tile for it is swapped in: the lines the old tile
-///  held and the new tile does not are skipped by that application, so the measurement must be asked for again once
-///  the tile is shown. The view jumps away while the first tile build is held, so the build for the view the
+/// The worker's measurement of a new width is applied before the tile for it is swapped in:
+/// the lines the old tile
+///  held and the new tile does not are skipped by that application,
+/// so the measurement must be asked for again once
+///  the tile is shown.
+/// The view jumps away while the first tile build is held,
+/// so the build for the view the
 ///  window ends at starts only after the measurement output waits at the window.
 #[test]
 fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights() {
@@ -974,8 +1020,13 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
     window.hide().expect("close wrap window");
 }
 
-/// A frame drawn right after the toolkit reports a new size, with no timer or handler run between them, already holds
-///  the tile for the new width: the viewport callback runs inside the draw, before the frame is composed, as it does
+/// A frame drawn right after the toolkit reports a new size,
+/// with no timer or handler run between them,
+/// already holds
+///  the tile for the new width:
+/// the viewport callback runs inside the draw,
+/// before the frame is composed,
+/// as it does
 ///  under a real windowing backend.
 #[test]
 fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
@@ -1029,9 +1080,14 @@ fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
     window.hide().expect("close wrap window");
 }
 
-/// A view taller than the tallest tile one raster can hold (`tile_cap`) is left to the worker too: nothing of it is
-///  shaped or painted on the window thread. No raster can hold such a view whole, so the test ends with the step and
-///  does not wait for a tile. The headless renderer cannot draw a window that large, so the size is reported without a
+/// A view taller than the tallest tile one raster can hold (`tile_cap`) is left to the worker too:
+/// nothing of it is
+///  shaped or painted on the window thread.
+/// No raster can hold such a view whole,
+/// so the test ends with the step and
+///  does not wait for a tile.
+/// The headless renderer cannot draw a window that large,
+/// so the size is reported without a
 ///  frame.
 #[test]
 fn a_view_taller_than_the_clip_cap_is_left_to_the_worker() {

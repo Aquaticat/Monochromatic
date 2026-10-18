@@ -1,14 +1,21 @@
 //! The caret stops of a line:
 //!  they equal a plain walk over the line for short and long lines alike,
-//!  and the work of finding them grows with the length of the line, not with its square.
-//! The work is counted as the bytes a lookup has to scan, never timed, so the checks do not depend on the host's load.
+//!  and the work of finding them grows with the length of the line,
+//! not with its square.
+//! The work is counted as the bytes a lookup has to scan,
+//! never timed,
+//! so the checks do not depend on the host's load.
 
-/// The walk under test, the rope view the lookups run on, and the flat walk that serves as the reference.
+/// The walk under test,
+/// the rope view the lookups run on,
+/// and the flat walk that serves as the reference.
 use super::{FLAT_LINE_BYTES, caret_stops, caret_stops_visiting, project_line};
-/// Helix's grapheme walk and rope view, used by the reference walk.
+/// Helix's grapheme walk and rope view,
+/// used by the reference walk.
 use helix_core::{RopeSlice, graphemes::next_grapheme_boundary};
 
-/// The stops a flat walk over the whole line finds: the walk every line took before long lines were chunked.
+/// The stops a flat walk over the whole line finds:
+/// the walk every line took before long lines were chunked.
 fn reference_stops(source: &str, visible: usize) -> Vec<usize> {
     let slice = RopeSlice::from(source);
     let mut stops = vec![0];
@@ -20,10 +27,18 @@ fn reference_stops(source: &str, visible: usize) -> Vec<usize> {
     return stops;
 }
 
-/// Text that stresses grapheme boundaries: combining marks, emoji sequences, flags, Hangul, CJK, tabs, and a CRLF.
+/// Text that stresses grapheme boundaries:
+/// combining marks,
+/// emoji sequences,
+/// flags,
+/// Hangul,
+/// CJK,
+/// tabs,
+/// and a CRLF.
 const TRICKY: &str = "ae\u{301}x \u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467} \u{1F1E9}\u{1F1EA}\u{1F1FA}\u{1F1F8} \u{1112}\u{1161}\u{11AB} 猫の目\tz\u{308}\u{308}!\r\n";
 
-/// A line of `length` characters made of tricky text and plain words, without a terminator.
+/// A line of `length` characters made of tricky text and plain words,
+/// without a terminator.
 fn long_line(length: usize) -> String {
     let mut text = String::new();
     let mut number = 0;
@@ -35,7 +50,8 @@ fn long_line(length: usize) -> String {
     return text.chars().take(length).collect();
 }
 
-/// Short and long lines get the stops a flat walk finds, whichever side of the chunking limit they are on.
+/// Short and long lines get the stops a flat walk finds,
+/// whichever side of the chunking limit they are on.
 #[test]
 fn stops_equal_the_flat_walk_on_either_side_of_the_chunking_limit() {
     let mut samples = vec![
@@ -72,7 +88,8 @@ fn stops_equal_the_flat_walk_on_either_side_of_the_chunking_limit() {
     );
 }
 
-/// The bytes the lookups of one walk have to scan, summed over the walk.
+/// The bytes the lookups of one walk have to scan,
+/// summed over the walk.
 fn scanned(source: &str) -> (u64, usize) {
     let visible = source.chars().count();
     let mut total: u64 = 0;
@@ -82,7 +99,8 @@ fn scanned(source: &str) -> (u64, usize) {
     return (total, stops.len());
 }
 
-/// A lookup scans the chunk it lands in; no chunk of a long line is longer than this many bytes.
+/// A lookup scans the chunk it lands in;
+/// no chunk of a long line is longer than this many bytes.
 const CHUNK_BYTES: u64 = 2048;
 
 /// Finding the stops of a line of a hundred thousand characters scans a bounded number of bytes for each stop,
