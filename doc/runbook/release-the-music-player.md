@@ -18,7 +18,8 @@ One release holds one file per platform and a checksum file:
 - `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz` (glibc)
 - `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz` (Alpine, musl)
 - `music-player-<version>-android.apk`
-- `music-player-<version>-desktop-third-party-licenses.txt` and `music-player-<version>-android-third-party-licenses.txt`
+- `music-player-<version>-desktop-third-party-licenses.txt` and
+  `music-player-<version>-android-third-party-licenses.txt`
   (license notices;
   see [License notices](#license-notices))
 - `SHA256SUMS`

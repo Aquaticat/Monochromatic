@@ -372,7 +372,7 @@ Taken on 2026-10-15 at the branch `feat/music-player-license-notices`:
   toml_writer) are compile-time
   dependencies of procedural macros,
   none linked.
-  The file is 1,998,225 bytes;
+  The file was 1,998,225 bytes then and is 2,004,190 bytes on 2026-10-18 after merging `main`;
   the Rust standard library notice is about 1.4 MB of it.
 - Android native:
   232 crates in 118 license texts;
@@ -386,6 +386,30 @@ Taken on 2026-10-15 at the branch `feat/music-player-license-notices`:
   `allow("MIT")` alone made `licenseeAndroidRelease` fail;
   a desktop build with
   `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` and no file failed in `build.rs`.
+
+Re-run on 2026-10-18 at the branch head after merging `main` (each number from a command run that day):
+
+- Desktop: the `notices` task covered 570 crates in 253 license texts.
+  `cargo tree --edges normal,no-proc-macro --features alsa-fallback --target x86_64-unknown-linux-gnu` names 440
+  lines, 2 of them path crates (`music-player`, `truepeak-core`), so 438 third-party crates, all in the file
+  (the task reports 438 for that target).
+  The union over the eight targets is 501 and, with procedural-macro edges, 576; the 8 crates named in the
+  list above are the only ones of those 576 that the file lacks.
+  `twox-hash 2.1.5`, `slint 1.18.1`, `symphonia 0.6.1` and `turso_core 0.8.2` are entries of the file.
+- A debug build with the file embedded prints it byte for byte with `--licenses` (2,004,190 bytes), also into a closed
+  pipe with exit status 0.
+  Removing `GPL-3.0-only` from a copy of `about.toml` made cargo-about exit 1 with
+  `failed to satisfy license requirements` for the Slint crates.
+  Building with `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` and no file failed in `build.rs`.
+- Android: `:app:dependencies --configuration releaseRuntimeClasspath` lists 124 `group:artifact` entries and
+  `artifacts.json` of `licenseeAndroidRelease` (forced to rerun) 121, all Apache-2.0; the three missing are
+  `compose-bom`, `kotlinx-coroutines-bom` and `kotlinx-serialization-bom`.
+  With `allow("MIT")` in place of `allow("Apache-2.0")` the task failed.
+  The notice file (1,748,650 bytes) names `media3-session`, `material3`, `kotlinx-coroutines-core`, `guava`,
+  `work-runtime`, `symphonia`, `twox-hash` and `opusic-sys`; the NOTICE collector read 1 file from 84 libraries.
+  The desktop and Android verification tasks passed on that head:
+  1,466 nextest tests (1 skipped), clippy and `lint:slint` clean, detekt and `lintDebug` clean,
+  1,289 Android unit tests with 0 failures in 127 result files.
 
 ## Consequences
 
