@@ -501,6 +501,46 @@ No account-wide billing or usage query is authorized or required by this campaig
 
 ## Unreleased CLI changes expose additional research cases
 
+## Repository Node26 image prerequisite correction in progress
+
+The subsequent cloud job-image consumers reached checkout,
+then the frozen Node `26.12.0` loader failed with a missing `libatomic.so.1`.
+The earlier base Node `24.22.0` check did not exercise the repository's different runtime.
+The failed CI image remains retained.
+A further owned derivative adds Debian `libatomic1`
+and executes both exact architecture archives from the frozen root `mise.lock` during its build.
+The archive hashes,
+ELF machine identifiers,
+dynamic-library resolution,
+TypeScript execution,
+and runtime versions must pass before that derivative receives consumer credit.
+The second Node installation is removed within the same build step.
+
+The isolated source `7590bcde15` contains that queued fixture.
+The same research branch now includes the frozen firstparty `truepeak-core` Cargo cache-mount fixture
+from source `7f22f25adb`.
+Its mount controls distinguish an empty offline failure,
+an online seed,
+offline target reuse,
+offline registry reuse with a fresh target,
+and changed-flag invalidation.
+No remote Cargo case has run yet.
+The actual local prerequisite control started pinned Node `24.22.0`,
+Rust `1.97.1`,
+and Cargo `1.97.1`
+with the frozen lock hash under a two-CPU,
+two-GiB,
+network-disabled runtime.
+
+The parent-authorized cumulative timestamp-compute model ceiling is now USD 2.
+Its fresh forecast includes the seven observed request intervals,
+the Cargo cohort,
+the forwarding graph,
+and the immutable remote-Git controls.
+The owned project remains `HARDWARE_16X32`,
+with at most two architecture builders and a five-minute server build timeout.
+This model does not inspect or constrain unseen account charges.
+
 The open [CLI upgrade pull request][cli-upgrade] documents differences from the installed release:
 remote Bake handling,
 source-policy enforcement,
