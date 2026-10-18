@@ -10,7 +10,7 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { artifactFileNameOf, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V18,
+  ARTIFACT_SCHEMA_VERSION_V19,
   parseSettledTwoLaneArtifact,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import { UnplaceableArtifactError, } from './pass-generation-guard.ts';
@@ -461,7 +461,7 @@ async function assertBodyMatchesLabel(
 export async function assertResumableSchemaGeneration(
   {
     artifactsDir,
-    writes = ARTIFACT_SCHEMA_VERSION_V18,
+    writes = ARTIFACT_SCHEMA_VERSION_V19,
   }: {
     readonly artifactsDir: string;
     readonly writes?: number;

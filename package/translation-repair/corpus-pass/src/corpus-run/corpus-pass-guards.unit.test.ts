@@ -321,7 +321,7 @@ await describe({
                 ['Mittens',],
               ],
             ],),
-            writes: 18,
+            writes: 19,
           },).message}`,
         );
       },
@@ -362,13 +362,15 @@ await describe({
                 ['Mittens',],
               ],
             ],),
-            writes: 18,
+            writes: 19,
           },).message}`,
         );
       },
     },),
     it({
-      name: 'STATES THE REFUSAL OF AN ARTIFACT THAT CARRIES THE LABEL OF THIS GENERATION AND NOT ITS BODY',
+      name: 'REFUSES A RESUME INTO A DIRECTORY OF GENERATION EIGHTEEN ARTIFACTS, which this pass no longer writes: it names them and '
+        + 'leaves them alone, since the recount of those files reads containment and inline code under the rules of eighteen and a '
+        + 'resumed directory would mix them with files recounted under the rules of nineteen; the files stay readable by their reader',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'corpus-pass-guards-', },);
         await writeFile(
@@ -393,12 +395,52 @@ await describe({
           driftAllowed: false,
         },);
 
+        expect(refusal,).toBeInstanceOf(SchemaGenerationError,);
+        expect(String(refusal,),).toBe(
+          `SchemaGenerationError: ${new SchemaGenerationError({
+            foreign: new Map([
+              [
+                'schema version 18',
+                ['Mittens',],
+              ],
+            ],),
+            writes: 19,
+          },).message}`,
+        );
+      },
+    },),
+    it({
+      name: 'STATES THE REFUSAL OF AN ARTIFACT THAT CARRIES THE LABEL OF THIS GENERATION AND NOT ITS BODY',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-guards-', },);
+        await writeFile(
+          join(
+            scratch.path,
+            'Mittens.json',
+          ),
+          JSON.stringify({
+            artifactSchemaVersion: 19,
+            id: 'Mittens',
+            tip: FIXED_TIP,
+            pipelineDigest: RECORDED_DIGEST,
+          },),
+        );
+
+        /**
+         What the guards threw.
+         */
+        const refusal = await refusalOf({
+          artifactsDir: scratch.path,
+          pipelineDigest: RECORDED_DIGEST,
+          driftAllowed: false,
+        },);
+
         expect(refusal,).toBeInstanceOf(MislabelledArtifactError,);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           `MislabelledArtifactError: ${new MislabelledArtifactError({
             entryId: 'Mittens',
-            writes: 18,
+            writes: 19,
           },).message}`,
         );
       },

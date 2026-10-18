@@ -224,9 +224,37 @@ export const ARTIFACT_SCHEMA_VERSION_V16 = 16;
 export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
 
 /**
- Generation eighteen, the one the pass writes (`artifact-two-lane-build.ts`, `pass-schema-guard.ts`): the finalists of a run-off and
- the slot of a frame are counted by the rules the lead adopted on 2026-10-15 and 2026-10-18, which the readers of generation seventeen
- and earlier do not apply to files written before them.
+ Generation nineteen, the one the pass writes (`artifact-two-lane-build.ts`, `pass-schema-guard.ts`): the recount of the
+ `consistency` section reads containment of the judges' quotes and the inline code of a span as the locator reads them (review of
+ 2026-10-18), which the readers of generation eighteen and earlier do not apply to files written before.
+
+ WHAT MOVED FROM EIGHTEEN, in the recount and in no field it records. A quote is contained in another only where no joint of a longer
+ word stands at an edge of the match, the locator's own test of an apostrophe, a hyphen or a joint of digits (`containsWords`,
+ `consistency-contains-words.ts`), so the candidate spans of a place and the slot words of a frame differ for quotes such as `cat` and
+ `cat's bowl`: two judges who quoted `cat's bowl` and one who quoted `cat` agreed on `cat` in eighteen and agree on no shorter words
+ here. A line ending pads inline code as a space does (`codeContentOf`, `consistency-markup-ranges.ts`), so the locator refuses a word
+ beside code padded by line endings, and a slot recorded beside such code is no stand.
+
+ WHY A GENERATION AND NOT THE RECOUNT ALONE: a file of eighteen was right under the rules its pass counted by, and the stricter recount
+ would refuse the agreement it recorded. A reader gates each reading on the generation the file records, so a stored artifact is read
+ under the rules it was written by (`artifactGenerationCutsContainmentAtJoints`,
+ `artifactGenerationReadsLineEndingsAsCodePadding`). Only the recount of a stored artifact is gated: the pass, which locates places in
+ a live page, always reads the locator's rules.
+
+ A BUILD OF THIS GENERATION REFUSES TO RESUME A RUN DIRECTORY STAMPED EIGHTEEN OR EARLIER (`assertResumableSchemaGeneration`,
+ `pass-schema-guard.ts`): a pass settles only into a directory whose files it writes itself. That is expected and no loss, since
+ `readSettledArtifact` still reads those files, each under its own generation's rules.
+
+ Everything else the generation eighteen record holds is this generation's too. The shape of the section is eighteen's, so the key
+ vocabulary is eighteen's. No cache key of the passes reads the generation or the field: the consistency cache digests the sheet and its
+ own version (`CONSISTENCY_CACHE_VERSION`), which did not move, since the counting of quotes is not stored.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V19 = 19;
+
+/**
+ Generation eighteen, the one the pass wrote until generation nineteen: the finalists of a run-off and the slot of a frame are counted
+ by the rules the lead adopted on 2026-10-15 and 2026-10-18, which the readers of generation seventeen and earlier do not apply to
+ files written before them.
 
  WHAT MOVED FROM SEVENTEEN, in the recount of the `consistency` section and in no field it records: a first round with no strict
  majority and a lone leader is run off among the leader and the labels with the second-highest count (`runOffFinalistsOf`), where
@@ -248,14 +276,12 @@ export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
  the span alone, which is a limit it documents (ledger B661): a span that holds a reference defined in another slice is read as plain
  text there.
 
- THE RECOUNT READS THREE THINGS MORE STRICTLY, with no field moved (review of 2026-10-18), and they rode inside eighteen on the
- evidence of the corpus-pass runs of TianqiChen66624, TianqiChen66625 and TianqiChen66626 alone: no file of eighteen is stored under
- them, and the two artifacts they hold (generation seventeen) still read. A file of eighteen stored elsewhere has not been read. A quote is contained in another only where no joint of a longer word stands at an
- edge of the match, the locator's own test of an apostrophe, a hyphen or a joint of digits (`containsWords`,
- `consistency-contains-words.ts`), so the candidate spans and the slot words differ for quotes such as `cat` and `cat's bowl`. A line
- ending pads inline code as a space does (`codeContentOf`, `consistency-markup-ranges.ts`), so the locator refuses a word beside code
- padded by line endings. A carry the bench was not asked (a decision of no alternative) is refused when it records a run-off, which no
- pass writes; this one applies to every generation.
+ A READER OF THIS GENERATION RECOUNTS CONTAINMENT AND INLINE CODE BY THE READINGS THE PASS THAT WROTE IT USED, which generation
+ nineteen replaced (review of 2026-10-18): a quote is contained in another where no letter, digit or combining mark stands beside the
+ match, a joint of a longer word being no bar, so `cat` is contained in `cat's bowl`; and a literal space alone pads inline code, so a
+ line ending beside it is a shown separator and a word beside code padded by line endings is a stand. Neither moved a field.
+ A carry the bench was not asked (a decision of no alternative) is refused when it records a run-off, which no pass writes; that
+ refusal applies to every generation, this one included.
 
  Everything else the generation seventeen record holds is this generation's too. The shape of the section is that of seventeen
  with the one key `definitions` added, so the key vocabulary is generation seventeen's and that key. No cache key of the passes
@@ -375,6 +401,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V16,
   ARTIFACT_SCHEMA_VERSION_V17,
   ARTIFACT_SCHEMA_VERSION_V18,
+  ARTIFACT_SCHEMA_VERSION_V19,
 ];
 
 /**
@@ -402,7 +429,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V15
   | typeof ARTIFACT_SCHEMA_VERSION_V16
   | typeof ARTIFACT_SCHEMA_VERSION_V17
-  | typeof ARTIFACT_SCHEMA_VERSION_V18;
+  | typeof ARTIFACT_SCHEMA_VERSION_V18
+  | typeof ARTIFACT_SCHEMA_VERSION_V19;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -1028,7 +1056,7 @@ export type SettledArtifact = {
    Which generation this is, stated rather than inferred from which fields
    happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V18;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V19;
 
   /**
    Corpus entry this covers.
