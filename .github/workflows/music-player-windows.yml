@@ -1,50 +1,74 @@
-name: research process timeout controls
-on:
-  workflow_dispatch:
-permissions:
-  contents: read
-env:
-  MISE_AUTO_INSTALL: 'false'
-  MISE_LOCKED: '1'
-defaults:
-  run:
-    working-directory: .depot/research/native-semantics
-jobs:
-  process:
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 5
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        runner: [ubuntu-24.04, depot-ubuntu-24.04]
-    env:
-      PROBE_PLATFORM_PROVIDER: github-${{ matrix.runner }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          # Freeze the already exercised bootstrap separately from workload source.
-          version: 2026.10.9
-          install: false
-          cache: false
-      - run: mise install node
-      - run: mise run //.depot/research/native-semantics:parallel-sibling
-      - id: timed
-        run: mise run //.depot/research/native-semantics:timeout-renew
-        timeout-minutes: 1
-        continue-on-error: true
-      - run: mise run //.depot/research/native-semantics:observe-process-timeout
-        if: always()
-        env:
-          PROBE_TIMEOUT_OUTCOME: ${{ steps.timed.outcome }}
-          PROBE_TIMEOUT_CONCLUSION: ${{ steps.timed.conclusion }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
-        with:
-          name: research-process-timeout-${{ matrix.runner }}
-          path: .depot/research/native-semantics/evidence/
-          if-no-files-found: error
-          retention-days: 7
+{
+  "name": "research current-source mvm GitHub controls",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "env": {
+    "MISE_AUTO_INSTALL": "false",
+    "MISE_LOCKED": "1"
+  },
+  "jobs": {
+    "lifecycle": {
+      "runs-on": "${{ matrix.label }}",
+      "timeout-minutes": 20,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "label": "ubuntu-24.04",
+              "provider": "github-hosted-ubuntu-24.04"
+            },
+            {
+              "label": "depot-ubuntu-24.04-4",
+              "provider": "github-depot-ubuntu-24.04-4"
+            }
+          ]
+        }
+      },
+      "env": {
+        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node pnpm"
+        },
+        {
+          "run": "mise run prepare:pnpm:install -- --frozen-lockfile"
+        },
+        {
+          "run": "mise run //.depot/research/mvm:lifecycle",
+          "working-directory": ".depot/research/mvm"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-current-mvm-${{ matrix.provider }}",
+            "path": ".depot/research/mvm/evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    }
+  }
+}

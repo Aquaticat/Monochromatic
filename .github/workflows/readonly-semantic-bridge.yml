@@ -1,78 +1,198 @@
-name: readonly semantic bridge host evidence
-
-on:
-  pull_request:
-    branches: ['main']
-    paths:
-    - 'package/config/oxlint/**'
-    - 'package/ownership-markers/foreign-borrowed/**'
-    - 'package/oxlint-plugin/no-restricted-syntax/**'
-    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'
-    - 'package/oxlint-plugin/shared/**'
-    - 'package/test-fixture/oxlint-no-restricted-syntax/**'
-    - 'pnpm-lock.yaml'
-    - '.github/workflows/readonly-semantic-bridge.yml'
-  merge_group:
-    branches: ['main']
-  push:
-    branches: ['main']
-    paths:
-    - 'package/config/oxlint/**'
-    - 'package/ownership-markers/foreign-borrowed/**'
-    - 'package/oxlint-plugin/no-restricted-syntax/**'
-    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'
-    - 'package/oxlint-plugin/shared/**'
-    - 'package/test-fixture/oxlint-no-restricted-syntax/**'
-    - 'pnpm-lock.yaml'
-    - '.github/workflows/readonly-semantic-bridge.yml'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-jobs:
-  semantic-bridge:
-    name: semantic bridge (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-        - ubuntu-latest
-        - macos-15
-        - windows-latest
-    runs-on: ${{ matrix.os }}
-    env:
-      MISE_AUTO_INSTALL: 'false'
-    steps:
-    - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        fetch-depth: 1
-
-    - name: Set up mise without repository-wide tool installation
-      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-      with:
-        # Resolve "latest" through the GitHub releases API, published releases only,
-        # one day old like pnpm's minimumReleaseAge. Without it the action installs
-        # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
-        # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
-        minimum_release_age: 1d
-        install: false
-
-    - name: Install package tools
-      run: mise install node pnpm
-
-    - name: Install workspace dependencies
-      run: mise exec node pnpm -- pnpm install --frozen-lockfile
-
-    - name: Build semantic plugin artifact
-      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
-
-    - name: Verify native bridge lifecycle and platform paths
-      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
-
-    - name: Verify external consumer artifact
-      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host
+{
+  "name": "research GitHub service and job containers",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "env": {
+    "MISE_AUTO_INSTALL": "false",
+    "MISE_LOCKED": "1"
+  },
+  "jobs": {
+    "host": {
+      "name": "research-service-host-${{ matrix.provider }}",
+      "runs-on": "${{ matrix.label }}",
+      "timeout-minutes": 5,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "label": "ubuntu-24.04",
+              "architecture": "x64",
+              "provider": "github-hosted-x64"
+            },
+            {
+              "label": "depot-ubuntu-24.04",
+              "architecture": "x64",
+              "provider": "github-depot-x64"
+            },
+            {
+              "label": "depot-ubuntu-24.04-arm",
+              "architecture": "arm64",
+              "provider": "github-depot-arm64"
+            }
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "services": {
+        "fixture": {
+          "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+          "credentials": {
+            "username": "x-token",
+            "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
+          },
+          "env": {
+            "MONO_RESEARCH_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-host"
+          },
+          "options": "--memory=256m --cpus=1 --pids-limit=64",
+          "ports": [
+            "8080/tcp"
+          ]
+        }
+      },
+      "env": {
+        "PROBE_SERVICE_URL": "http://127.0.0.1:${{ job.services.fixture.ports[8080] }}",
+        "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-host",
+        "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
+        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
+        "PROBE_JOB_CONTAINER": "false"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise run //.depot/research/service:consume",
+          "working-directory": ".depot/research/service"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-service-host-${{ matrix.provider }}",
+            "path": ".depot/research/service/evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "container": {
+      "name": "research-service-container-${{ matrix.provider }}",
+      "runs-on": "${{ matrix.label }}",
+      "timeout-minutes": 5,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "label": "ubuntu-24.04",
+              "architecture": "x64",
+              "provider": "github-hosted-x64"
+            },
+            {
+              "label": "depot-ubuntu-24.04",
+              "architecture": "x64",
+              "provider": "github-depot-x64"
+            },
+            {
+              "label": "depot-ubuntu-24.04-arm",
+              "architecture": "arm64",
+              "provider": "github-depot-arm64"
+            }
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "services": {
+        "fixture": {
+          "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+          "credentials": {
+            "username": "x-token",
+            "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
+          },
+          "env": {
+            "MONO_RESEARCH_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container"
+          },
+          "options": "--memory=256m --cpus=1 --pids-limit=64"
+        }
+      },
+      "env": {
+        "PROBE_SERVICE_URL": "http://fixture:8080",
+        "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container",
+        "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
+        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
+        "PROBE_JOB_CONTAINER": "true"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise run //.depot/research/service:consume",
+          "working-directory": ".depot/research/service"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-service-container-${{ matrix.provider }}",
+            "path": ".depot/research/service/evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ],
+      "needs": [
+        "host"
+      ],
+      "if": "always()",
+      "container": {
+        "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "credentials": {
+          "username": "x-token",
+          "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
+        },
+        "options": "--memory=1g --cpus=1 --pids-limit=128"
+      }
+    }
+  }
+}

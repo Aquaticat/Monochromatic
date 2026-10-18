@@ -1,0 +1,188 @@
+{
+  "name": "research native service and job containers",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "env": {
+    "MISE_AUTO_INSTALL": "false",
+    "MISE_LOCKED": "1"
+  },
+  "jobs": {
+    "host": {
+      "name": "research-service-host-${{ matrix.provider }}",
+      "runs-on": "${{ matrix.label }}",
+      "timeout-minutes": 5,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "label": "depot-ubuntu-24.04",
+              "architecture": "x64",
+              "provider": "native-depot-x64"
+            },
+            {
+              "label": "depot-ubuntu-24.04-arm",
+              "architecture": "arm64",
+              "provider": "native-depot-arm64"
+            }
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "services": {
+        "fixture": {
+          "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+          "credentials": {
+            "username": "x-token",
+            "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
+          },
+          "env": {
+            "MONO_RESEARCH_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-host"
+          },
+          "options": "--memory=256m --cpus=1 --pids-limit=64",
+          "ports": [
+            "8080/tcp"
+          ]
+        }
+      },
+      "env": {
+        "PROBE_SERVICE_URL": "http://127.0.0.1:${{ job.services.fixture.ports[8080] }}",
+        "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-host",
+        "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
+        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
+        "PROBE_JOB_CONTAINER": "false"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise run //.depot/research/service:consume",
+          "working-directory": ".depot/research/service"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-service-host-${{ matrix.provider }}",
+            "path": ".depot/research/service/evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "container": {
+      "name": "research-service-container-${{ matrix.provider }}",
+      "runs-on": "${{ matrix.label }}",
+      "timeout-minutes": 5,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "label": "depot-ubuntu-24.04",
+              "architecture": "x64",
+              "provider": "native-depot-x64"
+            },
+            {
+              "label": "depot-ubuntu-24.04-arm",
+              "architecture": "arm64",
+              "provider": "native-depot-arm64"
+            }
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "services": {
+        "fixture": {
+          "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+          "credentials": {
+            "username": "x-token",
+            "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
+          },
+          "env": {
+            "MONO_RESEARCH_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container"
+          },
+          "options": "--memory=256m --cpus=1 --pids-limit=64"
+        }
+      },
+      "env": {
+        "PROBE_SERVICE_URL": "http://fixture:8080",
+        "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container",
+        "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
+        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
+        "PROBE_JOB_CONTAINER": "true"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise run //.depot/research/service:consume",
+          "working-directory": ".depot/research/service"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-service-container-${{ matrix.provider }}",
+            "path": ".depot/research/service/evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ],
+      "needs": [
+        "host"
+      ],
+      "if": "always()",
+      "container": {
+        "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "credentials": {
+          "username": "x-token",
+          "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
+        },
+        "options": "--memory=1g --cpus=1 --pids-limit=128"
+      }
+    }
+  }
+}

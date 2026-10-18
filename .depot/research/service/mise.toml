@@ -1,0 +1,37 @@
+[tasks.consume]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { createHash } = await import('node:crypto');
+class ServiceConsumerFailure extends Error {}
+const endpoint = process.env.PROBE_SERVICE_URL;
+const nonce = process.env.PROBE_SERVICE_NONCE;
+const architecture = process.env.PROBE_EXPECTED_ARCH;
+if (!endpoint || !nonce || !['x64', 'arm64'].includes(architecture)) throw new ServiceConsumerFailure('Required service consumer inputs are absent');
+const expected = { repositoryBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harnessCommit: '5cfc1d90f92154cf62fa95789fad9bd7deeda208', architecture, nonce, cohort: 'monochromatic-platform-buildkit-20261018-v1' };
+const records = [];
+for (const path of ['/health', '/nonce', '/owned-missing-' + nonce]) {
+  const response = await fetch(endpoint + path, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+  const text = await response.text();
+  if (Buffer.byteLength(text) > 65536) throw new ServiceConsumerFailure('Owned service response exceeds its bounded fixture schema');
+  const body = JSON.parse(text);
+  const status = path.startsWith('/owned-missing-') ? 404 : 200;
+  if (response.status !== status || body.path !== path || body.status !== (status === 200 ? 'ok' : 'not-found') || response.headers.get('cache-control') !== 'no-store') throw new ServiceConsumerFailure('Service HTTP status/path/freshness control mismatch');
+  for (const [key, value] of Object.entries(expected)) if (body[key] !== value) throw new ServiceConsumerFailure('Service source, nonce or architecture mismatch for ' + key);
+  records.push({ path, httpStatus: response.status, body, bodySha256: createHash('sha256').update(text).digest('hex') });
+}
+let container;
+if (process.env.PROBE_JOB_CONTAINER === 'true') {
+  const inputBytes = fs.readFileSync('/app/probe.json');
+  const builderBytes = fs.readFileSync('/proof/builder.json');
+  if (inputBytes.length > 65536 || builderBytes.length > 65536) throw new ServiceConsumerFailure('Job image proof exceeds the fixture boundary');
+  const input = JSON.parse(inputBytes.toString('utf8'));
+  const builder = JSON.parse(builderBytes.toString('utf8'));
+  if (process.arch !== architecture || input.repositoryBase !== expected.repositoryBase || builder.architecture !== architecture || builder.harnessCommit !== expected.harnessCommit) throw new ServiceConsumerFailure('Actual job-container filesystem/source/architecture proof mismatch');
+  container = { input, builder, inputSha256: createHash('sha256').update(inputBytes).digest('hex'), builderSha256: createHash('sha256').update(builderBytes).digest('hex'), processArchitecture: process.arch, consumerNodeVersion: process.version };
+}
+const result = { schemaVersion: 1, passed: true, provider: process.env.PROBE_PLATFORM_PROVIDER, consumerHarness: process.env.GITHUB_SHA, expected, imageReference: 'registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7', endpoint, jobContainer: container ?? null, responses: records, observedAt: new Date().toISOString() };
+fs.mkdirSync('evidence', { recursive: true });
+fs.writeFileSync('evidence/service-consumer.json', JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
+'''
