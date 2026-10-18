@@ -3,8 +3,9 @@
 //!  the clip rules that keep a tile within them,
 //!  and the guard that cuts any frame to fit before it is painted.
 
-/// A clip is two distances below the first line's block.
-use super::frame::Clip;
+/// A clip is two distances below the first line's block,
+/// and a viewport carries the one a frame is prepared for.
+use super::frame::{Clip, Viewport};
 /// A code row is the unit the clip edges are rounded to.
 use crate::row_map::CODE_ROW;
 /// The most bytes a raster may hold.
@@ -143,4 +144,36 @@ pub fn fit_clip(
         return clip;
     }
     return band_clip(first_top, bottom, (from, to), tile_cap(columns, scale));
+}
+
+/// What:
+///  `viewport` with its clip replaced by the one [`fit_clip`] gives for a raster `columns` pixels wide,
+///  for the lines from `first_top` to `bottom`;
+///  the cut is logged at warn level.
+/// Why:
+///  The shaper prepares every frame through this,
+///  so the viewport a frame keeps names the clip its raster really has.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function fitViewport(viewport: Viewport, firstTop: number, bottom: number, columns: number): Viewport;
+/// ```
+pub fn fit_viewport(viewport: Viewport, first_top: f32, bottom: f32, columns: u64) -> Viewport {
+    let fitted = fit_clip(first_top, bottom, viewport.clip, columns, viewport.scale);
+    if fitted == viewport.clip {
+        return viewport;
+    }
+    tracing::warn!(
+        first = viewport.first,
+        count = viewport.count,
+        asked = ?viewport.clip,
+        fitted = ?fitted,
+        tile_top = first_top,
+        tile_bottom = bottom,
+        "cut a frame to the raster limit: the lines are taller than the window's map held"
+    );
+    return Viewport {
+        clip: fitted,
+        ..viewport
+    };
 }

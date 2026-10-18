@@ -201,7 +201,6 @@ mod quiet_read_tests;
 ///  ignored by default.
 #[cfg(test)]
 mod refresh_latency_tests;
-/// Bounded waiting that advances native timers until a state the test checks holds.
 /// A tile the painter refuses never blanks the source,
 ///  and a worker job that failed is freed.
 #[cfg(test)]
@@ -291,6 +290,7 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// Bounded waiting that advances native timers until a state the test checks holds.
 #[cfg(test)]
 mod waiting_tests;
 /// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.

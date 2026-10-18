@@ -81,9 +81,9 @@ mod limit;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export { bandClip, fitClip, rasterFits, tileCap } from './limit';
+/// export { bandClip, fitClip, fitViewport, rasterFits, tileCap } from './limit';
 /// ```
-pub use limit::{band_clip, fit_clip, raster_fits, tile_cap};
+pub use limit::{band_clip, fit_clip, fit_viewport, raster_fits, tile_cap};
 
 /// Shaping of single lines and virtual rows with the shared font setup.
 mod layout;
@@ -497,34 +497,9 @@ impl TextShaper {
         // row tall.
         let first_top = placed.block_top(viewport.first);
         let bottom = placed.block_top(last);
-        // What: The clip the window asked for was chosen from the heights its map held; the rows just shaped may be
-        //       taller, so the frame is cut to the raster limit here, around the middle of what was asked for.
-        // Why: The painter refuses a raster past the limit, which would leave the source blank.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const fitted = fitClip(firstTop, bottom, viewport.clip, width, viewport.scale);
-        // ```
-        let mut viewport = viewport;
-        let fitted = fit_clip(
-            first_top,
-            bottom,
-            viewport.clip,
-            u64::from(width),
-            viewport.scale,
-        );
-        if fitted != viewport.clip {
-            tracing::warn!(
-                first = viewport.first,
-                count = viewport.count,
-                asked = ?viewport.clip,
-                fitted = ?fitted,
-                tile_top = first_top,
-                tile_bottom = bottom,
-                "cut a frame to the raster limit: the lines are taller than the window's map held"
-            );
-            viewport.clip = fitted;
-        }
+        // The clip the window asked for was chosen from the heights its map held, which the rows just shaped may
+        // exceed, so the frame is cut to the raster limit here.
+        let viewport = fit_viewport(viewport, first_top, bottom, u64::from(width));
         let (origin, tall) = match viewport.clip {
             Some(clip) => (first_top + clip.top, clip.bottom - clip.top),
             None => (first_top, bottom - first_top),
