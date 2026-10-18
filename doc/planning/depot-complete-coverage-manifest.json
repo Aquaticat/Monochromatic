@@ -44339,7 +44339,7 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T21:19:36.014Z",
+  "latestEvidenceAt": "2026-10-18T21:48:49.890Z",
   "packedConsumerQualification": {
     "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "producerRun": 39130630504,
@@ -44770,5 +44770,11 @@
     "state": "pending Parent exact-source admission; no allocation",
     "nominalGuardUsd": 0.64,
     "materialCampaignPriority": true
+  },
+  "localFigmaAuthoredSourceConsumer": {
+    "evidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json",
+    "sourceLeafLabels": 24,
+    "actualPersonalExports": 3,
+    "compiledArtifactConsumer": false
   }
 }

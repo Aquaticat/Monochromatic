@@ -25,7 +25,8 @@
     "scriptBytes": 30611062,
     "readmes": 219,
     "readmeBytes": 1474750,
-    "allPathBlobBytesSha256Matched": true
+    "allScriptPathBlobBytesSha256Matched": true,
+    "allReadmePathBlobIdentitiesMatched": true
   },
   "parserQualifications": [
     "Static candidates and lexical source links, not executed assertion counts or runtime branch coverage",
@@ -131,7 +132,7 @@
       "package/webapp-productivity/rss",
       "package/webapp-productivity/syllable-break-demo"
     ],
-    "withNewExactRuntimeJoins": 7
+    "withNewExactRuntimeJoins": 9
   },
   "activePackages": {
     "owners": 208,
@@ -195,7 +196,7 @@
       "package/webapp-productivity/rss",
       "package/webapp-productivity/syllable-break-demo"
     ],
-    "withNewExactRuntimeJoins": 7
+    "withNewExactRuntimeJoins": 9
   },
   "materialExecution": {
     "observations": 1137,
@@ -6742,7 +6743,15 @@
         "Default-shaped TypeScript unit files have no package test:unit task."
       ],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "local-authored-source-unit",
+          "evidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json",
+          "sourceLeafLabelsJoinedToPassingOutput": 6,
+          "actualPersonalExports": 0,
+          "compiledArtifactConsumer": false
+        }
+      ],
       "exactNamedTestTasks": [],
       "smokeAndVerifyTaskCandidates": []
     },
@@ -6813,7 +6822,15 @@
         "Default-shaped TypeScript unit files have no package test:unit task."
       ],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "local-authored-source-unit",
+          "evidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json",
+          "sourceLeafLabelsJoinedToPassingOutput": 18,
+          "actualPersonalExports": 3,
+          "compiledArtifactConsumer": false
+        }
+      ],
       "exactNamedTestTasks": [],
       "smokeAndVerifyTaskCandidates": []
     },
@@ -18003,5 +18020,6 @@
     "positiveControls": true,
     "negativeControl": true,
     "limits": "No named package test task does not establish no tests: source-owned external consumers, host hooks, fixtures and shared Rust owners remain separate; smoke/verify candidates are retained without reclassifying them as tests"
-  }
+  },
+  "localFigmaSourceConsumerEvidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json"
 }
