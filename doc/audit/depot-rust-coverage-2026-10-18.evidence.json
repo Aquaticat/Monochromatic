@@ -1395,6 +1395,1257 @@
         "privilegedIgnoredCasesExecuted": false,
         "consumerPlacement": "Copy exact verified ELF to package/cli/wg-quicker-exempt/target/release/wg-quicker-exempt in an owned exact-source consumer checkout."
       }
+    },
+    {
+      "phase": "tool-image",
+      "runId": "jf0c9llb1v",
+      "harnessSha": "b652d9abb95c720d2dfdadab5fdaadaa728b7120",
+      "status": "failed",
+      "requestedAt": "2026-10-18T10:08:50.069Z",
+      "finishedAt": "2026-10-18T10:13:37Z",
+      "cpus": 8,
+      "memoryGb": 32,
+      "jobMaximumMinutes": 15,
+      "requestedToFinishSecondsUpperBound": 287,
+      "conservativeTimestampComputeProxyUsd": 0.1148,
+      "artifacts": [
+        {
+          "artifact_id": "01a14e80-11c4-77f0-b2d4-362916bc04a7",
+          "run_id": "jf0c9llb1v",
+          "workflow_id": "gtc6tw0vzs",
+          "workflow_path": "",
+          "job_id": "tj162jwptk",
+          "job_key": "_inline_0.yaml:tools",
+          "attempt_id": "gzz9j13s4l",
+          "attempt": 1,
+          "name": "rust-coverage-additional-tool-preparation",
+          "size_bytes": 21372,
+          "created_at": "2026-10-18T10:12:58Z"
+        },
+        {
+          "artifact_id": "01a14e80-0d58-7957-be47-094e317d1824",
+          "run_id": "jf0c9llb1v",
+          "workflow_id": "gtc6tw0vzs",
+          "workflow_path": "",
+          "job_id": "tj162jwptk",
+          "job_key": "_inline_0.yaml:tools",
+          "attempt_id": "gzz9j13s4l",
+          "attempt": 1,
+          "name": "rust-coverage-current-linter-recovery",
+          "size_bytes": 17632145,
+          "created_at": "2026-10-18T10:12:57Z"
+        }
+      ],
+      "artifactIntegrity": [
+        {
+          "zipPath": "tool-image-linter-receipts.zip",
+          "bytes": 17632145,
+          "sha256": "74315827c8f9f135f512d7727ce601cb0b29285e6f3a5986a4c43cd336d23218",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": "cargo-store-and-built-target-bytes.log",
+              "bytes": 131,
+              "sha256": "2ba919b046fb1c82ce19f0dbbc599588232c071f2564459ed0aed370cc65dd07"
+            },
+            {
+              "name": "current-source-linter-archive-manifest.json",
+              "bytes": 35662,
+              "sha256": "ae4edb926927ca0e32de09ae9455e0542663ff2e7963dc6ca19ddfee021f593f"
+            },
+            {
+              "name": "current-source-linter-complete-nextest.log",
+              "bytes": 62869,
+              "sha256": "01b69abfa09801d6e1bbb6043c8d3ba18a76bad15d14cc7010e8e9547ace7d7c"
+            },
+            {
+              "name": "current-source-linter-library-artifact.log",
+              "bytes": 617,
+              "sha256": "aaf8f9b799995de9c9fbbf31c3fbeb09c6b766b6215bddf08d5b178de9e27c73"
+            },
+            {
+              "name": "current-source-linter-real-help.log",
+              "bytes": 2122,
+              "sha256": "8e6306859eba1e0b30a0e30019aa17af169156a87321214f94c2af94071f035c"
+            },
+            {
+              "name": "current-source-linter-real-rules.log",
+              "bytes": 1172,
+              "sha256": "7ecc670fb3f53ac7c0880cf557adde695d35e8572310ab919fd7e9288bcc2281"
+            },
+            {
+              "name": "current-source-linter.tar.zst",
+              "bytes": 17603771,
+              "sha256": "198fd28187ecd87214aafbc9164624d09a2d75e5de4f886906dc4d72de7fb29b"
+            },
+            {
+              "name": "final-frozen-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": "initial-frozen-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": "linter-locked-dependency-preparation.log",
+              "bytes": 8856,
+              "sha256": "f0c49bda7b5ae713f4b37883ca86b77fd0b1a2ed7a640ad47d0b0fe59272bcc4"
+            },
+            {
+              "name": "linter-receipt.json",
+              "bytes": 45112,
+              "sha256": "422f0c44fb4b01ac5563b179e16702ed313109f6480d55dda7f393ac1e19c9f4"
+            },
+            {
+              "name": "nextest/default/linter.xml",
+              "bytes": 78238,
+              "sha256": "b38f214bd67587db9c07411d5e2287cc75b1eb6a7efe87940434caefd2a0baa9"
+            },
+            {
+              "name": "produced-current-linter.json",
+              "bytes": 308,
+              "sha256": "078047ee0d9ab688187693c3d1f8ae823b4586fb74394a3a5fe4e32d58e1daed"
+            },
+            {
+              "name": "retain-tested-current-linter-executable.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": "rustc-path.log",
+              "bytes": 45,
+              "sha256": "6554b64e1ccd7486c15d42083c6d0552d3aa7f348b8193f2a80005bcfef7fd74"
+            },
+            {
+              "name": "tool-binaries.json",
+              "bytes": 364,
+              "sha256": "61c4e1df28c0e52cb7cd6e3031dc8e3322f12e45568d8aed08ced3a5d83f821a"
+            },
+            {
+              "name": "tool-cargo.log",
+              "bytes": 602,
+              "sha256": "0e33d5b8d0181b5f6df4c229010fa1e438f7887f25725c3181c06991529a8111"
+            },
+            {
+              "name": "tool-nextest.log",
+              "bytes": 728,
+              "sha256": "0856919ff95673764d7209c8ac822262f5b710880ef4e34295874b21c2235b7a"
+            },
+            {
+              "name": "tool-nextest-run-help.log",
+              "bytes": 17410,
+              "sha256": "954997a24260580d65e0b9889dd820f4c0fe35061c9b999a193e398177567b09"
+            },
+            {
+              "name": "tool-rustc.log",
+              "bytes": 771,
+              "sha256": "856ea4f1a9afea1f7e8c588f9803559218a5e637a9f927deaf86db8a7f8941ee"
+            }
+          ]
+        },
+        {
+          "zipPath": "tool-image-preparation-receipts.zip",
+          "bytes": 21372,
+          "sha256": "538f45caf4c6f6ddc1f7c22e0e9a1361b3ecbd58fa825b1e9a6306bd034d968e",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": "additional-prepared-filesystem-bytes.log",
+              "bytes": 148,
+              "sha256": "b33069b068efb1135384c7d350f0b66ea23635c7a38a2896c6fc83bbe81be3ed"
+            },
+            {
+              "name": "additional-tools.json",
+              "bytes": 532,
+              "sha256": "10e1003879730fd9226dde0234e92264d7939bf744f0d02d7175f00726acb322"
+            },
+            {
+              "name": "existing-podman-version.log",
+              "bytes": 43,
+              "sha256": "03674378f877827eb69f67cd7fdf37904e660dcbdef511137b93da102ba3f4a4"
+            },
+            {
+              "name": "installed-cargo-fuzz-build-help.log",
+              "bytes": 6301,
+              "sha256": "0ef2341f09df4a33f2dc1e1b5638475b759c9de7fda1dee2d7442cdd36ba90fa"
+            },
+            {
+              "name": "installed-cargo-fuzz-path.log",
+              "bytes": 87,
+              "sha256": "5f1e5c18a583a6aae2c6b23b8497238a6931609bc9390e10213121ff41301f89"
+            },
+            {
+              "name": "installed-cargo-fuzz-version.log",
+              "bytes": 18,
+              "sha256": "3e2aa5c2baaf44e5a4968cc3fedb864f4717f85b713deacf3fc4294162358ca1"
+            },
+            {
+              "name": "official-codex-host-command-help-only.log",
+              "bytes": 3214,
+              "sha256": "4226dbf080b9d3a620385fba067bd3b8ac3c76654f28c3bd4d92ae20df2b03d2"
+            },
+            {
+              "name": "official-codex-version-only.log",
+              "bytes": 18,
+              "sha256": "15c9db57c80035537f94bea647d07608a1fab5148f5482c0a0d1d7422b7fb69e"
+            },
+            {
+              "name": "prepared-podman-build-help.log",
+              "bytes": 12874,
+              "sha256": "8e39cc228640a94f51f3f7443be7f90c6888d79df2c022912a803b039cb63aee"
+            },
+            {
+              "name": "prepared-podman-run-help.log",
+              "bytes": 17290,
+              "sha256": "fa11aecb45a7c4d9f9a62bb43f2a5b1282bd9bb07204124f574f118939300751"
+            },
+            {
+              "name": "prepared-podman-version.log",
+              "bytes": 21,
+              "sha256": "f26d57d47ab366bf7712fda9d3c57b82f23911e02ab8db0c837a68004eea886c"
+            },
+            {
+              "name": "seal.json",
+              "bytes": 32231,
+              "sha256": "08f2716d2f067f03a91881148cedc218b0fa1c4c50cdfa5061d5868e8214a0a4"
+            },
+            {
+              "name": "selective-locked-cargo-fuzz-installation.log",
+              "bytes": 1601,
+              "sha256": "a8af47cec753564843f7905544f36d45d326be3e50dece521c75e7f9e04a2c64"
+            }
+          ]
+        }
+      ],
+      "retainedCli": {
+        "purpose": "Tested executable transport, not Cargo target cache publication",
+        "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "binarySha256": "e698c16275e71a142cd95538c59c0543ab94a6ce3a382727c889e0dbe58da88d",
+        "archiveBytes": 17603771,
+        "archiveSha256": "198fd28187ecd87214aafbc9164624d09a2d75e5de4f886906dc4d72de7fb29b",
+        "tests": {
+          "run": 415,
+          "passed": 415,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 1,
+          "enumerated": 416
+        },
+        "sourceFiles": [
+          {
+            "path": "package/linter/monochromatic-lint/Cargo.lock",
+            "sha256": "a65e0479a1c2a6c6629e4d55d37354283e8942b914fda730aaebbc3dec268c42"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/Cargo.toml",
+            "sha256": "158fb617f318744c11a23cbe2481616ee8eccc38380855c0297f2a9ca05f7d71"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/LICENSES/GPL-3.0-or-later.txt",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/LICENSES/LGPL-3.0-or-later.txt",
+            "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/LICENSES/markdownlint-MIT.txt",
+            "sha256": "cdc3c1fb00ee139442c915e98afac039223569a00527e9f7aefc54f92019aec4"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/README.md",
+            "sha256": "16a5dd31e14c812ba16cd29ec3533501f0a083f346447196eff9d07867bb8c5a"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/bin/clippy-container.mjs",
+            "sha256": "7ddde7dd944b5949a068aca24e00d802ed278381a8853a1b92a484ad942edd60"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/bin/mutate-container.mjs",
+            "sha256": "803a2474ba7a4e352ae6867a0e5fab7f44993456c84227c8022e2797094465da"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/bin/test-container.mjs",
+            "sha256": "8d8ca49012f16fc5e24d3d3794d9b82cac8698531eb22f6e1beed236fa33b663"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/lfs-url-parity.json",
+            "sha256": "289d64aa6e37080e881b6e5ea0ee2623c6f48d4d0bfc1afdf6aaffe233bb16e5"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/merge-cases.json",
+            "sha256": "492ae6d5d19e5b0c1fdf6b2565c95f13f1f8b27337a8996034e7d6e243128cc2"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/processors.json",
+            "sha256": "d582a4d2d15e29a607e5e9ccb9fb2503a2ff9d68f25268bae22642b958f86e2f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/semantic-break-parity.json",
+            "sha256": "864fc5cd423414ce0fca4f89f14447e47aca45454362108c71dc09af27e41efd"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/mise.toml",
+            "sha256": "fe40ab66aef4b0bcf138269a0878f6a4fc0f8b65cbfa48e989bbba7bade46087"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/binary_tests.rs",
+            "sha256": "2fa11674ab6c31a6f73c5d7d2c74189f7e88c5e05ec817392c33b1acccfd16a6"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/cli_options.rs",
+            "sha256": "fefbab97ae53bf86b447c3b3d426e41a0ba2b18edd84d8cc089244e7aa3b7d2b"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/cli_options_tests.rs",
+            "sha256": "8c111945615d2f3737b852c46851c84a0a3dddc50c1f9a3b81deb4a2bab27131"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_data.rs",
+            "sha256": "0bf5981029a8d061bca715013b4657def2b450cb8331b9229560e89b86ae186b"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_error.rs",
+            "sha256": "ce7055207f97e17fee12fb17d8646ea018b53fb4d1c0b6665e322f1cc166c8a5"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_lookup.rs",
+            "sha256": "457d9af32b2068c6f81f9fe8946f98c9d62f944601db62f93e94e87d5b89d1ca"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_lookup_tests.rs",
+            "sha256": "7cdb1c4a50590c00f6ad73e152aba47c7735a2b5d7a97f366677658af2722076"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_match.rs",
+            "sha256": "6b1c3fc5861832fe207dea0e504d27c23583536e90041e3cd5a3e0edf245f865"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_match_tests.rs",
+            "sha256": "cd98292dc77c2d075c39cf202ba74ce8ad40b573531680626ee298d14afb7643"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_merge.rs",
+            "sha256": "797695400958eff49654a68d2fe0d0bac1aedefca39cd9f961b533651cc2d78d"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_merge_tests.rs",
+            "sha256": "9836581128c1ce5b3ca58a2c37b3c247c8c7b5eacd13d9937b25fed1119a5faa"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/configuration.rs",
+            "sha256": "d957f9a26e71e6fee4738001b997aa94d8dc3f5425367a073f3a30884df99698"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/configuration_rules.rs",
+            "sha256": "10f1cab19fd3b8b5455a5a469f4b13a07e0d9566c5c8042b8ea11e5c69af2acd"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/configuration_tests.rs",
+            "sha256": "ab8f9740eabd77a2e384d28a38a2e38d7a08085efe273af5c0465c2d00310a43"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/diagnostic.rs",
+            "sha256": "6b51379b671b6f36d7a0a036aeff48978606393fbe21593364c71a25b48562d3"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/diagnostic_tests.rs",
+            "sha256": "937cf34ba0b1b27f2f9f1ff8bdcc895b24221d365537ff73b328ce9c3217d0e8"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/edits.rs",
+            "sha256": "1c37a3cad81acc85dabb15bf3d714bf4cc4d21fe4e8c9a09435d482b724264a6"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/edits_tests.rs",
+            "sha256": "309b8ba9e8916e30d761dba7a058dcfad9916e2abe688b8f6adf4bbd32cc8afb"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/file_discovery.rs",
+            "sha256": "72ecda6a235b44280632128ca09ebc34220d1f61acdfea48983208bc28f18042"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/file_discovery_tests.rs",
+            "sha256": "b34767dbb10edc608e4bae112eccdd8ad10c9172860dc62dd3377a93946b338a"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/fix_loop.rs",
+            "sha256": "49124fd23b752e15c02cb4d9273af8616780b0b58a2df609516808d4d428d8b1"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/fix_loop_tests.rs",
+            "sha256": "0f2ba0a3f279cd7f3eaa602a13fafd872414177a0a4cf8906cc5d877e5f24f49"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/lib.rs",
+            "sha256": "0d745d76ef1cd6e7a971c52ded33f9cfb91aa46b80fcccf727f9120d300f335b"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/main.rs",
+            "sha256": "c2cf2eff7ccf414bb2a02d41bcab0abf6a2d50beae7ce69410daf391b51c19ef"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_basic_tests.rs",
+            "sha256": "bf1dcb70a835fbe5b62dc23fbd79b1a055e5b80b84b7bb40d9d8f8e3967e64cb"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_block_start.rs",
+            "sha256": "5849a4b9b3001a5858255a92c4ee568c0f12c3d2048e73d620c6755e8e1b055d"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_block_start_tests.rs",
+            "sha256": "26102639c027fe18e45e872bac1b17b9624aa768c77bc02c61375af8c7220c4c"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_break_points.rs",
+            "sha256": "1978028598af22e42b957b7081cca304262d7f81cd5fdcef395a0c73d7bdfcbd"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_break_points_tests.rs",
+            "sha256": "ad30b806c40092a26a8489a36b0c4bcf599e6f7e03ab3bf7080693606c2d4624"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_code.rs",
+            "sha256": "8c16ba61d629b9ba652df010fb5c205ebc8bcd15676ed62a3aa57e0a6492df06"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_commands.rs",
+            "sha256": "1293ae74f54cfa8522a9c437f83d33ac7f13e8013c21fe85d3e8b9ffffaf875e"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_commands_tests.rs",
+            "sha256": "25a1c061d3f33e2d6f15e6e8cddf2383d4fb8f3f8ccfde049ac081e29e80bfb3"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_definitions.rs",
+            "sha256": "7ff8371621441a923145775c72a5f55191e9c1b2744a2e0378b33caf391728cb"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_definitions_tests.rs",
+            "sha256": "3f6a069a559e7916df69c14dd6c1651943b96b42ba7b4939fbc99d8dcd5bd901"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_dispatch.rs",
+            "sha256": "7bc2fe2c1a5be27273aa46cf48251877dd5a838829dcd960dd66f3e98675909e"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_dispatch_tests.rs",
+            "sha256": "b46f81c452af5acf6596ed7b0c1ea66712c44c21eac2340e1d6c6f118829cf10"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_duplicate_headings.rs",
+            "sha256": "1214fdc50b1958819e8219ff94f911736e92389ba976c82256d6003c02d3b402"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_duplicate_headings_tests.rs",
+            "sha256": "43c314123ac3cbcc4304c3d8da0bc5726535bd89119a98be6cafe88cf338d55d"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_finding.rs",
+            "sha256": "ce0acd2073b92861bc29a3396da840254f42855aa1cb0ca48752d5434077c1c8"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_headings.rs",
+            "sha256": "cd71d4676117969c8aa15d3d72cd94339a4a7cb536749d85fc7dde187e5ce373"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_config.rs",
+            "sha256": "c719cbf67bce78e69f578ec3abba94ab4061849bd531a90300dd5bc8c8be17a0"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_config_tests.rs",
+            "sha256": "48fa99604bc5a70f3279eb109224853e4b4729177e135e036c0dd0822cba2f60"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_context.rs",
+            "sha256": "fec669490cf4257d6643a7b845a29cdbc613c2704897bf8b0277fc2a64ed7fb1"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_context_tests.rs",
+            "sha256": "750005080688c57f63aab7624a115239e1be09fb865c5ab27e8335470149fbda"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_endpoint.rs",
+            "sha256": "9d25736a4c2d50c7a356af14943d4273d4f5cdc92f2d47cc9ad0788e891cc82f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_endpoint_tests.rs",
+            "sha256": "5f4b9b423439d3905cf503f3371e04135e5b384d230ebcab2cbd393fc9baf517"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_image_url.rs",
+            "sha256": "0f3ff1226d23d2ff1159498c26ad5380bd9bb9c63a5a5178956ce935ee38a076"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_image_url_tests.rs",
+            "sha256": "550d89ed7d2dde1118ca67f0d370beea6fd3305c9568fe6e68a425d7ff0e79f1"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_oid.rs",
+            "sha256": "3aa8f390145b7880b790a9b86a850975bba4167c4c7dacb138a1fed8a0b84de0"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_oid_tests.rs",
+            "sha256": "ef7430defe9032b2b15cbdca6792cc6bd89078affa439a63861a770b891dbf9a"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_patterns.rs",
+            "sha256": "5d37818bd0153fba10059eca157070f208cf2b64827547f5046a0e16f5c6e0e4"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_patterns_tests.rs",
+            "sha256": "afe0c0b821b59d485e1e5de24a0e54129ef070f28eb698ae25c16e03a2a3c50d"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_sha256.rs",
+            "sha256": "33399cd37e2bc63fe958123c40db4f0c0f3db36494a56530cf6bf00ac80fdec5"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_sha256_tests.rs",
+            "sha256": "6409ce9141928d63e336ba52f71f8f0a12ebd0f3a6ec5196199cba90294109da"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_target.rs",
+            "sha256": "e3fcd2e3d6a1370334ba3e4be863c1806dfd3c604f1deca5bcb7941d0d265ec3"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_target_tests.rs",
+            "sha256": "d1bf17b82501b0a277a88313fb7dbd559d7b8433944d07401804f16870573df2"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_links.rs",
+            "sha256": "1fd2070eb7374499b8b5946e2328f92dd0ee3e13d7c197d3ad8aace16ed8a89a"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_parity_tests.rs",
+            "sha256": "9f97fc39ac0437106ad37e7ae858657663dd02341eaf70661256938ae57b27da"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_positions.rs",
+            "sha256": "e56703061110fcc40b5f85cd479623d90996cf50f8da212166cd6a36dae7a2e9"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_positions_tests.rs",
+            "sha256": "b4023a6838eda1d4b1cd9d72444ca752f468e18e9f1abb62e1077c65eabae151"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_prose_context.rs",
+            "sha256": "104afb7d68bcc5a68f66446fabaa1e4086f39b0bfa3fa7cf1639bb03e8019202"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_prose_context_tests.rs",
+            "sha256": "c134cb4282d988ac848200e552a67ad7458e0137aa212b2b1fc5d421a703a3e4"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_punctuation.rs",
+            "sha256": "8d87c86d747982e29e5ae271bda49324a76a8f5a6377300cdb3dcce8e3344976"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_punctuation_tests.rs",
+            "sha256": "75d2a945421fe962b5c106b907a9233971d88ff9fd69697ff8189005d0290f76"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_rule_settings.rs",
+            "sha256": "e538dcda263356f352bc91ad704d90297e038945df7de72561d50418d6e99942"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_rule_settings_tests.rs",
+            "sha256": "f943f7848d1c4cbbb8ab6616cce3a00714b277f82119192d9a2177fe81df3a6f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_semantic_breaks.rs",
+            "sha256": "2264678f89d8df71b9d4a26f6daa4e1506768a371fca1beff49cb648472ec31d"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_semantic_breaks_tests.rs",
+            "sha256": "b4b319b4e3bffe17b5449e628179027a0dc7151619337606e6e0d899fdbea806"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_source.rs",
+            "sha256": "5ad47f3de2e7d4d5e99f1f34eda9372f5c4da10f5ee7b3b4d9c604bcdb8c4f70"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_source_tests.rs",
+            "sha256": "d29f9326c4f3f1635c56430efce973914e0dc96c88812d7496fdfde3d47e0e14"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_table_text.rs",
+            "sha256": "a12a05bb6ac933b9db815e999a4e1d157d98ae87f55c5a1328181272ed2df63e"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_table_text_tests.rs",
+            "sha256": "e31eb1e1596fab5d484218388fa087895e1586008a017162d2122f5bd8896e56"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_tables.rs",
+            "sha256": "4dd71c6ad2fc6f973e58ddf2ad8b2e688c3f296772dcde703c2c1081f0445aff"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_tables_tests.rs",
+            "sha256": "75ca9d851c20b6f0ef3203c0b1d1532c7c66d5e0de4ed0039bdf66a51b226316"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_traversal_tests.rs",
+            "sha256": "57668c50083e018cb9a82a1a16b8006022966a3cbf1b41250bc28e1dd910c57f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/path_inputs.rs",
+            "sha256": "ee894b3cae3bffdbf221f188204007e7db651cf7e3570899d31fd2e47063d341"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/path_inputs_tests.rs",
+            "sha256": "46e00e86780a655a33d914bcb98db58a392f24c3e8c5dedb20466b6e8969e0da"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors.rs",
+            "sha256": "fe873004fe741e6d53a017d3064c29ba173d0bfa16375244d3483786c3dcad55"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_check.rs",
+            "sha256": "dc87b0296b716aadcca19d7f4bdce43db816615794a0f03565a86cb2624cbfcc"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_consumer.rs",
+            "sha256": "0b22d26634f04603123eba56163faaa7b5096c10d28b183176027dd7223c4a0f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_controls_tests.rs",
+            "sha256": "fab325649eaa1c76f8f3318e005b6a5a12ecb1ecb9eaa76d14410dfa8dd02c0b"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_docs.rs",
+            "sha256": "04efb25e35a39e0c4e674f69e3be6cf4971ab8835ca4039c6ddc0ea4c1e4a2e3"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_docs_tests.rs",
+            "sha256": "d9d4104a9dbb8a2dc69594f3ab25ab33dda5eec6be0a4f66a04ffe1c38300572"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_edge_tests.rs",
+            "sha256": "b09969a5be2022d636dc9dc6f0517a7b056727f07c0aaea3d8e53af17258e8f6"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_fences.rs",
+            "sha256": "b3060deb9f240be85066bf4da80155e75913968397ed28e73e2aaed1ab6acde4"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_fuzz_tests.rs",
+            "sha256": "9520c70a834ff913a36d87f53806bb523440a4e0042ca7cfedf6378b164d0601"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_lines.rs",
+            "sha256": "e938fe71e63b84b2f4f6c8f1c736f48e81bc5250ca774920ac31d12ce174dd58"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_model.rs",
+            "sha256": "9c308bb08f582d4a9818221857d0ede6877ebd81fe2869241755b80fb8379bbf"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_prepare.rs",
+            "sha256": "c9c00d059fac6905a434a4a01647a1906a00507628cbeb616d0dbd33fa7bc9b6"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_prepare_tests.rs",
+            "sha256": "423bb49d569df1e3041e328dda9b2da863908f25e5b25fbbd0f56a446bf4eb02"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_projection.rs",
+            "sha256": "8000803ba2d68c5494907c5d47efd7720f09a1cb8068d3715e1f5d575fdac311"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_projection_tests.rs",
+            "sha256": "ee6554f4bce68bed17c66e4f5efd63b1f600139195952e06aed0762c88e311c2"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_rewrite.rs",
+            "sha256": "b8c99fe0c0cabcedf7c196a522940628deacb0dbd2542a215c84b097177a7a1c"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_rewrite_tests.rs",
+            "sha256": "0e81e0257916b91772563b3a7d6c9d302ade90ecff9cc0675fad44ad8d80395b"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_spans.rs",
+            "sha256": "e762156c2d61978ca0f127bff99fd5bd103c7d9af01e7b458d3506a3b100e2ab"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_spans_tests.rs",
+            "sha256": "90f961b2de716e5d01ee139e2fa8a7157fd3afb361da8d2ff7ae53ed5cf7fe03"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_tests.rs",
+            "sha256": "4da14d52df10015438034941369fc2ed05ac9d7da436e6c37f3aefa8d6b0f4d2"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/resolved_rules.rs",
+            "sha256": "85af201eab66dcbd6c64cf26baa66da39d12b72e74df188541659fc4af8f6dd9"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_check.rs",
+            "sha256": "fb8501c1c2572879f5f5c11d274063e41f31ed44b0967ce9247c5844bbd1b2ad"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_check_tests.rs",
+            "sha256": "4c36b58ecbe9d1551a37db053bd9dc7852609640f378b67a4193bc6ccd1eab06"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_command.rs",
+            "sha256": "797ea9601d34c1c6e212590ac627ac900681b23c1cea943fe9b39ba0eda87a80"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_command_fix_tests.rs",
+            "sha256": "568a59557d736f2422ad9f0f1fb41cb5cda59114390f98122626fc48ae81a715"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_command_tests.rs",
+            "sha256": "e048eceb1e1ff3169ee0449a44e97041c140cc3421b94e32b8f2466fa5600788"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_failure.rs",
+            "sha256": "d6e807d73efa424ce1fc31fff9841622596cd8039cdab1e2d7726dbc89fa27ac"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_failure_tests.rs",
+            "sha256": "2c73c8ec10f926706e5aa1138ad43326b9ed0315d07384d68a133d1348a3ec69"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_file.rs",
+            "sha256": "2682f780dfb38771d4de5c6b0c0e020f4329ca65bc58fd7297fd37a651adac3d"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_file_tests.rs",
+            "sha256": "e6aaf787fef9569fcfe66edc9fc8271ed8d09581d66560d7e2b20a83fff61597"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_finish.rs",
+            "sha256": "a6c4e9aba52695a95c35d408f16f4a280810c69608f95d8be2b43c4f379d6815"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_json.rs",
+            "sha256": "810e68ca66b16e2f59774bf371ca8ccf41833181a6ce8d8df06f4065bfb2b50c"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_json_tests.rs",
+            "sha256": "e3a63d5f5ea7b88ff4c4b9e8907542b352f4d1138f6a7e64ea79c0a685dcbebf"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_lfs.rs",
+            "sha256": "c08fc93e19850592b566d5c6d1d7ea10d8e7df30c7ee2ea8159d3a2b9b7008b2"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_lfs_tests.rs",
+            "sha256": "0c79b7565357ee15aadbc5212c98e18a3cfc7feb9555fc2129bd3ff574dd4f33"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_modes.rs",
+            "sha256": "7e2140629ee8d39844703996685d0a4ee775ae3dc252b0530cbc5a0174c058ff"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_modes_tests.rs",
+            "sha256": "e67e02f5fdaeb46f89897e5e8aabd5594f3cd782721ca37bfa2eadcc144aad53"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_output.rs",
+            "sha256": "f08d3f25b650fe5b6dc1b74a31a7b3761fbbfc3613f677bc075ed8dec42ad096"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_output_tests.rs",
+            "sha256": "d0d1922ad9202b0750f1c9abff5ef3aeaf5860790df33a9844e2f0ff87747a1a"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_paths.rs",
+            "sha256": "fb7429673810be6d0b19a790d19477f76b61a73121b1a201930f96a64193a3ac"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_paths_tests.rs",
+            "sha256": "18ed4d0b897f00bdcaff241c36c4ad57ae77d127006e89bbdfd073ddc7c74414"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_plan.rs",
+            "sha256": "94105ef0419c522994530b7c133029483c0068320f1d40ea22ae80291addf8d0"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_plan_tests.rs",
+            "sha256": "6ff0d208d49531377261250225b61bbac27f785906624a5279a10fe5b57731a7"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_process.rs",
+            "sha256": "4953d2038597a11e1170216467ef2f68c4ee2fae3d1d3e88e728833f40861085"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_process_tests.rs",
+            "sha256": "6f346b58ed67dc6cea6b6e2267e1784994d8a96a8cfeb057a9805ec722b24f30"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_stdin.rs",
+            "sha256": "c0f1a622166df83d018af1b3432fa69ef43cc1c270e9ca8e140dacbfbaaf5381"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_test_support.rs",
+            "sha256": "b051a2ddfc9484820138976a127ba65666aa0ac719d804bc08e89e89ffe57caf"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_workers.rs",
+            "sha256": "f0d94fc68f1225db7b258ac8af21b9f256ec5bbcd660902578b41cebb05d6325"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_workers_tests.rs",
+            "sha256": "6b1efbdea9e7956afae7b7b92ef5556268ecb6ad8bdbc27721b305e0fc1b5dbc"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_write.rs",
+            "sha256": "19245daa8574e9cffc3038b7f6a59ea7714e1aa2f7f8149b20c7b26eced577ff"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_write_tests.rs",
+            "sha256": "4f43a5b08176056e783678ad6fb04e48aa7f4b8ff53ef5c907e0b77ea05647cd"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_dispatch.rs",
+            "sha256": "fad1fe310e962583a69d3572ec02c15be5f5ce9d8855e97cada0d30f46fca053"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_declarations.rs",
+            "sha256": "2db1faace1414a144ee8d102edac4f142d1b7a9910006767e35fd7b1815466a0"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_declarations_tests.rs",
+            "sha256": "f11237846e6fb9ba76beb82e4ce4bfa1b4a9f8b4fa4d6938c892e82ec0d9ece0"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_generics.rs",
+            "sha256": "48d49682369e1ddc59ee00182c3b696a144bfc2b72ed10f7106d0ad01b42efd5"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_inference.rs",
+            "sha256": "bd6de7afa26f6693f6cd2da4b85bd5fd92db83e162c52548fc58d4f476f3d55f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_types.rs",
+            "sha256": "20b83f045bc1b23428c3ab19b9fd2ed3bc5154dbaa4920a2cacfc1772026cdb9"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_types_tests.rs",
+            "sha256": "810e5f841ea13d7eaea4ba9e38e70baeea4b06fdcb32447f9043556620dc15d9"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_file_engine.rs",
+            "sha256": "5acebcfcd413029885b61d3ed1d7c0355275df6abae95d2fd78614d09d9bb5d9"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_file_engine_tests.rs",
+            "sha256": "7568b6898e150fdc6891c32ba863a988c4b11892285d9ab742a15932ec7250bd"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_generic_arguments.rs",
+            "sha256": "75f8342d34eae80a2b52e41f41ab1b255617540be34c112c8a1eeb303371c851"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_inferred_constants.rs",
+            "sha256": "09f404c59cbf05617e1cf1c6799a064d02cabfd402a4e9b983b3ccf697b5f713"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_inferred_constants_tests.rs",
+            "sha256": "cce0e771f499055cb3374ebc1533347303d84144026858adc675d99d214ad59f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_no_anonymous_functions.rs",
+            "sha256": "a354e1f561e0cb8e4e117673d2347410176ab51624906232c8d7b87875f64713"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_no_anonymous_functions_tests.rs",
+            "sha256": "2b46d62e99f359dcdc7f186665beb10087ebcef52d746cef0cf74a486dcd3435"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rule_settings.rs",
+            "sha256": "46131213662a37945c73ebfee78b8e84bdf1e1cdb7234fbdc8febd6984733585"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rule_settings_tests.rs",
+            "sha256": "b1e5dcc5bfc2134555ff52055b1df54ea876729dbb4e6efedd8e8201b1cb9c32"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rules.rs",
+            "sha256": "ace75109aa0c15df1faba41e921912330add7e4ddadcf15b90a33f7682c4be98"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rules_tests.rs",
+            "sha256": "b4c779536d820d8a468e6b52fd36968208f31faa889f7e0ded17c6a45bcfbff3"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_error.rs",
+            "sha256": "feee6eb548919c653a4c593daa7a69388142c97a63943466bdbe89c59286ca74"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_session.rs",
+            "sha256": "0b0ce3b1f9c956799b3a03bc147a4305169191053fe373758840c937dc6c7765"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_session_tests.rs",
+            "sha256": "f00b77b9a86ef257ecc2113111d6a8d4ad868b981b62ea1f696a18c70f9d7c69"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_test_support.rs",
+            "sha256": "1651e7a49a35dfdf8d7cddbb35fbc5c4f8b0d9e73bb373870860d7076519cbac"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_source.rs",
+            "sha256": "d75c2e40e46bcb207a6b4556bc1f5a450888b16e068f9cb16b64050b0e134f2e"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_source_tests.rs",
+            "sha256": "fc56922b72bfb88bd70689c2cd68d5d6f78955f0f7b5a0f4208175ef5ec67d3e"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_tests_in_sidecars.rs",
+            "sha256": "18de70b0543a9cee9dc5d9edc96b104e5e27bbe33a251f2f9abe0b5fc8db2e75"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_tests_in_sidecars_tests.rs",
+            "sha256": "d54ba58019eecd92533bb8b83bd3d7472e4b1d39fb0f686944786d42c3494ba0"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_toolchain.rs",
+            "sha256": "b365d76d1607224958e31388dd91e206eda01ca4e5ec06495c6751be55131251"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_type_diagnostic.rs",
+            "sha256": "d96ce8608cf079bb3f270ab64658d3f17a17fb2467f7f297110b16cc97849da8"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_workspace.rs",
+            "sha256": "d9ff3599f3ec473f0d6f7de4c5598946834272cc8a63e2827292cfdbcdaac5bb"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_workspace_tests.rs",
+            "sha256": "2e8c2e4a043ca94e901c7a516e20455fa92039341451e7954a06237fa00c458f"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/test_fs.rs",
+            "sha256": "91a3ff3dc8616c1abfc43027b619bc6afc0bf43f0fda41d9d7237ed20ebb3ca6"
+          },
+          {
+            "path": "package/linter/monochromatic-lint/test.Containerfile",
+            "sha256": "d569d9a634807d8fa948d3dc651816e3c979c4f3c890dba80902a9de827f7360"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/.cargo/mutants.toml",
+            "sha256": "6fbae09b60e77973ac1e14a636a51ff91089a5ee239fcb585b147f3f8613bd9f"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/Cargo.lock",
+            "sha256": "a08e414f4aef8c256071b4e149a55cda2f82dea1dcbc0ba278b36abc80b8e9cf"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/Cargo.toml",
+            "sha256": "d63ec6087242b717b1bdabcf915c30da7dc378905b0ec2335a07a663813bffa0"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/LICENSES/GPL-3.0-or-later.txt",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/LICENSES/LGPL-3.0-or-later.txt",
+            "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/README.md",
+            "sha256": "e749f83fefd00cd880db2604992e3e9ed38a69b1efe2e4cd45f78a078552e3d0"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/fixtures/jsonc-conformance.json",
+            "sha256": "eeefc850980d549c9a2ffcfda5007515a5ac0208b56e7d966a40b5db66f1dd9b"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/mise.toml",
+            "sha256": "5cdbf72ac92db1080c9e196a9f898489856614ff3bd41e5bb321298e0086cfb2"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/api_tests.rs",
+            "sha256": "0bd5ed5f7ff02e4a7dc154004aae44464a349fece50ad84c4f9683a03fbc9522"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/comment_merge.rs",
+            "sha256": "18dcd7c1310cdda4975584d847f4875c9ff6f7abb13150a753de85a89b8fc2c1"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_apply.rs",
+            "sha256": "ad6a87b7a43e1102009446971df25476ef19c449077d91568405699c91d594e4"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_comment.rs",
+            "sha256": "c597e05b97d01eafa5ac6bfc9f505b5aff393ea2baf28c7c801199487f9758f0"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_comment_tests.rs",
+            "sha256": "6796f9331329a46a0798d8979018df40eb1dc8bb57eee7c9c7cf93028e1dfedd"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_spine.rs",
+            "sha256": "1272da1a4ba4cff209643ea249d4e870e1766d85aeae5972339bc8ada18bbb5e"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_state.rs",
+            "sha256": "f09ba1b52b326f772ae48479b648a5c1d80ac843a9179d351e06a31d83ec3b40"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_tests.rs",
+            "sha256": "deed21e588c03514b4a70420a6a810fff46d883f513e76d5393897930a16220c"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/emit.rs",
+            "sha256": "4acf3fc6c9408bf69cd0b5897c223b112c6c5e7b5078e26f0e62187fb4bcaa35"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/error.rs",
+            "sha256": "8626a49a1b76b00c4b457f615f9852ebc17876d12f3ace7f0ccbb082e73bf3a3"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/fixture_tests.rs",
+            "sha256": "0833d25f0f8781c8aa5be243084fa684ede140d8a9a1c0e8d9b88327f8e41b86"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/lib.rs",
+            "sha256": "50ab94e48daee36b4cd37343a8ed38362d444f90f1081b7da26432662f284711"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/navigate.rs",
+            "sha256": "ffc44f0b74edcd29c06010af86b2650361811a21de00f722e0e9134139676f46"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/number.rs",
+            "sha256": "952d671be446d678ba0cb5005ce6d0e144835db53236b63f948282c3cf6c90e9"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/number_scale.rs",
+            "sha256": "d7a91db5db7adce0d0ad76925441c615e7de9ba1c3882d3d55fbe5f5c1bcf137"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/number_tests.rs",
+            "sha256": "3b247977d38abd6fd264c14a6b65e79dec1e0c4f992463b5f2b74bde7ed18513"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/parse.rs",
+            "sha256": "102247b34912e48708da0698d2bbabebf8eb67d9ff39c234d7a0d20981e94dde"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/parse_tests.rs",
+            "sha256": "c9f02f7ab18bd95f7d76075f14e75680f52ddb396c69ff99e70d764b85fa6802"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/path.rs",
+            "sha256": "ed733acaa68bf9dec9dd1ddd42236526d08ffa97fcab3ee0e7016e3ed54a1e6a"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/scan.rs",
+            "sha256": "e492aab99f8cd00218bd3af9b9dfba3d10dfe496bb9a9c07c729fe21a3500936"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/text_units.rs",
+            "sha256": "64129aa289f52c3d2aafd2c5902b91943d5fb0ee95ab1154e6b1b7299efaf155"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/text_units_tests.rs",
+            "sha256": "51b8db69484772ccb5951a381a292d07b9f61b83971e3f0cb9965f5de85231b4"
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/value.rs",
+            "sha256": "a80770174481dbf5ed9dfe09120a8a9566dec59af4ea8b4c890aa9d3efde1fca"
+          }
+        ],
+        "rustcSha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+      },
+      "nextest": {
+        "testsRun": 415,
+        "passed": 415,
+        "failed": 0,
+        "skipped": 1,
+        "enumeratedTotal": 416
+      },
+      "consumerBoundary": "Research harness ENOENT looking for debug/deps; direct rustc not invoked",
+      "snapshot": {
+        "reference": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r3-fuzz-codex",
+        "digest": "sha256:1c2b469a9d7fae8bc364e6392f771c28565647a04c40847f345bc140dfce4e88",
+        "freshConsumptionVerified": false
+      },
+      "toolPreparationRecordsRecoveredFromConsole": [
+        {
+          "name": "selective-locked-cargo-fuzz-installation",
+          "command": [
+            "mise",
+            "install",
+            "cargo:cargo-fuzz"
+          ],
+          "startedAt": "2026-10-18T10:09:40.485Z",
+          "finishedAt": "2026-10-18T10:09:52.919Z",
+          "elapsedSeconds": 12.433359499,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "installed-cargo-fuzz-path",
+          "command": [
+            "mise",
+            "which",
+            "cargo-fuzz"
+          ],
+          "startedAt": "2026-10-18T10:09:52.922Z",
+          "finishedAt": "2026-10-18T10:09:52.944Z",
+          "elapsedSeconds": 0.02175319899999886,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "installed-cargo-fuzz-version",
+          "command": [
+            "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-fuzz/0.13.2/bin/cargo-fuzz",
+            "--version"
+          ],
+          "startedAt": "2026-10-18T10:09:52.946Z",
+          "finishedAt": "2026-10-18T10:09:52.947Z",
+          "elapsedSeconds": 0.0008444500000005064,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "installed-cargo-fuzz-build-help",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-fuzz",
+            "--",
+            "cargo",
+            "fuzz",
+            "build",
+            "--help"
+          ],
+          "startedAt": "2026-10-18T10:09:52.949Z",
+          "finishedAt": "2026-10-18T10:09:54.222Z",
+          "elapsedSeconds": 1.2734651890000004,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "official-codex-version-only",
+          "command": [
+            "/opt/depot-reuse-20261018-r1/codex-0.163.0/codex",
+            "--version"
+          ],
+          "startedAt": "2026-10-18T10:09:55.056Z",
+          "finishedAt": "2026-10-18T10:09:55.064Z",
+          "elapsedSeconds": 0.007837883000000148,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "official-codex-host-command-help-only",
+          "command": [
+            "/opt/depot-reuse-20261018-r1/codex-0.163.0/codex",
+            "--no-daemon",
+            "app-server",
+            "--help"
+          ],
+          "startedAt": "2026-10-18T10:09:55.071Z",
+          "finishedAt": "2026-10-18T10:09:55.076Z",
+          "elapsedSeconds": 0.004891400999998951,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "existing-podman-version",
+          "command": [
+            "sh",
+            "-c",
+            "command -v podman && podman --version"
+          ],
+          "startedAt": "2026-10-18T10:09:55.079Z",
+          "finishedAt": "2026-10-18T10:09:56.276Z",
+          "elapsedSeconds": 1.1968425509999998,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "prepared-podman-version",
+          "command": [
+            "sudo",
+            "--non-interactive",
+            "podman",
+            "--version"
+          ],
+          "startedAt": "2026-10-18T10:09:56.278Z",
+          "finishedAt": "2026-10-18T10:09:56.290Z",
+          "elapsedSeconds": 0.011802604000000428,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "prepared-podman-run-help",
+          "command": [
+            "sudo",
+            "--non-interactive",
+            "podman",
+            "run",
+            "--help"
+          ],
+          "startedAt": "2026-10-18T10:09:56.293Z",
+          "finishedAt": "2026-10-18T10:09:56.303Z",
+          "elapsedSeconds": 0.010162834000000658,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "prepared-podman-build-help",
+          "command": [
+            "sudo",
+            "--non-interactive",
+            "podman",
+            "build",
+            "--help"
+          ],
+          "startedAt": "2026-10-18T10:09:56.305Z",
+          "finishedAt": "2026-10-18T10:09:56.315Z",
+          "elapsedSeconds": 0.009855493999999453,
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "additional-prepared-filesystem-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/opt/depot-reuse-20261018-r1/codex-0.163.0",
+            "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-fuzz/0.13.2/bin/cargo-fuzz"
+          ],
+          "startedAt": "2026-10-18T10:09:56.525Z",
+          "finishedAt": "2026-10-18T10:09:56.531Z",
+          "elapsedSeconds": 0.005575372999999672,
+          "status": 0,
+          "signal": null
+        }
+      ],
+      "preparationManifestLimitation": "Seal process reset additional-tools.json records; per-command logs and console records retained"
+    },
+    {
+      "phase": "consumer",
+      "runId": "x3x9v5j0pt",
+      "harnessSha": "908bc3488a3ea6b161c9c11852e707ebe5143b2d",
+      "status": "failed",
+      "requestedAt": "2026-10-18T10:28:09.055Z",
+      "finishedAt": "2026-10-18T10:29:00Z",
+      "cpus": 4,
+      "memoryGb": 16,
+      "jobMaximumMinutes": 15,
+      "requestedToFinishSecondsUpperBound": 51,
+      "conservativeTimestampComputeProxyUsd": 0.0102,
+      "artifacts": [],
+      "artifactIntegrity": [],
+      "consumerBoundary": "Owned registry allowlist omitted r3 tag; no compiler invocation; no artifact uploaded"
     }
   ],
   "receipts": {
@@ -1403,5 +2654,19 @@
     "compressedSha256": "d99bc51f9e5220240aa62e673d53f596772956e458a46d6ade4947e03e41431a",
     "rawBytes": 482127,
     "rawSha256": "dc24e815e150ac748e6f055adcd92f465c60f7f4971877aa674fae402abf3d65"
-  }
+  },
+  "rawReceipts": {
+    "path": "doc/audit/depot-rust-coverage-2026-10-18.receipts.json.gz",
+    "bytes": 173780,
+    "sha256": "f4e4c1e08f62cf9442dcdb37b0d93b7180ef86f102076deb40e104b3cb7f5fa8",
+    "uncompressedBytes": 842186,
+    "uncompressedSha256": "294b3a7d1b7d841715a3e8a3369f392b777f4072bdf6e09b764fd507805b312c"
+  },
+  "accounting": {
+    "cumulativeConservativeTimestampComputeProxyUsd": 1.617,
+    "remainingUsd": 3.383,
+    "ceilingUsd": 5,
+    "invoiceAccessed": false
+  },
+  "updatedAt": "2026-10-18T10:35:54.241Z"
 }
