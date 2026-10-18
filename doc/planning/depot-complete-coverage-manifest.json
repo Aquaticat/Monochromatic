@@ -129,6 +129,110 @@
       "rawSha256": "6fc7c31c49ee4da1fb3b416f4bcf3e29cac1d5dcd263d0f95f49a638c60c24aa",
       "bytes": 282355,
       "sha256": "404f23b4383b66949d0fee790cb715b48745ac0379e36e095c016bce0a049470"
+    },
+    {
+      "path": "depot-complete-coverage-matched-12129071058.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 283582,
+      "sha256": "624cea56d39c4b5dd10a38b3f00618e13de3c4387fba6d4b964fc665fa177254",
+      "sourceArtifactId": 12129071058,
+      "sourceArtifactDigest": "sha256:624cea56d39c4b5dd10a38b3f00618e13de3c4387fba6d4b964fc665fa177254"
+    },
+    {
+      "path": "depot-complete-coverage-matched-12127814164.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 283403,
+      "sha256": "83163ac9274414e736478531ea56bca6d001b22f1b8a019901c37b5058a54d67",
+      "sourceArtifactId": 12127814164,
+      "sourceArtifactDigest": "sha256:83163ac9274414e736478531ea56bca6d001b22f1b8a019901c37b5058a54d67"
+    },
+    {
+      "path": "depot-complete-coverage-matched-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 263704,
+      "sha256": "12fa72bf11bfbfa44d59927c928e0a3284f8ac762b887944a67ad28104c263b1",
+      "rawBytes": 3650397,
+      "rawSha256": "cb2b201648bc236a00ce5c8cf7db6437e970951cbf0421f9e83fc1d67df998f0"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129992871.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 694654,
+      "sha256": "9d091206bc138fa79238c33a1c2549b1053f523cb388de76627ba802b9cafbd0",
+      "sourceArtifactId": 12129992871,
+      "sourceArtifactDigest": "sha256:9d091206bc138fa79238c33a1c2549b1053f523cb388de76627ba802b9cafbd0"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129804795.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 661231,
+      "sha256": "5779436f80e77811d8f0bc702a9128589e47212479fca5c0636d65ea5b5b37a9",
+      "sourceArtifactId": 12129804795,
+      "sourceArtifactDigest": "sha256:5779436f80e77811d8f0bc702a9128589e47212479fca5c0636d65ea5b5b37a9"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129764494.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 878520,
+      "sha256": "337e24c8a54e655a56547b21ae5db7426d86481d9947243ac306112531c9485c",
+      "sourceArtifactId": 12129764494,
+      "sourceArtifactDigest": "sha256:337e24c8a54e655a56547b21ae5db7426d86481d9947243ac306112531c9485c"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-12129574586.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 1472088,
+      "sha256": "0813cca85cb87526d76479a600a8502cdc656130438b343f270e9b9fde647aa7",
+      "sourceArtifactId": 12129574586,
+      "sourceArtifactDigest": "sha256:0813cca85cb87526d76479a600a8502cdc656130438b343f270e9b9fde647aa7"
+    },
+    {
+      "path": "depot-complete-coverage-node-static-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 568755,
+      "sha256": "c82ed36cfcf5c5653727a191d5f939c9f79257edb39a1cd3601581dbf9eb9420",
+      "rawBytes": 7642884,
+      "rawSha256": "e8a755dc83dd944b6096886d0df20ea8e351414bd779bac712b12fbd413718eb"
+    },
+    {
+      "path": "depot-complete-coverage-node-default-pure-12130643908.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 467590,
+      "sha256": "c58ea57a791771e71c688ec6c1d139920226b0eb23ebbde71e3ed4abeb07a273",
+      "sourceArtifactId": 12130643908,
+      "sourceArtifactDigest": "sha256:c58ea57a791771e71c688ec6c1d139920226b0eb23ebbde71e3ed4abeb07a273"
+    },
+    {
+      "path": "depot-complete-coverage-node-default-pure-12130024032.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 323469,
+      "sha256": "942c1f3bb48bb7193042bd851eca936582f61099c51941652952d5ee6365ac85",
+      "sourceArtifactId": 12130024032,
+      "sourceArtifactDigest": "sha256:942c1f3bb48bb7193042bd851eca936582f61099c51941652952d5ee6365ac85"
+    },
+    {
+      "path": "depot-complete-coverage-node-default-pure-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 269643,
+      "sha256": "21b922f16581e24940d44bc7e42f7f46296ae0ccbbe6899d1ba8d7fb1aba0e8e",
+      "rawBytes": 3677269,
+      "rawSha256": "91279fd7b3295d87b176474997abfb209247c828a70551860d14d9209b1a3a3b"
+    },
+    {
+      "path": "depot-complete-coverage-harnesses.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 34511,
+      "sha256": "54b1a848f5fdf09939ec8f0e78fb72ad6b20a3c5d535ee931da7e0f6a000f8d0",
+      "rawBytes": 229409,
+      "rawSha256": "4cd46a045d02defaa434ca0cbe488c10c9c3b483cb133d91d6210dce1b66d07e"
+    },
+    {
+      "path": "depot-complete-coverage-android-reproducibility.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 18889,
+      "sha256": "04d241cdbe765a92c434dd808dd9c13a96931e92ca4d806fca66decf3fe1b57e",
+      "rawBytes": 154338,
+      "rawSha256": "b9248d6f59ecb715ba622d17199b4405d7d29b42128e60e66e3ea6c57e06b913"
     }
   ],
   "execution": [
@@ -209,6 +313,184 @@
           "counts": {
             "command_succeeded": 114,
             "command_failed_requires_classification": 11
+          },
+          "changedTrackedFiles": []
+        }
+      ]
+    },
+    {
+      "profile": "matched",
+      "run": 39106784923,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39106784923",
+      "workflowCommit": "a6292671a136a9552f9deeca6b005c2a826731c9",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "shards": [
+        {
+          "shard": "github",
+          "runner": "GitHub Actions 1000001960",
+          "cpuCount": 4,
+          "memoryBytes": 16766414848,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 45,
+            "command_failed_requires_classification": 6
+          },
+          "changedTrackedFiles": []
+        },
+        {
+          "shard": "depot",
+          "runner": "depot-69lzzr396x",
+          "cpuCount": 4,
+          "memoryBytes": 16779534336,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 45,
+            "command_failed_requires_classification": 6
+          },
+          "changedTrackedFiles": []
+        }
+      ]
+    },
+    {
+      "profile": "node-static",
+      "run": 39109937957,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39109937957",
+      "workflowCommit": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "shards": [
+        {
+          "shard": "c",
+          "runner": "depot-xm1r3wxxm0",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 100,
+            "command_failed_requires_classification": 9
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/claude-spawn/bundle/node/index.d.mts",
+            "package/claude-code-plugin/claude-spawn/bundle/node/index.mjs",
+            "package/claude-code-plugin/prompt-time/bundle/node/index.d.mts",
+            "package/claude-code-plugin/prompt-time/bundle/node/index.mjs",
+            "package/claude-code-plugin/stop-reminder/bundle/node/index.mjs"
+          ]
+        },
+        {
+          "shard": "d",
+          "runner": "depot-mj8flzsb51",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 111,
+            "command_failed_requires_classification": 9
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/correction-reminder/bundle/node/index.d.mts",
+            "package/claude-code-plugin/correction-reminder/bundle/node/index.mjs",
+            "package/claude-code-plugin/session-start-housekeeping/bundle/node/index.d.mts",
+            "package/claude-code-plugin/terminal-title/bundle/node/index.d.mts",
+            "package/claude-code-plugin/terminal-title/bundle/node/index.mjs",
+            "package/intellij-plugin/islands-black/islands-black.jar"
+          ]
+        },
+        {
+          "shard": "b",
+          "runner": "depot-s5qw7b411p",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 105,
+            "command_failed_requires_classification": 16
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/bash-output-filter/bundle/node/filter.d.mts",
+            "package/claude-code-plugin/bash-output-filter/bundle/node/filter.mjs",
+            "package/claude-code-plugin/bash-output-filter/bundle/node/index.d.mts",
+            "package/claude-code-plugin/bash-output-filter/bundle/node/index.mjs"
+          ]
+        },
+        {
+          "shard": "a",
+          "runner": "depot-nrfjhx4f2s",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 102,
+            "command_failed_requires_classification": 13
+          },
+          "changedTrackedFiles": [
+            "package/claude-code-plugin/guardrail/bundle/node/index.d.mts",
+            "package/claude-code-plugin/guardrail/bundle/node/index.mjs"
+          ]
+        }
+      ]
+    },
+    {
+      "profile": "node-default-pure",
+      "run": 39112145763,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39112145763",
+      "workflowCommit": "588275a55c7efefef93dbbc529078d31fdcfafd8",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "shards": [
+        {
+          "shard": "b",
+          "runner": "depot-w17mbb064z",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 62,
+            "command_failed_requires_classification": 1
+          },
+          "changedTrackedFiles": []
+        },
+        {
+          "shard": "a",
+          "runner": "depot-sc7z94h09z",
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 64
           },
           "changedTrackedFiles": []
         }
@@ -42628,5 +42910,6 @@
       "resourceCandidateCount": 0,
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
-  ]
+  ],
+  "latestEvidenceAt": "2026-10-18T09:01:09.238Z"
 }
