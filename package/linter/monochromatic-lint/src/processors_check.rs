@@ -13,8 +13,6 @@
 use crate::diagnostic::Diagnostic;
 /// Import caller-visible processor input and typed selections.
 use crate::processors::{ProcessorError, ProcessorLanguage, VirtualSource};
-/// Closures in fragments require the prepared body parse.
-use crate::rust_no_anonymous_functions::check_no_anonymous_functions;
 /// Rule settings remain the configuration module's responsibility.
 use crate::rust_rule_settings::RustRuleSettings;
 /// Existing code-line and documentation checks remain the policy owners.
@@ -42,9 +40,6 @@ pub(crate) fn check(
     let parsed: RustSource =
         RustSource::new(String::from(input.filename()), String::from(input.source()));
     let mut findings: Vec<Diagnostic> = Vec::new();
-    if let Some(severity) = settings.no_anonymous_functions {
-        findings.extend(check_no_anonymous_functions(&parsed, severity));
-    }
     if let Some(severity) = settings.rustdoc {
         findings.extend(check_rustdoc(&parsed, severity));
     }

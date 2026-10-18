@@ -115,11 +115,6 @@ pub const RULES: &[RuleInfo] = &[
         options: &[],
     },
     RuleInfo {
-        id: "rust/no-anonymous-functions",
-        fixable: false,
-        options: &[],
-    },
-    RuleInfo {
         id: "rust/require-explicit-types",
         fixable: false,
         options: &[],
@@ -251,7 +246,6 @@ pub const STARTER_CONFIGURATION: &str = r#"// monochromatic-lint.config.jsonc
     "rules": {
       "rust/max-lines": { "severity": "error", "max": 300 },
       "rust/require-rustdoc": { "severity": "error" },
-      "rust/no-anonymous-functions": { "severity": "error" },
       "rust/tests-in-sidecars": { "severity": "error" }
     }
   },

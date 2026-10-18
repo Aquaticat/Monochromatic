@@ -110,39 +110,15 @@ Configuration patterns select virtual files by those names.
 Findings and fixes are reported at host positions.
 A fix that cannot be mapped back to the host is dropped and its finding is kept.
 
-## Anonymous Rust functions
+## Closures
 
-The new `rust/no-anonymous-functions` rule rejects parsed closure expressions,
-including closures assigned to named variables,
-nested closures,
-and `move`,
-`async`,
-and `const` closures.
-Named functions,
-methods,
-function pointers,
-and async blocks are not closures and remain allowed.
-
-The rule emits no automatic fix:
-extracting a closure with captured state can require changing its caller.
-The syntax frontend does not expand macros;
-closures hidden inside macro token trees are outside this check's current coverage.
-
-Select the rule explicitly in the ordered JSONC configuration:
-
-```jsonc
-// monochromatic-lint.config.jsonc
-[
-  {
-    "files": ["**/*.rs"],
-    "rules": {
-      "rust/no-anonymous-functions": { "severity": "error" }
-    }
-  }
-]
-```
-
-`mise run //package/linter/monochromatic-lint:test:rust-style` verifies this rule.
+This linter has no closure rule.
+The syntax-only `rust/no-anonymous-functions` rule was removed on 2026-10-18,
+and a configuration that still names it fails as an unknown built-in rule (status `2`).
+Avoidable closures are reported by the type-aware Dylint lint `avoidable_closure` of
+`package/linter/monochromatic-lint-closure`,
+which a Rust package runs through its own `lint:closures` task.
+The decision and its consequences are recorded in `doc/decision/rust-closure-lint-dylint.md`.
 
 ## Rust test sidecars
 
@@ -195,10 +171,11 @@ A function item's unnameable type can retain `_`;
 that does not exempt a nameable enclosing reference or aggregate type.
 Unresolved coverage produces an explicit processing failure rather than a clean result.
 
-Use named callbacks with the anonymous-function rule:
+Closures have unnameable types, so prefer a named callback,
+which is also what the `avoidable_closure` Dylint lint asks for:
 
 ```rust
-//! Named callbacks satisfy the anonymous-function rule.
+//! A named callback has a nameable type.
 // src/main.rs
 
 /// Return one user's name for the `map` call.

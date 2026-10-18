@@ -58,8 +58,7 @@ use std::{
 const CONFIGURATION: &str = r#"[
   { "files": ["**/*.rs"], "rules": {
     "rust/max-lines": { "severity": "warn", "max": 12 },
-    "rust/require-rustdoc": { "severity": "error" },
-    "rust/no-anonymous-functions": { "severity": "error" }
+    "rust/require-rustdoc": { "severity": "error" }
   } },
   { "files": ["**/*.md", "**/*.mdx"], "rules": {
     "markdown/heading-increment": { "severity": "error" },
@@ -118,17 +117,17 @@ pub struct Case {
 /// const CASES: Case[] = [/* ... */];
 /// ```
 pub const CASES: &[Case] = &[
-    // A doc test inside rustdoc: the unlabeled fence is a Markdown finding, the closure a Rust one.
+    // A doc test inside rustdoc: the unlabeled fence is a Markdown finding, the undocumented function a Rust one.
     Case {
         name: "doctest.rs",
-        source: "//! File.\n\n/// Item prose.\n///\n/// ```\n/// //! Example.\n/// let value = call(|| 1);\n/// ```\nfn item() {}\n",
-        codes: &["markdown/fenced-code-language", "rust/no-anonymous-functions"],
+        source: "//! File.\n\n/// Item prose.\n///\n/// ```\n/// //! Example.\n/// let value = 1; fn helper() {}\n/// ```\nfn item() {}\n",
+        codes: &["markdown/fenced-code-language", "rust/require-rustdoc"],
     },
-    // A fence inside a block quote: only the closure in the virtual Rust file is reported.
+    // A fence inside a block quote: only the undocumented function in the virtual Rust file is reported.
     Case {
         name: "quoted.md",
-        source: "# Title\n\n> ```rust\n> //! Docs.\n> let value = call(|| 1);\n> ```\n",
-        codes: &["rust/no-anonymous-functions"],
+        source: "# Title\n\n> ```rust\n> //! Docs.\n> let value = 1; fn helper() {}\n> ```\n",
+        codes: &["rust/require-rustdoc"],
     },
     // A fence below JSX in MDX: the snippet lacks its opening `//!` line.
     Case {
@@ -136,11 +135,11 @@ pub const CASES: &[Case] = &[
         source: "<section>\n\n```rs\nlet value = 1;\n```\n\n</section>\n",
         codes: &["rust/require-rustdoc"],
     },
-    // Two Rust levels deep: the inner rustdoc's unlabeled fence and the innermost closure.
+    // Two Rust levels deep: the inner rustdoc's unlabeled fence and the innermost undocumented function.
     Case {
         name: "nested.rs",
-        source: "//! Root.\n/// ````rust\n/// //! Level one.\n/// /// ```\n/// /// //! Level two.\n/// /// let item: u32 = call(|| 1);\n/// /// ```\n/// fn example() {}\n/// ````\nfn outer() {}\n",
-        codes: &["markdown/fenced-code-language", "rust/no-anonymous-functions"],
+        source: "//! Root.\n/// ````rust\n/// //! Level one.\n/// /// ```\n/// /// //! Level two.\n/// /// let item: u32 = 1; fn helper() {}\n/// /// ```\n/// fn example() {}\n/// ````\nfn outer() {}\n",
+        codes: &["markdown/fenced-code-language", "rust/require-rustdoc"],
     },
     // Three fixable Markdown findings in one rustdoc comment, fixed together through the host.
     Case {
@@ -193,7 +192,16 @@ pub const GROUPED_FIXED: &str = "//! File.\n\n/// # Heading\n///\n/// See <https
 /// const REPLACEMENTS = ['', 'x', '\n', '```\n', '*\/', '\r\n', '🚀', '# ', '/// ', 'fn main() {}'];
 /// ```
 const REPLACEMENTS: [&str; 10] = [
-    "", "x", "\n", "```\n", "*/", "\r\n", "🚀", "# ", "/// ", "fn main() {}",
+    "",
+    "x",
+    "\n",
+    "```\n",
+    "*/",
+    "\r\n",
+    "🚀",
+    "# ",
+    "/// ",
+    "fn main() {}",
 ];
 
 /// What:
@@ -265,9 +273,17 @@ fn assert_host_finding(finding: &Diagnostic, name: &str, source: &str) {
     for label in &finding.labels {
         let span: &Span = &label.span;
         assert!(span.offset <= source.len(), "{}", finding.code);
-        assert!(span.length <= source.len() - span.offset, "{}", finding.code);
+        assert!(
+            span.length <= source.len() - span.offset,
+            "{}",
+            finding.code
+        );
         assert!(source.is_char_boundary(span.offset), "{}", finding.code);
-        assert!(source.is_char_boundary(span.offset + span.length), "{}", finding.code);
+        assert!(
+            source.is_char_boundary(span.offset + span.length),
+            "{}",
+            finding.code
+        );
         assert!(span.line >= 1 && span.column >= 1, "{}", finding.code);
     }
     if let Some(fix) = &finding.fix {
@@ -324,7 +340,10 @@ pub fn check_host(name: &str, source: &str) -> Vec<String> {
     match &fixing.fixed {
         Some(fixed) => {
             // A lint-time processing failure must have stopped the fixer.
-            assert!(!incomplete, "{name} was fixed despite incomplete processing");
+            assert!(
+                !incomplete,
+                "{name} was fixed despite incomplete processing"
+            );
             for finding in &fixing.findings {
                 assert_host_finding(finding, name, fixed.as_str());
                 assert!(!finding.processing_failure, "{}", finding.message);
@@ -474,7 +493,12 @@ pub fn check_orchestration(data: &[u8]) {
     } else {
         String::from(case.source)
     };
-    assert_eq!(check_host(case.name, source.as_str()), case.codes, "{}", case.name);
+    assert_eq!(
+        check_host(case.name, source.as_str()),
+        case.codes,
+        "{}",
+        case.name
+    );
     let tail: &[u8] = if data.len() > 2 { &data[2..] } else { &[] };
     check_adversarial_edits(case.name, source.as_str(), tail);
     // Invalid UTF-8 cannot be a source String; its bytes already selected a structured case.
@@ -493,7 +517,12 @@ fn counted_cases_reach_every_processor_layer() {
         for newline in 0..2_u8 {
             check_orchestration(&[u8::try_from(index).expect("bounded case index"), newline]);
         }
-        assert_eq!(check_host(case.name, case.source), case.codes, "{}", case.name);
+        assert_eq!(
+            check_host(case.name, case.source),
+            case.codes,
+            "{}",
+            case.name
+        );
     }
     check_orchestration(&[]);
     check_orchestration(&[255, 254, 253]);

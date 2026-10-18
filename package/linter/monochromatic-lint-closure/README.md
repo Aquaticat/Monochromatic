@@ -6,9 +6,10 @@ that reports a Rust closure expression unless a named function,
 a loop,
 or a `match` cannot replace it.
 The decision and its evidence are in `doc/decision/rust-closure-lint-dylint.md` and `doc/planning/linter-selective-anonymous-functions.md`.
-It is a stage-1 package:
-nothing in the repository loads it yet,
-and the syntax-only `rust/no-anonymous-functions` rule of `monochromatic-lint` is unchanged.
+The IDE package (`package/desktop-app/ide`) runs it through its `lint:closures` task.
+It replaced the syntax-only `rust/no-anonymous-functions` rule of `monochromatic-lint`,
+which was removed on 2026-10-18,
+so a Rust package has a closure check only when it has its own `lint:closures` gate.
 
 ## Package name
 

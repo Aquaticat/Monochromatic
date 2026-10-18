@@ -59,7 +59,7 @@ fn findings_are_jsonl_in_the_established_shape() {
     let fixture: Fixture = Fixture::new();
     write(&fixture.path, CONFIG, ALL_RULES);
     write(&fixture.path, "b.md", "# Title.\n\n# Second\n");
-    write(&fixture.path, "a/z.rs", "fn main() { call(|| 1); }\n");
+    write(&fixture.path, "a/z.rs", "#[test]\nfn main() {}\n");
     let output: RunOutput = run(&fixture.path, &[], "");
     assert_eq!(output.exit_code, 1);
     assert_eq!(output.stderr, "");
@@ -73,7 +73,7 @@ fn findings_are_jsonl_in_the_established_shape() {
         [
             "rust/require-rustdoc",
             "rust/require-rustdoc",
-            "rust/no-anonymous-functions",
+            "rust/tests-in-sidecars",
             "markdown/no-trailing-punctuation",
             "markdown/single-h1"
         ]
@@ -295,7 +295,7 @@ fn rules_init_and_print_config_run_without_linting() {
     write(&fixture.path, "a.md", "# Title.\n");
     let rules: RunOutput = run(&fixture.path, &["--rules"], "");
     assert_eq!(rules.exit_code, 0);
-    assert_eq!(records(rules.stdout.as_str()).len(), 18);
+    assert_eq!(records(rules.stdout.as_str()).len(), 17);
     assert_eq!(rules.stderr, "");
     let init: RunOutput = run(&fixture.path, &["--init"], "");
     assert_eq!(init.exit_code, 0);

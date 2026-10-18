@@ -146,15 +146,15 @@ fn processor_findings_and_fixes_use_the_host_file() {
         r#"[
           { "files": ["**/*.rs"], "ignores": ["**/*.md/**"], "rules": { "rust/require-rustdoc": { "severity": "error" } } },
           { "files": ["**/*.rs/*.md"], "rules": { "markdown/fenced-code-language": { "severity": "error" } } },
-          { "files": ["**/*.md/*.rs", "**/*.rs/*.md/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "warn" } } }
+          { "files": ["**/*.md/*.rs", "**/*.rs/*.md/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "warn" } } }
         ]"#,
     );
-    let rust: &str = "//! File.\n\n/// Item.\n///\n/// ```\n/// let value = call(|| 1);\n/// ```\nfn item() {}\n";
+    let rust: &str = "//! File.\n\n/// Item.\n///\n/// ```\n/// //! Example.\n/// let value = 1; fn helper() {}\n/// ```\nfn item() {}\n";
     write(&fixture.path, "src/a.rs", rust);
     write(
         &fixture.path,
         "doc/b.md",
-        "Text.\n\n```rust\nlet value = call(|| 2);\n```\n",
+        "Text.\n\n```rust\n//! Example.\nlet value = 2; fn helper() {}\n```\n",
     );
     let lint: RunOutput = run(&fixture.path, &[], "");
     assert_eq!(lint.exit_code, 1);
@@ -172,8 +172,8 @@ fn processor_findings_and_fixes_use_the_host_file() {
         [
             (
                 String::from("doc/b.md"),
-                String::from("rust/no-anonymous-functions"),
-                4
+                String::from("rust/require-rustdoc"),
+                5
             ),
             (
                 String::from("src/a.rs"),
@@ -182,32 +182,33 @@ fn processor_findings_and_fixes_use_the_host_file() {
             ),
             (
                 String::from("src/a.rs"),
-                String::from("rust/no-anonymous-functions"),
-                6
+                String::from("rust/require-rustdoc"),
+                7
             ),
         ]
     );
-    // The closure's host byte range is the two pipe characters in each host file.
+    // The undocumented function's host byte range is its own text in each host file.
     let markdown_offset: usize = lines[0]["labels"][0]["span"]["offset"]
         .as_u64()
         .expect("offset") as usize;
     assert_eq!(
-        &"Text.\n\n```rust\nlet value = call(|| 2);\n```\n"[markdown_offset..markdown_offset + 2],
-        "||"
+        &"Text.\n\n```rust\n//! Example.\nlet value = 2; fn helper() {}\n```\n"
+            [markdown_offset..markdown_offset + 14],
+        "fn helper() {}"
     );
     let rust_offset: usize = lines[2]["labels"][0]["span"]["offset"]
         .as_u64()
         .expect("offset") as usize;
-    assert_eq!(&rust[rust_offset..rust_offset + 2], "||");
+    assert_eq!(&rust[rust_offset..rust_offset + 14], "fn helper() {}");
     let fixed: RunOutput = run(&fixture.path, &["--fix"], "");
     assert_eq!(fixed.exit_code, 0);
     assert_eq!(
         read(&fixture.path, "src/a.rs"),
-        "//! File.\n\n/// Item.\n///\n/// ```rust\n/// let value = call(|| 1);\n/// ```\nfn item() {}\n"
+        "//! File.\n\n/// Item.\n///\n/// ```rust\n/// //! Example.\n/// let value = 1; fn helper() {}\n/// ```\nfn item() {}\n"
     );
     assert_eq!(
         codes(fixed.stdout.as_str()),
-        ["rust/no-anonymous-functions", "rust/no-anonymous-functions"]
+        ["rust/require-rustdoc", "rust/require-rustdoc"]
     );
 }
 

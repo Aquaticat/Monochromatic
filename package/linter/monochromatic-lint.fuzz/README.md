@@ -3,7 +3,7 @@
 Coverage-guided checks for the unified linter's native boundaries.
 Targets cover JSONC configuration validation,
 ordered merging,
-the Rust anonymous-function rule,
+the Rust sidecar test rule,
 semantic explicit-type checking,
 the implemented Markdown/MDX rules,
 and the executable's per-source orchestration path.
@@ -11,11 +11,11 @@ and the executable's per-source orchestration path.
 The merge target reuses the repository's structured JSONC generator.
 The configuration target combines raw syntax mutation with always-valid generated rule settings.
 The Rust-style target combines arbitrary valid UTF-8 with bounded generated Rust syntax
-whose closure count is known independently of the rule.
-Its controls distinguish move/async/nested closures from named callbacks,
-pipe operators,
-strings,
-and async blocks.
+whose test finding count is known independently of the rule.
+Its controls distinguish inline test modules and `#[test]` functions from module declarations,
+negated and key-value `cfg` attributes,
+test-looking strings and comments,
+and sidecar file names.
 The semantic target initializes a fixed in-memory Rust crate,
 submits generated/raw source only through the production session's source-overlay API,
 and checks independent violation counts plus restoration after changed input.
@@ -49,7 +49,7 @@ Fuzz-only process deadlines do not add a production parser timeout.
 
 Generator unit tests verify that successful validation,
 merging,
-and real closure checks are actually reached.
+and real sidecar test checks are actually reached.
 
 `mise run //package/linter/monochromatic-lint.fuzz:test:planted` proves the invariants can fail.
 It copies the linter,
@@ -57,7 +57,7 @@ this package and their JSONC dependencies to this package's ignored `target/plan
 plants one defect per fuzz target
 (a rejected `warn` severity,
 arrays replaced instead of concatenated by the merge,
-only the first closure reported,
+a sidecar file name no longer exempt,
 an initialized binding exempt from type annotations,
 a trailing colon no longer heading punctuation,
 and an unlabeled rustdoc fence no longer a doc test),
