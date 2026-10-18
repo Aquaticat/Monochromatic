@@ -46,11 +46,11 @@ static inline int xutftowcs_long_path(wchar_t *wcs, const char *utf)
 }
 ```
 
-In `compat/mingw.c:4251`,
+In `compat/mingw.c:4252`,
 the long-path handler rejects a path requiring expansion when expansion is disabled:
 
 ```c
-/* git-for-windows/git v2.55.0.windows.5, compat/mingw.c:4251 */
+/* git-for-windows/git v2.55.0.windows.5, compat/mingw.c:4252 */
 if (!expand || result >= MAX_LONG_PATH - 6) {
     errno = ENAMETOOLONG;
     return -1;

@@ -34,22 +34,22 @@ if err != nil {
 }
 ```
 
-In `pkg/cmd/run/watch/watch.go:163`,
+In `pkg/cmd/run/watch/watch.go:164`,
 the watch loop breaks on that error:
 
 ```go
-// cli/cli v2.102.0, pkg/cmd/run/watch/watch.go:163
+// cli/cli v2.102.0, pkg/cmd/run/watch/watch.go:164
 run, err = renderRun(out, *opts, client, repo, run, prNumber, annotationCache)
 if err != nil {
     break
 }
 ```
 
-In `pkg/cmd/run/watch/watch.go:191`,
+In `pkg/cmd/run/watch/watch.go:190`,
 the caller returns the error before its final workflow-conclusion handling:
 
 ```go
-// cli/cli v2.102.0, pkg/cmd/run/watch/watch.go:191
+// cli/cli v2.102.0, pkg/cmd/run/watch/watch.go:190
 if err != nil {
     return err
 }
