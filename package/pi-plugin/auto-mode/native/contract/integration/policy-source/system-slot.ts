@@ -99,6 +99,16 @@ function issuePolicyInput(state: PolicyLoaderState): PolicyInputCapability {
         .assertCurrent(binding);
     }
   };
+  /*
+   Staged construction makes each issued operation nonenumerable before publication.
+   */
+  for (const name of Reflect.ownKeys(capability)) {
+    Object.defineProperty(
+      capability,
+      name,
+      { enumerable: false }
+    );
+  }
   policyInputStates.set(
     capability,
     state
@@ -143,7 +153,7 @@ export function readPolicyInput(input: unknown): PolicyInputBinding {
  */
 export function readSystemPolicyInput(input: unknown): PolicyInputBinding {
   /**
-   Original binding read through the authenticating reader above.
+   Original binding read through {@link readPolicyInput}.
    */
   const value = readPolicyInput(input);
   if (value.slot !== 'customPrompt') throw new PolicySlotBindingError('Original policy input is not a system-prompt carrier');
