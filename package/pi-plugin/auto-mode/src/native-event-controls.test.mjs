@@ -29,8 +29,8 @@ assert.equal(original.signal,controller.signal);
 assert.equal(original.signal.reason,'original navigation cancellation');
 const [records]=event.records();
 assert.equal(records.length,4);
-assert.deepEqual(records.map(record=>record.phase),['input','after','input','after']);
-assert.deepEqual(records.map(record=>record.ordinal),[0,0,1,1]);
+assert.deepEqual(records.map(function phase(record){return record.phase;}),['input','after','input','after']);
+assert.deepEqual(records.map(function ordinal(record){return record.ordinal;}),[0,0,1,1]);
 for(const record of records)assert.deepEqual(record.value.value.signal,{
  nativeControl:'cancellation-signal',reference:0
 });
@@ -47,9 +47,11 @@ const identities=fixture({kind:changed.type,handlers:[
 ]});
 await identities.runner.emit(changed);
 const [identityRecords]=identities.records();
-assert.deepEqual(identityRecords.map(record=>record.value.value.signal.reference),[0,1,1,0]);
+assert.deepEqual(identityRecords.map(function controlReference(record){return record.value.value.signal.reference;}),[0,1,1,0]);
 assert.equal(changed.signal,originalReference);
 
+/** Native controls remain opaque even when public properties are replaced by accessors. */
+async function verifyOpaquePlatformControl(){
 const preAborted=new AbortController();
 preAborted.abort();
 let controlReads=0;
@@ -57,11 +59,15 @@ Object.defineProperty(preAborted.signal,'aborted',{get(){controlReads++;throw ne
 const compact=fixture({kind:'session_before_compact',handlers:[function preserveCompactControl(input){
  assert.equal(input.signal,preAborted.signal);
 }]});
-await compact.runner.emit({type:'session_before_compact',preparation,signal:preAborted.signal});
+const compactInput={type:'session_before_compact',preparation};
+Object.defineProperty(compactInput,'signal',{value:preAborted.signal,enumerable:false});
+await compact.runner.emit(compactInput);
 const [compactRecords]=compact.records();
 assert.equal(compactRecords.length,2);
 assert.deepEqual(compactRecords[0].value.value.signal,{nativeControl:'cancellation-signal',reference:0});
 assert.equal(controlReads,0);
+}
+await verifyOpaquePlatformControl();
 
 // The platform's prototype is compatibility information, not constructor authentication.
 const lookalike=Object.create(AbortSignal.prototype);
@@ -69,6 +75,17 @@ const opaque=fixture({kind:'session_before_tree',handlers:[function preserveOpaq
 await opaque.runner.emit({type:'session_before_tree',preparation,signal:lookalike});
 const [opaqueRecords]=opaque.records();
 assert.deepEqual(opaqueRecords[0].value.value.signal,{nativeControl:'cancellation-signal',reference:0});
+
+for(const controlData of [undefined,null,false,{note:'Ordinary declared-field data remains visible'}]){
+ const ordinary=fixture({kind:'session_before_tree',handlers:[function preserveOrdinaryControl(input){assert.equal(input.signal,controlData);}]});
+ await ordinary.runner.emit({type:'session_before_tree',preparation,signal:controlData});
+ const [ordinaryRecords]=ordinary.records();
+ assert.deepEqual(ordinaryRecords[0].value.value.signal,controlData);
+}
+const absent=fixture({kind:'session_before_tree',handlers:[function preserveAbsentControl(){return undefined;}]});
+await absent.runner.emit({type:'session_before_tree',preparation});
+const [absentRecords]=absent.records();
+assert.equal(Object.hasOwn(absentRecords[0].value.value,'signal'),false);
 
 //endregion Native callbacks own cancellation while receipts retain only opaque control identity
 
@@ -95,6 +112,8 @@ assert.throws(function rejectNestedControl(){nested.records();});
 const output=fixture({kind:'session_before_tree',handlers:[function returnExtensionControl(){return {signal:new AbortController().signal};}]});
 await output.runner.emit({type:'session_before_tree',preparation,signal:new AbortController().signal});
 assert.throws(function rejectExtensionControl(){output.records();});
+/** Invalid event accessors are rejected without invoking their code or replacing native callbacks. */
+async function verifySignalAccessorRejection(){
 let signalReads=0;
 const accessorInput={type:'session_before_tree',preparation};
 Object.defineProperty(accessorInput,'signal',{get(){signalReads++;return controller.signal;},enumerable:true});
@@ -102,6 +121,8 @@ const accessor=fixture({kind:'session_before_tree',handlers:[function preserveAc
 await accessor.runner.emit(accessorInput);
 assert.throws(function rejectAccessor(){accessor.records();});
 assert.equal(signalReads,0);
+}
+await verifySignalAccessorRejection();
 console.log(JSON.stringify({complete:true,originalSignalPreserved:true,opaqueControlReferences:true,
  originalCallbackOrder:true,ordinaryDataStillStrict:true,proxyAndUnrelatedClassesRejected:true,controlGettersNotRead:true}));
 
