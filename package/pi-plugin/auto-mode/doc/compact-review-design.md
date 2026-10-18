@@ -149,6 +149,21 @@ Review of the proposed policy-input port catches a separate syntax change before
 The original expression checks the class's private brand;
 the proposal checks a public string property.
 The supervisor stops that write and requests the original syntax and an independently compiled brand regression.
+The maintained `test:native:policy-input-identity` consumer obtains a real loaded capability
+from the built native environment.
+It checks original binding identity,
+every exported capability reader,
+public-property lookalikes,
+inherited copies,
+proxies and borrowed getters/methods.
+The original class artifact passes these cases.
+Fresh types and the new consumer's scoped lint pass with zero warnings and errors.
+Two separate private native builds replace the brand with the rejected string-property check
+or remove the entry guard;
+both fail the maintained consumer.
+Restored code rebuilds and passes.
+This establishes the new guard's sensitivity before the factory redesign;
+the replacement still requires its own built ownership and real-host checks.
 The temporary loader declaration is an interop boundary;
 it does not establish that the underlying JavaScript implementation is type-checked.
 The root `TCV` rule remains unchanged;

@@ -97,6 +97,10 @@ extends = "test:unit"
 description = "Verify built policy-slot errors, inherited setters, and stable facade identity"
 run = "node src/native-policy-slot-error.unit.test.ts"
 
+[tasks."test:native:policy-input-identity"]
+description = "Verify built policy-input ownership and rejection of counterfeit or borrowed receivers"
+run = "node --import ./dist/native/loader.mjs src/native-policy-input-identity.unit.test.ts"
+
 [tasks."test:native:approval-capture"]
 description = "Verify one built approval capture per operation, failed/absent capture and closure"
 run = "node src/native-approval-capture.unit.test.ts"

@@ -2,7 +2,11 @@
 
 Research and bounded routing experiments completed on 2026-10-18.
 The objective is substantially broader CI coverage using Depot as an additional execution pool,
-with GitHub Actions retained where it fits the workload.
+with GitHub Actions and GitHub-hosted runners remaining heavily used permanently.
+Depot-managed GitHub runners and native Depot CI are additional pools.
+GitHub's own compute retains ordinary eligible workloads,
+not only platform exceptions or emergency fallback.
+Staged native promotion applies to selected workflows and does not imply eventual replacement.
 This note records repository architecture,
 routing mechanisms,
 security boundaries,

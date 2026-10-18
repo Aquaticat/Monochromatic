@@ -4,7 +4,11 @@
 
 Use Depot as an additional execution and build pool,
 with Developer as the requested planning baseline.
-Keep GitHub Actions orchestration where its integration or native-platform requirements justify it.
+GitHub Actions and GitHub-hosted runners remain heavily used in the permanent design.
+Depot adds capacity and capabilities through managed GitHub runners,
+selected native CI workflows and its other services.
+Heavy use of GitHub's own compute is a requirement,
+not merely retention of GitHub orchestration around Depot workers.
 The expanded evaluation covers application owners,
 artifact consumers,
 caching,
@@ -33,9 +37,14 @@ before unspecified services or charges
 ([executed combined model][depot-source-2]).
 The USD 200 ceiling therefore requires an explicit workload allocation.
 
-GitHub remains the forge and check consumer.
-Native Depot is the proposed Linux orchestration pool;
-Depot-managed GitHub runners retain GitHub scheduling for eligible Linux AMD64/ARM64 and Windows jobs.
+GitHub remains the forge,
+check consumer and a heavily used execution provider.
+Ordinary Linux work remains part of its workload allocation,
+alongside platform-specific and publishing work.
+Selected Linux workflows can qualify for native Depot CI;
+Depot-managed GitHub runners provide an additional Linux AMD64/ARM64 and Windows pool.
+This corrects the former wording that described native Depot as the Linux orchestration pool.
+Neither native Depot nor Depot-managed runners become a blanket replacement for GitHub-hosted execution.
 GitHub scheduling also retains release permissions,
 protected-environment approvals and reusable-workflow references that native compatibility does not cover.
 Mac work stays on public GitHub under Developer.
@@ -983,6 +992,21 @@ After the evidence closes,
 the interview can settle the desired required/advisory boundaries,
 event cadence,
 paid-priority allocation and treatment of retained source failures.
+The first posted round asks about failure enforcement,
+workflow cadence and Linux orchestration order.
+The user accepted a regression ratchet:
+known-good checks and new or changed failures block,
+while only explicitly tracked existing source failures can remain advisory.
+Setup,
+discovery and artifact-integrity failures always block.
+The user selected core PR checks and weekly breadth,
+replacing the proposed nightly schedule.
+The user accepted Depot runners under GitHub orchestration first,
+followed by qualification and promotion of selected Linux workflows to native CI.
+This rollout stays within a permanent hybrid with heavy GitHub-hosted runner use.
+Promotion does not mean progressively draining eligible workloads from GitHub's own compute.
+The remaining interview settles the dependent adoption conditions;
+production routing still follows confirmation of shared understanding.
 The recommendation must retain its source cohorts,
 documented plan eligibility,
 exact consumer limits and USD 200 monthly scope.

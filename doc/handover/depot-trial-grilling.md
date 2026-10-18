@@ -1,5 +1,91 @@
 # Depot trial interview
 
+## Published research and accepted first interview round on 2026-10-18
+
+Research tip `64d814b21cae7399270cfcc244ad98c78aa905ec` is published through the isolated merge worktree.
+Direct remote readback is `3bd497b16a46b08f45a06d09b8c767ce83dbcad4`;
+the requested tip is verified in its ancestry.
+Publication used a normal push without force.
+The private controller journal is
+`latest-research-publication-64d814b21cae7399270cfcc244ad98c78aa905ec.private.json`.
+The finite factual execution and reconciliation queue is closed with the limits retained in the report.
+This does not assert complete product-feature or source-branch coverage.
+No fresh independent whole-report review ran after the agent service quota was exhausted.
+
+The first interview round is answered through the question tool:
+
+- Q1 is accepted:
+  use a regression ratchet.
+  Enforce known-good checks and block new or changed failures.
+  Setup,
+  discovery and artifact-integrity failures always block.
+  Existing source failures require exact baselines;
+  raw `FAIL` log tokens are insufficient because the passing harness controls deliberately emit them.
+- Q2 is accepted:
+  core checks on PRs and the wider matrix weekly.
+  This replaces the recommended nightly breadth.
+  Private personal fixtures stay local.
+  Dependency-based selection still needs qualification because the frozen task graph has a cycle.
+- Q3 is accepted:
+  staged native promotion.
+  Introduce Depot-managed runners under GitHub orchestration,
+  then qualify selected Linux workflows for native Depot CI against explicit acceptance criteria.
+  This is a rollout order within a permanent hybrid,
+  not a path to making Depot the default for all eligible Linux work.
+  Native paused-session attachment is still unqualified.
+
+The user explicitly clarified that Depot never fully replaces GitHub Actions.
+GitHub-hosted runners themselves remain heavily used,
+including ordinary eligible work rather than only platform exceptions or emergency fallback.
+Retaining GitHub orchestration while moving its execution to Depot does not satisfy this requirement.
+The permanent design has GitHub-hosted execution,
+Depot-managed GitHub runners and selected native Depot CI workflows.
+Provider placement follows workload suitability and measured benefit within that constraint.
+The report's former description of native Depot as the Linux orchestration pool is retracted.
+The user's correction confirms the intentional hybrid already recorded in the Q14 trial answer.
+It does not reopen provider replacement as an interview choice.
+
+The Developer baseline,
+additional-pool approach and USD 200 all-provider planning ceiling remain settled.
+No production implementation is unlocked by posting this round.
+The next action is to verify and publish these accepted constraints,
+then post the ready second interview round and obtain confirmation of shared understanding before implementation.
+
+The ready second round covers independent decisions:
+
+- Q4:
+  standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
+  versus approval of each paid batch.
+  Recommend standing authority for unattended CI,
+  using conservative published charges and the repository-owned allocation ledger.
+  This does not change subscriptions,
+  authorize account-wide inspection or guarantee an aggregate invoice.
+- Q5:
+  one bounded recovery attempt for a classified provider/startup failure,
+  versus recovery only on request.
+  Recommend automatic recovery with exposure reserved for both attempts and the first failure retained.
+  Source failures,
+  discovery failures and artifact-integrity failures cannot become successful checks by being ignored.
+- Q6:
+  retain the correction only in CI documents,
+  versus tightening the existing general `AUT` rule after this scope misreading.
+  Recommend the CI-document correction only,
+  consistent with the user's preference for narrowly scoped documentation changes.
+  The concrete alternative required by `AGENTS.md`'s correction rule is:
+  "Execute requested work without expanding scope.
+  Preserve accepted systems and workload allocations unless the user explicitly authorizes replacing them."
+  No `AGENTS.md` edit has been applied.
+
+The remaining technical acceptance criteria are engineering work,
+not requests for the user to choose runner labels,
+cache formats or retry timers.
+Known-failure baselines must identify actual reproducible cases rather than waive whole failing tasks.
+They must be qualified on the implementation candidate's immutable source;
+historical failures cannot automatically become current waivers.
+Native promotion qualifies the features each selected workflow needs;
+workflows requiring unqualified paused-session attachment remain on GitHub until that boundary qualifies.
+No numerical GitHub/Depot allocation or eventual Depot-majority target is inferred from the word "heavy".
+
 ## Final local capture and publication checkpoint on 2026-10-18
 
 The corrected capture is terminal and its owned container is absent.
