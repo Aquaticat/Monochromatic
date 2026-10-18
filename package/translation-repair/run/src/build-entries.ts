@@ -65,30 +65,4 @@ export const nodeEntries: ReadonlyMap<string, string> = new Map([
   ],
 ],);
 
-/**
- Source files of the runner entries, as the census names sources: from the
- package directory, with no leading `./`. The library index is left out,
- since what it reaches is library source. Every entry is written from
- `./src/`, which `build-entries.unit.test.ts` holds the list to, so the prefix
- is cut without asking.
-
- @returns Runner entry sources
-
- @example
- ```ts
- runnerEntrySources().has('src/corpus-run/corpus-pass.ts',); // true
- ```
- */
-export function runnerEntrySources(): ReadonlySet<string> {
-  return new Set(
-    [...nodeEntries,]
-      .filter(function isRunner([name,],): boolean {
-        return name !== 'index';
-      },)
-      .map(function sourceOf([, path,],): string {
-        return path.slice('./'.length,);
-      },),
-  );
-}
-
 //endregion Build entries

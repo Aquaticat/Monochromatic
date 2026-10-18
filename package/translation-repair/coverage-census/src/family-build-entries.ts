@@ -11,7 +11,7 @@ import { nodeEntries as ownEntries, } from './build-entries.ts';
 // split, one list named every runner. Each package that owns runners now lists
 // its own in `src/build-entries.ts`, so the census reads the union of those
 // lists, or it would take every runner another package owns for library
-// source. `family-build-entries.unit.test.ts` holds the table below to the
+// source. `family-build-entries.unit.test.ts` holds `FAMILY_ENTRY_LISTS` to the
 // packages that have a list, so a package that gains one cannot be missed.
 
 /**
@@ -23,6 +23,13 @@ import { nodeEntries as ownEntries, } from './build-entries.ts';
  ```
  */
 export class FamilyEntryConflictError extends Error {
+  /**
+   Declares this message safe to forward: it names a build entry and the
+   family packages and paths whose lists carry it, all written in the
+   packages' own `src/build-entries.ts`.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    Names the entry and both lists.
 
