@@ -3,6 +3,13 @@
 ## Native follow-up terminal result on 2026-10-18
 
 The authorized Depot native runner follow-up is complete at the consumer boundary.
+The [expanded evaluation](../audit/tech-depot-complete-ci-trial-vet-2026-10-18.md)
+records the final scoped verdict:
+intentional GitHub/Depot routing,
+with Developer plus selective overage as the planning baseline.
+Developer includes Depot Windows runners;
+Depot Mac runners require Startup.
+Free GitHub-hosted native work remains applicable under the chosen budget.
 All six workflow runs and 12 allocated job rows are terminal.
 Ten rows use actual Depot runners;
 the two preserved Windows ARM rows use GitHub.
@@ -78,17 +85,26 @@ Developer plus overage is always cheaper than Startup at the published rates:
 the extra USD 180 fee buys USD 108 more CI allowance.
 Other product pools and native Mac access remain separate considerations.
 
-Next action:
-publish the expanded six-section evaluation with the corrected intentional-routing scope,
-render and verify its evidence links,
-record the invoice and unexecuted-surface limits,
-then remove only this follow-up's disposable worktrees after scoped cleanup checks.
-Keep earlier source-failure ownership and historical resource gaps as explicitly unresolved evidence,
-without claiming a complete trial invoice or accepted complete graph.
+The expanded report has the approved section list,
+passes scoped Markdown checks and has verified local evidence links.
+Its rendered output was inspected.
+The [cleanup receipt](../audit/depot-native-worktree-cleanup-2026-10-18.evidence.json)
+records removal of only this follow-up's disposable worktrees after clean-status,
+ignored-file preview and stray Git-root checks.
+The frozen branches remain available.
+The [final verification receipt](../audit/depot-native-final-verification-2026-10-18.evidence.json)
+binds the published report and native evidence bytes.
+
+No native follow-up execution remains queued.
+The earlier source-failure ownership,
+historical resource gaps,
+unexecuted surfaces and missing invoice remain explicit acceptance limits.
+They are not a pending source-fix or migration queue.
+No complete trial invoice or accepted complete-graph latency is claimed.
 
 ## Completed trial execution and remaining acceptance gaps
 
-### Reopened native Depot runner evaluation
+### Historical reopening of the native Depot runner evaluation
 
 The user challenged the statement that macOS and Windows require another provider,
 then instructed:
@@ -102,9 +118,9 @@ retains the fresh primary documentation and limits.
 The real objective remains intentional GitHub/Depot routing under the USD $200 monthly ceiling,
 with Developer preferred where practical and elapsed waiting valued at CAD $8.975 per hour.
 The user did not ask for wholesale migration.
-The original evaluation report does not finish the authorized trial work.
+The original evaluation report did not finish the authorized native follow-up.
 
-Active independently verifiable work:
+The authorized follow-up comprised these independently verifiable areas:
 
 - Execute the missing native Windows and macOS consumers on Depot GitHub Actions runners.
   Preserve historical source revisions and original frozen harnesses;
@@ -117,6 +133,8 @@ Active independently verifiable work:
   and update the intentional-routing and combined-cost verdict from actual evidence.
 - Complete the remaining authorized source-issue and evidence reconciliation;
   keep unrecoverable archived evidence distinct from unexecuted work.
+
+The expanded evaluation and native terminal result record the completed follow-up and retained limits.
 
 Account-wide access and subscription changes remain excluded.
 The current Startup trial was already authorized for evaluation use.
