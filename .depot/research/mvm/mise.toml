@@ -1,0 +1,148 @@
+[tasks.lifecycle]
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { join } = await import('node:path');
+const os = await import('node:os');
+const { createHash, randomBytes } = await import('node:crypto');
+const { spawnSync, execFileSync } = await import('node:child_process');
+const { Readable } = await import('node:stream');
+const { pipeline } = await import('node:stream/promises');
+const { setTimeout } = await import('node:timers/promises');
+class LifecycleProbeFailure extends Error {}
+const source = process.cwd();
+const manifest = JSON.parse(fs.readFileSync('.depot/research/mvm/manifest.json', 'utf8'));
+const harness = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+if (execFileSync('git', ['diff', '--name-only', manifest.applicationBase, '--', 'package', 'mise.toml', 'mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'], { encoding: 'utf8' }).trim()) throw new LifecycleProbeFailure('Application source or dependency inputs differ from the frozen base');
+if (process.arch !== 'x64' || os.cpus().length < 4 || os.totalmem() < 15 * 1024 ** 3) throw new LifecycleProbeFailure('Host does not satisfy the declared four-CPU/sixteen-GB VM profile');
+const evidence = join(source, '.depot/research/mvm/evidence');
+fs.mkdirSync(evidence, { recursive: true, mode: 0o700 });
+const originalHome = os.homedir();
+const scratch = join(originalHome, 'temp/agent');
+fs.mkdirSync(scratch, { recursive: true, mode: 0o700 });
+fs.chmodSync(scratch, 0o700);
+const privateHome = fs.mkdtempSync(join(scratch, 'depot-current-mvm-'));
+const runtimeRoot = '/run/user/' + process.getuid();
+const results = [];
+let commandEnvironment = { ...process.env };
+const deadline = Date.now() + 16 * 60 * 1000;
+const run = (id, command, args, options = {}) => {
+  const startedAt = new Date().toISOString();
+  const remaining = deadline - Date.now();
+  if (!options.cleanup && remaining < 30000) throw new LifecycleProbeFailure('Lifecycle deadline reached with cleanup reserved');
+  const value = spawnSync(command, args, { cwd: source, env: options.environment ?? commandEnvironment, encoding: 'utf8', maxBuffer: 16777216, timeout: options.cleanup ? 30000 : Math.min(options.limit ?? 180000, remaining) });
+  fs.writeFileSync(join(evidence, id + '.stdout.log'), value.stdout ?? '');
+  fs.writeFileSync(join(evidence, id + '.stderr.log'), value.stderr ?? '');
+  const record = { id, command: [command, ...args], startedAt, finishedAt: new Date().toISOString(), status: value.status, signal: value.signal, error: value.error?.message ?? null };
+  results.push(record);
+  fs.writeFileSync(join(evidence, 'commands.json'), JSON.stringify(results, null, 2) + '\n');
+  console.log(JSON.stringify(record));
+  return value;
+};
+const requireSuccess = value => { if (value.status !== 0) throw new LifecycleProbeFailure('Owned lifecycle command failed; retained stdout/stderr identify the boundary'); return value; };
+const mvm = (id, args, options = {}) => run(id, 'mise', ['run', '//package/cli/mvm:run', '--', '--backend', 'libvirt', ...args], options);
+const virsh = (id, args, options = {}) => run(id, 'virsh', ['--connect', 'qemu:///session', ...args], options);
+const access = path => { try { fs.accessSync(path, fs.constants.R_OK | fs.constants.W_OK); return { available: true }; } catch (error) { return { available: false, error: String(error) }; } };
+const before = { kvm: access('/dev/kvm'), null: access('/dev/null'), cpus: os.cpus().length, memoryBytes: os.totalmem(), architecture: process.arch, kernel: os.release() };
+if (!before.null.available || !fs.existsSync('/dev/kvm')) throw new LifecycleProbeFailure('KVM prerequisite or access positive control is absent');
+requireSuccess(run('apt-update', 'sudo', ['--non-interactive', 'apt-get', 'update'], { limit: 240000 }));
+const packages = ['acl', 'libvirt-daemon', 'libvirt-daemon-driver-qemu', 'libvirt-clients', 'qemu-system-x86', 'qemu-utils', 'virtiofsd', 'ovmf'];
+requireSuccess(run('apt-install', 'sudo', ['--non-interactive', 'apt-get', 'install', '--yes', '--no-install-recommends', ...packages], { limit: 240000, environment: { ...commandEnvironment, DEBIAN_FRONTEND: 'noninteractive' } }));
+requireSuccess(run('package-versions', 'dpkg-query', ['--show', '--showformat=${Package}=${Version}\n', ...packages]));
+if (!before.kvm.available) requireSuccess(run('owned-kvm-acl', 'sudo', ['--non-interactive', 'setfacl', '--modify', 'u:' + process.getuid() + ':rw', '/dev/kvm']));
+const after = { kvm: access('/dev/kvm') };
+if (!after.kvm.available) throw new LifecycleProbeFailure('KVM device remains inaccessible after the scoped owned-VM permission control');
+if (!fs.existsSync(runtimeRoot)) requireSuccess(run('runtime-root', 'sudo', ['--non-interactive', 'install', '--directory', '--mode=700', '--owner=' + process.getuid(), '--group=' + process.getgid(), runtimeRoot]));
+const runtime = fs.mkdtempSync(join(runtimeRoot, 'd-'));
+fs.chmodSync(runtime, 0o700);
+const privateConfig = join(runtime, 'c');
+const longestSocket = join(privateConfig, 'libvirt/qemu/lib/domain-999-mvm-depot-current/monitor.sock');
+if (Buffer.byteLength(longestSocket) >= 108) throw new LifecycleProbeFailure('Private libvirt socket path exceeds the Linux boundary');
+commandEnvironment = { ...process.env, MVM_BACKEND: 'libvirt', HOME: privateHome, USER: os.userInfo().username, LOGNAME: os.userInfo().username, XDG_CONFIG_HOME: privateConfig, XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') };
+const imageDirectory = join(privateHome, '.local/share/mvm/images');
+fs.mkdirSync(imageDirectory, { recursive: true });
+const imagePath = join(imageDirectory, 'noble-server-cloudimg-amd64.img');
+const response = await fetch(manifest.imageUrl, { cache: 'no-store', signal: AbortSignal.timeout(300000) });
+if (!response.ok || !response.body) throw new LifecycleProbeFailure('Official guest image download failed: ' + response.status);
+const downloadStartedAt = new Date().toISOString();
+await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(imagePath, { mode: 0o600 }), { signal: AbortSignal.timeout(300000) });
+const hasher = createHash('sha256');
+for await (const chunk of fs.createReadStream(imagePath)) hasher.update(chunk);
+const image = { url: response.url, bytes: fs.statSync(imagePath).size, sha256: hasher.digest('hex'), downloadStartedAt, downloadFinishedAt: new Date().toISOString() };
+if (image.sha256 !== manifest.imageSha256) throw new LifecycleProbeFailure('Official guest image does not match the predeclared immutable checksum');
+fs.writeFileSync(join(evidence, 'admission.json'), JSON.stringify({ manifest, harness, before, after, image }, null, 2) + '\n');
+const daemons = ['virtlogd', 'libvirtd'];
+let primaryFailure;
+const cleanupErrors = [];
+let consumer;
+let finalDomains;
+const daemonExit = [];
+try {
+  for (const name of daemons) {
+    requireSuccess(run(name + '-help', '/usr/sbin/' + name, ['--help']));
+    requireSuccess(run(name + '-start', '/usr/sbin/' + name, ['--daemon', '--pid-file', join(runtime, name + '.pid')]));
+  }
+  const initial = requireSuccess(virsh('domains-before', ['list', '--all', '--name']));
+  if (initial.stdout.trim()) throw new LifecycleProbeFailure('Private libvirt session is not empty before creation');
+  requireSuccess(mvm('cli-help', ['--help']));
+  requireSuccess(mvm('create', ['create', manifest.guest.name, '--image', manifest.guest.image], { limit: 360000 }));
+  requireSuccess(virsh('monitor-help', ['help', 'qemu-monitor-command']));
+  const status = JSON.parse(requireSuccess(virsh('qmp-status', ['qemu-monitor-command', 'mvm-' + manifest.guest.name, '{"execute":"query-status"}'])).stdout);
+  const kvm = JSON.parse(requireSuccess(virsh('qmp-kvm', ['qemu-monitor-command', 'mvm-' + manifest.guest.name, '{"execute":"query-kvm"}'])).stdout);
+  if (!status.return?.running || !kvm.return?.enabled || !kvm.return?.present) throw new LifecycleProbeFailure('Real QMP guest did not report running with KVM enabled');
+  const nonce = randomBytes(16).toString('hex');
+  const stdout = requireSuccess(mvm('guest-stdout', ['exec', manifest.guest.name, '--', 'printf ' + nonce]));
+  if (!stdout.stdout.includes(nonce)) throw new LifecycleProbeFailure('Guest stdout nonce is absent');
+  const missing = '/mvm-missing-' + nonce;
+  const failure = mvm('guest-stderr-exit', ['exec', manifest.guest.name, '--', 'ls ' + missing]);
+  if (failure.status === 0 || !failure.stderr.includes(missing)) throw new LifecycleProbeFailure('Guest stderr/nonzero consumer did not observe the owned missing path');
+  const account = requireSuccess(mvm('guest-home', ['exec', manifest.guest.name, '--', 'getent passwd 0']));
+  const guestHome = account.stdout.split('\n').find(line => line.startsWith('root:'))?.split(':')[5];
+  if (!guestHome?.startsWith('/') || /\s/u.test(guestHome)) throw new LifecycleProbeFailure('Guest home was not resolved to an absolute token');
+  const guestDirectory = guestHome + '/temp/agent';
+  requireSuccess(mvm('guest-owned-directory', ['exec', manifest.guest.name, '--', 'mkdir --parents ' + guestDirectory]));
+  const payload = Buffer.from('depot-current-mvm-' + nonce + '\n');
+  const hostInput = join(privateHome, 'owned-input.bin');
+  const hostOutput = join(privateHome, 'owned-output.bin');
+  const guestPath = guestDirectory + '/owned-' + nonce + '.bin';
+  fs.writeFileSync(hostInput, payload);
+  requireSuccess(mvm('push', ['push', manifest.guest.name, hostInput, guestPath]));
+  requireSuccess(mvm('pull', ['pull', manifest.guest.name, guestPath, hostOutput]));
+  if (!payload.equals(fs.readFileSync(hostOutput))) throw new LifecycleProbeFailure('Real guest file roundtrip bytes differ');
+  const meta = JSON.parse(fs.readFileSync(join(privateHome, '.local/share/mvm/vms', manifest.guest.name, 'meta.json'), 'utf8'));
+  consumer = { passed: true, running: status.return.running, kvm: kvm.return, stdoutNoncePresent: true, nonzeroStatus: failure.status, stderrMissingPathPresent: true, roundtripBytes: payload.length, roundtripSha256: createHash('sha256').update(payload).digest('hex'), meta };
+  requireSuccess(mvm('destroy', ['destroy', manifest.guest.name]));
+} catch (error) {
+  primaryFailure = { message: String(error), stack: error.stack };
+} finally {
+  try {
+    const list = requireSuccess(virsh('domains-cleanup', ['list', '--all', '--name'], { cleanup: true }));
+    for (const domain of list.stdout.trim().split('\n').filter(Boolean)) {
+      if (!['mvm-depot-current', 'mvm-template-setup'].includes(domain)) throw new LifecycleProbeFailure('Unexpected domain in the private cleanup session');
+      requireSuccess(mvm('cleanup-' + domain, ['destroy', domain.slice(4)], { cleanup: true }));
+    }
+    finalDomains = requireSuccess(virsh('domains-after', ['list', '--all', '--name'], { cleanup: true })).stdout.trim();
+    if (finalDomains) throw new LifecycleProbeFailure('Private domains remain after cleanup');
+  } catch (error) { cleanupErrors.push(String(error)); }
+  for (const name of [...daemons].reverse()) {
+    try {
+      const pidFile = join(runtime, name + '.pid');
+      if (!fs.existsSync(pidFile)) continue;
+      const pid = Number(fs.readFileSync(pidFile, 'utf8').trim());
+      const command = fs.readFileSync('/proc/' + pid + '/cmdline', 'utf8').split('\0');
+      if (!Number.isSafeInteger(pid) || pid < 2 || !command.includes('/usr/sbin/' + name) || !command.includes(pidFile)) throw new LifecycleProbeFailure('Private daemon PID no longer matches its owned command');
+      process.kill(pid, 'SIGTERM');
+      const stopDeadline = Date.now() + 10000;
+      while (fs.existsSync('/proc/' + pid) && Date.now() < stopDeadline) await setTimeout(50);
+      const exited = !fs.existsSync('/proc/' + pid);
+      daemonExit.push({ name, pid, exited });
+      if (!exited) throw new LifecycleProbeFailure('Owned daemon PID remained after the bounded stop observation');
+    } catch (error) { cleanupErrors.push(String(error)); }
+  }
+  const record = { schemaVersion: 1, harness, applicationBase: manifest.applicationBase, provider: process.env.PROBE_PLATFORM_PROVIDER, manifest, before, after, image, consumer: consumer ?? null, primaryFailure: primaryFailure ?? null, cleanup: { domains: finalDomains ?? null, daemonExit, errors: cleanupErrors }, commands: results, observedAt: new Date().toISOString() };
+  fs.writeFileSync(join(evidence, 'lifecycle.json'), JSON.stringify(record, null, 2) + '\n');
+  console.log(JSON.stringify({ provider: record.provider, harness, consumer: record.consumer, primaryFailure: record.primaryFailure, cleanup: record.cleanup }));
+}
+if (primaryFailure || cleanupErrors.length || !consumer?.passed) throw new LifecycleProbeFailure('Current-source mvm lifecycle or owned cleanup did not pass; retained receipt identifies the boundary');
+'''

@@ -1,0 +1,34 @@
+name: research current-source mvm lifecycle
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_LOCKED: '1'
+jobs:
+  lifecycle:
+    runs-on: depot-ubuntu-24.04-4
+    timeout-minutes: 20
+    env:
+      PROBE_PLATFORM_PROVIDER: native-depot-ubuntu-24.04-4
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Hold the exercised bootstrap fixed; application tools remain lock-bound.
+          version: 2026.10.9
+          install: false
+          cache: false
+      - run: mise install node pnpm
+      - run: mise run prepare:pnpm:install -- --frozen-lockfile
+      - run: mise run //.depot/research/mvm:lifecycle
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: research-current-mvm-native
+          path: .depot/research/mvm/evidence/
+          if-no-files-found: error
+          retention-days: 7

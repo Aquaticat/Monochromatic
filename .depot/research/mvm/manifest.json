@@ -1,0 +1,19 @@
+{
+  "applicationBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "imageUrl": "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img",
+  "imageSha256": "04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94",
+  "imageChecksumObservedAt": "2026-10-18T07:14:59.491Z",
+  "imageChecksumSource": "https://cloud-images.ubuntu.com/noble/current/SHA256SUMS",
+  "imageAdmissionReason": "Freeze the official bytes before comparing current-source consumers; the application registry URL is mutable.",
+  "guest": {
+    "name": "depot-current",
+    "image": "ubuntu",
+    "memoryMiB": 8192,
+    "vcpus": 4
+  },
+  "host": {
+    "vcpus": 4,
+    "memoryGB": 16,
+    "jobTimeoutMinutes": 20
+  }
+}
