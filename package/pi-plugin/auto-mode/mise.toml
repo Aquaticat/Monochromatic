@@ -648,6 +648,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Verify that native dispatcher setup preserves the isolated CLI fixture fetch blocker"
 run = "node src/native-process-network.unit.test.ts"
 
+[tasks."test:native:process-network-receipts"]
+description = "Verify original classifier names, complete JSONL before responses, and receipt write failures"
+run = "node --max-old-space-size=512 src/native-process-network-receipts.test.mjs"
+
 [tasks."test:native:session-result"]
 description = "Verify built native SDK result identity, descriptor reads, optional presence, and accessor rejection"
 run = "node src/native-session-result.unit.test.ts"
@@ -972,6 +976,17 @@ run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.m
 [tasks."test:native:input-content"]
 description = "Verify exact shared text and producer-bound source content accessors"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-input-content.test.mjs"
+
+[tasks."test:native:session-inputs"]
+description = "Exercise native session actions, opaque controls, persisted content, compaction sets, and shared text"
+run = [
+  "mise run //package/pi-plugin/auto-mode:test:native:session-actions",
+  "mise run //package/pi-plugin/auto-mode:test:native:event-controls",
+  "mise run //package/pi-plugin/auto-mode:test:native:loaded-message-content",
+  "mise run //package/pi-plugin/auto-mode:test:native:compaction-inputs",
+  "mise run //package/pi-plugin/auto-mode:test:native:input-content",
+  "mise run //package/pi-plugin/auto-mode:test:native:streaming-context-capacity",
+]
 
 [tasks."test:native:retained-context-capacity"]
 description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"
