@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
-import { root, frozen, owned, evidence, environment, hash, run, rust, sourceAdmission } from './rust-bounded-profile.mjs';
+import { root, frozen, owned, evidence, environment, hash, run, rust, sourceAdmission, nextestConfig } from './rust-bounded-profile.mjs';
 import { prepareRuntime, runRuntime } from './rust-fuzz-runtime.mjs';
 
 //region Keep complete owning benchmark loops, baked public inputs and repeated unchanged execution distinct
@@ -36,6 +36,10 @@ try {
     if (built.status !== 0) { results.push({ path, boundary: 'owning-release-build', status:built.status }); continue; }
     binaries.push({ name, path:join(environment.CARGO_TARGET_DIR, 'release', name) });
     if (name === 'truepeak-core-bench') {
+      const testEnvironment = { ...environment };
+      delete testEnvironment.CARGO_BUILD_JOBS;
+      const tested = rust('truepeak-bench-owning-debug-nextest', ['cargo', 'nextest', '--config-file', nextestConfig('truepeak-bench'), 'run', '--locked', '--offline', '--no-fail-fast'], { cwd:project, env:testEnvironment, allowFailure:true });
+      results.push({ path, boundary:'owning-debug-nextest', status:tested.status });
       const selection = rust('truepeak-owning-run-bin-selection', ['cargo', 'run', '--release', '--offline', '--locked', '--', '--help'], { cwd:project, allowFailure:true });
       writeFileSync(join(evidence, 'truepeak-owning-run-selection.json'), JSON.stringify({ owningTask:'//package/music-player/truepeak-core.bench:run', suppliedArgument:'--help', status:selection.status, result:selection.output }, null,2) + '\n');
     }
