@@ -297,6 +297,18 @@ before saying it matches, QAB):
   the AboutSlint widget, branch `feat/music-player-desktop-licenses-row`) and `a8d200663bbc131bb` (Android Settings
   row, branch `feat/music-player-android-licenses-row`) are running; (f) `a24e53faf2449563e` (andlarge) is still
   running.
+- 2026-10-18, Android Licenses row (Sonnet agent `a8d200663bbc131bb`, branch `feat/music-player-android-licenses-row`,
+  worktree `/home/user/temp/agent/music-player-andlicrow`), NOT merged to `main`, no version bump, no release:
+  Settings ends with an About group whose Licenses row opens a page of its own (full window; the right half on a
+  creased screen) with the APK's `THIRD-PARTY-LICENSES.txt`, read off the main thread, cut into 6,649 blocks and listed
+  lazily; Back returns to Settings, Escape too on the unfolded screen; the list is a keyboard stop. Every build
+  variant now packs the asset (a short note without the `notices` output; `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true`
+  still fails on a missing file, proven). Opened on the emulator in 267 ms (process cold, median of 5, 264 to 276) and
+  140 ms (warm, 122 to 199); scroll windows had 29 to 30 janky frames of 901 to 907 (debug build). The decision, the
+  numbers and the open choice (full page versus the right pane on the unfolded screen) are in
+  `doc/decision/music-player-third-party-licenses.md`, section "Licenses row in Settings (2026-10-18)". The desktop row
+  (agent `ad19cbb1a5dabeac0`, branch `feat/music-player-desktop-licenses-row`) picks its own icon; the Android app
+  uses the Material Symbols `description` icon, so the two branches may need one icon agreed when both are merged.
 - In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
   (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
