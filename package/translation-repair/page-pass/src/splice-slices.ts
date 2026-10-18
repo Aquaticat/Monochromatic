@@ -1,6 +1,7 @@
-import type { DocumentChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { isInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type DocumentChunk,
+  isInsertionChunk,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   rendersAsNothing,
   wordForCount,
@@ -10,7 +11,10 @@ import {
   composedInsertion,
   documentLineEnding,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { assertSliceIndexing, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  assertSliceIndexing,
+  type ChunkPair,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   contentWrite,
   type PlacedSlice,

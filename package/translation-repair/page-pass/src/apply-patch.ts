@@ -15,6 +15,7 @@ import { checkPreservation, } from './preservation-check.ts';
 
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
+  type EditableEnvelope,
   nestingWithEdit,
   unreadableReason,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -23,7 +24,6 @@ import {
   clampQuoteDepth,
   quoteDepthBound,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import type { EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Patch application
 // The deterministic gate between editor output and the candidate text.
