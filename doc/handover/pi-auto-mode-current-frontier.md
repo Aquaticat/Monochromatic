@@ -43,6 +43,20 @@ with 98,444,104 sampled bytes attributed to `structuredClone` and 53,289,928 to 
 These are allocation attribution,
 not a retainer graph,
 post-GC live-size measurement or proof of the older heap failure's cause.
+The next memory-diagnosis step is a private retained-heap snapshot at a worker's settled checkpoint,
+after a bounded throwaway inspector/snapshot smoke test.
+Do not interrupt an active tool or mutate its immutable runtime artifact.
+The controller consumes commands by appending them to `controller-commands.jsonl`;
+it keeps `rpc-command.json` after consumption.
+Confirm the recorded command or its response rather than waiting for that file to disappear.
+The phase transport's held write passes original literal/template comparison:
+only intended module import strings are new.
+Review finds an unbound `environment` reference,
+and the source worker receives a correction to pass the original cwd explicitly.
+The factory's fake borrowed receivers intentionally now report `PolicySlotBindingError`
+instead of V8's class-private-field `TypeError`.
+Public reader errors retain their original text;
+the changed internal diagnostic and object layout must be reported explicitly.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
