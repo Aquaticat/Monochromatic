@@ -413,7 +413,7 @@ await describe({
          */
         const paths = await readGuardedDocs();
         expect([
-          join('package', 'module', 'translation-repair', 'doc', 'audit-ledger.md',),
+          join('package', 'translation-repair', 'doc', 'audit-ledger.md',),
           join('doc', 'planning', 'translation-repair-openrouter-2026-09-03.md',),
           join('doc', 'planning', 'the-third-rendering.md',),
         ].filter(function isUnread(path,): boolean {
@@ -478,7 +478,7 @@ await describe({
          Every doc the guard reads.
          */
         const paths = await readGuardedDocs();
-        expect((await withFiles({ path: join('package', 'module', 'translation-repair', 'doc', 'audit-ledger.md',), },)).length,)
+        expect((await withFiles({ path: join('package', 'translation-repair', 'doc', 'audit-ledger.md',), },)).length,)
           .toBeGreaterThan(20,);
         expectNoFindings({ findings: counterNameFindings({ paths, exemptions: COUNTER_NAME_EXEMPTIONS, },), },);
         /**

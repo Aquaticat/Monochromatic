@@ -1,7 +1,7 @@
 /**
  The texts the family's reference guards read, shared so each guard reads the
- same set: the TypeScript under every family package's `src`, the docs and README of the
- package the family was split out of, each family package's README and task file, and
+ same set: the TypeScript under every family package's `src`, the family's own docs and README,
+ each family package's README, docs and task file, and
  the living repository-level docs.
 
  MOVED OUT OF `task-list-numbers.unit.test.ts` when a second guard needed the
@@ -18,7 +18,6 @@ import {
 
 import {
   FAMILY_PACKAGES,
-  LEGACY_PACKAGE,
   readLivingRepositoryDocs,
   readPackageDocPaths,
   REPOSITORY_ROOT,
@@ -29,7 +28,7 @@ import {
 } from './family-source.test-fixture.ts';
 
 /**
- One file a guard reads, named from its package root (a source file by its package directory and its path under
+ One file a guard reads, named from the family directory (a source file by its package directory and its path under
  `src`, as `readPackageSource` names it), or from the repository
  root for a living repository-level doc.
 
@@ -40,7 +39,7 @@ import {
  */
 export type PackageText = {
   /**
-   Path from the package root, or package directory and path under `src` for source, which names locations.
+   Path from the family directory, or package directory and path under `src` for source, which names locations.
    */
   readonly path: string;
 
@@ -51,12 +50,12 @@ export type PackageText = {
 };
 
 /**
- Name of a package-level doc as a guard names it: from its package root, the legacy package's by the
- bare `doc/<name>.md` or `README.md`, a family package's by its directory.
+ Name of a package-level doc as a guard names it: from the family directory, so the family's own docs go by the
+ bare `doc/<name>.md` or `README.md` and a family package's by its directory.
 
  @param path - path from the repository root
 
- @returns The path from the package root, led by the package directory for a family package
+ @returns The path from the family directory, led by the package directory for a family package's file
 
  @example
  ```ts
@@ -65,14 +64,14 @@ export type PackageText = {
  */
 function packageRootedName({ path, }: { readonly path: string; },): string {
   return relative(
-    path.startsWith(LEGACY_PACKAGE,) ? LEGACY_PACKAGE : FAMILY_PACKAGES,
+    FAMILY_PACKAGES,
     path,
   );
 }
 
 /**
- Every file the guard reads: the TypeScript under every family package's `src`, the docs and README of the
- package the family was split out of, each family package's README and docs, and each family package's
+ Every file the guard reads: the TypeScript under every family package's `src`, the family's own docs and README,
+ each family package's README and docs, and each family package's
  task file.
 
  @returns Files with their text
@@ -98,7 +97,7 @@ export async function readPackageTexts(): Promise<readonly PackageText[]> {
     );
   },);
   /**
-   Non-source files, read from the repository root and named from their package root.
+   Non-source files, read from the repository root and named from the family directory.
    */
   const others = await Promise.all([
     ...docs,

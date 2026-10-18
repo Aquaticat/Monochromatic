@@ -33,17 +33,8 @@ export const REPOSITORY_ROOT: string = join(
 );
 
 /**
- The package the family was split out of, from the repository root. Its docs and README stay there until the docs
- move to the family, so the guards over package-level docs read it beside every family package's own.
- */
-export const LEGACY_PACKAGE: string = join(
-  'package',
-  'module',
-  'translation-repair',
-);
-
-/**
- Directory holding the family's packages, from the repository root.
+ Directory holding the family's packages, from the repository root. It also holds the family's own README and `doc`
+ directory, which belong to no one package.
  */
 export const FAMILY_PACKAGES: string = join(
   'package',
@@ -204,11 +195,10 @@ async function markdownDocsIn({ root, }: { readonly root: string; },): Promise<r
 }
 
 /**
- The package-level Markdown the guards read: the docs and README of the package the family was split out of,
- which still holds the family's docs, then each family package's README and docs. The family's own docs
- replace the legacy ones when they move, and this read follows them without a change.
+ The package-level Markdown the guards read: the family's own README and docs, which are about the family as a whole,
+ then each family package's README and docs.
 
- @returns Paths from the repository root, the legacy package first
+ @returns Paths from the repository root, the family's own first
 
  @example
  ```ts
@@ -217,17 +207,10 @@ async function markdownDocsIn({ root, }: { readonly root: string; },): Promise<r
  */
 export async function readPackageDocPaths(): Promise<readonly string[]> {
   /**
-   Packages that stay under `package/module`, among them the legacy one while it holds docs.
-   */
-  const legacyParents = await readdir(join(
-    REPOSITORY_ROOT,
-    dirname(LEGACY_PACKAGE,),
-  ),);
-  /**
-   Roots whose Markdown is read.
+   Roots whose Markdown is read: the family directory, then each package.
    */
   const roots = [
-    ...(legacyParents.includes(basename(LEGACY_PACKAGE,),) ? [LEGACY_PACKAGE,] : []),
+    FAMILY_PACKAGES,
     ...(await familyPackages()).map(function underFamily(name,): string {
       return join(
         FAMILY_PACKAGES,
