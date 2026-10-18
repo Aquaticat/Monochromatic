@@ -16,7 +16,8 @@ fn names(entries: &[DirectoryEntry]) -> Vec<OsString> {
 }
 
 /// Whether the listing holds an entry of this name,
-///  and if it does, whether that entry is a directory.
+///  and if it does,
+///  whether that entry is a directory.
 fn listed_as_directory(entries: &[DirectoryEntry], name: &str) -> Option<bool> {
     for entry in entries {
         if entry.name == name {
