@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "capturedAt": "2026-10-18T14:52:49.844Z",
-  "state": "Project created and bounded local preflight passed; native job and builder not yet allocated",
+  "state": "First native request failed on known exporter fixture defect after authorized builder connection; one single-export replacement admitted but not allocated",
   "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "harness": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
   "projectCreation": {
@@ -81,21 +81,459 @@
   },
   "sourceArchive": {
     "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
-    "bytes": 18768,
-    "sha256": "e5d29d600540f529c333ec3bb0bf259dde04d2b1fd76af16428d58c03142a2a2",
-    "uncompressedBytes": 83941,
-    "uncompressedSha256": "e11cd5460d277b1ec056d27673c6c0d0cbd60afc505153d6cf19629d12be9517"
+    "bytes": 46904,
+    "sha256": "47325a6b4413d482e1498f86cd374009bb617b9863cc058ad67dbdeca2ee75bb",
+    "uncompressedBytes": 247469,
+    "originalZips": 1,
+    "recoveryFixtureFiles": 10
   },
-  "runtime": null,
+  "runtime": {
+    "runId": "dzsf27t0xx",
+    "workflowId": "lsw98pwq44",
+    "jobId": "l1qjrcg80f",
+    "attemptId": "2r16tj84qh",
+    "sandboxId": "j14m9v5vk3w06g81t85l",
+    "build": {
+      "id": "j9r23brwtx",
+      "status": "BUILD_STATUS_FAILED",
+      "createdAt": "2026-10-18T14:54:39.892Z",
+      "finishedAt": "2026-10-18T14:54:47.759Z"
+    },
+    "terminal": {
+      "startedAt": "2026-10-18T14:54:31.142Z",
+      "finishedAt": "2026-10-18T14:54:55.510Z",
+      "run": "dzsf27t0xx",
+      "harness": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
+      "projectId": "ng17dl3xrn",
+      "waitStatus": 1,
+      "waitSignal": null,
+      "freshStatus": 0,
+      "watchdog": null,
+      "terminalCommandReturned": true,
+      "statusKeys": [
+        "org_id",
+        "run_id",
+        "status",
+        "workflows"
+      ],
+      "accountWideInspection": false
+    },
+    "status": "failed",
+    "profile": {
+      "schemaVersion": 1,
+      "startedAt": "2026-10-18T14:54:39.521Z",
+      "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "harness": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
+      "projectId": "ng17dl3xrn",
+      "cohort": "native-buildkit-auth-b40a656ce8d8510e",
+      "native": {
+        "architecture": "x64",
+        "cpuCount": 2,
+        "memoryBytes": 8336855040
+      },
+      "jobTokenPresent": true,
+      "onlyInjectedCredential": true,
+      "persistentSecretCreated": false,
+      "commands": [
+        {
+          "label": "cli-version",
+          "args": [
+            "version"
+          ],
+          "status": 0,
+          "signal": null,
+          "elapsedMilliseconds": 10,
+          "error": null,
+          "stdoutSha256": "688a557ead79ef18db991dee8cab17d00843543fbae3841fc5f4af011c935a87",
+          "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "label": "missing-token",
+          "args": [
+            "build",
+            "--project",
+            "ng17dl3xrn",
+            "--platform",
+            "linux/amd64",
+            "context"
+          ],
+          "status": 1,
+          "signal": null,
+          "elapsedMilliseconds": 10,
+          "error": null,
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderrSha256": "9c0af97d51e818283809d42bc02fe6c7521025324cd2659ab4172554fc6d3bce"
+        },
+        {
+          "label": "job-token-cli",
+          "args": [
+            "build",
+            "--project",
+            "ng17dl3xrn",
+            "--platform",
+            "linux/amd64",
+            "--build-platform",
+            "linux/amd64",
+            "--save",
+            "--save-tag",
+            "native-buildkit-auth-b40a656ce8d8510e",
+            "--provenance",
+            "mode=max",
+            "--progress",
+            "plain",
+            "--metadata-file",
+            "/home/runner/work/Monochromatic/Monochromatic/.depot/probe/native-buildkit-auth/output/receipts/build-metadata.json",
+            "--output",
+            "type=local,dest=/home/runner/work/Monochromatic/Monochromatic/.depot/probe/native-buildkit-auth/output/exported",
+            "context"
+          ],
+          "status": 1,
+          "signal": null,
+          "elapsedMilliseconds": 7948,
+          "exceeded": false,
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderrSha256": "e6271ed3d58f5c2b7a6fd2126a7e4d0e246cbe699d85ab2d58e69719944d9f09"
+        }
+      ],
+      "requests": [
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/CreateBuild",
+          "startedAt": "2026-10-18T14:54:39.849Z",
+          "forwarded": true,
+          "requestBytes": 66,
+          "ownedProjectByteBinding": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:39.903Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:39.906Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:40.507Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/ReportBuildHealth",
+          "startedAt": "2026-10-18T14:54:39.907Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:39.923Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/ReportStatusStream",
+          "startedAt": "2026-10-18T14:54:40.907Z",
+          "forwarded": true,
+          "status": 200
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:41.008Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:41.030Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:41.532Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:41.552Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:42.054Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:42.076Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:42.577Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:42.597Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:43.098Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:43.118Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:43.620Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:43.641Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:44.145Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:44.167Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:44.668Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:44.688Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/ReportBuildHealth",
+          "startedAt": "2026-10-18T14:54:44.924Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:44.942Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:45.190Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:45.208Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:45.710Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:45.731Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:46.233Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:46.253Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:46.755Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:46.775Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/GetBuildKitConnection",
+          "startedAt": "2026-10-18T14:54:47.277Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:47.392Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/ReportStatusStream",
+          "startedAt": "2026-10-18T14:54:47.418Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:47.436Z"
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/FinishBuild",
+          "startedAt": "2026-10-18T14:54:47.744Z",
+          "forwarded": true,
+          "status": 200,
+          "finishedAt": "2026-10-18T14:54:47.784Z"
+        }
+      ],
+      "buildCreateRequests": 1,
+      "accountWideListing": false,
+      "automaticOneCommandCliPathExercised": true,
+      "apiAuthorizationThenNormalDerivedBuildTokenAttachment": false,
+      "missingTokenRejectedBeforeBuildAdmission": true,
+      "failure": {
+        "name": "AssertionError",
+        "message": "#1 [depot] launching amd64 machine\n#1 DONE 7.5s\n\n#2 [depot] connecting to amd64 machine\n#2 DONE 0.0s\n\n#3 [internal] fetching git attributes\n#3 DONE 0.3s\nmultiple outputs currently unsupported\n\n\n1 !== 0\n"
+      },
+      "apiGuard": {
+        "createRequests": 1,
+        "forwardedRequests": 20,
+        "deniedRequests": 0,
+        "initialCredentialMatched": true,
+        "stubNotFound": false,
+        "stopped": true
+      },
+      "finishedAt": "2026-10-18T14:54:47.788Z"
+    },
+    "artifact": {
+      "at": "2026-10-18T15:01:02.606Z",
+      "artifact": {
+        "artifact_id": "01a14f82-18e2-780c-9ebd-5634c4bb996d",
+        "run_id": "dzsf27t0xx",
+        "workflow_id": "lsw98pwq44",
+        "workflow_path": "",
+        "job_id": "l1qjrcg80f",
+        "job_key": "_inline_0.yaml:auth",
+        "attempt_id": "2r16tj84qh",
+        "attempt": 1,
+        "name": "native-buildkit-job-auth",
+        "size_bytes": 2758,
+        "created_at": "2026-10-18T14:54:48Z"
+      },
+      "zipBytes": 2758,
+      "zipSha256": "2455167ace5a106c67f332a4579208265a4b7622ac48f6257de9d3d3a35dba03",
+      "apiBytesMatched": true,
+      "apiDigestReturned": false,
+      "actionLogDigestMatched": true,
+      "crcPassed": true,
+      "members": [
+        {
+          "path": "cli-version.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "cli-version.stdout",
+          "bytes": 88,
+          "sha256": "688a557ead79ef18db991dee8cab17d00843543fbae3841fc5f4af011c935a87"
+        },
+        {
+          "path": "job-token-cli.stderr",
+          "bytes": 192,
+          "sha256": "e6271ed3d58f5c2b7a6fd2126a7e4d0e246cbe699d85ab2d58e69719944d9f09"
+        },
+        {
+          "path": "job-token-cli.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "missing-token.stderr",
+          "bytes": 44,
+          "sha256": "9c0af97d51e818283809d42bc02fe6c7521025324cd2659ab4172554fc6d3bce"
+        },
+        {
+          "path": "missing-token.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "profile.json",
+          "bytes": 8079,
+          "sha256": "18ab8fa3b3a3e9f081eb6b315a0fb5504781102a168a1aec597aaf9eec46914b"
+        }
+      ]
+    }
+  },
   "cleanup": {
+    "projectId": "ng17dl3xrn",
     "required": true,
-    "projectDeleted": false,
-    "retainedImageAbsenceVerified": false
+    "reason": "Held solely for admitted single-export replacement; no other consumer dependency",
+    "nativeSlotReleasedAfterFirst": true,
+    "firstBuildFinish200": true
   },
   "limitations": [
     "No native job-token authorization proof before the cloud consumer",
     "No GitHub OIDC or external registry qualification",
     "No timing or whole-package test claim",
     "Timestamp-compute reservation is not an account-wide invoice cap"
-  ]
+  ],
+  "recovery": {
+    "at": "2026-10-18T15:10:27.767Z",
+    "harness": "ddf656ea992952559a975e8693668b2005583499",
+    "frozen": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "projectId": "ng17dl3xrn",
+    "worktree": "/home/user/temp/agent/depot-native-buildkit-auth-20261018",
+    "syntacticProgramsPassed": 2,
+    "unchangedActualLocalConsumerAndDockerfile": true,
+    "singleLocalExporter": true,
+    "savedImageNotProduced": true,
+    "registryReadUnqualified": true,
+    "sourceDiffEmptyOutsideResearch": true,
+    "remoteMatches": true,
+    "localStub": {
+      "args": [
+        "build",
+        "--project",
+        "ng17dl3xrn",
+        "--platform",
+        "linux/amd64",
+        "--build-platform",
+        "linux/amd64",
+        "--provenance",
+        "mode=max",
+        "--progress",
+        "plain",
+        "--metadata-file",
+        "/home/user/temp/agent/depot-native-buildkit-auth-controller-20261018/recovery/must-not-exist-metadata.json",
+        "--output",
+        "type=local,dest=/home/user/temp/agent/depot-native-buildkit-auth-controller-20261018/recovery/must-not-exist-export",
+        "context"
+      ],
+      "status": 1,
+      "output": "",
+      "diagnostic": "error retrieving projects: permission_denied: Owned research boundary blocked this API method\n",
+      "requests": [
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1.BuildService/CreateBuild",
+          "startedAt": "2026-10-18T15:10:27.763Z",
+          "forwarded": false,
+          "requestBytes": 25,
+          "ownedProjectByteBinding": true,
+          "status": 404,
+          "stubbed": true
+        },
+        {
+          "kind": "guarded-cli-api",
+          "path": "/depot.cli.v1beta1.ProjectsService/ListProjects",
+          "startedAt": "2026-10-18T15:10:27.765Z",
+          "forwarded": false,
+          "deniedReason": "API method outside the exact build allow-list",
+          "status": 403
+        }
+      ],
+      "stats": {
+        "createRequests": 1,
+        "forwardedRequests": 0,
+        "deniedRequests": 1,
+        "initialCredentialMatched": true,
+        "stubNotFound": true,
+        "stopped": true
+      },
+      "forwardsToDepot": 0
+    },
+    "scope": "Actual corrected CLI flag parsing and NotFound account-listing rejection; does not run exporter solve or native consumer",
+    "admission": {
+      "previousRun": "dzsf27t0xx",
+      "previousBuild": "j9r23brwtx",
+      "additionalReservationUsd": 0.23,
+      "cumulativeReservationUsd": 0.46,
+      "nominalCampaignGuardUsd": 1,
+      "maximumNativeJobs": 1,
+      "nativeCpus": 2,
+      "nativeMemoryGiB": 8,
+      "nativeServerMinutes": 5,
+      "maximumBuilders": 1,
+      "builderCpus": 16,
+      "builderMemoryGiB": 32,
+      "builderServerMinutes": 5,
+      "coverageReleased": true,
+      "parentAuthorized": true,
+      "allocated": false
+    }
+  },
+  "recordedAt": "2026-10-18T15:10:27.767Z"
 }

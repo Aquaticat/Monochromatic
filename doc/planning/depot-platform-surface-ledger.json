@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:06:43.934Z",
+  "updatedAt": "2026-10-18T15:10:27.821Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -15908,21 +15908,21 @@
       "status": "Finished selected functional owners: Truepeak89P2skipped/91same identities; p-limit-fork11passing groups; no timing ratio"
     },
     "nativeBuildkitJobAuthentication": {
-      "state": "Project created and bounded local preflight passed; native job and builder not yet allocated",
       "note": "doc/planning/depot-native-buildkit-auth-research.md",
       "evidence": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json",
+      "status": "First native request failed on known exporter fixture defect after authorized builder connection; one single-export replacement admitted but not allocated",
+      "firstRun": "dzsf27t0xx",
+      "firstBuild": "j9r23brwtx",
+      "recoveryHarness": "ddf656ea992952559a975e8693668b2005583499",
+      "cumulativeFullWindowReservationUsd": 0.46,
       "sourceArchive": {
         "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
-        "bytes": 18768,
-        "sha256": "e5d29d600540f529c333ec3bb0bf259dde04d2b1fd76af16428d58c03142a2a2",
-        "uncompressedBytes": 83941,
-        "uncompressedSha256": "e11cd5460d277b1ec056d27673c6c0d0cbd60afc505153d6cf19629d12be9517"
-      },
-      "projectId": "ng17dl3xrn",
-      "harness": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
-      "fullWindowTimestampComputeReservationUsd": 0.23,
-      "nominalCampaignGuardUsd": 1,
-      "accountWideListingBlockedByVerifiedRelay": true
+        "bytes": 46904,
+        "sha256": "47325a6b4413d482e1498f86cd374009bb617b9863cc058ad67dbdeca2ee75bb",
+        "uncompressedBytes": 247469,
+        "originalZips": 1,
+        "recoveryFixtureFiles": 10
+      }
     }
   },
   "publicDocumentationReconciliation": {
