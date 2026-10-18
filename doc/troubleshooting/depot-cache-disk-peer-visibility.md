@@ -10,7 +10,10 @@ but its overlapping consumers had different operation intervals:
 Both checked the seed payload,
 wrote only their own directories,
 and verified the other writer's manifest and payload hash.
-Their manifests were published 764 ms apart.
+Their consumer intervals overlap.
+Their manifest `publishedAt` fields differ by 764 ms,
+but those fields are set before atomic manifest writes finish.
+They do not measure publication-completion times.
 No application error or payload corruption occurred.
 The result rejects an assumption of immediately completed peer reads in this harness.
 

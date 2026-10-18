@@ -485,8 +485,10 @@ no installer recovery was needed.
 
 The seed's consumer operation took 126 ms.
 The fan-out consumer operations took 30,261 ms and 139 ms.
-Their writer manifests were published 764 ms apart,
-so both allocated clients were participating in the shared filesystem.
+Their consumer intervals overlap.
+Their manifest `publishedAt` fields differ by 764 ms,
+but the harness records those fields before each manifest's atomic write completes.
+They are not publication-completion timestamps.
 The slower consumer's delay has not been isolated causally.
 Archil's [consistency documentation][archil-consistency]
 explicitly says client caches can delay visibility after another client writes;
@@ -538,11 +540,11 @@ the Actions runtime token,
 and project OIDC exchange were excluded from this request.
 
 The inspected CLI release `v2.102.23`,
-`pkg/cmd/cargo/cargo.go`,
+`pkg/cmd/cargo/cargo.go:55`,
 calls `helpers.ResolveOrgAuth`.
-In that release's `pkg/helpers/token.go`,
+In that release's `pkg/helpers/token.go:13`,
 `ResolveOrgAuth` uses `ResolveStaticOrgAuth`,
-whose final fallback is `resolveJITToken`:
+whose final fallback is `resolveJITToken` at `pkg/helpers/token.go:129`:
 
 ```go
 // depot/cli/pkg/helpers/token.go, release v2.102.23
