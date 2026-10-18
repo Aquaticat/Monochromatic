@@ -233,6 +233,29 @@
       "sha256": "04d241cdbe765a92c434dd808dd9c13a96931e92ca4d806fca66decf3fe1b57e",
       "rawBytes": 154338,
       "rawSha256": "b9248d6f59ecb715ba622d17199b4405d7d29b42128e60e66e3ea6c57e06b913"
+    },
+    {
+      "path": "depot-complete-coverage-android-junit-execution.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 19294,
+      "sha256": "3014921f12d9ca8f84927c93e633376e8ee698118d82630b3846307f6cab758d",
+      "rawBytes": 115562,
+      "rawSha256": "483ad65476a8b70bac9fbd571d4671f899aa7f7516218cf03a3cf823ff48ae75"
+    },
+    {
+      "path": "depot-complete-coverage-android-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 96498,
+      "sha256": "b517d9c2ff726f96c1afedc8c5bbb5ed2a389125ccc41913a1c3292bcf7d85e1",
+      "rawBytes": 873837,
+      "rawSha256": "f957cebd7c534b50c0a379f86807b18742ae4510432f2e3ddaf87f7ec5c86d82"
+    },
+    {
+      "path": "../audit/depot-android-consumer-2026-10-18.evidence.json",
+      "encoding": "JSON",
+      "bytes": 14442,
+      "sha256": "b1e40d416698756af81b035d9ef817bbf0a8f6dd502d18f89edf49117b7f7ca1",
+      "sourceCommit": "81aee7750c9a909ddf54feda3f39266d4a169ed2"
     }
   ],
   "execution": [
@@ -495,6 +518,42 @@
           "changedTrackedFiles": []
         }
       ]
+    },
+    {
+      "profile": "android_debug_pair_and_jvm_consumers",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "runs": [
+        {
+          "run": "qvsjm5hmdp",
+          "workflowCommit": "941caae67e4013757b97e310bf5043791747dac5",
+          "actualJvmTestTaskExecuted": true,
+          "reports": 127,
+          "tests": 1289,
+          "allXmlTimestampsInsideActualCommand": true,
+          "restoredTestTasks": 0,
+          "artifactPairComplete": false
+        },
+        {
+          "run": "1jxc80q7q7",
+          "workflowCommit": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
+          "actualJvmTestTaskExecuted": true,
+          "reports": 127,
+          "tests": 1289,
+          "allXmlTimestampsInsideActualCommand": true,
+          "restoredTestTasks": 0,
+          "artifactPairComplete": true
+        }
+      ],
+      "deviceConsumer": {
+        "evidencePath": "../audit/depot-android-consumer-2026-10-18.evidence.json",
+        "sourceCommit": "81aee7750c9a909ddf54feda3f39266d4a169ed2",
+        "executed": 16,
+        "passed": 14,
+        "failed": 2,
+        "skipped": 0,
+        "cohort": "Frozen source four instrumentation files only",
+        "acceptance": "red_due_to_two_source_failures"
+      }
     }
   ],
   "familySummary": {
@@ -42911,5 +42970,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T09:01:09.238Z"
+  "latestEvidenceAt": "2026-10-18T09:17:12.947Z"
 }
