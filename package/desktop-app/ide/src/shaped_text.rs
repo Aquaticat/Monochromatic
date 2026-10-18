@@ -499,16 +499,16 @@ impl TextShaper {
         let bottom = placed.block_top(last);
         // The clip the window asked for was chosen from the heights its map held, which the rows just shaped may
         // exceed, so the frame is cut to the raster limit here.
-        let viewport = fit_viewport(viewport, first_top, bottom, u64::from(width));
-        let (origin, tall) = match viewport.clip {
+        let fitted = fit_viewport(viewport, first_top, bottom, u64::from(width));
+        let (origin, tall) = match fitted.clip {
             Some(clip) => (first_top + clip.top, clip.bottom - clip.top),
             None => (first_top, bottom - first_top),
         };
         let extent = tall.max(CODE_ROW);
-        let height = (extent * viewport.scale).ceil() as u32;
+        let height = (extent * fitted.scale).ceil() as u32;
         let mut view = ShapedView {
             rows,
-            viewport,
+            viewport: fitted,
             width,
             height,
             origin,
