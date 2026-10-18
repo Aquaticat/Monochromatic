@@ -720,6 +720,27 @@ the items after it are the record of 2026-10-05 and older.
     sidebar (18), theme (7), find (39) and annotation (65) guards, all status 0. Not guarded: the tab measuring pass
     (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
     ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
+  - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;
+    the user approved removing every `rust/no-anonymous-functions` finding without suppressing any). The count in
+    `package/desktop-app/ide` fell from 1135 to 67; `rust/max-lines`, `rust/require-rustdoc` and
+    `markdown/semantic-line-breaks` are at zero. Iterator adaptors, `map_or`, `with_context`, `retain` and predicate
+    parameters became `for` loops, `match`, `if let`, and small named types (`Waiting` in `src/native/waiting_tests.rs`
+    for the window test waits, the `Cancel` trait for `minimap::build`, `Condition`, `StopVisitor`, `SignCoverage`,
+    `EventRecorder` and the like). Several short-circuit chains became unconditional reads of plain fields
+    (`differs_only_in_annotations` in `src/native/render.rs`, `errored_there` in `src/native/navigation/tick.rs`,
+    `errored_here` in `src/native/navigation/actions.rs`); no read has a side effect. The 67 that remain are closures
+    that the callee's signature requires and that own state: 38 Slint `on_*` callbacks, 8 `Timer::start` bodies, 17
+    `thread::spawn` or `Builder::spawn` bodies, 2 `catch_unwind` bodies inside thread work, and the two `tree_house`
+    callbacks in `src/syntax_loader.rs`. Stable Rust has no named item that owns state for an `FnMut` or `FnOnce`
+    parameter, so they stay reported; a decision to suppress them, or to move that state into thread locals, is open.
+    Files added: `src/json_value.rs`, `src/language/diagnostics/store/pulled.rs`,
+    `src/language/request/answer/trouble.rs`, `src/minimap/paint.rs`, `src/native/waiting_tests.rs` and
+    `src/bin/ide-language-inspect/session/condition.rs`. Guard anchors moved in six `bin/inspect-*-guards.mjs` scripts;
+    every guard script was run again on the branch and all passed (annotation 65, find 39, ignored 28, search 17,
+    sidebar 18, source 108, theme 7, watch 76, language 31, language navigation 16, language lifecycle 28 runs,
+    bundle 8 cases). Test suites on the branch: `test` 783, `test:native` 197, `test:language` 379, `test:syntax` 64,
+    `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
+    `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
   - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
     for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
     listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
