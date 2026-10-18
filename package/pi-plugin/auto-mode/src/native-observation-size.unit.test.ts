@@ -36,9 +36,10 @@ function invoke({owner,name,args}:Readonly<{owner:unknown;name:string;args:reado
 
  @param body - complete provider request retained byte for byte
  @param maxBodyBytes - explicit caller limit when deliberately configured
+ @param onRequest - consumer observation proving invalid limits do not send requests
  @returns original owner, response and observed provider requests
  */
-async function observe({body,maxBodyBytes}:Readonly<{body:string;maxBodyBytes?:number}>){
+async function observe({body,maxBodyBytes,onRequest}:Readonly<{body:string;maxBodyBytes?:unknown;onRequest?:()=>void}>){
  const namespace:unknown=await import(new URL(
   '../dist/native/contract/lifecycle/root-lifecycle-retirement-entry/observer.mjs',import.meta.url,
  ).href);
@@ -54,10 +55,17 @@ async function observe({body,maxBodyBytes}:Readonly<{body:string;maxBodyBytes?:n
  const lease=Object.freeze({});
  const owner:unknown=Reflect.apply(factory,undefined,[{
   root:{session:{},manager:{}},
-  lifecycle:{capture(){return lease;},assertActive(value:unknown){assert.equal(value,lease);}},
-  collector:{capture(){return snapshot;},assertObservedFresh(value:unknown){assert.equal(value,snapshot);}},
+  lifecycle:{
+   capture(){return lease;},
+   assertActive(value:unknown){assert.equal(value,lease);},
+  },
+  collector:{
+   capture(){return snapshot;},
+   assertObservedFresh(value:unknown){assert.equal(value,snapshot);},
+  },
   ...(maxBodyBytes===undefined?{}:{maxBodyBytes}),
   terminalFetch(_input:unknown,init:unknown){
+   onRequest?.();
    requests.push(readMember({value:init,key:'body'}));
    return new Response('{}');
   },
@@ -92,7 +100,8 @@ await describe({name:'built request observation size',children:[
  it({name:'retains an unchanged valid provider body larger than the former default ceiling',fn:async function largeDefaultBody(){
   /** This already-serialized primary request exceeds the former one-mebibyte ceiling. */
   const body=JSON.stringify({messages:[{role:'user',content:'界'.repeat(400_000)}]});
-  const bytes=Buffer.byteLength(body);expect(bytes>1_048_576).toBe(true);
+  const bytes=Buffer.byteLength(body);
+  expect(bytes>1_048_576).toBe(true);
   const request=readRequest(await observe({body}));
   expect(readMember({value:request,key:'body'})).toBe(body);
   expect(readMember({value:request,key:'bytes'})).toBe(bytes);
@@ -105,8 +114,11 @@ await describe({name:'built request observation size',children:[
  it({name:'preserves provider success while withholding observation above an explicit byte limit',fn:async function explicitLimit(){
   const body=JSON.stringify({messages:[{role:'user',content:'界'}]});
   const observed=await observe({body,maxBodyBytes:Buffer.byteLength(body)-1});
-  assert.throws(function unavailableObservation(){readRequest(observed);},function configuredFailure(error:unknown):boolean{
-   assert.ok(Error.isError(error));expect(error.name).toBe('RequestObservationUnavailableError');
+  assert.throws(function unavailableObservation(){
+   readRequest(observed);
+  },function configuredFailure(error:unknown):boolean{
+   assert.ok(Error.isError(error));
+   expect(error.name).toBe('RequestObservationUnavailableError');
    assert.ok(Error.isError(error.cause));
    expect(error.cause.message.includes('observation')).toBe(true);
    return true;
@@ -116,5 +128,21 @@ await describe({name:'built request observation size',children:[
   const body=JSON.stringify({messages:[{role:'user',content:'x'.repeat(1_048_576)}]});
   const request=readRequest(await observe({body,maxBodyBytes:Buffer.byteLength(body)}));
   expect(readMember({value:request,key:'body'})).toBe(body);
+ }}),
+ it({name:'rejects invalid explicit byte limits before provider transport',fn:async function invalidConfiguration(){
+  const transports:unknown[]=[];
+  for(const maxBodyBytes of [0,-1,1.5,Number.NaN,Number.POSITIVE_INFINITY,Number.MAX_SAFE_INTEGER+1,'1024',null,1n,Symbol('limit')]){
+   await assert.rejects(async function invalidLimit(){
+    await observe({body:'{"messages":[]}',maxBodyBytes,onRequest:function unexpectedTransport(){
+     transports.push(maxBodyBytes);
+    }});
+   },function invalidProfile(error:unknown):boolean{
+    assert.ok(Error.isError(error));
+    expect(error.name).toBe('RequestObservationProfileError');
+    expect(error.message.includes('positive safe integer')).toBe(true);
+    return true;
+   });
+  }
+  expect(transports).toEqual([]);
  }}),
 ]});

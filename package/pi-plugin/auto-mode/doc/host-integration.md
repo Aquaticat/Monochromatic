@@ -31,6 +31,29 @@ These lifetime checks prevent an answer for a disposed or replaced session from 
 Their decomposition remains a consolidation target;
 the responsibility is needed even if the current internal arrangement changes.
 
+## Request size and passive observation
+
+Long primary-model requests remain observable without a default byte ceiling.
+The provider already owns the serialized request string;
+observation retains its unchanged bytes,
+byte count and digest without replacing the provider's sender.
+Explicit `maxBodyBytes` values remain positive safe-integer limits.
+An explicitly exceeded limit withholds evidence while preserving primary transport.
+
+The previous default and constructor ceiling were both 1,048,576 bytes.
+The live MiMo source worker exceeded that default and logged
+`RequestObservationProfileError: Serialized request exceeds observation byte bound`.
+The retained failure then produced
+`Tool execution requires usable request evidence; primary chat transport remains available`
+when reviewing later tool calls.
+This is an auto-mode observation limit,
+separate from the earlier preparation catch-all and Git protocol incidents.
+
+The built `test:native:request-observation-size` catalog reproduces both default-size and configured-size failures
+before the fix,
+while its exact UTF-8 boundary and explicit smaller-limit controls pass.
+Its final passing run and configured-host long-session replay remain pending.
+
 ## Dependencies and alternatives
 
 Pi is a third-party dependency.

@@ -27,7 +27,7 @@ export function createRequestObservationOwner({
   lifecycle,
   root,
   collector,
-  maxBodyBytes=1_048_576,
+  maxBodyBytes,
   prepareSourceAssociation
 }) {
   if(((typeof originalStream)!=='function')||((typeof terminalFetch)!=='function')
@@ -36,8 +36,7 @@ export function createRequestObservationOwner({
       ||(!object(root?.manager)))
     ||((typeof collector?.capture)!=='function')
     ||((typeof collector?.assertObservedFresh)!=='function'))throw new RequestObservationProfileError('Trusted stream, terminal sender, constructor-owned root, lifecycle registry and source collector are required');
-  if((!Number.isSafeInteger(maxBodyBytes))||(maxBodyBytes<1)
-    ||(maxBodyBytes>1_048_576))throw new RequestObservationProfileError('Bounded JSON body profile is required');
+  if((maxBodyBytes!==undefined)&&((!Number.isSafeInteger(maxBodyBytes))||(maxBodyBytes<1)))throw new RequestObservationProfileError('Configured request observation byte limit must be a positive safe integer or omitted');
   const boundRoot=Object.freeze({
     session:root.session,
     manager:root.manager
