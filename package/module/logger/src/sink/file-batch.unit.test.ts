@@ -4,7 +4,7 @@ import { join, } from 'node:path';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { createFileSink, } from '../../dist/final/node/node.mjs';
 
-import type { Sink, } from '../../dist/final/neutral/index.mjs';
+import type { LogRecord, Sink, } from '../../dist/final/neutral/index.mjs';
 
 //region Disposable files exercise completion ownership at the persisted artifact
 
@@ -55,12 +55,15 @@ await describe({
       fn: async ({ sinon, },) => {
         const warnings = sinon.stub(console, 'warn',);
         await withFileSink(async function checkSerialization({ sink, readRecords, },): Promise<void> {
-          const cyclic: { self?: unknown; } = {};
+          const cyclic: LogRecord & { self?: unknown; } = {
+            level: 'info', timestamp: 0, message: 'cyclic record',
+          };
           cyclic.self = cyclic;
           await sink.write(cyclic,);
-          await sink.write({ toJSON(): undefined {
+          const missing = { level: 'info' as const, timestamp: 0, message: 'missing JSON', toJSON(): undefined {
             return undefined;
-          }, },);
+          }, };
+          await sink.write(missing,);
           const after = { level: 'info' as const, timestamp: 1, message: 'after rejected serialization', };
           await sink.write(after,);
           expect((await readRecords()).slice(1,),).toEqual([after,],);

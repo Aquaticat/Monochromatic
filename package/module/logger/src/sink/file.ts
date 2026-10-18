@@ -24,6 +24,7 @@ class FileRecordSerializationError extends Error {
    */
   constructor() {
     super('File sink record serialization produced no JSON value',);
+    this.name = 'FileRecordSerializationError';
   }
 }
 
@@ -261,6 +262,9 @@ export function createFileSink({
         filePath,
         'utf8',
       );
+      /**
+       Only a successful read-back publishes an append owner to callers.
+       */
       const verified = content.includes('"test":true',);
       if (verified)
         state.appends = createFileAppendQueue({ filePath, },);
