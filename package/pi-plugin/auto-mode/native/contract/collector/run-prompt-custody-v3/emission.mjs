@@ -6,7 +6,7 @@ import {createExpandedPromptPublication,createHandlerPublication} from './handle
 
 //region Observe the original native emitter and ordered handler completion.
 /** Observe the original native emitter and ordered handler completion. */
-export function createRunEmission({state,reserve,phase,check,base,charge,fail,known,dense,capture,record,issuedErrors}){
+export function createRunEmission({state,reserve,phase,check,base,fail,known,dense,capture,record,issuedErrors}){
 function start({
     runner,
     expandedPrompt
@@ -20,12 +20,9 @@ function start({
         .options);
       if(!runner)throw new SourceCollectionError('Native run requires its actual extension runner');
       if(expandedPrompt!==undefined){
-       scope.expandedPromptInput=charge({
-         scope,
-         value:captureExpandedPromptInput({
+       scope.expandedPromptInput=captureExpandedPromptInput({
            content:expandedPrompt,
            runOccurrence:scope.handle
-         })
        });
        scope.expandedPromptPublication=createExpandedPromptPublication(scope.expandedPromptInput);
       }

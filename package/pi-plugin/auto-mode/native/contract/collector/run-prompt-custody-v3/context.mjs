@@ -3,7 +3,7 @@ import {readOriginalMessagePublication,observeMessageCopies} from './handler-pub
 
 //region Keep native message copies attached to their original run publications.
 /** Keep native message copies attached to their original run publications. */
-export function createRunContext({state,phase,check,charge,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}){
+export function createRunContext({state,phase,check,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}){
 /** Resolve retained native context inputs through existing run scopes, never through text or saved IDs. */
   function retainContextInputs(messages){
     const scope=state.current;
@@ -52,10 +52,7 @@ export function createRunContext({state,phase,check,charge,known,assertLive,asse
           origin,
           index
         ) { return (origin===previous[index]); })){check(scope);scope.constructedInputs=constructedInputs;return;}
-      const retainedMessageOrigins=charge({
-        scope,
-        value:Object.freeze(origins)
-      });
+      const retainedMessageOrigins=Object.freeze(origins);
       const view=Object.freeze({
         ...scope.view,
         retainedMessageOrigins

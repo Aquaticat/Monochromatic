@@ -195,6 +195,9 @@ function mutationCommand({ scopes, examine, timeoutSeconds }) {
     String(timeoutSeconds),
     '--no-config',
     '--no-shuffle',
+    // The same runner as the gate: the baseline and every mutant run through nextest.
+    '--test-tool',
+    'nextest',
     '--output',
     containerReport,
     '--cargo-arg=--offline',

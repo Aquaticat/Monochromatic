@@ -644,13 +644,12 @@ async function runPlantedControl({
       ...limits,
       base,
       'cargo',
-      'test',
+      'nextest',
+      'run',
       '--offline',
       '--locked',
       '--all-targets',
       '--no-fail-fast',
-      '--',
-      '--test-threads=2',
     ],
   });
   await runCommand({
@@ -673,7 +672,10 @@ async function runPlantedControl({
     allowFailure: true,
   });
   const output = `${run.stdout}\n${run.stderr}`;
-  const noticed = (run.status !== 0) && output.includes(`test ${control.failing} ... FAILED`);
+  // nextest prints `FAIL [ 0.012s] <binary id> <test name>`; the name is the last token of the line.
+  const noticed = (run.status !== 0) && output.split('\n').some(function failedLine(line) {
+    return /^\s*FAIL \[/u.test(line) && line.trimEnd().endsWith(` ${control.failing}`);
+  });
   await writeFile(
     join(
       evidence,

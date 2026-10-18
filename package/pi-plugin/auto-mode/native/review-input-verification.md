@@ -29,6 +29,20 @@ logical operators, malformed commands, absent command inputs, and non-Bash opera
 
 ## Complete-session replay
 
+The 2026-10-18 MiMo report adds a retained-input capacity boundary.
+A passing short replay did not establish that a longer session could retain its instruction evidence.
+The original session exhausted a string allocation while counting the entire retained context.
+The capacity regression therefore uses independently authenticated manager inputs whose combined records
+exceed one engine string,
+while checking that original publication identities remain distinct.
+
+The same report exposes a separate native confirmation boundary.
+The incumbent Stop action aborts the session before returning its blocking decision.
+The dispatcher now preserves that validated decision without requiring execution eligibility.
+Approval still rechecks currentness before execution.
+The actual native `stop` and `cancel` fallback modes check both zero executions
+and the explicit stopped message in every withheld tool result.
+
 The consumer replay includes the reported interaction's preceding turns and configured resources.
 Its shell environment needs the tools used by the saved commands,
 including `rg`; a missing executable changes tool results and later model context.
