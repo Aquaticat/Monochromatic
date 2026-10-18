@@ -145,6 +145,16 @@ import android.util.Log
 // ```
 import androidx.core.content.ContextCompat
 
+// What:     `import dev.monochromatic.musicplayer.core.QueuedLoadLedger` brings in the counter of queued native loads.
+// Why:      `poll` asks it whether the worker's failure number names the latest load, so a decode failure is
+//           reported once and an older load's failure is not.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { QueuedLoadLedger } from "./core/QueuedLoadLedger";
+// ```
+import dev.monochromatic.musicplayer.core.QueuedLoadLedger
+
 // What:     `import java.io.File` brings in the JDK `File` type (a path on the local filesystem).
 // Why:      `openDescriptor` wraps a bare absolute path in a `File` to open it directly.
 //
@@ -349,6 +359,9 @@ class RustEngine(context: Context) : AudioEngine {
 
     /** Receives a load that could not start, so the controller can tell the user. */
     private var onLoadFailed: ((String, LoadFailure) -> Unit)? = null
+
+    /** Counts the loads queued with the native engine, to tell a decode failure of the latest one from an old one. */
+    private val queuedLoads: QueuedLoadLedger = QueuedLoadLedger()
 
     /** Opens track descriptors on the I/O dispatcher with a time limit, never on the main thread. */
     private val descriptorOpener: TimedDescriptorOpen<ParcelFileDescriptor> = TimedDescriptorOpen(
@@ -772,6 +785,8 @@ class RustEngine(context: Context) : AudioEngine {
             onLoadFailed?.invoke(load.uri, LoadFailure.UNREADABLE)
             return
         }
+        // The worker opens and decodes the file after this call returns; a failure there is read in `poll`.
+        queuedLoads.queued(load.uri)
         load.seekSec?.let { seconds -> NativeBridge.nativeEngineSeek(handle, seconds) }
         resolveScope.launch {
             /** Normalization gain from the cache or a native measurement, resolved off the main thread. */
@@ -1516,6 +1531,26 @@ class RustEngine(context: Context) : AudioEngine {
             // this.endedHandled = false;
             // ```
             endedHandled = false
+        }
+        // What:     `if (!unloaded && pendingLoad == null) { ... }` reads the worker's load failure number.
+        // Why:      The native `load` call returned once the load was queued, so a file that opens but does not
+        //           decode (a truncated or renamed file) fails later on the worker; its number is the only sign.
+        //           A newer load still opening its descriptor, or an unloaded engine, makes an older failure stale.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!this.unloaded && this.pendingLoad === null) {
+        //   const failedUri = this.queuedLoads.failureToReport(nativeEngineFailedLoad(this.handle));
+        //   if (failedUri !== null) this.onLoadFailed?.(failedUri, "UNREADABLE");
+        // }
+        // ```
+        if (!unloaded && pendingLoad == null) {
+            /** File of the latest queued load when the worker has newly failed to decode it, else null. */
+            val failedUri: String? = queuedLoads.failureToReport(NativeBridge.nativeEngineFailedLoad(handle))
+            if (failedUri != null) {
+                Log.w(LOG_TAG, "the engine worker could not decode ${failedUri.substringAfterLast('/')}")
+                onLoadFailed?.invoke(failedUri, LoadFailure.UNREADABLE)
+            }
         }
     }
 

@@ -556,6 +556,20 @@ struct WorkerState {
     /// pendingPos: number;
     /// ```
     pending_pos: usize,
+    /// What:
+    ///      `loads_handled: u64`.
+    ///  How many `Command::Load` requests the worker has started handling,
+    ///           counting the one in progress.
+    /// Why:
+    ///       Kotlin counts the loads it queues; this count names the load a failure belongs to,
+    ///  because the
+    ///           worker handles loads in the order they were queued.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// loadsHandled: number;
+    /// ```
+    loads_handled: u64,
 }
 
 /// What:
@@ -605,6 +619,7 @@ impl WorkerState {
             prod: None,
             pending: Vec::new(),
             pending_pos: 0,
+            loads_handled: 0,
         }
     }
 }
@@ -815,6 +830,14 @@ pub(crate) fn worker_run(rx: Receiver<Command>, control: Arc<Control>) {
 /// function handleLoad(state: WorkerState, control: Control, file: File, play: boolean): void { ... }
 /// ```
 fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::File, play: bool) {
+    // What:     `state.loads_handled += 1;`. Count this load before any early return below.
+    // Why:      A failure names its load by this number, and Kotlin counts queued loads the same way.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // state.loadsHandled += 1;
+    // ```
+    state.loads_handled += 1;
     // What:     `state.stream = None;`. Overwrite the stream field with the empty `Option`.
     //           Assigning `None` DROPS the previous `AudioStream`, which closes it and
     //           stops its callback.
@@ -887,16 +910,21 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         // // source = the opened decoder
         // ```
         Ok(source) => source,
-        // What:     `Err(_) => return`. The failure arm. `Err(_)` matches any error; the
-        //           `_` is a wildcard that DISCARDS the error value (we don't inspect it).
-        //           `return` exits `handle_load` early, leaving the engine idle.
-        // Why:      If the file cannot be decoded, abandon the load silently.
+        // What:     `Err(_) => { fail_load(state, control); return; }`. The failure arm. `Err(_)` matches any
+        //           error; the `_` is a wildcard that DISCARDS the error value (we don't inspect it).
+        //           `fail_load` resets the track facts and publishes this load's number as the failed one,
+        //           then `return` exits `handle_load` early, leaving the engine idle.
+        // Why:      If the file cannot be decoded, abandon the load, but let Kotlin report it: the error value
+        //           carries nothing the report needs.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // // on any error: return;
+        // // on any error: failLoad(state, control); return;
         // ```
-        Err(_) => return,
+        Err(_) => {
+            fail_load(state, control);
+            return;
+        }
     };
     // What:     `let spec = source.spec();`. Call the `spec()` method on the decoder; it
     //           returns an `AudioSpec` value (a small COPY containing `rate: u32`,
@@ -909,7 +937,7 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // const spec = source.spec();
     // ```
     let spec = source.spec();
-    // What:     `if spec.rate == 0 || spec.channels == 0 { return; }`. Guard: `||` is
+    // What:     `if spec.rate == 0 || spec.channels == 0 { fail_load(state, control); return; }`. Guard: `||` is
     //           logical OR. If either the sample rate or channel count is zero (an invalid
     //           or empty track), `return` early. These comparisons and `||` are
     //           character-identical to TS.
@@ -920,6 +948,7 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // if (spec.rate === 0 || spec.channels === 0) return;
     // ```
     if spec.rate == 0 || spec.channels == 0 {
+        fail_load(state, control);
         return;
     }
     // What:     `control.rate.store(spec.rate, Ordering::Release);`. `control.rate` is an
@@ -1034,15 +1063,16 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
     // catch { /* recovery below */ }
     // ```
     if reconfigure_output(state, control, spec.rate, spec.channels).is_err() {
-        // What:     `control.playing.store(false, Ordering::Release);`. On output-build
-        //           failure, atomically force the play gate to `false` with `Release`.
-        // Why:      Nothing can play if the output failed; ensure we are paused/silent.
+        // What:     `fail_load(state, control);`. On output-build failure, force the play gate to `false`,
+        //           reset the track facts and report this load as failed.
+        // Why:      Nothing can play if the output failed; without the reset the deck keeps the previous track's
+        //           duration, and without the report Kotlin never learns the load failed.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // Atomics.store(control.playing, 0, 0 /* false */);
+        // failLoad(state, control);
         // ```
-        control.playing.store(false, Ordering::Release);
+        fail_load(state, control);
         // What:     `state.source = None;`. Drop the just-loaded decoder by setting the
         //           field back to the empty `Option`.
         // Why:      Undo the load so the engine is fully idle (no source, silent) after the
@@ -1054,6 +1084,40 @@ fn handle_load(state: &mut WorkerState, control: &Arc<Control>, file: std::fs::F
         // ```
         state.source = None;
     }
+}
+
+/// What:
+///      `fn fail_load(state: &WorkerState, control: &Arc<Control>)`.
+///  Resets every track fact the previous track left in `control` (silent,
+///           not ended,
+///  no rate,
+///  no channels,
+///  no length,
+///  no position) and then publishes this load's
+///           sequence number as the failed one.
+/// Why:
+///       A load whose file opens but does not decode used to return with the
+///           previous track's duration and play state still in `control`,
+///  and nothing told Kotlin;
+///  the deck then
+///           showed a stale length and playback stalled in silence.
+///  The sequence number is stored last so a reader
+///           that sees it also sees the reset.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function failLoad(state: WorkerState, control: Control): void { ... }
+/// ```
+fn fail_load(state: &WorkerState, control: &Arc<Control>) {
+    control.playing.store(false, Ordering::Release);
+    control.ended.store(false, Ordering::Release);
+    control.decode_done.store(false, Ordering::Release);
+    control.rate.store(0, Ordering::Release);
+    control.channels.store(0, Ordering::Release);
+    control.start_frame.store(0, Ordering::Release);
+    control.frames_played.store(0, Ordering::Release);
+    control.duration_ms.store(0, Ordering::Release);
+    control.failed_load.store(state.loads_handled, Ordering::Release);
 }
 
 /// What:
