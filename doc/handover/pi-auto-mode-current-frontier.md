@@ -52,6 +52,23 @@ Implement that ownership repair with asynchronous file batching and shared synch
 verify the logger and actual host,
 and bump the logger version before publication.
 No compressed receipt representation is justified by the current retainer evidence.
+The maintained built-artifact burst regression fails at 93,863,816 retained bytes before the repair.
+The file regression also reproduces corrupted JSONL when a record's `toJSON` calls the same sink reentrantly.
+Source repairs now share pending observations,
+reuse synchronous sink completions,
+and batch captured complete file records under a 64 KiB aggregation bound.
+The initial logger rebuild and type check pass;
+narrow regression checks are running.
+New lint findings still require cleanup,
+including the sequential append loop's expression and a preexisting source import in the directory test.
+The logger remains version `0.4.1` until verification closes;
+the required publishing bump is still queued.
+Then rebuild both auto-mode JavaScript and native output,
+run the complete configured-host replay variants,
+audit actual Luna payloads and prohibitions,
+and finish cleanup,
+measurements,
+documentation and the MiMo handoff.
 Earlier outputs still exit 134 from Node heap exhaustion;
 the private retirement-only replay instead reaches its 600-second driver limit after 58 live assessments.
 The immediate work is diagnosing the remaining fragmented-stream retention,
