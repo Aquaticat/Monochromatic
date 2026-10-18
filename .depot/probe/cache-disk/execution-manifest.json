@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Verify standalone Depot CI persistent disk, real mount, sequential source-bound persistence, fresh sandbox marker isolation, disjoint fan-out writers, peer reads and post cleanup",
+  "cohort": "monochromatic-disk-20261018T0503-trusted-v1",
+  "scope": "Isolated trial branch and uniquely named disk only",
+  "source": "Committed workflow, inline mise tasks and source checkout bound in per-job proof",
+  "actions": {
+    "cacheMount": "38d61fd25163e9ef3a3eff8a61676994d306e549",
+    "checkout": "de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+    "mise": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+    "uploadArtifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "bounds": {
+    "jobs": 3,
+    "maximumConcurrentJobs": 2,
+    "perJobCpus": 2,
+    "perJobMemoryGb": 8,
+    "perJobTimeoutMinutes": 5,
+    "fixturePayloadBytes": 1048576,
+    "peerVisibilityWaitMilliseconds": 45000
+  },
+  "preconditions": [
+    "Push committed branch before Depot dispatch to prevent local patch injection",
+    "Verify no pre-existing private job marker and no pre-existing mount",
+    "Require preinstalled Archil, record version/hash and reject the floating installer path",
+    "Require the same Archil hash after mounting",
+    "Never read or mutate another disk name"
+  ],
+  "network": "Repository checkout, pinned action and Node bootstrap, scoped sandbox disk metadata, mounted Depot cache disk, artifact upload",
+  "credentials": "Existing repository read permission, sandbox-issued job disk token handled by the pinned action; no user/org secret created or exported",
+  "outputs": "Whitelisted preflight and consumer JSON, artifact metadata/digests, provider job/attempt metadata and full post-step logs",
+  "cleanup": "Pinned action unmount and token release; preserve both outcomes. Disk payload intentionally retained under its unique name for provider retention; no shared-cache deletion or retention-setting change.",
+  "excluded": "No dependency-cache speed estimate, no whole-repository build, no subscription/settings/account-wide/invoice access, no guarantee of arbitrary concurrent tool-cache mutation safety"
+}
