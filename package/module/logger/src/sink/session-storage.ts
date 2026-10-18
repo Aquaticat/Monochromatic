@@ -79,7 +79,9 @@ function verifySessionStorage(): Promise<boolean> {
  ```
  */
 export function createSessionStorageSink(): Sink {
-  /** Synchronous admission shares completion without changing buffer persistence or flush triggers. */
+  /**
+   Synchronous admission shares completion without changing buffer persistence or flush triggers.
+   */
   const completedWrite = Promise.resolve();
   /**
    Persistence engine owning key allocation, footprint accounting, and quota

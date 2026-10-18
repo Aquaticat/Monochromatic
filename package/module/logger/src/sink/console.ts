@@ -435,7 +435,9 @@ function verifyConsole(): Promise<boolean> {
  ```
  */
 export function createConsoleSink(): Sink {
-  /** Synchronous admission shares completion so a producer burst cannot allocate a promise per record. */
+  /**
+   Synchronous admission shares completion so a producer burst cannot allocate a promise per record.
+   */
   const completedWrite = Promise.resolve();
   /**
    Instance-local console-sink state. `buffer` holds records awaiting the

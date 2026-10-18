@@ -246,7 +246,8 @@ export function createLogger(
        Sink entry receiving the record.
        */
       const entry = getSinkEntry({ entryIndex, },);
-      pendingWrites.add(entry.sink.write(record,),);
+      pendingWrites.add(entry.sink
+        .write(record,),);
     }
     catch (error: unknown) {
       reportLoggerInternalError({

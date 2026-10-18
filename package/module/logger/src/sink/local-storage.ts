@@ -132,7 +132,9 @@ function verifyLocalStorage(): Promise<boolean> {
  ```
  */
 export function createLocalStorageSink(): Sink {
-  /** Synchronous admission shares completion without changing buffer persistence or flush triggers. */
+  /**
+   Synchronous admission shares completion without changing buffer persistence or flush triggers.
+   */
   const completedWrite = Promise.resolve();
   /**
    Persistence engine owning run identity, key allocation, prior-run

@@ -151,7 +151,8 @@ export async function findNodeModulesUp(
  ```
  */
 export function createFileSink({
-  directory = process.env.MONOCHROMATIC_LOG_DIRECTORY,
+  directory = process.env
+    .MONOCHROMATIC_LOG_DIRECTORY,
 }: Readonly<{ directory?: string }> = {}): Sink {
   /**
    Instance-local file-sink resources. `appends` is populated during
@@ -163,7 +164,9 @@ export function createFileSink({
     appends?: ReturnType<typeof createFileAppendQueue>;
     verifyPromise?: Promise<boolean>;
   } = {};
-  /** Unverified writes keep their existing fulfilled completion without allocating per discarded record. */
+  /**
+   Unverified writes keep their existing fulfilled completion without allocating per discarded record.
+   */
   const completedWrite = Promise.resolve();
 
   /**
@@ -179,7 +182,7 @@ export function createFileSink({
       /**
        Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
        */
-      const nodeModulesDir = directory ? directory : await findNodeModulesUp({
+      const nodeModulesDir = directory !== undefined && directory !== '' ? directory : await findNodeModulesUp({
         cwd: process.cwd(),
         stat,
         dirname,
@@ -196,13 +199,16 @@ export function createFileSink({
       /**
        Directory under the chosen `node_modules` where every monochromatic log file lands.
        */
-      const LOG_DIR = directory ? directory : join(
+      const LOG_DIR = directory !== undefined && directory !== '' ? directory : join(
         nodeModulesDir,
         '.monochromatic',
       );
       await mkdir(
         LOG_DIR,
-        { recursive: true, mode: 0o700, },
+        {
+          recursive: true,
+          mode: 0o700,
+        },
       );
 
       /**

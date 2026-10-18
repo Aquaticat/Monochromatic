@@ -5,7 +5,7 @@ import { createLogger, } from '../dist/final/neutral/index.mjs';
 
 /** Explicit collection separates retained completion state from discarded log records. */
 const collect = globalThis.gc;
-if (typeof collect !== 'function')
+if ((typeof collect) !== 'function')
   throw new Error('The logger burst capacity task requires --expose-gc',);
 /** Shared completed sink operation remains valid for every delivered record. */
 const completed = Promise.resolve();

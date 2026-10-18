@@ -3,7 +3,9 @@ import type {
   Sink,
 } from '../types.ts';
 
-/** Lazy immutable completion adds no asynchronous work at module import. */
+/**
+ Lazy immutable completion adds no asynchronous work at module import.
+ */
 const memo: { completed?: Promise<void>; } = {};
 
 /**

@@ -41,10 +41,10 @@ await describe({
         logger.info('after rejection',);
         await logger.flush();
         expect(state.delivered,).toBe(3,);
-        expect(warnings.getCalls().flatMap(function argumentsOf(call,) {
+        expect(warnings.getCalls().flatMap(function argumentsOf(call,): unknown[] {
           return call.args;
         },).filter(function sharedFailure(value,) {
-          return typeof value === 'string'
+          return ((typeof value) === 'string')
             && value.includes('sink write promise rejected while being tracked',);
         },),).toHaveLength(1,);
       },
@@ -68,7 +68,12 @@ await describe({
           },],
         },);
         await initPromise;
-        try {
+        await using cleanup = {
+          async [Symbol.asyncDispose](): Promise<void> {
+            operation.resolve();
+            await logger.flush();
+          },
+        };
           logger.info('abandoned observation',);
           await logger.flush();
           logger.info('new observation of the same operation',);
@@ -83,11 +88,6 @@ await describe({
           operation.resolve();
           await flushing;
           expect(state.delivered,).toBe(2,);
-        }
-        finally {
-          operation.resolve();
-          await logger.flush();
-        }
       },
     },),
   ],

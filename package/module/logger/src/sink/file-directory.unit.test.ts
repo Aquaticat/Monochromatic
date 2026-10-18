@@ -1,23 +1,55 @@
 /** Verify configured destinations through the actual sink and default logger. @module */
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { chmod, mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { createFileSink } from '../../dist/final/node/node.mjs';
 
 //region Actual filesystem and child-process boundaries retain independent destinations.
-/** Node owns subprocess cancellation and completion. */
-const run = promisify(execFile);
+/**
+ Node owns the child lifecycle; captured stderr must remain empty through cleanup.
+
+ @param cwd - disposable workspace exercising ancestor discovery
+ @param home - disposable home excluding shared logger state
+ @param directory - explicit destination or empty ancestor-discovery control
+ @param marker - expected persisted record identifying the contrast
+ @param source - consumer import and actual logger calls
+ */
+async function run({ cwd, home, directory, marker, source }: {
+  readonly cwd: string;
+  readonly home: string;
+  readonly directory: string;
+  readonly marker: string;
+  readonly source: string;
+}): Promise<void> {
+  const child = spawn(process.execPath, ['--max-old-space-size=128', '--input-type=module', '--eval', source], {
+    cwd,
+    env: { ...process.env, HOME: home, MONOCHROMATIC_LOG_DIRECTORY: directory, LOGGER_DIRECTORY_MARKER: marker },
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  const errors: Buffer[] = [];
+  child.stderr.on('data', function capture(chunk: Buffer): void {
+    errors.push(chunk);
+  });
+  const status: unknown[] = await once(child, 'close');
+  const [code, signal] = status;
+  const stderr = Buffer.concat(errors).toString();
+  assert.equal(code, 0, stderr);
+  assert.equal(signal, null);
+  assert.equal(stderr, '');
+}
 /** Create disposable workspaces without changing shared process environment or cwd. */
 async function workspace() {
   const scratch = join(homedir(), 'temp', 'agent');
   await mkdir(scratch, { recursive: true, mode: 0o700 });
   await chmod(scratch, 0o700);
   const path = await mkdtemp(join(scratch, 'logger-directory-'));
-  return { path, async [Symbol.asyncDispose]() { await rm(path, { recursive: true }); } };
+  return { path, async [Symbol.asyncDispose]() {
+    await rm(path, { recursive: true });
+  } };
 }
 /** Read the real JSONL records rather than an intercepted write callback. */
 async function records(directory: string): Promise<unknown[]> {
@@ -32,7 +64,7 @@ async function records(directory: string): Promise<unknown[]> {
 }
 /** Match ordinary serialized data without asserting any backend state. */
 function hasMessage({ values, message }: Readonly<{ values: readonly unknown[]; message: string }>): boolean {
-  return values.some(value => typeof value === 'object' && value !== null && 'message' in value && value.message === message);
+  return values.some(value => ((typeof value) === 'object') && (value !== null) && ('message' in value) && (value.message === message));
 }
 
 await describe({ name: createFileSink.name, children: [
@@ -54,12 +86,10 @@ await describe({ name: createFileSink.name, children: [
     const ordinary = join(cwd, 'node_modules', '.monochromatic');
     const configured = join(fixture.path, 'configured');
     const source = `import {logger} from ${JSON.stringify(new URL('../../dist/final/node/index.mjs', import.meta.url).href)}; logger.info(process.env.LOGGER_DIRECTORY_MARKER); await logger.flush();`;
-    for (const contrast of [{ directory: '', marker: 'ancestor control' }, { directory: configured, marker: 'configured control' }]) {
-      await run(process.execPath, ['--max-old-space-size=128', '--input-type=module', '--eval', source], {
-        cwd, env: { ...process.env, HOME: fixture.path, MONOCHROMATIC_LOG_DIRECTORY: contrast.directory,
-          LOGGER_DIRECTORY_MARKER: contrast.marker },
-      });
-    }
+    await Promise.all([{ directory: '', marker: 'ancestor control' }, { directory: configured, marker: 'configured control' }]
+      .map(function check(contrast) {
+        return run({ cwd, home: fixture.path, source, ...contrast });
+      }));
     assert.equal(hasMessage({ values: await records(ordinary), message: 'ancestor control' }), true);
     assert.equal(hasMessage({ values: await records(ordinary), message: 'configured control' }), false);
     assert.equal(hasMessage({ values: await records(configured), message: 'configured control' }), true);
