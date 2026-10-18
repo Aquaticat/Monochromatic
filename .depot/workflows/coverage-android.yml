@@ -117,7 +117,9 @@ jobs:
           ,join(evidence,'restored-tool-image-manifest.json'))\\\\n  const
           registry=JSON.parse(readFileSync(join(evidence,'snapshot-registry-manifest.json'),'utf8'))\\\\n  as\
           sert.equal(registry.digest,expectedImage,'Snapshot registry digest is not
-          verified')\\\\n  manifest.observedImageDigest=registry.digest\\\\n  for(const path of
+          verified')\\\\n  assert(!registry.failure,'Snapshot registry configuration proof failed:
+          '+registry.failure)\\\\n  assert.equal(registry.config?.mediaType,'application/vnd.depot.thin.snaps\
+          hot.config.v2+json')\\\\n  manifest.observedImageDigest=registry.digest\\\\n  for(const path of
           ['app/build','rust/target','app/src/main/jniLibs'])assert(!existsSync(join(android,path)),'Unexpect\
           ed preexisting Android output: '+path)\\\\n  const
           disk=statfsSync(root)\\\\n  manifest.diskBefore={blockBytes:disk.bsize,freeBytes:disk.bavail*disk.b\
@@ -127,8 +129,32 @@ jobs:
           .kts','package/music-player/android-app/app/build.gradle.kts','package/music-player/android-app/gra\
           dle/wrapper/gradle-wrapper.properties','package/music-player/android-app/gradle/wrapper/gradle-wrap\
           per.jar','package/music-player/truepeak-core/Cargo.toml','package/music-player/desktop-app/Cargo.to\
-          ml'].map(path=>[path,sha(readFileSync(join(root,path)))]))\\\\n  save()\\\\n }\\\\n async function
-          captureArtifacts(){\\\\n  const
+          ml'].map(path=>[path,sha(readFileSync(join(root,path)))]))\\\\n  save()\\\\n }\\\\n function
+          classifyRelro(rows){\\\\n  const page=16384n\\\\n  const
+          loads=rows.filter(row=>row[0]==='LOAD').map(row=>({row,start:BigInt(row[2]),end:BigInt(row[2])+BigI\
+          nt(row[5]),writable:row.slice(6,-1).join('').includes('W')}))\\\\n  return
+          rows.filter(row=>row[0]==='GNU_RELRO').map(row=>{\\\\n   const start=BigInt(row[2]);const
+          size=BigInt(row[5]);const end=start+size\\\\n   const protectedStart=start/page*page;const
+          protectedEnd=(end+page-1n)/page*page\\\\n   const aligned=end%page===0n\\\\n   const
+          dedicated=loads.find(load=>load.start===start&&load.end<=end)\\\\n   const
+          overlap=Boolean(dedicated)&&loads.some(load=>load!==dedicated&&load.writable&&load.start<protectedE\
+          nd&&load.end>protectedStart)\\\\n   const safeDedicated=Boolean(dedicated)&&!overlap\\\\n   return
+          {virtualAddress:row[2],memoryBytes:row[5],endAligned16kb:aligned,dedicatedLoadCoversAllData:Boolean\
+          (dedicated),otherWritableLoadOverlapsProtectedPage:overlap,protectedPageEnd:'0x'+protectedEnd.toStr\
+          ing(16),compatible16kb:size===0n||aligned||safeDedicated,reason:size===0n?'empty_segment':aligned?'\
+          aligned_relro_end':safeDedicated?'dedicated_load_without_mutable_overlap':'shared_or_overlapping_wr\
+          itable_data'}\\\\n  })\\\\n }\\\\n function verifyRelroControls(){\\\\n  const
+          load=(start,size)=>['LOAD','0x0',start,start,size,size,'RW','0x4000']\\\\n  const
+          relro=(start,size)=>['GNU_RELRO','0x0',start,start,size,size,'R','0x1']\\\\n  assert(classifyRelro(\
+          [load('0x4000','0x4000'),relro('0x4000','0x4000')])[0].compatible16kb)\\\\n  assert(classifyRelro([\
+          load('0x4680','0x980'),relro('0x4680','0x980'),load('0x8000','0x100')])[0].compatible16kb)\\\\n  as\
+          sert(classifyRelro([load('0x5c40','0x390'),relro('0x5c40','0x3c0'),load('0x9fd0','0x10')])[0].compa\
+          tible16kb)\\\\n  assert(!classifyRelro([load('0x4680','0x2000'),relro('0x4680','0x980')])[0].compat\
+          ible16kb)\\\\n  assert(!classifyRelro([load('0x4680','0x980'),relro('0x4680','0x980'),load('0x5000'\
+          ,'0x100')])[0].compatible16kb)\\\\n  assert(!classifyRelro([relro('0x4680','0x980')])[0].compatible\
+          16kb)\\\\n  manifest.relroControls={alignedPositive:true,dedicatedLoadPositive:true,actualPaddedDed\
+          icatedLoadPositive:true,sharedWritableNegative:true,subsequentWritableOverlapNegative:true,missingL\
+          oadNegative:true}\\\\n  save()\\\\n }\\\\n async function captureArtifacts(){\\\\n  const
           sdk=execFileSync('mise',['exec','android-sdk','node','--','node','--input-type=module','--eval','co\
           nsole.log(process.env.ANDROID_HOME??\\\\\\\"\\\\\\\")'],{cwd:root,encoding:'utf8'}).trim()\\\\n  as\
           sert(sdk)\\\\n  manifest.androidHome=sdk\\\\n  const
@@ -141,25 +167,27 @@ jobs:
           ing()}}\\\\n  const
           artifactDir=join(evidence,'apks');mkdirSync(artifactDir,{recursive:true})\\\\n  const
           nativeScratch=join(homedir(),'temp/agent/android-elf');mkdirSync(nativeScratch,{recursive:true,mode\
-          :448})\\\\n  for(const [kind,path]of
-          [['debug','app/build/outputs/apk/debug/app-debug.apk'],['androidTest','app/build/outputs/apk/androi\
-          dTest/debug/app-debug-androidTest.apk']]){\\\\n   const
+          :448})\\\\n  const
+          apks=[['debug','app/build/outputs/apk/debug/app-debug.apk'],['androidTest','app/build/outputs/apk/a\
+          ndroidTest/debug/app-debug-androidTest.apk']]\\\\n  for(const [kind,path]of apks){\\\\n   const
           file=join(android,path)\\\\n   if(!existsSync(file)){manifest.artifacts.push({kind,path,state:'miss\
           ing_after_build'});continue}\\\\n   const bytes=readFileSync(file);const
           name=kind+'.apk';copyFileSync(file,join(artifactDir,name));manifest.artifacts.push({kind,path,artif\
-          actPath:'apks/'+name,bytes:bytes.length,sha256:sha(bytes)})\\\\n   await
-          run({name:kind+'-zipalign-16kb',command:join(buildTools,'zipalign'),args:['-c','-P','16','-v','4',f\
-          ile],budgetMs:30000})\\\\n   await
-          run({name:kind+'-signature',command:join(buildTools,'apksigner'),args:['verify','--verbose','--prin\
-          t-certs',file],budgetMs:30000})\\\\n   await
-          run({name:kind+'-manifest-badging',command:join(buildTools,'aapt2'),args:['dump','badging',file],bu\
-          dgetMs:30000})\\\\n   const
+          actPath:'apks/'+name,bytes:bytes.length,sha256:sha(bytes)})\\\\n  }\\\\n  save()\\\\n  for(const
+          [kind,path]of apks){\\\\n   const
+          file=join(android,path)\\\\n   if(!existsSync(file))continue\\\\n   for(const check of
+          [{name:kind+'-zipalign-16kb',command:join(buildTools,'zipalign'),args:['-c','-P','16','-v','4',file\
+          ]},{name:kind+'-signature',command:join(buildTools,'apksigner'),args:['verify','--verbose','--print\
+          -certs',file]},{name:kind+'-manifest-badging',command:join(buildTools,'aapt2'),args:['dump','badgin\
+          g',file]},{name:kind+'-manifest-tree',command:join(buildTools,'aapt2'),args:['dump','xmltree',file,\
+          '--file','AndroidManifest.xml']}]){\\\\n    try{await
+          run({...check,budgetMs:30000})}catch(error){recordFailure(error)}\\\\n   }\\\\n   const
           listing=execFileSync('unzip',['-Z','-1',file],{encoding:'utf8',maxBuffer:8*1024*1024}).trim().split\
           ('\\\\\\\\n')\\\\n   const
           native=listing.filter(entry=>entry.startsWith('lib/')&&entry.endsWith('.so'))\\\\n   for(const entry
           of
-          native){\\\\n    assert(/^lib\\\\\\\\/[A-Za-z0-9_-]+\\\\\\\\/[^/]+\\\\\\\\.so$/.test(entry),'Unexpe\
-          cted native archive path')\\\\n    const
+          native){\\\\n    try{\\\\n    assert(/^lib\\\\\\\\/[A-Za-z0-9_-]+\\\\\\\\/[^/]+\\\\\\\\.so$/.test(e\
+          ntry),'Unexpected native archive path')\\\\n    const
           payload=execFileSync('unzip',['-p',file,entry],{maxBuffer:256*1024*1024})\\\\n    const
           extracted=join(nativeScratch,sha(entry)+'.so');writeFileSync(extracted,payload)\\\\n    const
           elf=execFileSync('readelf',['--file-header','--program-headers','--dynamic','--dyn-syms','--wide',e\
@@ -168,20 +196,55 @@ jobs:
           n    const rows=elf.split('\\\\\\\\n').map(line=>line.trim().split(/\\\\\\\\s+/))\\\\n    const
           loads=rows.filter(row=>row[0]==='LOAD').map(row=>({offset:row[1],virtualAddress:row[2],alignment:ro\
           w.at(-1),aligned16kb:BigInt(row.at(-1))>=16384n&&(BigInt(row[2])-BigInt(row[1]))%16384n===0n}))\\\\\
-          n    const
-          relro=rows.filter(row=>row[0]==='GNU_RELRO').map(row=>({virtualAddress:row[2],memoryBytes:row[5],en\
-          dAligned16kb:(BigInt(row[2])+BigInt(row[5]))%16384n===0n}))\\\\n    const jni=[...new
+          n    const relro=classifyRelro(rows)\\\\n    const jni=[...new
           Set([...elf.matchAll(/\\\\\\\\bJava_[A-Za-z0-9_]+/g)].map(match=>match[0]))].sort()\\\\n    const
           sourceNative=join(android,'app/src/main/jniLibs',entry.slice(4))\\\\n    const
-          matchesBuildOutput=existsSync(sourceNative)?sha(readFileSync(sourceNative))===sha(payload):null\\\\\
-          n    manifest.nativeLibraries.push({apk:kind,entry,bytes:payload.length,sha256:sha(payload),elfLog:\
-          logName,loads,relro,relroPresent:relro.length>0,jniExports:jni,matchesBuildOutput})\\\\n    assert(\
-          loads.length&&loads.every(row=>row.aligned16kb),'ELF LOAD alignment failure:
-          '+entry)\\\\n    assert(relro.every(row=>row.endAligned16kb),'ELF RELRO end alignment failure:
-          '+entry)\\\\n    if(matchesBuildOutput!==null)assert(matchesBuildOutput,'APK/build native bytes
-          differ: '+entry)\\\\n   }\\\\n   if(kind==='debug')for(const abi of
-          ['arm64-v8a','x86_64'])assert(native.includes('lib/'+abi+'/libmusicplayer_native.so'),'Missing
-          source-required ABI '+abi)\\\\n  }\\\\n  save()\\\\n }\\\\n function captureJUnit(){\\\\n  const
+          sourceNativeSha256=existsSync(sourceNative)?sha(readFileSync(sourceNative)):null\\\\n    const
+          strippedNative=join(android,'app/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymb\
+          ols/out',entry)\\\\n    const
+          strippedIntermediateSha256=existsSync(strippedNative)?sha(readFileSync(strippedNative)):null\\\\n    \
+          const
+          matchesBuildOutput=sourceNativeSha256===null?null:sourceNativeSha256===sha(payload)\\\\n    const
+          matchesStrippedIntermediate=strippedIntermediateSha256===null?null:strippedIntermediateSha256===sha\
+          (payload)\\\\n    const
+          header=Object.fromEntries(['Class','Data','Type','Machine'].map(name=>[name,elf.split('\\\\\\\\n').\
+          find(line=>line.trim().startsWith(name+':'))?.split(':').slice(1).join(':').trim()??null]))\\\\n    \
+          const
+          alignmentRequirementApplies=['arm64-v8a','x86_64'].includes(entry.split('/')[1])\\\\n    manifest.n\
+          ativeLibraries.push({apk:kind,entry,bytes:payload.length,sha256:sha(payload),elfHeader:header,elfLo\
+          g:logName,loads,relro,relroPresent:relro.length>0,jniExports:jni,jniOnLoadExport:elf.includes('JNI_\
+          OnLoad'),sourceNativeSha256,strippedIntermediateSha256,matchesBuildOutput,matchesStrippedIntermedia\
+          te,alignmentRequirementApplies})\\\\n    save()\\\\n    assert(loads.length,'No ELF LOAD segments
+          were discovered:
+          '+entry)\\\\n    if(alignmentRequirementApplies)assert(loads.every(row=>row.aligned16kb),'ELF LOAD
+          alignment failure:
+          '+entry)\\\\n    if(alignmentRequirementApplies)assert(relro.every(row=>row.compatible16kb),'ELF
+          RELRO layout incompatibility:
+          '+entry)\\\\n    if(matchesStrippedIntermediate!==null)assert(matchesStrippedIntermediate,'APK/stri\
+          pped intermediate native bytes differ:
+          '+entry)\\\\n    }catch(error){recordFailure(error)}\\\\n   }\\\\n   if(kind==='debug')for(const abi
+          of
+          ['arm64-v8a','x86_64'])if(!native.includes('lib/'+abi+'/libmusicplayer_native.so'))recordFailure(new
+          Error('Missing source-required ABI
+          '+abi))\\\\n   manifest.abiInventory??={}\\\\n   manifest.abiInventory[kind]={packaged:[...new
+          Set(native.map(entry=>entry.split('/')[1]))].sort(),nativeEngine:[...new
+          Set(native.filter(entry=>entry.endsWith('/libmusicplayer_native.so')).map(entry=>entry.split('/')[1\
+          ]))].sort()}\\\\n   save()\\\\n  }\\\\n  try{\\\\n   const
+          logs=name=>readFileSync(join(evidence,name+'.log'),'utf8')\\\\n   const cert=kind=>/Signer #1
+          certificate SHA-256 digest: ([a-f0-9]+)/.exec(logs(kind+'-signature'))?.[1]\\\\n   const
+          packageName=kind=>/package: name='([^']+)'/.exec(logs(kind+'-manifest-badging'))?.[1]\\\\n   const
+          target=/android:targetPackage[^=\\\\\\\\n]*=\\\\\\\"([^\\\\\\\"]+)\\\\\\\"/.exec(logs('androidTest-\
+          manifest-tree'))?.[1]\\\\n   const
+          runner=/android:name[^=\\\\\\\\n]*=\\\\\\\"(androidx\\\\\\\\.test\\\\\\\\.runner\\\\\\\\.AndroidJUn\
+          itRunner)\\\\\\\"/.exec(logs('androidTest-manifest-tree'))?.[1]\\\\n   manifest.apkPair={debugPacka\
+          ge:packageName('debug'),testPackage:packageName('androidTest'),instrumentationTargetPackage:target,\
+          instrumentationRunner:runner,debugCertificateSha256:cert('debug'),testCertificateSha256:cert('andro\
+          idTest')}\\\\n   save()\\\\n   assert.equal(manifest.apkPair.debugPackage,'dev.monochromatic.musicp\
+          layer')\\\\n   assert.equal(manifest.apkPair.testPackage,'dev.monochromatic.musicplayer.test')\\\\n   \
+          assert.equal(target,manifest.apkPair.debugPackage)\\\\n   assert.equal(runner,'androidx.test.runner\
+          .AndroidJUnitRunner')\\\\n   assert(cert('debug'))\\\\n   assert.equal(cert('debug'),cert('androidT\
+          est'))\\\\n  }catch(error){recordFailure(error)}\\\\n  save()\\\\n }\\\\n function
+          captureJUnit(){\\\\n  const
           directory=join(android,'app/build/test-results/testDebugUnitTest')\\\\n  if(!existsSync(directory))\
           {manifest.junitState='no_report_directory';save();return}\\\\n  const
           target=join(evidence,'junit');mkdirSync(target,{recursive:true})\\\\n  for(const name of
@@ -197,7 +260,7 @@ jobs:
           differs')\\\\n   copyFileSync(join(directory,name),join(target,name));manifest.junit.push({name,...\
           fields,testcaseElements:cases,bytes:bytes.length,sha256:sha(bytes)})\\\\n  }\\\\n  manifest.junitSt\
           ate=manifest.junit.length?'reports_captured':'no_xml_reports';save()\\\\n }\\\\n let
-          ready=false\\\\n try{inspectSource();await
+          ready=false\\\\n try{verifyRelroControls();inspectSource();await
           run({name:'install-locked-android-tools',args:['install','--locked','android-sdk','cargo:cargo-ndk'\
           ],budgetMs:6*60*1000});await
           run({name:'prepare-owned-sdk-components',args:['run','prepare:android'],budgetMs:8*60*1000});ready=\
@@ -269,20 +332,17 @@ jobs:
           Buffer.from(await response.arrayBuffer());\\\\n    assert(bytes.length <= 1024 *
           1024);\\\\n    proof.digest = 'sha256:' + sha(bytes);\\\\n    assert.equal(proof.digest,
           'sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8');\\\\n    const manifest =
-          JSON.parse(bytes.toString());\\\\n    proof.manifest = manifest;\\\\n    const configResponse =
-          await get({ path: '/v2/' + repository + '/blobs/' + manifest.config.digest, authorization
-          });\\\\n    assert.equal(configResponse.status, 200);\\\\n    const configBytes = Buffer.from(await
-          configResponse.arrayBuffer());\\\\n    assert(configBytes.length <= 1024 *
-          1024);\\\\n    assert.equal('sha256:' + sha(configBytes), manifest.config.digest);\\\\n    const
-          config = JSON.parse(configBytes.toString());\\\\n    const variables = config.config?.Env ??
-          [];\\\\n    proof.config = { digest: manifest.config.digest, architecture: config.architecture, os:
-          config.os, rootfsType: config.rootfs?.type, environmentNames: variables.map(value =>
-          value.split('=')[0]), unmaskedSyntheticControlInConfig:
-          variables.includes('RESEARCH_PERSIST_CONTROL=synthetic-public-environment-20261018-r1'),
-          maskedSyntheticControlInConfig: variables.some(value =>
-          value.startsWith('RESEARCH_SECRET_CONTROL=')), credentialNamedVariablesPresent: variables.map(value
-          => value.split('=')[0]).filter(name => /TOKEN|PASSWORD|SECRET|AUTH/iu.test(name)) };\\\\n  }\\\\n}
-          catch (error) {\\\\n  proof.failure = String(error);\\\\n} finally
+          JSON.parse(bytes.toString());\\\\n    proof.manifest = manifest;\\\\n    assert(manifest.config.size
+          <= 16 * 1024 * 1024);\\\\n    const configResponse = await get({ path: '/v2/' + repository +
+          '/blobs/' + manifest.config.digest, authorization });\\\\n    assert.equal(configResponse.status,
+          200);\\\\n    const configBytes = Buffer.from(await
+          configResponse.arrayBuffer());\\\\n    assert.equal(configBytes.length,
+          manifest.config.size);\\\\n    assert.equal('sha256:' + sha(configBytes),
+          manifest.config.digest);\\\\n    const config =
+          JSON.parse(configBytes.toString());\\\\n    proof.config = { digest: manifest.config.digest,
+          mediaType: manifest.config.mediaType, bytes: configBytes.length, topLevelKeys:
+          Object.keys(config).sort(), interpretation: 'thin_snapshot_block_map_not_oci_environment'
+          };\\\\n\\\\n  }\\\\n} catch (error) {\\\\n  proof.failure = String(error);\\\\n} finally
           {\\\\n  writeFileSync(join(evidence, 'snapshot-registry-manifest.json'), JSON.stringify(proof, null,
           2) + '\\\\\\\\n');\\\\n  appendFileSync(join(evidence, 'snapshot-registry-manifest.jsonl'),
           JSON.stringify(proof) + '\\\\\\\\n');\\\\n  console.log(JSON.stringify({
