@@ -1287,3 +1287,28 @@ actual current-source Mac/Windows desktop and logger host contexts,
 source troubleshooting notes,
 and semantic feature/assertion classification.
 Historical cohorts are not carried forward as current-source executions.
+
+## packed-install-restored finite admission
+
+The immutable research harness is `c4c0d6fa8d3714849dc952f412102902eaf4d181`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `packed-install-restored-plan.json`.
+The deduplicated ledger contains 39 completed owned job rows,
+USD1.4400 completed GitHub rounded-minute compute,
+USD2.88 completed native conservative maxima,
+and USD0.12 reserved for this finite profile.
+The committed and reserved guard is USD4.4400 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
+
+The corrected pnpm consumer restores the 26 actual pnpr archives from run `39130630504`,
+artifact `12137807882`,
+and verifies archive bytes and hashes before use.
+It writes supported top-level `overrides` in the disposable `pnpm-workspace.yaml`.
+It repeats the missing-dependency negative control,
+then installs and runs actual external consumers without rebuilding the producer.
+The worker is bounded to 4 CPU, 16 GiB, and 10 minutes;
+the installed consumer is bounded to 2 CPU, 2 GiB, 256 PIDs,
+read-only root, and no network.

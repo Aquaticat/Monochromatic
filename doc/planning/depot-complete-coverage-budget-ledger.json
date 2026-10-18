@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-10-18T13:42:12.964Z",
+  "measuredAt": "2026-10-18T13:59:28.997Z",
   "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "guardUsd": 5,
   "pricingSource": {
@@ -1179,34 +1179,66 @@
       "invoice": false,
       "startedAt": "2026-10-18T13:31:51Z",
       "completedAt": "2026-10-18T13:34:11Z"
+    },
+    {
+      "dedupeKey": "depot-ci:l4zncjjbj5:run:3125s62dwd:job:nzkhw0wsbp:attempt:htd1mcqk6t",
+      "provider": "depot-ci",
+      "run": "3125s62dwd",
+      "job": "nzkhw0wsbp",
+      "attempt": "htd1mcqk6t",
+      "workflowSha": "8070a3c83ec41a63ae8614ffe93dfcdbcd3ae435",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "size": "8x32",
+        "vcpu": 8,
+        "memoryGiB": 32,
+        "jobMinutes": 15,
+        "campaignMinutes": 12,
+        "maximumParallelJobs": 1,
+        "consumerContainer": {
+          "vcpu": 2,
+          "memoryGiB": 2,
+          "pids": 512,
+          "timeoutSeconds": 600,
+          "network": false
+        }
+      },
+      "intervalScope": "provider run interval, not independently sampled worker interval",
+      "seconds": 212,
+      "listRateUsdPerMinute": 0.024,
+      "listRateBasis": "8 vCPU times published0.00005USD per vCPU-second times60; source-bound planning, not invoice",
+      "nominalRunIntervalProxyUsd": 0.0848,
+      "spentUpperBoundUsd": 0.36,
+      "reservationUsd": 0,
+      "invoice": false,
+      "startedAt": "2026-10-18T13:42:35Z",
+      "completedAt": "2026-10-18T13:46:07Z"
     }
   ],
   "activeReservation": {
-    "dedupeKey": "admission:desktop-headless-format:8070a3c83ec41a63ae8614ffe93dfcdbcd3ae435",
-    "profile": "desktop-headless-format",
-    "provider": "depot-ci",
-    "workflowSha": "8070a3c83ec41a63ae8614ffe93dfcdbcd3ae435",
+    "profile": "packed-install-restored",
+    "provider": "depot-github-runner",
+    "workflowSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
     "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "resourceShape": {
-      "vcpu": 8,
-      "memoryGiB": 32,
-      "jobMinutes": 15,
-      "campaignMinutes": 12,
+      "vcpu": 4,
+      "memoryGiB": 16,
+      "jobMinutes": 10,
       "maximumParallelJobs": 1,
       "consumerContainer": {
         "vcpu": 2,
         "memoryGiB": 2,
-        "pids": 512,
-        "timeoutSeconds": 600,
-        "network": false
+        "pids": 256,
+        "network": false,
+        "readOnly": true
       }
     },
-    "reservationUsd": 0.36
+    "reservationUsd": 0.12
   },
   "nominalMeasuredGithubElapsedUsd": 1.1556000000000002,
   "conservativeCompletedGithubRoundedMinuteUsd": 1.4400000000000008,
-  "conservativeCompletedNativeReservedUpperBoundUsd": 2.52,
-  "guardCommittedAndReservedUsd": 4.320000000000001,
+  "conservativeCompletedNativeReservedUpperBoundUsd": 2.88,
+  "guardCommittedAndReservedUsd": 4.44,
   "limits": [
     "Source-bound campaign compute only",
     "No account usage or invoice inspected",
