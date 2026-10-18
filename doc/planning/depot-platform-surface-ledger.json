@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T16:00:59.278Z",
+  "updatedAt": "2026-10-18T16:25:47.934Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -21815,5 +21815,25 @@
     ],
     "additionalSandboxSdkBoundary": "Separate installed @depot/sandbox types/source and actual seven VM lifecycle/custom-image receipts; not part of public proto/CLI service count",
     "testAnalyticsClarification": "Actual CLI help exposes flaky/slowest rankings across CI and GHA with7day default/90day maximum and explicit repo/ref filters. GHA dashboard guide says its Possibly flaky card is based on native attempts; do not conflate CLI endpoint capability with that UI card or claim both runtime histories were exercised."
+  },
+  "upstreamDiagnostics": {
+    "reviewedAt": "2026-10-18T16:25:47.934Z",
+    "imageListSerialization": {
+      "document": "doc/troubleshooting/depot-image-list-empty-output.md",
+      "evidence": "doc/audit/depot-image-list-empty-output-2026-10-18.evidence.json",
+      "actualProductionCommandControls": 14,
+      "prototype": "Only early empty-result guard removed; actual Cobra command compiled and run",
+      "limits": "Minimal command driver excludes full root bootstrap and interactive UI; installed CLI unchanged",
+      "filing": "Local issue draft only"
+    },
+    "semgrepInvocation": {
+      "document": "doc/troubleshooting/depot-builtin-semgrep-engine.md",
+      "evidence": "doc/audit/depot-semgrep-invocation-2026-10-18.evidence.json",
+      "currentScannerControls": 14,
+      "prototype": "Original/patched source-derived executable/args; current pinned scanner with actual missing/present USER and filename-selection controls",
+      "limits": "Podman replaces BuildKit gateway; modified Go wrapper not compiled/executed; ignored Wait/capture chunks unqualified",
+      "filing": "Local issue draft only"
+    },
+    "cloudAllocations": 0
   }
 }
