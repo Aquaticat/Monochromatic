@@ -223,6 +223,15 @@ No concurrent push process was interrupted.
 
 The requested eight-original graph classification review is complete.
 It made no measured-source changes and required no cloud allocations.
+Targeted Markdown lint,
+CommonMark rendering,
+internal-link checks,
+JSON parsing,
+and JSON formatting checks pass.
+The publication checks also validate the six reached WebKit reports,
+the twelve empty E2E discovery reports,
+the watch-condition count,
+and the explicit derived-view boundary.
 The whole-report sufficiency review remains separately queued after the parent's graph,
 operating-system,
 and semantic evidence queues close.
