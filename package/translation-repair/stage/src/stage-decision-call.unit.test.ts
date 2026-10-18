@@ -16,7 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
   attemptStageCall,

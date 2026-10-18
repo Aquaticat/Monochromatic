@@ -1,7 +1,9 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import { scanGfmReferenceLiterals, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type DocumentNode,
+  scanGfmReferenceLiterals,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
 
 //region Definition pairs and their order

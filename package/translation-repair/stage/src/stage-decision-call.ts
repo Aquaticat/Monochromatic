@@ -1,22 +1,24 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type {
-  DecisionAnswer,
-  DecisionQuestion,
-  DecisionState,
-  SyntheticClient,
-} from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { isDecisionStateOverContext, } from '@monochromatic-dev/translation-repair-provider/ts';
+import {
+  type DecisionAnswer,
+  type DecisionQuestion,
+  type DecisionState,
+  isDecisionStateOverContext,
+  type SyntheticClient,
+} from '@monochromatic-dev/translation-repair-provider/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { decisionsCardOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  decisionsCardOf,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
 // TYPE-ONLY AND DELIBERATELY CIRCULAR: `stage-call.ts` calls into this file
 // for a decision seat and this file names its voice type. Erased before
 // anything runs; the alternative is a third file holding one type alias.
 import type { StageVoice, } from './stage-call.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Stage decision call
 // The typed half of one stage exchange. A stage that can phrase its ballot

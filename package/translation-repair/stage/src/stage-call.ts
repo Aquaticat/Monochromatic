@@ -9,7 +9,10 @@ import type {
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { isDecisionSeat, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  isDecisionSeat,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
   type UnreadableCause,
@@ -19,7 +22,6 @@ import {
   attemptDecisionCall,
   type StageDecision,
 } from './stage-decision-call.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Stage call
 // One guarded model exchange for pipeline stages: non-ok outcomes and

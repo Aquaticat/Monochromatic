@@ -20,13 +20,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type ChatTextReply,
-  type DecisionReply,
-  type DecisionRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  ChatTextReply,
+  DecisionReply,
+  DecisionRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   createSeatTally,

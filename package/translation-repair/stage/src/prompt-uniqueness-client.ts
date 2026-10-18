@@ -3,17 +3,15 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type ChatTextReply,
+  type ChatTextRequest,
   readJsonOutcome,
   reaskElsewhereNudged,
+  type SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { MalformedCompletionError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ChatTextReply,
-  ChatTextRequest,
-  SyntheticClient,
-} from '@monochromatic-dev/translation-repair-provider/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   PROMPT_PAYLOAD_MISSING,
