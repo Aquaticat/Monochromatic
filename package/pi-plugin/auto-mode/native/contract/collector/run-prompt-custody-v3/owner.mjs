@@ -134,7 +134,6 @@ export function createRunPromptOwner({
     return value;
   }
   function capture({
-    scope,
     options,
     messages
   }){

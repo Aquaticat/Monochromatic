@@ -11,6 +11,7 @@ const content='Original retained input.\n'.repeat(44_000);
 
 /** Original argument frames issue each manager capability independently. */
 function appendMessage(message){
+  assert.equal(arguments[0],message);
   pool.captureManagerInput({frame:arguments,method:'appendMessage'});
 }
 
