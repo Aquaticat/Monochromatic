@@ -8975,8 +8975,12 @@ the production owner hash remains `0ad7cf1e86d17bcde704bb0d610b986eef81d1b7132bb
 Complete configured-host replay remains required after this isolated improvement.
 
 The earlier 20,000-receipt allocation sample emphasizes queued log writes.
-A positively confirmed synchronous-append counterfactual still exits 134,
-so append completion alone is insufficient.
+A synchronous-append counterfactual still exits 134.
+The conclusion that this excluded logger append retention is withdrawn on 2026-10-18:
+the hook changed the bundled logger,
+while configured extensions also loaded a separate TypeScript logger instance.
+The hook receipt proves bundle loading,
+not replacement of that source instance's append path.
 The private input-only publication probe reduces its separate capacity fixture to 2,753,896 bytes;
 it is not applied to production and does not establish a full-session repair.
 The class-based binding probe is also rejected:
@@ -9010,3 +9014,85 @@ Neither harness filesystem error nor missing executable establishes a product pr
   final full-consumer verification is still pending.
 
 There is nothing to file upstream for these owned implementation defects.
+
+## Logger completion retention and file ownership on 2026-10-18
+
+### Separate measured failures
+
+A completed faithful configured-host replay exercises all 52 saved calls and captures 62 actual Luna requests.
+Its fragmented-stream stress counterpart still exits 134 before the logger repairs.
+The active artifact for that checkpoint is `native-release-XGbh0H`.
+Successful original-boundary replay and unfinished streaming-memory repair remain separate conclusions.
+
+A collected heap snapshot exposes a large logger `pendingWrites` set through the module-local default instance.
+The original retained graph is not a computed dominator proof.
+An isolated consumer supplies the stronger capacity control:
+100,000 sink deliveries returning one shared fulfilled completion retain 93,863,816 heap bytes
+in the committed built-artifact regression before the repair.
+The subsequent repaired verification retains 48,304 bytes and still delivers all records.
+
+The logger originally created tracking and cleanup continuations for each record.
+Its producer can synchronously emit records faster than the JavaScript microtask queue can drain those continuations.
+`src/pending-writes.ts` now observes each active sink completion once,
+without skipping sink deliveries.
+Synchronous backends reuse a fulfilled completion,
+and the file sink shares completion across bounded append batches.
+Flush deadlines retain their observation-abandonment behavior;
+the same unfinished operation can be observed again after a deadline.
+
+Independent file regressions reveal additional ownership defects:
+
+- A record's `toJSON` hook reenters the same sink.
+  Capturing the predecessor before serialization lets the inner and outer append operations overlap.
+  The original output fails JSON parsing at position 349536.
+- Separate sinks initialized in one frozen millisecond choose the same timestamp-only filename.
+  Their separate serial queues still overlap on the shared file.
+  The unchanged artifact fails JSON parsing at position 349544.
+- A valid record object whose `toJSON` returns `undefined` inserts the literal `undefined` into JSONL.
+  The unchanged artifact emits `SyntaxError: "undefined" is not valid JSON` during read-back.
+
+The repairs finish serialization before queue admission,
+reject serialization without a JSON value,
+use a UUID in each sink filename,
+create the probe file exclusively,
+and publish an append queue only after successful probe read-back.
+Batch appends remain serial and preserve whole records.
+All corrected file cases pass the runtime suite;
+final types and lint verification remain recorded in the canonical frontier.
+These file controls do not establish the cause of the original auto-mode preparation failure.
+
+### Consumer and environment verification
+
+The host imports logger source through configured extensions and also loads a bundled logger.
+Those module-local defaults have independent state.
+Both consumer outputs need rebuilding before replay can establish the memory repair at the Pi boundary.
+The logger package's
+[write completion and file ownership explanation](../../package/module/logger/doc/write-completion.md)
+records the roles,
+alternatives,
+completion limits,
+and maintained regressions.
+
+The direct MiMo RPC pilot selects `llmgateway-devpass/mimo-v2.6-pro`,
+receives `READY` without tool execution,
+and exits normally under a 2-GiB memory and 2-CPU limit.
+Its disposable home copies configured resources and credentials privately.
+The controller resolves the repository's Mise environment without printing its values.
+An initial pilot lacking that environment emits
+`AssessmentTransportError: AUTO_MODE_LLMGATEWAY_API_KEY is unavailable for the assessment request`.
+The corrected environment resolves that startup failure.
+
+The package `native:cli` task changes cwd to the package directory.
+The current policy bootstrap then attempts that directory's absent `AGENTS.md` and emits `ENOENT` before RPC starts.
+Launching the maintained Pi command from the repository root exercises the intended reported consumer.
+The disposable mount setup also preserves both home aliases and disables automatic Mise installation.
+These controller corrections do not change the package's tool-review policy.
+
+No Node,
+JavaScript,
+Pi,
+or Linux defect is established by these controls.
+The failures belong to our completion accounting,
+serialization ordering,
+file ownership,
+and invocation setup.
