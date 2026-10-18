@@ -11,11 +11,12 @@ import {
   invariantThrowListLines,
   type InvariantThrowRow,
 } from './coverage-census-invariant.ts';
-import type {
-  CensusStretch,
-  KindTotal,
-  SourceKind,
-  SourceRow,
+import {
+  type CensusStretch,
+  type KindTotal,
+  ownSourceOf,
+  type SourceKind,
+  type SourceRow,
 } from './coverage-census-report.ts';
 import type { MappedFunction, } from './coverage-lines.ts';
 
@@ -159,9 +160,10 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
       if (fn.nested || (fn.at
         .kind
         === 'unmapped')
-        || (!fn.at
-          .source
-          .startsWith('src/',)))
+        || (ownSourceOf({ source: fn.at
+          .source, },)
+          .kind
+          === 'foreign'))
         return [];
       return [{
         source: fn.at

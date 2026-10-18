@@ -1,6 +1,6 @@
 import { join, } from 'node:path';
 
-import { runnerEntrySources, } from '../build-entries.ts';
+import { runnerEntrySources, } from '../family-build-entries.ts';
 import { writeFileAtomic, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { BundleMaps, } from './coverage-bundle-maps.ts';
 import {

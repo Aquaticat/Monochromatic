@@ -15,6 +15,13 @@ import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-gloss
 import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { Baseline, } from './coverage-census-baseline-lines.ts';
 import { requireCoverageBuild, } from './coverage-census-build.ts';
+import {
+  type CensusFamily,
+  isFamilyBundleName,
+  familySuiteRunsOf,
+  type FamilySuiteRun,
+  requireFamilyCoverageBuild,
+} from './coverage-census-family.ts';
 import { readUtf8Text, } from './coverage-census-read-text.ts';
 import type {
   packageCommit,
@@ -73,8 +80,15 @@ import type {
 // refused rather than counted, since its failing tests skip code they would
 // have run.
 //
+// THE FAMILY. Run from a package that has a coverage build config, the census
+// measures every package beside it (`coverage-census-family.ts`): it reads each
+// member's coverage build before it spends a suite, runs each member's unit
+// suite in the member's directory under one coverage directory, and names
+// sources from the family directory, as `<package>/src/<file>`. Run from a
+// directory that is no such package, it measures that directory alone.
+//
 // RUN FROM THE PACKAGE DIRECTORY, which the task does:
-// `mise run //package/module/translation-repair:coverage-census`.
+// `mise run //package/translation-repair/coverage-census:coverage-census`.
 
 /**
  The steps of the census that touch git, the suite, the coverage and the
@@ -113,6 +127,11 @@ export type CoverageCensusSteps = {
 };
 
 /**
+ What one run of a suite answered.
+ */
+type SuiteAnswer = Awaited<ReturnType<CoverageCensusSteps['runSuite']>>;
+
+/**
  Reads every earlier census the command line named, side by side.
 
  @param paths - census files named, in the order a refusal must be reported in
@@ -148,6 +167,318 @@ export async function readBaselines(
 }
 
 /**
+ Says a suite failed, naming the log to read.
+
+ @param subject - which suite: the whole one, or one member's
+
+ @param suite - what it answered
+
+ @param logPath - its log
+
+ @returns The refusal
+
+ @example
+ ```ts
+ throw suiteFailure({ subject: 'the suite', suite, logPath, },);
+ ```
+ */
+function suiteFailure(
+  {
+    subject,
+    suite,
+    logPath,
+  }: {
+    readonly subject: string;
+    readonly suite: SuiteAnswer;
+    readonly logPath: string;
+  },
+): StatedRefusalError {
+  return new StatedRefusalError({
+    says: `${subject} failed (exit ${String(suite.exitCode,)}, ${String(suite.failures,)} FAIL ${
+      wordForCount({
+        count: suite.failures,
+        one: 'marker',
+        many: 'markers',
+      },)
+    }); its log is `
+      + `${logPath}; a census of a failing suite would count code its failing tests skipped`,
+  },);
+}
+
+/**
+ One member's suite and what it answered.
+
+ @example
+ ```ts
+ const ran: MemberSuite = { run, suite: { passes: 3, failures: 0, exitCode: 0, }, logPath, };
+ ```
+ */
+type MemberSuite = {
+  /**
+   The run asked for.
+   */
+  readonly run: FamilySuiteRun;
+
+  /**
+   What it answered.
+   */
+  readonly suite: SuiteAnswer;
+
+  /**
+   Where its output went.
+   */
+  readonly logPath: string;
+};
+
+/**
+ Runs one member's suite.
+
+ @param run - the member's run
+
+ @param reportDirectory - where the member's log goes
+
+ @param coverageDirectory - where V8 writes coverage
+
+ @param runSuite - runs one suite, passed in so a case scripts it
+
+ @returns The run beside its log and what its suite answered
+
+ @example
+ ```ts
+ const ran = await memberSuiteOf({ run, reportDirectory, coverageDirectory, runSuite, },);
+ ```
+ */
+async function memberSuiteOf(
+  {
+    run,
+    reportDirectory,
+    coverageDirectory,
+    runSuite,
+  }: {
+    readonly run: FamilySuiteRun;
+    readonly reportDirectory: string;
+    readonly coverageDirectory: string;
+    readonly runSuite: CoverageCensusSteps['runSuite'];
+  },
+): Promise<MemberSuite> {
+  /**
+   Where this member's suite output goes.
+   */
+  const logPath = join(
+    reportDirectory,
+    `suite-${run.member}.log`,
+  );
+  return {
+    run,
+    suite: await runSuite({
+      command: [
+        'mise',
+        'run',
+        'test:unit',
+        ...run.files,
+      ],
+      cwd: run.cwd,
+      coverageDirectory,
+      logPath,
+    },),
+    logPath,
+  };
+}
+
+/**
+ Runs each member's suite in turn, one at a time since all write coverage to
+ one directory, each yielded as it ends so the first failure stops the rest.
+
+ @param runs - each member's run
+
+ @param reportDirectory - where each member's log goes
+
+ @param coverageDirectory - where V8 writes coverage
+
+ @param runSuite - runs one suite, passed in so a case scripts it
+
+ @returns Each run beside its log and what its suite answered
+
+ @example
+ ```ts
+ for await (const { run, suite, logPath, } of memberSuites({ runs, reportDirectory, coverageDirectory, runSuite, },)) report(suite,);
+ ```
+ */
+async function* memberSuites(
+  {
+    runs,
+    reportDirectory,
+    coverageDirectory,
+    runSuite,
+  }: {
+    readonly runs: readonly FamilySuiteRun[];
+    readonly reportDirectory: string;
+    readonly coverageDirectory: string;
+    readonly runSuite: CoverageCensusSteps['runSuite'];
+  },
+): AsyncGenerator<MemberSuite> {
+  for (const run of runs) {
+    yield memberSuiteOf({
+      run,
+      reportDirectory,
+      coverageDirectory,
+      runSuite,
+    },);
+  }
+}
+
+/**
+ Runs the unit suite of the package, or the test files named, and counts its
+ passes.
+
+ @param testFiles - test files named, none for the whole suite
+
+ @param packageDirectory - package directory the suite runs in
+
+ @param reportDirectory - where the suite's log goes
+
+ @param coverageDirectory - where V8 writes coverage
+
+ @param runSuite - runs one suite, passed in so a case scripts it
+
+ @returns The passing markers the suite printed
+
+ @throws StatedRefusalError where the suite failed or printed no pass marker
+
+ @example
+ ```ts
+ const passes = await runPackageSuite({ testFiles: [], packageDirectory, reportDirectory, coverageDirectory, runSuite, },);
+ ```
+ */
+async function runPackageSuite(
+  {
+    testFiles,
+    packageDirectory,
+    reportDirectory,
+    coverageDirectory,
+    runSuite,
+  }: {
+    readonly testFiles: readonly string[];
+    readonly packageDirectory: string;
+    readonly reportDirectory: string;
+    readonly coverageDirectory: string;
+    readonly runSuite: CoverageCensusSteps['runSuite'];
+  },
+): Promise<number> {
+  /**
+   Where the suite's output goes.
+   */
+  const logPath = join(
+    reportDirectory,
+    'suite.log',
+  );
+  /**
+   The suite's result.
+   */
+  const suite = await runSuite({
+    command: [
+      'mise',
+      'run',
+      'test:unit',
+      ...testFiles,
+    ],
+    cwd: packageDirectory,
+    coverageDirectory,
+    logPath,
+  },);
+  if ((suite.exitCode !== 0) || (suite.failures > 0))
+    throw suiteFailure({
+      subject: 'the suite',
+      suite,
+      logPath,
+    },);
+  // A CLEAN EXIT WITH NO PASS MARKER RAN NO TEST, whatever kept it from
+  // starting one. Counted, it printed a census beside "0 passes" whose every
+  // line is about a suite that never ran; until 2026-10-10 it was counted
+  // (ledger B384).
+  if (suite.passes === 0)
+    throw new StatedRefusalError({
+      says: `the suite printed no PASS marker, so it ran no test; its log is ${logPath}; a census of a suite `
+        + 'that ran nothing would count every line of the package as code no test ran',
+    },);
+  return suite.passes;
+}
+
+/**
+ Runs the unit suite of every member of the family, or of the members the named
+ test files stand in, and adds up their passes.
+
+ @param family - the family
+
+ @param testFiles - test files named, none for every member's whole suite
+
+ @param reportDirectory - where each member's log goes
+
+ @param coverageDirectory - where V8 writes coverage
+
+ @param runSuite - runs one suite, passed in so a case scripts it
+
+ @returns The passing markers the suites printed between them
+
+ @throws StatedRefusalError where a test file named stands in no member, a
+ member's suite failed, or no suite printed a pass marker
+
+ @example
+ ```ts
+ const passes = await runFamilySuites({ family, testFiles: [], reportDirectory, coverageDirectory, runSuite, },);
+ ```
+ */
+async function runFamilySuites(
+  {
+    family,
+    testFiles,
+    reportDirectory,
+    coverageDirectory,
+    runSuite,
+  }: {
+    readonly family: CensusFamily;
+    readonly testFiles: readonly string[];
+    readonly reportDirectory: string;
+    readonly coverageDirectory: string;
+    readonly runSuite: CoverageCensusSteps['runSuite'];
+  },
+): Promise<number> {
+  /**
+   Passing markers so far.
+   */
+  let passes = 0;
+  for await (
+    const {
+      run,
+      suite,
+      logPath,
+    } of memberSuites({
+      runs: familySuiteRunsOf({
+        family,
+        testFiles,
+      },),
+      reportDirectory,
+      coverageDirectory,
+      runSuite,
+    },)
+  ) {
+    if ((suite.exitCode !== 0) || (suite.failures > 0))
+      throw suiteFailure({
+        subject: `the suite of ${run.member}`,
+        suite,
+        logPath,
+      },);
+    passes += suite.passes;
+  }
+  if (passes === 0)
+    throw new StatedRefusalError({
+      says: `the suite printed no PASS marker, so it ran no test; its logs are in ${reportDirectory}; a census of a `
+        + 'suite that ran nothing would count every line of every package as code no test ran',
+    },);
+  return passes;
+}
+
+/**
  Runs the census the command line asked for and prints its report.
 
  Returns nothing: the report on stdout IS the output, and the census file it
@@ -157,6 +488,9 @@ export async function readBaselines(
 
  @param packageDirectory - package directory, where the mise task runs and
  whose `dist/final/node` the tests import
+
+ @param family - the family of packages beside this one that the census
+ measures with it, none where the package is measured alone
 
  @param env - environment the cache directory is read from
 
@@ -181,12 +515,14 @@ export async function runCoverageCensus(
   {
     line,
     packageDirectory,
+    family,
     env,
     steps,
     l,
   }: {
     readonly line: CommandLineOf<'coverage-census'>;
     readonly packageDirectory: string;
+    readonly family?: CensusFamily;
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly steps: CoverageCensusSteps;
     readonly l: Logger;
@@ -206,29 +542,43 @@ export async function runCoverageCensus(
     readBaseline: readBaselineFile,
   },);
   /**
-   Build directory the tests import.
+   Directory sources are named from and git is asked about: the family's
+   directory where the family is measured, else the package's.
    */
-  const distDirectory = join(
-    packageDirectory,
-    'dist',
-    'final',
-    'node',
-  );
+  const measuredDirectory = (family === undefined) ? packageDirectory : family.directory;
+  /**
+   Build directory the tests import, or the family's directory, from which
+   each member's bundles are named by their path.
+   */
+  const distDirectory = (family === undefined)
+    ? join(
+      packageDirectory,
+      'dist',
+      'final',
+      'node',
+    )
+    : family.directory;
   /**
    The build's bundles, split by whether a map stands beside each.
    */
-  const bundleMaps = await requireCoverageBuild({
-    distDirectory,
-    l,
-    readText: readUtf8Text,
-  },);
+  const bundleMaps = await ((family === undefined)
+    ? requireCoverageBuild({
+      distDirectory,
+      l,
+      readText: readUtf8Text,
+    },)
+    : requireFamilyCoverageBuild({
+      family,
+      l,
+      readText: readUtf8Text,
+    },));
   /**
    The commit and whether the files match it.
    */
   const {
     head,
     clean,
-  } = await steps.packageCommit({ packageDirectory, },);
+  } = await steps.packageCommit({ packageDirectory: measuredDirectory, },);
   /**
    The census's home on disk, under the package's cache directory.
    */
@@ -257,58 +607,36 @@ export async function runCoverageCensus(
   ),);
   l.info(`at ${head}${clean ? '' : ' with uncommitted changes'}; coverage in ${coverage.path}, report in ${reportDirectory}`,);
   /**
-   Where the suite's output goes.
+   Passing markers the suite or suites printed.
    */
-  const logPath = join(
-    reportDirectory,
-    'suite.log',
-  );
-  /**
-   The suite's result.
-   */
-  const suite = await steps.runSuite({
-    command: [
-      'mise',
-      'run',
-      'test:unit',
-      ...asked.testFiles,
-    ],
-    cwd: packageDirectory,
-    coverageDirectory: coverage.path,
-    logPath,
-  },);
-  if ((suite.exitCode !== 0) || (suite.failures > 0))
-    throw new StatedRefusalError({
-      says: `the suite failed (exit ${String(suite.exitCode,)}, ${String(suite.failures,)} FAIL ${
-        wordForCount({
-          count: suite.failures,
-          one: 'marker',
-          many: 'markers',
-        },)
-      }); its log is `
-        + `${logPath}; a census of a failing suite would count code its failing tests skipped`,
-    },);
-  // A CLEAN EXIT WITH NO PASS MARKER RAN NO TEST, whatever kept it from
-  // starting one. Counted, it printed a census beside "0 passes" whose every
-  // line is about a suite that never ran; until 2026-10-10 it was counted
-  // (ledger B384).
-  if (suite.passes === 0)
-    throw new StatedRefusalError({
-      says: `the suite printed no PASS marker, so it ran no test; its log is ${logPath}; a census of a suite `
-        + 'that ran nothing would count every line of the package as code no test ran',
+  const passes = (family === undefined)
+    ? await runPackageSuite({
+      testFiles: asked.testFiles,
+      packageDirectory,
+      reportDirectory,
+      coverageDirectory: coverage.path,
+      runSuite: steps.runSuite,
+    },)
+    : await runFamilySuites({
+      family,
+      testFiles: asked.testFiles,
+      reportDirectory,
+      coverageDirectory: coverage.path,
+      runSuite: steps.runSuite,
     },);
   await reportCensus({
     asked,
-    packageDirectory,
+    packageDirectory: measuredDirectory,
     distDirectory,
     bundleMaps,
     head,
     clean,
-    passes: suite.passes,
+    passes,
     tally: await steps.tallyCoverage({
       coverageDirectory: coverage.path,
       bundleUrlPrefix: `${pathToFileURL(distDirectory,)
         .href}/`,
+      ...((family === undefined) ? {} : { isBundleName: isFamilyBundleName, }),
     },),
     reportDirectory,
     baselines,

@@ -3,9 +3,12 @@
 // Production siblings import it through `/ts`; tests and fixtures through the built entry, so a process loads one copy.
 
 export {
+  FAMILY_ENTRY_LISTS,
+  FamilyEntryConflictError,
+  familyEntriesOf,
   nodeEntries,
   runnerEntrySources,
-} from './build-entries.ts';
+} from './family-build-entries.ts';
 export {
   type BundleMaps,
   bundleMapsOf,
@@ -29,6 +32,15 @@ export {
   type StretchStatus,
 } from './corpus-run/coverage-census-baseline.ts';
 export { requireCoverageBuild, } from './corpus-run/coverage-census-build.ts';
+export {
+  type CensusFamily,
+  type CensusScope,
+  censusScopeOf,
+  familySuiteRunsOf,
+  type FamilySuiteRun,
+  isFamilyBundleName,
+  requireFamilyCoverageBuild,
+} from './corpus-run/coverage-census-family.ts';
 export {
   packageCommit,
   sourcesEditedSince,
@@ -74,6 +86,8 @@ export {
   isUnmappedSource,
   type KindTotal,
   kindTotalsOf,
+  type OwnSource,
+  ownSourceOf,
   requirePlacedFunctions,
   type SourceKind,
   sourceKindOf,

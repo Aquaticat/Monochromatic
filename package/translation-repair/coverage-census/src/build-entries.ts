@@ -15,10 +15,14 @@
 // the normal build and the coverage build (`rolldown.node.config.ts`,
 // `rolldown.coverage.config.ts`), and the coverage census, which tells a
 // runner's command-line main from library source by this list (ledger T8).
+//
+// THIS LIST NAMES ONLY THE RUNNERS THIS PACKAGE OWNS. Every package that owns
+// runners lists its own in its own `src/build-entries.ts`, and the census
+// reads the union of those lists (`family-build-entries.ts`).
 
 /**
- Named entries of the normal build and the coverage build, each a path from
- the package directory. A map, as every table keyed by a name is (ledger
+ Named entries of this package's normal build and coverage build, each a path
+ from the package directory. A map, as every table keyed by a name is (ledger
  B77); the build configs hand rolldown its entries as an object.
 
  @example
@@ -44,31 +48,5 @@ export const nodeEntries: ReadonlyMap<string, string> = new Map([
     './src/corpus-run/coverage-probe.ts',
   ],
 ],);
-
-/**
- Source files of the runner entries, as the census names sources: from the
- package directory, with no leading `./`. The library index is left out,
- since what it reaches is library source. Every entry is written from
- `./src/`, which `build-entries.unit.test.ts` holds the list to, so the prefix
- is cut without asking.
-
- @returns Runner entry sources
-
- @example
- ```ts
- runnerEntrySources().has('src/corpus-run/corpus-pass.ts',); // true
- ```
- */
-export function runnerEntrySources(): ReadonlySet<string> {
-  return new Set(
-    [...nodeEntries,]
-      .filter(function isRunner([name,],): boolean {
-        return name !== 'index';
-      },)
-      .map(function sourceOf([, path,],): string {
-        return path.slice('./'.length,);
-      },),
-  );
-}
 
 //endregion Build entries

@@ -8,6 +8,7 @@ import {
   readFile,
 } from 'node:fs/promises';
 import {
+  dirname,
   join,
   relative,
   resolve,
@@ -166,6 +167,8 @@ export async function runSuite(
 
  @param bundleUrlPrefix - `file://` URL of the build directory with a trailing slash
 
+ @param isBundleName - whether a script under that prefix is a bundle, asked of its name; every one is where absent
+
  @returns Its bundle scripts
 
  @throws CoverageFileError where the file does not read as V8 writes one
@@ -179,9 +182,11 @@ async function readCoverageFile(
   {
     path,
     bundleUrlPrefix,
+    isBundleName,
   }: {
     readonly path: string;
     readonly bundleUrlPrefix: string;
+    readonly isBundleName?: (bundle: string) => boolean;
   },
 ): Promise<readonly BundleScript[]> {
   return bundleScriptsOf({
@@ -191,6 +196,7 @@ async function readCoverageFile(
       'utf8',
     ),
     bundleUrlPrefix,
+    ...((isBundleName === undefined) ? {} : { isBundleName, }),
   },);
 }
 
@@ -202,6 +208,8 @@ async function readCoverageFile(
  @param paths - coverage files, in the order to read them
 
  @param bundleUrlPrefix - `file://` URL of the build directory with a trailing slash
+
+ @param isBundleName - whether a script under that prefix is a bundle, asked of its name; every one is where absent
 
  @returns Each file's bundle scripts
 
@@ -216,15 +224,18 @@ export async function* coverageReadings(
   {
     paths,
     bundleUrlPrefix,
+    isBundleName,
   }: {
     readonly paths: readonly string[];
     readonly bundleUrlPrefix: string;
+    readonly isBundleName?: (bundle: string) => boolean;
   },
 ): AsyncGenerator<readonly BundleScript[]> {
   for (const path of paths) {
     yield readCoverageFile({
       path,
       bundleUrlPrefix,
+      ...((isBundleName === undefined) ? {} : { isBundleName, }),
     },);
   }
 }
@@ -235,6 +246,8 @@ export async function* coverageReadings(
  @param coverageDirectory - where V8 wrote coverage
 
  @param bundleUrlPrefix - `file://` URL of the build directory with a trailing slash
+
+ @param isBundleName - whether a script under that prefix is a bundle, asked of its name; every one is where absent
 
  @returns The painted tally
 
@@ -249,9 +262,11 @@ export async function tallyCoverage(
   {
     coverageDirectory,
     bundleUrlPrefix,
+    isBundleName,
   }: {
     readonly coverageDirectory: string;
     readonly bundleUrlPrefix: string;
+    readonly isBundleName?: (bundle: string) => boolean;
   },
 ): Promise<CoverageTally> {
   /**
@@ -283,12 +298,14 @@ export async function tallyCoverage(
   for await (const scripts of coverageReadings({
     paths,
     bundleUrlPrefix,
+    ...((isBundleName === undefined) ? {} : { isBundleName, }),
   },))
     tally.noteBoundaries({ scripts, },);
   stepsLog.info('boundaries noted; counting',);
   for await (const scripts of coverageReadings({
     paths,
     bundleUrlPrefix,
+    ...((isBundleName === undefined) ? {} : { isBundleName, }),
   },))
     tally.paint({ scripts, },);
   return tally;
@@ -301,7 +318,9 @@ export async function tallyCoverage(
 
  @param packageDirectory - package directory
 
- @param bundle - bundle name
+ @param bundle - bundle name, or its path from the build directory where the
+ build directory is a family's and each member's bundles stand in a directory
+ of their own
 
  @returns Its text, which the census reads each cold stretch out of
  (`coverage-invariant-throw.ts`), its lines, and the sources its map names,
@@ -329,6 +348,13 @@ export async function readBundle(
   readonly lines: BundleLines;
   readonly sources: readonly string[];
 }> {
+  /**
+   Directory the bundle stands in, which its map's source paths are relative to.
+   */
+  const mapDirectory = dirname(join(
+    distDirectory,
+    bundle,
+  ),);
   /**
    Its map file.
    */
@@ -364,14 +390,14 @@ export async function readBundle(
     lines: bundleLinesOf({
       text,
       map,
-      mapDirectory: distDirectory,
+      mapDirectory,
       packageDirectory,
     },),
     sources: sources.map(function fromPackage(source,): string {
       return relative(
         packageDirectory,
         resolve(
-          distDirectory,
+          mapDirectory,
           source,
         ),
       );

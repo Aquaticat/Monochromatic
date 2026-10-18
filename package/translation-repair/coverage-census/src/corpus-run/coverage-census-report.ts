@@ -361,9 +361,86 @@ export function requirePlacedFunctions(
 }
 
 /**
+ A source as a package names it, or a source outside every package's `src`.
+
+ @example
+ ```ts
+ const own: OwnSource = { kind: 'own', path: 'src/nap.ts', };
+ ```
+ */
+export type OwnSource =
+  | {
+    /**
+     A file under a package's `src`.
+     */
+    readonly kind: 'own';
+
+    /**
+     Its path inside its package, from `src/`.
+     */
+    readonly path: string;
+  }
+  | {
+    /**
+     A file elsewhere.
+     */
+    readonly kind: 'foreign';
+  };
+
+/**
+ Names a source by its path inside its package, where it is one of a package's
+ own: `src/<file>` as named from the package, or `<package>/src/<file>` as
+ named from the family directory, which the census does where it measures the
+ family.
+
+ @param source - source as a census records it
+
+ @returns Its path inside its package, or that it stands outside every
+ package's `src`: another package of the repository (`../...`), a dependency,
+ a build file or an unmapped bundle
+
+ @example
+ ```ts
+ ownSourceOf({ source: 'stage/src/nap.ts', },); // { kind: 'own', path: 'src/nap.ts', }
+ ```
+ */
+export function ownSourceOf({ source, }: { readonly source: string; },): OwnSource {
+  if (source.startsWith('src/',))
+    return {
+      kind: 'own',
+      path: source,
+    };
+  /**
+   Where the package's name ends, if the source starts with one.
+   */
+  const slash = source.indexOf('/',);
+  if (slash <= 0)
+    return { kind: 'foreign', };
+  /**
+   What stands before the first slash.
+   */
+  const first = source.slice(
+    0,
+    slash,
+  );
+  if (first.startsWith('.',) || first.startsWith('(',))
+    return { kind: 'foreign', };
+  /**
+   What stands after the first segment.
+   */
+  const rest = source.slice(slash + 1,);
+  return rest.startsWith('src/',)
+    ? {
+      kind: 'own',
+      path: rest,
+    }
+    : { kind: 'foreign', };
+}
+
+/**
  Says where a source sits.
 
- @param source - source relative to the package, or `(unmapped) <bundle>`
+ @param source - source relative to the package or to the family directory, or `(unmapped) <bundle>`
 
  @param entryFiles - sources the build names as runner entries
 
@@ -385,9 +462,13 @@ export function sourceKindOf(
 ): SourceKind {
   if (isUnmappedSource({ source, },))
     return 'unmapped';
-  if (!source.startsWith('src/',))
+  /**
+   Its path inside its package.
+   */
+  const own = ownSourceOf({ source, },);
+  if (own.kind === 'foreign')
     return 'other package';
-  return entryFiles.has(source,) ? 'entry file' : 'library source';
+  return entryFiles.has(own.path,) ? 'entry file' : 'library source';
 }
 
 /**

@@ -170,6 +170,10 @@ function isFunctionCoverage(value: unknown,): value is FunctionCoverage {
 
  @param bundleUrlPrefix - `file://` URL of the build directory with a trailing slash
 
+ @param isBundleName - whether a script under that prefix is a bundle, asked
+ of its name from the prefix; every script under it is one where absent, which
+ is right where the prefix is a build directory and no other file stands in it
+
  @returns Each bundle script the process loaded
 
  @throws CoverageFileError where the file is not JSON (a write cut short
@@ -187,10 +191,12 @@ export function bundleScriptsOf(
     path,
     text,
     bundleUrlPrefix,
+    isBundleName,
   }: {
     readonly path: string;
     readonly text: string;
     readonly bundleUrlPrefix: string;
+    readonly isBundleName?: (bundle: string) => boolean;
   },
 ): readonly BundleScript[] {
   /**
@@ -239,6 +245,8 @@ export function bundleScriptsOf(
         says: 'a script carries no url',
       },);
     if (!url.startsWith(bundleUrlPrefix,))
+      return [];
+    if ((isBundleName !== undefined) && (!isBundleName(url.slice(bundleUrlPrefix.length,),)))
       return [];
     if ((!isJsonArray(functions,)) || (!functions.every(isFunctionCoverage,)))
       throw new CoverageFileError({
