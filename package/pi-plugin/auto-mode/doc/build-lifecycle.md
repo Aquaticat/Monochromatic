@@ -70,8 +70,10 @@ A committed real-build regression first proves `EACCES` for a disposable unreada
 then reproduces the build's attempt to scan that target through a copied contract symlink.
 The replacement reads nonrecursive directory entries,
 extends a sequential queue only for actual directories and compares only regular files.
-The initial fixed consumer publishes successfully,
+The final sequential-queue consumer publishes successfully,
 retains the opaque link and shares both root and nested files on one mount.
+Fresh package types pass,
+and scoped lint checks both maintained files with zero warnings and errors across 486 rules.
 The source and bounded probe are retained in the
 [Node directory traversal diagnosis](../../../../doc/troubleshooting/node-recursive-directory-symlinks.md).
 It does not rewrite an old release.
@@ -81,7 +83,12 @@ Failed children retain their complete output and final newline bytes.
 Mutation verification proves both the `EXDEV` fallback and successful same-mount sharing:
 removing either behavior fails the actual-command regression,
 and restoring the implementation passes.
-The new borrowed-directory guard still requires its own post-restructuring mutation check.
+The rebuilt borrowed-directory mutant restores recursive enumeration and fails the third actual build with `EACCES`.
+A separate mutant skips real child directories and fails the nested-file inode assertion after the second build.
+Restoring the original implementation passes all three actual builds,
+with six independent raw stdout/stderr files retained.
+The private receipt is `reuse-traversal-built-mutants.json`
+under `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
 
 The supervisor's original log collector repeats the same traversal assumption outside the bounded child.
 Its recovery reads the completed child receipt first,

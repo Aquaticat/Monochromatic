@@ -13,9 +13,12 @@ The deployed pnpr trust configuration has not been inspected.
 
 The current source worker is `pi-mimo-rpc-session-QGwl5f`,
 resumed from the heap-failed worker's full saved history at unchanged bounds.
-Its supervisor checkpoint is `6df4b5a423718c97f833aee743ff78c49e7e1c0d`:
-the explicit thirteen changed catalog paths match the actual committed paths.
-It is diagnosing the transient consumer's `2 !== 3` attempt count without weakening expectations.
+Its corrected evidence delivery is accepted as `ad1be29e0d` after original transient parity,
+complete fallback/startup matrices,
+fresh types and fourteen-file lint pass.
+Its new read-only full `src` scan reports 905 warnings and 42 errors across 355 files and 486 rules.
+The worker confirms parsed severity counts match the emitting tool;
+its coherent next-path recommendation is still running.
 The old native worker closes normally before its full-history resume as `pi-mimo-rpc-session-9Tl0ts`.
 That worker delivers the two build-reuse paths;
 the supervisor's qualified host commit succeeds as `9363d8998b`.
@@ -23,6 +26,10 @@ Its frozen real two-mount CLI test,
 fresh package types and two-file lint all pass.
 Its next narrow scope is `policy-source/system-slot.mjs` plus typed implementation siblings,
 with `policy-loader.mjs` explicitly deferred to its following checkpoint.
+The minimal interop declaration is written;
+the proposed implementation write is stopped before application because it changes `#state in input`
+into a public string-property check and references an undeclared capability type.
+The supervisor resumes the worker with those exact corrections and the original three-path authorization.
 Neither worker may retry Git writes;
 the supervisor owns delivery after their distinct commit failures.
 Both current workers use the immutable `IFS6IL` correction with the measured resource bounds retained.
@@ -35,8 +42,9 @@ instead of importing the source-only reuse helper rejected by `test-import/requi
 This actual-command test passes for the frozen checkpoint containing `57c1ae4c03`
 and again after the actual MiMo lint repair.
 A later test-only refinement writes stdout and stderr directly to unique per-invocation files,
-preserving failed children and final newline bytes;
-its fresh check and actual-command mutation guards remain pending.
+preserving failed children and final newline bytes.
+Fresh types,
+two-file lint and actual-command mutation guards pass for that refinement.
 
 The screened formatter composition at frozen `6df4b5a423` passes fifteen of sixteen qualification tasks,
 including fresh types,
@@ -66,10 +74,9 @@ stopped and cancelled operations,
 `isError: true`,
 with exactly `The user stopped execution. Wait for their next instructions.` and zero executions.
 The complete ordinary approval matrix passes its updated observable result assertions.
-The broader manual matrix exposes the same exception assertion for cancellation;
-that case is now updated from its own retained native-context trace and awaits a fresh build/check.
-The remaining decision-context,
-approved-dependency and review-retirement tasks remain queued after that matrix.
+The broader manual matrix passes after the cancelled case is updated from its separate native-context trace.
+Decision context,
+approved dependencies and review retirement also pass against its rebuilt follow-up.
 Fresh types pass in the separately frozen post-MiMo native repair.
 Do not rebuild the live workers' immutable release while advancing this fix.
 
@@ -85,7 +92,11 @@ package types,
 complete fallback/startup matrices and original transient parity successfully.
 The supervisor accepts only that corrected delivery as `ad1be29e0d`.
 Its next read-only assignment measures and ranks the remaining complete `src` lint backlog.
-Newly compiled final-runtime validation of the accepted port remains required.
+The freshly compiled frozen `0e988eb5fc` build now passes JavaScript emission,
+owned native generation,
+fresh package types and the complete fallback/startup catalogs.
+The corresponding configured original-interaction replay is running against that frozen artifact,
+with the actual Luna service and captured request auditing still required.
 
 The source-freshness,
 host-isolation and complete session-action tasks pass for the shared approval fix.
@@ -101,9 +112,14 @@ The two actual-command mutations fail and restored code passes.
 A separate Node behavior is then reproduced:
 recursive `readdir` enters directory symlinks even with `withFileTypes: true`.
 The committed copied-asset case fails `EACCES` inside the real build's reuse enumeration.
-The replacement's initial consumer and fresh types pass;
-its sequential-directory restructuring,
-scoped lint and rebuilt borrowed-link guard remain pending.
+The final sequential-directory restructuring passes fresh types,
+the actual three-build regression and two-file lint with zero warnings and errors across 486 rules.
+Two rebuilt mutations fail their intended guards:
+restored recursive enumeration reaches `EACCES` in the third actual build,
+and skipping real child directories fails the nested-file inode assertion after the second build.
+Restored code passes all three builds with independent raw stdout/stderr retained.
+Receipts are `reuse-traversal-final-candidate.json`
+and `reuse-traversal-built-mutants.json` in the current scratch directory.
 See `doc/troubleshooting/node-recursive-directory-symlinks.md`.
 
 The first host-side mutation-log collector is killed after the child has already failed as expected.
@@ -126,7 +142,10 @@ see `doc/troubleshooting/git-policy-auto-push-reconciliation.md`.
 No wrapper implementation fix is claimed.
 The next isolated recovery publishes captured `ad1be29e0d` through upstream `277b447b8797`,
 with both protected dirty-file hashes unchanged during that pass.
-Subsequent traversal commits still require their own publication check.
+The following isolated pass publishes captured `4797d52963` through upstream `2c074b959422`,
+including the traversal fix and diagnostic documentation.
+Both protected dirty-file hashes remain unchanged during that pass.
+Later commits require another reachability check.
 
 [Issue 1770](https://github.com/Aquaticats/Monochromatic/issues/1770)
 retains the native worker's separate scoped shadow/LFS failure.
@@ -136,24 +155,26 @@ or historical packet failure is unproven.
 
 The remaining independently verifiable areas are:
 
-- Approval operation scope: updated observable denial fixture,
-  built units,
-  scoped lint,
-  types,
-  complete host matrix and rebuilt mutants.
-- Source catalog: actual MiMo's original-versus-port parity,
-  complete mode and variant matrix,
-  scoped lint and types,
-  complete child stderr and explicit-path checkpoint.
-- Native build reuse: actual MiMo's two-file lint repair,
-  real two-mount build regression,
-  same-mount positive control and rebuilt regression mutant.
+- Source catalog: compile the accepted typed port in a fresh coherent runtime,
+  repeat its complete mode and variant matrix and inspect complete child stderr.
+- Source lint: finish actual MiMo's measured inventory and advance its next coherent path cluster.
+- Native policy input: complete the static-factory typed port,
+  verify original and counterfeit brand cases through the rebuilt host,
+  then port the underlying policy loader and remove the temporary declaration bridge.
 - Architecture and footprint: finish the native lint backlog and typed boundary simplification,
   justify major responsibilities and measure a runnable dependency closure.
   Neither 13k code lines nor 100 MB is an accepted target.
 - Long-session failures: retain the heap-limit incident separately from generic supervisor-abort diagnostics
   and the unresolved Git packet error.
   Diagnose retention without treating a higher heap ceiling as a fix.
+  After the source worker finishes its read-only inventory,
+  close it normally and resume its complete saved history with the prepared allocation-sampling preload.
+  Keep immutable `IFS6IL`,
+  2 GiB memory,
+  two CPUs and the 1,536 MiB V8 ceiling unchanged.
+  `smoke-worker-allocation-profile` proves the retained allocation control appears
+  and normal shutdown leaves stdout/stderr empty.
+  The preload uses an in-process inspector session without opening a TCP inspector.
 - Final configured consumer: coherent logger `0.4.4` build,
   original interaction replay,
   long requests and required/excluded provider controls,
@@ -164,6 +185,11 @@ The remaining independently verifiable areas are:
 Default native release `kFkBoY` remains pinned.
 The resumed source worker uses a separate immutable corrected runtime.
 A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
+
+## Retained checkpoint history
+
+The following evidence records earlier checkpoints.
+Current open work and superseding results are maintained in `Current verified state`.
 MiMo native controller `42230`, fixture `pi-mimo-rpc-session-I79zzb`,
 delivered `system-slot-error.mjs` and new `system-slot-error.ts` after the narrowed prompt.
 The supervisor rejects its first proposal's added runtime `name` field:
