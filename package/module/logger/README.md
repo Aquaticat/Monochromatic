@@ -80,7 +80,9 @@ Cloudflare Workers (and any runtime that forbids timers,
 nothing is built at import,
  so no sink probe and no timer runs in global scope.
 The first log or flush call inside a handler builds the default logger and verifies its sinks there.
-A Worker that wants a logger scoped to one request can still build its own with `createLogger` over `sinks.createConsoleSink()`
+A Worker that wants a logger scoped to one request
+can still build its own with `createLogger`
+over `sinks.createConsoleSink()`
 and hand `flush()` to `ctx.waitUntil`.
 
 The published package exposes the built artifact only.
@@ -147,26 +149,23 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
   falls back to `console.log` for a missing level method,
   and writes `debug` to `process.stderr` when `process.stderr.write` is available
 - **file**:
-   Node.
-  js only.
+  Node.js only.
   `createFileSink({ directory })` selects an explicit destination;
   otherwise `MONOCHROMATIC_LOG_DIRECTORY` selects it for default loggers too.
   An empty or unset destination walks up from `process.cwd()` to the nearest
   ancestor `node_modules/`,
    then appends JSONL records to
-  `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
+  `<that project>/node_modules/.monochromatic/{timestamp}.{unique id}.log.jsonl` via
   `node:fs/promises`.
   Appends run in invocation order within each sink;
   a large record finishes every filesystem write before the next record starts.
   Each returned write completion includes that wait,
   so `logger.flush()` also covers queued records.
-   Without an explicit or environment destination,
-   when no ancestor `node_modules/` exists,
-   the sink
-  is marked unavailable rather than creating one at cwd;
-   this prevents
-  stray log directories from landing inside build output or other
-  non-project trees when a script is invoked from an unexpected cwd
+  Without an explicit or environment destination,
+  a missing project or failed project-file probe falls back to persistent user state.
+  One notice identifies the verified fallback directory and its reason.
+  An explicit destination failure reports the error and disables that file sink without redirecting it.
+  See the [file destination contract](doc/file-destinations.md) for platform locations and verification.
 - **IndexedDB**:
    browser only;
    buffers records through the same shared policy and flush triggers as the

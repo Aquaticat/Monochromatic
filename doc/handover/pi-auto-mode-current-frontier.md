@@ -11,6 +11,61 @@ An owned Git-wrapper defect or UX issue should be filed in this repository's Git
 
 ### Active workers and ownership
 
+### Logger destination decision and remaining delivery
+
+The human selected project-local default files with a per-user state fallback when the project is unavailable.
+Explicit directory arguments and `MONOCHROMATIC_LOG_DIRECTORY` remain strict destinations.
+Fallback must identify the actual destination visibly.
+Implement this as logger `0.4.3`, preserving lazy initialization and the existing append-completion contract.
+The full shared-analyzer lint reports zero warnings and errors on 21 files,
+but its fixture omitted that package's private log mount and exposed a real read-only default-file failure.
+Repair both the fixture and the logger behavior; preserve the original stderr as evidence.
+
+Default JavaScript and native `kFkBoY` now build from frozen `f56d63b688` inputs.
+Full units, visible-context catalogs and fresh-cache types pass against this delivered artifact.
+The final original-interaction replay, module census and complete branch checks remain pending.
+The source lint checkpoint still has 1,037 warnings and 47 errors.
+Earlier RPC workers are closed; current replacements and their owned scopes are recorded in the worker records.
+Shared analyzer `0.0.2` publication is not verified:
+GitHub run `39139032024` failed with registry `E401` diagnostics, requiring source-backed investigation.
+
+### Worker records
+
+Current native worker `pi-mimo-rpc-session-I79zzb`, controller `42230`, uses delivered `kFkBoY`.
+Current source worker `pi-mimo-rpc-session-B7AghW`, controller `53002`, uses that same immutable release.
+Both actual child environments pass policy-wrapper, Git LFS and attached-payload-capture preflights.
+Native owns the system-slot/policy-loader typed cluster.
+Source owns `src/native-decision-fallback.test.mjs` and new siblings for that catalog only.
+They must commit explicit captured paths and settle before supervisor verification.
+Neither worker may run heavy full checks inside its model container.
+The native worker's first broad read-only group falls back to ordinary inconclusive review,
+with selector `40258276-5672-4561-9613-d1768676eb63`.
+The supervisor inspects and allows that exact read group.
+This remains evidence of a manual-review fallback, not an automatic-review success.
+
+Logger fallback commits `47f973e52a`, `b87742b19f` and `7fded9f00b` preserve the project-first policy.
+The corrected full package lint has zero warnings and errors on 69 files with 486 rules.
+Fresh-cache types and the complete unit suite pass.
+The real read-only mounted consumer also passes:
+an independent write rejects with `EROFS`, the default logger persists in private user state,
+and an explicit read-only destination stays unavailable.
+Its recursive mkdir failure is reported as `ENOENT`, despite the independent `EROFS` write control;
+do not substitute an assumed diagnostic.
+The first type check raced the build and also exposed real callback/optional-property errors;
+corrected checks run after the completed build.
+Both destination guard removals rebuild, fail the maintained regression, restore and rebuild to a passing control.
+Their receipt is `logger-destination-mutants-receipt.json`.
+Logger `0.4.3` is bumped for publishing; registry delivery verification remains queued next.
+The package-local logger contract is `package/module/logger/doc/file-destinations.md`.
+
+The current package-directory measurement is 23,899,438 bytes from
+`du --bytes --max-depth=2 package/pi-plugin/auto-mode`.
+It counts shared hard links once within that traversal and excludes symlinked dependency contents.
+It includes 16,854,136 bytes of retained `dist`, 805,698 bytes in local `node_modules`,
+and 2,115,857 bytes in cache.
+It is not a dependency-closure or final-size claim.
+Earlier dependency-directory measurements and the outstanding real import census still apply.
+
 The real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
 thinking high,
 2 GiB memory,

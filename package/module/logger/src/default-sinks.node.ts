@@ -16,7 +16,7 @@ import type { Sink, } from './types.ts';
  {@link createSessionStorageSink} wherever web storage round-trips (Node
  22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
  round-trips (Deno, Node launched with `--localstorage-file`), and
- {@link createFileSink} wherever an ancestor `node_modules` exists. The
+ {@link createFileSink} in the ancestor project or writable user state. The
  noop sink is intentionally absent: the console sink verifies wherever
  `console` and `queueMicrotask` exist, so the default logger has a backend
  in every supported runtime, and a custom `createLogger` whose sinks all

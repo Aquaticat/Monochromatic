@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 15:25 UTC
+## Execution checkpoint on 2026-10-18 at 15:42 UTC
 
 Research remains active;
 do not start the interview.
@@ -25,8 +25,14 @@ Independent driver controls also found a staged-source detection gap and survivi
 Correction `234ccc92dabb81e998e0a0bb5e838713924dd83f`
 compares tracked state to `HEAD` and adds signal-driven cancellation,
 bounded group termination and final cancellation receipts.
-Independent rechecks of that exact correction are pending;
-stub owner commands provide no application execution credit.
+Independent rechecks of that exact correction pass all twelve controls,
+including actual staged/unstaged rejection and resistant process cleanup after both signals.
+The sealed preflight receipt is
+`doc/audit/depot-expanded-graph-preflight-2026-10-18.evidence.json`,
+with original-source/log joins and publication checks committed at `2ca0bda544`.
+Corrected GitHub run `39140975786` was dispatched once at `15:32:53.075 UTC` on that exact source;
+its finite terminal watcher remains active.
+Stub owner commands provide no application execution credit.
 The browser branch already contains `prepare:matched-image`;
 an incomplete-plan reading that alleged its omission was retracted.
 
@@ -36,10 +42,17 @@ then the fixture combined incompatible local export and `--save`,
 emitting `multiple outputs currently unsupported`.
 This is a fixture error already covered by the exporter troubleshooting documentation,
 not a token rejection.
-Local-export-only correction `pxx75mxnw2` is terminal finished;
-the platform owner is validating its actual image consumer before assigning execution credit.
-The separate project-scoped registry auth control is now authorized before the parent graph,
-using the same owned project and cumulative USD 0.69 conservative reservation under the existing USD 1 guard.
+Local-export-only correction `pxx75mxnw2` is terminal finished with its actual frozen-source consumer passing.
+The separate project-scoped registry auth run `38z4wlq9d3` is terminal finished:
+anonymous and invented-token requests returned 401,
+while the injected native token read the OCI graph and executed the extracted frozen queue consumer.
+The platform owner independently rehashed index children,
+config and layers from the original ZIP.
+Its owned project `ng17dl3xrn` and image were deleted,
+with manifest 200 changing to 404 and an exact project image query returning `not_found` at `15:38:29 UTC`.
+This is logical deletion evidence,
+not physical erasure.
+The platform native slot is released.
 Desktop continuation `0jpk5bwpvs` executed all six remaining authored sessions.
 Its structured summaries contain 41 passing and one failing assertion,
 with no skips;
@@ -48,8 +61,8 @@ The failing dialog assertion is `Ctrl+Shift+O opens the system folder dialog`.
 The owner verified zero retained app/compositor processes,
 units or container,
 restored sinks and absent credential.
-The coordinated native order is the platform owner's separate registry auth control,
-then the parent's corrected graph after independent preflight.
+The parent's native graph now waits only for the Rust owner's bounded cache campaign to finish;
+the corrected GitHub graph can overlap that single sequential cache job.
 No native graph has been dispatched.
 
 Packed consumers are sealed at `898fd6ab03`:
@@ -60,6 +73,14 @@ Dry-run discovery is not executed mutation testing.
 The type-only package's runtime-import rejection is a harness expectation error,
 not a product failure.
 The separate current-source Depot Windows and Startup-trial Mac controls retain their USD 2 campaign guard.
+Current-source public host controls `39141147245` are dispatched on harness
+`c50ed764237d45d5fc7aa123e86b3dc43891e9da`:
+five sequential contexts,
+locked Node 26.12,
+frozen working-byte manifests and actual emitted-binary consumers.
+The owner corrected GitHub's 21,000-character per-step limit using byte-identical runtime bootstrap generation,
+then ran positive and negative source-hash controls before dispatch.
+Depot Mac/Windows allocation remains separate and has not started.
 
 The parent finished substantive review of 18 deployed native-CI documentation pages,
 156,769 exact source bytes and 95 claim-level findings.
@@ -68,11 +89,16 @@ under the parent's expansion controller.
 The platform owner is merging those findings into the public source ledger,
 preserving the separately reviewed split-tests page.
 The parent owns a concise canonical interpretation note and the final report integration.
-The parent also finished reading the eleven remaining Cache integration pages,
-69,290 verified source bytes,
-and owns their substantive finding/ledger join.
+The parent finished all eleven remaining Cache integration pages,
+69,290 verified source bytes and 50 claim-level findings,
+with a sealed `cache-integration-complete-source-review.json` sent to the platform ledger owner.
+The full 13,860-path frozen inventory supplies positive owner controls and exact named-manifest applicability.
+The canonical interpretation is `doc/planning/depot-cache-capability-review.md`.
 The GitHub Cache integration guide explicitly documents no branch isolation on Depot;
-the parent owns a bounded cross-branch cache control before closing that trust-scope finding.
+the Rust researcher owns a bounded cross-branch cache control before closing that trust-scope finding.
+Its six sequential two-minute jobs plus one correction reserve use a separate USD 0.084 uniform proxy
+under a USD 0.10 guard;
+the parent coordinated dispatch after the platform slot release.
 No account setting or broad credential is needed.
 
 The original graph admission's USD 1.20 Depot nominal full-window reservation was incorrect.
@@ -92,7 +118,11 @@ retains the original admission correction and exact four artifact digests.
 The combined allocation ledger at `acf8a8c195` freezes 223 records and known partial nominal compute
 USD 6.1999959,
 with BuildKit's USD 0.538584 request proxy kept separate from unmeasured actual BuildKit compute.
-The parent must independently verify its arithmetic and append measured post-baseline attempts,
+The parent independently verified its arithmetic at `15:41:16 UTC`:
+all 411 original bodies,
+223 unique records,
+195 exact timestamp/rate/cost joins and separate exact BuildKit fractions pass.
+The parent must publish that receipt and append measured post-baseline attempts,
 including the failed graph and automatic-auth cohorts.
 Admission maxima are not observed charges or invoices.
 After factual queues close,

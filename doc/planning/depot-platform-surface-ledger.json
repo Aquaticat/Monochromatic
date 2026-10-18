@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:15:20.914Z",
+  "updatedAt": "2026-10-18T15:50:52.251Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -640,8 +640,23 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.284Z",
+        "reviewer": "/root",
+        "sourceSha256": "1963ad69ad4937b84b86a02929a16a397eacd9ba30a12b9e33750aca427020f8",
+        "sourceBytes": 5933,
+        "findings": [
+          "Bazel is configured for an HTTP remote cache with authorization header and optional x-depot-org selection; this guide does not establish remote execution.",
+          "GHA runners preconfigure a home .bazelrc, while containerized builds require explicit credentials. These are different configuration/secret boundaries.",
+          "Source-level concern: the container sample expands the token into ~/.bazelrc; mounting the input as a secret is not a reason to treat a separately written credential file as excluded from build outputs. The example is not adopted or used with a real token.",
+          "The full frozen path inventory contains no .bazelrc/.bazelversion/WORKSPACE/BUILD/MODULE.bazel owner manifest. This is a measured named-manifest absence, not a claim that every mention of Bazel was searched.",
+          "The incumbent task owner is Mise; adding Bazel only to exercise an available cache protocol would introduce a separate undecided build-system change."
+        ],
+        "use": "Record the supported protocol and secret-file caveat as nonactivated applicability evidence, without introducing a new build owner.",
+        "limits": "No Bazel binary, project, remote execution, credential export or cache-speed consumer is installed/executed. The possible credential-file output is a source-level example concern, not an observed leak in this evaluation."
+      }
     },
     {
       "title": "GitHub Actions",
@@ -668,8 +683,23 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.284Z",
+        "reviewer": "/root",
+        "sourceSha256": "0f0d228364a9bf30fa1b17080c4df92ac3549f88df5d34859ba2106a4848020f",
+        "sourceBytes": 3977,
+        "findings": [
+          "Depot GHA runners transparently route GitHub Actions cache API operations to Depot Cache; standard GitHub/self-hosted runners use GitHub's cache. This is separate from native cache disks, compiler outputs and BuildKit layer storage.",
+          "Entries are repository-scoped but explicitly not branch-isolated. Exact cache keys, restore prefixes and writer trust require their own verification; withholding an explicit DEPOT_TOKEN does not establish the scope of automatic cache API authorization.",
+          "Documented default retention is14days and no size limit, with organization controls7/14/30days and25to500GB/unlimited. These are published defaults/options, not inspected account settings or a strict spending cap.",
+          "The Nx shared-filesystem archive example links to deprecated Nx packages; the current dedicated Nx page describes a direct self-hosted remote-cache protocol. Neither example is an authorization to replace this repository's existing Mise owner.",
+          "Existing pinned Actions cache pnpm-store off/warm experiments qualify their exact source/job boundaries. A separate benign-marker cross-branch probe is now independently owned before closing the documented trust boundary."
+        ],
+        "use": "Keep automatic cache backend, key/ref trust, version and actual restored-artifact consumer explicit; compare source-bound complete jobs rather than claim a generic cache speedup.",
+        "limits": "No account retention/size toggle, broad credential or cache purge is changed. Cross-branch read behavior is documentation-only until the new consumer completes; fork scheduling and cross-repository denial are separate surfaces."
+      }
     },
     {
       "title": "Configure Go to use Depot Cache",
@@ -709,8 +739,22 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.285Z",
+        "reviewer": "/root",
+        "sourceSha256": "a80b2f03d343ae17bde2f6e518fad1c4a8070ecf1fec373e70cb2f88510d6439",
+        "sourceBytes": 5882,
+        "findings": [
+          "The guide requires Go1.24+ and GOCACHEPROG=depot gocache; multi-org user tokens select an organization explicitly.",
+          "GHA runners prepopulate GOCACHEPROG, while Docker/Bake builds need the CLI and explicitly mounted credentials. An environment variable alone is not a measured Go compilation consumer.",
+          "The guide's go clean -cache example is not treated as proof of remote erasure or verified cache-entry lifecycle.",
+          "The complete frozen path inventory has no .go, go.mod or go.work files; repository source-language inventory independently reports no Go owner. No synthetic Go package is introduced to inflate applicable CI coverage."
+        ],
+        "use": "Keep as a documented nonactivated integration unless a real source-owned Go workload is added through a separate design decision.",
+        "limits": "No Go cache execution, remote deletion guarantee, local persistent token or new toolchain is claimed."
+      }
     },
     {
       "title": "Configure Gradle to use Depot Cache",
@@ -749,8 +793,23 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.285Z",
+        "reviewer": "/root",
+        "sourceSha256": "54be74f782819448225042aa17ff604b2bde6552c2528ec441ad2e691985aea7",
+        "sourceBytes": 7343,
+        "findings": [
+          "Gradle uses its HTTP task-output build cache at cache.depot.dev, with caching enabled and push/read policy configured. It does not make dependency caches, pnpm store restoration and task-output reuse the same mechanism.",
+          "Direct configuration uses password token and optional organization ID username for multi-org user tokens; GHA runners supply init.gradle but still require Gradle caching enabled.",
+          "Docker/Bake builds need explicit secret propagation; host runner credentials/configuration are not automatically inside the build. Environment-mounted BuildKit secrets are distinct from persisting credentials into an image.",
+          "Frozen source has actual Kotlin-linter and Android Gradle owners with five build/settings files, verified against the complete13860path inventory and positive owner controls.",
+          "Existing repeated Kotlin-linter test --rerun jar evidence restores compilation outputs while six fresh JUnit cases execute. Its command-level benefit and slower/confounded whole jobs remain separate; this does not measure Android Gradle reuse."
+        ],
+        "use": "Prefer the already exercised Gradle integration for those existing owners, preserving forced fresh tests and cache-disabled baselines, then separately measure any Android application workload.",
+        "limits": "No persistent local credentials, org toggle or broad token is added. Published example syntax is not adopted untested; existing exact HTTP/task/JUnit receipts supply the qualified runtime evidence."
+      }
     },
     {
       "title": "Configure Maven to use Depot Cache",
@@ -791,8 +850,23 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.285Z",
+        "reviewer": "/root",
+        "sourceSha256": "e3915056bde49e90eb69cbd2ab15ed428b4e816138edc3556513227e1dceeca0",
+        "sourceBytes": 11436,
+        "findings": [
+          "The guide explicitly supports organization API tokens only, not user tokens, for Maven Cache. Existing user-token success on other HTTP/cache services does not qualify this auth contract.",
+          "It requires the Maven Build Cache extension, SHA256 configuration, matching depot-cache remote/server ID and registered extension; a prepopulated settings.xml alone is not sufficient.",
+          "Container examples copy a settings template that reads the environment and mount the token at execution, distinct from a literal credential file embedded into an image.",
+          "The frozen source has no pom.xml or .mvn manifest. Actual Java/Kotlin work uses Gradle wrappers, so Maven is not the repository's build owner.",
+          "No broad organization token is created merely to exercise an inapplicable integration."
+        ],
+        "use": "Record protocol/auth prerequisites and non-applicability while retaining Gradle as the measured JVM owner.",
+        "limits": "No Maven extension/configuration or organization credential is installed; no Maven artifact reuse or timing claim is made."
+      }
     },
     {
       "title": "Configure moonrepo to use Depot Cache",
@@ -833,8 +907,22 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.289Z",
+        "reviewer": "/root",
+        "sourceSha256": "1292082cf4789c076ee9f471d02674ecf57ba5a068a90d23284ad2e1f5a28d27",
+        "sourceBytes": 6515,
+        "findings": [
+          "moon uses the documented unstable_remote gRPCS cache configuration with token and optional X-Depot-Org header, with a linked Moon primary guide.",
+          "GHA runners preconfigure connection environment, but Docker/Bake requires explicit configuration/secret propagation. The token placeholder's tool-specific resolution is not validated here.",
+          "The complete frozen inventory has no .moon directory. A repository-level build-system replacement is separate from using the existing Mise task owners on additional compute.",
+          "The guide describes caching; it does not establish a repository remote-execution or scheduling consumer."
+        ],
+        "use": "Keep as a nonactivated compatibility surface, without introducing Moon solely to reach a cache backend.",
+        "limits": "No Moon workspace/config parser, token resolution, task output or timing was executed."
+      }
     },
     {
       "title": "Configure Nx to use Depot Cache",
@@ -866,8 +954,22 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.289Z",
+        "reviewer": "/root",
+        "sourceSha256": "8857009875fa362c11b662c304aa63098441d008e937b209a1efce93b26e9ea6",
+        "sourceBytes": 5241,
+        "findings": [
+          "Depot implements Nx's direct self-hosted remote-cache protocol with NX_SELF_HOSTED_REMOTE_CACHE_SERVER and access token variables, distinct from archiving an Nx directory using Actions cache.",
+          "The guide says Nx cannot send a custom organization header, so a user token belonging to multiple organizations cannot select one that way; it directs that case to an organization token.",
+          "GHA runners prepopulate endpoint/auth variables, while container builds require an explicit secret mount. These claims are not a general permission to export host runner credentials.",
+          "The complete frozen inventory has no nx.json. Existing Mise owns task orchestration, and no broad org token or new build owner is introduced for this integration."
+        ],
+        "use": "Retain direct-protocol versus archived-directory distinctions in the inventory, with organization-selection constraints explicit.",
+        "limits": "No Nx project, access-token grant, remote output consumer or performance evidence is claimed."
+      }
     },
     {
       "title": "Configure Pants to use Depot Cache",
@@ -908,8 +1010,22 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.289Z",
+        "reviewer": "/root",
+        "sourceSha256": "bdf2b2c631505577f64422a6fb2ce9eb60341bc1314b68c1547db5ff18aa4c14",
+        "sourceBytes": 6502,
+        "findings": [
+          "Pants uses explicit remote read/write booleans, gRPCS store address, authorization header and optional x-depot-org selection.",
+          "GHA runners preconfigure a Pants file; container builds separately propagate a token through an environment secret and tool-specific interpolation.",
+          "Published header fragments are illustrative and not a verified merged Pants configuration in this repository; authorization and organization selection must coexist in an actual consumer.",
+          "The complete frozen inventory has no pants.toml. No Pants owner or Python/Go workload is introduced to manufacture applicability."
+        ],
+        "use": "Keep cache protocol/read-write policy as researched nonactivated surface; preserve the existing task manager.",
+        "limits": "No Pants parser/build, remote-execution claim, token or cache performance consumer is executed."
+      }
     },
     {
       "title": "Configure sccache to use Depot Cache",
@@ -946,8 +1062,23 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.289Z",
+        "reviewer": "/root",
+        "sourceSha256": "b2a84a232dad67a56099c4feab3e7cd480c67e266898a1bfb24c26bc42643354",
+        "sourceBytes": 6198,
+        "findings": [
+          "sccache uses Depot's WebDAV endpoint with bearer token or username/password organization selection; this caches compiler results rather than restoring a Cargo target directory or skipping Nextest bodies.",
+          "The host GHA example explicitly sets RUSTC_WRAPPER=sccache. Merely having SCCACHE_WEBDAV_ENDPOINT or starting a server does not itself demonstrate Cargo invoked the wrapper or returned hits; the container example relies on wrapper configuration elsewhere.",
+          "Container builds need their own secret mount, and server-start environment is a separate boundary from a later client command. No tokens are copied into the repeated graph's application source.",
+          "Frozen root mise.toml, mise.no-env.toml and .cargo/config.toml contain no SCCACHE/RUSTC_WRAPPER/RUSTC_WORKSPACE_WRAPPER match in the verified exact-path search. Provider-injected runtime state remains observable rather than assumed absent.",
+          "The existing Git-policy compiled-cache controls record actual compiler hits and fresh test execution. Their one off baseline does not establish repeated end-to-end provider benefit."
+        ],
+        "use": "Qualify actual wrapper invocation, hit/miss counters, source/toolchain/flag identity and fresh test consumer for selected expensive Rust owners; retain compiled-target archive reuse as a distinct mechanism.",
+        "limits": "No universal Rust cache hit or whole-CI multiplier follows from endpoint configuration. C/C++ compatibility is documented but has no separately measured repository compiler-cache workload in this pass."
+      }
     },
     {
       "title": "Configure Turborepo to use Depot Cache",
@@ -986,8 +1117,22 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.289Z",
+        "reviewer": "/root",
+        "sourceSha256": "2f022ac75422b44f41b675fa510f17e27a2bddf74159213fc6a1fa2e5edb5fd5",
+        "sourceBytes": 5852,
+        "findings": [
+          "Turborepo uses TURBO_API, TURBO_TOKEN and TURBO_TEAM organization selection, with GHA connection configuration supplied by the runner.",
+          "Containerized builds require explicit token secret mounts and team/endpoint configuration; provider host state is not automatically the container's environment.",
+          "The complete frozen inventory has no turbo.json or turbo.jsonc. Mise is already the task owner, so adding Turbo is a new design rather than required Depot setup.",
+          "Generic marketing claims about incremental builds do not establish a source-bound output restoration or timing for this repository."
+        ],
+        "use": "Record as a nonactivated HTTP task-cache integration without replacing the existing task runner.",
+        "limits": "No Turbo config/task, remote cache output, credential or performance result is exercised."
+      }
     },
     {
       "title": "Configure Xcode compilation caching to use Depot Cache",
@@ -1009,8 +1154,23 @@
       "family": "cache-integrations",
       "applicability": "Compare existing toolchain use; do not introduce a build system merely for cache compatibility",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page, auth/protocol/tool ownership, repository applicability and actual runtime limits reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:39:07.290Z",
+        "reviewer": "/root",
+        "sourceSha256": "65cb622252b6ec49df27d292d7c512c5cc9a957e0ce95c72d761c75f1970574f",
+        "sourceBytes": 4411,
+        "findings": [
+          "Xcode26+ compilation caching uses LLVM CAS on Depot GHA Mac runners; local-workstation support is explicitly not delivered by this guide.",
+          "The runner supplies XCODE_XCCONFIG_FILE; an existing job-supplied value is left unchanged and disables this automatic route. A per-job DEPOT_XCODE_CACHE_ENABLED=0 opt-out is documented, distinct from org-wide toggles.",
+          "Prefix mapping and supported language settings affect compatibility/hit ratio. The summary Action collects actual counters at job completion; documented example5310hits/2.2GB is not repository measurement.",
+          "The complete frozen inventory has no .xcodeproj/.xcworkspace/.swift/Package.swift owner. A Rust Mac build or installed Apple toolchain is not itself an executed xcodebuild compilation-cache consumer.",
+          "Mac plan eligibility and actual Mac source-owner execution remain separate from this unused Xcode integration."
+        ],
+        "use": "Document applicability limits and per-job opt-out for a future real Xcode owner, without changing organization settings or claiming Rust Mac acceleration.",
+        "limits": "No Xcode project/cache statistics, local support, settings change or Xcode performance benchmark is claimed."
+      }
     },
     {
       "title": "Depot Cache",
@@ -1939,8 +2099,21 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "63d568e879499c6675011bb341b2dde778773572ee8fb35d9f84077e8165a0b0",
+        "sourceBytes": 10120,
+        "findings": [
+          "User, organization, project and one-hour pull token scopes are distinct; project tokens do not authorize CI, Cache or Agents, and core APIs can require an organization token despite valid user CLI login.",
+          "Documented resolution flag/env/stored-login/OIDC must be reconciled with actual current helper fallbacks, including JIT and Cache tokens; native auth experiment deliberately excludes all alternatives.",
+          "GitHub, GitLab, CircleCI, Buildkite and RWX OIDC require the corresponding configured project trust; support is not proof a particular relationship exists.",
+          "Native trusted-job injection is separate from GitHub OIDC; the exact native project build and repository consumer now pass with no added persistent token."
+        ],
+        "use": "Keep short-lived job auth for the qualified native path and retain existing user login only for exact solely-owned research resources.",
+        "limits": "No trust relationship, broad credential or untrusted-fork authorization is created or qualified."
+      }
     },
     {
       "title": "Install the Depot CLI",
@@ -1962,8 +2135,19 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "b63cbee40bbdc6751c04e156086e8cbac65a2c89585c60ae03a14b143b2eb49b",
+        "sourceBytes": 981,
+        "findings": [
+          "Installer/package-manager and OS/architecture-specific CLI distribution are local installation choices, not product runner/plan eligibility.",
+          "Current installed CLI2.102.23 and immutable source1f96d6d488f938de97ea640b115e9567ebfd6fbf, plus the complete real99-command help inventory, decide exercised syntax; current deployed docs can lead or differ from that binary."
+        ],
+        "use": "Preserve actual tool/source identities rather than assuming a floating install script has the tested behavior.",
+        "limits": "No new global installer, shell profile, Docker-default-builder or unrelated tool upgrade is performed."
+      }
     },
     {
       "title": "Depot CLI: Agents commands reference",
@@ -1993,8 +2177,20 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "24736542aa235c2821ae7ff3f2d0a5e4fafeffa8aaec14bbea3d7fed23304b24",
+        "sourceBytes": 6489,
+        "findings": [
+          "Claude remote execution/session lifecycle and local upload are distinct from ordinary CI or Sandbox SDK execution.",
+          "Local mode uploads conversation data, remote --wait readiness does not prove sandbox termination, and broad session listing is not needed to inspect our own bounded experiments.",
+          "CLI pass-through arguments or help/source availability do not establish supported model entitlement, a zero additional bill or user authorization for recurring model execution."
+        ],
+        "use": "Record agent-assisted investigation as available but nonactivated; ordinary CI experiments require no paid external model.",
+        "limits": "No Claude session, conversation upload, Code mirror or model subscription is created."
+      }
     },
     {
       "title": "Depot CLI: Compute commands reference",
@@ -2016,8 +2212,20 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "414eabf7304d7d05ab1e004752b5c9e39b8ae4d2677f99f8cfb99365b6a137cf",
+        "sourceBytes": 2684,
+        "findings": [
+          "sandbox exec, exec-pipe and pty target an existing sandbox/session identity; they are not a standalone create/stop lifecycle API.",
+          "The Sandbox SDK supplies a distinct lifecycle and filesystem contract; native CI SSH/existing compute access must not be relabeled as SDK custom-runtime qualification.",
+          "PTY, pipe, cwd/env and millisecond timeout options are operational controls with different stream/terminal semantics."
+        ],
+        "use": "Use exact owned sandbox identities for debugging and SDK lifecycle methods for the separately qualified short-lived SDK profile.",
+        "limits": "No arbitrary existing sandbox/session is enumerated or attached; detached replay remains separately qualified or unresolved in its own receipt."
+      }
     },
     {
       "title": "Depot CLI: Container builds commands reference",
@@ -2077,8 +2285,23 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "e85f230defab855dcc73f65a1453b62a774f385c4e958d63150d6cb2ff7ef867",
+        "sourceBytes": 30529,
+        "findings": [
+          "build and bake are remote BuildKit clients; default output can be cache-only, --load needs a local Docker-compatible consumer, and --save appends an image exporter.",
+          "Installed exporter validation rejects the initial combined local+save request; separate local-only and image-only corrections now pass with real exported consumers.",
+          "Bake HCL/JSON/Compose target project configuration and save tags are per-target graph behavior; actual advanced bake/secret/SSH/multiarch/cache-mount receipts remain source-bound rather than claiming every Buildx flag ran.",
+          "depot cargo is a current sccache-backed wrapper, not a remote Rust compiler service; namespace stripping is retained as its own diagnosed contract.",
+          "The current list command is depot list builds, not the guessed builds list; configure-docker mutates the global Docker builder/plugin and was not performed.",
+          "Project CLI cache defaults are per architecture and differ from the explicitly admitted tiny project policy; configured storage ceilings do not measure used storage or invoice debit."
+        ],
+        "use": "Retain direct build/bake commands and immutable exported graph consumers for current narrow repository contexts.",
+        "limits": "No real secret/SSH key, external production registry push, Docker-default mutation or blanket all-Buildx compatibility claim."
+      }
     },
     {
       "title": "Depot CLI: Depot CI commands reference",
@@ -2229,8 +2452,25 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "9b17672f66c738dc1f5c1f452487df547d1510f6a1054e3a22a889c36cd70986",
+        "sourceBytes": 79565,
+        "findings": [
+          "Migration analyzes/transforms workflows and can disable incompatible jobs; secrets-and-vars creates a one-shot import intent and does not require --yes confirmation, so it is not a read-only preview. No production migration/import is run.",
+          "ci run can upload local working-tree patches and inject them after checkout; reusable workflow call jobs cannot receive the patch and execute the merge-base source instead. Frozen research inputs are independently hash-bound.",
+          "dispatch takes a workflow basename and declared typed inputs; run takes a local workflow path. Default broad run/workflow lists are unnecessary for exact owned IDs.",
+          "status --wait has terminal-sensitive exit status; cancel scopes are mutually exclusive; rerun creates all job attempts only after terminal state, while retry selects failed/cancelled jobs and downstream work.",
+          "logs JSON is NDJSON; finite/follow forms and per-attempt selectors differ. Metrics summary versus samples depend on attempt/job/run scope, and authored summary is distinct from AI failure diagnosis.",
+          "Artifact list metadata does not return signed URLs; download is one artifact ID and refuses overwrite. Original ZIP/hash/size/CRC controls and rerun incident qualifications are preserved separately.",
+          "Secret/variable variants use optional repo/env/branch/workflow selectors; absent selectors mean organization-wide availability. Secret get never returns the value; variables are readable. Exact repo-only expiring transport variants are cleaned.",
+          "SSH connects to an existing job and --info exposes connection metadata, while --ssh-after-step inserts a debugging action. No persistent interactive operating policy is silently adopted."
+        ],
+        "use": "Provide explicit finite source-bound orchestration, logs/artifacts, physical tests and safe exact-owned debugging boundaries.",
+        "limits": "No account-wide list, secret bulk migration, production routing, broad variant or new diagnose/model call; native job-continue aggregate and timeout/artifact incidents remain separately qualified."
+      }
     },
     {
       "title": "Depot CLI: Overview and platform commands",
@@ -2268,8 +2508,23 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "4f3b01ae4045566e176f321a7ad3bfaa7db3c3c57398b06de40c39c72b6afea6",
+        "sourceBytes": 12716,
+        "findings": [
+          "login/logout/org switch mutate local authentication/context; org list is broad metadata and unnecessary when org is explicit.",
+          "tests resolves CI then GHA unless restricted; run/job latest-attempt lookup differs from an exact attempt. Pagination defaults100 and max500 require explicit scope before trusting counts.",
+          "split/run/report are supported in Depot CI and Depot-managed GHA jobs; this does not establish generic standard-GHA report authorization.",
+          "Candidate identity is filename or classname; testname timing sums individual JUnit cases within that candidate. Source size or deterministic weights are fallback, not learned timings.",
+          "Automatic matrix shard indices cover the immediate flattened matrix; explicit indices/total are needed for a selected split axis or reusable scope.",
+          "split-key distinguishes logical assignment scope; report-key identifies upload invocation. The validated Nextest per-test-classname adapter is a deliberate derived report with preserved raw XML and exact runnable mapping."
+        ],
+        "use": "Retain exact-attempt result queries and the exercised physical-sharding adapter; keep test event totals separate from unique cases and whole-suite coverage.",
+        "limits": "No global context switch, blanket automatic report coverage, whole-suite speed ratio or arbitrary name-as-candidate-history assumption."
+      }
     },
     {
       "title": "Depot Code",
@@ -2374,11 +2629,25 @@
       "family": "container-builds",
       "applicability": "Build shared multi-target research/CI images and architecture outputs without conflating targets with VMs",
       "retrievalValidated": true,
-      "reviewState": "Dedicated architecture builders, shared same-architecture cache and Bake graph source-reviewed; actual graph and overlapping isolated network consumers passed; billing interval apportionment remains source-limited",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "cb8bdda52a5967927d9f1659c0a1641c0aaffb0a8e728a4550d9cd2f015293e1",
+        "sourceBytes": 11694,
+        "findings": [
+          "Independent stages and bake targets may execute concurrently; same-architecture requests normally share one project builder and contend for its fixed resources.",
+          "Content-identical work can deduplicate across concurrent requests on the same builder; waiting for shared work is not necessarily a cache miss or admission queue.",
+          "Multiarch launches a native builder per architecture; per-project target separation changes resource/cache isolation rather than giving free parallel resources.",
+          "Autoscaled clones do not write new layers back to the primary; the per-instance scale threshold is not a total-builder ceiling. Our bounded project kept scaling off.",
+          "The overview example uses project-id while the deciding bake guide/current target syntax uses project_id; actual exercised HCL and CLI source decide the admitted graph."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker Arm images",
@@ -2401,12 +2670,25 @@
       "family": "container-builds",
       "applicability": "Produce architecture-specific reusable service/job images; distinguish that from repository ARM CI",
       "retrievalValidated": true,
-      "reviewState": "Actual Node/ELF and consumer-bound AMD64/ARM64 image outputs exercised; no Rust/TypeScript ARM repository workload credit until the queued real profile",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
         "doc/audit/depot-service-containers-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "7f4669b635ef1440c605f9a2bd82ca8c385cf4bfaa6bde1fc16c53b14ea52717",
+        "sourceBytes": 3768,
+        "findings": [
+          "Native AMD64/ARM64 builders avoid ordinary cross-architecture QEMU builds; actual two-architecture Node/service/derived images and ELF/runtime consumers qualify only those architectures.",
+          "Host-architecture detection can choose ARM automatically; explicit platform lists retain intent and are needed when the requesting runner differs.",
+          "Multiarch --load differs from ordinary Docker exporter manifest-list limitations and still requires a real compatible local daemon.",
+          "Documented physical/default cache sizes do not measure current storage consumption; Startup/Business larger builders remain a distinct tier gate."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Build autoscaling",
@@ -2438,9 +2720,24 @@
       "family": "container-builds",
       "applicability": "Potential later BuildKit throughput; keep this research within an enforceable maximum builder count",
       "retrievalValidated": true,
-      "reviewState": "Deciding Project.max_concurrent_builds is a per-instance scale-out threshold, not total instance cap; schemas reviewed; autoscaling kept off; no executed scale-out claim",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "b17837db672431c8fe15c3d02bfaf79aa47faac87ba187a17b1d3c84da147076",
+        "sourceBytes": 11200,
+        "findings": [
+          "Autoscaling is available on all plans, disabled by default, and compares concurrent requests with builds-per-instance before adding builders.",
+          "The documented prefilling16 and Project.max_concurrent_builds are per-instance thresholds; no source-reviewed total-builder cap was established, so no bounded scale-out was activated.",
+          "Each clone starts from the main cache and discards its newly generated cache writes; isolation can trade cross-build deduplication/cache efficiency for throughput.",
+          "Bake counts as one request per project independent of target count; multiple project IDs create separate requests/builders.",
+          "The feature has no extra activation fee, but scaled builders cost ordinary compute; temporary clones are documented not to consume cache-storage quota.",
+          "Smaller builders plus autoscaling does not give an individual build more CPU/RAM and is not a guaranteed latency improvement."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Continuous Integration",
@@ -2461,8 +2758,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "c22ae3c3261f0d97c2ae6cccb7d81be5453b0bb9ddb99039da401cb11dfe9226",
+        "sourceBytes": 2114,
+        "findings": [
+          "Remote container builds are usable inside an incumbent CI provider; integration does not require replacing the workflow scheduler.",
+          "The up-to40x marketing statement is not this repository measurement or a whole-CI forecast.",
+          "Default16CPU/32GB and larger Startup/Business shapes are independent of native CI runner sizes and included-minute pools."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Dev Containers",
@@ -2486,8 +2795,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "a01075f56a03df888431ca47f4f51f9159bf9c7b49bd7a08cf215cce59fa1308",
+        "sourceBytes": 5045,
+        "findings": [
+          "Dev Containers uses Docker Buildx and can route image construction through Depot; the developer workspace still requires a local/runtime consumer.",
+          "configure-docker installs a plugin and changes global defaults; no such mutation was performed in this audit.",
+          "The custom desktop/IDE/container incumbents do not automatically establish a VSCode Dev Containers adoption or compatibility receipt."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker Bake",
@@ -2528,11 +2849,26 @@
       "family": "container-builds",
       "applicability": "Review and execute a pinned shared-base image graph with named contexts",
       "retrievalValidated": true,
-      "reviewState": "Actual reviewed graph executed; local print and rejected-target controls do not substitute for the retained native build consumers",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "fbb2322953102e12fa6f07b0e807faffe13c4c67d2ea95718aad9b0b35583a0c",
+        "sourceBytes": 11652,
+        "findings": [
+          "HCL/JSON/Compose, groups, target contexts/inherits, variables and matrix names describe a multi-image graph rather than a test scheduler.",
+          "The deciding HCL key is project_id; Compose build.x-depot.project-id and per-target values take precedence over the action project input.",
+          "Compose lacks some HCL inheritance/variable features; bake build/load does not itself start compose services or publish an application.",
+          "Save tags add target suffixes and --save does not automatically push every bake-file tag; --push plus destination authentication is a separate operation.",
+          "Actual reviewed bake execution, local exports, secret/SSH controls and first-party Cargo cache mounts are retained in the BuildKit campaign, not inferred from --print.",
+          "The guide example uses action input file, while captured official action.yml/src/context.ts declare/read files. Do not copy that unqualified snippet; current action schema/source is deciding."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker",
@@ -2556,8 +2892,19 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "7998170a697e2891f2e9a1bd70946c0d4d3766f38c6265e0a5e7142e77970bc9",
+        "sourceBytes": 2455,
+        "findings": [
+          "The Docker plugin/driver route changes default docker build and buildx behavior and still requires a selected Depot project.",
+          "Direct depot CLI invocation qualifies the audited path without proving every third-party tool that invokes Docker/Buildx is compatible."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker Compose",
@@ -2584,8 +2931,21 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "1ffa65c4191a9152823db1046073845aaa5d90ab101d7a07e6b8d593367e56f2",
+        "sourceBytes": 6963,
+        "findings": [
+          "Preferred bake --load can build service images together and pull missing layers, whereas configured compose build downloads exported tar and creates individual requests per service.",
+          "Compose build cannot select separate Depot projects per service on the described driver route; bake supports x-depot project overrides.",
+          "Building/loading image graphs is separate from compose up networking, volumes, secret injection and actual service health; parent native/GHA service consumers provide distinct runtime evidence.",
+          "The illustrative final push references steps.build in a different test job and is not an adopted working publication recipe; no production Compose deployment or real publishing credential was used."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Local Development",
@@ -2608,8 +2968,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "5b2f391039fd815a1701dfe4aac7d3d6c2f20a03d558f30e5d5afcbff14e1b21",
+        "sourceBytes": 2963,
+        "findings": [
+          "Local users and CI share a project cache namespace; successful teammate access is not an independent security boundary.",
+          "Default build is cache-only unless a load/export/push operation is requested; source inspection or completed build status alone does not prove a runnable local consumer.",
+          "Explicit --project avoids introducing depot.json or mutating default Docker configuration during research."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Access private registries",
@@ -2629,8 +3001,19 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "d0a45c90438e990704219c8d7f747a6f5b826ee885d58002083c2395dce8793d",
+        "sourceBytes": 934,
+        "findings": [
+          "Private FROM and push authentication uses the invoking client local Docker credential provider; it is not established by Depot account login alone.",
+          "The automatic native job-token project-registry exchange is separately exercised; no arbitrary external private-registry credential or production push was added."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "AWS CodeBuild",
@@ -3152,8 +3535,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "a79d98c54b79b716fa70e83a9f85a26c98ab94ec3aa6499567c15fce435c4907",
+        "sourceBytes": 3016,
+        "findings": [
+          "Dashboard separates executed, cached and deduplicated stages/platforms, with step dependency graphs and50-build step histories.",
+          "Source/context/log visibility can include uploaded inputs; the actual research fixture restricts context and never supplies real secret markers as ordinary build arguments.",
+          "Share build creates an unauthenticated public URL; no share link was created and source availability is not publication authorization."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Container build metrics",
@@ -3182,8 +3577,21 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "8600bb8e194a1640dd7b8f2949beedb5b8917057005788af92ed3e07e9853d51",
+        "sourceBytes": 6247,
+        "findings": [
+          "Build/project UI offers CPU/memory graphs, cache/step histories and OOM or90percent utilization notices.",
+          "Dashboard time-saved/cache figures are not an unchanged-input causal provider comparison or an invoice.",
+          "Monthly/project/org usage pages are distinct from exact owned request/job metadata; no forbidden account usage/settings inspection was performed.",
+          "Context tab is documented when files are sent to builders; full-repository incumbent contexts require owner-specific ignore/secret review before adoption."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Optimal Dockerfiles for .NET",
@@ -3900,8 +4308,27 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "a8d5633a44a09c298077c6f7213adf17dc10d2dd66dfa30c7045f9ded87ecb31",
+        "sourceBytes": 23617,
+        "findings": [
+          "Developer includes default16CPU/32GB builders and native multiarch;32CPU/64GB and64CPU/128GB require Startup/Business with2x/4x allowance multipliers and corresponding rates.",
+          "Container compute is tracked by the second with no per-build minute minimum; public included build minutes are not a hard cap and are separately named from CI/GHA pools.",
+          "Default same-architecture project requests share one machine/cache; unlimited request concurrency is not unlimited independent CPU.",
+          "Fork pull-request isolation is documented to deny project-cache reads/writes; it is not established for every trigger/token route by the owned trusted-job probes.",
+          "Cache GC retains parent layers referenced by recently used descendants and explicitly can exceed the configured storage policy. keepGb is not a hard shared-storage budget cap.",
+          "The summary says500GB expansion while the detailed cache policy says1000GB; retention examples7/14/30 differ from actually accepted API1day. Preserve source disagreements rather than replacing measured configuration.",
+          "Platform list includes ARMv6/v7 and386, but native64-bit consumer receipts do not qualify those ABIs or imply a macOS/Windows container kernel.",
+          "Default provenance appears as unknown/unknown index entries; disabling it is a choice, while actual graph/subject verification is distinct from signature trust.",
+          "Lazy estargz/nydus and zstd exporter options are documented capabilities; no lazy-pull runtime, production Kubernetes/Fargate rollout or broad all-format claim was executed.",
+          "Architecture description names EC2/cloud-agent/machine-agent; current Metal/KVM observations on GHA/native CI are different products and cannot silently rewrite BuildKit hosting claims."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Quickstart for faster Docker image builds",
@@ -3925,8 +4352,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "55eab55f9780197e99d61c49ee21cdd1f0d728f419d93efd016f01e53a400ac7",
+        "sourceBytes": 3013,
+        "findings": [
+          "First-run login/project onboarding may prompt; installed helper failure paths can attempt listing even in nonTTY mode. The native auth relay blocks account listing before upstream.",
+          "Usage cap configuration is explicitly Container Build Minutes; it is not a documented native CI/GHA/Sandbox/storage/model aggregate USD cap.",
+          "No organization usage cap or subscription setting was changed; admission/timeout arithmetic remains a scoped research guard."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Troubleshooting container builds",
@@ -3975,8 +4414,25 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "fa9395ef707f3a796176a728a2551a666f43fa20372c1d02a9903fc960404142",
+        "sourceBytes": 17862,
+        "findings": [
+          "Keepalive/resource starvation, TLS transport, cache metadata, upstream Docker Hub, local certificate permissions and registry auth have separate documented diagnostics and must not be merged into one provider incident.",
+          "Client must remain connected during BuildKit work; network/VPN/firewall failures can cancel the build and do not prove an infrastructure allocation failure.",
+          "Docker29 API minimum1.44 versus old client1.43 affects --load; env-version, engine-config or registry alternatives are separate mechanisms, not all exercised workarounds here.",
+          "The provider recommends removing redundant gha cache exporters; cache persistence and actual cache-mount/target correctness remain distinct measured controls.",
+          "KEEP_GIT_DIR affects remote Git context metadata; source-bound Git contexts and local context excludes must be reviewed before adopting Git-dependent tasks.",
+          "DEPOT_DISABLE_OTEL disables embedded CLI tracing for conflicting OTEL schema environments; it is not an organization-wide telemetry or automatic AI-summary optout.",
+          "Resetting cache purges the project volume and starts clean infrastructure; no shared/production cache was reset or size setting changed in response to unrelated incidents.",
+          "Unknown/unknown provenance descriptors are expected metadata and are not additional runnable architectures or a failed ARM workload."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Environment variables",
@@ -4598,11 +5054,27 @@
       "family": "registry",
       "applicability": "Own immutable service/job-image artifacts with read-only pull and logical cleanup",
       "retrievalValidated": true,
-      "reviewState": "Conventional OCI image pull/auth/health/architecture consumers and owned tag/digest cleanup exercised; source retention and delayed garbage collection remain separate from physical erasure",
+      "reviewState": "Complete deployed registry page read; current scope, mutable-tag freshness, retention/GC and repository uses reconciled",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:34:07.399Z",
+        "sourceSha256": "53387f18b8a25062b272559ad80e85ca0a0ad9198c5ca90daa1bf3f9963a66a4",
+        "findings": [
+          "Org-hosted OCI Registry and backward-compatible saved-project paths coexist; --save auto-selects project repository",
+          "Standard transfer free; Fast outbound0.10USD/GB from firstGB; speed is owner-only organization setting, not changed",
+          "Storage shares BuildCache/DepotCache allowance,25GBDeveloper and250GBStartup,0.20USD/GB-month above included; no current usage read",
+          "Tagged retention opt-in; tagged keep1to30days or1to1000latest; untagged default3days; age is pushedAt, pulling does not extend",
+          "Project-saved image retention is separate from build cache keepDays: unlimited default, options1/7/14/30days",
+          "Deletion removes manifest immediately, usage may lag a day, unreferenced layers may take31hours to reclaim; shared layers stay",
+          "CLI pull-token is one-hour read-only and covers project or project-prefixed repository paths, not independently named repositories",
+          "General artifact maximum50GB is documented; exact relation to native block snapshots with larger virtual descriptors is unqualified"
+        ],
+        "use": "Reusable immutable CI/service images and source-bound artifacts; actual full BuildKit graphs and native block-snapshot readers remain distinct formats",
+        "limits": "No owner CDN setting, account storage/usage, retention-policy mutation, large-blob limit probe or physical-erasure proof; native automatic credential is a separate active bounded campaign"
+      }
     },
     {
       "title": "Pull-through cache",
@@ -4628,9 +5100,24 @@
       "family": "registry",
       "applicability": "Optional dependency-image mirror for future CI consumers",
       "retrievalValidated": true,
-      "reviewState": "Source-reviewed registry mirror/cache mechanism; no authenticated mirror mapping or dependency routing change exercised; do not conflate with already exercised owned OCI registry images",
+      "reviewState": "Complete deployed registry page read; current scope, mutable-tag freshness, retention/GC and repository uses reconciled",
       "runtimeEvidence": [],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:34:07.399Z",
+        "sourceSha256": "161cf105dece447acda22541ecd093a928ad07eea257932855dc9631c54c6fdc",
+        "findings": [
+          "Upstream registry credential connection is organization-level; per-repository upstream path fixed at repository creation and cannot be changed later",
+          "First missing layer requires upstream; cached pulls cannot guarantee availability after reclaimed data or for uncached content",
+          "Pull-through blobs not referenced by a pushed manifest become eligible after6hours without repository access",
+          "Cached mutable tag does not refresh upstream on pull; new version tag or upstream digest needed for release identity",
+          "Registry access token scopes use Depot repository name; CLI project pull-token does not cover separate pull-through repo",
+          "DockerHub credentials required, other public upstreams may omit; ECR uses IAMrole trust requiring provider support; GAR/GCR use serviceaccount JSON",
+          "Configured upstream credentials are not needed by consumers, which authenticate only to Depot"
+        ],
+        "use": "Potential future acceleration/credential simplification for actual repo base-image pulls after explicit upstream trust authorization",
+        "limits": "No upstream connection, registry credential, ECRrole, owner setting or pull-through repository created; no cache hit/refresh/outage or speed claim"
+      }
     },
     {
       "title": "Quickstart for Depot Registry",
@@ -4665,11 +5152,26 @@
       "family": "registry",
       "applicability": "Authenticate exact owned image consumers and avoid broad registry credentials",
       "retrievalValidated": true,
-      "reviewState": "Existing local auth obtained scoped read-only temporary credentials; positive GET precedes rejected write control; secrets and solely owned project/images cleaned",
+      "reviewState": "Complete deployed registry page read; current scope, mutable-tag freshness, retention/GC and repository uses reconciled",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:34:07.399Z",
+        "sourceSha256": "a29f7c6fbb49f42f26c3b34cd5d116c2eb9430c7611a0fd862da1c2491b23a07",
+        "findings": [
+          "Repositories auto-create on first push; project --save paths and arbitrary org-hosted repository names have different scope/lifecycle",
+          "Owner-created registry access tokens allow pull-only or push-and-pull, selected repository scopes and30/60/90days,1year or noexpiry",
+          "Scope frontend is exact, team/* onelevel, team/** descendants, ** wholeorg; permission applies to all listed scopes",
+          "Changing token scope requires replacement and revocation; no blanket token needed for bounded job injection",
+          "depot pull/push use CLI credential without docker login; arbitrary custom repository pull uses ordinary Docker registry auth",
+          "Registry v2 preserves legacy registry.depot.dev/project:build paths, while new names use org.registry.depot.dev",
+          "depot push copies saved build directly between registries without routing image bytes through local host"
+        ],
+        "use": "Current owned read-only one-hour build-token consumers and upcoming injected-job project-registry consumer, without a permanent secret",
+        "limits": "No owner registry access token, Kubernetes secret, external registry publication, cross-registry transfer or general-scope credential created; project prefix token is not an arbitrary repository credential"
+      }
     },
     {
       "title": "Security",
@@ -16005,19 +16507,24 @@
     "nativeBuildkitJobAuthentication": {
       "note": "doc/planning/depot-native-buildkit-auth-research.md",
       "evidence": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json",
-      "status": "First native request failed on known exporter fixture defect after authorized builder connection; one single-export replacement admitted but not allocated",
-      "firstRun": "dzsf27t0xx",
-      "firstBuild": "j9r23brwtx",
-      "recoveryHarness": "ddf656ea992952559a975e8693668b2005583499",
-      "cumulativeFullWindowReservationUsd": 0.46,
+      "status": "Qualified native injected-token BuildKit local export and org-hosted project-registry OCI/file consumer; all native runs terminal and solely-owned project/images removed",
+      "failedRun": "dzsf27t0xx",
+      "failedBuild": "j9r23brwtx",
+      "passedLocalRun": "pxx75mxnw2",
+      "passedLocalBuild": "xwq746tv4z",
+      "passedRegistryRun": "38z4wlq9d3",
+      "passedRegistryBuild": "20l2bllb5n",
+      "registryImageDigest": "sha256:6af2ea8c461c034d875f805cc973972b7e2977ca324690be65f9133db30f5469",
+      "cumulativeFullWindowReservationUsd": 0.69,
       "sourceArchive": {
         "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
-        "bytes": 46904,
-        "sha256": "47325a6b4413d482e1498f86cd374009bb617b9863cc058ad67dbdeca2ee75bb",
-        "uncompressedBytes": 247469,
-        "originalZips": 1,
-        "recoveryFixtureFiles": 10
-      }
+        "bytes": 128260,
+        "sha256": "73c1e95822919d9029144fd6892ecb5a9273f244db3ea39be634eac7e7c4b8a3",
+        "uncompressedBytes": 632781,
+        "originalZips": 3,
+        "fullSourceAndTerminalCleanup": true
+      },
+      "cleanupComplete": true
     }
   },
   "publicDocumentationReconciliation": {
@@ -17075,5 +17582,273 @@
       "sha256": "672193a5ca02e030240664f0812f7b612e7d02b263158b36728346a8c7a29f7e"
     },
     "scope": "Full source bodies and applicability reviewed, not runtime qualification of all syntax/integrations"
+  },
+  "cacheIntegrationCompleteSourceReview": {
+    "reviewer": "/root",
+    "pages": 11,
+    "findings": 50,
+    "sourceBytes": 69290,
+    "applicability": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "indexedFiles": 13860,
+      "scope": "All frozen tracked paths, including paused/deprecated packages; path/config presence only, not a claim that every possible integration string was searched",
+      "inventorySha256": "d79ceefcbb2324a8891cb7c3d466856d5b3387d5d74d53d59e13f2a5c751cc21",
+      "positiveControls": {
+        "rootMise": true,
+        "kotlinGradle": true
+      },
+      "matches": {
+        "bazel": [],
+        "go": [],
+        "maven": [],
+        "moon": [],
+        "nx": [],
+        "pants": [],
+        "turbo": [],
+        "xcode": [],
+        "gradle": [
+          "package/linter/kotlin/build.gradle.kts",
+          "package/linter/kotlin/settings.gradle.kts",
+          "package/music-player/android-app/app/build.gradle.kts",
+          "package/music-player/android-app/build.gradle.kts",
+          "package/music-player/android-app/settings.gradle.kts"
+        ],
+        "mise": [
+          "mise.toml",
+          "package-deprecated/audit/oph-common-look-and-feel/mise.toml",
+          "package-deprecated/mcp/nvim/mise.toml",
+          "package-paused/desktop-daemon/editord/mise.toml",
+          "package-paused/dev-script/inference-canary-viewer/mise.toml",
+          "package-paused/dev-script/inference-canary/mise.toml",
+          "package-paused/module/es/mise.toml",
+          "package-paused/stylesheet/monochromatic/mise.toml",
+          "package-paused/web-demo/glass/mise.toml",
+          "package-paused/webapp-content/messages-demo/mise.toml",
+          "package-paused/webapp-edu/paper2vn/mise.toml",
+          "package-paused/webapp-forge/seed/mise.toml",
+          "package-paused/webapp-forge/server/mise.toml",
+          "package-paused/webapp-forge/stress/mise.toml",
+          "package-paused/webapp-search/ai-tree/mise.toml",
+          "package-paused/webapp-search/exa-search/mise.toml",
+          "package/agent-harness-shared/current-time-context/mise.toml",
+          "package/agent-harness-shared/search-fetch/mise.toml",
+          "package/agent-harness-shared/session-discovery/mise.toml",
+          "package/agent-harness-shared/shell-command-analyzer/mise.toml",
+          "package/agent-harness-shared/terminal-title/mise.toml",
+          "package/agent-harness-shared/text-scan/mise.toml",
+          "package/agent-harness-shared/truncate/mise.toml",
+          "package/agent-harness-shared/usage-projection/mise.toml",
+          "package/build-tool/css/mise.toml",
+          "package/claude-code-plugin/bash-output-filter/mise.toml",
+          "package/claude-code-plugin/claude-spawn/mise.toml",
+          "package/claude-code-plugin/correction-reminder/mise.toml",
+          "package/claude-code-plugin/guardrail/mise.toml",
+          "package/claude-code-plugin/hook-type/mise.toml",
+          "package/claude-code-plugin/prompt-time/mise.toml",
+          "package/claude-code-plugin/session-start-housekeeping/mise.toml",
+          "package/claude-code-plugin/source/mise.toml",
+          "package/claude-code-plugin/statusline/mise.toml",
+          "package/claude-code-plugin/stop-reminder/mise.toml",
+          "package/claude-code-plugin/terminal-title/mise.toml",
+          "package/cli/android-exempt-unused/mise.toml",
+          "package/cli/forbidden-strings.fuzz/mise.toml",
+          "package/cli/forbidden-strings/mise.toml",
+          "package/cli/fy/mise.toml",
+          "package/cli/git-clone-size/mise.toml",
+          "package/cli/mutation-test.fixture/mise.toml",
+          "package/cli/mutation-test/mise.toml",
+          "package/cli/mvm/mise.toml",
+          "package/cli/nested-wayland-session/mise.toml",
+          "package/cli/open-code-review-issue/mise.toml",
+          "package/cli/rgffplay/mise.toml",
+          "package/cli/terminal-exec/mise.toml",
+          "package/cli/unused-export/mise.toml",
+          "package/cli/vmsync/mise.toml",
+          "package/cli/wg-allowedips/mise.toml",
+          "package/cli/wg-quicker-exempt/mise.toml",
+          "package/cli/wg-quicker/mise.toml",
+          "package/cloudflare-worker/rand/mise.toml",
+          "package/codex-plugin/bash-limit/mise.toml",
+          "package/config/dprint/mise.toml",
+          "package/config/lfs-r2-worker/mise.toml",
+          "package/config/oxlint/mise.toml",
+          "package/config/pnpr/mise.toml",
+          "package/config/rolldown/mise.toml",
+          "package/config/tofu/mise.toml",
+          "package/config/typescript/mise.toml",
+          "package/desktop-app/electron-counter/mise.toml",
+          "package/desktop-app/electron-infra/mise.toml",
+          "package/desktop-app/file-manager-electron/mise.toml",
+          "package/desktop-app/file-manager-gtk-sticky/mise.toml",
+          "package/desktop-app/file-manager-qt/mise.toml",
+          "package/desktop-app/file-manager/mise.toml",
+          "package/desktop-app/ide/mise.toml",
+          "package/desktop-app/terminal/mise.toml",
+          "package/desktop-daemon/hall-monitor/mise.toml",
+          "package/dev-script/backup-path/mise.toml",
+          "package/dev-script/catalog-tighten.matrix/mise.toml",
+          "package/dev-script/catalog-tighten/mise.toml",
+          "package/dev-script/claude-cpu-cap/mise.toml",
+          "package/dev-script/deps-cube/mise.toml",
+          "package/dev-script/deps-update/mise.toml",
+          "package/dev-script/file-enforcer/mise.toml",
+          "package/dev-script/page-weight/mise.toml",
+          "package/dev-script/task-util/mise.toml",
+          "package/dev-script/vm-builder/mise.toml",
+          "package/dev-script/watch-restart/mise.toml",
+          "package/figma/kiwi/mise.toml",
+          "package/figma/to-penpot/mise.toml",
+          "package/git-policy/cli.fuzz/mise.toml",
+          "package/git-policy/cli/mise.toml",
+          "package/git/executable/mise.toml",
+          "package/intellij-plugin/islands-black/mise.toml",
+          "package/kwin/key-helper/mise.toml",
+          "package/linter/kotlin/mise.toml",
+          "package/linter/monochromatic-lint.fuzz/mise.toml",
+          "package/linter/monochromatic-lint/mise.toml",
+          "package/mcp/mvm/mise.toml",
+          "package/mcp/search-fetch/mise.toml",
+          "package/mcp/stdio/mise.toml",
+          "package/module/array-at/mise.toml",
+          "package/module/async-iter/mise.toml",
+          "package/module/async-time/mise.toml",
+          "package/module/caught-value/mise.toml",
+          "package/module/conf-fork.fuzz/mise.toml",
+          "package/module/conf-fork/mise.toml",
+          "package/module/const/mise.toml",
+          "package/module/css-edit.bench/mise.toml",
+          "package/module/css-edit.conformance/mise.toml",
+          "package/module/css-edit.fuzz/mise.toml",
+          "package/module/css-edit/mise.toml",
+          "package/module/deepmerge-ts.fuzz/mise.toml",
+          "package/module/dom/mise.toml",
+          "package/module/fs-id/mise.toml",
+          "package/module/fs-path/mise.toml",
+          "package/module/function-arity/mise.toml",
+          "package/module/hyperscript/mise.toml",
+          "package/module/i18n-compose/mise.toml",
+          "package/module/image-diff/mise.toml",
+          "package/module/jsonc-edit.bench/mise.toml",
+          "package/module/jsonc-edit.conformance/mise.toml",
+          "package/module/jsonc-edit.fuzz/mise.toml",
+          "package/module/jsonc-edit/mise.toml",
+          "package/module/kv-store/mise.toml",
+          "package/module/llm-type/mise.toml",
+          "package/module/logger.fuzz/mise.toml",
+          "package/module/logger/mise.toml",
+          "package/module/make-asynchronous-fork.fuzz/mise.toml",
+          "package/module/make-asynchronous-fork/mise.toml",
+          "package/module/matcher-fork.fuzz/mise.toml",
+          "package/module/matcher-fork/mise.toml",
+          "package/module/matrix/mise.toml",
+          "package/module/memoize/mise.toml",
+          "package/module/numeric-format/mise.toml",
+          "package/module/observable/mise.toml",
+          "package/module/or-throw/mise.toml",
+          "package/module/p-limit-fork.fuzz/mise.toml",
+          "package/module/p-limit-fork/mise.toml",
+          "package/module/p-map-fork.fuzz/mise.toml",
+          "package/module/p-map-fork/mise.toml",
+          "package/module/p-memoize-fork.fuzz/mise.toml",
+          "package/module/p-memoize-fork/mise.toml",
+          "package/module/pify-fork.fuzz/mise.toml",
+          "package/module/pify-fork/mise.toml",
+          "package/module/pipe/mise.toml",
+          "package/module/pnpm-workspace-catalog/mise.toml",
+          "package/module/quick-lru-fork.fuzz/mise.toml",
+          "package/module/quick-lru-fork/mise.toml",
+          "package/module/test-diagnostic/mise.toml",
+          "package/module/test-expect/mise.toml",
+          "package/module/test-sandbox/mise.toml",
+          "package/module/test/mise.toml",
+          "package/module/throws/mise.toml",
+          "package/module/token-count/mise.toml",
+          "package/module/toml-edit.fuzz/mise.toml",
+          "package/module/toml-edit/mise.toml",
+          "package/module/wg-allowedips/mise.toml",
+          "package/module/zip-writer/mise.toml",
+          "package/music-player/android-app/mise.toml",
+          "package/music-player/design/mise.toml",
+          "package/music-player/desktop-app/mise.toml",
+          "package/music-player/desktop-e2e/mise.toml",
+          "package/music-player/truepeak-core.bench/mise.toml",
+          "package/music-player/truepeak-core/mise.toml",
+          "package/ownership-marker/foreign-borrowed/mise.toml",
+          "package/oxlint-plugin/no-restricted-syntax/mise.toml",
+          "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml",
+          "package/oxlint-plugin/shared/mise.toml",
+          "package/oxlint-plugin/stylistic/mise.toml",
+          "package/oxlint-plugin/test-import/mise.toml",
+          "package/oxlint-plugin/test-support/mise.toml",
+          "package/oxlint-plugin/tsdoc/mise.toml",
+          "package/pi-plugin/advisor/mise.toml",
+          "package/pi-plugin/agent-settled-notification/mise.toml",
+          "package/pi-plugin/ask-user-question/mise.toml",
+          "package/pi-plugin/auto-mode/mise.toml",
+          "package/pi-plugin/bash-poke/mise.toml",
+          "package/pi-plugin/current-time-context/mise.toml",
+          "package/pi-plugin/goal/mise.toml",
+          "package/pi-plugin/guardrail/mise.toml",
+          "package/pi-plugin/model-retirement/mise.toml",
+          "package/pi-plugin/morph-compact/mise.toml",
+          "package/pi-plugin/openai-fast/mise.toml",
+          "package/pi-plugin/search-fetch/mise.toml",
+          "package/pi-plugin/spawn/mise.toml",
+          "package/pi-plugin/statusline/mise.toml",
+          "package/pi-plugin/terminal-title/mise.toml",
+          "package/pi-plugin/thinking-default/mise.toml",
+          "package/pi-shared/model-review/mise.toml",
+          "package/pi-shared/model-selection/mise.toml",
+          "package/rolldown-plugin/import-attributes/mise.toml",
+          "package/runtime-error/bun/mise.toml",
+          "package/rust-module/forbidden-regex.bench/mise.toml",
+          "package/rust-module/forbidden-regex.fuzz/mise.toml",
+          "package/rust-module/forbidden-regex/mise.toml",
+          "package/rust-module/jsonc-edit.fuzz/mise.toml",
+          "package/rust-module/jsonc-edit/mise.toml",
+          "package/shim/node-domexception/mise.toml",
+          "package/shim/proper-lockfile/mise.toml",
+          "package/shim/readable-stream/mise.toml",
+          "package/shim/ungap-structured-clone/mise.toml",
+          "package/ssg/aquati.cat/mise.toml",
+          "package/stub/silent/mise.toml",
+          "package/stub/throwing/mise.toml",
+          "package/test-fixture/css-imported-no-exports/mise.toml",
+          "package/test-fixture/css-imported/mise.toml",
+          "package/test-fixture/css-importing-filepath/mise.toml",
+          "package/test-fixture/css-importing/mise.toml",
+          "package/test-fixture/data-sequence/mise.toml",
+          "package/test-fixture/file-enforcer-perf/mise.toml",
+          "package/test-fixture/oxlint-no-restricted-syntax/mise.toml",
+          "package/test-fixture/oxlint-stylistic/mise.toml",
+          "package/test-fixture/oxlint-test-import/case/asset-dist/mise.toml",
+          "package/test-fixture/oxlint-test-import/case/electron/mise.toml",
+          "package/test-fixture/oxlint-test-import/case/src-entry/mise.toml",
+          "package/test-fixture/oxlint-test-import/case/standard/mise.toml",
+          "package/test-fixture/oxlint-test-import/mise.toml",
+          "package/test-fixture/oxlint-tsdoc/mise.toml",
+          "package/test-fixture/toml-edit/mise.toml",
+          "package/typeface/aquaticat/mise.toml",
+          "package/webapp-productivity/done-postcss/mise.toml",
+          "package/webapp-productivity/done/mise.toml",
+          "package/webapp-productivity/doodle-widget/mise.toml",
+          "package/webapp-productivity/rss/mise.toml",
+          "package/webapp-productivity/syllable-break-demo/mise.toml",
+          "package/webapp-productivity/wc/mise.toml"
+        ]
+      }
+    },
+    "archive": {
+      "path": "doc/audit/depot-cache-integration-document-source-review-2026-10-18.evidence.json.gz",
+      "bytes": 8210,
+      "sha256": "f92c3eb1f7e87bd59c393faa0df7a1f9e42f762bb287cbdb8697154b0c690f6d"
+    },
+    "scope": "Full deployed source bodies reviewed; absent owner manifests do not establish absence of downloaded/configured third-party tool dependencies; runtime claims remain exact source-bound consumers"
+  },
+  "containerBuildCompleteSourceReview": {
+    "pages": 15,
+    "claims": 66,
+    "sourceBytes": 112543,
+    "sourceArchive": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz"
   }
 }

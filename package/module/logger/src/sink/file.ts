@@ -1,14 +1,5 @@
-import { randomUUID, } from 'node:crypto';
-import {
-  appendFile,
-  mkdir,
-  readFile,
-  stat,
-} from 'node:fs/promises';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { openDefaultLogFile, } from './file-destination.ts';
+import { openLogFile, } from './file-open.ts';
 
 import { reportLoggerInternalError, } from '../error-format.ts';
 
@@ -28,114 +19,7 @@ class FileRecordSerializationError extends Error {
   }
 }
 
-//region Ancestor search
-// Locates the project the process belongs to so log files land beside its
-// `node_modules` rather than at whatever stray cwd launched the script.
 
-/**
- Sentinel returned by {@link findNodeModulesUp} when no ancestor directory
- contains a `node_modules`. A unique symbol so it never collides with a real
- path string the walk might otherwise return, keeping the result free of a
- banned `string | undefined` union.
- 
- @example
- ```ts
- const dir = await findNodeModulesUp({ cwd, stat, dirname, join });
- if (dir === NO_NODE_MODULES_FOUND) {
-   // no ancestor project root
- }
- ```
- */
-export const NO_NODE_MODULES_FOUND: unique symbol = Symbol('logger:no-node-modules-found',);
-
-/**
- Walks up from `cwd` to find the nearest ancestor directory containing a
- `node_modules` subdirectory, returning that subdirectory's absolute path.
- 
- Using find-up rather than cwd-relative placement keeps log directories
- anchored to the project the caller actually belongs to. Without this,
- scripts invoked from build output (e.g. `dist/`) or other stray cwds
- would create `node_modules/.monochromatic/` inside those trees, polluting
- shipped artifacts.
- 
- Exported through the `./node` subpath primarily so `file.unit.test.ts`
- can exercise both the hit and miss paths directly with an injected `stat`.
- 
- @param cwd - starting directory for the upward search
- 
- @param stat - `node:fs/promises` stat, injected so tests drive hit,
- miss, and fault paths deterministically without touching a real tree
- 
- @param dirname - `node:path` dirname
- 
- @param join - `node:path` join
- 
- @param reportError - logger fault reporter injected for deterministic tests
- 
- @returns absolute path to the nearest ancestor `node_modules`, or
- {@link NO_NODE_MODULES_FOUND} when no ancestor contains one
- 
- @example
- ```ts
- const dir = await findNodeModulesUp({ cwd: process.cwd(), stat, dirname, join });
- ```
- */
-export async function findNodeModulesUp(
-  {
-    cwd,
-    stat: statPath,
-    dirname: parentOf,
-    join: joinPath,
-    reportError = reportLoggerInternalError,
-  }: {
-    readonly cwd: string;
-    readonly stat: typeof stat;
-    readonly dirname: typeof dirname;
-    readonly join: typeof join;
-    readonly reportError?: typeof reportLoggerInternalError;
-  },
-): Promise<string | typeof NO_NODE_MODULES_FOUND> {
-  /**
-   Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent.
-   */
-  const candidate = joinPath(
-    cwd,
-    'node_modules',
-  );
-  try {
-    /**
-     Stat result for `candidate`; only directories count as a hit, guarding against a sibling file also named `node_modules`.
-     */
-    const entry = await statPath(candidate,);
-    if (entry.isDirectory())
-      return candidate;
-  }
-  catch (error: unknown) {
-    // Missing candidate is expected while walking ancestors; only unexpected stat failures are logger faults.
-    if (!(Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))) {
-      reportError({
-        context: `node_modules candidate ${candidate} unavailable during file sink search`,
-        error,
-      },);
-    }
-  }
-  /**
-   Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk.
-   */
-  const parent = parentOf(cwd,);
-  if (parent === cwd)
-    return NO_NODE_MODULES_FOUND;
-  return await findNodeModulesUp({
-    cwd: parent,
-    stat: statPath,
-    dirname: parentOf,
-    join: joinPath,
-    reportError,
-  },);
-}
-//endregion Ancestor search
 
 //region File sink
 // Append-only JSONL sink. Imports `node:fs/promises` statically: this module
@@ -146,7 +30,7 @@ export async function findNodeModulesUp(
 /**
  Builds a file sink that appends JSONL records to a caller-selected directory,
  `MONOCHROMATIC_LOG_DIRECTORY`, or the nearest ancestor
- `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
+ `node_modules/.monochromatic/{timestamp}.log.jsonl`, with user-state fallback (resolved once during
  verification). The resolved path and the verification memo live in this
  instance's closure (no module-global state), so independent loggers and
  tests retain their own append ordering. Each `write` returns its batch's
@@ -189,86 +73,21 @@ export function createFileSink({
 
   /**
    Actual verification work, invoked exactly once via the memoized
-   `verifyPromise`. Resolves the log path, marking the sink unavailable
-   when the upward search yields {@link NO_NODE_MODULES_FOUND}. The logger
-   owns the resulting availability, so no flag is kept here.
+   `verifyPromise`. Resolves the log path, falling back from an unavailable project to user state.
+   Explicit destinations remain strict. The logger owns resulting availability.
    
    @returns Whether file system logging is available.
    */
   async function runVerify(): Promise<boolean> {
     try {
       /**
-       Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
+       Verified destination owns all subsequent queued appends for this instance.
        */
-      const nodeModulesDir = explicitDirectory ?? await findNodeModulesUp({
-        cwd: process.cwd(),
-        stat,
-        dirname,
-        join,
-      },);
-
-      if (nodeModulesDir === NO_NODE_MODULES_FOUND)
-        // Unexpected in a Node environment: the process is running JS, which
-        // almost always means there is a node_modules upward. Marking the sink
-        // unavailable (rather than creating one at a stray cwd) keeps stray log
-        // directories out of build output.
-        return false;
-
-      /**
-       Directory under the chosen `node_modules` where every monochromatic log file lands.
-       */
-      const LOG_DIR = explicitDirectory ?? join(
-        nodeModulesDir,
-        '.monochromatic',
-      );
-      await mkdir(
-        LOG_DIR,
-        {
-          recursive: true,
-          mode: 0o700,
-        },
-      );
-
-      /**
-       ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name.
-       */
-      const timestamp = new Date().toISOString()
-        .replaceAll(
-        ':',
-        '-',
-      );
-      /**
-       Log file chosen for this sink instance; kept in a local so the probe below reads a narrowed `string`.
-       */
-      const filePath = join(
-        LOG_DIR,
-        `${timestamp}.${randomUUID()}.log.jsonl`,
-      );
-
-      // Verify by writing and reading test data.
-      /**
-       Probe record written and read back to confirm the chosen file path round-trips.
-       */
-      const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
-      await appendFile(
-        filePath,
-        testData,
-        { flag: 'ax', },
-      );
-      /**
-       Probe contents read back; matching the literal `"test":true` proves the append + read path works end-to-end.
-       */
-      const content = await readFile(
-        filePath,
-        'utf8',
-      );
-      /**
-       Only a successful read-back publishes an append owner to callers.
-       */
-      const verified = content.includes('"test":true',);
-      if (verified)
-        state.appends = createFileAppendQueue({ filePath, },);
-      return verified;
+      const filePath = explicitDirectory === undefined
+        ? await openDefaultLogFile()
+        : await openLogFile(explicitDirectory,);
+      state.appends = createFileAppendQueue({ filePath, },);
+      return true;
     }
     catch (error: unknown) {
       reportLoggerInternalError({
