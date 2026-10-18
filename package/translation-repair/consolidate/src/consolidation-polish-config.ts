@@ -3,9 +3,9 @@ import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import {
   collectDefinitions,
   parseDocument,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consolidation polish configuration
 // ONE BUILDER, NO "OFF" KIND (ledger T8, 2026-09-30). The only production

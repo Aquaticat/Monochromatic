@@ -11,8 +11,10 @@ import {
 } from './consolidate-settle.ts';
 import type { ConsolidateSubject, } from './consolidate-wire.ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { floorReach, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  floorReach,
+  type LaneText,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   TranslationRepairInterruptedError,
   unflooredFinding,

@@ -37,7 +37,7 @@ import {
   buildCandidateSelectMessages,
   buildIntroducedDefectMessages,
 } from '@monochromatic-dev/translation-repair-adjudication';
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildConsolidateMessages,
   type ConsolidateSubject,

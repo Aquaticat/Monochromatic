@@ -7,7 +7,6 @@ import {
   wordForCount,
   wrapReplacementText,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   type ConsolidationPolishGateOutcome,
   gateConsolidationPolish,
@@ -15,12 +14,16 @@ import {
 import {
   deriveRefinableEnvelopes,
   parseDocument,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { RepairJudgedRound, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type { RefineStageMode, } from '@monochromatic-dev/translation-repair-repair/ts';
-import { runRefineStage, } from '@monochromatic-dev/translation-repair-repair/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type RefineStageMode,
+  runRefineStage,
+} from '@monochromatic-dev/translation-repair-repair/ts';
+import {
+  type DisputedWording,
+  type FloorGroundDisagreementError,
   floorReach,
   requireComparedVerdict,
   sameWording,
@@ -191,7 +194,7 @@ export function reviewParagraphsOf(
  @returns One bounded proposal round after structure and fidelity selection,
  or the base with nobody asked where the floor can compare nothing
 
- @throws {@link import('@monochromatic-dev/translation-repair-translate-floor/ts').FloorGroundDisagreementError} when the structural check says
+ @throws {@link FloorGroundDisagreementError} when the structural check says
  it compared nothing on ground the reach read as comparable, a fault in this
  code
 

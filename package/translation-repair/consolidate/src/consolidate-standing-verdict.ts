@@ -1,6 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   describeStandingVerdict,
@@ -11,7 +10,10 @@ import type {
   ArtifactContestVerdict,
   LaneChoice,
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  type DisputedWording,
+  validateTranslatedSlice,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
 //region Consolidation standing verdict
 // TWO VERDICTS ON ONE TEXT, kept apart on purpose. The deterministic gate says

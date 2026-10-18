@@ -13,6 +13,7 @@ import {
 import {
   gatherStageVoices,
   type HeardVoice,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
@@ -23,7 +24,6 @@ import {
   type TranslateReportWire,
   validateTranslatedSlice,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Consolidate produce
 // THE PRODUCING HALF of the consolidation, kept apart from the deciding half

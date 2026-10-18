@@ -23,10 +23,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { buildAbsoluteNaturalnessReviewMessages, } from '@monochromatic-dev/translation-repair-archive';
 import { polishConsolidation, } from '../dist/final/node/index.mjs';

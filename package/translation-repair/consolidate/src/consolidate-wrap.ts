@@ -9,8 +9,10 @@ import {
   wrapReplacementText,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { TranslateReportWire, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { sameWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  sameWording,
+  type TranslateReportWire,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
 //region Consolidation wrap
 // APPLIES THE SEMANTIC WRAP TO A CONSOLIDATION THAT SHIPS, which is the one

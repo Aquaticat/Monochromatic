@@ -16,7 +16,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type LaneContestBallot, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type { LaneContestBallot, } from '@monochromatic-dev/translation-repair-lane-contest';
 import { renderConsolidationBrief, } from '../dist/final/node/index.mjs';
 
 /**

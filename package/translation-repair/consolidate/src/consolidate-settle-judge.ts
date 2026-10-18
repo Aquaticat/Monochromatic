@@ -10,14 +10,14 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import {
   type IncumbentKind,
   TranslateAbsenceError,
+  type TranslateCandidateSet,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { TranslateCandidateSet, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   judgeSlateWithRetry,
   judgeTranslateSlate,
   runoffTiedFinalists,
+  type TranslateStageResult,
 } from '@monochromatic-dev/translation-repair-translate-stage/ts';
-import type { TranslateStageResult, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Consolidate settle judging

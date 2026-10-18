@@ -1,7 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { communityRenderingsBlock, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   CONTEST_POLICY,
   CONTEST_REFUSAL,
@@ -15,7 +14,10 @@ import { FRONT_MATTER_DECISION_RULE, } from '@monochromatic-dev/translation-repa
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { renderedBreakPrompt, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { citedReferenceCandidateLines, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  citedReferenceCandidateLines,
+  type SliceSyntax,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   ARCHIVE_TENSE_LABEL,
   CONSOLIDATED_TENSE_LABEL,

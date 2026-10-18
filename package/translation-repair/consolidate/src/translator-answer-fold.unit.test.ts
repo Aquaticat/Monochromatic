@@ -26,9 +26,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { produceTranslateSlate, } from '@monochromatic-dev/translation-repair-translate-stage';
-import { type HeardVoice, } from '@monochromatic-dev/translation-repair-stage';
+import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage';
 import { foldInvisibleVariants, } from '@monochromatic-dev/translation-repair-markup';
 import {
   buildTranslateMessages,

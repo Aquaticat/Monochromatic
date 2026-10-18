@@ -1,11 +1,9 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
-import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
-import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { renderConsolidationBrief, } from './consolidate-brief.ts';
 import { QUOTED_WORDS_REMINDER, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
+  type DeclaredNamePair,
   HOUSE_POLICY_BLOCK,
   NAME_FORM_SCOPE_RULE,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
@@ -17,11 +15,15 @@ import {
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { PAGE_APPARATUS_IS_KEPT, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type DisputedWording,
   TRANSLATE_FRONT_MATTER_RULE,
   TRANSLATE_LINE_STRUCTURE_RULE,
   TRANSLATE_PICTURE_SCOPE_RULE,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { CITED_REFERENCE_CANDIDATE_RULE, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  CITED_REFERENCE_CANDIDATE_RULE,
+  type SliceSyntax,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 
 //region Consolidate wire
 // Asks for the rendering that ships, given the two the lanes produced and what

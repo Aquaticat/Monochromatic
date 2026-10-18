@@ -6,10 +6,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type {
-  DisputedWording,
-  TranslateReportWire,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { ConsolidateGateOutcome, } from './consolidate-gate-stage.ts';
 import { gateAndShip, } from './consolidate-settle-gate.ts';
 import {
@@ -38,7 +34,9 @@ import { wrapConsolidationProposals, } from './consolidate-wrap.ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   buildTranslateCandidates,
+  type DisputedWording,
   type LaneText,
+  type TranslateReportWire,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type {
   TranslateDecision,

@@ -23,9 +23,9 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import {
   runWindowedRounds,
   shortBenchStageFinding,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Consolidation polish gate stage
 

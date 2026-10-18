@@ -16,7 +16,7 @@ import {
 
 import { messageText, } from '@monochromatic-dev/translation-repair-provider';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildRefineMessages,
   buildRefineSelectionContext,
