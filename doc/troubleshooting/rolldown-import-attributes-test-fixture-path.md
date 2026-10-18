@@ -46,6 +46,7 @@ In that source,
 `crates/rolldown/src/utils/load_entry_module.rs:40` maps the missing entry to its diagnostic:
 
 ```rust
+//! Upstream diagnostic branch excerpt.
 // crates/rolldown/src/utils/load_entry_module.rs
 ResolveError::NotFound(_) => Err(BuildDiagnostic::unresolved_entry(id, None)),
 ```
@@ -55,6 +56,7 @@ formats `Cannot resolve entry module {}.`.
 `crates/rolldown_error/src/types/event_kind.rs:160` names the diagnostic:
 
 ```rust
+//! Upstream event-name branch excerpt.
 // crates/rolldown_error/src/types/event_kind.rs
 EventKind::UnresolvedEntry => write!(f, "UNRESOLVED_ENTRY"),
 ```
