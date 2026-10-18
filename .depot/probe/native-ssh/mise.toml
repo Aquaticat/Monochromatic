@@ -1,0 +1,43 @@
+[tasks.prepare]
+quiet = true
+shell = "node --input-type=module-typescript -e"
+run = '''
+import {readFileSync,writeFileSync,mkdirSync,chmodSync,existsSync} from 'node:fs';import {homedir,availableParallelism,totalmem,userInfo} from 'node:os';import {join} from 'node:path';import {execFileSync} from 'node:child_process';import {createHash,randomBytes} from 'node:crypto';import {strict as assert} from 'node:assert';const sha=bytes=>createHash('sha256').update(bytes).digest('hex');const workspace=process.env.GITHUB_WORKSPACE;assert(workspace);assert.equal(availableParallelism(),2);assert(totalmem()>=7000000000&&totalmem()<=9000000000);assert(!existsSync('/continue'));assert(!existsSync(join(workspace,'continue')));const source=execFileSync('git',['rev-parse','HEAD'],{cwd:workspace,encoding:'utf8'}).trim();const root=join(homedir(),'temp/agent','native-ssh-'+source.slice(0,12));mkdirSync(root,{recursive:true,mode:0o700});chmodSync(root,0o700);const marker={kind:'native-ssh-fixture',nonce:randomBytes(32).toString('hex'),source,applicationBase:'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a',bootId:readFileSync('/proc/sys/kernel/random/boot_id','utf8').trim(),uid:userInfo().uid,gid:userInfo().gid,workspace,node:process.version,nodePath:process.execPath};const bytes=JSON.stringify(marker)+'\n';writeFileSync(join(root,'identity.json'),bytes,{mode:0o600});writeFileSync(join(root,'task-source.sha256'),sha(readFileSync('mise.toml'))+'\n',{mode:0o600});console.log('NATIVE_SSH_READY '+JSON.stringify({marker,root,markerPath:join(root,'identity.json'),markerSha256:sha(bytes),taskSha256:sha(readFileSync('mise.toml')),workflowSha256:sha(readFileSync(join(workspace,'.depot/workflows/native-ssh-acceptance.yml'))),syntheticWorkflowEnvironment:process.env.NATIVE_SSH_WORKFLOW_SENTINEL}));
+'''
+
+[tasks.verify]
+quiet = true
+shell = "node --input-type=module-typescript -e"
+run = '''
+import {readFileSync,writeFileSync,existsSync,unlinkSync,realpathSync,statSync} from 'node:fs';import {homedir} from 'node:os';import {join} from 'node:path';import {execFileSync,spawnSync} from 'node:child_process';import {createHash} from 'node:crypto';import {strict as assert} from 'node:assert';const sha=bytes=>createHash('sha256').update(bytes).digest('hex');const workspace=process.env.GITHUB_WORKSPACE;assert(workspace);const source=execFileSync('git',['rev-parse','HEAD'],{cwd:workspace,encoding:'utf8'}).trim();const root=join(homedir(),'temp/agent','native-ssh-'+source.slice(0,12));const marker=JSON.parse(readFileSync(join(root,'identity.json'),'utf8'));const direct=JSON.parse(readFileSync(join(root,'direct.json'),'utf8'));const cli=JSON.parse(readFileSync(join(root,'cli.json'),'utf8'));const paused=JSON.parse(readFileSync(join(root,'paused.json'),'utf8'));for(const row of [direct,cli,paused]){assert.equal(row.source,source);assert.equal(row.bootId,marker.bootId);assert.equal(row.markerSha256,sha(readFileSync(join(root,'identity.json'))));assert(Number.isSafeInteger(row.uid)&&row.uid>=0);assert(/^[0-9a-f]{64}$/u.test(row.challenge));assert.equal(row.responseSha256,sha(Buffer.concat([readFileSync(join(root,'identity.json')),Buffer.from(row.challenge)])));}assert.equal(direct.mode,'direct-ssh');assert.equal(cli.mode,'cli-pty');assert.equal(paused.mode,'paused-tmate');assert.equal(paused.workflowEnvironment,'workflow-sentinel-e02');assert.equal(realpathSync(paused.cwd),realpathSync(workspace));assert.equal(readFileSync(join(workspace,'continue'),'utf8').trim(),sha(marker.nonce));const fileOwnership=['direct.json','cli.json','paused.json'].map(name=>{const st=statSync(join(root,name));assert.equal(st.uid,marker.uid);assert.equal(st.mode&0o777,0o600);return{name,uid:st.uid,gid:st.gid,modeOctal:(st.mode&0o777).toString(8)};});const tmate=process.env.NATIVE_SSH_TMATE_EXECUTABLE;assert(tmate);assert.equal(sha(readFileSync(tmate)),'d2fff992e40ce18ff81b9a92fa1cb93a56fb5a82c1cc428204552d8dfa1bc04f');if(existsSync('/tmp/tmate.sock')){const stop=spawnSync(tmate,['-S','/tmp/tmate.sock','kill-server'],{encoding:'utf8',timeout:5000});assert.equal(stop.status,0);}assert(!existsSync('/tmp/tmate.sock'));unlinkSync(join(workspace,'continue'));assert(!existsSync(join(workspace,'continue')));const result={kind:'native-ssh-resumed',source,applicationBase:marker.applicationBase,markerSha256:direct.markerSha256,direct,cli,paused,fileOwnership,continueRemoved:true,tmateSocketAbsent:true};writeFileSync(join(root,'consumer.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});console.log('NATIVE_SSH_CONSUMER '+JSON.stringify(result));
+'''
+
+[tasks.prepare-tmate]
+quiet = true
+shell = "node --input-type=module-typescript -e"
+run = '''
+import {readFileSync,writeFileSync,appendFileSync,mkdirSync,chmodSync,existsSync,accessSync,constants} from 'node:fs';
+import {join} from 'node:path';
+import {homedir} from 'node:os';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {strict as assert} from 'node:assert';
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+assert.equal(process.platform,'linux');assert.equal(process.arch,'x64');
+const workspace=process.env.GITHUB_WORKSPACE;assert(workspace);assert(process.env.GITHUB_PATH&&process.env.GITHUB_ENV);
+const source=execFileSync('git',['rev-parse','HEAD'],{cwd:workspace,encoding:'utf8'}).trim();
+const dir=join(homedir(),'temp/agent','native-ssh-tmate-'+source.slice(0,12));assert(!existsSync(dir));mkdirSync(dir,{recursive:true,mode:0o700});chmodSync(dir,0o700);
+const url='https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz';
+const response=await fetch(url,{signal:AbortSignal.timeout(15000)});assert.equal(response.status,200);
+const chunks=[];let length=0;for await(const chunk of response.body){length+=chunk.length;assert(length<=1252460,'Admitted tmate archive byte ceiling');chunks.push(chunk);}
+const archive=Buffer.concat(chunks);assert.equal(archive.length,1252460);assert.equal(sha(archive),'6e503a1a3b0f9117bce6ff7cc30cf61bdc79e9b32d074cf96deb0264e067a60d');
+const path=join(dir,'admitted.tar.xz');writeFileSync(path,archive,{mode:0o600});
+const members=execFileSync('tar',['--list','--xz','--file',path],{encoding:'utf8',timeout:5000}).trim().split('\n');
+assert.deepEqual(members,['tmate-2.4.0-static-linux-amd64/','tmate-2.4.0-static-linux-amd64/tmate']);
+execFileSync('tar',['--extract','--xz','--file',path,'--directory',dir,'--strip-components=1'],{encoding:'utf8',timeout:5000});
+const binary=join(dir,'tmate'),bytes=readFileSync(binary);assert.equal(bytes.length,3135320);assert.equal(sha(bytes),'d2fff992e40ce18ff81b9a92fa1cb93a56fb5a82c1cc428204552d8dfa1bc04f');chmodSync(binary,0o500);
+const version=execFileSync(binary,['-V'],{encoding:'utf8',timeout:5000}).trim();assert.equal(version,'tmate 2.4.0');
+accessSync('/usr/bin/ssh-keygen',constants.X_OK);accessSync('/usr/bin/bash',constants.X_OK);
+appendFileSync(process.env.GITHUB_PATH,dir+'\n');appendFileSync(process.env.GITHUB_ENV,'NATIVE_SSH_TMATE_EXECUTABLE='+binary+'\n');
+console.log('NATIVE_SSH_TMATE_READY '+JSON.stringify({source,url,archiveBytes:archive.length,archiveSha256:sha(archive),executableBytes:bytes.length,executableSha256:sha(bytes),version,downloadDeadlineMs:15000,installDependencies:false}));
+'''
