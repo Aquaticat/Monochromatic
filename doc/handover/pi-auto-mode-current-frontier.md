@@ -21,6 +21,22 @@ The user authorizes shared logger repairs and requires a version bump to trigger
 The measured logger version is `0.4.1`; source repairs are under verification and the publishing bump remains pending.
 The user authorizes invoking and monitoring MiMo directly through Pi RPC.
 After readiness verification, run that agent and monitor the lint work rather than returning a manual handoff.
+The direct RPC connectivity pilot passed on 2026-10-18:
+configured `llmgateway-devpass/mimo-v2.6-pro` replied `READY`,
+dispatched no tools, and exited normally inside a 2-GiB, 2-CPU disposable container.
+Evidence: `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018/mimo-rpc-pilot.log`
+and fixture `pi-mimo-rpc-preflight-WNIl6a`.
+The controller resolves the repository's Mise environment without printing credentials,
+and launches the maintained command from the repository root.
+Calling the package `native:cli` task instead changes cwd to the package,
+whose absent `AGENTS.md` makes this policy bootstrap fail before RPC starts.
+Initial container probes also corrected a missing canonical home mount and disabled automatic tool installation.
+
+Logger build, all units, burst capacity and types passed before the final file-owner probe.
+The unchanged 100,000-record burst retained 48,304 heap bytes in that verification.
+The new same-millisecond, separate-sink regression fails with malformed JSONL at position 349544:
+timestamp-only names let independently serialized append queues write the same file.
+That production repair and its follow-up verification are required before publishing the logger bump.
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
 There is no adopted 13k line target.
 
