@@ -173,6 +173,67 @@ the supervisor supplies exact-group Allow through RPC.
 Do not claim a provider failure or a fixed cause from subsequent recovery.
 Send further task guidance at idle boundaries to avoid replacing active review inputs.
 
+MiMo's `src` formatter checkpoint is `8b34f75c03`:
+46 `src` files and five concurrently staged root troubleshooting documents.
+The worker recomputes commit paths from the unstaged diff after staging;
+that list is empty and the commit takes the whole index.
+The five documents are concurrent work,
+not supervisor-owned edits.
+They remain preserved.
+The required corrective comment is posted at
+<https://github.com/Aquaticats/Monochromatic/commit/8b34f75c03b65edc6fdfc575c48f22e44a9def77#commitcomment-205513045>.
+The user keeps root `CPN` unchanged and puts the captured-file-list lesson in package docs,
+matching the existing decision to keep root `TCV` unchanged.
+The package's `doc/compact-review-design.md` now retains that lesson.
+The checkpoint's own description overstates the source changes as parenthesization and TSDoc only.
+Independent positive-controlled comparison checks every changed file:
+35 stripped runtime ASTs match and 11 differ.
+Differences include `Error.isError`,
+template literals,
+return handling,
+destructuring,
+declaration splitting and runtime/type-only imports.
+`src-runtime-syntax-comparison.log` and `src-runtime-syntax-fixture.json` retain the complete result.
+Do not claim behavioral equivalence from the sampled review or AST equality alone.
+
+The focused native content-storage cleanup is committed as `602f594ee0`.
+Its two files have zero warnings/errors across the same 486 rules;
+independent fresh-cache types pass for the committed snapshot.
+Before adoption,
+private source `native-content-candidate-kDrrNy` builds as `ieehMY`.
+Its exact-content/accessor consumer passes with zero foreign-getter reads,
+and its actual runner streaming consumer retains 10,578,184 bytes,
+within the measured repaired spread.
+The earlier candidate type run overlaps its private build and is not accepted as stable-input evidence;
+the post-build fresh-cache type run passes separately.
+`committed-content-storage-lint.log`,
+`committed-content-storage-types.log` and the `native-content-candidate-*.log` files retain the results.
+
+A fully frozen package candidate for `8b34f75c03` now builds JavaScript and native output privately,
+without changing root publication or policy bytes.
+`committed-package-candidate.json` identifies its retained directory.
+Its native artifact is `FGiMf5` inside that private output.
+Full units,
+session-input aggregate,
+receipt consumer and fresh-cache types are running in separate disposable bounded fixtures.
+Their logs are `src-format-committed-{full-units,session-inputs,receipts,types}.log`.
+These verification inputs remain frozen while MiMo edits live `src`.
+Root publication remains `LytMAt` and the live worker remains pinned to `EWv4wy`.
+
+The formatter's JavaScript readonly issue is traced to `oxlint-tsgolint` `7.0.2004`,
+source `a61289117febcb1a60cf3bc75ef2b6bbccc4b665`.
+Current upstream `main` has the identical deciding rule file by SHA-256.
+The fresh prototype is `${HOME}/temp/agent/upstream-prototype.XlprBA91`.
+All four added JavaScript grammar cases fail before its guard;
+the complete existing rule catalog passes after the guard.
+Local prototype commits are `ccec2d9`,
+`0b64a8e` and comment clarification `f615072`.
+The standalone helper binary is building for a real formatter integration probe.
+No dependency,
+installed helper or rule configuration is changed.
+The new root troubleshooting document retains the source trace;
+finish the real integration probe and save its reproducible patch and local filing draft.
+
 ### Original worker and completed progress repair
 
 The original controller pinned `native-release-dXedQJ`.

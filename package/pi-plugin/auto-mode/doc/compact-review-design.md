@@ -91,3 +91,27 @@ Full maintained Oxlint covers 813 files with 486 rules:
 Behavioral verification does not establish lint completion.
 Inventories and receipts remain private under
 `${HOME}/temp/agent/pi-mimo-lint-approval-20261017`.
+
+## Checkpoint maintenance lessons
+
+Capture a nonempty list of explicit file paths before staging,
+including new files.
+Use that same list for staging and committing,
+then compare the committed paths with it.
+Do not rebuild the commit path list from the unstaged diff after staging:
+the list can become empty and cause Git to commit concurrent index entries.
+Commit `8b34f75c03` demonstrates that failure with five unrelated troubleshooting documents.
+The concurrent content is preserved and a corrective commit comment records the scope error.
+The user explicitly keeps root `CPN` unchanged and places this lesson here.
+
+A formatter's safe-fix label does not establish behavioral equivalence.
+The complete source checkpoint comparison retains runtime literal values,
+tagged-template raw text,
+names and branch order before classifying changes.
+Its 35 identical stripped ASTs and 11 differing files require different review evidence.
+Real consumer checks still cover differences in imports,
+return handling and error checks;
+AST equality alone does not prove `Function.prototype.toString` compatibility.
+The private native formatter also introduces TypeScript-only syntax into JavaScript,
+documented in the
+[readonly autofix investigation](../../../../doc/troubleshooting/oxlint-prefer-readonly-javascript.md).
