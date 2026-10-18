@@ -1,5 +1,36 @@
 # Depot trial interview
 
+## Local source-consumer checkpoint on 2026-10-18
+
+Cloud work remains terminal; no additional provider allocation is needed for this checkpoint.
+The frozen Figma parser and converter now pass all 24 authored leaf labels,
+including actual consumption of the three personal exports in a network-disabled container.
+Payloads, filenames and hashes remain private.
+The receipt is `doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json`.
+The remaining nine authored source-test files produced 151 passing leaf labels and four failures.
+Eight files pass; the import-attributes integration file fails during Rolldown entry resolution.
+It requests `src/fixtures`, while the frozen source contains `src/fixture`.
+The fresh owning Mise Node-harness build passes,
+and the existing built-export harness self-test passes its nine outer cases,
+including assertions about deliberate failures, timeouts and repeat termination.
+Those controls are separate from product coverage.
+Exact source identities and 22 process-output bodies are sealed in
+`doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json` and its source archive.
+Source-import successes do not establish compiled package assertion coverage.
+
+The next action is the committed three-leg local counterfactual admission:
+`doc/audit/depot-local-node-counterfactual-admission-2026-10-18.evidence.json`.
+First mount the discovered logger directory writable while retaining the missing fixture path.
+Then add only `MONOCHROMATIC_VERBOSE=true` to verify the actual logger verbosity switch.
+Finally add only a throwaway `fixtures -> fixture` alias while preserving source assertions.
+Each network-disabled container has two CPUs, 2 GiB RAM and a 150-second limit.
+Keep the entry-resolution and secondary logger diagnostics as separate incidents.
+After those controls, publish the detailed 223-owner semantic projection with its actual log-hash joins,
+integrate the new evidence into the approved report sections,
+complete scoped formatting and rendered checks, and publish through the existing isolated merge worktree.
+The agent service limit still prevents a fresh independent whole-report review.
+The interview has not started.
+
 ## Terminal allocation closure on 2026-10-18
 
 Every newly admitted job is terminal.

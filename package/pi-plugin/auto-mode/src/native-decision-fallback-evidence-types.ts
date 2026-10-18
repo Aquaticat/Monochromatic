@@ -71,20 +71,25 @@ export type AssessmentEvidenceRecord = Readonly<{
 }>;
 
 /**
- Selected policy material entry exposing its authored fragments.
+ Selected policy material entry exposing the fragment list the catalog visits.
+
+ Fragment spans stay unprojected because only the short-circuit assertion visit
+ reads their text.
  */
 export type AssessmentPolicyMaterial = Readonly<{
-  fragments: readonly Readonly<{ text: string }>[];
+  fragments: readonly unknown[];
 }>;
 
 /**
  Assessment request state fields the catalog asserts stay archived and local.
+
+ Only the first material entry is projected; its tail stays unknown.
  */
 export type AssessmentRequestState = Readonly<Record<string, unknown>> & Readonly<{
   parentProgram: string;
   selectedPolicyMaterial: readonly [
     AssessmentPolicyMaterial,
-    ...AssessmentPolicyMaterial[]
+    ...unknown[]
   ];
 }>;
 
@@ -338,26 +343,36 @@ export function assertAssessmentRequestState(value: unknown): asserts value is A
   const { selectedPolicyMaterial: material } = state;
   if ((!Array.isArray(material)) || ((material.length) < 1))
     throw new DecisionFallbackEvidenceShapeError('Assessment request state must select at least its policy material');
-  for (const entry of material) {
-    /**
-     Each material entry keeps its authored fragment list.
-     */
-    const materialEntry = evidenceMemberRecord(entry);
-    /**
-     Fragments stay an ordered array of authored spans.
-     */
-    const { fragments } = materialEntry;
-    if (!Array.isArray(fragments))
-      throw new DecisionFallbackEvidenceShapeError('Selected policy material must retain its fragments');
-    for (const fragment of fragments) {
-      /**
-       Each span keeps the text the catalog asserts starts with its rule code.
-       */
-      const span = evidenceMemberRecord(fragment);
-      if ((typeof span.text) !== 'string')
-        throw new DecisionFallbackEvidenceShapeError('Policy material fragments must retain their text');
-    }
-  }
+  /**
+   Only the first material entry's fragments are dereferenced by the catalog.
+   */
+  const materialEntry = evidenceMemberRecord(material[0]);
+  /**
+   Fragments stay an ordered array whose visited spans are read by the
+   short-circuit assertion.
+   */
+  const { fragments } = materialEntry;
+  if (!Array.isArray(fragments))
+    throw new DecisionFallbackEvidenceShapeError('Selected policy material must retain its fragments');
+}
+
+/**
+ Recognize a visited policy fragment span keeping its text.
+
+ Only spans the catalog's short-circuit visit reaches are checked; unvisited
+ fragments and unused material entries stay untouched.
+
+ @param value - fragment span reached by the short-circuit assertion
+
+ @returns whether the visited span keeps its asserted text
+
+ @example
+ ```ts
+ assert.ok(isPolicyFragmentText(span));
+ ```
+ */
+export function isPolicyFragmentText(value: unknown): value is Readonly<{ text: string }> {
+  return isMemberRecord(value) && ((typeof value.text) === 'string');
 }
 
 //endregion

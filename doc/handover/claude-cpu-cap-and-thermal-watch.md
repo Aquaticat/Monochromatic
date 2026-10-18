@@ -724,13 +724,25 @@ explained. The new rows are about 3.9 hours, mostly from before the fan curve fi
 measured, and paste, board, fan removal and cooler height changed together, so no single change can be credited.
 Repeat the comparison after a few hours of normal use, using rows after the fan curve fix.
 
-Queued rerun (user, 2026-10-18: "do the rerun, whenever it makes sense"): at 2026-10-18 05:00 UTC the rows after the
-fan curve fix (taken as 04:30 UTC, about 00:30 EDT) covered 0.7 hours with 3 settled samples, which is too little.
-Run `node ~/temp/agent/before-after-swap.ts [fix-time-utc]` (a scratch script, not in the repo; it splits at the
-last row with `board1_c` filled and at the fix time, and prints the settled medians of three eras). Report when the
-after-fix era has at least 100 settled samples in the 120 to 140 W bucket (the old board pinned at 95 degrees there)
-and in the 180 to 200 W bucket; if the user has not run heavy work by then, wait for it instead of reporting thin data.
-A session-only cron job also fires the check; the job dies with the session, so this paragraph is the durable record.
+Rerun at 18:07 EDT on 2026-10-18 (`node ~/temp/agent/before-after-swap.ts [fix-time-utc]`, a scratch script that
+splits at the last row with `board1_c` filled and at the fix time taken as 04:30 UTC; `~/temp/agent/band-detail.ts
+<lowest-watts-of-band>` prints per-chiplet medians for one band). The after-fix era had 64.7 hours and 885 settled
+samples. The stop condition (at least 100 settled samples in both the 120 to 140 W and 180 to 200 W buckets) was met
+only for the first: 170 samples at 120 to 140 W and 4 at 180 to 200 W.
+- 120 to 140 W settled: old board 95.4 degrees median (p90 96.0, 1033 samples, 4480 MHz); new board after the fix
+  80.0 degrees (p90 85.8, max 87.8, 170 samples, 5057 MHz). Before the fix the new board read 82.1 degrees (18 samples).
+- 40 to 60 W: 51.9 old, 51.1 new. 100 to 120 W: 75.5 old, 75.8 new (385 samples). Both match.
+- 140 to 160 W: 82.4 degrees (33 samples); 160 to 180 W: 83.4 (23); 180 to 200 W: 90.0 (4 samples, too few to use).
+- 80 to 100 W looks worse on the new board (81.9 against 60.3 settled) but the load differs: the band medians are
+  28.2 W on the first chiplet, 13.5 W on the second and load 4.6 on the new board, against 23.7 W, 17.2 W and load 10.3
+  on the old one. The hotter chiplet sets Tctl, so band medians of Tctl mix load shapes. This is read as a load shape
+  effect, not shown to be a cooling change.
+- The CPU fan ran at a median 1056 RPM across the rows at 120 to 140 W (system fans 5 and 6: 1479 and 1768), so the
+  quiet curve leaves speed unused; raising it is the user's noise trade, not decided.
+Caveats stand: paste, board, fan removal, cooler height and fan curve changed together; ambient temperature is not
+logged; run-to-run spread was not measured. Still queued: the 180 to 200 W bucket needs at least 100 settled samples
+(sustained load near 190 W for about 17 minutes). Next check: 2026-10-19 18:07 EDT by a session-only cron job; this
+paragraph is the durable record.
 
 Decision (user, 2026-10-18): switch the sample log to the motherboard fans. The watcher no longer reads CoolerControl;
 the seven Corsair columns stay in the header as empty slots so older rows keep their positions, and eleven columns
