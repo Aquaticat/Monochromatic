@@ -30,29 +30,15 @@ this diagnosis does not rely on an unverified local registry edit.
 The archive records upstream revision `5c168be5ef6a32ac966daf5983502a4f694b37ad`.
 
 In that external crate's `build.rs:18`,
-the timestamp seed is optional and malformed input is discarded:
-
-```rust
-// External turso_core 0.8.2: build.rs
-let source_date_epoch = env::var("SOURCE_DATE_EPOCH")
-    .ok()
-    .and_then(|epoch| epoch.parse::<i64>().ok());
-```
+`env::var("SOURCE_DATE_EPOCH")` reads the optional timestamp seed.
+The following `.ok()` and `epoch.parse::<i64>().ok()` discard missing or malformed input.
 
 At `build.rs:66`,
 the source selects the explicit seed,
 then Git commit time,
-then the current clock:
-
-```rust
-// External turso_core 0.8.2: build.rs
-let sqlite_date = format_utc(source_date_epoch.or(git_commit_epoch).unwrap_or_else(|| {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .expect("system clock before epoch")
-        .as_secs() as i64
-}));
-```
+then the current clock through `std::time::SystemTime::now()`.
+The archived receipt retains the unchanged complete source,
+including its original closures.
 
 At `build.rs:79`,
 that selected value becomes the generated `BUILT_TIME_SQLITE` constant.
