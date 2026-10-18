@@ -1,0 +1,42 @@
+name: Isolated Gradle invalidation, faults and real plugin host
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gradle:
+    runs-on:
+      size: 8x32
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_REUSE_ROLE: consume
+      REUSE_KIND: gradle
+      REUSE_PHASE: controls
+      REUSE_DEPENDENCIES: installed
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 64
+        clean: false
+    - name: Verify the independent snapshot identity
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - name: Verify prepared tools and installed dependency archive
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:tools
+    - name: Exercise input invalidation, isolated bad responses and real Detekt plugin loading
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:gradle
+    - name: Recheck the snapshot after all controls
+      if: always()
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: reuse-gradle-controls
+        path: .research-reuse/receipts
+        retention-days: 7
+        if-no-files-found: warn

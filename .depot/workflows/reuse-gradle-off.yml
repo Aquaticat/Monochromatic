@@ -1,0 +1,42 @@
+name: Isolated unchanged Gradle cache-off consumer
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gradle:
+    runs-on:
+      size: 8x32
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_REUSE_ROLE: consume
+      REUSE_KIND: gradle
+      REUSE_PHASE: off
+      REUSE_DEPENDENCIES: store
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 64
+        clean: false
+    - name: Require the independently bound snapshot manifest
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - name: Verify identical tools and content-store dependency preparation
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:tools
+    - name: Build and execute actual JUnit consumers with task-output caching disabled
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:gradle
+    - name: Recheck the snapshot after the consumer
+      if: always()
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: reuse-gradle-off
+        path: .research-reuse/receipts
+        retention-days: 7
+        if-no-files-found: warn

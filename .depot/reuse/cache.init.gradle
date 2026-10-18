@@ -23,6 +23,8 @@ gradle.settingsEvaluated { settings ->
         local { enabled = false }
         // Use Gradle's HTTP protocol through the private loopback recorder.
         remote(HttpBuildCache) {
+            // Disable this backend only for the explicit cache-off control; local output caching remains disabled.
+            enabled = System.getenv('REUSE_CACHE_DISABLED') != 'true'
             // The recorder forwards to Depot over TLS and supplies only the automatic job credential.
             url = System.getenv('REUSE_CACHE_URL')
             // This exception applies to the sandbox's loopback recorder, not the remote Depot connection.
