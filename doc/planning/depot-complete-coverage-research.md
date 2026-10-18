@@ -872,7 +872,7 @@ A follow-up must retain this failed boundary,
 qualify explicit hidden-resource inclusion,
 and run a fresh restored-artifact consumer before portability is credited.
 
-## Active bounded properties and remaining consumers
+## Bounded properties and remaining consumers
 
 Run `39120929405`,
 immutable harness `7e1b030e7e6898a7d1e7876cd0723dd61292c65a`,
@@ -893,7 +893,39 @@ The job has 8 CPUs,
 a 15-minute job bound,
 a 9-minute command campaign,
 and a 180-second per-task bound.
-No terminal result is claimed here.
+All 69 owning invocations reached a terminal outcome:
+64 passed and 5 failed,
+without a campaign-budget omission.
+The receipt's declared artifact set is complete,
+and it reports no changed tracked files.
+
+The failed boundaries are:
+
+- Conf-fork's coverage gate cannot read its absent frozen `coverage-baseline.json`.
+- JSONC's gate reports covered-line counts 12 versus 14 for `edit-comment.ts`,
+  8 versus 10 for `edit-set.ts`,
+  2 versus 3 for `emit-value.ts`,
+  and 2 versus 4 for `parse-jsonc.ts`.
+- Logger's gate reports 453 versus 456 covered lines in `src/sink/console.ts`.
+  These are actual coverage assertions;
+  their cause has not been attributed to the source or the runtime version.
+- Matcher's actual `isMatch` differential property shrank to inputs `['', 'a']`,
+  patterns `['!', '!']`,
+  and `{ caseSensitive: false, allPatterns: true }`.
+  The fork returned `false` while the locked upstream returned `true`.
+  The retained replay identity is seed `565212679`,
+  path `70:2:3:2:2:3:5:5:5:5:6:6`,
+  after 71 tests and 11 shrinks.
+- P-map's streaming and concurrent differential properties report error-message parity failures
+  for null and undefined iterable inputs respectively.
+  Both exact seeds,
+  paths,
+  inputs,
+  and nested assertions are retained.
+
+The original ZIP and source-bound logs are recorded in
+`depot-complete-coverage-typescript-fuzz-receipts.json.gz`.
+No gate was waived or refrozen.
 
 The finite deepmerge/compiler consumer,
 TOML Go conformance,
@@ -903,3 +935,21 @@ qualified desktop compositor/ImageMagick lookup and PNG decoding,
 proper packed installs,
 and complete product feature/assertion mapping remain tracked work.
 The complete-coverage and execution-complete flags remain false.
+
+## Actual browser owner baseline dispatched
+
+Run `39123458425`,
+immutable harness `6328647d8b7113a920d777044944612f3bc47a58`,
+keeps the same frozen application source and original Playwright recipe.
+Its 45 owning invocations comprise 42 shared builds plus the neutral module-test browser owner
+separately for Chromium,
+Firefox,
+and WebKit.
+That owner caps each actual Podman test container at 2 GiB and 2 CPUs with one worker.
+This named profile uses no retries,
+a 15-second test limit,
+and a 90-second suite limit.
+The original image declares Playwright 1.63.0 while the source lock declares 1.64.0;
+the run preserves that baseline instead of changing the recipe.
+No browser runtime result is claimed until its receipt is collected.
+Other browser and E2E specifications remain separate tracked profiles.

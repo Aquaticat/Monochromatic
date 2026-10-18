@@ -323,17 +323,12 @@
       "scope": "Actual shipped-header inventory, not architecture runtime qualification; no first-party WASM source is not an exclusion of this transitive capability"
     },
     "activeBoundedTypescriptFuzz": {
+      "state": "terminal_failure",
       "run": 39120929405,
-      "harness": "7e1b030e7e6898a7d1e7876cd0723dd61292c65a",
-      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
-      "plannedInvocations": 69,
-      "fuzzOwners": 12,
-      "propertyFiles": 28,
-      "coverageOwners": 13,
-      "missingFrozenBaseline": "package/module/conf-fork.fuzz/coverage-baseline.json",
-      "state": "dispatched, no terminal claim",
-      "resourceClass": "8CPU32GiB",
-      "jobMinutes": 15
+      "invocations": 69,
+      "passed": 64,
+      "failed": 5,
+      "evidence": "doc/planning/depot-complete-coverage-typescript-fuzz-receipts.json.gz"
     }
   },
   "coverageReviewComplete": false,
@@ -627,6 +622,22 @@
       "encoding": "GitHub artifact ZIP",
       "bytes": 1130359,
       "sha256": "93c619710d1c7d5e65f5d69f6f098d3e6e45dc45a8746c7f575b0276ae59ca12"
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-typescript-fuzz-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 163263,
+      "sha256": "7fde34982edba1b1086cd1a8c3a1e80da2461dc7231ba171b17bce1d8e180bfb",
+      "rawBytes": 2199538,
+      "rawSha256": "77527a79d5a56937601b62223483c5185e225505462464ef6b035225953d6f94"
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-typescript-fuzz-12134106934.zip",
+      "encoding": "original GitHub artifact ZIP",
+      "bytes": 183724,
+      "sha256": "0f8a23ad24fc94ef3fac95ec8be759566f7ddf52132a5e93de3d57b82e2a63fa",
+      "artifact": 12134106934,
+      "run": 39120929405
     }
   ],
   "execution": [
@@ -1070,6 +1081,108 @@
         }
       ],
       "restoredArtifactConsumerPassed": false
+    },
+    {
+      "profile": "bounded-typescript-properties",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39120929405,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39120929405",
+      "workflowCommit": "7e1b030e7e6898a7d1e7876cd0723dd61292c65a",
+      "invocations": 69,
+      "passed": 64,
+      "failed": 5,
+      "requestedFuzzOwners": 12,
+      "propertyFiles": 28,
+      "coverageGates": 13,
+      "jsoncConformanceTasks": 2,
+      "allCommandsReached": true,
+      "allExpectedDiscoveryMatched": true,
+      "changedTrackedFiles": [],
+      "failureBoundaries": [
+        {
+          "task": "//package/module/conf-fork.fuzz:fuzz:coverage",
+          "classification": "frozen_baseline_file_absent",
+          "diagnostic": "ENOENT coverage-baseline.json"
+        },
+        {
+          "task": "//package/module/jsonc-edit.fuzz:fuzz:coverage",
+          "classification": "authored_coverage_assertion_red_cause_unattributed",
+          "regressions": {
+            "edit-comment.ts": [
+              14,
+              12
+            ],
+            "edit-set.ts": [
+              10,
+              8
+            ],
+            "emit-value.ts": [
+              3,
+              2
+            ],
+            "parse-jsonc.ts": [
+              4,
+              2
+            ]
+          }
+        },
+        {
+          "task": "//package/module/logger.fuzz:fuzz:coverage",
+          "classification": "authored_coverage_assertion_red_cause_unattributed",
+          "regressions": {
+            "src/sink/console.ts": [
+              456,
+              453
+            ]
+          }
+        },
+        {
+          "task": "//package/module/matcher-fork.fuzz:fuzz",
+          "classification": "actual_fork_upstream_isMatch_parity_counterexample",
+          "seed": 565212679,
+          "path": "70:2:3:2:2:3:5:5:5:5:6:6",
+          "counterexample": {
+            "inputs": [
+              "",
+              "a"
+            ],
+            "patterns": [
+              "!",
+              "!"
+            ],
+            "options": {
+              "caseSensitive": false,
+              "allPatterns": true
+            }
+          },
+          "actual": false,
+          "expected": true,
+          "testsBeforeFailure": 71,
+          "shrinks": 11
+        },
+        {
+          "task": "//package/module/p-map-fork.fuzz:fuzz",
+          "classification": "actual_error_message_parity_assertions",
+          "cases": [
+            {
+              "kind": "streaming-map",
+              "seed": -1937990163,
+              "path": "7:0:0",
+              "inputKind": "null",
+              "testsBeforeFailure": 8,
+              "shrinks": 2
+            },
+            {
+              "kind": "concurrent-map",
+              "seed": 286397235,
+              "path": "17:0:0",
+              "inputKind": "undefined",
+              "testsBeforeFailure": 18,
+              "shrinks": 2
+            }
+          ]
+        }
+      ]
     }
   ],
   "familySummary": {
@@ -43501,5 +43614,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T11:14:47.019Z"
+  "latestEvidenceAt": "2026-10-18T11:34:24.277Z"
 }
