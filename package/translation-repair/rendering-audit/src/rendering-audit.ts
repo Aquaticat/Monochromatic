@@ -21,9 +21,11 @@ import {
   type ScreenedFinding,
   screenRenderingAudit,
 } from './rendering-audit-screen.ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Rendering audit stage
 // Asks a roster whether one rendering says what its original says, screens
