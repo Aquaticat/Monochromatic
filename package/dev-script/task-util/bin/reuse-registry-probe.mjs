@@ -59,11 +59,10 @@ try {
     const configResponse = await get({ path: '/v2/' + repository + '/blobs/' + manifest.config.digest, authorization });
     assert.equal(configResponse.status, 200);
     const configBytes = Buffer.from(await configResponse.arrayBuffer());
-    assert(configBytes.length <= 1024 * 1024);
+    assert(configBytes.length <= 16 * 1024 * 1024);
     assert.equal('sha256:' + sha(configBytes), manifest.config.digest);
     const config = JSON.parse(configBytes.toString());
-    const variables = config.config?.Env ?? [];
-    proof.config = { digest: manifest.config.digest, architecture: config.architecture, os: config.os, rootfsType: config.rootfs?.type, environmentNames: variables.map(value => value.split('=')[0]), unmaskedSyntheticControlInConfig: variables.includes('RESEARCH_PERSIST_CONTROL=synthetic-public-environment-20261018-r1'), maskedSyntheticControlInConfig: variables.some(value => value.startsWith('RESEARCH_SECRET_CONTROL=')), credentialNamedVariablesPresent: variables.map(value => value.split('=')[0]).filter(name => /TOKEN|PASSWORD|SECRET|AUTH/iu.test(name)) };
+    proof.config = { digest: manifest.config.digest, bytes: configBytes.length, topLevelKeys: Object.keys(config), unmaskedSyntheticValuePresent: configBytes.includes(Buffer.from('synthetic-public-environment-20261018-r1')), maskedSyntheticValuePresent: configBytes.includes(Buffer.from('synthetic-masked-environment-20261018-r1')) };
   }
 } catch (error) {
   proof.failure = String(error);
