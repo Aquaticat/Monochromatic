@@ -985,9 +985,16 @@ event cadence,
 paid-priority allocation and treatment of retained source failures.
 The first posted round asks about failure enforcement,
 workflow cadence and Linux orchestration order.
+The user accepted a regression ratchet:
+known-good checks and new or changed failures block,
+while only explicitly tracked existing source failures can remain advisory.
+Setup,
+discovery and artifact-integrity failures always block.
+The user selected core PR checks and weekly breadth,
+replacing the proposed nightly schedule.
 The proposed order is Depot runners under GitHub orchestration first,
 followed by promotion of matched Linux workflows to native CI against explicit acceptance criteria.
-This staging recommendation awaits the interview answers;
+This staging recommendation awaits the orchestration answer;
 it does not change the settled additional-pool scope or authorize production routing.
 The recommendation must retain its source cohorts,
 documented plan eligibility,

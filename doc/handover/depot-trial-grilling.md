@@ -12,18 +12,18 @@ The finite factual execution and reconciliation queue is closed with the limits 
 This does not assert complete product-feature or source-branch coverage.
 No fresh independent whole-report review ran after the agent service quota was exhausted.
 
-The first interview round is posted through the question tool and awaits answers:
+The first interview round is posted through the question tool.
+Q1 and Q2 are answered;
+Q3 remains pending:
 
-- Q1: enforcement of existing source failures.
-  Recommend a regression ratchet over fixing all failures before enforcement,
-  then an advisory rollout.
+- Q1 is accepted: use a regression ratchet.
+  Enforce known-good checks and block new or changed failures.
   Setup,
-  discovery and artifact-integrity failures always block in the recommended proposal.
+  discovery and artifact-integrity failures always block.
   Existing source failures require exact baselines;
   raw `FAIL` log tokens are insufficient because the passing harness controls deliberately emit them.
-- Q2: workflow cadence.
-  Recommend PR static/build/unit checks plus nightly breadth over everything per PR,
-  then PR checks plus weekly breadth.
+- Q2 is accepted: core checks on PRs and the wider matrix weekly.
+  This replaces the recommended nightly breadth.
   Private personal fixtures stay local.
   Dependency-based selection still needs qualification because the frozen task graph has a cycle.
 - Q3: Linux orchestration order.
@@ -36,7 +36,7 @@ The first interview round is posted through the question tool and awaits answers
 The Developer baseline,
 additional-pool approach and USD 200 all-provider planning ceiling remain settled.
 No production implementation is unlocked by posting this round.
-The next action is to record the answers,
+The next action is to record Q3,
 recompute the dependent interview frontier and obtain confirmation of shared understanding before implementation.
 
 ## Final local capture and publication checkpoint on 2026-10-18
