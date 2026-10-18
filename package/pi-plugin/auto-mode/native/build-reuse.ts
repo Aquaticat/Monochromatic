@@ -129,6 +129,7 @@ async function ownedBuildFiles({
         tag: readOwnedDirectory.name,
         l,
       });
+      dl.debug(`reading owned directory ${directory}`);
       /**
        Nonrecursive enumeration reveals links before deciding which children belong to the build.
        */

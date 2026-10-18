@@ -3,7 +3,8 @@
 ## Current verified state
 
 Work remains incomplete; no readiness handoff has been established.
-The user keeps root `TCV` and `CPN` unchanged and puts the lessons in package documentation.
+The user keeps root `TCV`,
+`CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
 Logger `0.4.4` is published and passes fresh installed-consumer checks,
 including read-only fallback and escaped terminal-control diagnostics.
@@ -77,10 +78,41 @@ and its complete fallback/startup matrices and fourteen-file lint pass before de
 Review rejects its remaining unsound type assertion:
 the guard checks only the first material entry and fragment object shape,
 while the type promises every material entry and every fragment's string text.
-The worker is correcting uninspected members to `unknown`
-and validating text only inside the actual short-circuit predicate,
-then repeating its scoped validation and original parity checks.
-Do not accept the pre-review port or weaken its original expectations.
+The corrected port keeps uninspected members as `unknown`
+and validates text only inside the original short-circuit predicate.
+Actual MiMo repeats its fourteen-file lint,
+package types,
+complete fallback/startup matrices and original transient parity successfully.
+The supervisor accepts only that corrected delivery as `ad1be29e0d`.
+Its next read-only assignment measures and ranks the remaining complete `src` lint backlog.
+Newly compiled final-runtime validation of the accepted port remains required.
+
+The source-freshness,
+host-isolation and complete session-action tasks pass for the shared approval fix.
+Its rebuilt follow-up also passes manual review,
+decision context,
+approved dependencies and review retirement after the cancelled fixture's observable result correction.
+Five rebuilt scope mutations fail their named guards,
+and restored code passes.
+
+Both maintained mount controls pass after MiMo's lint repair,
+and raw per-invocation output retention passes fresh types and two-file lint.
+The two actual-command mutations fail and restored code passes.
+A separate Node behavior is then reproduced:
+recursive `readdir` enters directory symlinks even with `withFileTypes: true`.
+The committed copied-asset case fails `EACCES` inside the real build's reuse enumeration.
+The replacement's initial consumer and fresh types pass;
+its sequential-directory restructuring,
+scoped lint and rebuilt borrowed-link guard remain pending.
+See `doc/troubleshooting/node-recursive-directory-symlinks.md`.
+
+The first host-side mutation-log collector is killed after the child has already failed as expected.
+Its recursive scan can enter the shared dependency graph through the fixture's `node_modules` link.
+Kernel OOM evidence is retained without claiming an independently matched helper PID.
+Recovery restores the private source,
+reads existing child output without rerunning it and replaces the collector with known-directory traversal.
+The remaining mutation and restored consumer pass.
+This incident remains separate from the earlier MiMo V8 heap failure.
 
 The user identifies divergent auto-push with concurrent dirty edits as another wrapper defect,
 authorizes another issue and directs recovery without waiting for the concurrent owner.
@@ -92,6 +124,9 @@ Later commits require a new reachability check.
 The private bridge and receipt are retained;
 see `doc/troubleshooting/git-policy-auto-push-reconciliation.md`.
 No wrapper implementation fix is claimed.
+The next isolated recovery publishes captured `ad1be29e0d` through upstream `277b447b8797`,
+with both protected dirty-file hashes unchanged during that pass.
+Subsequent traversal commits still require their own publication check.
 
 [Issue 1770](https://github.com/Aquaticats/Monochromatic/issues/1770)
 retains the native worker's separate scoped shadow/LFS failure.
