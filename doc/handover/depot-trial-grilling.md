@@ -3,6 +3,32 @@
 ## Current execution checkpoint on 2026-10-18
 
 Research remains active and the interview has not started.
+The three active research agents reached their service usage limit on continuation.
+Root now owns their durable queues and existing controller state;
+no completed or uncertain allocation is redispatched because an agent stopped.
+The seven-primary material controller reached terminal state:
+six workflows succeed and design fails before Node startup with
+`/research-node/node: error while loading shared libraries: libatomic.so.1: cannot open shared object file`.
+Root collected all seven original artifact ZIPs,
+verified their digests,
+CRC and receipt/log hashes,
+and retains the detailed contexts privately in `material-owner-collected-contexts.json`.
+Workflow success does not yet supply parsed Nextest case counts.
+Remaining work is explicit:
+parse and seal the material owner identities,
+diagnose and apply an admitted harness-only design prerequisite correction,
+review/admit the matched GNU source before its single primary dispatch,
+review/admit the prepared SSH correction before the remaining attempt,
+join terminal intervals into a new allocation-ledger snapshot,
+finish independent report sufficiency and renderer/publication checks.
+The screenshot-publication boundary is already closed by
+`doc/audit/depot-complete-coverage-desktop-receipts.json.gz`:
+22756 bytes,
+SHA-256 `8b9be6f1b2cfb29540226d0a8c4b520d867d8d6a24b0eddda516198b26b26885`.
+Its scan covers 188 tracked audit files and 251 decoded containers,
+finds zero original desktop ZIP/captured-PNG payloads and 836 hash references,
+and detects both actual private ZIPs and all 110 PNG occurrences in the positive control.
+No image inspection/masking/publication or new desktop launch is claimed.
 All parent graph cloud jobs are terminal,
 all parent graph watchers and collectors are reaped,
 and no parent cloud allocation remains active.
