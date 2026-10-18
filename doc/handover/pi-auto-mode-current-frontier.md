@@ -3,6 +3,12 @@
 ## Current verified state
 
 Work remains incomplete; no readiness handoff has been established.
+After the user's distance-to-completion question,
+a fresh committed `cabff94ee49a` snapshot reports 11,393 warnings and 96 errors across 853 files and 486 rules.
+The actual full-package task runs under 2 GiB memory and two CPUs.
+The scan excludes the workers' uncommitted partial ports.
+It is a stable remaining-debt measurement,
+not evidence of imminent completion or a reliable time estimate.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
