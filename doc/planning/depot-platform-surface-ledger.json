@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T06:50:13.355Z",
+  "updatedAt": "2026-10-18T10:55:46.489Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
     "path": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz",
-    "bytes": 3881763,
-    "sha256": "1481c97108b03a325bf5a3a22f88043470d240d824d2a8c342813c1c8a276ec6",
+    "bytes": 3883626,
+    "sha256": "d3d907ba12236df20900f65ef7109ac2b90c9a9a1ad71a03f1ae3b1bad2ca890",
     "pinnedRepositories": 28,
     "retrievedSourceFiles": 542,
     "supplementalRepositoryRootFiles": 142,
@@ -3916,8 +3916,8 @@
           "description": "List test results"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3927,8 +3927,8 @@
       "status": 0,
       "sha256": "a6b59d20cb3fd00619f9d8e07641b1855123f1e945735d3b8c31251bf2ce607a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3943,8 +3943,8 @@
           "description": "Get the latest blog post from Depot's RSS feed"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3954,8 +3954,8 @@
       "status": 0,
       "sha256": "e207ee7d7eea46f68215cd384c2395ae05ca036693d0457ce47c03bdbf45e74e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3970,8 +3970,8 @@
           "description": "Reset the cache for a project"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -3980,8 +3980,8 @@
       ],
       "status": 1,
       "diagnostic": "sccache not found in PATH: exec: \"sccache\": executable file not found in $PATH\n\nPlease install sccache: cargo install sccache\n",
-      "statusInterpretation": "Cargo wrapper prerequisite failure; not a remote cache result",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Preserved wrapper prerequisite failure; no remote result",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4056,8 +4056,8 @@
           "description": "Manage CI workflows"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4067,8 +4067,8 @@
       "status": 0,
       "sha256": "6da9aaa39729f828248e86f94439e8df58acdd1f9d66934127994d07a8e4ccec",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4095,8 +4095,8 @@
           "description": "Generate the autocompletion script for zsh"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4106,8 +4106,8 @@
       "status": 0,
       "sha256": "a3db0dc18bdf8d4ff820ec905d8a64d4e0dcca53d49aa05c9ba0c26c3799f8ba",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4126,8 +4126,8 @@
           "description": "Remove images from the registry by tag"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4137,8 +4137,8 @@
       "status": 0,
       "sha256": "01607782971e2c129eb262cccbb45825a83cbe01d1927aff20d9e1bc8204f470",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4157,8 +4157,8 @@
           "description": "List depot projects"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4173,8 +4173,8 @@
           "description": "Print the stored Depot API token"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4184,8 +4184,8 @@
       "status": 0,
       "sha256": "bd221f17e81c494f31817cb8edf6327b5df0cf1bb974390bdde5002c933aa7ec",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4208,8 +4208,8 @@
           "description": "Set the current organization in global Depot settings"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4240,8 +4240,8 @@
           "description": "Update project details"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4251,8 +4251,8 @@
       "status": 0,
       "sha256": "612cb5471bcf2c4387d0e34fd03529bca89a90e371f435cc9bd9d485abceb571",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4262,8 +4262,8 @@
       "status": 0,
       "sha256": "36532ed11ba1944c06bf7175fa1d0eeceadbea098665b9a8bdd9ccb9c6458abe",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4273,8 +4273,8 @@
       "status": 0,
       "sha256": "1200185b146be094f3aaa751e4779c35091ce5c6f020c47e729625f902afb0fb",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4297,8 +4297,8 @@
           "description": "Open a pseudo-terminal within the compute"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4325,8 +4325,8 @@
           "description": "Print candidates assigned to a test shard"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4337,8 +4337,8 @@
       "status": 0,
       "sha256": "1df7c2455fed0513cb1038506ffa25195c6e6540f03a9da9ad6f35e82e5c465c",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4349,8 +4349,8 @@
       "status": 0,
       "sha256": "a64b58b76743a09b6dbf4a8d73d0b34e1a396e01d9d57e8234c196abeeacbe2b",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4370,8 +4370,8 @@
           "description": "List artifacts for a CI run"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4382,8 +4382,8 @@
       "status": 0,
       "sha256": "78d88edae2309ebd7dda6ac9994a4c5083feb770d82d60320da27e7ea3649fc3",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4394,8 +4394,8 @@
       "status": 0,
       "sha256": "bded2f82c9d1bf8686a98ade077c25c57925daf59624bc026b020055c3087be9",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4406,8 +4406,8 @@
       "status": 0,
       "sha256": "93c1b5dec401d6eadf7148108e76a2b5c13ad1390c7b2899dee0c51572eb583a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4418,8 +4418,8 @@
       "status": 0,
       "sha256": "86fe9a439a6214d2d3c330f0d8ad8a6b800c381a49ef1301a52f8ac79a7bee05",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4430,8 +4430,8 @@
       "status": 0,
       "sha256": "7b8912cdcab31738e568cdaf304fe79f441d8636d6f4e151a0a0a924ef9a097f",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4447,12 +4447,16 @@
           "description": "Check authentication and repository access for migration"
         },
         {
+          "name": "secrets-and-vars",
+          "description": "Import GitHub Actions secrets and variables into Depot CI"
+        },
+        {
           "name": "workflows",
           "description": "Migrate and transform GitHub Actions workflows to .depot/workflows/"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4463,8 +4467,8 @@
       "status": 0,
       "sha256": "518762fc306596c3d2d51bc04d24dc6739454dda1a8c134f23e49af6a0e9c366",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4475,8 +4479,8 @@
       "status": 0,
       "sha256": "ac40065a13e3cc07289b1cdcaf49308c84cfb6f71d5e366e5b9d3ebb4fd69854",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4496,8 +4500,8 @@
           "description": "Show a CI run"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4533,8 +4537,8 @@
           "description": "Create or update a CI secret variant"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4545,8 +4549,8 @@
       "status": 0,
       "sha256": "07b3e7432311763059223c253ed27c6d9b3aeee5833993ba9b7901cc5f5d59ae",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4557,8 +4561,8 @@
       "status": 0,
       "sha256": "18a1e9e9711cf8ed9ef4ac19dc76198374dede1ee0816a930ee2f5b9125108c3",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4569,8 +4573,8 @@
       "status": 0,
       "sha256": "76cf4f0749b31a54853b404f1a1514ca44f528aa945abcfd529fa1edb5b04758",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4598,8 +4602,8 @@
           "description": "Create or update a CI variable variant"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4619,8 +4623,8 @@
           "description": "Show a CI workflow"
         }
       ],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4631,8 +4635,8 @@
       "status": 0,
       "sha256": "c996c59e9b7e015a31ca0b41928a85538018a02bfc93489fa05e0676170cc14e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4643,8 +4647,8 @@
       "status": 0,
       "sha256": "9f9e4f25eb2058df295b6c618a3e761e944f7de2338a26b89a948013c902dde1",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4655,8 +4659,8 @@
       "status": 0,
       "sha256": "3418cd155bb73a809e385f427b33a90b4c03fb9b8ebe3e922130f31cd2c6b50a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4667,8 +4671,8 @@
       "status": 0,
       "sha256": "4cf9ce80e708b2e5338270644d41c97dccc17922cdf79a71d9c7194d56bccb34",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4679,8 +4683,8 @@
       "status": 0,
       "sha256": "eed6e1644b096252599e883af38808e5bda07cd4d9b05c8d23dc2ea8a83de35b",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4691,8 +4695,8 @@
       "status": 0,
       "sha256": "c6a716aa22e6eae1f490664f370967b5c9aaa8a0a815c5dc123090fcbc7a4f01",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4703,8 +4707,8 @@
       "status": 0,
       "sha256": "76dc4e9b6e5b8f9590772aed6b88eda334c65742ae0609515a05c42de6d94b24",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4715,8 +4719,8 @@
       "status": 0,
       "sha256": "12b04034a94b9717e9650f1ce504dca1f36cbd45095f76a887219da5ef50601a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4727,8 +4731,8 @@
       "status": 0,
       "sha256": "f9fc478a21b23982dac5de059b36828bca4b15d5258209af9e1839065406b519",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4739,8 +4743,8 @@
       "status": 0,
       "sha256": "a26769f950f2a9d8b1f65c581254364bddd2f1448ab30a384dfb5b2c99556525",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4751,8 +4755,8 @@
       "status": 0,
       "sha256": "991cc35dec6357d013b355b44d6d14bfbde3b857f476c1a9448647099cade3df",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4763,8 +4767,8 @@
       "status": 0,
       "sha256": "ad76937d63b9f423fc89dd1d668d8b870b115a606643906e59d98fe51f93f9f6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4775,8 +4779,8 @@
       "status": 0,
       "sha256": "a4df78b6bff7de22ecd7e4f4ab043d648beb656194cb7f85676da10b1df8522e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4787,8 +4791,8 @@
       "status": 0,
       "sha256": "1bb548bd140718e0d938ae7fb580bac3b333f99ad8f4b83e31691bf1a8583c41",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4799,8 +4803,8 @@
       "status": 0,
       "sha256": "46a899e2c730ad01d037dd66a8d12dcf761c81b9945fc69e0890f8f57e58d9fe",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4811,8 +4815,8 @@
       "status": 0,
       "sha256": "72ec558a3f5291e4c5b5011eedb477b8b78e6b62400f0188edbf78d85ecd6313",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4823,8 +4827,8 @@
       "status": 0,
       "sha256": "c6c145d8c7b1e85862ed00518fe9283d71e9fe4d837163c676be5ca3c844749c",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4835,8 +4839,8 @@
       "status": 0,
       "sha256": "58830c69a18509d0d44136951cbe478fd2d6f4914a9ef6bbd3bd6b34aa8bfaa6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4847,8 +4851,8 @@
       "status": 0,
       "sha256": "862a839b712fd574f797ec6f27ad3723dc1c56dcdb4e78c35559bad25118657c",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4859,8 +4863,8 @@
       "status": 0,
       "sha256": "8bc2ebf24db585a0c38d1cc8030a5a4794a2938e3fd8a7b0ca6bd8a686a85650",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4871,8 +4875,8 @@
       "status": 0,
       "sha256": "ab7abfd5e3501fda2440a57b4848a117cb9358dca481cd42e72e4eb496006392",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4883,8 +4887,8 @@
       "status": 0,
       "sha256": "26aba8d0db42987cdafd20fa964c06a668b0ec345db8fac21be1413dee34ce4e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4895,8 +4899,8 @@
       "status": 0,
       "sha256": "1133adac6c34b2648550fe39f4c556733b3e1d81508cacd9e8f6345dc5a1547a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4907,8 +4911,8 @@
       "status": 0,
       "sha256": "fb2bb4b960442a3abadb8af0805e94abaf83bbae813c98fc3acf287a374de5be",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4920,8 +4924,8 @@
       "status": 0,
       "sha256": "e004be59ae0b23493667f9f3289839e697184bf8412302e3097829bc4a9efd28",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4933,8 +4937,8 @@
       "status": 0,
       "sha256": "30658a34797789a70fbaea2dd9c60c0f5a5f103bec2463bc7348dca07b9cd65a",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4946,8 +4950,8 @@
       "status": 0,
       "sha256": "e476e58cc22be504d9395400b9accbd66671b0fca6a39ad6fcd32eaf4dea46a5",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4959,8 +4963,8 @@
       "status": 0,
       "sha256": "79c0f93711178e163e3da68545e795db1d4431de24546970bc5a37bd90a720cd",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4972,8 +4976,8 @@
       "status": 0,
       "sha256": "facc4a3f67fb6906c2ed2f58225c64cb4b321ffe54b515a6d7b59ee05bcfa638",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4985,8 +4989,8 @@
       "status": 0,
       "sha256": "4cebb1a520a4a3368ca5c47d0330e14bf82d5a46daaf9f2fe193ec7d99b8e61f",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -4998,8 +5002,8 @@
       "status": 0,
       "sha256": "6793515cae68bbfac666c0710c007ccf6d7aad85bc2b516d787a5d8ef068b168",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5011,8 +5015,8 @@
       "status": 0,
       "sha256": "4cd2a64d4d1614882e5fe1d94132189b2698cb878531380f642998bd0a5ed454",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5024,8 +5028,8 @@
       "status": 0,
       "sha256": "6558d883cf7343d1acefa4fb8ac0f0a90cbe97c694c0f18757524231b6b3e4c0",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5037,8 +5041,8 @@
       "status": 0,
       "sha256": "f1b688d0076b77db7c43662c0a4c08f72764a63b153b8166155490fc7ab1837d",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5050,8 +5054,8 @@
       "status": 0,
       "sha256": "c0e2dfb7d73d01c4854737389ba1a6683a7e4f46c1103e322513e39611cb94d5",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5063,8 +5067,8 @@
       "status": 0,
       "sha256": "4d7831a5fd30a9a4f58bc1ecc57609904ba0c0c5c87ff000ea9053fd1400d6e6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5076,8 +5080,8 @@
       "status": 0,
       "sha256": "100215a74ac179433b8d8fdf55ea11afbd1710d7a9873a5655c8bf2588b730a6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5089,8 +5093,8 @@
       "status": 0,
       "sha256": "3904bf3074e0867ef906acd2a54b7a52daeafdf5a75079d0ddf36c5718da1d65",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5102,8 +5106,8 @@
       "status": 0,
       "sha256": "cd1f1c234d859bc7098f09d17bf485ea88784183b57d81825275245156cbe72b",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5115,8 +5119,8 @@
       "status": 0,
       "sha256": "a8eb60cc1a50ad22e7625a05ac54ad17cdaecd0960042ceaa7ad673b6a63b64d",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5128,8 +5132,8 @@
       "status": 0,
       "sha256": "83be5ec65a19662a593acdcd8542111f99bc97089eb6eb91377ff017d7f313ec",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5141,8 +5145,8 @@
       "status": 0,
       "sha256": "294e482d73bd946d62aaf3087312c9ae603655df270bae52370b39cf341a2895",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5152,8 +5156,8 @@
       "status": 0,
       "sha256": "f2b118def44f90b05f839607b57ed3caa56355d1753a7d2cc80963f03b2bc6e6",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5163,8 +5167,8 @@
       "status": 0,
       "sha256": "eb72dbd5ef4d2a8d90a78691ca1f47ce0f00fd570d017d89e781681e0b5a358e",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5175,8 +5179,8 @@
       "status": 0,
       "sha256": "fdbcd8372877c9cc7770f7fed671afba0b7fb00ac49b38c8ebcbe7407b3354f3",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5186,9 +5190,30 @@
       ],
       "status": 0,
       "sha256": "e719f5cdb194c4e8e4e91a79f74cc6935616113ff8dff0ad2d841e331648e9f4",
-      "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "children": [
+        {
+          "name": "add",
+          "description": "Add a new secret"
+        },
+        {
+          "name": "completion",
+          "description": "Generate the autocompletion script for the specified shell"
+        },
+        {
+          "name": "help",
+          "description": "Help about any command"
+        },
+        {
+          "name": "list",
+          "description": "List all secrets"
+        },
+        {
+          "name": "remove",
+          "description": "Remove a secret"
+        }
+      ],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5200,8 +5225,8 @@
       "status": 0,
       "sha256": "3ffd7cb2771f10a29a28630cdd01b7c9401439096af784ececfaabb08585a4bf",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5213,8 +5238,8 @@
       "status": 0,
       "sha256": "432203cdd3849948689bc40b1fa43407495eaf0a862605c02a41ebb99d229dab",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5226,8 +5251,8 @@
       "status": 0,
       "sha256": "e9f6bef9a119d8727064001d87bffef34df91ad882b5fe3caa71822703f247f4",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5237,8 +5262,8 @@
       "status": 0,
       "sha256": "79e6f5e0437ddad24cb1ca6b1c71621fe26058d96b0a375ea6286ac77cce0004",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5248,8 +5273,8 @@
       "status": 0,
       "sha256": "2dff8f001c6e6855511c60193b79cb1ef0c7089bc0dbfa34a2097a5bc60850ac",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     },
     {
       "command": [
@@ -5259,15 +5284,180 @@
       "status": 0,
       "sha256": "88b65f2b01664be784cc7bd9f0498f73c1c214fee9ae349c7fcfdd6ad9a7f2ac",
       "children": [],
-      "statusInterpretation": "Help invocation only; not a remote operation",
-      "reviewState": "enumerated; command implementation and helper source now retrieved; claim reconciliation in progress"
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "ci",
+        "migrate",
+        "secrets-and-vars"
+      ],
+      "status": 0,
+      "sha256": "c4efc4f8f1fbe0a198548dc02556912d5ad864d7e99e3f8e3fa9fbc2895f4233",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion"
+      ],
+      "status": 0,
+      "sha256": "a144fab348895e3e67e048aa6591e01dd61ac47d609cfa782684beed18493804",
+      "children": [
+        {
+          "name": "bash",
+          "description": "Generate the autocompletion script for bash"
+        },
+        {
+          "name": "fish",
+          "description": "Generate the autocompletion script for fish"
+        },
+        {
+          "name": "powershell",
+          "description": "Generate the autocompletion script for powershell"
+        },
+        {
+          "name": "zsh",
+          "description": "Generate the autocompletion script for zsh"
+        }
+      ],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "help"
+      ],
+      "status": 0,
+      "sha256": "8959169061e034fe8ec5272a0ef42a95ac6efb357e54b07a7abb1c20101e378e",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "bash"
+      ],
+      "status": 0,
+      "sha256": "0c16cccb570d332db42a04bef7f80200f0283e6b0232e777d242a22e337ee685",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "fish"
+      ],
+      "status": 0,
+      "sha256": "83f39d4d991753f031440eca5d6b56fe0265cac460af78361c0fc28cad1d6836",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "powershell"
+      ],
+      "status": 0,
+      "sha256": "23cbfd9439638b857a6e2b13163e2a90cb48197ea87ac716db4a7fc97a0b1600",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+    },
+    {
+      "command": [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "zsh"
+      ],
+      "status": 0,
+      "sha256": "86cbd4f1771f2b12fa8c5de3182a69ac27f13663c9148c927743206121fa8603",
+      "children": [],
+      "statusInterpretation": "Native help only; no remote operation",
+      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
     }
   ],
   "cliParserControl": {
     "previouslyMissedSingleSpaceColumn": "configure-docker",
     "correctedRootChildCount": 23,
     "missingRootCommands": [],
-    "limit": "Forwarding wrappers can hide subcommands; source and reference reconciliation still required"
+    "limit": "Native help and hidden source registrations are reconciled; forwarding tools still have their own external command surfaces",
+    "correctedEveryCachedNode": true,
+    "previousHelpRecords": 92,
+    "currentHelpRecords": 99,
+    "newlyDiscovered": [
+      [
+        "depot",
+        "ci",
+        "migrate",
+        "secrets-and-vars"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "help"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "bash"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "fish"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "powershell"
+      ],
+      [
+        "depot",
+        "claude",
+        "secrets",
+        "completion",
+        "zsh"
+      ]
+    ],
+    "syntheticSingleAndMultipleSpaceColumnControlPassed": true,
+    "flagSectionNegativeControlPassed": true
   },
   "officialRepositories": [
     {

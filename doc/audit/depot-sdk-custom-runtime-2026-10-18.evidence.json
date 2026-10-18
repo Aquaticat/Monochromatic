@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:43:49.908Z",
+  "updatedAt": "2026-10-18T10:56:17.262Z",
   "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "sdkVersion": "0.1.0-beta.7",
   "input": {
@@ -364,7 +364,7 @@
     "cumulativePriorBuildkitAndAllSandboxReservationsUsd": 0.574584,
     "ceilingUsd": 2,
     "status": "executed",
-    "priceScope": "Conservative reservation using the public 2-CPU CI rate; not an SDK invoice, aggregate account cap, included-allowance or storage-cost guarantee"
+    "priceScope": "Conservative reservation using the documented Sandbox SDK CI compute rate; not an actual invoice, aggregate account cap, included-allowance or storage-cost guarantee"
   },
   "smallFiles": {
     "schemaVersion": 1,
@@ -567,6 +567,25 @@
       "code": 1
     },
     "finishedAt": "2026-10-18T10:41:41.332Z"
+  },
+  "postStopFetch": {
+    "schemaVersion": 1,
+    "startedAt": "2026-10-18T10:53:31.647Z",
+    "scope": {
+      "sandboxId": "dmdwcf07jzx2rxj",
+      "commandId": "cmd_cqpwc814r7",
+      "since": "2026-10-18T10:41:21.053Z",
+      "until": "2026-10-18T10:41:40.772Z",
+      "maximumMilliseconds": 10000,
+      "maximumReturnedEntries": 20
+    },
+    "createCalls": 0,
+    "restartCalls": 0,
+    "timeoutExtensions": 0,
+    "rows": [],
+    "observedStatus": "finished",
+    "expectedOwnedCommandOutputFound": false,
+    "finishedAt": "2026-10-18T10:53:32.504Z"
   },
   "errorCollectorPositiveControl": {
     "observedAt": "2026-10-18T10:37:55.360Z",

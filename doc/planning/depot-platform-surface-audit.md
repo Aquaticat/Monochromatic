@@ -83,7 +83,7 @@ source commit `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
 Visible help traversal initially missed a single-space command column;
 the `configure-docker` control exposed that parser defect and the inventory was corrected.
 Source inspection then exposed hidden root commands and manually dispatched Claude subcommands.
-The expanded inventory contains 92 help invocations,
+The expanded inventory contains 99 help invocations,
 including the failed Cargo-wrapper help invocation described in the source gaps.
 
 No count establishes exhaustive understanding by itself.
@@ -308,6 +308,14 @@ A fresh `Get` confirmed `finished` after cleanup.
 The optional detached-command log stream hit its five-second abort.
 The fixture did not retain partial stream rows and did not reach its later historical fetch;
 this is not proof that detached output was absent or unretained.
+One later read-only fetch targeted only that stopped sandbox,
+its detached command,
+and the 19.719-second creation-to-stop window.
+It returned no rows;
+no create,
+restart,
+or timeout extension occurred.
+The SDK's asynchronous capture and indexing contract means this empty result does not prove absent output.
 Log replay remains unqualified.
 There is no fourth allocation.
 
