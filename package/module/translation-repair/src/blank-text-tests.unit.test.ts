@@ -1412,6 +1412,14 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
+  'consistency-span-agreement.ts#containsWords': {
+    tests: 2,
+    why: EMPTY_NEEDLE,
+  },
+  'consistency-label-form.ts#trailingNumberOf': {
+    tests: 1,
+    why: SENTINEL,
+  },
   'latin-letters.ts#isSpacedScriptWordCharacter': {
     tests: 1,
     why: SCANNER,
