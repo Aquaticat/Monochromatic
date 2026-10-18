@@ -73,6 +73,47 @@ including the failed Cargo-wrapper help invocation described in the source gaps.
 No count establishes exhaustive understanding by itself.
 The source and integration reconciliation remains active.
 
+## GitHub runner KVM documentation contradiction
+
+The current [GitHub runner troubleshooting page][gha-troubleshooting] says
+"Depot GitHub Actions runners don't currently provide `/dev/kvm`".
+The current runner probe contradicts that blanket restriction.
+[Run 39104064329][kvm-run],
+Depot job `117606073359`,
+observed `/dev/kvm` as a readable and writable character device on `depot-ubuntu-24.04`.
+The `/dev/null` positive control passed and the deliberately nonexistent device failed with `ENOENT`.
+The standard GitHub job in the same workflow found `/dev/kvm` but could not access it,
+reporting `EACCES`.
+Neither observation establishes that a guest booted.
+
+The [independently checked evidence][kvm-evidence] binds these observations to frozen repository source
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`
+and harness `15ee06968996212b97111accc2013c2780ed1944`.
+Both downloaded archive digests matched the GitHub API digests;
+both extracted member hashes and embedded observations also matched.
+The conflicting deployed page was fetched again during this verification.
+
+The [2026-07-07 Metal announcement][metal-launch] described future migration of GitHub runners.
+It cannot establish their placement in October.
+The [2026-09-16 load-testing account][metal-gha-rollout] explicitly describes
+"moving more GitHub Actions jobs onto Depot Metal"
+and says traffic was subsequently moved.
+That source establishes a rollout chronology,
+not complete migration of every label,
+KVM guest success,
+or a capacity guarantee.
+Its load test deliberately stopped before allocating real workload machines.
+The [2026-09-22 autoscaler account][metal-autoscaler] also describes capacity headroom,
+availability-zone constraints,
+and compute/storage pools rather than a queue-free service guarantee.
+
+Generic SDK sandboxes,
+standalone CI,
+GitHub runner labels,
+and native Windows/macOS remain separate products and execution cases.
+The generic SDK's retained missing-device observation does not override this GitHub runner result.
+The separate KVM initialization and actual guest consumer probes remain active work.
+
 ## Newly exposed orchestration semantics
 
 ### Local changes and reusable workflows
@@ -316,6 +357,12 @@ No completion or interview-readiness conclusion is made.
 [llms]: https://depot.dev/llms.txt
 [sitemap]: https://depot.dev/sitemap.xml
 [bundle]: https://depot.dev/llms-all.txt
+[gha-troubleshooting]: https://depot.dev/docs/github-actions/troubleshooting
+[kvm-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39104064329
+[kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
+[metal-launch]: https://depot.dev/blog/announcing-depot-metal
+[metal-gha-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
+[metal-autoscaler]: https://depot.dev/blog/autoscaling-depot-metal
 [manage-runs]: https://depot.dev/docs/ci/how-to-guides/manage-workflow-runs
 [retry]: https://depot.dev/docs/ci/how-to-guides/retry-steps
 [parallel]: https://depot.dev/docs/ci/how-to-guides/parallel-steps

@@ -62,6 +62,32 @@ Xvfb or container substitution is authorized by this research.
 
 ## Remaining execution
 
+### Actual PR and protection campaign
+
+The next fixture creates only the disposable base branch `research/depot-runtime-base-20261018`
+and a research PR from `research/depot-runtime-orchestration-20261018`.
+Its GitHub and native Depot workflows accept PRs targeting that exact base and the owned fixture paths.
+They never target `main`.
+The two jobs retain real event,
+head,
+merge-checkout,
+run and attempt identities.
+A fixture control deliberately fails or passes the job,
+and can hold it for 90 seconds to test explicit concurrency cancellation after a new commit.
+
+The campaign applies required checks and administrator enforcement only to that disposable base,
+then tests rejection while a required job fails and acceptance after it passes.
+Any merge attempt targets only the disposable base.
+It preserves the original `main` protection object and checks it again after cleanup.
+The owned PR and temporary protection are removed or closed after the retained evidence is complete.
+No production gate,
+release,
+workflow routing or subscription setting changes.
+Each job remains bounded to five minutes,
+with at most two jobs concurrently and USD 1 nominal compute exposure for this PR campaign.
+
+### Runtime and orchestration queue
+
 - Compare fresh cloud prerequisite artifacts with the local observation.
 - Exercise real PR check association and required-gate rejection on an isolated protected base branch.
 - Exercise explicit supersession,
