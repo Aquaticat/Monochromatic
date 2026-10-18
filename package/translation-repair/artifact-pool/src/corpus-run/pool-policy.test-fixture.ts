@@ -45,7 +45,11 @@ export const UNASKED_REPOSITORY: string = '/nonexistent/cattery/no-repository-he
 
  @example
  ```ts
- const run = await runBuiltCommand({ command: 'score-probe', env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, ...CONFLICTING_POOL_VARIABLES, }, },);
+ const run = await runBuiltCommand({
+   command: 'score-probe',
+   packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-probe'),
+   env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, ...CONFLICTING_POOL_VARIABLES, },
+ },);
  ```
  */
 export const CONFLICTING_POOL_VARIABLES: Readonly<Record<string, string>> = {

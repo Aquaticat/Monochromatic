@@ -48,6 +48,7 @@ export function noKeyRefusal({ command, }: { readonly command: string; },): stri
  ```ts
  const run = await runBuiltCommand({
    command: 'probe-sensitivity',
+   packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-probe'),
    env: scratchPlaces({ runsDir: scratch.path, scratchDir: scratch.path, },),
  },);
  ```
