@@ -195,7 +195,7 @@ Filed in:
 - [Translation repair handover 2026-09-06: the Mio12 wording follow-up of 2026-09-10](translation-repair-handover-2026-09-06-checkpoint-2026-09-10-mio12-wording-follow-up.md)
 - [Translation repair handover 2026-09-06: the Mio passes of 2026-09-09 and 2026-09-10 and the state before them](translation-repair-handover-2026-09-06-passes-mio8-to-mio12-and-handoff-state-2026-09-07-to-09-10.md)
 
-### 2026-10-18: the package split is planned, nothing has moved yet
+### 2026-10-18: the package split is planned and piloted, nothing has moved yet
 
 The owner asked on 2026-10-18 why lint is slow and to split the package into `package/translation-repair/<name>` first,
 before the other queued work.
@@ -227,17 +227,53 @@ before the other queued work.
   The branch's rules are a Copilot review ruleset and classic protection with no required checks,
   so the cause is not known.
 
+- Since then,
+  pushed:
+  `09d9805ddf` splits `corpus-run/cli-refusal.unit.test.ts` into one file per runner package;
+  `03c0de897a` and `d0810bb6df` add `familyLibraryNodeConfig` to `package/config/rolldown`
+  (a family member's library build keeps its siblings as imports of their built entries);
+  `2e79bef413` records the pilot and the readers that find a file by path in the plan,
+  and moves `build-entries.ts` to `coverage-census` in the map.
+- The pilot (`markup` and `test-fixture` moved out,
+  in `w165`) built and passed every case
+  but those of code that resolves a family file by path;
+  the plan's "Readers that find a file by path" section lists that code.
+- The split's scratch scripts are in `s245/split/`:
+  `own.ts` (placement and the move),
+  `scaffold.ts` (package files),
+  `literal-paths.ts` (file names held as text),
+  `full/full-run.ts` (a whole dry run in a keyless worktree).
+
 #### Next
 
-1.  The move commit:
-    `git mv` of every module per the map and every import rewritten,
-    by a scratch script;
-    then scaffolding,
-    tests,
-    scans,
-    fixtures and docs per the plan,
-    then the controls in a fresh keyless worktree.
-2.  The queue the split went ahead of,
+1.  Land the semantic-wrap config change before the move:
+    the build copies `semantic-wrap.config.jsonc` into `dist/final/node`
+    and the built module reads it there
+    (delegated to a Sonnet agent in `w166`;
+    merge its diff,
+    then commit).
+2.  Read the whole dry run (`s245/split/full/summary.txt`,
+    unit `tr-split-full-1`) and fix what it finds
+    in `own.ts` and `scaffold.ts`.
+3.  The move commit:
+    every module moved per the map and every import rewritten by `own.ts`,
+    with the scaffolding,
+    in a fresh keyless worktree;
+    its message names what does not build or pass yet.
+    Install and commit the lockfile in the branch worktree.
+4.  The readers that find a file by path,
+    per the plan,
+    delegated in slices:
+    scans and their allowlists,
+    the census reading every package's entries,
+    the cache-account audit,
+    the child-process fixtures and tests;
+    then package READMEs,
+    the docs move,
+    the file-enforcer and pnpr entries.
+5.  The controls in a fresh keyless worktree,
+    then the measured lint times into the plan.
+6.  The queue the split went ahead of,
     oldest first:
     the delegated items (finalist extension,
     guard demos);
@@ -245,7 +281,7 @@ before the other queued work.
     a `pi` sol review;
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
-3.  Tell the owner that the classifier refused the issue comments on 527 and 541,
+7.  Tell the owner that the classifier refused the issue comments on 527 and 541,
     that 527 and 541 no longer hold on the branch (`cbedea3574` removed the code),
     and that 542 is fixed by ledger X15.
 
