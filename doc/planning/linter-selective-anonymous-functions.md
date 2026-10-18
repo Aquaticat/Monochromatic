@@ -59,23 +59,49 @@ Report a closure unless both of these hold:
 A closure that captures nothing, a closure that only borrows for the duration of the call
 (an iterator adaptor, `catch_unwind`), and a let-bound closure stay reported.
 
-What this leaves in the IDE: 63 of the 67 would pass if every `'static` claim holds.
-The 4 closures without a `'static` callee (`catch_unwind` twice, `tree_house` twice) take a directive comment
-with a reason, which is the use the directive exists for.
+What this leaves in the IDE, as designed: the 63 closures with a `'static` callee pass, and the 4 without one
+(`catch_unwind` twice, `tree_house` twice) take a directive comment with a reason, which is the use the directive
+exists for.
+The measured result under the shipped load mode is 14 of 67 (see "Spike results").
 
 ### Evidence and gaps
 
 - Verified in source: `Timer::start` takes `impl FnMut() + 'static` (`i-slint-core-1.18.1/timers.rs`, line 93);
   `std::panic::catch_unwind` takes `F: FnOnce() -> R + UnwindSafe` with no `'static`
   (`library/std/src/panic.rs`, line 358).
-- Not verified: the generated Slint `on_*` setter bound (the generated source was not present in the build
-  directory when this was written), and whether `ra_ap_hir` answers "the parameter type of this callee carries a
-  `'static` bound" for a resolved call without extra work.
-  A spike must settle both before the criterion is accepted; if the second fails, the fallback is an allow-list
-  of callee paths as a rule option.
-- Cost is unmeasured: a semantic rule needs the workspace load that the explicit-type rules already pay,
-  and a syntax-only run would no longer be enough for this rule.
-  The spike measures the added time on the IDE package.
+- The spikes of the same day settled the points that were open when this was first written;
+  see "Spike results" below, which supersedes the 63 of 67 estimate.
+
+## Spike results
+
+Full report: `~/temp/agent/linter-spike/report.md` (branch `spike/linter-closure-static`, commits `7c5cee6d30` and
+`6c44d820e8`, spike code in `src/rust_closure_static_spike.rs`).
+
+- The generated Slint setter is `pub fn on_ping (& self , mut f : impl FnMut (i32) -> () + 'static)`.
+  The IDE's own generated source (`target/debug/build/ide-*/out/app.rs`) holds 28 setters, all `+ 'static`.
+- `ra_ap_hir` 0.0.336 answers "captures state and is a direct argument whose declared callee parameter carries
+  `'static`" for every callee that resolves to a declared function: std, user functions, trait methods (concrete,
+  generic and `dyn` receivers), impl-level bounds, `impl Trait`, `where` clauses, `Box<dyn ..>` and supertraits.
+  Ten twin cases (same source without `+ 'static`) all flipped to reported; a deliberately wrong expectation is
+  flagged. No new direct dependency; the spike reads `inner().internee`, an internal, tolerable under `=0.0.336`.
+- Run over the 67 remaining IDE closures with the shipped load mode: 14 pass (all `thread::spawn` and
+  `Builder::spawn`), 41 stay reported because the callee does not resolve (30 generated Slint setters, 7
+  `Timer::start`, 2 `catch_unwind(AssertUnwindSafe(..))`, 2 `tree_house`), 11 sit in `#[cfg(test)]` sidecars that the
+  session does not load, 1 is not a direct argument.
+  Causes: the executable loads with `WorkspacePreparation::SourceOnly` (`src/run_finish.rs`, lines 147 and 149), so
+  the Slint-generated window type does not exist for it; and the IDE's dependency graph did not load here
+  (`cargo metadata --offline --locked` fails on `encoding_rs`), so even `slint::Timer` did not resolve.
+  Whether `BuildGenerated` would resolve the setters is not verified.
+- Cost on `package/desktop-app/ide`: 0.067 s today against 5.9 s with the closure rule made semantic, about 80
+  times, from loading the session and a serial per-file pass; the classification itself is inside the noise. On
+  `package/linter/monochromatic-lint`: 0.043 s against 2.3 s.
+- Gaps: a callee that is a value of fn-trait type is not answered; closures inside macro token trees need
+  `expand_macro_call` and range mapping; a closure whose only use of a variable is `let _ = n` captures nothing.
+
+Consequence: the type criterion alone does not clear the IDE.
+Either a callee allow-list option covers the generated setters and `Timer::start`,
+or the executable gains a build-generated load mode, which runs the project's build script.
+Files outside the loaded target need a defined fallback (report, as today).
 
 ## Rejected for now
 
