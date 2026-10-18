@@ -11,6 +11,7 @@ assert(process.env.DEPOT_CACHE_TOKEN);
 const phase = process.env.REUSE_PHASE;
 assert(['seed', 'warm', 'inputs', 'target'].includes(phase));
 const project = join(root, 'package/git-policy/cli');
+run({ name: 'frozen-rust-source-admission', command: 'git', args: ['diff', '--exit-code', 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', '--', 'package/git-policy/cli', 'package/cli/forbidden-strings', 'package/rust-module/forbidden-regex', 'package/rust-module/jsonc-edit'] });
 const disk = '/mnt/aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1';
 const mountLines = readFileSync('/proc/self/mountinfo', 'utf8').split('\n').filter(line => line.split(' ')[4] === disk);
 assert.equal(mountLines.length, 1, 'Require the actual dedicated persistent mount');
