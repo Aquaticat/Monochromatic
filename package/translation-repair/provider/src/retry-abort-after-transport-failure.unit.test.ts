@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream';
+import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { exchangeWithRetry, } from '../dist/final/node/index.mjs';
 
 /**

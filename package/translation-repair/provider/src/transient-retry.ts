@@ -9,11 +9,11 @@ import {
   deliveredCharsOf,
   exchangeFailureLogText,
   isSelfEndedStream,
+  type ModelTransport,
   SyntheticHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
-import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 
 //region Transient retry
 // Transport-level retry over the injected HTTP seam. Two transient failure

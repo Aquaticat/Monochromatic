@@ -28,9 +28,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ModelTransport,
-  type TransportExchange,
+import type {
+  ModelTransport,
+  TransportExchange,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   createSyntheticClient,

@@ -9,6 +9,7 @@ import {
   type BedrockServedId,
   completionCapFor,
   perModelLimiter,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   BEDROCK_AUTH_HEADER,
@@ -38,17 +39,17 @@ import type {
 } from './chat-contract.ts';
 import { chatJsonThrough, } from './chat-json-through.ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
-import { formatUsageNote, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import {
+  formatUsageNote,
+  type MalformedCompletionError,
+  type ModelTransport,
+  type TransportReply,
+} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { failureForReply, } from './request-size-refusal.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { bedrockIdFor, } from './roster-reach.ts';
 import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
 import { reportSpend, } from './spend-line.ts';
 import { extractStreamedCompletion, } from './stream-completion.ts';
-import type {
-  ModelTransport,
-  TransportReply,
-} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
@@ -253,7 +254,7 @@ export function createBedrockClient(
 
    @throws {@link SyntheticHttpError} on non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-provider-stream/ts').MalformedCompletionError} on a stream that never ended the way its route ends
+   @throws {@link MalformedCompletionError} on a stream that never ended the way its route ends
 
    @example
    ```ts

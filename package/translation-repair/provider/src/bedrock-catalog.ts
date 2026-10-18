@@ -1,10 +1,10 @@
-import type {
-  BedrockRoute,
-  BedrockServedId,
-  BedrockStreamEnd,
-  RosterModelId,
+import {
+  type BedrockRoute,
+  type BedrockServedId,
+  type BedrockStreamEnd,
+  type RosterModelId,
+  servedRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { servedRecord, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 
 //region Bedrock catalog

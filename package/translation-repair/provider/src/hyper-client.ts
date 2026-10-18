@@ -17,6 +17,7 @@ import type {
 import { chatJsonThrough, } from './chat-json-through.ts';
 import {
   completionCapFor,
+  type CreditsShapeError,
   HYPER_API_VERSION,
   HYPER_AUTH_HEADER,
   HYPER_CREDITS_URL,
@@ -25,10 +26,14 @@ import {
   type HyperServedId,
   parseHyperCredits,
   perModelLimiter,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   formatUsageNote,
+  type MalformedCompletionError,
+  type ModelTransport,
   SyntheticHttpError,
+  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
@@ -39,12 +44,7 @@ import {
 } from './request-pace.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { hyperIdFor, } from './roster-reach.ts';
-import type {
-  ModelTransport,
-  TransportReply,
-} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
@@ -314,7 +314,7 @@ export function createHyperClient(
 
    @throws {@link SyntheticHttpError} on non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-provider-stream/ts').MalformedCompletionError} on a stream that never terminated or reported an error
+   @throws {@link MalformedCompletionError} on a stream that never terminated or reported an error
 
    @example
    ```ts
@@ -486,7 +486,7 @@ export function createHyperClient(
 
    @throws {@link SyntheticHttpError} on non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-shared-contract/ts').CreditsShapeError} on contract-violating bodies
+   @throws {@link CreditsShapeError} on contract-violating bodies
 
    @example
    ```ts

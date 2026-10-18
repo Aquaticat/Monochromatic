@@ -1,10 +1,8 @@
 import {
   holdSet,
+  type OpenRouterServedId,
+  type RosterModelId,
   servedRecord,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  OpenRouterServedId,
-  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 

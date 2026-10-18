@@ -1,7 +1,7 @@
 import type { BedrockCredits, } from './bedrock-ledger.ts';
-import type { HyperCredits, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { OpenRouterCredits, } from './openrouter-credits.ts';
 import {
+  type HyperCredits,
   PROVIDER_ORDER,
   type ProviderName,
   type ProviderRecord,

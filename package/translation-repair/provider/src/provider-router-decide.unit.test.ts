@@ -16,7 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import { type ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
   type BudgetView,

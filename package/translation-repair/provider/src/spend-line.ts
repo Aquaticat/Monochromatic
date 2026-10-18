@@ -2,8 +2,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { ExtractedCompletion, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { noteRunSpend, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  noteRunSpend,
+  type ProviderName,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Spend line
 // WHAT ONE CALL COST, on the one line a reader can total.

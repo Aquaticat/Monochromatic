@@ -18,9 +18,13 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   formatUsageNote,
+  type MalformedCompletionError,
+  type ModelTransport,
   parseQuotaSnapshot,
+  type QuotaShapeError,
   type QuotaSnapshot,
   SyntheticHttpError,
+  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { failureForReply, } from './request-size-refusal.ts';
@@ -41,10 +45,6 @@ import {
   exchangeWithRetry,
   type RetryPolicy,
 } from './transient-retry.ts';
-import type {
-  ModelTransport,
-  TransportReply,
-} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 
 //region Synthetic client
 // Imperative-shell client over the Synthetic API. Provider protocol failures throw;
@@ -216,7 +216,7 @@ export function createSyntheticClient(
 
    @throws {@link SyntheticHttpError} on non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-provider-stream/ts').MalformedCompletionError} on contract-violating bodies
+   @throws {@link MalformedCompletionError} on contract-violating bodies
 
    @example
    ```ts
@@ -413,7 +413,7 @@ export function createSyntheticClient(
 
    @throws {@link SyntheticHttpError} on non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-provider-stream/ts').QuotaShapeError} on contract-violating bodies
+   @throws {@link QuotaShapeError} on contract-violating bodies
 
    @example
    ```ts

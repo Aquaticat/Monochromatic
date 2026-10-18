@@ -18,9 +18,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ProviderName,
-  type ProviderRecord,
+import type {
+  ProviderName,
+  ProviderRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { createRoutingClient, } from '../dist/final/node/index.mjs';
 import { stubWetBudgets, } from './provider-router-wet-budgets.test-fixture.ts';

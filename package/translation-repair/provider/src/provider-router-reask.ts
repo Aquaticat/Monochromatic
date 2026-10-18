@@ -21,12 +21,12 @@ import type { ProviderBudgets, } from './provider-budget.ts';
 import {
   otherProviders,
   type ProviderName,
+  type SlotLedger,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type {
   ReAskReply,
   RoutedReply,
 } from './provider-router-reply.ts';
-import type { SlotLedger, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Provider router re-ask
 // A NON-CONFORMANT ANSWER IS RE-ASKED ON ANOTHER PROVIDER THAT SERVES THE MODEL.

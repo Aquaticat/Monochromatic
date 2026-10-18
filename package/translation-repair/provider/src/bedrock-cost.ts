@@ -1,4 +1,4 @@
-import { type BedrockServedId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type { BedrockServedId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { BEDROCK_MODELS, } from './bedrock-catalog.ts';
 import type { ExtractedCompletion, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 

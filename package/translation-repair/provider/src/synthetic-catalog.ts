@@ -1,11 +1,9 @@
 import {
   holdSet,
+  type RosterModelId,
   servedRecord,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  RosterModelId,
-  SyntheticServedId,
-  SyntheticVendorFamily,
+  type SyntheticServedId,
+  type SyntheticVendorFamily,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 

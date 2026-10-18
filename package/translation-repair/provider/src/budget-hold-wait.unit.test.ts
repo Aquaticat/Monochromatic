@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type BudgetView,
   EveryProviderDryError,

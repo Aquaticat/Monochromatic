@@ -12,8 +12,8 @@ import {
   type ProviderName,
   type ProviderRecord,
   providerRecord,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Budget hold wait
 // A budget reading that waits out a refusal hold before it calls every

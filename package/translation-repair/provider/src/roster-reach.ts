@@ -4,6 +4,7 @@ import {
   type HyperServedId,
   type OpenRouterServedId,
   PROVIDER_ORDER,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { BEDROCK_MODELS, } from './bedrock-catalog.ts';
 import type { ModelReach, } from './budget-routing.ts';
@@ -12,7 +13,6 @@ import {
   OPENROUTER_MODELS,
   OPENROUTER_WITHHELD,
 } from './openrouter-catalog.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   SYNTHETIC_MODELS,
   SYNTHETIC_WITHHELD,

@@ -16,10 +16,14 @@ import {
   completionCapFor,
   type OpenRouterServedId,
   perModelLimiter,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   formatUsageNote,
+  type MalformedCompletionError,
+  type ModelTransport,
   SyntheticHttpError,
+  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
@@ -47,7 +51,6 @@ import {
 } from './openrouter-credits.ts';
 import { requireNoStreamError, } from './openrouter-stream-error.ts';
 import { failureForReply, } from './request-size-refusal.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { openRouterIdFor, } from './roster-reach.ts';
 import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -55,10 +58,6 @@ import {
   extractStreamedCompletion,
   requireStreamTerminator,
 } from './stream-completion.ts';
-import type {
-  ModelTransport,
-  TransportReply,
-} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
@@ -325,7 +324,7 @@ export function createOpenRouterClient(
 
    @throws {@link SyntheticHttpError} on non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-provider-stream/ts').MalformedCompletionError} on a stream that never terminated
+   @throws {@link MalformedCompletionError} on a stream that never terminated
 
    @example
    ```ts

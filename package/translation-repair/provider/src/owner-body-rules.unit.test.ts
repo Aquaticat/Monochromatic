@@ -21,7 +21,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type TransportExchange, } from '@monochromatic-dev/translation-repair-provider-stream';
+import type { TransportExchange, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { MODEL_CARDS, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type BedrockLedger,

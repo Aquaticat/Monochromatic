@@ -11,9 +11,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import {
-  type ProviderName,
-  type ProviderRecord,
+import type {
+  ProviderName,
+  ProviderRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
