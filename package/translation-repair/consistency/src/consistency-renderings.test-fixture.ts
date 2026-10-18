@@ -29,6 +29,12 @@ export type QuotedPlace = {
    The words the judges quoted for it.
    */
   readonly quote: string;
+
+  /**
+   The English of the whole page the place stands in, with its offset taken as zero, none for a place read alone: a reference in
+   the place's English resolves against the definitions the page holds, whichever slice holds them.
+   */
+  readonly page?: string;
 };
 
 /**
@@ -53,6 +59,14 @@ type LabelledPlace = {
    What the place says on the page.
    */
   readonly english: ConsistencyEnglish;
+
+  /**
+   The English of the whole page and where the place's English starts in it, none for a place read alone.
+   */
+  readonly page?: {
+    readonly text: string;
+    readonly offset: number;
+  };
 };
 
 /**
@@ -115,6 +129,7 @@ export function renderingsOf(
         kind: 'present',
         text: chosen.english,
       },
+      ...((chosen.page === undefined) ? {} : { page: { text: chosen.page, offset: 0, }, }),
     },
     {
       label: 'OCCURRENCE 2',
@@ -122,6 +137,7 @@ export function renderingsOf(
         kind: 'present',
         text: receiving.english,
       },
+      ...((receiving.page === undefined) ? {} : { page: { text: receiving.page, offset: 0, }, }),
     },
   ];
   /**
