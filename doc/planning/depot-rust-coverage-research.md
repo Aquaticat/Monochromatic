@@ -472,3 +472,25 @@ The remaining admitted queue is linter fuzz,
 Git-policy and linter planted controls,
 truepeak release all-features Nextest,
 privileged WG namespaces and the bounded repeated benchmark owners.
+
+### Passing installed Codex boundary
+
+`1h6qf8j86f` passed the unchanged installed-host Nextest case after admitting
+`bubblewrap 0.9.0-1ubuntu0.3` in its owned disposable sandbox.
+The package verification,
+`/usr/bin/bwrap` SHA-256 and actual namespace probe are retained.
+The signed Codex `0.163.0` executable is unchanged.
+
+The final captured localhost request contains all 40 actual `function_call_output` items.
+Each has code `0` and exactly the expected `host-payload-executed` output.
+The native test independently passes its rewritten command membership-file assertion.
+All 40 host-reported hook durations are `1 ms`;
+this is one fixture sample at the host reporting resolution,
+not a comparative overhead estimate.
+The structured `consumerSummaries.installedCodex` receipt records this boundary.
+It exercises trusted hooks and a synthetic membership file through the real installed host,
+not real kernel cgroup placement or paid model execution.
+
+Completed compute proxy is USD 2.418.
+The active fuzz tails `w96195cl04` and linter fuzz `v17djp58z3` reserve USD 0.72,
+for a reservation-inclusive bound of USD 3.138.

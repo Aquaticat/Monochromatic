@@ -157033,5 +157033,67 @@
     "ceilingUsd": 5,
     "invoiceAccessed": false
   },
-  "updatedAt": "2026-10-18T11:20:32.209Z"
+  "updatedAt": "2026-10-18T11:20:32.209Z",
+  "consumerSummaries": {
+    "installedCodex": {
+      "runId": "1h6qf8j86f",
+      "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "provider": "Unauthenticated deterministic localhost Responses fixture",
+      "providerRequests": 41,
+      "functionCallOutputs": 40,
+      "successfulPayloadOutputs": 40,
+      "completedHookEvents": 40,
+      "sortedHookMilliseconds": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "distributionPackage": "bubblewrap\t0.9.0-1ubuntu0.3",
+      "bubblewrap": {
+        "path": "/usr/bin/bwrap",
+        "sha256": "e318903862396f96de3df57264e0158682b952fd3fb53ac23d876413e7b30f71",
+        "installationBoundary": "This disposable CI sandbox only; no account settings or prepared image tag changed"
+      },
+      "independentMembershipAssertion": "Passed by unchanged installed_host_rewrites_commands test",
+      "realPaidProviderCalls": 0,
+      "sourceAndSeedBytesChanged": false
+    }
+  }
 }
