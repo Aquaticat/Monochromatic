@@ -53,36 +53,98 @@ defaults -currentHost write com.apple.screensaver idleTime -int 0
 sudo /usr/bin/safaridriver --enable
 ```
 
+Auto-login:
 `sudo sysadminctl -autologin set -userName user -password '<password>'` failed with
-`SACSetAutoLoginPassword error:22` even with FileVault off, so a guest reboot needs a manual login
-from the UTM window.
+`SACSetAutoLoginPassword error:22` even with FileVault off.
+Writing `/etc/kcpassword` directly works
+(the password XORed with the fixed key `7d 89 52 23 d2 bc dd ea a3 b9 1f`, cycled,
+after zero-padding the password to a multiple of 12 bytes; mode 600, owner `root:wheel`)
+plus `sudo defaults write /Library/Preferences/com.apple.loginwindow autoLoginUser user`.
+Verified 2026-10-18 by `sudo shutdown -r now`: the guest came back logged in at the console, unlocked.
 
-### Reaching the host's preview server from the guest
-
-Forward the host's port into the guest so pages keep the same `localhost` origin:
-
-```bash
-# on m1
-ssh -i ~/.ssh/id_ed25519_vm -o ExitOnForwardFailure=yes -f -N -R 4173:127.0.0.1:4173 user@192.168.64.2
-```
-
-### Starting WebDriver in the guest
-
-Start the driver with `nohup` and stdin detached;
-a bare `cmd &` inside `ssh host '...'` dies when the SSH command returns,
-and the next request fails with curl exit 7 (connection refused):
+Keep a reboot from reopening a normal Safari window, which blocks WebDriver
+(`POST /session` then times out with `The session timed out while connecting to a Safari instance`):
 
 ```bash
 # in the guest, over SSH
-nohup /usr/bin/safaridriver --port 4445 </dev/null >/tmp/safari-driver.log 2>&1 &
+defaults write com.apple.loginwindow TALLogoutSavesState -bool false
+defaults write com.apple.loginwindow LoginwindowLaunchesRelaunchApps -bool false
+defaults write com.apple.Safari NSQuitAlwaysKeepsWindows -bool false
 ```
 
+Keep updates from restarting the guest (`softwareupdate --schedule off` still reports checking on in macOS 27,
+so set the preferences):
+
+```bash
+# in the guest, over SSH
+sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool false
+sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticDownload -bool false
+sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -bool false
+sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool false
+sudo defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool false
+```
+
+Over SSH without a TTY,
+`sudo -n` does not reuse an earlier `sudo -S` in a separate command;
+pipe the password to every `sudo -S -p ""` call.
+
+### WebDriver in the guest: a login LaunchAgent
+
+`~/Library/LaunchAgents/dev.monochromatic.safaridriver.plist` in the guest runs
+`/usr/bin/safaridriver --port 4445` with `RunAtLoad` and `KeepAlive`,
+in the logged-in GUI session; after the reboot test it was up and `ready` with no manual step.
+
+If you start the driver by hand instead,
+use `nohup ... </dev/null &`;
+a bare `cmd &` inside `ssh host '...'` dies when the SSH command returns,
+and the next request fails with curl exit 7 (connection refused).
+
 Never run `/Applications/Safari.app/Contents/MacOS/Safari` directly (for example with `--version`)
-to read the version: it starts a Safari process that never exits,
-and every later `POST /session` times out with
-`The session timed out while connecting to a Safari instance`.
-Read the version with `defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString`,
-and kill any such stray process before creating a session.
+to read the version: it starts a Safari process that never exits and blocks every later `POST /session`.
+Read the version with `defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString`.
+If a session times out, quit any normal Safari first (`osascript -e 'quit app "Safari"'`).
+After `Safari instance is already paired with another WebDriver session`,
+`DELETE /session/<id>` the stale session.
+
+### Tunnels: m1 launchd agent plus a local systemd unit
+
+`~/Library/LaunchAgents/dev.monochromatic.vm-tunnel.plist` on `m1` keeps one SSH connection to the guest
+(`KeepAlive`, `ThrottleInterval` 10, `ServerAliveInterval` 15) carrying both forwards:
+
+- `-R 4173:127.0.0.1:4173`: the guest's `localhost:4173` is m1's preview server, so pages keep the same origin.
+- `-L 4447:127.0.0.1:4445`: m1's port 4447 is the guest's WebDriver
+  (not 4445, which m1's own `safaridriver` uses).
+
+It reconnects by itself after a guest reboot.
+On the Linux side:
+
+```bash
+# /var/home/user/Monochromatic
+systemd-run --user --unit=xinyanchen-vm-webdriver --collect --property=MemoryMax=64M \
+  --property=Restart=always --property=RestartSec=10 \
+  ssh -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -N -L 4446:127.0.0.1:4447 m1
+```
+
+Then plain WebDriver HTTP against `http://127.0.0.1:4446` drives real Safari in the guest.
+The guest has no `python3` (calling it pops an Xcode command line tools install dialog),
+so decode screenshots on the Linux side.
+
+### Verified while the host was locked
+
+On 2026-10-18 `m1` was locked with `pmset displaysleepnow`
+(lock flag `<true/>` confirmed before and after).
+Guest Safari reported `document.visibilityState` `visible`,
+and its WebDriver screenshot of a page was pixel-identical (ImageMagick AE 0 at 2% fuzz)
+to the same capture with the host unlocked;
+after the guest reboot, all six pages of a site captured correctly with the host still locked.
+
+### Display scale
+
+The guest display (1920x1200, `DynamicResolution` on) runs HiDPI:
+pages report `devicePixelRatio` 2,
+and a 1920x1080 Safari window gives a 1920x1028 viewport.
+That matches a 4K screen at 2x.
+A true 1x capture needs the guest's display mode changed to non-HiDPI (not done yet).
 
 ## macOS WebKit fallback: `webkit-capture` on the host
 
