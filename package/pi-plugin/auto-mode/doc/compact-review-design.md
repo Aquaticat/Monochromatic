@@ -164,6 +164,15 @@ both fail the maintained consumer.
 Restored code rebuilds and passes.
 This establishes the new guard's sensitivity before the factory redesign;
 the replacement still requires its own built ownership and real-host checks.
+The first rebuilt factory passes the original identity cases,
+but separate enumeration and serialization checks expose another observable change.
+The original class passes both;
+the factory publishes enumerable getters and serializes 2,425 code units of loader state
+instead of the original `{}`.
+The correction keeps the issued operations nonenumerable during staged construction,
+before the object enters its ownership map or is frozen.
+The maintained consumer checks this behavior without printing the serialized loader state.
+Absence of an in-repository serialization caller does not justify surprising implicit data exposure.
 The temporary loader declaration is an interop boundary;
 it does not establish that the underlying JavaScript implementation is type-checked.
 The root `TCV` rule remains unchanged;

@@ -74,6 +74,16 @@ The private inspector smoke captures a 5,378,583-byte retained heap,
 finds the planted 2,097,168-byte array backing store through actual heap edges,
 and closes normally with complete stderr retained.
 No live worker has been signaled or snapshotted.
+Opacity comparison is complete in `policy-input-factory-opacity-results.json`:
+the original class passes all sixteen named cases;
+fresh JS and native builds of the committed factory pass fourteen and fail the two new cases.
+Enumeration exposes the five operations,
+and actual JSON output is 2,425 code units instead of `{}`.
+The native worker's new `native-fix-capability-opacity-20261018-regression-06` checkpoint
+owns only `system-slot.ts` and must make existing operations nonenumerable before issuance.
+Do not suppress or weaken either maintained regression.
+The failing frozen candidate is retained unchanged for comparison;
+the correction must qualify in a separate newly frozen candidate.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
