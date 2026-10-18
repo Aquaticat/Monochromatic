@@ -4,10 +4,14 @@ What went wrong in the rounds that reviewed the deferred findings and the quoted
 wrote the docs of that work (n163),
 read the history archive and fixed what the readings found (n164,
 n165 and n167),
-and fixed the findings of that review in the sheets and the empty link reading (n166 and n168):
+fixed the findings of that review in the sheets and the empty link reading (n166 and n168),
+finished the reading of empty links as their plain-text twins (n169),
+and wrote the ledger and prevention docs for the mistakes of those rounds (n172):
 the rule breaches of each round,
 as its author or reviewer disclosed them,
-and one mistake of the lead's brief for the archive fixes (M225).
+and three mistakes of the lead's briefs:
+the brief for the archive fixes (M225),
+and two in the brief for the docs round (M236 and M237).
 The lead's two other mistakes of the same days are filed with their subjects:
 M224,
 the worktree added without `--no-worktree-copy`,
@@ -33,7 +37,9 @@ The findings of the review of n162 are in its report (`s233/review.md`).
 Only the residue that it traced is filed in the ledger,
 as B619 in
 [Audit ledger: the consistency pass, what the word test reads as shown](audit-ledger-consistency-pass-what-the-word-test-reads-as-shown.md),
-which says that n166 and n168 fixed it and that neither is landed.
+which says that n166,
+n168,
+n169 and n173 fixed it and that it landed on 2026-10-18.
 The archive that n164,
 n165 and n167 read and fixed is the history archive,
 `doc/handover/translation-repair-history*.md` at the repository root:
@@ -54,7 +60,17 @@ the hand-backs `s234/handback-n163.md`,
 and the log `s234/breaches.md`),
 the briefs of the rounds (`prompts/prompt-n162-review-of-n159-and-n161.md` to `prompts/prompt-n168-z9-follow-up.md`),
 and the lead's notes of the day (`s228/next-docs-batch-notes.md` and `s241/notes-n170.md`).
-The breaches of the docs round that wrote these entries (n172) are in its own hand-back and are not filed here.
+M234 to M237 were written on 2026-10-18 from the hand-backs of n169 (`s240/handback-n169.md`)
+and n172 (`s243/handback-n172.md`),
+the briefs of n172 and n173 (`prompts/prompt-n172-docs-mistakes-n162-to-n170.md` and
+`prompts/prompt-n173-labelled-links-read-as-shown.md`),
+and the lead's notes (`s228/next-docs-batch-notes.md`).
+n171 and n173 returned no hand-back file,
+so their rule breaches are not filed,
+and n170 stays without an entry.
+The lead's slip in merging n173 onto n171 is M238,
+filed in
+[Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md).
 The rounds are named as the neighbouring entries name them,
 and a round name is not a task number.
 The sizes of reads and outputs are the authors' own figures.
@@ -534,6 +550,197 @@ and it is not landed.
 Prevention:
 the same as M210,
 M214 and M216.
+
+## M234: breaches of the Read, output, batch and search rules by the twin reading of empty links (n169)
+
+Status:
+happened on 2026-10-15 in the round that read an empty link as its plain-text twin in every reader (B619);
+every one disclosed by its author (`s240/handback-n169.md`,
+"Rules I broke"),
+and the lead's notes list the same forms.
+The round ended green on its final source
+(the suite at 2,450 passes and 0 failures,
+lint,
+types and the source scans clean,
+the replays as expected,
+no real change on any of the 92 pages),
+and landed on 2026-10-18 with n166,
+n168 and n171 in `555bb74aa0` and `29d6064708`.
+
+- Seven Reads with a limit over 50
+  (61,
+  62,
+  70,
+  85,
+  52,
+  53 and 70 lines:
+  `consistency-folded-links.ts`,
+  `consistency-markup-ranges.ts`,
+  `consistency-unread-units.ts`,
+  `consistency-prose-text.ts`,
+  `consistency-word-joints.ts`,
+  `consistency-shown-edge.ts`
+  and `consistency-count.ts`).
+- One `rg --context` over `mise.toml` printed far more than 50 lines to the terminal and not to a file.
+- Commands that read a file in a batch with the command that wrote it:
+  a file copy beside a checksum of the same files,
+  earlier in the work,
+  and,
+  in the guard stretch,
+  a `sha256sum` written to `sums-now.txt` in one batch with the `diff` that read it.
+  The author checked afterwards with `sha256sum --check`.
+- Two Edits to the one hand-back file in one batch.
+- Two probes (`p2` and `p3`) ran at once as units;
+  they read `src` and not `dist`,
+  so no two commands read or built `dist` together.
+- Short `diff`,
+  `cp` and `sha256sum` calls ran in the foreground;
+  the builds,
+  the tests,
+  the probes and the checks were units.
+- The author searched its own session transcript under `/home/user/.claude/projects/` with `rg`
+  to recover the exact unit commands of the earlier rounds.
+  The lead's notes list it as a breach.
+- A deviation the hand-back names under the replays:
+  it ran each as a unit with `TRANSLATION_REPAIR_RUNS_DIR` set,
+  and not in the literal form of the brief,
+  with the same command.
+
+The reaction is in the brief of the next round (`prompts/prompt-n173-labelled-links-read-as-shown.md`):
+it opens its rules with "the last author broke the first three",
+asks for a `limit` of 50 or less on every Read "even when you need a longer stretch",
+counts a checksum or a `diff` of a file as a read of it,
+and adds "Never search session transcripts".
+
+Prevention:
+the same as M210,
+M214 and M216,
+with the transcript search added to the forms a brief names:
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs".
+
+## M235: breaches of the output, Read, batch and search rules by the docs round for the mistakes of n162 to n170 (n172)
+
+Status:
+happened on 2026-10-15 in the round that wrote M224 to M233 and brought B619 up to date;
+every one disclosed by its author (`s243/handback-n172.md`,
+section 3,
+"every rule I broke"),
+and the lead's notes list the same forms.
+The round landed in `3fdfa7422e` after the advisor's review,
+and the fixes that followed (`c25e8f6b04` and `72789cd5f9`) corrected M224.
+
+- Terminal output over 50 lines that was not sent to a file,
+  twice:
+  an `rg --files` listing of the `doc/` folder (about 130 lines)
+  and an `rg '^#+ '` over five hand-backs (about 70 lines).
+- One Read with a limit over 50:
+  `mistake-prevention-shell-edits-commits-and-agents.md` at offset 100 with a limit of 60.
+- An Edit and an `rg` that read the same file in one batch,
+  twice:
+  the word-test ledger file (a search for "labels of marks only")
+  and the shell-commands ledger file (a search for a phrase of its opening).
+- A command that wrote a log and a command that counted it in one batch,
+  once:
+  the count exited 1 and the log was read afterwards,
+  and it held no finding.
+- An `rg` with an invented flag (`--output-file /dev/null`),
+  which exited 2 and touched no file.
+- Two scratch outputs (`round-hits.txt` and `brief-template-hits.txt`) were written
+  and read only after the advisor pointed it out;
+  the zero was then checked with a positive control.
+  Two Reads of `scans.log` printed very long single lines (test names).
+- Three Edits of its own hand-back replaced text already in the file
+  (two sentences of section 2,
+  and an append of section 3 that replaced the last line of section 2),
+  against the form the same round filed as M230 and as the rule "written once and then appended to".
+  The author said so,
+  and appended section 4 only.
+- A gap in its checks that the hand-back names:
+  the scans and the rendered check were not rerun after the edits that followed the advisor's review,
+  where the lint and the five doc guards were.
+  The first scan run had failed on `task-list-numbers.unit.test.ts` for a backticked pound sign and number in M230,
+  which the author fixed;
+  that is the guard working and no breach.
+
+Prevention:
+the same as M210,
+M214 and M216,
+with the rule of M230 that a hand-back is written once and then appended to
+shown broken by the author who had just filed it:
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs".
+
+## M236: a brief named the review as the source of a cause that a fix round had found
+
+Status:
+happened on 2026-10-15 in the brief for n172 (`prompts/prompt-n172-docs-mistakes-n162-to-n170.md`,
+item 2),
+and was corrected by the author of the round from the sources
+(`s243/handback-n172.md`,
+section 1,
+the first of three deviations).
+The brief asked for B619 to be brought up to date and said "n162 traced the cause to `apostropheJoinsAt`".
+
+- The review of n162 (`s233/review.md`,
+  finding Z9) traced the cause to `closingJointsOf`,
+  through `apartStartsOf`,
+  and says that it had read that branch and had not instrumented it.
+- The cause was found by n166,
+  which instrumented a copy and showed that refusing the case in that branch changed nothing;
+  the real cause was the last return of `apostropheJoinsAt` (`s237/handback-n166.md`,
+  section 3).
+  The lead's notes say that the pointer to the first function in the brief of n166 was the lead's,
+  from n162,
+  and that the brief of n172 repeated the attribution to n162.
+- n172 read the sources and filed the history as they hold it:
+  the review's pointer,
+  the instrumentation that refuted it,
+  and the real cause (B619).
+  The advisor's review of the round made it rewrite M227 and the prevention text,
+  which had read as a failure of the brief of n166 about that pointer;
+  that brief said "confirm the cause by instrumenting a copy first",
+  which is the instruction that found the pointer wrong.
+
+Prevention:
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs",
+whose rule that a brief carrying a cause says whether the report instrumented it (M227) this repeats
+for a brief that carries a cause into docs:
+the cause is quoted from the report that names it,
+with the report's own limit,
+and the later finding is cited beside it.
+
+## M237: a brief named a file for the brief rules that the repository does not hold
+
+Status:
+happened on 2026-10-15 in the brief for n172 (item 4),
+and was found by the author of the round
+(`s243/handback-n172.md`,
+section 1,
+the third of three deviations).
+The brief asked for a stronger rule "in the brief template,
+`doc/writer-brief.md` if that is where brief rules live:
+find out".
+
+- The author searched the repository's `doc/`,
+  the package's `doc/` and `AGENTS.md` for a brief template and found none.
+  The brief rules live in "Briefs and hand-backs" of `mistake-prevention-shell-edits-commits-and-agents.md`,
+  and the stronger rule went there.
+- The scratch folder of the work holds a file of that name,
+  `writer-brief.md` (192 lines,
+  last changed on 2026-10-06),
+  but it is a brief for another job
+  (verifying and fixing forward one contributor's production changes)
+  and holds no template of brief rules.
+- The brief put the question to the author ("find out") and named a path nobody had listed,
+  and the lead's notes count the path as a mistake of the brief.
+
+Prevention:
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs":
+a brief names a path only after the lead has listed it,
+and a question the lead can answer by one listing is answered before the brief is sent.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Tasks,
 builds and bulk output".

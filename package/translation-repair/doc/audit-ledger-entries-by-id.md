@@ -525,6 +525,8 @@ which lists every file of this record.
 - [M225, process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)
 - [M226, process mistakes, claims and commit messages](audit-ledger-process-claims-and-commit-messages.md)
 - [M227 to M233, process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)
+- [M234 to M237, process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)
+- [M238, process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md)
 - [T1 to T7, defects in the tests themselves](audit-ledger-test-suite-defects-in-the-tests-themselves.md)
 - [T9, defects in the tests themselves](audit-ledger-test-suite-defects-in-the-tests-themselves.md)
 - [X1, found while fixing, stages, seats and pairing keys](audit-ledger-found-while-fixing-stages-seats-and-pairing-keys.md)

@@ -661,6 +661,10 @@ each fixed the reader's slot-offset and place-count rules its own way,
 the merge held one rule twice,
 and four test files pinned rules or messages the other had changed (ledger M156).
 A three-way merge with no textual conflict said nothing about either.
+The fold files were reserved to one of two rounds that ran at once,
+and the lead's merge of that round onto the other kept two declarations of the folded links in one function,
+a block of the earlier round beside the later rewrite of it,
+so the merge commit did not build (ledger M238).
 
 The rule:
 work that may change the same production files runs one after the other,
@@ -676,6 +680,11 @@ and two predicates that tested membership in a string (ledger M174).
 A case about an unknown member reads the known list and names no number,
 a helper two test files need lives in one fixture,
 and membership is tested on a set.
+A round's change merged onto a tree that held another round's change to the same function is compared
+with the round's own change,
+file by file and by a script,
+before the commit,
+and the build of the merged tree follows at once (ledger M238).
 
 What enforces it:
 nothing in the package;
@@ -778,6 +787,20 @@ which showed that refusing the case in that branch changed nothing (ledger M227,
 B619).
 A review claimed reads of heads and tails before they were done,
 and about fifteen Edits rewrote it after its appended sections (ledger M230).
+The next two rounds after those seven broke the same forms again,
+the one that read empty links as their twins and the one that wrote the docs for the seven:
+Reads over 50 lines,
+an output of more than 50 lines to the terminal,
+a checksum written in one batch with the `diff` that read it,
+two Edits of a hand-back in one batch,
+an Edit beside a search of the same file,
+and,
+for the first,
+a search of its own session transcript for the commands of earlier rounds (ledger M234,
+M235).
+The brief of the docs round attributed to a review the cause that a fix round had found,
+and named a file for the brief rules that the repository does not hold (ledger M236,
+M237).
 
 The rule:
 an example in a brief that claims a failing result is run before the brief is sent,
@@ -847,6 +870,18 @@ two Edits to one file in one batch,
 and an Edit beside a read of the same file)
 and the number of rounds that broke each,
 and it asks for the author's own count of each form in the hand-back (ledger M227 to M233).
+The brief of n173,
+written after the breaches of n169,
+did that,
+with a `limit` of 50 or less on every Read "even when you need a longer stretch",
+a checksum or a `diff` of a file counted as a read of it,
+and a ban on searching session transcripts,
+and the heading of its rules says "the last author broke the first three" (ledger M234).
+The docs round for the seven broke the same forms in spite of its brief (ledger M235).
+A brief that carries a cause into a doc cites the report that names it with the report's own limit,
+and cites beside it the later finding that confirmed or refuted it (ledger M236).
+A brief names a path only after the lead has listed it,
+and a question that one listing answers is answered before the brief is sent (ledger M237).
 A hand-back states a read or a check as done only when it was done,
 is written once and then appended to,
 and a round that stops at a precondition names each read that its brief required and it did not finish
@@ -876,6 +911,10 @@ each fix as its own commit (ledger M219).
 What enforces it:
 habit,
 and the lead's check of each new brief against this list.
-The accounts of the rounds from n162 to n168 name no check that stopped a Read over 50 lines,
+The accounts of the rounds from n162 to n169,
+and of n172,
+name no check that stopped a Read over 50 lines,
 an output over 50 lines or two Edits to one file in one batch,
-so the hand-back's list of broken rules is the only check on them (ledger M227 to M233).
+so the hand-back's list of broken rules is the only check on them (ledger M227 to M235).
+Rounds n171 and n173 returned no hand-back file,
+so no list of theirs was read.

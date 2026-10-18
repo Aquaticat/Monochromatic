@@ -463,3 +463,39 @@ Prevention:
 "Shell commands" for the first,
 and "Claims without their evidence" for the third,
 whose rule that a count is read from its source before it is written this repeats.
+
+## M238: the merge of n173 onto n171 kept two declarations of the folded links
+
+Status:
+happened on 2026-10-18 (UTC);
+the first commit of the merge did not build,
+and the repair is `f9169093e6`.
+The sources are the messages of the two commits and the briefs of the rounds;
+no account of how the build failure was found is among them.
+
+- n173 worked in a copy of the tree after n169 (`w164`),
+  while n171 worked at the same time in the tree itself (`w161`).
+  The brief of n171 reserved the fold files to n173,
+  and the brief of n173 asked for every edit outside the fold files to be listed (file,
+  function and lines) so that the lead could merge it.
+- The lead merged n173's change onto n171's tree in `43428948cb`.
+  Its message says that the tree was not built or tested yet.
+  The merge left two declarations of the folded links in `apartStartsOf`:
+  n169's block was taken in beside n173's rewrite of it,
+  so `43428948cb` does not build.
+- `f9169093e6` keeps one.
+  Its message gives the check that the repair rests on:
+  a line-by-line comparison of the merged change with n173's change in its own worktree,
+  which now agrees for every file.
+- The gate g99b at `f9169093e6` then failed a different check,
+  the blankness scan,
+  on tests of n171 (B646).
+
+Prevention:
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Work merged from parallel briefs",
+whose rule that the second merge runs the tests of both pieces of work (M156,
+M174) this repeats with a comparison added:
+the merged change is compared with each round's own change by a script over the changed files
+before the commit,
+and the result is in the message.

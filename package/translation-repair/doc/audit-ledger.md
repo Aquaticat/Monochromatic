@@ -497,11 +497,14 @@ named for that subject and listed here.
   ten fix rounds without a commit,
   and a review loop that was not stopped.
 - [Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md):
-  The rule breaches of the rounds from the review of n159 and n161 to the empty link round (n162 to n168),
-  and a mistake of the lead's brief for the archive fixes.
+  The rule breaches of the rounds from the review of n159 and n161 to the twin reading of empty links and the docs round
+  (n162 to n169 and n172),
+  a mistake of the lead's brief for the archive fixes,
+  and two of the lead's brief for the docs round.
   The lead's other two mistakes of those days are filed in the shell commands and the claims files.
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
-  The lead's own slips as they were collected at the close of each batch of work.
+  The lead's own slips as they were collected at the close of each batch of work,
+  and in merging the work of two rounds.
 - [Audit ledger: process mistakes, checks run before a commit](audit-ledger-process-commit-gates.md):
   Commits made without the suite,
   the lint,
