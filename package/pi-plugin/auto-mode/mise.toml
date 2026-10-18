@@ -93,6 +93,10 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...
 [tasks."test:unit"]
 extends = "test:unit"
 
+[tasks."test:native:policy-slot-error"]
+description = "Verify built policy-slot errors, inherited setters, and stable facade identity"
+run = "node src/native-policy-slot-error.unit.test.ts"
+
 [tasks."test:confirmation"]
 description = "Verify built approval decisions and unified stop behavior"
 run = [
