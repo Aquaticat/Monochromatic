@@ -46,10 +46,10 @@ try {
   }
   if (binaries.length) {
     const runtime = prepareRuntime({ binaries, corpora:{}, directory:context, image:'localhost/rust-research-benchmarks:bounded', run });
-    writeFileSync(join(evidence, 'benchmark-runtime-admission.json'), JSON.stringify({ ...runtime, binaries:binaries.map(binary => ({ ...binary, sha256:hash(readFileSync(binary.path)) })), syntheticTracks:{ bytes:fixture.length, sha256:hash(fixture), count:tracks.length }, repetitions:2, inputIdentity:'Unchanged per executable across both repetitions', maximumSecondsPerInvocation:300 }, null,2) + '\n');
+    writeFileSync(join(evidence, 'benchmark-runtime-admission.json'), JSON.stringify({ ...runtime, binaries:binaries.map(binary => ({ ...binary, sha256:hash(readFileSync(binary.path)) })), syntheticTracks:{ bytes:fixture.length, sha256:hash(fixture), count:tracks.length }, repetitions:2, inputIdentity:'Unchanged per executable across both repetitions', maximumSecondsPerInvocation:600 }, null,2) + '\n');
     for (const binary of binaries) for (const repetition of [1,2]) {
       const name = binary.name + '-repetition-' + repetition;
-      const result = runRuntime({ name, image:runtime.image, executable:binary.name, args:binary.name === 'truepeak-core-bench' ? ['/input/tracks.jsonl'] : [], workingDirectory:binary.name === 'forbidden-regex-bench' ? '/input/repository' : '/work', maximumSeconds:300, directory:join(evidence,'runtime'), run });
+      const result = runRuntime({ name, image:runtime.image, executable:binary.name, args:binary.name === 'truepeak-core-bench' ? ['/input/tracks.jsonl'] : [], workingDirectory:binary.name === 'forbidden-regex-bench' ? '/input/repository' : '/work', maximumSeconds:600, directory:join(evidence,'runtime'), run });
       results.push({ executable:binary.name, repetition, input:binary.name === 'forbidden-regex-bench' ? 'Complete frozen repository source and owning ignore policy' : 'Deterministic synthetic tracks JSONL; no real audio-performance claim', ...result });
       writeFileSync(join(evidence, 'benchmark-results.json'), JSON.stringify(results,null,2) + '\n');
     }

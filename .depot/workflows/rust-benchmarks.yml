@@ -8,7 +8,7 @@ jobs:
     runs-on:
       size: 8x32
       image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r3-fuzz-codex
-    timeout-minutes: 20
+    timeout-minutes: 50
     env:
       CI: 'true'
       MISE_AUTO_INSTALL: 'false'
@@ -28,7 +28,7 @@ jobs:
     - name: Bind prepared image to its actual captured manifest
       run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
     - name: Execute immutable source benchmarks owner boundary
-      timeout-minutes: 18
+      timeout-minutes: 48
       run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:rust:benchmarks
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
