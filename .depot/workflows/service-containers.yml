@@ -138,7 +138,7 @@
         "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
         "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
         "PROBE_JOB_CONTAINER": "true",
-        "PROBE_JOB_IMAGE_REFERENCE": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346"
+        "PROBE_JOB_IMAGE_REFERENCE": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31"
       },
       "steps": [
         {
@@ -181,7 +181,7 @@
       ],
       "if": "always()",
       "container": {
-        "image": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+        "image": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
         "credentials": {
           "username": "x-token",
           "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
