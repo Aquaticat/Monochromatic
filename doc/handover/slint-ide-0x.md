@@ -870,6 +870,12 @@ the items after it are the record of 2026-10-05 and older.
     control (the expectation of `minimap_build.rs` renamed to `dead_code`) made `lint:closures` exit 1 with the closure
     reported and `this lint expectation is unfulfilled`; the file was restored. The README of the lint package still
     calls itself a stage-1 package.
+    Landed on 2026-10-18 as `1e143fbabe`, pushed straight to `origin/main` from the worktree (the owner chose this):
+    the main checkout holds an uncommitted line re-wrap in `package/desktop-app/ide/README.md` (one of a 314-file bulk
+    change from another session, last written 09:24), which makes `git merge --ff-only` refuse, so the checkout's
+    `main` stays behind `origin/main` until that change is committed or dropped by its owner. Branch and worktree
+    removed. The IDE is reinstalled (`~/.local/bin/monochromatic-ide`, sha256 `f068d238b760`, equal to
+    `dist/monochromatic-ide`; `monochromatic-ide.previous` is the build `2172fa208b55`); `--help` runs.
     Still open: the fate of the syntax-only rule once the gate is accepted (proposal in the agent's report: switch it
     off for `package/desktop-app/ide/**` by a configuration override, since the new lint covers the same closures with
     type information and sees macro arguments, and keep it elsewhere until each other Rust package has its own
