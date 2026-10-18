@@ -13,13 +13,22 @@ The deployed pnpr trust configuration has not been inspected.
 Default native release `kFkBoY` remains pinned while the live workers use it.
 A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
 MiMo native controller `42230`, fixture `pi-mimo-rpc-session-I79zzb`,
-reached 92 tools without source edits and was aborted to an actual settled boundary.
-Its new prompt `native-implement-error-class-only-20261018` narrows ownership to
-`system-slot-error.mjs` and a new `system-slot-error.ts` only.
+delivered `system-slot-error.mjs` and new `system-slot-error.ts` after the narrowed prompt.
+The supervisor rejects its first proposal's added runtime `name` field:
+a real subclass setter runs once with the original class and zero times with that proposal.
+The corrected class preserves the original assignment without another member declaration.
+Its worker commit fails with exit 128 and Git's
+`fatal: protocol error: bad line length character: Not ` diagnostic.
+Host delivery through the qualified wrapper succeeds as `98add8596e` without bypassing guards.
+The worker settles after 105 tools,
+then receives a separate six-call diagnostic assignment,
+`native-diagnose-private-home-git-filter-boundary-20261018`.
+That assignment permits read-only repository inspection and disposable fixtures only.
 The supervisor retains the queued `system-slot` and `policy-loader` changes.
 MiMo source controller `53002`, fixture `pi-mimo-rpc-session-B7AghW`,
 still owns only `native-decision-fallback.test.mjs` and new siblings for that catalog.
 Its observed errors are ordinary command/path failures, not the reported preparation diagnostic.
+It is now writing typed fallback helper modules; its complete delivery and checks are pending.
 
 Native aborts produce three error tool results containing
 `Complete group preparation or assessment failed`.
@@ -33,9 +42,24 @@ Supervisor commit `26b6aec284` completes constructor/group fixture declarations
 and names the receipt output callbacks.
 Frozen fresh-cache types and the constructor,
 program-owner and process-network receipt consumers pass.
-The three-file semantic lint still reports 54 warnings and one async-disposal error in the legacy `.mjs` catalog.
-That file is outside the TypeScript project's include list;
-the scoped result does not clear the old full-source backlog of 1,037 warnings and 47 errors.
+That initial three-file semantic lint reports 54 warnings and one async-disposal error in legacy `.mjs`.
+Commits `4c772c38e4` and `6200e15e9d` move the receipt consumer into TypeScript,
+separate subprocess transport and original child programs,
+and keep the old task entry.
+All embedded request programs are preserved;
+the formatter's five-file runtime AST comparison passes seven positive controls.
+The subsequent void-listener correction has its own real child consumer verification.
+Frozen `98add8596e` builds JavaScript and private native `Z9zLOF`.
+Fresh-cache types,
+complete units and the real receipt catalog pass,
+including complete empty child stderr.
+The new built error regression covers arity,
+message/cause,
+inherited name accessors and facade identity.
+Scoped lint reports 20 warnings and zero errors across nine files;
+later unit/entry style fixes still need a fresh check.
+The remaining dynamic-error-name finding requires source/configuration investigation.
+This does not clear the old full-source backlog of 1,037 warnings and 47 errors.
 
 The reported-interaction checkpoint retains 52 successful tools,
 zero selectors,
@@ -46,11 +70,27 @@ uses private writable project settings,
 writes the private credential store rather than merely parsing it,
 preserves the absence of provider credential overrides,
 and supplies the configured Deepseek credential presence with a fixture value.
-Startup diagnostics pass,
-but a stronger catalog comparison finds 164 models versus 185 in the worker's initial response.
-All remaining differences are OpenAI Fast physical routing targets.
-Current source-worker catalog observation is being compared at the matching session phase
-before attributing that difference to the fixture.
+Startup diagnostics pass.
+A fresh source-worker catalog observation returns 164 names,
+matching the corrected probe with no missing or extra names and a positive difference control.
+The initial 185-name response is a different checkpoint;
+the remaining 21 physical routing targets are not a current fixture mismatch.
+No exact cause of the initial/current catalog difference is established.
+
+The separate Git/LFS fixture compares raw/wrapped top-level Git with raw/wrapped Git on the helper PATH.
+All four empty-global-config cases pass and commit only the owned file.
+Wrapper-on-PATH alone is excluded as the cause of the live worker's protocol error.
+Private-home configuration and real-repository differences remain untested.
+
+Node release source `26e72d85a611e222e3f06025de8a3c496923bacd` confirms that type stripping retains class fields,
+and V8 defines those fields as own properties.
+The source-level corrected/error-field controls and runnable pass/fail reproduction are retained.
+The durable diagnosis is `doc/troubleshooting/node-typescript-error-class-fields.md`.
+Oxlint `1.88.0` source is checked out as `6941b4ed45ead21c45bc2164cb80a180eed85b43`.
+Its custom-error-name rule requires a literal class name and declares no configuration options.
+Configuration probes remain pending:
+the first driver fails before spawning because an unopened WriteStream has `fd: null`.
+The corrected driver awaits an opened numeric file descriptor.
 
 Remaining independently verified work areas:
 
