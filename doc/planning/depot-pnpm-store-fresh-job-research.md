@@ -32,7 +32,8 @@ Both use the same pinned `actions/cache/restore` and `actions/cache/save` code.
 The former uses GitHub's cache service;
 the latter uses Depot's transparent Actions cache integration.
 
-Run repeated cold jobs with deliberately absent keys,
+Run repeated cache-disabled jobs,
+repeated cold jobs with deliberately absent keys,
 a cold producer,
 then repeated independent warm consumers.
 Check the producer manifest,
@@ -75,7 +76,7 @@ A temporary compression check limits the single GitHub experiment archive to `50
 before it can be saved.
 The check's temporary file is removed;
 the Actions cache stores the original pnpm-store directory.
-The corrected harness's unique prefix is `research-20261018-pnpm-cache-v2`.
+The final repeated cohort's unique prefix is `research-20261018-pnpm-cache-v3`.
 
 No production or unrelated cache entry may be deleted for this experiment.
 After evidence capture,
@@ -111,8 +112,29 @@ not evidence that all other cache state stayed fixed between requests.
 The command deleted only identifier `9109200675`;
 it did not select production entries by age or key prefix.
 
+The initial seed run `39100149452` stalled in the parent-authored archive-size guard,
+before either save step.
+The harness passed an unsupported `--output` option to Zstd `1.5.7`;
+the supported output spelling is `-o`.
+With a larger input,
+the compressor's exit left the tar producer blocked because the guard waited for both exits
+before checking either result.
+This is a research-harness fault,
+not a cache-service failure.
+Both ordinary and force-cancellation requests were submitted;
+terminal reconciliation remains necessary before claiming the allocation stopped.
+
+Corrected source `165e0fb3f7` uses the supported option,
+an abortable stream pipeline and child cleanup on failure.
+A real 1 MiB fixture produces a 166-byte archive successfully.
+The same actual guard with an intentionally invalid compressor option exits with failure promptly
+instead of hanging.
+The corrected workflow has a 5-minute job limit and a 2-minute archive-guard limit.
+
+The new coherent cohort repeats cache-disabled and explicit-miss controls before seeding,
+then runs fresh warm consumers and the separate branch-isolation probe.
 Seed,
-warm and branch results remain in progress.
+warm and branch results remain unestablished until that cohort reaches terminal states.
 Each dispatch records the exact SHA,
 run URL,
 terminal job metadata and logs in private scratch before its findings are summarized here.

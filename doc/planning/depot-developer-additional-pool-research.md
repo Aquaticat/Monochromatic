@@ -118,14 +118,72 @@ Do not ask the user to rediscover repository facts or repeat settled preferences
 ## Current work
 
 Research is active.
-The capability agent is checking product and billing boundaries.
-The routing agent is inventorying current workflow and security state.
-The cache agent is preparing the current-source cache integration and fresh-job experiment design.
-The main agent is preparing isolated cache and orchestration probes.
+The cited [platform inventory](depot-developer-pool-capabilities-research.md)
+and [repository routing study](depot-developer-pool-routing-research.md) are complete.
+The [cache study](depot-developer-pool-cache-research.md)
+now includes real fresh-job Cargo compiler-cache hits,
+changed-flag invalidation,
+automatically supplied short-lived credentials and concurrent persistent-disk consumers.
+The parent-owned pnpm experiment is finishing its repeated cache-disabled,
+explicit-miss and warm comparisons.
+An independent research review is checking completeness and the remaining decision frontier.
 The user correction broadens every area's applicability to a substantially expanded CI graph;
 today's workflows are a measured incumbent,
 not the limit of the design.
 No interview question is pending.
+
+## Research findings and remaining acceptance work
+
+- Platform:
+  Developer covers Linux and Windows execution,
+  with separate CI,
+  Actions and container-build allowances.
+  Depot Mac eligibility requires Startup;
+  GitHub Mac remains complementary.
+  The platform inventory also covers registry,
+  snapshots,
+  SDK sandboxes,
+  Code,
+  Agents,
+  reports,
+  splitting,
+  disks and product-specific admission controls.
+  Source-verified eligibility is distinct from repository runtime acceptance.
+- Workload selection:
+  the study enumerates 2,421 tasks,
+  including hidden tasks,
+  and desired consumers beyond today's workflows.
+  Actual Mise graph evaluation rejects a real development-dependency cycle.
+  A pnpm reverse-closure probe traverses that cycle correctly;
+  it does not establish complete cross-language selection.
+- Routing:
+  immutable-source probes cover both pools,
+  each pool alone,
+  intentional worker failure and cancellation propagation.
+  Dispatch checks do not establish required PR-check enforcement or stopped billing.
+- Trust:
+  cache branch isolation,
+  fork restrictions,
+  release identity and publisher eligibility are separate boundaries.
+  A key prefix is not isolation.
+  Preserve eligible GitHub-hosted npm publication and the repository's exact pnpr trust configuration.
+- Economics:
+  observed repository arrivals and documented product prices are retained.
+  They do not price a substantially expanded graph.
+  Account-wide usage remains uninspected,
+  and vendor minute caps do not establish the requested aggregate dollar ceiling.
+- Rollout:
+  bounded explicit profiles can precede authoritative affected selection.
+  Required checks,
+  current-source failure policy,
+  headful Android feasibility,
+  Hyper-V consumers and complete GUI coverage retain explicit adoption checks.
+  Historical KVM guest execution is verified;
+  it does not substitute for those distinct consumers.
+
+The final pnpm timing comparison and independent review remain factual research work.
+Production profiles,
+PR enforcement and failure remediation remain implementation and acceptance work after the interview.
 
 ## Runtime research ownership
 

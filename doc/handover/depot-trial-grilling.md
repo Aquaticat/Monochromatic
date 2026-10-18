@@ -16,11 +16,35 @@ tracks independently verifiable areas and the stop condition for beginning the i
 Developer plus continued GitHub availability is settled;
 pool placement and operational preferences will be grilled after factual research.
 
-Current work:
-primary-source provider and billing research,
-repository routing and trust inventory,
-cache integration research,
-fresh-job cache measurements and orchestration probes.
+The capability and repository-routing research notes are complete.
+Actual routing probes cover both pools,
+single-pool selection,
+intentional worker failure and cancellation propagation through a stable gate.
+Fresh standalone Depot jobs verified automatic cache credentials,
+compiler reuse and changed-flag invalidation,
+plus concurrent persistent-disk consumers.
+Historical standalone KVM guest execution has been reverified from its retained artifact.
+SDK command and file consumers passed;
+every created sandbox was independently confirmed finished.
+
+The main remaining experiment is the repeated fresh-job pnpm-store comparison.
+An initial cold cohort passed,
+but seed run `39100149452` stalled in the parent-authored archive-size guard before saving.
+Ordinary and force cancellation were requested;
+reconcile its terminal state before claiming stopped allocation.
+The corrected harness is `165e0fb3f7` on `research/depot-pnpm-cache-20261018`.
+Its real success and intentional-failure controls pass.
+The final cohort adds explicit cache-disabled controls,
+uses unique scope `20261018-pnpm-cache-v3`
+and has a 5-minute job timeout.
+Parent monitor session `26919` runs its sequential phases and records terminal receipts
+under private `depot-developer-pool-research/receipts-v3`.
+The superseded seed monitor is session `59066`;
+it must stop on the unsuccessful old seed rather than dispatch warm consumers.
+The [pnpm research note](../planning/depot-pnpm-store-fresh-job-research.md)
+records protocol,
+storage ownership and failure details.
+The capabilities researcher is independently checking completeness and the remaining preference frontier.
 The main agent owns experiment harnesses and the combined decision tree.
 The research agents own separate cited capability,
 routing and cache notes.
