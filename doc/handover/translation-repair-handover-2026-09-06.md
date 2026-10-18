@@ -471,7 +471,10 @@ before the other queued work.
     the finalist extension makes that case commoner (2-1-1 over three candidates),
     so one fix round for R1 to R7, each red first, runs in `w184` on top of the extension's head `114c8dbc52`;
     the first stored-artifact check searched only the pooled runs directory (164 legacy artifacts, none with a
-    consistency record) and is re-run over the throwaway TianqiChen666 run directories;
+    consistency record); re-run over the five consistency-era TianqiChen666 run directories,
+    the new reader refuses `corpus-pass-TianqiChen66624` group 0 (generation 17, 2-1-1 of 4, no run-off),
+    which the old reader accepts (`w180-notes/reader-check/results-throwaway-*.json`),
+    so `w184` also bumps the artifact generation and recounts generation 17 and earlier under the tied-only rule;
     a relaunch waits for it);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
