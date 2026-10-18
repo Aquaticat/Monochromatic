@@ -343,8 +343,8 @@ before the other queued work.
     The README agent named role wording it inferred from module names without opening the modules
     (`consistency`,
     `artifact`,
-    `page-check` among them);
-    read those against the code.
+    `page-check` among them):
+    a Sonnet agent in `w174` reads every claim of the 37 READMEs against the code.
     The docs move landed (`w171`, on the branch as eight commits ending `e6e41417d5`):
     131 docs in `package/translation-repair/doc/`,
     `pictures.md` in `slice-reading/doc/`,
