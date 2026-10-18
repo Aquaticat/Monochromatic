@@ -15,7 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import { type GradingCandidate, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { GradingCandidate, } from '@monochromatic-dev/translation-repair-house-rule';
 import {
   assertSheetMatchesManifest,
   buildSampleManifest,

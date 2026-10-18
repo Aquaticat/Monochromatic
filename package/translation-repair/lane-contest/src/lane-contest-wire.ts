@@ -1,7 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { communityRenderingsBlock, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { JUDGE_LINE_STRUCTURE_CLAUSE, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { FRONT_MATTER_DECISION_RULE, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -16,7 +15,10 @@ import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { renderedBreakPrompt, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { laneContestTenseGroups, } from './lane-contest-tense.ts';
 import { tenseCandidateLines, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
-import { citedReferenceCandidateLines, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  citedReferenceCandidateLines,
+  type SliceSyntax,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 
 //region Lane contest wire
 // ASKS THE QUESTION THAT ACTUALLY SEPARATES THE TWO LANES, rather than which

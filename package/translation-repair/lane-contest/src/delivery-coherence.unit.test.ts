@@ -19,7 +19,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   assertDeliveryCoherent,
   DeliveryCoherenceError,

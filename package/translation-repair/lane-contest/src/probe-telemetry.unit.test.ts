@@ -14,11 +14,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type RegionDefectTally,
-  type ScreenedDefectClaim,
+import type {
+  RegionDefectTally,
+  ScreenedDefectClaim,
 } from '@monochromatic-dev/translation-repair-adjudication';
-import { type IssueProbeReading, } from '@monochromatic-dev/translation-repair-assembly';
+import type { IssueProbeReading, } from '@monochromatic-dev/translation-repair-assembly';
 import {
   corroboratingProberCount,
   judgeRegionProbe,

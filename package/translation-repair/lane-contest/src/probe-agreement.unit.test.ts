@@ -13,8 +13,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ScreenedDefectClaim, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type IssueProbeReading, } from '@monochromatic-dev/translation-repair-assembly';
+import type { ScreenedDefectClaim, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { IssueProbeReading, } from '@monochromatic-dev/translation-repair-assembly';
 import {
   probeFlaggedIssue,
   scoreProbeAgainstGrades,

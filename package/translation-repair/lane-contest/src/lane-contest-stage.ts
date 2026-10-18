@@ -17,13 +17,11 @@ import {
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type {
-  FanOutMode,
-  StageSettings,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 import {
+  type FanOutMode,
   runWindowedRounds,
   shortBenchStageFinding,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 

@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   type LaneContestOutcome,
   persistLaneContestOutcome,

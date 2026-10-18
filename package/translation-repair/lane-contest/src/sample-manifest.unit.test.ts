@@ -13,7 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type GradingCandidate, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { GradingCandidate, } from '@monochromatic-dev/translation-repair-house-rule';
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
   buildSampleManifest,

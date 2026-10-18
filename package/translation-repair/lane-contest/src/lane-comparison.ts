@@ -1,17 +1,17 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type {
-  LaneSliceOutcome,
-  SliceDelivery,
-  SliceDeliveryRecord,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { PreparationIdentity, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { assertDeliveryCoherent, } from './delivery-coherence.ts';
 import {
   comparisonSentence,
   type LaneComparisonFault,
 } from './lane-comparison-fault.ts';
-import { assertWordingCoherent, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  assertWordingCoherent,
+  type LaneSliceOutcome,
+  type SliceDelivery,
+  type SliceDeliveryRecord,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
 //region Lane comparison
 // What the two lanes did to the SAME slice, which is the question running both
