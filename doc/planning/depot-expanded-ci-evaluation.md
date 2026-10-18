@@ -732,8 +732,26 @@ for IDE,
 terminal,
 file-manager variants and the actual design Node/ImageMagick owners.
 Its seven primary profiles and two conditional corrections share a USD 5 nominal guard.
-Admission is not execution evidence;
-results enter this allocation only after their source/producers and runtime joins close.
+All seven primary workflows are now terminal,
+and the compiled Nextest inventories match their actual executed identities.
+IDE full passes 783 cases with one ignored;
+its separately executed library subset passes 316 cases with the same ignored case.
+Terminal passes 16,
+GTK passes 13,
+sticky passes eight with one ignored,
+and Qt passes its authored QString/default-state consumer.
+The 1137 execution observations contain 821 unique binary/case identities:
+the IDE subset overlaps full and is not additive unique coverage.
+IDE's real runtime producer stages 2500 files,
+and final source checks preserve the authored assertions.
+These are library/process/model/runtime consumers,
+without a new GUI or compositor launch.
+The retained design profile enumerates its 13 actual Node programs but executes zero:
+the copied locked Node binary exits 127 because the tool image lacks `libatomic.so.1`.
+Its separately admitted public-runner correction adds only the runtime library;
+the actual bootstrap preserves owning commands and assertions
+([primary case and producer receipt](../audit/depot-material-owner-primary-2026-10-18.evidence.json),
+[design correction admission](../audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json)).
 Static test attributes,
 successful compilation and an import-only fixture do not substitute for those runtime boundaries.
 
@@ -876,13 +894,19 @@ as do absent-owner cache/language recipes and external observability sinks
 
 Remaining factual work is explicitly owned in the
 [execution handover][depot-source-1]:
-the terminal public GNU correction and proposed matched Depot-Windows GNU consumer,
+the dispatched matched Depot-Windows GNU consumer,
 semantic feature/assertion reconciliation,
-existing-evidence joins and admitted execution of remaining IDE/file-manager/terminal/design owners,
-the finite native debug consumer,
+existing-evidence joins and the design runtime-library correction,
 and final combined allocation/cost normalization.
 The capability-allocation source review and concrete rollout profiles are written;
-the newly admitted material-owner execution and final source-failure dispositions remain open.
+the primary IDE/file-manager/terminal case identities and real producer joins are sealed.
+The two-attempt native debug campaign is complete with partial transport qualification:
+both direct OpenSSH challenges execute with client exit 255,
+both native CLI PTY challenges execute with exit zero,
+but no paused-session target or final workflow readback qualifies.
+The corrected attempt verifies the exact admitted tmate binary before its watchdog cancels the run;
+this does not establish a tmate failure cause or lack of support
+([final bounded SSH result](../audit/depot-native-ssh-correction-runtime-2026-10-18.evidence.json)).
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
 The repeated GitHub and corrected native graph phases,
 case parity and independent failure classifications are sealed;
