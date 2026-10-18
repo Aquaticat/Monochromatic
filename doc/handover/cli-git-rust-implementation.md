@@ -1672,7 +1672,9 @@ that is verification, not a decision for the user.
   remote after a reconcile and the note names `git merge --ff-only`. Nine controls pass on the host, the real binary
   was driven end to end, and the amend guard was shown to fail without it. Queued, in order: (1) read the gate and the
   scoped mutation run (unit `cli-git-rec1`, tag `rec1`, logs `~/temp/agent/rec1-container.log` and
-  `rec1-mutation.log`) and kill or justify every survivor; (2) release 0.2.0 (README version lines, `Cargo.toml`,
+  `rec1-mutation.log`) and kill or justify every survivor (first survivor: `==` to `!=` in `unpublished`, killed by
+  `an_unpublished_attempt_never_reports_success_and_keeps_a_real_exit_code`, committed after the `rec1` image was
+  built, so rerun that mutant's scope on a fresh tag after the run ends); (2) release 0.2.0 (README version lines, `Cargo.toml`,
   `Cargo.lock`, `cli.fuzz:lock:members`, dry-run publish from a `systemd-run --user` unit, push, verify crates.io
   and the release, `mise upgrade cargo:monochromatic-git-policy-cli`, `git checkout -- mise.lock`); (3) comment on
   and close issue 1769 with the release; (4) remove image tag `rec1`. Open design follow-up: advance the local branch
