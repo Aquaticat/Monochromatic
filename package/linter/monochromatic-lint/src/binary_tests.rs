@@ -1190,7 +1190,8 @@ fn concurrency_and_closed_pipes_do_not_change_results() {
 }
 
 /// Inline directives through the real executable:
-///  suppression, the unused-directive options and their usage errors,
+///  suppression,
+///  the unused-directive options and their usage errors,
 ///  standard-input linting and the rule listing's suppressibility.
 #[test]
 fn directives_through_the_executable() {
