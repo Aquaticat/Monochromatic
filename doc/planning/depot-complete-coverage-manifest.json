@@ -1809,7 +1809,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -1907,7 +1909,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -2053,7 +2057,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -2189,7 +2195,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -2357,7 +2365,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -2516,7 +2526,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -2794,7 +2806,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -2884,7 +2898,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -3033,7 +3049,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -3243,7 +3261,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -3326,7 +3346,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -3427,7 +3449,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -3706,7 +3730,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -3782,7 +3808,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -3863,7 +3891,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -3981,7 +4011,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -4113,7 +4145,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -4364,7 +4398,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -4512,7 +4548,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -4662,7 +4700,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -4819,7 +4859,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -4973,7 +5015,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -5109,7 +5153,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -5253,7 +5299,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -5382,7 +5430,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -5502,7 +5552,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -5602,7 +5654,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -5703,7 +5757,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -5791,7 +5847,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -5888,7 +5946,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -5946,7 +6006,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -6040,7 +6102,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -6160,7 +6224,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -6453,7 +6519,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -6609,7 +6677,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -6720,7 +6790,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -6769,7 +6841,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -6878,7 +6952,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -7164,7 +7240,16 @@
         "publish": [
           "//package/cli/forbidden-strings:publish"
         ],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/cli/forbidden-strings:test"
+        ],
+        "test:other": [
+          "//package/cli/forbidden-strings:test:container",
+          "//package/cli/forbidden-strings:test:guards:container",
+          "//package/cli/forbidden-strings:test:guards:observe:container",
+          "//package/cli/forbidden-strings:test:release:container"
+        ]
       },
       "testCandidates": [
         {
@@ -7415,7 +7500,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/cli/forbidden-strings.fuzz:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -7535,7 +7624,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -7696,7 +7787,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -7959,7 +8052,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -8102,7 +8197,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -8270,7 +8367,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/cli/mvm:test:hetzner"
+        ]
       },
       "testCandidates": [
         {
@@ -8701,7 +8802,15 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/cli/nested-wayland-session:test"
+        ],
+        "test:other": [
+          "//package/cli/nested-wayland-session:test:all",
+          "//package/cli/nested-wayland-session:test:cli:container",
+          "//package/cli/nested-wayland-session:test:container"
+        ]
       },
       "testCandidates": [
         {
@@ -9026,7 +9135,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -9288,7 +9399,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -9430,7 +9543,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -9596,7 +9711,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -9732,7 +9849,9 @@
         ],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -9914,7 +10033,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -10066,7 +10187,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -10389,7 +10512,12 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/cli/wg-quicker-exempt:test:functional",
+          "//package/cli/wg-quicker-exempt:test:functional:protocols"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -10517,7 +10645,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -10700,7 +10830,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/codex-plugin/bash-limit:test"
+        ],
+        "test:other": [
+          "//package/codex-plugin/bash-limit:test:host"
+        ]
       },
       "testCandidates": [
         {
@@ -10822,7 +10958,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -10888,7 +11026,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -10983,7 +11123,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -11109,7 +11251,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -11295,7 +11439,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -11410,7 +11556,9 @@
           "//package/config/pnpr:publish",
           "//package/config/pnpr:publish:dry-run"
         ],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -11572,7 +11720,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/config/rolldown:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -11720,7 +11872,18 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/config/tofu:test"
+        ],
+        "test:other": [
+          "//package/config/tofu:test:asn-cache",
+          "//package/config/tofu:test:external-caches",
+          "//package/config/tofu:test:hosts-resolver",
+          "//package/config/tofu:test:hosts-resolver:network",
+          "//package/config/tofu:test:storagebox-resolver",
+          "//package/config/tofu:test:storagebox-resolver:network"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -11825,7 +11988,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -11948,7 +12113,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/electron-counter:test"
+        ],
+        "test:other": [
+          "//package/desktop-app/electron-counter:test:wayland"
+        ]
       },
       "testCandidates": [
         {
@@ -12075,7 +12246,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -12275,7 +12448,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/file-manager:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -12398,7 +12575,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/file-manager-electron:test"
+        ],
+        "test:other": [
+          "//package/desktop-app/file-manager-electron:test:wayland"
+        ]
       },
       "testCandidates": [
         {
@@ -12567,7 +12750,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/file-manager-gtk-sticky:test"
+        ],
+        "test:other": [
+          "//package/desktop-app/file-manager-gtk-sticky:test:wayland"
+        ]
       },
       "testCandidates": [
         {
@@ -12717,7 +12906,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/file-manager-qt:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -13171,7 +13364,27 @@
           "//package/desktop-app/ide:test:native"
         ],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/ide:test"
+        ],
+        "test:other": [
+          "//package/desktop-app/ide:test:annotations",
+          "//package/desktop-app/ide:test:annotations-native",
+          "//package/desktop-app/ide:test:cli",
+          "//package/desktop-app/ide:test:find",
+          "//package/desktop-app/ide:test:fonts",
+          "//package/desktop-app/ide:test:ignored",
+          "//package/desktop-app/ide:test:language",
+          "//package/desktop-app/ide:test:minimap",
+          "//package/desktop-app/ide:test:open",
+          "//package/desktop-app/ide:test:raster",
+          "//package/desktop-app/ide:test:reader-lifecycle",
+          "//package/desktop-app/ide:test:search",
+          "//package/desktop-app/ide:test:syntax",
+          "//package/desktop-app/ide:test:tree",
+          "//package/desktop-app/ide:test:wrap"
+        ]
       },
       "testCandidates": [
         {
@@ -14105,7 +14318,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/desktop-app/terminal:test"
+        ],
+        "test:other": [
+          "//package/desktop-app/terminal:test:container"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -14215,7 +14434,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -14348,7 +14569,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -14446,7 +14669,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -14581,7 +14806,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/dev-script/catalog-tighten.matrix:test:matrix"
+        ]
       },
       "testCandidates": [
         {
@@ -14703,7 +14932,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -14948,7 +15179,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -15143,7 +15376,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -15388,7 +15623,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/dev-script/file-enforcer:test:container"
+        ]
       },
       "testCandidates": [
         {
@@ -16040,7 +16279,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -16219,7 +16460,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/dev-script/task-util:test:tsc-failure"
+        ]
       },
       "testCandidates": [
         {
@@ -16448,7 +16693,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -16579,7 +16826,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -16814,7 +17063,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -16941,7 +17192,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -17062,7 +17315,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -17320,7 +17575,11 @@
         ],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/git-policy/cli:test:git-image"
+        ]
       },
       "testCandidates": [
         {
@@ -17672,7 +17931,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/git-policy/cli.fuzz:test"
+        ],
+        "test:other": [
+          "//package/git-policy/cli.fuzz:test:planted"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -17789,7 +18054,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -17912,7 +18179,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -18035,7 +18304,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -18122,7 +18393,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -18212,7 +18485,11 @@
         "publish": [
           "//package/linter/kotlin:publish:bundle"
         ],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/linter/kotlin:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -18469,7 +18746,19 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/linter/monochromatic-lint:test"
+        ],
+        "test:other": [
+          "//package/linter/monochromatic-lint:test:container",
+          "//package/linter/monochromatic-lint:test:inferred-constants",
+          "//package/linter/monochromatic-lint:test:markdown",
+          "//package/linter/monochromatic-lint:test:processors",
+          "//package/linter/monochromatic-lint:test:processors:anchor-control",
+          "//package/linter/monochromatic-lint:test:processors:slice",
+          "//package/linter/monochromatic-lint:test:rust-style"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -18650,7 +18939,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/linter/monochromatic-lint.fuzz:test"
+        ],
+        "test:other": [
+          "//package/linter/monochromatic-lint.fuzz:test:planted"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -18761,7 +19056,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -18889,7 +19186,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -19016,7 +19315,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -19201,7 +19502,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -19347,7 +19650,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -19474,7 +19779,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -19607,7 +19914,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -19756,7 +20065,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/module/conf-fork:test:container"
+        ]
       },
       "testCandidates": [
         {
@@ -20127,7 +20440,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -20269,7 +20584,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/module/const:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -20455,7 +20774,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -20562,7 +20883,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -20646,7 +20969,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -20755,7 +21080,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -20923,7 +21250,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -21458,7 +21787,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -21622,7 +21953,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -21798,7 +22131,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -22005,7 +22340,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -22143,7 +22480,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -22302,7 +22641,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -22524,7 +22865,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -22683,7 +23026,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -22891,7 +23236,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -22983,7 +23330,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/module/jsonc-edit.conformance:test:shared-fixtures"
+        ]
       },
       "testCandidates": [
         {
@@ -23093,7 +23444,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -23238,7 +23591,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -23374,7 +23729,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/module/llm-type:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -23592,7 +23951,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/module/logger:test:burst-capacity"
+        ]
       },
       "testCandidates": [
         {
@@ -23982,7 +24345,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -24165,7 +24530,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -24343,7 +24710,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -24496,7 +24865,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -24680,7 +25051,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -24831,7 +25204,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/module/matrix:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -25003,7 +25380,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -25145,7 +25524,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/module/numeric-format:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -25304,7 +25687,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -25452,7 +25837,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -25846,7 +26233,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -26053,7 +26442,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -26212,7 +26603,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -26440,7 +26833,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -26598,7 +26993,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -26800,7 +27197,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -26951,7 +27350,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -27125,7 +27526,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -27268,7 +27671,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -27426,7 +27831,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -27590,7 +27997,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -27804,7 +28213,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -28007,7 +28418,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -28344,7 +28757,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -28519,7 +28934,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -28658,7 +29075,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -28789,7 +29208,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -28924,7 +29345,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -29085,7 +29508,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -29563,7 +29988,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/module/toml-edit.fuzz:test:scope"
+        ]
       },
       "testCandidates": [
         {
@@ -29754,7 +30183,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -29947,7 +30378,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -30156,7 +30589,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/music-player/android-app:test:instrumented",
+          "//package/music-player/android-app:test:instrumented:build",
+          "//package/music-player/android-app:test:instrumented:device"
+        ]
       },
       "testCandidates": [
         {
@@ -31370,7 +31809,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -31515,7 +31956,20 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/music-player/design:test:cover-picker:revisit",
+          "//package/music-player/design:test:feedback:overlay",
+          "//package/music-player/design:test:first-run:access",
+          "//package/music-player/design:test:keyboard-map",
+          "//package/music-player/design:test:scan-indicator",
+          "//package/music-player/design:test:search:filename-comparison",
+          "//package/music-player/design:test:settings-pane",
+          "//package/music-player/design:test:template-editor",
+          "//package/music-player/design:test:template-reference",
+          "//package/music-player/design:test:track-menu"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -31981,7 +32435,15 @@
         ],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/music-player/desktop-app:test"
+        ],
+        "test:other": [
+          "//package/music-player/desktop-app:test:alpine",
+          "//package/music-player/desktop-app:test:container",
+          "//package/music-player/desktop-app:test:windows-gnu"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -32108,7 +32570,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -32517,7 +32981,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/music-player/truepeak-core:test"
+        ],
+        "test:other": [
+          "//package/music-player/truepeak-core:test:debug"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -32660,7 +33130,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/music-player/truepeak-core.bench:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -32759,7 +33233,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -32907,7 +33383,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -33089,7 +33567,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-channel-workers",
+          "//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host",
+          "//package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host"
+        ]
       },
       "testCandidates": [
         {
@@ -33445,7 +33929,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -33595,7 +34081,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -33761,7 +34249,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -33958,7 +34448,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -34101,7 +34593,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -34359,7 +34853,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -34693,7 +35189,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -34833,7 +35331,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -35360,7 +35860,18 @@
           "//package/pi-plugin/auto-mode:test:native:unconfigured-policy"
         ],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": [
+          "//package/pi-plugin/auto-mode:test:assessment-bundles",
+          "//package/pi-plugin/auto-mode:test:assessment-transport",
+          "//package/pi-plugin/auto-mode:test:confirmation",
+          "//package/pi-plugin/auto-mode:test:decision-wire",
+          "//package/pi-plugin/auto-mode:test:semantic-operating-policy",
+          "//package/pi-plugin/auto-mode:test:source-contribution",
+          "//package/pi-plugin/auto-mode:test:source-contribution:tool",
+          "//package/pi-plugin/auto-mode:test:visible-context"
+        ]
       },
       "testCandidates": [
         {
@@ -37448,7 +37959,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -37750,7 +38263,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -37904,7 +38419,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -38106,7 +38623,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -38277,7 +38796,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -38475,7 +38996,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -38692,7 +39215,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39023,7 +39548,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39174,7 +39701,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39367,7 +39896,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39511,7 +40042,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39653,7 +40186,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39818,7 +40353,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -39984,7 +40521,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -40251,7 +40790,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -40362,7 +40903,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -40552,7 +41095,13 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/rust-module/forbidden-regex:test"
+        ],
+        "test:other": [
+          "//package/rust-module/forbidden-regex:test:debug"
+        ]
       },
       "testCandidates": [
         {
@@ -40694,7 +41243,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -40869,7 +41420,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41008,7 +41561,14 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/rust-module/jsonc-edit:test"
+        ],
+        "test:other": [
+          "//package/rust-module/jsonc-edit:test:debug",
+          "//package/rust-module/jsonc-edit:test:shared-fixtures"
+        ]
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41175,7 +41735,11 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [
+          "//package/rust-module/jsonc-edit.fuzz:test"
+        ],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41270,7 +41834,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41364,7 +41930,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41464,7 +42032,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41562,7 +42132,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41714,7 +42286,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -41871,7 +42445,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -41968,7 +42544,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42039,7 +42617,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42105,7 +42685,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42168,7 +42750,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42231,7 +42815,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42306,7 +42892,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42419,7 +43007,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -42497,7 +43087,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42564,7 +43156,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42622,7 +43216,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -42766,7 +43362,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -42842,7 +43440,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -42941,7 +43541,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -43049,7 +43651,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -43176,7 +43780,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
@@ -43284,7 +43890,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -43397,7 +44005,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -43497,7 +44107,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [],
       "nestedNodeManifests": [],
@@ -43610,7 +44222,9 @@
         "test:e2e": [],
         "test:native": [],
         "publish": [],
-        "release": []
+        "release": [],
+        "test:generic": [],
+        "test:other": []
       },
       "testCandidates": [
         {
