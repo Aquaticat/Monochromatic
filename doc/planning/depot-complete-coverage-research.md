@@ -450,7 +450,61 @@ failure/skip counts,
 source identities,
 and command logs accompany the APKs for the parent's headful device consumer.
 
+### Successful Android artifacts and JVM consumers
+
+The corrected run `1jxc80q7q7` finished successfully at workflow `8256d8bb9d`,
+still checking out the identical frozen application source.
+Its [retained receipts and actual JUnit case index][android-receipts]
+are 96,498 compressed bytes,
+with SHA-256 `b517d9c2ff726f96c1afedc8c5bbb5ed2a389125ccc41913a1c3292bcf7d85e1`.
+The downloaded ZIP matches the provider's 68,983,121-byte metadata.
+Native CI metadata did not provide a server archive digest;
+the local archive digest and all captured APK,
+native payload,
+JUnit,
+and command-log hashes are retained and checked.
+
+The pair passed signature,
+ZIP,
+package,
+instrumentation-target,
+runner,
+and certificate-agreement checks:
+
+- Debug APK:
+  164,612,582 bytes,
+  SHA-256 `96c1c48857fc6d6acf0f8bb488586cfefb39fd2950cb202685f15c7520c82eca`.
+- AndroidTest APK:
+  491,989 bytes,
+  SHA-256 `f1e75619b158d07ce3fdec9af1cd6fa084e4645acec2aff9af7f83865cd4aa49`.
+
+The APKs are retained privately and handed to the parent device lane as a matching pair.
+Their common certificate differs from the first run's certificate.
+No installed-device compatibility is inferred from APK signatures alone.
+The complete debug ZIP contains 10 native libraries:
+AndroidX graphics-path libraries for all 4 advertised ABIs,
+and the engine plus Turso SDK/sync libraries for the 2 declared 64-bit build targets.
+Both engine libraries expose 27 Java JNI symbols.
+Every packaged library matches its corresponding Gradle stripped-native intermediate.
+Every applicable ELF LOAD and RELRO check passes the corrected classifier.
+No native libraries are packaged in the AndroidTest APK.
+The extra 32-bit graphics-path libraries do not establish a working 32-bit engine.
+
+The second JVM run again produced 127 reports and 1,289 passing cases,
+with zero skipped cases,
+failures,
+or errors.
+The case-identity multiset matches the first run.
+Tracked source remained unchanged.
+The byte comparison is narrower:
+the 4 AndroidX payloads match between builds,
+while the 6 engine/Turso payloads differ.
+The retained evidence records both hashes;
+the cause is not established,
+and source identity is not being promoted into a bit-reproducibility claim.
+
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
+[android-receipts]: depot-complete-coverage-android-receipts.json.gz
 
 ## Remaining Node static and build campaign
 
@@ -495,26 +549,22 @@ then cancellation was requested.
 It is excluded from static-wave coverage.
 The corrected dispatch occurs only after the push completes and `git ls-remote` verifies the expected head.
 Cancellation acknowledgement and terminal job states remain separate evidence.
+The stale run is terminal `cancelled`,
+including both jobs.
+The intended static wave is run `39109937957`,
+whose actual API record binds head `82ea6108c57c9ef9cf6880e6d4506679812a6776`
+and workflow name `Research remaining Linux Node quality and build graph`.
 
 The active queue remains independently verifiable:
 
-- Review and execute the frozen Android product's SDK/NDK setup,
-  debug APK build,
-  AndroidTest APK build,
-  and applicable host JVM unit tests.
-  Use a single 8 CPU/32 GB cloud job capped at 30 minutes.
-  Preserve actual tool,
-  ABI,
-  layout,
-  source,
-  and APK hashes for the parent's local headful device consumer.
-  No emulator runs in this lane.
+- Reconcile the parent's actual device consumer with the source-bound APK pair.
+  Investigate the measured engine/Turso byte differences before making any reproducible-build claim.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
   and native/Kotlin/Slint/build-tool consumers.
-- Complete the matched provider repeat and filesystem-watch positive control
-  for the four failed default suites.
+- Publish the completed matched provider repeat `39106784923`
+  and filesystem-watch positive controls for the four failed default suites.
 - Execute remaining applicable Node quality,
   product,
   plugin,
@@ -543,8 +593,7 @@ The active queue remains independently verifiable:
 
 ## Current next action
 
-Complete the immutable package/feature/command manifest,
-inspect the first wave's terminal receipts,
-and use measured setup,
-execution,
-and failure evidence to form subsequent applicable Linux shards.
+Collect the running static wave's terminal receipts,
+finish default-test process and recursion review,
+then execute the applicable default-test and bounded non-default profiles.
+The immutable feature and consumer manifest remains under semantic review.
