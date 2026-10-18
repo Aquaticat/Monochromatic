@@ -6,6 +6,7 @@ import {
   quotesByLabelOf,
 } from './consistency-majority.ts';
 import type { ConsistencyVoice, } from './consistency-count-types.ts';
+import type { PageEnglish, } from './consistency-page-english.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Consistency slot in span
@@ -30,6 +31,9 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
  @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
  group; read from the ballots where absent
 
+ @param page - the English of the whole page the span belongs to and where the span starts in it, whose link and footnote
+ definitions a reference inside the span resolves against (n173); the span alone is the page where absent
+
  @returns The slot as the span holds it and its offset in the span, as a list of
  zero or one; none when the ballots do not agree on a slot, it shows a reader
  nothing, it does not stand once inside the span, it is all of the span, or it
@@ -47,12 +51,14 @@ export function slotInSpan(
     words,
     span,
     quotesByLabel = quotesByLabelOf({ voices, },),
+    page,
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly words: string;
     readonly span: string;
     readonly quotesByLabel?: QuotesByLabel;
+    readonly page?: PageEnglish;
   },
 ): readonly {
   readonly slot: string;
@@ -76,6 +82,7 @@ export function slotInSpan(
     haystack: span,
     words: slotWords,
     apostrophes: 'outside',
+    ...((page === undefined) ? {} : { page, }),
   },);
   if (inside.kind !== 'once')
     return [];

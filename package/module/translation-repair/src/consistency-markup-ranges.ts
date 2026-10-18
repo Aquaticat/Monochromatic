@@ -69,6 +69,28 @@ export type MarkupRanges = {
    image. A line break inside one is part of the markup and shows a reader nothing.
    */
   readonly linkResources: readonly MarkupRange[];
+
+  /**
+   The links and references, not the images, whose label shows letters or digits or marks, a closing mark last among them or not
+   (`[kit](u)`, `[-](u)`, `[kit][r]`), each with the opening bracket it is written with and its resource (n173).
+   */
+  readonly labelledLinks: readonly LabelledLink[];
+};
+
+/**
+ The two stretches of a link with a label that show a reader nothing, around the label that they show.
+ */
+export type LabelledLink = {
+  /**
+   The opening square bracket, before the label.
+   */
+  readonly opener: MarkupRange;
+
+  /**
+   The resource, from the end of the label to the end of the link: the closing bracket and the destination, the title or the
+   reference.
+   */
+  readonly resource: MarkupRange;
 };
 
 /**
@@ -82,6 +104,7 @@ export const NO_MARKUP_RANGES: MarkupRanges = {
   markOnlyLinks: [],
   closingLinks: [],
   linkResources: [],
+  labelledLinks: [],
 };
 
 /**
@@ -219,6 +242,73 @@ function linkResourcesOf({ nodes, }: { readonly nodes: readonly TreeNode[]; },):
             end,
           },
         ];
+    },);
+}
+
+/**
+ The kinds of label that show a reader something to read between the brackets: a word or a digit, or marks that close nothing.
+ */
+const LABELLED_KINDS: ReadonlySet<LinkLabelKind> = new Set<LinkLabelKind>([
+  'marks',
+  'other',
+],);
+
+/**
+ The links and references of a tree whose label shows letters or digits or marks, with the two stretches of each that show a reader
+ nothing: the opening square bracket and the resource (n173). A link whose label shows nothing is read whole as an empty link and one
+ whose label shows closing marks alone as a closing link, so neither is listed; an image is hidden whole, so it is not either. A link
+ that does not begin with a square bracket (`<https://u>`) is left out, and so is one whose resource cannot be placed.
+
+ @param english - the English the tree was read from, which tells a link written with square brackets from an autolink
+
+ @param nodes - every node of the tree
+
+ @returns The links, in the order the nodes were listed
+
+ @example
+ ```ts
+ const [link,] = labelledLinksOf({ english: '[kit](u)', nodes, },); // opener 0 to 1, resource 4 to 8
+ ```
+ */
+function labelledLinksOf(
+  {
+    english,
+    nodes,
+  }: {
+    readonly english: string;
+    readonly nodes: readonly TreeNode[];
+  },
+): readonly LabelledLink[] {
+  return nodes
+    .filter(function showsLabel(node,): boolean {
+      return ((node.type === 'link') || (node.type === 'linkReference'))
+        && LABELLED_KINDS.has(linkLabelKindOf({ node, },),);
+    },)
+    .flatMap(function partsOfLink(node,): readonly LabelledLink[] {
+      /**
+       Offset where the node starts, absent where the parser gave none.
+       */
+      const start = node.position
+        ?.start
+        .offset;
+      /**
+       The resource of the link, absent where the parser gave no position.
+       */
+      const [resource,] = linkResourcesOf({ nodes: [node,], },);
+      if ((start === undefined) || (resource === undefined))
+        return [];
+      // A link that does not begin with a square bracket (an autolink) has no opening bracket to hide.
+      if (english.charAt(start,) !== '[')
+        return [];
+      return [
+        {
+          opener: {
+            start,
+            end: start + 1,
+          },
+          resource,
+        },
+      ];
     },);
 }
 
@@ -415,6 +505,10 @@ export function markupRangesOf(
       kind: 'closing',
     },),
     linkResources: linkResourcesOf({ nodes, },),
+    labelledLinks: labelledLinksOf({
+      english,
+      nodes,
+    },),
   };
 }
 

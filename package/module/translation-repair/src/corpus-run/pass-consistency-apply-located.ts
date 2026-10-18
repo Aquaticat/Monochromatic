@@ -1,5 +1,7 @@
 import { standsOf, } from '../consistency-fold.ts';
+import type { PageEnglish, } from '../consistency-page-english.ts';
 import { consistencyLabel, } from '../consistency-wire.ts';
+import { pageDefinitionsOf, } from '../page-definitions.ts';
 import {
   replacedKeyOf,
   type SettledIndex,
@@ -116,11 +118,14 @@ export type LeftOutEdit = {
 
  @param words - the located words, with where they start
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), which a reference in the replacement or in the
+ English resolves against whichever slice holds the definition; none where the slice carries no page (n173)
+
  @returns Whether the replacement changes them
 
  @example
  ```ts
- const changes = changesWords({ edit, english, words: { start: 4, core: 'The cat naps', }, },);
+ const changes = changesWords({ edit, english, words: { start: 4, core: 'The cat naps', }, definitions: '', },);
  ```
  */
 function changesWords(
@@ -128,6 +133,7 @@ function changesWords(
     edit,
     english,
     words,
+    definitions,
   }: {
     readonly edit: PendingEdit;
     readonly english: string;
@@ -135,6 +141,7 @@ function changesWords(
       readonly start: number;
       readonly core: string;
     };
+    readonly definitions: string;
   },
 ): boolean {
   /**
@@ -155,12 +162,14 @@ function changesWords(
   return standsOf({
     haystack: edit.text,
     words: core,
+    definitions,
   },) < standsOf({
     haystack: english.slice(
       edit.start,
       edit.end,
     ),
     words: core,
+    definitions,
   },);
 }
 
@@ -176,6 +185,9 @@ function changesWords(
 
  @param english - the slice's English as it stood when the pass began
 
+ @param page - the English of the whole page the slice belongs to, whose link and footnote definitions a reference in the English or
+ in a replacement resolves against (n173); absent for a slice read alone
+
  @returns Each such replacement once, with the first place it changes in page order, in the order of the groups
 
  @example
@@ -188,12 +200,18 @@ export function editsChangingLocatedWords(
     index,
     sliceIndex,
     english,
+    page,
   }: {
     readonly index: SettledIndex;
     readonly sliceIndex: number;
     readonly english: string;
+    readonly page?: PageEnglish;
   },
 ): readonly LeftOutEdit[] {
+  /**
+   The link and footnote definitions of the page, none for a slice read alone.
+   */
+  const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },);
   /**
    What the page's groups hold by slice, and the places they replace in their slices.
    */
@@ -242,6 +260,7 @@ export function editsChangingLocatedWords(
             start,
             core,
           },
+          definitions,
         },);
       },)
       .map(function changedPlace({

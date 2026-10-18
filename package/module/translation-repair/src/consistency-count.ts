@@ -348,6 +348,14 @@ function locatedRendering(
     words,
     span,
     quotesByLabel,
+    ...((page === undefined)
+      ? {}
+      : {
+        page: {
+          ...page,
+          offset: page.offset + found.start,
+        },
+      }),
   },);
   return {
     ...bare,

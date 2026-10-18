@@ -1,6 +1,7 @@
 import type { Nodes, } from 'mdast';
 
 import {
+  type LabelledLink,
   markupRangesOf,
   NO_MARKUP_RANGES,
 } from './consistency-markup-ranges.ts';
@@ -468,6 +469,13 @@ export type ProseView = {
    of an image, none where the grammar refuses the English. A line break inside one is part of the link.
    */
   readonly linkResources: readonly ProseRange[];
+
+  /**
+   The links and references whose label shows letters or digits or marks (`[kit](u)`, `[-](u)`, `[kit][r]`), each with the stretch
+   of its opening square bracket and the stretch of its resource, none where the grammar refuses the English. The label is what a
+   reader sees there and the two stretches are not (n173).
+   */
+  readonly labelledLinks: readonly LabelledLink[];
 };
 
 /**
@@ -669,6 +677,10 @@ export function rememberedViewOf(
 
  @param english - the English of a slice
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone: a reference in the English whose
+ definition stands in another slice is then plain text, and the brackets of a link that it is not stop its label from holding a
+ delimiter of emphasis that the link would hold (n173)
+
  @returns The offsets of the delimiters, the closing ones apart; none where the grammar refuses the English
 
  @example
@@ -676,7 +688,15 @@ export function rememberedViewOf(
  const { closing, } = emphasisDelimitersOf({ english: 'a *b*’s c', },); // holds 4
  ```
  */
-export function emphasisDelimitersOf({ english, }: { readonly english: string; },): EmphasisDelimiters {
+export function emphasisDelimitersOf(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): EmphasisDelimiters {
   // An English with none of the three characters has no delimiter, so the parse is not made for it.
   if (![...DELIMITER_CHARACTERS,].some(function isHeld(character,): boolean {
     return english.includes(character,);
@@ -685,7 +705,10 @@ export function emphasisDelimitersOf({ english, }: { readonly english: string; }
   /**
    What one parse of the English makes of it, remembered for the next place that asks.
    */
-  const view = rememberedViewOf({ english, },);
+  const view = rememberedViewOf({
+    english,
+    definitions,
+  },);
   return view.emphasis;
 }
 

@@ -1,4 +1,5 @@
 import type { OffsetFoldedText, } from './consistency-fold-offsets.ts';
+import type { MarkupRange, } from './consistency-markup-ranges.ts';
 import { rememberedViewOf, } from './consistency-prose-text.ts';
 
 //region Consistency folded links
@@ -10,6 +11,11 @@ import { rememberedViewOf, } from './consistency-prose-text.ts';
 // closes a run of closing marks as those marks do; after a link whose label shows marks and no letter, a mark that starts a word. Which
 // stretch is a link, and what its label shows, is the parse's to say (`rememberedViewOf`), read once for an English and not again for
 // the next place that asks, and carried here from the offsets of the English to the offsets of the fold.
+//
+// A LINK WITH A LABEL IS READ AS ITS LABEL (n173): the opening square bracket and the resource of a link whose label shows letters,
+// digits or marks (`[kit](u)`, `[-](u "t")`, `[kit][r]`) show a reader nothing, so each is a stretch the word reading steps over
+// (`hiddenStarts`, `hiddenEnds`) and the label between them is read as the text it is. A link with no label or a label of closing
+// marks keeps the reading it has (`emptyStarts`, `closingSpans`); an image is not listed, since an image is read whole.
 //
 // THE PARSE IS ASKED ONLY WHERE A CLOSING SQUARE BRACKET STANDS IN THE FOLD, since every link has one and the fold asks nothing of a
 // link otherwise. An English the page grammar refuses has no parse, so no link is read in it. A reference with an empty label is a
@@ -39,6 +45,17 @@ export type FoldedLinks = {
    The offsets of the last unit of each link whose label shows marks and spaces and no letter or digit, and no closing mark last.
    */
   readonly markOnlyEnds: ReadonlySet<number>;
+
+  /**
+   For the last unit of each stretch of a link with a label that shows a reader nothing (its opening square bracket, its closing
+   bracket with the destination, the title or the reference), the offset of the stretch's first unit (n173).
+   */
+  readonly hiddenStarts: ReadonlyMap<number, number>;
+
+  /**
+   For the first unit of each stretch of a link with a label that shows a reader nothing, the offset after its last unit (n173).
+   */
+  readonly hiddenEnds: ReadonlyMap<number, number>;
 };
 
 /**
@@ -49,7 +66,32 @@ export const NO_FOLDED_LINKS: FoldedLinks = {
   emptyEnds: new Map(),
   closingSpans: new Map(),
   markOnlyEnds: new Set(),
+  hiddenStarts: new Map(),
+  hiddenEnds: new Map(),
 };
+
+/**
+ One stretch that shows a reader nothing, by the folded units of its first and last characters.
+ */
+type HiddenSpan = {
+  /**
+   The folded unit of the first character.
+   */
+  readonly first: number;
+
+  /**
+   The folded unit of the last character.
+   */
+  readonly last: number;
+};
+
+/**
+ One entry of a map from a folded unit to a folded unit or the offset after one.
+ */
+type UnitEntry = readonly [
+  number,
+  number,
+];
 
 /**
  The links of an English at the offsets of its fold.
@@ -96,6 +138,7 @@ export function foldedLinksOf(
     emptyLinks,
     closingLinks,
     markOnlyLinks,
+    labelledLinks,
   } = rememberedViewOf({
     english,
     definitions,
@@ -110,7 +153,7 @@ export function foldedLinksOf(
   ];
   if (kinds.every(function holdsNone(stretches,): boolean {
     return stretches.length === 0;
-  },))
+  },) && (labelledLinks.length === 0))
     return NO_FOLDED_LINKS;
   /**
    The first folded unit that stands for each offset of the English, mutated only inside this function.
@@ -192,11 +235,64 @@ export function foldedLinksOf(
     if (last !== undefined)
       markOnlyEnds.add(last,);
   }
+  /**
+   The stretches of the links with a label that show a reader nothing, by the folded units of their first and last characters. One
+   the fold holds no unit for, or whose first unit stands after its last, is left out. A map made from the pairs is never written
+   over a key it has not read.
+   */
+  const hiddenSpans = labelledLinks
+    .flatMap(function stretchesOfLink({
+      opener,
+      resource,
+    },): readonly MarkupRange[] {
+      return [
+        opener,
+        resource,
+      ];
+    },)
+    .flatMap(function unitsOfStretch(stretch,): readonly HiddenSpan[] {
+      /**
+       The folded unit of the first character of the stretch.
+       */
+      const first = unitAt.get(stretch.start,);
+      /**
+       The folded unit of the last character of the stretch.
+       */
+      const last = unitAt.get(stretch.end - 1,);
+      if ((first === undefined) || (last === undefined))
+        return [];
+      return (first > last)
+        ? []
+        : [
+          {
+            first,
+            last,
+          },
+        ];
+    },);
   return {
     emptyStarts,
     emptyEnds,
     closingSpans,
     markOnlyEnds,
+    hiddenStarts: new Map(hiddenSpans.map(function byLast({
+      first,
+      last,
+    },): UnitEntry {
+      return [
+        last,
+        first,
+      ];
+    },),),
+    hiddenEnds: new Map(hiddenSpans.map(function byFirst({
+      first,
+      last,
+    },): UnitEntry {
+      return [
+        first,
+        last + 1,
+      ];
+    },),),
   };
 }
 

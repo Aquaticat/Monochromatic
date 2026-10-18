@@ -42,6 +42,9 @@ import { continuesLatinWordOrCompatibilityForm, } from './latin-letters.ts';
 // A LINK THAT SHOWS A READER NOTHING (`[](u)`, `![](u)`, a reference with an empty label) NEITHER ENDS A WORD NOR STARTS ONE (n169):
 // every reading beside a stand, forward and backward, steps over a run of such links as it steps over the delimiters of emphasis, in
 // any order with them, so `kit[](u)'kit` reads as `kit'kit` and `kit-[](u)kit` as `kit-kit` (`pastHiddenUnits`).
+// A LINK WITH A LABEL SHOWS A READER ITS LABEL AND NOTHING ELSE (n173): its opening square bracket and its resource (`](u)`,
+// `][r]`, `]`) are stepped over the same way, so `kit[kit](u)kit` reads as `kitkitkit` (no stand of `kit`), `kit[-](u)kit` as
+// `kit-kit` and `kit [kit](u)kit` as `kit kitkit`; the label's own characters are the neighbours there.
 // THE RULE, by mark:
 //
 // - A hyphen joins when each side is a letter or a digit: `so` is no stand
@@ -235,7 +238,8 @@ const NO_EMPHASIS: ReadonlySet<number> = new Set();
  The first offset, from one offset on in one direction, that holds neither a delimiter of emphasis nor a unit of a link that shows
  nothing. A link that shows nothing (`[](u)`, `![](u)`) is stepped over whole, from its first unit forward or from its last unit
  backward, and may stand between delimiters of emphasis or between runs of them, so the reading takes them in any order and any
- number (n169).
+ number (n169). The opening square bracket and the resource of a link with a label are stepped over the same way, one stretch at a
+ time, and the label between them is left to be read (n173).
 
  @param text - folded English
 
@@ -276,6 +280,8 @@ function pastHiddenUnits(
   const {
     emptyStarts,
     emptyEnds,
+    hiddenStarts,
+    hiddenEnds,
   } = links;
   /**
    The offset reached, mutated only inside this function.
@@ -287,15 +293,15 @@ function pastHiddenUnits(
       continue;
     }
     /**
-     The first unit of the link that ends at the offset reached, absent where no link that shows nothing ends there.
+     The first unit of the link, or of the stretch of a link with a label, that ends at the offset reached, absent where none ends there.
      */
-    const first = emptyStarts.get(reached.at,);
+    const first = emptyStarts.get(reached.at,) ?? hiddenStarts.get(reached.at,);
     /**
-     The offset past the link that starts at the offset reached, reading on, or before the link that ends at it, reading back, absent
-     where no link shows nothing there.
+     The offset past the link or the stretch that starts at the offset reached, reading on, or before the one that ends at it, reading
+     back, absent where none shows nothing there.
      */
     const past = (step === 1)
-      ? emptyEnds.get(reached.at,)
+      ? (emptyEnds.get(reached.at,) ?? hiddenEnds.get(reached.at,))
       : ((first === undefined) ? undefined : (first - 1));
     if (past === undefined)
       break;

@@ -497,7 +497,19 @@ function apartStartsOf(
   /**
    The delimiters of the English's emphasis by the parse, at the offsets of the English as it was given.
    */
-  const delimiters = emphasisDelimitersOf({ english: haystack, },);
+  const delimiters = emphasisDelimitersOf({
+    english: haystack,
+    definitions,
+  },);
+  /**
+   The links of the English whose label shows nothing, closing marks or marks, at the offsets of the fold, none where no closing
+   square bracket stands in the fold.
+   */
+  const links = foldedLinksOf({
+    english: haystack,
+    folded,
+    definitions,
+  },);
   /**
    The links of the English whose label shows nothing, closing marks or marks, at the offsets of the fold, none where no closing
    square bracket stands in the fold.
@@ -715,6 +727,9 @@ export function locateWords(
 
  @param words - quote as a judge gave it, or the folded words of one
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English resolves against them, whichever slice holds the definition (n173)
+
  @returns The number of stands; none for a quote that shows a reader nothing
 
  @example
@@ -726,16 +741,18 @@ export function standsOf(
   {
     haystack,
     words,
+    definitions = '',
   }: {
     readonly haystack: string;
     readonly words: string;
+    readonly definitions?: string;
   },
 ): number {
   return apartStartsOf({
     haystack,
     folded: foldWithOffsets({ text: haystack, },),
     needle: foldedWordsOf({ text: words, },),
-    definitions: '',
+    definitions,
   },)
     .length;
 }

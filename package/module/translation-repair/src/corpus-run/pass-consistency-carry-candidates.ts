@@ -8,6 +8,7 @@ import type { CarryBlock, } from '../consistency-carry-standing.ts';
 import { standsOf, } from '../consistency-fold.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
+import { pageDefinitionsOf, } from '../page-definitions.ts';
 import { wrapReplacementText, } from '../semantic-wrap.ts';
 import { foldTranslation, } from '../translator-answer-fold.ts';
 import { crossingWordsLost, } from './pass-consistency-carry-crossing.ts';
@@ -203,11 +204,14 @@ function shippingParagraphOf(
 
  @param keeping - English words that must stay as they are, one entry for each place
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), which a reference in the paragraph or the
+ block resolves against whichever slice holds the definition; none where the slice carries no page (n173)
+
  @returns The entries the paragraph holds fewer times than the block does, in order
 
  @example
  ```ts
- const lost = keptWordsLost({ paragraph, block, keeping: ['The cat naps',], },);
+ const lost = keptWordsLost({ paragraph, block, keeping: ['The cat naps',], definitions: '', },);
  ```
  */
 function keptWordsLost(
@@ -215,19 +219,23 @@ function keptWordsLost(
     paragraph,
     block,
     keeping,
+    definitions,
   }: {
     readonly paragraph: string;
     readonly block: CarryBlock;
     readonly keeping: readonly string[];
+    readonly definitions: string;
   },
 ): readonly string[] {
   return keeping.filter(function isLost(words,): boolean {
     return standsOf({
       haystack: paragraph,
       words,
+      definitions,
     },) < standsOf({
       haystack: block.text,
       words,
+      definitions,
     },);
   },);
 }
@@ -315,6 +323,15 @@ export function writtenParagraphsOf(
     declaredNames,
   },);
   /**
+   The English of the whole page the slice belongs to, absent for a slice read alone.
+   */
+  const { page, } = facts;
+  /**
+   The link and footnote definitions of the page, which a reference in a paragraph or in the block resolves against; none for a slice
+   read alone.
+   */
+  const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, });
+  /**
    Each reply beside what became of it: its paragraph, or why it was withheld.
    */
   const judged = voices.map(function judgeOne({
@@ -343,6 +360,7 @@ export function writtenParagraphsOf(
         paragraph: text,
         block,
         keeping,
+        definitions,
       },);
       if (lost.length > 0) {
         wl.warn(`withheld ${seat} from the bench: its paragraph no longer holds the words of another place that must stay`,);

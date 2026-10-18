@@ -194,6 +194,7 @@ function workedOn(
       index,
       sliceIndex: facts.sliceIndex,
       english: currentText,
+      ...((facts.page === undefined) ? {} : { page: facts.page, }),
     },)
       .map(function namedLeftOut({
         group,
