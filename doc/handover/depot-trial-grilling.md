@@ -147,6 +147,17 @@ The root report now integrates packed and desktop consumers,
 native automatic BuildKit/registry success,
 static/property/mutation dispositions and the baseline arithmetic,
 while retaining pending graph/OS/source-semantic closure.
+The platform owner has now finished all 120 deployed documentation rows:
+119 full source-review objects plus the separately retained split-tests identity/adapter review.
+No retrieval-only generic rows remain.
+The source owner finishes publication and command/API applicability mapping without new allocations,
+then remains available for independent report sufficiency review after factual queues close.
+Material final constraints include soft BuildKit cache-size policy,
+deprecated Dagger integration,
+root-modifiable Linux-only egress and distinct GHA/container minute caps without a demonstrated combined dollar cap.
+The Root cache note now integrates the sealed six-job result,
+actual GitHub default `write` mode and untested default-branch sharing,
+fork/write-poisoning and retention boundaries.
 The private renderer crossed Node's default output buffer on the growing handover AST;
 following the existing bounded-buffer troubleshooting entry fixed the parent capture policy.
 All fourteen render targets now pass,

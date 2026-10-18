@@ -6,6 +6,8 @@ This review covers the eleven deployed Cache integration guides,
 69,290 captured source bytes and 50 claim-level findings.
 The [platform ledger](depot-platform-surface-ledger.json)
 keeps captured pages separate from reviewed claims and actual consumers.
+The [complete integration review](../audit/depot-cache-integration-document-source-review-2026-10-18.evidence.json.gz)
+joins the deployed source identities and substantive findings.
 The complete frozen Git inventory has 13,860 paths at
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`,
 with positive controls for the existing Mise and Kotlin Gradle owners.
@@ -27,11 +29,28 @@ it does not automatically enable Rust compiler caching or Gradle task-output reu
 
 The guide explicitly says entries have repository scope and no branch isolation.
 An exact-key or restore-prefix strategy therefore needs an explicit writer-trust model.
-The bounded marker campaign compares a real same-branch positive restoration with a sibling-branch restoration,
-using the same pinned Action version and cache-version inputs on both providers.
-That campaign is pending;
-fork scheduling,
-cross-repository access and every possible restore-prefix policy remain separate surfaces.
+The bounded marker campaign completed six sequential jobs using identical workflow source on sibling research refs,
+provider-specific exact keys and matching cache-version/path inputs.
+Both providers passed real same-branch exact-hit restoration controls.
+GitHub then missed the nondefault sibling branch's entry;
+Depot downloaded and rehashed its exact 53-byte marker.
+The pinned client is `actions/cache` 6.1.0 at `55cc8345863c7cc4c66a329aec7e433d2d1c52a9`.
+The [actual trust-scope receipt](depot-cache-trust-scope-research.md)
+retains source,
+key,
+version,
+marker and original ZIP identities.
+
+The public GitHub setup logs explicitly report the default `write` cache mode;
+alternate access-mode overrides were not tested.
+GitHub separately documents restoration from the default branch,
+so this sibling result does not mean all cross-branch GitHub cache reuse is unavailable.
+Fork scheduling,
+cross-repository access,
+write-poisoning and every possible restore-prefix policy remain separate surfaces.
+Both owned probe branches were removed;
+the benign cache entries remain subject to unmeasured retention/eviction.
+Branch deletion does not prove cache deletion.
 
 The guide documents default retention of 14 days and no size limit,
 with configurable retention and capacity options.

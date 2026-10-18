@@ -62,6 +62,10 @@ Slint and C/C++;
 the absence of Go or Python owners is a measured scope result,
 not a reason to install unrelated task systems
 ([source inventory and applicability controls](depot-complete-coverage-research.md)).
+The platform source ledger now reconciles all 120 captured deployed documentation pages,
+with source/hash-bound findings and explicit applicability limits.
+This does not mean every public API method or documented example was runtime-exercised
+([platform source ledger](depot-platform-surface-ledger.json)).
 
 The evidence is principally first-party execution data and inspected implementation source.
 Primary receipts bind original ZIP/member hashes,
@@ -322,6 +326,17 @@ Current primary wording and unit limits are retained in the
 [allowance reconciliation](depot-included-allowance-reconciliation.md).
 Mac allowance normalization and generic SDK eligibility for included CI credits remain unresolved;
 the model does not grant those forecast credits.
+The [current GHA troubleshooting guide](https://depot.dev/docs/github-actions/troubleshooting)
+documents a separate GitHub Actions minute limit,
+while container builds have their own usage control.
+Those published controls are not a demonstrated combined USD 200 limit across native CI,
+storage,
+Tests,
+SDK and other products.
+Configured account limits and their live effects were not inspected.
+The [container-build overview](https://depot.dev/docs/container-builds/overview)
+also describes cache-size policy as soft because required parent layers can be retained.
+A 25 GB project cache policy is therefore not a strict storage spending cap.
 
 The [combined pricing model](../audit/depot-combined-product-pricing-2026-10-18.evidence.json)
 prices independent named product entitlements,
@@ -402,7 +417,10 @@ Nx,
 Pants,
 Turbo and Xcode owners.
 Depot's Actions cache guide explicitly documents no branch isolation;
-actual trust-scope controls and their retained consumers belong beside the performance evidence
+the actual six-job probe confirms sibling-branch read reuse on Depot and a sibling miss on GitHub,
+after both same-branch positive controls.
+This is qualified to the observed defaults and nondefault sibling seed,
+not every access-mode or fork/PR write scenario
 ([cache applicability and trust review](depot-cache-capability-review.md)).
 
 ## Adoption conditions and unresolved evidence
