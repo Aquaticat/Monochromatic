@@ -383,6 +383,11 @@ The project schema's minimum `keep_gb: 25` applies per architecture,
 not to total project storage or a reserved allocation.
 The pricing page lists usage caps but does not document one aggregate dollar cap covering all products.
 The older cap announcements separately describe build minutes and GitHub Actions minutes.
+The complete current container quickstart and GitHub runner troubleshooting bodies also describe those separate controls.
+A categorical container-only interpretation is retracted;
+the source does not establish one aggregate dollar cap,
+current configured limits,
+or termination of already running work.
 
 The [autoscaling documentation][build-autoscaling]
 and the captured `depot/core/v1/project.proto` agree that `max_concurrent_builds`

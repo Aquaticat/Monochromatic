@@ -241,5 +241,36 @@
     "globalDeveloperDominanceClaimed": false,
     "developerBaselineReopened": false,
     "usageOrOrganizationServiceCalled": false
+  },
+  "capControlReconciliation": {
+    "at": "2026-10-18T15:55:44.925Z",
+    "retractedClaim": "Only container builds have a documented minute usage cap",
+    "currentDecidingSources": [
+      "https://depot.dev/docs/container-builds/quickstart.md",
+      "https://depot.dev/docs/github-actions/troubleshooting.md"
+    ],
+    "qualifiedConclusion": "Separate documented Container Build Minutes and GitHub Actions minute controls; no current setting inspection, configured values, runtime cap test or aggregate all-product USD enforcement",
+    "noAccountUsageOrSettingsInspected": true,
+    "sourceRows": [
+      {
+        "url": "https://depot.dev/docs/container-builds/quickstart.md",
+        "sha256": "55eab55f9780197e99d61c49ee21cdd1f0d728f419d93efd016f01e53a400ac7",
+        "bytes": 3013
+      },
+      {
+        "url": "https://depot.dev/docs/github-actions/troubleshooting.md",
+        "sha256": "f41fd5a82ee977f2bcc8ba9184d6734ffbd52b18f65c7a441b9c8802749d7f61",
+        "bytes": 19760
+      }
+    ],
+    "retainedSourceArchive": {
+      "path": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz",
+      "bytes": 3883626,
+      "sha256": "d3d907ba12236df20900f65ef7109ac2b90c9a9a1ad71a03f1ae3b1bad2ca890",
+      "pinnedRepositories": 28,
+      "retrievedSourceFiles": 542,
+      "supplementalRepositoryRootFiles": 142,
+      "publicDocumentationMdxFiles": 117
+    }
   }
 }

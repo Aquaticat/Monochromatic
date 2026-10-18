@@ -62,7 +62,10 @@ const ast = JSON.parse(astBody);
 The tradeoff remains a bounded in-memory capture;
 it does not make arbitrary output safe or remove the need to verify complete parsing.
 The default-bound failing catalog and explicit-bound passing catalog concern the same unchanged Markdown input.
-The rerun's exact output sizes and verification result are recorded after terminal collection.
+The bounded rerun exits zero for all fourteen documents.
+The handover AST is 1,067,303 bytes and its HTML is 215,831 bytes;
+complete JSON parsing finds no unintended emphasis or missing relative links.
+Actual rendered text is still read as a separate document verification step.
 No upstream patch is needed:
 the caller owns its capture policy and the supported option addresses this failure.
 The existing upstream-filing decision remains applicable.

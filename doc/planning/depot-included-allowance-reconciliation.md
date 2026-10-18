@@ -209,6 +209,11 @@ not subscription entitlements.
 Neither service was called.
 
 The pricing FAQ says a reached usage cap stops builds.
+The current container-build quickstart names a `Container Build Minutes` limit,
+and the current GitHub runner troubleshooting guide separately names a `GitHub Actions minutes limit`.
+The claim that only container builds have a documented minute-cap control is retracted.
+These are separately documented product controls;
+their configured values and runtime enforcement were not inspected or exercised.
 It does not specify a single aggregate dollar cap covering these separate meters,
 SDK sandboxes,
 storage and both CI products.
