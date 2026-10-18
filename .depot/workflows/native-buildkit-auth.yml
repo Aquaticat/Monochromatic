@@ -1,0 +1,42 @@
+name: Native CI injected-token BuildKit authorization
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  auth:
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 64
+    - uses: depot/setup-action@91bc8495a33ebfc504ffc89e5674379ccf23c29c
+      with:
+        version: '2.102.23'
+        oidc: 'false'
+        configure-docker: 'false'
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: '2026.10.9'
+        cache: 'false'
+        install: 'true'
+        install_args: node
+        wings_enabled: 'false'
+    - name: Authenticate one owned build and consume its export
+      working-directory: .depot/probe/native-buildkit-auth
+      timeout-minutes: 4
+      run: mise run workload
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: native-buildkit-job-auth
+        path: .depot/probe/native-buildkit-auth/output/receipts
+        include-hidden-files: true
+        retention-days: 7
+        if-no-files-found: error
