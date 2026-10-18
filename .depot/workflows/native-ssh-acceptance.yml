@@ -1,0 +1,37 @@
+name: native-ssh-acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+  NATIVE_SSH_WORKFLOW_SENTINEL: workflow-sentinel-e02
+jobs:
+  ssh-proof:
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Install only frozen Node
+        run: mise install --locked node
+      - name: Prepare source-bound identity
+        working-directory: .depot/probe/native-ssh
+        run: mise run prepare
+      - name: Paused workflow SSH
+        id: paused-ssh
+        timeout-minutes: 1
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113
+        with:
+          limit-access-to-actor: 'false'
+          detached: 'false'
+          connect-timeout-seconds: '45'
+      - name: Verify SSH writes and resumed workflow
+        working-directory: .depot/probe/native-ssh
+        run: mise run verify
