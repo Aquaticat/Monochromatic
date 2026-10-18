@@ -861,7 +861,8 @@ all member hashes,
 source admission,
 and native header inventory.
 
-The artifact is incomplete for a fresh consumer:
+The archive omits a declared producer output;
+its runtime effect on a fresh consumer is unmeasured:
 the producer declared `pi/ai/dist/providers/data/.manifest.json`,
 3,762 bytes with SHA-256 `a4c0a81f2cc4323b81d4c5d3886b343dc226939168f33e8eb731c928a81cfce9`,
 but that resource is absent from the actual ZIP.
