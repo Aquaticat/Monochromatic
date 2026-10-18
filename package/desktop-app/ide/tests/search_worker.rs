@@ -9,18 +9,63 @@ mod memory_fixture;
 
 /// Search replies preserve typed source locations and stream-specific errors.
 use ide_app::{
-    search::{MAX_CONTENT_RESULTS, MAX_PATH_RESULTS, MAX_SEARCH_RECORD, SearchKind},
+    search::{MAX_CONTENT_RESULTS, MAX_PATH_RESULTS, MAX_SEARCH_RECORD, SearchHit, SearchKind},
     search_worker::{SearchReply, SearchWorker},
     workspace::Workspace,
 };
 /// Fixtures are disposable and waits are bounded independently of child output timing.
 use std::{
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     fs,
     os::unix::ffi::OsStringExt,
     sync::Arc,
     time::{Duration, Instant},
 };
+
+/// Whether some hit is the unabridged content match on this line with this preview.
+fn has_content_hit(hits: &[SearchHit], line: usize, preview: &str) -> bool {
+    let wanted = SearchKind::Content {
+        line,
+        preview: preview.to_string(),
+        truncated: false,
+    };
+    for hit in hits {
+        if hit.kind == wanted {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Whether every hit is a content match on the first line of its file.
+fn all_on_first_line(hits: &[SearchHit]) -> bool {
+    for hit in hits {
+        if !matches!(hit.kind, SearchKind::Content { line: 1, .. }) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// Whether some hit is a file of exactly this name.
+fn has_file_name(hits: &[SearchHit], name: &OsStr) -> bool {
+    for hit in hits {
+        if hit.path.file_name() == Some(name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Whether some hit's path ends with these components.
+fn has_path_ending(hits: &[SearchHit], tail: &str) -> bool {
+    for hit in hits {
+        if hit.path.ends_with(tail) {
+            return true;
+        }
+    }
+    return false;
+}
 
 /// Wait for the currently requested reply without polling a subprocess directly from the GUI boundary.
 fn reply(worker: &mut SearchWorker) -> Arc<SearchReply> {
@@ -71,18 +116,8 @@ fn real_search_preserves_path_and_content_semantics() {
     assert!(paths[0].path.ends_with("Needle-path.txt"));
     assert_eq!(paths[0].kind, SearchKind::Path);
     assert_eq!(contents.len(), 2);
-    assert!(contents.iter().any(|hit| return hit.kind
-        == SearchKind::Content {
-            line: 1,
-            preview: "needle first".to_string(),
-            truncated: false
-        }));
-    assert!(contents.iter().any(|hit| return hit.kind
-        == SearchKind::Content {
-            line: 2,
-            preview: "needle elsewhere".to_string(),
-            truncated: false
-        }));
+    assert!(has_content_hit(contents, 1, "needle first"));
+    assert!(has_content_hit(contents, 2, "needle elsewhere"));
 }
 
 /// Each result cap is independent,
@@ -107,11 +142,7 @@ fn both_result_streams_stop_at_their_approved_caps() {
     );
     let contents = result.results.contents.as_ref().expect("content cap");
     assert_eq!(contents.len(), MAX_CONTENT_RESULTS);
-    assert!(
-        contents
-            .iter()
-            .all(|hit| return matches!(hit.kind, SearchKind::Content { line: 1, .. }))
-    );
+    assert!(all_on_first_line(contents));
 }
 
 /// Invalid content regexes retain useful literal filename results instead of silently returning no matches.
@@ -198,14 +229,8 @@ fn subprocess_results_preserve_native_filename_bytes() {
     for stream in [&result.results.paths, &result.results.contents] {
         let hits = stream.as_ref().expect("native path stream");
         assert_eq!(hits.len(), 2);
-        assert!(
-            hits.iter()
-                .any(|hit| return hit.path.file_name() == Some(native.as_os_str()))
-        );
-        assert!(
-            hits.iter()
-                .any(|hit| return hit.path.ends_with("needle-line\nbreak.txt"))
-        );
+        assert!(has_file_name(hits, native.as_os_str()));
+        assert!(has_path_ending(hits, "needle-line\nbreak.txt"));
     }
 }
 

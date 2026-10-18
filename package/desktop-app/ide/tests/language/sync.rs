@@ -83,8 +83,14 @@ fn incremental_reload_reaches_the_server_in_each_column_unit() {
             let events = change["params"]["contentChanges"]
                 .as_array()
                 .expect("content changes");
+            let mut all_ranged = true;
+            for event in events.iter() {
+                if event["range"].is_null() {
+                    all_ranged = false;
+                }
+            }
             assert!(
-                events.iter().all(|event| return !event["range"].is_null()),
+                all_ranged,
                 "an incremental server was sent a whole-text change in {encoding:?}: {change}"
             );
         }

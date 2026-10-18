@@ -104,10 +104,14 @@ fn records_with(log: &str, text: &str) -> Vec<String> {
 
 /// Assert that a record with this level and this ending is in the log.
 fn assert_record(text: &str, level: &str, ending: &str) {
+    let mut ended = false;
+    for line in records_at(text, level).iter() {
+        if line.ends_with(ending) {
+            ended = true;
+        }
+    }
     assert!(
-        records_at(text, level)
-            .iter()
-            .any(|line| return line.ends_with(ending)),
+        ended,
         "no {level} record ending with {ending:?} in the log:\n{text}"
     );
 }

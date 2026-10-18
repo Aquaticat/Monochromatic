@@ -101,7 +101,13 @@ fn raster_has_ink_and_requested_dimensions() {
         .expect("the test needs the shaped view to paint into a tile");
     assert_eq!(image.width, 500);
     assert_eq!(image.height, 24);
-    assert!(image.bytes.iter().any(|channel| return *channel != 0));
+    let mut inked = false;
+    for channel in image.bytes.iter() {
+        if *channel != 0 {
+            inked = true;
+        }
+    }
+    assert!(inked);
 }
 
 /// Empty text still has a valid source caret and transparent tile.

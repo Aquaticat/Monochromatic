@@ -144,11 +144,9 @@ fn inter_weights_and_italics_choose_real_variable_faces() {
                         assert!(run.synthesis().skew().is_none());
                         // Harfrust represents an all-default instance with an empty coordinate slice.
                         if weight == 400.0 {
-                            assert!(
-                                run.normalized_coords()
-                                    .iter()
-                                    .all(|value| return *value == 0)
-                            );
+                            for value in run.normalized_coords().iter() {
+                                assert_eq!(*value, 0);
+                            }
                         } else {
                             assert_eq!(run.normalized_coords().len(), 2);
                             assert_ne!(run.normalized_coords()[1], 0);

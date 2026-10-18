@@ -136,20 +136,26 @@ fn the_fixtures_wrap_as_described() {
             assert_tiles(&rows, text.chars().count(), &label);
             let tabbed = tab_starts_a_row(width, scale);
             let tab_rows = rows_of(&tabbed, 0, width, scale);
+            let mut continuation_starts_with_tab = false;
+            for row in tab_rows.iter().skip(1) {
+                if tabbed.chars().nth(row.start) == Some('\t') {
+                    continuation_starts_with_tab = true;
+                }
+            }
             assert!(
-                tab_rows
-                    .iter()
-                    .skip(1)
-                    .any(|row| return tabbed.chars().nth(row.start) == Some('\t')),
+                continuation_starts_with_tab,
                 "{label}: some continuation row starts with a tab, rows {tab_rows:?}"
             );
             let ending = tab_ends_a_row(width, scale);
             let ending_rows = rows_of(&ending, 0, width, scale);
+            let mut upper_row_ends_with_tab = false;
+            for row in ending_rows.iter().take(ending_rows.len() - 1) {
+                if ending.chars().nth(row.end - 1) == Some('\t') {
+                    upper_row_ends_with_tab = true;
+                }
+            }
             assert!(
-                ending_rows
-                    .iter()
-                    .take(ending_rows.len() - 1)
-                    .any(|row| return ending.chars().nth(row.end - 1) == Some('\t')),
+                upper_row_ends_with_tab,
                 "{label}: some upper row ends with a tab, rows {ending_rows:?}"
             );
             let exact = exact_fit(width, scale);
@@ -538,11 +544,15 @@ fn end_on_shaped_rows_at_every_width_and_scale() {
                     // Everything skipped on the way is a blank that ends the row.
                     for step in places.iter().skip(1) {
                         if step.head < row.end && step.head >= row.start {
+                            let mut only_blanks = true;
+                            for character in text.chars().skip(step.head).take(row.end - step.head)
+                            {
+                                if character != ' ' && character != '\t' {
+                                    only_blanks = false;
+                                }
+                            }
                             assert!(
-                                text.chars()
-                                    .skip(step.head)
-                                    .take(row.end - step.head)
-                                    .all(|c| return c == ' ' || c == '\t'),
+                                only_blanks,
                                 "{label}: row {index} stopped at {} before non-blanks",
                                 step.head
                             );
@@ -735,10 +745,11 @@ fn the_remembered_x_survives_short_rows_and_returns() {
                 );
                 visited.push((landed.head, landed.affinity));
             }
-            assert!(
-                column.is_some_and(|remembered| return (remembered.x - origin.x).abs() < 0.01),
-                "{label}: the aim never changed"
-            );
+            let aim_kept = match column {
+                Some(remembered) => (remembered.x - origin.x).abs() < 0.01,
+                None => false,
+            };
+            assert!(aim_kept, "{label}: the aim never changed");
             for _ in 0..rows.len() - 1 {
                 let landed = vertical(&mut shaper, &document, scale, width, -1, column);
                 column = Some(landed);
@@ -889,8 +900,14 @@ fn a_hanging_blank_at_the_end_of_the_text_leaves_no_empty_row() {
                     "{label}: every counted row has a range"
                 );
                 assert_tiles(&rows, text.chars().count(), &label);
+                let mut none_empty = true;
+                for row in rows.iter() {
+                    if row.is_empty() {
+                        none_empty = false;
+                    }
+                }
                 assert!(
-                    rows.iter().all(|row| return !row.is_empty()),
+                    none_empty,
                     "{label}: no counted row is empty, rows {rows:?}"
                 );
                 let end = text.chars().count();

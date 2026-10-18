@@ -164,10 +164,14 @@ fn mdx_is_painted_like_markdown() {
         "markup.raw.inline",
         "code",
     );
+    let mut tagged = false;
+    for (role, text) in painted("/project/page.mdx", source) {
+        if role == "tag" && text == "Chart" {
+            tagged = true;
+        }
+    }
     assert!(
-        painted("/project/page.mdx", source)
-            .iter()
-            .any(|(role, text)| return *role == "tag" && text == "Chart"),
+        tagged,
         "a JSX element on its own lines is painted by the HTML grammar"
     );
 }
@@ -194,9 +198,14 @@ fn fenced_code_is_painted_in_its_own_language() {
 fn fenced_code_has_no_block_color() {
     let source = "```rust\nlet cat = 1;\n```\n";
     let all = painted("/project/fences.md", source);
+    let mut block_colored = false;
+    for (role, _) in all.iter() {
+        if role.starts_with("markup") {
+            block_colored = true;
+        }
+    }
     assert!(
-        all.iter()
-            .all(|(role, _)| return !role.starts_with("markup")),
+        !block_colored,
         "a fenced block is painted with a block color; painted intervals: {all:?}"
     );
 }

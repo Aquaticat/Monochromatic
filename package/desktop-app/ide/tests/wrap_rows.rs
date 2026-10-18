@@ -270,7 +270,9 @@ fn measuring_twice_shapes_once() {
     assert_eq!(first.shaped, 40);
     assert_eq!(first.rebroken, 0);
     assert_eq!(first.lines.len(), 40);
-    assert!(first.lines.iter().all(|(_, rows)| return *rows > 1));
+    for (_, rows) in first.lines.iter() {
+        assert!(*rows > 1);
+    }
     let again = shaper.measure_lines(&document, 0..40, 1.0, Some(300.0), &[]);
     assert_eq!((again.shaped, again.rebroken), (0, 0));
     assert_eq!(again.lines, first.lines);
@@ -705,10 +707,12 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
     if let Some(error) = refused.err() {
         message = Some(format!("{error:#}"));
     }
+    let refused_with_limit = match message.as_deref() {
+        Some(text) => text.contains("64 MiB"),
+        None => false,
+    };
     assert!(
-        message
-            .as_deref()
-            .is_some_and(|text| return text.contains("64 MiB")),
+        refused_with_limit,
         "the oversized tile was not refused with the raster limit: {message:?}"
     );
 }
@@ -777,10 +781,13 @@ fn a_clipped_tile_holds_the_pixels_of_its_band() {
         part.bytes == full.bytes[from..to],
         "the clipped raster differs from its band of the whole raster"
     );
-    assert!(
-        part.bytes.chunks(4).any(|pixel| return pixel[3] > 0),
-        "the band has ink"
-    );
+    let mut inked = false;
+    for pixel in part.bytes.chunks(4) {
+        if pixel[3] > 0 {
+            inked = true;
+        }
+    }
+    assert!(inked, "the band has ink");
     // A rebase keeps the clip's distance below the first line's block.
     let mut moved = shaper.prepare_rows(
         &document,

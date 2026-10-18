@@ -261,9 +261,13 @@ fn worker_classifies_initial_and_changed_source_revisions() {
         .result
         .expect("updated Rust parsing")
         .expect("known Rust language");
-    assert!(styles.iter().any(
-        |span| return span.style == 6 && document.text().slice(span.start..span.end) == "next"
-    ));
+    let mut next_painted = false;
+    for span in styles.iter() {
+        if span.style == 6 && document.text().slice(span.start..span.end) == "next" {
+            next_painted = true;
+        }
+    }
+    assert!(next_painted);
 }
 
 /// Closing a worker with an unread job/reply joins it without a channel deadlock.

@@ -72,13 +72,7 @@ fn crash_fails_the_pending_request_and_the_next_open_restarts() {
         RequestOutcome::Starting,
         "an exited server could not be started again"
     );
-    assert_eq!(
-        restarted[0]
-            .server
-            .as_ref()
-            .map(|server| return server.instance),
-        Some(2)
-    );
+    assert_eq!(support::instance_of(&restarted[0]), Some(2));
     probe.until_ready();
     assert_eq!(probe.status.servers.len(), 1);
     assert_eq!(probe.status.servers[0].server.instance, 2);
@@ -130,19 +124,12 @@ fn file_switch_closes_the_first_file_and_reuses_the_server() {
     assert_eq!(probe.status.servers[0].server.instance, 1);
     let lines = support::report(&root);
     assert_eq!(started(&lines).len(), 1);
-    let received = support::received(&lines);
     let closed = support::first_received(&lines, "textDocument/didClose").expect("didClose");
     assert_eq!(
         closed["params"]["textDocument"]["uri"],
         format!("file://{}", first.display()).as_str()
     );
-    assert_eq!(
-        received
-            .iter()
-            .filter(|method| return method.as_str() == "textDocument/didOpen")
-            .count(),
-        2
-    );
+    assert_eq!(support::count_received(&lines, "textDocument/didOpen"), 2);
     probe.worker.close().expect("close");
     probe.wait_for("the closed state");
     while !(probe.status.document == DocumentState::Closed) {

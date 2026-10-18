@@ -72,6 +72,36 @@ fn span(source: &str, word: &str, style: u32) -> StyleSpan {
     };
 }
 
+/// Whether every run keeps the roman face at the source weight.
+fn all_plain(faces: &[(bool, i16)]) -> bool {
+    for face in faces {
+        if *face != (false, 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// Whether some run uses the real italic face.
+fn any_italic(faces: &[(bool, i16)]) -> bool {
+    for (italic, _) in faces {
+        if *italic {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Whether some roman run is lighter than the source weight.
+fn any_lighter_roman(faces: &[(bool, i16)]) -> bool {
+    for (italic, weight) in faces {
+        if !*italic && *weight < 0 {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// What font a run of the first row used,
 ///  as the font bytes' first and last values and the normalized weight coordinate.
 fn faces(source: &str, styles: &[StyleSpan]) -> Vec<(bool, i16)> {
@@ -117,7 +147,7 @@ fn role_numbers_name_the_registered_scopes() {
 fn heavy_roles_shape_in_a_heavier_instance_of_the_roman_face() {
     let source = "plain strong plain";
     let plain = faces(source, &[]);
-    assert!(plain.iter().all(|face| return *face == (false, 0)));
+    assert!(all_plain(&plain));
     for role in [HEADING_ROLE, BOLD_ROLE, LIST_ROLE] {
         let styled = faces(source, &[span(source, "strong", role)]);
         let mut heavier = 0;
@@ -139,12 +169,7 @@ fn heavy_roles_shape_in_a_heavier_instance_of_the_roman_face() {
 fn struck_text_is_lighter_than_the_source_weight() {
     let source = "plain struck plain";
     let styled = faces(source, &[span(source, "struck", STRIKETHROUGH_ROLE)]);
-    assert!(
-        styled
-            .iter()
-            .any(|(italic, weight)| return !*italic && *weight < 0),
-        "faces: {styled:?}"
-    );
+    assert!(any_lighter_roman(&styled), "faces: {styled:?}");
 }
 
 /// Emphasis,
@@ -155,10 +180,7 @@ fn italic_roles_use_the_real_italic_face() {
     let source = "plain words plain";
     for role in [ITALIC_ROLE, QUOTE_ROLE, LINK_URL_ROLE] {
         let styled = faces(source, &[span(source, "words", role)]);
-        assert!(
-            styled.iter().any(|(italic, _)| return *italic),
-            "role {role}: {styled:?}"
-        );
+        assert!(any_italic(&styled), "role {role}: {styled:?}");
     }
 }
 
@@ -167,10 +189,7 @@ fn italic_roles_use_the_real_italic_face() {
 fn color_only_roles_keep_the_source_face() {
     let source = "plain `code` plain";
     let styled = faces(source, &[span(source, "code", RAW_INLINE_ROLE)]);
-    assert!(
-        styled.iter().all(|face| return *face == (false, 0)),
-        "faces: {styled:?}"
-    );
+    assert!(all_plain(&styled), "faces: {styled:?}");
 }
 
 /// Carets sit where the unstyled line puts them,

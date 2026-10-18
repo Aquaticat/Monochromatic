@@ -118,10 +118,7 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
     assert_eq!(received[0], "initialize", "{received:?}");
     assert_eq!(received[1], "initialized", "{received:?}");
     assert_eq!(
-        received
-            .iter()
-            .filter(|method| return method.as_str() == "textDocument/didOpen")
-            .count(),
+        support::count_received(&lines, "textDocument/didOpen"),
         1,
         "the server did not receive exactly one didOpen: {received:?}"
     );
@@ -185,13 +182,7 @@ fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
             RequestOutcome::Starting,
             "a request before initialize was not answered as starting"
         );
-        assert_eq!(
-            answers[0]
-                .server
-                .as_ref()
-                .map(|server| return server.instance),
-            Some(1)
-        );
+        assert_eq!(support::instance_of(&answers[0]), Some(1));
     }
     probe.reload("alpha changed\n");
     assert!(

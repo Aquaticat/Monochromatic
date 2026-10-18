@@ -3,9 +3,31 @@
 /// Canonical text and the application-owned Helix adapter.
 use helix_core::Rope;
 /// Parser roles must address source characters rather than UTF-8 byte offsets.
-use ide_app::syntax::SyntaxEngine;
+use ide_app::{source_style::StyleSpan, syntax::SyntaxEngine};
 /// Paths drive Helix's built-in filename and shebang recognition.
 use std::path::Path;
+
+/// The source text of every span painted with one style,
+///  in source order.
+fn styled(spans: &[StyleSpan], text: &Rope, style: usize) -> Vec<String> {
+    let mut texts: Vec<String> = Vec::new();
+    for span in spans.iter() {
+        if span.style == style {
+            texts.push(text.slice(span.start..span.end).to_string());
+        }
+    }
+    return texts;
+}
+
+/// Whether some text contains the fragment.
+fn some_contains(texts: &[String], fragment: &str) -> bool {
+    for text in texts {
+        if text.contains(fragment) {
+            return true;
+        }
+    }
+    return false;
+}
 
 /// Real Rust grammar/query assets identify keywords,
 ///  Unicode strings,
@@ -18,23 +40,14 @@ fn rust_highlights_use_unicode_source_positions() {
         .highlight(Path::new("source.rs"), &text)
         .expect("pinned Rust grammar and queries")
         .expect("recognized Rust");
-    assert!(
-        spans
-            .iter()
-            .any(|span| return span.style == 1 && text.slice(span.start..span.end) == "fn")
-    );
-    assert!(spans.iter().any(|span| return span.style == 2
-        && text.slice(span.start..span.end).to_string().contains('🐈')));
+    assert!(styled(&spans, &text, 1).contains(&"fn".to_string()));
+    assert!(some_contains(&styled(&spans, &text, 2), "🐈"));
     let mut classified: Vec<(usize, String)> = Vec::new();
     for span in spans.iter() {
         classified.push((span.style, text.slice(span.start..span.end).to_string()));
     }
     assert!(
-        spans.iter().any(|span| return span.style == 3
-            && text
-                .slice(span.start..span.end)
-                .to_string()
-                .contains("// 猫")),
+        some_contains(&styled(&spans, &text, 3), "// 猫"),
         "classified source: {classified:?}"
     );
     let mut previous_end = 0;
@@ -54,18 +67,9 @@ fn typescript_highlights_inherited_queries() {
         .highlight(Path::new("source.ts"), &text)
         .expect("pinned TypeScript grammar and queries")
         .expect("recognized TypeScript");
-    assert!(
-        spans
-            .iter()
-            .any(|span| return span.style == 1 && text.slice(span.start..span.end) == "const")
-    );
-    assert!(spans.iter().any(|span| return span.style == 2
-        && text.slice(span.start..span.end).to_string().contains("cat")));
-    assert!(
-        spans
-            .iter()
-            .any(|span| return span.style == 5 && text.slice(span.start..span.end) == "string")
-    );
+    assert!(styled(&spans, &text, 1).contains(&"const".to_string()));
+    assert!(some_contains(&styled(&spans, &text, 2), "cat"));
+    assert!(styled(&spans, &text, 5).contains(&"string".to_string()));
 }
 
 /// Shebang recognition works without inventing an extension or loading project configuration.
@@ -77,11 +81,7 @@ fn javascript_shebang_is_recognized() {
         .highlight(Path::new("script"), &text)
         .expect("pinned JavaScript grammar and queries")
         .expect("recognized shebang");
-    assert!(
-        spans
-            .iter()
-            .any(|span| return span.style == 4 && text.slice(span.start..span.end) == "42")
-    );
+    assert!(styled(&spans, &text, 4).contains(&"42".to_string()));
 }
 
 /// Unknown plain text and empty recognized source are successful distinct results.

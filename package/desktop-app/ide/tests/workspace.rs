@@ -1,9 +1,30 @@
 //! Directory operations read disposable project trees and reject escapes without mutating them.
 
 /// The same project boundary will serve tree and search navigation.
-use ide_app::workspace::Workspace;
+use ide_app::workspace::{DirectoryEntry, Workspace};
 /// Native names and Unix symlinks exercise paths without UI-string normalization.
 use std::{ffi::OsString, fs, os::unix::fs::symlink, path::Path};
+
+/// The native names of a listing,
+///  in listing order.
+fn names(entries: &[DirectoryEntry]) -> Vec<OsString> {
+    let mut found: Vec<OsString> = Vec::new();
+    for entry in entries {
+        found.push(entry.name.clone());
+    }
+    return found;
+}
+
+/// Whether the listing holds an entry of this name,
+///  and if it does, whether that entry is a directory.
+fn listed_as_directory(entries: &[DirectoryEntry], name: &str) -> Option<bool> {
+    for entry in entries {
+        if entry.name == name {
+            return Some(entry.is_directory);
+        }
+    }
+    return None;
+}
 
 /// Hidden entries and native names arrive in display order with accurate directory kinds.
 #[test]
@@ -19,28 +40,15 @@ fn listing_matches_dirents_and_refreshes_from_disk() {
         OsString::from("猫 'quoted'.ts"),
     ];
     let first = project.list(Path::new(".")).expect("initial listing");
-    assert_eq!(
-        first
-            .iter()
-            .map(|entry| return entry.name.clone())
-            .collect::<Vec<_>>(),
-        expected
-    );
-    assert!(
-        first
-            .iter()
-            .any(|entry| return entry.name == "src" && entry.is_directory)
-    );
-    assert!(first.iter().any(|entry| return entry.name == ".hidden"));
+    assert_eq!(names(&first), expected);
+    assert_eq!(listed_as_directory(&first, "src"), Some(true));
+    assert!(listed_as_directory(&first, ".hidden").is_some());
     fs::write(fixture.path().join("new.rs"), "fn main() {}").expect("external new file");
     let second = project.list(Path::new(".")).expect("fresh listing");
     assert_eq!(second.len(), first.len() + 1);
-    assert!(second.iter().any(|entry| return entry.name == "new.rs"));
+    assert!(listed_as_directory(&second, "new.rs").is_some());
     assert_eq!(
-        second
-            .iter()
-            .map(|entry| return entry.name.clone())
-            .collect::<Vec<_>>(),
+        names(&second),
         vec![
             OsString::from(".hidden"),
             OsString::from("new.rs"),
@@ -102,12 +110,10 @@ fn symbolic_links_do_not_bypass_project_boundary() {
             .is_empty()
     );
     let entries = project.list(Path::new(".")).expect("root entries");
-    assert!(
-        !entries
-            .iter()
-            .find(|entry| return entry.name == "alias")
-            .expect("link entry")
-            .is_directory
+    assert_eq!(
+        listed_as_directory(&entries, "alias"),
+        Some(false),
+        "a symbolic link is listed, and is not a directory"
     );
 }
 

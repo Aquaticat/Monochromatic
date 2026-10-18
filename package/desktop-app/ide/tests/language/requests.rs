@@ -235,12 +235,17 @@ fn missing_capabilities_are_reported_per_request() {
     probe.poll();
     assert!(probe.hints.is_none());
     let received = support::received(&support::report(&root));
+    let mut unsupported_sent = false;
+    for method in received.iter() {
+        if method == "textDocument/definition"
+            || method == "textDocument/references"
+            || method == "textDocument/inlayHint"
+        {
+            unsupported_sent = true;
+        }
+    }
     assert!(
-        !received
-            .iter()
-            .any(|method| return method == "textDocument/definition"
-                || method == "textDocument/references"
-                || method == "textDocument/inlayHint"),
+        !unsupported_sent,
         "an unsupported request was sent: {received:?}"
     );
 }

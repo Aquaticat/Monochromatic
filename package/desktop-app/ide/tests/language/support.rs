@@ -635,6 +635,14 @@ pub fn received(lines: &[Value]) -> Vec<String> {
     return methods;
 }
 
+/// The process instance of the server that answered a request,
+///  or nothing when no server was asked.
+pub fn instance_of(answer: &LanguageReply) -> Option<u64> {
+    // The trailing `?` returns `None` when no server answered.
+    let server = answer.server.as_ref()?;
+    return Some(server.instance);
+}
+
 /// The server's latest copy of the document text,
 ///  with the version it was sent under.
 pub fn server_text(lines: &[Value]) -> Option<(i64, String)> {

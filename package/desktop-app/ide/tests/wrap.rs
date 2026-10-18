@@ -408,12 +408,13 @@ fn range_yields_one_rectangle_per_visual_row() {
         }
         for index in 0..row.visual_rows() {
             let expected = row.visual_row_offset(index, scale);
-            assert!(
-                ys.iter().any(|y| {
-                    return (*y - expected).abs() < 0.001;
-                }),
-                "row {index} has a rectangle at {expected}"
-            );
+            let mut found = false;
+            for y in ys.iter() {
+                if (*y - expected).abs() < 0.001 {
+                    found = true;
+                }
+            }
+            assert!(found, "row {index} has a rectangle at {expected}");
         }
     }
 }

@@ -332,11 +332,9 @@ fn message_rows_break_to_the_text_area() {
         "the block is as tall as its rows"
     );
     assert!(!narrow[0].messages[0].continued);
-    assert!(
-        narrow[0].messages[1..]
-            .iter()
-            .all(|row| return row.continued)
-    );
+    for row in narrow[0].messages[1..].iter() {
+        assert!(row.continued);
+    }
     for row in &narrow[0].messages {
         let indent = if row.continued {
             CONTINUATION_INDENT
