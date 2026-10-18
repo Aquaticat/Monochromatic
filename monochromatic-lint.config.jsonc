@@ -79,6 +79,24 @@
       },
     },
   },
+  // The UI fixtures of the Dylint closure lint (package/linter/monochromatic-lint-closure/tests/ui) contain closures on
+  // purpose: each one is a case the lint must report, allow, or let a suppression attribute silence. Owner decision
+  // 2026-10-18 (doc/decision/rust-closure-lint-dylint.md). Every other rule stays selected for these files.
+  {
+    "name": "ui-fixture-exemptions",
+    "files": [
+      "**/tests/ui/**/*.rs",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.mdx/**",
+    ],
+    "rules": {
+      "rust/no-anonymous-functions": {
+        "severity": "off",
+      },
+    },
+  },
   // Scope of the incumbent Rust gate, not a rule judgement. `package/git-policy/cli/src/native` was
   // checked only by the manual `native:lint:rust` task, which the gate never ran (see
   // doc/handover/cli-git-native-policy-engine.md, section "The repository's Rust linter is not part of
