@@ -215,7 +215,7 @@ function addressOfRun(
     end,
   }: {
     readonly text: string;
-    readonly run: RunSoFar;
+    readonly run: Readonly<RunSoFar>;
     readonly end: number;
   },
 ): readonly AddressRange[] {
