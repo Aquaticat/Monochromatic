@@ -242,10 +242,17 @@ its runner still checks independent retained before/after data.
 The next run reaches the ordinary-data catalog and exposes another test-reader mismatch:
 JSON receipts omit undefined object properties.
 That catalog now compares the expected serialized data.
-The corrected collection-consumer rerun is pending.
+The corrected collection consumer passes on `q83LlN` in `compaction-inputs-green3.log`.
+The actual configured resume/compact probe `eZNsLl` also passes on that artifact:
+`tokensBefore: 145267`, original callback signal, 108 branch entries,
+and no retained capture diagnostic in its complete stderr at the compact response.
+The next actual tool review is running with MiMo's scoped CLI repair assignment.
+Collection guard mutations and actual provider-payload checks remain pending.
 The MiMo CLI worker `JTeYFr` has exited with code 139 after V8 heap exhaustion;
 it leaves formatting edits in its assigned pair and no completed repair commit.
 Preserve its original session, stderr and captured requests while diagnosing this separate incident.
+The new scoped worker uses `eZNsLl` after verified manual compaction,
+with the same configured extensions and real Luna transport.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
