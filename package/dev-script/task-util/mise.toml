@@ -213,3 +213,12 @@ run = "node bin/rust-artifact-consumer.mjs"
 [tasks."research:rust:consumer-check"]
 run = ["node --check bin/rust-artifact-consumer.mjs", "node --check bin/reuse-registry-probe.mjs"]
 
+
+[tasks."research:rust:host"]
+run = "node bin/rust-codex-host.mjs"
+
+[tasks."research:rust:fuzz"]
+run = "node bin/rust-fuzz-coverage.mjs"
+
+[tasks."research:rust:bounded-check"]
+run = ["node --check bin/rust-bounded-profile.mjs", "node --check bin/rust-codex-host.mjs", "node --check bin/rust-fuzz-runtime.mjs", "node --check bin/rust-fuzz-coverage.mjs"]
