@@ -38,12 +38,18 @@ import {
   runBuiltCommand,
   type StartedBy,
 } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   noKeyRefusal,
   scratchPlaces,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/keyless-built-command.test-fixture.ts';
 import { HYPER_CHEAP, } from './spend-report.test-fixture.ts';
+
+/**
+ Built index of the probe package, which owns the `probe-sensitivity` command.
+ */
+const PROBE_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-probe',);
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -59,6 +65,11 @@ type GuardedCommand = {
    Name of the built command.
    */
   readonly command: string;
+
+  /**
+   URL of the built index of the package that owns the command, which the command's built file sits beside.
+   */
+  readonly packageEntry: string;
 
   /**
    Writes what the command reads under a scratch directory.
@@ -81,6 +92,7 @@ type GuardedCommand = {
 const COMMANDS: readonly GuardedCommand[] = [
   {
     command: 'probe-sensitivity',
+    packageEntry: PROBE_ENTRY,
     prepare: async function noArguments(): Promise<readonly string[]> {
       return [];
     },
@@ -92,6 +104,7 @@ const COMMANDS: readonly GuardedCommand[] = [
   },
   {
     command: 'spend-report',
+    packageEntry: RUN_ENTRY,
     prepare: async function oneLog(directory: string,): Promise<readonly string[]> {
       /**
        Log of one call.
@@ -120,6 +133,7 @@ const COMMANDS: readonly GuardedCommand[] = [
   },
   {
     command: 'cap-census',
+    packageEntry: RUN_ENTRY,
     prepare: async function emptyDirectory(directory: string,): Promise<readonly string[]> {
       /**
        Directory holding no log.
@@ -199,6 +213,7 @@ async function runGuarded(
   await using scratch = await scratchDir({ prefix: 'task-runner-guard-', },);
   return await runBuiltCommand({
     command: guarded.command,
+    packageEntry: guarded.packageEntry,
     args: await guarded.prepare(scratch.path,),
     env: {
       ...scratchPlaces({
@@ -263,6 +278,7 @@ await describe({
             await using scratch = await scratchDir({ prefix: 'task-runner-guard-', },);
             expect(await runBuiltCommand({
               command: 'probe-sensitivity',
+              packageEntry: PROBE_ENTRY,
               args: ['--bogus',],
               env: {
                 ...scratchPlaces({

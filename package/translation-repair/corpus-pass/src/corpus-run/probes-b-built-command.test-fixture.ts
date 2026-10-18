@@ -191,6 +191,9 @@ export const ONE_ENTRY_CORPUS: Readonly<Record<string, string>> = {
 
  @param command - built probe to run
 
+ @param packageEntry - URL of the built index of the package that owns the probe, as `import.meta.resolve` gives it
+ for that package's name
+
  @param files - corpus files by repository-relative path
 
  @param args - arguments after the command
@@ -203,17 +206,24 @@ export const ONE_ENTRY_CORPUS: Readonly<Record<string, string>> = {
 
  @example
  ```ts
- const run = await runProbeOver({ command: 'coverage-probe', files: { 'people/Mittens/page.md': 'Mittens naps.\n', }, args: ['--cap', '2',], },);
+ const run = await runProbeOver({
+   command: 'coverage-probe',
+   packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-coverage-census'),
+   files: { 'people/Mittens/page.md': 'Mittens naps.\n', },
+   args: ['--cap', '2',],
+ },);
  ```
  */
 export async function runProbeOver(
   {
     command,
+    packageEntry,
     files,
     args,
     builtDirectory,
   }: {
     readonly command: string;
+    readonly packageEntry: string;
     readonly files: Readonly<Record<string, string>>;
     readonly args: readonly string[];
     readonly builtDirectory?: string;
@@ -229,6 +239,7 @@ export async function runProbeOver(
   await using runs = await scratchDir({ prefix: `${command}-runs-`, },);
   return await runBuiltCommand({
     command,
+    packageEntry,
     args,
     env: {
       ...corpusEnvOf({ corpus, },),

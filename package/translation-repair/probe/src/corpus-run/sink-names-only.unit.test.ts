@@ -47,6 +47,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { readPlacement, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import { lockRunsDir, } from '@monochromatic-dev/translation-repair-run';
 import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
@@ -112,6 +113,7 @@ async function streamsOf(
    */
   const finished = await runBuiltCommand({
     command,
+    packageEntry: PROBE_ENTRY,
     args,
   },);
 

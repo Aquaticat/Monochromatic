@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   corpusEnvOf,
@@ -46,6 +47,7 @@ await describe({
         await using runs = await scratchDir({ prefix: 'sentinel-probe-runs-', },);
         const run = await runBuiltCommand({
           command: 'sentinel-probe',
+          packageEntry: BENCH_ENTRY,
           args: ['mittens',],
           env: {
             ...corpusEnvOf({ corpus, },),
@@ -67,6 +69,7 @@ await describe({
         await using runs = await scratchDir({ prefix: 'sentinel-probe-runs-', },);
         const run = await runBuiltCommand({
           command: 'sentinel-probe',
+          packageEntry: BENCH_ENTRY,
           args: [],
           env: {
             ...corpusEnvOf({ corpus, },),
@@ -88,6 +91,7 @@ await describe({
         await using runs = await scratchDir({ prefix: 'sentinel-probe-runs-', },);
         const run = await runBuiltCommand({
           command: 'sentinel-probe',
+          packageEntry: BENCH_ENTRY,
           args: ['--bogus',],
           env: {
             ...corpusEnvOf({ corpus, },),

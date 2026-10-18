@@ -30,6 +30,7 @@ import {
   type ChildRun,
   runBuiltCommand,
 } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { writeSettledArtifact, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/settled-v1-pool.test-fixture.ts';
 import {
@@ -113,6 +114,7 @@ async function drawOverOneEntry(
   // whole environment from the parent's without any `_API_KEY` variable.
   const run = await runBuiltCommand({
     command: 'draw-sample',
+    packageEntry: PROBE_ENTRY,
     args: argv,
     env: {
       TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -217,6 +219,7 @@ await describe({
       fn: async () => {
         const run = await runBuiltCommand({
           command: 'draw-sample',
+          packageEntry: PROBE_ENTRY,
           args: ['--bogus',],
           env: {},
         },);
@@ -270,6 +273,7 @@ await describe({
 
         const run = await runBuiltCommand({
           command: 'draw-sample',
+          packageEntry: PROBE_ENTRY,
           args: [],
           env: {
             TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -292,6 +296,7 @@ await describe({
 
         const run = await runBuiltCommand({
           command: 'draw-sample',
+          packageEntry: PROBE_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);

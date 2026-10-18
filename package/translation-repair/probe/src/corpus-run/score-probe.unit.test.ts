@@ -31,6 +31,7 @@ import {
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { writeScoreArtifacts, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/score-artifacts.test-fixture.ts';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { builtPipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts/corpus-run/built-pipeline-digest.test-fixture.ts';
 import {
   CONFLICTING_POOL_SAYS,
@@ -50,7 +51,7 @@ const COMMAND = 'score-probe';
 /**
  What the pool prints as the pipeline that read it.
  */
-const POOL_STAMP = await builtPipelineDigest();
+const POOL_STAMP = await builtPipelineDigest({ packageEntry: PROBE_ENTRY, },);
 
 /**
  Note printed when no refinement audit is carried.
@@ -302,6 +303,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: [],
               env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
@@ -341,6 +343,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: [],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -366,6 +369,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: [
                 '--repair-sheet',
                 join(
@@ -395,6 +399,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: ['--manifest',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);

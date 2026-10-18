@@ -28,6 +28,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   ROUND_NEVER_LINE,
@@ -97,6 +98,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'run-timing-report',
+          packageEntry: RUN_ENTRY,
           args: [
             rounds,
             calls,
@@ -146,6 +148,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'run-timing-report',
+          packageEntry: RUN_ENTRY,
           args: [old,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -190,6 +193,7 @@ it({
          */
         const run = await runBuiltCommand({
           command: 'run-timing-report',
+          packageEntry: RUN_ENTRY,
           args: [closed,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -225,6 +229,7 @@ it({
          */
         const run = await runBuiltCommand({
           command: 'run-timing-report',
+          packageEntry: RUN_ENTRY,
           args: [missing,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -259,6 +264,7 @@ it({
          */
         const run = await runBuiltCommand({
           command: 'run-timing-report',
+          packageEntry: RUN_ENTRY,
           args: [
             twice,
             twice,
@@ -285,6 +291,7 @@ it({
          */
         const run = await runBuiltCommand({
           command: 'run-timing-report',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);

@@ -26,6 +26,7 @@ import {
   type PipelineDigest,
 } from '@monochromatic-dev/translation-repair-glossary';
 import { republishSettledPages, } from '../../dist/final/node/index.mjs';
+import { builtDirectoryOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/built-package-directory.test-fixture.ts';
 import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 import { settledArtifactOver, } from '@monochromatic-dev/translation-repair-artifact/ts/corpus-run/settled-artifact.test-fixture.ts';
@@ -100,6 +101,27 @@ export const BUILT_PIPELINE_DIR: string = join(
  */
 export async function builtPipelineDigest(): Promise<PipelineDigest> {
   return (await digestPipeline({ dir: BUILT_PIPELINE_DIR, },)).digest;
+}
+
+/**
+ Digest of the built pipeline of the package that owns a built command, which
+ a disagreement over an artifact another build settled names as the reader
+ when that command is the one reading.
+
+ @param packageEntry - URL of the built index of the package that owns the command, as `import.meta.resolve` gives it
+ for that package's name
+
+ @returns The digest text of that package's `dist/final/node`
+
+ @example
+ ```ts
+ const thisBuild = await builtPipelineDigestOf({ packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-run'), },);
+ ```
+ */
+export async function builtPipelineDigestOf(
+  { packageEntry, }: { readonly packageEntry: string; },
+): Promise<PipelineDigest> {
+  return (await digestPipeline({ dir: builtDirectoryOf({ packageEntry, },), },)).digest;
 }
 
 /**

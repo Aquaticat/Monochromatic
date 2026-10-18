@@ -29,6 +29,7 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { reportCapCensus, } from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
@@ -331,6 +332,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cap-census',
+              packageEntry: RUN_ENTRY,
               args: [
                 scratch.path,
                 missing,
@@ -363,6 +365,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cap-census',
+              packageEntry: RUN_ENTRY,
               args: [],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
@@ -385,6 +388,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cap-census',
+              packageEntry: RUN_ENTRY,
               args: ['--tabby',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);

@@ -28,6 +28,7 @@ import {
   type ChildRun,
   runBuiltCommand,
 } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   corpusEnvOf,
@@ -157,6 +158,7 @@ async function runOverOneArtifact(
   );
   return await runBuiltCommand({
     command: 'displacement-probe',
+    packageEntry: BENCH_ENTRY,
     args,
     env: {
       ...corpusEnvOf({ corpus, },),
@@ -175,6 +177,7 @@ await describe({
         await using runs = await scratchDir({ prefix: 'displacement-probe-runs-', },);
         const run = await runBuiltCommand({
           command: 'displacement-probe',
+          packageEntry: BENCH_ENTRY,
           args: [],
           env: {
             ...corpusEnvOf({ corpus, },),

@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   noKeyRefusal,
@@ -44,6 +45,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'probe-sensitivity',
+              packageEntry: PROBE_ENTRY,
               env: scratchPlaces({
                 runsDir: scratch.path,
                 scratchDir: scratch.path,
@@ -66,6 +68,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'probe-sensitivity',
+              packageEntry: PROBE_ENTRY,
               args: ['--bogus',],
               env: scratchPlaces({
                 runsDir: scratch.path,

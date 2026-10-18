@@ -22,6 +22,7 @@ import {
 } from '@monochromatic-dev/translation-repair-run';
 import { protocolDigest, } from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 /**
@@ -74,6 +75,7 @@ async function runWithoutKeys(): Promise<CommandRun> {
    */
   const run = await runBuiltCommand({
     command: 'window-trial-probe',
+    packageEntry: BENCH_ENTRY,
     env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
   },);
 
@@ -111,6 +113,7 @@ await describe({
         // The shared fixture removes every variable ending in `_API_KEY`.
         const run = await runBuiltCommand({
           command: 'window-trial-probe',
+          packageEntry: BENCH_ENTRY,
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
 
@@ -141,6 +144,7 @@ await describe({
         // The shared fixture removes every variable ending in `_API_KEY`.
         const run = await runBuiltCommand({
           command: 'window-trial-probe',
+          packageEntry: BENCH_ENTRY,
           args: ['--bogus',],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);

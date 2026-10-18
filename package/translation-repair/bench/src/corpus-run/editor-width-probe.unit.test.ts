@@ -28,6 +28,7 @@ import {
   RUN_ROSTER,
 } from '@monochromatic-dev/translation-repair-run';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import {
   type BenchPages,
   benchWorld,
@@ -75,6 +76,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-width-probe',
+              packageEntry: BENCH_ENTRY,
               args: [],
               env: world.env,
             },);
@@ -103,6 +105,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-width-probe',
+              packageEntry: BENCH_ENTRY,
               args: [
                 '1',
                 'b',
@@ -134,6 +137,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-width-probe',
+              packageEntry: BENCH_ENTRY,
               args: ['--bogus',],
               env: world.env,
             },);

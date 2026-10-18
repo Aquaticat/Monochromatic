@@ -50,6 +50,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
@@ -166,6 +167,7 @@ async function runBuilt(
 
   return await runBuiltCommand({
     command,
+    packageEntry: PROBE_ENTRY,
     args,
     env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
   },);
@@ -248,6 +250,7 @@ async function auditOverArchive(
   await check({
     run: await runBuiltCommand({
       command: AUDIT_COMMAND,
+      packageEntry: PROBE_ENTRY,
       args: [
         '--archive',
         archive.path,
@@ -350,6 +353,7 @@ async function reportOverTwoRuns(
   await check({
     run: await runBuiltCommand({
       command: REPORT_COMMAND,
+      packageEntry: PROBE_ENTRY,
       args: typed(runs,),
       env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
     },),

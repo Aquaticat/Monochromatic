@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   corpusEnvOf,
@@ -54,6 +55,7 @@ await describe({
       fn: async () => {
         expect(await runProbeOver({
           command: 'translate-probe',
+          packageEntry: BENCH_ENTRY,
           files: {
             [`people/${ENTRY}/page.md`]: '',
             [`people/${ENTRY}/page.en.md`]: '',
@@ -73,6 +75,7 @@ await describe({
         await using runs = await scratchDir({ prefix: 'translate-probe-runs-', },);
         expect(await runBuiltCommand({
           command: 'translate-probe',
+          packageEntry: BENCH_ENTRY,
           args: [],
           env: {
             ...corpusEnvOf({ corpus, },),
@@ -91,6 +94,7 @@ await describe({
       fn: async () => {
         expect(await runProbeOver({
           command: 'translate-probe',
+          packageEntry: BENCH_ENTRY,
           files: {
             [`people/${ENTRY}/page.md`]: SOURCE_PAGE,
             [`people/${ENTRY}/page.en.md`]: TARGET_PAGE,
@@ -108,6 +112,7 @@ await describe({
       fn: async () => {
         expect(await runProbeOver({
           command: 'translate-probe',
+          packageEntry: BENCH_ENTRY,
           files: {
             [`people/${ENTRY}/page.md`]: SOURCE_PAGE,
             [`people/${ENTRY}/page.en.md`]: TARGET_PAGE,

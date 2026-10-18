@@ -26,12 +26,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 import {
   artifactPathOf,
   artifactTextWithoutArchive,
-  builtPipelineDigest,
+  builtPipelineDigestOf,
   declineEntry,
   ENTRY,
   publishedRun,
@@ -75,6 +76,7 @@ async function builtVerifier(
 }> {
   return await runBuiltCommand({
     command: 'verify-published',
+    packageEntry: RUN_ENTRY,
     args,
     env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, },
   },);
@@ -232,7 +234,7 @@ await describe({
             + '  WRONG LENGTH: page is -7 characters off what the archive plus every slice change comes to. '
             + 'Text no slice decided on was lost or added\n'
             + '  MISSING slice 1, 35 characters the page does not carry in order\n'
-            + `  READ BY ANOTHER BUILD: settled by ${ SETTLED_BY }, read by ${ await builtPipelineDigest() }; `
+            + `  READ BY ANOTHER BUILD: settled by ${ SETTLED_BY }, read by ${ await builtPipelineDigestOf({ packageEntry: RUN_ENTRY, },) }; `
             + 'a pass started here on this build rewrites the page to this reading\n'
             + 'verify-published: 0 of 1 page carry every wording their artifacts promised; 0 of those at the length it implies, 0 '
             + 'UNWEIGHED because the artifact predates the stored archive text\n',

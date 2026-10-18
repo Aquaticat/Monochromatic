@@ -21,6 +21,7 @@ import {
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { reportSliceCost, } from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { SLICE_CACHE_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
@@ -242,6 +243,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'slice-cost-report',
+              packageEntry: SLICE_CACHE_ENTRY,
               args: [path,],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
@@ -275,6 +277,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'slice-cost-report',
+              packageEntry: SLICE_CACHE_ENTRY,
               args: [path,],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
@@ -303,6 +306,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'slice-cost-report',
+              packageEntry: SLICE_CACHE_ENTRY,
               args: [path,],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
@@ -324,6 +328,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'slice-cost-report',
+              packageEntry: SLICE_CACHE_ENTRY,
               args: [],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
@@ -345,6 +350,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'slice-cost-report',
+              packageEntry: SLICE_CACHE_ENTRY,
               args: ['--tabby', 'nap.log'],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);

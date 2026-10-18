@@ -33,6 +33,7 @@ import {
   writeContest,
 } from './ledger-report.test-fixture.ts';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -73,6 +74,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'ledger-report',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -113,6 +115,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'ledger-report',
+          packageEntry: RUN_ENTRY,
           args: [
             '--model',
             'tabby-1',
@@ -150,6 +153,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'ledger-report',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -188,6 +192,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'ledger-report',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -220,6 +225,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'ledger-report',
+          packageEntry: RUN_ENTRY,
           args: ['--model',],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);

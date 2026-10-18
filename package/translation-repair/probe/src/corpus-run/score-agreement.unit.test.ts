@@ -23,6 +23,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   catDrawSheetText,
@@ -112,6 +113,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: [
                 '--sheet',
                 paths.sheet,
@@ -160,6 +162,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: [
                 '--sheet',
                 sheet,
@@ -189,6 +192,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: ['--sheet',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
             },);
@@ -231,6 +235,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: COMMAND,
+              packageEntry: PROBE_ENTRY,
               args: [
                 '--sheet',
                 sheet,

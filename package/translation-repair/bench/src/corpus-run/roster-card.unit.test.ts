@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -47,6 +48,7 @@ await describe({
             // whole environment from the parent's without any `_API_KEY` variable.
             const run = await runBuiltCommand({
               command: 'roster-card',
+              packageEntry: BENCH_ENTRY,
               args: [
                 provider,
                 'hf:cat/Mittens-1',
@@ -67,6 +69,7 @@ await describe({
       fn: async () => {
         const run = await runBuiltCommand({
           command: 'roster-card',
+          packageEntry: BENCH_ENTRY,
           args: [
             'bogus',
             'hf:cat/Mittens-1',
@@ -87,6 +90,7 @@ await describe({
       fn: async () => {
         const run = await runBuiltCommand({
           command: 'roster-card',
+          packageEntry: BENCH_ENTRY,
           args: [
             'synthetic',
             'hf:cat/Mittens-1',
@@ -108,6 +112,7 @@ await describe({
       fn: async () => {
         const run = await runBuiltCommand({
           command: 'roster-card',
+          packageEntry: BENCH_ENTRY,
           args: [],
           env: {},
         },);

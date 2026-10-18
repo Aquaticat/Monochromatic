@@ -22,6 +22,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { SLICE_CACHE_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   FIRST_SECTION_ONLY_TARGET,
@@ -62,6 +63,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'slice-census',
+          packageEntry: SLICE_CACHE_ENTRY,
           env: {
             TRANSLATION_REPAIR_RUNS_DIR: runs.path,
             TRANSLATION_REPAIR_CORPUS_CLONE_DIR: corpus.cloneDir,
@@ -102,6 +104,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'slice-census',
+          packageEntry: SLICE_CACHE_ENTRY,
           env: {
             TRANSLATION_REPAIR_RUNS_DIR: runs.path,
             TRANSLATION_REPAIR_CORPUS_CLONE_DIR: corpus.cloneDir,
@@ -136,6 +139,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'slice-census',
+          packageEntry: SLICE_CACHE_ENTRY,
           args: ['--whiskers',],
           env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
         },);

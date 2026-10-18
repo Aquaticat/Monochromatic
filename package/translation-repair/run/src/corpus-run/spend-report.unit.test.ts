@@ -28,6 +28,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   CUT_SPEND_LINE,
@@ -79,6 +80,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'spend-report',
+          packageEntry: RUN_ENTRY,
           args: [log,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -133,6 +135,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'spend-report',
+          packageEntry: RUN_ENTRY,
           args: [closed,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -168,6 +171,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'spend-report',
+          packageEntry: RUN_ENTRY,
           args: [missing,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -191,6 +195,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'spend-report',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);

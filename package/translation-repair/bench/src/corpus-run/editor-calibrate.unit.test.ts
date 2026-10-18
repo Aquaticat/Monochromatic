@@ -22,6 +22,7 @@ import {
 
 import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { makeBenchClone, } from '@monochromatic-dev/translation-repair-corpus-pass/ts/corpus-run/editor-bench-clone.test-fixture.ts';
 
@@ -62,6 +63,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-calibrate',
+              packageEntry: BENCH_ENTRY,
               args: [],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -91,6 +93,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-calibrate',
+              packageEntry: BENCH_ENTRY,
               args: ['3',],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -125,6 +128,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-calibrate',
+              packageEntry: BENCH_ENTRY,
               args: ['four',],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -151,6 +155,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-calibrate',
+              packageEntry: BENCH_ENTRY,
               args: [],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -178,6 +183,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-calibrate',
+              packageEntry: BENCH_ENTRY,
               args: ['--bogus',],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
@@ -203,6 +209,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'editor-calibrate',
+              packageEntry: BENCH_ENTRY,
               args: [],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,

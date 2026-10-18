@@ -13,6 +13,11 @@ import type { CorpusCloneEntry, } from './corpus-pass-clone.test-fixture.ts';
 // locations.
 
 /**
+ URL of the built index of this package, which the built pass sits beside.
+ */
+const CORPUS_PASS_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-corpus-pass',);
+
+/**
  Exit code `reportingRefusals` sets for a stated refusal.
  */
 export const REFUSED_AS_STATED: number = 6;
@@ -129,6 +134,7 @@ export async function runPass(
 ): Promise<PassRun> {
   return await runBuiltCommand({
     command: 'corpus-pass',
+    packageEntry: CORPUS_PASS_ENTRY,
     args,
     env: {
       TRANSLATION_REPAIR_RUNS_DIR: runsDir,

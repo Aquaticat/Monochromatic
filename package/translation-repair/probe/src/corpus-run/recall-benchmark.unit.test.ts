@@ -18,6 +18,7 @@ import {
 
 import { readHeadSha, } from '@monochromatic-dev/translation-repair-run';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import {
   type BenchPages,
   benchWorld,
@@ -73,6 +74,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'recall-benchmark',
+              packageEntry: PROBE_ENTRY,
               args: ['--bogus',],
               env: world.env,
             },);
@@ -94,6 +96,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'recall-benchmark',
+              packageEntry: PROBE_ENTRY,
               env: world.env,
             },);
 
@@ -114,6 +117,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'recall-benchmark',
+              packageEntry: PROBE_ENTRY,
               args: ['--plan',],
               env: world.env,
             },);
@@ -136,6 +140,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'recall-benchmark',
+              packageEntry: PROBE_ENTRY,
               env: world.env,
             },);
 
@@ -163,6 +168,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'recall-benchmark',
+              packageEntry: PROBE_ENTRY,
               args: ['--plan',],
               env: world.env,
             },);

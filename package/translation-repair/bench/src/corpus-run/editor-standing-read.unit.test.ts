@@ -35,6 +35,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   carrying,
@@ -164,6 +165,7 @@ async function standingOver(
    */
   const finished = await runBuiltCommand({
     command: STANDING_COMMAND,
+    packageEntry: BENCH_ENTRY,
     args: [archive,],
   },);
 
@@ -283,6 +285,7 @@ await describe({
          */
         const finished = await runBuiltCommand({
           command: STANDING_COMMAND,
+          packageEntry: BENCH_ENTRY,
           args: [
             first.archive,
             second.archive,
@@ -512,6 +515,7 @@ await describe({
         },);
         const finished = await runBuiltCommand({
           command: STANDING_COMMAND,
+          packageEntry: BENCH_ENTRY,
           env: { TRANSLATION_REPAIR_RUNS_DIR: fixture.archive, },
         },);
         // The summary names one artifact and the refusal names the fixture's own file, which a

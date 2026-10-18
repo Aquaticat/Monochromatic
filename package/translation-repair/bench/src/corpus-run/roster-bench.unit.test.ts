@@ -19,6 +19,7 @@ import {
 import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run';
 import { benchWidths, } from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import {
   type BenchPages,
   benchWorld,
@@ -59,6 +60,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'roster-bench',
+              packageEntry: BENCH_ENTRY,
               args: ['--bogus',],
               env: world.env,
             },);
@@ -80,6 +82,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'roster-bench',
+              packageEntry: BENCH_ENTRY,
               args: ['0',],
               env: world.env,
             },);
@@ -107,6 +110,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'roster-bench',
+              packageEntry: BENCH_ENTRY,
               env: world.env,
             },);
 
@@ -131,6 +135,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'roster-bench',
+              packageEntry: BENCH_ENTRY,
               env: world.env,
             },);
 

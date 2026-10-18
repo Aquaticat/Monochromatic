@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -35,6 +36,7 @@ await describe({
         // whole environment from the parent's without any `_API_KEY` variable.
         const run = await runBuiltCommand({
           command: 'budget-sample',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: {},
         },);
@@ -56,6 +58,7 @@ await describe({
       fn: async () => {
         const run = await runBuiltCommand({
           command: 'budget-sample',
+          packageEntry: RUN_ENTRY,
           args: ['extra',],
           env: {},
         },);

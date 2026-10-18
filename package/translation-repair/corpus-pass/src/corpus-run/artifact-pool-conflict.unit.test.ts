@@ -55,6 +55,7 @@ import {
   StatedRefusalError,
 } from '@monochromatic-dev/translation-repair-glossary';
 import { makeNamingArchive, } from '../archive-naming.test-fixture.ts';
+import { builtDirectoryOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/built-package-directory.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
@@ -245,17 +246,12 @@ await describe({
             }
 
             /**
-             Pipeline the built pool reports reading by: the build it stands in.
+             Pipeline the built pool reports reading by: the build it stands in, which is the artifact-pool package's.
              */
             const { digest, } = await digestPipeline({
-              dir: join(
-                import.meta.dirname,
-                '..',
-                '..',
-                'dist',
-                'final',
-                'node',
-              ),
+              dir: builtDirectoryOf({
+                packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-artifact-pool',),
+              },),
             },);
             expect({
               byRevision: await pooledRequiring({ requiredCommit: 'HEAD', },),

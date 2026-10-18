@@ -38,6 +38,7 @@ import {
   SYNTHETIC_DRY,
 } from './meter-report.test-fixture.ts';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { RUN_ENTRY, } from './built-entry.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -91,6 +92,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'meter-report',
+          packageEntry: RUN_ENTRY,
           args: [
             first,
             second,
@@ -153,6 +155,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'meter-report',
+          packageEntry: RUN_ENTRY,
           args: [bare,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -186,6 +189,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'meter-report',
+          packageEntry: RUN_ENTRY,
           args: [missing,],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
@@ -209,6 +213,7 @@ await describe({
          */
         const run = await runBuiltCommand({
           command: 'meter-report',
+          packageEntry: RUN_ENTRY,
           args: [],
           env: { TRANSLATION_REPAIR_RUNS_DIR: scratch.path, },
         },);
