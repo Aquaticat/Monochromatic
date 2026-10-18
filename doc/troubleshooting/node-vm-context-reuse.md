@@ -131,5 +131,10 @@ No upstream change or filing is proposed:
 - Prototype: the actual consumer correction and failing/passing controls are recorded;
   no upstream prototype is justified after the fault gate fails.
 
-Tracker-search results are recorded with the completed source check.
+The bounded tracker queries on 2026-10-18 were
+`gh search issues 'runInNewContext already declared' --repo nodejs/node`
+and `gh search prs 'runInNewContext context' --repo nodejs/node`.
+The first returned no matches;
+the second returned performance PR `47739`.
+These search results do not establish an upstream lexical-binding defect or a comprehensive absence of prior reports.
 There is nothing to file as an upstream defect from this incident.
