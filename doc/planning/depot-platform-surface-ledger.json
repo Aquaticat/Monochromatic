@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:42:42.486Z",
+  "updatedAt": "2026-10-18T15:46:07.928Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -2099,8 +2099,21 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "63d568e879499c6675011bb341b2dde778773572ee8fb35d9f84077e8165a0b0",
+        "sourceBytes": 10120,
+        "findings": [
+          "User, organization, project and one-hour pull token scopes are distinct; project tokens do not authorize CI, Cache or Agents, and core APIs can require an organization token despite valid user CLI login.",
+          "Documented resolution flag/env/stored-login/OIDC must be reconciled with actual current helper fallbacks, including JIT and Cache tokens; native auth experiment deliberately excludes all alternatives.",
+          "GitHub, GitLab, CircleCI, Buildkite and RWX OIDC require the corresponding configured project trust; support is not proof a particular relationship exists.",
+          "Native trusted-job injection is separate from GitHub OIDC; the exact native project build and repository consumer now pass with no added persistent token."
+        ],
+        "use": "Keep short-lived job auth for the qualified native path and retain existing user login only for exact solely-owned research resources.",
+        "limits": "No trust relationship, broad credential or untrusted-fork authorization is created or qualified."
+      }
     },
     {
       "title": "Install the Depot CLI",
@@ -2122,8 +2135,19 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "b63cbee40bbdc6751c04e156086e8cbac65a2c89585c60ae03a14b143b2eb49b",
+        "sourceBytes": 981,
+        "findings": [
+          "Installer/package-manager and OS/architecture-specific CLI distribution are local installation choices, not product runner/plan eligibility.",
+          "Current installed CLI2.102.23 and immutable source1f96d6d488f938de97ea640b115e9567ebfd6fbf, plus the complete real99-command help inventory, decide exercised syntax; current deployed docs can lead or differ from that binary."
+        ],
+        "use": "Preserve actual tool/source identities rather than assuming a floating install script has the tested behavior.",
+        "limits": "No new global installer, shell profile, Docker-default-builder or unrelated tool upgrade is performed."
+      }
     },
     {
       "title": "Depot CLI: Agents commands reference",
@@ -2153,8 +2177,20 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "24736542aa235c2821ae7ff3f2d0a5e4fafeffa8aaec14bbea3d7fed23304b24",
+        "sourceBytes": 6489,
+        "findings": [
+          "Claude remote execution/session lifecycle and local upload are distinct from ordinary CI or Sandbox SDK execution.",
+          "Local mode uploads conversation data, remote --wait readiness does not prove sandbox termination, and broad session listing is not needed to inspect our own bounded experiments.",
+          "CLI pass-through arguments or help/source availability do not establish supported model entitlement, a zero additional bill or user authorization for recurring model execution."
+        ],
+        "use": "Record agent-assisted investigation as available but nonactivated; ordinary CI experiments require no paid external model.",
+        "limits": "No Claude session, conversation upload, Code mirror or model subscription is created."
+      }
     },
     {
       "title": "Depot CLI: Compute commands reference",
@@ -2176,8 +2212,20 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "414eabf7304d7d05ab1e004752b5c9e39b8ae4d2677f99f8cfb99365b6a137cf",
+        "sourceBytes": 2684,
+        "findings": [
+          "sandbox exec, exec-pipe and pty target an existing sandbox/session identity; they are not a standalone create/stop lifecycle API.",
+          "The Sandbox SDK supplies a distinct lifecycle and filesystem contract; native CI SSH/existing compute access must not be relabeled as SDK custom-runtime qualification.",
+          "PTY, pipe, cwd/env and millisecond timeout options are operational controls with different stream/terminal semantics."
+        ],
+        "use": "Use exact owned sandbox identities for debugging and SDK lifecycle methods for the separately qualified short-lived SDK profile.",
+        "limits": "No arbitrary existing sandbox/session is enumerated or attached; detached replay remains separately qualified or unresolved in its own receipt."
+      }
     },
     {
       "title": "Depot CLI: Container builds commands reference",
@@ -2237,8 +2285,23 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "e85f230defab855dcc73f65a1453b62a774f385c4e958d63150d6cb2ff7ef867",
+        "sourceBytes": 30529,
+        "findings": [
+          "build and bake are remote BuildKit clients; default output can be cache-only, --load needs a local Docker-compatible consumer, and --save appends an image exporter.",
+          "Installed exporter validation rejects the initial combined local+save request; separate local-only and image-only corrections now pass with real exported consumers.",
+          "Bake HCL/JSON/Compose target project configuration and save tags are per-target graph behavior; actual advanced bake/secret/SSH/multiarch/cache-mount receipts remain source-bound rather than claiming every Buildx flag ran.",
+          "depot cargo is a current sccache-backed wrapper, not a remote Rust compiler service; namespace stripping is retained as its own diagnosed contract.",
+          "The current list command is depot list builds, not the guessed builds list; configure-docker mutates the global Docker builder/plugin and was not performed.",
+          "Project CLI cache defaults are per architecture and differ from the explicitly admitted tiny project policy; configured storage ceilings do not measure used storage or invoice debit."
+        ],
+        "use": "Retain direct build/bake commands and immutable exported graph consumers for current narrow repository contexts.",
+        "limits": "No real secret/SSH key, external production registry push, Docker-default mutation or blanket all-Buildx compatibility claim."
+      }
     },
     {
       "title": "Depot CLI: Depot CI commands reference",
@@ -2389,8 +2452,25 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "9b17672f66c738dc1f5c1f452487df547d1510f6a1054e3a22a889c36cd70986",
+        "sourceBytes": 79565,
+        "findings": [
+          "Migration analyzes/transforms workflows and can disable incompatible jobs; secrets-and-vars creates a one-shot import intent and does not require --yes confirmation, so it is not a read-only preview. No production migration/import is run.",
+          "ci run can upload local working-tree patches and inject them after checkout; reusable workflow call jobs cannot receive the patch and execute the merge-base source instead. Frozen research inputs are independently hash-bound.",
+          "dispatch takes a workflow basename and declared typed inputs; run takes a local workflow path. Default broad run/workflow lists are unnecessary for exact owned IDs.",
+          "status --wait has terminal-sensitive exit status; cancel scopes are mutually exclusive; rerun creates all job attempts only after terminal state, while retry selects failed/cancelled jobs and downstream work.",
+          "logs JSON is NDJSON; finite/follow forms and per-attempt selectors differ. Metrics summary versus samples depend on attempt/job/run scope, and authored summary is distinct from AI failure diagnosis.",
+          "Artifact list metadata does not return signed URLs; download is one artifact ID and refuses overwrite. Original ZIP/hash/size/CRC controls and rerun incident qualifications are preserved separately.",
+          "Secret/variable variants use optional repo/env/branch/workflow selectors; absent selectors mean organization-wide availability. Secret get never returns the value; variables are readable. Exact repo-only expiring transport variants are cleaned.",
+          "SSH connects to an existing job and --info exposes connection metadata, while --ssh-after-step inserts a debugging action. No persistent interactive operating policy is silently adopted."
+        ],
+        "use": "Provide explicit finite source-bound orchestration, logs/artifacts, physical tests and safe exact-owned debugging boundaries.",
+        "limits": "No account-wide list, secret bulk migration, production routing, broad variant or new diagnose/model call; native job-continue aggregate and timeout/artifact incidents remain separately qualified."
+      }
     },
     {
       "title": "Depot CLI: Overview and platform commands",
@@ -2428,8 +2508,23 @@
       "family": "cli",
       "applicability": "Installed command behavior and agent-consumer contracts",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed CLI page and command contract, source/version differences, repository applicability and runtime limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:46:07.928Z",
+        "sourceSha256": "4f3b01ae4045566e176f321a7ad3bfaa7db3c3c57398b06de40c39c72b6afea6",
+        "sourceBytes": 12716,
+        "findings": [
+          "login/logout/org switch mutate local authentication/context; org list is broad metadata and unnecessary when org is explicit.",
+          "tests resolves CI then GHA unless restricted; run/job latest-attempt lookup differs from an exact attempt. Pagination defaults100 and max500 require explicit scope before trusting counts.",
+          "split/run/report are supported in Depot CI and Depot-managed GHA jobs; this does not establish generic standard-GHA report authorization.",
+          "Candidate identity is filename or classname; testname timing sums individual JUnit cases within that candidate. Source size or deterministic weights are fallback, not learned timings.",
+          "Automatic matrix shard indices cover the immediate flattened matrix; explicit indices/total are needed for a selected split axis or reusable scope.",
+          "split-key distinguishes logical assignment scope; report-key identifies upload invocation. The validated Nextest per-test-classname adapter is a deliberate derived report with preserved raw XML and exact runnable mapping."
+        ],
+        "use": "Retain exact-attempt result queries and the exercised physical-sharding adapter; keep test event totals separate from unique cases and whole-suite coverage.",
+        "limits": "No global context switch, blanket automatic report coverage, whole-suite speed ratio or arbitrary name-as-candidate-history assumption."
+      }
     },
     {
       "title": "Depot Code",

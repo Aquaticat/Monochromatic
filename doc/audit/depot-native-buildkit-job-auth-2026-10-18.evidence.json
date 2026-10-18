@@ -668,7 +668,7 @@
     "required": false
   },
   "limitations": [
-    "No native job-token authorization proof before the cloud consumer",
+    "Initial admission had no native job-token proof; the later qualified local and project-registry consumers now supply that exact proof",
     "No GitHub OIDC or external registry qualification",
     "No timing or whole-package test claim",
     "Timestamp-compute reservation is not an account-wide invoice cap"
