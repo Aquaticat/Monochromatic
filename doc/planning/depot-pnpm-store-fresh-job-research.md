@@ -106,7 +106,8 @@ No warm-cache benefit is established until the remaining phases finish.
 
 The owned historical cache deletion completed and its identifier disappeared from the cache listing.
 Repository usage after cleanup was `9,947,540,746` bytes across `16` entries.
-Concurrent writes explain why a before/after aggregate need not equal the deleted entry's byte count.
+These are separately observed usage snapshots,
+not evidence that all other cache state stayed fixed between requests.
 The command deleted only identifier `9109200675`;
 it did not select production entries by age or key prefix.
 

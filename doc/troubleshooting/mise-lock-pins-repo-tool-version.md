@@ -292,8 +292,6 @@ Decision:
 The durable value is this document plus the `mise current` check it names,
  not a tracker entry.
 
-## Related
-
 ## Explicit requests can miss a configured lock binding
 
 On 2026-10-18,
