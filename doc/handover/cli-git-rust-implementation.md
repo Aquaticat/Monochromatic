@@ -1643,15 +1643,17 @@ that is verification, not a decision for the user.
   capture size check; the check is now `exceeds_capture_limit`, tested at the limit and one byte past it
   (`f28643eb9e`). The `wrapper_controls` fuzz target then crashed on `commit --l`: Git 2.56.0 accepts `--l` for
   `--long`, a dry run, so the wrapper was right and the oracle's start list said `--lo`; fixed in `0537053603`
-  with a fixed case that failed first. Queued, in order: (1) rerun the gate (image tag `nxt3`, unit `cli-git-nxt3`,
-  logs `~/temp/agent/nxt3-container.log` and `nxt3-mutation.log`) and confirm the two survivors are killed; (2) read
-  the `wrapper_controls` rerun (unit `cli-git-fuzz-wc`, log `~/temp/agent/fuzz-wc-20261018.log`); the other 11
-  targets passed 900 s; (3) release 0.1.6 of `monochromatic-git-policy-cli` for the probe leak fix (bump
-  `Cargo.toml`, `README.md`, `Cargo.lock`, run `cli.fuzz:lock:members`, dry-run publish, push, verify crates.io and
-  the GitHub release, `mise upgrade cargo:monochromatic-git-policy-cli`, `git checkout -- mise.lock`); (4) move the
-  `monochromatic-lint` container test and mutation flows to nextest; (5) remove the worktree
-  `.claude/worktrees/cli-git-nextest-gate`, the branch `chore/cli-git-nextest-gate` and the image tags `nxt`, `nxt2`,
-  `nxt3`.
+  with a fixed case that failed first. Results after those fixes: the gate passed 1952 tests with all 78 planted
+  controls noticed, the probe mutation run caught 9 of 9 viable mutants (3 unviable), the `wrapper_controls` rerun
+  ran 2,182,521 executions with exit 0, and both fuzz crates' planted controls were noticed under nextest (29 and 6).
+  Release 0.1.6 of `monochromatic-git-policy-cli` is published (crates.io, GitHub release with both archives; the
+  x86_64 archive job needed one rerun after a Sigstore Rekor timeout) and installed; its glibc floor is still 2.39.
+  `cargo publish --dry-run` failed to connect to `index.crates.io` from inside the tool shell (curl worked) and
+  passed from a `systemd-run --user` unit. The nextest worktree, branch and image tags are removed. The
+  `monochromatic-lint` container gate, mutation flows, processor snapshot and both fuzz build images now call
+  nextest (commit after `902fa1a743`); the validation unit `lint-nxt-validate` (tag `nxtlint`, logs
+  `~/temp/agent/lint-nxt-{gate,filter,rust-style,executable}.log`) is the last check, after which issue 1757
+  can be answered for `git-policy/cli` and `monochromatic-lint` (`wg-quicker-exempt` and `ide` belong to others).
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
