@@ -685,7 +685,52 @@ before emitting the host graph.
 This qualified external checkout is an additional build input,
 distinct from the frozen first-party tree.
 The build already rejects recursive invocation through `PI_AUTO_MODE_NATIVE_BUILD`.
-Its actual session/transport fixtures and capacity cases still require separate bounded profiles.
+The guarded host/default profile is now dispatched as run `39118106788`,
+using pushed and API-verified harness `3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2`.
+Its 35 remaining non-module Node default owners have 424 source-hashed candidate files.
+The distinct `package/cli/wg-allowedips` owner is included;
+the previous module failures concerned `package/module/wg-allowedips`.
+The profile plans 187 owning invocations across 2 sequential `8CPU/32GB` jobs,
+with the same 15-minute job,
+3-minute command,
+and 9-minute campaign bounds.
+It builds the actual qualified original Pi source before Auto Mode's defaults,
+then runs the finite `permission`,
+`prohibition`,
+and `none` domain profile,
+the maintained native syntax task,
+and a type check after the native artifact prerequisite exists.
+Installed SDK regular-file bytes are snapshotted before and after;
+descendant `node_modules` and symbolic links are outside that byte snapshot.
+Its test transports use finite synthetic responses and explicit fixture recursion/network guards.
+This is a dispatched campaign,
+not a passing host or whole-graph coverage claim.
+Capacity profiles remain separate bounded work.
+
+The process receipts,
+original GitHub ZIPs,
+and exact executed harness are now linked from the immutable coverage manifest.
+The CPU watcher assertion expected `2800000 100000`
+and observed `3000000 100000` after its fixture-path smoke run.
+No provider cause is assigned from that single failure.
+The decoder-producing command returned status `-1`;
+the exact executable/setup cause still needs a positive tool probe.
+
+The actual frozen `wg-quicker-exempt` release is admitted from native producer `lwp0vbb2vq`.
+Its ELF SHA is `02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921`.
+Admission verified 23 original source-file hashes,
+the root Mise lock,
+and the producer manifest hash.
+The producer exercised 15 ordinary Nextest cases;
+11 privileged ignored cases remain unexecuted.
+The 44-invocation `wg-companion` dispatch profile is prepared separately,
+so a fresh one-object signed GET can be downloaded before tool setup.
+Its URL is scoped to one exact owned repository Actions secret and one download step.
+The secret will be deleted after terminal output and artifacts are retained,
+then its exact-name absence will be checked.
+No URL is a dispatch input,
+and no ELF was committed or pushed.
+The proposed untracked Git-transport copies were removed before publication.
 
 The active queue remains independently verifiable:
 
@@ -728,8 +773,11 @@ The active queue remains independently verifiable:
 
 ## Current next action
 
-Collect process run `39114552347` at its terminal state.
-While it runs,
-finish the guarded Pi-host command review
-and prepare the remaining applicable default and bounded non-default profiles.
+Retain terminal output from guarded host/default run `39118106788`.
+Complete the short-lived companion download and actual sibling-release consumer,
+then remove and verify the exact owned secret.
+While cloud commands run,
+qualify the desktop lookup/decoder prerequisites,
+execute the isolated file-enforcer Git-config control,
+and prepare actual bounded fuzz/conformance/browser/product consumers.
 The immutable feature and consumer manifest remains under semantic review.

@@ -221,10 +221,10 @@
     {
       "path": "depot-complete-coverage-harnesses.json.gz",
       "encoding": "gzip JSON",
-      "bytes": 34511,
-      "sha256": "54b1a848f5fdf09939ec8f0e78fb72ad6b20a3c5d535ee931da7e0f6a000f8d0",
-      "rawBytes": 229409,
-      "rawSha256": "4cd46a045d02defaa434ca0cbe488c10c9c3b483cb133d91d6210dce1b66d07e"
+      "bytes": 50574,
+      "sha256": "89bf269ec5c277cd6f1711dd1bda310d5ce97edf64f2128c234633d67b1b2699",
+      "rawBytes": 301362,
+      "rawSha256": "1314a33f20cabcb15f14d0314088df3dd72ac9193d35d59c333c25b1ed313023"
     },
     {
       "path": "depot-complete-coverage-android-reproducibility.json.gz",
@@ -256,6 +256,30 @@
       "bytes": 14442,
       "sha256": "b1e40d416698756af81b035d9ef817bbf0a8f6dd502d18f89edf49117b7f7ca1",
       "sourceCommit": "81aee7750c9a909ddf54feda3f39266d4a169ed2"
+    },
+    {
+      "path": "depot-complete-coverage-node-process-12131308314.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 853811,
+      "sha256": "f54995cbfd17b37f75947ce8921c1d3ea8360f4df391ddacb77640a28d21e433",
+      "sourceArtifactId": 12131308314,
+      "sourceArtifactDigest": "sha256:f54995cbfd17b37f75947ce8921c1d3ea8360f4df391ddacb77640a28d21e433"
+    },
+    {
+      "path": "depot-complete-coverage-node-process-12130894667.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 854996,
+      "sha256": "fc86829147a0f861c8d31bc4f07b5ffe41746116d12d7ac7b751c224b553d806",
+      "sourceArtifactId": 12130894667,
+      "sourceArtifactDigest": "sha256:fc86829147a0f861c8d31bc4f07b5ffe41746116d12d7ac7b751c224b553d806"
+    },
+    {
+      "path": "depot-complete-coverage-node-process-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 284172,
+      "sha256": "4cdd02706562f9dc7d30db96cb41561374e793712b7c02bc3eb6e33bde4b5211",
+      "rawBytes": 3801090,
+      "rawSha256": "314691134ab341934cb9943e3b939b43bf7fde966911384ec3a15e10acc52999"
     }
   ],
   "execution": [
@@ -554,6 +578,77 @@
         "cohort": "Frozen source four instrumentation files only",
         "acceptance": "red_due_to_two_source_failures"
       }
+    },
+    {
+      "profile": "node-process",
+      "run": 39114552347,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39114552347",
+      "workflowCommit": "8fa5b508c061e9caec82847037a40a5ef414aa7b",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "classificationPending": true,
+      "plannedCommands": 131,
+      "passedCommands": 128,
+      "failedCommands": 3,
+      "owningDefaultTasks": 17,
+      "sourceCandidateFiles": 191,
+      "allExpectedFilesystemDiscoveryMatched": true,
+      "shards": [
+        {
+          "shard": "b",
+          "runner": "depot-0ct9tnl5hk",
+          "uid": 1001,
+          "gid": 117,
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 64,
+            "command_failed_requires_classification": 1
+          },
+          "changedTrackedFiles": []
+        },
+        {
+          "shard": "a",
+          "runner": "depot-1v8f043g75",
+          "uid": 1001,
+          "gid": 117,
+          "cpuCount": 8,
+          "memoryBytes": 33664888832,
+          "toolVersions": {
+            "mise": "2026.10.0 linux-x64 (2026-10-02)",
+            "node": "v26.12.0",
+            "pnpm": "12.14.0"
+          },
+          "counts": {
+            "command_succeeded": 64,
+            "command_failed_requires_classification": 2
+          },
+          "changedTrackedFiles": []
+        }
+      ],
+      "failureBoundaries": [
+        {
+          "task": "//package/cli/wg-quicker:test:unit",
+          "classification": "required_current_source_release_artifact_missing",
+          "newConsumer": "Prepared separate companion profile with actual frozen Rust ELF"
+        },
+        {
+          "task": "//package/dev-script/claude-cpu-cap:test:unit",
+          "classification": "source_assertion_failed_cause_not_yet_attributed",
+          "actual": "3000000 100000",
+          "expected": "2800000 100000"
+        },
+        {
+          "task": "//package/music-player/desktop-e2e:test:unit",
+          "classification": "installed_compositor_missing_and_decoder_command_unqualified",
+          "compositor": "cargo:monochromatic-nested-wayland-session@0.6.0 not installed",
+          "decoder": "Actual ImageMagick-producing command returned status -1; missing executable is not yet separately proven"
+        }
+      ]
     }
   ],
   "familySummary": {
@@ -42970,5 +43065,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T09:17:12.947Z"
+  "latestEvidenceAt": "2026-10-18T10:11:49.375Z"
 }
