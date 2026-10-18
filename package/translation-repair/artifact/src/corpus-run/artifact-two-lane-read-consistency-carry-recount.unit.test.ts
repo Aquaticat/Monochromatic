@@ -199,6 +199,24 @@ await describe({
           },
         },),
         it({
+          name: 'REFUSES A RUN-OFF BESIDE A CARRY THE BENCH WAS NOT ASKED, since a run-off follows a first round that reached its '
+            + 'quorum and a carry with no alternative was never asked',
+          fn: async () => {
+            const carries: readonly ArtifactConsistencyCarry[] = [
+              {
+                ...ALONE,
+                runOff: { finalists: ['CANDIDATE 1', 'CANDIDATE 2',], ballots: [], usable: 0, quorum: 1, },
+              },
+            ];
+            expect(carries.map(function refusedFor(carry,): string {
+              return recountRefusalOf({ carry, },);
+            },),).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: '
+              + 'expected no run-off, since the bench was not asked among the candidates.',
+            ],);
+          },
+        },),
+        it({
           name: 'REFUSES A CARRY THE BENCH WAS ASKED WITH FEWER THAN TWO CANDIDATES OR A QUORUM BELOW ONE, a seat heard twice, '
             + 'a usable count that is not the ballots\' and a decision that is not their majority',
           fn: async () => {
