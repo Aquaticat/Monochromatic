@@ -10,11 +10,12 @@ use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::Path};
 
 /// Convert readable ASCII fixtures to owned native argv values.
 fn args(values: &[&str]) -> Vec<OsString> {
-    // The closure converts each borrowed literal; collect owns the resulting variable-length argv.
-    return values
-        .iter()
-        .map(|value| return OsString::from(value))
-        .collect();
+    // Each borrowed literal is converted to an owned value; the list owns the variable-length argv.
+    let mut argv: Vec<OsString> = Vec::new();
+    for value in values {
+        argv.push(OsString::from(value));
+    }
+    return argv;
 }
 
 /// The options of a start that opens a window;

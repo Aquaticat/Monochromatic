@@ -97,9 +97,10 @@ fn longest_reread_interval(folders: u32, watched: bool) -> Duration {
     // for (const path of shown) longest = Math.max(longest, now - Math.max(lastRead.get(path) ?? 0, from));
     // ```
     for path in &shown {
-        let last = last_read
-            .get(path)
-            .map_or(measured_from, |at| return (*at).max(measured_from));
+        let last = match last_read.get(path) {
+            Some(at) => (*at).max(measured_from),
+            None => measured_from,
+        };
         longest = longest.max(now.saturating_duration_since(last));
     }
     return longest;

@@ -44,16 +44,17 @@ fn written(defaults: &str, requested: Option<&str>) -> Vec<&'static str> {
         .with_ansi(false)
         .with_writer(capture.clone())
         .finish();
-    tracing::subscriber::with_default(subscriber, || {
-        tracing::warn!(target: "slint", "probe=slint-warn");
-        tracing::info!(target: "slint", "probe=slint-info");
-        tracing::warn!(target: "ide_app::language", "probe=app-warn");
-        tracing::info!(target: "ide_app::language", "probe=app-info");
-        tracing::debug!(target: "ide_app::language", "probe=app-debug");
-        tracing::warn!(target: "helix_lsp::transport", "probe=helix-warn");
-        tracing::info!(target: "helix_lsp::transport", "probe=helix-info");
-        tracing::error!(target: "helix_lsp::transport", "probe=helix-error");
-    });
+    // The guard keeps the subscriber as this thread's default until it is dropped.
+    let default_guard = tracing::subscriber::set_default(subscriber);
+    tracing::warn!(target: "slint", "probe=slint-warn");
+    tracing::info!(target: "slint", "probe=slint-info");
+    tracing::warn!(target: "ide_app::language", "probe=app-warn");
+    tracing::info!(target: "ide_app::language", "probe=app-info");
+    tracing::debug!(target: "ide_app::language", "probe=app-debug");
+    tracing::warn!(target: "helix_lsp::transport", "probe=helix-warn");
+    tracing::info!(target: "helix_lsp::transport", "probe=helix-info");
+    tracing::error!(target: "helix_lsp::transport", "probe=helix-error");
+    drop(default_guard);
     let text = String::from_utf8(capture.0.lock().expect("capture").clone()).expect("text");
     let probes = [
         "slint-warn",

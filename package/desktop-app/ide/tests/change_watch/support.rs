@@ -55,68 +55,101 @@ fn merge(into: &mut Changes, from: Changes) {
     }
 }
 
-/// Accumulate changes until `done` accepts them or `limit` passes;
-///  the flag says whether `done` held.
-fn gather(
-    watcher: &mut ChangeWatcher,
-    limit: Duration,
-    mut done: impl FnMut(&Changes) -> bool,
-) -> (Changes, bool) {
-    let start = Instant::now();
-    let mut record = Changes::default();
-    loop {
-        merge(&mut record, watcher.take());
-        if done(&record) {
-            return (record, true);
-        }
-        if start.elapsed() >= limit {
-            return (record, false);
-        }
-        std::thread::sleep(Duration::from_millis(5));
-    }
+/// What:
+///  A wait for changes that must arrive.
+///  The caller loops `while !condition(&arrival.record) { arrival.again(watcher); }`
+///  and takes the record with `into_record`.
+/// Why:
+///  Notifications arrive on another thread,
+///  so the wait accumulates what the watcher publishes and fails the test after a deadline.
+pub struct Arrival {
+    /// What the wait is for,
+    ///  named in the failure when it times out.
+    what: String,
+    /// When the wait began.
+    started: Instant,
+    /// Everything reported since the wait began.
+    pub record: Changes,
 }
 
-/// Accumulate until `done` holds and return the record;
-///  fail the test naming `what` after five seconds.
-pub fn arrive(
-    watcher: &mut ChangeWatcher,
-    what: &str,
-    done: impl FnMut(&Changes) -> bool,
-) -> Changes {
-    let (record, reached) = gather(watcher, ARRIVAL, done);
-    assert!(reached, "{what} was not reported: {record:?}");
-    return record;
+impl Arrival {
+    /// Begin a wait for `what` and take what the watcher already published.
+    pub fn begin(watcher: &mut ChangeWatcher, what: &str) -> Self {
+        let mut record = Changes::default();
+        merge(&mut record, watcher.take());
+        return Self {
+            what: what.to_string(),
+            started: Instant::now(),
+            record,
+        };
+    }
+
+    /// Fail the test naming what was awaited when five seconds passed,
+    ///  else pause and take what the watcher published since.
+    pub fn again(&mut self, watcher: &mut ChangeWatcher) {
+        assert!(
+            self.started.elapsed() < ARRIVAL,
+            "{} was not reported: {:?}",
+            self.what,
+            self.record
+        );
+        std::thread::sleep(Duration::from_millis(5));
+        merge(&mut self.record, watcher.take());
+    }
+
+    /// The record the wait accumulated.
+    pub fn into_record(self) -> Changes {
+        return self.record;
+    }
 }
 
 /// Everything reported during 400 ms;
 ///  used to drain earlier notifications and to observe silence.
 pub fn quiet(watcher: &mut ChangeWatcher) -> Changes {
-    let (record, _reached) = gather(watcher, SILENCE, |_record| return false);
-    return record;
+    let start = Instant::now();
+    let mut record = Changes::default();
+    loop {
+        merge(&mut record, watcher.take());
+        if start.elapsed() >= SILENCE {
+            return record;
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
 }
 
 /// True when the record's latest watched set contains `path`.
 pub fn watching(record: &Changes, path: &Path) -> bool {
-    return record
-        .watched
-        .as_ref()
-        .is_some_and(|watched| return watched.contains(path));
+    return match record.watched.as_ref() {
+        Some(watched) => watched.contains(path),
+        None => false,
+    };
 }
 
 /// True when the record carries a watched set that lacks `path`.
 pub fn not_watching(record: &Changes, path: &Path) -> bool {
-    return record
-        .watched
-        .as_ref()
-        .is_some_and(|watched| return !watched.contains(path));
+    return match record.watched.as_ref() {
+        Some(watched) => !watched.contains(path),
+        None => false,
+    };
+}
+
+/// True when the record's latest watched set contains every one of `paths`.
+fn watching_all(record: &Changes, paths: &[&Path]) -> bool {
+    for path in paths {
+        if !watching(record, path) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Wait until every one of `paths` has a live watch,
 ///  then drain the follow-up invalidations.
 pub fn settle(watcher: &mut ChangeWatcher, paths: &[&Path]) {
-    arrive(watcher, "the watches for the shown folders", |record| {
-        return paths.iter().all(|path| return watching(record, path));
-    });
+    let mut arrival = Arrival::begin(watcher, "the watches for the shown folders");
+    while !watching_all(&arrival.record, paths) {
+        arrival.again(watcher);
+    }
     quiet(watcher);
 }
 

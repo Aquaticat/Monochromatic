@@ -74,19 +74,34 @@ pub enum Sign {
 }
 
 /// What:
-///  The first pair of `SIGN_PAIRS` whose two symbols `can_display` accepts,
-///  as the symbol of the row after the wrap;
-///  an arrow when there is none.
+///  Which symbols the fonts can show.
+///  A type that implements this trait answers for one symbol at a time.
 /// Why:
-///  The coverage predicate is a parameter so a test can state which symbols the fonts have.
+///  The coverage is a parameter of `choose_sign` so a test can state which symbols the fonts have.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function chooseSign(canDisplay: (c: string) => boolean): Sign;
+/// interface SignCoverage { canDisplay(character: string): boolean }
 /// ```
-pub fn choose_sign(mut can_display: impl FnMut(char) -> bool) -> Sign {
+pub trait SignCoverage {
+    /// Whether the fonts show `character`.
+    fn can_display(&mut self, character: char) -> bool;
+}
+
+/// What:
+///  The first pair of `SIGN_PAIRS` whose two symbols `coverage` accepts,
+///  as the symbol of the row after the wrap;
+///  an arrow when there is none.
+/// Why:
+///  The coverage is a parameter so a test can state which symbols the fonts have.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function chooseSign(coverage: SignCoverage): Sign;
+/// ```
+pub fn choose_sign(mut coverage: impl SignCoverage) -> Sign {
     for (before, after) in SIGN_PAIRS {
-        if can_display(before) && can_display(after) {
+        if coverage.can_display(before) && coverage.can_display(after) {
             return Sign::Glyph(after);
         }
     }

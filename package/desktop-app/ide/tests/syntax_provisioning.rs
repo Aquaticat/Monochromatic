@@ -251,9 +251,11 @@ fn bundled_manifest_matches_shipped_libraries_and_notices() {
             library.display()
         );
         let notices = runtime.join("licenses").join(name);
-        let count = fs::read_dir(&notices)
-            .unwrap_or_else(|error| panic!("missing notices {}: {error}", notices.display()))
-            .count();
+        let listing = match fs::read_dir(&notices) {
+            Ok(entries) => entries,
+            Err(error) => panic!("missing notices {}: {error}", notices.display()),
+        };
+        let count = listing.count();
         assert!(
             count > 0,
             "no license notice shipped in {}",

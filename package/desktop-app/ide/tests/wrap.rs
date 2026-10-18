@@ -402,12 +402,10 @@ fn range_yields_one_rectangle_per_visual_row() {
         for rectangle in &rectangles {
             assert!((rectangle.height - CODE_ROW).abs() < 0.001);
         }
-        let ys: Vec<f32> = rectangles
-            .iter()
-            .map(|rectangle| {
-                return rectangle.y;
-            })
-            .collect();
+        let mut ys: Vec<f32> = Vec::new();
+        for rectangle in rectangles.iter() {
+            ys.push(rectangle.y);
+        }
         for index in 0..row.visual_rows() {
             let expected = row.visual_row_offset(index, scale);
             assert!(
@@ -449,27 +447,25 @@ fn row_of_byte(row: &ShapedRow, byte: usize) -> usize {
 /// and long lines.
 fn source_lines() -> Vec<String> {
     let mut lines = Vec::new();
-    let mut files: Vec<_> = std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/src"))
+    let mut files: Vec<std::path::PathBuf> = Vec::new();
+    for entry in std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/src"))
         .expect("the source folder is readable")
-        .map(|entry| {
-            return entry.expect("a directory entry").path();
-        })
-        .filter(|path| {
-            return path
-                .extension()
-                .is_some_and(|extension| return extension == "rs");
-        })
-        .collect();
+    {
+        let path = entry.expect("a directory entry").path();
+        if let Some(extension) = path.extension()
+            && extension == "rs"
+        {
+            files.push(path);
+        }
+    }
     files.sort();
     for path in files {
         let text = std::fs::read_to_string(&path).expect("a source file is readable");
-        lines.extend(
-            text.lines()
-                .filter(|line| {
-                    return !line.trim().is_empty();
-                })
-                .map(str::to_string),
-        );
+        for line in text.lines() {
+            if !line.trim().is_empty() {
+                lines.push(line.to_string());
+            }
+        }
     }
     return lines;
 }

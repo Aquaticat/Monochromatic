@@ -45,9 +45,10 @@ fn every_entry_gets_its_heading_crates_and_source() {
 
 #[test]
 fn long_crate_lists_wrap_under_the_prefix_and_keep_long_names_whole() {
-    let items: Vec<String> = (0..30)
-        .map(|index| return format!("crate-{index} 1.0.0,"))
-        .collect();
+    let mut items: Vec<String> = Vec::new();
+    for index in 0..30 {
+        items.push(format!("crate-{index} 1.0.0,"));
+    }
     let lines = wrap("Used by: ", &items);
     assert!(lines.len() > 1, "{lines:?}");
     for line in &lines {

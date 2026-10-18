@@ -207,7 +207,10 @@ fn multi_line_range_marks_every_row_including_an_empty_line() {
         marks: vec![mark(1, 7, Severity::Warning)],
     };
     let (_, view, frame) = laid_out(source, &visible);
-    let rows: Vec<usize> = frame.underlines.iter().map(|run| return run.row).collect();
+    let mut rows: Vec<usize> = Vec::new();
+    for run in frame.underlines.iter() {
+        rows.push(run.row);
+    }
     assert_eq!(rows, [0, 0, 1, 2]);
     let first_end = view.rows[0].caret_x(3, 1.0);
     assert_eq!(frame.underlines[1].x, first_end);
@@ -261,11 +264,10 @@ fn overlapping_ranges_draw_the_worst_severity_last() {
         ],
     };
     let (_, _, frame) = laid_out("abcdefghij", &visible);
-    let order: Vec<Severity> = frame
-        .underlines
-        .iter()
-        .map(|run| return run.severity)
-        .collect();
+    let mut order: Vec<Severity> = Vec::new();
+    for run in frame.underlines.iter() {
+        order.push(run.severity);
+    }
     assert_eq!(
         order,
         [
@@ -335,7 +337,10 @@ fn overlapping_hints_take_a_new_row_and_only_the_current_row_is_considered() {
         label(source.chars().count(), "far"),
     ];
     let (_, frame, block) = with_block(&source, 0, &labels, Vec::new());
-    let rows: Vec<usize> = block.hints.iter().map(|place| return place.row).collect();
+    let mut rows: Vec<usize> = Vec::new();
+    for place in block.hints.iter() {
+        rows.push(place.row);
+    }
     assert_eq!(
         rows,
         [0, 1, 2, 2],

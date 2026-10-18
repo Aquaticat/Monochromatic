@@ -49,18 +49,19 @@ fn written(filter: &str, target: &str, level: log::Level, text: &str) -> String 
         .with_ansi(false)
         .with_writer(capture.clone())
         .finish();
-    tracing::subscriber::with_default(subscriber, || {
-        RELABEL.log(
-            &log::Record::builder()
-                .args(format_args!("{text}"))
-                .level(level)
-                .target(target)
-                .module_path(Some(target))
-                .file(Some("helix-lsp/src/transport.rs"))
-                .line(Some(168))
-                .build(),
-        );
-    });
+    // The guard keeps the subscriber as this thread's default until it is dropped.
+    let default_guard = tracing::subscriber::set_default(subscriber);
+    RELABEL.log(
+        &log::Record::builder()
+            .args(format_args!("{text}"))
+            .level(level)
+            .target(target)
+            .module_path(Some(target))
+            .file(Some("helix-lsp/src/transport.rs"))
+            .line(Some(168))
+            .build(),
+    );
+    drop(default_guard);
     return String::from_utf8(capture.0.lock().expect("capture").clone()).expect("text");
 }
 

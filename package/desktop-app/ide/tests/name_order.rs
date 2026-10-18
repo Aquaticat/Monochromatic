@@ -7,18 +7,24 @@ use ide_app::name_order::name_key;
 /// Native names include bytes that are not text.
 use std::{ffi::OsString, os::unix::ffi::OsStringExt};
 
+/// Orders two names by their keys.
+fn by_name_key(left: &OsString, right: &OsString) -> std::cmp::Ordering {
+    return name_key(left).cmp(&name_key(right));
+}
+
 /// Sort `names` by their keys,
 /// as `Workspace::list` does.
 fn sorted(names: &[&str]) -> Vec<String> {
-    let mut owned = names
-        .iter()
-        .map(|name| return OsString::from(*name))
-        .collect::<Vec<_>>();
-    owned.sort_by_cached_key(|name| return name_key(name));
-    return owned
-        .into_iter()
-        .map(|name| return name.to_string_lossy().into_owned())
-        .collect();
+    let mut owned: Vec<OsString> = Vec::new();
+    for name in names {
+        owned.push(OsString::from(*name));
+    }
+    owned.sort_by(by_name_key);
+    let mut texts: Vec<String> = Vec::new();
+    for name in owned {
+        texts.push(name.to_string_lossy().into_owned());
+    }
+    return texts;
 }
 
 /// Folders and files share one list,

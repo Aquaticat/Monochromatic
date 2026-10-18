@@ -157,6 +157,30 @@ fn hint_texts(assembled: &[Arc<Block>], line: usize) -> Vec<String> {
     return texts;
 }
 
+/// The hint snapshot a test expects to exist.
+fn unwrapped(snapshot: Option<Arc<HintsSnapshot>>) -> Arc<HintsSnapshot> {
+    return snapshot.expect("hint snapshot");
+}
+
+/// The diagnostics snapshot of one `rustc` problem with `message`.
+fn problems(stamp: DocumentStamp, message: &str) -> Arc<DiagnosticsSnapshot> {
+    return diagnostics(
+        stamp,
+        vec![("rustc", vec![problem(4, 5, Some(Severity::Error), message)])],
+    )
+    .expect("diagnostics snapshot");
+}
+
+/// The line each block stands above,
+///  in order.
+fn block_lines(assembled: &[Arc<Block>]) -> Vec<usize> {
+    let mut lines = Vec::new();
+    for block in assembled {
+        lines.push(block.line);
+    }
+    return lines;
+}
+
 /// Shared diagnostics snapshot for `stamp` with one group per `(source, items)` pair.
 fn diagnostics(
     stamp: DocumentStamp,
@@ -280,7 +304,7 @@ fn hints_are_grouped_by_line_and_line_ends() {
         None,
     );
     let assembled = blocks(&mut annotations, SHOWN);
-    let lines: Vec<usize> = assembled.iter().map(|block| return block.line).collect();
+    let lines: Vec<usize> = block_lines(&assembled);
     assert_eq!(
         lines,
         [0, 1, 4],
@@ -298,7 +322,6 @@ fn hints_are_grouped_by_line_and_line_ends() {
 #[test]
 fn hints_of_one_revision_accumulate_by_line_range() {
     let text = Rope::from(TEXT);
-    let unwrapped = |snapshot: Option<Arc<HintsSnapshot>>| return snapshot.expect("hint snapshot");
     let mut store = Annotations::default();
     // The view first shows lines 0 and 1, then lines 3 and 4.
     let upper = ranged(SHOWN, (0, 2), vec![hint(5, ": i32"), hint(17, ": i64")]);
@@ -306,7 +329,7 @@ fn hints_of_one_revision_accumulate_by_line_range() {
     let lower = ranged(SHOWN, (3, 5), vec![hint(37, "end")]);
     assert!(store.accept_hints(SHOWN, &text, unwrapped(lower)));
     let both = blocks(&mut store, SHOWN);
-    let lines: Vec<usize> = both.iter().map(|block| return block.line).collect();
+    let lines: Vec<usize> = block_lines(&both);
     assert_eq!(
         lines,
         [0, 1, 4],
@@ -316,7 +339,7 @@ fn hints_of_one_revision_accumulate_by_line_range() {
     let again = ranged(SHOWN, (0, 2), vec![hint(17, ": u8")]);
     assert!(store.accept_hints(SHOWN, &text, unwrapped(again)));
     let replaced = blocks(&mut store, SHOWN);
-    let kept: Vec<usize> = replaced.iter().map(|block| return block.line).collect();
+    let kept: Vec<usize> = block_lines(&replaced);
     assert_eq!(
         kept,
         [1, 4],
@@ -343,7 +366,6 @@ fn hints_of_one_revision_accumulate_by_line_range() {
 #[test]
 fn held_space_keeps_block_heights_until_hints_return_or_time_passes() {
     let text = Rope::from(TEXT);
-    let unwrapped = |snapshot: Option<Arc<HintsSnapshot>>| return snapshot.expect("hint snapshot");
     let start = Instant::now();
     let until = start + Duration::from_secs(1);
     let mut store = Annotations::default();
@@ -390,7 +412,7 @@ fn held_space_keeps_block_heights_until_hints_return_or_time_passes() {
     let answer = ranged(SHOWN, (0, 3), vec![hint(5, ": i32")]);
     assert!(store.accept_hints(SHOWN, &text, unwrapped(answer)));
     let answered = blocks(&mut store, SHOWN);
-    let lines: Vec<usize> = answered.iter().map(|block| return block.line).collect();
+    let lines: Vec<usize> = block_lines(&answered);
     assert_eq!(lines, [0, 1, 3]);
     assert_eq!(
         answered[1].height(),
@@ -424,7 +446,7 @@ fn held_space_keeps_block_heights_until_hints_return_or_time_passes() {
         "space was not given up when its time had passed"
     );
     let after = blocks(&mut store, SHOWN);
-    let remaining: Vec<usize> = after.iter().map(|block| return block.line).collect();
+    let remaining: Vec<usize> = block_lines(&after);
     assert_eq!(remaining, [0, 1], "held space outlived its time");
     assert_eq!(after[1].height(), BLOCK_GAP + ROW_HEIGHT);
     assert!(!store.expire(until + Duration::from_secs(5)));
@@ -466,7 +488,10 @@ fn diagnostic_window_finds_ranges_starting_above_it() {
         }]
     );
     let top = annotations.marks(SHOWN, &text, 0, 1);
-    let starts: Vec<usize> = top.iter().map(|mark| return mark.start).collect();
+    let mut starts: Vec<usize> = Vec::new();
+    for mark in top.iter() {
+        starts.push(mark.start);
+    }
     assert_eq!(starts, [0, 2, 4]);
     // Every message row stands above the line its diagnostic starts on, here line 0, and nowhere else.
     let assembled = blocks(&mut annotations, SHOWN);
@@ -504,18 +529,18 @@ fn caret_problems_include_range_ends_and_order_by_severity() {
             ],
         ),
     );
-    let at_end: Vec<&str> = annotations
-        .at(SHOWN, 9)
-        .iter()
-        .map(|item| return item.message.as_str())
-        .collect();
+    let described_at_end = annotations.at(SHOWN, 9);
+    let mut at_end: Vec<&str> = Vec::new();
+    for item in described_at_end.iter() {
+        at_end.push(item.message.as_str());
+    }
     assert_eq!(at_end, ["point", "no severity", "suggestion"]);
     assert_eq!(annotations.at(SHOWN, 6)[0].mark.severity, Severity::Warning);
-    let at_start: Vec<&str> = annotations
-        .at(SHOWN, 4)
-        .iter()
-        .map(|item| return item.message.as_str())
-        .collect();
+    let described_at_start = annotations.at(SHOWN, 4);
+    let mut at_start: Vec<&str> = Vec::new();
+    for item in described_at_start.iter() {
+        at_start.push(item.message.as_str());
+    }
     assert_eq!(at_start, ["suggestion"]);
     assert!(annotations.at(SHOWN, 10).is_empty());
     assert!(annotations.at(SHOWN, 3).is_empty());
@@ -588,14 +613,6 @@ fn accepting_stores_only_snapshots_of_the_displayed_text() {
     let older = DocumentStamp {
         file: 3,
         revision: 6,
-    };
-    let unwrapped = |snapshot: Option<Arc<HintsSnapshot>>| return snapshot.expect("hint snapshot");
-    let problems = |stamp, message: &str| {
-        return diagnostics(
-            stamp,
-            vec![("rustc", vec![problem(4, 5, Some(Severity::Error), message)])],
-        )
-        .expect("diagnostics snapshot");
     };
     let mut store = Annotations::default();
     assert!(

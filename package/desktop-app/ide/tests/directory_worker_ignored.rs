@@ -85,21 +85,20 @@ impl Session {
     /// The visible rows that are marked ignored,
     ///  as paths relative to the root.
     fn dimmed(&self) -> Vec<String> {
-        return self
-            .tree
-            .rows()
-            .into_iter()
-            .filter(|row| return row.ignored)
-            .map(|row| {
-                return row
-                    .entry
-                    .path
-                    .strip_prefix(&self.root)
-                    .expect("inside the root")
-                    .display()
-                    .to_string();
-            })
-            .collect();
+        let mut paths: Vec<String> = Vec::new();
+        for row in self.tree.rows() {
+            if row.ignored {
+                paths.push(
+                    row.entry
+                        .path
+                        .strip_prefix(&self.root)
+                        .expect("inside the root")
+                        .display()
+                        .to_string(),
+                );
+            }
+        }
+        return paths;
     }
 }
 

@@ -185,10 +185,10 @@ fn expected_notices() -> Vec<(String, PathBuf)> {
         .expect("target profile folder")
         .join("runtime");
     let package = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let mut expected: Vec<(String, PathBuf)> = files_below(&runtime.join("licenses"))
-        .into_iter()
-        .map(|(relative, path)| return (format!("runtime/licenses/{relative}"), path))
-        .collect();
+    let mut expected: Vec<(String, PathBuf)> = Vec::new();
+    for (relative, path) in files_below(&runtime.join("licenses")) {
+        expected.push((format!("runtime/licenses/{relative}"), path));
+    }
     expected.push((
         "runtime/Helix-LICENSE".to_string(),
         runtime.join("Helix-LICENSE"),
@@ -324,10 +324,13 @@ fn licenses_prints_every_embedded_text_without_a_display_or_home() {
         );
     }
     // Every crate of the list is named by name and version under some heading.
-    for used in crates
-        .iter()
-        .flat_map(|license| return license["crates"].as_array().expect("crates").iter())
-    {
+    let mut used_crates: Vec<&serde_json::Value> = Vec::new();
+    for license in crates.iter() {
+        for used in license["crates"].as_array().expect("crates").iter() {
+            used_crates.push(used);
+        }
+    }
+    for used in used_crates {
         let named = format!(
             "{} {}",
             used["name"].as_str().expect("crate name"),
@@ -377,16 +380,16 @@ fn a_start_removes_cache_folders_of_other_builds_unused_for_30_days() {
     }
     let output = invoke(fixture.path(), &[project.as_os_str()]);
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
-    let mut names: Vec<String> = fs::read_dir(&runtime)
-        .expect("runtime cache folder")
-        .map(|entry| {
-            return entry
+    let mut names: Vec<String> = Vec::new();
+    for entry in fs::read_dir(&runtime).expect("runtime cache folder") {
+        names.push(
+            entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned();
-        })
-        .collect();
+                .into_owned(),
+        );
+    }
     names.sort();
     assert!(
         !runtime.join("0000000000000031").exists(),
@@ -396,10 +399,12 @@ fn a_start_removes_cache_folders_of_other_builds_unused_for_30_days() {
         runtime.join("0000000000000001/grammars/sql.so").is_file(),
         "the folder used a day ago was removed: {names:?}\n{stderr}"
     );
-    let current: Vec<&String> = names
-        .iter()
-        .filter(|name| return name.as_str() != "0000000000000001")
-        .collect();
+    let mut current: Vec<&String> = Vec::new();
+    for name in names.iter() {
+        if name.as_str() != "0000000000000001" {
+            current.push(name);
+        }
+    }
     assert_eq!(
         current.len(),
         1,

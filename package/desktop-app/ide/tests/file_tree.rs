@@ -45,11 +45,10 @@ fn root_and_expanded_children_load_lazily_in_snapshot_order() {
     tree.apply_listing(root, entries.clone())
         .expect("root snapshot");
     // The closure extracts only metadata so the comparison tests ordering, not UI strings.
-    let actual: Vec<_> = tree
-        .rows()
-        .into_iter()
-        .map(|row| return row.entry)
-        .collect();
+    let mut actual = Vec::new();
+    for row in tree.rows() {
+        actual.push(row.entry);
+    }
     assert_eq!(actual, entries);
     assert!(tree.missing_listings().is_empty());
     let src = root.join("src");

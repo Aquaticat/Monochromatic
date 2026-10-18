@@ -104,10 +104,9 @@ fn workspace_snapshots_keep_native_names_and_order() {
     tree.apply_listing(workspace.root(), snapshot.clone())
         .expect("apply native snapshot");
     // Consume the returned rows and extract their original metadata for an exact ordered comparison.
-    let rows: Vec<_> = tree
-        .rows()
-        .into_iter()
-        .map(|row| return row.entry)
-        .collect();
+    let mut rows = Vec::new();
+    for row in tree.rows() {
+        rows.push(row.entry);
+    }
     assert_eq!(rows, snapshot);
 }

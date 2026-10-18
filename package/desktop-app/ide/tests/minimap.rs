@@ -105,23 +105,38 @@ fn pixel(built: &Built, column: usize, row: usize) -> [u8; 4] {
 
 /// Whether any pixel of picture row `row` has ink.
 fn inked(built: &Built, row: usize) -> bool {
-    return (0..built.width as usize).any(|column| return pixel(built, column, row)[3] > 0);
+    for column in 0..built.width as usize {
+        if pixel(built, column, row)[3] > 0 {
+            return true;
+        }
+    }
+    return false;
 }
 
 /// The leftmost column of picture row `row` with ink,
 /// if any.
 fn first_ink(built: &Built, row: usize) -> Option<usize> {
-    return (0..built.width as usize).find(|column| return pixel(built, *column, row)[3] > 0);
+    for column in 0..built.width as usize {
+        if pixel(built, column, row)[3] > 0 {
+            return Some(column);
+        }
+    }
+    return None;
+}
+
+/// One color channel scaled by `alpha`,
+///  rounded as the minimap does.
+fn channel(value: u8, alpha: u32) -> u8 {
+    return ((u32::from(value) * alpha + 127) / 255) as u8;
 }
 
 /// Premultiplied bytes of `rgb` at the alpha a glyph of weight `weight` gets in a band of weight `band`.
 fn premultiplied(rgb: [u8; 4], class: f32, band: f32) -> [u8; 4] {
     let alpha = (255.0 * IMAGE_ALPHA * class * band).round() as u32;
-    let channel = |value: u8| return ((u32::from(value) * alpha + 127) / 255) as u8;
     return [
-        channel(rgb[0]),
-        channel(rgb[1]),
-        channel(rgb[2]),
+        channel(rgb[0], alpha),
+        channel(rgb[1], alpha),
+        channel(rgb[2], alpha),
         alpha as u8,
     ];
 }
@@ -501,11 +516,13 @@ fn a_long_text_is_sampled_within_the_track_and_the_budget() {
     let lines = document.text().len_lines();
     let mut rows = LineRows::plain(lines);
     // Every third line is wrapped to two rows.
-    rows.apply(
-        (0..lines)
-            .filter(|line| return line % 3 == 0)
-            .map(|line| return (line, 2)),
-    );
+    let mut updates: Vec<(usize, usize)> = Vec::new();
+    for line in 0..lines {
+        if line % 3 == 0 {
+            updates.push((line, 2));
+        }
+    }
+    rows.apply(updates);
     let map = RowMap::plain(lines).with_rows(&rows);
     let mut shaper = TextShaper::new();
     let input = Input {

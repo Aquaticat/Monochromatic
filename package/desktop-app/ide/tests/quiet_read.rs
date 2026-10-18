@@ -163,25 +163,10 @@ fn the_worker_reports_a_recent_write_instead_of_its_bytes() {
     let mut worker = ReloadWorker::new().expect("start source worker");
     let now = SystemTime::now();
     write_with_time(&path, now);
-    let request = |snapshot: &Document| {
-        // What: a closure building the request a timer read sends; `clone` copies the path and snapshot.
-        // Why: Both reads send the same request; only the file's age differs between them.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const request = (snapshot) => ({ path, snapshot, generation: 7, requireQuiet: QUIET });
-        // ```
-        return ReloadRequest {
-            path: path.clone(),
-            snapshot: snapshot.clone(),
-            generation: 7,
-            highlight_unchanged: false,
-            require_quiet: Some(QUIET),
-        };
-    };
+
     assert!(
         worker
-            .request(request(&document))
+            .request(request(&path, &document))
             .expect("first timer read")
     );
     let recent = reply(&mut worker);
@@ -203,7 +188,7 @@ fn the_worker_reports_a_recent_write_instead_of_its_bytes() {
     write_with_time(&path, now - QUIET - Duration::from_secs(1));
     assert!(
         worker
-            .request(request(&document))
+            .request(request(&path, &document))
             .expect("second timer read")
     );
     let quiet = reply(&mut worker);
@@ -269,4 +254,25 @@ fn a_reread_with_no_write_behind_it_requires_quiet() {
         writing.has_unread_change(),
         "a reread hid the pending write notification"
     );
+}
+
+/// What:
+///  The request a timer read sends;
+///  `clone` copies the path and snapshot.
+/// Why:
+///  Both reads send the same request;
+///  only the file's age differs between them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const request = (path, snapshot) => ({ path, snapshot, generation: 7, requireQuiet: QUIET });
+/// ```
+fn request(path: &Path, snapshot: &Document) -> ReloadRequest {
+    return ReloadRequest {
+        path: path.to_path_buf(),
+        snapshot: snapshot.clone(),
+        generation: 7,
+        highlight_unchanged: false,
+        require_quiet: Some(QUIET),
+    };
 }

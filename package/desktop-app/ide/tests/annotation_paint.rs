@@ -433,7 +433,6 @@ fn selected_underlines_take_the_selected_ink() {
     let inside = columns(&view, &pixels, (2, boundary - 2), selected);
     let inside_severity = columns(&view, &pixels, (2, boundary - 2), LIGHT.error);
     let outside = columns(&view, &pixels, (boundary + 2, end - 2), LIGHT.error);
-    let lit = |list: &Vec<Option<f32>>| return list.iter().flatten().count();
     println!(
         "selected underline: {} selected-ink columns and {} error-ink columns inside, {} error-ink columns outside",
         lit(&inside),
@@ -484,4 +483,15 @@ fn annotation_inks_follow_the_scheme() {
             "own error {own_error}, own hint {own_hint}, foreign {foreign}"
         );
     }
+}
+
+/// How many columns of a probed list hold ink.
+fn lit(list: &[Option<f32>]) -> usize {
+    let mut count = 0;
+    for column in list {
+        if column.is_some() {
+            count += 1;
+        }
+    }
+    return count;
 }

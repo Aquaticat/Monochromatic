@@ -76,22 +76,28 @@ fn files_below(root: &Path) -> Vec<(String, PathBuf)> {
     // while (pending.length) { const directory = pending.pop()!; ... }
     // ```
     while let Some(directory) = pending.pop() {
-        // What: `unwrap_or_else(|error| panic!(...))` stops the build with a message on failure.
+        // What: a `match` whose failure arm calls `panic!(...)` stops the build with a message on failure.
         // Why: A build script reports problems by failing; there is no caller to hand an error to.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const entries = fs.readdirSync(directory, { withFileTypes: true }); // throws
         // ```
-        let entries = fs::read_dir(&directory)
-            .unwrap_or_else(|error| panic!("Cannot list {}: {error}", directory.display()));
+        let entries = match fs::read_dir(&directory) {
+            Ok(listing) => listing,
+            Err(error) => panic!("Cannot list {}: {error}", directory.display()),
+        };
         for listed in entries {
-            let entry = listed
-                .unwrap_or_else(|error| panic!("Cannot list {}: {error}", directory.display()));
+            let entry = match listed {
+                Ok(listed_entry) => listed_entry,
+                Err(error) => panic!("Cannot list {}: {error}", directory.display()),
+            };
             let path = entry.path();
             // `fs::metadata` follows symbolic links, so a linked file is embedded by its contents.
-            let metadata = fs::metadata(&path)
-                .unwrap_or_else(|error| panic!("Cannot inspect {}: {error}", path.display()));
+            let metadata = match fs::metadata(&path) {
+                Ok(inspected) => inspected,
+                Err(error) => panic!("Cannot inspect {}: {error}", path.display()),
+            };
             if metadata.is_dir() {
                 pending.push(path);
             } else if metadata.is_file() {
@@ -102,12 +108,13 @@ fn files_below(root: &Path) -> Vec<(String, PathBuf)> {
                 // ```ts
                 // const relative = path.relative(root, file);
                 // ```
-                let relative = path
+                let below = path
                     .strip_prefix(root)
-                    .expect("walked paths lie below the root")
-                    .to_str()
-                    .unwrap_or_else(|| panic!("{} is not valid Unicode", path.display()))
-                    .to_string();
+                    .expect("walked paths lie below the root");
+                let Some(text) = below.to_str() else {
+                    panic!("{} is not valid Unicode", path.display());
+                };
+                let relative = text.to_string();
                 found.push((relative, path));
             }
         }
@@ -139,15 +146,15 @@ fn listed_grammars(manifest: &str, location: &Path) -> Vec<String> {
     // ```ts
     // const after = manifest.split('"grammars"')[1];
     // ```
-    let after = manifest
-        .split_once("\"grammars\"")
-        .map(|(_, rest)| return rest)
-        .unwrap_or_else(|| panic!("{} has no grammars list", location.display()));
-    let list = after
-        .split_once('[')
-        .and_then(|(_, rest)| return rest.split_once(']'))
-        .map(|(inside, _)| return inside)
-        .unwrap_or_else(|| panic!("{} has no grammars array", location.display()));
+    let Some((_, after)) = manifest.split_once("\"grammars\"") else {
+        panic!("{} has no grammars list", location.display());
+    };
+    let Some((_, opened)) = after.split_once('[') else {
+        panic!("{} has no grammars array", location.display());
+    };
+    let Some((list, _)) = opened.split_once(']') else {
+        panic!("{} has no grammars array", location.display());
+    };
     let mut names: Vec<String> = Vec::new();
     // What: `split('"').skip(1).step_by(2)` takes the text between each pair of quotes.
     // Why: Every entry is one quoted file name.
@@ -157,9 +164,13 @@ fn listed_grammars(manifest: &str, location: &Path) -> Vec<String> {
     // const names = list.split('"').filter((_, index) => index % 2 === 1);
     // ```
     for name in list.split('"').skip(1).step_by(2) {
-        let plain = name
-            .chars()
-            .all(|character| return character.is_ascii_alphanumeric() || "_-.".contains(character));
+        let mut plain = true;
+        for character in name.chars() {
+            if !(character.is_ascii_alphanumeric() || "_-.".contains(character)) {
+                plain = false;
+                break;
+            }
+        }
         if !plain || !name.ends_with(".so") || name.starts_with('.') {
             panic!(
                 "{} lists an unexpected grammar entry {name:?}",
@@ -191,12 +202,13 @@ fn listed_grammars(manifest: &str, location: &Path) -> Vec<String> {
 /// ```
 fn embedded_files(runtime: &Path, package: &Path, crate_licenses: &Path) -> Vec<(String, PathBuf)> {
     let manifest = runtime.join("manifest.json");
-    let text = fs::read_to_string(&manifest).unwrap_or_else(|error| {
-        panic!(
+    let text = match fs::read_to_string(&manifest) {
+        Ok(read) => read,
+        Err(error) => panic!(
             "The application binary embeds its language runtime, but {} cannot be read ({error}). Prepare it with `mise run //package/desktop-app/ide:runtime` (the build, build:debug, lint, and test tasks run it first), then build again.",
             manifest.display()
-        )
-    });
+        ),
+    };
     let mut files: Vec<(String, PathBuf)> = vec![
         ("runtime/manifest.json".to_string(), manifest.clone()),
         (
@@ -255,15 +267,20 @@ fn embedded_files(runtime: &Path, package: &Path, crate_licenses: &Path) -> Vec<
         "LICENSES/crates.json".to_string(),
         crate_licenses.to_path_buf(),
     ));
-    // What: `sort_by(|left, right| left.0.cmp(&right.0))` orders pairs by their first element.
+    // What: `sort_by(by_path)` orders pairs by their first element.
     // Why: The application finds files by halving this sorted list.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // files.sort(([left], [right]) => compare(left, right));
     // ```
-    files.sort_by(|left, right| return left.0.cmp(&right.0));
+    files.sort_by(by_path);
     return files;
+}
+
+/// Orders two embedded files by their path in the runtime layout.
+fn by_path(left: &(String, PathBuf), right: &(String, PathBuf)) -> std::cmp::Ordering {
+    return left.0.cmp(&right.0);
 }
 
 /// What:
@@ -283,12 +300,12 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
     // ```ts
     // const profileDirectory = path.resolve(outDir, '../../..');
     // ```
-    let profile = out_directory.ancestors().nth(3).unwrap_or_else(|| {
+    let Some(profile) = out_directory.ancestors().nth(3) else {
         panic!(
             "Unexpected Cargo output directory {}",
             out_directory.display()
-        )
-    });
+        );
+    };
     let runtime = profile.join("runtime");
     // What: `parent()` climbs from `target/<profile>` to `target`, where the `notices` task writes.
     // Why: The crate license list is the same for every profile.
@@ -323,16 +340,18 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
     let mut key_input: Vec<u8> = Vec::new();
     let mut total: usize = 0;
     for (relative, path) in &files {
-        let bytes = fs::read(path)
-            .unwrap_or_else(|error| panic!("Cannot read {}: {error}", path.display()));
+        let bytes = match fs::read(path) {
+            Ok(read) => read,
+            Err(error) => panic!("Cannot read {}: {error}", path.display()),
+        };
         let digest = content_digest::fnv1a(&bytes);
         total += bytes.len();
         key_input.extend_from_slice(relative.as_bytes());
         key_input.push(0);
         key_input.extend_from_slice(&digest.to_le_bytes());
-        let absolute = path
-            .to_str()
-            .unwrap_or_else(|| panic!("{} is not valid Unicode", path.display()));
+        let Some(absolute) = path.to_str() else {
+            panic!("{} is not valid Unicode", path.display());
+        };
         // What: `writeln!(table, ...)` appends one formatted line; `{relative:?}` writes the text as a
         //       quoted, escaped Rust string literal. `.expect` stops on the impossible write failure.
         // Why: Paths become literals in generated code and must stay valid whatever characters they hold.
@@ -357,8 +376,9 @@ fn generate_embedded_runtime(out_directory: &Path, package: &Path) {
         count = files.len(),
     );
     let output = out_directory.join(GENERATED);
-    fs::write(&output, generated)
-        .unwrap_or_else(|error| panic!("Cannot write {}: {error}", output.display()));
+    if let Err(error) = fs::write(&output, generated) {
+        panic!("Cannot write {}: {error}", output.display());
+    }
 }
 
 /// What:

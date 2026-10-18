@@ -25,10 +25,10 @@ fn rust_highlights_use_unicode_source_positions() {
     );
     assert!(spans.iter().any(|span| return span.style == 2
         && text.slice(span.start..span.end).to_string().contains('🐈')));
-    let classified = spans
-        .iter()
-        .map(|span| return (span.style, text.slice(span.start..span.end).to_string()))
-        .collect::<Vec<_>>();
+    let mut classified: Vec<(usize, String)> = Vec::new();
+    for span in spans.iter() {
+        classified.push((span.style, text.slice(span.start..span.end).to_string()));
+    }
     assert!(
         spans.iter().any(|span| return span.style == 3
             && text

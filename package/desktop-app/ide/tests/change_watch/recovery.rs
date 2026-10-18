@@ -6,7 +6,7 @@
 /// Waits,
 ///  kernel probes,
 ///  and fixture helpers shared by this crate.
-use super::support::{arrive, kernel_watches, not_watching, quiet, set, settle, start, watching};
+use super::support::{Arrival, kernel_watches, not_watching, quiet, set, settle, start, watching};
 /// Fixture files are created and moved through the ordinary filesystem API.
 use std::fs;
 
@@ -34,13 +34,13 @@ fn queue_overflow_requests_a_full_reread() {
             fs::File::create(folder.join(format!("{index}.txt"))).expect("burst file");
         }
     }
-    arrive(
-        &mut watcher,
-        "an overflowed queue's full reread",
-        |record| {
-            return record.everything;
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "an overflowed queue's full reread");
+        while !(arrival.record.everything) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }
 
 /// An error from notify's event stream requests a full reread.
@@ -55,13 +55,13 @@ fn a_notification_error_requests_a_full_reread() {
     watcher.deliver(Err(notify::Error::generic(
         "simulated inotify read failure",
     )));
-    arrive(
-        &mut watcher,
-        "a notification error's full reread",
-        |record| {
-            return record.everything;
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "a notification error's full reread");
+        while !(arrival.record.everything) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }
 
 /// Removing a watched folder requests a full reread and leaves it unwatched.
@@ -75,13 +75,16 @@ fn a_removed_watched_folder_requests_a_full_reread() {
     watcher.watch_only(&set(&[&root, &folder]), None);
     settle(&mut watcher, &[&root, &folder]);
     fs::remove_dir(&folder).expect("remove watched folder");
-    arrive(
-        &mut watcher,
-        "a removed folder's full reread and lost watch",
-        |record| {
-            return record.everything && not_watching(record, &folder);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(
+            &mut watcher,
+            "a removed folder's full reread and lost watch",
+        );
+        while !(arrival.record.everything && not_watching(&arrival.record, &folder)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }
 
 /// A renamed watched folder leaves the watched set and requests a full reread,
@@ -100,13 +103,16 @@ fn a_renamed_watched_folder_is_not_followed_to_its_new_name() {
     watcher.watch_only(&set(&[&root, &folder]), None);
     settle(&mut watcher, &[&root, &folder]);
     fs::rename(&folder, &moved).expect("rename watched folder");
-    arrive(
-        &mut watcher,
-        "a renamed folder's full reread and lost watch",
-        |record| {
-            return record.everything && not_watching(record, &folder);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(
+            &mut watcher,
+            "a renamed folder's full reread and lost watch",
+        );
+        while !(arrival.record.everything && not_watching(&arrival.record, &folder)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     assert!(
         !kernel_watches(&moved),
         "the moved folder is still watched under its old name"
@@ -138,13 +144,16 @@ fn a_renamed_folder_with_an_unwatched_parent_loses_its_kernel_watch() {
     watcher.watch_only(&set(&[&root]), Some(&file));
     settle(&mut watcher, &[&root, &folder]);
     fs::rename(&folder, &moved).expect("rename the displayed file's folder");
-    arrive(
-        &mut watcher,
-        "a renamed folder's full reread and lost watch",
-        |record| {
-            return record.everything && not_watching(record, &folder);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(
+            &mut watcher,
+            "a renamed folder's full reread and lost watch",
+        );
+        while !(arrival.record.everything && not_watching(&arrival.record, &folder)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     assert!(
         !kernel_watches(&moved),
         "the moved folder kept a kernel watch that reports under its old name"
@@ -161,9 +170,13 @@ fn a_failed_watch_requests_a_full_reread_and_is_retried_on_request() {
     let root = workspace.root().to_path_buf();
     let missing = root.join("missing");
     watcher.watch_only(&set(&[&root, &missing]), None);
-    let failed = arrive(&mut watcher, "a failed watch's full reread", |record| {
-        return record.everything && watching(record, &root);
-    });
+    let failed = {
+        let mut arrival = Arrival::begin(&mut watcher, "a failed watch's full reread");
+        while !(arrival.record.everything && watching(&arrival.record, &root)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     assert!(
         not_watching(&failed, &missing),
         "a missing folder was reported as watched"
@@ -176,13 +189,15 @@ fn a_failed_watch_requests_a_full_reread_and_is_retried_on_request() {
         "a failed watch was retried without a request"
     );
     watcher.retry();
-    arrive(
-        &mut watcher,
-        "the retried watch and its extra read",
-        |record| {
-            return record.directories.contains(&missing) && watching(record, &missing);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "the retried watch and its extra read");
+        while !(arrival.record.directories.contains(&missing)
+            && watching(&arrival.record, &missing))
+        {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }
 
 /// A watch that keeps failing the same way is reported once.
@@ -198,9 +213,13 @@ fn a_watch_failing_the_same_way_is_reported_once_until_it_changes() {
     let root = workspace.root().to_path_buf();
     let missing = root.join("missing");
     watcher.watch_only(&set(&[&root, &missing]), None);
-    arrive(&mut watcher, "the first failure's full reread", |record| {
-        return record.everything && watching(record, &root);
-    });
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "the first failure's full reread");
+        while !(arrival.record.everything && watching(&arrival.record, &root)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     quiet(&mut watcher);
     for _ in 0..3 {
         watcher.retry();
@@ -213,7 +232,13 @@ fn a_watch_failing_the_same_way_is_reported_once_until_it_changes() {
     fs::create_dir(&missing).expect("create the missing folder");
     quiet(&mut watcher);
     watcher.retry();
-    arrive(&mut watcher, "the watch restored by a retry", |record| {
-        return record.directories.contains(&missing) && watching(record, &missing);
-    });
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "the watch restored by a retry");
+        while !(arrival.record.directories.contains(&missing)
+            && watching(&arrival.record, &missing))
+        {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }

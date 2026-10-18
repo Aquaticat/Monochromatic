@@ -88,10 +88,14 @@ pub fn assert_reads_as(path: &str, source: &str, language: &str, role: &str, fra
     // const index = ROLES.indexOf(role);
     // if (index < 0) throw new Error('role is one of the engine palette roles');
     // ```
-    let index: usize = ROLES
-        .iter()
-        .position(|name| return *name == role)
-        .expect("role is one of the engine palette roles");
+    let mut found_index = None;
+    for (position, name) in ROLES.iter().enumerate() {
+        if *name == role {
+            found_index = Some(position);
+            break;
+        }
+    }
+    let index: usize = found_index.expect("role is one of the engine palette roles");
     // What: `SyntaxEngine::new()` returns `Result<SyntaxEngine>`: success or an error value.
     // Why:  A missing bundled manifest must stop the test with its own diagnostic.
     //
@@ -126,9 +130,13 @@ pub fn assert_reads_as(path: &str, source: &str, language: &str, role: &str, fra
     // const classified = painted(path, source);
     // ```
     let classified = painted(path, source);
-    let found = classified
-        .iter()
-        .any(|(name, shown)| return ROLES[index] == *name && shown == fragment);
+    let mut found = false;
+    for (name, shown) in classified.iter() {
+        if ROLES[index] == *name && shown == fragment {
+            found = true;
+            break;
+        }
+    }
     assert!(
         found,
         "expected {role} on {fragment:?} in {path}; painted fragments: {classified:?}"
@@ -156,16 +164,15 @@ pub fn painted(path: &str, source: &str) -> Vec<(&'static str, String)> {
         .highlight(Path::new(path), &text)
         .expect("bundled grammar and highlighting rules load")
         .expect("bundled language is not plain text");
-    return spans
-        .iter()
-        .map(|span| {
-            return (
-                ROLES[span.style - 1],
-                text.slice(span.start..span.end)
-                    .to_string()
-                    .trim_end_matches(['\n', '\r'])
-                    .to_string(),
-            );
-        })
-        .collect();
+    let mut fragments: Vec<(&'static str, String)> = Vec::new();
+    for span in spans.iter() {
+        fragments.push((
+            ROLES[span.style - 1],
+            text.slice(span.start..span.end)
+                .to_string()
+                .trim_end_matches(['\n', '\r'])
+                .to_string(),
+        ));
+    }
+    return fragments;
 }

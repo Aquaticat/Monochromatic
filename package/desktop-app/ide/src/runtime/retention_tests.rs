@@ -40,16 +40,16 @@ fn key_folder(runtime: &Path, key: &str, used: Option<SystemTime>) {
 /// Entry names below `runtime`,
 ///  sorted.
 fn names(runtime: &Path) -> Vec<String> {
-    let mut found: Vec<String> = fs::read_dir(runtime)
-        .expect("runtime folder")
-        .map(|entry| {
-            return entry
+    let mut found: Vec<String> = Vec::new();
+    for entry in fs::read_dir(runtime).expect("runtime folder") {
+        found.push(
+            entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned();
-        })
-        .collect();
+                .into_owned(),
+        );
+    }
     found.sort();
     return found;
 }

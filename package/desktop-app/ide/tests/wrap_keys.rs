@@ -161,7 +161,10 @@ fn the_fixtures_wrap_as_described() {
                 cells(width, scale),
                 advance(scale)
             );
-            let lengths: Vec<usize> = exact_rows.iter().map(|row| return row.len()).collect();
+            let mut lengths: Vec<usize> = Vec::new();
+            for row in exact_rows.iter() {
+                lengths.push(row.len());
+            }
             assert_eq!(
                 lengths,
                 vec![
@@ -213,6 +216,36 @@ fn one_row(length: usize) -> Vec<Range<usize>> {
     }];
 }
 
+/// What:
+///  One line's text and its row ranges,
+///  so the tests name the line once and ask for a Home or End press at a caret.
+/// Why:
+///  Every assertion presses from a different caret in the same line.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const from = { home: (head, affinity) => home(text, rows, head, affinity), end: ... };
+/// ```
+struct Navigator<'a> {
+    /// The line's text.
+    text: helix_core::RopeSlice<'a>,
+    /// The visual rows of the line,
+    ///  as character ranges.
+    rows: &'a [Range<usize>],
+}
+
+impl Navigator<'_> {
+    /// Press Home with the caret at `head` and `affinity`.
+    fn home(&self, head: usize, affinity: ReadingAffinity) -> CaretPlace {
+        return home(self.text, self.rows, head, affinity);
+    }
+
+    /// Press End with the caret at `head` and `affinity`.
+    fn end(&self, head: usize, affinity: ReadingAffinity) -> CaretPlace {
+        return end(self.text, self.rows, head, affinity);
+    }
+}
+
 fn place(head: usize, affinity: ReadingAffinity) -> CaretPlace {
     return CaretPlace { head, affinity };
 }
@@ -223,47 +256,49 @@ fn place(head: usize, affinity: ReadingAffinity) -> CaretPlace {
 #[test]
 fn home_goes_to_the_row_start_then_the_first_non_blank() {
     let (document, rows) = sample();
-    let text = document.text().slice(..);
-    let home_from = |head, affinity| return home(text, &rows, head, affinity);
+    let from = Navigator {
+        text: document.text().slice(..),
+        rows: &rows,
+    };
     use ReadingAffinity::{Downstream, Upstream};
     assert_eq!(
-        home_from(28, Downstream),
+        from.home(28, Downstream),
         place(25, Downstream),
         "inside the last row"
     );
     assert_eq!(
-        home_from(25, Downstream),
+        from.home(25, Downstream),
         place(2, Downstream),
         "at a continuation row start: the first non-blank"
     );
     assert_eq!(
-        home_from(13, Downstream),
+        from.home(13, Downstream),
         place(2, Downstream),
         "the same from the middle row start"
     );
     assert_eq!(
-        home_from(13, Upstream),
+        from.home(13, Upstream),
         place(2, Downstream),
         "an end of the first row, past the first non-blank"
     );
-    assert_eq!(home_from(24, Downstream), place(13, Downstream));
+    assert_eq!(from.home(24, Downstream), place(13, Downstream));
     assert_eq!(
-        home_from(5, Downstream),
+        from.home(5, Downstream),
         place(2, Downstream),
         "past the indent on the first row"
     );
     assert_eq!(
-        home_from(2, Downstream),
+        from.home(2, Downstream),
         place(0, Downstream),
         "at the first non-blank character"
     );
     assert_eq!(
-        home_from(1, Downstream),
+        from.home(1, Downstream),
         place(0, Downstream),
         "inside the indent"
     );
     assert_eq!(
-        home_from(0, Downstream),
+        from.home(0, Downstream),
         place(2, Downstream),
         "from the line start"
     );
@@ -297,38 +332,40 @@ fn home_goes_to_the_row_start_then_the_first_non_blank() {
 #[test]
 fn end_goes_to_the_row_end_then_the_line_end() {
     let (document, rows) = sample();
-    let text = document.text().slice(..);
-    let end_from = |head, affinity| return end(text, &rows, head, affinity);
+    let from = Navigator {
+        text: document.text().slice(..),
+        rows: &rows,
+    };
     use ReadingAffinity::{Downstream, Upstream};
     assert_eq!(
-        end_from(0, Downstream),
+        from.end(0, Downstream),
         place(11, Downstream),
         "before the two trailing blanks of the first row"
     );
     assert_eq!(
-        end_from(11, Downstream),
+        from.end(11, Downstream),
         place(13, Upstream),
         "the end of the upper row is drawn on it"
     );
     assert_eq!(
-        end_from(13, Upstream),
+        from.end(13, Upstream),
         place(30, Downstream),
         "from the end of an upper row to the line end"
     );
     assert_eq!(
-        end_from(13, Downstream),
+        from.end(13, Downstream),
         place(23, Downstream),
         "the middle row, before its trailing blanks"
     );
-    assert_eq!(end_from(23, Downstream), place(25, Upstream));
-    assert_eq!(end_from(25, Upstream), place(30, Downstream));
+    assert_eq!(from.end(23, Downstream), place(25, Upstream));
+    assert_eq!(from.end(25, Upstream), place(30, Downstream));
     assert_eq!(
-        end_from(27, Downstream),
+        from.end(27, Downstream),
         place(30, Downstream),
         "the last row has no trailing blanks"
     );
     assert_eq!(
-        end_from(30, Downstream),
+        from.end(30, Downstream),
         place(30, Downstream),
         "at the end of the text"
     );
@@ -469,12 +506,16 @@ fn end_on_shaped_rows_at_every_width_and_scale() {
                     let start = place(row.start, ReadingAffinity::Downstream);
                     let places =
                         press_until_still(&mut shaper, &text, start, Edge::End, width, scale);
-                    let reached = places
-                        .iter()
-                        .find(|place| return place.head == row.end)
-                        .unwrap_or_else(|| {
-                            panic!("{label}: row {index} never reached its end, places {places:?}")
-                        });
+                    let mut found_place = None;
+                    for candidate in places.iter() {
+                        if candidate.head == row.end {
+                            found_place = Some(candidate);
+                            break;
+                        }
+                    }
+                    let Some(reached) = found_place else {
+                        panic!("{label}: row {index} never reached its end, places {places:?}")
+                    };
                     let expected_side = if index + 1 < rows.len() {
                         ReadingAffinity::Upstream
                     } else {
@@ -588,16 +629,16 @@ fn caret_row(document: &Document, width: f32, scale: f32) -> usize {
     let position = document.position();
     let rows = all_rows(&document.text().to_string(), width, scale);
     let line = document.text().char_to_line(position.head);
-    let in_line: Vec<usize> = rows
-        .iter()
-        .enumerate()
-        .filter(|(_, row)| return row.0 == line)
-        .map(|(index, _)| return index)
-        .collect();
-    let ranges: Vec<Range<usize>> = in_line
-        .iter()
-        .map(|index| return rows[*index].2.clone())
-        .collect();
+    let mut in_line: Vec<usize> = Vec::new();
+    for (index, row) in rows.iter().enumerate() {
+        if row.0 == line {
+            in_line.push(index);
+        }
+    }
+    let mut ranges: Vec<Range<usize>> = Vec::new();
+    for index in in_line.iter() {
+        ranges.push(rows[*index].2.clone());
+    }
     return in_line[row_containing(&ranges, position.head, position.affinity)];
 }
 

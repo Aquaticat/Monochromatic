@@ -4,7 +4,7 @@
 /// Waits,
 ///  kernel probes,
 ///  and fixture helpers shared by this crate.
-use super::support::{arrive, kernel_watches, quiet, set, settle, start, watching};
+use super::support::{Arrival, kernel_watches, quiet, set, settle, start, watching};
 /// What:
 ///  notify's event constructors build a synthetic event exactly like the inotify backend's.
 /// Why:
@@ -59,13 +59,16 @@ fn folders_outside_the_root_are_never_watched_or_reported() {
     let alias = root.join("alias");
     symlink(&real, &alias).expect("symbolic link inside the root");
     watcher.watch_only(&set(&[&root, &outside, &link, &alias]), None);
-    let refused = arrive(
-        &mut watcher,
-        "refused watches falling back to a full reread",
-        |record| {
-            return record.everything && watching(record, &root);
-        },
-    );
+    let refused = {
+        let mut arrival = Arrival::begin(
+            &mut watcher,
+            "refused watches falling back to a full reread",
+        );
+        while !(arrival.record.everything && watching(&arrival.record, &root)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     let watched = refused.watched.expect("published watched set");
     assert!(
         !watched.contains(&outside),
@@ -168,9 +171,13 @@ fn a_displayed_file_outside_the_root_is_not_watched_and_not_a_failure() {
     let file = outside.join("vec.rs");
     fs::write(&file, "pub struct Vec;\n").expect("outside file");
     watcher.watch_only(&set(&[&root]), Some(&file));
-    let first = arrive(&mut watcher, "the root's watch", |record| {
-        return watching(record, &root);
-    });
+    let first = {
+        let mut arrival = Arrival::begin(&mut watcher, "the root's watch");
+        while !(watching(&arrival.record, &root)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     let later = quiet(&mut watcher);
     assert!(
         !first.everything && !later.everything,

@@ -32,7 +32,42 @@ use ide_app::shaped_text::{Clip, TextShaper, Viewport};
 /// and the limit of one raster.
 use ide_app::text_raster::{CodeColors, MAX_RASTER_BYTES, TextRaster};
 /// The wrap indicator chain.
-use ide_app::wrap_sign::{SIGN_INK, SIGN_PAIRS, Sign, choose_sign};
+use ide_app::wrap_sign::{SIGN_INK, SIGN_PAIRS, Sign, SignCoverage, choose_sign};
+
+/// Which symbols the fonts of a test show.
+enum Coverage {
+    /// Every symbol.
+    All,
+    /// Every symbol but this one.
+    Without(
+        /// The symbol the fonts lack.
+        char,
+    ),
+    /// Both symbols of this pair and no other.
+    Pair(
+        /// The pair the fonts show.
+        (char, char),
+    ),
+    /// This symbol alone.
+    Only(
+        /// The only symbol the fonts show.
+        char,
+    ),
+    /// No symbol.
+    None,
+}
+
+impl SignCoverage for Coverage {
+    fn can_display(&mut self, character: char) -> bool {
+        return match self {
+            Coverage::All => true,
+            Coverage::Without(lacking) => character != *lacking,
+            Coverage::Pair(pair) => pair.0 == character || pair.1 == character,
+            Coverage::Only(shown) => character == *shown,
+            Coverage::None => false,
+        };
+    }
+}
 
 /// A long line of ordinary code that wraps at the widths used here.
 const CODE: &str = "let value = compute_total(first_item, second_item); // a long comment that keeps going and going";
@@ -169,7 +204,11 @@ fn a_page_step_counts_visual_rows_with_the_blocks_above_their_first_rows() {
 #[test]
 fn a_million_lines_stay_cheap() {
     let mut rows = LineRows::plain(1_000_000);
-    rows.apply((0..1_000_000).step_by(1000).map(|line| return (line, 3)));
+    let mut updates: Vec<(usize, usize)> = Vec::new();
+    for line in (0..1_000_000).step_by(1000) {
+        updates.push((line, 3));
+    }
+    rows.apply(updates);
     let map = RowMap::plain(1_000_000).with_rows(&rows);
     let copy = map.clone();
     assert!(copy == map);
@@ -482,21 +521,21 @@ fn tab_correction_settles_at_every_width() {
 /// else an arrow.
 #[test]
 fn the_sign_is_the_first_displayable_pair_or_an_arrow() {
-    let all = |_: char| return true;
-    assert_eq!(choose_sign(all), Sign::Glyph('\u{2925}'));
-    let without_first = |character: char| return character != '\u{2926}';
-    assert_eq!(choose_sign(without_first), Sign::Glyph('\u{21B3}'));
-    let only_last_pair =
-        |character: char| return SIGN_PAIRS[3].0 == character || SIGN_PAIRS[3].1 == character;
-    assert_eq!(choose_sign(only_last_pair), Sign::Glyph('\u{21AA}'));
-    let after_only = |character: char| return character == '\u{2925}';
+    assert_eq!(choose_sign(Coverage::All), Sign::Glyph('\u{2925}'));
     assert_eq!(
-        choose_sign(after_only),
+        choose_sign(Coverage::Without('\u{2926}')),
+        Sign::Glyph('\u{21B3}')
+    );
+    assert_eq!(
+        choose_sign(Coverage::Pair(SIGN_PAIRS[3])),
+        Sign::Glyph('\u{21AA}')
+    );
+    assert_eq!(
+        choose_sign(Coverage::Only('\u{2925}')),
         Sign::Arrow,
         "a pair needs both of its symbols, as in IntelliJ's TextBasedSoftWrapPainter"
     );
-    let none = |_: char| return false;
-    assert_eq!(choose_sign(none), Sign::Arrow);
+    assert_eq!(choose_sign(Coverage::None), Sign::Arrow);
 }
 
 /// The shaper tells a displayable character from one no font has.
@@ -573,11 +612,10 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
         suggestion: [90, 90, 90, 255],
     };
     let frame = lay_out(&view, &visible, &mut shaper, colors);
-    let mut offsets: Vec<f32> = frame
-        .underlines
-        .iter()
-        .map(|run| return run.offset)
-        .collect();
+    let mut offsets: Vec<f32> = Vec::new();
+    for run in frame.underlines.iter() {
+        offsets.push(run.offset);
+    }
     offsets.sort_by(f32::total_cmp);
     assert_eq!(
         offsets.len(),
@@ -663,7 +701,10 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
         dark: false,
     };
     let refused = TextRaster::new().paint(&view, colors, 0.0);
-    let message = refused.err().map(|error| return format!("{error:#}"));
+    let mut message = None;
+    if let Some(error) = refused.err() {
+        message = Some(format!("{error:#}"));
+    }
     assert!(
         message
             .as_deref()
@@ -810,9 +851,11 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
         for code_row in 0..150 {
             let mut inked = false;
             for y in code_row * row_pixels..(code_row + 1) * row_pixels {
-                inked |= pixels.bytes[y * width * 4..(y + 1) * width * 4]
-                    .chunks(4)
-                    .any(|pixel| return pixel[3] > 0);
+                for pixel in pixels.bytes[y * width * 4..(y + 1) * width * 4].chunks(4) {
+                    if pixel[3] > 0 {
+                        inked = true;
+                    }
+                }
             }
             assert!(
                 inked,

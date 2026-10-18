@@ -69,11 +69,10 @@ fn reader_bounds_requests_and_preserves_snapshot_order() {
     assert!(no_duplicate_listing);
     assert!(first.expect("first reply still current"));
     // Consume the visible rows and compare their exact native entries, not lossy display strings.
-    let actual: Vec<_> = tree
-        .rows()
-        .into_iter()
-        .map(|row| return row.entry)
-        .collect();
+    let mut actual = Vec::new();
+    for row in tree.rows() {
+        actual.push(row.entry);
+    }
     assert_eq!(actual, expected);
     assert!(!worker.is_busy());
 }

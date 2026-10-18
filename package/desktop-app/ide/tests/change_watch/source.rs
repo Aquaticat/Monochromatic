@@ -3,7 +3,7 @@
 //!  and silence for the IDE's own reads.
 
 /// Waits and fixture helpers shared by this crate.
-use super::support::{arrive, quiet, set, settle, start};
+use super::support::{Arrival, quiet, set, settle, start};
 /// Settled changes are read at once;
 ///  unsettled ones wait for the writer to go quiet.
 use ide_app::change_watch::{ChangeWatcher, SourceChange};
@@ -22,17 +22,16 @@ use std::{
     io::Write,
 };
 
-/// Drain,
-///  run `change`,
-///  and return the latest classification reported for the displayed file.
-fn classification(
-    watcher: &mut ChangeWatcher,
-    what: &str,
-    change: impl FnOnce(),
-) -> Option<SourceChange> {
-    quiet(watcher);
-    change();
-    let first = arrive(watcher, what, |record| return record.source.is_some());
+/// Return the latest classification reported for the displayed file,
+///  after the caller drained and made one change.
+fn classification(watcher: &mut ChangeWatcher, what: &str) -> Option<SourceChange> {
+    let first = {
+        let mut arrival = Arrival::begin(watcher, what);
+        while !(arrival.record.source.is_some()) {
+            arrival.again(watcher);
+        }
+        arrival.into_record()
+    };
     // Later events of the same operation may still arrive; let them land before reading the latest.
     let later = quiet(watcher);
     if later.source.is_some() {
@@ -61,8 +60,9 @@ fn displayed_file_changes_are_settled_only_when_finished() {
     // ```ts
     // let handle: number | undefined;
     // ```
-    let mut handle = None;
-    let open_write = classification(&mut watcher, "a truncating write", || {
+    let mut handle;
+    quiet(&mut watcher);
+    {
         let mut opened = OpenOptions::new()
             .write(true)
             .truncate(true)
@@ -70,41 +70,50 @@ fn displayed_file_changes_are_settled_only_when_finished() {
             .expect("open for writing");
         opened.write_all(b"partial").expect("partial write");
         handle = Some(opened);
-    });
+    }
+    let open_write = classification(&mut watcher, "a truncating write");
     assert_eq!(
         open_write,
         Some(SourceChange::Unsettled),
         "a truncating write still open looked finished"
     );
-    let closed = classification(&mut watcher, "the close", || {
+    quiet(&mut watcher);
+    {
         drop(handle.take());
-    });
+    }
+    let closed = classification(&mut watcher, "the close");
     assert_eq!(
         closed,
         Some(SourceChange::Settled),
         "closing the written file did not settle it"
     );
-    let replaced = classification(&mut watcher, "an atomic replace", || {
+    quiet(&mut watcher);
+    {
         let staged = root.join(".view.txt.tmp");
         fs::write(&staged, "replacement").expect("staged replacement");
         fs::rename(&staged, &file).expect("atomic replace");
-    });
+    }
+    let replaced = classification(&mut watcher, "an atomic replace");
     assert_eq!(
         replaced,
         Some(SourceChange::Settled),
         "an atomic replace did not settle"
     );
-    let removed = classification(&mut watcher, "a removal", || {
+    quiet(&mut watcher);
+    {
         fs::remove_file(&file).expect("remove displayed file");
-    });
+    }
+    let removed = classification(&mut watcher, "a removal");
     assert_eq!(
         removed,
         Some(SourceChange::Settled),
         "removing the displayed file did not settle"
     );
-    let recreated = classification(&mut watcher, "a recreation", || {
+    quiet(&mut watcher);
+    {
         fs::write(&file, "recreated").expect("recreate displayed file");
-    });
+    }
+    let recreated = classification(&mut watcher, "a recreation");
     assert_eq!(
         recreated,
         Some(SourceChange::Settled),
@@ -139,7 +148,11 @@ fn the_ides_own_reads_report_nothing() {
     );
     // Positive control: the same probe sees a real write to the same file.
     fs::write(&file, "changed").expect("external write");
-    arrive(&mut watcher, "the control write", |record| {
-        return record.source.is_some();
-    });
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "the control write");
+        while !(arrival.record.source.is_some()) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }

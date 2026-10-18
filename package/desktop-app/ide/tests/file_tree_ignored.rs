@@ -22,11 +22,12 @@ fn child(parent: &str, name: &str, is_directory: bool) -> DirectoryEntry {
 /// An answer naming the given entries,
 ///  with stamps of a work tree whose rules never change.
 fn answer(names: &[&str]) -> IgnoreAnswer {
+    let mut owned: BTreeSet<OsString> = BTreeSet::new();
+    for name in names {
+        owned.insert(OsString::from(name));
+    }
     return IgnoreAnswer {
-        names: names
-            .iter()
-            .map(|name| return OsString::from(name))
-            .collect::<BTreeSet<_>>(),
+        names: owned,
         stamps: RuleStamps {
             top: Some("/project".into()),
             ..RuleStamps::default()
@@ -36,12 +37,13 @@ fn answer(names: &[&str]) -> IgnoreAnswer {
 
 /// The names of the rows that are marked ignored.
 fn dimmed(tree: &FileTree) -> Vec<String> {
-    return tree
-        .rows()
-        .into_iter()
-        .filter(|row| return row.ignored)
-        .map(|row| return row.entry.name.to_string_lossy().into_owned())
-        .collect();
+    let mut names: Vec<String> = Vec::new();
+    for row in tree.rows() {
+        if row.ignored {
+            names.push(row.entry.name.to_string_lossy().into_owned());
+        }
+    }
+    return names;
 }
 
 /// A snapshot without an answer marks nothing,

@@ -30,6 +30,37 @@ fn viewport(wrap: Option<f32>) -> Viewport {
     };
 }
 
+/// The heaviest weight among the faces,
+///  or nothing without faces.
+fn weight_of(faces: &[(bool, i16)]) -> Option<i16> {
+    let mut heaviest: Option<i16> = None;
+    for face in faces {
+        let heavier = match heaviest {
+            Some(held) => face.1 > held,
+            None => true,
+        };
+        if heavier {
+            heaviest = Some(face.1);
+        }
+    }
+    return heaviest;
+}
+
+/// One straight color channel recovered from a premultiplied one with `alpha`.
+fn straight(value: u8, alpha: u32) -> u8 {
+    return ((u32::from(value) * 255 + alpha / 2) / alpha).min(255) as u8;
+}
+
+/// True when some channel of `color` is farther than four from the same channel of `hue`.
+fn is_off_hue(color: &[u8; 3], hue: [u8; 3]) -> bool {
+    for (drawn, wanted) in color.iter().zip(hue) {
+        if drawn.abs_diff(wanted) > 4 {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// The character range of the first occurrence of `word` in `source`.
 fn span(source: &str, word: &str, style: u32) -> StyleSpan {
     let byte = source.find(word).expect("word is in the sample");
@@ -89,15 +120,16 @@ fn heavy_roles_shape_in_a_heavier_instance_of_the_roman_face() {
     assert!(plain.iter().all(|face| return *face == (false, 0)));
     for role in [HEADING_ROLE, BOLD_ROLE, LIST_ROLE] {
         let styled = faces(source, &[span(source, "strong", role)]);
-        let heavier = styled
-            .iter()
-            .filter(|(italic, weight)| return !*italic && *weight > 0)
-            .count();
+        let mut heavier = 0;
+        for (italic, weight) in styled.iter() {
+            if !*italic && *weight > 0 {
+                heavier += 1;
+            }
+        }
         assert_eq!(heavier, 1, "role {role} makes one heavier run: {styled:?}");
     }
     let semibold = faces(source, &[span(source, "strong", LINK_ROLE)]);
     let bold = faces(source, &[span(source, "strong", BOLD_ROLE)]);
-    let weight_of = |faces: &Vec<(bool, i16)>| return faces.iter().map(|face| return face.1).max();
     assert!(weight_of(&semibold) > Some(0) && weight_of(&semibold) < weight_of(&bold));
 }
 
@@ -217,9 +249,11 @@ fn ink_of(role: u32, dark: bool) -> Vec<[u8; 3]> {
         // The raster is premultiplied; faint edge pixels carry too little color to compare.
         if pixel[3] >= 128 {
             let alpha = u32::from(pixel[3]);
-            let straight =
-                |value: u8| return ((u32::from(value) * 255 + alpha / 2) / alpha).min(255) as u8;
-            found.push([straight(pixel[0]), straight(pixel[1]), straight(pixel[2])]);
+            found.push([
+                straight(pixel[0], alpha),
+                straight(pixel[1], alpha),
+                straight(pixel[2], alpha),
+            ]);
         }
     }
     return found;
@@ -242,14 +276,12 @@ fn markdown_roles_are_painted_in_their_hue_in_both_schemes() {
                 !found.is_empty(),
                 "role {role}, {scheme}: nothing was drawn"
             );
-            let off = found
-                .iter()
-                .filter(|color| {
-                    return color.iter().zip(hue).any(|(drawn, wanted)| {
-                        return drawn.abs_diff(wanted) > 4;
-                    });
-                })
-                .count();
+            let mut off = 0;
+            for color in found.iter() {
+                if is_off_hue(color, hue) {
+                    off += 1;
+                }
+            }
             assert_eq!(
                 off,
                 0,

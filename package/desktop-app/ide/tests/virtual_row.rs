@@ -91,7 +91,10 @@ fn line_breaks_start_rows_and_indentation_is_kept() {
             "  Type 'string' is not assignable to type 'number'.",
         ]
     );
-    let continued: Vec<bool> = rows.iter().map(|row| return row.continued).collect();
+    let mut continued: Vec<bool> = Vec::new();
+    for row in rows.iter() {
+        continued.push(row.continued);
+    }
     assert_eq!(continued, [false, true, true]);
 }
 
@@ -204,24 +207,6 @@ fn a_pile_of_messages_is_capped_with_a_count() {
 ///  messages below hints.
 #[test]
 fn block_height_and_row_positions() {
-    let row = |text: &str| {
-        return MessageRow {
-            start: 0,
-            continued: false,
-            severity: Severity::Error,
-            gap: None,
-            text: text.to_string(),
-        };
-    };
-    let hint = |index: usize| {
-        return HintPlace {
-            row: index,
-            position: 0,
-            x: 0.0,
-            width: 10.0,
-            text: "x".to_string(),
-        };
-    };
     let mut block = Block {
         line: 4,
         hint_rows: 2,
@@ -264,4 +249,26 @@ fn block_height_and_row_positions() {
         ..empty
     };
     assert_eq!(held_only.height(), BLOCK_GAP + 2.0 * ROW_HEIGHT);
+}
+
+/// A message row of error severity that starts at the first character and holds `text`.
+fn row(text: &str) -> MessageRow {
+    return MessageRow {
+        start: 0,
+        continued: false,
+        severity: Severity::Error,
+        gap: None,
+        text: text.to_string(),
+    };
+}
+
+/// A hint on virtual row `index`.
+fn hint(index: usize) -> HintPlace {
+    return HintPlace {
+        row: index,
+        position: 0,
+        x: 0.0,
+        width: 10.0,
+        text: "x".to_string(),
+    };
 }

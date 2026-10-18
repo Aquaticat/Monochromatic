@@ -4,7 +4,7 @@
 /// Waits,
 ///  kernel probes,
 ///  and fixture helpers shared by this crate.
-use super::support::{arrive, kernel_watches, not_watching, quiet, set, settle, start, watching};
+use super::support::{Arrival, kernel_watches, not_watching, quiet, set, settle, start, watching};
 /// The watcher under test,
 ///  and how it classifies the displayed file's changes.
 use ide_app::change_watch::{ChangeWatcher, SourceChange};
@@ -22,26 +22,26 @@ use std::os::unix::fs::PermissionsExt;
 /// Fixture writes and renames happen through the ordinary filesystem API.
 use std::{fs, path::Path};
 
-/// Drain earlier notifications,
-///  run `change`,
-///  and require a report for `folder` without a full reread.
+/// Require a report for `folder` without a full reread,
+///  after the caller drained earlier notifications and made one filesystem change.
 ///
 /// What:
-///  `change: impl FnOnce()` accepts any closure called once,
-///  like a TS `() => void` parameter.
+///  The caller drains with `quiet` and makes the change itself before calling this.
 /// Why:
 ///  Each filesystem step is checked in isolation from the notifications of the previous step.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function expectReport(watcher, folder, name, change: () => void) { ... }
+/// function expectReport(watcher, folder, name) { ... }
 /// ```
-fn expect_report(watcher: &mut ChangeWatcher, folder: &Path, name: &str, change: impl FnOnce()) {
-    quiet(watcher);
-    change();
-    let record = arrive(watcher, name, |pending| {
-        return pending.directories.contains(folder);
-    });
+fn expect_report(watcher: &mut ChangeWatcher, folder: &Path, name: &str) {
+    let record = {
+        let mut arrival = Arrival::begin(watcher, name);
+        while !(arrival.record.directories.contains(folder)) {
+            arrival.again(watcher);
+        }
+        arrival.into_record()
+    };
     assert!(
         !record.everything,
         "{name} requested a full reread: {record:?}"
@@ -60,18 +60,26 @@ fn created_renamed_and_removed_entries_invalidate_their_folder() {
     fs::create_dir(&folder).expect("fixture folder");
     watcher.watch_only(&set(&[&root, &folder]), None);
     settle(&mut watcher, &[&root, &folder]);
-    expect_report(&mut watcher, &folder, "a created file", || {
+    quiet(&mut watcher);
+    {
         fs::write(folder.join("a.txt"), "a").expect("create");
-    });
-    expect_report(&mut watcher, &folder, "a renamed file", || {
+    }
+    expect_report(&mut watcher, &folder, "a created file");
+    quiet(&mut watcher);
+    {
         fs::rename(folder.join("a.txt"), folder.join("b.txt")).expect("rename");
-    });
-    expect_report(&mut watcher, &folder, "a removed file", || {
+    }
+    expect_report(&mut watcher, &folder, "a renamed file");
+    quiet(&mut watcher);
+    {
         fs::remove_file(folder.join("b.txt")).expect("remove");
-    });
-    expect_report(&mut watcher, &folder, "a created folder", || {
+    }
+    expect_report(&mut watcher, &folder, "a removed file");
+    quiet(&mut watcher);
+    {
         fs::create_dir(folder.join("nested")).expect("create folder");
-    });
+    }
+    expect_report(&mut watcher, &folder, "a created folder");
 }
 
 /// A permission change on a watched folder reports that folder,
@@ -85,7 +93,8 @@ fn a_permission_change_on_a_watched_folder_reports_it() {
     fs::create_dir(&folder).expect("fixture folder");
     watcher.watch_only(&set(&[&root, &folder]), None);
     settle(&mut watcher, &[&root, &folder]);
-    expect_report(&mut watcher, &folder, "a permission change", || {
+    quiet(&mut watcher);
+    {
         // What: `Permissions::from_mode(0o700)` builds Unix permission bits; `0o` marks an octal literal.
         // Why: Any mode change makes inotify report an attribute event for the folder itself.
         //
@@ -94,7 +103,8 @@ fn a_permission_change_on_a_watched_folder_reports_it() {
         // chmodSync(folder, 0o700);
         // ```
         fs::set_permissions(&folder, fs::Permissions::from_mode(0o700)).expect("change mode");
-    });
+    }
+    expect_report(&mut watcher, &folder, "a permission change");
 }
 
 /// Moving a file into and out of a watched folder reports both folders.
@@ -109,22 +119,27 @@ fn moves_into_and_out_of_a_watched_folder_report_both_folders() {
     watcher.watch_only(&set(&[&root, &folder]), None);
     settle(&mut watcher, &[&root, &folder]);
     fs::rename(root.join("outer.txt"), folder.join("outer.txt")).expect("move in");
-    arrive(
-        &mut watcher,
-        "a move into the folder, for both folders",
-        |record| {
-            return record.directories.contains(&folder) && record.directories.contains(&root);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "a move into the folder, for both folders");
+        while !(arrival.record.directories.contains(&folder)
+            && arrival.record.directories.contains(&root))
+        {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     quiet(&mut watcher);
     fs::rename(folder.join("outer.txt"), root.join("outer.txt")).expect("move out");
-    arrive(
-        &mut watcher,
-        "a move out of the folder, for both folders",
-        |record| {
-            return record.directories.contains(&folder) && record.directories.contains(&root);
-        },
-    );
+    {
+        let mut arrival =
+            Arrival::begin(&mut watcher, "a move out of the folder, for both folders");
+        while !(arrival.record.directories.contains(&folder)
+            && arrival.record.directories.contains(&root))
+        {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }
 
 /// A new watch reports its folder once,
@@ -140,19 +155,23 @@ fn a_new_watch_reports_its_folder_and_the_displayed_file_once() {
     let file = folder.join("view.txt");
     fs::write(&file, "view").expect("displayed file");
     watcher.watch_only(&set(&[&root]), None);
-    let first = arrive(&mut watcher, "the root's new watch", |record| {
-        return record.directories.contains(&root);
-    });
+    let first = {
+        let mut arrival = Arrival::begin(&mut watcher, "the root's new watch");
+        while !(arrival.record.directories.contains(&root)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     assert_eq!(first.source, None, "no file is displayed yet");
     // The displayed file's directory is watched even though the tree does not show it.
     watcher.watch_only(&set(&[&root]), Some(&file));
-    let second = arrive(
-        &mut watcher,
-        "the displayed file's new directory watch",
-        |record| {
-            return record.directories.contains(&folder) && record.source.is_some();
-        },
-    );
+    let second = {
+        let mut arrival = Arrival::begin(&mut watcher, "the displayed file's new directory watch");
+        while !(arrival.record.directories.contains(&folder) && arrival.record.source.is_some()) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     assert!(watching(&second, &folder));
 }
 
@@ -170,9 +189,13 @@ fn a_newly_displayed_file_in_a_watched_folder_is_reported_once() {
     watcher.watch_only(&set(&[&root]), Some(&first));
     settle(&mut watcher, &[&root]);
     watcher.watch_only(&set(&[&root]), Some(&second));
-    let switched = arrive(&mut watcher, "the newly displayed file", |record| {
-        return record.source.is_some();
-    });
+    let switched = {
+        let mut arrival = Arrival::begin(&mut watcher, "the newly displayed file");
+        while !(arrival.record.source.is_some()) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     // No write was seen, so the read it asks for must accept only a file that has been quiet.
     assert_eq!(
         switched.source,
@@ -196,24 +219,27 @@ fn a_displayed_file_is_reported_when_its_retried_folder_watch_starts() {
     let folder = root.join("later");
     let file = folder.join("view.txt");
     watcher.watch_only(&set(&[&root]), Some(&file));
-    arrive(
-        &mut watcher,
-        "the failed watch of a missing folder",
-        |record| {
-            return record.everything && watching(record, &root);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(&mut watcher, "the failed watch of a missing folder");
+        while !(arrival.record.everything && watching(&arrival.record, &root)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     fs::create_dir(&folder).expect("create the folder");
     fs::write(&file, "view").expect("create the displayed file");
     quiet(&mut watcher);
     watcher.retry();
-    arrive(
-        &mut watcher,
-        "the displayed file after its folder's retried watch",
-        |record| {
-            return watching(record, &folder) && record.source.is_some();
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(
+            &mut watcher,
+            "the displayed file after its folder's retried watch",
+        );
+        while !(watching(&arrival.record, &folder) && arrival.record.source.is_some()) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
 }
 
 /// Collapsing a folder removes its kernel watch;
@@ -232,13 +258,16 @@ fn collapsing_a_folder_removes_its_kernel_watch() {
         "the shown folder has no kernel watch"
     );
     watcher.watch_only(&set(&[&root]), None);
-    arrive(
-        &mut watcher,
-        "the collapsed folder's removal from the watched set",
-        |record| {
-            return not_watching(record, &folder);
-        },
-    );
+    {
+        let mut arrival = Arrival::begin(
+            &mut watcher,
+            "the collapsed folder's removal from the watched set",
+        );
+        while !(not_watching(&arrival.record, &folder)) {
+            arrival.again(&mut watcher);
+        }
+        arrival.into_record()
+    };
     assert!(
         !kernel_watches(&folder),
         "the collapsed folder kept its kernel watch"
@@ -283,20 +312,14 @@ fn an_ignore_rule_file_edited_in_place_reports_its_folder_and_other_files_do_not
         silent.directories.is_empty() && !silent.everything,
         "a content edit of an ordinary file reported its folder: {silent:?}"
     );
-    expect_report(
-        &mut watcher,
-        &root,
-        "an in-place edit of .gitignore",
-        || {
-            fs::write(root.join(".gitignore"), "*.log\n*.tmp\n").expect("edit rule file");
-        },
-    );
-    expect_report(
-        &mut watcher,
-        &info,
-        "an in-place edit of info/exclude",
-        || {
-            fs::write(info.join("exclude"), "# edited\n").expect("edit exclude file");
-        },
-    );
+    quiet(&mut watcher);
+    {
+        fs::write(root.join(".gitignore"), "*.log\n*.tmp\n").expect("edit rule file");
+    }
+    expect_report(&mut watcher, &root, "an in-place edit of .gitignore");
+    quiet(&mut watcher);
+    {
+        fs::write(info.join("exclude"), "# edited\n").expect("edit exclude file");
+    }
+    expect_report(&mut watcher, &info, "an in-place edit of info/exclude");
 }

@@ -46,6 +46,35 @@ const COLORS: AnnotationColors = AnnotationColors {
     suggestion: [90, 90, 90, 255],
 };
 
+/// The character offset where line `line` of `text` starts.
+fn start_of(text: &str, line: usize) -> usize {
+    return Document::new(text).text().line_to_char(line);
+}
+
+/// The block that stands above `line`.
+fn block_at(blocks: &[Arc<Block>], line: usize) -> Arc<Block> {
+    for block in blocks {
+        if block.line == line {
+            return Arc::clone(block);
+        }
+    }
+    panic!("block");
+}
+
+/// The words of all message rows,
+///  in order.
+fn words(rows: &[ide_app::virtual_row::MessageRow]) -> Vec<String> {
+    let mut texts: Vec<&str> = Vec::new();
+    for row in rows {
+        texts.push(row.text.as_str());
+    }
+    let mut found: Vec<String> = Vec::new();
+    for word in texts.join(" ").split_whitespace() {
+        found.push(word.to_string());
+    }
+    return found;
+}
+
 /// The process every record names.
 fn server() -> ServerIdentity {
     return ServerIdentity {
@@ -239,10 +268,10 @@ fn a_label_wider_than_the_text_area_breaks_into_rows() {
             assert_eq!(place.x, 0.0, "later pieces start at the left edge");
         }
     }
-    let joined: Vec<&str> = places
-        .iter()
-        .map(|place| return place.text.as_str())
-        .collect();
+    let mut joined: Vec<&str> = Vec::new();
+    for place in places.iter() {
+        joined.push(place.text.as_str());
+    }
     assert_eq!(
         joined
             .join(" ")
@@ -321,16 +350,6 @@ fn message_rows_break_to_the_text_area() {
             row.text
         );
     }
-    let words = |rows: &[ide_app::virtual_row::MessageRow]| {
-        return rows
-            .iter()
-            .map(|row| return row.text.as_str())
-            .collect::<Vec<_>>()
-            .join(" ")
-            .split_whitespace()
-            .map(str::to_string)
-            .collect::<Vec<_>>();
-    };
     assert_eq!(
         words(&narrow[0].messages),
         words(&plain[0].messages),
@@ -473,11 +492,10 @@ fn a_block_sits_above_the_first_row_and_underlines_stay_on_their_rows() {
     };
     let mut framed = shaper.prepare_rows(&document, viewport(2, 200.0), &[], &plain);
     let frame = lay_out(&framed, &visible, &mut shaper, COLORS);
-    let mut offsets: Vec<f32> = frame
-        .underlines
-        .iter()
-        .map(|run| return run.offset)
-        .collect();
+    let mut offsets: Vec<f32> = Vec::new();
+    for run in frame.underlines.iter() {
+        offsets.push(run.offset);
+    }
     offsets.sort_by(f32::total_cmp);
     assert_eq!(
         offsets,
@@ -527,13 +545,19 @@ fn a_new_width_does_only_the_work_it_needs() {
     for number in 0..40 {
         text.push_str(&format!("{CODE} {number}\n"));
     }
-    let start_of = |line: usize| return Document::new(&text).text().line_to_char(line);
-    let hints = vec![hint(start_of(3) + 10, ": a"), hint(start_of(9) + 10, ": b")];
+    let hints = vec![
+        hint(start_of(&text, 3) + 10, ": a"),
+        hint(start_of(&text, 9) + 10, ": b"),
+    ];
     let diagnostics = vec![
-        error(start_of(5) + 4, start_of(5) + 9, "short message"),
         error(
-            start_of(7) + 4,
-            start_of(7) + 9,
+            start_of(&text, 5) + 4,
+            start_of(&text, 5) + 9,
+            "short message",
+        ),
+        error(
+            start_of(&text, 7) + 4,
+            start_of(&text, 7) + 9,
             "expected `u32`, found `&str` because the argument named first_item is a string slice here",
         ),
     ];
@@ -646,26 +670,19 @@ fn a_new_width_applies_to_the_lines_near_the_view_first() {
     for number in 0..40 {
         text.push_str(&format!("{CODE} {number}\n"));
     }
-    let start_of = |line: usize| return Document::new(&text).text().line_to_char(line);
     let hints = vec![
-        hint(start_of(3) + 90, ": a"),
-        hint(start_of(30) + 90, ": b"),
+        hint(start_of(&text, 3) + 90, ": a"),
+        hint(start_of(&text, 30) + 90, ": b"),
     ];
     let long =
         "expected `u32`, found `&str` because the argument named first_item is a string slice here";
     let diagnostics = vec![
-        error(start_of(5) + 4, start_of(5) + 9, long),
-        error(start_of(33) + 4, start_of(33) + 9, long),
+        error(start_of(&text, 5) + 4, start_of(&text, 5) + 9, long),
+        error(start_of(&text, 33) + 4, start_of(&text, 33) + 9, long),
     ];
     let (mut annotations, document) = store(&text, hints, diagnostics);
     let mut shaper = TextShaper::new();
-    let block_at = |blocks: &[Arc<Block>], line: usize| {
-        return blocks
-            .iter()
-            .find(|block| return block.line == line)
-            .map(Arc::clone)
-            .expect("block");
-    };
+
     let wide = annotations.assemble(
         SHOWN,
         &document,
@@ -756,11 +773,13 @@ fn a_message_line_is_broken_again_as_a_whole() {
     );
     let rows = &blocks[0].messages;
     // The first message: every row but its last holds most of the width.
-    let first_end = rows
-        .iter()
-        .skip(1)
-        .position(|row| return !row.continued)
-        .map_or(rows.len(), |index| return index + 1);
+    let mut first_end = rows.len();
+    for (index, row) in rows.iter().enumerate().skip(1) {
+        if !row.continued {
+            first_end = index;
+            break;
+        }
+    }
     assert!(
         first_end >= 3,
         "the message takes several rows: {first_end}"
