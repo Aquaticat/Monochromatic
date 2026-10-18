@@ -238,20 +238,21 @@ before saying it matches, QAB):
 - 2026-10-18, desktop part of the owner's license decision, READY TO MERGE, NOT merged, NOT released, no version bump
   (a Sonnet agent was told not to merge, release or bump): branch `feat/music-player-desktop-licenses-row`, worktree
   `music-player-licrow`, code head `7cf2831df7`, `main` merged in at `5994c324b9`. The owner decided on 2026-10-18
-  (question tool): the desktop releases use Slint under its Royalty-free license 2.0 instead of GPL-3.0-only, and Settings
-  gets a Licenses row on both platforms without mockups. This branch is the desktop half; the Android row is another
-  agent's. It builds on the notice tooling of `feat/music-player-license-notices`, which is already an ancestor of `main`.
-  Done: `about.toml` accepts `LicenseRef-Slint-Royalty-free-2.0` and no longer `GPL-3.0-only`; cargo-about 0.9.2 drops the
-  text of a `LicenseRef-*` license (`doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md`), so
-  `bin/third-party-notices.mjs` adds a Slint section from `notices/slint-royalty-free-2.0.md` after a SHA-256 check of
-  each Slint crate's own file; the Settings page has an About heading and a Licenses row that opens `ui/licenses.slint`
-  (the `AboutSlint` widget, then the notice text in a ListView fed by `NoticeLines`, built on open and released on close);
-  Escape and the Back arrow return to Settings; release notes, README, runbook and the decision's dated amendment follow.
-  Fresh on this head: `lint:slint` clean, clippy clean, nextest 1,545 tests run, 1,545 passed, 1 skipped (1,466 on the
-  notices branch; this branch adds the Licenses tests and main's), end to end `settings/` 6 of 6 and `auto-play` 4 of 4 on
-  the release binary in the nested compositor, actionlint clean. Release binary 55,816,872 bytes against 55,544,040 on
-  `main` (a first build was 57,790,760 because `NOTICES` was a `const` copied into the window crate; now a `static`,
-  with a test). Startup: no measurable change (the two batches of the same build differ by about 20 ms, more than any
+  (question tool): the desktop releases use Slint under its Royalty-free license 2.0 instead of GPL-3.0-only, and
+  Settings gets a Licenses row on both platforms without mockups. This branch is the desktop half; the Android row is
+  another agent's. It builds on the notice tooling of `feat/music-player-license-notices`, which is already an
+  ancestor of `main`. Done: `about.toml` accepts `LicenseRef-Slint-Royalty-free-2.0` and no longer `GPL-3.0-only`;
+  cargo-about 0.9.2 drops the text of a `LicenseRef-*` license
+  (`doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md`), so `bin/third-party-notices.mjs` adds a Slint
+  section from `notices/slint-royalty-free-2.0.md` after a SHA-256 check of each Slint crate's own file; the Settings
+  page has an About heading and a Licenses row that opens `ui/licenses.slint` (the `AboutSlint` widget, then the
+  notice text in a ListView fed by `NoticeLines`, built on open and released on close); Escape and the Back arrow
+  return to Settings; release notes, README, runbook and the decision's dated amendment follow. Fresh on this head:
+  `lint:slint` clean, clippy clean, nextest 1,545 tests run, 1,545 passed, 1 skipped (1,466 on the notices branch;
+  this branch adds the Licenses tests and main's), end to end `settings/` 6 of 6 and `auto-play` 4 of 4 on the release
+  binary in the nested compositor, actionlint clean. Release binary 55,816,872 bytes against 55,544,040 on `main` (a
+  first build was 57,790,760 because `NOTICES` was a `const` copied into the window crate; now a `static`, with a
+  test). Startup: no measurable change (the two batches of the same build differ by about 20 ms, more than any
   difference between builds); opening the page builds the 40,039-line model in 833 to 1,098 microseconds. Not done: a
   green release dry run is recorded below when it finishes; the Windows and macOS binaries were not run; nothing was
   verified on a real keyboard or screen reader. Open for the owner: whether the Licenses page counts as the "About
