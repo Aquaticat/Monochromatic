@@ -1,5 +1,5 @@
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {captureApprovalHostSource} from './approval.mjs';
+import {captureApprovalHostSource,createApprovalHostOperation} from './approval.mjs';
 import {capturePolicyInputs} from './inputs.mjs';
 import {
   captureAuthorizationInputs,
@@ -346,8 +346,10 @@ export function createDecisionGate({
  const headingPolicy=headingContextAdmissionPolicy===undefined?undefined:captureHeadingContextAdmissionPolicy(headingContextAdmissionPolicy);
  const unitPolicy=unitAdoptionAdmissionPolicy===undefined?undefined:captureUnitAdoptionAdmissionPolicy(unitAdoptionAdmissionPolicy);
  const authorizationFactory=authorizationOwnerFor===undefined?undefined:captureAuthorizationOwnerFactory(authorizationOwnerFor);
- const captureHost=captureApprovalHostSource(approvalHost);
+ const captureSource=captureApprovalHostSource(approvalHost);
  let active=false;
+ function createOperationReview(){
+ const host=createApprovalHostOperation(captureSource);
  async function review(response){
   const rl=tagged({
     tag:review.name,
@@ -377,7 +379,7 @@ export function createDecisionGate({
      policy,
      headingPolicy,
      unitPolicy,
-     approvalHost:captureHost(),
+     approvalHost:host.captureHost(),
      sourceContext:{
        producerOwner,
        observer,
@@ -418,7 +420,8 @@ export function createDecisionGate({
    throw error;
   }
  }
- const gate=Object.freeze({review});
- return gate;
+ return Object.freeze({...host,review});
+ }
+ return Object.freeze({createOperationReview});
 }
 //endregion Original decision ownership

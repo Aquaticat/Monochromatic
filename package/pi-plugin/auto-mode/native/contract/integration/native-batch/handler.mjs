@@ -1,6 +1,5 @@
 import {dispatchPreparedBatch} from "./generated/prepared-dispatch.mjs";
 import {createDecisionGate} from '../action-policy/decision-core.mjs';
-import {captureApprovalHostSource} from '../action-policy/approval.mjs';
 import {createPreparedGroup} from './prepared-group.mjs';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 
@@ -63,7 +62,6 @@ export function createNativeBatchHandler({
   executionOrigins,
   readBypass=function readNoBypass(){return false;}
 }){
-  const captureHost=captureApprovalHostSource(approvalHost);
   const l=tagged({
     tag:createNativeBatchHandler.name,
     l:tagged({tag:'auto-mode-native-batch'})
@@ -102,12 +100,13 @@ export function createNativeBatchHandler({
       response:assistantMessage,
       stream
     });
+    using operationReview=reviewer.createOperationReview();
     const group=createPreparedGroup({
       response:assistantMessage,
       stream,
       signal,
       assertOperationCurrent:captureOperationCurrentness(),
-      captureHost,
+      captureHost:operationReview.captureHost,
       origins:executionOrigins,
       readBypass,
       constructSource(context){return producerOwner.beginJudgment({
@@ -116,7 +115,7 @@ export function createNativeBatchHandler({
         signal,
         group:context
       });},
-      reviewSource(){return reviewer.review(assistantMessage);},
+      reviewSource(){return operationReview.review(assistantMessage);},
       preparePrograms(judgment){prepareProgramInputs({
         judgment,
         tools:context.tools??[]

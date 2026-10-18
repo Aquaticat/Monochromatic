@@ -65,3 +65,29 @@ export function captureApprovalHostSource(input){
  const host=captureApprovalHost(input);
  return function captureFixedApprovalHost(){return host;};
 }
+
+/** One prepared operation shares its original presentation capture across automatic and manual review. */
+export function createApprovalHostOperation(captureSource){
+ const state={closed:false,captured:false,host:undefined,failure:undefined};
+ function captureHost(){
+  if(state.closed)throw new PolicyApprovalError('The original approval capability scope has ended');
+  if(state.failure)throw state.failure.error;
+  if(state.captured)return state.host;
+  state.captured=true;
+  try{
+   state.host=captureSource();
+   return state.host;
+  }catch(error){
+   state.failure={error};
+   throw error;
+  }
+ }
+ return Object.freeze({
+  captureHost,
+  [Symbol.dispose](){
+   state.closed=true;
+   state.host=undefined;
+   state.failure=undefined;
+  }
+ });
+}
