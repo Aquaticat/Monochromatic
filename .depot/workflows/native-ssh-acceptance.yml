@@ -31,7 +31,6 @@ jobs:
         with:
           limit-access-to-actor: 'false'
           detached: 'false'
-          connect-timeout-seconds: '45'
       - name: Verify SSH writes and resumed workflow
         working-directory: .depot/probe/native-ssh
         run: mise run verify
