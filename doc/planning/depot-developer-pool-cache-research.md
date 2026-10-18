@@ -666,6 +666,19 @@ No target directory,
 package archive,
 or broad new credential supplied that reuse.
 
+Each allocation reported 20 compiler requests,
+eight non-cacheable requests,
+and `compile_fails=1`,
+while the outer Cargo build and independent consumer returned success.
+The exact failed subprocess was not separately traced.
+In release source `src/server.rs:1563` and `src/server.rs:1600`,
+that counter increments for a failed compile result or a compiler-process error.
+No specific probe command or application failure is inferred from the counter.
+The receipt preserves it rather than treating cache-hit success as proof that every compiler request succeeded.
+The library archive hashes match between the seed and unchanged consumer;
+the changed flags alter that archive's hash.
+All independent consumer executable hashes match.
+
 The local terminal collector initially combined the waiter's stderr progress with stdout JSON.
 The retained final JSON was recovered from that combined capture without repeating any cloud job.
 This was a collector stream-separation error,
