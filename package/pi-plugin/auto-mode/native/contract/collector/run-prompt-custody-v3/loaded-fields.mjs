@@ -111,7 +111,6 @@ export function agentPromptArray(message){
    ?.value;
  if((Object.getPrototypeOf(message)!==Array.prototype)||(!Number.isSafeInteger(length))
    ||(length<0)
-   ||(length>4_096)
    ||(Reflect.ownKeys(message)
      .length
      !==(length

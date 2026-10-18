@@ -1,5 +1,156 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.2.0 native migration loses the Shift+Tab bypass toggle
+
+### Symptom
+
+On 2026-10-15 the user reported that the Shift+Tab toggle was missing.
+The previous statement that Pi was functional overstated the verified surface:
+live provider and approval checks did not establish interactive bypass parity.
+This is an owned migration regression,
+not evidence of an upstream keyboard failure.
+
+### Root cause
+
+The legacy extension registers the shortcut in
+`package/pi-plugin/auto-mode/src/index.ts:163`:
+
+```ts
+// package/pi-plugin/auto-mode/src/index.ts
+pi.registerShortcut(
+  BYPASS_SHORTCUT,
+```
+
+`package/pi-plugin/auto-mode/src/bypass.ts:26` defines its key:
+
+```ts
+// package/pi-plugin/auto-mode/src/bypass.ts
+const BYPASS_SHORTCUT = 'shift+tab';
+```
+
+Native installation removes the legacy extension declaration in
+`package/pi-plugin/auto-mode/mise.toml:567`:
+
+```js
+// package/pi-plugin/auto-mode/mise.toml, install:native
+for (const declaration of legacy) {
+  const source = typeof declaration === 'string' ? declaration : declaration.source
+  await spawn(process.execPath, [join(packageRoot, 'dist/native/cli.mjs'), 'remove', source, '--no-approve'], {
+```
+
+Before the repair,
+the replacement resource factory only captured the extension API in
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/resources.ts:97`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/resources.ts
+nativeApi.current = pi;
+```
+
+Its registered built-in factory list at line 113 contains the caller's factories and `captureApi`.
+The native resource-loader reproduction records no shortcut registration.
+The installed settings contain no legacy auto-mode declaration.
+The user's keybindings still assign `app.thinking.cycle` to `ctrl+e`.
+
+### Verification
+
+The built Pi 1.2.0 native host was probed at repository commit `c81e5308fe`.
+The probe uses disposable agent and workspace directories,
+synthetic provider configuration,
+and blocked networking.
+It calls the actual built bootstrap's resource loader and reads its extension shortcut maps.
+
+```bash
+# Run from ${HOME}/temp/agent/pi-tool-call-scope-20261014
+mise run probe-native-bypass
+```
+
+Working control:
+an injected extension registers `shift+tab`,
+and the same loader probe observes it.
+Failing case:
+the native host without that control registers no shortcuts.
+
+```json
+{"legacyAutoModeConfigured":false,"thinkingCycle":["ctrl+e"]}
+{"positiveControl":["shift+tab"],"currentNativeHost":[]}
+```
+
+The final assertion fails with Node's `AssertionError [ERR_ASSERTION]`:
+`Native host must retain the user-facing Shift+Tab bypass toggle`.
+This verifies missing registration;
+it does not test physical keyboard input in the user's running terminal.
+
+### Workarounds and rejected conclusions
+
+At initial diagnosis no workaround or restoration had been applied or verified.
+Changing the user's thinking-cycle binding is not supported by the evidence:
+it is already on Ctrl+E.
+Simply displaying a toggle would not restore its execution semantics.
+Re-enabling the entire legacy extension has not been validated with the native runtime.
+The existing bypass requirement in `doc/planning/pi-auto-mode-effect-contract.md`
+retains explicit user control and the fixed virtual-input guard.
+Those behaviors,
+session restoration,
+audit entries,
+and visible status were required restoration checks.
+
+### Repair and verification on 2026-10-15
+
+The native resource factory now calls `registerNativeBypass(pi)` immediately after capturing its API.
+`src/native-bypass.ts` restores the original shortcut,
+branch-backed toggle entries,
+session status,
+allow audit entries,
+and fixed virtual-input guard.
+The native batch handler captures explicit bypass before dispatch,
+retains prepared execution ownership,
+and skips semantic assessment without issuing a policy verdict.
+It rejects revocation at its freshness boundaries.
+
+The first execution test exposed an additional integration failure:
+`PolicySlotBindingError: Native extension event callbacks changed after source capture`.
+The new audit callback changed the event observation during nested execution.
+Commit `775efbc86c` uses the existing retained-source lifecycle for both resolved approval and explicit bypass,
+renamed `retainExecutionSources` to describe its actual responsibility.
+The collector still validates original dependencies and append-only receipt growth.
+The bypass test asserts that `lastReview` remains undefined.
+
+The maintained build,
+native build,
+package `lint:types`,
+and `test:native:bypass` pass.
+The built integration consumer runs a producer and parallel children in a disposable native session:
+
+```json
+{"complete":true,"shortcut":true,"bypassExecutions":3,"bypassAssessments":0,"disabledRestoresProhibition":true,"audit":true,"status":true,"reload":true,"fixedGuard":true}
+```
+
+The original built-bootstrap probe now reports:
+
+```json
+{"positiveControl":["shift+tab","shift+tab"],"currentNativeHost":["shift+tab"]}
+```
+
+The duplicate control registration is the injected control plus the restored built-in registration.
+The installed command uses the rebuilt native artifact.
+An existing Pi process retains its old runtime until restarted;
+extension reload alone does not replace that runtime.
+These checks exercise native shortcut registration and its actual handler,
+not physical keyboard delivery in the user's running terminal.
+
+### Upstream filing decision
+
+No upstream filing or draft is appropriate.
+The upstream-fault constraint fails because owned installation removes the registering extension.
+The repair belongs to this repository's replacement host.
+Upstream fixability,
+support policy,
+contribution policy,
+acceptance likelihood,
+and an upstream patch are therefore not applicable to this incident.
+No upstream clone or tracker mutation was needed to establish the owned failure.
+
 ## Sequential native judgment retries in Oxlint 1.88.0
 
 ### Symptom
@@ -728,7 +879,12 @@ The assertion incorrectly treated all execution diagnostics as cleanup diagnosti
 
 ### Source trace
 
-The maintained approval wrapper forwards the original Stop capability:
+The maintained approval wrapper forwards the original Stop capability.
+Abort forwarding now lives in
+`package/pi-plugin/auto-mode/native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs`.
+The original-source approval router was retired on 2026-10-17;
+`prepared-group.mjs` now owns its scope checks and confirmation routing.
+The historical source location remains in the captured excerpt:
 
 ```js
 // package/pi-plugin/auto-mode/native/contract/lifecycle/incumbent-tui-group/approval.mjs:100

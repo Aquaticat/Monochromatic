@@ -67,7 +67,6 @@ export function createResourceReceiptInputs({
    boundary:'before-policy-publication',
    ordinal:0
  });
- if(Buffer.byteLength(JSON.stringify(inputs))>1_048_576)throw new SourceCollectionError('Original resource receipt sources exceed the resource byte bound');
  return Object.freeze(inputs);
 }
 
@@ -80,7 +79,6 @@ export function retainResourceReceiptInputs({
    ...previous,
    ...current
  ]);
- if((inputs.length>64)||(Buffer.byteLength(JSON.stringify(inputs))>1_048_576))throw new SourceCollectionError('Retained resource receipts exceed the bounded resource profile');
  return inputs;
 }
 //endregion

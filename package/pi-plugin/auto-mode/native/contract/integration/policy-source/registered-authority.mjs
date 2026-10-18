@@ -9,6 +9,7 @@ import {
 import {bindRunMessageSources} from './run-messages.mjs';
 import {bindRetainedRunSources} from './run-history.mjs';
 import {bindResourceReceiptSources} from './resource-receipt-bindings.mjs';
+import {bindDecisionConversation} from './decision-context.mjs';
 
 import {bindHostPromptSource,bindResourceSystemSource,bindAppendPromptSources,bindContextPromptSources} from './resource-prompt-bindings.mjs';
 import {bindForcedPromptSource,bindRunGuidelineSources,bindMappedPromptSources} from './run-prompt-bindings.mjs';
@@ -58,7 +59,7 @@ export function bindRegisteredPolicy(context){
    governing:source
  });
  const retainedRuns=bindRetainedRunSources({governing:source});
- const additionalSources=Object.freeze([
+ const provenanceSources=Object.freeze([
    ...retainedRuns,
    ...resourceReceipts,
    ...(host?[host]:[]),
@@ -73,10 +74,16 @@ export function bindRegisteredPolicy(context){
    ...builtIn,
    ...resourceTools
  ]);
+ const selected=source.view.sources.decisionContext?.sources;
+ const conversation=bindDecisionConversation(source);
+ const additionalSources=Object.freeze([
+   ...provenanceSources.filter(function isSelected(binding){return selected===undefined||selected.includes(binding.view.source);}),
+   ...(conversation?[conversation]:[])
+ ]);
  /** Validate each local binding between fresh reads of their common original parent. */
  function assertAllCurrent(){
   source.assertCurrent(source.view);
-  for(const binding of additionalSources){
+  for(const binding of provenanceSources){
    binding.assertBindingIdentity(binding.view);
    if(binding.authority)binding.assertAuthorityCurrent(binding.authority);
   }
@@ -87,6 +94,7 @@ export function bindRegisteredPolicy(context){
    ...source,
    authority:undefined,
    additionalSources,
+   provenanceSources,
    assertAllCurrent,
    instructionCarriers,
    runInstructionCarriers
@@ -117,6 +125,7 @@ export function bindRegisteredPolicy(context){
    authority,
    assertAuthorityCurrent,
    additionalSources,
+   provenanceSources,
    assertAllCurrent,
    instructionCarriers,
    runInstructionCarriers

@@ -39,6 +39,7 @@ import {
   codemode,
   tui,
   maintainedRoot
+  ,nativeRoot
 } from '../current-sdk/paths.ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 
@@ -133,10 +134,7 @@ await mkdir(
 /**
  The native policy entry shares canonical implementation without evaluating the extension's SDK imports.
  */
-const maintainedEntry=entry({
-  root:maintainedRoot,
-  subpath:'./native-policy'
-});
+const maintainedEntry=pathToFileURL(join(nativeRoot,'policy/native-policy.mjs')).href;
 // The incumbent stager owns import aliases. Native fixtures may change HOME after this link is prepared.
 await writeFile(
   join(
@@ -144,7 +142,7 @@ await writeFile(
     'maintained-policy.mjs'
   ),
   `import {flushPolicyDiagnostics} from ${JSON.stringify(maintainedEntry)};\nawait flushPolicyDiagnostics();\n`
- +`export {askUser,createAssessmentSender,createNativeSemanticOperatingPolicies,VERDICT_ENTRY_TYPE,AuthorizationEvidenceError,captureAuthorizationInputs,captureAuthorizationOwnerFactory,MISSING_AUTHORIZATION_EVIDENCE,assertOriginalInputBudget,InputReceiptBudgetError,resolveInstructionEffects,InstructionResolutionInputError,inspectAuthorizationRequirements,resolveGuardOutcome,lowerEstablishedClause,CLAUSE_RELATIONS,createNativeQueryObservation,installNativePolicyHooks,NativePolicyRuntimeError,consumeRequestMaterial,retainRequestMaterialObligations,SemanticAdmissionPolicyError,copySemanticAdmissionPolicy,inspectSemanticAdmissionScope,matchesSemanticProgramProfile,consumeHeadingContexts,consumeUnitAdoptions,selectUnitAdoptionPairs,UnitAdoptionBindingError,consumeSourceAssociations,PolicyInputBindingError,flushPolicyDiagnostics} from ${JSON.stringify(maintainedEntry)};\n`
+    +`export * from ${JSON.stringify(maintainedEntry)};\n`
     +`export const maintainedPolicyEntry=${JSON.stringify(maintainedEntry)};\nexport const maintainedPackageRoot=${JSON.stringify(maintainedRoot)};\n`,
   {mode:0o600}
 );

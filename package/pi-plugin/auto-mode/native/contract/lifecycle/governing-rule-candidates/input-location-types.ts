@@ -28,7 +28,7 @@ export type SourceInputPosition =
     field: 'toolSnippets' | 'sections';
     key: string
   }
-  | { field: 'customPrompt' | 'appendSystemPrompt' | 'expandedPrompt' }
+  | { field: 'customPrompt' | 'appendSystemPrompt' | 'expandedPrompt' | 'visibleConversation' }
   | {
     field: 'contextFiles';
     ordinal: number;

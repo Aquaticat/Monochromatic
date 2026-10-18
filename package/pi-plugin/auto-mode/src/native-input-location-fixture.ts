@@ -65,7 +65,8 @@ export const inputLocationCases: readonly Readonly<Record<string, unknown>>[] = 
   ...[
     'customPrompt',
     'appendSystemPrompt',
-    'expandedPrompt'
+    'expandedPrompt',
+    'visibleConversation'
   ].map(function scalarPrompt(field) { 
     return { field }; 
   }),

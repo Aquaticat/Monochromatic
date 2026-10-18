@@ -16,7 +16,7 @@ await describe({ name: '', children: [
       assert.equal(f.owner.state.preparationFailed, true);
       assert.equal(f.owner.state.preparing, false);
       assert.equal(f.owner.state.selection, undefined);
-      assert.equal(f.byMember.size, 0);
+      assert.equal(f.byMember.size, 2);
       assert.deepEqual(f.events, ['active:1', 'seal:1', 'publishSources:1', 'prepareDependencies:1', 'active:2', 'finalizeDependencies:1', 'checkpoint:1', 'sources:1']);
     } });
   }),
@@ -52,7 +52,7 @@ await describe({ name: '', children: [
     }, failure);
     assert.equal(f.owner.state.preparationFailure, failure);
     assert.equal(f.owner.state.preparing, false);
-    assert.equal(f.byMember.size, 0);
+    assert.equal(f.byMember.size, 2);
     assert.equal(f.state.counts.get('finalizeDependencies'), 1);
     assert.equal(f.state.counts.get('checkpoint'), 1);
   } }),
@@ -67,13 +67,25 @@ await describe({ name: '', children: [
     assert.equal(f.owner.state.prepared, false);
     assert.equal(f.owner.state.selection, undefined);
     assert.equal(f.owner.state.handle, undefined);
-    assert.equal(f.byMember.size, 0);
+    assert.equal(f.byMember.size, 2);
     assert.equal(f.state.counts.get('active'), 2);
     assert.equal(f.state.counts.get('checkpoint'), 2);
     assert.ok(Error.isError(f.owner.state.preparationFailure));
     assert.equal(f.owner.state.preparationFailure.name, 'QuestionSelectionError');
   } }),
-  ...['deadline', 'cancellation'].map(function finalLifetimeBoundary(kind) {
+  it({ name: 'publishes complete preparation after the advisory target', fn: async function latePreparation() {
+    /** Original time advances only after selection construction has completed. */
+    const f = createPreparationFixture();
+    f.state.onStep = function advanceBeforePublication(point) {
+      if (point === 'checkpoint:4') f.clock.at = 60_000;
+    };
+    f.owner.prepare(f.members);
+    assert.equal(f.owner.state.prepared, true);
+    assert.equal(f.owner.state.preparationFailed, false);
+    assert.equal(f.byMember.size, f.members.length);
+    assert.equal(f.budget.diagnostics().retired, false);
+  } }),
+  ...['invalid-clock', 'cancellation'].map(function finalLifetimeBoundary(kind) {
     return it({ name: `blocks publication on original final ${kind} after selection construction`, fn: async function rejectsLateRetirement() {
       /** Real budget behavior, rather than a synthetic callback error, gates final publication. */
       const f = createPreparationFixture();
@@ -81,16 +93,16 @@ await describe({ name: '', children: [
       const reason = new Error('original cancellation reason');
       f.state.onStep = function retireBeforePublication(point) {
         if (point !== 'checkpoint:4') return;
-        if (kind === 'deadline') f.clock.at = 5_000;
+        if (kind === 'invalid-clock') f.clock.at = Number.NaN;
         else f.controller.abort(reason);
       };
       assert.throws(function retiredPublication() {
         f.owner.prepare(f.members);
-      }, { name: kind === 'deadline' ? 'JudgmentDeadlineError' : 'JudgmentCancelledError' });
+      }, { name: kind === 'invalid-clock' ? 'JudgmentBudgetError' : 'JudgmentCancelledError' });
       assert.equal(f.owner.state.preparationFailed, true);
       assert.equal(f.owner.state.preparing, false);
       assert.equal(f.owner.state.prepared, false);
-      assert.equal(f.byMember.size, 0);
+      assert.equal(f.byMember.size, 2);
       assert.equal(f.owner.state.handle, undefined);
       assert.equal(f.owner.knownSelection(), f.owner.state.selection);
       assert.equal(f.budget.diagnostics().retired, true);

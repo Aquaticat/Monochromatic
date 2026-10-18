@@ -3,6 +3,8 @@
  
  @module
  */
+export * from './native-policy-api.ts';
+
 
 export {
   BYPASS_ALLOW_KIND,
@@ -20,34 +22,17 @@ export {
  @internal
  */
 export {
-  askUser,
   notifyAsk,
   updateWidget,
-} from './ask-user.ts';
-export { findBudgetModel, } from './budget-model.ts';
-export {
-  buildContext,
-  buildProjectContext,
-  getReusableApproval,
-  getTrustDirectives,
-  type ProjectContextFile,
-} from './context.ts';
-export {
-  callJudge,
-  EmptyJudgeResponseError,
-  extractJsonVerdict,
-  parseVerdict,
-} from './judge.ts';
-export {
-  createJudgeCallHistory,
-  type JudgeCallHistory,
-  type JudgeCallOutcome,
-} from './judge-call-history.ts';
-export { callJudgeWithFallback, } from './judge-fallback.ts';
-export {
-  toolChoiceForApi,
-  VERDICT_TOOL,
-} from './judge-tool.ts';
+} from "./ask-user.ts";
+
+
+
+
+
+
+
+
 export {
   buildApprovalFingerprint,
   serializeToolInputForJudge,
@@ -62,12 +47,8 @@ export {
   hasCallerScopedYdotool,
 } from './virtual-input-guard.ts';
 export {
-  type BudgetModel,
   type VerdictData,
-  VERDICT_ENTRY_TYPE,
-  TRUST_ENTRY_TYPE,
-  type SignalContext,
-} from './types.ts';
+} from "./types.ts";
 
 //region Deterministic migration kernel remains separate from native evidence admission
 
@@ -76,21 +57,17 @@ export {
   createAssessmentHttpSender,
   type AssessmentTransportInput,
 } from './assessment-transport.ts';
-export { createAssessmentSender, } from './assessment-sender.ts';
+
 export { DecisionWireError, } from './decision-data.ts';
 export { encodeDecisionRequest, } from './decision-request.ts';
 export { decodeDecisionResponse, } from './decision-response.ts';
 export {
-  createNativeSemanticOperatingPolicies,
   type NativeSemanticOperatingPolicies,
-} from './semantic-operating-policy.ts';
+} from "./semantic-operating-policy.ts";
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
-export { AuthorizationEvidenceError, } from './authorization-evidence-data.ts';
-export { MISSING_AUTHORIZATION_EVIDENCE, } from './authorization-evidence-types.ts';
-export {
-  captureAuthorizationInputs,
-  captureAuthorizationOwnerFactory,
-} from './authorization-evidence.ts';
+
+
+
 export type {
   AuthorizationEvidenceInputs,
   AuthorizationEvidenceRecord,
@@ -101,41 +78,28 @@ export type {
   AuthorizationSourceView,
 } from './authorization-evidence-types.ts';
 export {
-  CLAUSE_RELATIONS,
   type ClauseRelation,
   type LoweredClause,
-  lowerEstablishedClause,
-} from './clause-lowering.ts';
-export { inspectAuthorizationRequirements, } from './authorization-requirements.ts';
+} from "./clause-lowering.ts";
+
 export {
   type GuardOutcome,
-  resolveGuardOutcome,
-} from './guard-outcome.ts';
+} from "./guard-outcome.ts";
 export {
   type InstructionResolution,
-  resolveInstructionEffects,
-} from './instruction-resolution.ts';
+} from "./instruction-resolution.ts";
 export {
   type InstructionApplicability,
   type InstructionEffect,
   type InstructionRule,
 } from './instruction-rule.ts';
-export {
-  flushPolicyDiagnostics,
-  InstructionResolutionInputError,
-} from './policy-data.ts';
 
-export {
-  assertOriginalInputBudget,
-  InputReceiptBudgetError,
-} from './input-receipt-budget.ts';
 
-export { SemanticAdmissionPolicyError, } from './semantic-admission-error.ts';
-export { copySemanticAdmissionPolicy, } from './semantic-admission-policy.ts';
-export {
-  inspectSemanticAdmissionScope,
-  matchesSemanticProgramProfile,
-} from './semantic-admission-scope.ts';
+
+
+
+
+
 export type {
   SemanticAcceptance,
   SemanticAdmissionDefinition,
@@ -143,8 +107,8 @@ export type {
   SemanticAdmissionPolicy,
   SemanticAdmissionScope,
 } from './semantic-admission-types.ts';
-export { PolicyInputBindingError, } from './policy-input-binding-error.ts';
-export { consumeSourceAssociations, } from './source-contribution.ts';
+
+
 export type {
   ContributionCarrier,
   ContributionPublication,
@@ -164,14 +128,13 @@ export type {
   SourceContributionResult,
   SourceContributionUse,
 } from './source-contribution-result.ts';
-export { consumeUnitAdoptions, } from './unit-adoption.ts';
-export { selectUnitAdoptionPairs, } from './unit-adoption-profile.ts';
+
+
 export {
-  UnitAdoptionBindingError,
   type UnitAdoptionEvidence,
   type UnitAdoptionPair,
   type UnitRuleProjection,
-} from './unit-adoption-binding.ts';
+} from "./unit-adoption-binding.ts";
 export type {
   UnitAdoptionInputs,
   UnitAdoptionInterpretation,
@@ -181,7 +144,7 @@ export type {
   UnitRegisteredAuthority,
   UnitSourceView,
 } from './unit-adoption-types.ts';
-export { consumeHeadingContexts, } from './heading-context.ts';
+
 export type {
   HeadingContentEstimate,
   HeadingContentRelation,
@@ -189,8 +152,8 @@ export type {
   HeadingContextEvidence,
   HeadingContextInterpretation,
 } from './heading-context-types.ts';
-export { consumeRequestMaterial, } from './request-material.ts';
-export { retainRequestMaterialObligations, } from './request-material-obligations.ts';
+
+
 export type {
   RequestMaterialAdmission,
   RequestMaterialEstimateValue,
@@ -207,18 +170,15 @@ export type {
 //region Native observation mechanisms do not authenticate frames or authorize execution
 
 export {
-  createNativeQueryObservation,
   type NativeQueryCapture,
   type NativeQueryObservation,
-} from './native-query-observation.ts';
+} from "./native-query-observation.ts";
 
 export {
-  installNativePolicyHooks,
-  NativePolicyRuntimeError,
   type NativePolicyAgentSlots,
   type NativePolicyHookInstallation,
   type NativePolicyHookRegistration,
-} from './native-runtime-hooks.ts';
+} from "./native-runtime-hooks.ts";
 
 //endregion Native observation mechanisms
 
@@ -227,29 +187,23 @@ export {
 /**
  @internal
  */
-export { analyzeBashCommand, } from './command-parser.ts';
+
 /**
  @internal
  */
-export { looksLikePath, } from './command-refs.ts';
+
 /**
  @internal
  */
-export {
-  contentSignals,
-  textSignals,
-} from './content-signals.ts';
+
 /**
  @internal
  */
-export {
-  decisionForDenyVerdict,
-  evaluate,
-} from './evaluate.ts';
+
 /**
  @internal
  */
-export { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
+
 /**
  @internal
  */
@@ -257,30 +211,18 @@ export { formatModelBlockReason, } from './model-feedback.ts';
 /**
  @internal
  */
-export {
-  isHomeDotfile,
-  isUnder,
-  pathSignals,
-  resolvePath,
-} from './path-signals.ts';
+
 /**
  @internal
  */
-export { registerProposeTrust, } from './register-propose-trust.ts';
+
 /**
  @internal
  */
-export {
-  bashSignals,
-  hasFlag,
-  shouldFlag,
-} from './signals.ts';
+
 /**
  @internal
  */
-export {
-  agentTempAllowlistedDirs,
-  isTrustedAgentTempDir,
-} from './temp-allowlist.ts';
+
 
 //endregion Internal verification exports

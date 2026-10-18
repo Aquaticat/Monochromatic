@@ -144,24 +144,49 @@ The lane did not edit those files, because they belong to other lanes.
 
 ### Mutation
 
-Not complete. The first scoped campaign stopped at its planted-control phase:
-two controls were not noticed (`strict reverse check line match guard` and `patch hunk count for removals`),
-because they named tests that do not exercise the mutated guard.
-Commit `0e009022a2` names `an_incomplete_preimage_line_matches_past_whitespace_when_not_anchored` and
-the new `a_removal_after_an_addition_still_counts_the_old_side`, and adds the second test.
-The second campaign was in flight when the lane was drained (see In flight at drain).
-No mutant results exist yet, so no caught, missed, unviable, or timeout totals are reported.
+Partial, and stopped as trailing work. The scoped campaign over the 14 modules
+(`mutation:scoped`, cargo-mutants 27.1.0, `--timeout 90`) reached its mutant phase once, with 417 mutants:
+299 caught, 16 missed, 33 unviable, 69 timeouts, and no rerun of the timeouts.
+The 16 missed mutants are the ones the tests in `ebfd97cc83` target; no campaign has re-measured them.
+The later campaigns stopped before a mutant total: one was killed by a drain signal, one exited 4 at the baseline,
+and one was stopped by the coordinator during planted controls.
 
-### In flight at drain
+### In flight
 
-- systemd user unit `replay-core-mutation-2` (memory cap 12G) runs, in order:
-  1. the container gate with `GIT_POLICY_NATIVE_IMAGE_TAG=replay`, log `~/temp/agent/replay-core-container-4.log`;
-  2. the scoped mutation campaign over the 14 implementation files, log `~/temp/agent/replay-core-mutation-2.log`.
-  The file list is in `~/temp/agent/replay-core-mutation-files.txt`.
-  Let it finish; do not kill it. Its `exit N` line ends each log.
-- Earlier, the first campaign (`replay-core-mutation-1.log`) failed at the planted-control phase, as described above.
-  The container gate before it (`replay-core-container-2.log`) passed all 959 library tests and failed only at Clippy,
-  on the four pre-existing findings.
+The branch was migrated to the data-only `cli-git.config.jsonc` and merged with `main`; the container gate on that
+merge (tag `replayG`) passed with 1812 unit, 137 binary and 1 consumer test and Clippy clean.
+The mutation campaign ran 2026-10-15 from 10:06 to 11:38 EDT as the systemd user unit `cli-git-replay-campaign`
+(driver `~/temp/agent/replay-campaign-20261015.ts`, logs `~/temp/agent/replay-mutation-P1.log` to `-P5.log`,
+`--timeout 300`): 429 mutants, no timeouts, 15 missed (1 in `replay_patch`, 12 in `replay_reverse_apply`, 2 in
+`replay_containment`); lanes P4 and P5 had none.
+Dispositions:
+
+- `replay_patch.rs:249` (the cursor after a trailing incomplete-line marker): killed by the cursor assertion in
+  `incomplete_lines_lose_their_newline`.
+- `replay_containment.rs:122` and `:157` (`&&` to `||`): killed by
+  `own_lines_between_landed_lines_need_both_ends_anchored` and
+  `a_prepared_change_shorter_than_the_landed_range_does_not_cover_it`.
+- `replay_reverse_apply.rs:129` (`-` to `+`): equivalent. With the end anchor only the position
+  `image.len() - preimage.len()` passes `matches_at`, and the widening search reaches every position, so the starting
+  position cannot change the result. The `/` mutant divides by zero for an empty preimage and is killed by
+  `a_removal_only_hunk_reverses_by_restoring_its_lines_at_the_end`.
+- `:135` (three mutants of the range guard): the guard duplicated the `usize` conversion and `matches_at`'s end check,
+  so it was removed instead of tested.
+- `:150`, `:180`, `:190`, `:100`: killed by the new reverse-apply controls (search backwards, restored lines,
+  search start, middle line without a newline).
+
+The controls and the guard removal are committed. Verification on the gate head (tag `replayI`: 1812 unit, 137 binary,
+1 consumer test): `replay_reverse_apply.rs` `find_position`, `reverse_hunk` and `matches_at` 54 mutants (2 missed before
+the long-image control was added), `replay_containment.rs` and `replay_patch.rs` 52 mutants with none missed, and a
+`find_position` rerun of 17 mutants with the single equivalent survivor at line 129 described above.
+Open: landing and the crate release 0.1.5 together with the deletion of the dead policy patch modules already on `main`.
+The container gate image bakes in the source snapshot, so a new test needs a new gate before a mutation run sees it.
+A long fuzz campaign (900 s per target, 15 targets) runs as the unit `cli-git-fuzz-campaign`
+(log `~/temp/agent/fuzz-campaign-20261015.log`); read it for crashes before the release.
+The fuzz sidecar had fallen behind the subject (stale lockfile version, byte paths in the journal helper, a refusal
+control for linked-worktree creation that the executable replaced with the copy lifecycle); all three are fixed on
+`main`. Every crate version bump must also run `mise run //package/git-policy/cli.fuzz:lock:members`, or the fuzz
+build stops at `cargo vendor --locked`.
 
 ### Remaining after drain
 
@@ -181,13 +206,52 @@ Mutation scope: `replay_patch`, `replay_reverse_apply`, `replay_containment`, `r
 
 ## Trailing gates
 
-Per the coordinator's 2026-10-10 update, these gates trail the cutover and are not run in this lane:
+The user decision of 2026-10-11 moved lane mutation campaigns behind the cutover.
+This section records what ran, and the commands to resume.
 
-- The old-and-new wrapper interop matrix. This lane keeps one-direction fixtures only.
-- Long fuzz campaigns. There is no replay fuzz target (see Fuzz), and no campaign was run.
-- The non-UTF-8 path field gate. The strict decoder choice is recorded under Choices open to veto.
+Ran:
 
-Mutation gating stays full for this lane, and the `git apply --reverse --check` differential stays.
+- Container gate at `ebfd97cc83`, the last code change (`GIT_POLICY_NATIVE_IMAGE_TAG=replay`):
+  library tests 973 passed, 2 ignored; the other binaries passed. Clippy failed only on the four pre-existing findings.
+  Image `localhost/git-policy-native-test:replay`, identifier `c39103e37cf37772b99d9ccef9b7a71fe949ddca4eff455b33fb7343b67384e6`.
+- Planted controls in the campaign run at `ebfd97cc83`: 15 of 15 noticed.
+- Mutants, the third campaign (`native-mutation-y5KnYD`, before `ebfd97cc83`):
+  417 found, 299 caught, 16 missed, 33 unviable, 69 timeouts.
+  The timeouts were not rerun, so the campaign exited 3. The timeouts are 27 in `replay_patch.rs`,
+  27 in `replay_reverse_apply.rs`, 8 in `replay_reservation.rs`, 2 in `replay_containment.rs`,
+  2 in `replay_merge.rs`, and one each in `replay_capture_order.rs`, `replay_revalidation.rs`, and `replay_subsumption.rs`.
+- Survivors killed by tests:
+  - `replay_patch.rs` 73:9, the `Display` impl of `ReplayPatchFormatError`:
+    `replay_patch::tests::the_format_error_displays_its_message` (`fd054ff503`).
+  - `replay_patch.rs` 293:23, the `<` to `<=` length guard in `find_bytes`:
+    `replay_patch::tests::a_needle_equal_to_the_haystack_is_found` (`fd054ff503`).
+  - The other 14 missed mutants of the third campaign are in `replay_reverse_apply.rs`, `replay_containment.rs`,
+    `replay_object.rs`, `replay_capture_order.rs`, `replay_reservation.rs`, and `replay_subsumption.rs`.
+    Each has a targeting test in `ebfd97cc83`: `an_incomplete_preimage_line_does_not_match_a_longer_image_line`,
+    `a_hunk_is_found_by_walking_forward_past_the_expected_line`,
+    `a_suffix_match_needs_the_prepared_hunk_to_end_at_the_landed_end`,
+    `a_header_without_a_value_keeps_its_whole_name`, `the_object_error_displays_its_message`,
+    `an_equal_sequence_is_not_later_than_the_landed_capture`, `the_capture_order_error_displays_its_message`,
+    `releasing_without_a_request_file_is_quiet`, `a_free_reservation_is_not_granted_to_a_younger_requester`,
+    `a_non_regular_triple_takes_the_landed_mode`, and `the_exact_record_width_follows_the_present_entries`.
+    The `+` to `*` mutant at `replay_reverse_apply.rs` 147:44 and the `&&` to `||` at `replay_containment.rs` 130:45
+    are targeted by the forward-walk and suffix tests above; neither is measured as killed yet.
+- Fourth and fifth campaigns: the fourth stopped with exit 4 at its baseline on
+  `index_lock_holders::tests::a_real_child_holding_the_lock_is_found_on_linux`, a test outside this lane
+  that depends on real child-process timing under host load. The fifth was stopped during planted controls.
+
+Not run, and the exact commands to resume:
+
+- The timed-out files, one at a time. The mutation task has no timeout option; its `--timeout` is fixed at 90 s
+  in `bin/mutate-native-container.mjs`. Changing it to 300 s would edit a shared gate, which this lane does not do.
+  Command: `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/<file>.rs`
+  for each file listed above.
+- The full scoped campaign over the 14 modules:
+  `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- <the --file list in ~/temp/agent/replay-core-mutation-files.txt>`.
+  Run it after the container gate, with the baseline failure above in mind.
+
+The `git apply --reverse --check` differential stays in the lane's gates. The interop matrix and fuzz campaigns
+remain deferred as before, and the non-UTF-8 path field gate stays recorded under Choices open to veto.
 
 ## Deviations from the plan
 

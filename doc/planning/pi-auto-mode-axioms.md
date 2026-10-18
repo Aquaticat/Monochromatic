@@ -2,6 +2,19 @@
 
 ## Authority and current status
 
+On 2026-10-15 the user raised the preparation-inclusive assessment budget to 15 seconds.
+This supersedes the five-second deadline recorded in the historical decisions and measurements.
+The accepted ceiling remains three sequential bundles with at most three parallel calls in each bundle.
+The average USD 0.001 per judgment constraint remains removed.
+Preparation, retries, conversion, and all bundles share one original deadline.
+
+The user also reaffirmed that each decision must not receive the full transcript,
+and directed inspection of the legacy auto-mode context selector.
+Its existing contract selects the larger of the latest five visible messages and the complete latest-user span,
+preserving the selected messages without truncation.
+Local capture and provenance retention must remain distinct from judge-input selection.
+The native assessment's complete source-receipt serialization diverged from this incumbent boundary.
+
 The user corrected the design:
 
 > These are NOT reasoning models.
@@ -942,6 +955,16 @@ Late results cannot authorize the pending action.
 No coding-plan fallback or model substitution is authorized.
 
 ### Three-call ceiling and parallel batched axioms
+
+On 2026-10-15 the user replaced the three-call ceiling with at most three sequential call bundles.
+Each bundle permits at most three parallel calls.
+The maximum is therefore nine calls arranged within three sequential bundles,
+not nine sequential calls.
+Preserve every selected question and its answer identity when dividing provider requests.
+The user clarified that only the average USD 0.001 per judgment cost limit is removed.
+The five-second preparation-inclusive deadline remains.
+The historical three-call and five-second decisions in this section describe the superseded design
+where they conflict with this update.
 
 On 2026-10-01,
 the user allowed at most three decision-model calls per eventual decision

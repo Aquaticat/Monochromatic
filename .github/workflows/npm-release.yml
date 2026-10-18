@@ -67,7 +67,6 @@ jobs:
           # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
           minimum_release_age: 1d
           install: false
-          cache: true
 
       - name: Install node and pnpm
         run: mise install node pnpm
@@ -107,7 +106,6 @@ jobs:
           # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
           minimum_release_age: 1d
           install: false
-          cache: true
 
       - name: Install node and pnpm
         run: mise install node pnpm
@@ -180,7 +178,6 @@ jobs:
           # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
           minimum_release_age: 1d
           install: false
-          cache: true
 
       - name: Install node and pnpm
         run: mise install node pnpm
@@ -234,7 +231,6 @@ jobs:
           # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
           minimum_release_age: 1d
           install: false
-          cache: true
 
       - name: Install node and pnpm
         run: mise install node pnpm

@@ -12,7 +12,6 @@ import type {
 /**
  Original judgment bounds all declarations, including claims never issued.
  */
-const MAX_CLAIMS = 1_536;
 
 //region Canonical claim identity is scoped to one predicate and original binding.
 /**
@@ -78,9 +77,6 @@ export function createClaimDeclaration({
           .checkpoint();
         return existing;
       }
-      if (owner.state
-        .declaredCount
-        >= MAX_CLAIMS) throw new QuestionSelectionError('Judgment exceeds the declared total claim bound');
       owner.budget
         .checkpoint();
       /**

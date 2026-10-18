@@ -154,7 +154,8 @@ export function createProgramGroupFixture({
    Fixture-local controls expose only independently selected failures and publication outcomes.
    */
   const state: {
-    slots?: readonly object[];
+    slots?: ReturnType<typeof owner.bindProgramCalls>;
+    runNative?: typeof nativeRunner.runNative;
     handles?: readonly object[]
   } = {};
   /**
@@ -227,10 +228,10 @@ export function createProgramGroupFixture({
     const slots = owner.bindProgramCalls({
       group: reached.handle,
       calls,
-      tools,
-      runNative
+      tools
     });
     state.slots = slots;
+    state.runNative = runNative;
     return slots;
   }
   /**
@@ -268,12 +269,10 @@ export function createProgramGroupFixture({
      */
     const call = calls[index];
     assert.ok(call);
-    return await owner.invokeProgramNative({
-      group: reached.handle,
-      slot,
-      call,
-      options
-    });
+    const entry = slot.open(call);
+    assert.ok(state.runNative);
+    try { return entry.complete(await state.runNative(call, options)); }
+    catch (error) { entry.fail(error); throw error; }
   }
   /**
    Consume only the exact original native outcome through the built program owner.

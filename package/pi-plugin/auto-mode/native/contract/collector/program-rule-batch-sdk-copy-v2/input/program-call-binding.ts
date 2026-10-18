@@ -12,7 +12,7 @@ import type {
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramSlot } from './program-state-types.ts';
 import type { JudgmentPrograms } from './program-api.ts';
-import type { NativeReturnTool } from './native-return-types.ts';
+import type { NativeReturnTool, NativeReturnCall, NativeCallSlot } from './native-return-types.ts';
 
 /**
  Capture original tool name before its structured-output choice, preserving native property-read order.
@@ -82,16 +82,13 @@ export function createProgramCallBinding({
 
    @param tools - original callable definitions in declared order
 
-   @param runNative - original fixed native runner
-
    @returns frozen original native slot handles
    */
   function bindProgramCalls({
     group: handle,
     calls,
-    tools,
-    runNative
-  }: BindProgramCallsInput): readonly object[] {
+    tools
+  }: BindProgramCallsInput): readonly NativeCallSlot[] {
     /**
      Original reached-group identity remains independent of copied declaration metadata.
      */
@@ -141,8 +138,7 @@ export function createProgramCallBinding({
         .members;
       if ((!isProgramArray(calls)) || (calls.length !== expected.length)
         || (!isProgramArray(tools))
-        || (tools.length !== expected.length)
-        || ((typeof runNative) !== 'function')) throw new JudgmentConstructionError('Native calls differ from complete reached group');
+        || (tools.length !== expected.length)) throw new JudgmentConstructionError('Native calls differ from complete reached group');
       /**
        Native call identifiers remain unique within the complete original reached group.
        */
@@ -172,8 +168,13 @@ export function createProgramCallBinding({
           || (tool?.name !== site.name)
           || (JSON.stringify(call.arguments) !== site.argsJSON)) throw new JudgmentConstructionError('Native call binding differs from original reached member');
         ids.add(call.id);
+        /** Factory-owned slot methods retain the exact group and slot identity in their closure. */
+        const nativeSlot = Object.freeze({ open(call: NativeReturnCall) {
+          if (!group.consumer) throw new JudgmentConstructionError('Reached group has no fixed native consumer');
+          return group.consumer.open({ slot: nativeSlot, call });
+        } });
         pending.push({
-          handle: Object.freeze({}),
+          handle: nativeSlot,
           group,
           ordinal: index,
           call: Object.freeze({
@@ -190,7 +191,6 @@ export function createProgramCallBinding({
       );
       group.slots = pending;
       group.consumer = createNativeReturnConsumer({
-        runNative,
         getSlot: readOwnedSlot,
         assertCurrent: assertOriginalGroup,
         assertReturnedMember: readReturnedMember

@@ -40,6 +40,14 @@ export type JudgmentInstructionsInput = Readonly<{
   readJudgmentSources: () => Readonly<{
     hostGoverningPolicy: unknown;
     governingSources: ReturnType<GoverningSetInput['readSources']>;
+    decisionContext?: Readonly<{
+      sources: ReturnType<GoverningSetInput['readSources']>;
+      selection?:Readonly<{excluded?:readonly Readonly<{
+        start:number;
+        end:number;
+        text:string
+      }>[]}>;
+    }>;
   }>;
   declaredNames: readonly Readonly<{
     id: string;
@@ -74,6 +82,15 @@ type RequestInstruction = Readonly<{
 }>;
 
 /**
+ Whole-operation decisions retain original request identity without selecting its archived body.
+ */
+type OperationDecisionInstruction = Readonly<{
+  kind: 'whole-operation-decision';
+  request: object;
+  binding: QuestionBinding;
+}>;
+
+/**
  Adoption retains both independently owned source-unit projections.
  */
 type AdoptionInstruction = Readonly<{
@@ -89,7 +106,7 @@ type AdoptionInstruction = Readonly<{
 /**
  Private instruction records determine which original dependencies must still match.
  */
-export type InstructionRecord = ClauseInstruction | RequestInstruction | AdoptionInstruction;
+export type InstructionRecord = ClauseInstruction | RequestInstruction | OperationDecisionInstruction | AdoptionInstruction;
 
 /**
  Lazy owner state preserves publication timing and separate meaning versus member identities.

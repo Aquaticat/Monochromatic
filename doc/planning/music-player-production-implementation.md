@@ -235,23 +235,28 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
-- 2026-10-15, agent `ad05bc0301c37d399` reported (head `1ce3b426e8`): GUI subsystem proven on all three Windows
-  runner jobs (Subsystem 2, positive control failed as intended, release dry run green). Unmet by design: PowerShell
-  `--version > out.txt` gives an empty file; I accepted that tradeoff (recorded in
-  `doc/decision/music-player-windows-gui-subsystem.md`, veto open). Merge steps: main merged cleanly at `3a8a2c9277`,
-  actionlint clean, desktop verification unit `verify-wgui` running; then ff-merge, push, bump to 0.1.4 in both
-  manifests plus both lockfiles, release, verify assets. Follow-ups from its report, not done: ANSI escapes on
-  arm64 Windows consoles (`src/logging.rs` colors; gate on a VT-enabled console), 9 pre-existing Windows clippy
-  findings (no Windows clippy task exists), a double-click startup failure shows no message and logs nowhere.
-- In flight on 2026-10-15, started after the human ran the desktop app and said "I have no major complaints":
-  (a) agent `ad05bc0301c37d399` (reported, see above), branch `feat/music-player-windows-gui-subsystem`, worktree `music-player-wgui`: the
-  Windows exe becomes a GUI-subsystem binary (no console window on double click) with the parent console attached so
-  `--version` still prints, proven on the real Windows runners with a PE Subsystem check and a positive control;
-  (b) agent `a36ecdbfa335190de`, branch `docs/music-player-release-measurements`, worktree `music-player-relmeasure`:
-  measures the release builds from the `0.1.3` artifacts (desktop in our nested compositor at 100, 1,000 and 10,000
-  tracks; Android release APK on a headful emulator) into `doc/audit/music-player-release-build-measurements-2026-10-15.md`.
-  After each reports: merge main into its branch, fresh verification, ff-merge, push; the Windows change needs a
-  version bump and a release after it merges.
+- 2026-10-15, agent `ad05bc0301c37d399` reported (head `1ce3b426e8`) and its work is MERGED and RELEASED as 0.1.4
+  (see the release record below): GUI subsystem proven on all three Windows runner jobs (Subsystem 2, positive control
+  failed as intended, release dry run green). Unmet by design: PowerShell `--version > out.txt` gives an empty
+  file; I accepted that tradeoff (recorded in `doc/decision/music-player-windows-gui-subsystem.md`, veto open).
+  Follow-up not done: 9 pre-existing Windows clippy findings (no Windows clippy task exists).
+- In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
+  (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
+  license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
+  `--licenses` flag or in-app view only if the design permits, decision `doc/decision/music-player-third-party-licenses.md`;
+  (d) agent `a9c8a6540c85f6042`, branch `fix/music-player-windows-startup-errors`, worktree `music-player-winerr`: a
+  message for a failed Windows GUI start (no message today) and ANSI escapes gated on a VT-enabled console (arm64
+  runner printed literal ESC characters), proven on the Windows runners with a positive control.
+  (e) agent `abe5d14bb8effe0d8`, branch `fix/music-player-cache-batched-commits`, worktree `music-player-cachebatch`:
+  the per-row fsync in `DecisionCache::put` (10,073 fsync calls for 10,000 rows, 27 to 99 s cold analysis);
+  (f) agent `aca4a721c4f906b9d`, branch `fix/music-player-android-large-library`, worktree `music-player-andlarge`:
+  Android `Invalid column last_modified` logged 772 to 1,005 times per 15 s at 10,000 tracks, and scroll jank at
+  10,000 tracks with the emulator-crash confound separated.
+  Merge procedure for all four as above, then bump the patch version and release.
+- Measurements MERGED to `main` at `d5748ffd54` on 2026-10-15 (agent `a36ecdbfa335190de`, doc
+  `doc/audit/music-player-release-build-measurements-2026-10-15.md`, no hedge words found by `rg`). Findings 1 to 4
+  of that doc are the work of (e) and (f); finding 4 (desktop refresh CPU grows with library size, 180 ms at 10,000
+  tracks) is assigned to (e) only if its evidence leads there.
 - Task 92, release workflow: MERGED to `main` at `ab725bd924` on 2026-10-15 (actionlint 1.7.12 clean; Android
   detekt, 1287 unit tests and lint fresh on the merged head; the merge touched neither version manifest, so it started
   no release, confirmed with `gh run list`). Workflow `.github/workflows/music-player-release.yml`, decision
@@ -326,14 +331,16 @@ before saying it matches, QAB):
   `cargo-publish.yml`; pnpm store caches measured slower than no cache and reverted; `cli-git-native` is cached in
   `final-newline.yml` and `npm-release.yml`. Unverified: the `npm-release.yml` version job, a PR restoring a
   main-scoped entry, release-matrix caching. Repo cache usage went over the cap (11.1 to 11.3 GB). Follow-ups noted by
-  the agent, not done: remove the dead `cache: true` from `npm-release.yml`, `pnpr-publish.yml` and
-  `kotlin-linter-publish.yml`; `kotlin-linter-publish.yml` lacks `MISE_AUTO_INSTALL: false` (472 s install on
-  2026-08-16); `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
+  the agent: the dead `cache: true` in `npm-release.yml`, `pnpr-publish.yml` and `kotlin-linter-publish.yml` is
+  removed and `kotlin-linter-publish.yml` has `MISE_AUTO_INSTALL: 'false'` (DONE 2026-10-15, main `7845259345`; a
+  `kotlin-linter-publish` dry run from the branch, run `38765367059`, passed; the other two workflows were not run);
+  still not done: `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
   publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
   write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
   music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
-  11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
-  run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
+  11 families and would delete 0. The first scheduled run (`38712633874`, 2026-10-15 09:23 UTC, success, 15 entries)
+  executed the DELETE path for real: it deleted the older `music-player-desktop-v1-Windows-ARM64` entry (899,731,867
+  bytes) and kept the newest of each family. Feature-branch entries of the Windows agent
   (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
 - Task 95, Alpine: MERGED to `main` at `2077b5b81e` on 2026-10-15 (decision `doc/decision/music-player-alpine.md`,
   workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64). The app builds and runs on Alpine 3.24.2
@@ -399,6 +406,14 @@ before saying it matches, QAB):
   Independent PE parse with `pefile` 2024.8.26: MSVC x64 and arm64 linker 14.51, GNU exe linker 2.46, and none of
   the three imports `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: any
   Windows or macOS binary, the arm64 Linux and musl binaries, anything on a real device.
+  RELEASED `music-player-v0.1.4` on 2026-10-15 (bump commit `9e4b09e2d1`, run `38765172415`, all jobs green): the
+  Windows executables are GUI-subsystem programs (no console window on double click; decision
+  `doc/decision/music-player-windows-gui-subsystem.md`). Ten files; `sha256sum --check` passed for nine, attestation
+  exit 0 for all nine, APK certificate `9de6e9a4...6926`, Linux x64 and the musl x64 binary (in `alpine:3.24`) print
+  `music-player 0.1.4`; `pefile` shows Subsystem 2 on all three Windows exes, MSVC linker 14.51, GNU linker 2.47,
+  and none import `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: the window
+  itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
+  0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 

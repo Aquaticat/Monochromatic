@@ -3,7 +3,6 @@
  */
 import type {
   NativeReturnCall,
-  NativeReturnOwner,
   NativeReturnTool
 } from './native-return-types.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
@@ -38,13 +37,18 @@ export type ProgramNativeCall = NativeReturnCall & Readonly<{
 }>;
 
 /**
+ Original tool-name lookup can leave an absent definition for judgment admission to reject.
+ */
+export type ProgramNativeToolLookup = ReturnType<(readonly NativeReturnTool[])['find']>;
+
+/**
  Complete native call groups retain one fixed native runner.
  */
 export type BindProgramCallsInput = Readonly<{
   group: object;
   calls: readonly ProgramNativeCall[];
-  tools: readonly NativeReturnTool[];
-  runNative: NativeReturnOwner['runNative'];
+  tools: readonly ProgramNativeToolLookup[];
+  
 }>;
 
 /**
@@ -53,5 +57,5 @@ export type BindProgramCallsInput = Readonly<{
 export type PrepareReachedMembersInput = Readonly<{
   group: object;
   members: readonly ProgramPreparedMember[];
-  nativeSignals: readonly AbortSignal[];
+  nativeSignals: readonly unknown[];
 }>;

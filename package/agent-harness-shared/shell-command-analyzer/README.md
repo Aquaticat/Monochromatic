@@ -22,5 +22,12 @@ separately from numeric `fileDescriptor` values.
 Nested scripts and their diagnostics come from the parser;
 the analyzer does not execute shell expressions or reparse removed legacy fields.
 
+`parseShellReviewStructure` projects the same parser tree for model permission review.
+It preserves command and control-flow roles, quoting, redirects, assignments, and nested execution.
+Complete source scripts and source locations stay local.
+Literal arguments and quoted here-document bodies remain data.
+Runtime expansion values and effects remain unestablished by parsing.
+`ShellReviewSyntaxError` rejects incomplete scripts and unsupported parameter operations.
+
 See the [AST adapter troubleshooting record](../../../doc/troubleshooting/unbash-5-ast-adapter.md)
 for the original failure and verification commands.

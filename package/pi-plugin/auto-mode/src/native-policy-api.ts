@@ -7,8 +7,16 @@
 //region Native consumers import only policy, observation, transport, and approval boundaries.
 
 export { askUser } from './ask-user.ts';
+export { buildVisibleContext } from './visible-context.ts';
+export { projectReviewInput } from './review-operation.ts';
+export {
+  registerNativeBypass,
+  readNativeBypassEnabled
+} from './native-bypass.ts';
 export { createAssessmentSender } from './assessment-sender.ts';
+export { isRetryableAssessmentFailure } from './assessment-failure.ts';
 export { createNativeSemanticOperatingPolicies } from './semantic-operating-policy.ts';
+export { admitsOperatingChoice } from './semantic-operating-choice.ts';
 export { VERDICT_ENTRY_TYPE } from './types.ts';
 export { AuthorizationEvidenceError } from './authorization-evidence-data.ts';
 export {
@@ -42,7 +50,8 @@ export { SemanticAdmissionPolicyError } from './semantic-admission-error.ts';
 export { copySemanticAdmissionPolicy } from './semantic-admission-policy.ts';
 export {
   inspectSemanticAdmissionScope,
-  matchesSemanticProgramProfile
+  matchesSemanticProgramProfile,
+  matchesSemanticOperationProfile
 } from './semantic-admission-scope.ts';
 export { consumeHeadingContexts } from './heading-context.ts';
 export { consumeUnitAdoptions } from './unit-adoption.ts';

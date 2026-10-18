@@ -1,5 +1,5 @@
 /**
- Built original instruction batches preserve explicit semantic uses, bounds, and declaration order. @module
+ Built original instruction batches preserve explicit semantic uses, complete membership, and declaration order. @module
  */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
@@ -99,23 +99,23 @@ await describe({
       },
     }),
     //endregion
-    //region Empty and out-of-profile collections fail before any batch publication.
+    //region Empty subjects fail while complete collections survive the removed fixture-derived ceilings.
     it({
       name: 'rejects empty requested subjects while permitting an empty tagged operation batch',
       fn: async function emptySubjects() {
         const empty = createInstructionFixture({ contents: [''] });
         assert.throws(function noInstructionClauses() { 
           empty.instructions.issueBoundPolicyBatch({ clauseRelations: true, requestMaterial: false }); 
-        }, { message: 'Clause relation requires one through 256 original instruction candidates' });
+        }, { message: 'Clause relation requires original instruction candidates' });
         assert.throws(function noProgramClauses() { 
           empty.instructions.issueProgramRuleBatch({ definitionId: 'clause_operation_relation' }); 
-        }, { message: 'Clause relation requires one through 256 indexed clauses' });
+        }, { message: 'Clause relation requires indexed clauses' });
         assert.throws(function noMixedClauses() { 
           empty.instructions.issueRuleAssessmentBatch(); 
-        }, { message: 'Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported' });
+        }, { message: 'Mixed rule assessment requires indexed clauses' });
         assert.throws(function noHeadingGroups() { 
           empty.instructions.issueBoundPolicyBatch({ clauseRelations: false, requestMaterial: false, headingContexts: true }); 
-        }, { message: 'Heading content requires one through 64 original source groups' });
+        }, { message: 'Heading content requires original source groups' });
         assert.throws(function noAdoptionPairs() { 
           empty.instructions.issueBoundPolicyBatch({ clauseRelations: false, requestMaterial: false, unitAdoptions: true }); 
         }, { message: 'No bounded original same-source adoption pairs are available' });
@@ -126,55 +126,34 @@ await describe({
     }),
     ...[256, 257].map(function clauseBound(count) {
       return it({
-        name: `retains original clause-batch behavior for ${count} tagged candidates`,
-        fn: async function originalClauseLimit() {
+        name: `retains every original clause across ${count} tagged candidates`,
+        fn: async function completeClauseMembership() {
           const content = Array.from({ length: count }, function originalClause(_value, index) { 
             return `C${index.toString(36).toUpperCase().padStart(2, '0')}: Original fixture clause ${index}.`; 
           }).join('\n\n');
-          const { instructions, declarations, batches } = createInstructionFixture({ contents: [content] });
+          const { instructions, batches } = createInstructionFixture({ contents: [content] });
           assert.equal(instructions.indexedRuleCandidates().length, count);
-          if (count === 257) {
-            assert.throws(function oversizedBoundClauses() { 
-              instructions.issueBoundPolicyBatch({ clauseRelations: true, requestMaterial: false }); 
-            }, { message: 'Clause relation requires one through 256 original instruction candidates' });
-            assert.throws(function oversizedProgramClauses() { 
-              instructions.issueProgramRuleBatch({ definitionId: 'clause_operation_relation' }); 
-            }, { message: 'Clause relation requires one through 256 indexed clauses' });
-            assert.throws(function oversizedMixedClauses() { 
-              instructions.issueRuleAssessmentBatch(); 
-            }, { message: 'Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported' });
-            assert.equal(declarations.length, 0);
-            assert.equal(batches.length, 0);
-          } else {
-            instructions.issueBoundPolicyBatch({ clauseRelations: true, requestMaterial: false });
-            instructions.issueProgramRuleBatch({ definitionId: 'clause_operation_relation' });
-            instructions.issueRuleAssessmentBatch();
-            assert.deepEqual(batches.map(function batchSize(value) { 
-              return value.length; 
-            }), [count, count, count * 2]);
-          }
+          instructions.issueBoundPolicyBatch({ clauseRelations: true, requestMaterial: false });
+          instructions.issueProgramRuleBatch({ definitionId: 'clause_operation_relation' });
+          instructions.issueRuleAssessmentBatch();
+          assert.deepEqual(batches.map(function batchSize(value) {
+            return value.length;
+          }), [count, count, count * 2]);
         },
       });
     }),
     ...[64, 65].map(function headingBound(count) {
       return it({
-        name: `retains original heading-batch behavior for ${count} source groups`,
-        fn: async function originalHeadingLimit() {
+        name: `retains every original heading across ${count} source groups`,
+        fn: async function completeHeadingMembership() {
           const contents = Array.from({ length: count }, function originalHeading(_value, index) { 
             return `# Original heading ${index}\n\nOriginal fixture content.`; 
           });
           const { instructions, declarations, batches } = createInstructionFixture({ contents });
           assert.equal(instructions.indexedHeadingContextCandidates().length, count);
-          if (count === 65) {
-            assert.throws(function oversizedHeadingBatch() { 
-              instructions.issueBoundPolicyBatch({ clauseRelations: false, requestMaterial: false, headingContexts: true }); 
-            }, { message: 'Heading content requires one through 64 original source groups' });
-            assert.equal(declarations.length, 0);
-            assert.equal(batches.length, 0);
-          } else {
-            instructions.issueBoundPolicyBatch({ clauseRelations: false, requestMaterial: false, headingContexts: true });
-            assert.equal(batches[0]?.length, count);
-          }
+          instructions.issueBoundPolicyBatch({ clauseRelations: false, requestMaterial: false, headingContexts: true });
+          assert.equal(batches[0]?.length, count);
+          assert.equal(declarations.length, count);
         },
       });
     }),

@@ -58,7 +58,7 @@ session.agent
  assert.equal(
    fixtureState.selections,
    eligible?1:0,
-   `Required or uncertain approval reaches the original selector unless a prohibition or unavailable UI blocks it: ${inspect(
+   `Confirmation follows unresolved automatic review with no established prohibition and an available UI: ${inspect(
      {
        authorizationCaptures: fixtureState.authorizationCaptures,
        handlerFailure: fixtureState.handlerFailure,

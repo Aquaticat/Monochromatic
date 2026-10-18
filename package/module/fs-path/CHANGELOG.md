@@ -1,5 +1,13 @@
 # @monochromatic-dev/module-fs-path
 
+## 0.2.1
+
+### Patch changes
+
+- Update repository metadata after the transfer to `Aquaticats/Monochromatic`.
+  Publish through `npm-publish.yml` to validate the new npm trusted publisher.
+  The public API is unchanged.
+
 ## 0.2.0
 
 ### Minor Changes

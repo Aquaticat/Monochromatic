@@ -49,13 +49,7 @@ export type NativeReturnSlot = {
  Fixed native callbacks supplied by the disposable fixture.
  */
 export type NativeReturnOwner = {
-  /**
-   Native runner's external positional signature.
-   */
-  readonly runNative: (
-    call: ReturnCall,
-    options: unknown
-  ) => unknown;
+  
   /**
    Original slot lookup.
    */
@@ -77,11 +71,10 @@ export type NativeReturnConsumer = {
   /**
    Native result is deliberately unknown until the test inspects it.
    */
-  readonly invoke: (input: {
+  readonly open: (input: {
     readonly slot: object;
     readonly call: ReturnCall;
-    readonly options?: unknown
-  }) => Promise<unknown>;
+  }) => Readonly<{ complete: (outcome: unknown) => unknown; fail: (error: unknown) => void }>;
   /**
    Supported script value requires original return membership.
    */

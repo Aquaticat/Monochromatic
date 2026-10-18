@@ -1,275 +1,173 @@
+/** Review complete groups between original native preparation and execution phases. @module */
+import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {sealPreparedInput} from './prepared-input-seal.ts';
+import {schedulePreparedCalls} from './prepared-schedule.ts';
+import {executeWithOwnedContext,executeWithOwnedMember,NativeExecutionGuardError} from '../../../lifecycle/execution-context-carrier/execute.mjs';
+
+//region Native phase results and retained failures share complete-group completion.
+/** Preparation contracts fail before releasing any executable. */
 export class PreparedBatchContractError extends Error {}
+/** Native cleanup and callback failures retain every issued member outcome. */
 export class PreparedBatchExecutionError extends Error {
-  constructor(
-    message,
-    {
-      failures,
-      outcomes,
-      assessmentDecision
-    }
-  ) {
-    super(
-      message,
-      {cause:new AggregateError(failures)}
-    );
-    this.diagnosticRecord={
-      outcomes,
-      assessmentDecision
-    };
+  constructor(message,{failures,outcomes,assessmentDecision}){
+    super(message,{cause:new AggregateError(failures)});
+    this.diagnosticRecord={outcomes,assessmentDecision};
   }
 }
 
-
-import {
-  executeWithOwnedContext,
-  NativeExecutionGuardError
-} from "../../../lifecycle/execution-context-carrier/execute.mjs";
-//region Private prepared-group dispatcher; all executable members wait for one combined judgment.
-
-
-
-/** Seal ordinary JSON-like input trees only after the supplied preparation hooks finish. */
-function sealInput(input) {
-  const pending=[input];
-  const seen=new Set();
-  while(pending.length > 0){
-    const value=pending.pop();
-    if((value===null) || (value===undefined)
-      || ((typeof value)==='string')
-      || ((typeof value)==='boolean'))continue;
-    if(((typeof value)==='number') && Number.isFinite(value))continue;
-    if(((typeof value)!=='object') || seen.has(value))throw new PreparedBatchContractError('Prepared input must be a non-aliased JSON-like tree');
-    seen.add(value);
-    if(seen.size>10_000)throw new PreparedBatchContractError('Prepared input exceeds the declared tree bound');
-    const prototype=Object.getPrototypeOf(value);
-    if(Array.isArray(value) ? prototype!==Array.prototype : (prototype!==Object.prototype) && (prototype!==null))throw new PreparedBatchContractError('Prepared input has an unsupported prototype');
-    if(Array.isArray(value) && (Reflect.ownKeys(value)
-      .length
-      !==(value.length
-      +1)))throw new PreparedBatchContractError('Prepared input array is sparse or has extra properties');
-    for(const key of Reflect.ownKeys(value)){
-      if((typeof key)!=='string')throw new PreparedBatchContractError('Prepared input has a symbol key');
-      const property=Object.getOwnPropertyDescriptor(
-        value,
-        key
-      );
-      if((property===undefined) || (!Object.hasOwn(
-        property,
-        'value'
-      )))throw new PreparedBatchContractError('Prepared input has an accessor');
-      if((!property.enumerable) && (!(Array.isArray(value) && (key==='length'))))throw new PreparedBatchContractError('Prepared input has hidden properties');
-      pending.push(property.value);
-    }
-    Object.freeze(value);
-  }
-  return input;
-}
-
-/** Caller owns the complete explicit group and actual SDK runToolCall function. */
+/** Prepare members once, review actual arguments, and run those same native preparations. */
 export async function dispatchPreparedBatch({
-  calls,
-  tools,
-  assistantMessage,
-  context,
-  runToolCall,
-  prepare,
-  after,
-  onUpdate,
-  onStart,
-  onFinish,
-  assess,
-  assertFresh,
-  signal,
-  executionJudgment,
-  executionMode='parallel'
-}) {
-  if((!Array.isArray(calls)) || (calls.length===0)
-    || (calls.length>64)
-    || calls.some(function isInvalidCall(call) { return ((call.type!=='toolCall') || ((typeof call.id)!=='string')
-      || (!call.id)
-      || ((typeof call.name)!=='string')
-      || (!call.name)); })
-    || (new Set(calls.map(function readCallId(call) { return (call.id); })).size!==calls.length))throw new PreparedBatchContractError('Prepared batch requires one to64 unique named members');
-  const scheduled=Object.freeze(calls.map(function cloneScheduledCall(call) { return (Object.freeze(structuredClone(call))); }));
-  if((executionMode!=='parallel') && (executionMode!=='sequential'))throw new PreparedBatchContractError('Unknown batch execution mode');
-  if((!executionJudgment)||[
-    'memberFor',
-    'beginExecution',
-    'executionFor',
-    'finishExecution'
-  ].some(function isMissingExecutionSupport(name) { return ((typeof executionJudgment[name])!=='function'); }))throw new PreparedBatchContractError('Enclosing judgment lacks required native execution occurrence support');
-  for(const call of scheduled){const tool=tools.find(function matchesTool(value) { return (value.name===call.name); });if(tool&&((typeof tool.createExecutionContext)!=='function'))throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)
-    } lacks required native context support; the complete group was not started`);}
-  const serial=(executionMode==='sequential') || scheduled.some(function requiresSequentialExecution(call) { return (tools.find(function matchesTool(tool) { return (tool.name===call.name); })
-    ?.executionMode
-    ==='sequential'); });
-  const turns=scheduled.map(function createExecutionTurn() { return (Promise.withResolvers()); });
-  const preparationTurns=scheduled.map(function createPreparationTurn() { return (Promise.withResolvers()); });
-  turns[0]
-    .resolve();
-  preparationTurns[0]
-    .resolve();
-  const ordinalByID=new Map(scheduled.map(function indexNativeCall(call,
-    index) { return ([
-    call.id,
-    index
-  ]); }));
-  const gate=Promise.withResolvers();
-  const ready=new Map();
-    const failures=[];
-    const snapshots=[];
-  const batchState={assessmentStarted:false,decision:undefined,executionGuardFailed:false};
-    
-    
-  function block(reason){
-    if(batchState.decision===undefined){batchState.decision=Object.freeze({
-      block:true,
-      reason
-    });gate.resolve(batchState.decision);}
+  calls,tools,nativePhases,prepare,after,onUpdate,onStart,onFinish,assess,assertFresh,signal,
+  executionJudgment,memberForExecution,executionMode='parallel'
+}){
+  /** Diagnostics never inspect native argument or result payloads. */
+  const l=tagged({tag:dispatchPreparedBatch.name,l:tagged({tag:'auto-mode-native-phases'})});
+  l.debug('preparing complete native group');
+  if(typeof nativePhases?.prepare!=='function'||typeof nativePhases.run!=='function'){
+    throw new PreparedBatchContractError('Original native preparation and execution phases are unavailable');
   }
-  function active(stage){if(signal.aborted)throw new PreparedBatchContractError(
-    'Prepared group cancelled',
-    {cause:signal.reason}
-  );assertFresh({stage});}
-  const executableTools=tools.map(function wrapOwnedTool(original) { return (({
-    ...original,
-    async execute(toolCallId,params,nativeSignal,nativeOnUpdate){
-    const args=[toolCallId,params,nativeSignal,nativeOnUpdate];
-    const ordinal=ordinalByID.get(args[0]);
-    if(ordinal===undefined)throw new PreparedBatchContractError('Execution has no declared member ordinal');
-    if(serial)await turns[ordinal]
-      .promise;
-    try{active('member-execute');}catch(error){failures.push(error);throw error;}
-    if(batchState.executionGuardFailed){const error=new PreparedBatchContractError('An execution context guard failed; remaining group members cannot start');failures.push(error);throw error;}
-    try{return await executeWithOwnedContext({
-      judgment:executionJudgment,
-      tool:original,
-      args
-    });}
-    catch(error){if(error instanceof NativeExecutionGuardError){batchState.executionGuardFailed=true;failures.push(error);}throw error;}
+  /** Membership and scheduling admission precedes native callbacks. */
+  const {scheduled,serial}=schedulePreparedCalls({calls,tools,executionJudgment,executionMode,PreparedBatchContractError});
+  /** Records retain actual preparations rather than tools suspended inside before hooks. */
+  const records=[];
+  /** Lifecycle failures remain independent of native error-valued outcomes. */
+  const failures=[];
+  /** Only complete successful preparation produces an assessment snapshot. */
+  const snapshots=[];
+  /** The first blocking result remains terminal. */
+  const state={decision:undefined,executionGuardFailed:false};
+
+  /** Cancellation and original operation freshness are checked at effect boundaries. */
+  function active(stage){signal.throwIfAborted();assertFresh({stage});}
+  /** Unexecuted preparation does not invoke the native after hook. */
+  function withheld(call){return {toolCall:call,result:{content:[{type:'text',text:state.decision.reason}],details:{}},isError:true};}
+  /** Record outcomes before foreign completion callbacks can throw. */
+  async function publish({record,outcome}){
+    nativePhases.retain?.({call:record.call,outcome});
+    record.outcome=outcome;
+    await onFinish?.(outcome);
+    return outcome;
   }
-  })); });
-  function onAbort() {  block('Prepared group cancelled before execution'); }
-  signal.addEventListener(
-    'abort',
-    onAbort,
-    {once:true}
-  );
-  if(signal.aborted)onAbort();
-  async function runMember(call){
-    const memberState={entered:false,preparationReleased:false};
-    
-    const ordinal=ordinalByID.get(call.id);
-    if(ordinal===undefined)throw new PreparedBatchContractError('Preparation has no declared member ordinal');
-    function releasePreparation(){
-      if(memberState.preparationReleased)return;
-      memberState.preparationReleased=true;
-      preparationTurns[ordinal+1]
-        ?.resolve();
+  /** Prepared peers cannot execute after an immediate native failure. */
+  async function finishWithheld(){
+    for(const record of records){
+      if(record.outcome!==undefined||record.failure!==undefined)continue;
+      try{await publish({record,outcome:withheld(record.call)});}
+      catch(error){record.failure={error};failures.push(error);}
     }
-    using memberTurn={ [Symbol.dispose]() {releasePreparation();turns[ordinal+1]
-      ?.resolve();} };
-    try{
-      await preparationTurns[ordinal]
-        .promise;
-      await onStart?.(call);
-      const result=await runToolCall(
-        call,
-        {
-          tools:executableTools,
-          assistantMessage,
-          context,
-          signal,
-          afterToolCall:after,
-          onUpdate:onUpdate===undefined?undefined:function forwardPartialUpdate(partial) { return (onUpdate(
-            partial,
-            call
-          )); },
-          beforeToolCall:async function prepareNativeMember(hook) {
-        memberState.entered=true;
-        try{
-          active('prepare-entry');
-          const prepared=await prepare(hook);
-          if(prepared?.block){block(prepared.reason || 'A member preparation blocked this complete group');return await gate.promise;}
-          active('input-prepared');
-          if(ready.has(call.id))throw new PreparedBatchContractError('Member reached preparation twice');
-          const sealed=sealInput(hook.args);
-          const member=Object.freeze({groupExecutionMode:serial?"sequential":"parallel",
-            id:call.id,
-            name:call.name,
-            input:sealInput(structuredClone(sealed))
-          });
-          ready.set(
-            call.id,
-            member
-          );
-          // The next native preparation may start now; execution still waits for complete admission.
-          releasePreparation();
-          if((ready.size===scheduled.length) && (batchState.decision===undefined)
-            && (!batchState.assessmentStarted)){
-            batchState.assessmentStarted=true;
-            const manifest=Object.freeze(scheduled.map(function readPreparedManifest(value) { return (ready.get(value.id)); }));
-            snapshots.push(manifest);
-            const assessed=await assess({
-              members:manifest,
-              signal
-            });
-            active('assessment-returned');
-            if((assessed===null) || ((typeof assessed)!=='object')
-              || ((typeof assessed.block)!=='boolean')
-              || (assessed.block && (((typeof assessed.reason)!=='string') || (!assessed.reason))))throw new PreparedBatchContractError('Combined assessment returned an invalid decision');
-            if(batchState.decision===undefined){batchState.decision=Object.freeze(assessed.block?{
-              block:true,
-              reason:assessed.reason
-            }:{block:false});gate.resolve(batchState.decision);}
-          }
-          const selected=await gate.promise;
-          active('member-release');
-          return selected.block?selected:undefined;
-        }catch(error){failures.push(error);block('Complete group preparation or assessment failed');return {
-          block:true,
-          reason:'Complete group preparation or assessment failed'
-        };}
+  }
+  /** Seal actual arguments and an independent review presentation. */
+  function manifest({call,prepared}){
+    sealPreparedInput({input:prepared.args,PreparedBatchContractError});
+    return Object.freeze({groupExecutionMode:serial?'sequential':'parallel',id:call.id,name:call.name,
+      input:sealPreparedInput({input:structuredClone(prepared.args),PreparedBatchContractError})});
+  }
+  /** Native execution owns conversion, awaited updates, and the after hook. */
+  async function run(record){
+    if(record.failure!==undefined)throw record.failure.error;
+    if(record.outcome!==undefined)return record.outcome;
+    if(state.decision.block)return await publish({record,outcome:withheld(record.call)});
+    /** Original selected definitions remain intact during preparation. */
+    const original=record.prepared.tool;
+    /** Adapt context carriage without replacing original native phase bodies. */
+    async function execute(...args){
+      try{
+        active('member-execute');
+        if(state.executionGuardFailed)throw new PreparedBatchContractError('An execution context guard failed; remaining group members cannot start');
+      }catch(error){failures.push(error);throw error;}
+      try{return memberForExecution===undefined
+        ?await executeWithOwnedContext({judgment:executionJudgment,tool:original,args})
+        :await executeWithOwnedMember({judgment:executionJudgment,member:memberForExecution(record.call.id),tool:original,args});}
+      catch(error){
+        if(error instanceof NativeExecutionGuardError){state.executionGuardFailed=true;failures.push(error);}
+        throw error;
       }
+    }
+    /** Preserve actual native call association for partial updates. */
+    function update(partial){return onUpdate?.(partial,record.call);}
+    try{return await publish({record,outcome:await nativePhases.run({call:record.call,prepared:record.prepared,execute,onUpdate:update,after})});}
+    catch(error){nativePhases.failed?.({call:record.call,error});throw error;}
+  }
+
+  for(const call of scheduled){
+    /** Preparation and completion share a record, including callback failures. */
+    const record={call,prepared:undefined,member:undefined,outcome:undefined,failure:undefined};
+    try{
+      await onStart?.(call);
+      /** Hook blocking differs from validation failure before hook entry. */
+      const hookState={blocked:false};
+      /** Native argument preparation precedes the original callback exactly once. */
+      async function before(hook){
+        active('prepare-entry');
+        const result=await prepare(hook);
+        hookState.blocked=Boolean(result?.block);
+        if(hookState.blocked){
+          state.decision??=Object.freeze({block:true,reason:result.reason||'A member preparation blocked this complete group'});
+          await finishWithheld();
+        }else if(state.decision?.block){
+          await finishWithheld();
+          return state.decision;
         }
-      );
-      if(!memberState.entered)block('A member failed native preparation before group admission');
-      await onFinish?.(result);
-      return result;
-    }catch(error){failures.push(error);block('Native member lifecycle failed');throw error;}
-  }
-  const completion={settled:undefined};
-  {
-    using abortSubscription={ [Symbol.dispose]() {signal.removeEventListener(
-    'abort',
-    onAbort
-  );} };
-    completion.settled=await Promise.allSettled(scheduled.map(runMember));
-  }
-  const {settled}=completion;
-  if(batchState.decision===undefined)throw new PreparedBatchContractError('Prepared batch completed without admission outcome');
-  if(failures.length > 0)throw new PreparedBatchExecutionError(
-    'Prepared batch retained lifecycle failures',
-    {
-      failures,
-      outcomes:settled,
-      assessmentDecision:batchState.decision
+        return result;
+      }
+      const prepared=await nativePhases.prepare({call,before});
+      record.prepared=prepared;
+      if(prepared.kind==='immediate'){
+        state.decision??=Object.freeze({block:true,reason:hookState.blocked
+          ?prepared.result.content?.[0]?.text||'A member preparation blocked this complete group'
+          :'A member failed native preparation before group admission'});
+        await publish({record,outcome:{toolCall:call,result:prepared.result,isError:prepared.isError}});
+        records.push(record);
+      }else{
+        if(prepared.kind!=='prepared')throw new PreparedBatchContractError('Original native preparation returned no prepared member');
+        record.member=manifest({call,prepared});
+        records.push(record);
+      }
+    }catch(error){
+      nativePhases.failed?.({call,error});
+      l.debug('native preparation or callback failed; withholding complete group');
+      l.debug(error);
+      record.failure={error};failures.push(error);
+      state.decision??=Object.freeze({block:true,reason:'Complete group preparation or assessment failed'});
+      if(!records.includes(record))records.push(record);
     }
-  );
-  const rejected=settled.filter(function isRejectedResult(result) { return (result.status==='rejected'); });
-  if(rejected.length > 0)throw new PreparedBatchExecutionError(
-    'Prepared batch has unhandled native outcomes',
-    {
-      failures:rejected.map(function readRejection(result) { return (result.reason); }),
-      outcomes:settled,
-      assessmentDecision:batchState.decision
+  }
+  if(state.decision!==undefined)await finishWithheld();
+  if(state.decision===undefined){
+    try{
+      active('input-prepared');
+      const members=Object.freeze(records.map(record=>record.member));
+      snapshots.push(members);
+      const decision=await assess({members,signal});
+      active('assessment-returned');
+      if(!decision||typeof decision.block!=='boolean'
+        ||(decision.block&&(typeof decision.reason!=='string'||!decision.reason))){
+        throw new PreparedBatchContractError('Combined assessment returned an invalid decision');
+      }
+      state.decision=Object.freeze(decision.block?{block:true,reason:decision.reason}:{block:false});
+    }catch(error){
+      l.debug('complete native group review failed');l.debug(error);
+      failures.push(error);
+      state.decision=Object.freeze({block:true,reason:'Complete group preparation or assessment failed'});
     }
-  );
-  return Object.freeze({
-    decision:batchState.decision,
-    assessmentCount:snapshots.length,
-    members:snapshots[0]??Object.freeze([]),
-    outcomes:Object.freeze(settled.map(function readCompletedValue(result) { return (result.value); }))
-  });
+  }
+  /** Sequential execution needs no deferred member-turn protocol. */
+  const settled=[];
+  if(serial){
+    for(const record of records){
+      try{settled.push({status:'fulfilled',value:await run(record)});}
+      catch(reason){settled.push({status:'rejected',reason});}
+    }
+  }else settled.push(...await Promise.allSettled(records.map(run)));
+  l.debug('all issued native members settled');
+  /** Native settlements are created locally, so no external completion association protocol is needed. */
+  const rejected=settled.filter(outcome=>outcome.status==='rejected');
+  if(failures.length>0||rejected.length>0){
+    throw new PreparedBatchExecutionError(failures.length>0?'Prepared batch retained lifecycle failures':'Prepared batch has unhandled native outcomes',{
+      failures:failures.length>0?failures:rejected.map(outcome=>outcome.reason),outcomes:settled,assessmentDecision:state.decision
+    });
+  }
+  return Object.freeze({decision:state.decision,assessmentCount:snapshots.length,
+    members:snapshots[0]??Object.freeze([]),outcomes:Object.freeze(settled.map(outcome=>outcome.value))});
 }
 //endregion

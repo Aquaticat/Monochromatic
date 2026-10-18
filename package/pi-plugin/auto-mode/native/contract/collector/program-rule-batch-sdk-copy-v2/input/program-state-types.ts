@@ -5,6 +5,7 @@ import type { NativeScriptValueGuardError } from './script-value-guard.ts';
 import type { JudgmentExecutionOrigin } from './execution-types.ts';
 import type {
   NativeReturnConsumer,
+  NativeCallSlot,
   NativeReturnSlot
 } from './native-return-types.ts';
 import type {
@@ -55,7 +56,7 @@ export type ProgramOwnerRecord = ProgramExecutionRecord & { program: ProgramScop
  Native slots add group custody and later member publication to the original return consumer's state.
  */
 export type ProgramSlot = Omit<NativeReturnSlot, 'member'> & {
-  readonly handle: object;
+  readonly handle: NativeCallSlot;
   readonly group: ProgramGroup;
   readonly ordinal: number;
   member?: object;

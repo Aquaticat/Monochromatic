@@ -12,10 +12,10 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 await describe({
   name: assertOriginalInputBudget.name,
   children: [
-    //region Inclusive limits do not multiply with the number of source owners
+    //region Receipt accounting does not impose source capacity limits
 
     it({
-      name: 'accepts zero usage and the exact combined count and byte boundaries',
+      name: 'accepts zero usage and the former combined count and byte boundaries',
       fn: async function checkBoundaries() {
         expect(function empty() {
           assertOriginalInputBudget({
@@ -33,19 +33,36 @@ await describe({
     ...[
       { resource: { count: 64, bytes: 0, }, session: { count: 65, bytes: 0, }, },
       { resource: { count: 1, bytes: 1_048_576, }, session: { count: 1, bytes: 3_145_729, }, },
-      { resource: { count: Number.MAX_SAFE_INTEGER, bytes: 0, }, session: { count: Number.MAX_SAFE_INTEGER, bytes: 0, }, },
     ].map(function excessiveUsage(input, index,) {
       return it({
-        name: `rejects combined overflow ${index} even when independently supplied`,
+        name: `accepts receipt usage beyond the former ceiling ${index}`,
         fn: async function checkOverflow() {
           expect(function combine() {
             assertOriginalInputBudget(input,);
-          },).toThrow(InputReceiptBudgetError,);
+          },).not.toThrow();
         },
       },);
     },),
 
-    //endregion Inclusive limits
+    it({
+      name: 'rejects aggregate counters that cannot be represented exactly',
+      fn: async function invalidAggregate() {
+        expect(function combine() {
+          assertOriginalInputBudget({
+            resource: { count: Number.MAX_SAFE_INTEGER, bytes: 0, },
+            session: { count: 1, bytes: 0, },
+          },);
+        },).toThrow(InputReceiptBudgetError,);
+        expect(function combineBytes() {
+          assertOriginalInputBudget({
+            resource: { count: 0, bytes: Number.MAX_SAFE_INTEGER, },
+            session: { count: 0, bytes: 1, },
+          },);
+        },).toThrow(InputReceiptBudgetError,);
+      },
+    },),
+
+    //endregion Receipt accounting
 
     //region Closed usage records reject unsupported fields and numeric domains
 

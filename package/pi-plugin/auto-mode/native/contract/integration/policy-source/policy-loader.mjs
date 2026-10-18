@@ -7,6 +7,9 @@ import {assertOriginalInputBudget} from './input-budget.mjs';
 import {copyOptions} from '../../collector/resource-input-custody/values.ts';
 import {createGoverningContextEmitter} from './context-emission.mjs';
 import {readBoundResourceFrame} from '../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {captureDecisionMaterial} from './decision-material.mjs';
+import {bindReadablePolicyFiles} from './readable-policy-files.mjs';
 
 //region The loader owns mutable input publication and its exact native resource binding.
 /**
@@ -91,6 +94,7 @@ export function createPolicyLoaderState({
    })!==inputState.binding.frame)throw new PolicySlotBindingError('Original resource input frame changed');
    if(owner.captureGoverningPolicy(inputState.loader)!==inputState.binding.source)throw new PolicySlotBindingError('Original selected policy capture changed');
    inputState.contextPublication?.assertCurrent();
+   inputState.binding.readablePolicies.assertCurrent();
    if(hostPrompt){
     const system=inputState.binding.frame
       .stages
@@ -116,6 +120,16 @@ export function createPolicyLoaderState({
      .content)throw new PolicySlotBindingError('Published system input differs from the owner-captured policy');
   }
   const source=systemSlot?inputState.emission.source:owner.captureGoverningPolicy(inputState.loader);
+  let relevance;
+  let relevanceFailure;
+  if(policy.relevance){
+   try{
+    relevance=await owner.refreshGoverningRelevance({loader:inputState.loader,signal:new AbortController().signal});
+   }catch(error){
+    relevanceFailure={cause:error};
+    tagged({tag:'reload-policy-relevance'}).error(error);
+   }
+  }
   const system=frame.stages
     .find(function isResourceSystemStage(value) { return (value.kind==='system'); });
   const resourceSystemInput=systemSlot||hostPrompt
@@ -182,7 +196,16 @@ export function createPolicyLoaderState({
       priorContext:inputState.contextPublication?.prior
     })
   });
+  const readablePolicies=bindReadablePolicyFiles(contextInputs);
+  const decisionSelection=policy.relevance?captureDecisionMaterial({
+   sources:Object.freeze([source,...readablePolicies.sources]),
+   input:{parsePolicy:policy.relevance.parse,relevance,relevanceFailure}
+  }):undefined;
   inputState.binding=Object.freeze({
+    readablePolicies,
+    decisionSelection,
+    relevance,
+    relevanceFailure,
     resourceReceiptInputs:inputState.retainedResourceReceipts,
     source,
     frame,
@@ -242,8 +265,7 @@ export function createPolicyLoaderState({
  function resourceInputs(){
   if(readResourceToolInputs===undefined)return undefined;
   const origins=readResourceToolInputs(inputState.loader);
-  if((!Array.isArray(origins))||(!Object.isFrozen(origins))
-    ||(origins.length>64))throw new PolicySlotBindingError('Resource tool inputs require their original bounded native view');
+  if((!Array.isArray(origins))||(!Object.isFrozen(origins)))throw new PolicySlotBindingError('Resource tool inputs require their original native view');
   for(const origin of origins){
    const {
      source,

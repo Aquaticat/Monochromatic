@@ -4,10 +4,20 @@
  */
 
 //region Typed boundaries expose original lifetime and attempt accounting only.
+/** One actual provider invocation receives the original cancellation and performance target. */
+export type JudgmentBundleOperation<Result> = (input: {
+ readonly signal: AbortSignal;
+ readonly targetAt: number;
+ readonly attempt: number;
+}) => Promise<Result>;
 /**
  Private mutable accounting shared only by original clock and dispatch owners.
  */
 export type JudgmentAccounting = {
+  /** Consumed sequential bundles across successful and failed dispatches. */
+  bundles: number;
+  /** Actual parallel call slots consumed across all bundles. */
+  calls: number;
   /**
    Last accepted monotonic clock reading.
    */
@@ -46,14 +56,20 @@ export type JudgmentAccounting = {
  One actual transport invocation within the original judgment.
  */
 export type JudgmentAttempt = {
+  /** Dispatch at most three parallel calls under the original shared bundle allowance. */
+  readonly runBundle: <Result>(operations: readonly ((input: {
+    readonly signal: AbortSignal;
+    readonly targetAt: number;
+    readonly attempt: number;
+  }) => Promise<Result>)[]) => Promise<readonly Result[]>;
   /**
    Original caller cancellation.
    */
   readonly signal: AbortSignal;
   /**
-   Preparation-inclusive absolute deadline.
+   Preparation-inclusive absolute performance target.
    */
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   /**
    Judgment-wide client invocation ordinal.
    */
@@ -91,14 +107,18 @@ export type JudgmentAttemptRecord = {
  Immutable diagnostics never renew lifetime or replenish attempts.
  */
 export type JudgmentBudgetSnapshot = {
+  /** Sequential bundles consumed, including failed calls. */
+  readonly bundles: number;
+  /** Actual call slots consumed within those bundles. */
+  readonly calls: number;
   /**
    Original first clock reading.
    */
   readonly startedAt: number;
   /**
-   Original absolute expiry.
+   Original absolute performance target.
    */
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   /**
    Consumed client invocations.
    */

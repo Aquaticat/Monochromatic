@@ -18,14 +18,6 @@ import type {
 } from './set-types.ts';
 
 /**
- One original judgment admits only the existing bounded source-list profile.
- */
-const MAX_SOURCES = 128;
-/**
- Combined original clause membership stays inside the existing batch profile.
- */
-const MAX_CLAUSES = 512;
-/**
  Set lifecycle diagnostics omit original governing-source content.
  */
 const l = tagged({ tag: 'auto-mode-governing-rule-set' });
@@ -39,8 +31,7 @@ const l = tagged({ tag: 'auto-mode-governing-rule-set' });
  */
 function assertOriginalSources(sources: readonly GoverningSource[]): void {
   if ((!Array.isArray(sources)) || (!Object.isFrozen(sources))
-    || (sources.length === 0)
-    || (sources.length > MAX_SOURCES)) throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
+    || (sources.length === 0)) throw new GoverningRuleBindingError('Original governing sources require a nonempty immutable source list');
   if (new Set(sources.map(function readGoverningSourceOccurrence(source: GoverningSource) { 
     return source.occurrence; 
   })).size !== sources.length) throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
@@ -56,13 +47,14 @@ function assertOriginalSources(sources: readonly GoverningSource[]): void {
 
  @returns immutable original source-set selection operations
 
- @throws GoverningRuleBindingError for invalid source membership or exceeded clause bounds
+ @throws GoverningRuleBindingError for invalid source membership
 
  @example createGoverningRuleSet({ readSources, parse });
  */
 export function createGoverningRuleSet({
   readSources,
-  parse
+  parse,
+  excludedRules=[]
 }: GoverningSetInput): GoverningRuleSet {
   /**
    Each original source-set construction keeps its own lifecycle diagnostics.
@@ -152,6 +144,11 @@ export function createGoverningRuleSet({
        Preserve the exact source-owned projection before augmenting its source ordinal.
        */
       const original = index.read(handle);
+      if((original.kind!=='source-heading-context')&&excludedRules.some(function excluded(rule){
+        return (rule.sourceOrdinal===sourceOrdinal)&&(rule.start===original.start)
+          &&(rule.end===original.end)
+          &&(rule.text===original.text);
+      }))continue;
       /**
        Ordinal augmentation does not replace original clause or source identity.
        */
@@ -204,7 +201,6 @@ export function createGoverningRuleSet({
       headingHandles.push(handle);
     }
   }
-  if (instructionHandles.length > MAX_CLAUSES) throw new GoverningRuleBindingError('Combined policy clause count exceeds the original batch profile');
   /**
    Public tagged enumeration remains stable across current reads.
    */

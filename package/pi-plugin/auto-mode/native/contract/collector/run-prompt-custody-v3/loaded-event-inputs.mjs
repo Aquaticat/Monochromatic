@@ -2,9 +2,9 @@ import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
 import {copyToolMetadata} from "../run-prompt-custody/messages.mjs";
 import {dataField} from './loaded-fields.mjs';
-//region Charge pending callback observations to the original shared input budget.
-/** Charge pending callback observations to the original shared input budget. */
-export function createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput,maximumSnapshotBytes}){
+//region Account for pending callback observations without imposing a capture ceiling.
+/** Account for pending callback observations without imposing a capture ceiling. */
+export function createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
 /** Group one native emission while copying each callback phase before its borrowed value can change. */
 function createEventHandlerCapture(){
@@ -26,7 +26,6 @@ function createEventHandlerCapture(){
       inputField:'eventHandler',
       inputOrigin:'native-event-handler'
     });
-    if((poolState.bytes+poolState.pendingEventBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
     eventState.records=[];eventState.retainedBytes=0;eventState.part++;
    }
    function capture(input){
@@ -41,18 +40,13 @@ function createEventHandlerCapture(){
        value:copyToolMetadata({value:input.value})
      });
      const recordBytes=Buffer.byteLength(JSON.stringify(record));
-     if((recordBytes+2)>65_536)throw new SourceCollectionError('Native event callback value exceeds the original source byte bound');
-     if((eventState.retainedBytes+recordBytes
-       +1)>65_536)publish();
      if(eventState.records.length===0)reserve();
      // Array delimiters and commas are charged before any complete emission publication.
      const addedBytes=recordBytes+(eventState.records.length===0?2:1);
-     if((poolState.bytes+poolState.pendingEventBytes
-       +addedBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
      eventState.records.push(record);eventState.retainedBytes+=addedBytes;poolState.pendingEventBytes+=addedBytes;
     }catch(error){
      poolState.failure=new InputCaptureError(error);
-     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+     // Capture failure is retained in the pool and enforced only by automatic assessment readers.
     }
    }
    function complete(){
@@ -63,7 +57,7 @@ function createEventHandlerCapture(){
      publish();
     }catch(error){
      poolState.failure=new InputCaptureError(error);
-     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+     // Capture failure is retained in the pool and enforced only by automatic assessment readers.
     }
    }
    return Object.freeze({
@@ -71,7 +65,7 @@ function createEventHandlerCapture(){
      complete
    });
   }
-/** Retain original context inputs and complete results under the existing manager budget. */
+/** Retain original context inputs and complete results in the original manager store. */
 function captureContextHandler(input){
    if(poolState.failure)return;
    try{
@@ -91,7 +85,7 @@ function captureContextHandler(input){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 /** Preserve the complete received result before native callback field selection. */
@@ -125,7 +119,7 @@ function captureHandlerResultOutput({frame}){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 return {

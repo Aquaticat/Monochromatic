@@ -32,7 +32,6 @@ export function snapshotToolLoadoutInput(input){
  const selected={};
    const selectedFields=[];
    const unobservedMetadata=[];
- const budget={declarations:0,gapBytes:0};
  for(const key of views){
   const tools=fields[key]
     .value;
@@ -42,8 +41,7 @@ export function snapshotToolLoadoutInput(input){
     'length'
   )
     ?.value;
-  if((!Number.isSafeInteger(length))||(length<0)
-    ||((budget.declarations+=length)>4_096))throw new SourceCollectionError('Native loadout views exceed the aggregate declaration bound');
+  if((!Number.isSafeInteger(length))||(length<0))throw new SourceCollectionError('Native loadout views require valid array lengths');
   const selection=selectToolMetadataInput(tools);selected[key]=selection.selected;
   for(const field of selection.metadata
     .selectedFields)selectedFields.push(`${key}.${field}`);
@@ -53,9 +51,7 @@ export function snapshotToolLoadoutInput(input){
    const entry=Object.freeze({
      ...gap,
      key:`${key}.${gap.key}`
-   });budget.gapBytes+=Buffer.byteLength(JSON.stringify(entry));
-   if((unobservedMetadata.length>=4_096)||(Buffer.byteLength(entry.key)>65_536)
-     ||(budget.gapBytes>1_048_576))throw new SourceCollectionError('Native loadout metadata gaps exceed the aggregate diagnostic bound');
+   });
    unobservedMetadata.push(entry);
   }
  }

@@ -12,6 +12,7 @@ import {
 import { reportLoggerInternalError, } from '../error-format.ts';
 
 import type { Sink, } from '../types.ts';
+import { appendAfter, } from './file-append.ts';
 
 //region Ancestor search
 // Locates the project the process belongs to so log files land beside its
@@ -129,14 +130,17 @@ export async function findNodeModulesUp(
 // asserts a Node runtime and no `process.versions.node` probe is needed.
 
 /**
- Builds a file sink that appends JSONL records to the nearest ancestor
+ Builds a file sink that appends JSONL records to a caller-selected directory,
+ `MONOCHROMATIC_LOG_DIRECTORY`, or the nearest ancestor
  `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
  verification). The resolved path and the verification memo live in this
  instance's closure (no module-global state), so independent loggers and
- tests never share a log file or need a reset hook. No `flush` hook: each
- `write` awaits `appendFile` directly, so there is no buffered state to
- drain.
+ tests retain their own append ordering. Each `write` awaits preceding writes
+ and its complete `appendFile`, so the logger's pending-write tracking also
+ covers queued records without a separate `flush` hook.
  
+ @param directory - explicit destination keeps caller-owned diagnostics outside workspace artifacts
+
  @returns Sink backed by `node:fs/promises`.
  
  @example
@@ -146,7 +150,9 @@ export async function findNodeModulesUp(
  await logger.flush();
  ```
  */
-export function createFileSink(): Sink {
+export function createFileSink({
+  directory = process.env.MONOCHROMATIC_LOG_DIRECTORY,
+}: Readonly<{ directory?: string }> = {}): Sink {
   /**
    Instance-local file-sink resources. `filePath` is populated during
    verification and read by `write`; `verifyPromise` memoizes concurrent
@@ -156,7 +162,8 @@ export function createFileSink(): Sink {
   const state: {
     filePath?: string;
     verifyPromise?: Promise<boolean>;
-  } = {};
+    writePromise: Promise<void>;
+  } = { writePromise: Promise.resolve(), };
 
   /**
    Actual verification work, invoked exactly once via the memoized
@@ -171,7 +178,7 @@ export function createFileSink(): Sink {
       /**
        Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
        */
-      const nodeModulesDir = await findNodeModulesUp({
+      const nodeModulesDir = directory ? directory : await findNodeModulesUp({
         cwd: process.cwd(),
         stat,
         dirname,
@@ -188,13 +195,13 @@ export function createFileSink(): Sink {
       /**
        Directory under the chosen `node_modules` where every monochromatic log file lands.
        */
-      const LOG_DIR = join(
+      const LOG_DIR = directory ? directory : join(
         nodeModulesDir,
         '.monochromatic',
       );
       await mkdir(
         LOG_DIR,
-        { recursive: true, },
+        { recursive: true, mode: 0o700, },
       );
 
       /**
@@ -272,10 +279,16 @@ export function createFileSink(): Sink {
       return;
 
     try {
-      await appendFile(
+      /**
+       Queue publication occurs before awaiting, preventing overlapping chunked appends.
+       */
+      const pending = appendAfter({
+        previous: state.writePromise,
         filePath,
-        `${JSON.stringify(record,)}\n`,
-      );
+        line: `${JSON.stringify(record,)}\n`,
+      },);
+      state.writePromise = pending;
+      await pending;
     }
     catch (error: unknown) {
       reportLoggerInternalError({

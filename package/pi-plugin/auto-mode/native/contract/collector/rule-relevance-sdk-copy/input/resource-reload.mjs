@@ -173,11 +173,6 @@ async function reload({
         pathToRawFileIdentity:'not-established',
         delegation:'not-established'
       });
-      if(Buffer.byteLength(JSON.stringify(scope.view))>1_048_576)throw failed({
-        scope,
-        error:new SourceCollectionError('Resource input frame exceeds total byte bound'),
-        at:'frame-bound'
-      });
       scope.status='ready';record.current=scope;return nativeReturn.value;
     }catch(error){
       if((!(error instanceof ResourceInputCustodyError))&&(!((error instanceof RecordedInputFailure)

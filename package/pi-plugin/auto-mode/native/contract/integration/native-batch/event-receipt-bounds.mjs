@@ -4,7 +4,7 @@ import {assertNativeSessionInputCapture,readNativeSessionInputUsage} from './gen
 
 //region Preserve the original native event assertions and their fixture-owned observations.
 export async function verifyEventBounds(){
- // Emissions split into bounded sources while preserving every original callback phase.
+ // A complete emission preserves every callback phase without byte-based splitting.
  const chunked=fixture({
    kind:'turn_start',
    handlers:Array.from(
@@ -18,20 +18,20 @@ export async function verifyEventBounds(){
      text:'x'.repeat(8_192)
    });
  const chunks=chunked.records();
- assert.ok(chunks.length>1);
+ assert.equal(chunks.length,1);
  assert.equal(
    chunks.flat()
      .length,
    48
  );
- assert.ok(chunks.every(function boundedChunk(chunk){return Buffer.byteLength(JSON.stringify(chunk))<=65_536;}));
+ assert.ok(Buffer.byteLength(JSON.stringify(chunks[0]))>65_536);
  assert.equal(
    readNativeSessionInputUsage(chunked.manager)
      .count,
    chunks.length
  );
 
- // Existing source byte and count limits still reject oversized original observations.
+ // Complete observations remain admissible beyond the former byte and count limits.
  const oversized=fixture({
    kind:'turn_start',
    handlers:[function observe(){return undefined;}]
@@ -41,11 +41,8 @@ export async function verifyEventBounds(){
      type:'turn_start',
      text:'x'.repeat(65_536)
    });
- assert.throws(
-   function requireCompleteCapture(){assertNativeSessionInputCapture(oversized.manager);},
-   function captureProfile(error){return error.message
-     .includes('supported source capture profile');}
- );
+ assertNativeSessionInputCapture(oversized.manager);
+ assert.equal(oversized.records()[0][0].value.value.text,'x'.repeat(65_536));
  const exhausted=fixture({
    kind:'turn_start',
    handlers:[function observe(){return undefined;}]
@@ -66,11 +63,9 @@ export async function verifyEventBounds(){
      type:'turn_start',
      ordinal:128
    });
- assert.throws(
-   function requireCountBound(){assertNativeSessionInputCapture(exhausted.manager);},
-   function captureProfile(error){return error.message
-     .includes('supported source capture profile');}
- );
+ assertNativeSessionInputCapture(exhausted.manager);
+ assert.equal(readNativeSessionInputUsage(exhausted.manager).count,129);
+ assert.equal(exhausted.records().length,129);
 
  // Capture never invokes a result accessor to discover its apparent data.
  const accessorState={calls:0};
@@ -87,7 +82,7 @@ export async function verifyEventBounds(){
  assert.throws(
    function requireOrdinaryValues(){assertNativeSessionInputCapture(accessor.manager);},
    function captureProfile(error){return error.message
-     .includes('supported source capture profile');}
+     .includes('Run message data requires named data properties');}
  );
 
 }

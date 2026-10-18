@@ -72,8 +72,10 @@ fn incomplete_lines_lose_their_newline() {
     assert_eq!(next, 5);
 
     let at_end: Vec<Vec<u8>> = split_keeping_newlines(b"@@ -1 +1 @@\n-a\n+b\n\\ No newline at end of file\n");
-    let (tail, _): (PatchHunk, usize) = parse_hunk(&at_end, 0).expect("hunk");
+    let (tail, after): (PatchHunk, usize) = parse_hunk(&at_end, 0).expect("hunk");
     assert_eq!(tail.lines[1], PatchLine { op: b'+', text: b"b".to_vec() });
+    // The cursor steps over the marker line, so the next parse starts after it.
+    assert_eq!(after, 4);
 }
 
 /// A marker with no line before it is a format error.

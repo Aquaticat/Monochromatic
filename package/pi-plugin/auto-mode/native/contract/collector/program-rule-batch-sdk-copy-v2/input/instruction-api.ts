@@ -51,6 +51,7 @@ export type InstructionSourceOperations = Readonly<{
 export type ProgramInstructionOperations = Readonly<{
   requestMaterialFor: () => object;
   claimRequestMaterial: () => object;
+  claimOperationDecision: () => object;
   claimHeadingContext: (input: Readonly<{ candidate: object }>) => object;
   claimProgramRuleCandidate: (input: ProgramInstruction) => object;
   claimUnitAdoption: (input: Readonly<{ pair: InstructionAdoptionPair }>) => object;

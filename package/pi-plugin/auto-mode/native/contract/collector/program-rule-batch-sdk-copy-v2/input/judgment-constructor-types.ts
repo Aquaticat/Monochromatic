@@ -18,6 +18,7 @@ import type {
 import type { JudgmentInstructionsInput } from './instruction-types.ts';
 import type { JudgmentLifecycleInput } from './judgment-lifecycle-types.ts';
 import type { JudgmentResponseInput } from './judgment-member-types.ts';
+import type { PreparedGroupContext } from '../../../integration/native-batch/prepared-group-types.ts';
 
 //region Bootstrap and occurrence inputs retain source and root identities across owners.
 /**
@@ -50,5 +51,6 @@ export type JudgmentConstructionInput = Readonly<{
   signal: AbortSignal;
   response: JudgmentResponseInput;
   stream: object;
+  group: () => PreparedGroupContext;
 }>;
 //endregion

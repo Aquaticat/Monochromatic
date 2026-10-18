@@ -5,26 +5,26 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { assessmentHttpFailure, } from './assessment-http-failure.ts';
+import { AssessmentTransportError, AssessmentRequestFailure } from './assessment-failure.ts';
+export { AssessmentTransportError } from './assessment-failure.ts';
 
 //region Transport owns HTTP resources while the judgment owns attempts and admission
 
 /**
- Transport diagnostics exclude credentials, request content, and upstream response text.
- */
-export class AssessmentTransportError extends Error {
-  /**
-   Identify the transport boundary without retaining borrowed failure causes.
-   */
-  override readonly name = 'AssessmentTransportError';
-}
-
-/**
- Original judgment supplies its already encoded body and preparation-inclusive deadline.
+ Original judgment supplies its already encoded body and preparation-inclusive performance target.
  */
 export type AssessmentTransportInput = {
+  /**
+   Owned judgment capability accounts for every parallel provider invocation.
+   */
+  readonly runBundle?: <Result>(operations: readonly ((input: {
+    readonly signal: AbortSignal;
+    readonly targetAt: number;
+    readonly attempt: number;
+  }) => Promise<Result>)[]) => Promise<readonly Result[]>;
   readonly body: string;
   readonly signal: AbortSignal;
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   readonly attempt: number;
 };
 
@@ -36,10 +36,7 @@ const endpoint = 'https://api.llmgateway.io/v1/decisions';
  Inherited judgment and transport bounds remain fixed at bootstrap.
  */
 const limits = {
-  durationMs: 5_000,
-  attempts: 3,
-  requestBytes: 1_048_576,
-  responseBytes: 65_536,
+  attempts: 9,
   successfulStatus: 200,
 } as const;
 /**
@@ -88,17 +85,15 @@ export function createAssessmentHttpSender({
   rl.debug('binding direct assessment transport',);
 
   /**
-   Recheck the original clock and cancellation without creating a new deadline.
+   Recheck the original clock and cancellation without creating a new performance target.
 
-   @param input - original judgment cancellation and deadline
+   @param input - original judgment cancellation and performance target
 
-   @returns remaining duration for this HTTP attempt
-
-   @throws AssessmentTransportError when cancellation or the original deadline prevents dispatch
+   @throws AssessmentTransportError when cancellation or an invalid clock prevents dispatch
    */
-  function remaining(input: AssessmentTransportInput): number {
+  function checkLifetime(input: AssessmentTransportInput): void {
     tagged({
-      tag: remaining.name,
+      tag: checkLifetime.name,
       l: rl,
     },)
       .debug('checking original assessment lifetime',);
@@ -106,25 +101,22 @@ export function createAssessmentHttpSender({
       .aborted)
       throw new AssessmentTransportError('Original assessment was cancelled',);
     /**
-     Preparation time has already consumed part of the original five-second budget.
+     Preparation time is measured against an advisory target and never expires evidence.
      */
-    const left = input.deadlineAt - now();
-    if ((!Number.isFinite(left,)) || (left < 1)
-      || (left > limits.durationMs))
-      throw new AssessmentTransportError('Original assessment deadline is expired or outside its five-second budget',);
-    return left;
+    if (!Number.isFinite(now(),))
+      throw new AssessmentTransportError('Original assessment clock is invalid',);
   }
 
   /**
-   Consume response bytes under the inherited limit before returning any provider content.
+   Consume complete response bytes while retaining original cancellation.
 
    @param response - original HTTP response
    
    @param input - original judgment attempt
 
-   @returns complete bounded response text
+   @returns complete response text
 
-   @throws AssessmentTransportError when response bytes or lifetime exceed the transport contract
+   @throws AssessmentTransportError when response decoding or cancellation fails
    */
   async function readResponse({
     response,
@@ -137,11 +129,11 @@ export function createAssessmentHttpSender({
       tag: readResponse.name,
       l: rl,
     },)
-      .debug('consuming bounded assessment response',);
+      .debug('consuming complete assessment response',);
     if (response.body === null)
       throw new AssessmentTransportError('Assessment HTTP response has no body',);
     /**
-     Retained chunks never exceed the inherited 64-KiB response limit.
+     Retain every received chunk without truncation.
      */
     const received: {
       chunks: Uint8Array[];
@@ -151,18 +143,38 @@ export function createAssessmentHttpSender({
       length: 0,
     };
     for await (const chunk of response.body) {
-      remaining(input,);
+      checkLifetime(input,);
       received.length += chunk.byteLength;
-      if (received.length > limits.responseBytes)
-        throw new AssessmentTransportError('Assessment HTTP response exceeds 65536 bytes',);
       received.chunks
         .push(chunk,);
     }
-    remaining(input,);
+    checkLifetime(input,);
     return new TextDecoder(
       'utf-8',
       { fatal: true, },
     ).decode(Buffer.concat(received.chunks,),);
+  }
+
+  /**
+   Preserve a fixed category for an actual fetch failure while withholding its borrowed cause.
+   @param url - fixed assessment endpoint
+   @param options - original request and cancellation
+   @returns original complete HTTP response
+   @throws AssessmentRequestFailure for a fetch TypeError while the caller remains active
+   @throws original error for cancellation or a nontransport failure
+   */
+  async function dispatchRequest({ url, options }: { readonly url: string; readonly options: RequestInit }): Promise<Response> {
+    /** Invocation failures retain only a local category and function-scoped diagnostic. */
+    const dl = tagged({ tag: dispatchRequest.name, l: rl });
+    try {
+      return await fetchImpl(url, options);
+    }
+    catch (error) {
+      dl.debug('assessment HTTP invocation failed');
+      if (!options.signal?.aborted && error instanceof TypeError)
+        throw new AssessmentRequestFailure('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
+      throw error;
+    }
   }
 
   /**
@@ -184,12 +196,10 @@ export function createAssessmentHttpSender({
     },);
     sl.debug('preparing original assessment HTTP attempt',);
     try {
-      remaining(input,);
+      checkLifetime(input,);
       if ((!Number.isInteger(input.attempt,)) || (input.attempt < 1)
         || (input.attempt > limits.attempts))
-        throw new AssessmentTransportError('Assessment HTTP attempt is outside the original three-attempt budget',);
-      if (Buffer.byteLength(input.body,) > limits.requestBytes)
-        throw new AssessmentTransportError('Assessment HTTP request exceeds 1048576 bytes',);
+        throw new AssessmentTransportError('Assessment HTTP attempt is outside the original nine-call bundle budget',);
       /**
        Credentials are read only for a dispatch that already has an admissible consumer.
        */
@@ -200,22 +210,17 @@ export function createAssessmentHttpSender({
         .includes(key,))
         throw new AssessmentTransportError('Assessment request contains its Gateway credential and was withheld',);
       /**
-       Both native cancellation and the remaining original deadline govern fetch and body consumption.
+       Native cancellation governs fetch and body consumption without an advisory-target timer.
        */
-      const signal = AbortSignal.any([
-        input.signal,
-        AbortSignal.timeout(
-          Math.floor(remaining(input,),),
-        ),
-      ],);
+      const {signal} = input;
       sl.debug('dispatching original assessment HTTP attempt',);
       /**
        Redirect refusal retains the fixed private-data route.
        Gateway-internal retries are independent of this single client attempt.
        */
-      const response = await fetchImpl(
-        endpoint,
-        {
+      const response = await dispatchRequest({
+        url: endpoint,
+        options: {
         method: 'POST',
         redirect: 'error',
         headers: {
@@ -225,10 +230,10 @@ export function createAssessmentHttpSender({
         },
         body: input.body,
         signal,
-      },
-      );
+        },
+      });
       /**
-       The stream iterator cancels response consumption when its limit or deadline fails.
+       The stream iterator cancels response consumption when original cancellation is observed.
        */
       const raw = await readResponse({
         response,

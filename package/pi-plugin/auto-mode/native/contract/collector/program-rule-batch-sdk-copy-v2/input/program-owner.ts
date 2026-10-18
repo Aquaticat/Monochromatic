@@ -127,7 +127,6 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
    Composed operations share the original judgment’s fixed capabilities and custody maps.
    */
   const {
-    invokeProgramNative,
     scriptValueFor,
     markProgramGuard
   } = createProgramValueAccess({
@@ -153,7 +152,6 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
     reachedGroupFor,
     bindProgramCalls,
     prepareReachedMembers,
-    invokeProgramNative,
     scriptValueFor,
     markProgramGuard,
     inspectReachedGroup,
