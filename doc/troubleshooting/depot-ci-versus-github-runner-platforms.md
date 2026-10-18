@@ -80,3 +80,48 @@ The original trial placement remains a historical fact.
 
 There is nothing to file upstream.
 The correction belongs in this repository's report and execution ledger.
+
+## Current GitHub runner KVM observation contradicts deployed troubleshooting
+
+On 2026-10-18,
+the current [Depot runner troubleshooting page][gha-kvm-doc] still said:
+
+> Depot GitHub Actions runners don't currently provide `/dev/kvm`.
+
+Actual [GitHub workflow run 39104064329][gha-kvm-run],
+Depot job `117606073359`,
+reported `/dev/kvm` as a character device with read and write access on `depot-ubuntu-24.04`.
+The same workflow's standard GitHub job found the device but received `EACCES`.
+The valid `/dev/null` control and deliberately nonexistent path established that the device probe could
+distinguish permitted,
+denied,
+and absent devices.
+
+The [retained verification receipt][gha-kvm-evidence] independently checks GitHub archive digests,
+extracted member hashes,
+and payload identity.
+It binds both observations to frozen source `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`
+and harness `15ee06968996212b97111accc2013c2780ed1944`.
+The conflicting documentation was fetched again while verifying the artifact.
+
+The blanket missing-KVM inference is withdrawn for that exercised Depot runner label.
+Device presence and access do not establish successful VM initialization,
+guest execution,
+Android acceptance,
+or behavior of every runner size and architecture.
+The generic SDK's separate missing-device observation remains specific to its own sandboxes.
+
+The [2026-09-16 Metal rollout account][gha-metal-rollout] describes moving GitHub Actions jobs onto Depot Metal.
+Consequently,
+the July announcement's future-migration wording cannot establish October placement.
+The underlying implementation cause of the documentation conflict is not proven.
+Use the label-specific runtime receipt for the observed fact,
+and retain documentation conflicts explicitly rather than turning the page into a universal capability ban.
+
+No upstream message was sent.
+The mismatch is documented locally while actual KVM initialization and guest verification proceed separately.
+
+[gha-kvm-doc]: https://depot.dev/docs/github-actions/troubleshooting
+[gha-kvm-run]: https://github.com/monochromatic-dev/Monochromatic/actions/runs/39104064329
+[gha-kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
+[gha-metal-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
