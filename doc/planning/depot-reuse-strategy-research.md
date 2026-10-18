@@ -114,7 +114,7 @@ Controls allocation `r328mp420m` runs the owner and separate documented/undocume
 retaining native CLI help/version and exact JAR hashes.
 This does not substitute for the root `lint:detekt` task's repository-wide fanout.
 
-Eighteen completed allocations account for 3,428 request-to-terminal seconds,
+The original 18 completed job attempts account for 3,428 request-to-terminal seconds,
 or USD 1.3712 at the declared eight-vCPU timestamp-price proxy.
 The completed cache campaign's job ceiling was 18,
 with the same two-simultaneous,
@@ -148,9 +148,12 @@ and `real_index_lock::tests::an_install_through_a_replaced_lock_is_refused`.
 The first observed the replacement file disappear;
 the second observed installation succeed instead of refusing a replacement.
 An earlier allocation failed a different replacement-identity case.
-No matched filesystem/provider control has established the cause.
-These are observed failures at a filesystem boundary,
-not established source defects or cache-caused regressions.
+The completed matched controls reproduce replacement-lock failures on both providers' ordinary directories
+and pass every selected case on their tmpfs fixtures.
+The [lock-identity investigation](../troubleshooting/git-policy-replaced-lock-filesystem.md)
+retains the source comparison,
+actual inode-reuse fields and precise limits of that diagnosis.
+These runtime assertions do not establish cache corruption.
 
 The unchanged Rust warm pair each recorded 131 Rust compiler-cache hits,
 with zero `cache_misses`,
@@ -268,14 +271,46 @@ The local isolated transport control passed three unchanged repeats,
 each with 34 passed cases and 1,922 filtered skips.
 Its rootless image has no `sudo`;
 that retained unsupported-mount boundary receives no tmpfs coverage credit.
-Each cloud provider runs three unchanged repeats of the exact archived 34-case cohort,
-then compare its ordinary owned fixture directory with an owned 256-MiB tmpfs when privileged mounting works.
+Each cloud provider completed three unchanged repeats of the exact archived 34-case cohort
+in its ordinary owned fixture directory and three in an owned 256-MiB tmpfs.
 The providers are native Depot,
 GitHub-hosted Ubuntu 24.04 and a four-CPU Depot GitHub runner.
 Signed object-read URLs are limited to the existing diagnostic artifact;
 no broad credential is installed in either CI service.
 Fixture clock/inode fields,
 actual mount types and every failed outcome remain evidence boundaries.
+
+Native ordinary-directory repeats passed 32,
+32 and 32 cases;
+Depot GitHub repeats passed 32,
+32 and 31;
+standard GitHub-hosted Ubuntu repeats passed 31,
+32 and 31.
+All nine tmpfs repeats passed all 34 cases.
+The only failed identities are the three replacement-lock cases named in the lock-identity investigation.
+Every repeat enumerated 1,956 cases and skipped 1,922 through the explicit selection.
+These are repeated executions of 34 unique cases,
+not complete executions of the original catalog.
+The separate ctime case passed in every matched repeat;
+its historical failure remains unreproduced.
+
+Each ordinary-directory field control observed inode/device reuse in all 64 unlink/recreate pairs;
+each tmpfs control observed none in its 64 pairs.
+Positive controls verified that the probe can observe an unchanged inode after replacing an existing file's bytes.
+Every tmpfs unmount succeeded.
+The actual mounted filesystem types,
+raw fields and failure outputs are retained rather than assigning cause from a filesystem label.
+
+All three receipt ZIP digests,
+the GitHub mirror's outer ZIP and its original inner ZIP hash were verified.
+Across the combined campaign,
+21 artifact ZIPs and all 774 members have retained hash/CRC evidence.
+Both collision-checked temporary object-URL secrets were deleted and their absence verified.
+The combined 21 job attempts span 20 workflow runs and produce a USD 1.407 timestamp-price proxy.
+The two GitHub windows each begin at their common workflow request and end at their own job completion;
+this conservatively overlaps predecessor and queue intervals.
+The native windows begin at their respective requests.
+These are declared accounting windows rather than measured allocated CPU time or an invoice.
 
 ### Repeated Gradle task-output comparison
 
@@ -541,16 +576,13 @@ This campaign does not launch or delegate emulator work.
 
 ## Campaign work queue
 
-- Execute the admitted matched archived-lock cohort on native Depot,
-  GitHub-hosted Ubuntu and Depot GitHub runners,
-  with repeated ordinary-directory and tmpfs consumers and exact fixture-field receipts.
-- Remove only the extension's collision-checked temporary repository secrets after their consumers finish.
 - Reconcile the separate Android,
   runtime and BuildKit agents' measured preparation boundaries without claiming their work as this campaign's probes.
 - Retain the reusable harness worktree while the portability comparison needs it,
   then inspect and remove only its owned state with the repository's cleanup checks.
 
-The 18-allocation cache campaign is complete within its declared consumer boundaries.
+The 18-attempt cache campaign and its three-attempt portability extension are complete
+within their declared consumer boundaries.
 Its native Git-policy aggregate remains failed;
 its scanner target producer/reader,
 Gradle controls and Detekt fixture consumers have their separate passing evidence.
@@ -696,6 +728,15 @@ cache service client,
 systemd user manager or device still needs a real startup/readiness probe.
 The parent's separate native-runtime findings are recorded in
 [the snapshot/runtime troubleshooting note](../troubleshooting/depot-snapshot-mise-cache.md).
+
+The separate Android investigation found an uncontrolled build-clock input in locked `turso_core 0.8.2`.
+Its original build script already accepts `SOURCE_DATE_EPOCH`;
+the [source-bound timestamp controls](../troubleshooting/turso-android-native-build-timestamps.md)
+show matching generated constants for repeated valid seeds,
+a changed constant for a changed seed and clock fallback for malformed input.
+The seed's actual numeric value and validity belong in native-output and cache provenance.
+Those are build-script controls,
+not a complete normalized Android rebuild or proof of whole-APK byte reproducibility.
 
 [actions-cache-doc]: https://depot.dev/docs/cache/integrations/github-actions
 [cache-disk-doc]: https://depot.dev/docs/ci/how-to-guides/cache-disks

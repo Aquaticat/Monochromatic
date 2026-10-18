@@ -47,7 +47,7 @@ match options.open(path) {
 The `RealIndexLock` fields at that file's line 57 retain paths and a `LockIdentity`,
 with no open `File` field.
 The identity is subsequently read from path metadata at line 300.
-The direct release path at line 139 calls `assert_identity()` before removing that path.
+The direct release path at line 138 calls `assert_identity()` before removing that path.
 Its deciding Unix comparison is at line 212:
 
 ```rust
@@ -154,7 +154,7 @@ the owned 256-MiB tmpfs reports `16914836`.
 All three unmounts succeed and retain the post-unmount filesystem observation.
 
 The ctime test at
-`package/git-policy/cli/src/native/index_lock_evidence_tests.rs:436`
+`package/git-policy/cli/src/native/index_lock_evidence_tests.rs:437`
 passes in every matched repeat.
 Its historical failure remains a separate,
 unreproduced boundary;
