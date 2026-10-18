@@ -147,3 +147,11 @@ writeFileSync(join(prefix, 'receipts/seal.json'), JSON.stringify(record, null, 2
 console.log(JSON.stringify(record));
 '''
 
+[tasks."research:reuse:tools"]
+description = "Verify a fresh prepared image and compare installed versus content-store dependency reuse"
+run = "node bin/reuse-tools-consumer.mjs"
+
+[tasks."research:reuse:gradle"]
+description = "Run actual Kotlin JUnit consumers against an isolated remote task-output cache"
+run = "node bin/reuse-gradle-consumer.mjs"
+

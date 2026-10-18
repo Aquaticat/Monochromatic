@@ -1,6 +1,6 @@
 import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, openSync, closeSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, openSync, closeSync, existsSync } from 'node:fs';
 import { cpus, totalmem } from 'node:os';
 import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
@@ -12,7 +12,7 @@ export const evidence = join(root, '.research-reuse/receipts');
 mkdirSync(evidence, { recursive: true, mode: 0o700 });
 export const manifest = JSON.parse(readFileSync(join(prefix, 'image-manifest.json'), 'utf8'));
 export const env = { ...process.env, MISE_DATA_DIR: join(prefix, 'mise-data'), MISE_CACHE_DIR: join(prefix, 'mise-cache'), RUSTUP_HOME: join(prefix, 'rustup'), CARGO_HOME: join(prefix, 'cargo'), GRADLE_USER_HOME: join(prefix, 'gradle'), MISE_AUTO_INSTALL: 'false', MISE_LOCKED: '1', CARGO_BUILD_JOBS: '8' };
-const records = [];
+const records = existsSync(join(evidence, 'commands.json')) ? JSON.parse(readFileSync(join(evidence, 'commands.json'), 'utf8')).records : [];
 
 /** Fingerprint bytes admitted from the immutable preparation image. */
 export function sha(value) {

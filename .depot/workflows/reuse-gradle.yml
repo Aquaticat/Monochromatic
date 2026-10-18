@@ -1,0 +1,45 @@
+name: Isolated prepared tools and Gradle cache research
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gradle:
+    runs-on:
+      size: 8x32
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018@sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_REUSE_ROLE: consume
+      REUSE_KIND: gradle
+      REUSE_PHASE: seed
+      REUSE_DEPENDENCIES: store
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        # Retain enough ancestry for the frozen dependency-admission comparison.
+        fetch-depth: 32
+        # A leaked untracked synthetic source marker must survive checkout and fail the image check.
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Freeze the task bootstrap and avoid unrelated root tools.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Verify installed tools and restore dependencies without downloads
+      run: mise run //package/dev-script/task-util:research:reuse:tools
+    - name: Compile Kotlin and execute the existing JUnit consumers
+      run: mise run //package/dev-script/task-util:research:reuse:gradle
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: reuse-gradle-seed
+        path: .research-reuse/receipts
+        retention-days: 7
+        if-no-files-found: warn
