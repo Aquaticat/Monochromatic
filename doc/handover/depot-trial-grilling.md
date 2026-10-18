@@ -1,5 +1,49 @@
 # Depot trial interview
 
+## Cache benefit clarification on 2026-10-18
+
+The user asked how caching changes the performance assessment.
+The approximately `3.26` GitHub/Depot elapsed-time ratio described cold compilation,
+not the repeat-workload cache benefit.
+No complete-graph cached speedup or fresh-job warm GitHub/Depot comparison has been established.
+
+The corrected [default container builder trial](../audit/depot-runner-sizing-2026-10-15.md)
+records two cold samples of `268.558` and `265.417` seconds,
+averaging `266.987` seconds,
+and unchanged repetitions of `22.297` to `37.654` seconds including local artifact export.
+Dividing the cold mean by those warm observations gives approximately `7.09` to `11.97`.
+That is a within-Depot cold-to-unchanged comparison,
+not a provider speedup.
+
+In the corrected sixteen-CPU/sixteen-job runner trial,
+the source-change rebuild averages `122.5` seconds versus `246.6` seconds cold,
+approximately a twofold elapsed-time ratio.
+The changed CLI name is verified in the real executable.
+This edit rebuilds both local packages under conservative content invalidation;
+it is not a measurement of every possible source edit.
+
+The [earlier GitHub reference](../audit/depot-trial-2026-10-15.md)
+also records unchanged same-job builds of `1.716` and `1.975` seconds.
+Those keep artifacts on the runner and do not measure cache restoration into a fresh job.
+They cannot be compared directly with Depot's local-download boundary.
+The native Mac/Windows follow-up records only artifact-cache misses and skipped cache saves,
+so it establishes no warm-cache benefit on those platforms.
+
+The [prepared desktop experiment](../audit/depot-prepared-desktop-2026-10-16.md)
+does verify reuse across fresh consumers:
+installed packages and source-bound binaries are reused without installation or compilation.
+Fresh runtime services still need startup,
+and changed build inputs require new preparation.
+Preparation cost and storage cannot be omitted from a steady-workload model.
+
+The [Cargo cache investigation](../troubleshooting/cargo-buildkit-source-timestamps.md)
+caught an actual stale executable under timestamp-based reuse.
+Content-aware package invalidation recovered the fixture,
+and the corrected application matrices passed all 100 runtime output assertions.
+Reject the stale subsecond source rebuild as a cache-performance result.
+The workload's cold,
+unchanged and edited-input frequencies remain needed to quantify total waiting benefit.
+
 ## Measured performance clarification on 2026-10-18
 
 The user asked whether the measured benefit was a fourfold speedup.
