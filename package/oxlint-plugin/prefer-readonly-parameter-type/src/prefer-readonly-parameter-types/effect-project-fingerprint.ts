@@ -144,8 +144,10 @@ function nearestLockfile(
  
  Two hundredths of a second apart, in favour of asking the snapshot. Asking it for all 574
  sources of one project does cost 136.9ms the first time against 13.0ms for a disk pass, because
- nothing else decodes declarations, but entries are keyed by path and shared across projects, so
- that per-project figure never multiplied by projects the way the single-run comparison implied.
+ nothing else decodes declarations. Every project snapshot pays that figure once, because this
+ fingerprint is computed per snapshot before any entry is read. Entries addressed by project and
+ path, and entries shared across projects by file and key digest, do not change that: sharing
+ saves the analysis of a source, not the fingerprint of each project that reaches it.
  
  @param project - TypeScript project providing analysed source.
  
