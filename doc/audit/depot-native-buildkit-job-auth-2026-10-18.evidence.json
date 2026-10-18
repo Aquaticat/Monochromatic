@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-18T14:52:49.844Z",
+  "state": "Project created and bounded local preflight passed; native job and builder not yet allocated",
+  "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "harness": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
+  "projectCreation": {
+    "at": "2026-10-18T14:47:44.515Z",
+    "request": {
+      "name": "monochromatic-native-auth-20261018-b40a656ce8d8510e",
+      "organizationId": "l4zncjjbj5",
+      "regionId": "us-east-1",
+      "hardware": "HARDWARE_16X32",
+      "buildTimeoutMinutes": 5,
+      "cachePolicy": {
+        "keepGb": 25,
+        "keepDays": 1
+      }
+    },
+    "preflightHarness": "1f5f9f51da475543beca0fe6e80116e484422cfa",
+    "existingLocalLoginUsedOnlyForOwnedProjectCreation": true,
+    "buildOrCiAllocation": false,
+    "maximumBuilders": 1,
+    "maximumNativeJobs": 1,
+    "fullWindowTimestampComputeReservationUsd": 0.23,
+    "nominalCampaignGuardUsd": 1,
+    "parentNativeSlotReserved": true,
+    "finishedAt": "2026-10-18T14:47:45.217Z",
+    "status": 200,
+    "project": {
+      "projectId": "ng17dl3xrn",
+      "organizationId": "l4zncjjbj5",
+      "name": "monochromatic-native-auth-20261018-b40a656ce8d8510e",
+      "regionId": "us-east-1",
+      "createdAt": "2026-10-18T14:47:45.122Z",
+      "hardware": "HARDWARE_16X32",
+      "buildTimeoutMinutes": 5,
+      "cachePolicy": {
+        "keepBytes": "26843545600",
+        "keepDays": 1,
+        "keepGb": 25
+      }
+    },
+    "diagnostic": null,
+    "eligibleForBuild": true,
+    "computeAllocated": false
+  },
+  "bounds": {
+    "schemaVersion": 1,
+    "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "cohort": "native-buildkit-auth-b40a656ce8d8510e",
+    "projectId": "ng17dl3xrn",
+    "sourcePath": "package/module/p-limit-fork/src/task-queue.ts",
+    "sourceSha256": "e791bea71a4c59e1d6fb17e7d2213a52f55937fe5999329864ddf76b8c0c59a5",
+    "native": {
+      "runner": "depot-ubuntu-24.04",
+      "cpus": 2,
+      "memoryGiB": 8,
+      "timeoutMinutes": 5
+    },
+    "builder": {
+      "platform": "linux/amd64",
+      "cpus": 16,
+      "memoryGiB": 32,
+      "timeoutMinutes": 5,
+      "maximumBuilders": 1
+    },
+    "fullWindowTimestampComputeReservationUsd": 0.23,
+    "nominalCampaignGuardUsd": 1,
+    "maximumBuildCreates": 1,
+    "alternativeCredentialPermitted": false
+  },
+  "preflight": {
+    "actualCliFallbackReachedAndBlocked": true,
+    "adversarialControls": 3,
+    "unaryAndStreamForwardingPassed": true,
+    "pinnedNode24FirstPartyConsumerPassed": true,
+    "actualMiseGuardPrefixReached": true,
+    "fullBuildArgumentsParserAndOwnedProjectBindingPassed": true,
+    "noDepotRequestsDuringLocalControls": true
+  },
+  "sourceArchive": {
+    "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
+    "bytes": 18768,
+    "sha256": "e5d29d600540f529c333ec3bb0bf259dde04d2b1fd76af16428d58c03142a2a2",
+    "uncompressedBytes": 83941,
+    "uncompressedSha256": "e11cd5460d277b1ec056d27673c6c0d0cbd60afc505153d6cf19629d12be9517"
+  },
+  "runtime": null,
+  "cleanup": {
+    "required": true,
+    "projectDeleted": false,
+    "retainedImageAbsenceVerified": false
+  },
+  "limitations": [
+    "No native job-token authorization proof before the cloud consumer",
+    "No GitHub OIDC or external registry qualification",
+    "No timing or whole-package test claim",
+    "Timestamp-compute reservation is not an account-wide invoice cap"
+  ]
+}
