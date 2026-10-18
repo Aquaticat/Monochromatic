@@ -10,9 +10,8 @@
  round, the run-off among places and the choice among a place's candidates) ends in a
  sentence that lists the exact labels the reply may use, and the response format of each
  ask lists them as an `enum`, so no stored answer of version four replies to the question
- asked now (the key digests the sheet, so the keys moved of themselves; the number moves
- as well, since a change to a sheet's wording or to what a ballot must contain to be
- usable moves it). A reply that names exactly one shown label in
+ asked now (the key digests the sheet, so the keys moved of themselves; the number moved
+ as well, for the reply shape and for what a ballot must contain to be usable, which the key does not digest). A reply that names exactly one shown label in
  another form (its case, white space, a bare number, the word with the number) now counts,
  and is stored as the shown label: a record of version four holds only replies the
  stricter guard counted, each already in the shown form, so none could hold a value
@@ -32,11 +31,15 @@
  key byte for byte. The wording of the first round's sheet and of the run-off among places is the same.
 
  The sheet of the run-off among a place's candidates changed its bytes (the lead's repair of 2026-10-18, ledger B657) and the
- number still did not move. Its rules now say that a first round was split between these candidates and the judge is asked
+ number still did not move, since the key digests the exact sheet: the new bytes make a new key, and no stored answer is read under
+ a key it was not written under. Its rules now say that a first round was split between these candidates and the judge is asked
  again, because a run-off whose finalists are every candidate (a split of two, or of three over three) sent the first ask's sheet
  byte for byte, and a client that answers a repeated model and prompt from its first payload replayed the first round's ballots.
- Only the `choice-run-off` stage is affected: the sheet of the first ask is byte for byte what version five has, so the key of
- every first ask is unchanged, and a carry run-off stored under its earlier key is asked afresh under the new one.
+ The paragraph goes into the rules of every carry run-off, whichever labels are its finalists (the `runOff` flag of
+ `buildCarryChoiceMessages` adds it, and the run-off is asked for a lone leader with the labels behind it as well as for a tie),
+ so every `choice-run-off` key moved, and the statement above that a run-off among the tied labels keeps its key holds for the
+ run-off among places alone. The `choice` stage is not affected: the sheet of the first ask is byte for byte what version five has,
+ so the key of every first ask is unchanged, and a carry run-off stored under its earlier key is asked afresh under the new one.
 
  Version four (the review of 2026-10-13): what the writers and the judges are
  shown changed again, before any pass wrote version three. The words of every
@@ -76,9 +79,9 @@
  to how quotes are located, how a choice wins or how a place is kept moves no key
  and needs no number, since the ballots mean the same under the same sheet.
 
- A change to a sheet's wording, to a reply shape or to what a ballot must contain
- to be usable moves this number, since each changes what a stored answer replies
- to or whether it counts. Version one was written by one pass (TianqiChen66623),
+ A change to a reply shape or to what a ballot must contain to be usable moves this number, since each changes
+ whether a stored answer counts and the key digests neither. A change to a sheet's wording moves the key and not the number,
+ since the key digests the exact sheet: an answer stored under the old wording is never found under the new key. Version one was written by one pass (TianqiChen66623),
  over a sheet that let a quote carry words of the source outside the repeat,
  counted by the exact text of a quote, and is not resumed.
 
