@@ -65,8 +65,10 @@ export function createNativeEventControlProjection(): (
       return value;
     }
     if (value === null || typeof value !== 'object' || types.isProxy(value)
-      || Object.getPrototypeOf(value) !== Object.prototype)
-      throw new SourceCollectionError(`${kind} event input requires an ordinary non-proxy record`);
+      || Object.getPrototypeOf(value) !== Object.prototype) {
+      pl.debug('non-record input retains its existing data validation');
+      return value;
+    }
     /**
      Descriptor access never invokes an event's signal getter.
      */
@@ -81,9 +83,13 @@ export function createNativeEventControlProjection(): (
      The platform object remains opaque, including its reason, listeners, accessors and symbols.
      */
     const signal: unknown = field.value;
-    if (signal === null || typeof signal !== 'object' || types.isProxy(signal)
-      || Object.getPrototypeOf(signal) !== nativeSignalPrototype)
+    if (types.isProxy(signal))
       throw new SourceCollectionError(`${kind} event signal requires a non-proxy platform-compatible control`);
+    if (signal === null || typeof signal !== 'object'
+      || Object.getPrototypeOf(signal) !== nativeSignalPrototype) {
+      pl.debug('non-control field retains its existing data validation');
+      return value;
+    }
     /**
      An equal ordinal establishes handle continuity within this emission, never permission.
      */
