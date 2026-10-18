@@ -30,7 +30,7 @@ import {
   type CensusFamily,
   type CoverageCensusSteps,
   createCoverageTally,
-  FAMILY_BUNDLE_PATTERN,
+  isFamilyBundleName,
   type PlacedTally,
   runCoverageCensus,
 } from '../../dist/final/node/index.mjs';
@@ -64,7 +64,7 @@ type FamilyCalls = {
   readonly tallies: {
     readonly coverageDirectory: string;
     readonly bundleUrlPrefix: string;
-    readonly bundlePattern?: RegExp;
+    readonly isBundleName?: (bundle: string) => boolean;
   }[];
   readonly placements: {
     readonly packageDirectory: string;
@@ -316,14 +316,14 @@ await describe({
           return coverageDirectory;
         },),).size,).toBe(1,);
         expect(calls.commits,).toEqual([scratch.path,],);
-        expect(calls.tallies.map(function prefixOf({ bundleUrlPrefix, bundlePattern, },): unknown {
+        expect(calls.tallies.map(function prefixOf({ bundleUrlPrefix, isBundleName, },): unknown {
           return {
             bundleUrlPrefix,
-            bundlePattern,
+            isBundleName,
           };
         },),).toEqual([{
           bundleUrlPrefix: `${pathToFileURL(scratch.path,).href}/`,
-          bundlePattern: FAMILY_BUNDLE_PATTERN,
+          isBundleName: isFamilyBundleName,
         },],);
         expect(calls.placements,).toEqual([{
           packageDirectory: scratch.path,
@@ -531,13 +531,15 @@ await describe({
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect(String(refusal,).includes(join(
+        expect(
+          String(refusal,).includes(join(
           scratch.path,
           'delta',
           'dist',
           'final',
           'node',
-        ),),).toBe(true,);
+        ),),
+        ).toBe(true,);
         expect(calls.suites,).toEqual([],);
       },
     },),

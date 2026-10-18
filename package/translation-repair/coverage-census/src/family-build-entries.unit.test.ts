@@ -124,7 +124,7 @@ await describe({
     },),
     it({
       name: 'REFUSES TWO PACKAGES THAT NAME ONE ENTRY AT TWO PATHS, naming the entry and both packages',
-      fn: () => {
+      fn: async () => {
         /**
          What the merge threw.
          */
@@ -156,7 +156,7 @@ await describe({
     },),
     it({
       name: 'KEEPS AN ENTRY TWO PACKAGES LIST AT THE SAME PATH once',
-      fn: () => {
+      fn: async () => {
         expect([...familyEntriesOf({
           lists: new Map([
             [

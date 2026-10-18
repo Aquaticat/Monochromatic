@@ -23,7 +23,7 @@ import {
 import {
   censusReportLines,
   type CensusSummary,
-  ownSourcePathOf,
+  ownSourceOf,
   readBundle,
   sourceKindOf,
   sourceLineAt,
@@ -36,19 +36,19 @@ import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/
 const ENTRY_FILES: ReadonlySet<string> = new Set(['src/corpus-run/purr.ts',],);
 
 await describe({
-  name: ownSourcePathOf.name,
+  name: ownSourceOf.name,
   children: [
     it({
       name: 'NAMES A SOURCE BY ITS PATH INSIDE ITS PACKAGE, whether it is named from the package or from the family '
         + 'directory, and no other source',
-      fn: () => {
-        expect(ownSourcePathOf({ source: 'src/nap.ts', },),).toBe('src/nap.ts',);
-        expect(ownSourcePathOf({ source: 'alpha/src/nap.ts', },),).toBe('src/nap.ts',);
-        expect(ownSourcePathOf({ source: 'alpha/src/corpus-run/purr.ts', },),).toBe('src/corpus-run/purr.ts',);
-        expect(ownSourcePathOf({ source: '../module/whisker/src/index.ts', },),).toBe(undefined,);
-        expect(ownSourcePathOf({ source: 'node_modules/whisker/src/index.ts', },),).toBe(undefined,);
-        expect(ownSourcePathOf({ source: 'alpha/dist/final/node/nap.mjs', },),).toBe(undefined,);
-        expect(ownSourcePathOf({ source: '(unmapped) nap.mjs', },),).toBe(undefined,);
+      fn: async () => {
+        expect(ownSourceOf({ source: 'src/nap.ts', },),).toEqual({ kind: 'own', path: 'src/nap.ts', },);
+        expect(ownSourceOf({ source: 'alpha/src/nap.ts', },),).toEqual({ kind: 'own', path: 'src/nap.ts', },);
+        expect(ownSourceOf({ source: 'alpha/src/corpus-run/purr.ts', },),).toEqual({ kind: 'own', path: 'src/corpus-run/purr.ts', },);
+        expect(ownSourceOf({ source: '../module/whisker/src/index.ts', },),).toEqual({ kind: 'foreign', },);
+        expect(ownSourceOf({ source: 'node_modules/whisker/src/index.ts', },),).toEqual({ kind: 'foreign', },);
+        expect(ownSourceOf({ source: 'alpha/dist/final/node/nap.mjs', },),).toEqual({ kind: 'foreign', },);
+        expect(ownSourceOf({ source: '(unmapped) nap.mjs', },),).toEqual({ kind: 'foreign', },);
       },
     },),
   ],
@@ -60,7 +60,7 @@ await describe({
     it({
       name: 'READS A SOURCE NAMED FROM THE FAMILY DIRECTORY AS A RUNNER ENTRY OR LIBRARY SOURCE by its name inside its '
         + 'package, and one outside every package as another package',
-      fn: () => {
+      fn: async () => {
         expect(sourceKindOf({ source: 'alpha/src/corpus-run/purr.ts', entryFiles: ENTRY_FILES, },),).toBe('entry file',);
         expect(sourceKindOf({ source: 'alpha/src/nap.ts', entryFiles: ENTRY_FILES, },),).toBe('library source',);
         expect(sourceKindOf({ source: 'src/corpus-run/purr.ts', entryFiles: ENTRY_FILES, },),).toBe('entry file',);
@@ -137,7 +137,7 @@ await describe({
     it({
       name: 'LISTS THE OUTERMOST UNCALLED FUNCTIONS OF A SOURCE NAMED FROM THE FAMILY DIRECTORY as package source, '
         + 'and still leaves out another package\'s',
-      fn: () => {
+      fn: async () => {
         /**
          A census holding one uncalled function in a family source and one outside the family.
          */
