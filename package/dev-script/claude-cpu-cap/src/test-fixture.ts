@@ -110,7 +110,7 @@ async function writeEntry({
 
 /**
  Creates a disposable host: a hwmon tree resembling the 7950X machine, proc files, a cap file, a cgroup `cpu.max`,
- a token location and a sample directory, so tests never touch the real system.
+ and a sample directory, so tests never touch the real system.
 
  @param threads - text written to the cap file
  
@@ -252,6 +252,28 @@ export async function makeHost({
     dir: join(
       root,
       'hwmon',
+      'hwmon7',
+    ),
+    files: {
+      name: 'nct6687\n',
+      fan1_input: '1500\n',
+      fan2_input: '0\n',
+      fan3_input: '1540\n',
+      fan4_input: '0\n',
+      fan5_input: '2050\n',
+      fan6_input: '0\n',
+      fan7_input: '2020\n',
+      fan8_input: '2590\n',
+      temp1_input: '78000\n',
+      temp2_input: '35000\n',
+      temp3_input: '40500\n',
+      temp4_input: '35500\n',
+    },
+  },);
+  await writeEntry({
+    dir: join(
+      root,
+      'hwmon',
       'hwmon6',
     ),
     files: {
@@ -333,11 +355,6 @@ export async function makeHost({
         root,
         'samples',
       ),
-      tokenFile: join(
-        root,
-        'cc-token',
-      ),
-      statusUrl: 'http://127.0.0.1:1/status',
     },
   };
 }

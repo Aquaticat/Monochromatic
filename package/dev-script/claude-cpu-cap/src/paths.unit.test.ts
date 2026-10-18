@@ -80,8 +80,6 @@ await describe({
               hwmonRoot: '/sys/class/hwmon',
               procRoot: '/proc',
               sampleDir: '/home/x/.local/share/claude-cpu-cap/samples',
-              tokenFile: '/home/x/.config/claude-cpu-cap/cc-token',
-              statusUrl: 'http://127.0.0.1:11987/status',
             },);
           },
         },),
@@ -95,8 +93,6 @@ await describe({
                 CPU_WATCH_HWMON_ROOT: '/c',
                 CPU_WATCH_PROC_ROOT: '/d',
                 CPU_WATCH_SAMPLE_DIR: '/e',
-                CPU_WATCH_TOKEN_FILE: '/f',
-                CPU_WATCH_STATUS_URL: 'http://g',
               },
               uid: 1,
               home: '/home/x',
@@ -106,8 +102,6 @@ await describe({
               hwmonRoot: '/c',
               procRoot: '/d',
               sampleDir: '/e',
-              tokenFile: '/f',
-              statusUrl: 'http://g',
             },);
           },
         },),

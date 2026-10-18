@@ -9,7 +9,7 @@ The operating notes (what the limits mean, how to tone the cap down or up) are i
 
 - `src/cpu-watch.ts`: the watcher entry point, run as the user unit `claude-cpu-watch.service`.
 - `src/run-pass.ts`: one watcher pass (cap, power, pressure, thermal, burst mode, sample row).
-- `src/cap.ts`, `src/power.ts`, `src/pressure.ts`, `src/hwmon.ts`, `src/corsair.ts`, `src/samples.ts`,
+- `src/cap.ts`, `src/power.ts`, `src/pressure.ts`, `src/hwmon.ts`, `src/files.ts`, `src/samples.ts`,
   `src/streak.ts`: the pieces a pass uses.
 - `src/paths.ts`: every location and limit, each overridable by environment variable.
 - `src/summarize-samples.ts`: Tctl per package-power bucket from the sample log.
@@ -20,7 +20,7 @@ The operating notes (what the limits mean, how to tone the cap down or up) are i
 
 `CPU_WATCH_LIMIT_CPU_SOME`, `_MEMORY_SOME`, `_THROTTLE_MHZ`, `_LAG`, `_TEMP`, `_BOOST_OFF_MHZ` and `_BURST_STEP_W`
 (all prefixed `CPU_WATCH_LIMIT_`) change the limits.
-`CPU_WATCH_CAP_FILE`, `_CGROUP_FILE`, `_HWMON_ROOT`, `_PROC_ROOT`, `_SAMPLE_DIR`, `_TOKEN_FILE` and `_STATUS_URL`
+`CPU_WATCH_CAP_FILE`, `_CGROUP_FILE`, `_HWMON_ROOT`, `_PROC_ROOT`, `_SAMPLE_DIR`
 point the watcher at other locations, which is how the tests run it on a disposable host.
 A limit of 0, for example `CPU_WATCH_LIMIT_CPU_SOME=0`, is the positive control that makes an alert fire.
 
@@ -42,5 +42,4 @@ systemctl --user restart claude-cpu-watch.service
 These files hold machine state, not source, so they are not in the repo:
 
 - `~/.config/claude-cpu-cap/threads`: the current thread cap, one integer from 1 to 32.
-- `~/.config/claude-cpu-cap/cc-token`: the CoolerControl access token (owner-only permissions).
 - `~/.local/share/claude-cpu-cap/samples/`: the CSV sample log, 14 days kept.

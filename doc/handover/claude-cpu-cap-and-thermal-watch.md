@@ -26,12 +26,14 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - No deliberate stress tests: the user needs the machine to work. Temperatures are judged from real work.
 - Boost and PBO stay off. The user disabled them (`/sys/devices/system/cpu/cpufreq/boost` is 0).
 - Commit eagerly.
-- The user allowed storing the CoolerControl token on disk and will rotate it on 2026-10-14.
+- The user allowed storing the CoolerControl token on disk. They planned to rotate it on 2026-10-14, then said on
+  2026-10-18 that they are not rotating it and that sessions may keep using it (`~/.config/claude-cpu-cap/cc-token`).
+  The watcher stopped reading it on 2026-10-18 (see the section on the board swap).
 - The user's own fan changes no longer count as an excuse for an alert: they are confident that tinkering will not
   push the CPU to 95 degrees as before, so every alert is real and no alert is exempt (2026-10-13).
 - The 4-hour stop-working check is pushed back to 4 hours after every weird event (user rule, 2026-10-13).
-  Weird means any alert except IO pressure, a cap change, `WATCHER-ERROR`, an unresolved `FAN-READ-FAILED`,
-  or a `WATCHER-STOPPED` the session did not cause.
+  Weird means any alert except IO pressure, a cap change, `WATCHER-ERROR`, an unresolved `FAN-READ-FAILED`
+  (no longer emitted since 2026-10-18), or a `WATCHER-STOPPED` the session did not cause.
 
 ## Current state
 
@@ -670,8 +672,8 @@ The day-one checks under "Checks before buying" still decide it.
 - The hold paragraph in `doc/handover/cli-git-rust-implementation.md` should point to this work.
   The session `monochromatic-18` was asked to update it.
 - A reboot has not been tested against the persistent setup.
-- After the token rotation, the new token goes into `~/.config/claude-cpu-cap/cc-token`;
-  until then the fan columns stay empty.
+- The token is not being rotated (user, 2026-10-18) and still works for ad hoc CoolerControl API reads.
+  The watcher does not read CoolerControl since 2026-10-18, so `cc-token` is only for manual use.
 
 ## Next actions
 
@@ -691,6 +693,7 @@ The day-one checks under "Checks before buying" still decide it.
    dots (four of about 2 mm near the corners, one of 3 to 4 mm in the centre) with no manual spreading, and the paste
    needs no cure time (NT-H2 AM5 Edition manual and product page, fetched 2026-10-13). The reseat also resets the
    other checks: base film removed, -7 mm offset, bars NORTH and SOUTH, screws alternately to the stop.
+   Done on 2026-10-18 together with a board swap; see the section on the board swap.
 
 ### In-repo CPU cap package (2026-10-13, about 22:15 EDT)
 
@@ -699,7 +702,33 @@ request ("Make (almost) everything live in the repo"); the running service start
 It was first copied unchanged, then rewritten (2026-10-13, about 22:40 EDT) into small modules with injectable paths,
 unit tests on disposable fixtures (all passing), and zero lint errors and warnings; the live service runs the rewrite.
 Event lines now carry the tagged logger prefix.
-Host state stays outside the repo: the `threads` file, `cc-token` and the sample log.
+Host state stays outside the repo: the `threads` file and the sample log.
+
+### Board swap, repaste and motherboard fans (2026-10-18)
+
+What the user reported (about 00:30 to 00:40 EDT on 2026-10-18): the new paste (NT-H2) is on, the motherboard was
+swapped, the top rear fan was removed, and the CPU cooler fan now sits much lower. The user fixed the fan curve
+about ten minutes before 00:40 EDT, and was connecting every fan directly to the motherboard (the Corsair Commander
+Core XT is bypassed). The user said it "seems to be running better now".
+The new board is an MSI MAG B850 Tomahawk Max WiFi (`/sys/class/dmi/id/board_name`: MAG B850 TOMAHAWK MAX WIFI
+(MS-7E62)). Its `nct6687` chip exposes eight fan inputs and the labels CPU Fan, Pump Fan and System Fan #1 to #6.
+At 00:40 EDT the speeds were 1485, 0, 1541, 0, 2063, 0, 2027 and 2590 RPM; which physical fan sits on which header
+is not recorded.
+
+Evidence so far, and its limits: the last row with the Gigabyte board readings is 2026-10-17 17:36 UTC and the first
+new-board row is 2026-10-18 03:15 UTC. Settled medians (previous 12 samples in the same 20 W bucket) at 120 to 140 W
+were 95.4 degrees at 4480 MHz on the old board (1033 samples) and 82.1 degrees at 5045 MHz on the new one
+(18 samples); at 180 to 200 W the new board held 90.1 degrees at 5183 MHz (57 samples); 100 to 120 W matched
+(75.5 and 75.1) and 40 to 60 W moved from 51.9 to 49.3. The old 180 to 200 W row (44 samples, 70.8 degrees) is not
+explained. The new rows are about 3.9 hours, mostly from before the fan curve fix, with no run-to-run spread
+measured, and paste, board, fan removal and cooler height changed together, so no single change can be credited.
+Repeat the comparison after a few hours of normal use, using rows after the fan curve fix.
+
+Decision (user, 2026-10-18): switch the sample log to the motherboard fans. The watcher no longer reads CoolerControl;
+the seven Corsair columns stay in the header as empty slots so older rows keep their positions, and eleven columns
+were appended (eight `nct6687` fan speeds and its System, VRM MOS and PCH temperatures). Rejected: keeping the
+Corsair columns and leaving them empty (still logs a failed-read warning, records no fan speed), and dropping fan
+columns (loses the link between a temperature change and a fan speed change).
 
 ## Commits so far
 

@@ -300,6 +300,10 @@ export async function discoverSensors(hwmonRoot: string,): Promise<Sensors> {
       entries,
       driver: 'gigabyte_wmi',
     },),
+    superIoDir: findDriverDir({
+      entries,
+      driver: 'nct6687',
+    },),
     acpiDir: findDriverDir({
       entries,
       driver: 'acpitz',

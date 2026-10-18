@@ -14,6 +14,9 @@ import { readPressure, } from './pressure.ts';
 import {
   ABSENT,
   BOARD_SENSOR_INDEXES,
+  LEGACY_CORSAIR_COLUMN_COUNT,
+  MB_FAN_INPUTS,
+  MB_TEMPERATURE_INPUTS,
   MS_PER_DAY,
   SAMPLE_HEADER,
   SAMPLE_RETENTION_DAYS,
@@ -21,6 +24,7 @@ import {
 import {
   readMicroWatts,
   readMilliCelsius,
+  readRpm,
   readTextOrEmpty,
 } from './files.ts';
 import type {
@@ -164,10 +168,6 @@ export type SampleInput = Readonly<{
    */
   power: PowerSample;
   /**
-   Six fan speeds and the probe temperature.
-   */
-  corsairFields: readonly string[];
-  /**
    Whether burst mode is on.
    */
   burst: boolean;
@@ -186,7 +186,8 @@ export type SampleInput = Readonly<{
 }>;
 
 /**
- Builds the 31 CSV fields of one sample row in the order of {@link SAMPLE_HEADER}.
+ Builds the CSV fields of one sample row in the order of {@link SAMPLE_HEADER}.
+ The seven Corsair columns are written empty, because the controller is no longer read.
  The unlabeled motherboard sensors are logged raw; which of them tracks case or socket temperature is for the data.
 
  @param input - the row's inputs
@@ -195,7 +196,7 @@ export type SampleInput = Readonly<{
 
  @example
  ```ts
- (await buildSampleFields(input,)).length; // 31
+ (await buildSampleFields(input,)).length; // 42
  ```
  */
 export async function buildSampleFields(input: SampleInput,): Promise<readonly string[]> {
@@ -245,7 +246,12 @@ export async function buildSampleFields(input: SampleInput,): Promise<readonly s
       .toFixed(1,),
     input.load1,
     String(input.cap,),
-    ...input.corsairFields,
+    ...Array.from(
+      { length: LEGACY_CORSAIR_COLUMN_COUNT, },
+      function emptyCorsairField(): string {
+      return ABSENT;
+    },
+    ),
     fixedField({
       value: power.chiplet1Watts,
       digits: 1,
@@ -280,6 +286,18 @@ export async function buildSampleFields(input: SampleInput,): Promise<readonly s
       dir: sensors.igpuDir,
       name: 'power1_input',
     },),
+    ...await Promise.all(MB_FAN_INPUTS.map(function boardFan(index,) {
+      return readRpm({
+        dir: sensors.superIoDir,
+        name: `fan${index}_input`,
+      },);
+    },),),
+    ...await Promise.all(MB_TEMPERATURE_INPUTS.map(function boardTemperature(index,) {
+      return readMilliCelsius({
+        dir: sensors.superIoDir,
+        name: `temp${index}_input`,
+      },);
+    },),),
   ];
 }
 
@@ -295,8 +313,6 @@ export async function buildSampleFields(input: SampleInput,): Promise<readonly s
  
  @param cap - thread cap in force
  
- @param corsairFields - fan speeds and probe temperature
- 
  @param burst - whether burst mode is on
  
  @param sampleDay - local date of the last write, to prune once per day
@@ -305,7 +321,7 @@ export async function buildSampleFields(input: SampleInput,): Promise<readonly s
 
  @example
  ```ts
- sampleDay = await writeSample({ paths, sensors, power, cap: 28, corsairFields, burst: false, sampleDay, },);
+ sampleDay = await writeSample({ paths, sensors, power, cap: 28, burst: false, sampleDay, },);
  ```
  */
 export async function writeSample({
@@ -313,7 +329,6 @@ export async function writeSample({
   sensors,
   power,
   cap,
-  corsairFields,
   burst,
   sampleDay,
 }: Readonly<{
@@ -321,7 +336,6 @@ export async function writeSample({
   sensors: Sensors;
   power: PowerSample;
   cap: number;
-  corsairFields: readonly string[];
   burst: boolean;
   sampleDay: string;
 }>,): Promise<string> {
@@ -356,7 +370,6 @@ export async function writeSample({
     time: now.toISOString(),
     cap,
     power,
-    corsairFields,
     burst,
     cpuPressure: await readPressure({
       file: join(

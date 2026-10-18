@@ -21,7 +21,7 @@ await describe({
       name: 'lists every entry with its driver name',
       fn: async function listsEntries() {
         /**
-         Disposable host with seven hwmon entries.
+         Disposable host with eight hwmon entries.
          */
         const { paths, } = await makeHost({ threads: '28', cpuPressure: 0, },);
         /**
@@ -30,7 +30,7 @@ await describe({
         const entries = await listHwmon(paths.hwmonRoot,);
         expect(entries.map(function nameOf(entry,) {
           return entry.name;
-        },).toSorted(),).toEqual(['acpitz', 'amdgpu', 'amdgpu', 'gigabyte_wmi', 'k10temp', 'nvme', 'zenergy',],);
+        },).toSorted(),).toEqual(['acpitz', 'amdgpu', 'amdgpu', 'gigabyte_wmi', 'k10temp', 'nct6687', 'nvme', 'zenergy',],);
         expect(findDriverDir({ entries, driver: 'k10temp', },),).toContain('hwmon0',);
         expect(findDriverDir({ entries, driver: 'missing', },),).toBe(ABSENT,);
       },
@@ -54,6 +54,7 @@ await describe({
         expect(sensors.gpuDir,).toMatch('hwmon5',);
         expect(sensors.igpuDir,).toMatch('hwmon6',);
         expect(sensors.boardDir,).toMatch('hwmon2',);
+        expect(sensors.superIoDir,).toMatch('hwmon7',);
       },
     },),
     it({
@@ -63,11 +64,11 @@ await describe({
          Disposable host.
          */
         const { paths, } = await makeHost({ threads: '28', cpuPressure: 0, },);
-        await Promise.all(['hwmon0', 'hwmon1', 'hwmon5', 'hwmon6',].map(async function removeEntry(entry,) {
+        await Promise.all(['hwmon0', 'hwmon1', 'hwmon5', 'hwmon6', 'hwmon7',].map(async function removeEntry(entry,) {
           await rm(join(paths.hwmonRoot, entry,), { recursive: true, },);
         },),);
         /**
-         Sensors found after the CPU, energy and GPU drivers were removed.
+         Sensors found after the CPU, energy, GPU and fan drivers were removed.
          */
         const sensors = await discoverSensors(paths.hwmonRoot,);
         expect(sensors.temperatureFile,).toBe(ABSENT,);
@@ -75,6 +76,7 @@ await describe({
         expect(sensors.coreEnergyFiles,).toEqual([],);
         expect(sensors.gpuDir,).toBe(ABSENT,);
         expect(sensors.igpuDir,).toBe(ABSENT,);
+        expect(sensors.superIoDir,).toBe(ABSENT,);
         expect(sensors.boardDir,).not.toBe(ABSENT,);
       },
     },),

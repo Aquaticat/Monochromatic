@@ -20,7 +20,6 @@ import {
   pruneSamples,
   writeSample,
 } from './samples.ts';
-import { EMPTY_CORSAIR_FIELDS, } from './corsair.ts';
 import { makeHost, } from './test-fixture.ts';
 
 /**
@@ -39,9 +38,11 @@ await describe({
       },
     },),
     it({
-      name: 'the header has 31 columns',
+      name: 'the header has 42 columns, the 31 older ones first so older rows keep their positions',
       fn: async function headerWidth() {
-        expect(COLUMN_COUNT,).toBe(31,);
+        expect(COLUMN_COUNT,).toBe(42,);
+        expect(SAMPLE_HEADER.split(',',).slice(0, 31,).at(-1,),).toBe('igpu_w',);
+        expect(SAMPLE_HEADER.split(',',).slice(31,).at(0,),).toBe('cpu_fan_rpm',);
       },
     },),
     it({
@@ -66,7 +67,6 @@ await describe({
           time: '2026-10-13T00:00:00.000Z',
           cap: 28,
           power,
-          corsairFields: ['1', '2', '3', '4', '5', '6', '25.5',],
           burst: true,
           cpuPressure: 1.5,
           load1: '10.66',
@@ -74,9 +74,11 @@ await describe({
         },);
         expect(fields,).toHaveLength(COLUMN_COUNT,);
         expect(fields.slice(0, 9,),).toEqual(['2026-10-13T00:00:00.000Z', '61.5', '58.0', '57.0', '', '4450', '1.5', '10.66', '28',],);
-        expect(fields.slice(9, 16,),).toEqual(['1', '2', '3', '4', '5', '6', '25.5',],);
+        expect(fields.slice(9, 16,),).toEqual(['', '', '', '', '', '', '',],);
         expect(fields.slice(18, 24,),).toEqual(['30.0', '31.0', '32.0', '33.0', '34.0', '35.0',],);
-        expect(fields.slice(24,),).toEqual(['16.8', '40.0', '1', '45.0', '12.0', '50.0', '3.0',],);
+        expect(fields.slice(24, 31,),).toEqual(['16.8', '40.0', '1', '45.0', '12.0', '50.0', '3.0',],);
+        expect(fields.slice(31, 39,),).toEqual(['1500', '0', '1540', '0', '2050', '0', '2020', '2590',],);
+        expect(fields.slice(39,),).toEqual(['35.0', '40.5', '35.5',],);
       },
     },),
     describe({
@@ -158,7 +160,7 @@ await describe({
       name: writeSample.name,
       children: [
         it({
-          name: "appends a 31-field row to today's file, creating the directory and header, and returns today's date",
+          name: "appends a 42-field row to today's file, creating the directory and header, and returns today's date",
           fn: async function appendsRow() {
             /**
              Disposable host.
@@ -180,7 +182,6 @@ await describe({
               sensors,
               power,
               cap: 28,
-              corsairFields: EMPTY_CORSAIR_FIELDS,
               burst: false,
               sampleDay: '',
             },);
