@@ -23,10 +23,6 @@
       "rust/require-rustdoc": {
         "severity": "error",
       },
-      // Owner decision 2026-10-05: warn everywhere until no finding is left, then error.
-      "rust/no-anonymous-functions": {
-        "severity": "warn",
-      },
       // Unit tests live in sidecar files (`<name>_tests.rs` declared with `#[cfg(test)] #[path = ...] mod tests;`).
       // Decision record: doc/planning/rust-test-sidecar-enforcement.md.
       "rust/tests-in-sidecars": {
@@ -75,24 +71,6 @@
         "severity": "off",
       },
       "rust/require-rustdoc": {
-        "severity": "off",
-      },
-    },
-  },
-  // The UI fixtures of the Dylint closure lint (package/linter/monochromatic-lint-closure/tests/ui) contain closures on
-  // purpose: each one is a case the lint must report, allow, or let a suppression attribute silence. Owner decision
-  // 2026-10-18 (doc/decision/rust-closure-lint-dylint.md). Every other rule stays selected for these files.
-  {
-    "name": "ui-fixture-exemptions",
-    "files": [
-      "**/tests/ui/**/*.rs",
-    ],
-    "ignores": [
-      "**/*.md/**",
-      "**/*.mdx/**",
-    ],
-    "rules": {
-      "rust/no-anonymous-functions": {
         "severity": "off",
       },
     },

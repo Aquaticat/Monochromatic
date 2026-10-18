@@ -78,7 +78,7 @@ impl SetupError {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type RuleInfo = { id: string; fixable: boolean; options: string[] };
+/// type RuleInfo = { id: string; fixable: boolean; options: string[]; suppressible: boolean };
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 pub struct RuleInfo {
@@ -88,6 +88,11 @@ pub struct RuleInfo {
     pub fixable: bool,
     /// Option names accepted besides `severity`.
     pub options: &'static [&'static str],
+    /// Whether an inline `monochromatic-lint-disable` family directive may suppress this rule's findings.
+    ///  The rule declares this here;
+    ///  no configuration key,
+    ///  override or nested configuration can change it.
+    pub suppressible: bool,
 }
 
 /// What:
@@ -108,93 +113,125 @@ pub const RULES: &[RuleInfo] = &[
         id: "rust/max-lines",
         fixable: false,
         options: &["max"],
+        suppressible: false,
     },
     RuleInfo {
         id: "rust/require-rustdoc",
         fixable: false,
         options: &[],
-    },
-    RuleInfo {
-        id: "rust/no-anonymous-functions",
-        fixable: false,
-        options: &[],
+        suppressible: false,
     },
     RuleInfo {
         id: "rust/require-explicit-types",
         fixable: false,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "rust/tests-in-sidecars",
         fixable: false,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/heading-increment",
         fixable: false,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/commands-show-output",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/no-duplicate-heading",
         fixable: false,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/single-h1",
         fixable: false,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/no-trailing-punctuation",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/no-bare-urls",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/no-emphasis-as-heading",
         fixable: false,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/fenced-code-language",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/link-image-reference-definitions",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/link-image-style",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/no-pipe-tables",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/semantic-line-breaks",
         fixable: true,
         options: &[],
+        suppressible: true,
     },
     RuleInfo {
         id: "markdown/lfs-image-url",
         fixable: true,
         options: &["exclude"],
+        suppressible: true,
     },
 ];
+
+/// What:
+///  Find one shipped rule's description by the identifier a finding carries in `code`.
+/// Why:
+///  The directive engine asks the rule's own declaration whether it may be suppressed,
+///  and treats an identifier outside the registry as unknown,
+///  which keeps `core/` and `directive/` findings unsuppressible.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function ruleInfo(id: string): RuleInfo | undefined;
+/// ```
+pub fn rule_info(id: &str) -> Option<&'static RuleInfo> {
+    for rule in RULES {
+        if rule.id == id {
+            return Some(rule);
+        }
+    }
+    return None;
+}
 
 /// What:
 ///  Render the rule listing as JSON Lines.
@@ -251,7 +288,6 @@ pub const STARTER_CONFIGURATION: &str = r#"// monochromatic-lint.config.jsonc
     "rules": {
       "rust/max-lines": { "severity": "error", "max": 300 },
       "rust/require-rustdoc": { "severity": "error" },
-      "rust/no-anonymous-functions": { "severity": "error" },
       "rust/tests-in-sidecars": { "severity": "error" }
     }
   },

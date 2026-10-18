@@ -9,6 +9,8 @@
 //! // Declare typed command options; execution consumes native paths without lossy string conversion.
 //! ```
 
+/// Import the unused-directive settings the two reporting options resolve to.
+use crate::directive_options::{DirectiveOptions, UnusedDirectiveSeverity};
 /// Import the incumbent CLI parser's trait and declaration macro.
 use clap::Parser;
 /// Import the non-zero count type so a worker limit of zero cannot be expressed.
@@ -95,6 +97,34 @@ pub struct CliOptions {
     /// Emit execution debug information separately from JSONL findings.
     #[arg(long)]
     pub debug: bool,
+    /// Report disable directives that suppressed nothing,
+    ///  as warnings.
+    #[arg(long, conflicts_with = "report_unused_disable_directives_severity")]
+    pub report_unused_disable_directives: bool,
+    /// Report disable directives that suppressed nothing at this severity;
+    ///  `allow` and `off` report nothing.
+    #[arg(long, value_name = "SEVERITY", value_enum)]
+    pub report_unused_disable_directives_severity: Option<UnusedDirectiveSeverity>,
+}
+
+/// What:
+///  Resolve the unused-directive options of one invocation.
+/// Why:
+///  Planning copies the result into every file plan,
+///  so rule code never reads the command line.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// options.directiveOptions()
+/// ```
+impl CliOptions {
+    /// Combine the plain flag and the severity option.
+    pub fn directive_options(&self) -> DirectiveOptions {
+        return DirectiveOptions::from_flags(
+            self.report_unused_disable_directives,
+            self.report_unused_disable_directives_severity,
+        );
+    }
 }
 
 /// Argument grammar controls do not ship in release code.

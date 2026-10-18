@@ -745,7 +745,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     parameter, so they stay reported. Thread locals are not a way out: a spawned thread cannot read the parent's
     thread locals (`src/find_worker.rs:179` hands two channel ends to its worker), and for the UI callbacks they
     would swap `Rc<RefCell<..>>` captures for hidden global state. The helper route the user picked first (generic
-    helpers with a suppression each) is withdrawn: `monochromatic-lint` has no inline suppression, and a Rust
+    helpers with a suppression each) is withdrawn: `monochromatic-lint` had no inline suppression then (comment directives were built afterwards), and a Rust
     `#[allow]` does not reach it (`src/rust_no_anonymous_functions.rs` has no option but severity). The user then
     asked to change the rule itself, with type resolution and ignore comments. The proposal is
     `doc/planning/linter-selective-anonymous-functions.md` (not accepted): directive comments with a mandatory
@@ -763,7 +763,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     syntax in oxlint, ESLint, Biome, Ruff and Clippy; closure bans elsewhere; a Dylint or rustc-driver route), one
     closes the measured gaps (test sidecars under `cfg(test)`, the IDE dependency graph and generated code, the
     5.9 s breakdown, wrapper cases). Both reported (proposal sections "Research results" and "Round two results"):
-    comment directives are already decided (D2 of `doc/planning/rust-linter-oxlint-parity.md`, unbuilt); the type
+    comment directives were already decided (D2 of `doc/planning/rust-linter-oxlint-parity.md`; built since, see the bullet "Inline directives in the linter"); the type
     criterion gives 62 allowed and 5 reported of the 67 only with the full dependency graph, `cfg(test)` plus
     `cfg(debug_assertions)` and `BuildGenerated`, at 22 to 39 s on the IDE package against 0.063 s; under
     `SourceOnly` 25 of 67. The spike branch `spike/linter-closure-static` keeps its local commits (`fad1074bd2`,
@@ -790,11 +790,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     exemption (entry `ui-fixture-exemptions`) cleared the 86 fixture warnings; the package, on the shared nightly
     with `build` and `lint` task names again, passed 13 tests, clippy, rustfmt and `monochromatic-lint` from a clean
     shell, and the IDE copy still gave 62 of 67 allowed. The coordinator reran the package tests and the IDE
-    `test:cli` (13) on the new nightly after the final merge. Known host problem, not diagnosed: cargo from the
-    1.101 nightlies (`nightly-2026-10-17` and `nightly-2026-10-18`) cannot connect to crates.io on this host
-    (`Could not connect to server` in 17 ms; reproduced outside the sandbox in a user unit; curl over IPv4 and IPv6,
-    stable cargo and the 1.100 nightly `nightly-2026-09-22` work; no upstream issue found). Fetch with
-    `cargo +stable fetch --locked` and run nightly offline until it is understood.
+    `test:cli` (13) on the new nightly after the final merge. Known host problem, diagnosed afterwards: cargo
+    of `nightly-2026-10-13`, `-10-17` and `-10-18` fails to reach crates.io (`Could not connect to server` in
+    17 ms) because an OpenSnitch `reject-always` rule exists for each of those exact `cargo` paths
+    (`/etc/opensnitchd/rules/`); it destroys the socket (`ECONNABORTED`). It is not a 1.101 bug: the same
+    binary at an allowed path connects, and `nightly-2026-10-11` and `-10-12` (1.101) connect. An unanswered
+    OpenSnitch pop-up (30 s timeout, default action reject, duration forever) mints such a rule for every new
+    toolchain path. Fixed on 2026-10-18 at the owner's request: the rule `000-allow-cargo.json` (regexp on the
+    `cargo` of any rustup toolchain under the home directory or an agent scratch rustup home, with `precedence`) was
+    added, a fetch on `nightly-2026-10-18` then worked, and the six toolchain `cargo` reject rules were moved to
+    `/etc/opensnitchd/rules.removed-2026-10-18/`
+    (`doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md`). The pop-up default (reject, forever, 30 s)
+    is unchanged, so a path outside every rule still gets a permanent reject; `lint:closures` still fetches with the
+    stable cargo and builds offline, which stays valid.
     Stage 2b landed after review (branch `feat/ide-closure-lint`; see the bullet "Dylint gate over the IDE").
     The user also asked to look at their oxlint setup; findings: shared config
     `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
@@ -826,6 +834,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bundle 8 cases). Test suites on the branch: `test` 783, `test:native` 197, `test:language` 379, `test:syntax` 64,
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
+  - Queued work from the owner's requests of 2026-10-18 (answers through the question tool):
+    the IDE bug "Source viewport 1354x12548 exceeds the 64 MiB raster limit" on a very tall window (screenshot: blank
+    text area, line numbers and minimap drawn) is being fixed by an agent on branch `fix/ide-tall-window-tile`
+    (worktree `.claude/worktrees/ide-tall-tile`); the owner wants the failure to degrade, not blank the text, and the
+    minimap to stay crisp, never replaced by rectangles. After that lands, the minimap is redesigned: the owner chose
+    "downscale the real rendering", so the minimap becomes merely a zoomed-out reflection of the main window (the
+    window's own painted tiles with selection, find matches, diagnostics and virtual rows, shrunk to the minimap width),
+    replacing the separate pixel-per-column builder of `src/minimap/` and `src/native/minimap_build.rs`; it must be
+    tiled and cached so that a long file stays fast and under the raster limit. The comment-directive engine of
+    `monochromatic-lint` (decision D2) is being built by an agent on branch `feat/lint-directives`.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
     worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
@@ -869,18 +887,49 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 18, theme 7, find 39, ignored 28, search 17, watch 76, language 31, language lifecycle 28 runs, language
     navigation 16), and `inspect:language`, `inspect:language-mise` and `inspect:language-confinement`. A positive
     control (the expectation of `minimap_build.rs` renamed to `dead_code`) made `lint:closures` exit 1 with the closure
-    reported and `this lint expectation is unfulfilled`; the file was restored. The README of the lint package still
-    calls itself a stage-1 package.
+    reported and `this lint expectation is unfulfilled`; the file was restored. The stale stage-1 wording of the lint
+    package README was rewritten by the removal below.
     Landed on 2026-10-18 as `1e143fbabe`, pushed straight to `origin/main` from the worktree (the owner chose this):
     the main checkout holds an uncommitted line re-wrap in `package/desktop-app/ide/README.md` (one of a 314-file bulk
     change from another session, last written 09:24), which makes `git merge --ff-only` refuse, so the checkout's
     `main` stays behind `origin/main` until that change is committed or dropped by its owner. Branch and worktree
     removed. The IDE is reinstalled (`~/.local/bin/monochromatic-ide`, sha256 `f068d238b760`, equal to
     `dist/monochromatic-ide`; `monochromatic-ide.previous` is the build `2172fa208b55`); `--help` runs.
-    Still open: the fate of the syntax-only rule once the gate is accepted (proposal in the agent's report: switch it
-    off for `package/desktop-app/ide/**` by a configuration override, since the new lint covers the same closures with
-    type information and sees macro arguments, and keep it elsewhere until each other Rust package has its own
-    `lint:closures`).
+    Decided on 2026-10-18 (the owner,
+    through the question tool):
+    the syntax-only rule `rust/no-anonymous-functions` is removed altogether,
+    repo-wide,
+    instead of being switched off for the IDE only.
+    It landed on 2026-10-18 by a push to `origin/main` from branch `refactor/remove-no-anonymous-functions`
+    (an agent; the coordinator merged `main`, reran the linter package tests, 412 passed and 1 skipped, the fuzz
+    sidecar tests, 10 passed, clippy, rustfmt and the closure package lint, all status 0, and ran the installed
+    `monochromatic-lint` 0.1.3, which still contains the rule, over the IDE and the closure package: status 0, no
+    finding, because the repository config no longer selects it).
+    A config that still names the removed rule is a setup error, `Unknown built-in rule rust/no-anonymous-functions.`,
+    exit status 2.
+    The agent reported that the root lint run exits 1 on Markdown findings in files it did not touch (24 in its
+    final run, compared against the base text for the four files it did touch); the coordinator did not rerun it.
+    The Dylint lint `avoidable_closure` is the only closure check from then on.
+    Rust packages other than the IDE have no closure check until each gets its own `lint:closures` gate.
+    The record is the section "Removal of `rust/no-anonymous-functions`" of `doc/decision/rust-closure-lint-dylint.md`.
+  - Inline directives in the linter (D2 of `doc/planning/rust-linter-oxlint-parity.md`, built after the Dylint gate above;
+    branch `feat/lint-directives`, worktree `.claude/worktrees/lint-directives`, an agent, 2026-10-18; landed as merge
+    `6808166dfd`, after the coordinator reran 488 package tests, clippy, rustfmt and the fuzz sidecar tests on the
+    merged tree and ran the built binary over a disposable project: a covered finding stayed quiet, a directive aimed
+    at `rust/max-lines` was refused, one without a reason was reported). The owner decided D2 on 2026-07-25 and asked
+    for it to be built. `monochromatic-lint-disable`, `-enable`,
+    `-disable-line` and `-disable-next-line` are read from `//` and `/* */` comments of Rust files and from HTML
+    comments of Markdown files (not MDX), each needing a ` -- reason`. `rust/max-lines` and `rust/require-rustdoc`
+    declare themselves unsuppressible in `RULES` (`src/run_modes.rs`, shown by `--rules`); a directive aimed at either is
+    reported as `directive/non-suppressible`. The other findings are `directive/missing-justification`,
+    `directive/unknown-rule`, `directive/malformed` and, on request, `directive/unused`
+    (`--report-unused-disable-directives`, or `--report-unused-disable-directives-severity` with oxlint's five values).
+    One filter in `HostChecker::check_snapshot` covers the syntax rules, the semantic rule and the rustdoc and fence
+    processors, so `--fix` never sees a suppressed finding's fix. The README section "Inline directives" lists the
+    stricter readings taken where the planning documents were silent. The installed `monochromatic-lint` 0.1.3 predates
+    this and ignores such comments; the package version was not bumped, and no IDE file, configuration or root file
+    changed. The Dylint lint's own `expect(.., reason)` attributes are unaffected: the comment form for it is still the
+    open veto above.
   - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
     for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
     listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the

@@ -81,6 +81,9 @@ Options:
 - `--no-error-on-unmatched-pattern` accepts a path argument that matches nothing.
 - `--debug` adds execution notes on standard error,
   including every file selected or ignored.
+- `--report-unused-disable-directives` reports inline directives that suppressed nothing as warnings,
+  and `--report-unused-disable-directives-severity <SEVERITY>` sets their severity;
+  see "Inline directives".
 
 ## Configuration
 
@@ -110,45 +113,179 @@ Configuration patterns select virtual files by those names.
 Findings and fixes are reported at host positions.
 A fix that cannot be mapped back to the host is dropped and its finding is kept.
 
-## Anonymous Rust functions
+## Inline directives
 
-The new `rust/no-anonymous-functions` rule rejects parsed closure expressions,
-including closures assigned to named variables,
-nested closures,
-and `move`,
-`async`,
-and `const` closures.
-Named functions,
-methods,
-function pointers,
-and async blocks are not closures and remain allowed.
+A finding can be suppressed by a comment that names this tool,
+in the ESLint family's spelling:
 
-The rule emits no automatic fix:
-extracting a closure with captured state can require changing its caller.
-The syntax frontend does not expand macros;
-closures hidden inside macro token trees are outside this check's current coverage.
+- `monochromatic-lint-disable` suppresses from the comment to the matching enable,
+  or to the end of the file.
+- `monochromatic-lint-enable` ends a disable.
+- `monochromatic-lint-disable-line` suppresses on the comment's own line.
+- `monochromatic-lint-disable-next-line` suppresses on the line after the comment.
 
-Select the rule explicitly in the ordered JSONC configuration:
+Each keyword is followed by optional comma-separated rule identifiers
+and a mandatory justification after a run of two or more dashes set off by whitespace.
+Without identifiers a directive covers every suppressible rule.
+Identifiers are the full identifiers that `--rules` lists and findings carry in `code`,
+such as `rust/tests-in-sidecars`;
+a bare `tests-in-sidecars` is reported as unknown.
 
-```jsonc
-// monochromatic-lint.config.jsonc
-[
-  {
-    "files": ["**/*.rs"],
-    "rules": {
-      "rust/no-anonymous-functions": { "severity": "error" }
-    }
-  }
-]
+```rust
+//! Directives sit in ordinary comments,
+//! directly above the line a finding is reported on,
+//! which for an inline test module is the line of the `mod` keyword.
+
+/// Generated tests.
+#[cfg(test)]
+// monochromatic-lint-disable-next-line rust/tests-in-sidecars -- generated bindings keep their tests inline
+mod tests {}
 ```
 
-`mise run //package/linter/monochromatic-lint:test:rust-style` verifies this rule.
+In Markdown a directive is an HTML comment,
+for example `<!-- monochromatic-lint-disable-next-line markdown/no-bare-urls -- quoted from a log -->`.
+MDX has no directive form:
+its HTML comments are syntax errors,
+and its expression comments are not read.
+
+### Which comments count
+
+A directive is read only from a comment that the parser reports,
+and only when the comment's text starts with the keyword.
+Rust directives are `//` and `/* */` comments;
+doc comments (`///`,
+`//!`,
+`/** */`,
+`/*! */`) are rustdoc prose and never directives.
+Markdown directives are HTML comments that begin an HTML node,
+so a directive shown in a code fence,
+an indented code block,
+an inline code span or a larger HTML block is only an example.
+Text inside Rust strings is never a comment.
+A comment whose first word starts with `monochromatic-lint-` but is not one of the four keywords
+is reported as malformed;
+a comment that merely mentions the tool elsewhere is ordinary text.
+
+### What a directive covers
+
+A finding belongs to the line and byte offset where its first label starts.
+A line directive is matched by line,
+and a range directive by the position of its comment:
+a finding that starts before the comment stays.
+The latest range directive that names the rule decides,
+so `monochromatic-lint-disable` followed by `monochromatic-lint-enable rust/tests-in-sidecars`
+re-enables only that rule.
+A line directive wins over a range.
+Lines follow the host language:
+Rust counts LF lines and byte columns,
+Markdown counts CR,
+LF and CRLF lines and UTF-16 columns.
+Directive findings use the same units as every other finding.
+
+A directive acts on the file that contains it.
+Findings in embedded sources are reported at host positions,
+so a Rust comment above a rustdoc block covers the Markdown findings inside that block.
+Rust fenced in Markdown has only `rust/max-lines` and `rust/require-rustdoc` applied to it,
+both unsuppressible,
+and a comment inside the fence is code,
+not a directive.
+The semantic rule `rust/require-explicit-types` goes through the same filter as the syntax rules;
+a processing failure never does.
+
+### Rules that refuse directives
+
+`rust/max-lines` and `rust/require-rustdoc` declare themselves unsuppressible.
+A directive entry that names either is reported as `directive/non-suppressible`
+and the rule's findings stay;
+the other entries of the same directive still apply.
+No configuration key,
+override or nested configuration changes this:
+the declaration is part of the rule,
+and `--rules` shows it as `"suppressible":false`.
+
+### Findings about directives
+
+These findings are always errors,
+have stable identifiers,
+and are not themselves suppressible:
+
+- `directive/missing-justification`:
+  the directive has no reason,
+  so it suppresses nothing.
+  Every keyword needs one,
+  `monochromatic-lint-enable` included.
+- `directive/non-suppressible`:
+  an entry names a rule that refuses directives.
+- `directive/unknown-rule`:
+  an entry names no shipped rule.
+- `directive/malformed`:
+  an unknown `monochromatic-lint-` keyword,
+  an empty entry in the rule list,
+  or a line directive written over several lines.
+
+`directive/unused` is reported only on request.
+`--report-unused-disable-directives` reports at warning severity,
+and `--report-unused-disable-directives-severity` takes `allow`,
+`off`,
+`warn`,
+`deny` or `error`;
+the two options exclude each other,
+as in oxlint,
+and `allow` and `off` report nothing.
+Unused directives are not reported by default.
+A listed directive is judged per rule,
+and the unused identifier is underlined.
+A directive is not judged after a processing failure,
+because a rule's findings may be missing.
+
+### Choices the design left open
+
+Where the planning documents were silent,
+the stricter reading was taken:
+
+- Only full rule identifiers are accepted.
+- A directive that is void (no justification,
+  or malformed) suppresses nothing and does not start a range.
+- Doc comments are never directives,
+  although the planning ledger listed "any comment token":
+  rustdoc is where this tool's own documentation quotes directives.
+- A line directive in a block comment over several lines is malformed,
+  as ESLint treats it,
+  rather than guessed at.
+- An empty entry such as `a,,b` is malformed,
+  so a typo cannot widen a directive.
+- An `enable` that re-enables nothing is unused,
+  and so is a directive that a later one covering the same finding made redundant.
+
+### Fixing and suppression
+
+Suppression runs before fixes are collected,
+so `--fix` never applies the fix of a suppressed finding,
+and the directive stays in the file.
+Every `--fix` pass rechecks the new text,
+so a directive covers the line it names in the text that is now there.
+A fix of one finding that moves text onto another line,
+such as a line break inside a paragraph,
+can move a covered finding out of its directive's line;
+the next pass then reports it.
+
+## Closures
+
+This linter has no closure rule.
+The syntax-only `rust/no-anonymous-functions` rule was removed on 2026-10-18,
+and a configuration that still names it fails as an unknown built-in rule (status `2`).
+Avoidable closures are reported by the type-aware Dylint lint `avoidable_closure` of
+`package/linter/monochromatic-lint-closure`,
+which a Rust package runs through its own `lint:closures` task.
+The decision and its consequences are recorded in `doc/decision/rust-closure-lint-dylint.md`.
 
 ## Rust test sidecars
 
 `rust/tests-in-sidecars` requires unit tests to live in sidecar files.
 It reports a module that has an inline body under a `cfg` that selects test builds
-(`cfg(test)`, `cfg(all(test, ...))`, `cfg(any(test, ...))`),
+(`cfg(test)`,
+`cfg(all(test, ...))`,
+`cfg(any(test, ...))`),
 once per outermost module,
 and a function marked `#[test]` or a runtime's `#[...::test]` outside a sidecar file.
 A `#[cfg(test)] mod name;` declaration that loads a file is the sidecar form and is never reported.
@@ -158,13 +295,17 @@ A rule sees one parsed file and cannot see which file declares it,
 so a sidecar is recognized by its name:
 a file named `*_tests.rs` or `tests.rs`,
 or any file under a `tests` directory.
-Each finding names the sidecar to create, such as `thing_tests.rs` for `thing.rs`,
+Each finding names the sidecar to create,
+such as `thing_tests.rs` for `thing.rs`,
 and the declaration to write:
 `#[cfg(test)] #[path = "thing_tests.rs"] mod tests;`.
-Test-only helper functions without `#[test]`, doc tests and virtual files in embedded sources are not checked.
+Test-only helper functions without `#[test]`,
+doc tests and virtual files in embedded sources are not checked.
 
-Exempt a crate whose whole purpose is testing, such as a fuzz sidecar crate,
-by turning the rule off in a later block, which leaves its other rules selected:
+Exempt a crate whose whole purpose is testing,
+such as a fuzz sidecar crate,
+by turning the rule off in a later block,
+which leaves its other rules selected:
 
 ```jsonc
 // monochromatic-lint.config.jsonc
@@ -195,10 +336,12 @@ A function item's unnameable type can retain `_`;
 that does not exempt a nameable enclosing reference or aggregate type.
 Unresolved coverage produces an explicit processing failure rather than a clean result.
 
-Use named callbacks with the anonymous-function rule:
+Closures have unnameable types,
+so prefer a named callback,
+which is also what the `avoidable_closure` Dylint lint asks for:
 
 ```rust
-//! Named callbacks satisfy the anonymous-function rule.
+//! A named callback has a nameable type.
 // src/main.rs
 
 /// Return one user's name for the `map` call.
@@ -283,14 +426,16 @@ their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
 `mutation:executable` does the same for the orchestration modules,
 the executable's entry point,
+the command grammar,
 Rust rule selection,
 input expansion and the fix loop;
 `mutation:core` for configuration,
 findings,
+inline directives,
 grouped edits and the syntax-only Rust rules;
 `mutation:semantic` for the semantic engine and the explicit-type rule;
 and `mutation:processors:files` for the processor modules.
-The executable and core scopes skip the four tests that load a Cargo workspace,
+The executable and core scopes skip the five tests that load a Cargo workspace,
 which the semantic scope and the full container tests run.
 The semantic scope has its own per-mutant limit,
 and any campaign accepts `-- --shard k/n` (zero-based,

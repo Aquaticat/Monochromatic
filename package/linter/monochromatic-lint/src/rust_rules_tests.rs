@@ -82,7 +82,10 @@ fn documentation_kind_catalog_is_exercised() {
 }
 
 /// Rustdoc forms satisfy the rule,
-///  while ordinary comments and suppression-looking text do not.
+///  while ordinary comments and directive-looking comments do not.
+/// The rule itself never reads directives:
+///  suppression is a filter applied after the rules,
+///  and the rustdoc rule declares itself unsuppressible there.
 #[test]
 fn only_real_doc_comments_satisfy_documentation() {
     for source in [
@@ -92,7 +95,7 @@ fn only_real_doc_comments_satisfy_documentation() {
         assert!(check_rustdoc(&context(source), Severity::Error).is_empty());
     }
     let findings = check_rustdoc(
-        &context("// ordinary\n// rust-linter-disable-next-line\nfn f() {}"),
+        &context("// ordinary\n// monochromatic-lint-disable-next-line -- r\nfn f() {}"),
         Severity::Warn,
     );
     assert_eq!(findings.len(), 2);

@@ -35,7 +35,7 @@ const RULES: &str = r#"[
   { "files": ["**/*.rs"], "ignores": ["**/*.md/**", "**/*.mdx/**"], "rules": {
     "rust/max-lines": { "severity": "error", "max": 300 },
     "rust/require-rustdoc": { "severity": "error" },
-    "rust/no-anonymous-functions": { "severity": "error" }
+    "rust/tests-in-sidecars": { "severity": "error" }
   } },
   { "files": ["**/*.md", "**/*.mdx"], "ignores": ["**/*.rs/**"], "rules": {
     "markdown/heading-increment": { "severity": "error" },
@@ -429,8 +429,12 @@ fn configuration_lookup_and_merging_follow_the_design() {
   { "files": ["doc/**"], "rules": { "markdown/lfs-image-url": { "severity": "off", "exclude": ["b/"] } } },
 ]"#,
     );
-    fixture.write(&format!("nested/{CONFIG}"), r#"[{ "files": ["*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "warn" } } }]"#);
-    let three_lines: &str = "//! File.\n\n/// One.\nfn one() {}\n/// Two.\nfn two() { call(|| 1); }\n/// Three.\nfn three() {}\n";
+    fixture.write(
+        &format!("nested/{CONFIG}"),
+        r#"[{ "files": ["*.rs"], "rules": { "rust/tests-in-sidecars": { "severity": "warn" } } }]"#,
+    );
+    // Each file holds one documented stray unit test on its eleventh line, which only the sidecar rule reports.
+    let three_lines: &str = "//! File.\n\n/// One.\nfn one() {}\n/// Two.\nfn two() {}\n/// Three.\nfn three() {}\n/// Stray.\n#[test]\nfn stray() {}\n";
     for file in [
         "src/a.rs",
         "top.rs",
@@ -454,10 +458,11 @@ fn configuration_lookup_and_merging_follow_the_design() {
     }
     // The nested configuration governs its subtree alone: no rustdoc or line budget there, and its
     // single-star pattern does not reach `nested/deep`. The later `src` block changes only the severity.
+    // The outer configuration has no sidecar rule, so the stray test is reported only below `nested`.
     assert_eq!(
         summary,
         [
-            "nested/a.rs rust/no-anonymous-functions warn",
+            "nested/a.rs rust/tests-in-sidecars warn",
             "src/a.rs rust/max-lines warn",
             "top.rs rust/max-lines error",
         ]
@@ -515,20 +520,63 @@ fn configuration_lookup_and_merging_follow_the_design() {
     }
     // An explicit configuration outside the tree replaces lookup and matches working-directory paths.
     let outside: Fixture = Fixture::new();
-    let explicit: PathBuf = outside.write("only.jsonc", r#"[{ "files": ["nested/**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "error" } } }]"#);
+    let explicit: PathBuf = outside.write("only.jsonc", r#"[{ "files": ["nested/**/*.rs"], "rules": { "rust/tests-in-sidecars": { "severity": "error" } } }]"#);
     let explicit_text: String = explicit.to_string_lossy().into_owned();
     let overridden: Run = run(&fixture.path, &["--config", explicit_text.as_str()], b"");
     assert_eq!(
         located(overridden.stdout.as_str()),
         [
-            "nested/a.rs rust/no-anonymous-functions 6 17",
-            "nested/deep/a.rs rust/no-anonymous-functions 6 17",
+            "nested/a.rs rust/tests-in-sidecars 11 4",
+            "nested/deep/a.rs rust/tests-in-sidecars 11 4",
         ]
     );
     // Running from a subdirectory still finds the ancestor configuration and names files relative to that directory.
     let below: Run = run(&fixture.path.join("src"), &[], b"");
     // The finding sits on the first code line beyond the budget of two.
     assert_eq!(located(below.stdout.as_str()), ["a.rs rust/max-lines 8 1"]);
+}
+
+/// A configuration that still selects the removed anonymous-function rule is a setup error on status 2,
+///  naming the rule,
+///  and lints nothing;
+///  the same file without that rule runs normally.
+#[test]
+fn a_configuration_naming_the_removed_anonymous_function_rule_is_a_setup_error() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write("a.rs", "fn main() { call(|| 1); }\n");
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "off" } } }]"#,
+    );
+    let stale: Run = run(&fixture.path, &[], b"");
+    assert_eq!((stale.status, stale.stdout.as_str()), (2, ""));
+    assert!(
+        stale
+            .stderr
+            .starts_with("monochromatic-lint: Configuration "),
+        "{}",
+        stale.stderr
+    );
+    assert!(
+        stale
+            .stderr
+            .contains("Unknown built-in rule rust/no-anonymous-functions"),
+        "{}",
+        stale.stderr
+    );
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/max-lines": { "severity": "error", "max": 300 } } }]"#,
+    );
+    let current: Run = run(&fixture.path, &[], b"");
+    assert_eq!(
+        (
+            current.status,
+            current.stdout.as_str(),
+            current.stderr.as_str()
+        ),
+        (0, "", "")
+    );
 }
 
 /// `--fix` replaces files atomically,
@@ -636,15 +684,15 @@ fn processors_report_and_fix_at_host_positions() {
         r#"[
           { "files": ["**/*.rs"], "ignores": ["**/*.md/**", "**/*.mdx/**"], "rules": { "rust/require-rustdoc": { "severity": "error" } } },
           { "files": ["**/*.rs/*.md"], "rules": { "markdown/fenced-code-language": { "severity": "error" }, "markdown/no-trailing-punctuation": { "severity": "error" } } },
-          { "files": ["**/*.md/*.rs", "**/*.mdx/*.rs", "**/*.rs/*.md/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "warn" }, "rust/require-rustdoc": { "severity": "warn" } } }
+          { "files": ["**/*.md/*.rs", "**/*.mdx/*.rs", "**/*.rs/*.md/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "warn" } } }
         ]"#,
     );
-    let markdown: &str = "Intro 🚀.\r\n\r\n> ```rust,no_run\r\n> # let hidden = 1;\r\n> let value = call(|| 🚀());\r\n> ```\r\n";
-    let rust: &str = "//! File.\n\n    /// # Heading.\n    ///\n    /// ```\n    /// //! Example.\n    /// let value = call(|| 1);\n    /// ```\n    fn item() {}\n";
+    let markdown: &str = "Intro 🚀.\r\n\r\n> ```rust,no_run\r\n> # let hidden = 1;\r\n> let value = \"🚀\"; fn helper() {}\r\n> ```\r\n";
+    let rust: &str = "//! File.\n\n    /// # Heading.\n    ///\n    /// ```\n    /// //! Example.\n    /// let value = 1; fn helper() {}\n    /// ```\n    fn item() {}\n";
     fixture.write("doc/a.md", markdown);
     fixture.write(
         "doc/b.mdx",
-        "<section>\n\n```rs\n//! Embedded.\nlet value = call(|| 2);\n```\n\n</section>\n",
+        "<section>\n\n```rs\n//! Embedded.\nlet value = 2; fn helper() {}\n```\n\n</section>\n",
     );
     fixture.write("src/c.rs", rust);
     let output: Run = run(&fixture.path, &[], b"");
@@ -653,22 +701,26 @@ fn processors_report_and_fix_at_host_positions() {
         located(output.stdout.as_str()),
         [
             "doc/a.md rust/require-rustdoc 4 5",
-            "doc/a.md rust/no-anonymous-functions 5 20",
-            "doc/b.mdx rust/no-anonymous-functions 5 18",
+            "doc/a.md rust/require-rustdoc 5 21",
+            "doc/b.mdx rust/require-rustdoc 5 16",
             "src/c.rs markdown/no-trailing-punctuation 3 9",
             "src/c.rs markdown/fenced-code-language 5 9",
-            "src/c.rs rust/no-anonymous-functions 7 26",
+            "src/c.rs rust/require-rustdoc 7 24",
         ]
     );
     // Byte ranges index the host file exactly, across CRLF, a quote prefix and astral characters.
     let lines: Vec<serde_json::Value> = records(output.stdout.as_str());
-    let markdown_closure: &serde_json::Value = &lines[1]["labels"][0]["span"];
-    let offset: usize = markdown_closure["offset"].as_u64().expect("offset") as usize;
-    let length: usize = markdown_closure["length"].as_u64().expect("length") as usize;
-    assert_eq!(&markdown[offset..offset + length], "|| 🚀()");
-    let rust_closure: &serde_json::Value = &lines[5]["labels"][0]["span"];
-    let rust_offset: usize = rust_closure["offset"].as_u64().expect("offset") as usize;
-    assert_eq!(&rust[rust_offset..rust_offset + 4], "|| 1");
+    let markdown_item: &serde_json::Value = &lines[1]["labels"][0]["span"];
+    let offset: usize = markdown_item["offset"].as_u64().expect("offset") as usize;
+    let length: usize = markdown_item["length"].as_u64().expect("length") as usize;
+    assert_eq!(&markdown[offset..offset + length], "fn helper() {}");
+    let rust_item: &serde_json::Value = &lines[5]["labels"][0]["span"];
+    let rust_offset: usize = rust_item["offset"].as_u64().expect("offset") as usize;
+    let rust_length: usize = rust_item["length"].as_u64().expect("length") as usize;
+    assert_eq!(
+        &rust[rust_offset..rust_offset + rust_length],
+        "fn helper() {}"
+    );
     let heading: usize = lines[3]["labels"][0]["span"]["offset"]
         .as_u64()
         .expect("offset") as usize;
@@ -682,16 +734,16 @@ fn processors_report_and_fix_at_host_positions() {
     assert_eq!(fixed.status, 0);
     assert_eq!(
         fixture.read("src/c.rs"),
-        "//! File.\n\n    /// # Heading\n    ///\n    /// ```rust\n    /// //! Example.\n    /// let value = call(|| 1);\n    /// ```\n    fn item() {}\n"
+        "//! File.\n\n    /// # Heading\n    ///\n    /// ```rust\n    /// //! Example.\n    /// let value = 1; fn helper() {}\n    /// ```\n    fn item() {}\n"
     );
     assert_eq!(fixture.read("doc/a.md"), markdown);
     assert_eq!(
         located(fixed.stdout.as_str()),
         [
             "doc/a.md rust/require-rustdoc 4 5",
-            "doc/a.md rust/no-anonymous-functions 5 20",
-            "doc/b.mdx rust/no-anonymous-functions 5 18",
-            "src/c.rs rust/no-anonymous-functions 7 26",
+            "doc/a.md rust/require-rustdoc 5 21",
+            "doc/b.mdx rust/require-rustdoc 5 16",
+            "src/c.rs rust/require-rustdoc 7 24",
         ]
     );
 }
@@ -893,9 +945,9 @@ fn rules_init_print_config_and_debug_modes() {
     let rules: Run = run(&fixture.path, &["--rules"], b"");
     assert_eq!((rules.status, rules.stderr.as_str()), (0, ""));
     let listed: Vec<serde_json::Value> = records(rules.stdout.as_str());
-    assert_eq!(listed.len(), 18);
+    assert_eq!(listed.len(), 17);
     assert_eq!(listed[0]["id"], "rust/max-lines");
-    assert_eq!(listed[17]["id"], "markdown/lfs-image-url");
+    assert_eq!(listed[16]["id"], "markdown/lfs-image-url");
     let init: Run = run(&fixture.path, &["--init"], b"");
     assert_eq!((init.status, init.stderr.as_str()), (0, ""));
     assert_eq!(
@@ -1135,4 +1187,92 @@ fn concurrency_and_closed_pipes_do_not_change_results() {
     let closed: Output = child.wait_with_output().expect("wait for the executable");
     assert_eq!(closed.status.code(), Some(1));
     assert_eq!(String::from_utf8(closed.stderr).expect("UTF-8"), "");
+}
+
+/// Inline directives through the real executable:
+///  suppression,
+///  the unused-directive options and their usage errors,
+///  standard-input linting and the rule listing's suppressibility.
+#[test]
+fn directives_through_the_executable() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(CONFIG, RULES);
+    fixture.write(
+        "a.md",
+        "# Title\n\n<!-- monochromatic-lint-disable-next-line markdown/single-h1 -- legacy title -->\n# Second\n",
+    );
+    fixture.write(
+        "lib.rs",
+        "//! Docs.\n// monochromatic-lint-disable-next-line rust/max-lines -- budget\n/// Item.\nfn item() {}\n",
+    );
+    // The Markdown directive suppresses its finding; the Rust directive names an unsuppressible rule.
+    let plain: Run = run(&fixture.path, &[], b"");
+    assert_eq!((plain.status, plain.stderr.as_str()), (1, ""));
+    assert_eq!(
+        located(plain.stdout.as_str()),
+        ["lib.rs directive/non-suppressible 2 41"]
+    );
+    // An unused directive is a warning on request, an error with the severity option.
+    fixture.write("lib.rs", "//! Docs.\n");
+    let warned: Run = run(&fixture.path, &["--report-unused-disable-directives"], b"");
+    assert_eq!((warned.status, warned.stderr.as_str()), (0, ""));
+    assert!(warned.stdout.is_empty(), "{}", warned.stdout);
+    fixture.write("a.md", "# Title\n\n<!-- monochromatic-lint-disable-next-line markdown/single-h1 -- stale -->\nplain\n");
+    let warning: Run = run(&fixture.path, &["--report-unused-disable-directives"], b"");
+    assert_eq!(warning.status, 0);
+    assert_eq!(records(warning.stdout.as_str())[0]["severity"], "warn");
+    let error: Run = run(
+        &fixture.path,
+        &["--report-unused-disable-directives-severity", "error"],
+        b"",
+    );
+    assert_eq!(error.status, 1);
+    assert_eq!(
+        records(error.stdout.as_str())[0]["code"],
+        "directive/unused"
+    );
+    // Giving both spellings, or an unknown severity, is a usage error.
+    for arguments in [
+        vec![
+            "--report-unused-disable-directives",
+            "--report-unused-disable-directives-severity=warn",
+        ],
+        vec!["--report-unused-disable-directives-severity=loud"],
+    ] {
+        let refused: Run = run(&fixture.path, &arguments, b"");
+        assert_eq!(
+            (refused.status, refused.stdout.as_str()),
+            (2, ""),
+            "{arguments:?}"
+        );
+        assert!(
+            refused
+                .stderr
+                .contains("--report-unused-disable-directives"),
+            "{}",
+            refused.stderr
+        );
+    }
+    // Standard input is linted with the same directives.
+    let piped: Run = run(
+        &fixture.path,
+        &[
+            "--stdin",
+            "--stdin-filename",
+            "n.md",
+            "--report-unused-disable-directives",
+        ],
+        b"# One\n\n<!-- monochromatic-lint-disable-next-line markdown/single-h1 -- r -->\nplain\n",
+    );
+    assert_eq!(
+        located(piped.stdout.as_str()),
+        ["n.md directive/unused 3 43"]
+    );
+    // The listing declares which rules refuse directives.
+    let rules: Run = run(&fixture.path, &["--rules"], b"");
+    let listed: Vec<serde_json::Value> = records(rules.stdout.as_str());
+    assert_eq!(listed[0]["id"], "rust/max-lines");
+    assert_eq!(listed[0]["suppressible"], false);
+    assert_eq!(listed[1]["suppressible"], false);
+    assert_eq!(listed[2]["suppressible"], true);
 }

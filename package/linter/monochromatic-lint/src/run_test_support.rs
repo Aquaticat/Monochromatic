@@ -37,7 +37,7 @@ pub(crate) const ALL_RULES: &str = r#"[
   { "files": ["**/*.rs"], "rules": {
     "rust/max-lines": { "severity": "error", "max": 300 },
     "rust/require-rustdoc": { "severity": "error" },
-    "rust/no-anonymous-functions": { "severity": "error" }
+    "rust/tests-in-sidecars": { "severity": "error" }
   } },
   { "files": ["**/*.md", "**/*.mdx"], "rules": {
     "markdown/heading-increment": { "severity": "error" },

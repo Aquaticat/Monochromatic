@@ -18,6 +18,7 @@ use crate::{
     config_error::ConfigError,
     config_lookup::{ConfigurationSource, discover_configuration, load_configuration_at},
     config_match::{FileConfiguration, PreparedConfiguration, prepare_configuration},
+    directive_options::DirectiveOptions,
     markdown_rule_settings::{MarkdownRuleSettings, markdown_rule_settings},
     run_paths::{Language, absolute_normal, display_name, language_of, relative_from},
     rust_rule_settings::{RustRuleSettings, rust_rule_settings},
@@ -87,6 +88,9 @@ pub struct FilePlan {
     pub config: Arc<PreparedConfiguration>,
     /// Rules for the host file itself.
     pub root: RootRules,
+    /// Whether and how loudly unused suppression directives are reported;
+    ///  the same for every file of a run.
+    pub directives: DirectiveOptions,
 }
 
 /// What:
@@ -157,6 +161,8 @@ pub struct ConfigStore {
     /// Nearest configuration for each directory already looked up;
     ///  `None` records "none found".
     by_directory: BTreeMap<PathBuf, Option<Arc<PreparedConfiguration>>>,
+    /// Unused-directive settings copied into every plan.
+    directives: DirectiveOptions,
 }
 
 /// What:
@@ -195,7 +201,23 @@ impl ConfigStore {
             cwd: cwd.to_path_buf(),
             explicit: prepared,
             by_directory: BTreeMap::<PathBuf, Option<Arc<PreparedConfiguration>>>::new(),
+            directives: DirectiveOptions::default(),
         });
+    }
+
+    /// What:
+    ///  Set the unused-directive reporting that every later plan carries.
+    /// Why:
+    ///  The command line fixes it for the whole run,
+    ///  and planning is the one place that builds file plans.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// store.withDirectives(options)
+    /// ```
+    pub fn with_directives(mut self, directives: DirectiveOptions) -> ConfigStore {
+        self.directives = directives;
+        return self;
     }
 
     /// What:
@@ -302,6 +324,7 @@ impl ConfigStore {
                 language,
                 config,
                 root,
+                directives: self.directives,
             }),
         });
     }

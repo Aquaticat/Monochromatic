@@ -52,6 +52,9 @@ Conclusion: native Clippy cannot enforce the sidecar rule.
 
 The linter already ships `rust/max-lines`, `rust/require-rustdoc`, `rust/no-anonymous-functions`
 and `rust/require-explicit-types`, with access to the parsed source.
+Note of 2026-10-18:
+`rust/no-anonymous-functions` was removed afterwards,
+see `doc/decision/rust-closure-lint-dylint.md`.
 The rule reports two shapes:
 
 - a `mod` item with an inline body that carries `#[cfg(test)]` (including `cfg(all(test, ...))`);
