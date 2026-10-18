@@ -631,7 +631,7 @@ async fn run_crash_cycles(write: &str, sync: &str, cycles: u32) -> Vec<CrashOutc
     let executable = std::env::current_exe().expect("the test binary should know its own path");
     let mut outcomes = Vec::new();
     let mut start: u64 = 0;
-    for _ in 0..cycles {
+    for cycle in 0..cycles {
         let mut child = std::process::Command::new(&executable)
             .args(["--exact", "cache::tests::crash_writer_child", "--ignored", "--nocapture"])
             .env("CACHE_CRASH_DB", &path_text)
@@ -642,8 +642,11 @@ async fn run_crash_cycles(write: &str, sync: &str, cycles: u32) -> Vec<CrashOutc
             .spawn()
             .expect("the crash writer should start");
         let reader = std::io::BufReader::new(child.stdout.take().expect("the child's stdout is piped"));
+        // The line iterator stays alive until after the kill: closing the pipe early would make the child's next
+        // `println!` panic and end it before the kill, which the test would then mistake for a kill.
+        let mut lines = reader.lines();
         let mut reported = start;
-        for line in reader.lines() {
+        for line in lines.by_ref() {
             let line = line.expect("the child's stdout should be readable");
             if let Some(total) = line.strip_prefix("CRASH_COMMITTED ") {
                 reported = total.parse().expect("the child reports whole numbers");
@@ -653,8 +656,13 @@ async fn run_crash_cycles(write: &str, sync: &str, cycles: u32) -> Vec<CrashOutc
             }
         }
         assert!(reported >= start + 5 * CRASH_BATCH, "the child stopped before it wrote enough");
+        // The child commits a batch in about a millisecond, so a kill sent the instant its line arrives always
+        // lands between batches. A varying pause (0 to 3.999 ms, from a fixed mix of the cycle number) spreads the
+        // kills across the batch.
+        std::thread::sleep(std::time::Duration::from_micros(invented_fingerprint(u64::from(cycle)) % 4000));
         child.kill().expect("SIGKILL should reach the child");
         child.wait().expect("the killed child should be reaped");
+        drop(lines);
         let reopened = DecisionCache::open(&path_text)
             .await
             .expect("the database should open after kill -9");
@@ -704,7 +712,7 @@ async fn batched_writes_survive_kill_nine_with_whole_batches_only() {
 // lands inside a batch's worth of work and that the alignment check can fail.
 #[tokio::test]
 async fn row_writes_after_kill_nine_leave_partial_batches() {
-    let outcomes = run_crash_cycles("row", "full", 6).await;
+    let outcomes = run_crash_cycles("row", "full", 12).await;
     assert!(
         outcomes.iter().any(|outcome| outcome.found % CRASH_BATCH != 0),
         "no kill landed inside a batch of row commits: {:?}",
