@@ -17,10 +17,94 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { once, } from 'node:events';
+import { Worker, } from 'node:worker_threads';
+
 import {
   type ConsistencyVoice,
+  containedQuoteWordsOf,
   countConsistency,
 } from '../dist/final/node/index.mjs';
+import { environmentWithoutKeys, } from './child-environment.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+
+/**
+ The built module's address, for a worker that imports it.
+ */
+const BUILT_INDEX = new URL(
+  '../dist/final/node/index.mjs',
+  import.meta.url,
+).href;
+
+/**
+ The worker's script: it reads the candidates for the quotes handed to it and posts them back. A worker, since a call that never
+ returns holds the thread it runs on and no timer in that thread can end it.
+ */
+const CANDIDATES_SCRIPT = `
+const { parentPort, workerData, } = require('node:worker_threads');
+async function post() {
+  const pkg = await import(workerData.index);
+  const voices = workerData.quotes.map(function ballotOf(quote, index) {
+    return { seat: 'seat ' + index, reason: 'The first place words it best.', quotes: [{ label: 'OCCURRENCE 1', quote, },],
+      choice: 'OCCURRENCE 1', keep: [], };
+  });
+  parentPort.postMessage(pkg.containedQuoteWordsOf({ voices, label: 'OCCURRENCE 1', }));
+}
+post();
+`;
+
+/**
+ The candidate spans of a place each ballot quoted once, read in a worker that is ended at the hang stop.
+
+ @param quotes - one quote of the first place for each ballot
+
+ @returns The candidates, longest first, or the word `hung` when the worker had not answered by the hang stop
+
+ @example
+ ```ts
+ const candidates = await candidatesInWorker({ quotes: ['the cat', 'the cat',], },);
+ ```
+ */
+async function candidatesInWorker({ quotes, }: { readonly quotes: readonly string[]; },): Promise<unknown> {
+  /**
+   The keyless environment, its removed variables left out, since a worker takes every value it is handed as text.
+   */
+  const env = Object.fromEntries(Object.entries(environmentWithoutKeys(),).filter(function isSet([, value,],): boolean {
+    return value !== undefined;
+  },),);
+  /**
+   The worker reading the candidates.
+   */
+  const worker = new Worker(CANDIDATES_SCRIPT, {
+    eval: true,
+    workerData: {
+      index: BUILT_INDEX,
+      quotes,
+    },
+    env,
+  },);
+  /**
+   The stop for a hang, which no case waits for: ending the worker ends a call that never returns.
+   */
+  const stop = AbortSignal.timeout(HANG_STOP_MS,);
+  try {
+    /**
+     The worker's one message, which an error event the worker raises rejects.
+     */
+    const [candidates,] = await once(
+      worker,
+      'message',
+      { signal: stop, },
+    );
+    return candidates;
+  } catch (error) {
+    if (stop.aborted)
+      return 'hung';
+    throw error;
+  } finally {
+    await worker.terminate();
+  }
+}
 
 /**
  Builds one ballot that chooses the first place and quotes the given spans.
@@ -263,6 +347,52 @@ await describe({
           { kind: 'unlocated', reason: 'ambiguous', },
           { kind: 'unlocated', reason: 'not-found', },
         ],);
+      },
+    },),
+    it({
+      name: 'READS A COMBINING MARK AS PART OF THE WORD IT FOLLOWS, as the locator does: a quote "cafe" is no word of '
+        + '"cafe" written with a combining acute accent, so it is contained only in itself and is no candidate',
+      fn: async () => {
+        // The fold leaves the decomposed accent as it is, so the accent follows the "e" in the longer quotes.
+        const candidates = containedQuoteWordsOf({
+          voices: [
+            ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'cafe', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'cafe\u{0301} au lait', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'cafe\u{0301} au lait', }, choice: 'OCCURRENCE 1', },),
+          ],
+          label: 'OCCURRENCE 1',
+        },);
+        expect(candidates,).toEqual(['cafe\u{0301} au lait',],);
+      },
+    },),
+    it({
+      name: 'ENDS ON A BLANK QUOTE, which is contained only in another blank quote: a blank quote beside two that end in a '
+        + 'letter is no candidate, and two blank quotes beside one of words are the one candidate',
+      fn: async () => {
+        // The search for an empty text finds it at every offset and once more at the end, so a loop stepping one offset past
+        // each find never ran out; a reply whose quote folds to nothing is one a judge can send.
+        expect({
+          lone: await candidatesInWorker({ quotes: ['', 'the cat', 'the cat',], },),
+          most: await candidatesInWorker({ quotes: [' ', '', 'the cat',], },),
+        },).toEqual({
+          lone: ['the cat',],
+          most: ['',],
+        },);
+      },
+    },),
+    it({
+      name: 'ORDERS CANDIDATES BY CODE POINTS, NOT UTF-16 UNITS: a quote of four letters is longer than one of a letter and two '
+        + 'cats beyond the first plane, though the second takes five units',
+      fn: async () => {
+        const candidates = containedQuoteWordsOf({
+          voices: [
+            ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'abcd', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'x🐈🐈', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'abcd x🐈🐈', }, choice: 'OCCURRENCE 1', },),
+          ],
+          label: 'OCCURRENCE 1',
+        },);
+        expect(candidates,).toEqual(['abcd', 'x🐈🐈',],);
       },
     },),
   ],
