@@ -575,8 +575,8 @@ before saying it matches, QAB):
   repo cache was at 10.28 GB; a real `cache-prune` run (`39109951532`) deleted four superseded entries (2.33 GB), now
   7.95 GB.
 
-- 2026-10-18, license polish after 0.1.6, branch `fix/music-player-license-polish`, worktree `music-player-licpolish`; not
-  merged to `main`, no version bump. Three commits: the Slint attribution badge (`#MadeWithSlint`, the
+- 2026-10-18, license polish after 0.1.6, branch `fix/music-player-license-polish`,
+  worktree `music-player-licpolish`; not merged to `main`, no version bump. Three commits: the Slint attribution badge (`#MadeWithSlint`, the
   `MadeWithSlint-logo-whitebg.png` file the license links, image URL pinned to Slint commit `7577a165d1`, linked to
   slint.dev) is the first element of the release notes template in `music-player-release.yml`, so the release page
   meets section 2(b) as well as the in-app widget (2(a)); the same notes no longer say Android has no screen for the
