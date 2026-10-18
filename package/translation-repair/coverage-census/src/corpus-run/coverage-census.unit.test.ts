@@ -40,7 +40,7 @@ import {
   runBuiltCommand,
 } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
-import { BUILT_DIRECTORY, } from './coverage-census.test-fixture.ts';
+import { COVERAGE_CENSUS_ENTRY, } from './built-entry.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -100,7 +100,7 @@ async function runInPackage(
   return await runBuiltCommand({
     command: 'coverage-census',
     args,
-    builtDirectory: BUILT_DIRECTORY,
+    packageEntry: COVERAGE_CENSUS_ENTRY,
     cwd: packageDirectory,
     env: {
       XDG_CACHE_HOME: join(

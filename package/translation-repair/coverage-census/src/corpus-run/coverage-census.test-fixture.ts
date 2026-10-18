@@ -5,21 +5,7 @@
  @module
  */
 
-import {
-  dirname,
-} from 'node:path';
-import { fileURLToPath, } from 'node:url';
-
 import type { CensusStretch, } from '../../dist/final/node/index.mjs';
-
-/**
- Directory holding this package's built commands, found through the package's
- own name so the as-built suites start the census's commands from here and not
- from the package that owns the shared child fixture.
- */
-export const BUILT_DIRECTORY: string = dirname(
-  fileURLToPath(import.meta.resolve('@monochromatic-dev/translation-repair-coverage-census',),),
-);
 
 /**
  A recorded stretch in one source over some lines.
