@@ -423,10 +423,12 @@ At the launch of `TianqiChen66624`:
     the breaches of n169 and n172,
     and the lead's mistakes in the n172 brief;
     the lead's notes for it are in `s228/next-docs-batch-notes.md`.
-    The branch worktree holds ignored leftovers that lack a permission
-    (624 read-only `.frozen-*` folders of 2026-09-13)
-    and dangling symbolic links in kept test-folder copies (M224);
-    removing them waits for the owner's word after a dry run.
+    The branch worktree holds 195 ignored `.frozen-*` folders of 2026-09-09 to 2026-09-28,
+    169 of them the frozen builds September's corpus passes ran on and 37 docs cite,
+    19 read-only at the top,
+    and dangling symbolic links inside the evidence folders that the open issues 527 and 541 cite (M224).
+    The owner allowed their removal on 2026-10-17 on an account that missed both citations;
+    removal waits for the owner's answer on the corrected account.
 4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;

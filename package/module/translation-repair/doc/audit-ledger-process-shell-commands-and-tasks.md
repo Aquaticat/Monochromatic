@@ -641,22 +641,39 @@ and it came again on 2026-10-15.
   No test locks a mode there,
   and no entry is filed for tests that lock modes.
 - What does lack a permission:
-  624 directories named `.frozen-*` in the package `node_modules/`,
-  mode `dr-x------`,
-  dated 2026-09-13 (`s228/unwritable-dirs.txt`).
-  No file in the branch or the main checkout outside `node_modules` and `doc` names them today
-  (`s228/frozen-writers-repo.txt` and `s228/frozen-writers-main.txt`,
-  both empty).
-  `git log --all -S'frozen-producer'` finds only docs commits,
-  the earliest `afe60d9db7` ("record native lifecycle proofs")
-  and `90133cb312` ("record final sealed input verification and cleanup"),
-  so the September input-proof work left them.
+  624 directories without a write bit under the package `node_modules/`
+  (`s228/unwritable-dirs.txt`),
+  all inside the folders named `.frozen-*`.
+  Corrected by the lead on 2026-10-17 after measuring:
+  the package `node_modules/` holds 195 top-level `.frozen-*` folders dated 2026-09-09 to 2026-09-28,
+  and only 19 of them,
+  dated 2026-09-13 to 2026-09-15,
+  are read-only at the top;
+  the 624 count includes the folders nested in them.
+  169 of the 195 are `.frozen-dist-<commit>` snapshots of the build each corpus pass of September ran on,
+  made by the step "Freeze the dist under `node_modules/.frozen-dist-<commit>`"
+  of `doc/handover/translation-repair-handover-2026-09-06-queue-items-two-to-seven.md`;
+  the rest come from the input-proof work of 2026-09-13 to 2026-09-15.
+  No source file names them,
+  but 37 docs cite them 175 times,
+  most as the bytes a pass ran on.
+  The first version of this entry said they were dated 2026-09-13,
+  that nothing names them,
+  and that the input-proof work left them all;
+  the search behind that excluded `doc` and looked for `frozen-producer` only
+  (`git log --all -S'frozen-producer'` finds the docs commits `afe60d9db7` and `90133cb312`).
 - Not traced:
   which entry stopped the copy.
   That a copied read-only directory refused its children is a guess.
   Removing these ignored leftovers is a cleanup of the keyed branch worktree:
   a dry run first,
   then the owner's word.
+  The owner gave that word on 2026-10-17 on the first version's account;
+  since the docs cite the frozen builds as evidence,
+  and the open issues 527 and 541 cite the folders that hold the dangling links
+  (`node_modules/.monochromatic/comparison-evidence/` and `node_modules/.monochromatic/preparation-root-order/`)
+  as retained proof,
+  nothing was removed before the owner saw the corrected account.
 
 Prevention:
 every worktree added from a worktree that holds ignored files passes `--no-worktree-copy`,
