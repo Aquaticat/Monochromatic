@@ -155,3 +155,7 @@ run = "node bin/reuse-tools-consumer.mjs"
 description = "Run actual Kotlin JUnit consumers against an isolated remote task-output cache"
 run = "node bin/reuse-gradle-consumer.mjs"
 
+[tasks."research:reuse:rust"]
+description = "Build the existing native CLI and run Nextest consumers with isolated remote compiler reuse"
+run = "node bin/reuse-rust-consumer.mjs"
+

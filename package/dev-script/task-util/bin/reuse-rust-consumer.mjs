@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, statSync, openSync, closeSync, fsyncSync, renameSync, utimesSync } from 'node:fs';
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { strict as assert } from 'node:assert';
-import { root, evidence, env, manifest, sha, run } from './reuse-context.mjs';
+import { root, evidence, env, sha, run } from './reuse-context.mjs';
 
 //region Install only the checksum-audited research compiler wrapper, using the image's locked toolchain
 assert(process.env.DEPOT_CACHE_TOKEN);
@@ -49,7 +49,7 @@ function stats(label) {
 
 /** Run all existing native library, binary and public candidate integration tests through Nextest. */
 function consume({ label, expected = 'success', features = [] }) {
-  run({ name: label + '-build-cli', command: 'mise', args: ['exec', 'rust', '--', 'cargo', 'build', '--locked', '--offline', '--bin', 'cli-git-native', ...features], cwd: project, childEnv: buildEnv, limit: 480_000, expected });
+  run({ name: label + '-build-cli', command: 'mise', args: ['exec', 'rust', '--', 'cargo', 'build', '--locked', '--offline', '--bin', 'cli-git-native', ...features], cwd: project, childEnv: buildEnv, limit: 480_000 });
   stats(label + '-after-cli-build');
   const tested = run({ name: label + '-nextest', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'run', '--locked', '--offline', '--lib', '--test', 'native_binary', '--test', 'native_candidates', ...features], cwd: project, childEnv: buildEnv, limit: 480_000, expected });
   stats(label + '-after-nextest');
@@ -70,7 +70,7 @@ try {
     } finally { writeFileSync(source, original); }
     consume({ label: 'native-source-original-recovery' });
     consume({ label: 'native-dependency-feature-positive-control', features: ['--features', 'serde_json/raw_value'] });
-    buildEnv.RUSTFLAGS = '-C opt-level=1';
+    buildEnv.RUSTFLAGS = '-C debuginfo=1';
     consume({ label: 'native-compiler-flag-positive-control' });
     delete buildEnv.RUSTFLAGS;
   }

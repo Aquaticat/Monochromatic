@@ -24,7 +24,7 @@ run({ name: 'unshare-help', command: 'unshare', args: ['--help'] });
 const currentUser = userInfo();
 const mise = execFileSync('which', ['mise'], { encoding: 'utf8' }).trim();
 const assignments = ['MISE_DATA_DIR', 'MISE_CACHE_DIR', 'RUSTUP_HOME', 'CARGO_HOME', 'MISE_AUTO_INSTALL', 'MISE_LOCKED', 'MISE_TRUSTED_CONFIG_PATHS', 'PATH'].map(name => name + '=' + (env[name] ?? ''));
-const isolate = ['unshare', '--net', '--setuid', String(currentUser.uid), '--setgid', String(currentUser.gid), '--', '/usr/bin/env', ...assignments];
+const isolate = ['unshare', '--net', '--setuid', String(currentUser.uid), '--setgid', String(currentUser.gid), '--', '/usr/bin/env', ...assignments, 'HOME=' + homedir(), 'USER=' + currentUser.username, 'LOGNAME=' + currentUser.username];
 run({ name: 'offline-installed-tool-availability', command: 'sudo', args: [...isolate, mise, 'install', 'node', 'pnpm', 'java', 'rust', 'cargo-binstall', 'cargo:cargo-nextest'], limit: 120_000 });
 const emptyTools = join(root, '.research-reuse/empty-tools');
 mkdirSync(emptyTools, { recursive: true });
