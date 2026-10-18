@@ -12,12 +12,7 @@
  @module
  */
 
-import {
-  mkdir,
-  realpath,
-  writeFile,
-} from 'node:fs/promises';
-import { join, } from 'node:path';
+import { realpath, } from 'node:fs/promises';
 
 import {
   describe,
@@ -27,16 +22,11 @@ import {
 
 import {
   environmentWithoutKeys,
-  runBuiltCommand,
   runKeyless,
   spawnKeyless,
+  variablesSet,
 } from './child-environment.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
-
-/**
- Built index of the bench package, whose `editor-standing-read` command the cases that start a built command run.
- */
-const BENCH_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-bench',);
 
 /**
  Fake variables this process holds while a case runs, none a real credential:
@@ -67,43 +57,6 @@ const REPORT_PROGRAM = [
   '  cwd: process.cwd(),',
   '}));',
 ].join('\n',);
-
-/**
- Sets variables in this process, restoring what stood before.
-
- @param values - variables to set, by name
-
- @returns Disposable that restores every variable it set
-
- @example
- ```ts
- using fakes = variablesSet({ values: FAKE_VARIABLES, },);
- ```
- */
-function variablesSet({ values, }: { readonly values: Readonly<Record<string, string>>; },): Disposable {
-  /**
-   Values standing before this call, by name.
-   */
-  const standing = new Map<string, string>();
-  for (const name of Object.keys(values,)) {
-    const value = process.env[name];
-    if (value !== undefined)
-      standing.set(name, value,);
-  }
-  for (const [name, value,] of Object.entries(values,))
-    process.env[name] = value;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      for (const name of Object.keys(values,)) {
-        const value = standing.get(name,);
-        if (value === undefined)
-          Reflect.deleteProperty(process.env, name,);
-        else
-          process.env[name] = value;
-      }
-    },
-  };
-}
 
 /**
  What the report program printed, read back.
@@ -218,44 +171,6 @@ await describe({
           hasPath: true,
           cwd: await realpath(process.cwd(),),
         },);
-      },
-    },),
-    it({
-      name: 'RUNS A BUILT COMMAND with the case\'s variable winning over this process\'s and reports its exit '
-        + 'code and both streams whole',
-      fn: async () => {
-        await using runs = await scratchDir({ prefix: 'child-environment-runs-', },);
-        await using other = await scratchDir({ prefix: 'child-environment-other-', },);
-        await mkdir(join(runs.path, 'artifacts',),);
-        await writeFile(join(runs.path, 'artifacts', 'Mittens.json',), '{}', 'utf8',);
-        using pointed = variablesSet({ values: { TRANSLATION_REPAIR_RUNS_DIR: other.path, }, },);
-        void pointed;
-        const run = await runBuiltCommand({
-          command: 'editor-standing-read',
-          packageEntry: BENCH_ENTRY,
-          env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
-        },);
-        expect(run.code,).toBe(1,);
-        expect(run.stderr,).toBe(
-          `editor-standing-read: ${join(runs.path, 'artifacts', 'Mittens.json',)} refused, `
-          + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
-        );
-        expect(run.stdout.split('\n',).at(0,),).toBe(
-          'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsJudged=0 '
-          + 'digestsUnjudged=0 unjudgedDigestRounds=0',
-        );
-      },
-    },),
-    it({
-      name: 'DROPS this process\'s runs directory from a built command that is given none',
-      fn: async () => {
-        await using runs = await scratchDir({ prefix: 'child-environment-runs-', },);
-        await mkdir(join(runs.path, 'artifacts',),);
-        await writeFile(join(runs.path, 'artifacts', 'Mittens.json',), '{}', 'utf8',);
-        using pointed = variablesSet({ values: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, }, },);
-        void pointed;
-        const run = await runBuiltCommand({ command: 'editor-standing-read', packageEntry: BENCH_ENTRY, },);
-        expect(run.stderr.includes(runs.path,),).toBe(false,);
       },
     },),
   ],

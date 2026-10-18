@@ -6,7 +6,8 @@
  the same question. That one reads the CLASSES and decides which may repeat
  their message. This one reads the SINKS: the four places that catch a failure
  while reading an artifact, a lock file or a run file, and print or record a
- reason for it. A marked class is only safe if the sink actually asks.
+ reason for it. A marked class is only safe if the sink actually asks. The standing-read command, a sink the bench
+ package owns, is read in `editor-standing-read-sink.unit.test.ts` of that package, through the same fixture.
 
  WHY AN UNREADABLE FILE AND NOT A MALFORMED ONE. A malformed file reaches
  every sink through `parseRunJson`, which already wraps it in a marked class,
@@ -33,11 +34,7 @@
  @module
  */
 
-import {
-  chmod,
-  readFile,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -46,12 +43,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
 import { readPlacement, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import { lockRunsDir, } from '@monochromatic-dev/translation-repair-run';
 import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
-import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
+import {
+  LEAKED_OPENING,
+  namedRefusal,
+  SOUND_ARTIFACT,
+  UNREADABLE,
+  unopenable,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/unopenable-file.test-fixture.ts';
 import {
   NO_POOL_POLICY,
   UNASKED_REPOSITORY,
@@ -60,233 +62,9 @@ import {
 //region Sink naming tests
 
 /**
- What a command left on its two streams.
- */
-type CommandStreams = {
-  /**
-   Everything the command wrote to stdout.
-   */
-  readonly stdout: string;
-
-  /**
-   Everything the command wrote to stderr.
-   */
-  readonly stderr: string;
-};
-
-/**
- Runs one built command and returns both its streams, whatever it exited
- with.
-
- A NON-ZERO EXIT IS NOT A FAILURE TO RUN HERE. `editor-standing-read` exits 1
- on a fixture that recorded no judged rounds, which is its own verdict and has
- nothing to do with the refusal these cases read. The shared fixture reports an
- exit code rather than rejecting on one, which is why it is used instead of a
- promisified `execFile`: that one rejects on any non-zero exit and hides the streams
- on the rejection.
-
- @param command - built command to run
-
- @param packageEntry - URL of the built index of the package that owns the command, as `import.meta.resolve` gives it
- for that package's name
-
- @param args - arguments the command receives after its script
-
- @returns Both streams as the command left them
-
- @throws Error where the command never started at all
-
- @example
- ```ts
- const { stderr, } = await streamsOf({ command: STANDING_COMMAND, packageEntry: BENCH_ENTRY, args: [dir,], },);
- ```
- */
-async function streamsOf(
-  {
-    command,
-    packageEntry,
-    args,
-  }: {
-    readonly command: string;
-    readonly packageEntry: string;
-    readonly args: readonly string[];
-  },
-): Promise<CommandStreams> {
-  /**
-   Command as it finished, or why it never started.
-   */
-  const finished = await runBuiltCommand({
-    command,
-    packageEntry,
-    args,
-  },);
-
-
-  return {
-    stdout: finished.stdout,
-    stderr: finished.stderr,
-  };
-}
-
-/**
- Artifact file every case makes unreadable.
- */
-const UNREADABLE = 'Basket.json';
-
-/**
  Lock file name `lockRunsDir` competes for, which it does not take as input.
  */
 const LOCK_FILE = 'pass.lock';
-
-/**
- Command whose sink the CLI case exercises. Its module exports nothing, so
- its sink is reachable only by running it, which is also how an operator
- meets it.
- */
-const STANDING_COMMAND = 'editor-standing-read';
-
-/**
- Built index of the bench package, which owns the standing-read command.
- */
-const BENCH_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-bench',);
-
-/**
- Opening a filesystem error used to print, which must appear nowhere.
-
- Kept as its own constant so each case asserts against the exact shape that
- leaked rather than against a paraphrase of it.
- */
-const LEAKED_OPENING = "permission denied, open '";
-
-/**
- Refusal every sink is expected to report for a file that will not open.
-
- BUILT PER FILE rather than shared as one constant, because the lock case
- cannot choose its file name: `lockRunsDir` competes for `pass.lock` and takes
- only the directory.
-
- @param file - base name the sink should report, never a path
-
- @returns Sentence the guarded reader builds for an unopenable file
-
- @example
- ```ts
- expect(reason,).toBe(namedRefusal({ file: UNREADABLE, },),);
- ```
- */
-function namedRefusal(
-  { file, }: { readonly file: string; },
-): string {
-  return `could not read ${file} as JSON (EACCES)`;
-}
-
-/**
- Pipeline commit the sound fixture records.
- */
-const SHARED_TIP = 'f'.repeat(40,);
-
-/**
- Built pipeline the sound fixture records.
- */
-const SHARED_GENERATION = `sha256-tree-v1:${'f'.repeat(64,)}`;
-
-/**
- One artifact that parses, so a reader has a pool to place it in.
-
- The attribution reader throws rather than returning an empty pool, so a
- directory holding only the broken fixture never reaches the sink at all.
- */
-const SOUND_ARTIFACT = JSON.stringify({
-  tip: SHARED_TIP,
-  pipelineDigest: SHARED_GENERATION,
-  artifactSchemaVersion: 1,
-  id: 'Whiskers',
-  chunkCritics: [
-    {
-      chunkIndex: 0,
-      heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
-      claimAttributions: [],
-    },
-  ],
-  issues: [],
-},);
-
-/**
- Writes a file nothing may open, and proves it cannot be opened.
-
- @param dir - directory to write into
-
- @param name - file to write
-
- @param body - contents, which no case should ever get to see
-
- @returns Path written
-
- @throws Error where the file opened anyway, which a run as root would do
-
- @example
- ```ts
- const path = await unopenable({ dir, name: UNREADABLE, body: '{}', },);
- ```
- */
-async function unopenable(
-  {
-    dir,
-    name,
-    body,
-  }: {
-    readonly dir: string;
-    readonly name: string;
-    readonly body: string;
-  },
-): Promise<string> {
-  /**
-   Path of the fixture.
-   */
-  const path = join(
-    dir,
-    name,
-  );
-
-  await writeFile(
-    path,
-    body,
-    'utf8',
-  );
-  // Removing a file needs write permission on its DIRECTORY rather than on
-  // the file, so the scratch directory's disposer takes this mode-000 file
-  // out without chmoding it back.
-  await chmod(
-    path,
-    0o000,
-  );
-
-  try {
-    await readFile(
-      path,
-      'utf8',
-    );
-  } catch (refused) {
-    // THE REFUSAL IS THE PROOF, so it is read rather than discarded. A file
-    // that declined for some other reason would send a different class to the
-    // sink, and every assertion on the sink's report would be about a case nobody chose.
-    if (Error.isError(refused,)
-      && ('code' in refused)
-      && (refused.code === 'EACCES'))
-      return path;
-
-    throw new Error(
-      `${name} declined to open, but not for want of permission, so this case `
-        + 'would exercise a refusal it was not written for',
-      { cause: refused, },
-    );
-  }
-
-  throw new Error(
-    `${name} opened at mode 000, so this case would test a readable file while `
-      + 'reporting a pass. Run the suite as an ordinary user rather than as root.',
-  );
-}
 
 /**
  Console methods a sink may write through: `console.log` for a command's own
@@ -496,36 +274,6 @@ await describe({
           `${lockPath} unreadable (${namedRefusal({ file: LOCK_FILE, },)})`,
         ),).toBe(true,);
         expect(said.includes(LEAKED_OPENING,),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'NAMES the code where a standing artifact will not open, run as an '
-        + 'operator runs it, since the module exports nothing to call directly',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'sink-standing-', },);
-
-        /**
-         Artifact the command will meet and fail to open.
-         */
-        const path = await unopenable({
-          dir: scratch.path,
-          name: UNREADABLE,
-          body: SOUND_ARTIFACT,
-        },);
-
-        /**
-         What the command printed, on both streams.
-         */
-        const { stderr, } = await streamsOf({
-          command: STANDING_COMMAND,
-          packageEntry: BENCH_ENTRY,
-          args: [scratch.path,],
-        },);
-
-        expect(stderr.includes(
-          `${STANDING_COMMAND}: ${path} refused, ${namedRefusal({ file: UNREADABLE, },)}`,
-        ),).toBe(true,);
-        expect(stderr.includes(LEAKED_OPENING,),).toBe(false,);
       },
     },),
   ],

@@ -57,7 +57,9 @@ The groups that follow name the main ones.
   `keyless-built-command.test-fixture.ts`,
   `gated-git.test-fixture.ts`,
   `runs-dir-pointed.test-fixture.ts`,
-  `score-artifacts.test-fixture.ts` and `settled-v1-pool.test-fixture.ts`.
+  `score-artifacts.test-fixture.ts`,
+  `settled-v1-pool.test-fixture.ts` and `unopenable-file.test-fixture.ts`,
+  which writes a mode-000 file and proves it cannot be opened.
 
 Two files test the fixtures themselves:
 `wall-clock-stub.unit.test.ts` and `scan-findings.unit.test.ts`.

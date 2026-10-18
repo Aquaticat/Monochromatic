@@ -355,3 +355,42 @@ export async function runBuiltCommand(
     },
   },);
 }
+
+/**
+ Sets variables in this process, restoring what stood before. A write to the
+ process environment, so a case calling it runs in a suite that runs one case
+ at a time.
+
+ @param values - variables to set, by name
+
+ @returns Disposable that restores every variable it set
+
+ @example
+ ```ts
+ using pointed = variablesSet({ values: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, }, },);
+ ```
+ */
+export function variablesSet({ values, }: { readonly values: Readonly<Record<string, string>>; },): Disposable {
+  /**
+   Values standing before this call, by name.
+   */
+  const standing = new Map<string, string>();
+  for (const name of Object.keys(values,)) {
+    const value = process.env[name];
+    if (value !== undefined)
+      standing.set(name, value,);
+  }
+  for (const [name, value,] of Object.entries(values,))
+    process.env[name] = value;
+  return {
+    [Symbol.dispose]: function restore(): void {
+      for (const name of Object.keys(values,)) {
+        const value = standing.get(name,);
+        if (value === undefined)
+          Reflect.deleteProperty(process.env, name,);
+        else
+          process.env[name] = value;
+      }
+    },
+  };
+}
