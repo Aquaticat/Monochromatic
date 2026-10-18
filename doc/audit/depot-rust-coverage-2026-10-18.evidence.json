@@ -156266,6 +156266,751 @@
           "passed": 38
         }
       ]
+    },
+    {
+      "phase": "codex-host-r4",
+      "runId": "1h6qf8j86f",
+      "harnessSha": "28465cf9ba7f6c9df8329f6b254e7b36c2c815d6",
+      "status": "finished",
+      "requestedAt": "2026-10-18T11:16:20.879Z",
+      "finishedAt": "2026-10-18T11:18:04Z",
+      "cpus": 4,
+      "memoryGb": 16,
+      "jobMaximumMinutes": 15,
+      "requestedToFinishSecondsUpperBound": 104,
+      "conservativeTimestampComputeProxyUsd": 0.0208,
+      "artifacts": [
+        {
+          "artifact_id": "01a14ebb-a885-7e1b-af8d-d7d0ec6fdb2d",
+          "run_id": "1h6qf8j86f",
+          "workflow_id": "m23g26krxr",
+          "workflow_path": "",
+          "job_id": "1dbtkxzrpc",
+          "job_key": "_inline_0.yaml:consumer",
+          "attempt_id": "pfw781r0kw",
+          "attempt": 1,
+          "name": "rust-coverage-codex-host",
+          "size_bytes": 1076059,
+          "created_at": "2026-10-18T11:18:03Z"
+        }
+      ],
+      "artifactIntegrity": [
+        {
+          "zipPath": "codex-host-r4-receipts.zip",
+          "bytes": 1076059,
+          "sha256": "8e74879ef5c1527c11d0a3477fcb06d95851b6441a269e4eef2796471206993a",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": ".research-rust-codex-host/receipts/existing-installed-host-fixture.log",
+              "bytes": 1728,
+              "sha256": "fd370b99e824e29e9845ca6c934fd84825722453f2e5cf91d823866e15c671de"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/existing-installed-host-fixture.log.stderr",
+              "bytes": 1728,
+              "sha256": "fd370b99e824e29e9845ca6c934fd84825722453f2e5cf91d823866e15c671de"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/existing-installed-host-fixture.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/final-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/final-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/final-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/initial-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/initial-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/initial-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/installed-host-boundary.json",
+              "bytes": 815,
+              "sha256": "3e909cdcd86ebc9d4b89e3d60b3a605cd7ab84def81b7f90e695ebe86e9825fc"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/locked-dependency-preparation.log",
+              "bytes": 673,
+              "sha256": "bf4976ff89a686d4856fb85432f709e4e4d3d2456d54c59f6c195f91310bccf8"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/locked-dependency-preparation.log.stderr",
+              "bytes": 673,
+              "sha256": "bf4976ff89a686d4856fb85432f709e4e4d3d2456d54c59f6c195f91310bccf8"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/locked-dependency-preparation.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/nextest/default/codex-host.xml",
+              "bytes": 949,
+              "sha256": "a27b7766023c889a50cb1aed3d26c44a2c3800c77e54474e67c9ec92e5e80cd4"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/official-host-help.log",
+              "bytes": 3437,
+              "sha256": "e490f648c9ebdb4900c74144840bb4fa02d4029dc1501b8b9b8e5e8f006162b6"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/official-host-help.log.stderr",
+              "bytes": 223,
+              "sha256": "f370865a5836b8268640029de9a752177a86531d4c1d8cf3a3b507950d742d2a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/official-host-help.log.stdout",
+              "bytes": 3214,
+              "sha256": "4226dbf080b9d3a620385fba067bd3b8ac3c76654f28c3bd4d92ae20df2b03d2"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/official-host-version.log",
+              "bytes": 241,
+              "sha256": "8bb2afd302f0520bfe0c7f87647654aa26827165b801b85aaae598e3c4bc6f97"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/official-host-version.log.stderr",
+              "bytes": 223,
+              "sha256": "f370865a5836b8268640029de9a752177a86531d4c1d8cf3a3b507950d742d2a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/official-host-version.log.stdout",
+              "bytes": 18,
+              "sha256": "15c9db57c80035537f94bea647d07608a1fab5148f5482c0a0d1d7422b7fb69e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-help.log",
+              "bytes": 4868,
+              "sha256": "348106c583318d91c1a8086b50d43b6faed5bb893fc1d2bf49074ec0ee60c329"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-help.log.stdout",
+              "bytes": 4868,
+              "sha256": "348106c583318d91c1a8086b50d43b6faed5bb893fc1d2bf49074ec0ee60c329"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-package-verification.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-package-verification.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-package-verification.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-package-version.log",
+              "bytes": 28,
+              "sha256": "eed00dbdc61fe312a15db5f0a86b0fa5685aa024308a053de554e380990036a4"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-package-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-package-version.log.stdout",
+              "bytes": 28,
+              "sha256": "eed00dbdc61fe312a15db5f0a86b0fa5685aa024308a053de554e380990036a4"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-prerequisite-install.log",
+              "bytes": 929,
+              "sha256": "a88781f7698652be57d1656ff199b9271ab39ea9a25c969b37fd06e578cacd6f"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-prerequisite-install.log.stderr",
+              "bytes": 57,
+              "sha256": "faaab07c02e918afb8dd9a89769009129adfb6e220b835feccf1e077cc1dc3cc"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-prerequisite-install.log.stdout",
+              "bytes": 872,
+              "sha256": "5920d12d6034fed2b77ced21928279654cdfa7d8f1971f03383b3d97aed46112"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-real-namespace-probe.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-real-namespace-probe.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-real-namespace-probe.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-version.log",
+              "bytes": 17,
+              "sha256": "3a0618bed56bc5ced74eea5965def37047e2b879a25ceb85bbc964efbe00489e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-bubblewrap-version.log.stdout",
+              "bytes": 17,
+              "sha256": "3a0618bed56bc5ced74eea5965def37047e2b879a25ceb85bbc964efbe00489e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-package-index-refresh.log",
+              "bytes": 1051,
+              "sha256": "a22914dd413392405c24e77d13f66d430218d0bcbae449976bbf4d576414b5d2"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-package-index-refresh.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-package-index-refresh.log.stdout",
+              "bytes": 1051,
+              "sha256": "a22914dd413392405c24e77d13f66d430218d0bcbae449976bbf4d576414b5d2"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-package-manager-help.log",
+              "bytes": 1619,
+              "sha256": "977fb78b8099025f84360c930e374ad17bca5f7c2e1395ccb777301bf12d8acf"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-package-manager-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/owned-package-manager-help.log.stdout",
+              "bytes": 1619,
+              "sha256": "977fb78b8099025f84360c930e374ad17bca5f7c2e1395ccb777301bf12d8acf"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/profile-receipt.json",
+              "bytes": 8480,
+              "sha256": "3d67dc99732ba60825569a7e5f9d7abfc997bb74b9b716fd2899d60c8c1ed6b3"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/000.request.json",
+              "bytes": 60758,
+              "sha256": "e14ca4132299ec1bf3166df67f96d0c51275b5af3bd55f8678086ed2685cfc6e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/000.response.txt",
+              "bytes": 409,
+              "sha256": "f64ce69976bfad666947cc750cb7a95ac2b7e9c4437294bc6d304df0fc916db3"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/001.request.json",
+              "bytes": 61215,
+              "sha256": "97723b3182810e66ea3b20a74a1156508fddcb4c126ba5c64178c894fa4ace5f"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/001.response.txt",
+              "bytes": 409,
+              "sha256": "77fa98ac9a0140b3fddb9b2f9d8bacdd50df6a01374e8bd9e01e45980fea480d"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/002.request.json",
+              "bytes": 61672,
+              "sha256": "adab6edbe9f1bb283485772039d1894f210fcafa2b0a435418731b4d553b4055"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/002.response.txt",
+              "bytes": 409,
+              "sha256": "9bf6d9758029ebfe6a83b1858c12660880b67fff6eb38d27eee371ed20521928"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/003.request.json",
+              "bytes": 62129,
+              "sha256": "46d0eced786e2d564418d5aaa0e9d4a72cff53cfd30fa66a0e5fd5f50d1a6449"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/003.response.txt",
+              "bytes": 409,
+              "sha256": "e9d80db8a480eafa87903270ca2a96202a0b565ff94587583e6f9952ae1b7472"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/004.request.json",
+              "bytes": 62586,
+              "sha256": "66fe877d0ad24646060db11192c44c6c8de212fae8be5659bfdfa90b9cbd39d2"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/004.response.txt",
+              "bytes": 409,
+              "sha256": "adfbba8d1a101eef6c2fc04e26b49cb95d0444dbcd5ef896e86a0adc0910dbfe"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/005.request.json",
+              "bytes": 63043,
+              "sha256": "7ee6933ed7125fc951e5c6875406eb7d67b6b13b9ea52ee53e9722302ed5c48a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/005.response.txt",
+              "bytes": 409,
+              "sha256": "83413a14296c054299bb73c5d9316671a70d5b62b7f09c1092ecc0a356e38d1a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/006.request.json",
+              "bytes": 63500,
+              "sha256": "ec759209f0a7f517f71b8dc03640ef201ba919eb4a2eb82b16923dea23fc3f05"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/006.response.txt",
+              "bytes": 409,
+              "sha256": "3590b542293eb476273884982b4cccc1ed58381d8683f5453c93fed33e9e4299"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/007.request.json",
+              "bytes": 63957,
+              "sha256": "41173921eb9f8f381eca153c2348d225d6d75e8741be8deb98d22acb90791580"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/007.response.txt",
+              "bytes": 409,
+              "sha256": "85f4712a7d7bb2f7aa6b9703a6383c39cd4a5f075028e3bdb399abb5ddf2e9a0"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/008.request.json",
+              "bytes": 64414,
+              "sha256": "273d0acefe1ea17bbf8b91c6b0c4c6513da2879f210c9c8e72afc304f0b3908c"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/008.response.txt",
+              "bytes": 409,
+              "sha256": "076ff51d1a4338478f7d268780a6d3dcba200a9cbf77f724c6bd5c082f531bb0"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/009.request.json",
+              "bytes": 64871,
+              "sha256": "2f4b4e9b7a1d4d3ba4d4e987291b3115d03df28342c6dcde84dcda5590f22c27"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/009.response.txt",
+              "bytes": 409,
+              "sha256": "8c98d0a91a31a3147d3f215aee36e7fb9ca0f57fe1b284bc84bed52ffa4b4307"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/010.request.json",
+              "bytes": 65328,
+              "sha256": "326524fd790943abe6ded888f15f0587a4bcd57a60f37c0156a24e4a4acab475"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/010.response.txt",
+              "bytes": 410,
+              "sha256": "4055cbf97dccc5478a287b41c25f567ff7b32fa0697a6b797c3bfd4fe19d6790"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/011.request.json",
+              "bytes": 65787,
+              "sha256": "9b1cf8ab9c54b60e51220e7e1f2c77042a73879179d3366fa2f036d0f5c0559d"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/011.response.txt",
+              "bytes": 410,
+              "sha256": "32c1fce1b65ec732984978d1ace7a065fe417899691dc6cde446bc8a8485f51e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/012.request.json",
+              "bytes": 66496,
+              "sha256": "4cbe208e530ac15191f455632df6a775411b7c6fa0cb7bf29f605830eeae547a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/012.response.txt",
+              "bytes": 410,
+              "sha256": "c51b5aa773b08b8908e9da5992289380480336f5f9e43cef78ce7634f513acd0"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/013.request.json",
+              "bytes": 66955,
+              "sha256": "d9ec08053c65bc811dfd13d678d9c67e289f44a9d9f01a45f48aadecde296a72"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/013.response.txt",
+              "bytes": 410,
+              "sha256": "64958a5b84ff43149d4fe72e86e8e8b52d21cdb263f3be1ca84e3b979d348508"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/014.request.json",
+              "bytes": 67414,
+              "sha256": "d8d4b977a3c09b9e907dfa3d0aac0d5d840591974893530476355167a1c323a3"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/014.response.txt",
+              "bytes": 410,
+              "sha256": "4819e3c41bb9fdbf5cef03dcad972de6ff113d4013413906766bbdb77512455e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/015.request.json",
+              "bytes": 67873,
+              "sha256": "75fb62d4ddb4f2236bc60db583152fa45fc02c36a0b5341f3eee852937316571"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/015.response.txt",
+              "bytes": 410,
+              "sha256": "af3af0efe3a873ebe389f188cfd71366198d7f70efb6542614162ac784a2610c"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/016.request.json",
+              "bytes": 68332,
+              "sha256": "a07fef8d8d4fbf797fef263268e54ec9a5e9dd7df644c3d52f5dc165e2386640"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/016.response.txt",
+              "bytes": 410,
+              "sha256": "3e182ce7b8fa7f87996e7cb39b8fa820c9813dda1f3d37ea3529fb1d1394eafc"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/017.request.json",
+              "bytes": 68791,
+              "sha256": "d4a144733182f1410ce612521e7de492738046aa4ad56e64df7f5166e6b2f8f2"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/017.response.txt",
+              "bytes": 410,
+              "sha256": "712a897558cea3767af66684d8b224a0a69f1e0a4ff0fbb0a0311096f7220102"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/018.request.json",
+              "bytes": 69250,
+              "sha256": "1fb91ab5a0adc1a1e62f7da5743338a2544bdc24a400ba5297cb465a03393f3a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/018.response.txt",
+              "bytes": 410,
+              "sha256": "f48b4bb15c74699a1fe8402d072eb7b3109c9b4b68ab4d6e619f47a2184a7025"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/019.request.json",
+              "bytes": 69709,
+              "sha256": "43942bfaf2c4488cb6b46f7dd03438a1b8a051125ab3e4c96ae563837b52b85a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/019.response.txt",
+              "bytes": 410,
+              "sha256": "687a3aa46f5057c9605064a413c7612d7588e8c36de5da5639edc9ae5677eb9d"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/020.request.json",
+              "bytes": 70168,
+              "sha256": "1d6f6107cb77218d554b68267ac49b6740b00c4331ad6dbada29b642498ff662"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/020.response.txt",
+              "bytes": 410,
+              "sha256": "49f4b7cd36022899cba0abc6ac7b972e7c264c3d36e471fa028824534f1db809"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/021.request.json",
+              "bytes": 70627,
+              "sha256": "45681465634292b6dd6d82bb9efda60bc8a01ce92a4ddc23cb6e4b62dbeb4f04"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/021.response.txt",
+              "bytes": 410,
+              "sha256": "37b4e474ef5de2d164acc88a133a6564b901b4d8bf0e3815c5b5467d209d3392"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/022.request.json",
+              "bytes": 71086,
+              "sha256": "93ed8451462b27e04c432033e34a04633584d09868c66a69e3cd923f33816580"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/022.response.txt",
+              "bytes": 410,
+              "sha256": "c561890f75c6867b383e500b71faab1016cf170c18a0110363a36d9d94bd0c6f"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/023.request.json",
+              "bytes": 71545,
+              "sha256": "b0021329c503aa50475275b41029388c29142791120d2881ebf6ec48c4361ae6"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/023.response.txt",
+              "bytes": 410,
+              "sha256": "c53377dd67e74f3d2d8a99ea68358ccaa5acff1a692295d27be1d63477003fa3"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/024.request.json",
+              "bytes": 72004,
+              "sha256": "29956916126579b3238c3ebe99a5328fbfc636ee8b23fe6cbb61810b81507145"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/024.response.txt",
+              "bytes": 410,
+              "sha256": "2e2801254d648b3189270911308adef3e000c39366495828422365f5895d92ac"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/025.request.json",
+              "bytes": 72463,
+              "sha256": "8d6731f3fd479fd4fee2d269c0fdb6796dc8b24808f16a38376f6f1868d2404c"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/025.response.txt",
+              "bytes": 410,
+              "sha256": "580ffc7b7268eb3d3ce5a75278ca5b348c5aa46ca5e8a9c3320d19e8e98f62ba"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/026.request.json",
+              "bytes": 72922,
+              "sha256": "8c88e7bc1cabd1bfcbed209cc40f5e9dd466d1dd746256ba3a7db6aaa0935cca"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/026.response.txt",
+              "bytes": 410,
+              "sha256": "446f07acd3c6349600ea4e129243dc407557041b0bd99f9d994d51ae26986d45"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/027.request.json",
+              "bytes": 73381,
+              "sha256": "ea0442645de8c5ac375da3b1c93fe7f2237099c70884708de1457454ca27f0cd"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/027.response.txt",
+              "bytes": 410,
+              "sha256": "4c0f3823a2fbf5af7358e573939d936de931796da2c0bb469d1763e6ab54d2ad"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/028.request.json",
+              "bytes": 73840,
+              "sha256": "930fa0b3b01e82db0f243940793c9ade9bc5fc591a47680f8f7758e762081328"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/028.response.txt",
+              "bytes": 410,
+              "sha256": "4b6fe5b2a9011e906b7c16df2964a91b10765bff1841ce3c1e1d35e003cec567"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/029.request.json",
+              "bytes": 74299,
+              "sha256": "9f33c77a02d01f1d66a76ccf6d8267889135292bc5671007db8280768cf5455b"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/029.response.txt",
+              "bytes": 410,
+              "sha256": "a49398fe3e40e6fec5c7b6841c123e6517c3140fee02893e80dc68ca1e2d70df"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/030.request.json",
+              "bytes": 74758,
+              "sha256": "8552a2e3e9f67d73d9bfcdf4b6a4be8b8bae5d405d9fa98b93207fd00b21ec98"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/030.response.txt",
+              "bytes": 410,
+              "sha256": "b147ed6f5c66f942bb74e0a1e370dccb7776289d86c8e77cbbad6a0997ce4588"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/031.request.json",
+              "bytes": 75217,
+              "sha256": "31d6593a1eae44df5d4fb05451f9a8fc90d5098b33ed498030488780ad7f5ee6"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/031.response.txt",
+              "bytes": 410,
+              "sha256": "9dd3a27705b0a2bfb2409be374a218d756ecbbac043d294013a0f189230b385f"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/032.request.json",
+              "bytes": 75676,
+              "sha256": "1ec2e9bd18d1fb7b2b03cbcf44c4861b0d3a3414c9c88a9dd73e3d4247e169c0"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/032.response.txt",
+              "bytes": 410,
+              "sha256": "c63b6c84153e1235683ebf601effdec489fe26ef726b464e1d633fecfa2a8005"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/033.request.json",
+              "bytes": 76135,
+              "sha256": "2737176f26e22009472de53a3afd5593044dcf70351795e03380b6ac5cc63363"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/033.response.txt",
+              "bytes": 410,
+              "sha256": "4a46dd7b1bfab9743bb9511a9b2612d5dc6b8878fb9d3a39b4543c11be3b5bbf"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/034.request.json",
+              "bytes": 76594,
+              "sha256": "fd75cd36fe85f0ec8498f1ce279b345046d527a64ad85790a01178fd6736ab45"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/034.response.txt",
+              "bytes": 410,
+              "sha256": "73d507c5bc3e98daad6960f83ee259a4870746c181b829aefdf6cf5af1983bbd"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/035.request.json",
+              "bytes": 77053,
+              "sha256": "06cd6cc1783fbcdba4a1f12d631a0d30e6cbff2d24dbb9f7dbbfd1602ed97c81"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/035.response.txt",
+              "bytes": 410,
+              "sha256": "26580796253f3172cb7a1182cc0d4a96dee520d2073f5087f80c4d753d97ac2c"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/036.request.json",
+              "bytes": 77512,
+              "sha256": "fb45ad0ecb7df081999d8728b7534ab1e5857f6c0db65bee7b2ea49d556cf6c0"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/036.response.txt",
+              "bytes": 410,
+              "sha256": "9ba409c7bf3e406894e6c47ae95e3be80f0e612ecf4f89b05ebb3a0c64bfd948"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/037.request.json",
+              "bytes": 77971,
+              "sha256": "d17d11a7705798813d70886b5b001bc189043bbe4552a0527a34b14ff35a9e1e"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/037.response.txt",
+              "bytes": 410,
+              "sha256": "a7677aaefcfbe80a24e74022399ccca5578abf29d624af5ddf634ca8e771e86d"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/038.request.json",
+              "bytes": 78430,
+              "sha256": "7a5b7df89ba356c1bb0d6f7ad8165820a629e2efeab469cdef1ff567190ae1ab"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/038.response.txt",
+              "bytes": 410,
+              "sha256": "a19e77d2cd8eebd5bd4e0acc00980682bd259079d798d7c93a5be5f55ed93aaa"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/039.request.json",
+              "bytes": 78889,
+              "sha256": "f9d828973be5e05ac7f9e90d5a90d3e03f1e2915833fc8d44a0bd7e8c77f8df9"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/039.response.txt",
+              "bytes": 410,
+              "sha256": "d9b2b4dece7a8cfb4153ee0ed215dc33331701e0741f6656acd343b7a03e022f"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/040.request.json",
+              "bytes": 79348,
+              "sha256": "a940c59f1ff34e6da992383650042a618ea8014a309c3441fad4271a07795be5"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/040.response.txt",
+              "bytes": 353,
+              "sha256": "1a9b24cf571e175e3faf193c6030d32645dbaaf483ad14a1b737bec95e9395e8"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/client.jsonl",
+              "bytes": 1153,
+              "sha256": "0f761cf761dabb941bab21b622f699c6977554733aec5467afe4123908dd8439"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/host.jsonl",
+              "bytes": 191316,
+              "sha256": "e3c08a963cd05d61ef7f590202aeb0db2547a5f9c8bbddbd0e7d6e7879b39089"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/protocol/loopback-relay.json",
+              "bytes": 267,
+              "sha256": "5fb8112429ed65245da5e2a0ec3a03882b5b0e83778c7d7f8925fd1060d7fba8"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/source-admission.json",
+              "bytes": 2758,
+              "sha256": "08df65a2c7bd2599864474b56a95f5c34148d12cc48a59385b8baff8f3df863a"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/synthetic-home/.local/state/mise/incomplete-installs/.migrated",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/synthetic-home/.local/state/mise/tracked-configs/62deba21d095098c",
+              "bytes": 1131,
+              "sha256": "1d8e9ed0652f47824af3f4d02f5513349d29976047b6fb7c380954a33881113d"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/synthetic-home/.local/state/mise/tracked-configs/9ce8ce5d2da9e3ae",
+              "bytes": 69044,
+              "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/synthetic-home/.local/state/mise/trusted-configs/Monochromatic-Monochromatic-e67cef48d998e176.monorepo",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-codex-host/receipts/system-bubblewrap.json",
+              "bytes": 223,
+              "sha256": "cd97ab682ea2b932155f4570ddd4b459b37eb8d3b0f951553a1c8414605c5d76"
+            },
+            {
+              "name": ".research-reuse/receipts/reuse-registry-probe-session.json",
+              "bytes": 140,
+              "sha256": "6b79b9d05728e13ed0a72febf5e87cf3a0c4a5244ac3adc045fbd02b956a01e4"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.json",
+              "bytes": 3792,
+              "sha256": "280d1c7826d7f9ce1b83e221d056dbc588cf3766f51914477c545a3fd1e04553"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.jsonl",
+              "bytes": 3087,
+              "sha256": "72a9fc12c0a9b00f3012355640d9895c32ea9f6596d3ea1d166a4f780b4cb886"
+            }
+          ]
+        }
+      ],
+      "junit": [
+        {
+          "path": ".research-rust-codex-host/receipts/nextest/default/codex-host.xml",
+          "enumeratedTotal": 1,
+          "skipped": 0,
+          "failed": 0,
+          "errors": 0,
+          "testsRun": 1,
+          "passed": 1
+        }
+      ]
     }
   ],
   "receipts": {
@@ -156277,16 +157022,16 @@
   },
   "rawReceipts": {
     "path": "doc/audit/depot-rust-coverage-2026-10-18.receipts.json.gz",
-    "bytes": 5370798,
-    "sha256": "d6d90bc7a9a9a1d53b922da7a9aa9a66715b8a1ed4dccabf49f276e3f7855cbd",
-    "uncompressedBytes": 28698292,
-    "uncompressedSha256": "62c8f4e9aeaa51d09b10638b24ae24d58a2cfa29db8a35ccc2c5999e7fbbc118"
+    "bytes": 6355401,
+    "sha256": "bfbd40c997d07d4ee61949dfecabffe95f766c221347820d25ae2c6e46d5abc6",
+    "uncompressedBytes": 31875273,
+    "uncompressedSha256": "7193f49c6ad681fd9e7417a2eacac2d095dd8aeba0675e0312ece3f801066041"
   },
   "accounting": {
-    "cumulativeConservativeTimestampComputeProxyUsd": 2.3972,
-    "remainingUsd": 2.6028,
+    "cumulativeConservativeTimestampComputeProxyUsd": 2.418,
+    "remainingUsd": 2.582,
     "ceilingUsd": 5,
     "invoiceAccessed": false
   },
-  "updatedAt": "2026-10-18T11:15:57.391Z"
+  "updatedAt": "2026-10-18T11:20:32.209Z"
 }
