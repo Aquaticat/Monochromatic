@@ -57,7 +57,7 @@ and Windows surfaces it.
  An organization (OV) certificate's subject is the organization's legal name,
  which is why
 this project signs under a registered organization rather than an individual (see
-[../decisions/desktop-app-code-signing.md](../decisions/desktop-app-code-signing.md)).
+[../decision/desktop-app-code-signing.md](../decision/desktop-app-code-signing.md)).
 
 ## Verification
 

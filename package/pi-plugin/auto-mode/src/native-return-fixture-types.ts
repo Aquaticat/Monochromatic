@@ -74,7 +74,10 @@ export type NativeReturnConsumer = {
   readonly open: (input: {
     readonly slot: object;
     readonly call: ReturnCall;
-  }) => Readonly<{ complete: (outcome: unknown) => unknown; fail: (error: unknown) => void }>;
+  }) => Readonly<{
+    complete: (outcome: unknown) => unknown;
+    fail: (error: unknown) => void
+  }>;
   /**
    Supported script value requires original return membership.
    */

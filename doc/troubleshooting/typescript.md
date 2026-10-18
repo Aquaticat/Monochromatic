@@ -1943,5 +1943,3 @@ The independent Go thread failure remains bounded by its existing incident evide
 
 - [VSCode](vscode.md):
    VSCode extension configuration for TypeScript tools.
-- [Toolchain](./TROUBLESHOOTING.toolchain.md):
-   build tools and toolchain management.

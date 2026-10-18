@@ -58,7 +58,9 @@ export function matchesSemanticProgramProfile({
  Native callers authenticate prepared membership; matching supplies no implementation facts or permission.
 
  @param configured - fixed bootstrap scope
+ 
  @param effect - original prepared operation and optional program inspection
+ 
  @returns whether the complete operation has an adopted semantic consumer
  */
 export function matchesSemanticOperationProfile({
@@ -68,14 +70,25 @@ export function matchesSemanticOperationProfile({
   readonly configured: string;
   readonly effect: SemanticAdmissionInputs['effects'][number];
 },): boolean {
-  /** Scope matching logs no command text or original source content. */
-  const rl = tagged({ tag: matchesSemanticOperationProfile.name, l, },);
+  /**
+   Scope matching logs no command text or original source content.
+   */
+  const rl = tagged({
+    tag: matchesSemanticOperationProfile.name,
+    l,
+  },);
   rl.debug('matching original prepared operation to fixed semantic scope',);
-  if ((configured === 'native-inspected-programs-v2') && (effect.prepared?.name === 'bash'))
-    return typeof effect.prepared.input.command === 'string';
+  if ((configured === 'native-inspected-programs-v2') && (effect.prepared
+    ?.name
+    === 'bash'))
+    return (typeof effect.prepared
+      .input
+      .command) === 'string';
   return matchesSemanticProgramProfile({
     configured,
-    inspected: effect.programInspection?.declaration.profile,
+    inspected: effect.programInspection
+      ?.declaration
+      .profile,
   },);
 }
 

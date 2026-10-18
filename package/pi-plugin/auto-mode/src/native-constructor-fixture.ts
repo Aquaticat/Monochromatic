@@ -197,8 +197,14 @@ export function createConstructorFixture(): ConstructorFixture {
       response,
       stream,
       group() {
-        return groupContextModule.createPreparedGroupContext({ response, stream, signal: controller.signal,
-          readClosure: premature, readJudgment: premature, assertDependenciesCurrent: premature });
+        return groupContextModule.createPreparedGroupContext({
+          response,
+          stream,
+          signal: controller.signal,
+          readClosure: premature,
+          readJudgment: premature,
+          assertDependenciesCurrent: premature
+        });
       }
     },
   };

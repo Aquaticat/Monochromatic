@@ -141,7 +141,10 @@ export type FixtureProgramOwner = Readonly<{
   }>;
   reachProgramGroup: (input: Readonly<Record<string, unknown>>) => FixtureReachedGroup;
   reachedGroupFor: (group: unknown) => FixtureReachedGroup;
-  bindProgramCalls: (input: Readonly<Record<string, unknown>>) => readonly Readonly<{ open: (call: FixtureProgramCall) => Readonly<{ complete: (outcome: unknown) => unknown; fail: (error: unknown) => void }> }>[];
+  bindProgramCalls: (input: Readonly<Record<string, unknown>>) => readonly Readonly<{ open: (call: FixtureProgramCall) => Readonly<{
+    complete: (outcome: unknown) => unknown;
+    fail: (error: unknown) => void
+  }> }>[];
   prepareReachedMembers: (input: Readonly<Record<string, unknown>>) => readonly object[];
   scriptValueFor: (input: Readonly<Record<string, unknown>>) => string;
   markProgramGuard: (input: Readonly<Record<string, unknown>>) => Error;

@@ -1,28 +1,47 @@
-/** Disposable transcript fixtures exercise maintained built projection. @module */
-import {sessionEntryToContextMessages,type SessionEntry} from '@earendil-works/pi-coding-agent';
-import {buildVisibleContext as buildContext,VERDICT_ENTRY_TYPE,type VerdictData} from '../dist/final/node/index.mjs';
+/**
+ Disposable transcript fixtures exercise maintained built projection. @module
+ */
+import {
+  sessionEntryToContextMessages,
+  type SessionEntry
+} from '@earendil-works/pi-coding-agent';
+import {
+  type buildVisibleContext as buildContext,
+  VERDICT_ENTRY_TYPE,
+  type VerdictData
+} from '../dist/final/node/index.mjs';
 import type {MockBranchEntry} from './visible-context-fixture-types.ts';
 
 //region Test fixtures
 
-/** Number of repeated tokens in long-message fixtures. */
+/**
+ Number of repeated tokens in long-message fixtures.
+ */
 export const LONG_TEXT_REPEAT_COUNT = 80;
 
-/** Number of bash tool activities generated for window tests. */
+/**
+ Number of bash tool activities generated for window tests.
+ */
 export const BASH_ACTIVITY_COUNT = 6;
 
-/** Minimum newest visible messages retained by context window. */
+/**
+ Minimum newest visible messages retained by context window.
+ */
 export const EXPECTED_MESSAGE_FLOOR = 5;
 
 
 
 /** Bind the actual Pi projector to deliberately incomplete legacy and future session fixtures.
  @param branch - disposable nonstandard session entries
+ 
  @returns built projection input retaining original runtime conversion
  */
 export function contextFromBranch({branch}:{readonly branch:readonly MockBranchEntry[]}):Parameters<typeof buildContext>[0]{
  // These fixtures intentionally include shapes absent from current Pi declarations.
- return {entries:branch as unknown as readonly SessionEntry[],project:sessionEntryToContextMessages};
+ return {
+   entries:branch as unknown as readonly SessionEntry[],
+   project:sessionEntryToContextMessages
+ };
 }
 
 /**
@@ -53,6 +72,7 @@ export function userMessage(
  Build assistant tool-call entry.
  
  @param name - tool name
+ 
  @param args - tool arguments
  
  @returns assistant message entry
@@ -90,8 +110,11 @@ export function assistantToolCall(
  Build tool-result entry.
  
  @param toolName - tool name
+ 
  @param output - tool output text
+ 
  @param isError - whether tool execution errored
+ 
  @param details - renderer-visible tool details
  
  @returns tool-result message entry
@@ -145,7 +168,10 @@ export function toolResult(
  */
 export function bashActivity(
   activityNumber: number,
-): readonly [MockBranchEntry, MockBranchEntry,] {
+): readonly [
+  MockBranchEntry,
+  MockBranchEntry,
+] {
   return [
     assistantToolCall({
       name: 'bash',
@@ -188,7 +214,9 @@ export function verdictEntry(
  Minimal parsed visible-message shape used for window assertions.
  */
 type ParsedVisibleMessage = {
-  /** Message role discriminator. */
+  /**
+   Message role discriminator.
+   */
   readonly role: string;
 };
 
@@ -202,14 +230,20 @@ type ParsedVisibleMessage = {
 export function parseVisibleMessages(
   context: string,
 ): readonly ParsedVisibleMessage[] {
-  /** Parsed context at untrusted JSON boundary. */
+  /**
+   Parsed context at untrusted JSON boundary.
+   */
   const parsed: unknown = JSON.parse(context,);
   if (!Array.isArray(parsed,))
     throw new Error('Expected judge context to contain JSON message array.',);
-  /** Validated message entries. */
+  /**
+   Validated message entries.
+   */
   const messages: ParsedVisibleMessage[] = [];
   for (const rawMessage of parsed) {
-    /** Current untrusted array element. */
+    /**
+     Current untrusted array element.
+     */
     const message: unknown = rawMessage;
     if (((typeof message) !== 'object')
       || (message === null)

@@ -99,8 +99,14 @@ export type NativeReturnFixture = {
    Generated runtime consumer under test.
    */
   readonly consumer: NativeReturnConsumer;
-  /** Test-owned producer drives actual reservation and terminal capture separately. */
-  readonly invoke: (input: Readonly<{ slot: object; call: NativeReturnFixture['call']; options?: unknown }>) => Promise<unknown>;
+  /**
+   Test-owned producer drives actual reservation and terminal capture separately.
+   */
+  readonly invoke: (input: Readonly<{
+    slot: object;
+    call: NativeReturnFixture['call'];
+    options?: unknown
+  }>) => Promise<unknown>;
   /**
    Original owner callbacks used to check bootstrap identity capture.
    */
@@ -165,7 +171,10 @@ export function nativeReturnFixture({
   runNative,
   structured = false
 }: {
-  readonly runNative?: (call: NativeReturnFixture['call'], options: unknown) => unknown;
+  readonly runNative?: (
+    call: NativeReturnFixture['call'],
+    options: unknown
+  ) => unknown;
   readonly structured?: boolean
 } = {}): NativeReturnFixture {
   /**
@@ -248,11 +257,17 @@ export function nativeReturnFixture({
     },
   };
   const consumer = nativeReturn.createNativeReturnConsumer(owner);
-  /** Fixture orchestration is not a replacement SDK runner; host phase tests exercise the real producer. */
+  /**
+   Fixture orchestration is not a replacement SDK runner; host phase tests exercise the real producer.
+   */
   async function invoke(input: Parameters<NativeReturnFixture['invoke']>[0]): Promise<unknown> {
     const entry = consumer.open(input);
-    try { return entry.complete(await nativeRun(input.call, input.options)); }
-    catch (error) { entry.fail(error); throw error; }
+    try { return entry.complete(await nativeRun(
+      input.call,
+      input.options
+    )); }
+    catch (error) { entry.fail(error);
+    throw error; }
   }
   return {
     consumer,

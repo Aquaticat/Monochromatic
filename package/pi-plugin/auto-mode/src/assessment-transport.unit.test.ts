@@ -137,7 +137,9 @@ await describe({
           fetchImpl: async function countDispatch() { calls++;
           return new Response('{}',); },
         },);
-        expect(await send(assessmentInput()),).toBe('{}');
+        expect(
+          await send(assessmentInput()),
+        ).toBe('{}');
         expect(calls,).toBe(1,);
       },
     },),
@@ -189,7 +191,9 @@ await describe({
           fetchImpl: async function lateResponse() { clock = 15_000;
           return new Response('{}',); },
         },);
-        expect(await send(assessmentInput()),).toBe('{}');
+        expect(
+          await send(assessmentInput()),
+        ).toBe('{}');
       },
     },),
   ],
