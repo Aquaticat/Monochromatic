@@ -102,6 +102,29 @@ await describe({
     },),
 
     it({
+      name: 'RECORDS A REFUSAL-SHAPED RE-ASK AS SUCH, naming the kind it failed as and the marker for its cause, not the detail '
+        + 'of a schema mismatch, beside the first answer that is returned',
+      fn: async () => {
+        const bothFail = await reaskElsewhereNudged({
+          request: REQUEST,
+          first: { reply: FIRST_REPLY, outcome: FIRST_UNUSABLE, },
+          ask: async () => ({ text: '', refusal: '不能回答。', servedBy: 'hyper', }),
+        },);
+        expect(bothFail,).toEqual({
+          kind: 'schema-mismatch',
+          rawText: 'not json at all',
+          detail: 'fixture',
+          reaskFailure: {
+            servedBy: 'hyper',
+            kind: 'refusal-shaped',
+            rawText: '不能回答。',
+            cause: 'api-refusal-field',
+          },
+        },);
+      },
+    },),
+
+    it({
       name: 'ANSWERS WITH A USABLE FIRST ANSWER at once, asking no second provider',
       fn: async () => {
         /**
