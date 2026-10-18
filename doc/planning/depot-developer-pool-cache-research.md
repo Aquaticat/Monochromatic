@@ -462,16 +462,47 @@ each requesting the documented two-CPU/eight-GB sandbox label
 and a five-minute job timeout.
 The payload is limited to 1 MiB plus consumer manifests and partitioned writer fixtures.
 The workflow refuses the floating Archil installer path when the executable is absent.
-Actual mount,
-persistence,
-consumer,
-and post-cleanup outcomes remain pending until terminal artifact reconciliation.
+All jobs finished successfully.
+The [validated receipt](../audit/depot-persistent-cache-disk-probe-2026-10-18.evidence.json)
+binds their different sandbox IDs,
+source and workflow hashes,
+real `fuse.archil` mounts,
+absent private-job markers,
+and artifact upload/download digests.
+Both fan-out consumers read the seed and verified each other's disjoint writer payloads.
+Archil was preinstalled as `v0.9.2-1791935133`,
+build `aabe187a`,
+with executable hash `3bbf2fa696708c3ce4e8408ae557fc449db2692dee27fdb161281789d59d1bf4`.
+The hash remained unchanged after mounting;
+no installer recovery was needed.
 
-The next action is to collect the terminal metadata,
-per-job evidence artifacts,
-and unmount/token-release logs;
-recover a missing preinstalled Archil only with an inspected and pinned payload.
-No cache benefit or successful persistence is inferred from dispatch acceptance.
+The seed's consumer operation took 126 ms.
+The fan-out consumer operations took 30,261 ms and 139 ms.
+Their writer manifests were published 764 ms apart,
+so both allocated clients were participating in the shared filesystem.
+The slower consumer's delay has not been isolated causally.
+Archil's [consistency documentation][archil-consistency]
+explicitly says client caches can delay visibility after another client writes;
+this is relevant context,
+not proof of the precise mechanism in this run.
+
+All post logs show the unmount group completing before disk-token deletion returned HTTP 200
+and the release-success marker appeared.
+The implementation awaits unmount before token release.
+No separate mount-table probe ran after the action's post step,
+so the receipt distinguishes source-ordered cleanup evidence from that stronger assertion.
+A private validator initially expected a command-trace line that Depot did not expose;
+the final validator checks the retained ordered groups and actual release response instead.
+
+Precise provider attempt intervals total 111.712 seconds.
+At the published two-CPU/eight-GB rate,
+the timestamp-based gross compute estimate is USD $0.0111712,
+before included usage and excluding storage.
+The request-to-terminal interval is 106.353 seconds,
+which counts the overlapping consumers once.
+These values are neither an invoice nor a dependency-cache speed comparison.
+The uniquely named fixture disk remains for provider retention;
+no shared disk or retention setting was changed.
 
 ## Sources and limits
 
@@ -494,3 +525,4 @@ or complete storage total was established by this note.
 [custom-images]: https://depot.dev/docs/ci/how-to-guides/custom-images
 [cache-mount]: https://github.com/depot/cache-mount
 [github-cache]: https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching
+[archil-consistency]: https://docs.archil.com/details/consistency
