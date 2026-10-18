@@ -13,7 +13,7 @@ await chmod(scratch,0o700);
 const directory=await mkdtemp(join(scratch,'native-cli-receipt-contract-'));
 await using fixture={async[Symbol.asyncDispose](){await rm(directory,{recursive:true,force:true});}};
 const route='https://api.llmgateway.io/v1/decisions';
-const request={model:'original-fixture-model',questions:[{name:'first-original-question'},{name:'quoted"\\question\nlast'}]};
+const request={model:'original-fixture-model',questions:[{name:'first-original-question'},{name:'quoted"\\question\nlast'},{name:"../..;$(printf RECEIPT_SYNTAX_BOUNDARY)'\\u0027</script>\n"}]};
 const requestJSON=JSON.stringify(request);
 
 async function run({script,receipt}){
