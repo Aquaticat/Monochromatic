@@ -357,7 +357,7 @@ storage,
 and lifecycle cases.
 The repository requires a headful emulator on the host GPU in its own systemd user unit,
 with a private AVD and adb port.
-Its Android skill prohibits headless flags,
+Its [Android emulator skill](../../.agents/skills/android-emulator/SKILL.md) prohibits headless flags,
 Xvfb,
 and container launches.
 Cloud feasibility therefore requires a real display and GPU launch proof in addition to KVM.
@@ -455,6 +455,8 @@ The probe verifies both cardinalities and the comparison case.
 This supports agent-requested diagnostic work and same-source comparisons without altering defaults.
 It does not enforce PR status:
 [GitHub explicitly excludes manual workflow-dispatch checks from PR required-check association][github-required].
+A required PR gate needs an eligible automatic run for any pool change;
+a successful manual comparison cannot replace it.
 
 ### Trusted plan and bounded matrix
 
@@ -527,6 +529,43 @@ Explicit experimental overrides,
 standalone KVM lanes,
 and remote BuildKit are complements to that sequence.
 Their respective workload advantages survive independently of the static-versus-dynamic routing choice.
+
+### Concrete candidate assignments
+
+These assignments illustrate the mechanism without changing production defaults:
+
+- Trusted Node validation:
+  a GitHub planning job selects explicit type,
+  lint,
+  and unit profiles;
+  Depot-managed Linux workers execute them;
+  the stable GitHub gate consumes their exact receipts.
+  Untrusted source remains on a secret-free GitHub-hosted profile until Depot cache isolation is proven.
+- Native Rust and desktop consumers:
+  select native Linux x64 or ARM and Windows workers by target capability,
+  with separate Alpine consumers and cross-compilation artifacts.
+  GitHub-hosted Mac workers complement the Developer plan.
+  Native Windows ARM runtime coverage needs a verified available host;
+  it is not implied by a cross-built artifact.
+- Android:
+  compile and package on the applicable ordinary Linux profile;
+  treat headful instrumentation as a separate standalone-Depot candidate that must pass the display,
+  GPU,
+  and actual emulator lifecycle checks.
+- VM workloads:
+  use standalone Depot's KVM surface for a disposable MVM guest lifecycle candidate;
+  retain a distinct unresolved host-capability requirement for VMSync's Windows Hyper-V path.
+- Containerized builds:
+  keep GitHub orchestration while Depot BuildKit produces source-bound images,
+  then run a separate application consumer assertion.
+- Publishing:
+  keep npm trusted publishing on an eligible GitHub-hosted worker;
+  consume verified build artifacts without changing pnpr's issuer and workflow trust bindings.
+- Agent experiments:
+  dispatch an allowlisted workload and explicit `github`,
+  `depot`,
+  or `compare` selection with source or patch identity and bounded resources.
+  Preserve its diagnostic status and artifacts without representing it as required-PR enforcement.
 
 ## Gates, trust, and failure semantics
 
