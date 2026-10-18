@@ -139,6 +139,31 @@ The maintained `unknown` regression fails with `1 !== 2` and the original callba
 Next run the execution/ownership/phase safety tasks,
 then restart the RPC worker on the verified runtime with its saved session preserved.
 Add private actual-request capture and exercise RPC compaction before continuing the scoped edits.
+
+### Reopened persisted assistant-content capture failure
+
+The preserved real worker session opens in captured RPC fixture `pi-mimo-rpc-session-6nOsXz`
+on `native-release-rKKphY`,
+but startup retains `SessionInputCaptureError` with `Run message profile supports text content only`.
+The original failure is `loaded-history.mjs` calling the text-only validator on assistant content.
+Live manager capture already uses `assertManagerMessageContent`,
+which preserves native text signatures,
+thinking and tool-call blocks.
+Keep this incident separate from progress freshness and cancellation-handle projection.
+RPC `compact` succeeds with `tokensBefore: 145267`,
+and the probe confirms actual `session_before_compact`,
+an original cancellation handle and 108 branch entries.
+That success does not clear the retained history error or establish the next tool review.
+The maintained SDK persistence and live/load differential regression is committed before the repair.
+Its first run is pending.
+
+The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
+session `44944`,
+with actual Luna-body capture and verified runtime `rKKphY`.
+Its current editing checkpoint is only the CLI network guard and process consumer pair.
+The supervisor owns the other original checkpoint files during the history/compaction investigation;
+their lint work stays queued.
+This keeps lint implementation independent of the failing resumed-session consumer.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
