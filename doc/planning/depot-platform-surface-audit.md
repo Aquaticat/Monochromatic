@@ -721,7 +721,17 @@ A separate campaign built an ordinary OCI job image from the exact owned service
 The original service image stays unchanged and retained for active consumers.
 Parent-run GitHub job `117622633314` in workflow run `39109462308` retained the service's healthcheck,
 reached healthy state,
-then encountered checkout's GitHub REST download fallback because the job image lacked Git.
+then printed checkout's GitHub REST download fallback.
+The [later direct original-image probe](../audit/depot-original-service-git-2026-10-18.evidence.json)
+confirmed that the immutable AMD64 image could not resolve `git --version`:
+Node reported `spawnSync git ENOENT`,
+and every default `PATH` candidate was absent.
+The valid Node command and deliberately absent command controls passed.
+The mount-free,
+network-disabled local container used 2 CPUs and 2 GiB and was removed.
+This proves an image prerequisite gap on that default path.
+The historical checkout fallback alone does not identify every initialization failure,
+and this local control does not observe the historical job environment or the original ARM image.
 The job reached its five-minute guard during archive-download retries.
 This differs from the local Podman healthcheck loss and does not establish a shared runtime limitation.
 
