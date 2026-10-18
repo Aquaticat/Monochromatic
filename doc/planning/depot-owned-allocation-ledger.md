@@ -78,3 +78,12 @@ The original queue attribution to `39132577785` at `3829831039cc43aa717c6c927f83
 is retained as a corrected cancelled-generator control.
 Actual guest consumers are native `25jpltfpkq` and GitHub `39134227406`
 at `1373e624739fbc93502b0c8ca502820c6ff99b45`.
+
+## Publication checks
+
+Targeted `lint:monochromatic-lint` and rendered CommonMark inspection pass.
+Original-byte checks cover all 411 retained source bodies;
+all 1118 source-pointer joins and six actual PR-checkout joins resolve.
+Exact Decimal/Fraction recomputation matches all 195 priced intervals and the separate BuildKit proxy.
+Credential-pattern candidates classify as public Rust cfg names or normalized workflow filenames.
+The coordinator's independent arithmetic review is still required before adopting the totals.

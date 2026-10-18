@@ -560,3 +560,8 @@ public repository package names,
 QEMU references to private key files and libvirt help paths;
 they contain no key-file bytes.
 This closes the pending three-ZIP review without changing original archive bytes or allocating resources.
+
+The completed guest-review section and reconciled Rust handoff pass targeted `lint:monochromatic-lint`.
+Their rendered CommonMark output was inspected.
+The new original gzip retains SHA256
+`6f0bf7c1ea1891b24d8702b373fc9c30b8eb885a0827e6e056cb483cac0183d9`.
