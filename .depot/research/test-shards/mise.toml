@@ -139,7 +139,7 @@ const runs = [];
 for (const repeat of phase === 'seed' ? [1, 2, 3] : [1]) {
   const label = phase === 'seed' ? 'seed-' + repeat : 'shard-' + index;
   const args = ['tests', 'run', '--candidate-type', 'classname', '--timings-type', 'testname', '--candidates-file', join(base, 'candidates.txt'), '--index', phase === 'seed' ? '0' : index, '--total', phase === 'seed' ? '1' : '2', '--split-key', splitKey, '--command', 'mise run //.depot/research/test-shards:execute-selected', '--report-path', join(base, 'evidence/nextest/default', label + '.xml'), '--report-key', splitKey + ':' + label];
-  const result = spawnSync('depot', args, { env: { ...process.env, PROBE_REPORT_LABEL: label }, encoding: 'utf8', timeout: 180000, maxBuffer: 8388608 });
+  const result = spawnSync('depot', args, { cwd: base, env: { ...process.env, PROBE_REPORT_LABEL: label }, encoding: 'utf8', timeout: 180000, maxBuffer: 8388608 });
   const log = (result.stdout ?? '') + (result.stderr ?? '');
   fs.writeFileSync(join(base, 'evidence', label + '.depot-tests.log'), log);
   const upload = /Depot uploaded (\d+) test report file\(s\), processed (\d+) file\(s\), reported (\d+) test\(s\), and skipped (\d+) file\(s\)/u.exec(log);
