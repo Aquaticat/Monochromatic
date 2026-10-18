@@ -288,9 +288,28 @@ before the other queued work.
     Left:
     `source-scan` lists `coverage-census` as a development dependency no scan imports
     (drop it with a lockfile regeneration);
-    the move's import rewrite left oxlint errors (20 in `provider`;
-    a lint and type-check census of all 36 packages runs as unit `tr-split-lint-census`,
-    output in `s245/split/lint/`);
+    the move's import rewrite and scaffolding left oxlint findings in 30 of 36 packages
+    (census at `w167`'s head, `s245/split/lint/census.txt`;
+    every package builds and type-checks):
+    526 `no-import-type-side-effects`,
+    440 duplicate imports,
+    40 TSDoc links to `import('@monochromatic-dev/...')` read as tags,
+    12 arrow functions in rolldown configs,
+    5 `index.ts` barrels over 300 lines,
+    1 readonly parameter,
+    and a `test-fixture` lint task that matches no file.
+    A Sonnet agent in `w172` clears them in the 23 packages no other agent holds,
+    with a dist byte comparison per package;
+    adjudication,
+    bench,
+    corpus-pass,
+    probe,
+    run
+    and slice-cache follow after `w168` lands.
+    The move's dry run built and tested but never linted:
+    a ledger entry is owed with the split's docs batch.
+    The per-package lint times in that census (2.5 to 37 s) were taken under four agents' load
+    and are not the measurement the plan owes;
     `w169` landed (`a77972ac5c` and the twelve before it):
     the census measures every family package and reads the union of the six runner packages'
     entry lists;
