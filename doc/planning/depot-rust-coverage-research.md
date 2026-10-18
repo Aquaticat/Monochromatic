@@ -1025,7 +1025,11 @@ branch-A seed and same-branch positive restore,
 then branch-B restore using the same provider-specific exact key and cache version.
 Jobs remain sequential with at most one active reviewer job;
 the coordinator is notified at cloud start and end.
-No application checkout, account inspection, broad credential injection,
-cache purge, subscription/settings mutation or paid provider call is authorized.
-Owned branches and temporary files require cleanup; cache retention/deletion limits must be explicit.
+No application checkout,
+account inspection,
+broad credential injection,
+cache purge,
+subscription/settings mutation or paid provider call is authorized.
+Owned branches and temporary files require cleanup;
+cache retention/deletion limits must be explicit.
 No cache cloud allocation has occurred at this queue boundary.

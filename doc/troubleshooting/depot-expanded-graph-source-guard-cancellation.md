@@ -34,7 +34,8 @@ Staging the changed file makes its index and working bytes agree.
 The committed object IDs remain unchanged.
 Both checks therefore accept that changed working file.
 
-Git source tag `v2.39.5`, commit `cc7d11c16782041a6bb73e2fb56417b7d4c6d186`,
+Git source tag `v2.39.5`,
+commit `cc7d11c16782041a6bb73e2fb56417b7d4c6d186`,
 `Documentation/git-diff.txt:26` describes the unnamed-commit form:
 
 ```text
@@ -75,7 +76,8 @@ The driver creates each owner with `detached: true` and redirects its output to 
 Its cleanup is a JavaScript `finally` block,
 with no `SIGINT` or `SIGTERM` listener in the original version.
 
-Node source tag `v26.12.0`, commit `26e72d85a611e222e3f06025de8a3c496923bacd`,
+Node source tag `v26.12.0`,
+commit `26e72d85a611e222e3f06025de8a3c496923bacd`,
 `doc/api/child_process.md:934` documents the process boundary:
 
 ```text
@@ -255,14 +257,20 @@ Anonymous GitHub searches for Node detached/SIGTERM/parent behavior
 and Git diff/staged/HEAD behavior are retained in the source archive.
 No empty-search claim is used to infer an upstream defect.
 
-1.  Upstream fault: no.
+1.  Upstream fault:
+    no.
     The repository selected the wrong comparison and omitted its signal protocol.
-2.  Upstream fixability: existing documented Git and Node interfaces already support the required behavior.
-3.  Supported use case: the cited documentation covers commit comparisons,
+2.  Upstream fixability:
+    existing documented Git and Node interfaces already support the required behavior.
+3.  Supported use case:
+    the cited documentation covers commit comparisons,
     detached process groups and signal listeners.
-4.  Contribution welcome: not assessed because no upstream change is proposed.
-5.  Fix likelihood: no upstream fix is needed.
-6.  Prototype: the consumer driver repair is implemented and independently verified;
+4.  Contribution welcome:
+    not assessed because no upstream change is proposed.
+5.  Fix likelihood:
+    no upstream fix is needed.
+6.  Prototype:
+    the consumer driver repair is implemented and independently verified;
     no upstream source modification is appropriate.
 
 Nothing is filed or drafted upstream.
