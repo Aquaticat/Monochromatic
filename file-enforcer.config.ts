@@ -24,6 +24,7 @@ import {
   overwriteIfNotExists,
   tagged,
   type CanonicalTomlValue,
+  type CargoBlockInsertion,
   type CargoEnforcement,
   type CargoManifestPlan,
   type GlobResults,
@@ -1467,6 +1468,43 @@ const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no
 `;
 
 /**
+ Crate directories whose code carries `#[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(..))]` attributes
+ for the `avoidable_closure` Dylint lint (doc/decision/rust-closure-lint-dylint.md). Present-seeded: only these
+ crates get the `check-cfg` entry, because rustc warns about an unexpected `dylint_lib` cfg name without it.
+ 
+ @example
+ ```ts
+ console.log(CARGO_DYLINT_DIRS.includes('package/desktop-app/ide'));
+ ```
+ */
+const CARGO_DYLINT_DIRS: readonly string[] = ['package/desktop-app/ide',];
+
+/**
+ `check-cfg` list that declares the `dylint_lib` cfg name with any value, written inside an existing
+ `[lints.rust.unexpected_cfgs]` of a crate listed in {@link CARGO_DYLINT_DIRS}.
+ 
+ @example
+ ```ts
+ console.log(CARGO_DYLINT_CHECK_CFG);
+ ```
+ */
+const CARGO_DYLINT_CHECK_CFG: readonly string[] = ['cfg(dylint_lib, values(any()))',];
+
+/**
+ Canonical `[lints.rust.unexpected_cfgs]` block appended to crates in {@link CARGO_DYLINT_DIRS} that lack it.
+ 
+ @example
+ ```ts
+ console.log(CARGO_DYLINT_BLOCK);
+ ```
+ */
+const CARGO_DYLINT_BLOCK = `# Declares the cfg name of \`#[cfg_attr(dylint_lib = ..)]\` suppressions, enforced by file-enforcer.
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ${JSON.stringify(CARGO_DYLINT_CHECK_CFG)}
+`;
+
+/**
  Clippy lint keys the canonical policy sets inside an existing `[lints.clippy]`.
  
  @example
@@ -1739,6 +1777,68 @@ function cargoProfileEnforcements(
 }
 
 /**
+ Whether a crate carries Dylint suppression attributes and so needs the `dylint_lib` cfg declared.
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns True when the crate directory is listed in {@link CARGO_DYLINT_DIRS}
+ 
+ @example
+ ```ts
+ usesDylintAttributes({ manifestPath: 'package/desktop-app/ide/Cargo.toml' }); // true
+ ```
+ */
+function usesDylintAttributes({ manifestPath, }: { readonly manifestPath: string; },): boolean {
+  return CARGO_DYLINT_DIRS.includes(cargoPackageDir({ manifestPath, },),);
+}
+
+/**
+ Keeps the `check-cfg` list of an existing `[lints.rust.unexpected_cfgs]` equal to the canonical one.
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns One guarded enforcement for a crate in {@link CARGO_DYLINT_DIRS}, none for any other crate
+ 
+ @example
+ ```ts
+ cargoDylintEnforcements({ manifestPath: 'package/desktop-app/ide/Cargo.toml' });
+ ```
+ */
+function cargoDylintEnforcements(
+  { manifestPath, }: { readonly manifestPath: string; },
+): readonly CargoEnforcement[] {
+  if (!usesDylintAttributes({ manifestPath, },))
+    return [];
+
+  return [{
+    guardPath: ['lints', 'rust', 'unexpected_cfgs',],
+    path: ['lints', 'rust', 'unexpected_cfgs', 'check-cfg',],
+    value: CARGO_DYLINT_CHECK_CFG,
+  },];
+}
+
+/**
+ Block insertion that materializes `[lints.rust.unexpected_cfgs]` where a crate in {@link CARGO_DYLINT_DIRS} lacks it.
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns One absent-block insertion for a crate in {@link CARGO_DYLINT_DIRS}, none for any other crate
+ 
+ @example
+ ```ts
+ cargoDylintBlocks({ manifestPath: 'package/desktop-app/ide/Cargo.toml' });
+ ```
+ */
+function cargoDylintBlocks(
+  { manifestPath, }: { readonly manifestPath: string; },
+): readonly CargoBlockInsertion[] {
+  if (!usesDylintAttributes({ manifestPath, },))
+    return [];
+
+  return [{ absentPath: ['lints', 'rust', 'unexpected_cfgs',], text: CARGO_DYLINT_BLOCK, },];
+}
+
+/**
  Builds the canonical enforcement plan for one crate manifest.
  
  @param manifestPath - Repo-relative manifest path from discovery
@@ -1762,10 +1862,12 @@ function buildCargoManifestPlan(
         value: cargoHomepage({ manifestPath, },),
       },
       ...cargoProfileEnforcements({ manifestPath, },),
+      ...cargoDylintEnforcements({ manifestPath, },),
     ],
     blocks: [
       { absentPath: ['lints', 'clippy',], text: CARGO_LINTS_BLOCK, },
       { absentPath: ['workspace',], text: CARGO_WORKSPACE_BLOCK, },
+      ...cargoDylintBlocks({ manifestPath, },),
     ],
   };
 }
