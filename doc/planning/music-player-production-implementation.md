@@ -302,8 +302,8 @@ before saying it matches, QAB):
   Settings ends with an About group whose Licenses row opens a page of its own (full window; the right half on a
   creased screen) with the APK's `THIRD-PARTY-LICENSES.txt`, read off the main thread, cut into 6,649 blocks and listed
   lazily; Back returns to Settings, Escape too on the unfolded screen; the list is a keyboard stop. Every build
-  variant now packs the asset (a short note without the `notices` output; `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true`
-  still fails on a missing file, proven). Opened on the emulator in 267 ms (process cold, median of 5, 264 to 276) and
+  variant now packs the asset (a short note without the `notices` output;
+  `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` still fails on a missing file, proven). Opened on the emulator in 267 ms (process cold, median of 5, 264 to 276) and
   140 ms (warm, 122 to 199); scroll windows had 29 to 30 janky frames of 901 to 907 (debug build). The decision, the
   numbers and the open choice (full page versus the right pane on the unfolded screen) are in
   `doc/decision/music-player-third-party-licenses.md`, section "Licenses row in Settings (2026-10-18)". The desktop row
