@@ -14596,7 +14596,7 @@
         "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
       ],
       "projectId": "27m5m3vjlv",
-      "status": "Native exporters, multiarch registry consumers, immutable Git contexts, real Cargo build cache mounts, reviewed Bake graph, synthetic secret/keyless SSH and CNI controls executed; owned tags/project deleted and registry absence checked",
+      "status": "Bounded BuildKit campaign and actual consumers complete; solely owned project/tags deleted with registry absence checks; source and local scanner diagnosis continues",
       "limits": [
         "No full Rust test-suite claim from the truepeak-core release producer",
         "No external registry push, autoscaling execution or measured lazy-pull startup advantage",

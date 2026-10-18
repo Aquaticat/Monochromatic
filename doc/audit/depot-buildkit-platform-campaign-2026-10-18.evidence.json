@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T10:10:33.380Z",
+  "collectedAt": "2026-10-18T11:26:03.533Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research ongoing: original owned image tags and project deleted after complete OCI graph preservation; immutable Git and lint controls retained; Semgrep non-detection remains unqualified",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 3419317,
-    "sha256": "8aefa123a56f3e05b3bf58e57b404ed862e75d105b92b8416d8adac54deae0f2"
+    "bytes": 3573335,
+    "sha256": "cd9fff9610f40cbfd39ce9292ef104f8b7b7ef16e61d5c834fbcc71b7f78c40f"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -152,6 +152,7 @@
     "b0e3247a279507c759964162ec9eb816e3dcc402",
     "86a3a389e48ecc427c0bb735269d0613a4aead8b",
     "004e1b1b0cb2e4a0fd68db4de367508663762393",
+    "249f9101c19099556f2d8669dc534cec2475e19b",
     "7f22f25adbb05e0c1add22211b12f1d275a29c17",
     "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
   ],
@@ -4290,6 +4291,96 @@
       ]
     }
   ],
+  "semgrepCurrentLocalControls": [
+    {
+      "receipt": "builtin-lint-current-semgrep.json",
+      "source": "249f9101c19099556f2d8669dc534cec2475e19b",
+      "image": "localhost/depot-semgrep-current-249f9101c190:research",
+      "baseImage": "docker.io/semgrep/semgrep@sha256:81474464c1f07483ba0682a44787fd93c91397419762a04abe2bafaae396304b",
+      "cloudAllocation": false,
+      "resources": {
+        "cpus": 2,
+        "memoryGiB": 2,
+        "pids": 128,
+        "hostMounts": 0
+      },
+      "cases": [
+        {
+          "phase": "depot-semgrep-current-249f9101c1-version",
+          "exitCode": 127,
+          "elapsedMilliseconds": 377,
+          "ownedContainerAbsent": true,
+          "stderr": "Error: crun: executable file `/usr/local/bin/semgrep` not found: No such file or directory: OCI runtime attempted to invoke a command that was not found\n"
+        }
+      ]
+    },
+    {
+      "receipt": "builtin-lint-current-semgrep-recovery.json",
+      "source": "249f9101c19099556f2d8669dc534cec2475e19b",
+      "image": "localhost/depot-semgrep-current-249f9101c190:research",
+      "baseImage": "docker.io/semgrep/semgrep@sha256:81474464c1f07483ba0682a44787fd93c91397419762a04abe2bafaae396304b",
+      "entrypoint": "semgrep resolved using image PATH from its OCI configuration",
+      "cloudAllocation": false,
+      "resources": {
+        "cpus": 2,
+        "memoryGiB": 2,
+        "pids": 128,
+        "hostMounts": 0
+      },
+      "cases": [
+        {
+          "phase": "depot-semgrep-recovery-249f9101c1-version",
+          "exitCode": 0,
+          "elapsedMilliseconds": 2049,
+          "ownedContainerAbsent": true,
+          "stderr": ""
+        },
+        {
+          "phase": "depot-semgrep-recovery-249f9101c1-help",
+          "exitCode": 0,
+          "elapsedMilliseconds": 278,
+          "ownedContainerAbsent": true,
+          "stderr": "cmdliner error: Illegal escape char '\\n' in \"[INTERNAL] Dump symbol analysis results in JSON format, \\\\\\n          ATD type 'symbol_analysis'.\\n\"\n"
+        },
+        {
+          "phase": "depot-semgrep-recovery-249f9101c1-canonical-fixed",
+          "exitCode": 0,
+          "elapsedMilliseconds": 1570,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 1,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "depot-semgrep-recovery-249f9101c1-cmd-metavariadic",
+          "exitCode": 0,
+          "elapsedMilliseconds": 1439,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 1,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "depot-semgrep-recovery-249f9101c1-from-metavariable",
+          "exitCode": 0,
+          "elapsedMilliseconds": 1628,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 1,
+          "errors": [],
+          "stderr": ""
+        }
+      ]
+    }
+  ],
   "retainedOwnedOciGraphs": {
     "startedAt": "2026-10-18T09:54:51.947Z",
     "projectId": "27m5m3vjlv",
@@ -5106,6 +5197,6 @@
   "unresolved": [
     "Native OCI empty statement subjects versus registry subjects: deciding source and consumer consequences",
     "Cross-project pull-token isolation",
-    "Canonical Dockerfile current Semgrep-rule non-detection, custom filename filtering and scanner error handling"
+    "Configured Semgrep 1.34.1 misses the fixed-rule control while a separate current 1.181.0 consumer detects it; full Depot integration upgrade, custom filename filtering and scanner error handling remain unqualified"
   ]
 }
