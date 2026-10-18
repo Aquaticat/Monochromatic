@@ -36,8 +36,9 @@ for(const record of records){
  assert.deepEqual(record.value.value.preparation.fileOps.written,{nativeCollection:'file-path-set',values:['written/path']});
  assert.deepEqual(record.value.value.preparation.fileOps.edited,{nativeCollection:'file-path-set',values:[]});
  assert.equal(record.value.value.preparation.note,input.preparation.note);
- assert.ok(Object.isFrozen(record.value.value.preparation.fileOps.read.values));
 }
+const copied=copyToolMetadata(projectNativeCompactionFilePaths({preparation:{fileOps}}));
+assert.ok(Object.isFrozen(copied.preparation.fileOps.read.values));
 fileOps.read.add('later/path');
 assert.deepEqual(records[1].value.value.preparation.fileOps.read.values,[...paths,'after/path']);
 assert.throws(function ordinaryMetadataStillRejectsSets(){copyToolMetadata(fileOps);});

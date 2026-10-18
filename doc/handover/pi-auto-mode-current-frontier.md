@@ -230,7 +230,16 @@ The per-emission factory is renamed to `createNativeEventInputProjection`
 in `event-input-projection.ts`;
 the prior `event-controls.ts` path moved on 2026-10-18.
 Private control guard utilities and the remaining lint checkpoint must use that current path.
-The repair is not built or type-checked yet.
+Repair commit `ae5358be05` builds as `native-release-q83LlN`.
+Package types pass against a private archive of that exact source commit,
+including the new native modules;
+the worker's concurrent edits are excluded from this type result.
+The original cancellation-control consumer also passes on the new artifact.
+The first collection-consumer run preserves values and callback mutation snapshots,
+then reveals that the test checks freezing after its receipt reader has JSON-decoded the snapshot.
+That test now checks freezing on the actual copier result;
+its runner still checks independent retained before/after data.
+The corrected collection-consumer rerun is pending.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
@@ -238,7 +247,8 @@ The supervisor allows the subsequent one-command private-summary preview only.
 
 The first checkpoint clears all findings in these package-relative files:
 
-- `native/contract/collector/run-prompt-custody-v3/event-controls.ts`.
+- `native/contract/collector/run-prompt-custody-v3/event-input-projection.ts`
+  (the original `event-controls.ts` path moved on 2026-10-18).
 - `src/native-event-controls.test.mjs`.
 - `src/native-session-actions.test.mjs`.
 - `native/contract/integration/native-host/process-network-guard.ts`.
