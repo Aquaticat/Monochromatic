@@ -181,7 +181,8 @@
       "Remote branch ancestry",
       "Terminal prior attempt before a correction",
       "Existing local credential shape admitted"
-    ]
+    ],
+    "inlineTaskSha256": "0bdf479e54e3ee06934fdbd8f3379b406bf4e54f5a1992c7f0cf222463c2ebf6"
   },
   "proofContract": [
     "Exact owned run/job/attempt/sandbox match from fresh status plus CLI info",
@@ -286,8 +287,17 @@
       "containerAbsentAfter": true,
       "priorFixtureSyntaxFailurePreserved": true
     },
-    "openSshVersion": "",
-    "existingLocalCredentialShapeAdmitted": true
+    "openSshVersion": "OpenSSH_10.2p1, OpenSSL 3.5.9 29 Sep 2026",
+    "existingLocalCredentialShapeAdmitted": true,
+    "openSshVersionReceipt": {
+      "argv": [
+        "ssh",
+        "-V"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": "OpenSSH_10.2p1, OpenSSL 3.5.9 29 Sep 2026\n"
+    }
   },
   "preflightDefects": [
     "Controller TOML nested literal fence fixed before execution; no worktree/cloud resource created by parse failure",
