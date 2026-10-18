@@ -56,6 +56,21 @@ await describe({
             expect(message,).toContain('lands at 9 to 3 in a slice of 24 units',);
           },
         },),
+
+        it({
+          name: 'SAYS THAT A LANDING STARTS AND ENDS AT WHOLE NUMBERS, beside the rest of what a landing must be, so a reader of the '
+            + 'message knows a fractional offset is one of the faults',
+          fn: async () => {
+            const { message, } = new FragmentLandingError({
+              slice: 24,
+              start: 2.5,
+              end: 7,
+            },);
+            expect(message,).toContain(
+              'and a landing starts and ends at whole numbers, starts at 0 or later, ends at or after its start, and ends within the slice',
+            );
+          },
+        },),
       ],
     },),
 
