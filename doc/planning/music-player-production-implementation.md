@@ -261,6 +261,17 @@ before saying it matches, QAB):
   Android `Invalid column last_modified` logged 772 to 1,005 times per 15 s at 10,000 tracks, and scroll jank at
   10,000 tracks with the emulator-crash confound separated.
   Merge procedure for all four as above, then bump the patch version and release.
+- (e) cachebatch, continued by a Sonnet agent on 2026-10-18, branch `fix/music-player-cache-batched-commits`,
+  worktree `music-player-cachebatch` under `/var/mnt/encrypted/temp/agent/`, NOT MERGED, open to veto. Cause read in
+  the Turso 0.8.2 source: every connection defaults to `SyncMode::Full`, so each autocommit `DecisionCache::put` is
+  one WAL `fsync`. The desktop actor now drains its write queue (up to 256 rows) into one `DecisionCache::put_batch`
+  transaction. Benchmark on a real disk (btrfs on the encrypted device), 10,000 rows, five repeats: 75.9 to 87.1 s and
+  10,070 `fsync` calls before, 0.49 to 0.64 s and 47 after. Tests: truepeak-core with a kill -9 test (shown to fail
+  when the transaction is removed) and desktop 1464 passed; Android verification is recorded in the report to the
+  caller. Decision and rejected alternatives: `doc/decision/music-player-analysis-cache-commits.md`.
+  Open: the Android actor still commits per row (its warm path waits on each row, so draining would not batch, and
+  the `fsync` cost on a device was not measured); the desktop cold start was not rerun end to end; the 180 ms CPU per
+  added file and the 23 to 25 s busy tail from the audit were not investigated.
 - Measurements MERGED to `main` at `d5748ffd54` on 2026-10-15 (agent `a36ecdbfa335190de`, doc
   `doc/audit/music-player-release-build-measurements-2026-10-15.md`, no hedge words found by `rg`). Findings 1 to 4
   of that doc are the work of (e) and (f); finding 4 (desktop refresh CPU grows with library size, 180 ms at 10,000
