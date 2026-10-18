@@ -133,7 +133,21 @@ fun notificationPostVerdict(
  * @return the title and the text of the notification
  */
 fun unplayableFilesNotice(fileNames: List<String>, timedOut: Boolean): AnalysisFailureNotice {
-    return AnalysisFailureNotice(title = "", text = "")
+    require(fileNames.isNotEmpty()) { "an unplayable-files report names at least one file" }
+    /** The first file named in the notice. */
+    val first: String = shortName(fileNames.first())
+    return AnalysisFailureNotice(
+        title = if (fileNames.size == 1) {
+            "Could not play $first."
+        } else {
+            "Could not play ${fileNames.size} files, including $first."
+        },
+        text = when {
+            timedOut -> "The music library did not answer in time. Try again in a moment."
+            fileNames.size == 1 -> "Its file could not be opened."
+            else -> "They could not be opened."
+        },
+    )
 }
 
 // What:     `fun deliverAnalysisFailureNotice(...)` posts the notice when it can be posted and otherwise only logs.
@@ -159,6 +173,8 @@ fun unplayableFilesNotice(fileNames: List<String>, timedOut: Boolean): AnalysisF
  * @param verdict reads the platform state and decides whether the post can be made
  * @param post posts the notice as one system notification
  * @param warn writes one warning line, with the failure that caused it when there is one
+ * @param noticeFor words the notice from the file names; the analysis failure wording unless the caller passes its own
+ * @param subject what the warnings call the notification, so a log line says which report was not posted
  * @return true only when the notice was handed to [post] and [post] returned
  */
 fun deliverAnalysisFailureNotice(
@@ -176,20 +192,20 @@ fun deliverAnalysisFailureNotice(
     val decided: NotificationPostVerdict? = try {
         verdict()
     } catch (expectedFailure: RuntimeException) {
-        warn("analysis failure notification not posted: the notification state could not be read", expectedFailure)
+        warn("$subject notification not posted: the notification state could not be read", expectedFailure)
         null
     }
     if (decided == null) {
         return false
     }
     if (decided != NotificationPostVerdict.POST) {
-        warn("analysis failure notification not posted for ${fileNames.size} files: ${decided.name}", null)
+        warn("$subject notification not posted for ${fileNames.size} files: ${decided.name}", null)
         return false
     }
     try {
-        post(analysisFailureNotice(fileNames))
+        post(noticeFor(fileNames))
     } catch (expectedFailure: RuntimeException) {
-        warn("analysis failure notification for ${fileNames.size} files could not be posted", expectedFailure)
+        warn("$subject notification for ${fileNames.size} files could not be posted", expectedFailure)
         return false
     }
     return true

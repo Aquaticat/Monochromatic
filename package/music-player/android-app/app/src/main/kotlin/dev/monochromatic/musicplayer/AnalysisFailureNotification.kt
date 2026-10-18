@@ -24,8 +24,10 @@ import androidx.core.content.ContextCompat
 import dev.monochromatic.musicplayer.core.AnalysisFailureNotice
 import dev.monochromatic.musicplayer.core.NotificationPostVerdict
 import dev.monochromatic.musicplayer.core.UnplayableReport
+import dev.monochromatic.musicplayer.core.analysisFailureNotice
 import dev.monochromatic.musicplayer.core.deliverAnalysisFailureNotice
 import dev.monochromatic.musicplayer.core.notificationPostVerdict
+import dev.monochromatic.musicplayer.core.unplayableFilesNotice
 
 /** Id of the notification channel that carries only the analysis-failure notification. */
 internal const val ANALYSIS_FAILURE_CHANNEL_ID: String = "analysis-failure"
@@ -38,6 +40,9 @@ internal const val ANALYSIS_FAILURE_NOTIFICATION_ID: Int = 4202
 
 /** Fixed id of the notification that reports files the player passed, different from the analysis one. */
 internal const val UNPLAYABLE_FILES_NOTIFICATION_ID: Int = 4203
+
+/** Logcat tag of the notification that reports files the player passed. */
+private const val UNPLAYABLE_NOTIFICATION_TAG: String = "UnplayableFiles"
 
 /** Logcat tag of the failure notification, shared with the sweep code that reports to it. */
 private const val FAILURE_NOTIFICATION_TAG: String = "PeakSweep"
@@ -141,17 +146,46 @@ private fun currentPostVerdict(context: Context): NotificationPostVerdict {
  */
 internal fun postAnalysisFailureNotification(context: Context, fileNames: List<String>) {
     /** Whether the notice was posted, logged for the sweep's log line. */
-    val posted: Boolean = deliverAnalysisFailureNotice(
+    val posted: Boolean = postFailureNotice(
+        context = context,
         fileNames = fileNames,
-        verdict = { currentPostVerdict(context) },
-        post = { notice ->
-            context.getSystemService(NotificationManager::class.java)
-                .notify(ANALYSIS_FAILURE_NOTIFICATION_ID, buildAnalysisFailureNotification(context, notice))
-        },
-        warn = { message, cause -> Log.w(FAILURE_NOTIFICATION_TAG, message, cause) },
+        notificationId = ANALYSIS_FAILURE_NOTIFICATION_ID,
+        noticeFor = ::analysisFailureNotice,
+        subject = "analysis failure",
+        tag = FAILURE_NOTIFICATION_TAG,
     )
     Log.i(FAILURE_NOTIFICATION_TAG, "analysis failure notification files=${fileNames.size} posted=$posted")
 }
+
+/**
+ * Posts one notice on the failure channel under [notificationId], or logs one warning and posts nothing.
+ *
+ * @param context any context of this app
+ * @param fileNames bare names of the files the notice names
+ * @param notificationId id the notification is posted under, so a later notice with it replaces an earlier one
+ * @param noticeFor words the notice from the file names
+ * @param subject what the warnings call the notification
+ * @param tag logcat tag of the warnings
+ * @return whether the notification was posted
+ */
+private fun postFailureNotice(
+    context: Context,
+    fileNames: List<String>,
+    notificationId: Int,
+    noticeFor: (List<String>) -> AnalysisFailureNotice,
+    subject: String,
+    tag: String,
+): Boolean = deliverAnalysisFailureNotice(
+    fileNames = fileNames,
+    verdict = { currentPostVerdict(context) },
+    post = { notice ->
+        context.getSystemService(NotificationManager::class.java)
+            .notify(notificationId, buildAnalysisFailureNotification(context, notice))
+    },
+    warn = { message, cause -> Log.w(tag, message, cause) },
+    noticeFor = noticeFor,
+    subject = subject,
+)
 
 /**
  * Posts the report of files the player passed.
@@ -160,4 +194,14 @@ internal fun postAnalysisFailureNotification(context: Context, fileNames: List<S
  * @param report the files passed so far in the walk, and whether it ended on a timeout
  */
 internal fun postUnplayableFilesNotification(context: Context, report: UnplayableReport) {
+    /** Whether the notice was posted, logged for the walk's log line. */
+    val posted: Boolean = postFailureNotice(
+        context = context,
+        fileNames = report.fileNames,
+        notificationId = UNPLAYABLE_FILES_NOTIFICATION_ID,
+        noticeFor = { names -> unplayableFilesNotice(fileNames = names, timedOut = report.timedOut) },
+        subject = "unplayable files",
+        tag = UNPLAYABLE_NOTIFICATION_TAG,
+    )
+    Log.i(UNPLAYABLE_NOTIFICATION_TAG, "unplayable files notification files=${report.fileNames.size} posted=$posted")
 }

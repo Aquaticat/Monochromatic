@@ -86,6 +86,7 @@ import android.os.IBinder
 // ```
 import android.database.ContentObserver
 import dev.monochromatic.musicplayer.core.RescanPlan
+import dev.monochromatic.musicplayer.core.UnplayableReport
 import android.os.Handler
 import android.os.Looper
 import android.provider.DocumentsContract
@@ -341,6 +342,20 @@ class PlaybackService : MediaSessionService() {
 
     /** Main-thread handler that debounces change signals into one rescan. */
     private val handler: Handler = Handler(Looper.getMainLooper())
+
+    /** Latest report of the files the player passed in its current walk, read when the delayed post runs. */
+    private var latestUnplayableReport: UnplayableReport? = null
+
+    /**
+     * Posts the unplayable-files notification once for a burst of failures, so a walk past many files makes one
+     * notification and the system's limit on notification updates cannot drop the last one (D122, D123).
+     */
+    private val unplayableNoticeTrigger: CoalescedTrigger = CoalescedTrigger(
+        schedule = { task -> handler.postDelayed({ task() }, UNPLAYABLE_NOTICE_DELAY_MS) },
+        action = {
+            latestUnplayableReport?.let { report -> postUnplayableFilesNotification(this, report) }
+        },
+    )
 
     /** Remembers change signals that arrive while a library load runs, so no rescan is lost (D113). */
     private val rescanPlan: RescanPlan = RescanPlan()
@@ -600,6 +615,10 @@ class PlaybackService : MediaSessionService() {
         // this.brainPlayer = new BrainPlayer(this.controller, Looper.getMainLooper());
         // ```
         controller.onTrackLoaded = { uri -> readArtistTag(uri) }
+        controller.onUnplayableFiles = { report ->
+            latestUnplayableReport = report
+            unplayableNoticeTrigger.request()
+        }
         contentResolver.registerContentObserver(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, mediaObserver)
         watchGrantedTree()
         brainPlayer = BrainPlayer(controller, Looper.getMainLooper())
@@ -1458,6 +1477,9 @@ class PlaybackService : MediaSessionService() {
         // ```
         /** Quiet time after the last change signal before the library is rescanned. */
         private const val RESCAN_DEBOUNCE_MS: Long = 1_500L
+
+        /** Time the player gathers files it passes into one notification before posting it. */
+        private const val UNPLAYABLE_NOTICE_DELAY_MS: Long = 400L
 
         /**
          * Defines action local bind value for this music-player component; the TypeScript-oriented notes above
