@@ -36,6 +36,288 @@
       "authoredShellStatus": 0,
       "liveRewriteSurvives": true,
       "matchingKeyAndSectionPositiveControls": true
+    },
+    "hostSdkAdmission": {
+      "originalRun": 39118106788,
+      "correctedRun": 39119985290,
+      "initialFailureWasHarnessLookup": true,
+      "orderingFailureClaimWithdrawn": true,
+      "actualCause": "Snapshot helper searched direct auto-mode/root node_modules links for a transitive coding-agent dependency; successful pnpm installation preceded the check",
+      "allFiveVersions": "1.2.0",
+      "regularFiles": 2412,
+      "descendantNodeModulesAndSymlinksExcluded": true
+    },
+    "packagedTransitiveNativePayloads": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "artifactRun": 39119985290,
+      "entries": [
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-coding-agent/examples/extensions/doom-overlay/doom/build/doom.wasm",
+          "bytes": 380169,
+          "sha256": "571d161956593508cf4ade732ae93753f00484bb526667a8676571cca14dec7d",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node",
+          "bytes": 52024,
+          "sha256": "36e909adf35c2734a2a52b3d65b7dbfb83f2278f306d51b7e32c5045516dfb7f",
+          "format": "Mach-O64",
+          "machine": 16777228,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-x64/darwin-platform.node",
+          "bytes": 22784,
+          "sha256": "7ec59a02fff9562f6354274ad070ba35f8e0998b3b111eb27ad3de579ffb6c65",
+          "format": "Mach-O64",
+          "machine": 16777223,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-arm64/linux-platform-x11.node",
+          "bytes": 67240,
+          "sha256": "63d4545349a25b5c97e352ea6d254cea50ff3c14161212ad3ddb3fc28022ddb5",
+          "format": "ELF",
+          "machine": 183,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-x64/linux-platform-x11.node",
+          "bytes": 18008,
+          "sha256": "522d2550f7fa5d0d5bd204f45983f786ce2be9cf80f27f00179640d31d0689d6",
+          "format": "ELF",
+          "machine": 62,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-arm64/win32-platform.node",
+          "bytes": 9216,
+          "sha256": "0e5671ab39ef577940483ced58fdf29ecdf5f864f368d90a771eec4aeeae11b8",
+          "format": "PE",
+          "machine": 43620,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-x64/win32-platform.node",
+          "bytes": 8704,
+          "sha256": "51bee02bcb73b165ab92af75ae15b88aba3f5d99f072e63ef60af92ffdc4d565",
+          "format": "PE",
+          "machine": 34404,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm",
+          "bytes": 1881634,
+          "sha256": "10468181565c56004c867f3a4af96f89a0ef5a63a72f2b5fb12c1f1992a3615c",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/crypto/crypto.so",
+          "bytes": 120228,
+          "sha256": "fa26b6fafda251c3b1442dcc4c876b3ac73689639519f4ddfc2c410ebdb5b7c2",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/encoding/encoding.so",
+          "bytes": 7715,
+          "sha256": "d501aa2a8410ee07c196103f0d169b226ec61c922883713510fd723fe14036c3",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/headers/headers.so",
+          "bytes": 8896,
+          "sha256": "42c847104d6aa8d4666fa41bb74d324c2ee9a4d15c2492fca013b1631232b011",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/structured-clone/structured-clone.so",
+          "bytes": 6007,
+          "sha256": "0ac5a36c0545c659ba6f9f8de5af11862df84546d151d0f15ec5184c95fd6cb3",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/url/url.so",
+          "bytes": 397332,
+          "sha256": "af780a79f1fb131b5e6fa1d6fedc481e265420cf2f254fe966255230f4c1bc62",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/quickjs.wasm",
+          "bytes": 637405,
+          "sha256": "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-coding-agent/examples/extensions/doom-overlay/doom/build/doom.wasm",
+          "bytes": 380169,
+          "sha256": "571d161956593508cf4ade732ae93753f00484bb526667a8676571cca14dec7d",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node",
+          "bytes": 52024,
+          "sha256": "36e909adf35c2734a2a52b3d65b7dbfb83f2278f306d51b7e32c5045516dfb7f",
+          "format": "Mach-O64",
+          "machine": 16777228,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-x64/darwin-platform.node",
+          "bytes": 22784,
+          "sha256": "7ec59a02fff9562f6354274ad070ba35f8e0998b3b111eb27ad3de579ffb6c65",
+          "format": "Mach-O64",
+          "machine": 16777223,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-arm64/linux-platform-x11.node",
+          "bytes": 67240,
+          "sha256": "63d4545349a25b5c97e352ea6d254cea50ff3c14161212ad3ddb3fc28022ddb5",
+          "format": "ELF",
+          "machine": 183,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-x64/linux-platform-x11.node",
+          "bytes": 18008,
+          "sha256": "522d2550f7fa5d0d5bd204f45983f786ce2be9cf80f27f00179640d31d0689d6",
+          "format": "ELF",
+          "machine": 62,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-arm64/win32-platform.node",
+          "bytes": 9216,
+          "sha256": "0e5671ab39ef577940483ced58fdf29ecdf5f864f368d90a771eec4aeeae11b8",
+          "format": "PE",
+          "machine": 43620,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-x64/win32-platform.node",
+          "bytes": 8704,
+          "sha256": "51bee02bcb73b165ab92af75ae15b88aba3f5d99f072e63ef60af92ffdc4d565",
+          "format": "PE",
+          "machine": 34404,
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm",
+          "bytes": 1881634,
+          "sha256": "10468181565c56004c867f3a4af96f89a0ef5a63a72f2b5fb12c1f1992a3615c",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/crypto/crypto.so",
+          "bytes": 120228,
+          "sha256": "fa26b6fafda251c3b1442dcc4c876b3ac73689639519f4ddfc2c410ebdb5b7c2",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/encoding/encoding.so",
+          "bytes": 7715,
+          "sha256": "d501aa2a8410ee07c196103f0d169b226ec61c922883713510fd723fe14036c3",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/headers/headers.so",
+          "bytes": 8896,
+          "sha256": "42c847104d6aa8d4666fa41bb74d324c2ee9a4d15c2492fca013b1631232b011",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/structured-clone/structured-clone.so",
+          "bytes": 6007,
+          "sha256": "0ac5a36c0545c659ba6f9f8de5af11862df84546d151d0f15ec5184c95fd6cb3",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/url/url.so",
+          "bytes": 397332,
+          "sha256": "af780a79f1fb131b5e6fa1d6fedc481e265420cf2f254fe966255230f4c1bc62",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        },
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/quickjs.wasm",
+          "bytes": 637405,
+          "sha256": "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9",
+          "format": "WebAssembly",
+          "machine": "wasm32-or-declared-module-memory",
+          "presenceAndHeaderOnly": true,
+          "actualModuleLoadNotProven": true
+        }
+      ],
+      "scope": "Actual shipped-header inventory, not architecture runtime qualification; no first-party WASM source is not an exclusion of this transitive capability"
+    },
+    "activeBoundedTypescriptFuzz": {
+      "run": 39120929405,
+      "harness": "7e1b030e7e6898a7d1e7876cd0723dd61292c65a",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "plannedInvocations": 69,
+      "fuzzOwners": 12,
+      "propertyFiles": 28,
+      "coverageOwners": 13,
+      "missingFrozenBaseline": "package/module/conf-fork.fuzz/coverage-baseline.json",
+      "state": "dispatched, no terminal claim",
+      "resourceClass": "8CPU32GiB",
+      "jobMinutes": 15
     }
   },
   "coverageReviewComplete": false,
@@ -234,10 +516,10 @@
     {
       "path": "depot-complete-coverage-harnesses.json.gz",
       "encoding": "gzip JSON",
-      "bytes": 115685,
-      "sha256": "5a6d9038c600711477afead2f7dc496b89c4d8c70f174fa3e0c00655e7036d4a",
-      "rawBytes": 589999,
-      "rawSha256": "50cd6a3df714ad8c0f116b7980885af16ea6c2951c0adb4b1ad040aaf43d4838"
+      "bytes": 189868,
+      "sha256": "be7f1316c675028655c2f1c7f84a119043732f4fcde21fb867d9849131050b83",
+      "rawBytes": 930229,
+      "rawSha256": "f701d8c886a03ae8734b6e1f95d325001a6512ed38aac2ff688f8bbf7e30d961"
     },
     {
       "path": "depot-complete-coverage-android-reproducibility.json.gz",
@@ -309,6 +591,26 @@
       "sha256": "559172ce0a2c8ebee3e4acb320eba40b259ca25d72440d15e9fa2a9e3834b251",
       "rawBytes": 300983,
       "rawSha256": "46dad14461c6d03f314d14497046abde5b1ec974573ef466e35cbb070ff5672d"
+    },
+    {
+      "path": "depot-complete-coverage-node-host-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 2318869,
+      "sha256": "a52a41f08ed194718ca8659f4d63fbd86ac0db24acfaa951c016f5d0d82fc513",
+      "rawBytes": 17717680,
+      "rawSha256": "b1a607a1bba6fe0a43a5811ef008f18527b55e455a8dfd6d8caa0148dc7ae548"
+    },
+    {
+      "path": "depot-complete-coverage-node-host-12133191644.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 132753,
+      "sha256": "9fcb7a0185590d9527b8fb2aea3b7c78e0a1a86b2d6bdda3f31539e69dd17e98"
+    },
+    {
+      "path": "depot-complete-coverage-node-host-12133008592.zip",
+      "encoding": "GitHub artifact ZIP",
+      "bytes": 1130359,
+      "sha256": "93c619710d1c7d5e65f5d69f6f098d3e6e45dc45a8746c7f575b0276ae59ca12"
     }
   ],
   "execution": [
@@ -699,6 +1001,59 @@
       "consumerExecutesElf": false,
       "secretDeleted": true,
       "exactSecretNameAbsent": true
+    },
+    {
+      "profile": "guarded-node-hosts",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39118106788,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39118106788",
+      "workflowCommit": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "invocations": 108,
+      "passed": 105,
+      "failed": 3,
+      "newDefaultOwners": 34,
+      "newCandidateFiles": 262,
+      "otherShard": {
+        "commandsStarted": 0,
+        "commandsNotStarted": 79,
+        "state": "harness_dependency_location_preflight_failed",
+        "diagnostic": "Installed qualified SDK package is absent: pi-agent-core",
+        "intermediateOrderingHypothesisWithdrawn": true
+      }
+    },
+    {
+      "profile": "corrected-five-sdk-host",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39119985290,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39119985290",
+      "workflowCommit": "47aef8d403e4151593725943456fa3b0a8bce626",
+      "invocations": 79,
+      "passed": 78,
+      "failed": 1,
+      "newDefaultOwners": 1,
+      "newCandidateFiles": 162,
+      "actualDefaultTaskPassed": true,
+      "actualNativeBuildPassed": true,
+      "subsequentTypecheckPassed": true,
+      "nativeSyntaxPassed": true,
+      "domain": {
+        "permission": "passed, zero HTTP/provider requests",
+        "prohibition": "passed, zero HTTP/provider requests",
+        "none": "source assertion: unresolved versus unspecified"
+      },
+      "sdkRegularFilesCompared": 2412,
+      "sdkRegularFilesUnchanged": true,
+      "changedTrackedFiles": [
+        "package/claude-code-plugin/stop-reminder/bundle/node/index.mjs"
+      ],
+      "declaredArtifactAbsences": [
+        {
+          "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/ai/dist/providers/data/.manifest.json",
+          "bytes": 3762,
+          "sha256": "a4c0a81f2cc4323b81d4c5d3886b343dc226939168f33e8eb731c928a81cfce9"
+        }
+      ],
+      "restoredArtifactConsumerPassed": false
     }
   ],
   "familySummary": {
@@ -43130,5 +43485,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T10:42:22.544Z"
+  "latestEvidenceAt": "2026-10-18T11:12:09.343Z"
 }

@@ -814,3 +814,89 @@ No real credential,
 complete generator image,
 or exported image layer was used.
 Expanded CI must preserve that limit when qualifying this existing image consumer.
+
+## Guarded host terminal results and artifact boundary
+
+Run `39118106788` invoked all 108 sharda commands: 105 passed and 3 default owners failed.
+Those failures are spread-rule assertions in `no-restricted-syntax`,
+retirement-table characterization (`570` actual versus `551` expected),
+and OpenAI Fast nested-option identity.
+Its 34 default owners discovered and hash-matched 262 files.
+Shardb invoked no commands because my admission helper searched only direct dependency links.
+An intermediate ordering hypothesis was wrong:
+the actual pnpm dependency install had already completed.
+The incumbent coding-agent realpath/sibling lookup resolves the transitive SDK packages.
+
+Corrected immutable harness `47aef8d403e4151593725943456fa3b0a8bce626`
+ran as `39119985290`: 78 of 79 owning invocations passed.
+The actual native build,
+subsequent type check,
+native syntax check,
+and default unit task passed;
+all 162 expected default files matched actual discovery.
+The additional finite domain task passed permission and prohibition with zero HTTP/provider requests,
+then failed its `none` assertion with actual `unresolved` versus expected `unspecified`.
+This source assertion remains red.
+The earlier missing-native-artifact type failure is closed by this qualified prerequisite build.
+
+All 2,412 regular files across the five actual SDK 1.2.0 roots had identical before/after hashes.
+Descendant `node_modules` and symlinks were outside that snapshot.
+Original Pi source was pinned to `06a466935536f8c9bcacb2d5efc0fc021be1bdff`;
+its reported unstaged tracked-file diff was empty.
+One generated Claude stop-reminder bundle changed in the application checkout,
+so this is not an unchanged-tree claim.
+
+The normal native artifact is 65,588,732 compressed bytes and 198,624,683 expanded bytes.
+All 33,912 actual ZIP members matched independent streamed decompression hashes
+in a network-disabled read-only container capped at 2 GiB and 2 CPUs;
+a deliberately corrupted extracted fixture was rejected.
+Its actual payload includes WebAssembly and platform-native dependency files;
+header presence is not runtime qualification for another OS or architecture.
+The compiled payload stays in normal cloud artifact storage,
+not Git history.
+The public compressed receipt retains actual task logs,
+all member hashes,
+source admission,
+and native header inventory.
+
+The artifact is incomplete for a fresh consumer:
+the producer declared `pi/ai/dist/providers/data/.manifest.json`,
+3,762 bytes with SHA-256 `a4c0a81f2cc4323b81d4c5d3886b343dc226939168f33e8eb731c928a81cfce9`,
+but that resource is absent from the actual ZIP.
+The pinned uploader defaults `include-hidden-files` to `false`
+and passes `excludeHiddenFiles: true` to its globber.
+A follow-up must retain this failed boundary,
+qualify explicit hidden-resource inclusion,
+and run a fresh restored-artifact consumer before portability is credited.
+
+## Active bounded properties and remaining consumers
+
+Run `39120929405`,
+immutable harness `7e1b030e7e6898a7d1e7876cd0723dd61292c65a`,
+dispatched the same frozen application source.
+Its 69 planned invocations comprise 42 shared builds,
+12 bounded fuzz owners over 28 actual property files,
+13 authored deterministic coverage checks,
+and JSONC conformance plus the shared Rust-fixture digest check.
+Ten fuzz owners request 100 runs per property;
+logger and TOML request 1,000 ms per property.
+Actual successful trial counts are not exported by every owning task,
+so requested budgets are not reported as observed trial counts.
+The frozen tree contains only 12 matching coverage-baseline files;
+the conf-fork baseline is absent.
+No baseline refreeze or intentionally infinite deepmerge campaign is invoked.
+The job has 8 CPUs,
+32 GiB,
+a 15-minute job bound,
+a 9-minute command campaign,
+and a 180-second per-task bound.
+No terminal result is claimed here.
+
+The finite deepmerge/compiler consumer,
+TOML Go conformance,
+mutation-container lifecycle,
+actual Chromium/Firefox/WebKit consumers,
+qualified desktop compositor/ImageMagick lookup and PNG decoding,
+proper packed installs,
+and complete product feature/assertion mapping remain tracked work.
+The complete-coverage and execution-complete flags remain false.
