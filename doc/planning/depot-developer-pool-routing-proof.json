@@ -979,7 +979,42 @@
       "dev:site": 2,
       "serve:site": 2,
       "watch:build:js:client": 3
-    }
+    },
+    "qualityTaskCount": 521,
+    "unitTestFiles": 1072,
+    "browserTestFiles": 8,
+    "kotlinSourceFiles": 294,
+    "rustManifests": [
+      "package/cli/forbidden-strings.fuzz/Cargo.toml",
+      "package/cli/forbidden-strings/Cargo.toml",
+      "package/cli/nested-wayland-session/Cargo.toml",
+      "package/cli/wg-quicker-exempt/Cargo.toml",
+      "package/codex-plugin/bash-limit/Cargo.toml",
+      "package/desktop-app/file-manager-gtk-sticky/Cargo.toml",
+      "package/desktop-app/file-manager-qt/Cargo.toml",
+      "package/desktop-app/file-manager/Cargo.toml",
+      "package/desktop-app/ide/Cargo.toml",
+      "package/desktop-app/terminal/Cargo.toml",
+      "package/git-policy/cli.fuzz/Cargo.toml",
+      "package/git-policy/cli/Cargo.toml",
+      "package/linter/monochromatic-lint.fuzz/Cargo.toml",
+      "package/linter/monochromatic-lint/Cargo.toml",
+      "package/music-player/desktop-app/Cargo.toml",
+      "package/music-player/truepeak-core.bench/Cargo.toml",
+      "package/music-player/truepeak-core/Cargo.toml",
+      "package/rust-module/forbidden-regex.bench/Cargo.toml",
+      "package/rust-module/forbidden-regex.fuzz/Cargo.toml",
+      "package/rust-module/forbidden-regex/Cargo.toml",
+      "package/rust-module/jsonc-edit.fuzz/Cargo.toml",
+      "package/rust-module/jsonc-edit/Cargo.toml"
+    ],
+    "expensiveUnitFiles": [
+      "package/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts",
+      "package/cli/vmsync/src/lifecycle.expensive.unit.test.ts",
+      "package/dev-script/task-util/src/tsc-filter.expensive.unit.test.ts",
+      "package/module/image-diff/src/client.expensive.unit.test.ts",
+      "package/pi-plugin/bash-poke/src/tui.expensive.unit.test.ts"
+    ]
   },
   "consumerClosureAnalysis": {
     "measuredAt": "2026-10-18T05:04:59.732Z",
@@ -2867,8 +2902,10 @@
         "@monochromatic-dev/webapp-productivity-wc"
       ],
       "root": "monochromatic",
-      "limitation": "Node workspace metadata only; not a complete Rust, Gradle, generated-input or global-configuration impact selector"
-    }
+      "limitation": "Node workspace metadata only; not a complete Rust, Gradle, generated-input or global-configuration impact selector",
+      "exactDeclaredPackageClosureSetVerified": true
+    },
+    "pnpmVersion": "12.14.0"
   },
   "routing": {
     "collectedAt": "2026-10-18T05:19:51.868Z",
