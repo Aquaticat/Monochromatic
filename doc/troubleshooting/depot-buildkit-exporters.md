@@ -21,9 +21,10 @@ The source was retrieved and separately checked in a shallow clone at that commi
 Exact source is retained in the [platform source archive][sources].
 
 The Bake command calls `registry.WithDepotSave` for save requests.
-`pkg/buildx/commands/bake.go:140` contains:
+`pkg/buildx/commands/bake.go:141` contains:
 
 ```go
+// depot/cli:pkg/buildx/commands/bake.go
 if in.save {
     opts := registry.SaveOptions{
         // Other project, build and credential fields omitted.
@@ -34,9 +35,10 @@ if in.save {
 }
 ```
 
-`pkg/registry/cli.go:38` identifies image exporters:
+`pkg/registry/cli.go:39` identifies image exporters:
 
 ```go
+// depot/cli:pkg/registry/cli.go
 for i, export := range buildOpt.Exports {
     if export.Type == "image" {
         imageExportIndices = append(imageExportIndices, i)
@@ -48,6 +50,7 @@ When no image exporter exists,
 `pkg/registry/cli.go:53` appends one:
 
 ```go
+// depot/cli:pkg/registry/cli.go
 if len(imageExportIndices) == 0 {
     exportImage := client.ExportEntry{
         Type: "image",
@@ -62,6 +65,7 @@ The subsequent option conversion rejects that list.
 `pkg/buildx/build/build.go:433` contains:
 
 ```go
+// depot/cli:pkg/buildx/build/build.go
 switch len(opt.Exports) {
 case 1:
     // valid

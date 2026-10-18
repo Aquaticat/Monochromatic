@@ -36,7 +36,8 @@ immutable source,
 resource bounds,
 run identity,
 consumer assertions,
-and cleanup evidence before execution.
+and a cleanup plan before execution.
+Retain the actual terminal and cleanup results after execution.
 Existing receipts remain evidence only for their recorded source and exercised behavior.
 
 ## Enumerated primary surfaces
@@ -322,10 +323,11 @@ Reading the historical project with the existing user login was rejected:
 No organization token was created.
 The separately authorized research project `27m5m3vjlv` was created with explicit `HARDWARE_16X32`,
 five-minute build timeout,
-25 GB cache retention target,
+`cachePolicy.keepGb=25`,
 one-day cache retention,
 and no autoscaling request.
-The public schema rejects a retention target smaller than 25 GB.
+The create response reports 26,843,545,600 retained-cache bytes for that field value.
+The public schema rejects a `keepGb` value smaller than 25.
 The create response proves these initial bounds without account-wide inspection.
 
 Request `7wjrw9szj0` failed with `multiple outputs currently unsupported`.
