@@ -133,12 +133,39 @@ and extracts per-role message projection from context windowing.
 New regression catalogs cover assistant,
 direct Bash and every known process metadata location,
 with strict current-proposal and unrelated-error controls.
-Formatting,
-builds,
-types,
-retained-history replay and guard mutations are pending.
-No shared `src` or published artifact is changed by this candidate.
-Finish this repair before resuming the native typing worker.
+Scoped formatting reports zero warnings and errors;
+private JavaScript and native `I3dKHQ` builds,
+fresh-cache types and full units pass.
+The actual retained-history projector probe passes on the full saved session and an aborted-message prefix.
+The full context window can exclude the aborted call,
+but projection used to throw before window selection.
+The first green probe incorrectly required that marker in the final selected window;
+the corrected probe explicitly checks its actual prefix and retains the failed harness log.
+Source regression commit `a9b1766942` records both failing catalogs before implementation adoption.
+Guard mutations and the configured Pi replay remain pending.
+Root published `dist` remains unchanged.
+The first configured replay fails before Pi startup because its capture preload cannot resolve the private
+candidate's canonical scratch path inside the container.
+The corrected launcher mounts that canonical path as well as both repository aliases.
+The read-only resumed controller is `pi-mimo-rpc-session-dwTJVg`,
+command session `97637`,
+on `I3dKHQ` with the original `j2yRJI` saved history.
+Its final-child Git-wrapper and LFS preflight passes.
+Finish this repair before resuming the native typing assignment.
+
+### Launcher acceptance checks
+
+The LFS comparison now proves raw Git and the wrapper both exit 128 without the helper,
+with unchanged `HEAD`,
+and both commit only the named file with the helper present.
+The issue comment is
+<https://github.com/Aquaticats/Monochromatic/issues/1768#issuecomment-6251202628>.
+The final-child preflight rejects raw Git and missing LFS in separate positive controls,
+then passes with both qualified tools.
+Luna capture is now an explicit import on the Pi Node invocation,
+so tool subprocesses do not inherit that capture preload through `NODE_OPTIONS`.
+The source native-return checkpoint `75e519aca9` independently passes scoped lint and fresh-cache types.
+Navigation assertion commit `b7f1ae1be2` passes the complete host-isolation catalog.
 
 [Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) is open with `needs-triage`.
 The supervisor's RPC launcher omitted the wrapper from its replacement PATH.
