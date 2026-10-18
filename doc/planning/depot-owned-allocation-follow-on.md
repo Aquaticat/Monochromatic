@@ -58,9 +58,10 @@ These counts and source pointers are retained in
 
 Assigned Depot GitHub job intervals contribute a nominal list proxy of `USD 0.0167`.
 Native job-attempt intervals contribute `USD 0.0094`.
-The desktop native receipt only establishes its provider run envelope,
+The initial desktop projection used its provider run envelope,
 `279` seconds,
 giving a separately qualified `USD 0.1116` run-envelope proxy.
+That historical projection is retained with the corrected attempt boundary in the expanded receipt.
 Standard public GitHub nominal compute is `USD 0`.
 These amounts are arithmetic over retained provider timestamps,
 not observed invoices or measured VM billing lifetimes.
@@ -87,8 +88,16 @@ The expanded terminal snapshot has `30` unique rows:
 `7` Depot GitHub jobs,
 `8` native CI jobs,
 and the same `3` BuildKit requests.
-The nominal known-provider-window list proxy is `USD 0.6105`,
+The initial expanded projection was `USD 0.6105`,
 including the explicitly qualified `USD 0.1116` desktop run-envelope fallback.
+The exact scoped workflow response for `qxqg28drpc`
+now establishes attempt `9tx3p5369r` from `15:00:11Z` to `15:04:34Z`,
+or `263` seconds and `USD 0.1052`.
+Its actual attempt status is failed,
+replacing the budget projection's generic finished state.
+The corrected nominal known-provider-window total is `USD 0.6041`.
+The original run-envelope values remain preserved as superseded evidence,
+and there are no remaining native run-only fallback intervals in this follow-on snapshot.
 The BuildKit request-window proxy remains separate and unmeasured builder billing remains unknown.
 
 The root graph subtotal independently recomputes to `USD 0.487`:

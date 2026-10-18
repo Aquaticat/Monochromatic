@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
-  "recordedAt": "2026-10-18T16:44:43.410Z",
+  "recordedAt": "2026-10-18T16:52:20.554Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
     "record": "inputs/doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json@d265c963dbb0c95c",
@@ -796,14 +796,16 @@
       "key": "depot:native-ci:run:0jpk5bwpvs:job:scrrj4czcl:attempt:9tx3p5369r",
       "provider": "depot",
       "product": "native-ci",
-      "kind": "job-attempt-with-run-envelope-only",
+      "kind": "job-attempt",
       "identifiers": {
         "runId": "0jpk5bwpvs",
         "jobId": "scrrj4czcl",
         "attemptId": "9tx3p5369r",
-        "sandboxId": null
+        "sandboxId": "nlq2tlrs7z3tnzpl8lcj",
+        "workflowId": "qxqg28drpc",
+        "attemptNumber": 1
       },
-      "status": "finished",
+      "status": "failed",
       "executionSha": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
       "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
       "requestedResources": {
@@ -828,25 +830,25 @@
         "commit": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb"
       },
       "interval": {
-        "startedAt": "2026-10-18T14:59:56Z",
-        "finishedAt": "2026-10-18T15:04:35Z",
-        "milliseconds": 279000,
-        "seconds": "279",
-        "scope": "provider run envelope; job-attempt timestamps and VM billing boundaries missing",
+        "startedAt": "2026-10-18T15:00:11Z",
+        "finishedAt": "2026-10-18T15:04:34Z",
+        "milliseconds": 263000,
+        "seconds": "263",
+        "scope": "provider native job-attempt execution interval; VM billing lifetime unmeasured",
         "source": {
-          "record": "inputs/coverage-owned-budget-rows.json@b4db2b5e44de3015",
-          "pointer": "/rows/42"
+          "record": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+          "pointer": "/jobs/0/attempts/0"
         },
         "nominalListCompute": {
-          "usd": "0.1116",
-          "numerator": "6696000000",
+          "usd": "0.1052",
+          "numerator": "6312000000",
           "denominator": "60000000000",
           "rateUsdPerMinute": "0.024",
           "actualInvoiceObserved": false,
           "billableVmLifetimeObserved": false
         }
       },
-      "missingJobAttemptBoundaries": true,
+      "missingJobAttemptBoundaries": false,
       "maximumFullTimeoutReservation": {
         "minutes": 15,
         "usd": "0.36",
@@ -857,6 +859,10 @@
         {
           "record": "inputs/coverage-owned-budget-rows.json@b4db2b5e44de3015",
           "pointer": "/rows/42"
+        },
+        {
+          "record": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+          "pointer": "/jobs/0/attempts/0"
         }
       ],
       "ownerReportedRunEnvelopeProxyUsd": "0.1116",
@@ -877,7 +883,35 @@
           "network": false
         }
       },
-      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct.",
+      "replacedRunEnvelopeProjection": {
+        "status": "finished",
+        "kind": "job-attempt-with-run-envelope-only",
+        "interval": {
+          "startedAt": "2026-10-18T14:59:56Z",
+          "finishedAt": "2026-10-18T15:04:35Z",
+          "milliseconds": 279000,
+          "seconds": "279",
+          "scope": "provider run envelope; job-attempt timestamps and VM billing boundaries missing",
+          "source": {
+            "record": "inputs/coverage-owned-budget-rows.json@b4db2b5e44de3015",
+            "pointer": "/rows/42"
+          },
+          "nominalListCompute": {
+            "usd": "0.1116",
+            "numerator": "6696000000",
+            "denominator": "60000000000",
+            "rateUsdPerMinute": "0.024",
+            "actualInvoiceObserved": false,
+            "billableVmLifetimeObserved": false
+          }
+        },
+        "reason": "Exact scoped provider attempt metadata supersedes owner run-envelope projection; preserved historical arithmetic is not added again."
+      },
+      "providerRunEnvelope": {
+        "startedAt": "2026-10-18T14:59:56Z",
+        "finishedAt": "2026-10-18T15:04:35Z"
+      }
     },
     {
       "key": "depot:native-ci:run:dzsf27t0xx:job:l1qjrcg80f:attempt:2r16tj84qh",
@@ -2228,10 +2262,10 @@
       "rows": 8,
       "pricedProviderIntervals": 8,
       "unpricedProviderIntervals": 0,
-      "runOnlyFallbacks": 1,
+      "runOnlyFallbacks": 0,
       "nominalObservedProviderWindowListProxy": {
-        "usd": "0.4308",
-        "numerator": "25848000000",
+        "usd": "0.4244",
+        "numerator": "25464000000",
         "denominator": "60000000000"
       },
       "buildRequestWindowProxy": {
@@ -2337,14 +2371,14 @@
   "actualVmBillingIntervalsObserved": false,
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-follow-on-2026-10-18.sources.json.gz",
-    "bytes": 346791,
-    "sha256": "d80f6d303b7efe08534a0adf566133c179752bdd7d127cb1b0d6dff5c7c9ef80",
-    "uncompressedBytes": 2975086,
-    "records": 31
+    "bytes": 366374,
+    "sha256": "0558f48b95141b4df77f38b934277cd358ce3e1cd38c795b14c162ad3922eae4",
+    "uncompressedBytes": 3061792,
+    "records": 33
   },
   "nominalKnownProviderWindowListProxyTotal": {
-    "usd": "0.6105",
-    "numerator": "36630000000",
+    "usd": "0.6041",
+    "numerator": "36246000000",
     "denominator": "60000000000"
   },
   "rootGraphNominalKnownProviderWindowSubtotal": {
@@ -2404,5 +2438,13 @@
       "source": "expanded-graph-native-podman-workflow.json",
       "sha256": "a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc"
     }
-  ]
+  ],
+  "desktopBoundaryHydration": {
+    "recordedAt": "2026-10-18T16:52:20.554Z",
+    "record": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+    "original279SecondRunEnvelopePreserved": true,
+    "exactAttemptSeconds": 263,
+    "nominalReductionUsd": "0.0064",
+    "noNewAllocation": true
+  }
 }
