@@ -281,9 +281,16 @@ before the other queued work.
     Cherry-pick their commits onto the branch,
     then gate the merged head.
 2.  Package READMEs landed (`704165269a` to `48ea1fc3d0`).
-    After `w167` lands:
-    `source-scan`'s `source-scans` task depends on a `build` task the package lacks
-    and on none of the five sibling builds its tests load;
+    `w167` landed (`2bd2d2ab4f` and the six before it):
+    every scan reads every family package,
+    keys are `<package>/<path under src>`,
+    and `source-scans` depends on the four sibling builds its tests load.
+    Left:
+    `source-scan` lists `coverage-census` as a development dependency no scan imports
+    (drop it with a lockfile regeneration);
+    the move's import rewrite left oxlint errors (20 in `provider`;
+    a lint and type-check census of all 36 packages runs as unit `tr-split-lint-census`,
+    output in `s245/split/lint/`);
     `source-scan` and `test-fixture` export `./ts` to an `src/index.ts` neither has;
     the `source-scan` README describes its readers as mid-move.
     The README agent named role wording it inferred from module names without opening the modules
