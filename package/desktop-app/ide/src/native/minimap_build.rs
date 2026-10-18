@@ -396,9 +396,18 @@ impl MinimapWorker {
             .spawn(move || {
                 // `catch_unwind` stops an unwinding build at the thread boundary: a detached thread has no join to
                 // report a panic, so it is logged here, and the next request starts a new worker.
-                let outcome = catch_unwind(AssertUnwindSafe(|| {
-                    serve(shaper, &job_receiver, &reply_sender, &worker_newest);
-                }));
+                let outcome = catch_unwind(AssertUnwindSafe(
+                    #[cfg_attr(
+                        dylint_lib = "monochromatic_lint_closure",
+                        expect(
+                            avoidable_closure,
+                            reason = "catch_unwind accepts only a callable without parameters, so the shaper and the channel ends the worker serves with must be moved into a closure"
+                        )
+                    )]
+                    || {
+                        serve(shaper, &job_receiver, &reply_sender, &worker_newest);
+                    },
+                ));
                 if outcome.is_err() {
                     tracing::error!(
                         "minimap worker panicked; the next picture starts a new worker"

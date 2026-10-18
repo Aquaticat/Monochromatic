@@ -131,6 +131,15 @@ fn bind_caret(
     let shared = Rc::clone(language);
     let weak = owner.as_weak();
     // `move ||` hands the captured handles to the stored callback.
+    // The Slint setters below keep the callback for the life of the window, so it has to own its state.
+    // An attribute cannot sit on the initializer of a `let`, so it sits on the statement.
+    #[cfg_attr(
+        dylint_lib = "monochromatic_lint_closure",
+        expect(
+            avoidable_closure,
+            reason = "the Slint on_hover_request and on_definition_request setters keep the callback after the call, so it must own the weak window handle and the shared state"
+        )
+    )]
     let callback = move || {
         let Some(window) = weak.upgrade() else {
             return;

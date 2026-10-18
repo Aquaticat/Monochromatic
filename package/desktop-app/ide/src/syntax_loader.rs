@@ -185,17 +185,27 @@ fn read_rules(
     // const text = readQuery(language, name => { try { return source.query(name, file); }
     //   catch (error) { failure ??= String(error); return ''; } });
     // ```
-    let text = tree_house::read_query(language, |name| {
-        return match source.query(name, file) {
-            Ok(text) => text,
-            Err(error) => {
-                if failure.is_none() {
-                    failure = Some(format!("{error:#}"));
+    let text = tree_house::read_query(
+        language,
+        #[cfg_attr(
+            dylint_lib = "monochromatic_lint_closure",
+            expect(
+                avoidable_closure,
+                reason = "tree_house::read_query accepts only an FnMut(&str) -> String reader, and this one records the first failure in the caller's variable, which a named function cannot reach"
+            )
+        )]
+        |name| {
+            return match source.query(name, file) {
+                Ok(text) => text,
+                Err(error) => {
+                    if failure.is_none() {
+                        failure = Some(format!("{error:#}"));
+                    }
+                    String::new()
                 }
-                String::new()
-            }
-        };
-    });
+            };
+        },
+    );
     if let Some(reason) = failure {
         return Err(reason);
     }
@@ -308,7 +318,16 @@ impl OwnLoader {
                 ));
             }
         };
-        compiled.configure(|capture| return best_scope(capture, self.scopes));
+        compiled.configure(
+            #[cfg_attr(
+                dylint_lib = "monochromatic_lint_closure",
+                expect(
+                    avoidable_closure,
+                    reason = "LanguageConfig::configure accepts only an FnMut(&str) -> Option<Highlight> callback, and this one reads the scope table of self, which a named function cannot reach"
+                )
+            )]
+            |capture| return best_scope(capture, self.scopes),
+        );
         tracing::debug!(language = %name, grammar = grammar_name, library = %library.display(), "language highlighting prepared from the application's own runtime");
         return Ok(compiled);
     }

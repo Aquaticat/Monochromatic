@@ -137,9 +137,18 @@ impl TileWorker {
             .spawn(move || {
                 // What: `catch_unwind` (std::panic) stops an unwinding build at the thread boundary.
                 // Why: A detached thread has no join to report a panic, so the panic is logged here instead.
-                let outcome = catch_unwind(AssertUnwindSafe(|| {
-                    worker_thread::run(shaper, request_receiver, reply_sender, worker_shared);
-                }));
+                let outcome = catch_unwind(AssertUnwindSafe(
+                    #[cfg_attr(
+                        dylint_lib = "monochromatic_lint_closure",
+                        expect(
+                            avoidable_closure,
+                            reason = "catch_unwind accepts only a callable without parameters, so the shaper and the channel ends the worker runs with must be moved into a closure"
+                        )
+                    )]
+                    || {
+                        worker_thread::run(shaper, request_receiver, reply_sender, worker_shared);
+                    },
+                ));
                 if outcome.is_err() {
                     tracing::error!(
                         "source tile worker panicked; the next scroll re-center starts a new worker"
