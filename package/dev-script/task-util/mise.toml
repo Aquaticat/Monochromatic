@@ -211,5 +211,5 @@ run = "node bin/reuse-lock-portability.mjs"
 run = "node bin/rust-artifact-consumer.mjs"
 
 [tasks."research:rust:consumer-check"]
-run = "node --check bin/rust-artifact-consumer.mjs"
+run = ["node --check bin/rust-artifact-consumer.mjs", "node --check bin/reuse-registry-probe.mjs"]
 

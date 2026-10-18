@@ -33,7 +33,9 @@ jobs:
       if: always()
       with:
         name: rust-coverage-ordinary-library-consumer
-        path: .research-rust-consumer/receipts
+        path: |
+          .research-rust-consumer/receipts
+          .research-reuse/receipts
         include-hidden-files: true
         retention-days: 7
         if-no-files-found: error

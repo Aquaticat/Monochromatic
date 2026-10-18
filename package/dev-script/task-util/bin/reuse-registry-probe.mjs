@@ -8,7 +8,7 @@ import { evidence, sha } from './reuse-context.mjs';
 const origin = 'https://l4zncjjbj5.registry.depot.dev';
 const repository = 'research-reuse-20261018';
 const tag = process.env.REUSE_IMAGE_TAG ?? 'tools-r1';
-assert(['tools-r1', 'tools-r2-git256'].includes(tag));
+assert(['tools-r1', 'tools-r2-git256', 'tools-r3-fuzz-codex'].includes(tag));
 const expectedDigest = process.env.REUSE_IMAGE_DIGEST ?? 'sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8';
 assert(/^sha256:[a-f0-9]{64}$/u.test(expectedDigest));
 const token = process.env.DEPOT_SNAPSHOT_TOKEN;
@@ -62,13 +62,16 @@ try {
     manifestVerified = true;
     const manifest = JSON.parse(bytes.toString());
     proof.manifest = manifest;
+    assert(Number.isSafeInteger(manifest.config.size) && manifest.config.size <= 16 * 1024 * 1024);
     const configResponse = await get({ path: '/v2/' + repository + '/blobs/' + manifest.config.digest, authorization });
     assert.equal(configResponse.status, 200);
     const configBytes = Buffer.from(await configResponse.arrayBuffer());
     assert(configBytes.length <= 16 * 1024 * 1024);
+    assert.equal(configBytes.length, manifest.config.size);
     assert.equal('sha256:' + sha(configBytes), manifest.config.digest);
     const config = JSON.parse(configBytes.toString());
-    proof.config = { digest: manifest.config.digest, bytes: configBytes.length, topLevelKeys: Object.keys(config), unmaskedSyntheticValuePresent: configBytes.includes(Buffer.from('synthetic-public-environment-20261018-r1')), maskedSyntheticValuePresent: configBytes.includes(Buffer.from('synthetic-masked-environment-20261018-r1')) };
+    assert(Number.isSafeInteger(config.disk_size_bytes));
+    proof.config = { digest: manifest.config.digest, bytes: configBytes.length, topLevelKeys: Object.keys(config), diskSizeBytes: config.disk_size_bytes, unmaskedSyntheticValuePresent: configBytes.includes(Buffer.from('synthetic-public-environment-20261018-r1')), maskedSyntheticValuePresent: configBytes.includes(Buffer.from('synthetic-masked-environment-20261018-r1')) };
   }
 } catch (error) {
   proof.failure = String(error);
