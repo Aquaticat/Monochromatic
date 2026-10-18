@@ -184,11 +184,31 @@ await describe({
              The configuration path the program was handed.
              */
             const config = starts[1]?.[1] ?? '';
-            expect(config.endsWith('semantic-wrap.config.jsonc',),).toBe(true,);
+            /**
+             The copy the build puts beside the built chunks, which is where
+             the built module must read the configuration from.
+             */
+            const builtCopy = join(
+              import.meta.dirname,
+              '..',
+              'dist',
+              'final',
+              'node',
+              'semantic-wrap.config.jsonc',
+            );
+            expect(config,).toBe(builtCopy,);
             expect((await readFile(
               config,
               'utf8',
             )).includes('markdown/semantic-line-breaks',),).toBe(true,);
+            /**
+             The configuration as the package ships it in `src`.
+             */
+            const sourceBytes = await readFile(join(
+              import.meta.dirname,
+              'semantic-wrap.config.jsonc',
+            ),);
+            expect(await readFile(config,),).toEqual(sourceBytes,);
             expect(starts[1]?.slice(2,),).toEqual([
               '--stdin',
               '--stdin-filename',
