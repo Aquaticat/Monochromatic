@@ -8,6 +8,19 @@ the requested tip is verified in its ancestry.
 Publication used a normal push without force.
 The private controller journal is
 `latest-research-publication-64d814b21cae7399270cfcc244ad98c78aa905ec.private.json`.
+The accepted first-round answers and permanent GitHub-hosted execution correction are subsequently published
+at `8f6cc54eb38a46dc9c4702e06d56c80508fa3910`,
+with requested tip `2b39f13df685e79a115f2f91ba388d0991a539b0` verified in its ancestry.
+The matching private journal records a successful normal push and exact remote readback.
+All four changed CI documents pass scoped Markdown lint and CommonMark rendering,
+with no missing local links or italic spans.
+The rendered provider-allocation paragraphs have been read.
+The private renderer initially rejected the routing study because it was absent from its registered file list;
+after registering that owned document,
+the complete scoped render passes.
+The Git policy replayed the formatting commit during concurrent landing;
+the final published requested tip is the replayed identity,
+not the discarded prepared identity `aad99ed01e36ac42152c5c389703dddf9960ba59`.
 The finite factual execution and reconciliation queue is closed with the limits retained in the report.
 This does not assert complete product-feature or source-branch coverage.
 No fresh independent whole-report review ran after the agent service quota was exhausted.
@@ -48,10 +61,12 @@ It does not reopen provider replacement as an interview choice.
 The Developer baseline,
 additional-pool approach and USD 200 all-provider planning ceiling remain settled.
 No production implementation is unlocked by posting this round.
-The next action is to verify and publish these accepted constraints,
-then post the ready second interview round and obtain confirmation of shared understanding before implementation.
+The second interview round is posted through the question tool and awaits Q4,
+Q5 and Q6.
+The next action is to record those answers,
+recompute the remaining frontier and obtain confirmation of shared understanding before implementation.
 
-The ready second round covers independent decisions:
+The posted second round covers independent decisions:
 
 - Q4:
   standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
