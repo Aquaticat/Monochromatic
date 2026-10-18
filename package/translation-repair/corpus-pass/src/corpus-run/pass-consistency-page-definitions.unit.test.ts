@@ -7,6 +7,7 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -278,17 +279,17 @@ await describe({
             /**
              How many replacements the slice leaves out, on a page or on none.
              */
-            function leftOutCount({ page, }: { readonly page?: PageEnglish; },): number | undefined {
+            function leftOutCount({ facts, }: { readonly facts: ConsistencySliceFacts; },): number {
               const { slices, } = workedPageOf({
                 settled: [withEdit({ group: mine, edit, },), other,],
-                slices: [factsOnPage({ page, },),],
+                slices: [facts,],
               },);
-              return slices[0]?.leftOut.length;
+              return nonNullishOrThrow(slices[0],).leftOut.length;
             }
             expect({
-              defined: leftOutCount({ page: pageWith({ definition: '[r]: u', },), },),
-              otherLabel: leftOutCount({ page: pageWith({ definition: '[x]: u', },), },),
-              alone: leftOutCount({},),
+              defined: leftOutCount({ facts: factsOnPage({ page: pageWith({ definition: '[r]: u', },), },), },),
+              otherLabel: leftOutCount({ facts: factsOnPage({ page: pageWith({ definition: '[x]: u', },), },), },),
+              alone: leftOutCount({ facts: factsOnPage({},), },),
             },).toEqual({
               defined: 1,
               otherLabel: 0,

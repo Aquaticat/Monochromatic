@@ -120,7 +120,7 @@ const WRITER_LABEL = OFFERS.find(function isWriter({ kind, },): boolean {
 /**
  The bench of the scene, in roster order.
  */
-const BENCH_OF_THREE = [SEAT_HYPER_ONLY, SEAT_BEDROCK_ONLY_TEXT, SEAT_HYPER_VISION,];
+const BENCH_OF_THREE: readonly string[] = [SEAT_HYPER_ONLY, SEAT_BEDROCK_ONLY_TEXT, SEAT_HYPER_VISION,];
 
 /**
  A bench that splits three ways in the first ask, one candidate for each seat, and agrees on the writer's paragraph after.

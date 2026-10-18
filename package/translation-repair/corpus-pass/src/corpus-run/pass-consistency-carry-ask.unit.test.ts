@@ -500,8 +500,8 @@ await describe({
                 return client.chatJson(request,);
               },
             };
-            for (const runOff of [false, true,]) {
-              await askCarryChoice({
+            await Promise.all([false, true,].map(function askWith(runOff,): Promise<unknown> {
+              return askCarryChoice({
                 client: recording,
                 modelIds: BENCH,
                 subject: CHOICE_SUBJECT,
@@ -512,7 +512,7 @@ await describe({
                 stageSettings: SCRIPTED_STAGE_SETTINGS,
                 runOff,
               },);
-            }
+            },),);
             expect(formats.length,).toBe(BENCH.length * 2,);
             expect(formats.map(function enumOf(format,): unknown {
               return (format.json_schema.schema.properties as Record<string, { enum?: string[]; }>).choice?.enum;
