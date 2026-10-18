@@ -26,6 +26,14 @@ runner minutes,
 storage,
 or agents.
 
+The [Depot Metal announcement][metal] describes infrastructure already used automatically
+by Depot CI and Sandboxes at no additional cost.
+It is not another pool to configure.
+The announcement's 30% performance improvement and sub-second microVM startup are vendor claims,
+not measurements of Monochromatic workloads or guaranteed job-admission latency.
+Its description of GitHub runner and container-build migration as future work
+does not establish when those separate products changed infrastructure.
+
 - [Depot CI][ci]:
   Linux x86_64 and Arm64 sandboxes with 2 to 64 vCPUs and 8 to 256 GB memory.
   Included minutes use the 2-vCPU/8-GB size as their base.
@@ -614,3 +622,4 @@ remain grilling topics after the actionable research and probes are reconciled.
 [research-evidence]: ../audit/depot-developer-platform-research-2026-10-18.evidence.json
 [vm-recovery]: ../audit/depot-vm-recovery-2026-10-17.evidence.json
 [coherent-report]: ../audit/tech-depot-complete-ci-trial-vet-2026-10-17.md
+[metal]: https://depot.dev/blog/announcing-depot-metal

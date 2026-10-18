@@ -658,5 +658,15 @@
       "Existing coherent Android APK consumer ran on a local emulator, not on Depot compute",
       "Generic SDK default-image /dev/kvm observations are a different execution product"
     ]
+  },
+  "metalInfrastructureSource": {
+    "url": "https://depot.dev/blog/announcing-depot-metal",
+    "fetchedAt": "2026-10-18T05:29:28.377Z",
+    "status": 200,
+    "sha256": "5ca6f02981e2e48aa37cf1f34ec88ae00caac165df7da4b2c9a29acca822c918",
+    "automaticForCiAndSandboxesDocumented": true,
+    "separatePoolOrOptInDocumented": false,
+    "performanceClaimsMeasuredOnRepository": false,
+    "githubRunnerAndBuilderMigrationCompletionProven": false
   }
 }
