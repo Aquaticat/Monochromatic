@@ -1649,3 +1649,34 @@ The remaining finite factual queue is independently owned:
 - Seal the per-package source feature/assertion and observed execution manifest,
   retaining counts, missing reach, cross-lane contexts and historical hash boundaries separately.
 - Finish source-backed troubleshooting notes and rendered Markdown checks.
+
+## Current Mac owner evidence and proposed handoff clarification
+
+The recovery Mac receipt independently verified all 63 recorded command-log hashes.
+Its observed runtime is Node26.12 on ARM64, three available CPUs,
+and 7,516,192,768 memory bytes.
+All 42 shared builds passed.
+The plugin semantic-host and external-consumer owners and the filesystem owner passed.
+Logger retained two file-batch child failures, Promise identity and invalid JSON,
+without treating them as one proven cause.
+Nextest reported 1,495 executed binary/case identities,
+1,468 passed and 27 failed, plus one skipped summary entry.
+Its 1,522 status lines include repeated final failure emissions;
+those are deduplicated by binary target and case name.
+The actual emitted ARM64 Mach-O debug binary passed `--version`,
+and all tracked working-byte hashes remained unchanged.
+
+The logger correction left auxiliary generated-task and task-source hash fields stale in the old plan.
+The immutable deployed workflow and actual decoded bootstrap equality were already qualified.
+The original public admission is preserved as recorded;
+future Depot plan fields now carry the actual corrected hashes,
+and dispatch checks the generated-task hash against every actual bootstrap result.
+No application source or assertion changed.
+
+The evidence-handoff failures expose an instruction gap.
+The proposed concrete edit tightens `QIV` in `AGENTS.md` to:
+
+> Before trusting a null or count, validate scope, cache, harness, evidence transport, and generator reach with controls; list unexercised surfaces.
+
+This is a planning proposal, not an applied instruction-file edit.
+The completed local logger and deployed-uploader controls implement that boundary for this profile.
