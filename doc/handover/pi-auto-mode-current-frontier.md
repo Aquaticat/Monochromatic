@@ -2,6 +2,21 @@
 
 ## Latest verified boundary and user steering
 
+The next bounded MiMo assignment is an independent native policy-input cluster:
+`native/contract/integration/policy-source/system-slot*`,
+`policy-loader*` and necessary sibling type declarations only.
+The source worker retains exclusive `src/` ownership.
+The native assignment must preserve existing entry points and capability/currentness behavior,
+replace unsafe state typing with real contracts,
+avoid casts and lint suppression,
+and stop after one coherent committed cluster for supervisor verification.
+The supervisor owns private builds,
+consumer checks,
+guard mutations and package documentation.
+It must not publish into root `dist` while either worker is live.
+The user has explicitly authorized invoking and monitoring MiMo through Pi RPC.
+Each session remains bounded to 2 GiB and two CPUs with private state and a qualified Git wrapper.
+
 The private compaction projection cluster now passes scoped formatting with zero warnings and zero errors,
 private native build `jj5kwZ`,
 post-build fresh-cache types and the maintained `test:native:compaction-inputs` consumer.
