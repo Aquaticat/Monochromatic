@@ -139,10 +139,10 @@ export const nativeRoot: string = fileURLToPath(new URL(
 ```
 
 `package/pi-plugin/auto-mode/native/loader.ts:51` maps exact original module URLs,
-and `loader.ts:153` looks up the resolved URL:
+and `loader.ts:145` looks up the resolved URL:
 
 ```typescript
-// package/pi-plugin/auto-mode/native/loader.ts:153
+// package/pi-plugin/auto-mode/native/loader.ts:145
 const hostModule = hostModules.get(resolved.url);
 ```
 
@@ -155,11 +155,11 @@ This excludes SDK runner byte drift as the cause of the changed namespace.
 Activation alone is insufficient.
 In run `39126088565`,
 it advances the actual owner to `Error: Cannot find module 'which'` from `cross-spawn`.
-The frozen `package/pi-plugin/auto-mode/native/build-emission.ts:174`
+The frozen `package/pi-plugin/auto-mode/native/build-emission.ts:176`
 links each emitted package to its installed dependency graph:
 
 ```typescript
-// package/pi-plugin/auto-mode/native/build-emission.ts:174
+// package/pi-plugin/auto-mode/native/build-emission.ts:176
 await linkDependencies({
   target: join(target, 'node_modules'),
   source: dirname(dirname(installed)),
