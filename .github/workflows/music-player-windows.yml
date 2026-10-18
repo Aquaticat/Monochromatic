@@ -984,17 +984,28 @@ jobs:
         code = finish(process, 20000)
         text = console_text()
         check("startup failure, console of the parent", dialog is None and code == 1 and "Music Player could not start" in text, f"dialog {dialog}, exit code {code}, console shows {text[-600:]!r}")
-        out_file = open_inheritable_file(os.path.join(temp_dir, "failure-out.txt"))
-        err_file = open_inheritable_file(os.path.join(temp_dir, "failure-err.txt"))
-        process, pid = launch("", True, True, out_file, err_file)
-        dialog = find_dialog(pid, 8)
-        code = finish(process, 20000)
-        kernel32.CloseHandle(out_file)
-        kernel32.CloseHandle(err_file)
-        with open(os.path.join(temp_dir, "failure-err.txt"), encoding="utf-8", errors="replace") as handle:
-            logged = handle.read()
-        check("startup failure, stderr in a file", dialog is None and code == 1 and "Music Player could not start" in logged, f"dialog {dialog}, exit code {code}, stderr file ends with {logged[-600:]!r}")
+        # The same four steps with stderr in a file (a script or the CI): no box, the text and the debug log in the file,
+        # and the process must end on its own with the exit status of the step.
+        os.environ["RUST_LOG"] = "debug"
+        for step, phrase, wanted_code in (
+            ("window-system", "connection to the Windows desktop", 1),
+            ("window", "could not create its window", 1),
+            ("event-loop", "window stopped working", 1),
+            ("panic", "internal error", 101),
+        ):
+            os.environ[FORCE] = step
+            out_file = open_inheritable_file(os.path.join(temp_dir, "failure-out.txt"))
+            err_file = open_inheritable_file(os.path.join(temp_dir, "failure-err.txt"))
+            process, pid = launch("", True, True, out_file, err_file)
+            dialog = find_dialog(pid, 8)
+            code = finish(process, 20000)
+            kernel32.CloseHandle(out_file)
+            kernel32.CloseHandle(err_file)
+            with open(os.path.join(temp_dir, "failure-err.txt"), encoding="utf-8", errors="replace") as handle:
+                logged = handle.read()
+            check(f"startup failure, forced {step} failure, stderr in a file", dialog is None and code == wanted_code and phrase in logged and FORCE in logged, f"dialog {dialog}, exit code {code} (None means still running after 28 seconds), stderr file ends with {logged[-1500:]!r}")
 
+        os.environ["RUST_LOG"] = "info"
         # Startup failure in a double-click start: no console, no standard handle. The message box must appear.
         kernel32.FreeConsole()
         for step, phrase, wanted_code in (

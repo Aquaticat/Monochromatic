@@ -938,6 +938,7 @@ fn forced_failure(_step: StartupStep) -> Result<(), slint::PlatformError> {
 #[cfg(windows)]
 fn startup_failed(step: StartupStep, error: slint::PlatformError) -> anyhow::Error {
     music_player::startup_failure_win32::report_startup_failure(step, &error.to_string());
+    tracing::debug!(?step, "the startup failure was reported; main returns the error and drops its state");
     return anyhow::Error::from(error);
 }
 
