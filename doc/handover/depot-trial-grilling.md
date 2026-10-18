@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 16:23 UTC
+## Execution checkpoint on 2026-10-18 at 16:33 UTC
 
 Research remains active;
 do not start the interview.
@@ -31,7 +31,7 @@ The sealed preflight receipt is
 `doc/audit/depot-expanded-graph-preflight-2026-10-18.evidence.json`,
 with original-source/log joins and publication checks committed at `2ca0bda544`.
 Corrected GitHub run `39140975786` was dispatched once at `15:32:53.075 UTC` on that exact source;
-its finite terminal watcher remains active.
+its finite terminal watcher is reaped with terminal failure at `16:24:13 UTC`.
 Stub owner commands provide no application execution credit.
 The browser branch already contains `prepare:matched-image`;
 an incomplete-plan reading that alleged its omission was retracted.
@@ -82,7 +82,7 @@ The native correction admission retains the existing two-sample USD 0.72 reserve
 its cumulative conservative campaign proxy remains USD 2.9096.
 The real corrected native consumer remains required;
 local fake-executable routing controls give no application case credit.
-The GitHub terminal watcher remains session `63906`.
+The GitHub terminal watcher session `63906` is reaped.
 Completed GitHub samples already have CRC/API-size/API-digest-verified original ZIPs:
 GitHub one `12142265999`,
 199494 bytes,
@@ -109,7 +109,34 @@ Shared builds passed in 72.591 seconds and Rust owners in 340.119 seconds.
 The private inspector now counts actual ZIP members,
 replacing its erroneous placeholder-based `actuallyStartedCommands` projection.
 All 1082 retained original command logs across these five samples pass exact byte/hash joins.
-Inspect all failure families and the last public GitHub repetition before publication.
+The last public GitHub repetition is collected:
+artifact `12142748843`,
+199971 bytes,
+SHA256 `90209f8bfe7778673f7f3b83ba851440542b045adc584360096ee4da228948b2`.
+It also has 194 actual command logs,
+six command-budget outcomes and 28 unstarted commands.
+The independent platform reviewer verifies all six original CRC/ZIP-byte/digest records
+and all 1276 retained command-log hashes.
+Both complete shared-build programs and Rust owner programs match across all four GHA repetitions.
+Shared-build mean times are GitHub 210.210 seconds versus Depot GHA 73.2885 seconds,
+with observed spreads 6.962 and 1.395 seconds:
+a 2.86825 ratio of means.
+Rust owner means are 720.5195 versus 325.8625 seconds,
+with observed spreads 10.631 and 28.513 seconds:
+a 2.21112 ratio of means.
+These compare completed phases,
+not complete pipelines or a fixed randomized property-test corpus.
+The first Rust identity projection erroneously included Nextest's changing progress ordinals;
+the actual format was inspected and the corrected case-only projection matches all four samples.
+It contains 89 Truepeak and 237 forbidden-strings passing identities per sample;
+the two Truepeak skips are summary counts,
+not enumerated skip identities in this projection.
+The Rust owner independently validates that normalization and its negative controls before final publication.
+Both original native ZIP digests also match their actual upload-action log digests;
+the action's exact message is `SHA256 digest of uploaded artifact zip is ...`.
+Native correction run `fnvwqfg0bb` is dispatched once on `72af18d5b1`;
+its finite terminal watcher is process session `20838`.
+Inspect all failure families and seal corrected native consumers before publication.
 
 Packed consumers are sealed at `898fd6ab03`:
 25 actual runtime imports,
