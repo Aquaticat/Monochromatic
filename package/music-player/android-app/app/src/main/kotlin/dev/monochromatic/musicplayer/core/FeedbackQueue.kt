@@ -50,22 +50,25 @@ internal const val FEEDBACK_NOTICE_DURATION_MS: Long = 4_000L
 /** Upper bound in milliseconds for any visible time a caller supplies. */
 internal const val FEEDBACK_MAX_DURATION_MS: Long = 60_000L
 
-// What:     `private val FEEDBACK_DISPLAY_ORDER: List<FeedbackKind>` lists kinds from top to bottom.
-// Why:      D29 places the Undo message above the error message, whatever order they were shown in.
+// What:     `internal val FEEDBACK_DISPLAY_ORDER: List<FeedbackKind>` lists kinds from top to bottom.
+// Why:      D29 places the Undo message above the error message, whatever order they were shown in. The notice
+//           kind (File details, re-analysis progress) sits between them: the actionable Undo leads, and a status
+//           line never covers an error. Every declared kind is listed once, so none gets an accidental position.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const FEEDBACK_DISPLAY_ORDER: FeedbackKind[] = ["UNDO", "ERROR"];
+// const FEEDBACK_DISPLAY_ORDER: FeedbackKind[] = ["UNDO", "NOTICE", "ERROR"];
 // ```
-/** Top-to-bottom display order of feedback kinds. */
-private val FEEDBACK_DISPLAY_ORDER: List<FeedbackKind> = listOf(FeedbackKind.UNDO, FeedbackKind.ERROR)
+/** Top-to-bottom display order of feedback kinds; it holds every kind of [FeedbackKind] exactly once. */
+internal val FEEDBACK_DISPLAY_ORDER: List<FeedbackKind> =
+    listOf(FeedbackKind.UNDO, FeedbackKind.NOTICE, FeedbackKind.ERROR)
 
-// What:     `enum class FeedbackKind` declares the two closed kinds of transient feedback.
+// What:     `enum class FeedbackKind` declares the three closed kinds of transient feedback.
 // Why:      Replacement, ordering and default duration depend only on which kind a message is.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type FeedbackKind = "ERROR" | "UNDO";
+// type FeedbackKind = "ERROR" | "UNDO" | "NOTICE";
 // ```
 /** Kinds of transient feedback shown above the player content. */
 enum class FeedbackKind(
@@ -316,7 +319,7 @@ class FeedbackQueue private constructor(
     // ```ts
     // visible(): FeedbackMessage[] { return sortBy(this.entries, kindRank).map(e => e.message); }
     // ```
-    /** Returns the visible messages with Undo above error, independent of the order they were shown in. */
+    /** Returns the visible messages in [FEEDBACK_DISPLAY_ORDER], independent of the order they were shown in. */
     fun visible(): List<FeedbackMessage> =
         entries.sortedBy { entry -> FEEDBACK_DISPLAY_ORDER.indexOf(entry.message.kind) }.map { entry -> entry.message }
 
