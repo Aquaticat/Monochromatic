@@ -241,6 +241,68 @@ an observed terminal job,
 and stopped billing remain distinct facts.
 No excluded account-wide analytics method is invoked here.
 
+## Live plan eligibility and autoscaling boundary
+
+The [live public pricing capture](../audit/depot-live-public-pricing-2026-10-18.evidence.json.gz)
+retains every feature row's SVG,
+every FAQ answer,
+and each compute tab from an isolated unauthenticated browser session.
+Text-only fetching omitted the availability icons and collapsed FAQ answers.
+The capture did not inspect account state,
+cookies,
+invoices,
+or subscriptions.
+
+Developer includes Linux and Windows GitHub runners,
+multi-platform builds,
+Build Insights,
+API access,
+autoscaling,
+agent sandboxes,
+test reporting,
+OIDC,
+egress filtering,
+and community support.
+macOS runners require Startup or Business;
+the [GitHub runner overview][github-runners] independently confirms this plan boundary.
+A successful Startup-trial macOS job does not establish Developer eligibility.
+GPU builds,
+custom regions,
+dedicated infrastructure,
+static outbound IPs,
+PrivateLink,
+and AWS deployment are Business features in this capture.
+This eligibility statement is separate from ordinary CI device probes and their lack of GPU devices.
+The managed GPU documentation requires customer AWS capacity and a provider-prepared custom runner AMI;
+it does not expose a Developer GPU sandbox label.
+
+The FAQ defines storage billing as the month's average combined build-cache,
+Depot Cache,
+and registry storage,
+sampled hourly.
+Developer's 25 GB is shared among those products.
+The project schema's minimum `keep_gb: 25` applies per architecture,
+not to total project storage or a reserved allocation.
+The pricing page lists usage caps but does not document one aggregate dollar cap covering all products.
+The older cap announcements separately describe build minutes and GitHub Actions minutes.
+
+The [autoscaling documentation][build-autoscaling]
+and the captured `depot/core/v1/project.proto` agree that `max_concurrent_builds`
+means builds per instance before adding an instance.
+It does not limit the total instance count.
+The audited create/update schemas expose no total-instance ceiling.
+Autoscaling remains off under this campaign's maximum-builder bound;
+there is no actual scale-out claim.
+The executed Bake graph counts as one build per project,
+regardless of its target count.
+
+Additional builders clone the main cache but do not merge their new layers back.
+Work on different builders is not deduplicated.
+The docs exclude temporary clones from cache storage charges while retaining normal compute charges.
+These consequences make project separation,
+larger builders,
+and scale-out distinct CI architecture choices.
+
 ## Registry lifecycle and export surface
 
 [Registry v2][registry] supports arbitrary OCI artifacts,
@@ -720,6 +782,8 @@ No completion or interview-readiness conclusion is made.
 [metal-launch]: https://depot.dev/blog/announcing-depot-metal
 [metal-gha-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
 [metal-autoscaler]: https://depot.dev/blog/autoscaling-depot-metal
+[github-runners]: https://depot.dev/docs/github-actions/overview
+[build-autoscaling]: https://depot.dev/docs/container-builds/how-to-guides/autoscaling
 [manage-runs]: https://depot.dev/docs/ci/how-to-guides/manage-workflow-runs
 [retry]: https://depot.dev/docs/ci/how-to-guides/retry-steps
 [parallel]: https://depot.dev/docs/ci/how-to-guides/parallel-steps
