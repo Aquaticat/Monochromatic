@@ -675,6 +675,8 @@ In release source `src/server.rs:1563` and `src/server.rs:1600`,
 that counter increments for a failed compile result or a compiler-process error.
 No specific probe command or application failure is inferred from the counter.
 The receipt preserves it rather than treating cache-hit success as proof that every compiler request succeeded.
+The [compiler-request diagnostic](../troubleshooting/sccache-cargo-request-failure-counter.md)
+records that boundary and the unassigned subprocess identity.
 The library archive hashes match between the seed and unchanged consumer;
 the changed flags alter that archive's hash.
 All independent consumer executable hashes match.
@@ -683,6 +685,24 @@ The local terminal collector initially combined the waiter's stderr progress wit
 The retained final JSON was recovered from that combined capture without repeating any cloud job.
 This was a collector stream-separation error,
 not a failed CI job or a malformed stdout JSON response.
+
+## Verification and retained fixtures
+
+Scoped Markdown lint,
+CommonMark rendering,
+JSON parsing,
+source and artifact digest checks,
+and credential-pattern scans passed for the completed evidence.
+The private experiment worktree was removed after a clean tracked-state check,
+an ignored-file dry run,
+and inspection for stray ignored Git-directory entries.
+Only its generated forbidden-string cache was ignored;
+no stray Git-directory entries existed.
+The pushed branch and source bytes in the receipts preserve every harness.
+The unique provider fixture disk,
+small HTTP Cache entry,
+and isolated compiler-cache prefix remain subject to provider retention.
+No existing shared cache or account retention setting was changed.
 
 ## Sources and limits
 

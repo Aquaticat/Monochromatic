@@ -88,7 +88,7 @@ It does not restore a Cargo target or registry archive.
 ### Non-success and unexercised observations
 
 - The compiler-request failure counter was one in every job.
-- `cargo nextest --version` returned 101 with `error: no such command: ` followed by the name `nextest`.
+- `cargo nextest --version` returned 101 with ``error: no such command: `nextest` ``.
   No unit-test execution or pass was claimed.
 - Optional features,
   application builds,
