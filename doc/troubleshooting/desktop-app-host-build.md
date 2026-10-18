@@ -1,7 +1,7 @@
 # Host-native builds of package/desktop-app crates on immutable Fedora (Bazzite 44)
 
 Two host-only build failures hit `package/music-player/desktop-app` and `package/desktop-app/terminal` when
-building natively instead of in the podman container (see `../decisions/desktop-app-podman-build.md`).
+building natively instead of in the podman container (see `doc/decision/desktop-app-podman-build.md`).
 Both are specific to the immutable-Fedora host layout (Bazzite 44,
  ostree) and do not occur in the container,
  which

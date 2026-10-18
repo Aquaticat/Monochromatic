@@ -175,6 +175,17 @@ with a fixed 0.8 dB margin, is retired.
 Its figures live on only as the `LEGACY_*` constants of `truepeak-core.bench/src/main.rs`,
 which keep the bench's `--proportional` ledger reproducible.
 
+## Versioning
+
+The crate is unpublished (`publish = false` in `Cargo.toml`, absent from crates.io) and both apps and the bench take
+it by path, so the version number is bookkeeping and gates no build.
+It moved from 0.1.0 to 0.2.0 on 2026-10-18 to record the changes since the first version:
+the XXH3-64 track fingerprint, the cache schema 2, `DecisionCache::put_batch` and the per-track decision removal.
+While the crate stays below 1.0, a change that alters the public surface or the cache schema bumps the minor version,
+and the four `Cargo.lock` files (this crate, `truepeak-core.bench`, `desktop-app` and `android-app/rust`) are
+regenerated with cargo in the same commit.
+The apps' own versions (the release tag) are independent of this one.
+
 ## Tasks
 
 Run these with `mise run //package/music-player/truepeak-core:<task>`.

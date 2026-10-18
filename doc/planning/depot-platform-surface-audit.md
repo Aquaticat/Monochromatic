@@ -360,6 +360,10 @@ and community support.
 macOS runners require Startup or Business;
 the [GitHub runner overview][github-runners] independently confirms this plan boundary.
 A successful Startup-trial macOS job does not establish Developer eligibility.
+The [allowance reconciliation](depot-included-allowance-reconciliation.md)
+withdraws the earlier categorical macOS allowance exclusion.
+Startup macOS credit and normalized-debit treatment remain unresolved;
+Developer tier ineligibility is a separate documented boundary.
 GPU builds,
 custom regions,
 dedicated infrastructure,
@@ -567,9 +571,26 @@ reports test-specific `testName` values
 but the same `className`,
 `monochromatic-git-policy-cli`.
 Submitting the test names as `classname` candidates does not satisfy the documented JUnit mapping.
-The parent experiment retains the passing physical partitions separately from the zero-timing result
-and is checking the actual binary classname as a positive control.
-No history-weighted per-test Nextest qualification follows from report ingestion alone.
+The parent experiment retained the passing physical partitions separately from the zero-timing result.
+Its actual-binary-classname positive controls found timing data,
+which qualifies the original miss as a harness identity mismatch.
+Report ingestion alone did not qualify the per-test lookup.
+
+The [source-bound identity adapter](depot-tests-identity-adapter-research.md)
+subsequently completed actual run `st40hvmw90`.
+The current Nextest reporter and configuration had no built-in classname-format option.
+The narrow adapter preserved every raw XML byte and uploaded explicitly derived reports.
+The three unchanged seeds and two fresh physical shard jobs retained 136 passing API rows,
+with each derived classname equal to its unchanged exact runnable name.
+Both shard jobs reported timings for all 34 candidates,
+executed disjoint 17-case sets,
+and passed the downstream consumer.
+The [diagnosis and runnable patch](../troubleshooting/depot-nextest-test-identity.md)
+retain positive and adversarial controls,
+the committed guard-removal test,
+source policy and cleanup.
+This qualifies the selected ordinary passing single-binary shape;
+it makes no complete-suite or elapsed-time improvement claim.
 
 ## Owned BuildKit campaign and exporter boundaries
 
@@ -700,7 +721,17 @@ A separate campaign built an ordinary OCI job image from the exact owned service
 The original service image stays unchanged and retained for active consumers.
 Parent-run GitHub job `117622633314` in workflow run `39109462308` retained the service's healthcheck,
 reached healthy state,
-then encountered checkout's GitHub REST download fallback because the job image lacked Git.
+then printed checkout's GitHub REST download fallback.
+The [later direct original-image probe](../audit/depot-original-service-git-2026-10-18.evidence.json)
+confirmed that the immutable AMD64 image could not resolve `git --version`:
+Node reported `spawnSync git ENOENT`,
+and every default `PATH` candidate was absent.
+The valid Node command and deliberately absent command controls passed.
+The mount-free,
+network-disabled local container used 2 CPUs and 2 GiB and was removed.
+This proves an image prerequisite gap on that default path.
+The historical checkout fallback alone does not identify every initialization failure,
+and this local control does not observe the historical job environment or the original ARM image.
 The job reached its five-minute guard during archive-download retries.
 This differs from the local Podman healthcheck loss and does not establish a shared runtime limitation.
 
@@ -1033,12 +1064,15 @@ The installed Docker configuration uninstall path will not be exercised against 
   Finish source and upstream recording without counting it as a repaired built-in integration.
 - Document the verified empty image-catalog `--output json` plaintext branch
   and complete its upstream contribution gate.
-- Keep the successful service/job-container receipts separate from the remaining
-  cross-attempt artifact identity,
-  job-level continued-failure,
-  timeout/cancellation,
-  and aggregate-status controls.
-  An intentionally cancelled job confounds the current job-level continuation observation.
+- Keep successful service/job-container receipts separate from the
+  [parent's orchestration evidence](../audit/depot-native-orchestration-2026-10-18.evidence.json)
+  and [isolated job-policy/history controls](../audit/depot-job-policy-history-2026-10-18.evidence.json).
+  Content-bound first and full-rerun artifact consumers passed.
+  Native job-level continued failure preserved downstream success but left aggregate/check-suite failure;
+  the paired GitHub workflow succeeded.
+  An isolated step-level continuation completed the native workflow successfully.
+  The earlier timeout-confounded observation does not supersede those isolated controls.
+  Retain incident causality limits and timeout/process boundaries separately.
 - The Cargo wrapper checks for local `sccache` before providing delegated help.
   This machine's help invocation failed with `sccache not found in PATH`.
   That is a local prerequisite failure,
@@ -1063,16 +1097,12 @@ The installed Docker configuration uninstall path will not be exercised against 
   and language recipes.
 - Finish public status-history pagination and component coverage before interpreting reliability;
   no uptime denominator is currently established.
-- Qualify a per-test Nextest identity adapter after checking for a built-in classname control.
-  Preserve raw JUnit and frozen application input,
-  derive explicitly labeled identities only if needed,
-  and test positive and rejected mappings before an owned serial physical-shard profile.
-  The parent admitted one concurrent VM,
-  unchanged seeds,
-  separate physical shards,
-  a consumer,
-  and a bounded read-only history follow-up under the shared USD 1 physical-campaign ceiling.
-  No production reporting or routing change follows from that admission.
+- Reconcile the completed identity-adapter receipt into the complete test-producer applicability map.
+  Its selected passing single-binary report shape does not qualify arbitrary JUnit or complete-suite reporting.
+- Complete the [queued actual ARM64 repository profile](depot-arm64-workload-research.md)
+  after the current evidence-ledger reconciliation.
+  Existing ARM image/tool controls do not qualify repository Rust or TypeScript execution.
+  The admitted profile is one 8-CPU job with a finite 15-minute lifetime and nominal USD 1 campaign bound.
 
 The source/evidence ledger will distinguish discovered,
 retrieved,

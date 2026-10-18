@@ -12,6 +12,7 @@
     "nano-spawn": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/module-test": "workspace:*",
     "mitata": "catalog:",
     "@mitata/counters": "catalog:"
   }

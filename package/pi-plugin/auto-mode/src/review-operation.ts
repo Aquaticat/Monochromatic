@@ -43,7 +43,7 @@ export function projectReviewInput({
    */
   const l = tagged({ tag: projectReviewInput.name, });
   l.debug('projecting tool arguments for review');
-  if (name !== 'bash' && !(name === 'process' && input.action === 'start')) return input;
+  if ((name !== 'bash') && (!((name === 'process') && (input.action === 'start')))) return input;
   /**
    Keep original execution options beside the parsed command structure.
    */

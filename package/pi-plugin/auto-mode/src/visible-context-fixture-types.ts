@@ -1,172 +1,309 @@
-/** Disposable session shapes include old and future transcript entries. @module */
-import {VERDICT_ENTRY_TYPE,type VerdictData} from '../dist/final/node/index.mjs';
+/**
+ Disposable session shapes include old and future transcript entries. @module
+ */
+import type {VERDICT_ENTRY_TYPE} from '../dist/final/node/index.mjs';
+import type {VerdictData} from '../dist/final/node/index.mjs';
 
 //region Nonstandard fixture entries exercise the original Pi projector.
-/** Text block shape consumed by {@link buildContext}. */
+/**
+ Text block shape consumed by {@link buildContext}.
+ */
 type MockTextBlock = {
-  /** Message block discriminator. */
+  /**
+   Message block discriminator.
+   */
   readonly type: 'text';
-  /** Text payload. */
+  /**
+   Text payload.
+   */
   readonly text: string;
 };
 
-/** Image block shape consumed by {@link buildContext}. */
+/**
+ Image block shape consumed by {@link buildContext}.
+ */
 type MockImageBlock = {
-  /** Message block discriminator. */
+  /**
+   Message block discriminator.
+   */
   readonly type: 'image';
-  /** Complete encoded image data. */
+  /**
+   Complete encoded image data.
+   */
   readonly data: string;
-  /** Image media type. */
+  /**
+   Image media type.
+   */
   readonly mimeType: string;
 };
 
-/** Thinking block shape consumed by {@link buildContext}. */
+/**
+ Thinking block shape consumed by {@link buildContext}.
+ */
 type MockThinkingBlock = {
-  /** Assistant block discriminator. */
+  /**
+   Assistant block discriminator.
+   */
   readonly type: 'thinking';
-  /** Complete visible reasoning text. */
+  /**
+   Complete visible reasoning text.
+   */
   readonly thinking: string;
-  /** Provider-only signature that judge context must omit. */
+  /**
+   Provider-only signature that judge context must omit.
+   */
   readonly thinkingSignature?: string;
 };
 
-/** Tool-call block shape consumed by {@link buildContext}. */
+/**
+ Tool-call block shape consumed by {@link buildContext}.
+ */
 type MockToolCallBlock = {
-  /** Assistant block discriminator. */
+  /**
+   Assistant block discriminator.
+   */
   readonly type: 'toolCall';
-  /** Tool-call identifier. */
+  /**
+   Tool-call identifier.
+   */
   readonly id?: string;
-  /** Tool name. */
+  /**
+   Tool name.
+   */
   readonly name: string;
-  /** Tool arguments. */
+  /**
+   Tool arguments.
+   */
   readonly arguments: Readonly<Record<string, unknown>>;
-  /** Provider-only signature that judge context must omit. */
+  /**
+   Provider-only signature that judge context must omit.
+   */
   readonly thoughtSignature?: string;
 };
 
-/** Message shapes used by the context scanner. */
+/**
+ Message shapes used by the context scanner.
+ */
 type MockMessage =
   | {
-    /** User-message role. */
+    /**
+     User-message role.
+     */
     readonly role: 'user';
-    /** User content. */
+    /**
+     User content.
+     */
     readonly content: string | readonly (MockTextBlock | MockImageBlock)[];
   }
   | {
-    /** Assistant-message role. */
+    /**
+     Assistant-message role.
+     */
     readonly role: 'assistant';
-    /** Assistant visible blocks. */
+    /**
+     Assistant visible blocks.
+     */
     readonly content: readonly (MockTextBlock | MockThinkingBlock | MockToolCallBlock)[];
-    /** Assistant stop reason. */
+    /**
+     Assistant stop reason.
+     */
     readonly stopReason?: string;
-    /** Visible assistant error text. */
+    /**
+     Visible assistant error text.
+     */
     readonly errorMessage?: string;
   }
   | {
-    /** Tool-result role. */
+    /**
+     Tool-result role.
+     */
     readonly role: 'toolResult';
-    /** Tool-call identifier. */
+    /**
+     Tool-call identifier.
+     */
     readonly toolCallId?: string;
-    /** Tool name reported by Pi. */
+    /**
+     Tool name reported by Pi.
+     */
     readonly toolName: string;
-    /** Whether tool execution errored. */
+    /**
+     Whether tool execution errored.
+     */
     readonly isError: boolean;
-    /** Tool result content. */
+    /**
+     Tool result content.
+     */
     readonly content: readonly (MockTextBlock | MockImageBlock)[];
-    /** Renderer-visible tool details. */
+    /**
+     Renderer-visible tool details.
+     */
     readonly details?: unknown;
   }
   | {
-    /** Direct Bash execution role. */
+    /**
+     Direct Bash execution role.
+     */
     readonly role: 'bashExecution';
-    /** Executed command. */
+    /**
+     Executed command.
+     */
     readonly command: string;
-    /** Complete command output. */
+    /**
+     Complete command output.
+     */
     readonly output: string;
-    /** Process exit status. */
+    /**
+     Process exit status.
+     */
     readonly exitCode?: number;
-    /** Cancellation state. */
+    /**
+     Cancellation state.
+     */
     readonly cancelled: boolean;
-    /** Output truncation state. */
+    /**
+     Output truncation state.
+     */
     readonly truncated: boolean;
-    /** Full output path shown by Pi when output is truncated. */
+    /**
+     Full output path shown by Pi when output is truncated.
+     */
     readonly fullOutputPath?: string;
   }
   | {
-    /** Persisted system-prompt role that Pi does not render. */
+    /**
+     Persisted system-prompt role that Pi does not render.
+     */
     readonly role: 'system';
-    /** Instruction text. */
+    /**
+     Instruction text.
+     */
     readonly content: string;
-    /** Named prompt sections. */
+    /**
+     Named prompt sections.
+     */
     readonly sections?: Readonly<Record<string, string>>;
-    /** Session timestamp consumed by Pi projection. */
+    /**
+     Session timestamp consumed by Pi projection.
+     */
     readonly timestamp: number;
   }
   | {
-    /** Role from a newer Pi runtime than installed declarations describe. */
+    /**
+     Role from a newer Pi runtime than installed declarations describe.
+     */
     readonly role: 'futureRole';
-    /** Payload whose visibility auto-mode cannot know. */
+    /**
+     Payload whose visibility auto-mode cannot know.
+     */
     readonly payload: string;
   }
   | {
-    /** User-message role as parsed from an older or hand-edited session file. */
+    /**
+     User-message role as parsed from an older or hand-edited session file.
+     */
     readonly role: 'user';
-    /** Missing content that Pi's projection normalizes. */
+    /**
+     Missing content that Pi's projection normalizes.
+     */
     readonly content: null;
   };
 
-/** Branch-entry shapes used by the context scanner. */
+/**
+ Branch-entry shapes used by the context scanner.
+ */
 export type MockBranchEntry =
   | {
-    /** Session entry discriminator. */
+    /**
+     Session entry discriminator.
+     */
     readonly type: 'message';
-    /** Session message. */
+    /**
+     Session message.
+     */
     readonly message: MockMessage;
   }
   | {
-    /** Session custom entry discriminator. */
+    /**
+     Session custom entry discriminator.
+     */
     readonly type: 'custom';
-    /** Extension custom entry discriminator. */
+    /**
+     Extension custom entry discriminator.
+     */
     readonly customType: typeof VERDICT_ENTRY_TYPE;
-    /** Verdict data attached to next tool result. */
+    /**
+     Verdict data attached to next tool result.
+     */
     readonly data: VerdictData;
   }
   | {
-    /** Visible custom-message entry discriminator. */
+    /**
+     Visible custom-message entry discriminator.
+     */
     readonly type: 'custom_message';
-    /** Custom renderer identity. */
+    /**
+     Custom renderer identity.
+     */
     readonly customType: string;
-    /** Complete custom content. */
+    /**
+     Complete custom content.
+     */
     readonly content: string | readonly (MockTextBlock | MockImageBlock)[];
-    /** Renderer-visible details. */
+    /**
+     Renderer-visible details.
+     */
     readonly details?: unknown;
-    /** Whether Pi displays message. */
+    /**
+     Whether Pi displays message.
+     */
     readonly display: boolean;
-    /** Session timestamp consumed by Pi projection. */
+    /**
+     Session timestamp consumed by Pi projection.
+     */
     readonly timestamp: string;
   }
   | {
-    /** Compaction entry discriminator. */
+    /**
+     Compaction entry discriminator.
+     */
     readonly type: 'compaction';
-    /** Complete compaction summary. */
+    /**
+     Complete compaction summary.
+     */
     readonly summary: string;
-    /** First retained session entry identifier. */
+    /**
+     First retained session entry identifier.
+     */
     readonly firstKeptEntryId: string;
-    /** Token count represented by summary. */
+    /**
+     Token count represented by summary.
+     */
     readonly tokensBefore: number;
-    /** System prompt state Pi 0.87 re-emits after compaction. */
+    /**
+     System prompt state Pi 0.87 re-emits after compaction.
+     */
     readonly systemMessage?: MockMessage;
-    /** Session timestamp consumed by Pi projection. */
+    /**
+     Session timestamp consumed by Pi projection.
+     */
     readonly timestamp: string;
   }
   | {
-    /** Branch-summary entry discriminator. */
+    /**
+     Branch-summary entry discriminator.
+     */
     readonly type: 'branch_summary';
-    /** Source branch entry identifier. */
+    /**
+     Source branch entry identifier.
+     */
     readonly fromId: string;
-    /** Complete branch summary. */
+    /**
+     Complete branch summary.
+     */
     readonly summary: string;
-    /** Session timestamp consumed by Pi projection. */
+    /**
+     Session timestamp consumed by Pi projection.
+     */
     readonly timestamp: string;
   };
 

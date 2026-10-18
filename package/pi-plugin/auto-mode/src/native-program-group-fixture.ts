@@ -271,8 +271,12 @@ export function createProgramGroupFixture({
     assert.ok(call);
     const entry = slot.open(call);
     assert.ok(state.runNative);
-    try { return entry.complete(await state.runNative(call, options)); }
-    catch (error) { entry.fail(error); throw error; }
+    try { return entry.complete(await state.runNative(
+      call,
+      options
+    )); }
+    catch (error) { entry.fail(error);
+    throw error; }
   }
   /**
    Consume only the exact original native outcome through the built program owner.

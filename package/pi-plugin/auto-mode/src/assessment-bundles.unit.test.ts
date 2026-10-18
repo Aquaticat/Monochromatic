@@ -39,7 +39,7 @@ function respond(body: string): Response {
 /** Require the actual transport body to retain its string identity. */
 function readHttpBody(options?: RequestInit): string {
  const body=options?.body;
- if(typeof body!=='string')throw new Error('Expected exact provider request text');
+ if((typeof body)!=='string')throw new Error('Expected exact provider request text');
  return body;
 }
 
@@ -68,14 +68,14 @@ await describe({name:'assessment call bundles',children:[
   assert.equal(concurrency.peak,3);
   assert.deepEqual(bodies.map(body=>JSON.parse(body).questions.length),[200,200,200,17]);
   assert.deepEqual(Object.keys(result.answers),Array.from({length:617},(_,index)=>`original_${index}`));
-  assert.ok(Object.values(result.answers).every(answer=>typeof answer==='object'&&answer!==null&&'noul' in answer&&answer.noul===0.875));
+  assert.ok(Object.values(result.answers).every(answer=>((typeof answer)==='object')&&(answer!==null)&&('noul' in answer)&&(answer.noul===0.875)));
   assert.equal(result.usage.input_tokens,40);
   assert.equal(result.usage.output_tokens,4);
   assert.equal(result.usage.requests.length,4);
   assert.equal(budget.finish().bundles,2);
   assert.equal(budget.diagnostics().calls,4);
  }}),
- ...[1,200,201,600,601,1800].map(count=>it({name:`preserves complete membership for ${count} questions`,fn:async function verifyPartitionBoundary(){
+ ...[1,200,201,600,601,1_800].map(count=>it({name:`preserves complete membership for ${count} questions`,fn:async function verifyPartitionBoundary(){
   const {budget}=createBudgetFixture();
   const bodies:string[]=[];
   const send=createAssessmentSender({now:()=>0,readCredential:()=>assessmentFixtureKey,fetchImpl:async function localHttp(_url,options){
@@ -112,7 +112,7 @@ await describe({name:'assessment call bundles',children:[
    return respond(readHttpBody(options));
   }});
   const error=await captureBudgetRejection(budget.dispatch(input=>send({...input,body:requestBody(617)})));
-  assert.ok(error instanceof Error);
+  assert.ok(Error.isError(error,));
   assert.equal(state.calls,3);
   assert.equal(budget.diagnostics().bundles,1);
  }}),

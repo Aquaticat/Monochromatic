@@ -9,7 +9,7 @@ Its `index.cjs` is a single line:
  Bun,
  all modern browsers per the Firefox ESR 140 baseline in `PHILOSOPHY.browser-support.md`).
 
-The root `package.json` substitutes the deprecated upstream package with this shim via `overrides: { '@ungap/structured-clone': 'link:package/shim/ungap-structured-clone' }`.
+`pnpm-workspace.yaml` substitutes the deprecated upstream package with this shim via `overrides: { '@ungap/structured-clone': 'link:package/shim/ungap-structured-clone' }`.
 The substitution clears the published `Potential CWE-502 - Update to 1.3.1 or higher` deprecation while keeping `mdast-util-to-hast`'s and `rehype-autolink-headings`'s `import structuredClone from '@ungap/structured-clone'` (and the `structuredClone(value)` call sites in `lib/state.js`,
  `lib/footer.js`,
  and `lib/index.js`) working unchanged.

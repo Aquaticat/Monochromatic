@@ -1,6 +1,97 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 11:38 UTC
+## Execution checkpoint on 2026-10-18 at 12:20 UTC
+
+The expanded evaluation remains research work;
+the interview has not started.
+The [working expanded report](../planning/depot-expanded-ci-evaluation.md)
+now uses the approved six sections;
+it is not the final sufficiency verdict.
+The [combined pricing model](../audit/depot-combined-product-pricing-2026-10-18.evidence.json)
+has executed separate-product scenarios,
+including the counterexample to an all-product Developer cost-dominance claim.
+Actual whole-graph allocation and critical paths remain parent-owned.
+After completing its active Truepeak fixture and publication,
+the Rust researcher owns independent review of the parent's eight policy ZIPs,
+three process ZIPs,
+eight VM/KVM ZIPs and combined pricing arithmetic.
+The review also checks the working report outside that researcher's own Rust claims,
+with no new cloud allocation.
+The coverage researcher published its separate
+[per-job budget ledger](../planning/depot-complete-coverage-budget-ledger.json).
+The corrected standard-GitHub `mvm` lifecycle passed in `39125868595`,
+source `64d6a666e63e4773ee56666148ae9c8ba371877a`.
+It preserves runner UID/GID `1001`,
+adds device group `993` only to the child,
+executes the actual frozen owner,
+checks guest stdout and exit-two stderr,
+and roundtrips 51 bytes with SHA256 `07442f8c71b3a17811a517cd5fceea7977e97e6f4a17d6a95a7602b7dc7daae8`.
+KVM is present and enabled;
+final private domains are empty and both owned daemons exited without cleanup errors.
+Its original 48783-byte ZIP and 97 member identities passed API-digest,
+CRC and SHA verification.
+The named-ACL removal writer remains unidentified.
+The failed seventh attempt `39124932077` lacked workspace pnpm setup and did not exercise a guest;
+the eighth attempt restored the original frozen install recipe before execution.
+The [complete VM/KVM sequence](../audit/depot-mvm-kvm-2026-10-18.evidence.json)
+and final troubleshooting correction are public.
+All eight original ZIPs are retained.
+The job-level ledger is 619 observed seconds,
+USD 0.0498 gross Depot compute value before allowances,
+and a separately labeled USD 0.1238 all-provider four-CPU equivalent proxy.
+It does not establish an invoice or billable VM lifetime.
+
+The per-test identity adapter passed actual `st40hvmw90`:
+both physical shards found historical timings for all 34 candidates and passed their exact 17-case partitions.
+Its [public receipt](../audit/depot-tests-identity-adapter-2026-10-18.evidence.json)
+retains the original and derived report relation,
+stored rows,
+source and guard-removal controls.
+The platform researcher owns remaining source-ledger reconciliation,
+the queued repository ARM check and
+[included-allowance reconciliation](../planning/depot-included-allowance-reconciliation.md).
+Do not extend the older native-CI-only Developer/Startup arithmetic to combined product usage.
+
+The fresh compiled artifact consumer verified 1036 declared hashes,
+including the hidden manifest.
+Actual runtime consumption initially failed because upload/extraction flattened producer symlinks.
+The same immutable artifact passed permission and prohibition after restoring source-owned activation and
+emitted dependency links in `39126304854`,
+source `bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e`.
+No application build or unit suite ran in that consumer,
+and both successful domain cases made zero HTTP/provider requests.
+The remaining `none` case reached its preserved `unresolved` versus `unspecified` source assertion.
+The coverage researcher owns complete matching-image browser/E2E receipts,
+finite mutation and conformance completion and their canonical coverage note.
+Separate remaining coverage items are actual desktop compositor/ImageMagick/PNG prerequisites and consumers,
+proper packed-install consumers,
+and semantic feature/assertion-manifest completion.
+No other lane owns these items;
+the coverage researcher must reconcile measured/reserved campaign cost before each additional bounded profile.
+
+The broader Rust ledger records all 35 bounded ASan fuzz targets completed,
+Truepeak's actual all-features Nextest result of 89 passing cases and two expected skips,
+and independently parsed planted-fault results.
+The Rust researcher owns remaining benchmark and privileged WG terminal evidence.
+
+The [matched process receipt](../audit/depot-process-timeouts-2026-10-18.evidence.json)
+contains all three original ZIPs.
+All three providers allowed the finite seventy-second writer past a sixty-second step deadline.
+Only the native observation establishes completion after the executor advanced to its next step;
+both GitHub-orchestrated observers started after writer completion.
+The [source-backed note](../troubleshooting/depot-step-timeout-process-boundary.md)
+keeps that difference separate from unknown signal routing,
+VM release and billing.
+
+The parent queue is container Git/libatomic prerequisite notes,
+job-environment recurrence documentation,
+combined provider/cost/critical-path modeling,
+the approved six-section expanded report and independent sufficiency review.
+Disposable PR cleanup and ordinary/default/step continuation publication are complete.
+Research snapshots remain available for their active consumers;
+cleanup follows the last owning campaign.
+
+## Historical execution checkpoint on 2026-10-18 at 11:38 UTC
 
 The actual single-job retry of native run `xgq2429hqv` completed artifact download on attempt two.
 Its consumer then correctly rejected the old fixture's failed assertion.
@@ -3423,6 +3514,28 @@ Proposed clarification to existing `AGENTS.md` rule `QF1`,
 pending acceptance:
 require relevant configuration and recent execution history to be inspected before asking behavior questions
 that those artifacts can answer.
+
+## Independent review correction and remaining execution, 2026-10-18
+
+The independent Rust-lane reviewer verified all nineteen root policy/process/MVM ZIPs and 566 members.
+It identified a substantive MVM scope error:
+the 51-byte push/pull check reads and writes the host shared directory,
+without separately asserting guest payload visibility or guest writes.
+The working report,
+MVM receipt qualification and KVM troubleshooting note now retract the stronger interpretation.
+The root lane must execute an explicit guest read,
+distinct output creation and transformation consumer on native Depot,
+Depot-managed GitHub and standard GitHub,
+with original-source identities and cleanup retained.
+This is an active factual task;
+it is not a future production acceptance condition.
+
+The coverage lane also owns current-source desktop/logger Mac and Windows controls after desktop and packed consumers.
+Historical cross-platform owner/dependency hashes and locked toolchains differ from the frozen expanded source.
+Use standard public-GitHub runners sequentially,
+with maximum thirty-minute jobs and a retained admission ledger;
+record actual runtime versus compile-only boundaries and preserve source failures.
+The root lane retains ownership of the coherent Linux graph and repeated whole-graph timing comparison.
 
 [release-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/38785821860
 [runner-docs]: https://depot.dev/docs/github-actions/overview

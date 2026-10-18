@@ -5,7 +5,11 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { assessmentHttpFailure, } from './assessment-http-failure.ts';
-import { AssessmentTransportError, AssessmentRequestFailure } from './assessment-failure.ts';
+import {
+  AssessmentTransportError,
+  AssessmentRequestFailure
+} from './assessment-failure.ts';
+
 export { AssessmentTransportError } from './assessment-failure.ts';
 
 //region Transport owns HTTP resources while the judgment owns attempts and admission
@@ -157,21 +161,41 @@ export function createAssessmentHttpSender({
 
   /**
    Preserve a fixed category for an actual fetch failure while withholding its borrowed cause.
+   
    @param url - fixed assessment endpoint
+   
    @param options - original request and cancellation
+   
    @returns original complete HTTP response
+   
    @throws AssessmentRequestFailure for a fetch TypeError while the caller remains active
+   
    @throws original error for cancellation or a nontransport failure
    */
-  async function dispatchRequest({ url, options }: { readonly url: string; readonly options: RequestInit }): Promise<Response> {
-    /** Invocation failures retain only a local category and function-scoped diagnostic. */
-    const dl = tagged({ tag: dispatchRequest.name, l: rl });
+  async function dispatchRequest({
+    url,
+    options
+  }: {
+    readonly url: string;
+    readonly options: RequestInit
+  }): Promise<Response> {
+    /**
+     Invocation failures retain only a local category and function-scoped diagnostic.
+     */
+    const dl = tagged({
+      tag: dispatchRequest.name,
+      l: rl
+    });
     try {
-      return await fetchImpl(url, options);
+      return await fetchImpl(
+        url,
+        options
+      );
     }
     catch (error) {
       dl.debug('assessment HTTP invocation failed');
-      if (!options.signal?.aborted && error instanceof TypeError)
+      if ((!options.signal
+        ?.aborted) && (error instanceof TypeError))
         throw new AssessmentRequestFailure('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
       throw error;
     }

@@ -204,7 +204,10 @@ function visibleMessage(
       role: message.role,
       toolName: message.toolName,
       content: visibleTextOrImageMessageContent(message.content,),
-      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({details:message.details,process:message.toolName==='process'}), }),
+      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({
+        details:message.details,
+        process:message.toolName==='process'
+      }), }),
       isError: message.isError,
     };
   }
@@ -229,7 +232,10 @@ function visibleMessage(
       role: message.role,
       customType: message.customType,
       content: visibleTextOrImageMessageContent(message.content,),
-      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({details:message.details,process:message.customType==='ad-process:notification'}), }),
+      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({
+        details:message.details,
+        process:message.customType==='ad-process:notification'
+      }), }),
     };
   }
   if (message.role === 'branchSummary') {

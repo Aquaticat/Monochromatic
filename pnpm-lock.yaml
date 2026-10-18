@@ -1989,6 +1989,8 @@ importers:
         specifier: 'catalog:'
         version: 26.6.5
 
+  package/dsh-plugin/search-fetch: {}
+
   package/figma/kiwi:
     dependencies:
       '@monochromatic-dev/module-caught-value':
@@ -4895,6 +4897,9 @@ importers:
       '@mitata/counters':
         specifier: 'catalog:'
         version: 0.0.8
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       mitata:
         specifier: 'catalog:'
         version: 1.0.34

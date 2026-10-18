@@ -1,36 +1,124 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
-import {mkdir,chmod,mkdtemp,rm} from 'node:fs/promises';
+import {
+  mkdir,
+  chmod,
+  mkdtemp,
+  rm
+} from 'node:fs/promises';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const guard=fileURLToPath(new URL('../dist/native/contract/integration/native-host/process-network-guard.ts',import.meta.url));
-const scratch=join(homedir(),'temp','agent');
-await mkdir(scratch,{recursive:true,mode:0o700});
-await chmod(scratch,0o700);
-const directory=await mkdtemp(join(scratch,'native-cli-receipt-contract-'));
-await using fixture={async[Symbol.asyncDispose](){await rm(directory,{recursive:true,force:true});}};
+const guard=fileURLToPath(new URL(
+  '../dist/native/contract/integration/native-host/process-network-guard.ts',
+  import.meta.url
+));
+const scratch=join(
+  homedir(),
+  'temp',
+  'agent'
+);
+await mkdir(
+  scratch,
+  {
+    recursive:true,
+    mode:0o700
+  }
+);
+await chmod(
+  scratch,
+  0o700
+);
+const directory=await mkdtemp(join(
+  scratch,
+  'native-cli-receipt-contract-'
+));
+await using fixture={async[Symbol.asyncDispose](){await rm(
+  directory,
+  {
+    recursive:true,
+    force:true
+  }
+);}};
 const route='https://api.llmgateway.io/v1/decisions';
-const request={model:'original-fixture-model',questions:[{name:'first-original-question'},{name:'quoted"\\question\nlast'},{name:"../..;$(printf RECEIPT_SYNTAX_BOUNDARY)'\\u0027</script>\n"}]};
+const request={
+  model:'original-fixture-model',
+  questions:[
+    {name:'first-original-question'},
+    {name:'quoted"\\question\nlast'},
+    {name:"../..;$(printf RECEIPT_SYNTAX_BOUNDARY)'\\u0027</script>\n"}
+  ]
+};
 const requestJSON=JSON.stringify(request);
 
-async function run({script,receipt}){
- const child=spawn(process.execPath,['--import',guard,'--input-type=module','--eval',script],{
-  cwd:directory,
-  env:{...process.env,HOME:directory,PI_AUTO_MODE_CLI_FIXTURE_CHILD:'1',PI_AUTO_MODE_CLI_FIXTURE_REQUESTS:receipt,AUTO_MODE_LLMGATEWAY_API_KEY:'synthetic-local-fixture-only'},
-  stdio:['ignore','pipe','pipe'],signal:AbortSignal.timeout(10_000),killSignal:'SIGKILL',
- });
- const output=[],diagnostics=[];
- child.stdout.on('data',chunk=>output.push(chunk));
- child.stderr.on('data',chunk=>diagnostics.push(chunk));
- const[code,signal]=await once(child,'close');
- const stderr=Buffer.concat(diagnostics).toString('utf8');
- assert.equal(signal,null,stderr);
- assert.equal(code,0,stderr);
- assert.equal(stderr,'','The isolated receipt probe must retain complete empty stderr');
- return Buffer.concat(output).toString('utf8');
+async function run({
+  script,
+  receipt
+}){
+ const child=spawn(
+   process.execPath,
+   [
+     '--import',
+     guard,
+     '--input-type=module',
+     '--eval',
+     script
+   ],
+   {
+     cwd:directory,
+     env:{
+       ...process.env,
+       HOME:directory,
+       PI_AUTO_MODE_CLI_FIXTURE_CHILD:'1',
+       PI_AUTO_MODE_CLI_FIXTURE_REQUESTS:receipt,
+       AUTO_MODE_LLMGATEWAY_API_KEY:'synthetic-local-fixture-only'
+     },
+     stdio:[
+       'ignore',
+       'pipe',
+       'pipe'
+     ],
+     signal:AbortSignal.timeout(10_000),
+     killSignal:'SIGKILL',
+   }
+ );
+ const output=[];
+ const diagnostics=[];
+ child.stdout
+   .on(
+     'data',
+     chunk=>output.push(chunk)
+   );
+ child.stderr
+   .on(
+     'data',
+     chunk=>diagnostics.push(chunk)
+   );
+ const[code,signal]=await once(
+   child,
+   'close'
+ );
+ const stderr=Buffer.concat(diagnostics)
+   .toString('utf8');
+ assert.equal(
+   signal,
+   null,
+   stderr
+ );
+ assert.equal(
+   code,
+   0,
+   stderr
+ );
+ assert.equal(
+   stderr,
+   '',
+   'The isolated receipt probe must retain complete empty stderr'
+ );
+ return Buffer.concat(output)
+   .toString('utf8');
 }
 
 const acceptedScript=`
@@ -79,8 +167,29 @@ import assert from 'node:assert/strict';
 await assert.rejects(()=>fetch(${JSON.stringify(route)},{method:'POST',body:${JSON.stringify(requestJSON)}}),function receiptWriteFailed(error){return error instanceof Error&&['EISDIR','EPERM'].includes(error.code);});
 console.log('receipt-write-failure-prevents-local-response');
 `;
-assert.equal(await run({script:failureScript,receipt:directory}),
- 'receipt-write-failure-prevents-local-response\n');
-assert.equal(await run({script:acceptedScript,receipt:join(directory,'requests.jsonl')}),
- 'accepted-original-names-and-standard-jsonl-before-response\n');
-console.log(JSON.stringify({complete:true,acceptedRoutes:3,originalNames:true,standardJSONLBeforeResponse:true,rejectionsLeaveReceiptUnchanged:true,receiptFailurePreventsResponse:true,completeChildStderrEmpty:true}));
+assert.equal(
+  await run({
+    script:failureScript,
+    receipt:directory
+  }),
+  'receipt-write-failure-prevents-local-response\n'
+);
+assert.equal(
+  await run({
+    script:acceptedScript,
+    receipt:join(
+      directory,
+      'requests.jsonl'
+    )
+  }),
+  'accepted-original-names-and-standard-jsonl-before-response\n'
+);
+console.log(JSON.stringify({
+  complete:true,
+  acceptedRoutes:3,
+  originalNames:true,
+  standardJSONLBeforeResponse:true,
+  rejectionsLeaveReceiptUnchanged:true,
+  receiptFailurePreventsResponse:true,
+  completeChildStderrEmpty:true
+}));

@@ -78,7 +78,7 @@ await describe({
             targetAt: mode === 'past-target' ? 0 : performance.now() + 15_000,
             attempt: 1,
           };
-          if (mode === 'success' || mode === 'past-target') expect(await send(input,),).toBe(raw,);
+          if ((mode === 'success') || (mode === 'past-target')) expect(await send(input,),).toBe(raw,);
           else {
             const error = await assessmentFailure(async function dispatch() {
               return await send(input,);

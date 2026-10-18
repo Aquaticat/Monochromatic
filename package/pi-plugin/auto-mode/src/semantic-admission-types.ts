@@ -49,7 +49,9 @@ export type SemanticAdmissionInputs = {
    */
   readonly effects: readonly {
     readonly programInspection?: { readonly declaration: { readonly profile: string; }; };
-    /** Original prepared member retains the complete direct command, authenticated by the native judgment. */
+    /**
+     Original prepared member retains the complete direct command, authenticated by the native judgment.
+     */
     readonly prepared?: {
       readonly name: string;
       readonly input: { readonly command?: unknown; };

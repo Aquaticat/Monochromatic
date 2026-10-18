@@ -45,11 +45,21 @@ await describe({ name: 'assessment failure classification', children: [
     const send = assessmentSender({ fetchImpl: async function failHttpInvocation() { throw new TypeError('fixture connection failed'); } });
     /** This retained category contains no borrowed upstream cause. */
     const failure = await assessmentFailure(async function dispatchOriginalAttempt() { return await send(assessmentInput()); });
-    expect(isRetryableAssessmentFailure(new AggregateError([failure], 'single failed call'))).toBe(true);
-    expect(isRetryableAssessmentFailure(new AggregateError([failure, failure], 'shared failure reason'))).toBe(true);
-    expect(isRetryableAssessmentFailure(new AggregateError([new AggregateError([failure], 'inner')], 'outer'))).toBe(true);
-    expect(isRetryableAssessmentFailure(new AggregateError([], 'empty'))).toBe(false);
-    expect(isRetryableAssessmentFailure(new AggregateError([failure, new Error('unqualified')], 'mixed'))).toBe(false);
+    expect(
+      isRetryableAssessmentFailure(new AggregateError([failure], 'single failed call')),
+    ).toBe(true);
+    expect(
+      isRetryableAssessmentFailure(new AggregateError([failure, failure], 'shared failure reason')),
+    ).toBe(true);
+    expect(
+      isRetryableAssessmentFailure(new AggregateError([new AggregateError([failure], 'inner')], 'outer')),
+    ).toBe(true);
+    expect(
+      isRetryableAssessmentFailure(new AggregateError([], 'empty')),
+    ).toBe(false);
+    expect(
+      isRetryableAssessmentFailure(new AggregateError([failure, new Error('unqualified')], 'mixed')),
+    ).toBe(false);
     expect(isRetryableAssessmentFailure({ name: 'AssessmentRequestFailure' })).toBe(false);
     /** An aggregate cycle is not a finite transport-failure explanation. */
     const cyclic = new AggregateError([], 'cyclic');

@@ -628,6 +628,16 @@ before saying it matches, QAB):
   name, kind and parent folder but not the D77 action wording (Select track, Play track), which needs the Auto-play
   setting threaded into `search_view_of`; `PlayerError` now prints the wrapped error text twice in a full chain.
 
+Bookkeeping chore, 2026-10-18, after 0.1.7: `truepeak-core` was still at 0.1.0 although it gained the XXH3-64
+fingerprint, cache schema 2, `put_batch` and per-track decision removal. The crate is `publish = false`, was never on
+crates.io (the API answers that the crate does not exist), and no document records a decision to publish it; both apps
+and `truepeak-core.bench` take it by path, so the version gates no build. The "tagged tree plus crates.io" source offer
+covers the third-party crates only; the two path crates (`music-player`, `truepeak-core`) ship in the tagged tree. The
+human chose to bump the version without publishing: `truepeak-core` is now 0.2.0 (minor bump for the schema change while
+below 1.0), and the four `Cargo.lock` files were regenerated with `cargo metadata --offline`. The rule is in the
+"Versioning" section of `package/music-player/truepeak-core/README.md`. A later publish would need a manual bootstrap
+per `doc/runbook/publish-crate-first-time.md` and a `cargo-publish.yml` job; that is not queued.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI

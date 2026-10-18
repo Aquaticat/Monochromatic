@@ -71,7 +71,10 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
        Toggle selection uses the active branch, including after reload or navigation.
        */
       const enabled = !readNativeBypassEnabled(ctx);
-      tagged({ tag: 'toggleNativeBypass', l: rl })
+      tagged({
+        tag: 'toggleNativeBypass',
+        l: rl
+      })
         .warn(enabled ? 'explicit bypass enabled' : 'explicit bypass disabled');
       appendBypassToggleEntry({
         pi,
@@ -127,12 +130,18 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
      */
     const decision = guardVirtualInput(event);
     if (decision.block) {
-      tagged({ tag: guardNativeTool.name, l: rl })
+      tagged({
+        tag: guardNativeTool.name,
+        l: rl
+      })
         .warn('fixed virtual-input guard blocked native tool');
       return decision;
     }
     if (readNativeBypassEnabled(ctx)) {
-      tagged({ tag: guardNativeTool.name, l: rl })
+      tagged({
+        tag: guardNativeTool.name,
+        l: rl
+      })
         .warn('recording explicit native bypass tool admission');
       appendBypassAllowEntry({
         pi,

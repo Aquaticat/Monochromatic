@@ -2,9 +2,9 @@
 
 ## Status and admitted scope
 
-This research is preparing a serial native CI profile from frozen application source
+The serial native CI profile completed successfully from frozen application source
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
-No adapter profile has been dispatched.
+Run `st40hvmw90` completed at research source `c6d25d092678b0933f1e3b43765fc46c02593a9e`.
 The purpose is to test historical weighting for individual runnable Nextest test names
 without changing production test reports or routing.
 
@@ -125,15 +125,35 @@ setup-script suites,
 cross-binary duplicate names,
 or a production reporter change.
 
-## Work still required
+## Cloud consumer and cleanup
 
-Run the admitted serial seed/shard/consumer profile after the clean-source,
-remote-identity,
-syntax and resource preflight.
-Preserve ingestion separately from actual history coverage.
-If same-run history visibility is insufficient,
-use only the separately admitted bounded read-only follow-up.
-Do not infer a speed benefit or complete 1,956-case suite qualification from this selected cohort.
+Both fresh physical shard jobs found timings for all 34 exact runnable-name candidates.
+They executed disjoint 17-case sets,
+and the downstream consumer passed the exact 34-case union.
+Attempt-scoped API reads retained 136 passing rows across the three seeds and two shards,
+with `className` equal to the unchanged exact `testName` on every row.
+The original and derived XML matched the independently constructed rewrite byte for byte.
+Four provider sandbox IDs were distinct.
+This does not identify physical hosts or measure improved elapsed time.
+
+All five original ZIPs were retained privately with API-size,
+CRC and independently computed SHA256 checks.
+The four report/consumer ZIPs are also included byte for byte in the public compressed source artifact.
+The separate 98 MB input ZIP is represented by exact metadata and hashes rather than duplicated in Git.
+The exact owned transport variant was deleted,
+absence was verified,
+and the private signed URL file was retired.
+No follow-up history allocation was needed.
+
+The [public evidence](../audit/depot-tests-identity-adapter-2026-10-18.evidence.json)
+records individual report hashes,
+lookup counts,
+source/resource admission and cleanup.
+The [source artifact](../audit/depot-tests-identity-adapter-2026-10-18.sources.json.gz)
+retains deciding sources,
+full fixtures,
+original report ZIPs and raw API/log evidence.
+This selected cohort does not qualify the complete 1,956-case suite or a speed benefit.
 
 [split]: https://depot.dev/docs/ci/how-to-guides/split-tests
 [nextest-junit]: https://github.com/nextest-rs/nextest/tree/cargo-nextest-0.9.148/site/src/docs/machine-readable

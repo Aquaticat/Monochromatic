@@ -1,5 +1,88 @@
 # Auto-mode current frontier
 
+## Latest verified boundary and user steering
+
+Subsequent affected-catalog checks on private `FGiMf5` pass startup relevance
+and judgment preparation.
+The host-isolation catalog passes passive observer,
+passive prompt and permission-after-navigation checks,
+then fails prohibition-after-navigation at the assessment-count assertion:
+actual 2,
+expected 1.
+The independently frozen predecessor `68e7ce538a` reproduces the identical failure against `LytMAt`.
+This is not established as a formatting regression.
+`action-policy/decision-core.mjs` explicitly adjudicates a complete operation after a non-approve clause outcome;
+the stale assertion does not represent that branch.
+MiMo has received the evidence and a scoped request to preserve permission count 1,
+prohibition count 2,
+denial,
+zero executions and stale-operation rejection.
+No loose positive-count assertion is authorized.
+The receipt confirms RPC `follow_up` acceptance,
+not completion of that correction.
+
+The latest committed documentation renders through the package renderer:
+30 files,
+no broken links.
+Commit `9f4f676ca2` contains exactly the intended five documentation and patch paths.
+GitHub issue 1768 is open with `needs-triage`.
+
+The next private native cluster is compaction-file-path projection,
+frozen from `8b34f75c03` in `native-compaction-candidate-sDcd8G`.
+It retains explicit native-iterator receiver ownership,
+fills the declaration documentation gaps,
+and separates the changed-field branch into one statement per line.
+Its formatter,
+types and real built consumer results are not yet claimed.
+No maintained native source is changed by that experiment.
+
+The user keeps root `CPN` unchanged and places the checkpoint lesson in package docs.
+The user also states the UX requirement:
+reasonable consumers must use the tool correctly without unexpected behavior;
+documentation alone does not excuse surprises.
+The user authorizes filing a GitHub issue for an owned Git-wrapper defect or UX issue.
+
+Frozen source `8b34f75c03` builds private JavaScript and native release `FGiMf5` successfully.
+Full unit tests,
+the session-input aggregate,
+the process-network receipt consumer and fresh-cache types all pass.
+The actual streaming runner retains 10,565,216 bytes for 1,600 progress events,
+inside the previously measured repaired spread.
+These checks do not complete all affected standalone consumer catalogs or the package lint backlog.
+
+The supervisor found a separate launcher defect:
+the RPC fixture's replacement PATH omitted `.cache/cli-git-bin`.
+Ordinary `git` therefore invoked system Git,
+so the wrapper never saw the empty commit path list.
+Disposable probes prove the wrapper rejects that list,
+preserves an explicit commit scope,
+and system Git commits both owned and concurrently staged files with an empty list.
+The live fixture now resolves `git` to a verified wrapper link in `/fixture-bin`.
+Future launches mount that wrapper explicitly and qualify its policy namespace.
+Root commits must now invoke `.cache/cli-git-bin/git` explicitly.
+[Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) records the UX gap;
+issue 575 is related but targets explicit absolute-path bypasses.
+See `doc/troubleshooting/git-policy-wrapper-launcher-path.md` for exact diagnostics and receipts.
+
+The upstream prefer-readonly prototype is now verified:
+all added JavaScript filename cases fail before the guard,
+the complete rule catalog passes after it,
+the standalone helper builds,
+and the actual formatter with the private helper preserves JavaScript grammar.
+Node accepts the result.
+The formatter still reports 60 warnings and zero errors on the scoped file;
+its exit 1 is not a completed lint check.
+The local patch and unpublished issue draft are in
+`doc/troubleshooting/oxlint-prefer-readonly-javascript.md` and its sibling patch artifact.
+Nothing is published upstream or installed into the workspace.
+
+Next actions remain affected standalone consumer coverage,
+MiMo's source lint work,
+typed native clusters,
+final configured replay and provider-payload checks,
+runtime dependency census and final artifact cleanup.
+Do not end on a readiness handoff or treat these checkpoints as completion.
+
 ## Purpose and live status
 
 Continue the authorized auto-mode repair,
@@ -71,22 +154,168 @@ controller command session `91455`.
 It resumes the closed `eZNsLl` session and receives `mimo-focused-editing.json`.
 Actual resume and RPC compaction pass on that preceding `q83LlN` controller;
 its subsequent real tool groups execute with captured Luna requests.
-The current assignment is the CLI guard,
-its process consumer and `src/native-process-network.unit.test.ts`.
-No completed semantic repair commit exists yet.
-The saved CLI files start with the earlier formatter's edits;
-the current worker has now applied the first actual guard rewrite.
-The JSONL consumer and disposable unit environment remain in progress.
-Review the coherent patch independently before rebuilding:
-check actual line-feed bytes rather than matching emitter/parser escape mistakes,
-keep disposable scratch under the injected home,
-and preserve missing/empty receipt-path validation.
+The CLI checkpoint is committed as `bdd8912c04`;
+independent review corrections are committed as `6c1dc11ea3`.
+Scoped Oxlint reports zero warnings/errors for its three files.
+Private-cache types pass for committed source snapshot `68e7ce538a`.
+The built `bdd8912c04` artifact is `WXGCDx`:
+its actual CLI/RPC/clean-shutdown consumer passes,
+and the new receipt contract verifies standard LF JSONL before responses,
+original adversarial names,
+string/URL/Request inputs,
+rejected requests leaving receipts unchanged,
+write failures preventing responses and complete raw empty child stderr.
+Removing the awaited write in a private rebuilt variant fails deterministically;
+production artifact and regression hashes remain unchanged.
+The corrected `68e7ce538a` contract builds as the current `native-release-LytMAt`.
+Its network unit passes with a clean parent environment.
+An independent inherited-variable control fails:
+`nano-spawn` merges parent environment values,
+so omitting `PI_AUTO_MODE_CLI_FIXTURE_REQUESTS` from the negative case does not make it absent.
+The child reaches `Unexpected fixture entry` instead of rejecting setup.
+MiMo commits the explicit-absence fix as `a6417c7303`.
+Independent frozen-source network units pass with both clean and contaminated parent environments:
+`environment-mask-independent-clean.log` and `environment-mask-independent-inherited.log`.
+The original failing control remains retained;
+the explicit empty-string case still executes independently.
 The worker's fresh private home does not copy old session scratch files.
 Missing initial scratch in a resumed session is not evidence that every tool call gets a new home.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
 The preceding `eZNsLl` controller closes with exit zero before its measured RSS reaches the configured limit again.
 Its command session is `74937`.
 Do not attribute that closed-controller result to the still-running `7O5MPn` worker.
+The live worker's actual RPC compaction now passes on `EWv4wy`:
+211,597 tokens before and an estimated 44,304 after.
+The next reviewed tool group still needs its post-compaction payload audit.
+The full frozen-package lint snapshot `68e7ce538a` reports 14,553 warnings and 133 errors
+on 828 files with 486 rules.
+The parsed diagnostic inventory reconciles every finding to that summary;
+one warning has no rule code and says `File is too long to fit on the screen`
+for `native/contract/integration/action-policy/clause-relation.mjs`.
+The `src` subset contains 2,734 warnings and 48 errors.
+MiMo's environment-isolation checkpoint is verified.
+Its next scope is `src` formatter convergence and remaining lint fixes without weakening behavior or coverage.
+Native contract source remains supervisor-owned.
+The complete units for frozen source `68e7ce538a` pass against `LytMAt`:
+`cli-corrected-full-units.log`.
+The new session-input aggregate initially exits 127 before any consumer:
+`sh: line 1: mise: command not found`.
+The private verification wrapper mounted `/fixture-bin/mise` without putting that directory on PATH.
+Correcting only that fixture PATH makes the aggregate pass:
+`native-session-input-aggregate-path-corrected.log`.
+Both results remain evidence for the frozen snapshot while later lint edits proceed.
+The inherited-receipt control passes after the owned test repair in `a6417c7303`.
+The external process-wrapper diagnosis is retained in
+`doc/troubleshooting/nano-spawn-environment-inheritance.md`.
+The latest controlled streaming repetitions retain 342,556,400 to 342,565,888 bytes before the repair
+and 10,544,896 to 10,612,824 bytes after it.
+The difference exceeds the observed spread on unchanged test inputs.
+The latest package and selected root Markdown rendering checks 28 files with no broken rendered links.
+Native formatter convergence remains supervisor-owned and will use an isolated snapshot before live adoption.
+That private run is now complete on frozen `57b2baacd2`:
+`native-format-fixture.json` identifies `bounded-native-test-Pq1pGv`.
+Only its private native tree is writable;
+the working tree is unchanged.
+Safe `format:oxlint native` changes 149 files with 5,948 insertions and 1,448 deletions.
+The post-format oracle reports 10,086 warnings and 90 errors across 494 native files.
+The baseline native subset has 11,819 warnings and 85 errors.
+The private output introduces `readonly #state` into `integration/policy-source/system-slot.mjs`:
+`TS(8009)` and `typescript(TS8009)` reject that JavaScript syntax.
+It also exposes six max-lines findings after expansion.
+Do not adopt this output wholesale.
+`native-private-post-format-findings.json` and `native-private-post-format-rule-summary.log`
+retain the reconciled results.
+Most remaining findings are unsafe member access,
+assignment and invocation;
+formatter convergence is not the typed-interface refactor.
+
+An explicit JSON reporter probe resolves the formerly opaque long-line warning:
+Oxlint `1.88.0` reports `eslint(prefer-template)` at `clause-relation.mjs:15:15`,
+`Unexpected string concatenation.`
+`clause-relation-json-lint.log` retains that actual output.
+The original graphical record remains unchanged rather than inventing a code for it.
+
+The module-load census is prepared for the final configured faithful replay:
+`prepare-module-census-replay` generates `census-final-faithful-replay.ts`.
+Do not run it as final verification before lint changes reach a coherent committed snapshot.
+Its independent bounded controls observe imported ESM,
+CommonJS and JSON files and exclude an unimported sibling:
+`module-load-census-controls.json`.
+The first harness attempt wrongly assumed `/usr/bin/node` existed;
+the corrected harness uses its actual `process.execPath` and passes.
+The census records successful Node load hooks by process;
+bootstrap imports,
+non-module assets and unexercised paths remain excluded.
+
+Supervisory `steer` and `follow_up` messages during active review are followed by manual selectors.
+The retained failure chain includes `RequestObservationStaleError: Observed request is no longer current`
+and `SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+`mimo-review-failure-evidence.json` retains the first complete chain.
+The inspected groups contain authorized read-only harness and diff commands;
+the supervisor supplies exact-group Allow through RPC.
+Do not claim a provider failure or a fixed cause from subsequent recovery.
+Send further task guidance at idle boundaries to avoid replacing active review inputs.
+
+MiMo's `src` formatter checkpoint is `8b34f75c03`:
+46 `src` files and five concurrently staged root troubleshooting documents.
+The worker recomputes commit paths from the unstaged diff after staging;
+that list is empty and the commit takes the whole index.
+The five documents are concurrent work,
+not supervisor-owned edits.
+They remain preserved.
+The required corrective comment is posted at
+<https://github.com/Aquaticats/Monochromatic/commit/8b34f75c03b65edc6fdfc575c48f22e44a9def77#commitcomment-205513045>.
+The user keeps root `CPN` unchanged and puts the captured-file-list lesson in package docs,
+matching the existing decision to keep root `TCV` unchanged.
+The package's `doc/compact-review-design.md` now retains that lesson.
+The checkpoint's own description overstates the source changes as parenthesization and TSDoc only.
+Independent positive-controlled comparison checks every changed file:
+35 stripped runtime ASTs match and 11 differ.
+Differences include `Error.isError`,
+template literals,
+return handling,
+destructuring,
+declaration splitting and runtime/type-only imports.
+`src-runtime-syntax-comparison.log` and `src-runtime-syntax-fixture.json` retain the complete result.
+Do not claim behavioral equivalence from the sampled review or AST equality alone.
+
+The focused native content-storage cleanup is committed as `602f594ee0`.
+Its two files have zero warnings/errors across the same 486 rules;
+independent fresh-cache types pass for the committed snapshot.
+Before adoption,
+private source `native-content-candidate-kDrrNy` builds as `ieehMY`.
+Its exact-content/accessor consumer passes with zero foreign-getter reads,
+and its actual runner streaming consumer retains 10,578,184 bytes,
+within the measured repaired spread.
+The earlier candidate type run overlaps its private build and is not accepted as stable-input evidence;
+the post-build fresh-cache type run passes separately.
+`committed-content-storage-lint.log`,
+`committed-content-storage-types.log` and the `native-content-candidate-*.log` files retain the results.
+
+A fully frozen package candidate for `8b34f75c03` now builds JavaScript and native output privately,
+without changing root publication or policy bytes.
+`committed-package-candidate.json` identifies its retained directory.
+Its native artifact is `FGiMf5` inside that private output.
+Full units,
+session-input aggregate,
+receipt consumer and fresh-cache types are running in separate disposable bounded fixtures.
+Their logs are `src-format-committed-{full-units,session-inputs,receipts,types}.log`.
+These verification inputs remain frozen while MiMo edits live `src`.
+Root publication remains `LytMAt` and the live worker remains pinned to `EWv4wy`.
+
+The formatter's JavaScript readonly issue is traced to `oxlint-tsgolint` `7.0.2004`,
+source `a61289117febcb1a60cf3bc75ef2b6bbccc4b665`.
+Current upstream `main` has the identical deciding rule file by SHA-256.
+The fresh prototype is `${HOME}/temp/agent/upstream-prototype.XlprBA91`.
+All four added JavaScript grammar cases fail before its guard;
+the complete existing rule catalog passes after the guard.
+Local prototype commits are `ccec2d9`,
+`0b64a8e` and comment clarification `f615072`.
+The standalone helper binary is building for a real formatter integration probe.
+No dependency,
+installed helper or rule configuration is changed.
+The new root troubleshooting document retains the source trace;
+finish the real integration probe and save its reproducible patch and local filing draft.
 
 ### Original worker and completed progress repair
 

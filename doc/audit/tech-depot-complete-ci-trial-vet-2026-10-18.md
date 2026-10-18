@@ -45,10 +45,14 @@ Routine native work can remain on free GitHub-hosted runners within the chosen b
 [public GitHub compute][github-billing],
 [executed native consumers][consumers]).
 
-For CI usage alone,
+For native Depot CI compute considered alone,
 the financial ranking is Developer plus overage > Startup:
-Startup's additional USD 180 monthly fee buys USD 108 more CI allowance.
+Startup's additional USD 180 monthly fee buys USD 108 more native CI allowance.
 The executed model checks the pricing breakpoints and shows Developer remains cheaper at every usage level.
+This calculation does not combine the separate GitHub runner and build entitlements.
+The [expanded combined-product model](depot-combined-product-pricing-2026-10-18.evidence.json)
+includes explicit inputs where Startup costs less;
+do not generalize this single-product result to all CI or all Depot usage.
 Developer's tradeoffs are lower allowances,
 variable overage and no Depot Mac access.
 Startup provides Mac access and larger separate product pools,

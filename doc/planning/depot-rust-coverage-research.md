@@ -9,6 +9,90 @@ Main-worktree changes are documentation and evidence only;
 executable harnesses use the retained,
 solely owned `research/depot-reuse-20261018` worktree.
 
+## Final execution status
+
+The admitted Rust queue is complete at frozen application source
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+All owned cloud jobs are terminal.
+The final conservative compute proxy is USD 4.213,
+leaving USD 0.787 under the USD 5 ceiling.
+No account invoice was accessed and no real paid model/provider request was made.
+The corpus audit intentionally retains an eight-CPU proxy envelope
+although its immutable workflow configured four CPUs and 16 GiB;
+the original adapter attribution is preserved with the correction.
+
+- The current linter passed 415 cases with one helper skipped.
+  Its actual CLI passed help/rule-list checks.
+  The separate direct-rustc consumer passed after using Cargo compiler-artifact JSON paths
+  and matching full-metadata rlib/rmeta artifacts.
+- The ordinary core profile passed 336 cases with 13 skipped.
+  WG's 11 privileged cases subsequently passed in `506m7r84kk`,
+  with real kernel BPF/cgroup/network execution and default Nextest concurrency.
+  Node/Tini controls reproduced and corrected the earlier initless namespace teardown failure.
+  Owned cgroups were empty after cleanup and both mounts unmounted with status `0`.
+- The official installed Codex host passed its unchanged native consumer.
+  Stderr-retaining repeat `m138glct7m` recorded 41 localhost fixture requests,
+  40 successful shell payloads,
+  40 completed native hooks and zero stderr bytes.
+  Reported hook milliseconds are host-resolution observations,
+  not isolated overhead or provider-performance comparisons.
+- All 35 source-declared fuzz targets completed bounded AddressSanitizer runs
+  across the retained original profiles and selected tails.
+  Every tracked seed was admitted without source/seed changes.
+  The unique crate-qualified generator baselines total 67 passed cases.
+  Interrupted whole jobs remain failed attempts;
+  completed tail targets do not change those statuses.
+- The Git owner noticed all 29 planted faults and the linter owner all six.
+  Corrected actual JUnit identities were independently cross-checked against Python's XML parser
+  for 30 Git reports and 1,140 testcase elements.
+  The original adapter's wrong failure names remain retained as superseded evidence.
+  These mutation baselines do not erase the separate full Git suite's two known failures.
+- Truepeak's release `--all-features` owner passed 89 cases with two intentional skips
+  out of 91 enumerated.
+  This is separate from the earlier no-default-features BuildKit library producer.
+- Both benchmark sidecars completed their full unchanged workloads twice in `hzfbgz4xq7`.
+  Regex processed 3,783,920 lines per repetition.
+  The same-image audit verified all 13,860 archive members,
+  including 1,464 SHA-256/size-admitted LFS materializations.
+  The Truepeak benchmark's three owner unit cases passed.
+  Its first synthetic input had no feasible policy.
+  Positive-fixture run `1k8ph1wk9h` then completed the unchanged search twice:
+  both selected a winning candidate and produced matching 8,704-byte,
+  24-row feature files.
+  These synthetic peak-bin runs do not measure real audio decoding.
+
+The executable research head is `ae56107178` on `research/depot-reuse-20261018`.
+Actual immutable execution SHAs are retained per run.
+This lane's main-checkout changes are documentation and evidence only.
+No prepared image tag,
+account setting or subscription was changed by the final consumers.
+
+### Remaining coverage boundaries
+
+The regex default suite intentionally skips
+`pathological_nested_repetition_terminates_without_oom`:
+`tests/integration.rs:547` documents its slower two-pattern regression.
+Its fixed case was not separately selected;
+bounded fuzzing is a distinct runtime boundary.
+The linter's `panic_hook_child` and Truepeak's `crash_writer_child`
+are exercised by their parent subprocess tests and are not added as new Nextest cases.
+Truepeak's ignored `bench_cold_write` requires the `bench:cache` owner
+and an explicitly admitted real-disk `CACHE_BENCH_DIR`;
+no storage-durability benchmark is claimed.
+The Truepeak sidecar's bare `cargo run` owner remains ambiguous between two binaries
+without `default-run`;
+actual benchmark execution selected the produced benchmark binary explicitly.
+Its real-audio collector was not exercised by synthetic-bin fixtures.
+The separate full Git-policy suite retains two current-source failures.
+Desktop/native and Android consumers remain separately owned.
+No historical desktop case count was imported into this denominator.
+
+The prerequisite diagnoses and verified consumer corrections are recorded in
+[the WG namespace troubleshooting entry](../troubleshooting/depot-wg-privileged-prerequisites.md)
+and [the Git archive input-identity entry](../troubleshooting/git-archive-lfs-input-identity.md).
+
+## Initial budget admission
+
 The cumulative conservative compute proxy begins at USD 1.407,
 leaving USD 3.593 beneath the USD 5 ceiling.
 At most two owned cloud jobs may run simultaneously.
@@ -694,9 +778,13 @@ That exposed an insufficient 256 MiB stdout buffer before execution.
 The driver now uses native `git archive --output` and streams its checksum.
 A retained 10,240-byte selected-file control verifies native file output and streamed hashing.
 The frozen attributes contain no export-ignore or export-subst directives.
-The corpus uses frozen Git-object bytes,
-including any checked-in LFS pointer text,
-not separately fetched media payloads.
+The initial plan described the corpus as raw Git-object bytes with LFS pointer text.
+That description was too strong:
+Git archive calls working-tree conversion before writing regular files.
+The executed archive is 602,992,640 bytes,
+with SHA-256 `47698c6be07012ab111e7586c1fd23d8b1f610ca5d3f570e53147da9a30ad368`.
+A same-image audit now checks every member and any LFS materialization
+against its content-addressed frozen source.
 Actual benchmark job `hzfbgz4xq7` uses harness `111910f0352b0e65e8f3f0befa61282915b90e2c`.
 
 At this checkpoint completed compute proxy is USD 3.4492,
@@ -705,3 +793,93 @@ The benchmark and WG reservations give a cumulative bound of USD 4.8892.
 They are the only active owned jobs.
 The remaining independent queue is the final installed Codex stderr-retention pass;
 its admission waits for reconciled capacity and budget.
+
+### Benchmark execution and final isolation checks
+
+Benchmark `hzfbgz4xq7` completed all four native invocations with status `0` and no recorded OOM.
+The regex repetitions each reached all throughput,
+bucket,
+set and line-matches sections over 3,783,920 lines.
+Their container intervals were 359.21 and 364.80 seconds.
+The same-engine throughput range was 9,162,279 to 10,054,431 lines per second.
+These are unchanged-input samples;
+no Depot/vendor performance comparison is established.
+Generic runtime fields named `finished` and `executedUnits` detect libFuzzer output
+and do not describe benchmark completion.
+Benchmark completion is established by actual exit status,
+full workload output and retained container state.
+The Truepeak debug Nextest owner passed three cases.
+Its unchanged search executable processed 24 synthetic tracks twice
+and reported no feasible candidate in either repetition.
+The winning-policy/output-file branch is not credited.
+The original bare Cargo run owner separately failed with status `101`
+because it declares two binaries without `default-run`;
+explicit execution used the produced `truepeak-core-bench` artifact.
+
+WG retry `p81kntfxgs` reached all 11 privileged cases:
+five passed and six failed in process-identity teardown checks.
+Actual protocol-hook marking/drop cases passed.
+The writable private cgroup bind and new bpffs mounts were admitted.
+The namespace used Node as PID 1;
+source `keeper_process.rs` polls `/proc` after signaling
+and only reaps a holder when it is the direct parent.
+Unreaped orphan state is therefore an explicit hypothesis,
+not yet a product-failure attribution.
+The next bounded retry `4hddgrkrk2` adds a real Tini init
+and independent zombie/reaping controls before running unchanged tests.
+Normal Nextest concurrency is preserved.
+The earlier non-lazy cgroup unmount failure remains retained.
+A fallback lazy detach is restricted to the private bind view;
+namespace and owned VM teardown end remaining process references.
+
+Installed Codex stderr-retention run `m138glct7m` passed its native host test.
+Its actual retained stderr and protocol receipts still require final classification.
+Completed compute proxy at this checkpoint is USD 4.024,
+leaving USD 0.976.
+The same-image corpus audit is `8ksdxnqq25`
+and the controlled-init WG retry is `4hddgrkrk2`.
+They are the only active owned jobs,
+with a conservative combined reservation of USD 0.48.
+
+### Closed final reservations
+
+WG run `506m7r84kk` passed all 11 ignored cases after both init controls passed.
+The Node control observed orphan state `Z`;
+the Tini control observed the orphan absent.
+Cgroup inventory after cleanup was empty and both ordinary unmount commands returned `0`.
+The original six failed reports remain unchanged.
+
+The corpus audit verified that the executed archive exactly matched its recorded digest,
+with 13,860 members and no missing entries.
+All 1,464 raw-blob mismatches matched frozen LFS pointer SHA-256 and size.
+The earlier pointer-only attribution is superseded.
+
+Positive Truepeak benchmark run `1k8ph1wk9h` used 24 long flat-peak tracks.
+The full unchanged grid selected window count `14`,
+threshold `60` seconds and margin `0.300` dB.
+Decoded budget was `1,440` seconds against target `4,359`.
+Both repetitions emitted 24 valid feature rows,
+8,704 bytes and SHA-256
+`6b353d33aa7b2acda2090abfa6f4d69b71fb15a9ea5096d80bc6d144c7723cbd`.
+Their container intervals were 0.1942 and 0.1957 seconds.
+The feasible no-classifier branch also produced actual ranked output.
+This closes winning/output emission for the synthetic fixture,
+while real audio collection and decode performance remain uncredited.
+
+Final completed conservative compute proxy is USD 4.213.
+No owned job or reservation remains active.
+The final executable adapter syntax check passed all admitted Rust research bins.
+The YAML check rejected the committed malformed positive control
+and accepted every admitted Rust workflow.
+
+## Next delegated review
+
+The coordinator queued an independent read-only evidence review after this Rust publication.
+The review covers the job-policy/history,
+process-timeout and MVM/KVM audit bundles dated 2026-10-18,
+the combined-product pricing calculation and the root expanded-CI report outside this lane.
+It requires independent ZIP decoding,
+CRC/hash/outcome joins,
+credential inspection,
+current allowance sources and one committed review note.
+No new cloud allocation is admitted for that review.

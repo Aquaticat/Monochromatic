@@ -105,15 +105,18 @@ await describe({
         /**
          Assert the guard stops at setup for a child run with the supplied fixture environment.
 
-         @param environment - disposable fixture environment exercising one setup refusal
+         @param specificEnvironment - fixture overrides defining the refused setup boundary
          */
-        async function expectReceiptPathRejection(environment: Record<string, string>) {
+        async function expectReceiptPathRejection(specificEnvironment: Record<string, string>) {
           try {
             await spawn(process.execPath, [
               '--import', guard.href, '--input-type=module', '--eval', 'throw new Error("Unexpected fixture entry");',
             ], {
               cwd,
-              env: environment,
+              env: {
+                PI_AUTO_MODE_CLI_FIXTURE_REQUESTS: undefined,
+                ...specificEnvironment
+              },
               signal: AbortSignal.timeout(CHILD_DEADLINE_MS),
             });
           }

@@ -951,8 +951,12 @@ a 15-second test limit,
 and a 90-second suite limit.
 The original image declares Playwright 1.63.0 while the source lock declares 1.64.0;
 the run preserves that baseline instead of changing the recipe.
-No browser runtime result is claimed until its receipt is collected.
-Other browser and E2E specifications remain separate tracked profiles.
+The terminal receipt verifies all 45 owning invocations:
+42 shared builds passed and the three engine owners failed before their test bodies.
+Each engine enumerated two cases,
+but Playwright 1.64.0 could not find its required executables in the original 1.63.0 image.
+These six enumerated cases receive no executed-body credit.
+The original container recipe and failure are retained.
 
 ## Fresh compiled-host artifact consumer dispatched
 
@@ -971,11 +975,275 @@ It admits one exact source-bound artifact,
 checks its digest and declared output hashes,
 restores only compiled output,
 and executes the actual native domain owner without rebuilding application source.
-The known `none` frontier assertion remains an expected preserved source failure,
-while permission and prohibition remain actual positive controls.
+The producer passed all 44 owning invocations.
+The fresh consumer verified all 1,036 declared compiled file hashes,
+including the formerly omitted 3,762-byte `.manifest.json`,
+and restored 33,802 ZIP members against the matching installed SDK snapshot.
+Its first actual domain import failed because `runner.js` did not expose `nativeAssertActive`.
+No domain scenario ran in that first fresh consumer.
 The consumer verifies the installed SDK snapshot against the producer before host execution.
 Only the artifact download step receives its read-only workflow token;
 no new repository secret was created.
 
 The source diagnosis and outstanding membership/runtime boundaries are recorded in
 [`github-artifact-hidden-sdk-resources.md`](../troubleshooting/github-artifact-hidden-sdk-resources.md).
+
+## Restored activation and dependency topology controls
+
+Run `39126088565`,
+immutable harness `0d8123ea327f5beddedcf3ba99d698288ea6d979`,
+retains the flattened artifact failure and calls the frozen source's activation owner.
+Activation alone advances the failure from the missing export to missing dependency `which`.
+Its namespace probes used an incorrect `.mjs` suffix for `paths.ts`;
+those probe failures are harness errors and provide no namespace evidence.
+
+Corrected run `39126304854`,
+immutable harness `bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e`,
+restores the same exact producer artifact without building application source or running the unit suite.
+It preserves the materialized directories,
+calls `activateNativeBuild`,
+and reconstructs the three emitted dependency symlinks with the exact frozen producer formula.
+The loader's expected runner URL changes from unequal to equal to the generated absolute import.
+The same 52,321-byte `runner.js`,
+SHA-256 `ad8895d110bc4b0eb26415589b2e8b2e7516bf8f91c28504a8214f2e7572fe47`,
+then exposes `nativeAssertActive` through the registered maintained loader.
+The earlier 79-command producer and fresh 44-command producer have identical runner bytes.
+
+The actual restored domain owner passes permission and prohibition with zero HTTP/provider requests,
+then reaches the preserved `none` assertion:
+actual `unresolved` versus expected `unspecified`.
+This qualifies the measured same-layout restored consumer through those scenario boundaries.
+Generated absolute imports and dependency symlinks remain packaging requirements;
+arbitrary filesystem relocation and another platform are unmeasured.
+
+## Matching-image browser and E2E campaign
+
+Run `39126466632`,
+immutable harness `552831830ef2f059b7efa5149fe20f053428c220`,
+is terminal with all 50 owning invocations reached:
+47 passed and 3 failed.
+Its finite plan has 50 owning invocations:
+42 shared builds,
+the authored browser-property bundle and product page build,
+one copied-recipe matching-image control,
+the root browser owner for all three configured engines,
+and the root E2E owner for both configured engines.
+The frozen inventory contains eight browser specifications and four E2E specifications.
+All application source,
+test assertions,
+and Playwright configurations remain unchanged.
+Only the copied Docker recipe's base-image token changes to the digest-qualified 1.64.0 image.
+A consumer-boundary Podman wrapper adds 2 GiB memory and 2 CPU limits to each actual container.
+The job remains bounded to 8 CPUs,
+32 GiB,
+15 minutes,
+one worker,
+zero retries,
+and finite per-task and suite limits.
+The actual browser owners execute all eight planned specifications in each engine.
+Chromium passes 28 cases;
+Firefox passes 28;
+WebKit passes 26,
+fails the authored OPFS availability assertion (false versus true),
+and skips the authored fs-path OPFS write case.
+These are 82 passing browser cases,
+one failed assertion,
+and one authored skip.
+The property owner requests 25 runs per browser property;
+its per-backend report remains in the exact task log.
+Both product page color-scheme screenshot assertions pass in every engine.
+
+The original root E2E discovery also imports the inactive
+`package-paused/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts`
+and fails its missing `@monochromatic-dev/module-or-throw` import before any E2E body.
+The four active DOM specifications require explicit source-owner selectors;
+the terminal selector control is recorded in the active E2E section.
+This discovery failure is retained rather than silently excluding the inactive root.
+All terminal logs,
+original archive member hashes,
+native topology controls,
+and parsed browser cases are retained in
+`depot-complete-coverage-artifact-browser-receipts.json.gz`.
+
+The active E2E and finite TypeScript owners now have terminal receipts in their dedicated sections.
+The research coverage lane retains these separate independently verifiable queue items:
+
+- Qualify the frozen desktop compositor,
+  ImageMagick executable lookup,
+  and PNG decoding prerequisites;
+  invoke the actual owning consumer with disposable bounded GUI state.
+- Run isolated packed-install consumers through the existing packing and manifest-transformation owners;
+  keep the dependency-free import failure as a negative control.
+- Complete the semantic package,
+  feature,
+  assertion,
+  generator,
+  and consumer manifest;
+  distinguish active and inactive roots and unexecuted surfaces.
+
+These items remain owned work after active E2E and the finite mutation/conformance profiles.
+Each allocation requires the campaign's measured and reserved budget reconciliation,
+finite resource limits,
+and no overlapping coverage cloud job.
+
+## Active E2E and finite TypeScript completion
+
+Run [`39126926119`](https://github.com/Aquaticats/Monochromatic/actions/runs/39126926119)
+uses immutable harness `26d238d84acb484d50bbf2e35c6fba42f2300338`.
+Its 45 calls pass,
+including the unchanged root E2E owners with the four active DOM spec paths as explicit arguments.
+Chromium passes 17 actual cases;
+Firefox passes 17.
+There are no skips or retries.
+The unfiltered discovery failure remains separate.
+
+Run [`39127382413`](https://github.com/Aquaticats/Monochromatic/actions/runs/39127382413)
+uses immutable harness `775d735adbc34c4caea7c626a43f27cd27d0d971`.
+It reaches all 50 planned calls:
+49 succeed and the harness-only call to the nonexistent fixture `build` task fails.
+The fixture declares no build task.
+The actual built mutation CLI integration owner still runs and passes its source assertions.
+Its native report contains 11 killed,
+6 survived,
+2 compile-error,
+zero timeout,
+and zero runtime-error outcomes across 6 shards.
+Native classifications do not independently establish assertion entry for every mutant.
+The final cleanup receipt contains zero owned containers.
+
+The actual TOML Go owner passes TOML 1.0 with 205 valid,
+205 encoder,
+and 474 invalid tests.
+TOML 1.1 passes 214 valid,
+214 encoder,
+and 467 invalid tests.
+The observed tool is `toml-test v2.2.0` built with `go1.26.2 linux/amd64`.
+Both finite declared-type campaigns use seed `7331`,
+size `8`,
+and produce zero failed cases and zero stray diagnostics,
+once with unions and once without.
+The separate positive control passes 65 clean cases and catches 42 of 45 tampered cases.
+Missed combined-case IDs `70`,
+`87`,
+and `94` remain retained in the generated source.
+The frozen gate requires at least one tamper detection,
+so its exit zero is not evidence of complete diagnostic sensitivity.
+
+The validated logs,
+source-bound plans,
+workflow bytes,
+parsed E2E reports,
+compiler-generated cases,
+mutation report,
+and cleanup receipt are retained in
+[`depot-complete-coverage-finite-owner-receipts.json.gz`](depot-complete-coverage-finite-owner-receipts.json.gz).
+Its 391550 bytes have SHA-256 `e93b3f330656a5f7c7c7c629d915cc70e0dda8a1bfdc8fb6ad826556bba264c7`.
+The desktop prerequisite,
+packed-install,
+and semantic-manifest queue items remain independently owned.
+
+## Desktop producer and remaining finite controls
+
+Depot CI run `9zvpr3t592` at `799b35f63ffaaa869996dc34800fd2ef05ca5995` is terminal.
+The original frozen compositor build succeeds and reports version `0.6.0`;
+the actual Mise lookup resolves that real producer.
+The desktop E2E unit owner passes with the installed ImageMagick and actual PNG fixtures.
+The original desktop release owner first fails bindgen's configured libclang lookup.
+After installing a symlink to the real Ubuntu libclang library at the frozen task's `/usr/lib64` path,
+the unchanged build owner succeeds.
+Both current-source release binaries are retained and hash-verified.
+The actual default E2E owner starts private audio and a transient user unit,
+then stops before its first check because compositor `0.6.0` defaults to nested winit without a live parent display.
+The source requires an explicit `--headless` flag for display-free rendering.
+A separate finite consumer will restore those exact binaries and forward that supported option;
+it will preserve the default failure and every product assertion.
+Both scoped cleanup receipts prove no owned runtime container,
+application process,
+or active test unit remains,
+and private sink names are restored.
+The failed remote asset observer returned `stream error: internal: proxy connection failed`;
+its artifact contains no observer receipt,
+so no producer asset-byte result is claimed from it.
+
+The independently verifiable remaining queue is:
+
+- Restore the current-source desktop binaries,
+  capture actual materialized asset hashes,
+  and run the original graphical consumer through its supported headless compositor boundary.
+- Execute the prepared proper pnpr packed-install profile,
+  retaining raw Git object IDs,
+  actual working-file hashes,
+  actual tarball hashes,
+  dependency-free rejection,
+  installed consumers,
+  CLI output,
+  and real bundler/plugin behavior.
+- Complete the feature/assertion/generator/consumer classification with explicit unproven surfaces.
+- Reconcile current e02 source/task/dependency inputs against historical Mac/Windows cohorts;
+  retain material current-source owner gaps and prepare the smallest finite host control.
+
+The current packed-install reservation is USD0.36.
+The campaign guard conservatively retains USD1.32 rounded GitHub time plus USD2.16 completed native job maxima,
+for USD3.84 committed and reserved against USD5.
+These are source-bound published-rate bounds and proxies,
+not invoices or account-wide usage.
+
+## packed-install-corrected admission
+
+The first proper packed-install profile,
+`39129851779` at `0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f`,
+passes its 42 prerequisite builds but stops in the research source-byte inventory before packing begins.
+Git emits `error: unknown option `null``.
+The harness used unsupported `git ls-files --null`;
+a local actual Git invocation verifies the supported `-z` form and its NUL-delimited output.
+No package packing,
+isolated install,
+or installed consumer is credited to that failed harness.
+The corrected immutable harness is `d7447847d5d7c38e6d08164bba6f9fadd841564e`.
+Its original resource and assertion bounds are retained.
+The refreshed deduplicated ledger records 36 completed owned job rows,
+USD1.3920 rounded completed GitHub compute,
+USD2.16 conservative completed native maxima,
+and a USD0.36 finite next reservation.
+The committed and reserved compute guard is USD3.9120 against USD5,
+with invoice and account-wide usage explicitly uninspected.
+
+## Same-producer headless desktop admission
+
+The proper packed producer run `39130630504` is terminal.
+It reaches actual source-owned builds and pnpr packing,
+then pnpm emits `ERR_PNPM_NO_OFFLINE_META` after reporting that the isolated fixture's
+`pnpm.overrides` in `package.json` is ignored.
+Its retained tarballs will feed a separate corrected isolated consumer;
+no installed positive consumer is credited to that failed install.
+The original dependency-free negative control and exact packed outputs remain retained.
+
+The next immutable desktop harness is `9d39515de6cdf01261746637626ab263c1d6a287`.
+It restores the hash-verified archive from `9zvpr3t592`,
+compares source metadata and both binary hashes,
+and adds the compositor's supported `--headless` argument through `E2E_COMPOSITOR`.
+It repeats no Rust build or unit suite.
+A real local executable control verifies unchanged version forwarding,
+the ordinary-argument insertion,
+and the actual archive's 75-member separator handling.
+The first generated wrapper failed this local control and caused no cloud allocation;
+the corrected function-based generator passes it.
+The job is bounded to 15 minutes on 8 vCPU and 32 GiB;
+the private graphical consumer is bounded to 2 vCPU,
+2 GiB,
+512 PIDs,
+600 seconds,
+and no network.
+Its one-artifact transport uses the previously exercised repository-only secret variant pattern,
+containing a five-minute signed GET URL and removed after the attempt.
+No branch or workflow secret isolation is claimed.
+The API's measured URL lifetime is 299 seconds at receipt time.
+
+The refreshed ledger records 37 completed job rows and USD3.9600
+committed and reserved compute against USD5,
+including the USD0.36 next reservation.
+The independent remaining queue retains proper installed consumers,
+actual current-source Mac/Windows desktop and logger host contexts,
+source troubleshooting notes,
+and semantic feature/assertion classification.
+Historical cohorts are not carried forward as current-source executions.
