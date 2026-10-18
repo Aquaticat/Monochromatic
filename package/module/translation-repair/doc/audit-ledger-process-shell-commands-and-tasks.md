@@ -674,6 +674,21 @@ and it came again on 2026-10-15.
   (`node_modules/.monochromatic/comparison-evidence/` and `node_modules/.monochromatic/preparation-root-order/`)
   as retained proof,
   nothing was removed before the owner saw the corrected account.
+  Shown it the same day,
+  the owner chose to delete all of it as first approved.
+  The lead removed the 195 `.frozen-*` folders and the 16 dangling links
+  (`s228/remove-branch-leftovers.ts`;
+  dry run `s228/leftovers-dry.json`,
+  result `s228/leftovers-apply.json`).
+  The check after it (`s228/leftovers-after.json`) found no `.frozen-*` folder
+  and 4 links that the removal left dangling:
+  `producer-prepare.mjs` in four `bootstrap-symlink-refusal` folders of the comparison evidence,
+  each pointing into the removed `.frozen-producer-bootstrap-WWrgVV`.
+  They worked when the owner approved,
+  so they were left in place.
+  The frozen builds the docs cite no longer exist;
+  each citation now records a build that is gone,
+  and the commit it names is still in the history.
 
 Prevention:
 every worktree added from a worktree that holds ignored files passes `--no-worktree-copy`,
