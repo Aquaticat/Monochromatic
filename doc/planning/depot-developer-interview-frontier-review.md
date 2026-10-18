@@ -1,5 +1,16 @@
 # Depot research review and interview frontier
 
+## Withdrawn readiness finding
+
+On 2026-10-18,
+the user rejected the completeness of this research.
+The readiness conclusion and proposed question frontier in this historical draft are withdrawn.
+The [reopened platform surface audit](depot-platform-surface-audit.md)
+supersedes them.
+Missing research must be investigated rather than assigned wholesale to later acceptance work.
+The retained draft records the incomplete reasoning;
+it does not authorize an interview or implementation.
+
 ## Purpose and scope
 
 Independent research review on 2026-10-18 for the parent investigation.
