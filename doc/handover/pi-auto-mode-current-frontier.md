@@ -94,9 +94,24 @@ Fresh types,
 scoped lint,
 host-isolation,
 receipt and complete-unit checks are running against that immutable candidate.
+Those types,
+host-isolation,
+receipt and complete-unit checks finish successfully.
+The scoped lint reports two test-only warnings:
+`eslint/no-await-in-loop` and `no-restricted-syntax/no-low-information-symbol-description`.
+Commit `9d3dae29d8` maps independent invalid-limit checks through `Promise.all`
+and gives the invalid Symbol a descriptive label;
+its fresh scoped/type check remains pending.
 The configured-host long-session replay and guard mutants remain required.
 The live worker still uses pinned `kFkBoY`,
 so it has not received this runtime correction.
+The next resource verification is a coordinated source-worker restart:
+complete its pending readonly edits,
+settle and close its old controller with full stderr retained,
+then resume the same complete session history with the verified private `ebe81e3364` dist mounted read-only.
+The root default dist remains pinned.
+Measure the actual long primary request and review outcome,
+then continue the worker's full mode matrix and lint delivery.
 
 The reported-interaction checkpoint retains 52 successful tools,
 zero selectors,
