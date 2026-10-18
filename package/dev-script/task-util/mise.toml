@@ -52,3 +52,133 @@ run = "node src/tsc-failure.unit.test.ts"
 [tasks.buildAndTest]
 description = "Build the seven node entries, then run unit tests against the built testing seam"
 run = ["mise run build", "mise run test:unit"]
+
+
+[tasks."research:depot:pnpm:prepare"]
+description = "Record immutable source and fresh runner for an isolated dependency-cache experiment"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process');
+const { mkdirSync, readFileSync, writeFileSync, readdirSync } = await import('node:fs');
+const { join } = await import('node:path');
+const { cpus, totalmem, platform, arch } = await import('node:os');
+const { createHash } = await import('node:crypto');
+const { strict: assert } = await import('node:assert');
+const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+const directory = join(root, '.research-depot/evidence');
+const store = join(root, '.research-depot/pnpm-store');
+mkdirSync(directory, { recursive: true });
+mkdirSync(store, { recursive: true });
+assert.equal(readdirSync(store).length, 0, 'Fresh allocation unexpectedly contains the experiment store');
+const hash = path => createHash('sha256').update(readFileSync(join(root, path))).digest('hex');
+const result = {
+  recordedAt: new Date().toISOString(),
+  sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  pool: process.env.RESEARCH_POOL,
+  phase: process.env.RESEARCH_PHASE,
+  sample: process.env.RESEARCH_SAMPLE,
+  scope: process.env.RESEARCH_SCOPE,
+  lockSha256: hash('pnpm-lock.yaml'),
+  miseLockSha256: hash('mise.lock'),
+  node: process.version,
+  pnpm: execFileSync('pnpm', ['--version'], { encoding: 'utf8' }).trim(),
+  runner: { name: process.env.RUNNER_NAME, os: process.env.RUNNER_OS, arch: process.env.RUNNER_ARCH, imageOS: process.env.ImageOS, imageVersion: process.env.ImageVersion, platform: platform(), architecture: arch(), cpus: cpus().length, cpuModel: cpus()[0]?.model, totalMemoryBytes: totalmem() },
+  freshExperimentStoreEmpty: true
+};
+assert.equal(result.node, 'v26.12.0');
+assert.equal(result.pnpm, '12.14.0');
+writeFileSync(join(directory, 'allocation.json'), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
+'''
+
+[tasks."research:depot:pnpm:verify"]
+description = "Assert expected fresh-job archive hit or miss and validate the stored manifest"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { readFileSync, writeFileSync, readdirSync } = await import('node:fs');
+const { join } = await import('node:path');
+const { strict: assert } = await import('node:assert');
+const directory = join(process.env.GITHUB_WORKSPACE, '.research-depot');
+const allocation = JSON.parse(readFileSync(join(directory, 'evidence/allocation.json')));
+const expectedHit = allocation.phase === 'warm' || (allocation.phase === 'branch' && allocation.pool === 'depot');
+const actualHit = process.env.RESEARCH_CACHE_HIT === 'true';
+assert.equal(actualHit, expectedHit, 'Cache backend returned an unexpected hit/miss');
+const marker = join(directory, 'pnpm-store/research-manifest.json');
+if (expectedHit) {
+  const producer = JSON.parse(readFileSync(marker));
+  for (const key of ['lockSha256', 'miseLockSha256', 'node', 'pnpm', 'scope', 'pool']) assert.equal(producer[key], allocation[key], 'Restored dependency identity mismatch: ' + key);
+  assert.notEqual(producer.runner.name, allocation.runner.name, 'Warm measurement must use a fresh allocation');
+  writeFileSync(join(directory, 'evidence/cache-producer.json'), JSON.stringify(producer, null, 2) + '\n');
+} else {
+  assert.equal(readdirSync(join(directory, 'pnpm-store')).length, 0, 'A declared miss unexpectedly restored data');
+}
+const result = { expectedHit, actualHit, matchedKey: process.env.RESEARCH_MATCHED_KEY, phase: allocation.phase, pool: allocation.pool, differentBranchProbe: allocation.phase === 'branch' };
+writeFileSync(join(directory, 'evidence/cache-result.json'), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
+'''
+
+[tasks."research:depot:pnpm:install"]
+description = "Measure the current workspace dependency installation against an explicitly isolated pnpm store"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process');
+const { readFileSync, writeFileSync } = await import('node:fs');
+const { join } = await import('node:path');
+const directory = join(process.env.GITHUB_WORKSPACE, '.research-depot');
+const args = ['install', '--frozen-lockfile', '--store-dir', join(directory, 'pnpm-store')];
+const startedAt = new Date().toISOString();
+const started = performance.now();
+const result = spawnSync('pnpm', args, { stdio: 'inherit' });
+const record = { startedAt, finishedAt: new Date().toISOString(), elapsedSeconds: (performance.now() - started) / 1000, command: ['pnpm', ...args], exitStatus: result.status, signal: result.signal, error: result.error?.message };
+writeFileSync(join(directory, 'evidence/install.json'), JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+if (result.error) throw result.error;
+if (result.status !== 0) throw new Error('Frozen workspace dependency installation failed; preserve its source failure');
+const allocation = JSON.parse(readFileSync(join(directory, 'evidence/allocation.json')));
+if (allocation.phase === 'seed') writeFileSync(join(directory, 'pnpm-store/research-manifest.json'), JSON.stringify(allocation, null, 2) + '\n');
+'''
+
+[tasks."research:depot:pnpm:guard"]
+description = "Check an archive-size bound before saving the sole experimental cache entry"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process');
+const { once } = await import('node:events');
+const { statSync, writeFileSync, unlinkSync } = await import('node:fs');
+const { join } = await import('node:path');
+const { strict: assert } = await import('node:assert');
+const directory = join(process.env.GITHUB_WORKSPACE, '.research-depot');
+const archive = join(process.env.RUNNER_TEMP, 'research-pnpm-quota-check.tar.zst');
+const compressor = spawn('zstd', ['--threads=2', '--quiet', '--force', '--output', archive], { stdio: ['pipe', 'ignore', 'inherit'] });
+const packer = spawn('tar', ['--create', '--file', '-', '--directory', join(directory, 'pnpm-store'), '.'], { stdio: ['ignore', 'pipe', 'inherit'] });
+packer.stdout.pipe(compressor.stdin);
+const [packed, compressed] = await Promise.all([once(packer, 'close'), once(compressor, 'close')]);
+assert.equal(packed[0], 0, 'Cache quota tar failed');
+assert.equal(compressed[0], 0, 'Cache quota compression failed');
+const result = { compressedBytes: statSync(archive).size, maximumBytes: 500_000_000, checkOnly: true, savedPathIsOriginalStore: true };
+writeFileSync(join(directory, 'evidence/archive-size-guard.json'), JSON.stringify(result, null, 2) + '\n');
+unlinkSync(archive);
+console.log(JSON.stringify(result));
+assert(result.compressedBytes <= result.maximumBytes, 'Archive exceeds the predeclared repository cache headroom budget');
+'''
+
+[tasks."research:depot:pnpm:consume"]
+description = "Run the existing semantic bridge build and external artifact consumers after dependency setup"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process');
+const { writeFileSync } = await import('node:fs');
+const { join } = await import('node:path');
+const rows = [];
+for (const task of ['build:js:node', 'test:semantic-bridge-host', 'test:external-consumer-host']) {
+  const command = '//package/oxlint-plugin/prefer-readonly-parameter-type:' + task;
+  const start = performance.now();
+  const result = spawnSync('mise', ['run', command], { stdio: 'inherit' });
+  rows.push({ task: command, elapsedSeconds: (performance.now() - start) / 1000, exitStatus: result.status, signal: result.signal, error: result.error?.message });
+  if (result.status !== 0) break;
+}
+const result = { recordedAt: new Date().toISOString(), tasks: rows, trackedSourceDiff: execFileSync('git', ['diff', '--name-only'], { encoding: 'utf8' }).trim() };
+writeFileSync(join(process.env.GITHUB_WORKSPACE, '.research-depot/evidence/consumer.json'), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
+if (rows.some(row => row.exitStatus !== 0)) throw new Error('Existing semantic-bridge consumer failed; do not present dependency-cache success as complete CI success');
+'''
