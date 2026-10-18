@@ -1,4 +1,4 @@
-# Depot Developer as an additional CI pool: research plan
+# Expanded CI using Depot and GitHub: research plan
 
 ## Authorization and sequencing
 
@@ -9,7 +9,13 @@ and required research before the interview begins.
 Depot and GitHub Actions experiments are authorized for that research.
 Do not start grilling while a factual prerequisite can still be researched or tested.
 
-Developer and continued GitHub availability are settled objectives.
+The user subsequently clarified that migration is the wrong framing:
+the objective is to use Depot's full capabilities and greatly expand the current CI setup.
+Developer remains the intended base plan,
+and GitHub remains complementary capacity.
+Discovery must cover the full Depot platform relevant to that expanded CI,
+including capabilities absent from current workflows and capabilities outside Developer eligibility.
+Eligibility gaps inform the later interview rather than silently narrowing research.
 The research must determine practical routing,
 reuse,
 coverage,
@@ -25,13 +31,22 @@ the main worktree receives documentation and evidence.
 ## Independently verifiable research areas
 
 - Provider capabilities and billing:
-  current Developer eligibility,
+  the current complete platform inventory,
+  Developer eligibility,
   separate allowances,
   normalization,
   storage,
   retention,
   concurrency,
   admission controls and trial-to-paid transition semantics.
+  Include remote container builds,
+  CI sandboxes and orchestration,
+  GitHub runners,
+  reusable images,
+  caches and disks,
+  registry,
+  test reporting and splitting,
+  debugging and programmatic execution.
 - Repository workload and selection:
   existing workflows,
   affected-package and consumer selection,
@@ -103,4 +118,7 @@ The capability agent is checking product and billing boundaries.
 The routing agent is inventorying current workflow and security state.
 The cache agent is preparing the current-source cache integration and fresh-job experiment design.
 The main agent is preparing isolated cache and orchestration probes.
+The user correction broadens every area's applicability to a substantially expanded CI graph;
+today's workflows are a measured incumbent,
+not the limit of the design.
 No interview question is pending.

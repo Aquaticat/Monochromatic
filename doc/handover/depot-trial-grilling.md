@@ -4,6 +4,12 @@
 
 The user requested Depot Developer as an additional pool alongside GitHub,
 then required comprehensive research before grilling.
+They clarified that migration is the wrong framing:
+use Depot's full capabilities and greatly expand the current lackluster CI setup.
+The research now covers all CI-relevant Depot capabilities and desired repository coverage,
+not only placement of existing jobs.
+Developer remains the intended base plan;
+record eligibility gaps rather than excluding capabilities from discovery.
 Depot and GitHub Actions research experiments are authorized.
 The [research plan](../planning/depot-developer-additional-pool-research.md)
 tracks independently verifiable areas and the stop condition for beginning the interview.
