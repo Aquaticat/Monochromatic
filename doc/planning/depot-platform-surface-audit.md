@@ -360,6 +360,10 @@ and community support.
 macOS runners require Startup or Business;
 the [GitHub runner overview][github-runners] independently confirms this plan boundary.
 A successful Startup-trial macOS job does not establish Developer eligibility.
+The [allowance reconciliation](depot-included-allowance-reconciliation.md)
+withdraws the earlier categorical macOS allowance exclusion.
+Startup macOS credit and normalized-debit treatment remain unresolved;
+Developer tier ineligibility is a separate documented boundary.
 GPU builds,
 custom regions,
 dedicated infrastructure,

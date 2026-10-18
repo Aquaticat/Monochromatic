@@ -76,6 +76,9 @@ does not establish when those separate products changed infrastructure.
 
 The [runner plan matrix][runners] puts macOS on Startup and Business.
 Developer does not provide native macOS runners even though the current Startup trial exercised them.
+The [current allowance reconciliation](depot-included-allowance-reconciliation.md)
+withdraws the earlier categorical macOS allowance exclusion.
+Startup macOS debit and credit treatment remain unresolved.
 The trial's availability is not proof of Developer eligibility.
 The [native evaluation][native-evaluation] remains the evidence for actual Windows and macOS consumer behavior.
 
