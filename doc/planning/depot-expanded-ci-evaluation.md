@@ -361,6 +361,38 @@ admission reservations are not added as observed charges
 ([normalized baseline](depot-owned-allocation-ledger.md),
 [independent exact arithmetic](../audit/depot-owned-allocation-independent-arithmetic-2026-10-18.evidence.json)).
 
+The current-source four-CPU Linux comparison has two completed repetitions on each GitHub runner pool.
+All 42 shared Node build commands pass in every sample.
+GitHub takes 206.729 and 213.691 seconds;
+Depot's GitHub runners take 73.986 and 72.591 seconds.
+The means are 210.210 and 73.2885 seconds,
+with observed spreads of 6.962 and 1.395 seconds.
+The ratio of means is 2.87.
+The two Rust owner commands average 720.5195 seconds on GitHub versus 325.8625 seconds on Depot,
+a 2.21 ratio,
+with observed spreads of 10.631 and 28.513 seconds.
+Both original Rust command logs contain the same 89 Truepeak and 237 forbidden-strings passing identities
+in every sample;
+the Truepeak summary also records two skips.
+These compare complete owner programs,
+including Rust compilation and test execution,
+under observed four-CPU,
+approximately 16 GB Linux x64 allocations
+([original samples, sources and exact arithmetic](../audit/depot-expanded-graph-github-repetition-2026-10-18.evidence.json)).
+
+Neither ratio describes complete CI.
+Each public GitHub repetition leaves 28 commands unstarted and terminates six commands at their budgets,
+while both Depot GitHub repetitions retain all 222 scheduled command logs.
+Property-test seeds also differ across repetitions.
+The graph is one job with parallel dependency branches,
+not a distributed artifact pipeline or every repository owner.
+It restores no explicit package/compiler cache and uses a fresh Cargo target;
+provider image,
+tool and registry caches are not assumed empty.
+The ranges are observed spreads from two repetitions,
+not statistical confidence intervals
+([source-bound limits](../audit/depot-expanded-graph-github-repetition-2026-10-18.evidence.json)).
+
 Cache conclusions name the workload and mechanism.
 Both fresh pnpm profiles use pinned `actions/cache/restore` and `actions/cache/save`
 at `27d5ce7f107fe9357f9df03efb73ab90386fccae` for the isolated pnpm content store.
@@ -429,8 +461,10 @@ Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
 current-source macOS and Windows owner controls,
 semantic feature/assertion reconciliation,
-source-ledger reconciliation,
-repeated coherent Linux graph measurement and combined allocation/cost normalization.
+corrected native graph consumer reconciliation and combined allocation/cost normalization.
+All 120 captured documentation pages now have substantive applicability findings in the source ledger.
+The repeated GitHub graph phases are sealed;
+their failed full-graph outcomes remain qualified rather than converted into an overall speed claim.
 The desktop,
 packed-install and native automatic BuildKit/registry consumer queues are complete with the qualifications in
 Gate and artifact-consumer results.
