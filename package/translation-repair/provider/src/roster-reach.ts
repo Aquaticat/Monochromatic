@@ -123,11 +123,6 @@ export type BedrockSpelling =
   };
 
 /**
- Every approved roster identity, in card order; declared on the cards and
- named here for the callers that read the roster beside its reach.
- */
-
-/**
  How Charm Hyper spells one roster model, where it serves it at all.
 
  @param modelId - roster model to look up

@@ -38,14 +38,6 @@ export const SYNTHETIC_CHAT_BASE_URL = 'https://api.synthetic.new/openai/v1';
  */
 export const SYNTHETIC_QUOTAS_URL = 'https://api.synthetic.new/v2/quotas';
 
-
-
-/**
- Re-exported so the hundred-odd callers that name a roster model keep one
- import, while the identity itself lives in `roster-id.ts` where both catalogs
- can see it without a cycle.
- */
-
 /**
  Verified per-model facts routing and budgeting read.
 
