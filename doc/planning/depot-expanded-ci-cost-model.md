@@ -72,6 +72,25 @@ the concurrent CPU allocation also prevents treating sibling improvements as ind
 The completed shared-build and Rust phase comparisons retain their separate repeated measurements in the
 [evaluation report](depot-expanded-ci-evaluation.md).
 
+## Conditional waiting value
+
+The retained waiting input is CAD 8.975/hour.
+The dated Bank of Canada observation for 2026-10-16 is CAD 1.4154/USD,
+re-fetched from the primary Valet endpoint for this calculation.
+That gives USD 6.340963685/hour.
+The repeated completed shared-build means differ by 136.9215 seconds for Depot GitHub
+and 147.910 seconds for corrected native Depot.
+If the human waits throughout that phase,
+the respective conditional values are USD 0.24117 and USD 0.26053 per phase
+([original dated FX and exact phase inputs](../audit/depot-expanded-graph-conditional-waiting-value-2026-10-18.evidence.json)).
+
+Actual blocked time is unmeasured;
+multiply those values by the fraction of the phase spent waiting.
+Unattended overnight execution does not establish human waiting cost.
+The calculation counts one shared-build interval and adds no overlapping Rust branch.
+Different generated cases,
+failed source gates and public GitHub budget stops prevent an equal-completion whole-CI waiting-benefit or ROI claim.
+
 ## Lane coordination
 
 Each researcher retains its existing per-campaign admission and measured/reserved ledger.

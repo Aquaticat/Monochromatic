@@ -442,10 +442,23 @@ Depot GitHub runners USD 1.3372 and SDK intervals USD 0.0081959,
 with public GitHub compute zero.
 Their known partial nominal subtotal is USD 6.1999959 before allowances.
 BuildKit's USD 0.538584 request-window proxy remains separate from unknown allocated-builder compute.
-Later research attempts require a deduplicated follow-on ledger;
-admission reservations are not added as observed charges
+Admission reservations are not added as observed charges
 ([normalized baseline](depot-owned-allocation-ledger.md),
 [independent exact arithmetic](../audit/depot-owned-allocation-independent-arithmetic-2026-10-18.evidence.json)).
+
+The independently checked follow-on snapshot adds 30 distinct terminal allocation rows,
+with no baseline duplicates and 35 rehashed source bodies.
+Its nominal provider-window proxy is USD 0.6041:
+Depot GitHub USD 0.1797 and native CI USD 0.4244,
+with public GitHub compute zero.
+The desktop row uses its exact 263-second failed attempt,
+not the superseded 279-second run envelope.
+The separate BuildKit request-window proxy is USD 0.015897333333;
+actual allocated-builder billing remains unknown.
+Later OS,
+owner and debug controls are excluded from this frozen snapshot until separately normalized
+([follow-on ledger](depot-owned-allocation-follow-on.md),
+[independent frozen source and arithmetic](../audit/depot-owned-allocation-follow-on-independent-2026-10-18.evidence.json)).
 
 The current-source four-CPU Linux comparison has two completed repetitions on each GitHub runner pool.
 All 42 shared Node build commands pass in every sample.
