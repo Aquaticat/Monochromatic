@@ -43,6 +43,14 @@ const loadedInput: unknown = Reflect.get(environment, 'policyInput');
 assert.ok((loadedInput !== null) && ((typeof loadedInput) === 'object'));
 /** Explicit issued-object identity remains available inside the independent test callbacks. */
 const input: object = loadedInput;
+/** Independent native resource ownership verifies genuine getter results without a caller-created state. */
+const loadedResource: unknown = await import(new URL(
+  '../dist/native/contract/collector/rule-relevance-sdk-copy/input/resource-owner.mjs',
+  import.meta.url,
+).href);
+assert.ok((loadedResource !== null) && ((typeof loadedResource) === 'object'));
+/** Explicit namespace identity remains available inside independent test callbacks. */
+const resource: object = loadedResource;
 /** Public operations accept either the capability or their original aggregate argument. */
 const readers = [
   { name: 'readPolicyInput', field: undefined },
@@ -133,6 +141,25 @@ await describe({
         }, { name: 'PolicySlotBindingError', message: 'Policy input link is not this loader original binding' });
       },
     }),
+    it({
+      name: 'genuine getters retain the native loader and its actual resource-frame identity',
+      fn: async function originalGetterResults() {
+        /** Only the native resource owner can authenticate this loader and binding pair. */
+        const loader: unknown = Reflect.get(input, 'loader');
+        assert.ok((loader !== null) && ((typeof loader) === 'object'));
+        /** The binding must be the same original object recognized outside the capability module. */
+        const nativeBinding: unknown = Reflect.get(input, 'nativeBinding');
+        assert.ok((nativeBinding !== null) && ((typeof nativeBinding) === 'object'));
+        /** Public policy reading independently identifies the currently bound native frame. */
+        const binding = invoke({ namespace: policy, name: 'readPolicyInput', argument: input });
+        assert.ok((binding !== null) && ((typeof binding) === 'object'));
+        assert.equal(invoke({
+          namespace: resource,
+          name: 'readBoundResourceFrame',
+          argument: { binding: nativeBinding, loader },
+        }), Reflect.get(binding, 'frame'));
+      },
+    }),
     ...readers.map(function readerCase(reader) {
       return it({
         name: `${reader.name} rejects counterfeit objects before invoking public property traps`,
@@ -185,6 +212,33 @@ await describe({
           });
         },
       });
+    }),
+    it({
+      name: 'genuine instance methods reload and revalidate through the original publication owner',
+      fn: async function originalMethodResults() {
+        /** Method values remain unknown until their actual callable kind is observed. */
+        const read: unknown = Reflect.get(input, 'readCurrent');
+        assert.ok((typeof read) === 'function');
+        /** The original assertion function must accept only its currently published binding. */
+        const check: unknown = Reflect.get(input, 'assertCurrent');
+        assert.ok((typeof check) === 'function');
+        /** The original async reload must publish a fresh binding rather than silently doing nothing. */
+        const reload: unknown = Reflect.get(input, 'reload');
+        assert.ok((typeof reload) === 'function');
+        /** The instance reader and exported reader must observe the same current publication. */
+        const before = invoke({ namespace: policy, name: 'readPolicyInput', argument: input });
+        assert.equal(Reflect.apply(read, input, []), before);
+        assert.equal(Reflect.apply(check, input, [before]), undefined);
+        await Reflect.apply(reload, input, []);
+        /** The reload's actual new publication invalidates the previous identity. */
+        const after = invoke({ namespace: policy, name: 'readPolicyInput', argument: input });
+        assert.notEqual(after, before);
+        assert.equal(Reflect.apply(read, input, []), after);
+        assert.equal(Reflect.apply(check, input, [after]), undefined);
+        assert.throws(function staleBinding() {
+          Reflect.apply(check, input, [before]);
+        }, { name: 'PolicySlotBindingError', message: 'Policy input link is not this loader original binding' });
+      },
     }),
   ],
 });
