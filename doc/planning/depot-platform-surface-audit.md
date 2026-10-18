@@ -1112,7 +1112,8 @@ and the retained standard CI device observations.
 
 These optional products have concrete repository applicability and authorization boundaries in the ledger.
 Reviewing them does not require adopting them or manufacturing unrelated workloads.
-The remaining generic page/command entries still require their substantive pass.
+That checkpoint still had generic page/command entries.
+The complete deployed-page reconciliation now replaces those retrieval-only states in the ledger.
 
 ## Selected repository owners actually execute on Linux ARM64 CI
 
@@ -1149,15 +1150,67 @@ These are upstream author's claims until reconciled with deciding source and app
 An unmerged change receives no deployed capability credit.
 The installed Docker configuration uninstall path will not be exercised against shared state.
 
-## Active source and runtime gaps
+## Complete deployed-page contract reconciliation
 
-- Reconcile every indexed page and command with a concrete repository use,
-  a non-applicability reason,
-  or an explicit unresolved question.
-- Compare deployed schemas,
-  bundled CLI schemas,
+The complete current bodies of all 120 indexed documentation pages have a substantive applicability review.
+The ledger retains 119 explicit `sourceReview` records
+and the separate split-tests candidate-identity/physical-adapter review.
+No generic retrieval-only documentation state remains.
+The parent independently reviewed eighteen native CI pages and eleven Cache integration pages;
+their exact source hashes,
+findings,
+and repository applicability are joined in durable source archives.
+
+The CLI applicability map covers 99 distinct actual help/parser invocations.
+Ninety-eight returned help successfully;
+the Cargo wrapper instead rejected its missing local `sccache` prerequisite.
+The API map covers 31 captured protobuf service declarations,
+208 method declarations,
+and 63 deployed CI/GHA OpenAPI operations.
+Declarations duplicated across source packages remain separate source evidence,
+not a count of uniquely deployed endpoints.
+These maps classify repository uses,
+token/settings restrictions,
+and exact runtime limits.
+They do not claim every method,
+example,
+format,
+or optional integration was executed.
+
+The complete container-build pass records soft cache GC limits,
+cache-parent retention,
+autoscaling's per-instance threshold,
+Compose/Bake/default-Docker distinctions,
+public log sharing,
+and installed exporter restrictions.
+The complete GitHub runner pass records deprecated Dagger support,
+Dependabot's separate credential/settings route,
+Linux-only root-modifiable egress rules,
+Mac fixed-capacity queues,
+and the difference between CLI analytics and dashboard flaky-test cards.
+Source-only optional products do not receive runtime acceptance credit.
+
+Current runner-type pricing explicitly lists Linux two-CPU at `USD 0.006/minute`,
+Linux four-CPU at `USD 0.012/minute`,
+Windows four-CPU at `USD 0.016/minute`,
+and Mac eight-CPU at `USD 0.08/minute`.
+Windows/Linux allowance multipliers differ from their cash rates;
+Mac debit/credit mechanics remain unresolved.
+No silent universal normalized-minute cash price is used.
+
+The [native automatic-authentication follow-up](depot-native-buildkit-auth-research.md)
+now separately qualifies a local exporter
+and an image-only project-registry consumer using only injected native job credentials.
+All three source-bound native runs and build requests are terminal,
+all three original ZIPs are retained,
+and the solely owned image/project deletion has fresh absence controls.
+
+## Follow-up qualification and upstream diagnostic work
+
+- Preserve the source/deployment distinction for the mapped schemas,
+  bundled CLI protobuf versions,
   SDK exports,
-  and source release dates method by method.
+  and unexercised methods.
 - Reconcile the executed BuildKit graph,
   Git contexts,
   mounts,
@@ -1197,13 +1250,12 @@ The installed Docker configuration uninstall path will not be exercised against 
   secret authorization,
   retained-log gaps,
   and unexercised ordinary OCI or named runtimes.
-- Replace generic page and command states with cited applicability and evidence boundaries,
-  including source-only network,
+- Keep source-only network,
   Code,
   Agents,
   managed AWS,
   external CI integrations,
-  and language recipes.
+  and absent language owners distinct from the recorded actual consumers.
 - Finish public status-history pagination and component coverage before interpreting reliability;
   no uptime denominator is currently established.
 - Reconcile the completed identity-adapter receipt into the complete test-producer applicability map.

@@ -209,12 +209,13 @@ not subscription entitlements.
 Neither service was called.
 
 The pricing FAQ says a reached usage cap stops builds.
-The current container-build quickstart names a `Container Build Minutes` limit,
-and the current GitHub runner troubleshooting guide separately names a `GitHub Actions minutes limit`.
+The current [container-build quickstart][build-quickstart] names a `Container Build Minutes` limit,
+and the current [GitHub runner troubleshooting guide][runner-troubleshooting]
+separately names a `GitHub Actions minutes limit`.
 The claim that only container builds have a documented minute-cap control is retracted.
 These are separately documented product controls;
 their configured values and runtime enforcement were not inspected or exercised.
-It does not specify a single aggregate dollar cap covering these separate meters,
+These sources do not specify a single aggregate dollar cap covering these separate meters,
 SDK sandboxes,
 storage and both CI products.
 No such automatic USD 200 guarantee follows from the public wording or this local ledger.
@@ -235,3 +236,5 @@ must apply each entitlement to its own admitted workload and meter.
 [sdk]: https://depot.dev/docs/api/sandbox-sdk-reference
 [agents]: https://depot.dev/docs/agents/overview
 [build-parallelism]: https://depot.dev/docs/container-builds/build-parallelism
+[build-quickstart]: https://depot.dev/docs/container-builds/quickstart
+[runner-troubleshooting]: https://depot.dev/docs/github-actions/troubleshooting
