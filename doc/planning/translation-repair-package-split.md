@@ -200,14 +200,16 @@ and what it holds.
   quorum,
   seat tally,
   prompt payloads,
-  and the block and section pairing stages.
+  the section pairing stage
+  and the block pairing stage's wire and prompt pieces.
 - `slice-reading`:
   10,016 lines,
   43 files,
   imports 9.
   Image reading and OCR,
   chunked documents,
-  slice coverage and pictures.
+  slice coverage and pictures,
+  and the block pairing stage (`pair-blocks-stage.ts`).
 - `rendering-audit`:
   5,360 lines,
   20 files,

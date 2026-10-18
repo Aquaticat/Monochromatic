@@ -280,8 +280,18 @@ before the other queued work.
     each with a before-and-after source-set control.
     Cherry-pick their commits onto the branch,
     then gate the merged head.
-2.  Package READMEs (the scaffold wrote one-line stubs),
-    then the docs move per the plan's "Docs" section.
+2.  Package READMEs landed (`704165269a` to `48ea1fc3d0`).
+    After `w167` lands:
+    `source-scan`'s `source-scans` task depends on a `build` task the package lacks
+    and on none of the five sibling builds its tests load;
+    `source-scan` and `test-fixture` export `./ts` to an `src/index.ts` neither has;
+    the `source-scan` README describes its readers as mid-move.
+    The README agent named role wording it inferred from module names without opening the modules
+    (`consistency`,
+    `artifact`,
+    `page-check` among them);
+    read those against the code.
+    Then the docs move per the plan's "Docs" section.
 3.  The controls in a fresh keyless worktree
     (suite names and counts against g100,
     scans,
