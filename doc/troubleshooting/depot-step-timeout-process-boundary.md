@@ -48,7 +48,7 @@ fs.writeFileSync('evidence/timeout-renew-completed-' + attempt + '.json',
 
 The actual GitHub logs report runner version `2.337.0`.
 Its release source is `397b032cbf865e9c3ddfab89d533ec19325e1273`.
-`src/Runner.Sdk/ProcessInvoker.cs:31` declares these grace intervals:
+`src/Runner.Sdk/ProcessInvoker.cs:32` declares these grace intervals:
 
 ```text
 # actions/runner, src/Runner.Sdk/ProcessInvoker.cs
@@ -60,6 +60,8 @@ private readonly TimeSpan _sigtermTimeout = TimeSpan.FromMilliseconds(2500);
 wait,
 then send SIGTERM and wait before killing the tree.
 That branch depends on `killProcessOnCancel`.
+The script handler passes `killProcessOnCancel: false`
+in `src/Runner.Worker/Handlers/ScriptHandler.cs:346`.
 The public implementation permits a cancellation interval beyond the nominal deadline;
 the observation does not independently identify every signal delivered to the child.
 
