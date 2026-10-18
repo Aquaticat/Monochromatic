@@ -48,6 +48,24 @@ The live source worker owns only the same fourteen catalog paths.
 It repairs its type errors and moves to the scoped lint backlog:
 229 findings are reported at the 33-tool checkpoint.
 No package-wide lint or catalog parity completion is claimed.
+The process later exits 139 at 100 tool results and eight tool errors.
+Its retained stderr reports V8's
+`FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`
+under the existing 1,536 MiB heap ceiling.
+Its source session file is 2,255,703 bytes.
+This evidence establishes a heap-limit failure;
+it does not establish which retention path consumes that heap.
+The old native worker remains alive and settled.
+No killed in-flight source write is replayed:
+the only unfinished tool is a read of `src/assessment-sender.ts`.
+The source worker's final scoped lint passes,
+but its transient consumer fails `2 !== 3` assessment attempts.
+Preserve the original expected counts and diagnose parity before changing runtime or assertions.
+The supervisor checkpoints only its changed catalog paths,
+retaining that failure in the commit subject,
+and prepares a full-history resume at unchanged bounds on the same immutable corrected runtime.
+Fresh types for the independently frozen mount repair still encounter the preceding catalog checkpoint's type errors;
+these are not mount-repair type failures.
 
 Native aborts produce three error tool results containing
 `Complete group preparation or assessment failed`.
@@ -196,6 +214,23 @@ All twenty excluded outputs are restored in the private candidate.
 No formatter output has been adopted into the root worktree.
 Private build and consumer qualification of the remaining changes are pending;
 AST equality does not establish source-qualification or complete runtime equivalence.
+Its first private build fails at `native/build-reuse.ts` with an actual hard-link `EXDEV`:
+the copied active symlink still names the live candidate through a separate read-only mount.
+Only the private copied pointer is localized;
+the root and live worker artifact remain unchanged.
+The localized private build passes as `native-release-BNfypR`,
+reusing 886 files and 6,956,014 bytes.
+
+Committed mount regression `532c20e618` separately proves equal `st_dev` values,
+matching eligible metadata and an actual direct-link `EXDEV` across distinct disposable bind mounts.
+Its maintained reuse assertion fails with that error before the repair.
+Commit `7a70bcecae` retains verified independently allocated output only for `EXDEV`;
+all other link failures propagate.
+The bounded frozen corrected test passes all three named cases,
+including the same-mount inode-sharing positive control and intact file/directory checks.
+The Linux `link(2)` manual explicitly documents this distinct-mount behavior.
+Package `doc/build-lifecycle.md` retains the defect and verification contract.
+Fresh corrected types and scoped lint remain required.
 
 The supervisor incorrectly stops native diagnostic call `call_3295f42211d7470d867d0a18`
 after misreading JSON display escaping as actual source escapes.
