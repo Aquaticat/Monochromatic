@@ -12,7 +12,8 @@ A minimal Electron app proving this repo can ship a no-Vite,
    and renderer sandboxing stays enabled.
 - Linux launch forces Chromium's Ozone Wayland backend and the automated test unsets `DISPLAY`,
   so an XWayland fallback cannot make the test pass.
-- Distribution bundles are generated with shared `@monochromatic-dev/desktop-app-electron-infra` helpers around `@electron/packager`,
+- Distribution bundles are generated with shared
+   `@monochromatic-dev/desktop-app-electron-infra` helpers around `@electron/packager`,
    not Vite or Forge.
 
 ## Tasks
@@ -22,7 +23,8 @@ A minimal Electron app proving this repo can ship a no-Vite,
 - `mise run //package/desktop-app/electron-counter:distribute` builds Linux,
    Windows,
    and macOS bundles for x64 and arm64.
-- `mise run //package/desktop-app/electron-counter:distribute:dry-run` prints the exact distribution target matrix without downloading Electron zips.
+- `mise run //package/desktop-app/electron-counter:distribute:dry-run`
+   prints the exact distribution target matrix without downloading Electron zips.
 
 ## Pure Wayland verification
 

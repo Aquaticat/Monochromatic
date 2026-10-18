@@ -172,7 +172,8 @@ The agent reported that all five installed nightly toolchains fail to compile `b
 A scratch crate that depends on `branches` at exactly 0.4.4 compiled cleanly with `nightly-2026-09-22`.
 The failure belongs to the newest nightly that an upgrade had just installed,
 not to every installed nightly.
-The agent then built with the stable toolchain through raw `cargo` as a workaround instead of reporting the exact toolchain
+The agent then built
+with the stable toolchain through raw `cargo` as a workaround instead of reporting the exact toolchain
 boundary.
 
 ### Lesson

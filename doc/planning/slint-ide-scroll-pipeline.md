@@ -9,7 +9,8 @@ All numbers come from the nested compositor with the installed single file,
 on a host with a one-minute load of 35 to 87,
 with only runs in which the frame recorder dropped nothing counted.
 
-- Vello starts and draws in the nested compositor (it needs no compositor change; the compositor already has a dmabuf GPU path),
+- Vello starts and draws in the nested compositor (it needs no compositor change;
+  the compositor already has a dmabuf GPU path),
   but FemtoVG, software, Vello, and the default (FemtoVG) showed the same frame cadence, with a longest pause of 50 to
   67 ms in every cell.
   (The "about half of the possible frames" figure first reported here was a harness artifact:

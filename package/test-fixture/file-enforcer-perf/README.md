@@ -82,11 +82,13 @@ Launches 5 podman containers simultaneously,
    `--memory=1g`
 - **IO**:
    `--device-read/write-iops=<auto-detected device>:100`,
-   `--device-read/write-bps=<auto-detected device>:80mb` (the backing block device is resolved at runtime via `findmnt` against `MONOREPO_ROOT`,
+   `--device-read/write-bps=<auto-detected device>:80mb` (the backing block device is resolved
+    at runtime via `findmnt` against `MONOREPO_ROOT`,
    then canonicalized through any mapper symlinks;
    on a typical LUKS+btrfs setup this lands on `/dev/dm-0`)
 
-Validates constraints by ensuring the **peak** container sysbench score stays below the known VPS baseline of 1605 events/sec.
+Validates constraints by ensuring the **peak** container sysbench score stays below the known VPS baseline
+ of 1605 events/sec.
 Reports min,
  median,
  and max timings across all containers for each benchmark scenario.
@@ -96,18 +98,21 @@ Reports min,
 ### Why contention instead of bandwidth throttling
 
 The original approach used `--cpus=0.3` (CFS bandwidth throttling via `cpu.max`).
-This created unrealistic benchmark results because CFS bandwidth control works by alternating between "run" and "stall" phases within fixed periods:
+This created unrealistic benchmark results because CFS bandwidth control works by alternating between "run"
+ and "stall" phases within fixed periods:
 
 - With `cpu.max = "30000 100000"` (30ms quota per 100ms period),
    the process runs for up to 30ms,
    then is **frozen for the remaining 70ms** until the next period
 - Operations under 30ms complete cleanly;
    operations crossing a period boundary get a random 70ms penalty
-- This creates a **bimodal latency distribution** (fast or fast+70ms) rather than the uniformly slower execution of a real VPS
+- This creates a **bimodal latency distribution** (fast or fast+70ms) rather than the uniformly slower execution
+ of a real VPS
 - p95/p99 numbers are inflated by stall injection,
    not by actual compute slowness
 - Reducing the period (e.g.,
-   `cpu.max = "3000 10000"`) shrinks the stalls to 7ms but introduces scheduler overhead and measurement noise from the 100Hz refill rate
+   `cpu.max = "3000 10000"`) shrinks the stalls to 7ms but introduces scheduler overhead and measurement noise
+    from the 100Hz refill rate
 
 ### How real VPS providers schedule CPU
 
@@ -151,7 +156,8 @@ Benefits over CFS bandwidth throttling:
 
 ### Why taskset instead of cpuset cgroup
 
-Rootless podman on systemd-managed cgroups v2 cannot use `--cpuset-cpus` because systemd does not delegate the cpuset controller to user slices by default.
+Rootless podman on systemd-managed cgroups v2 cannot use `--cpuset-cpus`
+ because systemd does not delegate the cpuset controller to user slices by default.
 The cpuset controller is a partitioning controller (it carves out exclusive core ownership),
  unlike proportional controllers like `cpu.weight` or `memory.max`.
 Delegating it to unprivileged users would let them monopolize physical cores,
@@ -202,7 +208,8 @@ Both the micro tier and the constrained tier can report CPU hardware counters (c
  cache references and misses,
  branch mispredictions) through `@mitata/counters`.
 On Linux this needs perf access:
- the default `kernel.perf_event_paranoid=2` blocks the kernel-inclusive counters the addon opens unless the process holds `CAP_PERFMON`.
+ the default `kernel.perf_event_paranoid=2` blocks the kernel-inclusive counters the addon opens
+  unless the process holds `CAP_PERFMON`.
 
 ### Micro tier
 
@@ -210,7 +217,8 @@ mitata loads `@mitata/counters` itself and prints counters inline in its benchma
 The workspace uses strict pnpm isolation (`hoist: false`,
  `nodeLinker: isolated`),
  so mitata cannot resolve the addon from its own location;
- a `packageExtensions` entry in `pnpm-workspace.yaml` declares the dependency for mitata so the runtime `import('@mitata/counters')` resolves.
+ a `packageExtensions` entry in `pnpm-workspace.yaml` declares the dependency for mitata
+  so the runtime `import('@mitata/counters')` resolves.
 
 Grant `CAP_PERFMON` to the node binary once,
  then run the micro benchmarks:

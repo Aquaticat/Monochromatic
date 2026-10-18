@@ -46,7 +46,8 @@ with the stated reason that stale dependency state can produce false negatives.
 Restoring that state would conflict with the existing correctness owner;
 the present proposal does not override it or claim a TypeScript incremental-cache speedup.
 Built JavaScript,
-declarations and native binaries are separately consumed artifacts whose source/compiler/configuration identities matter.
+declarations
+and native binaries are separately consumed artifacts whose source/compiler/configuration identities matter.
 
 The terminal's existing `package/desktop-app/terminal/mise.toml:43` dispatcher chooses host Cargo
 only when Cargo,

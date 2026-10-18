@@ -165,7 +165,8 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
    Rejected:
     a read-only check plus a `version:bump` command (two steps when forgotten),
     and adding paths without updating the worktree (leaves reverted versions in `git status`).
-- The changesets `version` job in `npm-release.yml` runs the same ripple before committing the Version Packages pull request.
+- The changesets `version` job in `npm-release.yml` runs the same ripple
+  before committing the Version Packages pull request.
    Root task `changeset:version` runs `changeset version`,
     then `mise run //package/git-policy/repository:bump:dependents`,
     then `pnpm install --lockfile-only`.

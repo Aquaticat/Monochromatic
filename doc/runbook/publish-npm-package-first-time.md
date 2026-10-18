@@ -44,7 +44,8 @@ Prerequisites:
    titled `chore(*): version packages`,
    still open.
    Land the changeset in the same push as the manifest change that drops `private`:
-   a public manifest reaching `main` without a pending changeset makes the workflow try to publish the pre-release version through trusted publishing,
+   a public manifest reaching `main` without a pending changeset makes the workflow try to publish the pre-release
+   version through trusted publishing,
    which fails with `E404` because no trusted publisher exists yet
    (harmless,
    seen for `module-fs-path` on 2026-09-07).
@@ -144,7 +145,8 @@ TODO
      `npm view @monochromatic-dev/module-logger version` until it prints `0.1.0`.
      Expected:
      a brand-new package's version document appears at once,
-     but the package index (`https://registry.npmjs.org/@monochromatic-dev%2fmodule-logger`) can answer 404 for several minutes.
+     but the package index (`https://registry.npmjs.org/@monochromatic-dev%2fmodule-logger`) can answer 404 for several
+     minutes.
 14.  Merge the version pull request:
      `gh pr merge <number> --squash`.
      Expected:

@@ -64,7 +64,8 @@ A later explicit adoption request is required before implementation or a decisio
   `valibot`,
   `yuku-ast`,
   and `yuku-parser`.
-- `package/git-policy/cli/src/management-parser.ts` describes a repository-owned management-command grammar that replaced
+- `package/git-policy/cli/src/management-parser.ts` describes a repository-owned management-command grammar
+  that replaced
   the `@optique/core` facade.
 - `package/git-policy/cli/src/parser/argv.ts` describes a repository-owned Git argv region parser that replaced
   `@optique/core` option parsing.
@@ -150,7 +151,8 @@ A technology result therefore needs an integration shape:
 - use CAC for management plus shared Git-region tokenization while retaining Git-specific scanners;
 - or replace every parser path with CAC plus adapters.
 
-The last shape cannot be credited with deleting the complete parser directory unless a prototype demonstrates the Git-specific
+The last shape cannot be credited
+with deleting the complete parser directory unless a prototype demonstrates the Git-specific
 facts without recreating those scans around CAC.
 
 ## Frozen hard constraints
@@ -246,7 +248,8 @@ No soft score can offset a hard-gate failure.
   license,
   release,
   and package-artifact changes would migration introduce?
-- Does CAC's TypeScript surface preserve cli-git's static command and option guarantees under this repository's compiler and
+- Does CAC's TypeScript surface preserve cli-git's static command
+  and option guarantees under this repository's compiler and
   declaration settings?
 - Does a migration delete more repository-owned parser complexity than the adapter and compatibility code it adds?
 - Which current tests establish replacement parity,
@@ -284,7 +287,8 @@ No soft score can offset a hard-gate failure.
 
 ### 2026-08-14 initial checkpoint
 
-The first repository read changes the framing from "replace Optique with CAC" to "compare CAC with the current owned parser
+The first repository read changes the framing from "replace Optique with CAC" to "compare CAC
+with the current owned parser
 set."
 The package manifest shows Optique has already been removed.
 The key practicality threshold is therefore net simplification with strict behavioral parity,
@@ -325,7 +329,8 @@ ninety-six wrapper tests in `src/bin.unit.test.ts`,
 trust management subprocess tests,
 packed JSONL boundary fixtures,
 and a packed lifecycle benchmark.
-Migration completeness requires mapping every affected parser branch to these tests rather than treating management examples alone
+Migration completeness requires mapping every affected parser branch
+to these tests rather than treating management examples alone
 as parity.
 
 ### 2026-08-14 CAC-only scope checkpoint

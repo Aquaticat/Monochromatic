@@ -58,7 +58,8 @@ The shape now follows `package/module/logger/DECISIONS.md`
    `happy-opfs` left the manifest,
    the pnpm catalog,
    and the lockfile:
-   929 kB unpacked plus five transitive packages that every Node installer would have downloaded for a path no consumer runs.
+   929 kB unpacked plus five transitive packages that every Node installer
+   would have downloaded for a path no consumer runs.
 - `normalize` is public and delegates under `node` like its siblings.
    `dirnameFallback`,
    `joinFallback`,
@@ -108,10 +109,12 @@ Measured on 2026-09-07 on the built artifacts:
 
 Accepted consequences:
 
-- A Node consumer whose bundler resolves the `default` condition gets no filesystem for root discovery and no message beyond the rejection,
+- A Node consumer whose bundler resolves the `default` condition
+   gets no filesystem for root discovery and no message beyond the rejection,
    the same as every package in the logger's prior-art sample.
 - The inlined logger stays inlined (standing `doc/decision/npm-publishing.md` direction):
-   a consumer that also installs `@monochromatic-dev/module-logger` runs two logger instances with separate sink discovery.
+   a consumer that also installs `@monochromatic-dev/module-logger`
+   runs two logger instances with separate sink discovery.
 - No browser CI job exists;
    the Playwright gate runs locally in podman,
    as for the logger.

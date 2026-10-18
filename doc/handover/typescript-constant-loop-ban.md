@@ -312,7 +312,8 @@ Final verification passed:
 - Ordinary migrated sources contain no `for (;;)` statements.
 - The two runtime-error fixtures use `for (;;)` as approved.
 - Root-inclusive ancestor traversal now has focused start-to-root and root-only tests.
-- The pre-existing production statement at `package/ssg/aquati.cat/src/lib/content.ts` remains unchanged and out of scope.
+- The pre-existing production statement at `package/ssg/aquati.cat/src/lib/content.ts` remains unchanged
+  and out of scope.
 - Scoped commit path inspection contains only task files.
 - An optional repository-wide Oxlint sweep was also attempted.
   It failed on unrelated baseline input with 697 errors and 3,870 warnings,

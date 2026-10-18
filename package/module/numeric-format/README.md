@@ -74,7 +74,9 @@ but fractional minutes / hours / days were deferred ([proposal-intl-duration-for
 
 ### 2. Magnitude-driven unit selection is out of scope
 
-The auto-select-best-unit feature (`"0.3ms" -> "51ms" -> "1.2s"` depending on input magnitude) was redirected to a hypothetical
+The auto-select-best-unit feature
+(`"0.3ms" -> "51ms" -> "1.2s"` depending on input magnitude)
+was redirected to a hypothetical
 `Intl.RelativeTimeFormat` v2 ([ecma402#498][e498],
  still open).
 The proposal team's framing in [proposal-intl-duration-format#174][i174],
@@ -93,7 +95,9 @@ And @FrankYFTang on the charter:
 >  without any reference point of start or end.
 
 [#32][i32] is the longest thread on adaptive unit-set selection.
-The options debated (`smallestUnit` / `largestUnit` / `hideZeroValued` / `requiredFields`) all let the caller fix the field set;
+The options debated
+(`smallestUnit` / `largestUnit` / `hideZeroValued` / `requiredFields`)
+all let the caller fix the field set;
 none picks the field set from input magnitude.
 No `bestFit`-style option was added.
 

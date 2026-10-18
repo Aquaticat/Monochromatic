@@ -330,7 +330,8 @@ That preserved snapshot covers `4x77lb56cs` only.
 The independently hash-verified global development union includes external executor records
 and has 686 terminal package identities and 33 unresolved identities;
 the browser-properties bundle supplies the additional terminal identity.
-Development prerequisite recovery `dhxhzzvmc3` is terminal at pushed revision `2676cb365a206434b525bf032a5875cafde827e9`.
+Development prerequisite recovery `dhxhzzvmc3` is terminal
+at pushed revision `2676cb365a206434b525bf032a5875cafde827e9`.
 All 12 selected package checks and their 24-check closure passed;
 the sidecar generator commands passed without output drift.
 The browser group reached the engines but exceeded its 1,200,000 ms adapter budget;
@@ -486,7 +487,8 @@ preserve that guard while grafting the generated branch's new forwarding/selecti
 Cleanup control `qsg8tx4bvb` measures root `0:0` output and reproduces ordinary deletion failure;
 Git already removes registration, so the privileged Git retry is rejected.
 The orphan-only correction at `53514e17d6` passes `p3jlkgvl99`,
-with strict source identity, image config, metadata, confined removal and no remaining containers independently verified.
+with strict source identity, image config, metadata,
+confined removal and no remaining containers independently verified.
 Ten negative fixtures, the ordinary positive fixture and the guard-removal control pass, all removed.
 Long-three is independently reconciled: conf fuzz and TOML mutation pass;
 conf mutation exits one from a red `src/conf.cache.unit.test.ts` baseline.

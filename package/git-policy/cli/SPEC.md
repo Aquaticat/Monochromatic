@@ -126,7 +126,8 @@ The file is JSON with comments,
 Without the file the defaults apply.
 Legacy executable configuration files (`cli-git.config.mjs`,
  `cli-git.config.ts`) are never read or executed:
-beside a JSONC file `git cli-git check` reports a `legacy-config-ignored` configuration warning (other commands and `fix` stay silent),
+beside a JSONC file `git cli-git check` reports a `legacy-config-ignored` configuration warning (other commands
+ and `fix` stay silent),
 and alone they are a configuration failure that asks for the translation.
 
 Config parsing validates the following.
@@ -344,7 +345,8 @@ pending journals wait for the next repository invocation without the flag.
 Before staging,
 exclude every registered worktree root strictly nested under the source.
 Private stage names are reserved and excluded at every path component.
-Stage each destination separately in a mode-`0700` sibling directory so file cloning stays on the destination filesystem.
+Stage each destination separately in a mode-`0700` sibling directory so file cloning stays
+ on the destination filesystem.
 Copy regular files into the stage with an exclusive copy-on-write request whose unsupported-filesystem behavior falls
 back to a full copy.
 Preserve directory and regular-file permission bits plus exact symbolic-link target text.
@@ -637,7 +639,8 @@ at most four per-update `git rev-list --stdin` or `git ls-tree` processes run co
 one `git diff-tree --stdin` reads every range commit's delta,
 and one `git cat-file --batch` reads every blob.
 Never spawn one process per commit.
-Not yet met by the native executable: it handles updates one after another, runs `git rev-list <local> --not <published>`
+Not yet met by the native executable: it handles updates one after another,
+ runs `git rev-list <local> --not <published>`
 with arguments, and reads each range commit's delta with its own `git diff-tree` process; the handover lists this as an
 open divergence.
 
@@ -1893,7 +1896,8 @@ whichever earlier replay lost its race.
   including `encoding`,
   the author and committer identities and dates,
   and custom headers.
-  `git replay` and plain `git commit-tree` both transcoded non-UTF-8 messages and dropped custom headers in the prototype.
+  `git replay` and plain `git commit-tree` both transcoded non-UTF-8 messages and dropped custom headers
+   in the prototype.
 - A signed prepared commit,
   one carrying a `gpgsig` or `gpgsig-sha256` header,
   is rebuilt with
@@ -2010,7 +2014,8 @@ and prepared entries:
     in order,
     is subsumed,
     and one that dropped or rewrote a landed line is not.
-    A prepared hunk that replaces exactly the lines a landed deletion removed is a modify/delete conflict and is not subsumed.
+    A prepared hunk that replaces exactly the lines a landed deletion removed is a modify/delete conflict
+     and is not subsumed.
 
 Strict reverse application alone never subsumes the case the decision exists for:
 an own edit directly next to the landed edit sits in the landed hunk's context lines,
@@ -2505,7 +2510,8 @@ The verdict is proven alive,
 dead,
 or evidence-free:
 
-- A proven-alive owner gets a wait bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800) with one human-readable stderr line naming the holder.
+- A proven-alive owner gets a wait bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800)
+ with one human-readable stderr line naming the holder.
 - A dead or evidence-free owner gets Git-style quadratic backoff with jitter up to
   `indexLock.unprovenOwnerTimeoutMs`,
   then `index-lock-unproven-owner` with exit `2`,
@@ -2749,7 +2755,8 @@ Landing and replay:
   prepared bytes holding the landed edit plus an adjacent own edit land as they are;
   a far-apart edit is not subsumed and merges;
   an adjacent edit without the landed one conflicts;
-  identical additions and additions keeping every landed line are subsumed while one that rewrote a landed line conflicts;
+  identical additions and additions keeping every landed line are subsumed while one
+   that rewrote a landed line conflicts;
   delete against modify conflicts either way round and a deletion on both sides is subsumed;
   binary blobs are subsumed only when identical;
   a landed mode change merges three-way even when the content is subsumed;

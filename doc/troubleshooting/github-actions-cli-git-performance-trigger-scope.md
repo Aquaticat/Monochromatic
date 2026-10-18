@@ -196,7 +196,8 @@ confirming that changes outside `package/git-policy/cli/package.json` do not sat
 - A dependency or metadata edit in `package/git-policy/cli/package.json` with an unchanged `version` starts only the
   detection job.
 - A change outside `package/git-policy/cli/package.json` creates no automatic workflow run.
-- A missing automated base revision or non-string manifest version fails detection instead of silently running or skipping
+- A missing automated base revision or non-string manifest version
+  fails detection instead of silently running or skipping
   the benchmark.
 
 ### Historical runs outside the automatic scope
@@ -262,7 +263,8 @@ Tradeoffs:
   The next cli-git version change is the automatic release boundary.
 - A version-changing pull request followed by its merge can run the benchmark for both events.
   Keeping both preserves pull-request feedback and direct-main coverage.
-- The detector uses a full-history checkout so the event's base manifest is available across multi-commit pushes and pull
+- The detector uses a full-history checkout so the event's base manifest
+  is available across multi-commit pushes and pull
   requests.
 - Manual dispatch intentionally bypasses the version-change requirement.
 

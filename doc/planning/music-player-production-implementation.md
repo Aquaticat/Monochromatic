@@ -4,9 +4,11 @@
 
 On 2026-10-10 the human said: "Now go prod. Dev work. Use Haiku subagents."
 That authorizes production implementation of the accepted design in `package/music-player/design/decisions.md`.
-Earlier records that said no production implementation was authorized (for example D101 to D104) described the design rounds;
+Earlier records that said no production implementation was authorized (for example D101 to D104) described the design
+rounds;
 this instruction supersedes them for implementation, and not for any design question still open.
-Production source had been reverted to design-only on 2026-09-09 (`6d2d06e41`: "The accepted visual review did not authorize production app implementation"),
+Production source had been reverted to design-only on 2026-09-09 (`6d2d06e41`: "The accepted visual review did not
+authorize production app implementation"),
 so the production app is the older player and differs from the design in many places.
 
 The work happens on the branch `feat/music-player-production`, in the worktree `~/temp/agent/music-player-production`.
@@ -29,12 +31,16 @@ The work happens on the branch `feat/music-player-production`, in the worktree `
   Applied rule: diagnosis, cross-system debugging, performance and audio engineering, search and database integration,
   the keyboard map with its end-to-end runs, and polish fixes that need judgment go to Sonnet;
   pure-logic ports with a tested reference, mechanical renames, comment sweeps and verification runs stay on Haiku.
-  Every brief names `doc/troubleshooting/` as the first search and requires the build or run, not only a linter, as its verdict.
-- Trust, set by the human on 2026-10-10: once there is enough evidence that Haiku is good enough for a specific kind of task,
+  Every brief names `doc/troubleshooting/` as the first search and requires the build or run, not only a linter, as its
+  verdict.
+- Trust, set by the human on 2026-10-10: once there is enough evidence that Haiku is good enough for a specific kind of
+- task,
   the orchestrator does not repeat that kind of work as if it distrusted them.
-  Evidence so far: pure-logic ports with a tested reference (packages 1 and 2) compiled, mirrored every case, passed the unit
+  Evidence so far: pure-logic ports with a tested reference (packages 1 and 2) compiled, mirrored every case, passed
+  the unit
   tests and, after one round, detekt, and the orchestrator's own re-run agreed with the agents' reports.
-  For that kind of task the orchestrator accepts the agent's own test and detekt results from the logs and runs the suite once before committing.
+  For that kind of task the orchestrator accepts the agent's own test and detekt results from the logs and runs the
+  suite once before committing.
   Compose UI packages have no evidence yet and keep the full verification, including native captures.
 - Haiku subagents write code and tests for one bounded work package each, in the shared worktree, in disjoint files.
   They never run Gradle, never commit and never touch another package's files.
@@ -59,7 +65,8 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
    to `core/KeyboardMap.kt` with a test that mirrors `design/keyboard-map-test.mjs`.
 3. Player screen to the design: remove the in-app volume row (D43), fold and cover layouts (D41 to D45),
    deck content height (D44).
-4. Folder picker: letter rail (D17, D28), folder names (D31), the cover picker with an upward caret while open (D46, D104).
+4. Folder picker: letter rail (D17, D28), folder names (D31), the cover picker with an upward caret while open (D46,
+4. D104).
 5. Search page (D47 to D74).
 6. Feedback overlays and Undo (D83, D29).
 7. Scan indicator (D26, D84).
@@ -74,60 +81,93 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
 - Packages 1 and 2 (Haiku 5.5): both ports compiled on the first build and mirrored every JS case;
   detekt then found 97 findings in them, mostly missing KDoc on local values, which a second Haiku round fixed.
   Verified by the orchestrator: `testDebugUnitTest` and detekt both green, landed on `main` as `cc2b1c49e`.
-- The human disabled detekt's whole complexity rule set on 2026-10-10 (`7ed98539d`); a Haiku audit of oxlint and clippy was started.
+- The human disabled detekt's whole complexity rule set on 2026-10-10 (`7ed98539d`); a Haiku audit of oxlint and clippy
+- was started.
 - Model rule, set by the human on 2026-10-10: without evidence, assume Haiku can handle everything,
   and escalate to Sonnet 5.5 only when Haiku is proven bad by its results.
   An earlier entry here that elevated packages 3 and 4 to Sonnet before any result was wrong and is withdrawn;
   packages 3 and 4 start on Haiku.
-- Verification tooling: `~/temp/agent/run-production-task.ts` runs a Gradle or shell command for the production worktree in a
-  capped container (6 GiB, 2 CPUs); mise's own task path fails with "Failed to find Build Tools revision 36.0.0" there while the
+- Verification tooling: `~/temp/agent/run-production-task.ts` runs a Gradle or shell command for the production
+- worktree in a
+  capped container (6 GiB, 2 CPUs); mise's own task path fails with "Failed to find Build Tools revision 36.0.0" there
+  while the
   same Gradle command through `raw:` passes, a difference not yet explained.
 
 - Landed on the branch by 2026-10-10, each with its own unit tests and a clean detekt run: the folder rail and index,
-  the transport deck, the track list pane, the folder picker pane with the app bars and icons, the assembled cover and unfolded
-  player screens with a debug host, the feedback queue and overlay, the scan indicator, the first-run pane, the track menu,
+  the transport deck, the track list pane, the folder picker pane with the app bars and icons, the assembled cover and
+  unfolded
+  player screens with a debug host, the feedback queue and overlay, the scan indicator, the first-run pane, the track
+  menu,
   the template editor and Settings page, and the Search matcher, results and page.
-  Native captures of the player screen found one defect (text and icons drawn black on the dark canvas because no content
+  Native captures of the player screen found one defect (text and icons drawn black on the dark canvas because no
+  content
   color was provided); it is fixed and a recapture is running.
-- Decision D105 (trash): folder grants delete immediately with a copy-back Undo; the system library uses Android's trash request.
-- Host wiring on the production branch (2026-10-10): routes (Player, Search, Settings, template editor), the first-run pane in
-  place of the permission gate, the scan indicator driven by a process-wide sweep progress holder, the feedback overlay with a
-  host-owned queue, the track menu with real actions and the D105 trash flows. Unit tests and detekt were green for each step;
+- Decision D105 (trash): folder grants delete immediately with a copy-back Undo; the system library uses Android's
+- trash request.
+- Host wiring on the production branch (2026-10-10): routes (Player, Search, Settings, template editor), the first-run
+- pane in
+  place of the permission gate, the scan indicator driven by a process-wide sweep progress holder, the feedback overlay
+  with a
+  host-owned queue, the track menu with real actions and the D105 trash flows. Unit tests and detekt were green for
+  each step;
   trash, the file-manager intent, the clipboard and the popup position are not yet exercised on a device.
-  Native captures of the Search, Settings and template editor routes (40 views) found one more content-color gap in the debug
+  Native captures of the Search, Settings and template editor routes (40 views) found one more content-color gap in the
+  debug
   host only (the production root has a Surface); the Search result title now sets its own color.
-- Per-row duration and true peak landed on the branch (`4bdbfe3b0`, `8fdadbe51`): the shared core gained a per-track decision
-  removal and a peak kind, the JNI crate gained `nativePeekPeak` and `nativeInvalidateTrack`, and Kotlin reads duration from
-  MediaStore or `MediaMetadataRetriever` (cached by fingerprint) and the exact peak from the native cache. Rows show only exact
+- Per-row duration and true peak landed on the branch (`4bdbfe3b0`, `8fdadbe51`): the shared core gained a per-track
+- decision
+  removal and a peak kind, the JNI crate gained `nativePeekPeak` and `nativeInvalidateTrack`, and Kotlin reads duration
+  from
+  MediaStore or `MediaMetadataRetriever` (cached by fingerprint) and the exact peak from the native cache. Rows show
+  only exact
   peaks; File details shows sampled ones with a marker. Re-analyse invalidates one track and re-measures it.
-- Keyboard wiring (D102) on the host: a root key handler over the classifier with 52 unit tests; not yet exercised on a device.
-  Decisions of the orchestrator on the agent's questions: Escape stays as D102 words it (popup and Search only); one map for
-  Windows and Linux chords; Ctrl+O is unhandled off the cover layout; Ctrl+G switches to the playing track's folder; a tap on a
+- Keyboard wiring (D102) on the host: a root key handler over the classifier with 52 unit tests; not yet exercised on a
+- device.
+  Decisions of the orchestrator on the agent's questions: Escape stays as D102 words it (popup and Search only); one
+  map for
+  Windows and Linux chords; Ctrl+O is unhandled off the cover layout; Ctrl+G switches to the playing track's folder; a
+  tap on a
   row returns focus to the playback area.
-- Known gaps on Android: a folder-scan failure that the library source swallows (it reports an empty folder), the Settings page
-  on the inner screen spanning the full width, and every device-only behaviour (trash flows, file manager intent, clipboard,
-  popup position, keyboard focus). The debug APK built by Gradle alone carries no native library; the package's `build:native`
+- Known gaps on Android: a folder-scan failure that the library source swallows (it reports an empty folder), the
+- Settings page
+  on the inner screen spanning the full width, and every device-only behaviour (trash flows, file manager intent,
+  clipboard,
+  popup position, keyboard focus). The debug APK built by Gradle alone carries no native library; the package's
+  `build:native`
   task (cargo-ndk, both ABIs) must run first.
-- Desktop composition (2026-10-10): the new `AppWindow` (cover layout below 600 px, two panes from 600 px) replaced the old
-  page-tab UI and its five experimental page styles; Rust glue modules bind the engine to the components; Settings, template
+- Desktop composition (2026-10-10): the new `AppWindow` (cover layout below 600 px, two panes from 600 px) replaced the
+- old
+  page-tab UI and its five experimental page styles; Rust glue modules bind the engine to the components; Settings,
+  template
   editor, search, menu, overlays and keyboard are wired; 521 tests pass and clippy is clean on the host. Not done: sweep
-  progress for the scan indicator, per-track length and peak from the engine (rows show no second line yet), the first-run copy
-  for desktop, the opened root's name for the no-audio state, key repeat (Slint 1.17 has no repeat flag), macOS and Windows
+  progress for the scan indicator, per-track length and peak from the engine (rows show no second line yet), the
+  first-run copy
+  for desktop, the opened root's name for the no-audio state, key repeat (Slint 1.17 has no repeat flag), macOS and
+  Windows
   branches never compiled.
-- Desktop: the template, search, folder, keymap and overlay logic is ported to Rust and integrated into `desktop-app/src`
-  (485 tests pass, clippy clean on the host; the container clippy task fails on the existing `truepeak-core` path dependency,
+- Desktop: the template, search, folder, keymap and overlay logic is ported to Rust and integrated into
+- `desktop-app/src`
+  (485 tests pass, clippy clean on the host; the container clippy task fails on the existing `truepeak-core` path
+  dependency,
   which the container does not mount). The Slint components are being built next to the Android captures.
 - Real-app verification (2026-10-11): a scripted run of the real Android app on the owned Fold emulator (native library,
-  generated library) found five defects that the debug host had hidden: the track menu opened at the bottom instead of by its
-  row, the Settings line for track rows was empty, the light rail boundary line was missing, the deck blanked when the playing
-  track was on another page, and three keyboard behaviours needed the decisions recorded above. All were fixed and re-run; the
-  run ends 31 of 32 (the remaining step is Android's own permission prompt covering the app on the folded cover, as designed).
-  The same style of run on the desktop (Slint MCP headless and nested in `cage`) found missing per-row length and peak, wrong
+  generated library) found five defects that the debug host had hidden: the track menu opened at the bottom instead of
+  by its
+  row, the Settings line for track rows was empty, the light rail boundary line was missing, the deck blanked when the
+  playing
+  track was on another page, and three keyboard behaviours needed the decisions recorded above. All were fixed and
+  re-run; the
+  run ends 31 of 32 (the remaining step is Android's own permission prompt covering the app on the folded cover, as
+  designed).
+  The same style of run on the desktop (Slint MCP headless and nested in `cage`) found missing per-row length and peak,
+  wrong
   first-run copy, dead shortcuts after leaving Search, and a menu clipped at the window edge; all were fixed.
-- Final state on `main` (2026-10-11): Android unit tests and detekt pass; desktop 577 tests pass and clippy is clean on the host.
+- Final state on `main` (2026-10-11): Android unit tests and detekt pass; desktop 577 tests pass and clippy is clean on
+- the host.
   What is not exercised is listed in `package/music-player/design/HANDOFF.md` under the production handoff.
 - Correction (2026-10-11 evening): the "final state" above overstated what was checked. Tests, lints and static renders
-  passed, but nobody had used the apps the way a person does. The human then found, in a few hours of use, missing hover and
+  passed, but nobody had used the apps the way a person does. The human then found, in a few hours of use, missing
+  hover and
   pressed feedback on every desktop control, a wrong Settings page, a jumping taskbar progress indicator, audio stutters
   under load, the list scrolling on every track click, a deck that wasted a line, and copy problems. The product was not
   finished. A change is now done only after it has been driven in the running window (hover, press, keyboard, both color
@@ -143,8 +183,10 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 - The human checks only `main`, and `main` is not sacred: merge as soon as tests, lints and clippy pass, and say plainly
   what has not been driven in a window or on a device.
 - Subagents work in parallel, at most five at a time. Routing authority (2026-10-11): the orchestrator decides what goes
-  to Sonnet without proof; diagnosis, performance, integration and judgment work goes to Sonnet, mechanical work stays on
-  Haiku (`doc/limitation/haiku.md` records why). Every brief names `doc/troubleshooting/` as the first search and requires
+  to Sonnet without proof; diagnosis, performance, integration and judgment work goes to Sonnet, mechanical work stays
+  on
+  Haiku (`doc/limitation/haiku.md` records why). Every brief names `doc/troubleshooting/` as the first search and
+  requires
   real runs, not a linter, as the verdict. Early circuit breaker: when a strategy cannot fit a hard requirement, record
   why and stop work on it.
 - Polish standard: every clickable element has hover, pressed and pointer-cursor feedback; no copy or layout that a user
@@ -154,7 +196,8 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 - Emulator: launch it headfully, as its own systemd user unit, on the host GPU, no container, no `xvfb-run`, no
   `-feature -Vulkan` (`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`, section "Working agent
   launch"). The headless container launch failed for 2.8 hours. Never use `wm density`; change display size through
-  Settings (Display size or Developer options "Smallest width") and restore it. Always use a private copy of the owned AVD.
+  Settings (Display size or Developer options "Smallest width") and restore it. Always use a private copy of the owned
+  AVD.
 - Scale: 1 000 artists and 1 000 000 tracks is normal operation (tests at 1M belong in the normal suite); above that is
   unsupported. The real library to seed names from is `/home/user/Seafile/Plain/Music` (read only).
 - Colors: D108. The OS accent is the only platform color on both apps, every derived color is OKLCH.
@@ -164,22 +207,26 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   panes when wide: half each with the text out of the crease band on a device with a crease, the 0.3636 default ratio
   without one; Back and Escape close).
 - Analysis progress: D107 (a system notification, never an in-app banner; a Plasma job on KDE).
-- `mise upgrade`: scope it to the tool (`mise upgrade <tool>`), and use `--before 0s` only for our own just-released crate.
+- `mise upgrade`: scope it to the tool (`mise upgrade <tool>`), and use `--before 0s` only for our own just-released
+- crate.
   A bare upgrade installs unrelated toolchains and rewrites `mise.lock` (it broke the builds once).
 
 ### Landed on `main`
 
-- Earlier: Inter font, thin LTO, `run-quick`, Settings dividers removed, stable Folders panel, rail tap circle, deck title
+- Earlier: Inter font, thin LTO, `run-quick`, Settings dividers removed, stable Folders panel, rail tap circle, deck
+- title
   click, Search on the right pane only, library name heading, hover and pressed everywhere (desktop), deck heading and
   one-line controls, steady seek bar, list scrolls only when asked.
 - Toolchain: Slint 1.18.1 in three packages; every Rust crate and Android build dependency at the latest release (Turso
   0.8.2, jni 0.22, ringbuf 0.5, Gradle 9.8.1, AGP 9.4.1, Kotlin 2.4.21); the `branches` crate fix for the newest nightly
   (`doc/troubleshooting/floating-nightly-branches-crate-abort.md`); the Android native targets are in the `mise` rust
-  config, so `mise run //package/music-player/android-app:build:native` works (about 7 minutes); nested compositor 0.4.0.
+  config, so `mise run //package/music-player/android-app:build:native` works (about 7 minutes); nested compositor
+  0.4.0.
 - Desktop: Settings per D109 and D110; playback position equals the audible position and same-format neighbours are
   gapless (`src/playback_clock.rs`, `Queue::peek_next_natural`; cross-format joins add a 43 ms hold and are not
   gapless); Search on the in-memory index with the 1M scale fixes (D111, D112; 1M tests in the normal suite;
-  `MUSIC_PLAYER_SCAN_PAUSE_MS` slows the scan for hand tests); the D106 keyboard map (`src/keymap_bindings.rs` is the one
+  `MUSIC_PLAYER_SCAN_PAUSE_MS` slows the scan for hand tests); the D106 keyboard map (`src/keymap_bindings.rs` is the
+  one
   table behind the classifier, badges, tooltips and menu rows), focus ring, hint badges and double Shift; the theme in
   OKLCH from the OS accent; the audio underrun meter and rtkit priority; the taskbar progress state machine.
 - End-to-end runner: `package/music-player/desktop-e2e`, run by `mise run //package/music-player/desktop-app:test:e2e`
@@ -190,7 +237,8 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   `FoldingFeature`; Search on the in-memory index plus a scan pipeline that builds the library off the main thread; the
   OKLCH theme.
 - Shared theme: the light baseline was retuned for AA under state layers (D108, primary delta-E 3.46, open to veto); one
-  fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side, and
+  fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side,
+  and
   the Rust drift test fails if either side changes alone.
 
 - A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
@@ -348,16 +396,19 @@ before saying it matches, QAB):
   creased screen) with the APK's `THIRD-PARTY-LICENSES.txt`, read off the main thread, cut into 6,649 blocks and listed
   lazily; Back returns to Settings, Escape too on the unfolded screen; the list is a keyboard stop. Every build
   variant now packs the asset (a short note without the `notices` output;
-  `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` still fails on a missing file, proven). Opened on the emulator in 267 ms (process cold, median of 5, 264 to 276) and
+  `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` still fails on a missing file, proven). Opened on the emulator in
+  267 ms (process cold, median of 5, 264 to 276) and
   140 ms (warm, 122 to 199); scroll windows had 29 to 30 janky frames of 901 to 907 (debug build). The decision, the
   numbers and the open choice (full page versus the right pane on the unfolded screen) are in
   `doc/decision/music-player-third-party-licenses.md`, section "Licenses row in Settings (2026-10-18)". The desktop row
   (agent `ad19cbb1a5dabeac0`, branch `feat/music-player-desktop-licenses-row`) picks its own icon; the Android app
   uses the Material Symbols `description` icon, so the two branches may need one icon agreed when both are merged.
 - In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
-  (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
+  (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`:
+  third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
-  `--licenses` flag or in-app view only if the design permits, decision `doc/decision/music-player-third-party-licenses.md`;
+  `--licenses` flag or in-app view only if the design permits, decision
+  `doc/decision/music-player-third-party-licenses.md`;
   (d) branch `fix/music-player-windows-startup-errors`, worktree `/var/mnt/encrypted/temp/agent/music-player-winerr`:
   FINISHED 2026-10-18 by a Sonnet agent (the Opus agents `a9c8a6540c85f6042` and `a507287f6e2fa8092` died on the
   limit), main merged into the branch, NOT merged to `main`, no version bump, no release. A failed Windows start now
@@ -414,8 +465,10 @@ before saying it matches, QAB):
   `~/.local/share/music-player-release-keys` holds `music-player-release.p12.sops.json` and
   `credentials.txt.sops.json`, encrypted to the age identity in `~/.config/mise/age.txt`; each decrypted to the same
   sha256 as its original before I deleted the plaintext. Open: a copy of `age.txt` outside this machine, which the
-  human has not mentioned (without it the backup dies with the machine); (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
-  against 25 s install), macOS x64 dropped, and AppImage (the human ruled 2026-10-15: not needed while the program ships as a single
+  human has not mentioned (without it the backup dies with the machine); (3) vetoable choices: macOS ad-hoc signing, no
+  Android SDK cache (measured 17 s restore
+  against 25 s install), macOS x64 dropped, and AppImage (the human ruled 2026-10-15: not needed while the program
+  ships as a single
   executable application; the placeholder icon is fine too, so both are settled); (4) product gaps the agent found:
   the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB, no third-party
   license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
@@ -427,7 +480,8 @@ before saying it matches, QAB):
   file). Android: I reran detekt, unit tests (1287, none failed, the test task executed) and lint fresh on the merged
   head. Real runs on both platforms were the agent's (desktop in the nested compositor, Android on an emulator); I
   viewed the four Settings PNGs. Open to the human's veto: the setting's name, the "Playback" group, the supporting
-  lines, and the Search action label ("Select track" or "Play track"). Known and left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
+  lines, and the Search action label ("Select track" or "Play track"). Known and left alone: `desktop-e2e`
+  `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
 - Task 94, Android row text alignment (D130): MERGED to `main` at `3e7d03e7c2` on 2026-10-15 (detekt, 1249 unit tests
   and lint passed fresh on the merged head; I viewed the three retaken PNGs). The human's ruling: beside the crease
   only text dodges it; fills, state layers and rings may reach the crease and the pane edge; text columns win. Two
@@ -466,7 +520,8 @@ before saying it matches, QAB):
   the agent: the dead `cache: true` in `npm-release.yml`, `pnpr-publish.yml` and `kotlin-linter-publish.yml` is
   removed and `kotlin-linter-publish.yml` has `MISE_AUTO_INSTALL: 'false'` (DONE 2026-10-15, main `7845259345`; a
   `kotlin-linter-publish` dry run from the branch, run `38765367059`, passed; the other two workflows were not run);
-  still not done: `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
+  still not done: `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a
+  pending
   publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
   write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
   music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
@@ -478,8 +533,10 @@ before saying it matches, QAB):
   workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64). The app builds and runs on Alpine 3.24.2
   with Alpine's own rust 1.96.1, dynamic musl (static musl cannot open a window: `dlopen` is unsupported there, and
   Alpine ships no static fontconfig, freetype or pipewire). Code changes: raw `sched_setscheduler` syscall because musl
-  returns ENOSYS, a cargo feature `alsa-fallback` (PipeWire first, then the default ALSA device), `Update::AudioUnavailable`
-  with a notice in the window. Runtime packages: `apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client
+  returns ENOSYS, a cargo feature `alsa-fallback` (PipeWire first, then the default ALSA device),
+  `Update::AudioUnavailable`
+  with a notice in the window. Runtime packages: `apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-clien
+  t
   wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib`. My fresh run on the merged head:
   `lint:slint`, `lint:clippy` clean and nextest 1448 passed, 1 skipped (host glibc); the agent's Alpine runs (1449
   passed, 1 skipped on x86_64 and aarch64, smoke OK, window shown through our nested compositor with llvmpipe, audio
@@ -488,7 +545,8 @@ before saying it matches, QAB):
   hardware, a real GPU, X11, other compositors, edge and postmarketOS. Alpine clippy flags `src/oklch.rs`
   `manual_range_contains` where host clippy does not (the Alpine guard runs no clippy; not fixed, lint not loosened).
   The Alpine CI cache entries are 0.93 to 0.95 GB each, over the 650 MB guide, and the agent added the Alpine family
-  to `cache-prune.yml`. Release artifact (task 100): MERGED to `main` at `ff743f8b7e` on 2026-10-15, job `build-desktop-musl` in
+  to `cache-prune.yml`. Release artifact (task 100): MERGED to `main` at `ff743f8b7e` on 2026-10-15, job
+  `build-desktop-musl` in
   the release workflow adds `music-player-<version>-linux-musl-x64.tar.gz` and `-arm64.tar.gz` (Alpine build image,
   `--version` checked in the runtime image). The agent's two dry runs from its branch passed (38684256021 and
   38686797998); it measured the Alpine x86_64 job at 15 to 20 minutes, which now sets a release's length (about 7
@@ -669,7 +727,8 @@ Queued, not started (an agent slot frees when one of the above reports; the cap 
   only a tap keeps the in-app message.
 - The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
-- Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
+- Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are
+- done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
 - 2026-10-18 MERGED (agent `a24e53faf2449563e`, head `303ef695f0`, 1,302 Android unit tests, detekt, lintDebug and
   clippy clean): the `last_modified` fix (root cause: the document column asked of the media store, 27,137 exceptions
@@ -716,7 +775,8 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
   that described the styles went on 2026-10-13), the accent chroma floor and the D108 retune stay, the two Turso bugs
   are not filed, and `targetSdk` stays on 36. Ask any new question through the question tool, never in prose.
 - Android large folders (2026-10-13): rows are now keyed by track (`core/TrackRowLineSource.kt`), so an analysis step
-  no longer rebuilds the page; on the Fold emulator with 10 000 tracks in one folder frame p99 went from 400, 450, 109 ms
+  no longer rebuilds the page; on the Fold emulator with 10 000 tracks in one folder frame p99 went from 400, 450, 109
+  ms
   to 69, 53, 48 ms and main-thread CPU from 31.5, 31.7, 21.7 s to 13.4, 15.9, 16.6 s. No actual ANR was ever
   reproduced, before or after (the original came from one bug report, `~/temp/agent/agent-android-final/bugreport1/`).
   Second round (2026-10-13 and 14, headful on the Fold emulator, 10 000 invented tracks, interleaved before and after,
@@ -819,7 +879,8 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
   item index in the after variant although no queue is published.
   Transport on a folder of three 120 s invented tones (media key and the notification shade card's buttons, state read
   from `dumpsys` after each step, second relaunch): Next and Previous by key, Next and Previous by the shade card,
-  pause and play by the card gave the same sequence of active items (0, 1, 1, 1, 1, 2, 0, 2, 2, 0, 1, 1, 1, 1, 1, 1) and the
+  pause and play by the card gave the same sequence of active items (0, 1, 1, 1, 1, 2, 0, 2, 2, 0, 1, 1, 1, 1, 1, 1)
+  and the
   same states (PLAYING, then PAUSED with actions 21428, then PLAYING) in both variants; the queue was 3 before and 0
   after. A Previous pressed after 5 s and a second one at once left the item at 1 in both variants. The position
   field of `dumpsys` is the value at the last update, not extrapolated, so positions are compared only as
@@ -851,7 +912,8 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 - Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
   restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
   phantom view on the Android idle deck.
-- Not measured or only partly done: cold-cache startup at 1M on desktop; a load sweep running with a user event on a cold
+- Not measured or only partly done: cold-cache startup at 1M on desktop; a load sweep running with a user event on a
+- cold
   open at 1M; Search with 1M tracks on an Android device (20 000 tracks: median 34 to 46 ms, worst 290 ms); Android
   `folderIndex` (about 1.5 s at 1M); long Android search terms (0.6 to 1.9 s off the main thread); shuffle-all queue
   paths are O(n); add and delete at 1M still cost about 0.4 s on the engine thread (building and announcing the list);
@@ -889,12 +951,14 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
   `ral`, `xxh3` and `bannerfit` Gradle homes (4.7 to 4.8 GB each) and `agent-refresh-cost` (17 GB). Kept: the worktrees
   `music-player-production`, `-cover-picker`, `-first-run-access`, `-theme-compose-prototype`, `-relgnu` (in flight),
   the Gradle homes `aps-gradle-home` (my verify scripts use it) and `tap-gradle-home`, and
-  `~/temp/agent/agent-polish2/work/` (not inspected). The branches themselves were not deleted. A failed decode is retried at every library change, one decode per failed file per change.
+  `~/temp/agent/agent-polish2/work/` (not inspected). The branches themselves were not deleted. A failed decode is
+  retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
 - Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
   the D123 failure notification (its device pass ran on the API 37 emulator only).
-- Windows linkers (2026-10-14): the desktop app no longer links with `lld-link` (mold is ELF-only and cannot replace it);
+- Windows linkers (2026-10-14): the desktop app no longer links with `lld-link` (mold is ELF-only and cannot replace
+- it);
   the MSVC targets use Visual Studio's `link.exe`, and an `x86_64-pc-windows-gnu` build links with GNU ld. The suite now
   runs on GitHub Windows runners (`.github/workflows/music-player-windows.yml`), where its first run found eleven
   Windows-only failures, fixed. Record: `doc/decision/music-player-windows-linkers.md`. Windows is now verified on those
@@ -953,7 +1017,8 @@ Read these before repeating them. Each one cost the human a correction.
 - A command ran `rg` without a path and read the worktree root. Always pass a path.
 - I wrote in a brief that `-no-window` on the host GPU had worked, and the agent launched a headless emulator, which
   the human reports breaks frequently, although this handover already said to launch headfully. The ban is now the
-  rules EMW and EMB in the `android-emulator` skill (`.agents/skills/android-emulator/SKILL.md`), a section in the troubleshooting document, and the brief of every emulator agent:
+  rules EMW and EMB in the `android-emulator` skill (`.agents/skills/android-emulator/SKILL.md`), a section in the
+  troubleshooting document, and the brief of every emulator agent:
   headful on the host GPU as its own systemd unit, never `-no-window`, `xvfb-run` or a container, and on a failed
   launch report the error instead of falling back.
 
@@ -980,12 +1045,14 @@ Read these before repeating them. Each one cost the human a correction.
   an unreadable row behave as before. One pure rule per platform (`rowActivationFor`, `row_activation_for`), mutation
   checked; the desktop e2e suite gains the `auto-play` session (117 declared); the switch moves under the text in a
   narrow list pane.
-- [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`): `.github/workflows/music-player-release.yml`
+- [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`):
+- `.github/workflows/music-player-release.yml`
   builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,
   triggered by a version change in `package/music-player/desktop-app/Cargo.toml` or by a dispatch
   (`doc/decision/music-player-releases.md`, `doc/runbook/release-the-music-player.md`).
   The Android version now derives from that manifest, and a release signing config reads `MUSIC_PLAYER_*` values.
-- [x] Alpine Linux (musl) on x86_64 and aarch64 (2026-10-14, branch `feat/music-player-alpine`): a dynamically linked build
+- [x] Alpine Linux (musl) on x86_64 and aarch64 (2026-10-14, branch `feat/music-player-alpine`): a dynamically linked
+- build
   with Alpine's own Rust (a static binary cannot link PipeWire or open a window), an opt-in ALSA fallback for machines
   with no sound server, a window message when no audio output opens, a musl-safe scheduler call, and a CI workflow plus
   smoke test that runs the app in this repository's compositor (`doc/decision/music-player-alpine.md`).

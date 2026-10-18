@@ -128,7 +128,8 @@ Observed on 2026-09-06 (runs for `3d6c20c9f`,
  `6e3ffeb76`,
  `abe8b9434`,
  `36e48b299`):
-the Conformance step reports `valid tests: 0 passed, 205 failed` and `encoder tests: 0 passed, 205 failed` for both TOML versions,
+the Conformance step reports `valid tests: 0 passed, 205 failed`
+and `encoder tests: 0 passed, 205 failed` for both TOML versions,
 while every invalid case passes,
 and each failure's `output from parser-cmd (stderr)` is one line:
 `mise WARN deprecated [config.experimental_monorepo_root]: experimental_monorepo_root is deprecated. Use monorepo_root instead. This will be removed in mise 2027.12.0.`
@@ -137,7 +138,8 @@ Cause:
 toml-test runs the adapters as `node <adapter>`,
  and on the runner `node` is a mise shim;
 mise-action installs the latest mise (2026.9.1 that day),
-which deprecates the root config's `experimental_monorepo_root` key and prints the warning to stderr on every shim invocation.
+which deprecates the root config's `experimental_monorepo_root` key
+and prints the warning to stderr on every shim invocation.
 toml-test treats any stderr from a decoder or encoder as the case's result,
 so every valid and encoder case fails while the invalid cases,
 which expect a failure,
@@ -160,7 +162,8 @@ both kept:
   so no mise warning of any kind (a deprecated key,
   an available update) reaches the adapters' stderr.
   Verified with a positive control on 2026-09-06:
-  `mise --version` prints the "mise version 2026.9.1 available" warning by default and nothing but the version under `MISE_LOG_LEVEL=error`.
+  `mise --version` prints the "mise version 2026.9.1 available" warning by default
+  and nothing but the version under `MISE_LOG_LEVEL=error`.
 
 Confirmed in CI on 2026-09-06:
 run 34062395210 on `1c28c42a5` passed every step,

@@ -132,7 +132,8 @@ Create proper error hierarchy:
 - [x] 2.6.2.1 Runtime server dependency is h3,
        not Elysia,
        and lives under `dependencies`.
-- [ ] 2.6.2.2 Audit remaining runtime imports and ensure they live under `dependencies` in `package/webapp-productivity/rss/package.json`.
+- [ ] 2.6.2.2 Audit remaining runtime imports and ensure they live
+        under `dependencies` in `package/webapp-productivity/rss/package.json`.
 
 #### 2.6.3 Import style consistency
 

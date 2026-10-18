@@ -292,7 +292,9 @@ package-deprecated/         Deprecated packages retained for reference
 ## Technical stack
 
 - **Task runner**:
-  [Mise](https://mise.jdx.dev/) with Node (`shell = "node --input-type=module-typescript -e"`) for cross-platform task logic
+  [Mise](https://mise.jdx.dev/) with Node
+  (`shell = "node --input-type=module-typescript -e"`)
+  for cross-platform task logic
 - **Runtime**:
   [Node.js](https://nodejs.org/) for TypeScript task and CLI execution.
   Bun stays installed only for explicit Bun islands,

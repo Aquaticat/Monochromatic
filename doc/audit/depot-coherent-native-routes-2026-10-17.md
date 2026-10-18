@@ -58,7 +58,8 @@ The original `msvc-x64`,
 and `gnu-x64-ucrt64` matrix is preserved.
 Independent nextest runs after successful test compilation even when a consumer assertion fails.
 The original PowerShell file-redirection assertion is unchanged.
-Independent merged-stream and uncaptured-console steps run the original subprobe bodies and retain separate JSON records.
+Independent merged-stream and uncaptured-console steps run the original subprobe bodies
+and retain separate JSON records.
 Uncaptured completion alone is insufficient:
 its own provider step log must contain the exact expected version line.
 

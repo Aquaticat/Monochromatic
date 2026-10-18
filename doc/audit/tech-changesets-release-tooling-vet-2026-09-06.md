@@ -32,7 +32,9 @@
 
 The workspace has never published a package to npm.
 Issue #159 asks for release versioning and publishing automation and names changesets as the recommended tool.
-The owner stated during the module-logger release grilling (`doc/planning/module-logger-release.md`) that changesets was their standing intent.
+The owner stated during the module-logger release grilling
+(`doc/planning/module-logger-release.md`)
+that changesets was their standing intent.
 This audit vets that single candidate against the skill's hard gates,
 audits its source,
 and validates it in a throwaway workspace.
@@ -59,7 +61,8 @@ Measured repository context:
    and no changesets mention in `pnpm-workspace.yaml`,
    `package.json`,
    or `mise.toml`.
-- `.github/workflows/publish.yml` publishes a hardcoded package list with a stored `NPM_TOKEN` that does not exist (`gh secret list`),
+- `.github/workflows/publish.yml` publishes a hardcoded package list
+   with a stored `NPM_TOKEN` that does not exist (`gh secret list`),
    has never run,
    and has no build step (issues #306,
    #307).

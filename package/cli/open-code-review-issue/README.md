@@ -143,7 +143,8 @@ OCR session transcripts are commonly persisted at:
 
 When positional input is omitted or a named path does not exist,
 the command prints these generation instructions.
-It also scans that sessions root without reading transcript contents and suggests the most recently modified JSONL path when one exists.
+It also scans that sessions root without reading transcript contents
+and suggests the most recently modified JSONL path when one exists.
 
 ## Repository selection
 

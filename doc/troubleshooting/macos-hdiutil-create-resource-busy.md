@@ -1,4 +1,5 @@
-# `hdiutil create` failed with "Resource busy" once on a `macos-15` GitHub-hosted arm64 runner while building the music player disk image
+# `hdiutil create` failed with "Resource busy" once on a `macos-15` GitHub-hosted arm64 runner
+while building the music player disk image
 
 ## Symptom
 

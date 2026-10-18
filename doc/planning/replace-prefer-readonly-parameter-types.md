@@ -52,7 +52,8 @@ The migration-specific acceptance gate is complete.
 - File-enforcer now stages lock-owner metadata privately and publishes it by same-directory rename.
   Commit `d2240c4c5` adds a deterministic pause at the stage-to-publish boundary,
   where contenders observe no owner before publication and a live complete owner afterward.
-  Commits `965d4cf32` and `b8a649536` use one-shot release operations and prevent a vanished predecessor observation from
+  Commits `965d4cf32` and `b8a649536` use one-shot release operations
+  and prevent a vanished predecessor observation from
   deleting its successor.
   Commit `4e28505f8` releases 8 writers together against one manifest lock.
   Commit `920bc0439` starts a real competing `acquireManifestLock()` while owner metadata remains privately staged,
@@ -87,7 +88,8 @@ or rewritten as readonly acceptance failures.
 The user corrected the TOML migration on 2026-07-13:
 `ForeignBorrowed` is an ownership-boundary marker,
 not a type annotation to repeat on every AST descendant or callback.
-The correction is now recorded in the prefer-readonly guidance message and `package/ownership-marker/foreign-borrowed/README.md`.
+The correction is now recorded in the prefer-readonly guidance message
+and `package/ownership-marker/foreign-borrowed/README.md`.
 
 The implemented semantic rule applies that correction:
 
@@ -284,7 +286,8 @@ The semantic-rule implementation and shared-configuration migration are complete
 - commit `7efe445aa` adds exact standard-library `Array<T>` to `ReadonlyArray<T>` suggestions;
 - commit `03a2a0618` caches exact-source direct effect scans after a workspace shadow run consumed CPU for more than ten
   minutes without completing;
-- commit `b6dcba729` rejects inferred-project sentinels without poisoning later configured snapshots and skips non-enforced
+- commit `b6dcba729` rejects inferred-project sentinels without poisoning later configured snapshots
+and skips non-enforced
   or declaration inputs;
 - commit `42478177d` catalogs exact observational String,
   identity-search,
@@ -317,7 +320,8 @@ The semantic-rule implementation and shared-configuration migration are complete
   and propagates destructured object-literal call effects by declared mutation target;
 - commit `dbb5616ee` moves `ForeignBorrowed` into shared plugin configuration for package-wide foreign-boundary use;
 - commits `1c662eb1a` and `6a21274b0` migrate TSDoc and stylistic plugin foreign inputs and verified context effects;
-- commits `f3c61a669` and `807cdcb2c` preserve current callable identities across direct-summary cache hits and always index
+- commits `f3c61a669` and `807cdcb2c` preserve current callable identities across direct-summary cache hits
+and always index
   configured active source despite stale external-library metadata;
 - a repeat one-worker workspace sweep reports zero semantic bridge failures across 1,315 replacement-rule diagnostics;
 - commit `37e48c19b` removes caller-owned coercion hooks from `module-or-throw` failure formatting;
@@ -352,7 +356,8 @@ The semantic-rule implementation and shared-configuration migration are complete
   preserves named type-alias package provenance,
   and audits `StdoutWriter.write` as receiver mutation;
 - after the user rejected an absent `message` mutation contract as unsupported,
-  commit `c6e026a82` moves MCP response serialization to ownership-known call sites and passes primitive text through the
+  commit `c6e026a82` moves MCP response serialization to ownership-known call sites
+  and passes primitive text through the
   generic writer;
 - after the user required a dedicated package seam,
   commit `092963df8` moves semantic rule source,
@@ -444,7 +449,8 @@ The semantic-rule implementation and shared-configuration migration are complete
   parser,
   filesystem,
   and retained callback ingress uses exact `ForeignBorrowed` boundaries;
-- observational inputs now use explicit readonly data structures or `ReadonlyDeep` only when the complete reachable value
+- observational inputs now use explicit readonly data structures or `ReadonlyDeep` only
+when the complete reachable value
   is capability-free;
   exported hyperscript and Penpot option bags retain their mutable public declarations,
   and reflective `Object.entries`,
@@ -1397,7 +1403,8 @@ Higher-order propagation should instead come from machine-readable program struc
   strings;
 - use conservative signature-local `@mutates` effects for bodyless or opaque callables when specialization cannot be
   proved;
-- prototype TypeScript-level effect metadata only if a bodyless generic API needs expressiveness that generated summaries
+- prototype TypeScript-level effect metadata only if a bodyless generic API needs expressiveness that generated
+summaries
   cannot carry.
 
 ### Chosen test and declaration exemptions
@@ -1586,7 +1593,8 @@ projects.
 
 For mixed ownership,
 do not automatically split one domain type into mutable and immutable sibling types.
-Prefer a local projection unless an independently meaningful domain distinction already exists or is separately designed.
+Prefer a local projection unless an independently meaningful domain distinction already exists
+or is separately designed.
 
 ### Chosen declaration publication
 
@@ -1707,7 +1715,8 @@ transitive or root dependency.
 not proof that the resulting capability is soundly immutable.
 The semantic rule must still inspect the resolved projection and its reachable effects.
 The probe showed that `ReadonlyDeep<Map<...>>` and `ReadonlyDeep<Set<...>>` produce useful collection projections,
-while `ReadonlyDeep<AbortController>` retains `abort()` and must produce `projectedReadonlyCapability` when used as a supposedly
+while `ReadonlyDeep<AbortController>` retains `abort()` and must produce `projectedReadonlyCapability`
+when used as a supposedly
 nonmutating contract.
 
 Suggestions may introduce `ReadonlyDeep<T>` only when the target package already declares `type-fest` or when the

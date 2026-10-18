@@ -241,7 +241,8 @@ For posterity,
     Orders 4+ never ran
 4. Moved guest tools install before guest agent start → same race,
     template shutdown kills it
-5. Installed guest tools via `exec()` after agent is up → `exec()` used `/bin/bash` because no VM metadata exists during template creation
+5. Installed guest tools via `exec()` after agent is up →
+   `exec()` used `/bin/bash` because no VM metadata exists during template creation
 6. Used `virsh` directly with `powershell.exe` → VirtioFsSvc installed but wouldn't start
 7. Discovered WinFsp dependency (not documented anywhere obvious)
 8. Downloaded WinFsp,

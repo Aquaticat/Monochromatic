@@ -34,7 +34,8 @@ The [Scorecard workflow](../../.github/workflows/scorecard.yml) specifies
 4 per rolling hour,
 and 8 per rolling day.
 Excess events are skipped rather than retried after capacity returns.
-The [accepted trial context](../handover/depot-trial-grilling.md) also permits cancelling superseded intermediate checks.
+The [accepted trial context](../handover/depot-trial-grilling.md)
+also permits cancelling superseded intermediate checks.
 Neither permission removes the rolling limits or authorizes replacing them with a periodic schedule.
 
 A replacement must evaluate all windows together,

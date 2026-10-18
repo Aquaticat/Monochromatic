@@ -207,7 +207,7 @@ That documented maximum is inconsistent and was not resolved by changing this ac
 The page also says retained parent layers can make usage exceed the configured size.
 A retention setting is therefore not evidence of a hard spending ceiling.
 [Organization retention](https://depot.dev/docs/cache/overview#cache-retention-policy),
-[project policy and retained layers](https://depot.dev/docs/container-builds/overview#configurable-cache-policies-per-project)
+[project policy and retained layers][container-cache-policies]
 
 At USD 0.20 per average GB above the allowance,
 the replay's storage sensitivities are:
@@ -297,7 +297,7 @@ Both fresh consumers still lacked a user session bus:
 Installed package reuse is therefore established,
 while desktop session startup in this Depot CI image remains unverified.
 No package-setup saving is added to the monthly replay.
-[Checkout workaround and runtime boundary](../troubleshooting/depot-snapshot-mise-cache.md#depot-cli-210222-local-patches-collide-with-files-retained-by-snapshot-checkout)
+[Checkout workaround and runtime boundary][snapshot-checkout-workaround]
 
 ## Agent work and the unmeasured budget
 
@@ -458,3 +458,5 @@ or spending-limit change is adopted by this report.
 [registry-pricing]: https://depot.dev/docs/registry/overview#pricing
 [custom-images]: https://depot.dev/docs/ci/how-to-guides/custom-images
 [runner-overview]: https://depot.dev/docs/github-actions/overview
+[container-cache-policies]: https://depot.dev/docs/container-builds/overview#configurable-cache-policies-per-project
+[snapshot-checkout-workaround]: ../troubleshooting/depot-snapshot-mise-cache.md#depot-cli-210222-local-patches-collide-with-files-retained-by-snapshot-checkout

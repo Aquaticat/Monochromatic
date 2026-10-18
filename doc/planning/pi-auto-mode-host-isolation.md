@@ -9,7 +9,8 @@ This proposal revises the integration scope recommended in the
 The user accepted alternative A, "Replace the integration", on 2026-10-15.
 The [accepted decision](../decision/pi-auto-mode-host-isolation.md) authorizes implementation.
 The replacement consumer matrix passes, and release `native-release-Yhc7sX` is installed on 2026-10-15.
-The [current handover](../handover/pi-auto-mode-current-frontier.md) records final evidence and remaining warning cleanup.
+The [current handover](../handover/pi-auto-mode-current-frontier.md)
+records final evidence and remaining warning cleanup.
 
 ## What the new evidence changes
 
@@ -68,7 +69,8 @@ Requalify each retained mechanism at the proposed-group seam.
 
 Replace the main-request observer's authority to reject chat transport with evidence capture scoped to tool decisions.
 Replace persistent session-root admission with operation currentness.
-Remove now-unneeded stream claim, runtime lifecycle, forwarding, and generated-state paths after consumer coverage exists.
+Remove now-unneeded stream claim, runtime lifecycle, forwarding,
+and generated-state paths after consumer coverage exists.
 Do not add another wrapper that leaves both ownership systems live.
 
 The exact deletion set depends on tracing the remaining source-authenticity consumers.
@@ -94,7 +96,8 @@ not merely a catch that reopens one observer's root.
 ### C: Rebuild policy semantics and host integration together
 
 Benefit: permits replacing every current module.
-Cost: discards already-verified policy resolution and exact execution behavior without evidence that both need replacement.
+Cost: discards already-verified policy resolution and exact execution behavior
+without evidence that both need replacement.
 It expands the set of contracts to re-establish.
 
 Ranking: A > B > C.
@@ -113,7 +116,8 @@ B precedes C because it retains useful tested behavior rather than replacing unr
 - Cancelled navigation preserves a still-current operation where Pi permits it;
   actual branch change invalidates old decisions without invalidating later prompts.
 - Changed prepared arguments, source policy, tools, or required dependencies invalidate prior approval.
-- Permission, prohibition, independent authorization requirements, uncertainty, and explicit bypass retain accepted behavior.
+- Permission, prohibition, independent authorization requirements,
+  uncertainty, and explicit bypass retain accepted behavior.
 - Exercise the original installed CLI with all configured packages and copied instructions in a disposable environment.
 - Verify both authored-response controls and authorized live model consumers before activation.
 - Keep the currently installed artifact intact until the replacement passes these checks.

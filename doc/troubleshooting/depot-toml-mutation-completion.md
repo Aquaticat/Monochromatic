@@ -118,7 +118,8 @@ The combined provider interval is `2834043` milliseconds at `16x64`.
 The full native report is retained as compressed byte-identical evidence in
 [the terminal audit](../audit/depot-toml-reconciliation-2026-10-17.md#terminal-toml-infrastructure-outcome).
 These infrastructure-derived statuses do not establish source mutation completion or passing tests.
-The complete current container adapter was exercised by the bounded actual TOML pilot described in the consumer recovery section.
+The complete current container adapter was exercised by the bounded actual TOML pilot
+described in the consumer recovery section.
 
 Pilot `0j8zhbn9n0` now exercises that complete adapter through the unchanged source task
 with one existing source-file selector and the full unit suite.
@@ -411,7 +412,8 @@ The final common cohort remains held.
 File-enforcer mutation ran and failed before enumeration with its original `ENOENT` (`#1068`);
 it receives no mutant assertion credit.
 The original completed file-enforcer container failure remains failed (`#1070`).
-The independent actual-source classifier defect is now [issue `#1142`](https://github.com/Aquaticats/Monochromatic/issues/1142),
+The independent actual-source classifier defect is now
+[issue `#1142`](https://github.com/Aquaticats/Monochromatic/issues/1142),
 verified open with `needs-triage`.
 No application source fix was made.
 The structured `historicalIndependentCoverage` retains each selected identity,

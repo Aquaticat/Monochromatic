@@ -329,7 +329,8 @@ not a new issue.
    `Object.keys`/`values`/`entries`,
    `await Promise.all`,
    and `new Array(n)` safe.
-   Verified in `podman run --rm --memory=6g --cpus=4 … docker.io/library/rust:latest cargo test -p oxc_linter no_useless_spread`
+   Verified in
+   `podman run --rm --memory=6g --cpus=4 … docker.io/library/rust:latest cargo test -p oxc_linter no_useless_spread`
    (rustc 1.98.1):
    post-patch the rule test passes with no snapshot change;
    with the new tests kept and the kind forced back to `SafeFix`,

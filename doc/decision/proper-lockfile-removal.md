@@ -4,14 +4,16 @@
 
 `proper-lockfile@4.1.2` (moxystudio/node-proper-lockfile,
  last commit 2021-01) enters the resolved graph as a transitive of `@earendil-works/pi-coding-agent@0.74.0`.
-The package is abandoned and the workspace's dependency policy (`doc/dependency-blocklist.md`) targets such transitives for removal through one of four mechanisms:
+The package is abandoned and the workspace's dependency policy (`doc/dependency-blocklist.md`) targets such transitives
+for removal through one of four mechanisms:
  throwing stub,
  silent stub,
  pure removal,
  or API-compatible shim.
 
 The decision below selects the API-compatible shim path.
-The two alternatives (silent stub and pure removal) both fail under at least one code path that pi-coding-agent exercises during normal startup,
+The two alternatives (silent stub and pure removal) both fail under at least one code path
+that pi-coding-agent exercises during normal startup,
  and the workspace silent stub additionally has a thenable trap that hangs the async lock path.
 
 ## First-party callers
@@ -30,7 +32,8 @@ Every `@earendil-works/pi-coding-agent` import across the workspace is `import t
 - `package/pi-plugin/terminal-title/src/{index.ts:27, index.unit.test.ts:13}`:
    type-only
 
-All three workspace pi packages declare `@earendil-works/pi-coding-agent` only under `peerDependencies` + `devDependencies`,
+All three workspace pi packages declare `@earendil-works/pi-coding-agent` only under `peerDependencies` +
+`devDependencies`,
  never `dependencies` (see `package/pi-plugin/auto-mode/package.json:26-37`).
 
 No first-party source constructs `AuthStorage`,
@@ -41,7 +44,8 @@ No first-party source constructs `AuthStorage`,
 
 ## pi-coding-agent runtime callers
 
-The package is consumed at runtime because `package/pi-plugin/auto-mode` ships at `dist/final/node/index.mjs` and is loaded by the pi CLI binary (the host).
+The package is consumed at runtime because `package/pi-plugin/auto-mode` ships at `dist/final/node/index.mjs`
+and is loaded by the pi CLI binary (the host).
 The relevant call sites inside the installed `@earendil-works/pi-coding-agent@0.74.0` dist:
 
 - `dist/main.js:377`:
@@ -59,16 +63,19 @@ The relevant call sites inside the installed `@earendil-works/pi-coding-agent@0.
 - `dist/core/model-registry.js:519`:
    `const apiKeyFromAuthStorage = await this.authStorage.getApiKey(model.provider, { includeFallback: false });`
 
-`SettingsManager.create` reaches `FileSettingsStorage` -> `withLock` (sync) -> `lockfile.lockSync(...)` at `settings-manager.js:44`,
+`SettingsManager.create` reaches `FileSettingsStorage` -> `withLock` (sync) -> `lockfile.lockSync(...)` at
+`settings-manager.js:44`,
  but only when the settings file already exists (`settings-manager.js:69`).
-`AuthStorage.getApiKey` reaches `FileAuthStorageBackend` -> `withLockAsync` -> `lockfile.lock(...)` at `auth-storage.js:88` and `await release()` at `auth-storage.js:116`.
+`AuthStorage.getApiKey` reaches `FileAuthStorageBackend` -> `withLockAsync` -> `lockfile.lock(...)` at
+`auth-storage.js:88` and `await release()` at `auth-storage.js:116`.
 
 Both the sync and async lock paths are exercised during normal pi startup,
  not only during OAuth refresh.
 
 ## Silent-stub semantics
 
-`package/stub/silent/index.cjs` is a `Proxy` over a no-op function whose `get` trap returns `module.exports` for every property;
+`package/stub/silent/index.cjs` is a `Proxy`
+over a no-op function whose `get` trap returns `module.exports` for every property;
  including `then`.
 That makes the stub a thenable:
  `await stub` enters the Promise resolution machinery,
@@ -100,7 +107,8 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
 
 1. **API-compatible shim (recommended).
    **
-   Real implementation of `lockSync(path, options)` and `lock(path, options)` via `node:fs.mkdirSync({ recursive: false })` on a sibling `.<basename>.lock` directory.
+   Real implementation of `lockSync(path, options)`
+   and `lock(path, options)` via `node:fs.mkdirSync({ recursive: false })` on a sibling `.<basename>.lock` directory.
    Returns a release function (sync from `lockSync`,
     the same sync function from `lock`).
    Both sync and async startup paths execute correctly,
@@ -122,7 +130,8 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
 2. **Silent stub.
    **
    Add `proper-lockfile` to `.pnpmfile.mjs` `POLICY` with `action: 'silent'`.
-   Works for the sync path but hangs the async path under `await release` and under `await lockfile.lock(...)` because the workspace stub's Proxy treats every property access (including `.then`) as a self-return.
+   Works for the sync path but hangs the async path under `await release` and under `await lockfile.lock(...)`
+   because the workspace stub's Proxy treats every property access (including `.then`) as a self-return.
 
    - Pros:
       one-line change,
@@ -131,11 +140,14 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
       hangs pi on every startup that resolves a model API key (`model-registry.js:519` is on the hot path,
       not just OAuth refresh).
 
-3. **Removal** (`pnpm-workspace.yaml` `overrides: { 'proper-lockfile': '-' }` or parent-scoped `'@earendil-works/pi-coding-agent>proper-lockfile': '-'`).
+3. **Removal**
+   (`pnpm-workspace.yaml` `overrides: { 'proper-lockfile': '-' }`
+or parent-scoped `'@earendil-works/pi-coding-agent>proper-lockfile': '-'`).
    Causes `auth-storage.js:12` and `settings-manager.js:4` to throw `MODULE_NOT_FOUND` at module load.
    Since `dist/index.js:6,22` statically re-exports both,
     pi-coding-agent itself fails to load.
-   The runtime extension load chain (`package/pi-plugin/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`) breaks.
+   The runtime extension load chain (`package/pi-plugin/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`)
+   breaks.
 
    - Pros:
       smallest possible install footprint.
@@ -169,7 +181,8 @@ Package root:
   Acquires the lock by atomic `mkdirSync`;
    releases by `rmdirSync`.
   `lockSync` throws `ELOCKED` on first conflict (the upstream contract).
-  `lock` retries internally per `options.retries` (number or object form) with exponential backoff from `minTimeout` to `maxTimeout`,
+  `lock` retries internally per `options.retries` (number or object form) with exponential backoff
+  from `minTimeout` to `maxTimeout`,
    no jitter.
 - `index.d.cts`:
    declares the upstream's exported shape with `export = lock` and a merged namespace.
@@ -194,21 +207,25 @@ module.exports.lock = lock;
 module.exports.lockSync = lockSync;
 ```
 
-The function-form export (rather than `module.exports = { lockSync, lock }`) survives a future caller doing `lockfile(...)` directly.
+The function-form export (rather than `module.exports = { lockSync, lock }`) survives a future caller doing
+`lockfile(...)` directly.
 Upstream uses this pattern and we follow it for maximum compatibility.
 
 ## Simplifications versus upstream
 
 - **No `fs.realpath`.
   **
-  Both pi-coding-agent callsites always pass `{ realpath: false }` (verified at `auth-storage.js:38` and `settings-manager.js:44`);
+  Both pi-coding-agent callsites always pass `{ realpath: false }`
+  (verified at `auth-storage.js:38` and `settings-manager.js:44`);
    the shim treats every target as already-resolved through `path.resolve`.
 - **No stale-lock detection.
   **
-  Upstream rewrites a sentinel file inside the lock dir on a `stale` interval and removes the lock if no holder is alive.
+  Upstream rewrites a sentinel file inside the lock dir on a `stale` interval
+  and removes the lock if no holder is alive.
   The shim has no equivalent.
   If pi crashes while holding the lock,
-   the next pi invocation throws ELOCKED until the user removes `<agentDir>/.auth.json.lock` or `<agentDir>/.settings.json.lock` manually.
+   the next pi invocation throws ELOCKED until the user removes `<agentDir>/.auth.json.lock`
+   or `<agentDir>/.settings.json.lock` manually.
 - **No `onCompromised` callback.
   **
   The option is accepted but never invoked;
@@ -223,7 +240,9 @@ Upstream uses this pattern and we follow it for maximum compatibility.
 The sync/async retry asymmetry mirrors the upstream contract:
 
 - `lockSync` throws `ELOCKED` immediately on first conflict;
-   callers handle retries themselves (`auth-storage.js:32-54` and `settings-manager.js:38-60` both wrap `lockSync` in a 10-attempt sync retry loop with a 20ms busy-wait).
+   callers handle retries themselves
+   (`auth-storage.js:32-54` and `settings-manager.js:38-60` both wrap `lockSync` in a 10-attempt sync retry loop
+with a 20ms busy-wait).
 - `lock` retries internally per `options.retries` per the async callsite at `auth-storage.js:88`.
 
 ## pnpm-workspace.yaml override
@@ -237,10 +256,12 @@ overrides:
 
 The `link:` protocol is path-based,
  so pnpm substitutes the symlinked path regardless of which version a transitive dependent declared,
- identical to how the existing `'node-domexception': 'link:package/shim/node-domexception'` line handles every upstream `node-domexception` request.
+ identical to how the existing `'node-domexception': 'link:package/shim/node-domexception'` line handles every upstream
+ `node-domexception` request.
 No version-qualified entry is needed.
 
-The entry is placed adjacent to the existing `node-domexception` and `readable-stream` shim entries inside `overrides` (between them,
+The entry is placed adjacent to the existing `node-domexception`
+and `readable-stream` shim entries inside `overrides` (between them,
  in alphabetical position).
 
 No `.pnpmfile.mjs` change.

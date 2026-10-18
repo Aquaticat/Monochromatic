@@ -35,12 +35,14 @@ or with a correction to a named entry.
 ## Blocker
 
 Resolved on 2026-10-10.
-The user created a crates.io token with the publish-new, publish-update and trusted-publishing scopes and ran `cargo login`.
+The user created a crates.io token with the publish-new,
+publish-update and trusted-publishing scopes and ran `cargo login`.
 `cargo publish --dry-run` (with the verifying build) passed, then `cargo publish --no-verify` from the cutover branch
 published `monochromatic-lint` 0.1.0.
 The trusted publisher (`Aquaticat/Monochromatic`, `cargo-publish.yml`, no environment, id 24613)
 was added through `POST /api/v1/trusted_publishing/github_configs` with that token,
-which the endpoint's source accepts for the trusted-publishing scope (`src/controllers/trustpub/github_configs/create.rs`).
+which the endpoint's source accepts for the trusted-publishing scope
+(`src/controllers/trustpub/github_configs/create.rs`).
 The token is still in `~/.cargo/credentials.toml`; revoking the bootstrap token is the user's step.
 
 ## Publications
@@ -199,10 +201,13 @@ The order that avoided a window in which commits failed:
 
 1. Built the wrapper's `dist` in the branch worktree from the branch tree
    (`mise run //package/git-policy/cli:build:js:node`).
-   The installed wrapper runs the repository's `dist`, whose old Markdown policy runs the deleted CLI, so it had to be replaced
+   The installed wrapper runs the repository's `dist`,
+   whose old Markdown policy runs the deleted CLI,
+   so it had to be replaced
    at the same moment the deletion landed.
 2. Committed two files other sessions had left uncommitted in the main checkout
-   (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`), with the user's approval, because the fast-forward touched both.
+   (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`),
+   with the user's approval, because the fast-forward touched both.
 3. Fast-forwarded `main`, copied the built `dist` over the live one by rename, ran `git cli-git trust --yes`
    for the changed `cli-git.config.ts` (the user approved this on 2026-10-10) and ran the pinned tool install.
 
@@ -274,7 +279,8 @@ The new linter is `monochromatic-lint .` with the worktree configuration.
   646 `builtin(require-rustdoc)`
   and 5 `builtin(max-lines)`,
   all in `.rs` files.
-- The 402 errors from the earlier partial count are the 397 Rust rustdoc errors and the 5 `markdown/heading-increment` errors.
+- The 402 errors from the earlier partial count are the 397 Rust rustdoc errors
+  and the 5 `markdown/heading-increment` errors.
   The Markdown rules that make up the rest of the count are not in that figure.
 
 ### Why the incumbents did not gate the Rust findings

@@ -54,7 +54,8 @@ exists to compare layout engines,
 
 - `mise run //package/desktop-app/file-manager-gtk-sticky:build` builds the release binary.
 - `mise run //package/desktop-app/file-manager-gtk-sticky:test` runs the pure band-math unit tests.
-- `mise run //package/desktop-app/file-manager-gtk-sticky:test:wayland` drives the app inside `package/cli/nested-wayland-session` and asserts spawn,
+- `mise run //package/desktop-app/file-manager-gtk-sticky:test:wayland`
+   drives the app inside `package/cli/nested-wayland-session` and asserts spawn,
    dedup,
    close,
    zero pane overlaps,

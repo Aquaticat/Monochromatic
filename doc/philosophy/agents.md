@@ -106,10 +106,12 @@ When no section fits,
 
 ### Runtime environment checks
 
-Do not put detection logic or compatibility warnings in `AGENTS.md` when a hook can enforce the same constraint automatically and silently.
+Do not put detection logic or compatibility warnings in `AGENTS.md`
+when a hook can enforce the same constraint automatically and silently.
 `AGENTS.md` text is passive;
  an agent reads it once and may not apply it consistently.
-A hook fires on every session start and injects a warning directly into context only when the condition is actually violated.
+A hook fires on every session start and injects a warning directly into context only
+when the condition is actually violated.
 
 ### Removed: "Detecting the Current Shell"
 
@@ -175,7 +177,8 @@ Global personal settings (relevant excerpt):
 Do not include syntax examples for standard tools (e.g. `rg`,
  `gh`,
  `curl`) or explain why a well-known tool is useful.
-Any competent agent or developer already knows how to use `ripgrep` or when to reach for official documentation over source code.
+Any competent agent or developer already knows how to use `ripgrep` or when to reach for official documentation
+over source code.
 Explaining these things wastes tokens on every context load and signals distrust of the reader.
 
 Removed:
@@ -228,7 +231,8 @@ Example:
 
 ### Inline pointers to this philosophy doc
 
-Do not add per-rule "(see doc/philosophy/`agents.md`)" / "(rationale in doc/philosophy/`agents.md`)" pointers to `AGENTS.md`.
+Do not add per-rule "(see doc/philosophy/`agents.md`)" / "(rationale in doc/philosophy/`agents.md`)" pointers to
+`AGENTS.md`.
 Normal operation needs the rule,
  its cue,
  and the tokens to act,
@@ -237,7 +241,9 @@ Normal operation needs the rule,
  which it must not.
 Rationale,
  mechanism,
- and examples relocated here stay discoverable through the single global note at the top of `AGENTS.md` plus the section-name correspondence (each subsection under "Relocated rule rationale" is named for the `AGENTS.md` section it came from).
+ and examples relocated here stay discoverable through the single global note at the top of `AGENTS.md` plus the
+ section-name correspondence
+ (each subsection under "Relocated rule rationale" is named for the `AGENTS.md` section it came from).
 If a rule is genuinely crippled without relocated detail,
  move the detail back into `AGENTS.md` rather than pointing here.
 A specific reference (exact section heading) is acceptable only when unavoidable;
@@ -249,7 +255,8 @@ How a task is wired internally is not an agent-facing rule.
 Agents run tests with `mise run test` (or a package's `:test`),
  so they never need to know that Rust packages run on `cargo nextest run` instead of `cargo test`,
  that the fuzz crate scopes its run to `--lib`,
- or that Rust unit tests live in co-located `<name>_tests.rs` sidecars declared from the source file with `#[cfg(test)] #[path = "..."] mod tests;`.
+ or that Rust unit tests live in co-located `<name>_tests.rs` sidecars declared from the source file
+ with `#[cfg(test)] #[path = "..."] mod tests;`.
 The runner choice lives in the mise tasks;
  the sidecar layout lives in the source files themselves.
 An agent editing a Rust file sees the existing `mod tests;` stub at the bottom and the sibling `*_tests.rs` beside it,
@@ -259,7 +266,8 @@ Restating that in `AGENTS.md` spends tokens every session to describe what the c
  and it invites the rule to drift from the implementation it documents.
 Keep `AGENTS.md` to rules that change what an agent decides at a fork it would otherwise get wrong;
  leave runner choice and test-file mechanics to the tasks and the code.
-This is the test-tooling instance of the general rule above ("Code examples for rules that are self-explanatory" and "Detailed sub-rules for generic workflows"):
+This is the test-tooling instance of the general rule above
+("Code examples for rules that are self-explanatory" and "Detailed sub-rules for generic workflows"):
  a convention an agent will copy from its surroundings does not need a written rule.
 
 ### Removed: 2026-09 rule-by-rule optimization
@@ -320,7 +328,8 @@ work.
 `bun test` specifically:
  never substitute it for a missing mise task.
  The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import,
- so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations).
+ so `bun test <file>` prints `PASS` log lines (from the harness)
+ and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations).
  The misleading summary suggests the run was broken when in fact every test passed.
  Use `mise run //package/<path>:test:unit`;
  if no such task exists,
@@ -359,14 +368,16 @@ API:
 #### Git cleanup and worktree safety reviews: the cli-git tool-cache allowlist
 
 When the review touches `cli-git`'s linked-worktree guard,
- account for the baked-in tool-cache allowlist (`default_allowed_worktree_dirs` in `package/git-policy/cli/src/native/effective_target.rs`,
+ account for the baked-in tool-cache allowlist
+ (`default_allowed_worktree_dirs` in `package/git-policy/cli/src/native/effective_target.rs`,
  currently uv's git cache):
  repositories whose git-dir resolves under an allowed dir bypass that guard,
  so destructive git is not actually blocked there.
 
 #### Command execution conventions: the bash-output path substitution
 
-`~` in Bash tool output is a display substitution for `/var/home/user` or `/home/user` applied by the `bash-output-filter` hook,
+`~` in Bash tool output is a display substitution for `/var/home/user`
+or `/home/user` applied by the `bash-output-filter` hook,
  plus stripping of the current cwd prefix.
  It applies only at the start of a line,
  so paths inside JSON or error messages are unaffected.
@@ -532,8 +543,10 @@ Non-zero-match silent failures (same shape,
  `head -N` truncating before later files have a chance,
  where one noisy file consumes the cap and buries everything alphabetically later (remove or raise the cap,
  or surface that the result is truncated);
- denylist filters (`rg -v 'a|b|c'`) hide whatever you forgot to keep and discard whatever you forgot to include (prefer allowlist patterns:
- a positive shape like literal `' cat '` with surrounding spaces for prose-form English usage of a word that is also a shell command);
+ denylist filters (`rg -v 'a|b|c'`) hide whatever you forgot to keep
+ and discard whatever you forgot to include (prefer allowlist patterns:
+ a positive shape like literal `' cat '` with surrounding spaces for prose-form English usage of a word
+ that is also a shell command);
  `-l` (filenames only) hides the context needed to tell real matches from noise (default to full lines,
  switch to `-l` only after confirming the noise cost is concrete);
  narrow `--type` on the first pass feels thorough but skips matches in unexpected file kinds (widen first).
@@ -619,7 +632,8 @@ See [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../troubleshootin
 #### Verify on a throwaway: why a guard test needs a throwaway
 
 When the behavior under test is whether a guard blocks a destructive operation,
- running that operation against real state means a broken guard (the exact failure you are testing for) damages real state,
+ running that operation against real state means a broken guard (the exact failure you are testing for) damages real
+ state,
  while a passing guard tells you nothing a throwaway would not have.
  So build both the allowed case and the rejected case as fixtures.
 
@@ -665,7 +679,9 @@ A test file covering sync matchers but skipping async matchers is the same as no
  and refusing stops that state says another turn could still advance,
  the PreToolUse guardrail (`ccgr`),
  the roadmap PostToolUse type-check.
- Flagging the machinery at all lets agents game the surface pattern (swapping one hedge for a novel one that passes but carries the same epistemic gap) and reframes an internalized rule as an external gate to dodge.
+ Flagging the machinery at all lets agents game the surface pattern
+ (swapping one hedge for a novel one that passes but carries the same epistemic gap)
+ and reframes an internalized rule as an external gate to dodge.
  The rule the agent must own stays (the hedge-phrase list);
  the fact that a hook backstops it is omitted.
 
@@ -695,7 +711,8 @@ A test file covering sync matchers but skipping async matchers is the same as no
  `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
  The trailing-question rule is dropped from `AGENTS.md` entirely rather than reworded:
  "ask via the question tool,
- never end on a bare question" restates standard harness behavior the `AskUserQuestion` tool and its description already carry,
+ never end on a bare question" restates standard harness behavior the `AskUserQuestion` tool
+ and its description already carry,
  so it fails the Purpose test for non-obvious project knowledge.
  Exception:
  the `bash-output-filter` `~` substitution stays named,
@@ -777,7 +794,8 @@ The helper-shape allowlist suppresses the report when a function ends in `return
 Failure that shows why the config,
  not a plain-language rule,
  must decide:
- a redesign of `package/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`,
+ a redesign of `package/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside
+ `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`,
  `L_NEAR_BLACK`,
  `L_MID`,
  `L_NEAR_WHITE`,
@@ -796,7 +814,8 @@ A Markdown `\<`,
  or regex escaping makes text safe only in its own grammar;
  carried into another language it is either inert or actively wrong.
 The destination grammar is the only authority,
- so normalize source semantics as needed and encode for the exact destination subcontext at the final interpolation boundary.
+ so normalize source semantics as needed
+ and encode for the exact destination subcontext at the final interpolation boundary.
 The rule reaches every text-emitting transformer:
  serializers,
  code generators,
@@ -834,7 +853,8 @@ A verification that depends on a resource the user just made available (a connec
 So it runs before unrelated work and before other parts of the same task.
 
 The trap is the "these are all part of the same task" rationalization:
- a scope expansion ("do all of X too") or a long multi-item task list feels like a license to keep working through the list and leave the resource-gated check for the end.
+ a scope expansion ("do all of X too") or a long multi-item task list feels like a license to keep working through the
+ list and leave the resource-gated check for the end.
 It is not.
 The resource's availability window,
  not the task-list order,

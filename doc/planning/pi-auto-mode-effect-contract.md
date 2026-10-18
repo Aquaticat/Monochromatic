@@ -249,7 +249,8 @@ The next candidate tranche is limited to remaining narrow natural-language relat
 against explicit supplied facts,
 without raw Bash interpretation or a model-produced final action.
 This limited tranche does not replace Q13 B:
-qualified semantic-effect estimates for validated inspected forms remain eligible where code has not established the effect.
+qualified semantic-effect estimates for validated inspected forms remain eligible
+where code has not established the effect.
 Unsupported evidence is not converted into a false occurrence claim.
 
 ## Assessment snapshot

@@ -1600,7 +1600,8 @@ Static musl size added over a 385,656-byte baseline:
 and `regorus` 7,038,952.
 
 Ranking from the research:
-A (OpenTofu-shaped HCL) > B (TOML) > F (TOML with CEL) > E (JSONC) > D (YAML) > C (KDL) > I (Dhall) > J (Rego) > G (Starlark) > H (KCL).
+A (OpenTofu-shaped HCL) > B (TOML) > F (TOML with CEL) > E (JSONC) > D (YAML)
+> C (KDL) > I (Dhall) > J (Rego) > G (Starlark) > H (KCL).
 
 - A over B:
    native expressions keep per-file derivations in one general language,

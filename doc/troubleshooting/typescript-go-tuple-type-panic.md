@@ -340,7 +340,8 @@ if (hit !== LAYERED_SUMMARY_CACHE_MISS) {
 }
 ```
 
-The warm completeness assertion consequently sees the caller edge but neither the callee summary nor its omission identity.
+The warm completeness assertion consequently sees the caller edge
+ but neither the callee summary nor its omission identity.
 It throws the secondary `Owned effect edge lacks callee summary` error.
 
 The fix needs either:
@@ -461,7 +462,8 @@ and the Oxlint summary does not disclose the missing analysis.
 
 Until omission metadata round-trips,
 extracted-rule acceptance cannot use warm output or compare worker counts.
-The acceptance harness needs fresh-process versus warm-process diagnostic equality and one-worker versus default-worker equality.
+The acceptance harness needs fresh-process versus warm-process diagnostic equality
+ and one-worker versus default-worker equality.
 
 ## Minimal reproduction
 
@@ -538,7 +540,8 @@ Once a persisted summary is read,
 the analyzer can abort category evidence,
 continue with partially loaded state,
 and lose findings.
-The verified cold/warm differential under "Warm-cache verification" supersedes earlier workspace counts in this document.
+The verified cold/warm differential under "Warm-cache verification" supersedes earlier workspace counts
+ in this document.
 
 ## Verified workarounds
 
@@ -560,7 +563,8 @@ the next unchanged run is damaged again,
 and clearing user cache is not an acceptable operational fix.
 
 The earlier claim that every per-package task avoids the panic is superseded.
-`mise run //package/module/translation-repair:lint:oxlint` reproduces both the fresh omission and warm-cache failure when the extracted rules are enabled.
+`mise run //package/module/translation-repair:lint:oxlint` reproduces both the fresh omission and warm-cache failure
+ when the extracted rules are enabled.
 
 ## What does not work
 
@@ -579,7 +583,8 @@ The earlier claim that every per-package task avoids the panic is superseded.
 - Passing paths through the root mise task,
   as in `mise run lint:oxlint -- <path>`.
   That task has no usage spec,
-  so mise splices the argument into the script body and the run dies with `ERR_INVALID_TYPESCRIPT_SYNTAX` before Oxlint starts.
+  so mise splices the argument into the script body and the run dies with `ERR_INVALID_TYPESCRIPT_SYNTAX`
+   before Oxlint starts.
 
 ## Upstream filing decision
 

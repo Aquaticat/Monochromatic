@@ -20,8 +20,9 @@ Sole external candidate per the user instruction of 2026-10-05
 ("Evaluate this specific candidate only").
 macOS, Windows MSVC, and Android targets keep their existing linkers because mold links ELF only.
 The incumbent (rust-lld 23.1.1, the rustc self-contained linker reached through the cc driver)
-is carried as the status-quo baseline candidate required by the replacement parity overlay, with evidence depth equal to its production use plus the
-measurements recorded in this report, not a fresh source audit.
+is carried as the status-quo baseline candidate required by the replacement parity overlay,
+with evidence depth equal to its production use plus the measurements recorded in this report,
+not a fresh source audit.
 
 The ranking in this report orders mold against the per-environment status quo only;
 no other external linker was evaluated, per the user restriction.
@@ -926,8 +927,10 @@ one-at-a-time sensitivity matrix preserves the ranking with non-overlapping aggr
 ## Recommendation
 
 Recommendation: the incumbent finalist. Keep rust-lld; make no product change. Do not adopt
-mold 3.0.0 for this repository's Linux linking at this time. This is an evidence-decided score outcome, not a hard-gate failure; mold passes
-every gate and is a credible future candidate. Revisit triggers (any one):
+mold 3.0.0 for this repository's Linux linking at this time.
+This is an evidence-decided score outcome, not a hard-gate failure;
+mold passes every gate and is a credible future candidate.
+Revisit triggers (any one):
 
 1. Upstream fixes small-link overhead (the issue #1696 class), removing the measured regression
    on the repository's dominant link sizes.
@@ -1015,7 +1018,8 @@ Executed after the final recommendation commit (filled in that commit's follow-u
   commit `8de38c35a2df16a25f7ff87ac3ad07156a925beb`), the verified tarball
   `~/temp/agent/mold-dist/mold-3.0.0-x86_64-linux.tar.gz` with its extracted tree, the driver
   scripts `phase-e.mjs` and `phase-e2.mjs`, and the process logs under `/tmp/pi-processes-CDjjpP/`.
-- Lock released: `~/temp/agent/technology-vet-locks/var-home-user-Monochromatic-doc-audit-tech-mold-linker-vet-2026-10-05.md.lock`.
+- Lock released:
+  `~/temp/agent/technology-vet-locks/var-home-user-Monochromatic-doc-audit-tech-mold-linker-vet-2026-10-05.md.lock`.
 - All steps executed 2026-10-05 after the recommendation commit: worktree removed
   (`git worktree remove --force`; it no longer appears in `git worktree list`), the committed
   image and volume removed (`podman rmi localhost/mold-eval:v3.0.0-deps-n2`,

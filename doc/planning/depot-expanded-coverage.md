@@ -231,7 +231,8 @@ The discovery check must compare matching test files with the selected configura
   and `RustEngineTest` in
   [`app/src/androidTest`](../../package/music-player/android-app/app/src/androidTest/kotlin/dev/monochromatic/musicplayer).
   `RustEngineTest` uses assumptions when indexed music is unavailable.
-  A successful run with skipped library-dependent cases must state that boundary and retain fixture preparation as open work.
+  A successful run with skipped library-dependent cases
+  must state that boundary and retain fixture preparation as open work.
   Compiling the APKs is not behavioral completion.
 
 ### Desktop native and Alpine smoke checks

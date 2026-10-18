@@ -6,9 +6,11 @@ Issue #429 aligned cli-git's declared floor with the latest published Node LTS l
 Issue #475 keeps that exact floor and adds the verified newer Node line.
 `package/git-policy/cli/package.json` is the source of truth and carries one caret branch per supported line,
 currently `^24.11.0 || ^26.0.0`.
-The lowest branch is the maintained minimum supported runtime and the build derives its `node24.11.0` transform target from it.
+The lowest branch is the maintained minimum supported runtime
+and the build derives its `node24.11.0` transform target from it.
 
-`package/git-policy/cli/src/runtime-contract.host-evidence.ts` requires execution at the exact floor of any declared line,
+`package/git-policy/cli/src/runtime-contract.host-evidence.ts`
+requires execution at the exact floor of any declared line,
 imports the built public MJS without extra output,
 and checks successful help plus invalid-usage behavior.
 `.github/workflows/cli-git-trust.yml` built and ran unit and host evidence at every declared floor;
@@ -45,7 +47,8 @@ and minimum-runtime host evidence confirmed:
 
 The guard had two positive controls after its first commit:
 
-- running host evidence under repository Node 26.7.0 failed before artifact execution because it was not exact declared floor;
+- running host evidence under repository Node 26.7.0 failed
+  before artifact execution because it was not exact declared floor;
 - temporarily restoring `^22.18.0`,
   rebuilding through derived `node22.18.0` target,
   and running on Node 22.18.0 failed representative invalid CLI behavior with exit `1`.
@@ -299,7 +302,8 @@ Cons:
 
 Ranking:
 raising the floor is first because it matches the measured artifact and existing source design with a verified runtime.
-Preserving Node 22 is second because it retains broader support but requires an unbuilt cross-package compatibility change.
+Preserving Node 22 is second because it retains broader support
+but requires an unbuilt cross-package compatibility change.
 
 ## What does not work
 

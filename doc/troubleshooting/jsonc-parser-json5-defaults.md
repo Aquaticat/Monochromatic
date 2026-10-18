@@ -60,7 +60,8 @@ parse_to_ast AsTokens    "[ \"test\" ] // 1" -> ok
 CstRootNode::parse       "[ \"test\" ] // 1" -> ok
 ```
 
-So the rustdoc's "Parse Strictly as JSON" recipe (`src/lib.rs:99-121`) still accepts `// c\n{ "a": 1 }` and `{ /* b */ "a": 1 }`
+So the rustdoc's "Parse Strictly as JSON" recipe (`src/lib.rs:99-121`)
+still accepts `// c\n{ "a": 1 }` and `{ /* b */ "a": 1 }`
 when the text goes through `CstRootNode::parse`,
 the entry point for editing.
 
@@ -205,7 +206,9 @@ pub fn parse(text: &str, parse_options: &ParseOptions) -> Result<Self, ParseErro
   )?;
 ```
 
-In `scan_handling_comments` (`src/parse_to_ast.rs:177-199`) the `AsTokens` arm captures the comment and loops before the arms that reach `handle_comment`:
+In `scan_handling_comments` (`src/parse_to_ast.rs:177-199`)
+the `AsTokens` arm captures the comment and loops
+before the arms that reach `handle_comment`:
 
 ```rust
 fn scan_handling_comments(&mut self) -> Result<Option<Token<'a>>, ParseError> {
@@ -237,8 +240,10 @@ whose `scan` checks the option on every comment (`src/parser.rs:64-83`),
 so they reject correctly.
 
 The strict tests do not cover this path:
-`assert_has_strict_error` (`src/parse_to_ast.rs:595-596`) calls `parse_to_ast(text, &Default::default(), &strict_options())`,
-and `CollectOptions::default()` collects no comments (`src/parse_to_ast.rs:22-26`).
+`assert_has_strict_error` (`src/parse_to_ast.rs:595-596`)
+calls `parse_to_ast(text, &Default::default(), &strict_options())`,
+and `CollectOptions::default()` collects no comments
+(`src/parse_to_ast.rs:22-26`).
 
 ### `set_value` always replaces, and `serde_json` numbers compare by representation
 

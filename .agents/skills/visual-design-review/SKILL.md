@@ -1,6 +1,9 @@
 ---
 name: visual-design-review
-description: Visual design work. Use before building or reviewing UI design variants, design matrices, HTML review forms, device mockups or frames, Android screen comparisons, a UI matched to a reference screenshot, or any custom interactive element (click or touch target size). Loading it is a required step before the first visual artifact, not an option.
+description: Visual design work. Use before building or reviewing UI design variants, design matrices,
+HTML review forms, device mockups or frames, Android screen comparisons, a UI matched to a reference screenshot,
+or any custom interactive element (click or touch target size).
+Loading it is a required step before the first visual artifact, not an option.
 ---
 
 # Visual design review

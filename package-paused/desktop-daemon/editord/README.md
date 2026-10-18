@@ -283,7 +283,9 @@ file tree interactions, and general editor behavior.
 editord proxies three language servers over JSON-RPC/stdio:
 
 - **oxlint** (`oxlint --lsp`): linting diagnostics for JS/TS
-- **tsgo** (`tsgo --lsp --stdio`): type diagnostics, hover, completions, go-to-definition, find references, inlay hints, selection ranges for JS/TS
+- **tsgo** (`tsgo --lsp --stdio`):
+  type diagnostics, hover, completions, go-to-definition,
+  find references, inlay hints, selection ranges for JS/TS
 - **dprint** (`dprint lsp`): formatting for JS/TS, JSON, CSS, HTML, Markdown, YAML, TOML
 
 The server aggregates diagnostics from oxlint and tsgo via a `DiagnosticStore`

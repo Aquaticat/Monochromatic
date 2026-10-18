@@ -414,7 +414,9 @@ Property files keep importing the built artifact by package name;
 the coverage driver and the oracle helpers import the runtime source through the `/ts` subpath instead of `../index.ts`,
 the coverage report resolves the runtime package root through that subpath instead of walking up from its own file,
 and the corpus loader's fixture and repository paths shrank by one directory.
-The `fuzz` and `fuzz:coverage` tasks run as `//package/module/toml-edit.fuzz:fuzz` and `//package/module/toml-edit.fuzz:fuzz:coverage`;
+The `fuzz` and `fuzz:coverage` tasks run as
+`//package/module/toml-edit.fuzz:fuzz`
+and `//package/module/toml-edit.fuzz:fuzz:coverage`;
 `toml-edit-fuzz.yml` type-checks and unit-tests the sidecar alongside the runtime package and calls the sidecar tasks.
 Every property file and the conformance suite passed in bounded,
  smoke,
@@ -431,11 +433,13 @@ so each file's code-line total fell below its frozen covered count;
 The two red `toml-edit-fuzz` runs since that commit never reached the gate:
 they failed one step earlier,
  at conformance,
- because CI's newer mise printed a deprecation warning on every `node` shim call and toml-test treats any stderr as a failed case
+ because CI's newer mise printed a deprecation warning on every `node` shim call
+and toml-test treats any stderr as a failed case
 (`doc/troubleshooting/toml-edit-fuzz-workflow.md`,
  "Symptom:
  every valid and encoder case fails with a mise warning on stderr").
-Every file's coverage percentage after the refreeze matches or exceeds what the pre-reformat run reported at 100 percent,
+Every file's coverage percentage after the refreeze
+matches or exceeds what the pre-reformat run reported at 100 percent,
 so the drop was the whitespace artifact the "Coverage gate (phase 8)" section anticipates,
  not lost reach.
 

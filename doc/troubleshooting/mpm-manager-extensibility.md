@@ -169,7 +169,8 @@ A broader registration search found `ManagerPool.add_manager()` callers only in 
 and
 `meta_package_manager/config.py:739-779` adds trusted config-defined managers.
 
-Historical issue [kdeldycke/meta-package-manager#276][issue-276] asked for extension documentation and mentioned plugins.
+Historical issue [kdeldycke/meta-package-manager#276][issue-276]
+asked for extension documentation and mentioned plugins.
 The maintainer rejected external plugins in 2021 because the project preferred a monolithic source and test surface.
 The later config-defined manager feature supplies a lightweight out-of-tree extension path,
 but 7.6.1 still has no full-power external class-plugin mechanism.
@@ -201,7 +202,8 @@ a read-only fixture mount,
 and a temporary home.
 The repository was not mounted.
 
-`gh attestation verify` did not accept the release attestation under its default GitHub Actions issuer policy and emitted:
+`gh attestation verify` did not accept the release attestation
+under its default GitHub Actions issuer policy and emitted:
 
 ```text
 Error: verifying with issuer "sigstore.dev"

@@ -60,7 +60,8 @@ This is the documented meaning of those options,
 not a defect.
 A later mount covers an earlier one,
 so binding the project again after the replacements makes it visible:
-the measured run with `--ro-bind PROJECT PROJECT` last listed the project and failed the write with `Read-only file system`.
+the measured run with `--ro-bind PROJECT PROJECT` last listed the project
+and failed the write with `Read-only file system`.
 
 ### `--clearenv` runs while options are parsed, before the working directory is recorded
 

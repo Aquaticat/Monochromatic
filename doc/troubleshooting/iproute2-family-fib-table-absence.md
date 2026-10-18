@@ -215,7 +215,8 @@ A future `iproute2` diagnostic change fails closed and requires an intentional u
 ### Instantiate a fail-closed route in the missing family
 
 Adding `unreachable default` creates the family table and makes subsequent listing succeed.
-`wg-quicker` uses this after claiming a table so exempt traffic cannot fall through to VPN routing when one physical family is absent.
+`wg-quicker` uses this after claiming a table so exempt traffic cannot fall through to VPN routing
+when one physical family is absent.
 The tradeoff is semantic:
 the family no longer has an absent table,
 it has an explicit unreachable default owned by `wg-quicker`.

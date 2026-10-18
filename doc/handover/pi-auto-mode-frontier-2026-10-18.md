@@ -87,7 +87,8 @@ Targeted run `39106517976` succeeds at that revision.
 The fresh, disposable registry consumer installs logger `0.4.2`, verifies its public exports and repository,
 and persists five ordinary, tagged, large, reentrant and independently owned-file records as valid JSONL.
 Evidence is `logger042-registry-consumer.log` and `logger042-registry-receipt.json` in the current scratch.
-The automatic workflow's HTTP 404 remains a separate path; the targeted trusted-publisher recovery completes publication.
+The automatic workflow's HTTP 404 remains a separate path;
+the targeted trusted-publisher recovery completes publication.
 
 The stderr inventory is retained as `final-stderr-receipt.json` with the original raw files.
 It includes deliberate private `nativeRunReserve` stack probes, a Synthetic catalog route rejected by the offline hook,
@@ -180,7 +181,8 @@ The remaining independently verifiable work is:
 - Run both complete configured-host replay variants with corrected terminal validators.
 - Audit actual Luna payloads and exercise prohibition, Stop, cancellation and cleanup boundaries.
 - Render the package and canonical documents; update the architecture and handoff measurements to the final artifact.
-- Complete the positive-control consumer audit, cleanup dry run, reviewed inactive-artifact removal and footprint measurement.
+- Complete the positive-control consumer audit, cleanup dry run,
+   reviewed inactive-artifact removal and footprint measurement.
 - Invoke MiMo through Pi RPC, monitor the lint repair, and validate its resulting changes.
 
 Earlier outputs still exit 134 from Node heap exhaustion;
@@ -2389,7 +2391,8 @@ Focused runtime and fixture lint passes with zero diagnostics after documenting 
 Six domain comparisons pass with identical public outcomes and native execution counts,
 including the permission-versus-prohibition positive control.
 The first omission pass exposed an undetected missing collector-parent currentness callback.
-Added consumers now change parent currentness after reaching and pass original native cancellation through the source tool.
+Added consumers now change parent currentness after reaching
+and pass original native cancellation through the source tool.
 The expanded consumers pass against both implementations.
 All 44 deliberate runtime omissions or substitutions produce assertion failures,
 and the runtime bridge and implementation artifacts retain their starting hashes.
@@ -3122,7 +3125,8 @@ the built module hash was unchanged.
 The prepared-member probe measured 10812 policy opens;
 using the original judgment's validated identities during approval measured 10634.
 Selecting the matching source before validating its binding did not change this fixture's 10634-open count.
-That fixture therefore supplies no performance evidence for source lookup paths that encounter earlier unrelated sources.
+That fixture therefore supplies no performance evidence for source lookup paths
+that encounter earlier unrelated sources.
 Removing the redundant dependency check before complete source validation measured 10236 opens.
 The native Allow scenario passes,
 but the unchanged 10000-open regression remains red.
@@ -6451,7 +6455,8 @@ multiline,
 re-export,
 and nested dynamic imports;
 they also cover escaped source names and adversarial replacement values.
-The initial static test import reported TypeScript `TS6307` because generated `.ts` was outside the composite source set.
+The initial static test import reported TypeScript `TS6307`
+because generated `.ts` was outside the composite source set.
 The final test loads the built module by URL and checks its expected callable consumer contract.
 No source import,
 type-check suppression,
@@ -10843,7 +10848,8 @@ The accepted all-host-input domain remains unfinished.
 ## Input-origin-only links for unsupported prompt representations
 
 A native prompt containing an image or normalization hint still has an original expanded-text input.
-It must not disappear from source assessment merely because its representation is outside the text-only association profile.
+It must not disappear from source assessment merely
+because its representation is outside the text-only association profile.
 Required control `1c03dff` / `proc_1b9c` failed on that missing retained input.
 
 The existing publication alias index now distinguishes `input-only` links
@@ -14442,7 +14448,8 @@ and hierarchy remain separate.
 12 live Jev requests,
 two fixed identical passes over six actual policy clauses,
 and no retries.
-The predicate asks whether the selected clause states an approval or authorization prerequisite for any described action.
+The predicate asks whether the selected clause states an approval
+or authorization prerequisite for any described action.
 It does not ask whether the proposed action is covered,
 whether authorization is already supplied,
 who can supply it,

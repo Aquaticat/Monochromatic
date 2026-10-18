@@ -611,7 +611,8 @@ including multi-line inline tables.
 Tradeoffs:
 
 - A crate with a git dependency cannot be published to crates.io
-   ("[crates.io][] does not allow packages to be published with dependencies on code published outside of [crates.io][]",
+   ("[crates.io][] does not allow packages to be published
+with dependencies on code published outside of [crates.io][]",
    `rust-lang/cargo` `doc/book/src/reference/specifying-dependencies.md:205-207`).
 - `\e`,
    `\xHH`,

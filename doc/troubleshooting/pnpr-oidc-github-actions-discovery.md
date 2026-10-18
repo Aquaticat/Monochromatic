@@ -351,7 +351,8 @@ Only pnpm/pnpm#14666 (the feature pull request)
        the prototype confines the change to `pnpr/crates/auth/src/oidc`.
 3.   **Are they supporting this use case?**
       Yes.
-      `pnpr/crates/pnpr/OIDC.md` configures `issuer: https://token.actions.githubusercontent.com` for keyless publishing,
+      `pnpr/crates/pnpr/OIDC.md` configures
+       `issuer: https://token.actions.githubusercontent.com` for keyless publishing,
        and `verifies_rs256_workload_tokens` names the same issuer.
 4.   **Would the repo welcome our contribution?**
       Yes,
@@ -383,7 +384,9 @@ Decision:
 
 Upstream state checked the same day:
  `main` was `8f20a3fd69748b1f6eb5c6a7c54d5917456a2013`,
- every commit touching `pnpr/crates/auth/src/oidc.rs` or `pnpr/crates/auth/src/oidc/` after pnpm/pnpm#14666 is a style or size refactor
+ every commit touching `pnpr/crates/auth/src/oidc.rs`
+ or `pnpr/crates/auth/src/oidc/` after pnpm/pnpm#14666
+ is a style or size refactor
  (pnpm/pnpm#14730,
   #14760,
   #14792,

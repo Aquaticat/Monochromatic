@@ -81,7 +81,9 @@ and setting `RUSTUP_TOOLCHAIN` around `mise run` has no effect because mise over
 Measured workaround: `MISE_RUST_VERSION=nightly-2026-09-22` makes mise select a toolchain that has the component;
 with it `inspect:language` and `inspect:language-lifecycle` passed.
 `inspect:language-confinement` still fails its `scripted-pwd-alias` case on this host,
-with `WrongWorkingDirectory("/tmp")`, while an empty `/tmp/.git` directory (created 2026-10-13) exists, which Helix treats as a workspace marker.
+with `WrongWorkingDirectory("/tmp")`,
+while an empty `/tmp/.git` directory (created 2026-10-13) exists,
+which Helix treats as a workspace marker.
 Removing that directory was not tried, so it is not determined to be the cause;
 an older build from the main checkout fails the same three checks, so the failure does not come from this work.
 

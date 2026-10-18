@@ -23,7 +23,9 @@ an error run ends without the empty line.
 The commit wrapper's `final-newline` policy rewrites every non-empty text file to end in exactly one LF,
 so a committed golden file no longer matches.
 Workaround:
-stage the fixtures into a scratch directory before the run and restore the empty line there for files whose last line is a warning summary (`src/ui_tests.rs` of the package).
+stage the fixtures into a scratch directory before the run
+and restore the empty line there for files whose last line is a warning summary
+(`src/ui_tests.rs` of the package).
 The harness never reads `--bless` from the environment of `dylint_testing`;
 the package's `bless` task copies the saved actual output instead.
 

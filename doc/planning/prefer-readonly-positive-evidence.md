@@ -93,7 +93,8 @@ Its documentation says a value used to create a non-const handle that might esca
 It also skips template functions because all instantiations cannot be known
 ([documentation](https://clang.llvm.org/extra/clang-tidy/checks/misc/const-correctness.html)).
 
-Clang's `readability-non-const-parameter` check states that it warns only when constness makes the function interface safer.
+Clang's `readability-non-const-parameter` check states that it warns only
+ when constness makes the function interface safer.
 It withholds a warning when nested pointer writes could make the const declaration misleading
 ([documentation](https://clang.llvm.org/extra/clang-tidy/checks/readability/non-const-parameter.html)).
 Both checks prefer reduced recall over an unproved const replacement.
@@ -119,7 +120,8 @@ ESLint's `no-param-reassign` reports observed parameter assignment and,
 when configured,
 observed property modification
 ([documentation](https://eslint.org/docs/latest/rules/no-param-reassign)).
-JetBrains' `AssignmentToMethodParameter` similarly reports assignment or modification and supplies a local-variable rewrite
+JetBrains' `AssignmentToMethodParameter` similarly reports assignment or modification
+ and supplies a local-variable rewrite
 ([documentation](https://www.jetbrains.com/help/inspectopedia/AssignmentToMethodParameter.html)).
 These inverse rules report positive mutation evidence rather than unresolved possibilities.
 
@@ -130,7 +132,8 @@ enforce error-severity rules on new code,
 and report stale suppression entries for pruning
 ([documentation](https://eslint.org/docs/latest/use/suppressions)).
 If this project retains an acceptance mechanism,
-a site-specific manifest with stable fingerprints and stale-entry enforcement is stronger than unstructured inline prose.
+a site-specific manifest with stable fingerprints
+ and stale-entry enforcement is stronger than unstructured inline prose.
 It is still weaker than not producing a nonactionable preference finding.
 
 ## Prototype measurement
@@ -192,7 +195,8 @@ not a cross-environment release reproduction.
 ### Error cause constructors
 
 The four `super(..., { cause })` sites pass a primitive message and a fresh ordinary options object.
-ECMA-262 specifies that `InstallErrorCause` reads `cause` from the options object and installs the value as a data property on the new Error.
+ECMA-262 specifies that `InstallErrorCause` reads `cause` from the options object and installs the value
+ as a data property on the new Error.
 It does not inspect the cause value
 ([specification](https://tc39.es/ecma262/2026/multipage/fundamental-objects.html#sec-installerrorcause)).
 

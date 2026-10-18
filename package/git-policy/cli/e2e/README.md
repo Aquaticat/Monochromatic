@@ -468,7 +468,8 @@ Each result line prints a workload digest over labels,
 selections,
 and captured bytes.
 Two consecutive runs of seed 1 printed identical digests for all 54 non-skipped runs,
-and the two seed-1 runs of 2026-09-26 against `09b0eb07b` and `9b5f66c40` printed identical digests for `concurrent-trace-replay`.
+and the two seed-1 runs of 2026-09-26 against `09b0eb07b` and `9b5f66c40`
+printed identical digests for `concurrent-trace-replay`.
 Hook barriers make the pinned interleavings identical on replay;
 free-running starts and the `sigkill-offset` kill still depend on process scheduling,
 so a replay reproduces the workload exactly but can land a free-running race differently.

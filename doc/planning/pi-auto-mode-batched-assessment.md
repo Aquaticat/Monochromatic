@@ -511,7 +511,8 @@ Keep each rule ID and text inside its question:
 TypeSafe documents question-map keys as correlation only,
 not inference input.
 
-The benefit is explicit question coverage of the indexed rules rather than a manually selected set of rule-specific heads.
+The benefit is explicit question coverage of the indexed rules
+rather than a manually selected set of rule-specific heads.
 The risks are compound rules,
 missing contextual facts,
 irrelevant workflow rules,

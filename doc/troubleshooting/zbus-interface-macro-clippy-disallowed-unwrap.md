@@ -6,7 +6,8 @@ although the block contains no `unwrap`.
 The error points at the `#[zbus::interface(...)]` attribute line.
 
 Found while applying the root `clippy.toml` inside the container lint of `package/cli/nested-wayland-session`.
-Before the container received that file, the ban was not applied there and the nine interface blocks of the crate passed.
+Before the container received that file,
+the ban was not applied there and the nine interface blocks of the crate passed.
 
 ## Symptom
 

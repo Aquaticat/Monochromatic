@@ -1,4 +1,5 @@
-# mise 2026.7.0: any invocation fails with "no data key retrieved from metadata" inside containers that carry an age-encrypted env file but no age identity
+# mise 2026.7.0: any invocation fails with "no data key retrieved from metadata"
+inside containers that carry an age-encrypted env file but no age identity
 
 ## Symptom
 

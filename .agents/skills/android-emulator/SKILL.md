@@ -1,6 +1,8 @@
 ---
 name: android-emulator
-description: Android emulator or AVD work. Use before launching, scripting or briefing an agent to use the Android emulator (device passes, screenshots, gfxinfo, adb on an emulator). Loading it is a required step before the first launch. Headless launches are banned.
+description: Android emulator or AVD work. Use before launching, scripting or briefing an agent
+to use the Android emulator (device passes, screenshots, gfxinfo, adb on an emulator).
+Loading it is a required step before the first launch. Headless launches are banned.
 ---
 
 # Android emulator

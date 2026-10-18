@@ -30,7 +30,9 @@ Measured before the change:
 - The `RootFilesystem` seam had two real adapters (`node:fs/promises`,
    OPFS) but no test adapter;
    every marker test built a directory tree under `mkdtemp`.
-- Error identity was a string compare (`error.message === GIT_ROOT_MISSING_MESSAGE`) rewrapped into `GitRepositoryRootNotFoundError`;
+- Error identity was a string compare
+   (`error.message === GIT_ROOT_MISSING_MESSAGE`)
+   rewrapped into `GitRepositoryRootNotFoundError`;
    the other finders threw bare `Error`.
 - Nine other upward walks live elsewhere in the repo (six `find-up` call sites,
    two hand-rolled `node_modules` walks,
@@ -229,7 +231,8 @@ Mapping:
    manifest description,
    changeset (`changeset:status` reports `module-fs-path -> 0.2.0`).
    Types clean in every migrated package;
-   the oxlint failures those packages report are pre-existing `require-eventual-artifact` findings on imports this change did not touch (fy,
+   the oxlint failures those packages report are pre-existing
+   `require-eventual-artifact` findings on imports this change did not touch (fy,
    git-clone-size,
    mvm,
    vmsync,

@@ -41,7 +41,8 @@ The generated counterpart is
 `package/git-policy/cli/src/optional/repository-policy/dependent-version-bump-policy.ts`.
 This identifies a relevant decoding path,
 not a confirmed root cause.
-Do not conclude that missing-manifest sentinels or stale snapshots caused the error without inspecting the executing inputs.
+Do not conclude that missing-manifest sentinels
+or stale snapshots caused the error without inspecting the executing inputs.
 See [trusted snapshot behavior](cli-git-trusted-snapshot-stale-policy-code.md).
 
 ## Verification record

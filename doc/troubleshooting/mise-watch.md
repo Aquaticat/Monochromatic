@@ -656,12 +656,15 @@ First SIGINT hangs the following invocations:
 watchexec's `--help` documents `-j` accepts either an inline jaq expression or,
  if the argument starts with `@`,
  a path to a file containing a jaq program.
- The hang affects **both forms** because the cycle lives in `FilterProgs::new` (`crates/cli/src/filterer/progs.rs:66-115`),
+ The hang affects **both forms** because the cycle lives in
+`FilterProgs::new` (`crates/cli/src/filterer/progs.rs:66-115`),
  which is called whenever `-j` is present regardless of where the program comes from.
  Reproduced 2026-05-11 with watchexec 2.5.1:
  a process running `watchexec -w /tmp/x -j 'true' -- sleep 9999` survives the first SIGINT and only dies on SIGKILL.
 
-The watchexec docs (CLI `--help` and the discussions link at <https://github.com/watchexec/watchexec/discussions/592>) advertise the inline form on equal footing with `@file`.
+The watchexec docs (CLI `--help` and the discussions link at
+<https://github.com/watchexec/watchexec/discussions/592>)
+advertise the inline form on equal footing with `@file`.
  There is no documented warning that either form hangs on SIGINT.
  The draft upstream issue at the end of this section should call out that inline jaq is affected too,
  so an upstream fix covers both code paths.

@@ -134,7 +134,8 @@ it does not return an accepted group result.
 A private copy of the Pi 1.0.0 dispatcher then passed nine host controls in `proc_669f`.
 The strengthened copy passed 13 controls in `proc_75fb`,
 also with exit 0.
-The strengthened path keeps one admission for a declared group even when a host setting or member forces serial execution.
+The strengthened path keeps one admission for a declared group even when a host setting
+or member forces serial execution.
 It preserves ordered serial execution,
 blocks the entire group on denial,
 and fails closed when required batch admission is unavailable.

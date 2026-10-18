@@ -19,8 +19,8 @@ Subject:
 Monorepo manager.
 
 Decision scope:
-select a monorepo manager for Monochromatic that provides every file-enforcer functionality and a watch mode with an RPC or
-IPC inspection and control channel,
+select a monorepo manager for Monochromatic that provides every file-enforcer functionality
+and a watch mode with an RPC or IPC inspection and control channel,
 natively or through documented extension,
 before plugging functionality into a tool or building a Bazel replacement.
 
@@ -762,7 +762,8 @@ Confusion triggers spot-checked with plain `curl` from the development machine o
 - pnpm:
    `https://pnpm.io/cli/recursive` and `https://pnpm.io/workspace-task-orchestration` describe `--no-bail` differently.
 - oneRepo:
-   `https://onerepo.tools/docs/config/` documents `lifecycles` under `taskConfig` while its example sets it under `tasks`.
+   `https://onerepo.tools/docs/config/` documents `lifecycles` under `taskConfig`
+   while its example sets it under `tasks`.
 - Nadle:
    `https://nadle.dev/docs/getting-started/features/` configures `CopyTask` with `to`,
    while `https://nadle.dev/docs/guides/file-operation-tasks/` uses `into`.

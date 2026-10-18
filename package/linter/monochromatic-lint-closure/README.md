@@ -45,7 +45,9 @@ A callee parameter requires `'static` in two ways:
 - Its type is a generic parameter,
   including an `impl Trait` argument,
   with a `TypeOutlives(parameter, 'static)` clause in the callee's `param_env`.
-  `param_env` already includes the parent impl and trait clauses and the clauses that a supertrait such as `trait Task: 'static` implies (a measured fact:
+  `param_env` already includes the parent impl and trait clauses
+  and the clauses that a supertrait such as `trait Task: 'static` implies
+  (a measured fact:
   an explicit elaboration pass changed no fixture result,
   so the package does not have one).
 - Its type is `Box<dyn Trait + 'static>`,

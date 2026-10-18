@@ -33,7 +33,8 @@ Git-starting modules:
   and writes the synthetic merge base (`read-tree`, `update-index`, `write-tree`, `hash-object`).
 - `replay_capture_history` lists the first-parent history (two processes) and reads `captured.json`
   and the landed-capture records.
-- `replay_merge` runs `merge-tree --write-tree --merge-base`, finds the first landed commit that touched a conflicting path,
+- `replay_merge` runs `merge-tree --write-tree --merge-base`,
+   finds the first landed commit that touched a conflicting path,
   and writes the replayed commit: a raw rewrite when unsigned, `commit-tree -S` when signed.
 - `replay_commit` composes the steps into one replay and returns `Replayed` or `Conflict` data.
 
@@ -73,7 +74,8 @@ Each case of the SPEC list maps to a test:
 - A far-apart edit is not subsumed and merges:
   `replay_containment::tests::a_far_apart_prepared_change_does_not_contain_the_landed_change`,
   and the far-apart path of `replay_subsumption::tests::the_scenario_settles_each_path_by_its_rule`.
-- An adjacent edit without the landed one conflicts: `replay_commit::tests::an_adjacent_edit_without_the_landed_edit_conflicts`.
+- An adjacent edit without the landed one conflicts:
+   `replay_commit::tests::an_adjacent_edit_without_the_landed_edit_conflicts`.
 - Identical additions and additions keeping every landed line are subsumed, a rewrite is not:
   `replay_subsumption_text::tests::an_addition_on_both_sides_is_subsumed_against_the_empty_blob`,
   `replay_containment::tests::additions_against_an_empty_base_keep_every_landed_line`.
@@ -100,7 +102,8 @@ The four replay binary-level controls run `replay_commit` against disposable rea
 The wrapper's commit path stays refused until integration, so these are not wrapper-binary runs.
 
 - Non-overlapping hunks replay with `commit-replayed` data (`Replayed`: `onto`, `prepared_oid`, `from_base`, `oid`).
-- Overlapping hunks give `concurrent-commit/replay-conflict` data (`ReplayConflict`: `winning_oid`, `paths`, `prepared_oid`),
+- Overlapping hunks give `concurrent-commit/replay-conflict` data
+   (`ReplayConflict`: `winning_oid`, `paths`, `prepared_oid`),
   and the prepared commit cherry-picks onto the base:
   `replay_commit::tests::overlapping_hunks_conflict_and_the_prepared_commit_cherry_picks`.
 - The reservation is granted after the configured lost races, with the request naming the count:
@@ -197,7 +200,8 @@ build stops at `cargo vendor --locked`.
 3. Record the image identifier under Final gate.
 4. If the campaign did not run, rerun it from the worktree with
    `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot path> mise run //package/git-policy/cli:native:test:container`
-   and then `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot path> mise run //package/git-policy/cli:native:mutation:scoped -- <the --file list>`.
+   and then
+   `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot path> mise run //package/git-policy/cli:native:mutation:scoped -- <the --file list>`.
    The `--file` list is the 14 modules named in the Mutation scope note below.
 
 Mutation scope: `replay_patch`, `replay_reverse_apply`, `replay_containment`, `replay_object`,
@@ -213,13 +217,15 @@ Ran:
 
 - Container gate at `ebfd97cc83`, the last code change (`GIT_POLICY_NATIVE_IMAGE_TAG=replay`):
   library tests 973 passed, 2 ignored; the other binaries passed. Clippy failed only on the four pre-existing findings.
-  Image `localhost/git-policy-native-test:replay`, identifier `c39103e37cf37772b99d9ccef9b7a71fe949ddca4eff455b33fb7343b67384e6`.
+  Image `localhost/git-policy-native-test:replay`,
+  identifier `c39103e37cf37772b99d9ccef9b7a71fe949ddca4eff455b33fb7343b67384e6`.
 - Planted controls in the campaign run at `ebfd97cc83`: 15 of 15 noticed.
 - Mutants, the third campaign (`native-mutation-y5KnYD`, before `ebfd97cc83`):
   417 found, 299 caught, 16 missed, 33 unviable, 69 timeouts.
   The timeouts were not rerun, so the campaign exited 3. The timeouts are 27 in `replay_patch.rs`,
   27 in `replay_reverse_apply.rs`, 8 in `replay_reservation.rs`, 2 in `replay_containment.rs`,
-  2 in `replay_merge.rs`, and one each in `replay_capture_order.rs`, `replay_revalidation.rs`, and `replay_subsumption.rs`.
+  2 in `replay_merge.rs`, and one each in `replay_capture_order.rs`, `replay_revalidation.rs`,
+  and `replay_subsumption.rs`.
 - Survivors killed by tests:
   - `replay_patch.rs` 73:9, the `Display` impl of `ReplayPatchFormatError`:
     `replay_patch::tests::the_format_error_displays_its_message` (`fd054ff503`).
@@ -244,7 +250,8 @@ Not run, and the exact commands to resume:
 
 - The timed-out files, one at a time. The mutation task has no timeout option; its `--timeout` is fixed at 90 s
   in `bin/mutate-native-container.mjs`. Changing it to 300 s would edit a shared gate, which this lane does not do.
-  Command: `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/<file>.rs`
+  Command:
+  `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/<file>.rs`
   for each file listed above.
 - The full scoped campaign over the 14 modules:
   `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- <the --file list in ~/temp/agent/replay-core-mutation-files.txt>`.
@@ -257,7 +264,8 @@ remain deferred as before, and the non-UTF-8 path field gate stays recorded unde
 
 - `subsume_landed_changes` takes the shared-path list from its caller.
   The first version listed the paths itself, which made four `diff-tree` listings per replay where the SPEC allows two.
-- The reservation request bytes follow the TypeScript object, not the empty marker SPEC line 2091 names (see Choices open to veto).
+- The reservation request bytes follow the TypeScript object,
+   not the empty marker SPEC line 2091 names (see Choices open to veto).
 - The plan's Git-starting tests use real repositories through `test_support`, not the wrapper binary.
 
 ## Choices open to veto
@@ -265,7 +273,8 @@ remain deferred as before, and the non-UTF-8 path field gate stays recorded unde
 - Non-UTF-8 output from `git merge-tree` or `git rev-list` fails the replay (strict decoding, as the incumbent's
   `TextDecoder` with `fatal: true`). The byte-preserving alternative keeps paths as bytes end to end and needs the
   landing lane's path type to change. Rejected for now because the incumbent refuses such output too.
-- `reservation-request` contains the TypeScript object `{"schemaVersion":2,"state":"reservation-request","lostRaces":n}`.
+- `reservation-request` contains the TypeScript object
+   `{"schemaVersion":2,"state":"reservation-request","lostRaces":n}`.
   SPEC line 2091 calls it an empty marker. Both wrappers read the same file, so the TypeScript bytes are kept.
   The SPEC wording is stale and should be corrected to the object.
 - Hunk ranges accept ASCII digits only. The TypeScript used `Number(text)`, which accepts an empty range start as zero.
@@ -284,11 +293,15 @@ remain deferred as before, and the non-UTF-8 path field gate stays recorded unde
   History was not amended, so the integrator sees two commits with the same subject.
 - `capture_records`, `transaction_registry`, `owner_lock`, and `blob_batch` were used read-only.
   No function in those modules was changed.
-- `acquire_reserved_landing_lock` takes a closure for the landing lock. The integrator passes the landing lane's acquisition.
-- `replay_commit` expects the shadow git directory, the object directory with the alternates, and the transaction directory
-  that already holds `captured.json`. Replays of a moved target use the same transaction directory with a new replay number.
+- `acquire_reserved_landing_lock` takes a closure for the landing lock. The integrator passes the landing lane's
+   acquisition.
+- `replay_commit` expects the shadow git directory, the object directory with the alternates,
+   and the transaction directory
+  that already holds `captured.json`. Replays of a moved target use the same transaction directory
+  with a new replay number.
 - The planted controls registered in `bin/native-planted-controls.mjs` are additive:
-  `replay_reverse_apply`, `replay_patch`, `replay_capture_order`, `replay_reservation`, `replay_object`, and `replay_subsumption`.
+  `replay_reverse_apply`, `replay_patch`, `replay_capture_order`, `replay_reservation`, `replay_object`,
+  and `replay_subsumption`.
 
 ## Files outside the lane
 

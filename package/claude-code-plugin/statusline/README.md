@@ -52,7 +52,8 @@ Replaces Claude Code's built-in spinner verbs,
 with no relation to what Claude is actually doing
 ([anthropics/claude-code#33057](https://github.com/anthropics/claude-code/issues/33057)).
 
-The statusline extracts a gerund from the newest assistant prose and thinking summaries at the end of the session transcript instead.
+The statusline extracts a gerund from the newest assistant prose and thinking summaries
+at the end of the session transcript instead.
 Since Claude's prose naturally contains gerunds that describe its current activity
 ("Let me search for...",
  "I'll try refactoring..."),

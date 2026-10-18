@@ -316,7 +316,8 @@ and package currently targets repository-local development rather than published
 No `.out-of-scope/` entry matches sudo command lookup.
 
 Broad open and closed searches for `secure_path` found sudo tracker discussions,
-including issue `#348` about whether path should reset by default and pull request `#409` about configure-time secure path control.
+including issue `#348` about whether path should reset by default
+and pull request `#409` about configure-time secure path control.
 Exact search for `secure_path` plus `command not found` found no matching issue or pull request.
 No duplicate needs a comment because observed behavior matches documented policy.
 

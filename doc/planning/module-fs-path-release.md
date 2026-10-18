@@ -44,7 +44,8 @@ After this release,
    confirmed by the extraction commit `894c84a5d`,
    the `dom` tsconfig,
    and the OPFS backend)
-   and a single entry with dynamic imports (the logger decision measured that every `import()` leaks into every downstream bundle).
+   and a single entry with dynamic imports
+   (the logger decision measured that every `import()` leaks into every downstream bundle).
 - Backends are chosen at resolution time through `package.json` `imports` entries:
    `#posix-path` (`node`:
    `node:path/posix`;
@@ -134,7 +135,8 @@ After this release,
    34 import lines in 30 files,
    every one a Node context;
    no built client bundle in the repo contains fs-path code;
-   `doc/troubleshooting/css-tooling.md` records done-postcss routing around fs-path because its imports dragged Node builtins into the client bundle.
+   `doc/troubleshooting/css-tooling.md` records done-postcss routing around fs-path
+   because its imports dragged Node builtins into the client bundle.
    Only `dev-script/deps-cube` (2 files) imports a Node-only helper (`findPackageRootCached`);
    nothing in the repo imports the `ensure*` or `empty*` helpers.
 - Gates:
@@ -149,7 +151,8 @@ After this release,
    `emptyPath`,
    `removeEmptyFilesInDir`,
    and `GitRepositoryRootNotFoundError` have no test.
-- README claims the package is source-only and lists `./find-monorepo-root` and `./find-package-root` subpaths removed in commit `06cceaa67` (2026-05-29).
+- README claims the package is source-only and lists `./find-monorepo-root`
+   and `./find-package-root` subpaths removed in commit `06cceaa67` (2026-05-29).
 - `npm pack --dry-run`:
    22 files,
    347 kB unpacked,
@@ -203,7 +206,8 @@ After this release,
    and lockfile;
    deps-cube imports moved to `/ts/node.ts`).
    The lockfile was regenerated with the committed pnpm 11.21.0 through `mise exec pnpm@11.21.0`:
-   the uncommitted pnpm 12.3.4 bump in `mise.lock` (another session's change) fails every `pnpm install` in this checkout,
+   the uncommitted pnpm 12.3.4 bump in `mise.lock` (another session's change)
+   fails every `pnpm install` in this checkout,
    pristine or not,
    while re-verifying the lockfile:
    `ERR_PNPM_META_FETCH_FAIL` fetching `@jsr/std__path` from `registry.npmjs.org`.
@@ -256,7 +260,8 @@ After this release,
    `ensureDir`,
    and `findPackageRootCached` work from the installed package;
    `/ts` refused with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
-   The consumer's fixture put `[monorepo]` on line 1 of `mise.toml` and the finder missed it (the marker required a newline before the header):
+   The consumer's fixture put `[monorepo]` on line 1 of `mise.toml`
+   and the finder missed it (the marker required a newline before the header):
    fixed in `a7876a2a2` with three regression cases.
 
 ## Result (2026-09-07)
@@ -286,7 +291,8 @@ After this release,
 Historical next action after the 2026-09-07 release:
 
 None for this release.
-The next changeset merged to `main` for this package exercises the CI publish path with provenance for the first time and proves the trusted publisher.
+The next changeset merged to `main` for this package exercises the CI publish path
+with provenance for the first time and proves the trusted publisher.
 `module-test` still waits on `module-async-time`,
  `module-caught-value`,
  `module-const`,

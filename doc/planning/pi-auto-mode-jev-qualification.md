@@ -233,7 +233,8 @@ for the retained model failures.
 12 live Jev requests,
 two fixed identical passes over six actual policy clauses,
 and no retries.
-The predicate asks whether the selected clause states an approval or authorization prerequisite for any described action.
+The predicate asks whether the selected clause states
+an approval or authorization prerequisite for any described action.
 It does not ask whether the proposed action is covered,
 whether authorization is already supplied,
 who can supply it,

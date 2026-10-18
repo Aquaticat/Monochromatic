@@ -1,4 +1,5 @@
-# KWin 6.7.1 delivers a Wayland drag only to a client's first `wl_data_device`, so a winit/Slint app's separately-bound drag-and-drop device never receives file drops
+# KWin 6.7.1 delivers a Wayland drag only to a client's first `wl_data_device`,
+so a winit/Slint app's separately-bound drag-and-drop device never receives file drops
 
 A file dragged from Dolphin onto the Slint file-manager prototype
 (`package/desktop-app/file-manager/`) on a native KWin Wayland session does

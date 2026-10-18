@@ -46,7 +46,8 @@ Each item names the IntelliJ source it comes from
 - Continuation indent: the first non-blank column of the logical line, plus one column for the mark
   (`USE_CUSTOM_SOFT_WRAP_INDENT = true`, `CUSTOM_SOFT_WRAP_INDENT = 0`).
 - Home and End (`EditorActionUtil.moveCaretToLineStart`, `moveCaretToLineEnd`, smart Home on):
-  Home goes to the start of the visual row, and from there to the first non-blank column of the logical line's first row;
+  Home goes to the start of the visual row, and from there to the first non-blank column
+   of the logical line's first row;
   End goes to the end of the visual row (trailing blanks skipped), and from there to the logical line end.
   Shift variants extend the selection.
   The built rules are IntelliJ's in full (`src/line_boundary.rs`):
@@ -77,8 +78,10 @@ but the vertical model, the geometry readback, the gutter model,
 and the caret, aim, and hit code assume one row per source line.
 Places that must change, silent failures first:
 
-1. `src/shaped_row.rs`: `hit` probes at half the layout height, so every click on a wrapped line lands in the middle row;
-   `range` hard-codes `y: self.top` and a height of one code row, so selection, find, underlines, and reveal all inherit it.
+1. `src/shaped_row.rs`: `hit` probes at half the layout height, so every click on a wrapped line lands
+ in the middle row;
+   `range` hard-codes `y: self.top` and a height of one code row, so selection, find, underlines,
+    and reveal all inherit it.
 2. `src/text_raster.rs` and `src/annotation_paint.rs`: exact float matches of `rectangle.y` against a row's top
    lose selected ink and underline splitting on continuation rows.
 3. `src/shaped_text/view.rs`, `src/document.rs`, `src/vertical_motion.rs`, `src/caret_motion.rs`:
@@ -91,7 +94,8 @@ Places that must change, silent failures first:
    pointer and hover resolve a logical line, so a click on a continuation row maps wrongly.
 6. `src/annotation_layout.rs`: hint and message x and underline y come from a logical row;
    hint packing sets block height from x, and messages can run past the pane width.
-7. `src/native/rows.rs` (`measure`, `present`) and `ui/app.slint`: the gutter has one number and one mark per logical line;
+7. `src/native/rows.rs` (`measure`, `present`) and `ui/app.slint`: the gutter has one number
+ and one mark per logical line;
    it needs a per visual row model with the number or the wrap indicator.
 8. `src/tab_layout.rs`: tab stops are measured on an unbroken layout and then used on a wrapped one.
 9. `src/row_map.rs`: every height, `locate`, `page`, `extent`, and `block_top` assumes one code row per line.
@@ -108,7 +112,8 @@ Option A, shaping every line at the wrap width, is affordable on a worker thread
 - Re-breaking all kept layouts at a new width, which a window resize needs, took 40 to 80 ms for 50,000 lines,
   about one microsecond per line.
 - The kept layouts held about 158 MB for 50,000 lines (3.2 KB per line).
-- Parley's `OverflowWrap::Anywhere` and `set_line_break_override` behaved as assumed, no row start fell inside a grapheme
+- Parley's `OverflowWrap::Anywhere` and `set_line_break_override` behaved as assumed,
+ no row start fell inside a grapheme
   in the cases tried, and the layout width scales with the builder scale (use `width * scale`).
   The syntax brush runs of production were not pushed, so shaping cost is a lower bound.
   966 of 57,938 rows reported an advance wider than the width at width 600. The advance includes the hanging space;
@@ -139,7 +144,8 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
   an overflowing space hangs on the upper row.
   ICU differs from IntelliJ: it does not break after `,`, `;`, `)` before a letter, nor before `(` or `.`.
   CJK ideographs do break between each other.
-  The hook `set_line_break_override` on the builder (a function of the code point pair) can force or suppress a boundary,
+  The hook `set_line_break_override` on the builder (a function of the code point pair) can force
+   or suppress a boundary,
   so the IntelliJ rules can be added as an override; whether an override that splits a grapheme is safe is unverified.
   The `complex-scripts` feature is off, so Thai, Lao, Khmer, and Myanmar get no dictionary breaking.
 - Reading rows: `layout.lines()` gives each visual row with its byte range and metrics (`block_min_coord`,
@@ -150,7 +156,8 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
   `Cursor::from_point` gives index and affinity.
   `Selection::geometry` returns one rectangle per visual row.
   The existing note `doc/troubleshooting/parley-cursor-from-point-inside-grapheme.md` still applies.
-- Continuation indent: `Layout::set_text_indent(amount, IndentOptions { each_line: false, hanging: true })` indents every
+- Continuation indent: `Layout::set_text_indent(amount, IndentOptions { each_line: false, hanging: true })` indents
+ every
   row but the first and takes one amount per layout, so a layout per logical line works;
   the indent becomes the row offset in `align()`, so `align` must run after breaking (unverified at runtime).
   The breaker also exposes per row `set_line_x` and `set_line_max_advance`; its glyph shift is unverified.

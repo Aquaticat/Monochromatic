@@ -2,7 +2,8 @@
 status: final; recommendation recorded, adoption not authorized
 lifecycle-phase: recommended (retain incumbent); candidate B exited on proven hard-gate failures
 subject: pnpm store-loader
-scope: Decide whether the Monochromatic monorepo can migrate dependency linking from the pnpm isolated node_modules linker to the pnpm experimental loaded linker (store loader).
+scope: Decide whether the Monochromatic monorepo can migrate dependency linking
+ from the pnpm isolated node_modules linker to the pnpm experimental loaded linker (store loader).
 started: 2026-10-18
 last-updated: 2026-10-18
 governing-skill: .agents/skills/choosing-technology/SKILL.md
@@ -16,11 +17,13 @@ criteria-and-weights: six criteria frozen at weight 1 each; scoring runs only fo
 hard-constraints:
   - CI installs remain possible from the committed frozen lockfile with store caching
   - Electron packaging and Playwright-in-podman browser and e2e runs keep working
-  - Mise-run workflows keep working: tsc --build type check, bare-node TypeScript unit tests, rolldown node/browser/client builds, oxlint with tsgolint, watch and dev servers
+  - Mise-run workflows keep working: tsc --build type check, bare-node TypeScript unit tests,
+   rolldown node/browser/client builds, oxlint with tsgolint, watch and dev servers
   - Native addon, napi, WASM and platform-binary dependencies stay loadable and buildable
   - No regression of the strict isolation guarantees behind nodeLinker isolated with hoist false
   - Node surfaces that must run stored code meet the loader Node floor of 24.18+ or 26.2+
-  - Supply-chain policy keeps effect: .pnpmfile readPackage substitution, overrides including link shims, allowBuilds approvals, strict minimumReleaseAge, trustPolicy no-downgrade
+  - Supply-chain policy keeps effect: .pnpmfile readPackage substitution, overrides including link shims,
+   allowBuilds approvals, strict minimumReleaseAge, trustPolicy no-downgrade
   - The committed lockfile stays portable across supportedArchitectures darwin/linux, x64/arm64, glibc/musl
 base-components:
   - Inspectable open-source local technology
@@ -160,8 +163,8 @@ Each constraint lists its measured source.
    wasm font packages),
    `allowBuilds` list,
    napi incident record
-   [doc/audit/depot-git-host-failure-mapping-2026-10-17.evidence.json](depot-git-host-failure-mapping-2026-10-17.evidence.json)
-   and [doc/troubleshooting/napi-loader-bundled-out-of-package.md](../troubleshooting/napi-loader-bundled-out-of-package.md).
+   [depot-git-host-failure evidence](depot-git-host-failure-mapping-2026-10-17.evidence.json)
+   and [napi-loader troubleshooting](../troubleshooting/napi-loader-bundled-out-of-package.md).
 3. Supply-chain policy keeps effect:
    `.pnpmfile.mjs` substitution,
    `overrides` including `link:` shims,
@@ -191,7 +194,7 @@ Each constraint lists its measured source.
 8. No regression of the strict isolation guarantees behind `nodeLinker: isolated` with `hoist: false`.
    Source:
    [pnpm-workspace.yaml](../../pnpm-workspace.yaml) line 409 comment,
-   [doc/troubleshooting/napi-loader-bundled-out-of-package.md](../troubleshooting/napi-loader-bundled-out-of-package.md).
+   [napi-loader troubleshooting](../troubleshooting/napi-loader-bundled-out-of-package.md).
 
 ## Candidate ledger
 
@@ -264,7 +267,7 @@ Each constraint lists its measured source.
   repository evidence class;
   scenarios in
   [package/dev-script/catalog-tighten.matrix](../../package/dev-script/catalog-tighten.matrix/README.md)
-  and [package/dev-script/catalog-tighten/src/version-pnp.ts](../../package/dev-script/catalog-tighten/src/version-pnp.ts).
+  and [version-pnp.ts](../../package/dev-script/catalog-tighten/src/version-pnp.ts).
 - Base category:
   inspectable open-source local technology.
 - Overlays:

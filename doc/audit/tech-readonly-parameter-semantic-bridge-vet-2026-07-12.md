@@ -249,7 +249,8 @@ Lifecycle:
 Reason:
  Oxlint already supplies the Oxc AST and source spans.
 The real-boundary TypeScript 7 probe mapped semantic nodes to exact Oxlint diagnostics without another parse.
-`oxc-parser` adds no type objects or lifecycle capability and would introduce a third tree without a compensating benefit.
+`oxc-parser` adds no type objects or lifecycle capability
+and would introduce a third tree without a compensating benefit.
 
 ### Yuku parser and analyzer plus a custom type evaluator
 
@@ -457,7 +458,8 @@ host.
 This proves configured-project discovery for two repository packages,
 not every package topology.
 
-One Oxlint run reported `threads_count: 16` but all probe diagnostics carried one process ID and sequential snapshot IDs.
+One Oxlint run reported `threads_count: 16`
+but all probe diagnostics carried one process ID and sequential snapshot IDs.
 That run proves the tested embedded-JavaScript execution was serialized through one plugin process;
 it does not prove every Oxlint mode or future host lifecycle.
 A process search after Oxlint exited found no surviving native TypeScript API child for the fixture path.

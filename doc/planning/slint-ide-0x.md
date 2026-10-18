@@ -42,7 +42,8 @@ The user subsequently reviewed the approach and explicitly authorized implementa
   History is session-local because persistent session restore remains cut.
 - Refresh automatically during external changes,
   including while text is selected.
-  Best-effort content-relative caret/selection mapping and approximate viewport anchoring should minimize visual location loss.
+  Best-effort content-relative caret/selection mapping
+and approximate viewport anchoring should minimize visual location loss.
   Exact pixel preservation and universal mapping through rewritten text are not required.
   Selected ranges follow corresponding replaced regions,
   not a later occurrence of the old selected text.

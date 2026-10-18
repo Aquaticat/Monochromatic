@@ -1,4 +1,5 @@
-# mise npm backend keeps a stale lockfile-pinned "latest" version (npm:socket@2.1.0, a deprecated bad build) after the npm dist-tag rolls back
+# mise npm backend keeps a stale lockfile-pinned "latest" version
+(npm:socket@2.1.0, a deprecated bad build) after the npm dist-tag rolls back
 
 mise 2026.6.9,
  npm backend,

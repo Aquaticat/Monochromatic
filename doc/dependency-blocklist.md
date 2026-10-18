@@ -8,7 +8,8 @@ They differ in what lands in `node_modules` after the install.
 
 1. **Generic substitution stub on disk**:
     edit the policy table in `.pnpmfile.policies.json` at the repo root.
-   The `readPackage` hook in `.pnpmfile.mjs` reads that table and replaces every dependency entry pointing at the blocked package with a workspace stub.
+   The `readPackage` hook in `.pnpmfile.mjs` reads that table
+   and replaces every dependency entry pointing at the blocked package with a workspace stub.
    Two stub kinds exist:
     throwing and silent.
 
@@ -16,14 +17,16 @@ They differ in what lands in `node_modules` after the install.
     or an API-compatible shim on disk**:
     edit the `overrides` block in `pnpm-workspace.yaml`.
    pnpm's native `"name": "-"` primitive removes the package from the resolved graph entirely.
-   The same block also accepts `link:package/shim/<name>` to substitute the package with a workspace shim that re-exports the real API.
+   The same block also accepts `link:package/shim/<name>` to substitute the package with a workspace shim that
+   re-exports the real API.
 
 The split is intentional.
 pnpm has a first-class removal primitive;
  reimplementing it would add code without adding capability.
 Generic substitution needs a workspace-aware hook,
  since pnpm's overrides cannot point at a workspace package by aliased name in every version.
-Shim substitution uses pnpm's overrides directly because `link:` is a path-based protocol that sidesteps workspace-name resolution.
+Shim substitution uses pnpm's overrides directly because `link:` is a path-based protocol that sidesteps workspace-name
+resolution.
 
 ## Scope and what is not covered
 
@@ -91,7 +94,8 @@ Pick the lightest action that surfaces the problem at the right place.
    or wrapping a different package).
   Generic stubs break the runtime contract;
    removal leaves the static import dangling.
-  A shim package that re-exports the real API keeps consumers working while removing the unwanted source from `node_modules`.
+  A shim package that re-exports the real API keeps consumers working
+  while removing the unwanted source from `node_modules`.
 
 If you are unsure,
  prefer the throwing stub.
@@ -272,8 +276,10 @@ Consumers wrapping `require('fsevents')` in try/catch continue working.
 
 ### Shim for a deprecated package hard-imported by a transitive consumer
 
-`fetch-blob@3.2.0/from.js:3` does `import DOMException from 'node-domexception'` and uses it as a constructor at `from.js:86`.
-The upstream package is deprecated but its runtime behaviour on Node 17+ and Bun is `module.exports = globalThis.DOMException`,
+`fetch-blob@3.2.0/from.js:3` does `import DOMException from 'node-domexception'`
+and uses it as a constructor at `from.js:86`.
+The upstream package is deprecated but its runtime behaviour on Node 17+
+and Bun is `module.exports = globalThis.DOMException`,
  which is trivially reproducible.
 
 The shim package lives at `package/shim/node-domexception/`.
@@ -325,7 +331,9 @@ for (const key of Object.keys(Stream,)) {
 module.exports.Stream = Stream;
 ```
 
-The pattern uses `Object.defineProperty` per key instead of the more idiomatic `Object.assign(module.exports, Stream)` because `Stream.Readable` inherits a getter-only `promises` accessor via its function-prototype chain (`Object.getPrototypeOf(Stream.Readable) === Stream`);
+The pattern uses `Object.defineProperty` per key instead of the more idiomatic `Object.assign(module.exports, Stream)`
+because `Stream.Readable` inherits a getter-only `promises` accessor via its function-prototype chain
+(`Object.getPrototypeOf(Stream.Readable) === Stream`);
  under strict mode (which CommonJS modules run in by default in Node 22+),
  `Object.assign` throws `TypeError: Attempted to assign to readonly property` when it reaches the inherited accessor.
 `Object.defineProperty` creates a new own data property that shadows the inherited accessor,
@@ -352,7 +360,9 @@ After install,
  three transitive `readable-stream` edges (`winston@3.15.0/node_modules/readable-stream`,
  `winston-transport@4.9.0/node_modules/readable-stream`,
  `isomorphic-git@1.37.6/node_modules/readable-stream`) symlink to the workspace shim.
-The substitution unifies `instanceof` identity across the workspace (every consumer of `readable-stream` now operates on `node:stream`'s classes directly) and makes the transitive `abort-controller` fallback guards inside `readable-stream@4`'s `pipeline.js`,
+The substitution unifies `instanceof` identity across the workspace (every consumer of `readable-stream` now operates
+on `node:stream`'s classes directly) and makes the transitive `abort-controller` fallback guards inside
+`readable-stream@4`'s `pipeline.js`,
  `duplexify.js`,
  and `operators.js` unreachable,
  formally closing the loop on the earlier `'abort-controller': '-'` removal.
@@ -379,7 +389,8 @@ The substitution unifies `instanceof` identity across the workspace (every consu
     so the byte change,
     not `--force`,
     is the reliable trigger.
-   See `doc/troubleshooting/pnpm-minimum-release-age-exclude-first-match.md` ("What does not work") for the session that established this.
+   See `doc/troubleshooting/pnpm-minimum-release-age-exclude-first-match.md` ("What does not work") for the session
+   that established this.
 2. Read stderr for the `[blocked-dep]` lines.
    Confirm the dependent names you expected appear;
     one warning per `(dependent, blocked, action)` tuple.
@@ -399,7 +410,8 @@ The substitution unifies `instanceof` identity across the workspace (every consu
     probe the API surface that the original importer exercises.
    For a constructor shim:
     `node -e "const X = require('<blocked-pkg>'); const e = new X('msg','Name'); console.log(e.name, e.message, e instanceof Error)"`.
-   Also check that the install no longer lists the package as a deprecated subdependency in stderr and that `pnpm why <blocked-pkg>` resolves through the workspace link.
+   Also check that the install no longer lists the package as a deprecated subdependency in stderr
+   and that `pnpm why <blocked-pkg>` resolves through the workspace link.
 
 ## Cross-references
 

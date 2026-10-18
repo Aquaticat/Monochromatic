@@ -364,7 +364,8 @@ there are no directive comments.
   Rust linting thereby joins `mise run lint`,
    which it never did before.
 - `package/git-policy/markdown-lint` keeps its policy and calls `monochromatic-lint`:
-   it writes a one-rule configuration for `markdown/lfs-image-url` to a temporary file created with a proper temporary-file call,
+   it writes a one-rule configuration for `markdown/lfs-image-url`
+   to a temporary file created with a proper temporary-file call,
    passes `--config`,
    `--stdin`,
    `--stdin-filename`,

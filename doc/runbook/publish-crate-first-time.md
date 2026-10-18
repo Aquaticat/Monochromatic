@@ -326,7 +326,8 @@ Unlike `monochromatic-jsonc-edit`,
 this crate ships release binaries.
 After the Trusted Publishing form is saved,
 the agent dispatches the workflow with dry-run off on a ref whose
-`package/linter/monochromatic-lint` and `package/rust-module/jsonc-edit` directories are byte-identical to the published commit:
+`package/linter/monochromatic-lint` and `package/rust-module/jsonc-edit` directories are byte-identical
+to the published commit:
 
 ```bash
 gh workflow run cargo-publish.yml --ref main -f crate=monochromatic-lint -f dry-run=false

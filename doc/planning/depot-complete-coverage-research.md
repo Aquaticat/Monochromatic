@@ -1677,7 +1677,9 @@ No application source or assertion changed.
 The evidence-handoff failures expose an instruction gap.
 The proposed concrete edit tightens `QIV` in `AGENTS.md` to:
 
-> Before trusting a null or count, validate scope, cache, harness, evidence transport, and generator reach with controls; list unexercised surfaces.
+> Before trusting a null or count,
+> validate scope, cache, harness, evidence transport, and generator reach with controls;
+> list unexercised surfaces.
 
 This is a planning proposal, not an applied instruction-file edit.
 The completed local logger and deployed-uploader controls implement that boundary for this profile.

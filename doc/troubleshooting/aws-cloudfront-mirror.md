@@ -1920,19 +1920,26 @@ Sources for the reassessment were accessed on 2026-09-07.
 
 [origin-tls-announcement]: https://aws.amazon.com/about-aws/whats-new/2025/11/amazon-cloudfront-tls13-origin/
 [origin-protocol-api]: https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_OriginSslProtocols.html
-[origin-ciphers]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-ciphers-cloudfront-to-origin.html
+[origin-ciphers]:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-ciphers-cloudfront-to-origin.html
 [cloudfront-502]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/http-502-bad-gateway.html
 [caddy-cloudfront-issue]: https://github.com/caddyserver/caddy/issues/7445
-[origin-request-policies]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.md
+[origin-request-policies]:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.md
 [s3-oac]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.md
-[origin-https]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-custom-origin.html
+[origin-https]:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-custom-origin.html
 [origin-feature-request]: https://repost.aws/questions/QUzNusy9axTz2iWIyfK1q-nw/feature-cloudfront-origin-tls-v1-3
-[policy-interaction]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
-[custom-origin-requests]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.md
+[policy-interaction]:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
+[custom-origin-requests]:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.md
 [origin-sni-note]: https://repost.aws/knowledge-center/cloudfront-https-connection-fails
-[origin-helper]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.md
+[origin-helper]:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.md
 [flat-rate-plans]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.md
-[host-policy-report]: https://repost.aws/questions/QUyKQbjgzkRYG-DI0bsKE6Mg/configure-the-cloud-front-to-set-the-origin-request-header
+[host-policy-report]:
+https://repost.aws/questions/QUyKQbjgzkRYG-DI0bsKE6Mg/configure-the-cloud-front-to-set-the-origin-request-header
 [fly-host-report]: https://community.fly.io/t/fly-io-apps-behind-cloudfront/20028
 [alb-sni-report]: https://repost.aws/questions/QU6ztFUrqgSlOTgVFu2CM9KA/cloud-front-to-alb-sni
 [certmagic-source]: https://github.com/caddyserver/certmagic

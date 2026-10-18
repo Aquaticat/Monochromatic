@@ -865,7 +865,8 @@ State found on 2026-10-10:
 - Linter publication, done the same day after the user created a crates.io token with the publish-new,
   publish-update and trusted-publishing scopes:
   `monochromatic-lint` 0.1.0 was published from the cutover branch,
-  the trusted publisher (`Aquaticat/Monochromatic`, `cargo-publish.yml`, no environment) was added through the crates.io API
+  the trusted publisher (`Aquaticat/Monochromatic`, `cargo-publish.yml`, no environment) was added
+   through the crates.io API
   with that token, and the workflow dispatched with dry-run off created the 0.1.0 release with eight archives over OIDC.
   `mise` then compiled the crate instead of downloading an archive,
   because `cargo-binstall` does not look under a `monochromatic-lint-v<version>` tag.
@@ -881,7 +882,8 @@ State found on 2026-10-10:
 - Linter cutover landed on 2026-10-10 as `b111c0ca39` (fast-forward, pushed); evidence in
   `doc/handover/unified-linter-cutover.md`.
   The five incumbent linter packages are deleted, `cli-git.config.ts` takes the Markdown policy defaults,
-  `monochromatic-lint` 0.1.1 is pinned in `mise.no-env.toml` and installed, and the wrapper `dist` in the main checkout was replaced
+  `monochromatic-lint` 0.1.1 is pinned in `mise.no-env.toml` and installed, and the wrapper `dist`
+   in the main checkout was replaced
   by the one built from the landed source.
   The user approved `git cli-git trust --yes` for the changed config and committing the two uncommitted files
   (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`) that blocked the fast-forward.
@@ -892,12 +894,14 @@ State found on 2026-10-10:
   Markdown autofix with `pathBytes` passes the container gate (633 unit, 43 binary, 1 consumer) and fuzz,
   and its mutation campaign left one real survivor in `markdown_exclude.rs:95:39` that needs a test;
   the two `event_path.rs:173` base64 survivors are equivalent.
-  Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical in four scenarios)
+  Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical
+   in four scenarios)
   with one survivor, `policy_dependent_version.rs:255:66`, in a filter no probe could reach with a deleted candidate.
   The user corrected the gate on 2026-10-10: it requires every mutant to be caught or justified as impossible to catch,
   not exactly zero missed.
   A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
-  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
+  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant
+   with a test.
   The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
 - The user's instruction of 2026-10-10: focus on finishing cli-git; pre-existing Markdown lint findings can wait.
   The fenced-code false-positive fix for the linter (123 findings, repro `~/temp/agent/momoa-probe/fence.md`)
@@ -1532,7 +1536,8 @@ that is verification, not a decision for the user.
 - [ ] Commit path, run as parallel lanes from 2026-10-10 (user: no hybrid, the old TypeScript implementation goes,
   wait for the native commit path and parallelize better).
   Lanes branch from `feat/cli-git-native-transactions` at `0faec78d77`,
-  each with its own evidence file `doc/handover/cli-git-native-<lane>.md` and worktree `.claude/worktrees/cli-git-lane-<lane>`:
+  each with its own evidence file `doc/handover/cli-git-native-<lane>.md`
+   and worktree `.claude/worktrees/cli-git-lane-<lane>`:
   `hooks` (slice 4), `capture` (slice 5), `replay-core` (slice 8 without the landing lock),
   `auto-push` (slice 9 auto-push, post-commit lifecycle, manual-push listings), `signals` (slice 10 and maintenance),
   `worktree-copy` (slice 11).
@@ -1691,7 +1696,8 @@ that is verification, not a decision for the user.
   Record: `doc/planning/rust-test-sidecar-enforcement.md`.
   Parity of the Rust semantic-line-break rule with the TypeScript one, measured by the translation-repair session:
   591 of 598 inputs byte-identical, the 7 differences are breaks after non-BMP characters where the Rust rule is right.
-  The interop lane landed on `main` as `78d23d18a4` (container gate rerun: 1666 unit and 118 binary tests, Clippy clean).
+  The interop lane landed on `main` as `78d23d18a4` (container gate rerun: 1666 unit and 118 binary tests,
+   Clippy clean).
   mise holds new releases back for 24 hours; the repository exempts its own crates by exact name
   (`minimum_release_age_excludes` in `mise.no-env.toml`, commit `4059fc9925`).
   The pathBytes lane (evidence in `doc/handover/cli-git-native-pathbytes.md`) merged on 2026-10-15 after the hardening
@@ -1802,7 +1808,8 @@ that is verification, not a decision for the user.
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
   a sleeping container while a prune may still be running.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
-  repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix, are untouched.
+  repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix,
+   are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
   the Windows checks and the release-artifact performance gates;
   the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
@@ -1842,7 +1849,8 @@ that is verification, not a decision for the user.
   the commit path, replay conflicts and journals are done on branch `feat/cli-git-native-pathbytes`
   and wait for the merge (`doc/handover/cli-git-native-pathbytes.md`).
 - [x] `mono/dependent-version-bump`: landed on `main` (`doc/handover/cli-git-native-dependent-version.md`).
-- [x] This repository's translated configuration lists all four optional policies and sets `rulesFile` (`cli-git.config.jsonc`, `doc/handover/cli-git-native-config.md`).
+- [x] This repository's translated configuration lists all four optional policies
+ and sets `rulesFile` (`cli-git.config.jsonc`, `doc/handover/cli-git-native-config.md`).
 - [ ] Manual-push listings for the content policies, with the push lifecycle.
 - [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
 - [ ] Container integration, mutation testing, fuzzing, platform checks, and release-artifact performance gates.
@@ -1891,7 +1899,8 @@ Verification:
 - Tests include the independent corpus,
   a wrong-pairwise-fold positive control,
   and the parser's 512-container limit.
-- The first comment-ownership fixture failed because comments after a comma on the same line belong to the preceding value.
+- The first comment-ownership fixture failed because comments after a comma on the same line belong
+ to the preceding value.
   The fixture now uses separate lines and asserts that the intended final comment is present before testing ownership.
 
 JSONC schema validation and nearest/explicit configuration discovery are implemented.

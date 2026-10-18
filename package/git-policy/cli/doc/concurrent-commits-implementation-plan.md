@@ -38,7 +38,8 @@ the `SPEC.md` heading holds the rules.
   whose `HEAD` names a private copy of the target branch
   and whose `objects/info/alternates` names the real object store,
   so hooks see the real branch name and upstream.
-  New objects stay in the shadow store until landing migrates them into the real store as a pack kept with a `.keep` file,
+  New objects stay in the shadow store until landing migrates them into the real store
+as a pack kept with a `.keep` file,
   and no `refs/cli-git/` ref is ever created.
   `SPEC.md` "Private preparation" and "Object migration";
   the decision's "Private `HEAD` shape:

@@ -106,7 +106,8 @@ The restriction is architectural,
 not a hidden field omitted from the published TypeScript declarations.
 The public report object is converted to one current-file offset pair before it crosses into Rust.
 
-Oxlint's [JS plugin documentation](https://oxc.rs/docs/guide/usage/linter/js-plugins.html) calls the API alpha and says it aims at ESLint compatibility.
+Oxlint's [JS plugin documentation](https://oxc.rs/docs/guide/usage/linter/js-plugins.html) calls the API alpha
+and says it aims at ESLint compatibility.
 ESLint's ordinary rule-report descriptor also lacks cross-file related locations,
 so this is not an Oxlint parity bug.
 
@@ -319,3 +320,5 @@ A human is responsible for reviewing the Oxc 1.78.0 source trace,
 running the reproduction,
 and validating any proposed upstream change before filing.
 ~~~
+
+[js-plugin-docs]: https://oxc.rs/docs/guide/usage/linter/js-plugins.html

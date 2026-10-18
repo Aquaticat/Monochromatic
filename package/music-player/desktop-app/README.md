@@ -134,7 +134,8 @@ backend differs by target.
 
 The player builds and runs on Alpine Linux (musl libc),
 on x86_64 and aarch64.
-The decision and every measurement behind it are in [`doc/decision/music-player-alpine.md`](../../../doc/decision/music-player-alpine.md).
+The decision and every measurement behind it are
+ in [`doc/decision/music-player-alpine.md`](../../../doc/decision/music-player-alpine.md).
 The binary is dynamically linked against Alpine's musl and runs only on musl systems.
 A fully static binary is not possible:
 the PipeWire,
@@ -362,7 +363,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/peakcache.rs`,
    `src/peakcache_service.rs` and `src/peakcache_handle.rs`:
    the persistent peak cache.
-   `peakcache.rs` computes the opaque fingerprint (through the shared XXH3-64 `track_fingerprint` of `truepeak-core`) and decides where `decisions.db` lives;
+   `peakcache.rs` computes the opaque fingerprint (through the shared XXH3-64 `track_fingerprint` of `truepeak-core`)
+    and decides where `decisions.db` lives;
    the Turso-backed actor in `peakcache_service.rs` owns the database,
    and the synchronous `CacheHandle` in `peakcache_handle.rs` is what the controller and the sweep call.
 - `src/measure.rs`:
@@ -690,7 +692,8 @@ lightness and hue (a binary search, never per-channel clipping, which would shif
 Text roles are then moved in lightness until WCAG AA holds on every surface they are drawn on and under the hover layer,
 so contrast holds for any accent.
 The canvas stays pure black in dark and pure white in light (D41, D34), and the error roles are constants that follow no
-accent. Every gray (deck, rows, surfaces, outlines, text variants) carries the root hue at its own tint unless the root is
+accent. Every gray (deck, rows, surfaces, outlines, text variants) carries the root hue at its own tint
+ unless the root is
 completely neutral, meaning its three 8-bit channels are equal (D118); an accent role is never less chromatic than the
 strongest gray of its scheme, except under a completely neutral root, where every accent is gray.
 Hover and pressed fills of the selected segment and the search match fill (D59) are OKLCH roles too;
@@ -921,9 +924,12 @@ Pages:
 Tab and Shift+Tab walk the folder picker (the Open pill; on the folded layout the folder trigger first), the folder and
 track lists, the deck controls (seek bar, Previous, Play, Next, mode group), then Search and Settings, and wrap; no
 element traps the keyboard. Every focusable element draws the focus ring and nothing else (D117), only while the
-keyboard is in use: a key press turns the ring on and a pointer press turns it off. The template text field shows it for any focus, as a browser does for a text input; the Search query field has no ring of its own, because its caret already shows where the typing goes.
+keyboard is in use: a key press turns the ring on and a pointer press turns it off. The template text field shows it
+ for any focus, as a browser does for a text input; the Search query field has no ring of its own,
+ because its caret already shows where the typing goes.
 
-The ring is the pair Firefox paints for `:focus-visible`, hugging the element instead of its bounding box: a 2 px ring in
+The ring is the pair Firefox paints for `:focus-visible`, hugging the element instead of its bounding box:
+ a 2 px ring in
 the `primary` role flush against the element's edge and a 1 px ring in the `on-primary` role around it, so the ring is
 readable on any surface. Both follow the element's own shape: each corner's radius grows by the widths inside the ring,
 so a pill stays a pill, a circle a circle, and a rounded rectangle keeps its curve; a square corner becomes a 2 px one.
@@ -1051,7 +1057,8 @@ is measured again when its size or modified time differs from the cache.
 Only "everything" walks and refreshes the whole library, and so does a set of more than 100,000 distinct paths.
 At most one refresh sweep runs; requests that arrive meanwhile merge into one follow-up that covers their union
 (`refresh_coalescer.rs`).
-The refresh sweep shows no progress and decodes no file twice, because the sweep of the load and the refresh sweeps share
+The refresh sweep shows no progress and decodes no file twice, because the sweep of the load
+ and the refresh sweeps share
 the fingerprints they have taken.
 A file that failed to decode has no stored result, so it is tried again at the next library change, whichever file
 changed (every refresh sweep also takes the small set of files recorded as failed), and in every full refresh.
@@ -1061,8 +1068,10 @@ The desktop notification is stricter: one per file for a run of the app (D122).
 
 The selected track follows its file (`controller_reload.rs`): when the file that is playing is replaced, the new file is
 opened first and swapped in at the same position (clamped to the new length), the player keeps playing, the peak and the
-gain are worked out again, the seek bar takes the new length, and no message is shown; a replacement that does not open yet
-changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
+gain are worked out again, the seek bar takes the new length, and no message is shown; a replacement
+ that does not open yet
+changes nothing until the next event. A paused selected track keeps its position when the new file has it
+ and starts again
 from zero when it does not.
 
 A file that cannot be decoded is skipped by Next, Previous and the end of a track, and its row shows "Can't be played".

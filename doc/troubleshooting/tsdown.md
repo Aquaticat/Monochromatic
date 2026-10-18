@@ -586,17 +586,20 @@ This contradicts two other documentation pages:
 
 #### Source code confirms the Dependencies page is correct
 
-`DepsPlugin` (`src/features/deps.ts`) is registered whenever a `package.json` exists (`src/features/rolldown.ts:115-117`).
+`DepsPlugin` (`src/features/deps.ts`) is registered
+whenever a `package.json` exists (`src/features/rolldown.ts:115-117`).
  On initialization,
  `getProductionDeps()` (`src/features/deps.ts:415-421`) collects all names from `dependencies`,
  `peerDependencies`,
  and `optionalDependencies`.
- The `externalStrategy()` function (`src/features/deps.ts:316-319`) then marks any import matching those names as external,
+ The `externalStrategy()` function (`src/features/deps.ts:316-319`)
+then marks any import matching those names as external,
  no user configuration required.
 
 Additionally,
  when `deps.onlyBundle` is not set (the default),
- the `generateBundle` hook (`src/features/deps.ts:275-284`) emits a warning if any `node_modules` dependencies end up bundled.
+ the `generateBundle` hook (`src/features/deps.ts:275-284`)
+emits a warning if any `node_modules` dependencies end up bundled.
  A tool that bundles everything by default would not warn about bundling.
 
 #### The FAQ also recommends a stricter-than-necessary fix

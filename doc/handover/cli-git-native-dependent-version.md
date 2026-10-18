@@ -931,7 +931,8 @@ The three timeouts were rerun alone, as the rule for timeouts requires:
   (the committed runner still passes `--timeout 90` and no `--re`), and it was restored with `git checkout` afterwards.
   The run ran through `node ~/temp/agent/gate-slot.ts` with the runner command
   `mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/candidate_prediction.rs'`.
-  Result: 2 mutants, 1 caught (`replace projected_scope -> ... with Ok(vec![])`, listed in `mutants.out/caught.txt`), 1 unviable,
+  Result: 2 mutants, 1 caught (`replace projected_scope -> ... with Ok(vec![])`, listed in `mutants.out/caught.txt`),
+  1 unviable,
   0 timeouts, 0 missed; the baseline took 47 seconds to test.
   Its verdict is caught by cargo-mutants itself, so the timeout is closed.
   The hand evidence above (28 lib tests and 12 binary tests failing, in 10.6 and 12.6 seconds) shows the same detection.
@@ -1158,10 +1159,13 @@ The merge commit is `0b9e4e3eda` (main brought the Markdown autofix branch, `1b6
 Conflicts and their resolution:
 
 - `package/git-policy/cli.fuzz/Cargo.toml`, `bin/container.mjs`, `bin/planted-controls.mjs`, `src/lib.rs`:
-  both sides kept, the dependent-version target and the Markdown targets (`linter_output`, `event_path`, `linter_config`).
+  both sides kept, the dependent-version target and the Markdown targets (`linter_output`, `event_path`,
+  `linter_config`).
 - `package/git-policy/cli/src/native/policy_checks.rs`:
-  `MarkdownAutofix` runs `check_markdown` (main's policy), `DependentVersionBump` runs `check_dependent_version` (this branch).
-  The `unported_content` helper and `MARKDOWN_AUTOFIX_NEEDS` / `DEPENDENT_VERSION_BUMP_NEEDS` were removed, since no content policy is unported now.
+  `MarkdownAutofix` runs `check_markdown` (main's policy), `DependentVersionBump` runs `check_dependent_version` (this
+  branch).
+  The `unported_content` helper and `MARKDOWN_AUTOFIX_NEEDS` / `DEPENDENT_VERSION_BUMP_NEEDS` were removed,
+  since no content policy is unported now.
 - Tests that asserted a refusal, rewritten to the wired behavior: `policy_checks_tests.rs`, `policy_pass_tests.rs`,
   `wrapped_command_tests.rs`, `direct_fix_tests.rs` (`a_fix_with_the_wired_policy_listed_completes_and_installs`),
   `binary_frontier_tests.rs` (`add_runs_the_content_policies_over_what_it_stages`), `binary_policy_tests.rs`
@@ -1225,11 +1229,14 @@ No timeout occurred, so no solo rerun was needed.
 The 3 missed mutants are in `is_listed_change` (`policy_dependent_version.rs:204`), the helper that the lint refactor
 created from the filter that section "The surviving mutant is equivalent after the candidate fix" justifies:
 `is_listed_change -> true`, `is_listed_change -> false` and `!= -> ==` in it.
-The same proof applies unchanged, because the helper is the same filter and has the same single reader (the `UNLISTED` loop).
+The same proof applies unchanged, because the helper is the same filter
+and has the same single reader (the `UNLISTED` loop).
 On every route that reaches the planner the listing check cannot refuse, so no mutant of the filter changes an outcome.
 The earlier campaign on `1899e041ef` recorded the same survivor at the old line 255.
 
 Rerun commands, for a later rerun after a land or a merge:
 
-- Gate: `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:test:container`
-- Mutation: `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/policy_checks.rs' --file 'src/native/policy_dependent_version.rs'`
+- Gate:
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:test:container`
+- Mutation:
+`GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/policy_checks.rs' --file 'src/native/policy_dependent_version.rs'`

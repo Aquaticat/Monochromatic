@@ -19,7 +19,8 @@ The user corrected the design:
 
 > These are NOT reasoning models.
 > Instead of asking them to reason through which action should be taken,
-> get them to emit probabilities for the axioms and then we deterministically algorithmically parse through them ourselves
+> get them to emit probabilities for the axioms
+> and then we deterministically algorithmically parse through them ourselves
 > and get the final action.
 
 This is the required architecture.
@@ -991,7 +992,8 @@ voting,
 or repeated uncertainty sampling.
 The deterministic evaluator stops after any settled outcome,
 including a code-only outcome before inference.
-The [batched assessment proposal](pi-auto-mode-batched-assessment.md) records the implications and remaining qualification.
+The [batched assessment proposal](pi-auto-mode-batched-assessment.md) records the implications
+and remaining qualification.
 Production adoption and thresholds remain unapproved.
 
 ### Q12: Necessity-based retention accepted

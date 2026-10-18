@@ -119,7 +119,8 @@ A one-worker cold-to-warm control over `package/module/translation-repair` measu
 The warm cache therefore changes semantic coverage,
 worker count changes the surviving diagnostic fingerprint,
 and default-worker warning volume remains unstable.
-The controlled matrix does not prove that a cache-write race or scheduling alone caused earlier non-isolated diagnostic-count variation.
+The controlled matrix does not prove that a cache-write race
+or scheduling alone caused earlier non-isolated diagnostic-count variation.
 This is not a performance-only regression.
 The plugin logger's warnings are outside Oxlint's diagnostic channel,
 so the damaged 166-finding run still prints `Found 0 warnings`.

@@ -199,7 +199,8 @@ and raw manifest text.
 A successful rewrite must replace exactly one occurrence of the quoted `from` with the quoted `to`,
 and rewriting back must restore the input;
 a refusal must be a manifest shape problem;
-and when the manifest reader accepts the text and it holds exactly one plainly spelled top-level version equal to `from`,
+and when the manifest reader accepts the text and it holds exactly one plainly spelled
+top-level version equal to `from`,
 the rewrite must succeed and the reader must then see `to` with every other fact unchanged.
 The third splits the input at its first NUL byte into a package name and source text,
 and requires the specifier scan to agree with a restatement of its rule written with index loops,

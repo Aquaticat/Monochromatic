@@ -14,13 +14,18 @@ from a terminal in your logged-in Windows desktop session (not the SSH session).
 
 ## Update 2026-10-14: the linker changed
 
-The `lld-link.exe` pin was removed on 2026-10-14 (the maintainer found lld unreliable on Windows, and a release probe showed
-it leaves the dynamic C runtime in an `+crt-static` x86_64 exe).
-`x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc` now link with Visual Studio's own `link.exe`, which rustc finds
-through vswhere, so **LLVM's `bin` no longer has to be on PATH** and the Visual Studio C++ build tools are the only linker
-requirement.
-The build and check results below were recorded with `lld-link.exe`; re-run `mise run //package/music-player/desktop-app:build`
-on the Windows machine to confirm the `link.exe` build there (the GitHub Windows runners already build and test it:
+The `lld-link.exe` pin was removed on 2026-10-14
+(the maintainer found lld unreliable on Windows,
+and a release probe showed it leaves the dynamic C runtime
+in an `+crt-static` x86_64 exe).
+`x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc` now link
+with Visual Studio's own `link.exe`, which rustc finds through vswhere,
+so **LLVM's `bin` no longer has to be on PATH**
+and the Visual Studio C++ build tools are the only linker requirement.
+The build and check results below were recorded with `lld-link.exe`;
+re-run `mise run //package/music-player/desktop-app:build`
+on the Windows machine to confirm the `link.exe` build there
+(the GitHub Windows runners already build and test it:
 `.github/workflows/music-player-windows.yml`).
 A GNU-toolchain build (`x86_64-pc-windows-gnu`, MSYS2 MinGW-w64, GNU ld, no Visual Studio) is available through
 `mise run //package/music-player/desktop-app:build:windows-gnu`; the perceptual check below applies to either binary

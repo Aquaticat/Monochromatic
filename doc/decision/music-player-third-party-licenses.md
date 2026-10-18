@@ -435,7 +435,8 @@ Section 2(b) asks for the Slint attribution badge "on a public webpage, preferab
 Application can be downloaded from, in such a way that it can be easily found by any visitor to that page".
 The binaries are downloaded from the GitHub release page, whose text is the notes that the "Write the release notes"
 step of `.github/workflows/music-player-release.yml` writes (one template, `notes.md`, for every release).
-The badge is the first element of the notes after the two paragraphs that name the version, the commit and the tag, above the Downloads
+The badge is the first element of the notes after the two paragraphs that name the version, the commit and the tag,
+above the Downloads
 heading, so it is on the screen when the page opens.
 
 What Slint publishes, read on 2026-10-18 and not recalled:

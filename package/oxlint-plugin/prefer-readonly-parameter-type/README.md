@@ -27,7 +27,8 @@ Every call reached from caller-owned state has one accepted outcome:
 - default-library collection member's effect on its receiver's structure is derivable from the paired
   read-only view,
   and every caller-supplied observer it hands receiver state to is owned source whose own effects propagate;
-- exact `ForeignHostCapability` marker plus `@mutates` contract bounds runtime-owned host behavior after inference fails;
+- exact `ForeignHostCapability` marker plus `@mutates` contract bounds
+  runtime-owned host behavior after inference fails;
 - rule rejects call as opaque.
 
 Missing source,
@@ -180,7 +181,8 @@ and stale-contract reports.
 ## Demand and cache boundaries
 
 Each active source expands analysis through exact owned callee and callback identities only.
-A reached `ForeignBorrowed` candidate asks TypeScript for exact signature usages and walks backwards through callable owners.
+A reached `ForeignBorrowed` candidate asks TypeScript for exact signature usages
+and walks backwards through callable owners.
 Inline collection observers use their containing call directly,
 and referenced observers use their argument reference when TypeScript correctly reports no direct invocation.
 Non-call escapes,
@@ -243,7 +245,8 @@ See the
 
 Invoking a caller-provided callback is an affected capability.
 The rule tracks invocation separately from referent mutation,
-so an implementation-derived callback call does not automatically claim mutation of the function object or every captured value.
+so an implementation-derived callback call does not automatically claim mutation
+of the function object or every captured value.
 Unknown and external callbacks remain fail closed.
 
 ## What counts as an external call

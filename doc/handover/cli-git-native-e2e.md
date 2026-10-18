@@ -238,7 +238,8 @@ the same `--seed`.
 - `bin/e2e-native-container.mjs` copies the snapshot file list of `bin/test-native-container.mjs` and
   `bin/interop-native-container.mjs` (a third copy); extracting one shared function would touch scripts other lanes
   edit, so it is left for the integrator.
-- The seed 1 run covers one interleaving of the free-running scenarios; the integration document records the further seeds.
+- The seed 1 run covers one interleaving of the free-running scenarios;
+  the integration document records the further seeds.
 
 ## Trailing gates
 
