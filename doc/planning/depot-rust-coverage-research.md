@@ -154,15 +154,19 @@ not a downloadable executable handoff.
 
 Run `lwp0vbb2vq` completed successfully from harness `3a7e85d395cb67a5d189224963782c9b45527c71`:
 
-- `wg-quicker-exempt`: 15 cases run and passed,
+- `wg-quicker-exempt`:
+  15 cases run and passed,
   zero failed,
   11 skipped and 26 enumerated.
-- `jsonc-edit`: 81 cases run and passed,
+- `jsonc-edit`:
+  81 cases run and passed,
   zero failed or skipped and 81 enumerated.
-- `forbidden-regex`: 235 cases run and passed,
+- `forbidden-regex`:
+  235 cases run and passed,
   zero failed,
   one skipped and 236 enumerated.
-- `codex-plugin/bash-limit`: five cases run and passed,
+- `codex-plugin/bash-limit`:
+  five cases run and passed,
   zero failed,
   one skipped and six enumerated.
 

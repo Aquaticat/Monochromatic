@@ -25,7 +25,8 @@ In `compiler/rustc_metadata/src/locator.rs:676`,
 the loader rejects stub archive metadata when no full-metadata slot has already been resolved:
 
 ```rust
-// rustc_metadata/src/locator.rs:676, revision 5d8fec0669a64607db9ccbf663e7c23125bf4748
+//! `rustc_metadata/src/locator.rs:676`
+//! Compiler revision `5d8fec0669a64607db9ccbf663e7c23125bf4748`.
 if metadata.get_header().is_stub {
     assert_ne!(flavor, CrateFlavor::Rmeta);
     if slot.is_none() {
@@ -44,7 +45,8 @@ The failure does not establish an application-source defect or a provider-specif
 The compiler's own `tests/run-make/embed-metadata/rmake.rs:54` tests the intended explicit pairing:
 
 ```rust
-// tests/run-make/embed-metadata/rmake.rs:60, same compiler revision
+//! `tests/run-make/embed-metadata/rmake.rs:60`
+//! Same compiler revision.
 let mut rustc = rustc();
 kind.add_extern(&mut rustc, "dep1", "deps");
 rustc.extern_("dep1", path("deps").join("libdep1.rmeta"));
