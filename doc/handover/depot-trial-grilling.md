@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 16:54 UTC
+## Execution checkpoint on 2026-10-18 at 17:24 UTC
 
 Research remains active and the interview has not started.
 All parent graph cloud jobs are terminal,
@@ -120,6 +120,75 @@ Current archive replacement does not erase Git history.
 The parent independently reconciles the sanitized final ledger,
 including subsequent OS/owner/debug attempts,
 before publishing a final combined subtotal.
+
+The sanitized follow-on snapshot independently passes at `17:14:07 UTC`:
+30 exact timestamp-pointer/rate joins,
+35 retained source-body hashes,
+zero frozen-baseline duplicates and exact BigInt arithmetic.
+Frozen coordinator receipt and nested original snapshot archive are
+`doc/audit/depot-owned-allocation-follow-on-independent-2026-10-18.evidence.json`
+and its sources archive,
+committed at `846d2c1301`.
+USD 0.6041 remains a nominal provider-window proxy;
+USD 0.015897333333 remains a separate BuildKit request proxy.
+The public metadata projection correction found no nonpublic actor/email,
+credential,
+signed URL or connection material.
+Unnecessary public actor/email fields in the full GitHub REST body were replaced by explicit selected metadata.
+The selected workflow responses and private-original hash boundaries remain distinct;
+no Git history was rewritten.
+
+The conditional waiting model is sealed at `6553733993`:
+`doc/audit/depot-expanded-graph-conditional-waiting-value-2026-10-18.evidence.json`.
+The original dated Bank of Canada source was re-fetched and retained.
+CAD 8.975/hour divided by CAD 1.4154/USD gives USD 6.340963685/hour.
+Completed shared-build phase differences have conditional full-blocking values USD 0.24117 for Depot GHA
+and USD 0.26053 for corrected native.
+Actual human blocking is unmeasured,
+no overlapping Rust time is added and no whole-CI benefit or ROI is claimed.
+Both new cost receipts pass hashes/bytes for six frozen wrapper bodies and 35 nested retained bodies,
+JSON formatting and targeted Markdown lint.
+All fifteen parent documents render with valid relative links and no unintended emphasis.
+The new report allocation sections,
+failure-classification paragraphs,
+native parity,
+follow-on figures and conditional cost note were read as actual HTML.
+Direct remote main `3cddf3617afbde0c13fc532db20ae05a6c39b9f9`
+contains all eight checked parent landed commits through `296ecf41c8` at `17:17:04 UTC`.
+The later cost commits need a subsequent remote ancestry check.
+
+Public OS recovery `39144499822` is terminal.
+Actual Windows x64 and ARM each run 1494 Nextest cases,
+1493 pass and one unreadable-session-path failure,
+plus one skip.
+Mac runs 1495 cases,
+1468 pass and 27 fail,
+plus one skip.
+These are per-binary runtime outcomes,
+not unique authored-assertion totals.
+The GNU adapter duplicates the owner's `--no-fail-fast` and reaches zero test bodies;
+Coverage retains that harness error and owns one GNU-only correction after the matched OS run.
+Matched Depot OS `39148580870` runs on `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`
+under `doc/audit/depot-current-host-matched-admission-2026-10-18.evidence.json`,
+two sequential 20-minute caps with 17-minute inner bounds,
+USD 1.92 reserved under USD 2.
+Coverage owns its finite watcher and cleanup.
+
+Kotlin's claimed unexecuted six JVM methods are retracted pending actual JUnit identity comparison.
+The missing semantic projection alone did not prove missing execution.
+Coverage and Rust compare the exact Gradle project,
+immutable source and six classname/name tuples from the existing repeated cache cohort before any new allocation.
+Coverage also checks actual OS Nextest binary/package identities and older receipts for the other proposed owners.
+The new owner campaign remains unallocated until its concrete proposal and existing-evidence scope checks close.
+Platform's Bash diagnosis is complete at `3cddf3617a`:
+`doc/troubleshooting/bash-builtin-kill-signal-option.md`,
+exact patchlevel-nine source and safe signal-zero controls.
+Its pending real-debug proposal remains separate.
+Rust may use one two-CPU three-minute owned cleanup job,
+maximum USD 0.018 within its existing guard,
+only if deciding source establishes injected-token namespace access and exact digest checks.
+No broader token or account enumeration is authorized;
+coordinate at most two active cloud jobs across owners.
 
 ## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 

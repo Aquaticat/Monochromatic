@@ -20,7 +20,7 @@
   "checks": {
     "uniqueRows": 30,
     "sourceBodies": 35,
-    "originalTimestampPointerJoins": 30,
+    "retainedTimestampPointerJoins": 30,
     "baselineDuplicates": 0,
     "exactBigIntArithmetic": true,
     "invoiceAndVmLifetimeUnobserved": true,
@@ -47,6 +47,6 @@
     "bytes": 398912,
     "sha256": "9a71dca1550e93b8a4cfebd18c28e53ad29347a93a1f31f6a93cddd2aa6903a5",
     "records": 2,
-    "nestedOriginalSourceBodies": 35
+    "nestedRetainedSourceBodies": 35
   }
 }
