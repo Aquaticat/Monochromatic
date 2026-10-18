@@ -2,8 +2,8 @@
 
 ## Symptom
 
-A CLI that needs a terminal can reject ordinary piped stdin.
-Giving that CLI a PTY with `script` introduces another process and session boundary.
+The native Depot CLI debugging leg needs an actual terminal.
+Giving it a PTY with `script` introduces another process and session boundary.
 Closing the input pipe does not establish that its remote interactive shell exited,
 or that terminating the wrapper reaped its child.
 
@@ -19,6 +19,31 @@ The read-only source is util-linux tag `v2.42.2`,
 commit `f44509230b9f8224993b8c6157f85888359a64e1`,
 from [the upstream repository][upstream].
 The installed executable reports `script from util-linux 2.42.2`.
+
+The separately captured Depot CLI source is commit `1f96d6d`.
+`pkg/cmd/ci/ssh.go:74` selects metadata output when stdin is not a terminal:
+
+```go
+// depot/cli pkg/cmd/ci/ssh.go:74 to 76
+if info || !helpers.IsTerminal() {
+    return printSSHInfo(sandboxID, sessionID, output)
+}
+```
+
+Its interactive path calls `pty.Run`.
+`pkg/pty/session.go:37` requires raw terminal input:
+
+```go
+// depot/cli pkg/pty/session.go:37 to 39
+oldState, err := term.MakeRaw(fd)
+if err != nil {
+    return fmt.Errorf("make raw: %w", err)
+}
+```
+
+Thus ordinary piped `depot ci ssh` is a metadata operation,
+not execution of the RPC terminal challenge.
+The local bridge supplies that terminal.
 
 `term-utils/script.1.adoc:162` explicitly documents the piped-input limitation:
 
@@ -164,18 +189,24 @@ No external issue or comment was filed.
 
 ### Upstream filing decision
 
-1.  Upstream fault: no.
+1.  Upstream fault:
+    no.
     Our adapter needed explicit shell termination,
     proper quoting and owned-child supervision.
-2.  Fixability: no upstream change is needed for this verified boundary.
-3.  Supported use: the manual documents `--command` and `--return`,
+2.  Fixability:
+    no upstream change is needed for this verified boundary.
+3.  Supported use:
+    the manual documents `--command` and `--return`,
     and explicitly cautions about noninteractive pipes.
-4.  Contribution acceptance: not assessed for a filing,
+4.  Contribution acceptance:
+    not assessed for a filing,
     because no upstream defect is alleged.
     No policy restriction is inferred.
-5.  Expected acceptance: not assessed.
+5.  Expected acceptance:
+    not assessed.
     No maintainer refusal or guarantee is inferred.
-6.  Prototype: no upstream prototype is appropriate for this adapter correction.
+6.  Prototype:
+    no upstream prototype is appropriate for this adapter correction.
 
 The repository `.out-of-scope/` inventory was checked;
 it contains no util-linux exemption.
