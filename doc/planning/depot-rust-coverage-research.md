@@ -1033,3 +1033,28 @@ subscription/settings mutation or paid provider call is authorized.
 Owned branches and temporary files require cleanup;
 cache retention/deletion limits must be explicit.
 No cache cloud allocation has occurred at this queue boundary.
+
+Completion update on 2026-10-18:
+the separate [cache-scope receipt](../audit/depot-cache-trust-scope-2026-10-18.evidence.json)
+now retains all six terminal jobs and their original ZIPs.
+Both same-branch controls passed;
+the sibling branch missed on standard public GitHub and restored exact marker bytes on Depot GitHub.
+The workflow omitted `cache-mode`;
+GitHub setup explicitly reported default `write`.
+This does not test default-branch seeding,
+explicit mode overrides,
+forks,
+cross-repository isolation,
+or write poisoning.
+The nominal Depot elapsed list-compute proxy is `USD 0.0025`,
+the uniform rounded-completed proxy is `USD 0.036`,
+and no reservation remains.
+Owned remote/local probe branches and job temporary paths were removed;
+benign cache entries remain subject to unqueried existing retention policy.
+
+The next independent local-only queue is
+[the separately sourced allocation follow-on](depot-owned-allocation-follow-on.md).
+It will deduplicate post-baseline owned terminal controls against the frozen `223`-row baseline,
+without editing the baseline or allocating cloud resources.
+Root and coverage owners retain their active watcher ownership;
+their final graph and OS rows join only after terminal receipts are available.

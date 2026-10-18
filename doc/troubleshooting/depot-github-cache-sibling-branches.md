@@ -35,7 +35,7 @@ commit `55cc8345863c7cc4c66a329aec7e433d2d1c52a9`.
 Its source was cloned and read without modifying the third-party files.
 Source bodies are retained in the linked gzip under `records["actions-cache/..."]`.
 
-`restore/action.yml:41` selects the restore-only entry point:
+`restore/action.yml:33` selects the restore-only entry point:
 
 ```yaml
 # actions/cache, restore/action.yml
@@ -85,6 +85,33 @@ and independently derived cache version
 `src/restoreImpl.ts:54` intentionally leaves `cache-hit` unset on a miss.
 The GitHub sibling's empty output therefore agrees with the pinned implementation;
 it is not treated as an exact hit or a failed action.
+
+### Cache access mode and branch visibility
+
+GitHub's current reference documents `cache-mode` as cache-operation access granted through scoped tokens:
+`read` permits restore,
+`write` permits restore and save,
+`write-only` permits save,
+and `none` permits neither.
+When omitted,
+trusted triggers such as this experiment's `workflow_dispatch` default to `write`;
+low-trust triggers default to `read`.
+The workflow omitted this key.
+All three public GitHub setup logs explicitly reported `Cache mode: write`.
+Depot setup logs did not report a mode.
+The shell recorder's null mode is not substituted for the GitHub runner's explicit setup observation.
+
+This comparison therefore measures sibling visibility under the observed defaults.
+It does not test any explicit mode override.
+The retained released `v6.1.0` restore-only and save-only bundles contain no `ACTIONS_CACHE_MODE` reference.
+The current documentation describes token enforcement;
+client-side skip behavior for alternate modes was not exercised.
+
+GitHub also documents that other branches can restore a default-branch cache.
+Repository-wide reuse through a default-branch seed is consequently a documented possibility.
+This experiment seeded a nondefault branch,
+not the default branch,
+and does not establish that GitHub can never support cache sharing across repository branches.
 
 ## Verification
 
@@ -199,6 +226,7 @@ Both local prerequisite failures preceded every cloud allocation;
 the corrected commit was identical on both live refs.
 
 Original uploader logs retain Node.js warnings `DEP0040` and `DEP0169`.
+The runner also reported that this pinned Node.js 20 uploader was forced to run on Node.js 24.
 All jobs and API artifact digest checks passed;
 the warnings were not suppressed or attributed to application behavior.
 

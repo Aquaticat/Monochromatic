@@ -1487,8 +1487,8 @@
   "unstartedQueue": [],
   "cacheEnvironmentObservationScope": "Custom shell steps only; JavaScript actions receive their own runtime environment. Absent shell variables do not establish absent cache authentication.",
   "observedNominalElapsedListComputeUsd": 0.0025,
-  "completedUniformRoundedProxyUsd": 0.036000000000000004,
-  "currentConservativeGuardProxyUsd": 0.036000000000000004,
+  "completedUniformRoundedProxyUsd": 0.036,
+  "currentConservativeGuardProxyUsd": 0.036,
   "activeJobs": 0,
   "correctionJobsAllocated": 0,
   "remainingReservationsUsd": 0,
@@ -1531,7 +1531,9 @@
     "actualCleanupAbsenceRecords": 6,
     "credentialPatternCandidates": [],
     "denseMembersDecodedForInspection": true,
-    "targetedMarkdownLintAndRenderedInspection": "pending"
+    "targetedMarkdownLintAndRenderedInspection": "passed before final cache-mode clarification; final targeted recheck pending",
+    "sourceBodyByteLengthAndSha256Joins": 86,
+    "denseRemainingUniqueLogLinesInspected": 168
   },
   "pricingSource": {
     "sourceRecord": "pricing/current-runner-types",
@@ -1548,5 +1550,25 @@
     "uncompressedBytes": 8056646,
     "uncompressedSha256": "d0c4d5ed6d1e6990c741eba25ece582a623195644f8cb8e6eb67a87f0f517932",
     "records": 86
+  },
+  "cacheModeQualification": {
+    "workflowExplicitCacheMode": null,
+    "trigger": "workflow_dispatch",
+    "githubDocumentedTrustedDefault": "write",
+    "githubObservedSetupMode": "write",
+    "githubObservedModeLogCount": 3,
+    "depotObservedSetupMode": null,
+    "modes": {
+      "read": "restore only",
+      "write": "restore and save",
+      "write-only": "save only",
+      "none": "neither"
+    },
+    "tokenEnforcementDocumented": true,
+    "explicitModeOverridesTested": false,
+    "retainedReleasedRestoreAndSaveBundlesExplicitActionsCacheModeReferences": 0,
+    "defaultBranchSeedTested": false,
+    "defaultBranchReuseAcrossBranchesDocumented": true,
+    "allRepositoryCacheSharingImpossibleClaim": false
   }
 }
