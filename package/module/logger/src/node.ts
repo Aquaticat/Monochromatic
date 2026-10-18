@@ -12,6 +12,7 @@
 export { createFileSink, } from './sink/file.ts';
 
 //region Internal seams
+export { userLogDirectory as _userLogDirectory, } from './sink/file-state.ts';
 // Underscore-prefixed re-exports let `file.unit.test.ts` exercise the ancestor
 // search through the built artifact (the `require-eventual-artifact` rule)
 // without widening the documented API; they are not part of the public
@@ -19,5 +20,5 @@ export { createFileSink, } from './sink/file.ts';
 export {
   findNodeModulesUp as _findNodeModulesUp,
   NO_NODE_MODULES_FOUND as _NO_NODE_MODULES_FOUND,
-} from './sink/file.ts';
+} from './sink/file-project.ts';
 //endregion Internal seams

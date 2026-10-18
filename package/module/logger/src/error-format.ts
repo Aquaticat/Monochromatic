@@ -11,6 +11,26 @@
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 /**
+ Report fallback directly because a sink cannot recursively log through itself.
+
+ @param directory - verified destination receiving records
+ @param reason - evidence explaining why the project directory is unavailable
+ */
+export function reportLoggerFallback({ directory, reason, }: {
+  readonly directory: string;
+  readonly reason: string;
+},): void {
+  if ((typeof console) === 'undefined')
+    return;
+  const report = (typeof console.warn) === 'function'
+    ? console.warn
+    : ((typeof console.error) === 'function' ? console.error : console.log);
+  if ((typeof report) !== 'function')
+    return;
+  report.call(console, `logger file sink: ${reason}; using fallback ${JSON.stringify(directory,)}`,);
+}
+
+/**
  Reports a logger-internal caught value without going back through logger
  sinks, formatting it via {@link caughtValueText}.
  
