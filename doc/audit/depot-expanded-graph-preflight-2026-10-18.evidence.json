@@ -513,7 +513,10 @@
     "logByteLengthAndSha256Joins": 1878,
     "signalHandlerRemovalAsserted": true,
     "defaultRustConcurrencyOverrideKeysAbsentInFakeChildren": true,
-    "allConfiguredControlsPassed": true
+    "allConfiguredControlsPassed": true,
+    "originalSourceBodyLengthAndSha256Joins": 31,
+    "credentialPatternCandidates": 0,
+    "targetedMarkdownLintAndRenderedInspection": "passed"
   },
   "corrections": [
     {
