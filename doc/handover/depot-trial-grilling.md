@@ -14,17 +14,20 @@ No fresh independent whole-report review ran after the agent service quota was e
 
 The first interview round is answered through the question tool:
 
-- Q1 is accepted: use a regression ratchet.
+- Q1 is accepted:
+  use a regression ratchet.
   Enforce known-good checks and block new or changed failures.
   Setup,
   discovery and artifact-integrity failures always block.
   Existing source failures require exact baselines;
   raw `FAIL` log tokens are insufficient because the passing harness controls deliberately emit them.
-- Q2 is accepted: core checks on PRs and the wider matrix weekly.
+- Q2 is accepted:
+  core checks on PRs and the wider matrix weekly.
   This replaces the recommended nightly breadth.
   Private personal fixtures stay local.
   Dependency-based selection still needs qualification because the frozen task graph has a cycle.
-- Q3 is accepted: staged native promotion.
+- Q3 is accepted:
+  staged native promotion.
   Introduce Depot-managed runners under GitHub orchestration,
   then qualify selected Linux workflows for native Depot CI against explicit acceptance criteria.
   This is a rollout order within a permanent hybrid,
@@ -46,7 +49,39 @@ The Developer baseline,
 additional-pool approach and USD 200 all-provider planning ceiling remain settled.
 No production implementation is unlocked by posting this round.
 The next action is to verify and publish these accepted constraints,
-then ask the dependent interview frontier and obtain confirmation of shared understanding before implementation.
+then post the ready second interview round and obtain confirmation of shared understanding before implementation.
+
+The ready second round covers independent decisions:
+
+- Q4: standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
+  versus approval of each paid batch.
+  Recommend standing authority for unattended CI,
+  using conservative published charges and the repository-owned allocation ledger.
+  This does not change subscriptions,
+  authorize account-wide inspection or guarantee an aggregate invoice.
+- Q5: one bounded recovery attempt for a classified provider/startup failure,
+  versus recovery only on request.
+  Recommend automatic recovery with exposure reserved for both attempts and the first failure retained.
+  Source failures,
+  discovery failures and artifact-integrity failures cannot become successful checks by being ignored.
+- Q6: retain the correction only in CI documents,
+  versus tightening the existing general `AUT` rule after this scope misreading.
+  Recommend the CI-document correction only,
+  consistent with the user's preference for narrowly scoped documentation changes.
+  The concrete alternative required by `AGENTS.md`'s correction rule is:
+  "Execute requested work without expanding scope.
+  Preserve accepted systems and workload allocations unless the user explicitly authorizes replacing them."
+  No `AGENTS.md` edit has been applied.
+
+The remaining technical acceptance criteria are engineering work,
+not requests for the user to choose runner labels,
+cache formats or retry timers.
+Known-failure baselines must identify actual reproducible cases rather than waive whole failing tasks.
+They must be qualified on the implementation candidate's immutable source;
+historical failures cannot automatically become current waivers.
+Native promotion qualifies the features each selected workflow needs;
+workflows requiring unqualified paused-session attachment remain on GitHub until that boundary qualifies.
+No numerical GitHub/Depot allocation or eventual Depot-majority target is inferred from the word "heavy".
 
 ## Final local capture and publication checkpoint on 2026-10-18
 
