@@ -17,17 +17,29 @@ and the owner asked for packages of a manageable size.
 The measurements and the map of every moved file are in
 [the split plan](../../doc/planning/translation-repair-package-split.md).
 Each package has its own `README.md` that names what it exports and what it depends on.
-`markup` is the lowest layer and every package with production code lists it.
+`markup` is the lowest layer and imports no other family package;
+every other package with production code lists it in `dependencies`,
+except `consolidate`,
+which lists it in `devDependencies` only.
 `source-scan` and `test-fixture` hold no production code and have no build.
 
 - [`adjudication`](adjudication/README.md):
-  the critic and panel prompts and ballot tallies and the screen for defects a repair introduced.
+  the critic and panel prompts,
+  candidate selection,
+  the ballot tallies and the screen for defects a repair introduced.
 - [`archive`](archive/README.md):
-  reviews and disputes and revision checks over the translation a page already carries.
+  the reviews,
+  disputes,
+  revision checks,
+  coverage verdicts and screens over the translation a page already carries,
+  and the preparation of its sections and blocks.
 - [`artifact`](artifact/README.md):
-  the two-lane settled artifact built from a run and read back with strict checks.
+  the two-lane settled artifact built from a run,
+  read back with strict checks,
+  and rebuilt into the preparation the run settled with.
 - [`artifact-pool`](artifact-pool/README.md):
-  the pool of settled artifacts and the comparison of the two lanes rows.
+  the pool of settled artifacts,
+  its eligibility policy and the comparison of the two lanes' rows.
 - [`assembly`](assembly/README.md):
   assembly integrity and repetition checks and the repair contract and record shapes.
 - [`bench`](bench/README.md):
@@ -41,7 +53,8 @@ Each package has its own `README.md` that names what it exports and what it depe
 - [`corpus-source`](corpus-source/README.md):
   the pinned corpus reader and the preparation of an entry for the pipeline.
 - [`coverage-census`](coverage-census/README.md):
-  finds the package code no unit test ran by running the suite under V8 coverage.
+  finds the family code no unit test ran,
+  by running every package's unit suite under one V8 coverage directory.
 - [`document-structure`](document-structure/README.md):
   the MDX and Markdown parse and the heading and block alignment of original and translation.
 - [`glossary`](glossary/README.md):
@@ -51,7 +64,9 @@ Each package has its own `README.md` that names what it exports and what it depe
 - [`insertion`](insertion/README.md):
   checks for carried insertions and container halves and the corpus-run bookkeeping beside them.
 - [`lane-contest`](lane-contest/README.md):
-  the contest between the lanes over a contested slice and the checks that follow it.
+  the contest between the lanes over a contested slice,
+  the checks that follow it,
+  and the seeded-error and sampling tools that measure the pipeline.
 - [`markup`](markup/README.md):
   the lowest layer with the character classes and markup scanners every other package reads text through.
 - [`page-check`](page-check/README.md):
@@ -313,8 +328,9 @@ March 13,
 never day first.
 The rule lives in `HOUSE_POLICY_BLOCK` (`package/translation-repair/house-rule/src/house-policy.ts`),
 which every writing and judging sheet carries,
-and the rendering glossaries (`rendering-glossary*.ts` in the `rendering-audit` and `translate-floor` packages)
-seed Canadian forms only;
+and the rendering glossaries (`rendering-glossary*.ts` in the `rendering-audit` package,
+with their tests in
+`translate-floor`) seed Canadian forms only;
 `package/translation-repair/adjudication/src/canadian-english-policy.unit.test.ts` and
 `package/translation-repair/translate-floor/src/canadian-forms-policy.unit.test.ts` guard both.
 The sheets reach only slices a lane rewrites,
@@ -511,12 +527,17 @@ const result = await repairTranslation({
   },
   signal,
   perCallTimeoutMs,
+  stageSettings,
 },);
 ```
 
 - `client` is an injected model client (`createSyntheticClient` or any
   `SyntheticClient` implementation);
   the library performs no IO of its own.
+- `stageSettings` is the value `readStageSettings` (declared in the `stage` package) returns;
+  `repairTranslation` requires it.
+  The optional `sliceCharBudget`,
+  `sliceCache` and `overlap` complete the parameters.
 - `perCallTimeoutMs` is the deadline for each model exchange.
   It has no default:
   every caller in the package states its own.
@@ -594,7 +615,7 @@ const result = await repairTranslation({
   `unchanged`,
   or `blocked-non-translation`),
   every adjudicated issue with its resolution fate,
-  and degradation findings.
+  and the alignment and stage findings in scorecard-stable wording.
   When no candidate demonstrably beats the input,
   the input is returned unchanged with its unresolved issues.
 - Every issue record also carries **what was written** for it,
