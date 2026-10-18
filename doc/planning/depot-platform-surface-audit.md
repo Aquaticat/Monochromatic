@@ -277,7 +277,20 @@ it does not establish SDK invoice pricing,
 storage charges,
 included-allowance accounting,
 or an aggregate account cap.
-The replacement has not yet been allocated in this checkpoint.
+Replacement `b2f4z72r3951f5k` also accepted the same runtime and resource limits.
+Its consumer failed with `FileSystemError: the operation timed out`
+before the intended absolute Git command ran.
+The harness attempted `stat` and a full 20,315,448-byte executable download first;
+its error collector omitted the SDK error's `syscall` and `path` fields.
+The retained receipt therefore cannot establish which filesystem operation timed out.
+Cleanup again completed,
+and a fresh `Get` confirmed `finished`.
+Custom-image command execution and filesystem transfer remain unqualified by these attempts.
+The prior default-image command and small-file consumers remain separate positive controls.
+The next diagnostic must execute Git first,
+retain operation boundaries and the SDK error fields,
+and test a small file independently of executable transfer.
+No additional sandbox is allocated at this checkpoint.
 
 ## Live plan eligibility and autoscaling boundary
 

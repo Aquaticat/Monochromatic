@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:31:07.814Z",
+  "updatedAt": "2026-10-18T10:35:42.051Z",
   "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "sdkVersion": "0.1.0-beta.7",
   "input": {
@@ -133,9 +133,9 @@
     "inputVerified": true
   },
   "localValidation": {
-    "observedAt": "2026-10-18T10:25:33.362Z",
-    "source": "512594d40ffe95390181df6a3511928928e8b7d3",
-    "recipeSha256": "89f4b759cd6168b5846904db0f997f2672960c1b10d74e6e7c2bd401d53a5c51",
+    "observedAt": "2026-10-18T10:33:47.755Z",
+    "source": "05d6ffe7b4b638009ab8745bf857de1dc4b7ba16",
+    "recipeSha256": "2c3911702610660cbf48dce6184734f2c6586e940e59c78a28a3141ca4fed862",
     "valid": {
       "status": 0,
       "stdout": "",
@@ -260,8 +260,109 @@
     "additionalComputeProxyReservationUsd": 0.012,
     "cumulativePriorBuildkitAndBothSandboxReservationsUsd": 0.562584,
     "ceilingUsd": 2,
-    "status": "admitted-not-yet-allocated",
+    "status": "executed",
     "priceScope": "Conservative reservation using the public 2-CPU CI rate; not an SDK invoice, aggregate account cap, included-allowance or storage-cost guarantee"
+  },
+  "recovery": {
+    "schemaVersion": 1,
+    "source": "05d6ffe7b4b638009ab8745bf857de1dc4b7ba16",
+    "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "startedAt": "2026-10-18T10:33:50.773Z",
+    "sdkVersion": "0.1.0-beta.7",
+    "request": {
+      "resources": {
+        "vcpus": 2,
+        "memoryMb": 4096,
+        "diskGb": 150
+      },
+      "timeoutMinutes": 2,
+      "architecture": "amd64",
+      "disableTailnet": true,
+      "disableDepotCache": true,
+      "configuration": {
+        "secrets": {}
+      },
+      "name": "research-sdk-custom-9d7a3f42-5db1-4074-bac8-374b037ba4ac",
+      "runtime": {
+        "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+      }
+    },
+    "forecast": {
+      "priorBuildkitTimestampProxyUsd": 0.538584,
+      "publicTwoCpuCiRateUsdPerMinute": 0.006,
+      "maximumRequestedSandboxMinutes": 2,
+      "maximumAdditionalComputeProxyUsd": 0.012,
+      "previousSandboxReservedComputeProxyUsd": 0.012,
+      "cumulativeProxyUsd": 0.562584,
+      "admittedCumulativeCeilingUsd": 2,
+      "accountOrInvoiceCapProven": false
+    },
+    "createCallCount": 1,
+    "checks": [],
+    "cleanup": {
+      "confirmed": {
+        "sandboxId": "b2f4z72r3951f5k",
+        "status": "finished",
+        "name": "research-sdk-custom-9d7a3f42-5db1-4074-bac8-374b037ba4ac",
+        "resources": {
+          "vcpus": 2,
+          "memoryMb": 4096,
+          "diskGb": 150
+        },
+        "runtime": {
+          "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+        },
+        "architecture": "amd64",
+        "createdAt": "2026-10-18T10:33:52.713Z",
+        "startedAt": "2026-10-18T10:33:55.644Z",
+        "expiresAt": "2026-10-18T10:35:52.709Z",
+        "stoppedAt": "2026-10-18T10:34:35.138Z"
+      },
+      "terminal": true
+    },
+    "registryControls": [
+      {
+        "phase": "before-create",
+        "status": 200,
+        "digest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd",
+        "bytes": 1896
+      }
+    ],
+    "credentialsRetained": false,
+    "created": {
+      "sandboxId": "b2f4z72r3951f5k",
+      "status": "running",
+      "name": "research-sdk-custom-9d7a3f42-5db1-4074-bac8-374b037ba4ac",
+      "resources": {
+        "vcpus": 2,
+        "memoryMb": 4096,
+        "diskGb": 150
+      },
+      "runtime": {
+        "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+      },
+      "architecture": "amd64",
+      "createdAt": "2026-10-18T10:33:52.713Z",
+      "startedAt": "2026-10-18T10:33:55.644Z",
+      "expiresAt": "2026-10-18T10:35:52.709Z"
+    },
+    "runtimeReferenceComparison": {
+      "requested": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256",
+      "returned": {
+        "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+      },
+      "exactMatch": true
+    },
+    "expiryMetadata": {
+      "lifetimeFromCreationMilliseconds": 119996,
+      "requestedMinutes": 2
+    },
+    "error": {
+      "name": "FileSystemError",
+      "message": "the operation timed out",
+      "code": "OTHER"
+    },
+    "finishedAt": "2026-10-18T10:34:35.819Z"
   },
   "sources": [
     {
