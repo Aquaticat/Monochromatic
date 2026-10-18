@@ -1092,3 +1092,57 @@ found no full host archive to hand to another owner.
 The receipt ZIPs therefore do not supply a reusable materialized source tar.
 The [Git archive input-identity contract](../troubleshooting/git-archive-lfs-input-identity.md)
 remains the reconstruction and admission boundary.
+## Retained legacy owner identity search
+
+The [legacy owner search receipt](../audit/depot-rust-legacy-owner-search-2026-10-18.evidence.json)
+inventories `169` retained Depot JSON,
+gzip,
+and ZIP evidence files by exact bytes and SHA-256.
+It searches `168` of those files;
+the static source-assertion catalog is explicitly excluded from runtime evidence.
+The bounded local profile used two CPUs,
+2 GiB memory,
+256 PIDs,
+no network,
+and a 90-second container lifetime.
+It decoded `94` unique retained ZIPs and verified `3,558` member CRCs.
+The exact parser passed `72` synthetic local controls covering every selected package/lib/bin alias.
+Those controls receive no application execution credit.
+
+The search found no matching Nextest status,
+JUnit case,
+structured test outcome,
+or binary-enumeration candidate for `package/desktop-app/ide`,
+`package/desktop-app/terminal`,
+or the three `file-manager` application packages.
+The source-qualified alias set includes `ide_app`,
+`terminal_app`,
+and every declared `monochromatic-file-manager` binary variant.
+Actual retained forbidden-strings,
+Truepeak,
+linter,
+and music-player outcomes supply positive corpus controls.
+Repeated occurrence counts are not a test denominator.
+
+The legacy test-feature trial selects Truepeak,
+forbidden-regex,
+its integration binary,
+and JSONC.
+The expanded native feature matrix selects Truepeak.
+The prepared desktop producer emits `music-player` and `monochromatic-nested-wayland-session`;
+its interaction checks do not establish these other applications' Rust unit execution.
+Across seven specifically identified legacy revisions,
+the file-manager and terminal package source/task trees match frozen `e02`,
+while the IDE tree differs.
+There is still no matching retained case/binary outcome for these owners in the searched corpus.
+Resolved dependency equality is not inferred from Git tree equality.
+No additional authored cases receive credit,
+and no new allocation ran.
+
+Four mutation-fixture members ending in `.json` contain the authored `mutation-private-input` marker,
+rather than JSON.
+The scanner retains those parse issues,
+their original hashes,
+and their raw-text search.
+None contains a literal selected owner alias.
+The receipt makes no global absence claim about other private filesystem material.

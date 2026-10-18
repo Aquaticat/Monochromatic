@@ -276,8 +276,15 @@ Coverage also requested a source-qualified search of retained Rust and legacy re
 for actual IDE,
 file-manager,
 and terminal package/binary/case identities before any new owner allocation.
-This read-only evidence join is queued after the compact Kotlin seal.
-An empty entry in the current Rust projection is not proof that historical cohorts never executed that owner.
+The [sealed legacy search](../audit/depot-rust-legacy-owner-search-2026-10-18.evidence.json)
+inventories `169` retained evidence files and searches `168`,
+with the static assertion catalog excluded.
+It validates `94` unique ZIPs,
+`3,558` member CRCs,
+and `72` synthetic parser controls.
+No matching outcome/binary candidate for these owners was found in that corpus.
+The explicit source-tree comparisons and four marker-file parse issues remain retained.
+An empty entry in the Rust projection was not used as sole absence evidence.
 
 ## Provider metadata publication correction
 
