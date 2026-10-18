@@ -38,8 +38,6 @@ including repeated immutable release paths.
 That apparent count does not deduplicate shared inodes.
 The earlier 22,933,936-byte cleanup snapshot predates subsequent builds.
 
-## Platform variants and optional peers
-
 ## Executed module-load checkpoint
 
 The original reported MiMo interaction replays on `native-release-kFkBoY` with the configured extensions,
