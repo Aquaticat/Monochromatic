@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, readFileSync, writeFileSync, statSync, existsSync, openSync, closeSync, fsyncSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { strict as assert } from 'node:assert';
@@ -11,6 +11,13 @@ assert(process.env.DEPOT_CACHE_TOKEN);
 const phase = process.env.REUSE_PHASE;
 assert(['seed', 'warm', 'inputs', 'target'].includes(phase));
 const project = join(root, 'package/git-policy/cli');
+const disk = '/mnt/aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1';
+const mountLines = readFileSync('/proc/self/mountinfo', 'utf8').split('\n').filter(line => line.split(' ')[4] === disk);
+assert.equal(mountLines.length, 1, 'Require the actual dedicated persistent mount');
+assert(mountLines[0].includes(' - fuse.archil '));
+writeFileSync(join(evidence, 'target-cache-mount.json'), JSON.stringify({ disk, mountLines }, null, 2) + '\n');
+const tracked = execFileSync('git', ['ls-files', '--cached', '-z', '--', 'package/git-policy/cli', 'package/cli/forbidden-strings', 'package/rust-module/forbidden-regex', 'package/rust-module/jsonc-edit'], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }).split('\0').filter(Boolean);
+const sourceFiles = tracked.map(path => ({ path, sha256: sha(readFileSync(join(root, path))), mtimeMilliseconds: statSync(join(root, path)).mtimeMs }));
 const privateRoot = join(root, '.research-reuse');
 const toolRoot = join(privateRoot, 'sccache');
 mkdirSync(toolRoot, { recursive: true });
@@ -59,6 +66,29 @@ function consume({ label, expected = 'success', features = [] }) {
 
 try {
   consume({ label: 'native-' + phase });
+  if (phase === 'seed') {
+    const finalArchive = join(disk, 'immutable-target.tar.zst');
+    const finalManifest = join(disk, 'immutable-target.json');
+    assert(!existsSync(finalArchive) && !existsSync(finalManifest), 'Never overwrite an existing producer namespace');
+    const pending = finalArchive + '.pending';
+    run({ name: 'target-archive-save-to-persistent-disk', command: 'tar', args: ['--create', '--zstd', '--file', pending, '--directory', target, '.'], limit: 120_000 });
+    const publicationStart = performance.now();
+    const fd = openSync(pending, 'r');
+    fsyncSync(fd);
+    closeSync(fd);
+    const bytes = readFileSync(pending);
+    assert(bytes.length <= 1024 * 1024 * 1024, 'Bound the compressed research target artifact to1GiB');
+    const targetManifest = { baseSourceSha: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', producerHarnessSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), root, sourceFiles, rustcSha256: sha(readFileSync(execFileSync('mise', ['which', 'rustc'], { cwd: root, env, encoding: 'utf8' }).trim())), wrapperSha256: sha(readFileSync(wrapper)), archiveBytes: bytes.length, archiveSha256: sha(bytes), profile: { incremental: '0', devDebug: '0', rustflags: null }, publicationStartedAt: new Date().toISOString() };
+    renameSync(pending, finalArchive);
+    const manifestPending = finalManifest + '.pending';
+    const manifestFd = openSync(manifestPending, 'wx', 0o600);
+    writeFileSync(manifestFd, JSON.stringify(targetManifest, null, 2) + '\n');
+    fsyncSync(manifestFd);
+    closeSync(manifestFd);
+    renameSync(manifestPending, finalManifest);
+    const published = { ...targetManifest, publicationCompletedAt: new Date().toISOString(), fsyncAndPublicationSeconds: (performance.now() - publicationStart) / 1000 };
+    writeFileSync(join(evidence, 'immutable-target-manifest.json'), JSON.stringify(published, null, 2) + '\n');
+  }
   if (phase === 'inputs') {
     const source = join(root, 'package/cli/forbidden-strings/src/runtime_cache/warning.rs');
     const original = readFileSync(source, 'utf8');

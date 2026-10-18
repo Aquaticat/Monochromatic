@@ -34,6 +34,12 @@ jobs:
         cache: false
     - name: Verify captured tools and installed dependency extraction
       run: mise run //package/dev-script/task-util:research:reuse:tools
+    - name: Mount only this experiment's trusted immutable target archive
+      uses: depot/cache-mount@38d61fd25163e9ef3a3eff8a61676994d306e549
+      with:
+        name: aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1
+        path: /mnt/aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1
+        debug: 'true'
     - name: Build native CLI and execute existing Nextest consumers
       run: mise run //package/dev-script/task-util:research:reuse:rust
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

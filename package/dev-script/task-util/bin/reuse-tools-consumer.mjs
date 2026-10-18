@@ -65,4 +65,11 @@ const rootDependency = join(root, 'node_modules/@monochromatic-dev/dev-script-ta
 assert.equal(realpathSync(rootDependency), join(root, 'package/dev-script/task-util'));
 writeFileSync(join(evidence, 'dependency-layout.json'), JSON.stringify({ strategy, archiveBytes: statSync(archive).size, archiveSha256: manifest.dependencyArchive.sha256, taskUtilLinkTarget: realpathSync(rootDependency), modulesLayout: readFileSync(join(root, 'node_modules/.modules.yaml'), 'utf8') }, null, 2) + '\n');
 for (const [name, task] of [['semantic-plugin-build', 'build:js:node'], ['semantic-host-consumer', 'test:semantic-bridge-host'], ['semantic-external-consumer', 'test:external-consumer-host']]) run({ name, command: 'mise', args: ['run', '//package/oxlint-plugin/prefer-readonly-parameter-type:' + task], limit: 180_000 });
+if (process.env.REUSE_KIND === 'rust') {
+  const path = '/usr/bin/archil';
+  assert(existsSync(path), 'Refuse the cache action floating installer when Archil is missing');
+  assert.equal(sha(readFileSync(path)), '3bbf2fa696708c3ce4e8408ae557fc449db2692dee27fdb161281789d59d1bf4');
+  run({ name: 'preinstalled-archil-version', command: path, args: ['--version'], limit: 15_000 });
+  writeFileSync(join(evidence, 'preinstalled-archil-hash.json'), JSON.stringify({ path, sha256: sha(readFileSync(path)) }, null, 2) + '\n');
+}
 //endregion
