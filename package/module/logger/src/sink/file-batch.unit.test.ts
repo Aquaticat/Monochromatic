@@ -59,8 +59,8 @@ await describe({
           record.message = 'after';
           /** Second record joins the pending batch without losing its original position. */
           const second = sink.write({ level: 'info', message: 'second', timestamp: 2, },);
-          expect(first,).toBe(second,);
           await second;
+          expect(first,).toBe(second,);
           expect((await readRecords()).slice(1,),).toEqual([
             { level: 'info', message: 'before\n世界', timestamp: 1, },
             { level: 'info', message: 'second', timestamp: 2, },
