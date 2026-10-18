@@ -6,12 +6,10 @@ import {
 } from '@monochromatic-dev/translation-repair-repair/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
+  type CommandLineOf,
+  type FlagValue,
   idListFlag,
   wholeNumberFlag,
-} from '@monochromatic-dev/translation-repair-run/ts';
-import type {
-  CommandLineOf,
-  FlagValue,
 } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Judge fidelity arguments

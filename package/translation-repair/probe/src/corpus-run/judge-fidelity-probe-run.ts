@@ -17,8 +17,14 @@ import type {
 import { reviewedFidelityRequest, } from '../fidelity-reference-request.ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { reviewedFidelityTrials, } from '../fidelity-reference-trials.ts';
-import { runFidelityTrial, } from '@monochromatic-dev/translation-repair-run/ts';
-import { mapOverlapped, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  type CommandLineOf,
+  runFidelityTrial,
+} from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  mapOverlapped,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import { readFidelityArguments, } from './judge-fidelity-args.ts';
 import {
   boundFidelityMatrix,
@@ -31,7 +37,6 @@ import {
   fidelityRowResult,
   type FidelityRowResult,
 } from './judge-fidelity-probe-plan.ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import {
   probeRosterWith,
   readCandidateIds,
@@ -39,7 +44,6 @@ import {
 } from './probe-candidates.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import type { RunnerClosure, } from '@monochromatic-dev/translation-repair-insertion/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Judge fidelity probe run
 // Source-reviewed judge calibration, once the process has handed it the

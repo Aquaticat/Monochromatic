@@ -1,5 +1,7 @@
-import { artifactsDirOf, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type { PoolPolicy, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
+import {
+  artifactsDirOf,
+  type PoolPolicy,
+} from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { readRunJson, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   assertSheetMatchesManifest,

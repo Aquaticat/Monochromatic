@@ -1,11 +1,11 @@
 import { readCorpusFile, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { readPoolPolicy, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
+  type CommandLineOf,
   readRunCorpusPinSetting,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { drawGradingSample, } from './draw-sample-run.ts';
 
 //region Draw sample

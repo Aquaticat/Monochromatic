@@ -1,13 +1,13 @@
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { ROSTER_MODEL_IDS, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  ROSTER_MODEL_IDS,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
   idListFlag,
+  type ReadsFlag,
+  type ReadsSwitch,
   RUN_ROSTER,
-} from '@monochromatic-dev/translation-repair-run/ts';
-import type {
-  ReadsFlag,
-  ReadsSwitch,
 } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Probe candidates

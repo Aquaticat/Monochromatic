@@ -2,13 +2,13 @@ import { join, } from 'node:path';
 
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
+  type AdjudicatedIssue,
   isIssueCategory,
   isIssueSeverity,
   type IssueCategory,
   type IssueSeverity,
   readRunJson,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   artifactFileNameOf,
   ArtifactParseError,

@@ -15,8 +15,10 @@ import {
   parseSampleManifest,
   requireSheetSeed,
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { writtenOr, } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  type CommandLineOf,
+  writtenOr,
+} from '@monochromatic-dev/translation-repair-run/ts';
 import {
   preGradeName,
   readNamedOrBeside,

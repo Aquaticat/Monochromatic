@@ -3,8 +3,8 @@ import {
   type PriorIssueDisclosure,
   type ProbedEditKind,
   PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
+  type RepairRegion,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type { RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import {
   BASELINE_TEXT,
   CLEAN_REGION,

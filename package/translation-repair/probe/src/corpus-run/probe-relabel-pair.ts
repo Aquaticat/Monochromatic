@@ -2,10 +2,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { runIntroducedDefectProbe, } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type {
-  PriorIssueDisclosure,
-  RepairRegion,
+import {
+  type PriorIssueDisclosure,
+  type RepairRegion,
+  runIntroducedDefectProbe,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
 import {

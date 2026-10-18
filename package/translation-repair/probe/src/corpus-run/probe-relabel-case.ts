@@ -1,13 +1,17 @@
-import { readRunJson, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type AdjudicatedIssue,
+  readRunJson,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
   type CorpusPin,
   readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type { RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication/ts';
+import {
+  prepareDocumentPair,
+  type RepairRegion,
+} from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { parseSampleManifest, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { readArtifactRecords, } from './probe-relabel-artifact.ts';
 

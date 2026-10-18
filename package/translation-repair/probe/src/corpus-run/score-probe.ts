@@ -1,9 +1,9 @@
 import { readPoolPolicy, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
+  type CommandLineOf,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { printProbeScore, } from './score-probe-run.ts';
 
 //region Score probe

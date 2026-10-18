@@ -1,13 +1,13 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { readReviewedFidelityReferences, } from '../fidelity-reference-read.ts';
 import {
+  type CommandLineOf,
   createRunClient,
   readRunCorpusPinSetting,
   reportingRefusals,
   resolveRunsDir,
   RUN_PER_CALL_TIMEOUT_MS,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { runFidelityProbe, } from './judge-fidelity-probe-run.ts';
 import { digestPipeline, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { nowAsIso, } from './probe-run-clock.ts';

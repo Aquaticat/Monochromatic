@@ -8,6 +8,7 @@ import { parseSettledArtifact, } from '@monochromatic-dev/translation-repair-art
 import {
   type ArtifactFileName,
   assertArtifactProvenance,
+  type EligibleEntries,
   entryIdOfArtifact,
   requireRecord,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
@@ -16,7 +17,6 @@ import type {
   readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { DrawReconcileError, } from './draw-reconcile.ts';
-import type { EligibleEntries, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
   classifyBand,
   extractGradingCandidate,

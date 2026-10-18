@@ -1,5 +1,7 @@
-import type { TelemetryProbeReading, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { summarizeProbeTelemetry, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
+import {
+  summarizeProbeTelemetry,
+  type TelemetryProbeReading,
+} from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import type { StageRosterCoverage, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Probe telemetry report

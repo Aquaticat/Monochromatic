@@ -5,10 +5,10 @@ import type {
   readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { GradingCandidate, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { EligibleEntries, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
   type ArtifactFileName,
   artifactsDirOf,
+  type EligibleEntries,
   keepEligible,
   type PoolPolicy,
   resolvePool,

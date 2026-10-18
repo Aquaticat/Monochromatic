@@ -4,7 +4,6 @@ import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-pro
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { runRepairBenchmark, } from '@monochromatic-dev/translation-repair-repair/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { persistRecallScorecard, } from './recall-scorecard-store.ts';
 import {
   chooseRecallEntries,
@@ -18,6 +17,7 @@ import {
   refuseUnmeasuredScorecard,
 } from './recall-benchmark-report.ts';
 import {
+  type CommandLineOf,
   RECALL_JUDGE_MODEL_IDS,
   RUN_CALL_CONFIG,
   RUN_MODELS,
@@ -96,11 +96,11 @@ const RUN_BUDGET_MS = BUDGET_HOURS
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
- @throws {@link import('@monochromatic-dev/translation-repair-glossary/ts').StatedRefusalError} when the
+ @throws {@link StatedRefusalError} when the
  corpus at the pin yields no entry to seed, with or without `--plan`, before
  any client is built or anything is kept
 
- @throws {@link import('@monochromatic-dev/translation-repair-glossary/ts').StatedRefusalError} when a run
+ @throws {@link StatedRefusalError} when a run
  over chosen entries dispatched none or planted no seed, after keeping its
  record
 

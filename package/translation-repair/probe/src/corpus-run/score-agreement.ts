@@ -1,8 +1,8 @@
 import {
+  type CommandLineOf,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { printGradeReport, } from './score-agreement-run.ts';
 
 //region Score agreement

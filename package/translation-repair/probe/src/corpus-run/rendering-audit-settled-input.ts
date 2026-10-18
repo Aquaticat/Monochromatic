@@ -20,6 +20,7 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { listArtifactFiles, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
+  type ParsedTwoLaneArtifact,
   parseSettledTwoLaneArtifact,
   readSettledEntryInfo,
   rebuildPreparation,
@@ -27,7 +28,6 @@ import {
   type RecipeHalf,
   verifyArtifactMeasurements,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
-import type { ParsedTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact/ts';
 import {
   identityOf,
   type SettledAuditSubject,

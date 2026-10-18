@@ -2,10 +2,10 @@ import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  type CommandLineOf,
   idListFlag,
   wholeNumberFlag,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Settled rendering audit arguments
 // The command line surface of `rendering-audit-settled.ts`, kept apart from the

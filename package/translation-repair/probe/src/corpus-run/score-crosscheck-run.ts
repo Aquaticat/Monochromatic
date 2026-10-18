@@ -1,5 +1,7 @@
-import { artifactsDirOf, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type { PoolPolicy, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
+import {
+  artifactsDirOf,
+  type PoolPolicy,
+} from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { gatherAttributionEntries, } from './attribution-read.ts';
 import {
   buildCrosscheckCensus,

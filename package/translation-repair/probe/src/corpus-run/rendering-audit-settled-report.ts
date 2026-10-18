@@ -1,8 +1,8 @@
 import {
+  type CommandLineOf,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { runSettledReport, } from './rendering-audit-settled-report-run.ts';
 
 //region Settled audit report

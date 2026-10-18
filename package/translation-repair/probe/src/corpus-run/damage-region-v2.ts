@@ -1,10 +1,10 @@
 import { readRunJson, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type ArtifactDeliveryRow,
   type ArtifactFileName,
   entryIdOfArtifact,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import type { ArtifactLaneSelection, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { ArtifactDeliveryRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { parseSettledTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact/ts';
 import {
   pageRelationOf,

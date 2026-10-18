@@ -1,11 +1,11 @@
 import { AUDIT_ARMS, } from './audit-sensitivity-input.ts';
 import { runAuditSensitivity, } from './audit-sensitivity-run.ts';
 import {
+  type CommandLineOf,
   createRunClient,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { digestPipeline, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { nowAsIso, } from './probe-run-clock.ts';
 import { readRunnerClosure, } from '@monochromatic-dev/translation-repair-insertion/ts';

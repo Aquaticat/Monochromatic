@@ -3,13 +3,13 @@ import {
   readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
+  type CommandLineOf,
   createRunClient,
   readRunCorpusPinSetting,
   reportingRefusals,
   resolveRunsDir,
   RUN_MODELS,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { digestPipeline, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { outsideReadsFrom, } from '@monochromatic-dev/translation-repair-corpus-pass/ts';
 import { nowAsIso, } from './probe-run-clock.ts';

@@ -1,11 +1,11 @@
 import {
+  type CommandLineOf,
   createRunClient,
   readHeadSha,
   readRunCorpusPinSetting,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { nowAsIso, } from './probe-run-clock.ts';
 import { runRecallBenchmark, } from './recall-benchmark-run.ts';
 import { readStageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
