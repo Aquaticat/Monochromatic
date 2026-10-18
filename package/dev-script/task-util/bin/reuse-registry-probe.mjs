@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
 import { evidence, sha } from './reuse-context.mjs';
@@ -69,5 +69,6 @@ try {
   proof.failure = String(error);
 } finally {
   writeFileSync(join(evidence, 'snapshot-registry-manifest.json'), JSON.stringify(proof, null, 2) + '\n');
+  appendFileSync(join(evidence, 'snapshot-registry-manifest.jsonl'), JSON.stringify(proof) + '\n');
   console.log(JSON.stringify({ automaticSnapshotCredentialPresent: proof.automaticSnapshotCredentialPresent, digest: proof.digest ?? null, failure: proof.failure ?? null }));
 }

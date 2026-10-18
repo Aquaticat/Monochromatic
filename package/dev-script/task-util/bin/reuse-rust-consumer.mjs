@@ -73,7 +73,7 @@ try {
     const pending = finalArchive + '.pending';
     run({ name: 'target-archive-save-to-persistent-disk', command: 'tar', args: ['--create', '--zstd', '--file', pending, '--directory', target, '.'], limit: 120_000 });
     const publicationStart = performance.now();
-    const fd = openSync(pending, 'r');
+    const fd = openSync(pending, 'r+');
     fsyncSync(fd);
     closeSync(fd);
     const bytes = readFileSync(pending);
