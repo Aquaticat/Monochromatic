@@ -68,6 +68,11 @@ fn malformed_shapes_are_rejected() {
             "[{\"files\":[],\"rules\":{\"unknown/rule\":{}}}]",
             "Unknown built-in rule",
         ),
+        // The removed anonymous-function rule is rejected by name, exactly like an unregistered one.
+        (
+            "[{\"files\":[],\"rules\":{\"rust/no-anonymous-functions\":{\"severity\":\"off\"}}}]",
+            "Unknown built-in rule rust/no-anonymous-functions",
+        ),
         (
             "[{\"files\":[],\"rules\":{\"rust/max-lines\":\"off\"}}]",
             "settings must be an object",

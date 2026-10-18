@@ -72,9 +72,10 @@ fn markdown_fences_are_checked_as_virtual_rust_at_host_positions() {
     let fixture: Fixture = Fixture::new();
     let config: &str = r#"[
       { "files": ["**/*.md"], "rules": { "markdown/single-h1": { "severity": "error" } } },
-      { "files": ["**/*.md/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "warn" }, "rust/no-anonymous-functions": { "severity": "error" } } }
+      { "files": ["**/*.md/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "warn" }, "rust/max-lines": { "severity": "error", "max": 0 } } }
     ]"#;
-    let source: &str = "# Title\n\n```rust\nlet value = call(|| 1);\n```\n\n# Second\n";
+    let source: &str =
+        "# Title\n\n```rust\n//! Docs.\nlet value = 1; fn helper() {}\n```\n\n# Second\n";
     let findings: Vec<Diagnostic> = check(&fixture.path, config, "doc/a.md", source);
     for finding in &findings {
         assert_eq!(finding.filename, "doc/a.md");
@@ -84,19 +85,23 @@ fn markdown_fences_are_checked_as_virtual_rust_at_host_positions() {
     assert_eq!(
         pairs,
         [
-            (String::from("markdown/single-h1"), 7),
-            (String::from("rust/no-anonymous-functions"), 4),
-            (String::from("rust/require-rustdoc"), 4),
+            (String::from("markdown/single-h1"), 8),
+            (String::from("rust/max-lines"), 5),
+            (String::from("rust/require-rustdoc"), 5),
         ]
     );
-    let closure: &Diagnostic = with_code(findings.as_slice(), "rust/no-anonymous-functions");
-    // The closure starts after `let value = call(` on host line 4.
-    assert_eq!(closure.labels[0].span.column, 18);
+    let item: &Diagnostic = with_code(findings.as_slice(), "rust/require-rustdoc");
+    // The undocumented function starts after `let value = 1; ` on host line 5.
+    assert_eq!(item.labels[0].span.column, 16);
     assert_eq!(
-        &source[closure.labels[0].span.offset..closure.labels[0].span.offset + 2],
-        "||"
+        &source[item.labels[0].span.offset..item.labels[0].span.offset + 14],
+        "fn helper() {}"
     );
-    assert_eq!(closure.severity, Severity::Error);
+    assert_eq!(item.severity, Severity::Warn);
+    // The budget anchors on the first authored line beyond it, at the start of that line.
+    let budget: &Diagnostic = with_code(findings.as_slice(), "rust/max-lines");
+    assert_eq!(budget.labels[0].span.column, 1);
+    assert_eq!(budget.severity, Severity::Error);
 }
 
 /// A virtual path no block selects,
@@ -106,7 +111,7 @@ fn markdown_fences_are_checked_as_virtual_rust_at_host_positions() {
 #[test]
 fn unconfigured_and_ignored_virtual_paths_are_not_checked() {
     let fixture: Fixture = Fixture::new();
-    let source: &str = "# Title\n\n```rust\nlet value = call(|| 1);\n```\n\n# Second\n";
+    let source: &str = "# Title\n\n```rust\nlet value = 1;\n```\n\n# Second\n";
     let host_only: &str =
         r#"[{ "files": ["**/*.md"], "rules": { "markdown/single-h1": { "severity": "error" } } }]"#;
     assert_eq!(
@@ -114,7 +119,7 @@ fn unconfigured_and_ignored_virtual_paths_are_not_checked() {
         [(String::from("markdown/single-h1"), 7)]
     );
     let ignoring: &str = r#"[
-      { "files": ["**/*.rs"], "ignores": ["**/*.md/**"], "rules": { "rust/no-anonymous-functions": { "severity": "error" } } },
+      { "files": ["**/*.rs"], "ignores": ["**/*.md/**"], "rules": { "rust/require-rustdoc": { "severity": "error" } } },
       { "files": ["**/*.md"], "rules": { "markdown/single-h1": { "severity": "error" } } }
     ]"#;
     assert_eq!(
@@ -122,10 +127,10 @@ fn unconfigured_and_ignored_virtual_paths_are_not_checked() {
         [(String::from("markdown/single-h1"), 7)]
     );
     // `**/*.rs` alone reaches the fence, and the unconfigured host contributes nothing of its own.
-    let virtual_only: &str = r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "error" } } }]"#;
+    let virtual_only: &str = r#"[{ "files": ["**/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "error" } } }]"#;
     assert_eq!(
         located(check(&fixture.path, virtual_only, "doc/a.md", source).as_slice()),
-        [(String::from("rust/no-anonymous-functions"), 4)]
+        [(String::from("rust/require-rustdoc"), 4)]
     );
 }
 
@@ -138,9 +143,9 @@ fn rustdoc_and_doc_tests_are_checked_and_fixed_through_the_host() {
     let config: &str = r#"[
       { "files": ["**/*.rs"], "ignores": ["**/*.md/**"], "rules": { "rust/require-rustdoc": { "severity": "error" } } },
       { "files": ["**/*.rs/*.md"], "rules": { "markdown/fenced-code-language": { "severity": "error" }, "markdown/no-trailing-punctuation": { "severity": "error" } } },
-      { "files": ["**/*.rs/*.md/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "warn" } } }
+      { "files": ["**/*.rs/*.md/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "warn" } } }
     ]"#;
-    let source: &str = "//! File docs.\n\n/// # Heading.\n///\n/// ```\n/// let value = call(|| 1);\n/// ```\nfn item() {}\n";
+    let source: &str = "//! File docs.\n\n/// # Heading.\n///\n/// ```\n/// //! Example.\n/// let value = 1; fn helper() {}\n/// ```\nfn item() {}\n";
     let findings: Vec<Diagnostic> = check(&fixture.path, config, "src/a.rs", source);
     let mut pairs: Vec<(String, usize)> = located(findings.as_slice());
     pairs.sort();
@@ -149,7 +154,7 @@ fn rustdoc_and_doc_tests_are_checked_and_fixed_through_the_host() {
         [
             (String::from("markdown/fenced-code-language"), 5),
             (String::from("markdown/no-trailing-punctuation"), 3),
-            (String::from("rust/no-anonymous-functions"), 6),
+            (String::from("rust/require-rustdoc"), 7),
         ]
     );
     for finding in &findings {
@@ -158,7 +163,7 @@ fn rustdoc_and_doc_tests_are_checked_and_fixed_through_the_host() {
     // Inside rustdoc the unlabeled fence becomes `rust`, and both fixes keep the comment prefix.
     assert_eq!(
         fixed(source, findings.as_slice()),
-        "//! File docs.\n\n/// # Heading\n///\n/// ```rust\n/// let value = call(|| 1);\n/// ```\nfn item() {}\n"
+        "//! File docs.\n\n/// # Heading\n///\n/// ```rust\n/// //! Example.\n/// let value = 1; fn helper() {}\n/// ```\nfn item() {}\n"
     );
 }
 
@@ -169,7 +174,7 @@ fn an_mdx_error_is_one_processing_finding() {
     let fixture: Fixture = Fixture::new();
     let config: &str = r#"[
       { "files": ["**/*.mdx"], "rules": { "markdown/single-h1": { "severity": "error" } } },
-      { "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "error" } } }
+      { "files": ["**/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "error" } } }
     ]"#;
     let source: &str = "# Title\n\n<A>\ntext\n</B>\n";
     let findings: Vec<Diagnostic> = check(&fixture.path, config, "doc/a.mdx", source);
@@ -187,7 +192,7 @@ fn an_mdx_error_is_one_processing_finding() {
         r#"[{ "files": ["**/*.md"], "rules": { "markdown/single-h1": { "severity": "error" } } }]"#;
     assert!(check(&fixture.path, markdown, "doc/a.md", source).is_empty());
     // With no host rules, the same MDX failure still surfaces once, through extraction.
-    let virtual_only: &str = r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "error" } } }]"#;
+    let virtual_only: &str = r#"[{ "files": ["**/*.rs"], "rules": { "rust/require-rustdoc": { "severity": "error" } } }]"#;
     let extracted: Vec<Diagnostic> = check(&fixture.path, virtual_only, "doc/a.mdx", source);
     assert_eq!(extracted.len(), 1);
     assert!(extracted[0].processing_failure);
@@ -199,23 +204,15 @@ fn an_mdx_error_is_one_processing_finding() {
 #[test]
 fn unavailable_semantic_coverage_is_reported_and_syntax_rules_still_run() {
     let fixture: Fixture = Fixture::new();
-    let config: &str = r#"[{ "files": ["**/*.rs"], "rules": { "rust/require-explicit-types": { "severity": "error" }, "rust/no-anonymous-functions": { "severity": "error" } } }]"#;
+    let config: &str = r#"[{ "files": ["**/*.rs"], "rules": { "rust/require-explicit-types": { "severity": "error" }, "rust/max-lines": { "severity": "error", "max": 0 } } }]"#;
     // No semantic engine is supplied to this checker, as on a worker thread.
-    let host: Vec<Diagnostic> = check(
-        &fixture.path,
-        config,
-        "src/a.rs",
-        "fn main() { call(|| 1); }\n",
-    );
+    let host: Vec<Diagnostic> = check(&fixture.path, config, "src/a.rs", "fn main() {}\n");
     let mut codes: Vec<&str> = Vec::<&str>::new();
     for finding in &host {
         codes.push(finding.code.as_str());
     }
     codes.sort();
-    assert_eq!(
-        codes,
-        ["core/processing-failure", "rust/no-anonymous-functions"]
-    );
+    assert_eq!(codes, ["core/processing-failure", "rust/max-lines"]);
     let failure: &Diagnostic = with_code(host.as_slice(), "core/processing-failure");
     assert!(failure.processing_failure);
     assert!(

@@ -209,9 +209,6 @@ pub mod rust_file_engine;
 mod rust_generic_arguments;
 /// Semantic disambiguation of type-shaped generic constant placeholders.
 mod rust_inferred_constants;
-/// Internal syntax-only rejection of anonymous Rust functions.
-#[doc(hidden)]
-pub mod rust_no_anonymous_functions;
 /// Typed Rust rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod rust_rule_settings;

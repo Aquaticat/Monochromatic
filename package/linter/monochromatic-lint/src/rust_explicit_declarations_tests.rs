@@ -52,7 +52,8 @@ fn leaves_present_annotations_for_semantic_validation() {
     assert!(check(source).is_empty());
 }
 
-/// Closure parameters and results are independent requirements when the closure-ban rule is disabled.
+/// Closure parameters and results are independent annotation requirements,
+///  whether or not a closure is otherwise acceptable.
 #[test]
 fn checks_each_anonymous_parameter_and_return_annotation() {
     let findings: Vec<Diagnostic> = check("fn main() { call(|first, second: u16| first); }");

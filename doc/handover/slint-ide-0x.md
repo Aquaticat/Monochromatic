@@ -869,18 +869,31 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 18, theme 7, find 39, ignored 28, search 17, watch 76, language 31, language lifecycle 28 runs, language
     navigation 16), and `inspect:language`, `inspect:language-mise` and `inspect:language-confinement`. A positive
     control (the expectation of `minimap_build.rs` renamed to `dead_code`) made `lint:closures` exit 1 with the closure
-    reported and `this lint expectation is unfulfilled`; the file was restored. The README of the lint package still
-    calls itself a stage-1 package.
+    reported and `this lint expectation is unfulfilled`; the file was restored. The stale stage-1 wording of the lint
+    package README was rewritten by the removal below.
     Landed on 2026-10-18 as `1e143fbabe`, pushed straight to `origin/main` from the worktree (the owner chose this):
     the main checkout holds an uncommitted line re-wrap in `package/desktop-app/ide/README.md` (one of a 314-file bulk
     change from another session, last written 09:24), which makes `git merge --ff-only` refuse, so the checkout's
     `main` stays behind `origin/main` until that change is committed or dropped by its owner. Branch and worktree
     removed. The IDE is reinstalled (`~/.local/bin/monochromatic-ide`, sha256 `f068d238b760`, equal to
     `dist/monochromatic-ide`; `monochromatic-ide.previous` is the build `2172fa208b55`); `--help` runs.
-    Still open: the fate of the syntax-only rule once the gate is accepted (proposal in the agent's report: switch it
-    off for `package/desktop-app/ide/**` by a configuration override, since the new lint covers the same closures with
-    type information and sees macro arguments, and keep it elsewhere until each other Rust package has its own
-    `lint:closures`).
+    Decided on 2026-10-18 (the owner,
+    through the question tool):
+    the syntax-only rule `rust/no-anonymous-functions` is removed altogether,
+    repo-wide,
+    instead of being switched off for the IDE only.
+    It landed on 2026-10-18 by a push to `origin/main` from branch `refactor/remove-no-anonymous-functions`
+    (an agent; the coordinator merged `main`, reran the linter package tests, 412 passed and 1 skipped, the fuzz
+    sidecar tests, 10 passed, clippy, rustfmt and the closure package lint, all status 0, and ran the installed
+    `monochromatic-lint` 0.1.3, which still contains the rule, over the IDE and the closure package: status 0, no
+    finding, because the repository config no longer selects it).
+    A config that still names the removed rule is a setup error, `Unknown built-in rule rust/no-anonymous-functions.`,
+    exit status 2.
+    The agent reported that the root lint run exits 1 on Markdown findings in files it did not touch (24 in its
+    final run, compared against the base text for the four files it did touch); the coordinator did not rerun it.
+    The Dylint lint `avoidable_closure` is the only closure check from then on.
+    Rust packages other than the IDE have no closure check until each gets its own `lint:closures` gate.
+    The record is the section "Removal of `rust/no-anonymous-functions`" of `doc/decision/rust-closure-lint-dylint.md`.
   - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
     for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
     listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
