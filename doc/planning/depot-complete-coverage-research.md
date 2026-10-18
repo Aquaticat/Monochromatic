@@ -1312,3 +1312,45 @@ then installs and runs actual external consumers without rebuilding the producer
 The worker is bounded to 4 CPU, 16 GiB, and 10 minutes;
 the installed consumer is bounded to 2 CPU, 2 GiB, 256 PIDs,
 read-only root, and no network.
+
+## Current desktop functional boundary and remaining independent sessions
+
+The corrected `.cjs` forwarder in native run `3125s62dwd`
+(job `nzkhw0wsbp`, attempt `htd1mcqk6t`)
+restores the immutable current-source compositor and desktop executables without rebuilding.
+The actual unchanged E2E owner emits 69 `PASS` outcomes,
+one authored Wayland modifier-repeat skip,
+and 20 PNG captures,
+then throws `CheckFailureError` waiting for the thirty-track folder at `wide-interaction.ts:362`.
+This is a source wait boundary,
+not a passed complete desktop suite.
+The same invocation does not execute the six sessions after `wide`.
+Artifact `01a14f43-320d-7a25-8de3-1d00d38d4552`
+is 1274818 bytes with SHA-256
+`027bfe42ff2cbcba19dd705b5675867e0355d91a307f009a029b7d50adf586a4`;
+96 members expand to 26811016 bytes with recorded log hashes verified.
+The consumer records 635 actual working input files and 8201667 working bytes
+separately from raw Git identities and without claiming original producer asset-byte equivalence.
+Private sink names are restored;
+active units, app processes, compositor processes,
+and retained runtime containers are zero.
+The single-artifact temporary credential is absent after cleanup.
+The provider run interval is 13:42:35 to 13:46:07 UTC on 2026-10-18,
+212 seconds and a USD0.0848 list-rate interval proxy,
+with the complete USD0.36 maximum retained conservatively.
+
+Remaining independently verifiable work is explicit:
+
+- Desktop remaining sessions: execute unchanged authored `narrow`, `dialog`, `auto-play`,
+  `quit`, `states`, and `visual` session bodies with an explicit research scheduler.
+  Preserve the default owner invocation failure and identify the scheduler seam.
+  Retain source-file hashes, actual outcomes, PNG receipts, and independent cleanup.
+- Packed installation: finish immutable archive restoration, supported pnpm workspace configuration,
+  a missing-dependency negative control, proper isolated install,
+  and actual installed library, CLI, and bundler consumers.
+- Current cross-OS controls: run finite public GitHub macOS and Windows desktop and host owners
+  after desktop and packed work, sequentially, without deployment or provider calls.
+  Compare source, task, dependency, tool, and actual working-byte identities before historical carry-forward.
+- Semantic inventory: reconcile feature and assertion ownership, generator reach,
+  actual versus compile-only consumers, and every material unexercised surface.
+  Static declaration counts are not runtime coverage.
