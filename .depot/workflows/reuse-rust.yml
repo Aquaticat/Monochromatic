@@ -32,6 +32,8 @@ jobs:
         version: 2026.10.9
         install: false
         cache: false
+    - name: Bind the unique snapshot tag to its expected manifest digest
+      run: mise run //package/dev-script/task-util:research:reuse:registry
     - name: Verify captured tools and installed dependency extraction
       run: mise run //package/dev-script/task-util:research:reuse:tools
     - name: Mount only this experiment's trusted immutable target archive
@@ -42,6 +44,9 @@ jobs:
         debug: 'true'
     - name: Build native CLI and execute existing Nextest consumers
       run: mise run //package/dev-script/task-util:research:reuse:rust
+    - name: Recheck snapshot tag resolution after the consumer
+      if: always()
+      run: mise run //package/dev-script/task-util:research:reuse:registry
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
       with:

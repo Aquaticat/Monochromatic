@@ -159,3 +159,7 @@ run = "node bin/reuse-gradle-consumer.mjs"
 description = "Build the existing native CLI and run Nextest consumers with isolated remote compiler reuse"
 run = "node bin/reuse-rust-consumer.mjs"
 
+[tasks."research:reuse:registry"]
+description = "Read only this experiment snapshot manifest and selected synthetic image configuration"
+run = "node bin/reuse-registry-probe.mjs"
+
