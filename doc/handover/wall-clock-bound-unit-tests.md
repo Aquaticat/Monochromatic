@@ -314,8 +314,20 @@ both reproduced deterministically:
   (`package/module/async-time/src/with-timeout.ts`)
   so a global replacement mid-race cannot cross domains.
   Load connection:
-  the crash window stays open while sink verification (fs I/O) is in flight at attempt start,
+  the crash window stays open while sink verification (fs I/O) is in flight at attempt start
+  (`verifyTimeoutMs` defaults to 5000 ms),
   so parallel load widens it.
+  `doc/troubleshooting/cli-git-logger-sink-verify-timeout.md`
+  corroborates the emitter (`verifyAndApply` under `withHostTimeout`)
+  and documents that same verification path stalling for seconds under host load
+  in plain `test:unit` runs;
+  the deadlock variant is recorded there as its own incident section.
+  Latent exposure in the default suite:
+  the three files that install fake timers
+  (`package/module/test/src/sinon-clock.unit.test.ts`,
+  `package/module/logger/src/sink/file-batch.unit.test.ts`,
+  `package/module/test-sandbox/src/sandbox.unit.test.ts`);
+  no default-run failure observed.
   This is a latent,
   worse form of issue 1762's own theme inside the harness:
   a deadlock instead of a false red.
