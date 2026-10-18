@@ -74,6 +74,58 @@ not a shared root cause.
 Do not saturate the host to recreate it;
 any load experiment must use a bounded disposable container.
 
+## Fake-timer cross-domain clear deadlock on 2026-10-18
+
+A separate incident with the same emitter,
+bounded by a whole-file deadlock instead of a timeout diagnostic line.
+During the issue #1762 investigation
+(`doc/handover/wall-clock-bound-unit-tests.md`),
+a probe against the built harness dist installed sinon fake timers
+(`toFake: ['setTimeout', 'clearTimeout']`)
+at the start of a test attempt and deterministically deadlocked:
+the entire test file hung,
+no `[FAIL]` diagnostic was emitted,
+and node exited 13 with
+`Warning: Detected unsettled top-level await`.
+The preceding stderr carried sinon's
+`FakeTimers: clearTimeout was invoked to clear a native timer instead of one created by this library. To automatically clean-up native timers, use shouldClearNativeTimers.`
+emitted by `clearTimer` in `@sinonjs/fake-timers`,
+surfaced through the bundled harness path
+`withTimeout` dispose,
+`withHostTimeout`,
+`verifyAndApply`,
+logger `initialize`:
+the same `verifyAndApply` sink-verification path this doc names as the emitter.
+
+Mechanism:
+bootstrap schedules each sink verification deadline with the native `setTimeout`;
+a test attempt that replaces global `clearTimeout` while a verification is still in flight
+leaves the completion disposer calling the replacement with the native handle;
+`@sinonjs/fake-timers` throws by design on that cross-domain clear;
+the rejection escapes the logger initialization path and never surfaces as a test failure.
+The host-load section of this doc matters here:
+verification in flight for seconds under load
+widens the window in which an early fake-timer install can collide with it.
+That makes the deadlock a latent,
+load-sensitive hazard for the default-run files that install fake timers
+(`package/module/test/src/sinon-clock.unit.test.ts`,
+`package/module/logger/src/sink/file-batch.unit.test.ts`,
+`package/module/test-sandbox/src/sandbox.unit.test.ts`);
+no default-run failure has been observed,
+and the issue #1762 five-batch 32-process repro was green.
+
+Workaround verified in the probes:
+pass `shouldClearNativeTimers: true` to `sinon.useFakeTimers`
+so the fake clock forwards native clears instead of throwing;
+both probe files then ran green to completion (exit 0).
+Root-fix direction,
+not implemented at this writing:
+`withTimeout`
+(`package/module/async-time/src/with-timeout.ts`)
+should capture schedule and clear from one clock domain
+so a global replacement mid-race cannot cross domains.
+The owner paused fix implementation while the issue #1762 remedy design settles.
+
 ## Workarounds and rejected interpretations
 
 No fix or workaround for the underlying verification delay is verified.
