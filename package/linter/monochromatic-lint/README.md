@@ -171,7 +171,8 @@ A function item's unnameable type can retain `_`;
 that does not exempt a nameable enclosing reference or aggregate type.
 Unresolved coverage produces an explicit processing failure rather than a clean result.
 
-Closures have unnameable types, so prefer a named callback,
+Closures have unnameable types,
+so prefer a named callback,
 which is also what the `avoidable_closure` Dylint lint asks for:
 
 ```rust

@@ -13,6 +13,9 @@ full semantic enforcement for `rust/require-explicit-types`,
 not a syntax-only approximation.
 This supersedes the prior no-semantic-analysis restriction for this rule.
 The anonymous-function rule remains separately configurable as `rust/no-anonymous-functions`.
+Note of 2026-10-18:
+that rule was removed afterwards,
+see `doc/decision/rust-closure-lint-dylint.md`.
 
 Requirements:
 
