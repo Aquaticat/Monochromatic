@@ -132,6 +132,23 @@ not a proven allocation limit during handoff.
 This remains within the campaign's USD 1 nominal compute-proxy ceiling.
 Cancellation status will not be reported as evidence of VM termination or billing cessation.
 
+The longer supersession control succeeded at the job-status boundary.
+Head `b043aa1d88d9f49fd8391ea05db7126826edce41` was observed executing both gates,
+including the native task's own start marker.
+Replacement head `c61f59f6869d5f6c733d4024f32d8fca1e25cdde` was then pushed.
+GitHub run `39105751918` and native run `bx47zbxvw1` became cancelled;
+the replacement GitHub run `39105819735` and native run `zptxtpxmn0` succeeded.
+GitHub again reported the PR mergeable.
+The ordinary merge API accepted that passing head into the disposable base,
+returning merge commit `5c5fcad4acad9751c4e0cd06f51f847a75537461`.
+No administrator bypass was used.
+The retained collection covers every observed control head:
+six GitHub runs,
+six native runs,
+and their source-bound artifacts and logs.
+The cancelled native run has no uploaded artifact;
+its start marker is retained from its live and terminal logs.
+
 ## Native step-semantics campaign manifest
 
 A separate isolated branch `research/depot-native-orchestration-20261018`
@@ -153,3 +170,51 @@ Intentional failing and timed-out controls are identified separately from unexpe
 No application source,
 production workflow,
 credential store or account setting changes.
+
+### First native step result
+
+Run `dl8cq50bl0` used harness `c23fcaa454222e0a264cd5a3466b4d0299ff1f41`.
+Retry state retained exactly three ordered executions,
+and the final environment and output values were both `3`.
+Parallel sequential branches saw their own environment updates,
+did not see the sibling's update within the group,
+saw the sibling's filesystem marker,
+and merged both outputs after the group.
+The exhausted retry control executed twice before continuation.
+The two-minute job-timeout control stopped during retry backoff after two logged executions.
+
+The per-attempt timeout budget renewed:
+the second execution began after the first minute and completed its own 50-second wait.
+However,
+the first Node descendant also wrote its completion file at `07:02:33.213Z`,
+70.009 seconds after its own start,
+despite the first step attempt's one-minute timeout.
+The state assertion failed on that completion file,
+so the downstream consumer correctly lacked a successful state receipt.
+This is not an all-green orchestration result.
+
+The first default-parallel observation preceded its sibling's eight-second completion horizon.
+It cannot establish descendant termination.
+Harness `2519664ed7` adds a nine-second observation wait;
+that correction has not yet run.
+Harness `44b3303eca` separately compares a single timed-out Mise/Node task on GitHub-hosted Actions,
+Depot-hosted Actions and native Depot CI,
+with a completed writer as a positive control and a post-deadline filesystem observation.
+The paired Actions jobs run first,
+then the native job,
+with at most two jobs concurrently,
+five-minute job limits and a separate USD 1 nominal compute-proxy ceiling.
+No causal attribution to Depot or Mise follows until those controls and the relevant source paths are examined.
+
+## Active follow-up ownership
+
+The repository coverage researcher owns the frozen-source Android cloud build:
+the existing `test:unit` and `test:instrumented:build` tasks,
+both native ABIs,
+and source-bound APK hashes.
+The parent owns the actual local,
+headful host-GPU instrumented consumer after those artifacts are available.
+The parent also owns the current-source mvm guest lifecycle,
+physical Depot Tests sharding,
+and the immutable BuildKit service-image consumers.
+The BuildKit researcher retains the service image until those consumers finish.
