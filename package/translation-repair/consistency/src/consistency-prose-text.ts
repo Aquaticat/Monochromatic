@@ -1,6 +1,7 @@
 import type { Nodes, } from 'mdast';
 
 import {
+  type CodePadding,
   type LabelledLink,
   markupRangesOf,
   NO_MARKUP_RANGES,
@@ -488,6 +489,9 @@ export type ProseView = {
  @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone: a reference in the English
  whose definition stands in another slice is then plain text
 
+ @param codePadding - what pads the content of inline code: a space and a line ending as CommonMark reads it, or a literal space alone
+ as an artifact written before line endings padded code was read; a space and a line ending where absent
+
  @returns The prose (the English itself where the grammar refuses it), the stretches it keeps and the delimiters (none where the
  grammar refuses)
 
@@ -500,9 +504,11 @@ export function proseViewOf(
   {
     english,
     definitions = '',
+    codePadding = 'spaces-and-line-endings',
   }: {
     readonly english: string;
     readonly definitions?: string;
+    readonly codePadding?: CodePadding;
   },
 ): ProseView {
   /**
@@ -590,6 +596,7 @@ export function proseViewOf(
     ...markupRangesOf({
       english,
       nodes,
+      codePadding,
     },),
   };
 }
@@ -615,6 +622,11 @@ type RememberedView = {
   readonly definitions: string;
 
   /**
+   The padding of inline code it was read with.
+   */
+  readonly codePadding: CodePadding;
+
+  /**
    What the parse made of it.
    */
   readonly view: ProseView;
@@ -633,6 +645,9 @@ const rememberedViews: RememberedView[] = [];
 
  @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
 
+ @param codePadding - what pads the content of inline code, which is part of what the view holds and so of what is remembered; a space
+ and a line ending where absent
+
  @returns What `proseViewOf` gives for it
 
  @example
@@ -644,16 +659,20 @@ export function rememberedViewOf(
   {
     english,
     definitions = '',
+    codePadding = 'spaces-and-line-endings',
   }: {
     readonly english: string;
     readonly definitions?: string;
+    readonly codePadding?: CodePadding;
   },
 ): ProseView {
   /**
-   The view read before for an equal English and equal definitions, none when there is none.
+   The view read before for an equal English, equal definitions and an equal padding of code, none when there is none.
    */
   const known = rememberedViews.find(function isSame(entry,): boolean {
-    return (entry.english === english) && (entry.definitions === definitions);
+    return (entry.english === english)
+      && (entry.definitions === definitions)
+      && (entry.codePadding === codePadding);
   },);
   if (known !== undefined)
     return known.view;
@@ -663,10 +682,12 @@ export function rememberedViewOf(
   const view = proseViewOf({
     english,
     definitions,
+    codePadding,
   },);
   rememberedViews.push({
     english,
     definitions,
+    codePadding,
     view,
   },);
   if (rememberedViews.length > REMEMBERED_VIEWS)

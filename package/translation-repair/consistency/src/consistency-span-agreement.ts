@@ -2,7 +2,10 @@ import {
   codePointLength,
   compareCodePoints,
 } from '@monochromatic-dev/translation-repair-markup/ts';
-import { containsWords, } from './consistency-contains-words.ts';
+import {
+  type ContainmentEdges,
+  containsWords,
+} from './consistency-contains-words.ts';
 import { foldedWordsOf, } from './consistency-fold.ts';
 import {
   type QuotesByLabel,
@@ -39,6 +42,9 @@ import type { ConsistencyVoice, } from './consistency-count-types.ts';
  @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
  group; read from the ballots where absent
 
+ @param edges - which joints of a longer word bar a quote from containing another: the locator's test of a joint, or none but the
+ letters beside the match, as a recount of an artifact written before the locator's test counted reads it; the locator's where absent
+
  @returns The candidate spans, longest first and by code points among those of one length; none when the ballots quoted nothing
  for the place or no quote is contained in the quotes of more than half of the ballots; a blank quote is a candidate only when
  a strict majority of the ballots gave a blank one
@@ -53,10 +59,12 @@ export function containedQuoteWordsOf(
     voices,
     label,
     quotesByLabel = quotesByLabelOf({ voices, },),
+    edges = 'locator',
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly quotesByLabel?: QuotesByLabel;
+    readonly edges?: ContainmentEdges;
   },
 ): readonly string[] {
   /**
@@ -75,6 +83,7 @@ export function containedQuoteWordsOf(
         return containsWords({
           outer,
           inner: candidate,
+          edges,
         },);
       },)
         .length;

@@ -1,4 +1,7 @@
-import { containsWords, } from './consistency-contains-words.ts';
+import {
+  type ContainmentEdges,
+  containsWords,
+} from './consistency-contains-words.ts';
 import type { ConsistencyVoice, } from './consistency-count-types.ts';
 import {
   foldedWordsOf,
@@ -342,6 +345,10 @@ export function markEvidenceOf(
  place is located by containment, or only a quote that is the words, as a recount of an artifact written before the change reads
  it; containing quotes where absent
 
+ @param edges - which joints of a longer word bar a quote from containing the words, under containing quotes: the locator's test of a
+ joint, or none but the letters beside the match, as a recount of an artifact written before the locator's test counted reads it;
+ the locator's where absent
+
  @returns The folded slot words more than half of the usable ballots gave beside them, or none
 
  @example
@@ -356,12 +363,14 @@ export function agreedSlotWordsOf(
     words,
     quotesByLabel = quotesByLabelOf({ voices, },),
     slotAgreement = 'containing-quote',
+    edges = 'locator',
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly words: string;
     readonly quotesByLabel?: QuotesByLabel;
     readonly slotAgreement?: SlotAgreement;
+    readonly edges?: ContainmentEdges;
   },
 ): readonly string[] {
   return majorityText({
@@ -379,6 +388,7 @@ export function agreedSlotWordsOf(
           : containsWords({
             outer: quote,
             inner: words,
+            edges,
           },);
       },)
       .flatMap(function slotOf(entry,): readonly string[] {

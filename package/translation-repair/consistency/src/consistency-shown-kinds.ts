@@ -1,5 +1,8 @@
 import { isAsciiAlphanumeric, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { MarkupRange, } from './consistency-markup-ranges.ts';
+import type {
+  CodePadding,
+  MarkupRange,
+} from './consistency-markup-ranges.ts';
 import { rememberedViewOf, } from './consistency-prose-text.ts';
 import { transparentUnitsOf, } from './consistency-unread-units.ts';
 
@@ -395,6 +398,9 @@ function isStretchOf(
 
  @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
 
+ @param codePadding - what pads the content of inline code: a space and a line ending as CommonMark reads it, or a literal space alone
+ as an artifact written before line endings padded code was read; a space and a line ending where absent
+
  @returns One kind per UTF-16 unit: `hidden` where `transparentUnitsOf` says the unit shows nothing and the unit separates nothing,
  `boundary` for the units of an image, of a tag that separates or annotates and of the pipes and padding of a table row, `shown`
  elsewhere
@@ -408,9 +414,11 @@ export function unitKindsOf(
   {
     english,
     definitions = '',
+    codePadding = 'spaces-and-line-endings',
   }: {
     readonly english: string;
     readonly definitions?: string;
+    readonly codePadding?: CodePadding;
   },
 ): readonly UnitKind[] {
   /**
@@ -419,6 +427,7 @@ export function unitKindsOf(
   const hidden = transparentUnitsOf({
     english,
     definitions,
+    codePadding,
   },);
   /**
    The kinds, mutated only inside this function.
@@ -432,6 +441,7 @@ export function unitKindsOf(
   const view = rememberedViewOf({
     english,
     definitions,
+    codePadding,
   },);
   if (view.refused)
     return kinds;

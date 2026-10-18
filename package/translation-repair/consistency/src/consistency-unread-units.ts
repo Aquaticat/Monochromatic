@@ -2,6 +2,7 @@ import {
   isAsciiDigit,
   isAsciiLetter,
 } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { CodePadding, } from './consistency-markup-ranges.ts';
 import { rememberedViewOf, } from './consistency-prose-text.ts';
 import { commentRegionsOf, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
@@ -376,6 +377,10 @@ const LINE_BREAKS: ReadonlySet<string> = new Set([
 
  @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
 
+ @param codePadding - what pads the content of inline code: a space and a line ending as CommonMark reads it, or a literal space alone
+ as an artifact written before line endings padded code was read, which hides no line ending beside code; a space and a line ending
+ where absent
+
  @returns One flag per UTF-16 unit of the English, true where the unit shows nothing
 
  @example
@@ -387,9 +392,11 @@ export function transparentUnitsOf(
   {
     english,
     definitions = '',
+    codePadding = 'spaces-and-line-endings',
   }: {
     readonly english: string;
     readonly definitions?: string;
+    readonly codePadding?: CodePadding;
   },
 ): readonly boolean[] {
   /**
@@ -398,6 +405,7 @@ export function transparentUnitsOf(
   const view = rememberedViewOf({
     english,
     definitions,
+    codePadding,
   },);
   /**
    One flag per unit, false until the unit is found to show nothing.
@@ -425,11 +433,11 @@ export function transparentUnitsOf(
   // A LINE ENDING THAT PADS INLINE CODE shows a reader nothing, as the padding space does: CommonMark turns each line ending of the
   // content into a space and strips one from each side, so the line ending directly outside a content stretch (a line feed, a
   // carriage return, or the two together) is hidden. What stands directly outside a content stretch is a backtick when the code is
-  // not padded, so a line break between words is never reached from here.
+  // not padded, so a line break between words is never reached from here. The padding of spaces alone hides none.
   for (const {
     start,
     end,
-  } of view.codeContents) {
+  } of ((codePadding === 'spaces-and-line-endings') ? view.codeContents : [])) {
     if ((start > 0) && LINE_BREAKS.has(english.charAt(start - 1,),)) {
       hidden[start - 1] = true;
       if ((english.charAt(start - 1,) === '\n') && (english.charAt(start - 2,) === '\r'))

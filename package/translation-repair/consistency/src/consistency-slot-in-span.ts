@@ -1,5 +1,7 @@
+import type { ContainmentEdges, } from './consistency-contains-words.ts';
 import { locateWords, } from './consistency-fold.ts';
 import { carriesOrCutsMarkup, } from './consistency-markup.ts';
+import type { CodePadding, } from './consistency-markup-ranges.ts';
 import {
   agreedSlotWordsOf,
   type QuotesByLabel,
@@ -43,6 +45,14 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
  @param slotAgreement - which quotes a slot given beside counts for the words: any quote that contains them, or only a quote that
  is them, as a recount of an artifact written under the earlier rule reads it; containing quotes where absent
 
+ @param edges - which joints of a longer word bar a quote from containing the words, under containing quotes: the locator's test of a
+ joint, or none but the letters beside the match, as a recount of an artifact written before the locator's test counted reads it;
+ the locator's where absent
+
+ @param codePadding - what pads the content of inline code when the slot is located in the span: a space and a line ending as
+ CommonMark reads it, or a literal space alone as a recount of an artifact written before line endings padded code reads it; a space
+ and a line ending where absent
+
  @returns The slot as the span holds it and its offset in the span, as a list of
  zero or one; none when the ballots do not agree on a slot, it shows a reader
  nothing, it does not stand once inside the span, it is all of the span, or it
@@ -63,6 +73,8 @@ export function slotInSpan(
     page,
     definitions,
     slotAgreement = 'containing-quote',
+    edges,
+    codePadding,
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
@@ -72,6 +84,8 @@ export function slotInSpan(
     readonly page?: PageEnglish;
     readonly definitions?: string;
     readonly slotAgreement?: SlotAgreement;
+    readonly edges?: ContainmentEdges;
+    readonly codePadding?: CodePadding;
   },
 ): readonly {
   readonly slot: string;
@@ -86,6 +100,7 @@ export function slotInSpan(
     quotesByLabel,
     words,
     slotAgreement,
+    ...((edges === undefined) ? {} : { edges, }),
   },);
   if ((slotWords === undefined) || rendersAsNothing({ text: slotWords, },))
     return [];
@@ -98,6 +113,7 @@ export function slotInSpan(
     apostrophes: 'outside',
     ...((page === undefined) ? {} : { page, }),
     ...((definitions === undefined) ? {} : { definitions, }),
+    ...((codePadding === undefined) ? {} : { codePadding, }),
   },);
   if (inside.kind !== 'once')
     return [];

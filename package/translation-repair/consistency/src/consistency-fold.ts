@@ -14,6 +14,7 @@ import {
   singleMarkAt,
 } from './consistency-loose-marks.ts';
 import { withProvenApostrophes, } from './consistency-fold-apostrophes.ts';
+import type { CodePadding, } from './consistency-markup-ranges.ts';
 import type { PageEnglish, } from './consistency-page-english.ts';
 import {
   foldWithOffsets,
@@ -594,6 +595,10 @@ as a reader sees it: below), so `so`
 
  @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a caller that holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a place was read with (generation 18 for a slot, 19 for the words); read from `page` where absent, and handed to the proof of the apostrophe beside the words as well as to the word test
 
+ @param codePadding - what pads the content of inline code when the word test reads the text a reader sees: a space and a line ending
+ as CommonMark reads it, or a literal space alone as a reader of an artifact written before line endings padded code reads it; a
+ space and a line ending where absent
+
  @returns That the words stand nowhere, the offsets of the one span they name
  in the English, or that they stand more than once and no mark evidence
  chooses one of the stands (a stand inside a longer word is no stand);
@@ -615,6 +620,7 @@ export function locateWords(
     apostrophes = 'proven',
     page,
     definitions: given,
+    codePadding,
   }: {
     readonly haystack: string;
     readonly words: string;
@@ -622,6 +628,7 @@ export function locateWords(
     readonly apostrophes?: 'proven' | 'outside';
     readonly page?: PageEnglish;
     readonly definitions?: string;
+    readonly codePadding?: CodePadding;
   },
 ): SpanSearch {
   /**
@@ -698,6 +705,7 @@ export function locateWords(
     end: bare.end,
     needle,
     definitions,
+    ...((codePadding === undefined) ? {} : { codePadding, }),
   },))
     return { kind: 'none', };
   return {

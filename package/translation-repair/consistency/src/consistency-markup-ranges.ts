@@ -376,14 +376,24 @@ function leadingBackticksOf({ text, }: { readonly text: string; },): number {
 }
 
 /**
- The characters CommonMark reads as a space in the content of inline code: a space, and each line ending once its line endings are
- turned into spaces.
+ What pads the content of inline code on each side: `spaces-and-line-endings` for the characters CommonMark reads as a space (a space,
+ and each line ending once its line endings are turned into spaces), and `spaces` for a literal space alone, which is how the
+ consistency pass read it before line endings padded code and how a recount of an artifact written then reads it
+ (\`artifactGenerationReadsLineEndingsAsCodePadding\`, \`artifact-two-lane-contract.ts\`).
  */
-const SPACES_AND_LINE_ENDINGS: ReadonlySet<string> = new Set([
-  ' ',
-  '\n',
-  '\r',
-],);
+export type CodePadding = 'spaces' | 'spaces-and-line-endings';
+
+/**
+ The characters that pad the content of inline code, and that make content all padding when it holds no other, by reading.
+ */
+const PADDING_CHARACTERS: Readonly<Record<CodePadding, ReadonlySet<string>>> = {
+  'spaces': new Set([' ',],),
+  'spaces-and-line-endings': new Set([
+    ' ',
+    '\n',
+    '\r',
+  ],),
+};
 
 /**
  How many units of one side of the content of inline code are a single space or line ending, which CommonMark reads as one space.
@@ -392,23 +402,32 @@ const SPACES_AND_LINE_ENDINGS: ReadonlySet<string> = new Set([
 
  @param side - which side to read
 
+ @param padding - what pads the content: a literal space alone, or a space and a line ending
+
  @returns One for a space, a line feed or a carriage return on the side, two for a carriage return followed by a line feed, none
- where the side holds none of them
+ where the side holds none of them; under a space alone, one for a space and none otherwise
 
  @example
  ```ts
- const width = paddingWidthOf({ text: '\r\ntens', side: 'start', },); // 2
+ const width = paddingWidthOf({ text: '\r\ntens', side: 'start', padding: 'spaces-and-line-endings', },); // 2
  ```
  */
 function paddingWidthOf(
   {
     text,
     side,
+    padding,
   }: {
     readonly text: string;
     readonly side: 'end' | 'start';
+    readonly padding: CodePadding;
   },
 ): number {
+  if (padding === 'spaces') {
+    return (side === 'start')
+      ? (text.startsWith(' ',) ? 1 : 0)
+      : (text.endsWith(' ',) ? 1 : 0);
+  }
   if (side === 'start') {
     if (text.startsWith(' ',) || text.startsWith('\n',))
       return 1;
@@ -428,27 +447,32 @@ function paddingWidthOf(
  close it, and without one space on each side when the content begins and ends with a space and is not all spaces (the padding that
  lets code begin or end with a backtick). CommonMark turns each line ending of the content into a space first, so a line ending (a
  line feed, a carriage return or the two together) pads a side as a space does. Where only one side holds a space or a line ending,
- or the content is spaces and line endings alone, every one of them is shown.
+ or the content is spaces and line endings alone, every one of them is shown. Under the padding of spaces alone (an artifact
+ written before line endings padded code), a literal space is all that pads and a line ending is shown.
 
  @param english - the English the tree was read from
 
  @param range - the stretch of the whole code node, backticks included
 
+ @param codePadding - what pads the content: a literal space alone, or a space and a line ending
+
  @returns The stretch of the content
 
  @example
  ```ts
- const content = codeContentOf({ english: 'a `kit` b', range: { start: 2, end: 7, }, },); // 3 to 6
- const padded = codeContentOf({ english: 'a ` kit ` b', range: { start: 2, end: 9, }, },); // 4 to 7
+ const content = codeContentOf({ english: 'a `kit` b', range: { start: 2, end: 7, }, codePadding: 'spaces', },); // 3 to 6
+ const padded = codeContentOf({ english: 'a ` kit ` b', range: { start: 2, end: 9, }, codePadding: 'spaces', },); // 4 to 7
  ```
  */
 function codeContentOf(
   {
     english,
     range,
+    codePadding,
   }: {
     readonly english: string;
     readonly range: MarkupRange;
+    readonly codePadding: CodePadding;
   },
 ): MarkupRange {
   /**
@@ -485,34 +509,40 @@ function codeContentOf(
    How many units of the content pad its start and its end: one for a space or a line feed or a carriage return, two for a carriage
    return and a line feed, none where the side holds neither.
    */
-  const padding = {
+  const widths = {
     start: paddingWidthOf({
       text: written,
       side: 'start',
+      padding: codePadding,
     },),
     end: paddingWidthOf({
       text: written,
       side: 'end',
+      padding: codePadding,
     },),
   };
   /**
-   Whether the content holds a character that is no space and no line ending.
+   The characters that pad the content under this reading.
+   */
+  const paddingCharacters = PADDING_CHARACTERS[codePadding];
+  /**
+   Whether the content holds a character that pads nothing: no space, and under the reading by line endings no line ending either.
    */
   const holdsNoSpace = Array.from(written,)
     .some(function isNoSpace(character,): boolean {
-      return !SPACES_AND_LINE_ENDINGS.has(character,);
+      return !paddingCharacters.has(character,);
     },);
   /**
    Whether one space or line ending pads each side: both ends are spaces or line endings and the content holds a character that is
    neither.
    */
-  const padded = (padding.start > 0)
-    && (padding.end > 0)
+  const padded = (widths.start > 0)
+    && (widths.end > 0)
     && holdsNoSpace;
   return padded
     ? {
-      start: start + padding.start,
-      end: end - padding.end,
+      start: start + widths.start,
+      end: end - widths.end,
     }
     : {
       start,
@@ -527,6 +557,9 @@ function codeContentOf(
 
  @param nodes - every node of the tree
 
+ @param codePadding - what pads the content of inline code: a space and a line ending as CommonMark reads it, or a literal space alone
+ as an artifact written before line endings padded code was read; a space and a line ending where absent
+
  @returns The stretches of the three kinds
 
  @example
@@ -538,9 +571,11 @@ export function markupRangesOf(
   {
     english,
     nodes,
+    codePadding = 'spaces-and-line-endings',
   }: {
     readonly english: string;
     readonly nodes: readonly TreeNode[];
+    readonly codePadding?: CodePadding;
   },
 ): MarkupRanges {
   return {
@@ -563,6 +598,7 @@ export function markupRangesOf(
         return codeContentOf({
           english,
           range,
+          codePadding,
         },);
       },),
     emptyLinks: stretchesOfLabelsShowing({

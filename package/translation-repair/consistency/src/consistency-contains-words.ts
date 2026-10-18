@@ -15,7 +15,17 @@ import { cutsWord, } from './consistency-word-joints.ts';
 // ONE KNOWN DIFFERENCE FROM THE LOCATOR: the fold writes a single corner bracket (`『cat』and`) as an apostrophe and the quote
 // handed here has lost which character it was, so the locator, which keeps it, finds `cat` in `『cat』and` and this test does not
 // contain `cat` in the folded quote `cat'and`. The difference only withholds a candidate span, which leaves a place unlocated
-// rather than located at the wrong words.
+// rather than located at the wrong words. A RECOUNT OF AN ARTIFACT WRITTEN BEFORE THE LOCATOR'S TEST OF A JOINT COUNTED asks for the
+// earlier edges (`ContainmentEdges`, `letters`), under which only a letter, a digit or a combining mark beside the match bars
+// containment, as the pass that wrote the artifact counted; every other caller reads the locator's.
+
+/**
+ Which joints of a longer word bar containment: `locator` for the locator's own test of a joint (`cutsWord`), which every pass and
+ every reader of a page uses, and `letters` for the earlier reading, which asked for no letter, digit or combining mark of a spaced
+ script beside the match and nothing more. The earlier reading is that of a recount of an artifact written before the generation that
+ moved to the locator's (`artifactGenerationCutsContainmentAtJoints`, `artifact-two-lane-contract.ts`); it is no reading for a page.
+ */
+export type ContainmentEdges = 'letters' | 'locator';
 
 /**
  No offsets: a quote in the fold holds no markup, so no closing joint and no emphasis delimiter is read in it.
@@ -34,8 +44,12 @@ const NO_EMPHASIS: ReadonlySet<number> = new Set();
 
  @param inner - folded words that may be contained
 
+ @param edges - which joints bar containment: the locator's test of a joint, or none but a letter, a digit or a combining mark beside
+ the match, as a recount of an artifact written before the locator's test counted reads it; the locator's where absent
+
  @returns Whether `inner` stands in `outer` with no letter, digit or combining mark of a spaced script beside it on either side
- and no joint of a longer word at either edge, read as the locator reads one; an empty `inner` stands only in an empty `outer`
+ and, under the locator's edges, no joint of a longer word at either edge, read as the locator reads one; an empty `inner` stands
+ only in an empty `outer`
 
  @example
  ```ts
@@ -46,9 +60,11 @@ export function containsWords(
   {
     outer,
     inner,
+    edges = 'locator',
   }: {
     readonly outer: string;
     readonly inner: string;
+    readonly edges?: ContainmentEdges;
   },
 ): boolean {
   // An empty text is found at every offset and once more past the last, so the search never runs out of finds; a blank
@@ -77,6 +93,9 @@ export function containsWords(
     // (`consistency-shown-edge.ts`): a decomposed accent after the match makes it part of a longer word.
     if (isSpacedScriptWordCharacter({ character: before, },) || isSpacedScriptWordCharacter({ character: after, },))
       continue;
+    // The earlier reading asks for nothing more than the letters beside the match.
+    if (edges === 'letters')
+      return true;
     // A JOINT OF A LONGER WORD IS READ AS THE LOCATOR READS IT: the quote is plain text in the fold, so no emphasis, link or
     // closing joint is read, and the characters the fold wrote are the characters the quote holds.
     if (!cutsWord({

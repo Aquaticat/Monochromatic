@@ -2,6 +2,7 @@ import {
   type EdgeUnit,
   textUnitsOf,
 } from './consistency-edge-units.ts';
+import type { CodePadding, } from './consistency-markup-ranges.ts';
 import { unitKindsOf, } from './consistency-shown-kinds.ts';
 import { isSpacedScriptWordCharacter, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isDefaultIgnorable, } from '@monochromatic-dev/translation-repair-typography/ts';
@@ -165,6 +166,9 @@ function edgeCuts(
 
  @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
 
+ @param codePadding - what pads the content of inline code: a space and a line ending as CommonMark reads it, or a literal space alone
+ as an artifact written before line endings padded code was read; a space and a line ending where absent
+
  @returns Whether the start or the end of the span stands inside a shown word
 
  @example
@@ -179,12 +183,14 @@ export function cutsShownWord(
     end,
     needle,
     definitions = '',
+    codePadding = 'spaces-and-line-endings',
   }: {
     readonly text: string;
     readonly start: number;
     readonly end: number;
     readonly needle: string;
     readonly definitions?: string;
+    readonly codePadding?: CodePadding;
   },
 ): boolean {
   /**
@@ -195,6 +201,7 @@ export function cutsShownWord(
   const kinds = unitKindsOf({
     english: text,
     definitions,
+    codePadding,
   },);
   /**
    The units of the English that show a reader something, in order. A unit is hidden or not by the kind of its first character,
