@@ -204,8 +204,9 @@ Its skipped unassigned scheduler row `117715669048` must not become a compute al
 Recovery `39144499822` is terminal with five allocated public GitHub jobs.
 The follow-on queue is to append its exact owned rows after selected provider-metadata verification.
 Its unassigned skipped scheduler row `117725490037` is excluded.
-Separate Depot OS run `39148580870` is owner-watched under its own USD 2 guard;
-its USD 1.92 admission reservation is not a measured allocation cost.
+Separate Depot OS run `39148580870` is terminal under its own USD 2 guard.
+Its exact Mac/Windows rows await the owner's retained artifact/API seal before final normalization.
+Its USD 1.92 admission reservation is not a measured allocation cost.
 The documented host memory unit is GB,
 with actual CPU and RAM measurements missing from that handoff.
 
@@ -243,8 +244,20 @@ and no refresh-token request or persistent credential creation.
 The first exact `tools-r1` tag read then returned HTTP `404`,
 code `MANIFEST_UNKNOWN`.
 No deletion ran.
-The queue is to verify the exchanged token's selected repository authorization
-and independently read all exact tags and immutable digests before drawing an absence conclusion.
+The [sealed absence receipt](../audit/depot-native-snapshot-absence-2026-10-18.evidence.json)
+joins all three creators to the exact host,
+repository,
+tags,
+and immutable digests.
+All six valid scoped reads returned `MANIFEST_UNKNOWN` with HTTP `404`.
+The identical path returned HTTP `401` with a deliberately invalid noncredential bearer.
+Selected JWT audience and repository/pull authorization match exactly.
+No deletion request,
+new credential,
+or cloud job ran.
+Expiry cause and storage reclamation remain unmeasured.
+The [authentication troubleshooting note](../troubleshooting/depot-native-snapshot-registry-authentication.md)
+retains the exercised bridge and its limits.
 
 ## Kotlin and legacy owner joins
 
