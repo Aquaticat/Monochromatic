@@ -47,6 +47,7 @@ jobs:
         retention-days: 7
         if-no-files-found: warn
     - name: Seal the source checkout and synthetic secret file
+      id: sealed-source
       if: ${{ always() && steps.additional-tools.outcome == 'success' }}
       env:
         RESEARCH_RUST_TOOL_PHASE: seal
@@ -60,7 +61,7 @@ jobs:
         retention-days: 7
         if-no-files-found: error
     - name: Capture the additional tools independently of application test status
-      if: ${{ always() && steps.additional-tools.outcome == 'success' }}
+      if: ${{ always() && steps.additional-tools.outcome == 'success' && steps.sealed-source.outcome == 'success' }}
       uses: depot/snapshot-action@a082cbabd407afdf324a7b4f41889795636f4b24
       with:
         image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r3-fuzz-codex

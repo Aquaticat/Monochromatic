@@ -69,9 +69,17 @@ try {
     assert.equal(parsed.length, 18);
     assert(parsed.some(rule => rule.id === 'rust/require-explicit-types'));
     if (tested.status === 0) {
+      const xml = readFileSync(join(evidence, 'nextest/default/linter.xml'), 'utf8');
+      const attributes = /<testsuites\b([^>]*)>/u.exec(xml)?.[1];
+      assert(attributes);
+      const count = name => Number(new RegExp('\\b' + name + '="(\\d+)"', 'u').exec(attributes)?.[1] ?? 0);
+      const tests = { run: count('tests') - count('skipped'), passed: count('tests') - count('skipped') - count('failures') - count('errors'), failed: count('failures'), errors: count('errors'), skipped: count('skipped'), enumerated: count('tests') };
+      assert.equal(tests.run, 415);
+      assert.equal(tests.passed, 415);
+      assert.equal(tests.skipped, 1);
       const archive = join(evidence, 'current-source-linter.tar.zst');
       requireSuccess(run({ name: 'retain-tested-current-linter-executable', command: 'tar', args: ['--create', '--zstd', '--file', archive, '--directory', join(environment.CARGO_TARGET_DIR, 'debug'), 'monochromatic-lint'] }));
-      writeFileSync(join(evidence, 'current-source-linter-archive-manifest.json'), JSON.stringify({ purpose: 'Tested executable transport, not Cargo target cache publication', source: frozen, binarySha256: digest(readFileSync(binary)), archiveBytes: statSync(archive).size, archiveSha256: digest(readFileSync(archive)), tests: { run: 415, passed: 415, failed: 0, skipped: 1, enumerated: 416 }, sourceFiles: sources, rustcSha256: digest(readFileSync(rustcPath)) }, null, 2) + '\n');
+      writeFileSync(join(evidence, 'current-source-linter-archive-manifest.json'), JSON.stringify({ purpose: 'Tested executable transport, not Cargo target cache publication', source: frozen, binarySha256: digest(readFileSync(binary)), archiveBytes: statSync(archive).size, archiveSha256: digest(readFileSync(archive)), tests, sourceFiles: sources, rustcSha256: digest(readFileSync(rustcPath)) }, null, 2) + '\n');
     }
     const library = rust({ name: 'current-source-linter-library-artifact', args: ['cargo', 'build', '--locked', '--offline', '--lib'], cwd: project });
     failed ||= library.status !== 0;
