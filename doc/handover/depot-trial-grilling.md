@@ -1,6 +1,68 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 14:26 UTC
+## Execution checkpoint on 2026-10-18 at 15:08 UTC
+
+Research remains active;
+do not start the interview.
+GitHub graph run `39135886118` is terminal failed:
+all four jobs passed checkout and resource recording,
+then failed selected-tool setup because the parent omitted configured `cargo-binstall`.
+The exact mise diagnostic is
+`requires configured install dependency 'cargo-binstall@latest', but its selected version is not installed`.
+No graph workload command ran;
+the planned 222 commands provide no execution or speed credit.
+The parent retained terminal job metadata,
+artifact identities and private failed logs,
+then followed the existing
+[Cargo installer troubleshooting entry](../troubleshooting/mise-cargo-backend-needs-rust-installed.md).
+Correction `fdca95cc72` installs locked Node,
+pnpm,
+Rust and `cargo-binstall` before locked Nextest.
+The Rust researcher independently preflights the actual final driver and setup locally before repeat dispatch.
+The browser branch already contains `prepare:matched-image`;
+an incomplete-plan reading that alleged its omission was retracted.
+
+Native automatic BuildKit authentication run `dzsf27t0xx` is terminal failed.
+The CLI connected to the AMD64 builder with the injected native token,
+then the fixture combined incompatible local export and `--save`,
+emitting `multiple outputs currently unsupported`.
+This is a fixture error already covered by the exporter troubleshooting documentation,
+not a token rejection.
+The actual image consumer and separate registry authorization remain unqualified.
+Desktop continuation `0jpk5bwpvs` has also reached terminal failure;
+its owner is collecting the actual remaining-session results.
+The coordinated native order is the platform owner's authorized local-export-only auth correction,
+then the parent's corrected graph after independent preflight.
+No native graph has been dispatched.
+
+Packed consumers are sealed at `898fd6ab03`:
+25 actual runtime imports,
+one type-only package checked with positive and negative TypeScript consumers,
+and all five functional consumers including real mutation CLI dry-run discovery.
+Dry-run discovery is not executed mutation testing.
+The type-only package's runtime-import rejection is a harness expectation error,
+not a product failure.
+The separate current-source Depot Windows and Startup-trial Mac controls retain their USD 2 campaign guard.
+
+The parent finished substantive review of 18 deployed native-CI documentation pages,
+156,769 exact source bytes and 95 claim-level findings.
+The sealed private source/hash/review join is `native-ci-complete-source-review.json`
+under the parent's expansion controller.
+The platform owner is merging those findings into the public source ledger,
+preserving the separately reviewed split-tests page.
+The parent owns a concise canonical interpretation note and the final report integration.
+
+The combined allocation ledger at `acf8a8c195` freezes 223 records and known partial nominal compute
+USD 6.1999959,
+with BuildKit's USD 0.538584 request proxy kept separate from unmeasured actual BuildKit compute.
+The parent must independently verify its arithmetic and append measured post-baseline attempts,
+including the failed graph and automatic-auth cohorts.
+Admission maxima are not observed charges or invoices.
+After factual queues close,
+obtain an independent sufficiency review,
+finish the approved report sections and only then start the decision interview.
+
+## Historical execution checkpoint on 2026-10-18 at 14:26 UTC
 
 The factual research queue remains active;
 do not start the interview yet.
