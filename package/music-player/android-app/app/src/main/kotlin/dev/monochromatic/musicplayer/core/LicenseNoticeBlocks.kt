@@ -34,7 +34,7 @@ private const val RULE_LENGTH: Int = 78
 /** Most lines of the notice file that one block takes before the block is closed and a new one starts. */
 internal const val LICENSE_BLOCK_MAX_LINES: Int = 40
 
-// What:     `private const val WRAPPED_LINE_MIN: Int = 45` is the shortest length of a line that was cut to fit a column.
+// What:     `private const val WRAPPED_LINE_MIN: Int = 45` is the shortest length of a line cut to fit a column.
 // Why:      Prose in the file is hard-wrapped at 70 to 120 characters, so every line of a wrapped paragraph except the
 //           last is long. Lists and centered titles are shorter, and joining them would destroy their shape.
 //
@@ -45,7 +45,17 @@ internal const val LICENSE_BLOCK_MAX_LINES: Int = 40
 /** Trimmed length from which a line counts as part of hard-wrapped prose. */
 private const val WRAPPED_LINE_MIN: Int = 45
 
-// What:     `enum class LicenseBlockKind` names the three things the page draws.
+// What:     `private const val SECTION_HEADING_LINES: Int = 3` is how many lines a section heading takes.
+// Why:      A section heading is a rule, the title and a rule, so the reader skips all three together.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SECTION_HEADING_LINES = 3;
+// ```
+/** Lines of a section heading: the rule above, the title and the rule below. */
+private const val SECTION_HEADING_LINES: Int = 3
+
+// What:     `enum class LicenseBlockKind` names the things the page draws.
 // Why:      The page draws a section title, a subsection title, wrapped prose and preformatted lines differently, and
 //           the list needs one content type per look.
 //
@@ -88,7 +98,8 @@ data class LicenseBlock(
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const isRule = (line: string, mark: string): boolean => line.length === RULE_LENGTH && [...line].every((c) => c === mark);
+// const isRule = (line: string, mark: string): boolean =>
+//   line.length === RULE_LENGTH && [...line].every((c) => c === mark);
 // ```
 /** True when [line] is exactly [RULE_LENGTH] copies of [mark]. */
 private fun isRule(line: String, mark: Char): Boolean = line.length == RULE_LENGTH && line.all { char -> char == mark }
@@ -101,7 +112,9 @@ private fun isRule(line: String, mark: Char): Boolean = line.length == RULE_LENG
 // ```ts
 // function blockOf(lines: string[]): LicenseBlock {
 //   const wrapped = lines.length >= 2 && lines.slice(0, -1).every((l) => l.trim().length >= WRAPPED_LINE_MIN);
-//   return wrapped ? { kind: "prose", text: lines.map((l) => l.trim()).join(" ") } : { kind: "lines", text: lines.join("\n") };
+//   return wrapped
+//     ? { kind: "prose", text: lines.map((l) => l.trim()).join(" ") }
+//     : { kind: "lines", text: lines.join("\n") };
 // }
 // ```
 /**
@@ -166,7 +179,7 @@ fun splitLicenseNotices(notices: String): List<LicenseBlock> {
         if (isRule(line, '=') && next.isNotBlank() && !isRule(next, '=') && isRule(afterNext, '=')) {
             closeParagraph()
             blocks.add(LicenseBlock(kind = LicenseBlockKind.SECTION, text = next.trim()))
-            index += 3
+            index += SECTION_HEADING_LINES
         } else if (line.isNotBlank() && !isRule(line, '-') && !isRule(line, '=') && isRule(next, '-')) {
             closeParagraph()
             blocks.add(LicenseBlock(kind = LicenseBlockKind.SUBSECTION, text = line.trim()))

@@ -357,10 +357,11 @@ internal object PlayerRouteRules {
         PlayerRoute.Licenses -> PlayerRoute.Settings
     }
 
-    // What:     `fun backFromHost(route: PlayerRoute, settingsIsWide: Boolean): PlayerRoute` names where the Back button
-    //           and Escape lead on the screen the host draws.
+    // What:     `fun backFromHost(route: PlayerRoute, settingsIsWide: Boolean): PlayerRoute` names where the Back
+    //           button and Escape lead on the screen the host draws.
     // Why:      The wide Settings page shows its editor in place, so Back closes Settings from either route and
-    //           skips the Settings route; the Licenses page is a page of its own on every width and returns to Settings.
+    //           skips the Settings route; the Licenses page is a page of its own on every width and returns to
+    //           Settings.
     //
     // In TS you'd write (pseudocode):
     // ```ts

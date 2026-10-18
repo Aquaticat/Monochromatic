@@ -175,7 +175,8 @@ private val LICENSES_PAGE_MARGIN: Dp = 16.dp
 private val LICENSES_KEY_STEP: Dp = 48.dp
 
 // What:     `private const val LICENSES_PAGE_SHARE: Float = 0.9f` is the share of the viewport that Page Up/Down moves.
-// Why:      A little less than a full page keeps the last line of the old page in view, so the reader keeps their place.
+// Why:      A little less than a full page keeps the last line of the old page in view, so the reader keeps
+//           their place.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -214,7 +215,25 @@ internal sealed interface LicensesLoad {
 // type LicenseScroll = "lineUp" | "lineDown" | "pageUp" | "pageDown" | "top" | "bottom";
 // ```
 /** A keyboard move of the Licenses list. */
-internal enum class LicenseScroll { LINE_UP, LINE_DOWN, PAGE_UP, PAGE_DOWN, TOP, BOTTOM }
+internal enum class LicenseScroll {
+    /** One key step up. */
+    LINE_UP,
+
+    /** One key step down. */
+    LINE_DOWN,
+
+    /** One page up. */
+    PAGE_UP,
+
+    /** One page down. */
+    PAGE_DOWN,
+
+    /** To the first block. */
+    TOP,
+
+    /** To the last block. */
+    BOTTOM,
+}
 
 // What:     `internal fun licenseScrollOf(key: Key): LicenseScroll?` maps a key to the list move it means.
 // Why:      A keyboard user reads the page by arrows, page keys and Home and End, as in any scrolling document.
@@ -239,7 +258,9 @@ internal fun licenseScrollOf(key: Key): LicenseScroll? = when (key) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// async function readLicenseNoticesAsset(): Promise<string> { return await fetch("asset:THIRD-PARTY-LICENSES.txt").then((r) => r.text()); }
+// async function readLicenseNoticesAsset(): Promise<string> {
+//   return await fetch("asset:THIRD-PARTY-LICENSES.txt").then((r) => r.text());
+// }
 // ```
 /** Reads the APK asset `THIRD-PARTY-LICENSES.txt` as UTF-8 text on the IO dispatcher. */
 suspend fun readLicenseNoticesAsset(context: Context): String = withContext(Dispatchers.IO) {
@@ -247,11 +268,14 @@ suspend fun readLicenseNoticesAsset(context: Context): String = withContext(Disp
 }
 
 // What:     `internal suspend fun loadLicenses(readNotices)` reads the notices and cuts them into blocks.
-// Why:      The page needs one call that never throws: a failure becomes the `Failed` state and is logged with its cause.
+// Why:      The page needs one call that never throws: a failure becomes the `Failed` state and is logged with its
+//           cause.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// async function loadLicenses(read: () => Promise<string>): Promise<LicensesLoad> { try { ... } catch (e) { console.error(e); return failed; } }
+// async function loadLicenses(read: () => Promise<string>): Promise<LicensesLoad> {
+//   try { ... } catch (e) { console.error(e); return failed; }
+// }
 // ```
 /** Reads the notice text with [readNotices] and splits it on the default dispatcher; logs the sizes and the time. */
 internal suspend fun loadLicenses(readNotices: suspend () -> String): LicensesLoad {
@@ -272,8 +296,8 @@ internal suspend fun loadLicenses(readNotices: suspend () -> String): LicensesLo
         return LicensesLoad.Loaded(blocks)
     } catch (error: CancellationException) {
         throw error
-    } catch (error: Exception) {
-        Log.e(LICENSES_LOG_TAG, "licenses could not be read", error)
+    } catch (expectedFailure: Exception) {
+        Log.e(LICENSES_LOG_TAG, "licenses could not be read", expectedFailure)
         return LicensesLoad.Failed
     }
 }
@@ -315,6 +339,8 @@ fun licensesPage(readNotices: suspend () -> String, onBack: () -> Unit, modifier
             )
         }
     }
+    /** The load state of this composition, read once so the branches below see one value. */
+    val shown: LicensesLoad = load
     Column(
         modifier = modifier.fillMaxSize().background(canvasColor(dark = isSystemInDarkTheme()))
             .semantics { paneTitle = LICENSES_TITLE },
@@ -324,10 +350,10 @@ fun licensesPage(readNotices: suspend () -> String, onBack: () -> Unit, modifier
         Box(
             modifier = Modifier.weight(1f).fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars),
         ) {
-            when (val state = load) {
+            when (shown) {
                 LicensesLoad.Loading -> licensesLoading()
                 LicensesLoad.Failed -> licensesMessage(text = LICENSES_FAILED_TEXT)
-                is LicensesLoad.Loaded -> licensesList(blocks = state.blocks)
+                is LicensesLoad.Loaded -> licensesList(blocks = shown.blocks)
             }
         }
     }
@@ -382,7 +408,9 @@ private fun licensesMessage(text: String) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function List(props: { blocks: LicenseBlock[] }): UIElement { return <VirtualList items={blocks} tabIndex={0} onKeyDown={scrollKeys}/>; }
+// function List(props: { blocks: LicenseBlock[] }): UIElement {
+//   return <VirtualList items={blocks} tabIndex={0} onKeyDown={scrollKeys}/>;
+// }
 // ```
 /** Draws [blocks] in a lazy list with a keyboard ring inside its edge while the list holds keyboard focus. */
 @Composable
@@ -397,7 +425,9 @@ private fun licensesList(blocks: List<LicenseBlock>) {
         modifier = Modifier.fillMaxSize().testTag(LICENSES_LIST_TAG)
             .focusRing(shape = RectangleShape, placement = FocusRingPlacement.INSIDE)
             .focusable()
-            .onKeyEvent { event -> licensesKeyHandled(event = event, state = listState, scope = scope, stepPx = stepPx) },
+            .onKeyEvent { event ->
+                licensesKeyHandled(event = event, state = listState, scope = scope, stepPx = stepPx)
+            },
         state = listState,
         contentPadding = PaddingValues(horizontal = LICENSES_PAGE_MARGIN, vertical = 8.dp),
     ) {
@@ -416,7 +446,12 @@ private fun licensesList(blocks: List<LicenseBlock>) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function onKeyDown(e: KeyboardEvent): boolean { const move = licenseScrollOf(e.key); if (!move) return false; scrollBy(...); return true; }
+// function onKeyDown(e: KeyboardEvent): boolean {
+//   const move = licenseScrollOf(e.key);
+//   if (!move) return false;
+//   scrollBy(...);
+//   return true;
+// }
 // ```
 /** Scrolls [state] for a key-down that [licenseScrollOf] knows; any other key goes on to the host. */
 private fun licensesKeyHandled(event: KeyEvent, state: LazyListState, scope: CoroutineScope, stepPx: Float): Boolean {
