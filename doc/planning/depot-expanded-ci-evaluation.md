@@ -303,6 +303,22 @@ those stub controls earn no application execution credit
 ([setup failure](../audit/depot-expanded-graph-setup-failure-2026-10-18.evidence.json),
 [independent source and cancellation controls](../audit/depot-expanded-graph-preflight-2026-10-18.evidence.json)).
 
+The first native graph repetitions complete their shared-build and Rust owners,
+but browser preparation reaches the documented `newuidmap` primary-group rejection.
+The isolated correction routes native Podman probes,
+builds and runs through the previously verified noninteractive rootful boundary.
+It preserves the absolute executable,
+application inputs,
+command plan and container resource limits.
+Both real corrected native repetitions pass preparation,
+Chromium and Firefox owner tasks;
+WebKit still reaches the source OPFS verification assertion,
+and root E2E discovers the unresolved paused-owner dependency before any test executes.
+All 222 command logs are retained per corrected sample,
+without command-budget termination or unstarted work.
+Passing setup does not convert these source gates into a passing pipeline
+([original and corrected native consumers](../audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json)).
+
 The native-CI documentation review covers parallel shared-filesystem semantics,
 retry state,
 identity,
@@ -392,6 +408,16 @@ tool and registry caches are not assumed empty.
 The ranges are observed spreads from two repetitions,
 not statistical confidence intervals
 ([source-bound limits](../audit/depot-expanded-graph-github-repetition-2026-10-18.evidence.json)).
+
+Corrected native Depot repeats the same completed shared-build commands in 62.589 and 62.011 seconds,
+with a 0.578-second observed spread.
+Its 62.300-second mean gives a 3.37 ratio against GitHub's shared-build mean.
+The native Rust commands take 322.278 and 331.160 seconds,
+with an 8.882-second observed spread;
+their 326.719-second mean gives a 2.21 ratio against GitHub.
+Native uses the explicit rootful Podman prerequisite adapter and retains separate source/test failures,
+so these also remain completed-phase comparisons
+([source and original artifact joins](../audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json)).
 
 Cache conclusions name the workload and mechanism.
 Both fresh pnpm profiles use pinned `actions/cache/restore` and `actions/cache/save`
