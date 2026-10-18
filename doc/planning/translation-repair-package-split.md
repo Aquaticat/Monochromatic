@@ -614,7 +614,46 @@ and the rest left in place:
   the task-runner guard reach
   and the stack-edge child test.
 
-### Docs
+## The full dry run
+
+Run in keyless worktree `w165` at `2e79bef413` with every file moved by the map
+(36 packages;
+`source-scan` and `test-fixture` own no production module and have no build):
+
+- Every package with production code builds.
+- Tests fail in 9 packages:
+  `adjudication`,
+  `bench`,
+  `corpus-pass`,
+  `coverage-census`,
+  `probe`,
+  `run`,
+  `slice-cache`,
+  `source-scan`
+  and `typography`.
+  Measured per describe against gate g99b,
+  100 suites lose cases;
+  every one belongs to a reader in the list in "Readers that find a file by path":
+  the runner tests that start a built entry ("as built"),
+  the source scans and their positive controls,
+  the census and cache-account audit runs,
+  the child-environment and keyless-child tests,
+  and `proseMaskReading`.
+- Every task of the old `mise.toml` is carried by one of the new packages.
+- Outside the old package,
+  only two files name it,
+  and file-enforcer generates both:
+  the root `mise.toml` PATH list,
+  globbed from installed `node_modules/.bin` directories,
+  and the pnpr publish list.
+  The move runs file-enforcer in the branch worktree after its install.
+
+The semantic-wrap config change (`3d844e0315`, `76eb00d8fc`) landed after the dry run,
+so the move runs again at `76eb00d8fc`,
+and that commit's gate g100 (suite 2484 passing, lint, types and scans clean)
+replaces `94ebefa1e3` as the suite baseline in "Controls".
+
+## Docs
 
 - Docs about the family as a whole
   (the ledger,
@@ -630,9 +669,12 @@ and the rest left in place:
 
 ## Controls
 
-The pre-split state is recorded at `94ebefa1e3`:
+The pre-split state is recorded at `94ebefa1e3`,
+and the suite again at `76eb00d8fc` (gate g100),
+whose semantic-wrap change moves the pipeline digest:
 
 - suite 2482 passing cases and the blankness scan green;
+  2484 at `76eb00d8fc`;
 - oxlint 0 warnings and 0 errors;
 - the TianqiChen66625 decisions replay byte-identical to the n171 build's output except for its label;
 - the corpus measure over the 92 pinned pages.
