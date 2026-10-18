@@ -85,8 +85,76 @@ This record checks that design against the Rust and Windows documentation and th
   that has no console code; both gave 0 bytes). Use `music-player --version | Out-File out.txt`, `| Out-String`,
   or `Start-Process -Wait -NoNewWindow -RedirectStandardOutput out.txt`.
 - Ctrl+C and closing the terminal reach the attached program as they reach any process attached to that console.
-- A start by double-click that fails (no display, no graphics) shows no message; the exit status is 1 and nothing is
-  logged anywhere. A log file or a message box would fix that and is not part of this change.
+- A start by double-click that fails shows a Windows message box that names the failed step, what Windows reported and
+  the remedies; see "Follow-up: startup failure message". The exit status stays 1 (101 after a panic).
+- Log lines and clap's text carry ANSI colors only on a console that interprets them; see "Follow-up: console colors".
+
+## Follow-up: startup failure message
+
+Status:
+ Implemented on branch `fix/music-player-windows-startup-errors` (2026-10-15).
+ Closes the gap "a double-click start that fails shows no message and logs nowhere".
+
+- The steps that end the program: Slint's winit backend (`Backend::builder().build()`, the connection to the desktop),
+  `AppWindow::new()` (the window), `app.run()` (the event loop of the running window), and a panic of the main thread.
+  No sound output is not one of them: the window shows its own notice and the program keeps running
+  (the runner has no audio device and the program stayed up for 15 seconds in every run).
+- `src/startup_failure.rs` holds the pure part: one message per step with the detail Windows reported, the remedies
+  that hold for this program, and the path of the executable for a Command Prompt start (tested on every host).
+  Only the event-loop message offers `SLINT_BACKEND=software`: without a renderer name the winit backend already tries
+  the OpenGL renderer and then the software renderer when it creates the window
+  (`i-slint-backend-winit` 1.18.1, `try_create_window_with_fallback_renderer`), but OpenGL itself starts later,
+  when the window is shown inside the event loop.
+- `src/startup_failure_win32.rs` re-reads `GetStdHandle(STD_ERROR_HANDLE)` at the time of the failure.
+  No usable handle (a double-click start, or an attach that could not supply stderr): `MessageBoxW` with
+  `MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TASKMODAL`, the flags Alacritty uses for its Windows panic box
+  (`alacritty/src/panic.rs`). Any handle (a console, a file, a pipe): the text is printed on stderr and no box appears,
+  so a script or a CI job never waits for a click. The panic hook does the same for panics of the main thread and runs
+  the previous hook first.
+- Mechanism chosen: the message box alone, not a log file. Precedent: Alacritty shows a `MessageBoxW` for a panic of its
+  GUI-subsystem build, and Neovide shows its own error window when stdout is not a terminal
+  (`src/error_handling.rs`, `handle_startup_errors`); neither writes a startup log file. A log file under the app data
+  directory would still need the person to find it, and the box already tells them how to see the log lines
+  (start from Command Prompt). The Microsoft `MessageBoxW` page does not document copying the text with Ctrl+C, so the
+  message does not claim it.
+- The `windows` crate feature `Win32_UI_WindowsAndMessaging` was added (0.62.2 has `MessageBoxW` there);
+  `Cargo.lock` did not change.
+- Test hook: a Windows debug build reads `MUSIC_PLAYER_FORCE_STARTUP_FAILURE` (`window-system`, `window`, `event-loop`,
+  `panic`) and fails that step through the same code path as a real failure. The reading code is behind
+  `#[cfg(all(windows, debug_assertions))]`, so release builds do not contain it.
+- Linux and macOS are unchanged: the error goes from `main` to stderr exactly as before.
+
+## Follow-up: console colors
+
+Status:
+ Implemented on branch `fix/music-player-windows-startup-errors` (2026-10-15).
+ Closes the gap "escape characters on `msvc-arm64`".
+
+Cause, from the sources:
+
+- `tracing-subscriber` 0.3.23 (`src/fmt/fmt_layer.rs`, `Layer::default`) turns ANSI colors on whenever the `ansi`
+  feature is on and `NO_COLOR` is empty. It never looks at the handle it writes to, and nothing in it sets the console
+  mode (`nu-ansi-term` 0.50.3 has `enable_ansi_support`, which `tracing-subscriber` does not call).
+  So every log line carried escape sequences: into files (the `launch.log` of the earlier runs holds them on all three
+  jobs) and onto consoles that do not interpret them.
+- clap prints through `anstream` 1.0.0. `anstyle-query` 1.1.5 (`src/windows.rs`, `enable_virtual_terminal_processing`)
+  sets `ENABLE_VIRTUAL_TERMINAL_PROCESSING` on stdout first and returns at the first error, so with stdout in a file the
+  console behind stderr is never switched. With `TERM` set (the runners set `xterm-256color`),
+  `AutoStream::always` then picks pass-through over the console attribute API, and the escapes reach a console without
+  VT processing as text.
+- Why only arm64 showed it: a console that a process creates with `AllocConsole` starts with VT processing off on the
+  `windows-11-arm` image and on on the x64 images (measured in the runs below; the step prints the mode and
+  `HKCU\Console\VirtualTerminalLevel`).
+
+Fix:
+
+- After the attach, `enable_console_colors` (`src/console_attach_win32.rs`) reads the mode of stdout and of stderr
+  separately and adds `ENABLE_VIRTUAL_TERMINAL_PROCESSING` to each console; a file or a pipe has no console mode.
+- `src/console_color.rs` decides: the log is colored only when stderr is a console with VT processing and `NO_COLOR` is
+  empty (`logging::init_with_ansi`); clap keeps its own detection unless a console refused the mode, and then prints no
+  colors (`cli::parse_with_color`).
+- Like `anstream`, the program leaves the mode on the console it attached to.
+- Linux and macOS are unchanged: `tracing-subscriber`'s default still colors log lines there, also in a file.
 
 ## Evidence
 

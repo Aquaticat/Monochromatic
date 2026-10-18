@@ -631,6 +631,9 @@ on a bare Xvfb screen Slint's frame throttle divides by a refresh rate of 0 and 
 `.github/workflows/music-player-windows.yml` builds, tests and starts the program
 on `windows-2025` (x64) and `windows-11-arm` for the MSVC targets and on `windows-2025` for the GNU target.
 It prints the linker rustc ran, so a `lld` link would fail the job, and the PE import table of the program.
+It reads the console screen buffer and log files back to check that no ANSI escape sequence lands as text,
+and reads the startup failure message box back through Win32 calls
+(`doc/decision/music-player-windows-gui-subsystem.md`).
 Each job caches the cargo registry, the git database and the target directory.
 
 ## Taskbar progress
@@ -980,6 +983,13 @@ Verification runs use it to capture several accents without changing the host's 
 `MUSIC_PLAYER_SCAN_PAUSE_MS` makes the folder scan pause that many milliseconds after each reported batch.
 Leave it unset for normal speed; any value that is not a whole number is ignored.
 Verification runs use it to type into Search while the scan is still running.
+
+`MUSIC_PLAYER_FORCE_STARTUP_FAILURE` makes a Windows debug build fail one startup step on purpose:
+`window-system`, `window`, `event-loop` or `panic`.
+Release builds and non-Windows builds do not contain the code that reads it, and any other value fails nothing.
+The Windows workflow uses it to drive the startup failure report (`src/startup_failure.rs`):
+with no console and no stderr handle (a double-click start) the program shows a message box,
+otherwise it prints the same text on stderr.
 
 ## Typeface
 
