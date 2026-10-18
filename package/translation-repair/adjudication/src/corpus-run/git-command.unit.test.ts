@@ -32,7 +32,10 @@ await describe({
       name: 'PREFERS the real binary where the system has it, the control that the path fallback is not every '
         + 'answer, asked in a process of its own since the first answer of a process is kept',
       fn: async () => {
-        expect(await runBuiltInChild({ body: 'process.stdout.write(await built.resolveGit());', },),)
+        expect(await runBuiltInChild({
+          packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-glossary',),
+          body: 'process.stdout.write(await built.resolveGit());',
+        },),)
           .toBe(SYSTEM_GIT,);
       },
     },),

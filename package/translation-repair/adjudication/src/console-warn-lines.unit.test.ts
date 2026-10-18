@@ -25,7 +25,6 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
-import { pathToFileURL, } from 'node:url';
 
 import {
   describe,
@@ -63,21 +62,11 @@ function childSource(): string {
    The fixture under test, by absolute URL so the child's working directory
    can be anywhere.
    */
-  const fixture = pathToFileURL(join(
-    import.meta.dirname,
-    'console-warn-lines.test-fixture.ts',
-  ),).href;
+  const fixture = import.meta.resolve('@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts',);
   /**
    The built package the fixture reads its logger from.
    */
-  const built = pathToFileURL(join(
-    import.meta.dirname,
-    '..',
-    'dist',
-    'final',
-    'node',
-    'index.mjs',
-  ),).href;
+  const built = import.meta.resolve('@monochromatic-dev/translation-repair-typography',);
   return [
     `const { warnLinesDuring } = await import(${JSON.stringify(fixture,)});`,
     `const { contextRoot } = await import(${JSON.stringify(built,)});`,

@@ -35,6 +35,10 @@ import nanoSpawn, { type Result, } from 'nano-spawn';
 
 import { isCredentialName, } from '@monochromatic-dev/translation-repair-typography';
 import { STARTED_BY_VARIABLE, } from '../dist/final/node/index.mjs';
+import {
+  builtDirectoryOf,
+  packageRootOf,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/built-package-directory.test-fixture.ts';
 
 /**
  Prefix of every variable the package reads for its own settings.
@@ -45,26 +49,6 @@ const SETTING_PREFIX = 'TRANSLATION_REPAIR_';
  Exit code reported when a child ended on a signal and so has none.
  */
 const SIGNALLED = -1;
-
-/**
- The package's directory, where built commands run unless a case says
- otherwise.
- */
-const PACKAGE_ROOT = join(
-  import.meta.dirname,
-  '..',
-);
-
-/**
- The package's build directory, where built commands are found unless a case
- names another package's.
- */
-const BUILT_DIRECTORY = join(
-  PACKAGE_ROOT,
-  'dist',
-  'final',
-  'node',
-);
 
 /**
  Environment for a child: the parent's, with every variable the rule removes
@@ -302,25 +286,25 @@ function markerFor(
 }
 
 /**
- Runs one built command (`dist/final/node/<command>.mjs`) with the keyless
- environment and reports how it ended whatever its exit code, for the
- as-built suites.
+ Runs one built command (`dist/final/node/<command>.mjs` of the package that
+ owns the command) with the keyless environment and reports how it ended
+ whatever its exit code, for the as-built suites.
 
  @param command - command's name, which names its built file
+
+ @param packageEntry - URL of the built index of the package that owns the
+ command, as `import.meta.resolve` gives it for that package's name, which the
+ command's built file sits beside
 
  @param args - the command's arguments
 
  @param env - variables the case sets for it, such as the runs directory, the
  lookup cache directory or the corpus clone directory
 
- @param cwd - directory it runs in, the package's own where absent
+ @param cwd - directory it runs in, the owning package's own where absent
 
  @param startedBy - who the child's marker says started it: the task of this
  command unless the case says otherwise
-
- @param builtDirectory - directory holding the built command, this package's
- own build where absent; a case for a command another package owns passes that
- package's build directory, found through the package's name
 
  @returns Exit code, then stdout and stderr whole
 
@@ -328,31 +312,35 @@ function markerFor(
 
  @example
  ```ts
- const run = await runBuiltCommand({ command: 'window-trial-probe', env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, }, },);
+ const run = await runBuiltCommand({
+   command: 'window-trial-probe',
+   packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-bench'),
+   env: { TRANSLATION_REPAIR_RUNS_DIR: runsDir, },
+ },);
  ```
  */
 export async function runBuiltCommand(
   {
     command,
+    packageEntry,
     args = [],
     env = {},
-    cwd = PACKAGE_ROOT,
+    cwd = packageRootOf({ packageEntry, },),
     startedBy = 'its own task',
-    builtDirectory = BUILT_DIRECTORY,
   }: {
     readonly command: string;
+    readonly packageEntry: string;
     readonly args?: readonly string[];
     readonly env?: Readonly<Record<string, string>>;
     readonly cwd?: string;
     readonly startedBy?: StartedBy;
-    readonly builtDirectory?: string;
   },
 ): Promise<ChildRun> {
   return await runKeyless({
     file: process.execPath,
     args: [
       join(
-        builtDirectory,
+        builtDirectoryOf({ packageEntry, },),
         `${command}.mjs`,
       ),
       ...args,

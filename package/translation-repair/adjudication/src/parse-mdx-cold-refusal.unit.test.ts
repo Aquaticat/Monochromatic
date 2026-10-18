@@ -12,9 +12,6 @@
  @module
  */
 
-import { join, } from 'node:path';
-import { pathToFileURL, } from 'node:url';
-
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -27,10 +24,7 @@ import { runBuiltInChild, } from './corpus-run/built-child.test-fixture.ts';
 /**
  Where the stack-edge search is, by URL, so a child process can import it.
  */
-const STACK_EDGE_URL = pathToFileURL(join(
-  import.meta.dirname,
-  'stack-edge.test-fixture.ts',
-),).href;
+const STACK_EDGE_URL = import.meta.resolve('@monochromatic-dev/translation-repair-test-fixture/ts/stack-edge.test-fixture.ts',);
 
 /**
  How many times a child runs the search, the first of them in a process that has built no refusal.
@@ -61,6 +55,7 @@ async function edgeKindsOf(
    What the child wrote: the kind of each attempt, as a JSON list.
    */
   const written = await runBuiltInChild({
+    packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-document-structure',),
     body: [
       `const { caughtAtStackEdge, } = await import(${JSON.stringify(STACK_EDGE_URL,)});`,
       'const body = \'>\'.repeat(200,) + \' cat\';',

@@ -38,15 +38,42 @@ import { scratchPlaces, } from '@monochromatic-dev/translation-repair-test-fixtu
 const UNREADABLE_COMMIT = 'whiskers';
 
 /**
+ Built index of the bench package, which owns the `displacement-probe` command and its kin.
+ */
+const BENCH_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-bench',);
+
+/**
+ Built index of the coverage-census package, which owns the `coverage-probe` command and its kin.
+ */
+const COVERAGE_CENSUS_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-coverage-census',);
+
+/**
+ Built index of the probe package, which owns the `draw-sample` command and its kin.
+ */
+const PROBE_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-probe',);
+
+/**
+ Built index of the run package, which owns the `ledger-report` command and its kin.
+ */
+const RUN_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-run',);
+
+/**
+ Built index of the slice-cache package, which owns the `slice-census` command and its kin.
+ */
+const SLICE_CACHE_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-slice-cache',);
+
+/**
  Each built command that reads the corpus pin, with arguments its command
  line accepts, so the run reaches the pin rather than a usage refusal.
  */
 const PIN_READERS: readonly {
   readonly command: string;
+  readonly packageEntry: string;
   readonly args: readonly string[];
 }[] = [
   {
     command: 'coverage-control-probe',
+    packageEntry: COVERAGE_CENSUS_ENTRY,
     args: [
       '--only',
       'Mittens',
@@ -54,6 +81,7 @@ const PIN_READERS: readonly {
   },
   {
     command: 'coverage-probe',
+    packageEntry: COVERAGE_CENSUS_ENTRY,
     args: [
       '--only',
       'Mittens',
@@ -63,62 +91,77 @@ const PIN_READERS: readonly {
   },
   {
     command: 'displacement-probe',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
   {
     command: 'draw-sample',
+    packageEntry: PROBE_ENTRY,
     args: [],
   },
   {
     command: 'editor-calibrate',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
   {
     command: 'editor-width-probe',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
   {
     command: 'judge-fidelity-probe',
+    packageEntry: PROBE_ENTRY,
     args: [],
   },
   {
     command: 'probe-relabel',
+    packageEntry: PROBE_ENTRY,
     args: [],
   },
   {
     command: 'probe-verify',
+    packageEntry: PROBE_ENTRY,
     args: [],
   },
   {
     command: 'producer-calibrate',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
   {
     command: 'recall-benchmark',
+    packageEntry: PROBE_ENTRY,
     args: [],
   },
   {
     command: 'rendering-audit-settled',
+    packageEntry: PROBE_ENTRY,
     args: [],
   },
   {
     command: 'roster-bench',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
   {
     command: 'sentinel-probe',
+    packageEntry: BENCH_ENTRY,
     args: ['mittens',],
   },
   {
     command: 'slice-census',
+    packageEntry: SLICE_CACHE_ENTRY,
     args: [],
   },
   {
     command: 'translate-probe',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
   {
     command: 'window-trial-probe',
+    packageEntry: BENCH_ENTRY,
     args: [],
   },
 ];
@@ -132,6 +175,7 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: PIN_READERS.map(function refusalCase({
         command,
+        packageEntry,
         args,
       },) {
         return it({
@@ -144,6 +188,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command,
+              packageEntry,
               args,
               env: {
                 ...scratchPlaces({
@@ -179,6 +224,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'ledger-report',
+              packageEntry: RUN_ENTRY,
               args: [],
               env: {
                 TRANSLATION_REPAIR_RUNS_DIR: scratch.path,

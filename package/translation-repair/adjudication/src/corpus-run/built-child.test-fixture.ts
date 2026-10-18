@@ -1,20 +1,18 @@
 /**
- A child process that runs a few lines against the built package, for a case
+ A child process that runs a few lines against a built package, for a case
  that needs a first call of a memoised function in a process of its own.
 
  @module
  */
 
-import { join, } from 'node:path';
-import { pathToFileURL, } from 'node:url';
-
-
 import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 /**
- Runs lines against the built package in a fresh process and returns what it
+ Runs lines against a built package in a fresh process and returns what it
  wrote to its standard output.
+
+ @param packageEntry - URL of the built index of the package that declares the names the lines read, as `import.meta.resolve` gives it for that package's name
 
  @param body - module source run after `built`, the built package's namespace, is bound; it writes its answer with `process.stdout.write`
 
@@ -24,28 +22,25 @@ import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/
 
  @example
  ```ts
- const written = await runBuiltInChild({ body: 'process.stdout.write(await built.resolveGit());', },);
+ const written = await runBuiltInChild({
+   packageEntry: import.meta.resolve('@monochromatic-dev/translation-repair-glossary'),
+   body: 'process.stdout.write(await built.resolveGit());',
+ },);
  ```
  */
 export async function runBuiltInChild(
-  { body, }: { readonly body: string; },
+  {
+    packageEntry,
+    body,
+  }: {
+    readonly packageEntry: string;
+    readonly body: string;
+  },
 ): Promise<string> {
   /**
    Directory the child runs in, so nothing it logs lands in the checkout.
    */
   await using scratch = await scratchDir({ prefix: 'built-child-', },);
-  /**
-   The built package, by absolute URL so the child can run from anywhere.
-   */
-  const builtUrl = pathToFileURL(join(
-    import.meta.dirname,
-    '..',
-    '..',
-    'dist',
-    'final',
-    'node',
-    'index.mjs',
-  ),);
   /**
    What the child wrote, a failed exit refusing instead.
    */
@@ -54,7 +49,7 @@ export async function runBuiltInChild(
     args: [
       '--input-type=module',
       '--eval',
-      `const built = await import(${JSON.stringify(builtUrl.href,)});\n${body}`,
+      `const built = await import(${JSON.stringify(packageEntry,)});\n${body}`,
     ],
     cwd: scratch.path,
   },);

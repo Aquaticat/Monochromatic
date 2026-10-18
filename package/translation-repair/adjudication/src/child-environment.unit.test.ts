@@ -34,6 +34,11 @@ import {
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 /**
+ Built index of the bench package, whose `editor-standing-read` command the cases that start a built command run.
+ */
+const BENCH_ENTRY = import.meta.resolve('@monochromatic-dev/translation-repair-bench',);
+
+/**
  Fake variables this process holds while a case runs, none a real credential:
  two keys (one carrying the package's prefix and one not), one setting of
  the package's, and one plain variable the rule leaves alone.
@@ -227,6 +232,7 @@ await describe({
         void pointed;
         const run = await runBuiltCommand({
           command: 'editor-standing-read',
+          packageEntry: BENCH_ENTRY,
           env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
         },);
         expect(run.code,).toBe(1,);
@@ -248,7 +254,7 @@ await describe({
         await writeFile(join(runs.path, 'artifacts', 'Mittens.json',), '{}', 'utf8',);
         using pointed = variablesSet({ values: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, }, },);
         void pointed;
-        const run = await runBuiltCommand({ command: 'editor-standing-read', },);
+        const run = await runBuiltCommand({ command: 'editor-standing-read', packageEntry: BENCH_ENTRY, },);
         expect(run.stderr.includes(runs.path,),).toBe(false,);
       },
     },),

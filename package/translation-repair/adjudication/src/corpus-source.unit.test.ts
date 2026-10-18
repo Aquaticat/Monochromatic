@@ -388,7 +388,7 @@ await describe({
           "import { tmpdir, } from 'node:os';",
           "import { join, } from 'node:path';",
           `const { CorpusReadError, listCorpusPeople, } = await import(${
-            JSON.stringify(new URL('../dist/final/node/index.mjs', import.meta.url,).href,)
+            JSON.stringify(import.meta.resolve('@monochromatic-dev/translation-repair-corpus-source',),)
           });`,
           "const gone = mkdtempSync(join(tmpdir(), 'translation-repair-gone-cwd-'));",
           'process.chdir(gone);',
