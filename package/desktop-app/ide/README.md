@@ -4594,6 +4594,114 @@ Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
 the application does not inherit Helix's modal commands or editing features.
 
+### Lint gates
+
+`mise run //package/desktop-app/ide:lint` runs these gates in order:
+
+- Clippy over all targets with warnings denied,
+  in the bounded container.
+- `cargo fmt --check`,
+  in the bounded container.
+- The repository's Rust linter (`monochromatic-lint`):
+  the line budget,
+  the rustdoc requirement,
+  Markdown line breaks,
+  and the syntax-only closure rule,
+  which still reports the closures that remain as warnings.
+- `slint-viewer --check` over every UI file.
+- `lint:closures`,
+  described next.
+
+`lint:release` checks the release profile and is a separate task.
+
+#### Closures
+
+`lint:closures` runs the Dylint lint `avoidable_closure` (`package/linter/monochromatic-lint-closure`)
+over every target of the crate with `cargo dylint --all-targets`:
+the library,
+the binaries,
+the unit tests,
+and the integration tests.
+The lint reports a closure unless it captures state
+and is passed straight to a callee whose parameter requires `'static`.
+Such a callee keeps the state past the call,
+so no named function,
+loop,
+or `match` can replace the closure:
+the Slint `on_*` setters,
+`Timer::start`,
+`thread::spawn`,
+and `Builder::spawn` bodies are of this kind and pass.
+Every other closure is a named function,
+a `for` loop,
+a `match`,
+or a small named type,
+test code included.
+That includes closures written inside macro arguments such as `assert!` and `json_value!`,
+which the syntax-only rule cannot see.
+
+A closure that its callee requires,
+although the callee's parameter is not `'static`,
+carries rustc's own suppression
+on the closure argument,
+or on the `let` statement that binds it:
+
+```text
+// src/syntax_loader.rs
+#[cfg_attr(
+    dylint_lib = "monochromatic_lint_closure",
+    expect(avoidable_closure, reason = "a true sentence about why the callee needs a closure")
+)]
+```
+
+These are the two `catch_unwind` bodies of the minimap and tile workers,
+the two `tree_house` callbacks in `src/syntax_loader.rs`,
+and the caret callback in `src/native/language/actions.rs`.
+`expect` makes rustc report a suppression that no longer suppresses anything (`unfulfilled_lint_expectations`),
+and the task turns that report into an error.
+The `check-cfg` entry in `Cargo.toml` that declares the `dylint_lib` name is written by file-enforcer
+(`file-enforcer.config.ts`,
+`CARGO_DYLINT_DIRS`).
+The syntax-only rule cannot read the attribute,
+so it keeps reporting these five.
+
+The task runs on the host,
+not in the container,
+because the lint is a rustc driver plugin:
+
+- It uses the shared nightly of the repository,
+  which carries the `rustc-dev` component,
+  and the mise tools `cargo-dylint` and `dylint-link`.
+- It depends on `runtime` and `notices`,
+  because the IDE build embeds `target/debug/runtime` and
+  `target/crate-licenses.json`.
+  The build runs in `target/dylint` with links to both,
+  because `build.rs` finds them relative to the build directory and the shared cargo configuration would otherwise
+  place that directory under a path hashed from the checkout.
+- The nightly cargo of the development host cannot connect to crates.io
+  (`doc/troubleshooting/dylint-library-tests-and-shared-build-dir.md`),
+  so the task fetches with `cargo +stable fetch --locked` and builds offline.
+- `DYLINT_RUSTFLAGS` defaults to `-D avoidable_closure -D unfulfilled_lint_expectations`;
+  `DYLINT_RUSTFLAGS='-W avoidable_closure'` lists every report as a warning instead.
+  A target that depends on a library with reports,
+  such as an integration test,
+  is not linted until the library is clean.
+
+Measured on 2026-10-18 with a load average between 12 and 19 from other work,
+three runs each:
+
+- With `target/dylint` deleted:
+  78.9 to 87.1 seconds,
+  median 81.4.
+- With nothing changed:
+  15.0 to 16.9 seconds,
+  median 16.0.
+- After touching `src/lib.rs`:
+  16.5 to 21.6 seconds,
+  median 17.6.
+
+The first run with an empty Dylint driver cache adds about 30 seconds for the driver build.
+
 ## Release build and single executable
 
 `mise run //package/desktop-app/ide:build` builds the optimized `monochromatic-ide` binary

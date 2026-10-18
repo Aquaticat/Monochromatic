@@ -678,7 +678,8 @@ runCargo(['fmt', '--check'])
 """
 
 [tasks.lint]
-run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rustfmt", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
+# lint:closures runs last: it is the only gate that needs the host nightly toolchain with rustc-dev and cargo-dylint.
+run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rustfmt", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint", "mise run //package/desktop-app/ide:lint:closures"]
 
 [tasks."format:rust"]
 description = "Format application-owned Rust sources"
