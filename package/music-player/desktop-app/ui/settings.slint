@@ -673,7 +673,7 @@ export component SettingsPage inherits Rectangle {
                             y: 38px;
                             width: parent.width - root.title-x - 16px;
                             height: 20px;
-                            text: "Notices of the software built into Music Player";
+                            text: "Third-party notices";
                             font-size: Theme.body-medium;
                             color: Theme.on-surface-variant;
                             overflow: elide;
@@ -686,7 +686,7 @@ export component SettingsPage inherits Rectangle {
                             mouse-cursor: pointer;
                             accessible-role: button;
                             accessible-label: "Licenses";
-                            accessible-description: "Notices of the software built into Music Player";
+                            accessible-description: "Third-party notices";
                             accessible-action-default => { root.open-licenses(); }
                             clicked => {
                                 Focus.ring-visible = false;

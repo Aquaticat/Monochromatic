@@ -86,7 +86,7 @@ fn the_licenses_row_is_a_labelled_button_under_an_about_heading_in_both_forms() 
         assert_eq!(touch.accessible_label().as_deref(), Some("Licenses"), "width {width}");
         assert_eq!(
             touch.accessible_description().as_deref(),
-            Some("Notices of the software built into Music Player"),
+            Some("Third-party notices"),
             "width {width}"
         );
         // The row sits one 44 px heading below the switch row, 16 px in from the pane edges, and is as tall as every row.
