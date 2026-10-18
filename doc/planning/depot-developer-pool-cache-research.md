@@ -181,8 +181,16 @@ Measure layer hits separately from compilation-cache hits and local artifact dow
 
 The [CI caching policy](../decision/ci-caching.md)
 already records fresh-job GitHub cache wins for selected Rust verification builds.
-It also records pnpm-store cache regressions:
-restoration plus installation cost more than installation alone in the tested jobs.
+It also records a pnpm-store archive-cache comparison in the GitHub-hosted
+`readonly-semantic-bridge.yml` jobs of run `38672732092` and its repeat.
+On `ubuntu-latest`,
+restoration plus installation took `7 + 8` seconds versus `8` to `9` seconds without restoration.
+On `windows-latest`,
+the boundary was `15 + 13` seconds versus `15.6` seconds.
+On `macos-15`,
+it was `37 + 8` seconds versus `14.7` seconds.
+These are GitHub Actions archive restoration plus pnpm installation measurements,
+not a general build-cache slowdown or separate measurements of the logger and TOML workflows.
 Those measurements do not establish that a different Depot cache backend has the same result.
 They make pnpm caching a separate hypothesis rather than an automatic improvement.
 
@@ -199,8 +207,8 @@ They make pnpm caching a separate hypothesis rather than an automatic improvemen
   Keep downloadable crate content separate from mutable target directories.
   The release policy excludes shipped or attested outputs from caches.
 - pnpm:
-  `pnpm-workspace.yaml` enables isolated workspace installation,
-  prunes virtual-store orphans on installation,
+  the installed tree uses isolated workspace installation.
+  `pnpm-workspace.yaml` prunes virtual-store orphans on installation
   and records optional-platform coverage for Linux and macOS,
   x64 and ARM64,
   glibc and musl.
@@ -354,7 +362,7 @@ and all exit statuses.
 ### Saves when frozen tests fail
 
 The pinned repository action is `actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae`.
-Its `action.yml:46` uses `post-if: success()`;
+Its `action.yml:44` uses `post-if: success()`;
 its deprecated `save-always` input says that it does not work as intended.
 Use explicit restore and save actions in the experiment.
 `src/saveImpl.ts:65` calls the cache toolkit,
