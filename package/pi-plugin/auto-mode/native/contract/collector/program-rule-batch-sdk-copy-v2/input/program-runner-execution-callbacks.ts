@@ -3,12 +3,16 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
-import type { NativeReturnCall } from './native-return-types.ts';
+import type { NativeReturnEntry } from './native-return-types.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
 import type {
   ProgramExecutionCallbacks,
-  ProgramExecutionCallbacksInput
+  ProgramExecutionCallbacksInput,
+  ProgramNativePhasePipeline
 } from './program-runner-execution-types.ts';
+
+/** Each genuine slot retains its actual preparation, per-call signal, and terminal continuation. */
+type ChildNativePhase = { lifetime: NativeReturnEntry; pipeline?: ProgramNativePhasePipeline; prepared?: unknown };
 
 /**
  Dispatch diagnostics omit prepared member arguments and opaque host hooks.
@@ -42,7 +46,10 @@ export function createProgramExecutionCallbacks({
   bound,
   assertParentCurrent,
   parentId,
-  assessment
+  assessment,
+  context,
+  response,
+  signal
 }: ProgramExecutionCallbacksInput): ProgramExecutionCallbacks {
   /**
    Factory diagnostics retain callback boundary tags.
@@ -59,10 +66,14 @@ export function createProgramExecutionCallbacks({
     ordinals,
     slots
   } = bound;
+  /** The SDK phase factory is captured before preparation callbacks can replace host properties. */
+  const phaseFactory = runner.host.createOwnedToolPhases;
+  /** Native call associations remain private to this reached group. */
+  const nativeCalls = new Map<string, ChildNativePhase>();
   /**
    Native dispatcher dictates positional callbacks while private publication remains shared.
    */
-  const callbacks = {
+  const callbacks: ProgramExecutionCallbacks = {
     /** Read the original admitted execution handle only after assessment publication.
      @param id - original native call identifier
      @returns original prepared execution handle
@@ -98,43 +109,37 @@ export function createProgramExecutionCallbacks({
       if (!member) throw new Error('Prepared child has no owned execution handle');
       return member;
     },
-    /** Invoke the exact native call through its original judgment slot.
-     @param call - original native call
-     @param options - original opaque native invocation options
-     @returns original judgment invocation result
-     */
-    runToolCall(
-      this: void,
-      call: NativeReturnCall,
-      options: unknown
-    ): unknown {
-      /**
-       Native forwarding preserves caller-owned argument and option identities.
-       */
-      const nl = tagged({
-        tag: callbacks.runToolCall
-          .name,
-        l: cl
-      });
-      nl.debug('invoking original reached native member');
-      /**
-       Original group identity is read before native slot association.
-       */
-      const groupHandle = group.handle;
-      /**
-       Bound call ordinal remains owned by the original native association.
-       */
-      const ordinal = nonNullishOrThrow(ordinals.get(call.id));
-      /**
-       Original admitted slot is required before judgment invocation.
-       */
-      const slot = nonNullishOrThrow(slots[ordinal]);
-      return judgment.invokeProgramNative({
-        group: groupHandle,
-        slot,
-        call,
-        options
-      });
+    /** The actual slot owns reservation and terminal capture across SDK phases. */
+    nativePhases: {
+      async prepare({call,before}) {
+        const nl = tagged({tag: callbacks.nativePhases.prepare.name, l: cl});
+        nl.debug('reserving original child before native preparation');
+        const ordinal = nonNullishOrThrow(ordinals.get(call.id));
+        const slot = nonNullishOrThrow(slots[ordinal]);
+        const lifetime = slot.open(call);
+        const record: ChildNativePhase = {lifetime};
+        nativeCalls.set(call.id,record);
+        const memberSignal = nonNullishOrThrow(group.members[ordinal]).signal ?? signal;
+        const pipeline = phaseFactory({tools:bound.tools,context,
+          assistantMessage:response,signal:memberSignal});
+        record.pipeline = pipeline;
+        record.prepared = await pipeline.prepare({call,before});
+        return record.prepared;
+      },
+      run(input) {
+        tagged({tag: callbacks.nativePhases.run.name, l: cl}).debug('running original prepared child');
+        const record = nonNullishOrThrow(nativeCalls.get(input.call.id));
+        if(record.prepared!==input.prepared)throw new Error('Child execution requires its original native preparation');
+        return nonNullishOrThrow(record.pipeline).run(input);
+      },
+      retain({call,outcome}) {
+        tagged({tag: callbacks.nativePhases.retain.name, l: cl}).debug('retaining original child completion');
+        nonNullishOrThrow(nativeCalls.get(call.id)).lifetime.complete(outcome);
+      },
+      failed({call,error}) {
+        tagged({tag: callbacks.nativePhases.failed.name, l: cl}).debug('retaining child native phase failure');
+        nativeCalls.get(call.id)?.lifetime.fail(error);
+      }
     },
     /** Forward original preparation to the original host and parent.
      @param hook - opaque native preparation hook

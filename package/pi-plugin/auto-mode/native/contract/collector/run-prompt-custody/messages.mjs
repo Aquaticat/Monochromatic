@@ -1,28 +1,26 @@
 import {types} from 'node:util';
 import {SourceCollectionError} from '../collector.mjs';
 
-/** Validate every serialized occurrence under one budget before cloning; depth also rejects cycles. */
-function copyBoundedData({
+/** Copy ordinary data iteratively, rejecting cycles without imposing a depth or size ceiling. */
+function copyOrdinaryData({
   input,
   sharedReferences
 }){
   const holder={};
     const pending=[{
     value:input,
-    depth:0,
-    path:'$',
     parent:holder,
     key:'value'
   }];
-    const seen=new Set();let bytes=0;
-    let nodes=0;
+    const seen=new Set();
+    const active=new Set();
   // Metadata keeps non-enumerable data in an owned JSON view. Message cloning remains unchanged.
   function retainCopy({
     parent,
     key,
     value
   }){
-    if(sharedReferences)Object.defineProperty(
+    Object.defineProperty(
       parent,
       key,
       {
@@ -35,40 +33,39 @@ function copyBoundedData({
   }
   while(pending.length > 0){
     const entry=pending.pop();
+    if(entry.leave){active.delete(entry.value);continue;}
     const {
       value,
-      depth,
-      path,
       parent,
       key:inputKey
-    }=entry;if(depth>32)throw new SourceCollectionError('Run message data exceeds depth bound');
+    }=entry;
     if((value===undefined)||(value===null)
-      ||((typeof value)==='boolean')){bytes+=5;retainCopy({
+      ||((typeof value)==='boolean')){retainCopy({
       parent,
       key:inputKey,
       value
     });continue;}
-    if((typeof value)==='number'){if(!Number.isFinite(value))throw new SourceCollectionError('Run message number must be finite');bytes+=24;retainCopy({
+    if((typeof value)==='number'){if(!Number.isFinite(value))throw new SourceCollectionError('Run message number must be finite');retainCopy({
       parent,
       key:inputKey,
       value
     });continue;}
-    if((typeof value)==='string'){bytes+=Buffer.byteLength(JSON.stringify(value));if(bytes>1_048_576)throw new SourceCollectionError('Run message data exceeds byte bound');retainCopy({
+    if((typeof value)==='string'){retainCopy({
       parent,
       key:inputKey,
       value
     });continue;}
     if(types.isProxy(value))throw new SourceCollectionError('Run message data requires ordinary non-proxy values');
-    if(((typeof value)!=='object')||((!sharedReferences)&&seen.has(value))
-      ||((++nodes)>4_096))throw new SourceCollectionError(sharedReferences?'Tool metadata exceeds the bounded expanded ordinary-data profile':'Run message data requires a bounded non-aliased ordinary tree');
+    if(((typeof value)!=='object')||((!sharedReferences)&&seen.has(value)))throw new SourceCollectionError('Run message data requires a non-aliased ordinary tree');
+    if(active.has(value))throw new SourceCollectionError('Tool metadata contains a cycle');
+    active.add(value);
+    pending.push({leave:true,value});
     seen.add(value);const array=Array.isArray(value);
     const prototype=Object.getPrototypeOf(value);
     if(array?prototype!==Array.prototype:prototype!==Object.prototype)throw new SourceCollectionError('Run message data has an unsupported prototype');
-    const keys=Reflect.ownKeys(value);if((keys.length>4_097)||(array&&((value.length>4_096)||(keys.length!==(value.length
-      +1)))))throw new SourceCollectionError('Run message container exceeds bound or has sparse/extra entries');
-    bytes+=2+(keys.length
-      *2);if(bytes>1_048_576)throw new SourceCollectionError('Run message data exceeds byte bound');
-    const target=sharedReferences?(array?[]:{}):undefined;
+    const keys=Reflect.ownKeys(value);if(array&&(keys.length!==(value.length
+      +1)))throw new SourceCollectionError('Run message container has sparse or extra entries');
+    const target=array?[]:{};
     retainCopy({
       parent,
       key:inputKey,
@@ -85,8 +82,8 @@ function copyBoundedData({
         'value'
       ))
         ||((!property.enumerable)&&(!sharedReferences)
-          &&(!(array&&(key==='length')))))throw new SourceCollectionError(`Run message data requires named data properties at ${path}[${String(key)}]`);
-      if(array&&(key==='length'))continue;bytes+=Buffer.byteLength(JSON.stringify(key));if(bytes>1_048_576)throw new SourceCollectionError('Run message data exceeds byte bound');
+          &&(!(array&&(key==='length')))))throw new SourceCollectionError(`Run message data requires named data properties: ${String(key)}`);
+      if(array&&(key==='length'))continue;
       // Reserve owned slots in original order before the work stack visits their values.
       retainCopy({
         parent:target,
@@ -95,25 +92,22 @@ function copyBoundedData({
       });
       pending.push({
         value:property.value,
-        depth:depth+1,
-        path:`${path}[${JSON.stringify(key)}]`,
         parent:target,
         key
       });
     }
   }
-  const copy=sharedReferences?holder.value:structuredClone(input);
-  if(Buffer.byteLength(JSON.stringify({value:copy}))>1_048_576)throw new SourceCollectionError('Complete run message data exceeds byte bound');
-  const freeze=[copy];while(freeze.length > 0){const value=freeze.pop();if((!value)||((typeof value)!=='object'))continue;freeze.push(...Object.values(value));Object.freeze(value);}return copy;
+  const copy=holder.value;
+  const freeze=[copy];while(freeze.length > 0){const value=freeze.pop();if((!value)||((typeof value)!=='object'))continue;for(const child of Object.values(value))freeze.push(child);Object.freeze(value);}return copy;
 }
 /** Copy message trees without changing the incumbent rejection of aliases and cycles. */
-export function copyMessageData(input){return copyBoundedData({
+export function copyMessageData(input){return copyOrdinaryData({
   input,
   sharedReferences:false
 });}
 
-/** Shared declaration metadata is charged for each JSON occurrence, never deduplicated or given per-tool budgets. */
-export function copyToolMetadata(input){return copyBoundedData({
+/** Copy each shared metadata occurrence independently while rejecting ancestor cycles. */
+export function copyToolMetadata(input){return copyOrdinaryData({
   input,
   sharedReferences:true
 });}
@@ -133,7 +127,6 @@ export function assertTextMessageContent(content){
 /** Message paths/types are data; no role, customType or display flag grants authority. */
 export function snapshotRunMessages(messages){
   if((!Array.isArray(messages))||(Object.getPrototypeOf(messages)!==Array.prototype)
-    ||(messages.length>64)
     ||(Reflect.ownKeys(messages)
       .length
       !==(messages.length
@@ -163,5 +156,5 @@ export function snapshotRunMessages(messages){
     assertTextMessageContent(value.content);
     result.push(value);
   }
-  if(Buffer.byteLength(JSON.stringify(result))>1_048_576)throw new SourceCollectionError('Combined run messages exceed byte bound');return Object.freeze(result);
+  return Object.freeze(result);
 }

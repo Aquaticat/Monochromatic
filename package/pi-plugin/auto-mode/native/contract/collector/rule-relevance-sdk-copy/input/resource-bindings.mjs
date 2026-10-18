@@ -66,7 +66,6 @@ export function createResourceBindings({known,current,readSessionLoader,readSess
         ...original,
         resourceInputObservation:scope.view
       });
-      if(Buffer.byteLength(JSON.stringify(value))>1_048_576)throw new SourceCollectionError('Combined resource collection exceeds total byte bound');
       snapshots.set(
         value,
         {
@@ -133,7 +132,6 @@ export function createResourceBindings({known,current,readSessionLoader,readSess
           nativeRunComposition:run,
           hostGoverningPolicy:policy
         });
-        if(Buffer.byteLength(JSON.stringify(snapshot))>1_048_576)throw new SourceCollectionError('Base-linked source collection exceeds total byte bound');
         snapshots.set(
           snapshot,
           {

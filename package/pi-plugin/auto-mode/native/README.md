@@ -1,5 +1,11 @@
 # Native host integration
 
+The current [architecture documents](../doc/architecture.md) justify each major retained module.
+The superseded extension entry was removed on 2026-10-17.
+Historical migration descriptions retain their original implementation names;
+current public consumers use maintained named exports.
+
+
 This directory maintains the native runtime,
 source collectors,
 judgment consumer,
@@ -17,8 +23,9 @@ root and source identity,
 ordered callback failures,
 every file checkpoint,
 and exact retained file bytes in disposable roots.
-Live checks enforce the original deadline;
-retained checks preserve cancellation and freshness after that deadline expires.
+Live checks enforce original cancellation and clock validity;
+retained checks preserve cancellation and freshness after decision completion.
+Fifteen seconds is an advisory performance target, with no elapsed-time rejection.
 Mechanical projections explicitly withhold instruction authority and human permission.
 `test:native:program-queue` checks original recorder reuse,
 private token and public label membership,
@@ -143,6 +150,100 @@ An explicit sequential mode skips tool policy reads.
 All execution capabilities remain uninvoked during scheduling.
 Original sparse-array scheduling is retained when no tool lookup observes an array hole.
 This admission behavior does not establish successful complete dispatch for sparse input.
+`test:native:prepared-completion` verifies final admission presence,
+retained lifecycle failure precedence,
+and original native rejection causes.
+Duplicate and nullish failures remain in their original order.
+Execution errors retain the original complete native outcome array and selected decision.
+Successful completion freezes its envelope and native value list,
+while retaining the original decision and first assessment snapshot identities.
+Without a snapshot,
+each completion receives a fresh frozen empty member list.
+Original getter ordering and opaque observation failures remain unchanged.
+`test:native:prepared-executable` verifies original tool metadata snapshots,
+context-owner identity,
+native argument identity,
+and execution-turn admission.
+Serial members await their selected turn before currentness checks;
+parallel members never look up a turn.
+Turn failures propagate without entering the retained native-failure list.
+Currentness failures enter that list before context-guard state is inspected.
+Only original native guard instances close the shared group to later execution.
+Ordinary native failures retain their original identity without being added to that list by the wrapper.
+Retained execution remains callable after a caller replaces the wrapper's `execute` property.
+
+`test:native:profile-call` verifies original direct-call admission,
+callable membership,
+source bounds,
+and private argument-pattern ownership.
+Escaped identifiers keep their original source text and decoded callable name.
+Callsite and callee-span envelopes are frozen;
+the borrowed pattern remains the exact original decoder result.
+Validation preserves original property-read order and opaque thrown values.
+Synthetic parser nodes retain the original fractional end-position admission;
+this does not establish that the parser emits such positions.
+The computed-member fixture `tools[tool]` isolates computed syntax rejection from property-kind rejection.
+
+`test:native:profile-successors` verifies original native `Promise.all` and `Promise.allSettled` declarations.
+Complete successor collections retain their inclusive 32-member limit,
+original source spans,
+ordered aliases,
+and private pattern ownership.
+Original producer and borrowed call-inspector results retain their exact identities.
+The original binding name is read for each mapped member and again for final publication.
+Declaration envelopes remain unfrozen until their original outer owner publishes them.
+Synthetic syntax isolates each combinator guard and preserves original getter order,
+opaque failures,
+and sparse array mapping.
+Sparse group members retain holes while the original combined site spread materializes them as `undefined`.
+That synthetic observation does not establish complete native dispatch for sparse input.
+
+`test:native:prepared-member` verifies original native preparation,
+independent sealed input snapshots,
+and complete-group admission.
+Manifests follow declaration order even when readiness insertion order differs.
+Native preparation and assessment are awaited;
+currentness and preparation-release return values remain synchronous.
+Original blocking preparation bypasses sealing and group assessment.
+The first shared decision survives a later assessment settlement.
+Assessment validation retains original getter ordering and repeated reads.
+Preparation failures remain retained with their original identity and produce a fresh fallback block.
+Entry-marker publication failures reject before retention begins.
+Failures in the retention or blocking owner still reject the native member.
+
+`test:native:prepared-lifecycle` verifies original native callback order,
+borrowed SDK argument identity,
+awaited preparation turns and notifications,
+and synchronous release ownership.
+An undeclared member rejects before lifecycle failure retention or turn disposal.
+Preparation may release its turn before native completion;
+repeated hooks and final disposal release that turn only once.
+Missing native preparation blocks admission while preserving the native result and finish notification.
+Failures caught during execution are retained before blocking and rethrowing.
+Disposal failures remain outside that catch;
+combined execution and disposal failures preserve the original `SuppressedError` identities.
+Partial updates and preparation callbacks return their original values synchronously.
+Native options retain the original explicit `onUpdate: undefined` property when updates are absent.
+
+`test:native:pattern-decoder` verifies original finite data,
+exact result bindings,
+ordinary object properties,
+and inclusive collection and nesting limits.
+The decoder borrows the original private pattern owner and diagnostic constructor.
+Child patterns reach that owner before their containing pattern;
+array item lists,
+object entry lists,
+and entry records are frozen before the containing pattern is published.
+The owner supplies every returned pattern by identity.
+Already published children remain observed when a later child fails.
+Literal metadata,
+unary arguments,
+and property keys preserve original getter ordering and repeated reads.
+Original sparse synthetic arrays retain their holes;
+parser-produced array holes remain rejected.
+Nameless synthetic identifiers isolate defined-binding rejection from name mismatch.
+Custom test owners do not grant membership in the production decoder's private ownership set.
+
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
@@ -162,9 +263,10 @@ now contain their integrated implementations directly.
 The build exports them through bridges without patching their source bodies.
 Imports were relocated to this package graph without changing policy decisions.
 
-The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.
+The maintained build emits qualified Pi 1.2.0 source and owned transformations into an immutable release directory.
+The stable `dist/native` link selects the verified active release.
 The package `build` task builds maintained exports before building this native artifact.
-Native policy consumers use the dedicated `./native-policy` package export.
+Native policy consumers use the release's copy of the dedicated `./native-policy` package export.
 It shares policy implementations with the extension entry through common build chunks,
 without importing the extension's SDK-dependent transcript code.
 `test:native:direct-imports` starts each generated manager and SDK entry in a fresh process,
@@ -242,7 +344,13 @@ foreign identities,
 and primitive queries.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
-Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
+Each release contains a fresh contract tree and matching maintained policy bundle.
+The build loads its actual CLI before replacing the active link.
+Generation or loading failure preserves the previous command;
+the first migration retains the former directory and restores it if publication fails.
+Older release directories remain available to processes already using them.
+`test:native:build-activation` verifies failed generation, failed CLI loading,
+directory migration, and subsequent link replacement in a disposable installation.
 The native CLI entry is `dist/native/cli.mjs`.
 `native/command.ts` and `bin/pi` route the ordinary command to that maintained build.
 The `install:native` task retains a private settings backup,
@@ -310,15 +418,25 @@ The bootstrap binds the maintained Luna adapter and direct HTTP sender
 for `openai/gpt-6-luna-decisions` through the Gateway `/v1/decisions` route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
 preserves every original state value and named question in the Decisions wire format,
-retains the original deadline,
-and performs one HTTP request per client attempt.
+retains original cancellation and advisory timing,
+and partitions complete assessments into requests containing at most 200 questions.
+One judgment permits at most three sequential bundles with at most three parallel HTTP calls each.
+Every bundle uses original cancellation and preparation-inclusive timing without a deadline timer.
+Failed bundles consume their allowance;
+later dispatches and the single eligible retry share the same counters.
+Each request retains complete shared context and original question names.
+The policy consumer receives a merged answer set only after every partition passes attribution checks.
+The average USD 0.001 per judgment cost target was removed on 2026-10-15.
 Gateway-internal retries remain separate from client attempt accounting.
 Categorical probabilities and independent confidence metadata remain unchanged.
 Refusals,
 missing or reordered answers,
 wrong serving identities,
-invalid distributions,
-and requests exceeding 200 questions fail without admitting partial estimates.
+and invalid distributions fail without admitting partial estimates.
+The single-request encoder rejects more than 200 questions;
+the composed sender partitions larger assessments without dropping questions.
+`test:assessment-bundles` verifies concurrency, exact answer membership, cancellation,
+bundle ceilings, retry accounting, and retired capability rejection.
 `test:decision-wire` checks conversion and the composed sender against authored fixtures.
 `test:assessment-transport` covers isolated and loopback HTTP behavior;
 `test:native:assessment-transport` connects it to original native policy review with authored responses.
@@ -369,7 +487,9 @@ The pending original channel supplies code-owned facts for an admitted `fresh-se
 those facts remain unsatisfied until the original user response arrives.
 Generic prerequisites retain their separate fact owner.
 
-Unresolved and unspecified automatic assessments also reach the original dialog when a UI is available.
+Unresolved and unspecified clause assessments first reach the whole-operation Luna decision question.
+It retains the original operation, selected conversation, policy, cancellation, and transport allowance.
+Only unresolved or failed automatic paths reach the original dialog when a UI is available.
 An established prohibition at the strongest known applicable tier blocks even when other premises are uncertain.
 Headless uncertainty remains blocked.
 The dialog offers `Allow` and `Stop`;
@@ -379,9 +499,22 @@ aborts the current run.
 Source freshness,
 exact prepared-group identity,
 and cancellation remain checked during and after approval.
-Transport failures,
-malformed responses,
-and judgment expiry do not become manual approval requests.
+Recoverable initial transport or assessment failures also try whole-operation review first.
+Exhausted automatic review, uncertain final decisions, and unavailable observation evidence
+fall back to manual approval of the complete prepared operation.
+The independent manual group owns its original native signal, branch, prepared members, and execution tokens.
+It does not fabricate an automatic assessment receipt.
+An already established policy decision or approval cannot be replaced after its dependencies change.
+A policy change during whole-operation review invalidates that operation instead of opening another dialog.
+Decision logs retain source spans, distributions, admission results, fallback errors, and final outcomes.
+Assessment logs retain the complete selected inputs and replies under a shared operation digest.
+`test:native:decision-fallback` verifies final approval and denial, model failures, cancellation,
+source changes, and reconstruction of the falsely admitted prerequisite from logger records.
+Primary prompt and request observation stays passive when capture fails;
+Pi retains its callbacks, errors, retry settings, and transport.
+`test:native:session-actions` exercises native navigation and provider lifecycle behavior.
+`test:native:host-isolation` exercises passive capture and manual fallback.
+`test:native:manual-group` checks exact manual operation identity and execution lifetime.
 `test:native:manual-review` covers uncertainty,
 prohibition precedence,
 confirmation outcomes,
@@ -489,8 +622,13 @@ cancellation,
 and immutable assessed arguments during approved execution.
 The adopted receipt timing and measured contrasts are recorded in
 `doc/planning/pi-auto-mode-governing-domain-closure.md` and `doc/troubleshooting/pi-sdk-staging.md`.
-The approved combined and session receipt capacity is 128;
-resource-local capture remains limited to 64 receipts and all byte bounds remain unchanged.
+On 2026-10-15 the user approved removal of arbitrary instruction-capture capacities,
+superseding the combined/session limit of 128 and resource limit of 64.
+Byte accounting remains available without rejecting normal inputs at fixture-derived thresholds.
+Ownership,
+freshness,
+descriptor checks,
+and explicit cycle rejection remain required.
 The isolated consumer with all 22 configured extensions passes through three child calls and cleanup.
 Its assessment uses authored replies and makes no provider requests.
 The installed Hyper primary,
@@ -511,8 +649,19 @@ The user adopted literal single-call support on 2026-10-14.
 The decoder accepts `return await tools.name({...})`
 and `const result = await tools.name({...}); return result;`.
 The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
-The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
+The semantic scope `native-inspected-programs-v2` includes direct native Bash commands,
+single-call programs,
+and producer/successor programs.
+Direct Bash commands retain their complete string and prepared-operation identity for automatic review.
+`test:native:direct-bash` covers permitted, prohibited, uncertain, and mixed groups through native execution.
 Its supported-meaning cutoff is `0.60` with a unique leading score under the adopted Luna policy.
+
+Registered tool schemas have no aggregate property-count ceiling.
+`test:native:tool-schema-capacity` retains 12,000 properties and rejects changed descriptors,
+accessors,
+and unexpected prototypes.
+Retained-message binding indexes origins once by source identity and brackets construction with parent checks.
+`test:native:run-message-freshness` verifies the read bound and rejects mutation during construction.
 
 `test:native:single-call` verifies complete original source,
 escaped identifiers and literal data,

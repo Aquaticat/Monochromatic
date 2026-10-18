@@ -6,7 +6,7 @@ import {createRequestProducerOwner} from '../../collector/request-producer-judgm
 import {createRequestObservationOwner} from '../../lifecycle/root-lifecycle-retirement-entry/observer.mjs';
 import {createJudgmentConstructor} from "./generated/judgment.mjs";
 import {bindPolicySessionCollector} from '../policy-source/system-slot.mjs';
-import {registerOriginalJudgmentStart} from '../action-policy/judgment-start.mjs';
+import {createOperationCurrentness} from './operation-currentness.mjs';
 import {createNativeBatchHandler} from './handler.mjs';
 import {
   ruleAssessmentCatalogText,
@@ -19,6 +19,7 @@ import {prepareNativeSourceAssociation} from './source-association.mjs';
 import {
   installNativePolicyHooks,
   NativePolicyRuntimeError
+  ,isRetryableAssessmentFailure
 } from '../maintained-policy.mjs';
 
 export {NativePolicyRuntimeError} from '../maintained-policy.mjs';
@@ -32,7 +33,6 @@ export function bindNativePolicyRuntime({
   root,
   lifecycle,
   policyInput,
-  endpoint,
   rootDirectory,
   parsePolicy,
   catalogText=ruleAssessmentCatalogText,
@@ -44,6 +44,7 @@ export function bindNativePolicyRuntime({
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost,
+  readBypass,
   sendWire,
   wrapToolDefinition,
   readSessionDisposalState,
@@ -64,6 +65,7 @@ export function bindNativePolicyRuntime({
  if(agent.signal!==undefined)throw new NativePolicyRuntimeError('Cannot change policy ownership during an active agent run');
  if(agent.executeToolBatch!==undefined)throw new NativePolicyRuntimeError('The original session already has a complete-group executor');
  lifecycle.assertActive(lifecycle.capture(root));
+ const currentness=createOperationCurrentness(root);
  trace('policy-runtime.bind');
  const collector=bindPolicySessionCollector({
    input:policyInput,
@@ -72,13 +74,13 @@ export function bindNativePolicyRuntime({
  const observer=createRequestObservationOwner({
    originalStream,
    terminalFetch,
-   lifecycle,
+   lifecycle:currentness,
    root,
    collector,
-   endpoint,
    prepareSourceAssociation:prepareNativeSourceAssociation
  });
  const producerOwner=createRequestProducerOwner({now});
+ const executionOrigins=new WeakMap();
  async function sendAttributedAssessment(input){
   const wire=bindRuleAssessmentWire(input.request);
   const raw=await sendWire(Object.freeze({
@@ -97,8 +99,8 @@ export function bindNativePolicyRuntime({
    observer,
    collector,
    rootAdapter:Object.freeze({
-     prepare:function captureOriginalRootLease() { return (lifecycle.capture(root)); },
-     finalize:function checkOriginalRootLease(lease) { return (lifecycle.assertActive(lease)); }
+     prepare:function captureOperationRoot() { return (currentness.capture(root)); },
+     finalize:function checkOperationRoot(operation) { ; (currentness.assertActive(operation)); }
    }),
    rootDirectory,
    files,
@@ -109,9 +111,12 @@ export function bindNativePolicyRuntime({
      .digest('hex'),
    trace,
    send:configuredSemanticUse?sendAttributedAssessment:send,
-   isRetryableTransportFailure:function declineUnqualifiedClaim() { return (false); }
+   isRetryableTransportFailure:isRetryableAssessmentFailure
  });
- const runtimeState={lastJudgment:undefined,lastReview:undefined};
+ const runtimeState={
+   lastJudgment:undefined,
+   lastReview:undefined
+ };
  const stream=producerOwner.bindJudgmentConsumer({
   handle:function observeOriginalMainRequest({
     model,
@@ -136,7 +141,13 @@ export function bindNativePolicyRuntime({
    semanticAdmissionPolicy,
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
-   approvalHost
+   approvalHost,
+   executionOrigins,
+   captureOperationCurrentness(){
+    const operation=currentness.capture(root);
+    return function assertOperationCurrent(){currentness.assertActive(operation);};
+   }
+   ,readBypass
  });
  async function executeToolBatch(input){
   trace('policy-runtime.batch');
@@ -162,21 +173,24 @@ export function bindNativePolicyRuntime({
  const installation=installNativePolicyHooks({
    agent,
    previousStream,
-   observedStream:function observedStream(model,context,options){return producerOwner.fromAgentLoop({
-     stream,model,context,options
+   observedStream:function observedStream(
+     model,
+     context,
+     options
+   ){return producerOwner.fromAgentLoop({
+     stream,
+     model,
+     context,
+     options
    });},
    executeToolBatch,
    invalidateObserver:function invalidateRequestObservation() { observer.invalidate(); },
-   registerJudgmentStart:function registerOriginalJudgment() { return (registerOriginalJudgmentStart({
-     agent,
-     producerOwner,
-     stream
-   })); },
    registerExecutionTools:function registerOriginalExecutionTools() { return (registerOwnedExecutionTools({
      session,
-     producerOwner,
      stream,
-     wrapToolDefinition
+     wrapToolDefinition,
+     readBypass,
+     executionOrigins
    })); },
    isSessionDisposed:function hasCompletedNativeDisposal() { return (readSessionDisposalState(session)
      .completed

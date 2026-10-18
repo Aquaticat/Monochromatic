@@ -5,7 +5,7 @@ import { createFacadeFixture } from './native-facade-fixture.ts';
 
 /** Each invalid option independently reaches an original bootstrap rejection branch. */
 const invalidOptions = [
-  { now: null }, { now: false }, { deadlineAt: Number.NaN }, { deadlineAt: Number.POSITIVE_INFINITY },
+  { now: null }, { now: false }, { targetAt: Number.NaN }, { targetAt: Number.POSITIVE_INFINITY },
   { rootDirectory: false }, { rootDirectory: 'relative' }, { files: {} }, { trace: false },
 ] as const;
 
@@ -26,7 +26,7 @@ await describe({ name: '', children: [
       assert.throws(function invalid() { 
         f.construct(); 
       }, {
-        name: ('now' in change) || ('deadlineAt' in change) ? 'DependencyDeadlineError' : 'DependencyConfigurationError',
+        name: ('now' in change) || ('targetAt' in change) ? 'DependencyClockError' : 'DependencyConfigurationError',
       });
       assert.deepEqual(f.events, []);
     } });

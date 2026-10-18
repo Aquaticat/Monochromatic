@@ -313,3 +313,48 @@ Agent work done:
  #306,
  #307,
  #338) and the legacy plan rewrite.
+
+## Serialized file writes release, 2026-10-16
+
+The owner requested publication of the logger's pending `0.4.1` release.
+This version serializes complete file-sink appends so concurrently queued records larger than a filesystem write chunk
+remain valid JSONL in invocation order.
+The registry still served `0.4.0` when this request arrived.
+The existing `npm-release.yml` attempt
+[38837664209](https://github.com/Aquaticats/Monochromatic/actions/runs/38837664209)
+failed with `ERR_PNPM_FAILED_TO_PUBLISH` and HTTP 404 for `0.4.1`.
+That failure alone does not establish the authentication cause.
+
+The previously verified `npm-publish.yml` workflow now accepts a `module` choice,
+`fs-path` or `logger`,
+and builds and tests the selected module before packing it with pnpm.
+The separate publish job uses npm OIDC and provenance.
+Logger repository metadata now points to `Aquaticats/Monochromatic`.
+The release kept the pending version `0.4.1`.
+
+Commit `61d38bd7041443b236eea75b0a7f00da7e0d53bc` is the source for
+[release run 38838431661](https://github.com/Aquaticats/Monochromatic/actions/runs/38838431661).
+Local `lint:types` and `lint:oxlint` passed with zero warnings and errors.
+The disposable npm consumer has its own private manifest and an explicit installation prefix.
+The workflow succeeded,
+including the build and unit tests.
+npm accepted the upload,
+then made `0.4.1` available at `2026-10-16T02:06:06.290Z`;
+the registry's `latest` tag now resolves to it.
+The registry identifies GitHub Actions as publisher and
+`80363e5d-aede-4258-81ca-d4ee414a90a5` as the trusted publisher configuration.
+Its SLSA provenance names `Aquaticats/Monochromatic`,
+`.github/workflows/npm-publish.yml`,
+and source commit `61d38bd7041443b236eea75b0a7f00da7e0d53bc`.
+Tag `@monochromatic-dev/module-logger@0.4.1` preserves that revision.
+
+A fresh npm installation passed version and repository URL assertions.
+The installed `createLogger`,
+`tagged`,
+and `createFileSink` queued four records with 600000-character payloads,
+flushed them,
+and produced complete JSONL in exact invocation order.
+The `/ts` entry remained unavailable to registry consumers as intended.
+
+Next action:
+none for `0.4.1`.

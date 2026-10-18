@@ -52,9 +52,9 @@ export function isNamedInputField(field: unknown): field is 'toolSnippets' | 'se
 
  @example isScalarInputField('expandedPrompt');
  */
-export function isScalarInputField(field: unknown): field is 'customPrompt' | 'appendSystemPrompt' | 'expandedPrompt' {
+export function isScalarInputField(field: unknown): field is 'customPrompt' | 'appendSystemPrompt' | 'expandedPrompt' | 'visibleConversation' {
   return (field === 'customPrompt') || (field === 'appendSystemPrompt')
-    || (field === 'expandedPrompt');
+    || (field === 'expandedPrompt') || (field === 'visibleConversation');
 }
 
 /**

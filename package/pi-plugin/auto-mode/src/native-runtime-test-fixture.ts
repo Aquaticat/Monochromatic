@@ -106,12 +106,6 @@ export function createNativeHookFixture(): NativeHookFixture {
     observedStream,
     executeToolBatch,
     invalidateObserver(): void { events.push('invalidate',); },
-    registerJudgmentStart() {
-      events.push('register-start',);
-      return function removeStart(): void {
-        events.push('remove-start',);
-      };
-    },
     registerExecutionTools() {
       events.push('register-tools',);
       return function removeTools(): void {

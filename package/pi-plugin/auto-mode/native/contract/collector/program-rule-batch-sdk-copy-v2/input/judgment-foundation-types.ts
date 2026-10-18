@@ -13,12 +13,7 @@ import type {
   JudgmentSourceReceipt,
   JudgmentSources
 } from './judgment-source-types.ts';
-import type { JudgmentMembershipSnapshot } from './judgment-member-types.ts';
-import type { InstructionMember } from './instruction-types.ts';
-import type {
-  ProgramMemberRecord,
-  ProgramGroup
-} from './program-state-types.ts';
+import type { PreparedGroupContext } from '../../../integration/native-batch/prepared-group-types.ts';
 
 /**
  Original occurrence observations retain fixed bootstrap capabilities and lazy dependency checks.
@@ -31,14 +26,11 @@ export type JudgmentFoundationInput<Source extends JudgmentConstructorSources, R
 /**
  Shared membership begins empty after original budget and source observations succeed.
  */
-export type JudgmentFoundation<Source extends JudgmentConstructorSources> = JudgmentMembershipSnapshot
+export type JudgmentFoundation<Source extends JudgmentConstructorSources> = PreparedGroupContext
   & Pick<JudgmentSources<Source>, 'receipt' | 'readCurrentSourceBinding'>
   & Readonly<{
     budget: JudgmentBudget;
     requestInput: MainAgentRequestInput<JudgmentSourceReceipt<Source>>;
     sourceOwner: JudgmentSources<Source>;
     facade: DependencyFacade;
-    bindings: WeakMap<object, ProgramMemberRecord & InstructionMember>;
-    byMember: Map<string, object>;
-    childGroups: ProgramGroup[];
   }>;

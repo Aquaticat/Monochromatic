@@ -15,16 +15,16 @@ import {createLoadedUserInputs} from './loaded-user-inputs.mjs';
  */
 export function createInputPool({
   entries,
-  maximumInputs,
-  maximumSnapshotBytes,
   InputCaptureError
 }){
  const occurrence=Object.freeze({});
  const origins=new WeakMap();
+ const sourceDataByContent=new Map();
+ const metadataTexts=new Map();
  const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedInputs:Object.freeze([])};
 
  function reserve(){
-  if((++poolState.count)>maximumInputs)throw new SourceCollectionError(`Original input receipts exceed the ${maximumInputs}-source profile`);
+  poolState.count++;
  }
  function retain({
    carrier,
@@ -38,24 +38,26 @@ export function createInputPool({
    kind='native-session-message-input'
  }){
   const contentFormat=(typeof value)==='string'?'text':'native-content-json';
-  const content=contentFormat==='text'?value:JSON.stringify(value??[]);
-  if(Buffer.byteLength(content)>65_536)throw new SourceCollectionError('Loaded session message content exceeds the original source byte bound');
+  const serialized=contentFormat==='text'?value:JSON.stringify(value??[]);
+  let data=sourceDataByContent.get(serialized);
+  if(data===undefined){
+   data=Object.freeze({content:serialized,sha256:createHash('sha256').update(serialized).digest('hex')});
+   sourceDataByContent.set(serialized,data);
+  }
+  const serializedMetadata=JSON.stringify({...metadata,contentFormat});
+  const metadataJSON=metadataTexts.get(serializedMetadata)??serializedMetadata;
+  if(!metadataTexts.has(serializedMetadata))metadataTexts.set(serializedMetadata,metadataJSON);
   const source=Object.freeze({
     kind,
-    content,
+    content:data.content,
     contentFormat,
     inputOrigin,
     inputLocation:Object.freeze({
       field:inputField,
       ...(ordinal===undefined?{}:{ordinal}),
-      metadataJSON:JSON.stringify({
-        ...metadata,
-        contentFormat
-      })
+      metadataJSON
     }),
-    sha256:createHash('sha256')
-      .update(content)
-      .digest('hex'),
+    sha256:data.sha256,
     occurrence:Object.freeze({}),
     ...(kind==='native-resource-tool-input'?{resourceInputOccurrence:inputOccurrence}:{sessionInputOccurrence:inputOccurrence}),
     registration:undefined,
@@ -63,7 +65,6 @@ export function createInputPool({
     permission:false
   });
   poolState.bytes+=Buffer.byteLength(JSON.stringify(source));
-  if((poolState.bytes+poolState.pendingEventBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
   const publisher=createInputOnlyPublication({source,systemInput});publisher.capture(carrier);
   const origin=Object.freeze({
     source,
@@ -89,7 +90,7 @@ export function createInputPool({
  const {captureSummary,captureEdit,captureLoadedEntries}=createLoadedHistory({occurrence,reserve,retain,poolState,InputCaptureError});
 captureLoadedEntries(entries);
 const {captureInitialManagerInput,captureManagerInput}=createLoadedManagerInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
-const {createEventHandlerCapture,captureContextHandler,captureHandlerResultOutput}=createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput,maximumSnapshotBytes});
+const {createEventHandlerCapture,captureContextHandler,captureHandlerResultOutput}=createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
 const {captureToolLoadoutQuery,captureToolLoadoutInput,captureToolLoadoutOutput,captureExtensionToolInput,captureCustomToolDescriptions}=createLoadedToolInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
 const {captureAgentInput}=createLoadedAgentInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
 const {captureQueuedInput,captureUninterceptedInput,captureCallInput,captureCommandInput,captureTransformedInput,captureInputEvent,captureCustomMessageInput}=createLoadedUserInputs({poolState,InputCaptureError,reserve,retainConstructedInput});

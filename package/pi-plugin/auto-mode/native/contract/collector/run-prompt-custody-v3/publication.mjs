@@ -11,7 +11,7 @@ import {createGuidelineInputs} from './guideline-inputs.mjs';
 
 //region Publish immutable run ancestry using the existing source capabilities.
 /** Publish immutable run ancestry using the existing source capabilities. */
-export function createRunPublication({state,check,base,charge,requireRenderCapture}){
+export function createRunPublication({state,check,base,requireRenderCapture}){
 function publishScope(scope){
     check(scope);const publishedBase=base();
     const republished=republishBaseInputs({
@@ -31,10 +31,7 @@ function publishScope(scope){
     const builtInPromptInputs=scope.rendered
       ?.inputs
       ??Object.freeze([]);
-    charge({
-      scope,
-      value:options
-    });check(scope);
+    check(scope);
     if(state.active!==scope)throw new SourceCollectionError('Run source occurrence changed before publication');
     const observations=Object.freeze(scope.slots
       .map(function snapshotHandlerSlot(slot) { return (Object.freeze({
@@ -53,12 +50,9 @@ function publishScope(scope){
             at:failure.at
           })); }))
       })); }));
-    const handlerOptionInputs=charge({
-      scope,
-      value:captureHandlerOptionInputs({
+    const handlerOptionInputs=captureHandlerOptionInputs({
         observations,
         runOccurrence:scope.handle
-      })
     });
     const handlerOptionPublications=Object.freeze(handlerOptionInputs.map(function captureHandlerOptionPublication(
       source,
@@ -186,12 +180,15 @@ function publishScope(scope){
       otherInputCoverage:'not-established'
     });
     const ancestors=[];let {parent} = scope;
-    while(parent){if(ancestors.length>=64)throw new SourceCollectionError('Run source ancestry exceeds its declared profile');ancestors.push(parent.node);parent=parent.parent;}
+    const seen=new Set();
+    while(parent){
+      if(seen.has(parent))throw new SourceCollectionError('Run source ancestry contains a cycle');
+      seen.add(parent);ancestors.push(parent.node);parent=parent.parent;
+    }
     scope.view=Object.freeze({
       ...scope.node,
       ancestors:Object.freeze(ancestors)
     });
-    if(Buffer.byteLength(JSON.stringify(scope.view))>8_388_608)throw new SourceCollectionError('Complete run ancestry exceeds its declared byte bound');
     scope.state='published';state.current=scope;state.active=undefined;return options;
   }
 return {publishScope};

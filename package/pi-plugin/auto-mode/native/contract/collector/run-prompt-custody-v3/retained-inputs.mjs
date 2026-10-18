@@ -16,7 +16,6 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
         .some(function hasObservedInput(slot) { return (slot.before!==undefined); })
         &&(scope.handlerOptionOrigins===undefined))throw new SourceCollectionError('Original callback input history has no completed source publication');
       for(const origin of scope.handlerOptionOrigins??[]){
-        if(origins.length>=128)throw new SourceCollectionError('Original callback input history exceeds the 128-source profile');
         origins.push(origin);
       }
     }
@@ -36,7 +35,6 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
       ...handlerInputs,
       ...managerInputs
     ]);
-    if(value.length>128)throw new SourceCollectionError('Combined original callback and manager inputs exceed the 128-source profile');
     state.combinedInputView={
       managerInputs,
       handlerInputs,
@@ -129,13 +127,7 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
       .occurrence
       ===origin.source
       .occurrence); }))return;
-    const next=origins.length>=128
-      ?Object.freeze({
-        rootOccurrence,
-        origins,
-        failure:new SourceCollectionError('Retained native message sources exceed the original 128-source profile')
-      })
-      :Object.freeze({
+    const next=Object.freeze({
         rootOccurrence,
         origins:Object.freeze([
           ...origins,
@@ -167,7 +159,6 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
         const origin=originalMessageInput(original);
         if((!origin)||seen.has(origin.source
           .occurrence))continue;
-        if(origins.length>=128)throw new SourceCollectionError('Retained native message sources exceed the original 128-source profile');
         seen.add(origin.source
           .occurrence);origins.push(origin);
       }

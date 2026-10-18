@@ -1,5 +1,328 @@
 # LLM Gateway Luna Decisions returns complete answers without complete native admission
 
+## Permission review receives unrelated agent guidance on 2026-10-16
+
+### Symptom and evidence
+
+Session `2026-10-16T02-17-34-349Z` reached manual approval while inspecting task headings with `grep`
+and reading the handover with `sed`, after preceding inspection calls succeeded.
+The installed whole-operation request included the full root policy and Pi's hidden tool-use guidance.
+Three identical live requests returned `deny: 0.57`, `approve: 0.41`, and `unknown: 0.02`.
+The `0.60` action cutoff correctly withheld automatic approval.
+The defect was the selected review scope and inputs, not a transport timeout.
+The concurrent sessionStorage warning is explicitly outside this incident's investigation.
+
+### Source trace and correction
+
+The accepted scope is execution permission and required consent.
+Tool-use and implementation conventions remain coding-agent guidance.
+The shared question scope is defined in
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/permission-review-scope.ts`.
+Both automatic review phases consume it.
+
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-context.mjs:31`
+selects readable project policy sources and visible conversation before clause indexing:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-context.mjs
+const sources=Object.freeze([
+  snapshot.hostGoverningPolicy,
+  ...(snapshot.readablePolicySources??[]),
+  ...(conversation?[conversation]:[])
+]);
+```
+
+Hidden prompts, tool metadata, and skill descriptions remain local provenance inputs.
+They do not become review questions or shared model context.
+Additional policy inputs must bind to actual readable files through the incumbent observer.
+Complete root-policy copies in transcript strings are replaced with a selected-excerpt reference.
+
+The existing relevance cache was disconnected from production initialization and admitted no exclusions.
+Commits `d9e9771bd8`, `c35670685a`, and `22532b415e` connect initialization, selection, and wire projection.
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/startup-relevance.mjs:25`
+constructs requests from individual changed rules and fixed remit text:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/startup-relevance.mjs
+const body=JSON.stringify({model:ruleAssessmentModel,state:{remit:request.definition.remit},questions});
+```
+
+No complete policy field accompanies those questions.
+Unchanged classifications persist across owners; changed rule text or classifier profile requires fresh estimates.
+The user's subsequent instruction to cull uncertain rules is implemented in
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-material.mjs:11`:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-material.mjs
+const excluded=Object.freeze((relevance?.rules??[]).filter(function notAdmitted(rule){return rule.probability<0.6;}));
+```
+
+Selected excerpts retain original source spans and freshness checks.
+Relevance selection does not grant execution permission.
+Startup classification failure preserves chat; tool calls require scoped confirmation or remain withheld without UI.
+
+### Verification and limits
+
+Installed release `native-release-8uGKtw` passes built startup and readable-context regressions.
+The relevance boundary includes `0.60` and excludes lower estimates.
+Cold, warm, and changed-rule fixtures request four, zero, and one classifications respectively.
+A disposable build fails the regression with culling removed and passes when restored.
+The startup failure matrix covers chat, Allow, Stop, and headless withholding.
+
+```sh
+# Repository root; built consumer tests with disposable fixtures
+mise run //package/pi-plugin/auto-mode:test:native:startup-relevance
+mise run //package/pi-plugin/auto-mode:test:native:decision-context
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+```
+
+The full reported conversation replay executes nine original calls across six groups without confirmation.
+The live explicit prohibited-read control blocks both calls without confirmation.
+Receipts and the resource comparison are indexed in
+[the current handover](../handover/pi-auto-mode-current-frontier.md).
+These observations establish the exercised interactions, not universal classifier accuracy.
+Removing uncertain rules can omit a relevant restriction when its relevance estimate is low;
+that tradeoff follows the user's explicit selection policy.
+
+### Rejected approaches
+
+- Raising or lowering the action cutoff does not repair unrelated review inputs.
+- Filtering only shared context still exposes omitted instructions in per-clause questions.
+- An initial-command replay does not establish behavior after the reported preceding turns.
+- Keeping uncertain rules contradicts the subsequent explicit selection instruction.
+
+### Upstream filing decision
+
+Nothing to add upstream: source selection, permission scope, and disconnected cache integration are application defects.
+The upstream-fault gate fails.
+The Decisions route supports the requests exercised here; upstream fixability, contribution policy,
+maintainer intent, and prototype gates do not justify a provider report for these local corrections.
+No external issue or message is prepared.
+
+## Repository inspection blocked by unresolved prerequisites on 2026-10-16
+
+### Symptom and retained evidence
+
+Installed auto-mode release `native-release-tmMxY3` blocked a handover-directory listing
+and `pwd` plus `git rev-parse --show-toplevel` with:
+
+> An independent authorization prerequisite remains unsatisfied or unresolved;
+> session confirmation cannot satisfy it
+
+The original session beginning `2026-10-16T00-30-17-591Z` retains both tool calls and their rejected results.
+Neither proposed operation required another authorization under the reported task.
+The original local logs omitted per-clause distributions,
+so the exact clause causing that incident is unknown.
+An unchanged installed replay subsequently reached a dialog;
+its `PX2` prerequisite score was `0.39`, below admission.
+That replay does not establish that `PX2` caused this incident.
+The separate 2026-10-15 `proof.txt` incident has its own retained `0.60` evidence.
+
+### Source trace and repair
+
+Before commit `ad6d59cb92`,
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/review-outcome.ts:84`
+converted unresolved authorization requirements into the quoted terminal explanation:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/review-outcome.ts, before ad6d59cb92
+if (authorization.state === 'unresolved') {
+```
+
+The agent's initial interpretation, routing those estimates directly to a dialog, was rejected.
+The user required the decision model to reconsider the complete operation first.
+Current `package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-core.mjs:108`
+now selects that path before native confirmation:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-core.mjs:108
+const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict==='ask')
+  ?await decideCompleteOperation()
+  :undefined;
+```
+
+The new question retains complete selected context and every original prepared tool operation.
+It shares the existing model, categorical cutoff, deadline, and transport allowance.
+A recoverable clause-assessment failure also reaches this model question.
+An established governing prohibition remains terminal.
+Unresolved or failed final review reaches scoped confirmation when available.
+Allow authorizes the exact operation without rewriting prerequisite estimates as satisfied external facts.
+
+The source-change control exposed another failure:
+changing `AGENTS.md` during final model review initially entered the independent manual fallback and executed.
+Commit `8854618f2a` prevents replacing that stale review with a new dialog.
+The subsequent deadline control distinguishes source freshness from an exhausted assessment budget,
+so a model timeout can still reach last-resort manual review for an unchanged operation.
+
+### Reconstructable diagnostics
+
+The user identified missing decision evidence as a logging defect.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/compiler.mjs:138`
+records each selected clause, distribution, serving model, priority, and admission result:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/compiler.mjs:138
+recordDecision({judgment,event:'clause-admission',details:{id,binding:projection,model:record.model,matchingModel,answer:record.answer,admitted,priority}});
+```
+
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-diagnostics.ts:28`
+retains one local identifier for the original judgment:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-diagnostics.ts:28
+const reviewId = reviewIds.get(judgment) ?? randomUUID();
+```
+
+Assessment records include complete selected model input and parsed replies under `assessmentId` and `operationId`.
+Question evidence joins those records to `reviewId` through the same operation digest.
+Decision records retain routing, model outcomes, scoped confirmation, and nested failures.
+Invalid reply records retain the malformed reply.
+Transport credentials and the archived primary-provider request are excluded from assessment records.
+These local logs contain command and policy contents and are not public issue attachments.
+
+### Verification and limitations
+
+The original routing regression failed because only one assessment ran.
+The candidate then passed an authored false-prerequisite response followed by final-model approval.
+The live candidate replay uses the user's exact commands,
+the actual repository working directory and policy,
+17 configured packages,
+27 home-discovered skills,
+and all 140 cached MCP tool definitions.
+It made four successful Luna calls,
+executed both commands,
+and opened no dialog.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/repo-decision-candidate.log`.
+
+The built consumer regression covers automatic approve and deny,
+unknown and lower-scoring answers,
+malformed replies,
+initial and final transport failures,
+Allow and Stop,
+dismissal,
+missing UI,
+source changes,
+cancellation,
+original-deadline expiry,
+and explicit fresh confirmation.
+It reconstructs the authored false prerequisite from the actual tagged logger's records.
+
+```sh
+# Repository root; authored provider replies and disposable native sessions
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+```
+
+The earlier synthetic working-directory policy did not establish behavior under the real repository policy.
+The older original logs cannot be repaired retroactively.
+Authored cases establish routing and retention;
+live results establish the named observed operations, not general model accuracy.
+Installed release `native-release-Jg5gMF` passes the same live repository-policy replay in
+fixture `pi-hyper-rpc-allow-HTVK1s`, with four successful Luna calls, both commands executed, and no dialog.
+Its persisted JSONL records contain 518 question answers and 515 clause-admission records,
+linked to both complete assessment exchanges and the final approval.
+The installed prohibition control `pi-hyper-rpc-prohibited-a1TH2T` blocks both proposed reads without a dialog.
+The fallback, original-budget, ownership, public API, type, and focused zero-error lint checks pass.
+Complete installed receipts are indexed in [the current handover](../handover/pi-auto-mode-current-frontier.md).
+
+### Upstream filing decision
+
+Nothing to add upstream for this incident:
+the demonstrated missing fallback and diagnostics are owned application behavior.
+The original model interpretation cannot be attributed to a specific clause from its retained logs.
+The upstream-fault gate therefore fails;
+upstream fixability, contribution acceptance, maintainer intent, and an upstream prototype do not arise.
+The existing provider supports the Decisions request shape exercised by the retained live HTTP 200 receipts.
+No upstream message or speculative provider patch is prepared.
+
+## Local read falsely acquires an unrelated prerequisite on 2026-10-15
+
+After restoring selected conversation context,
+the configured host received complete HTTP 200 assessments for a local `proof.txt` read,
+but emitted:
+
+> An independent authorization prerequisite remains unsatisfied or unresolved;
+> session confirmation cannot satisfy it
+
+Luna selected `prerequisite` with probability `0.60` for `PX2`,
+whose authorization condition concerns destructive or external actions.
+The observed local read does neither.
+The first live host attempt and both unchanged-body repetitions admitted that meaning.
+The adopted inclusive `0.60` threshold explains why the consumer retained the prerequisite;
+its independent confidence field was `0.53` and was not the admission field.
+This is a false positive for this operation,
+not evidence that the Gateway ignored input or that the confirmation guard should be removed.
+
+### Source trace and bounded repair
+
+The question supplied the selected clause while retaining the operation only in shared input.
+The replacement repeats the complete original operation beside each clause,
+without changing source content,
+question identity,
+rubrics,
+admission threshold,
+or authorization behavior.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire.mjs:56`
+decodes the original native JSON snapshots:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire.mjs:56
+const proposedOperation = Object.freeze({
+  parent: JSON.parse(envelope.parentJSON),
+  prepared: JSON.parse(envelope.preparedJSON)
+});
+```
+
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire-clause.mjs:59`
+adds `proposedOperation` to each categorical clause question.
+The original shared input remains complete.
+The tradeoff is repeated operation bytes per clause;
+conversation archives remain excluded.
+The measurements establish changed model outputs,
+not the provider's internal cause or general semantic accuracy.
+
+### Verification
+
+The unchanged requests and repeat responses are retained under
+`${HOME}/temp/agent/pi-hyper-rpc-allow-e9HmAE/`
+and `${HOME}/temp/agent/pi-core-repeat-fgODvB/`.
+Two changed-format observations under `${HOME}/temp/agent/pi-core-operation-ygPhES/`
+retained permission and fresh-confirmation estimates while no independent prerequisite met admission.
+These diagnostic observations executed no proposed tool operation.
+
+After commit `67a2d7cfe3`,
+the installed CLI was exercised in disposable homes with all 17 configured packages,
+copied workspace instructions,
+authored primary-model responses,
+and live Luna assessments:
+
+- `pi-hyper-rpc-allow-xBd3tp`:
+  one scoped confirmation and one completed native file read.
+- `pi-hyper-rpc-prohibited-jdUv2C`:
+  an actual file-read prohibition, no confirmation, and no child execution.
+- `pi-hyper-rpc-generic-L5IYbS`:
+  required approval from an external records office, no confirmation, and no child execution.
+
+Each assessment used three HTTP calls under the original fifteen-second budget.
+The permission case retained 516 questions and request sizes of 370631,
+377120,
+and 289751 bytes.
+Its slowest response completed in 5760.916 milliseconds.
+These receipts prove the named live consumer cases,
+not human keyboard delivery or general classifier accuracy.
+The maintained `test:native:decision-context` also checks exact operation equality in every clause question,
+complete selected messages,
+absence of the old prefix,
+follow-up selection,
+and reload.
+No upstream defect or filing is established by these application measurements.
+
+## Historical admission investigation
+
+The remaining sections describe the 2026-10-14 input,
+threshold,
+and experiments.
+Their unresolved result does not replace the newer configured-host receipts.
+
 ## Symptom and version
 
 On 2026-10-14,

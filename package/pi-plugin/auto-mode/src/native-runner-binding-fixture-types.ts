@@ -48,7 +48,7 @@ export type RunnerBindingAdmission = Readonly<{
   group: object;
   calls: readonly RunnerBindingCall[];
   tools: readonly unknown[];
-  runNative: RunnerBindingNative;
+  
 }>;
 /**
  Exposed binding retains each independently owned association and transport.

@@ -428,6 +428,53 @@ unless the user asks otherwise.
   A one-character change to a length threshold then diverged on 5,159 gerund texts while the filtered
   public API reported none of them,
   so the raw match list has to be compared alongside the exported function.
+- Identifier-token scanner for runtime-compiled patterns interpolating a parsed identifier,
+  such as the four `RegExp` constructions `prefer-describe-function-ref-name` compiled per lookup
+  from `String.raw` templates interpolating the name,
+  to classify an imported file's export surface (audit issues #712 through #716,
+  replaced 2026-10-17 in commits `d16977a5d9` and `e47e2d39c5`):
+  compare the name as literal text,
+  never as pattern source,
+  and replace `\b` with maximal identifier-part runs.
+  Interpolating an identifier carries two inherent defect classes:
+  a `$` in the name compiles as an end-of-input anchor so the name never matches,
+  and ASCII `\b` misreads every non-ASCII neighbour,
+  rejecting names that end in a non-ASCII letter while accepting a name followed by `$` or a
+  non-ASCII letter inside a longer identifier.
+  Literal token comparison fixes both,
+  which is a behaviour change that needs an owner decision and its own corpus classes.
+  The run matcher must exempt the `\s` set from the non-ASCII identifier-part over-approximation,
+  or a no-break space inside a brace list is swallowed into the token;
+  that exemption was the single divergence the first cut of the replacement produced.
+  Where the pattern was quadratic on adversarial repetition,
+  the re-export shape `export\s*\{[^}]*\bNAME\b[^}]*\}` rescanning the brace-free remainder per
+  unterminated opener,
+  the cursor scan resumes past each closing brace it has ruled out,
+  since every opener before that brace shares the same first closing brace,
+  the same from-clause verdict,
+  and a segment containing the current one,
+  and it stops entirely once no closing brace exists ahead.
+  Measured,
+  that turns the audit's four-times-per-doubling series (1010 ms at 240 KB of openers) into
+  0.6 ms,
+  and one megabyte costs 2.7 ms.
+  See
+  `package/oxlint-plugin/no-restricted-syntax/src/rule/prefer-describe-function-ref-name.export-scan.ts`.
+- Differential evidence when the replacement intentionally fixes pattern defects,
+  so byte-identical outputs are the wrong bar:
+  read the patterns from the pre-refactor commit (`git show` against the replacement commit's
+  parent) and assert the fragments are present,
+  compare classification verdicts pair by pair over a template corpus and a seeded fuzz corpus,
+  pass each divergence through a predicate naming the defect class it belongs to and fail on any
+  unclassified one,
+  and pin both directions with controls:
+  pairs that must diverge exactly as documented and pairs that must agree.
+  Finish with a mutation suite in which every single-point mutation of the replacement must be
+  detected by the corpus,
+  since an undetected mutation names a corpus gap rather than a safe replacement;
+  the first probe here missed the digit-zero token edge until a mutation exposed it.
+  The `prefer-describe-function-ref-name` probe compared 40,859 pairs with zero unclassified
+  divergences and detected all fifteen mutations.
 
 ### Files where source-of-truth IS regex (kept with disables)
 

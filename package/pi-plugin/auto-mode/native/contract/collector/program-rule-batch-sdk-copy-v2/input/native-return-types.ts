@@ -156,13 +156,7 @@ export type NativeReturnSlot = {
  Fixed owner callbacks keep retained inspection separate from live value use.
  */
 export type NativeReturnOwner = {
-  /**
-   External native runner dictates its positional call signature.
-   */
-  readonly runNative: (
-    call: NativeReturnCall,
-    options: unknown
-  ) => unknown;
+  
   /**
    Original slot reader remains available after native completion and retirement.
    */
@@ -182,7 +176,7 @@ export type NativeReturnOwner = {
 //region Consumer operations expose retained evidence and guarded value access
 
 /**
- One native invocation keeps the original call and options objects.
+ One native preparation retains the original call identity.
  */
 export type NativeReturnInput = {
   /**
@@ -193,10 +187,7 @@ export type NativeReturnInput = {
    Original native call object is passed unchanged to the runner.
    */
   readonly call: NativeReturnCall;
-  /**
-   Original native options are passed unchanged to the runner.
-   */
-  readonly options?: unknown;
+  
 };
 
 /**
@@ -233,10 +224,9 @@ export type NativeReturnInspection = {
  Original reached-group consumer separates execution, live access, and inspection.
  */
 export type NativeReturnConsumer = {
-  /**
-   Retain the original native return and conversion.
-   */
-  readonly invoke: (input: NativeReturnInput) => Promise<NativeReturnOutcome>;
+  /** Reserve an actual native call before asynchronous preparation starts. */
+  readonly open: (input: NativeReturnInput) => NativeReturnEntry;
+  
   /**
    Read supported text only through current original ownership.
    */
@@ -249,5 +239,16 @@ export type NativeReturnConsumer = {
    */
   readonly inspect: (handle: object) => NativeReturnInspection;
 };
+
+/** Native phases retain completion through the original slot without consulting live parent eligibility. */
+export type NativeReturnEntry = Readonly<{
+  complete: (outcome: unknown) => NativeReturnOutcome;
+  fail: (error: unknown) => void;
+}>;
+
+/** Factory-owned slots expose their native lifetime instead of requiring an invocation-handle round trip. */
+export type NativeCallSlot = Readonly<{
+  open: (call: NativeReturnCall) => NativeReturnEntry;
+}>;
 
 //endregion Consumer operations expose retained evidence and guarded value access

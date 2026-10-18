@@ -131,6 +131,8 @@ const eventObserverUrl=new URL(
   'event-observer.ts',
   import.meta.url
 ).href;
+/** Capture failure handling is supplied by this release's passive native event boundary. */
+const passiveEventsUrl=new URL('passive-events.mjs',import.meta.url).href;
 /**
  Qualified native manager edits are rebased onto the original module dependency graph.
  */
@@ -145,7 +147,8 @@ const manager=imports({
     [loadedInputsUrl]:loadedInputsUrl,
     [queryObserverUrl]:queryObserverUrl,
     [contextObserverUrl]:contextObserverUrl,
-    [eventObserverUrl]:eventObserverUrl
+    [eventObserverUrl]:eventObserverUrl,
+    [passiveEventsUrl]:passiveEventsUrl
   }
 });
 /**
@@ -182,6 +185,7 @@ const sessionCore=imports({
   path:sessionPath,
   overrides:{
  [resourceReloadUrl]:resourceReloadUrl,
+ './agent-loop.mjs':pathToFileURL(join(output,'agent-loop.mjs')).href,
  './session-manager.js':pathToFileURL(join(
    output,
    'session-manager.mjs'
@@ -208,8 +212,7 @@ const sessionCore=imports({
  Generated Session imports connect the existing manager, input, and prompt ownership modules.
  */
 const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\nimport {attachNativeContextCopies,readRootOccurrence,readNativeSessionInputOrigin,assertNativeSessionInputCapture,readNativeConstructedInputOrigins,readNativeSessionInputUsage,captureNativeQueuedInput,captureNativeCustomMessageInput,captureNativeInputEvent,observeNativeUninterceptedInput,observeNativeTransformedInput,captureNativeCommandInput,captureNativeCallInput,createNativeHandlerResultObserver,createNativeContextObserver} from "./session-manager.mjs";\n`
-  +`import {createBaseCompositionOwner} from ${helperUrl("../../collector/rule-relevance-sdk-copy/input/base-owner.mjs")};\n`
-  +`import {createRunPromptOwner} from ${helperUrl('../../collector/run-prompt-custody-v3/owner.mjs')};\n`
+  +`import {createPassiveBaseOwner as createBaseCompositionOwner,createPassiveRunOwner as createRunPromptOwner} from ${helperUrl('./passive-prompt.mjs')};\n`
   +`import {copyPromptOptions} from ${helperUrl('../../collector/base-prompt-custody-v2/copy.mjs')};\n`
   +`import {emitOwnedBeforeAgentStart,emitOwnedContext,emitOwnedInput} from "./run-emitter.mjs";\n`
   +`import {readNativeRunnerDomainEvents} from "./event-runner.mjs";\n`

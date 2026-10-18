@@ -136,6 +136,8 @@
     {
       "original": "collector/result-program-sdk-copy-guarded/stage-private/child-prepared-dispatch.mjs",
       "maintained": "collector/result-program-sdk-copy-guarded/input/child-prepared-dispatch.mjs",
+      "currentMaintained": "collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs",
+      "movedOn": "2026-10-17",
       "sha256": "4e8f79a98e83d71707ec76e1dcc1b118065ed6bbfc189290ec8687e85e4c677c",
       "origin": "previous-generated-input",
       "relocatedLiterals": 2
@@ -289,7 +291,7 @@
     },
     {
       "original": "integration/action-policy/evaluate.mjs",
-      "maintained": "integration/action-policy/evaluate.mjs",
+      "maintained": "integration/action-policy/decision-core.mjs",
       "sha256": "6753cdc51ab25fcedb7ac378994c6a93a6a0694ec82b338e17ae61edcda0a1f7",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -310,7 +312,7 @@
     },
     {
       "original": "integration/action-policy/index.mjs",
-      "maintained": "integration/action-policy/index.mjs",
+      "maintained": "integration/action-policy/decision-core.mjs",
       "sha256": "ec4009fe6e2e6a32e40a54b85226a2fd1e89cf0b567af4e3136d2ec828b6a5ea",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -319,13 +321,6 @@
       "original": "integration/action-policy/inputs.mjs",
       "maintained": "integration/action-policy/inputs.mjs",
       "sha256": "ddd89e06eaa42e9a164660bf36a952279397fbf2a7231bf3850bd7c7dead74f2",
-      "origin": "authored-source",
-      "relocatedLiterals": 0
-    },
-    {
-      "original": "integration/action-policy/judgment-start.mjs",
-      "maintained": "integration/action-policy/judgment-start.mjs",
-      "sha256": "2197650408c9fa52bbfa4bb3ba4538db310e6de5b6bcbc636a4ae6b221da78e1",
       "origin": "authored-source",
       "relocatedLiterals": 0
     },
@@ -352,7 +347,7 @@
     },
     {
       "original": "integration/action-policy/reviewer.mjs",
-      "maintained": "integration/action-policy/reviewer.mjs",
+      "maintained": "integration/action-policy/decision-core.mjs",
       "sha256": "38eb4d0ff271d7242a536a1853525e57e40ca9e97d0c6e5229f5a00055784856",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -772,6 +767,8 @@
     {
       "original": "lifecycle/incumbent-tui-group/approval.mjs",
       "maintained": "lifecycle/incumbent-tui-group/approval.mjs",
+      "currentMaintained": "integration/native-batch/prepared-group.mjs",
+      "movedOn": "2026-10-17",
       "sha256": "d4d73caf9ffb720e654a0ec3cb8e934cb708c364de2b265e9f8c09f9e5d76d96",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -822,7 +819,8 @@
     },
     {
       "original": "lifecycle/native-program-groups/execute-child.mjs",
-      "maintained": "lifecycle/native-program-groups/execute-child.mjs",
+      "maintained": "lifecycle/execution-context-carrier/execute.mjs",
+      "movedOn": "2026-10-17",
       "sha256": "34f0465297afc878ce3c5ee5f0952fd4ade1d522dbd148e082a08952f3bc9146",
       "origin": "authored-source",
       "relocatedLiterals": 0

@@ -28,7 +28,7 @@ run = "cargo fmt --check"
 
 [tasks.test]
 description = "Run native unit and conformance tests"
-run = "cargo test --all-targets"
+run = "cargo nextest run --all-targets"
 
 [tasks."dependencies:fetch"]
 description = "Fetch the locked dependency archives before offline container verification"

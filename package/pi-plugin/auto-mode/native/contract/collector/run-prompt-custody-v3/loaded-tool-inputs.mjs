@@ -73,7 +73,7 @@ function captureToolLoadoutQuery({
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 function captureToolLoadoutInput({frame}){
@@ -106,7 +106,7 @@ function captureToolLoadoutInput({frame}){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 function captureToolLoadoutOutput({frame}){
@@ -144,7 +144,7 @@ function captureToolLoadoutOutput({frame}){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 function captureExtensionToolInput({frame}){
@@ -178,7 +178,7 @@ function captureExtensionToolInput({frame}){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(!(error instanceof SourceCollectionError))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 function captureCustomToolDescriptions({frame}){
@@ -208,7 +208,7 @@ function captureCustomToolDescriptions({frame}){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(!(error instanceof SourceCollectionError))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 return {

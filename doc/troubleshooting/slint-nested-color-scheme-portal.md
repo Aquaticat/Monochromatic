@@ -300,6 +300,8 @@ these are its boundaries.
   while the real portal returns two.
   Slint's `downcast_ref` accepts both;
   a client that insists on two layers would not.
+  The October 16 trial investigates the resulting Zenity failure under
+  "Zenity 4.0.1 fails on the private portal's deprecated Read reply".
 - The private bus does not expose unrelated host services such as notifications or file-chooser portals.
 
 ## What does not work
@@ -446,6 +448,137 @@ The planted version failed against the stock configuration
 (`left: ["org.freedesktop.DBus", "org.example.MonochromaticPlantedService"]`)
 and passes with the private configuration.
 
+## Zenity 4.0.1 fails on the private portal's deprecated Read reply
+
+### Observed failure
+
+The Depot desktop chooser diagnostic run `38832874391`,
+job `116755346132`,
+recorded Zenity `4.0.1-1build3` exiting with `SIGSEGV` after:
+
+```text
+# Zenity stderr captured by the desktop chooser diagnostic
+GLib-CRITICAL: the GVariant format string 'v' has a type of 'v' but the given value has a type of 'u'
+GLib-CRITICAL: g_variant_get: assertion 'valid_format_string (format_string, TRUE, value)' failed
+```
+
+The subprocess was present and launched;
+the missing chooser window was not evidence that Zenity was absent.
+The existing failure is tracked in [repository issue 1004](https://github.com/Aquaticats/Monochromatic/issues/1004).
+[Chooser diagnostic run](https://github.com/Aquaticats/Monochromatic/actions/runs/38832874391)
+
+### Reply contract and test gap
+
+The [current XDG Settings specification](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-read)
+still documents two variant layers for deprecated `Read`,
+and one for `ReadOne`.
+Before the trial correction,
+`package/cli/nested-wayland-session/src/appearance_portal.rs:177`
+delegated directly to the same setting value used by `ReadOne`:
+
+```rust
+// package/cli/nested-wayland-session/src/appearance_portal.rs, before the trial correction
+fn read(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
+    return self.read_setting(namespace, key);
+}
+```
+
+The existing tests converted each decoded reply directly to an integer or RGB tuple.
+Installed `zvariant` `5.14.0`,
+checksum `b5e28c25bd8bb8da5a1f3e7065d0c156b9ee9a7973adf78b0e35eaefdf3b1b5c`,
+accepts both shapes in `src/value.rs:490`,
+inside `Value::downcast_ref`:
+
+```rust
+// zvariant-5.14.0/src/value.rs:495
+if let Value::Value(v) = self {
+    <T>::try_from(v)
+} else {
+    <T>::try_from(self)
+}
+```
+
+This automatic unwrapping hid the protocol mismatch from value-only assertions.
+`Value::value_signature` preserves the distinction in `src/value.rs:296`:
+
+```rust
+// zvariant-5.14.0/src/value.rs:296
+Value::Value(_) => &Signature::Variant,
+```
+
+The trial test commit `5eb02af048` checks each decoded value's contained signature before conversion:
+`ReadOne` and `ReadAll` require `u` for color scheme or `(ddd)` for accent;
+deprecated `Read` requires `v`.
+The typed conversion then rejects further extra wrappers.
+The calls traverse the real disposable private bus,
+so they verify the serialized reply rather than a helper's in-memory return value.
+
+### Verification status
+
+The committed regression ran against the unchanged implementation using:
+
+```sh
+# trial/depot-20261015 worktree
+mise run //package/cli/nested-wayland-session:test:all
+```
+
+The bounded package container ran 270 tests:
+266 passed and four failed.
+The failures assert deprecated `Read` contained signatures of `u` or `(ddd)` instead of `v`:
+the accent-only portal test and the color-scheme tests for served values,
+notification-time readback,
+and environment-bus isolation.
+The command exited with status 1,
+and nextest reported no skipped tests.
+Trial implementation commit `dcaae7c673` adds the deprecated method's extra wrapper.
+The identical command then passed all 270 tests with no skipped tests.
+After the conversion-error callback was named in trial commit `294b0db534`,
+the same tests passed again,
+and `mise run //package/cli/nested-wayland-session:lint:clippy` passed.
+The final comment-only trial commit `d6deca5fa5` also passed scoped repository lint
+for `appearance_portal.rs`,
+`appearance_portal_tests.rs`,
+and `appearance_accent_tests.rs`.
+That check retained three pre-existing `rust/no-anonymous-functions` warnings and reported no errors.
+The [complete cloud rerun](https://github.com/Aquaticats/Monochromatic/actions/runs/38833901553/job/116758578135)
+at immutable source `93560fbb09` then passed 117 checks with no failures and one not-injectable check.
+All seven sessions exited with status 0.
+The chooser check observed a dialog covering 800000 pixels,
+closed it with Escape,
+and verified keyboard focus returned to the player by opening Search with `Ctrl+F`.
+The subprocess probe recorded Zenity exiting with status 1 and no signal after cancellation;
+its captured stderr contained no variant-format assertion or `SIGSEGV`.
+This verifies the correction at the original chooser boundary on the prepared Depot runner.
+The job took 410 seconds,
+including a 185-second interaction step.
+
+The same captured stderr retains separate
+[accessibility-bus](https://github.com/Aquaticats/Monochromatic/issues/1041),
+[dconf-service](https://github.com/Aquaticats/Monochromatic/issues/1042),
+and [transient-parent](https://github.com/Aquaticats/Monochromatic/issues/1043) diagnostics.
+Those diagnostics did not fail this suite;
+their underlying behavior remains separate from the corrected reply contract.
+The not-injectable case is `double-shift/repeat`,
+whose harness explicitly reports a skip and points to pure detector coverage.
+These remaining findings are tracked separately from issue 1004.
+Issue 1004 remains open until the trial correction is integrated into the main branch.
+
+### Upstream filing decision for the malformed reply
+
+1.  The observed contract violation is in this repository's private portal,
+    not an established defect in zvariant or the portal specification.
+2.  The repository controls the reply wrapper and can correct it.
+3.  The deprecated method's nested variant is explicitly documented.
+4.  No external contribution policy is needed for the repository-owned correction.
+5.  No upstream maintainer decision is being requested.
+6.  The committed regression failed before the wrapper correction and passed afterward;
+    the complete cloud rerun also passed the chooser open,
+    cancel,
+    and restored-focus checks.
+
+No upstream issue or comment is proposed.
+The existing repository issue owns the consumer failure.
+
 ## Upstream filing decision
 
 `.out-of-scope/` was inspected and has no Slint or xdg-desktop-portal entry.
@@ -544,7 +677,8 @@ Nothing is filed.
     The `--on` help text promises a handler for a callback,
     not delivery of calls made while the component is constructed.
     The interpreter can only accept a handler on an instance that exists,
-    and creating it runs `init` (`tools/viewer/main.rs:304`, then `:378`).
+    and creating it runs `init` (`tools/viewer/main.rs:304`,
+    then `:378`).
 2.  Fixable:
     only by changing how the viewer constructs components,
     for example by queuing early calls;

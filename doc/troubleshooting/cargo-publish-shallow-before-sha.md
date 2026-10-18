@@ -302,3 +302,46 @@ A landing procedure can also avoid the trigger:
 
 `.out-of-scope/` was not consulted because no upstream filing is proposed.
 Nothing to file.
+
+## Depot preparation cannot inspect its immutable base after default shallow checkout
+
+On 2026-10-16,
+Depot run `1v4l9tglbt` stopped before dependency preparation or repository checks.
+The trial task asked Git to verify its fixed source base:
+
+```text
+# trial/depot-complete-ci-20261016, commit 50fbf6983171067eda7199bc21f5c31edfcbc5ce
+git merge-base --is-ancestor bae6ef28a183039a6c4ba509179dc4baaedeac2e HEAD
+fatal: Not a valid commit name bae6ef28a183039a6c4ba509179dc4baaedeac2e
+```
+
+The workflow used the same pinned checkout action documented in this report,
+but omitted `fetch-depth`.
+The action's `action.yml` was fetched again at
+`de0fac2e4500dabe0009e67214ff5f5447ce83dd`;
+its default remains `1`.
+The trial required an ancestor object that the workflow had not requested.
+This is a trial configuration error,
+separate from the publishing decision described in this report.
+
+Trial commit `3fda67d325bc646f1c6b2cc5385542c4863bac78`
+adds `fetch-depth: 0` to `.depot/workflows/depot-complete-ci.yml`.
+Its tradeoff is retrieving repository history for the ancestry check.
+Unlike the publishing check,
+this task explicitly verifies ancestry before comparing immutable inputs.
+The corrected environment-only run is `tg907s5kfs`;
+it completed successfully.
+The preparation record at `2026-10-16T02:26:38.274Z`
+reports matching hashes for all four immutable inputs,
+`elapsedMs: 22986`,
+and `checksExecuted: false`.
+The repository tracking issue is
+[1057](https://github.com/Aquaticats/Monochromatic/issues/1057).
+The original failed run executed no quality,
+build,
+or test checks and must not count as CI coverage.
+
+No upstream filing is justified:
+the checkout action applied its documented default.
+This incident requires a repository trial-harness correction,
+not an upstream patch.

@@ -14,10 +14,10 @@ import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { analyzeBashCommand, } from './command-parser.ts';
+import { analyzeShellCommand as analyzeBashCommand, } from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import { isBashToolEvent, } from './tool-event.ts';
+import type { ShellCommandInfo as CommandInfo } from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import type {
-  CommandInfo,
   GuardDecision,
 } from './types.ts';
 

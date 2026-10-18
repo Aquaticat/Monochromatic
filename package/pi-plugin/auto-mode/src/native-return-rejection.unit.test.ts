@@ -11,7 +11,7 @@ import { nativeReturn, nativeReturnFailure, nativeReturnFixture } from './native
 await describe({
   name: '',
   children: [
-    ...['runNative', 'getSlot', 'assertCurrent', 'assertReturnedMember'].map(function missingOwner(key) {
+    ...['getSlot', 'assertCurrent', 'assertReturnedMember'].map(function missingOwner(key) {
       return it({
         name: `rejects missing fixed owner callback ${key}`,
         fn: async function missingCallback() {
@@ -30,31 +30,26 @@ await describe({
       fn: async function fixedCallbacks() {
         /** Existing consumer captured callable identity at bootstrap. */
         const fixture = nativeReturnFixture();
-        for (const key of ['runNative', 'getSlot', 'assertCurrent', 'assertReturnedMember']) Reflect.set(fixture.owner, key, undefined);
-        await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+        for (const key of ['getSlot', 'assertCurrent', 'assertReturnedMember']) Reflect.set(fixture.owner, key, undefined);
+        await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
         expect(fixture.consumer.valueFor({ slot: fixture.handle, outcome: fixture.outcome })).toBe('original text');
       },
     }),
     it({
       name: 'rejects synchronous reentry and releases the entry lock before native settlement',
       fn: async function entryLifetime() {
-        /** Every reentrant rejection is observed immediately to avoid unhandled rejections. */
+        const fixture = nativeReturnFixture();
         const nested: Promise<unknown>[] = [];
-        /** Original native execution invokes the consumer recursively before returning. */
-        const fixture = nativeReturnFixture({ runNative: function reenter() {
-          nested.push(nativeReturnFailure(function recursiveInvocation() {
-            return fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
-          }));
-          return fixture.outcome;
+        const consumer = nativeReturn.createNativeReturnConsumer({ ...fixture.owner, getSlot(handle) {
+          nested.push(nativeReturnFailure(() => consumer.open({ slot: handle, call: fixture.call })));
+          return fixture.owner.getSlot(handle);
         } });
-        await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+        const entry = consumer.open({ slot: fixture.handle, call: fixture.call });
         expect(nested.length).toBe(1);
         expect(await nested[0]).toHaveProperty('message', 'Native result consumer cannot reenter through synchronous callbacks');
-        /** A later call reaches the slot reservation guard, proving the entry lock was released. */
-        const repeated = await nativeReturnFailure(function laterInvocation() {
-          return fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
-        });
-        expect(repeated).toHaveProperty('message', 'Native slot already reserved its invocation');
+        entry.complete(fixture.outcome);
+        expect(await nativeReturnFailure(() => consumer.open({ slot: fixture.handle, call: fixture.call })))
+          .toHaveProperty('message', 'Native slot already reserved its invocation');
       },
     }),
     ...['id', 'name'].map(function callIdentity(field) {
@@ -66,11 +61,11 @@ await describe({
           /** Only one original identity field is changed in each contrast. */
           const call = { ...fixture.call, [field]: 'foreign' };
           expect(await nativeReturnFailure(function mismatchedCall() {
-            return fixture.consumer.invoke({ slot: fixture.handle, call, options: fixture.options });
+            return fixture.invoke({ slot: fixture.handle, call, options: fixture.options });
           })).toBeInstanceOf(nativeReturn.NativeReturnContractError);
           expect(fixture.state.invocations).toBe(0);
           expect(fixture.consumer.inspect(fixture.handle).state).toBe('uninvoked');
-          await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+          await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
           expect(fixture.consumer.valueFor({ slot: fixture.handle, outcome: fixture.outcome })).toBe('original text');
         },
       });
@@ -103,7 +98,7 @@ await describe({
           } });
           /** Return-shape rejection retains the same failure in terminal inspection. */
           const failure = await nativeReturnFailure(function invoke() {
-            return fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+            return fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
           });
           expect(failure).toBeInstanceOf(nativeReturn.NativeReturnContractError);
           expect(fixture.consumer.inspect(fixture.handle)).toMatchObject({ state: 'invalid-return', failure, conversionCount: 0 });
@@ -123,7 +118,7 @@ await describe({
           /** Structured output remains available for retained inspection. */
           const fixture = nativeReturnFixture({ structured: true });
           fixture.outcome.result.structuredContent = value;
-          await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+          await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
           expect(fixture.consumer.inspect(fixture.handle)).toMatchObject({ state: 'returned', conversionCount: 1, conversion: { status: 'unsupported', kind: value === null ? 'null' : typeof value } });
           expect(await nativeReturnFailure(function unsupportedBinding() {
             return fixture.consumer.valueFor({ slot: fixture.handle, outcome: fixture.outcome });
@@ -140,12 +135,12 @@ await describe({
         /** Separate original slots provide allowed and rejected boundary controls. */
         const allowed = nativeReturnFixture({ structured: true });
         allowed.outcome.result.structuredContent = exact;
-        await allowed.consumer.invoke({ slot: allowed.handle, call: allowed.call, options: allowed.options });
+        await allowed.invoke({ slot: allowed.handle, call: allowed.call, options: allowed.options });
         expect(allowed.consumer.valueFor({ slot: allowed.handle, outcome: allowed.outcome })).toBe(exact);
         /** The same string with another multibyte character exceeds the byte bound. */
         const rejected = nativeReturnFixture({ structured: true });
         rejected.outcome.result.structuredContent = `${exact}é`;
-        await rejected.consumer.invoke({ slot: rejected.handle, call: rejected.call, options: rejected.options });
+        await rejected.invoke({ slot: rejected.handle, call: rejected.call, options: rejected.options });
         expect(await nativeReturnFailure(function oversizedBinding() {
           return rejected.consumer.valueFor({ slot: rejected.handle, outcome: rejected.outcome });
         })).toHaveProperty('name', 'NativeScriptValueGuardError');
@@ -161,7 +156,7 @@ await describe({
           Object.defineProperty(fixture.outcome.result, 'structuredContent', { get: function nativeFailure() {
             throw error;
           } });
-          await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+          await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
           expect(await nativeReturnFailure(function ordinaryFailure() {
             return fixture.consumer.valueFor({ slot: fixture.handle, outcome: fixture.outcome });
           })).toBe(error);

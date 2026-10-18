@@ -25,7 +25,7 @@ see `doc/decision/general-purpose-subagent-ban.md`.
 
 ## Solution
 
-This hook denies tool calls in two cases:
+The handler implements denial responses for two cases:
 
 1. **Resume blocking**:
     when an Agent call includes a `resume` parameter,
@@ -37,6 +37,26 @@ This hook denies tool calls in two cases:
     it is denied
    with a message directing the caller to `mise run //package/<path>:test:unit`
    (or `node <file>` for ad-hoc single-file runs).
+
+## Resume blocking status
+
+On 2026-10-15,
+the user reported that resume blocking does not appear to work in Claude Code.
+This is a user-observed discrepancy,
+not a reproduced failure or an established explanation of the host's behavior.
+The handler still returns a denial for an Agent input containing a string `resume` field.
+That source behavior alone does not prove Claude Code invokes the hook or enforces its response.
+
+The user wants resumes allowed but deferred removal of the existing check.
+Their concern is that Claude Code's non-open-source implementation makes unproven changes undesirable.
+Keep the check unchanged until host-level evidence supports a change.
+No such runtime verification was performed for this observation.
+
+Follow the [Claude Code upstream bugs policy](../../../.out-of-scope/claude-code-upstream-bugs.md):
+do not file or track upstream Claude Code bugs as GitHub issues,
+or develop elaborate local workarounds for upstream defects.
+This observation does not establish an upstream defect.
+Document the uncertainty without treating it as a request for investigation or a speculative workaround.
 
 ## Setup
 

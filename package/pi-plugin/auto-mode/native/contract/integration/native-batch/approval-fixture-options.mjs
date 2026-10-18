@@ -29,7 +29,10 @@ const permission=mode==='bare'?'Use sentence case in the final response.':mode==
 export const policyText=`RUL:\n ${permission}\n\nCNF:\n Require a fresh Allow response from the current Pi session user for this exact prepared group.\n${uncertainContext?'\nUNK:\n Follow the additional policy that has not been supplied.\n':''}`;
 
 export const programProfile='awaited-string-result-then-literal-parallel';
-export const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);';
+export const outsideProfile=process.argv.includes('--outside-profile');
+export const code=outsideProfile
+ ?'const first = await tools.fixture_value({path:"seed"}); const second = await tools.fixture_value({path:"second"}); return second;'
+ :'const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);';
 
 export const fixtureState={
   nativePi:undefined,
@@ -37,11 +40,13 @@ export const fixtureState={
   abortTask:undefined,
   approvalCaptures:0,
   assessments:0,
+  wires:[],
   authorizationCaptures:0,
   executions:0,
   notifications:0,
   originalBody:undefined,
   requests:0,
+  proposalLimit:1,
   selections:0,
   activeAuthorization:true,
   handlerFailure:undefined

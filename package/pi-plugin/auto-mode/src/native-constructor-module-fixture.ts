@@ -10,7 +10,7 @@ export type ConstructorFixtureView = Readonly<{
   finished: boolean;
   accounting: Readonly<{
     startedAt: number;
-    deadlineAt: number;
+    targetAt: number;
     retired: boolean
   }>;
   memberExecutions: readonly object[];
@@ -35,6 +35,7 @@ export type ConstructorFixtureInput = Readonly<{
   signal: AbortSignal;
   response: object;
   stream: object;
+  group: () => unknown;
 }>;
 
 /**
