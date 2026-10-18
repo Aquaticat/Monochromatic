@@ -41,8 +41,11 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
  
  Schema 8 retains every distinct bounded reason category for a source,
  including the known TypeScript tuple serializer panic.
+ 
+ Schema 9 adds `sharedKeyDigest` to the envelope of an entry shared across projects,
+ and addresses such an entry by file and key digest instead of by project.
  */
-export const EFFECT_CACHE_SCHEMA = 8;
+export const EFFECT_CACHE_SCHEMA = 9;
 
 /**
  Process memo for analyzer implementation digest.
