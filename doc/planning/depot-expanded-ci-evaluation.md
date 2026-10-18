@@ -212,8 +212,9 @@ or a fair native-platform performance ratio
 The corrected public Windows GNU owner runs 1494 distinct binary/case identities:
 1492 pass and two fail,
 with one separate summary-only skip.
-The failures include the unreadable-session-path/logging case and
-`watch::tests::a_burst_of_changes_requests_one_rescan`.
+The failing cases are
+`music-player::session::tests::an_unreadable_session_path_loads_as_defaults_and_is_logged_with_the_read_error`
+and `watch::tests::a_burst_of_changes_requests_one_rescan`.
 Repeated final-failure lines are not extra executed cases.
 The original duplicate-argument adapter ran zero bodies and retains no test credit;
 the corrected result preserves unchanged source assertions.
@@ -433,6 +434,25 @@ These documented behaviors remain separate from executed repository consumers
 Native live/paused-step SSH,
 per-job logs and resource metrics are separately documented debugging capabilities.
 Their operational admission must retain exact attempt identity and private connection details.
+Owned native run `sqrz4sml30` executes matching source/boot/challenge responses through direct OpenSSH
+and the native CLI PTY path.
+Their local exits are 255 and zero,
+so the direct response alone is not a successful-client qualification.
+Neither remote context inherits the synthetic workflow environment;
+direct SSH runs as UID 0 and native CLI RPC as UID 1001.
+The paused-action target and final workflow readback remain unqualified.
+Dependency installation is the last recorded phase before watchdog cancellation;
+the last APT line does not identify the blocking instruction or cause.
+Its exact source has a real completed/cancelled GitHub check,
+`native-ssh-acceptance / ssh-proof`,
+whose details identify the owned native job and attempt.
+The app is Depot Code Access (`219785`);
+that identity does not mean the optional Depot Code product was enabled.
+The known GitHub graph source provides nonempty check controls,
+while both queried sources have zero legacy commit statuses.
+This qualifies the observed native check publication,
+not branch-protection configuration or a stable production check-name mapping
+([SSH and forge-consumer receipt](../audit/depot-native-ssh-runtime-2026-10-18.evidence.json)).
 Developer community support,
 beta terms and the incomplete incident-history denominator provide no repository availability guarantee.
 The proposal retains exact-attempt diagnostics and GitHub execution as a fallback;

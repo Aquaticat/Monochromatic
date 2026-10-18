@@ -271,8 +271,9 @@ All recorded owned identities and the askpass socket are freshly absent.
 The final 276 log events show the paused action entering `apt-get update`
 and emitting only the 237-byte `/etc/apt/apt-mirrors.txt` Mirrorlist line before cancellation.
 No tmate target was logged.
-This is an uncompleted installer phase,
-not evidence that tmate transport fails or is unsupported.
+Dependency installation is the last recorded phase;
+the last APT line does not identify the blocking instruction or cause.
+It is not evidence that tmate transport fails or is unsupported.
 Pinned action source `src/index.js:82` through `src/index.js:110`
 shows `install-dependencies: false` skips both package installation and static-binary download,
 then uses `tmate` from `PATH`.
@@ -296,13 +297,35 @@ completed/cancelled under app `219785`,
 The known GitHub graph source has six checks:
 four GitHub Actions checks for run `39140975786` and two Depot Code Access native-graph checks.
 Both exact SHAs have zero legacy commit statuses.
-Details/external-ID correspondence with the owned SSH run is still being joined;
+The check details identify exact owned job `q74vcmxkk1`,
+and fresh native status binds it to run `sqrz4sml30` and attempt `fhxx4s51rf`.
+Selected URL/external-ID hashes and match booleans are sealed in
+`doc/audit/depot-native-ssh-runtime-2026-10-18.evidence.json`;
 the installed app name alone does not mean the optional Depot Code product was enabled.
 No app/account settings were inspected or changed.
 Coverage committed and pushed the seven-owner material harness at
 `015ee75186e697a05160913dbd8006eceb90b2e5` before its actual bootstrap/Mise/Node preflight.
 It preserves the admitted profile/prerequisite/argv boundaries and adds actual OS/CPU/memory probes.
-No material allocation has begun at this checkpoint.
+The final executable admission is
+`doc/audit/depot-material-owner-executable-admission-2026-10-18.evidence.json`.
+It binds pushed harness `e270285361b526793ff1db3af9f8224630c28e70`
+and frozen application `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`,
+after actual owner-variable,
+Cargo-selection,
+altered-PNG/LFS-pointer rejection and publication controls pass.
+Finite controller session `55444` has started.
+IDE full run `39156168838` uses `depot-ubuntu-24.04-4`,
+four requested CPUs/documented 16 GiB and a 30-minute/USD 0.36 maximum.
+GTK release run `39156185253` uses public `ubuntu-24.04`,
+30 minutes and nominal compute USD 0.
+Those jobs own both global slots.
+The private journal is
+`/var/home/user/temp/agent/depot-complete-coverage-20261018/material-owner-campaign-controller.json`.
+Its initial reservation is USD 1.08 primary,
+USD 2.88 conditional and USD 1.04 unpriced headroom,
+with fresh terminal predecessor rows required before subsequent dispatches.
+Platform prepares the SSH correction read-only;
+allocation requires Root coordination of a released/reserved slot.
 Rust checked the actual locked Mise 2026.10.9 affected-task selector,
 separately from the installed 2026.10.0 failure.
 Its actual locked-version metadata probe now confirms the identical workspace cycle,
