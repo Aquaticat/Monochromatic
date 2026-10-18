@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "cohort": "monochromatic-platform-buildkit-20261018-v1",
+  "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "nodeBase": "docker.io/library/node@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+  "nodeVersion": "24.22.0",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "projectRequest": {
+    "hardware": "HARDWARE_16X32",
+    "buildTimeoutMinutes": 5,
+    "cachePolicy": {
+      "keepGb": 25,
+      "keepDays": 1
+    },
+    "maxConcurrentBuilds": "unset; autoscaling off"
+  },
+  "bounds": {
+    "maximumArchitectureBuilders": 2,
+    "cpusPerBuilder": 16,
+    "memoryGiBPerBuilder": 32,
+    "buildTimeoutMinutes": 5,
+    "campaignWallClockMinutes": 8,
+    "publishedComputeRatePerBuilderMinuteUsd": 0.04,
+    "timestampComputeCeilingUsd": 1
+  },
+  "sharedImage": {
+    "holdUntilParentConsumersFinish": true,
+    "healthPath": "/health",
+    "nonceEnvironment": "MONO_RESEARCH_NONCE",
+    "port": 8080
+  },
+  "credentials": "Existing Depot login only; synthetic secret text and a keyless SSH-agent protocol fixture; no real private key; read-only temporary project pull token when image exists",
+  "proofs": [
+    "Local Bake print and invalid-target controls",
+    "Two architecture runtime identity and builder resource assertions",
+    "Shared target graph with named input context",
+    "Secret tmpfs and keyless SSH-agent forwarding consumer",
+    "Normal OCI service image, provenance/SBOM subjects and local export",
+    "Pinned remote Git source versus local overlay control",
+    "Owned registry pull, exact media types, scoped deletion after shared consumers"
+  ],
+  "unexercised": [
+    "Production application deployment",
+    "GPU or macOS/Windows container execution",
+    "Complete ordinary OCI versus Depot block-snapshot portability",
+    "External cache restoration into a fresh independent project",
+    "SOCI startup performance",
+    "Account invoice or aggregate hard-cap enforcement"
+  ]
+}

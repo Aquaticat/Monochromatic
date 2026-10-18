@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-18T06:48:01.387Z",
+  "node": "docker.io/library/node@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+  "nodeVersion": "24.22.0",
+  "frontend": "docker.io/docker/dockerfile@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e",
+  "scanner": "docker.io/docker/buildkit-syft-scanner@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9",
+  "platforms": [
+    {
+      "architecture": "amd64",
+      "digest": "sha256:ec857ea6bb60cb3d0fa4d97495590c5fe7d51be8572c307b55957eeb06569cf7"
+    },
+    {
+      "architecture": "arm64",
+      "digest": "sha256:156e9bc7a0a267cc6ca77b4283e32b123479342df684ce297455d7b95ff5a6b5"
+    }
+  ],
+  "fullSourceReceipt": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz"
+}
