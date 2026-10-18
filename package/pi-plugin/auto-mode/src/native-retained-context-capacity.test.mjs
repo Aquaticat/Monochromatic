@@ -8,6 +8,9 @@ import {freezePromptOptions} from '../dist/native/contract/collector/base-prompt
 //region Actual manager origins exceed one engine string while remaining separate immutable inputs.
 const pool=captureLoadedInputs([]);
 const content='Original retained input.\n'.repeat(44_000);
+const blocks=[{type:'text',text:content}];
+globalThis.gc();
+const initialHeap=process.memoryUsage().heapUsed;
 
 /** Original argument frames issue each manager capability independently. */
 function appendMessage(message){
@@ -15,8 +18,10 @@ function appendMessage(message){
   pool.captureManagerInput({frame:arguments,method:'appendMessage'});
 }
 
-for(let index=0;index<600;index++)appendMessage({role:'user',content});
+for(let index=0;index<600;index++)appendMessage({role:'user',content:blocks});
 pool.assertCaptured();
+globalThis.gc();
+const retainedHeap=process.memoryUsage().heapUsed-initialHeap;
 const origins=pool.readConstructedInputs();
 assert.equal(origins.length,600);
 assert.ok(pool.inputUsage().bytes>constants.MAX_STRING_LENGTH,
@@ -40,9 +45,16 @@ owner.captureContextClone({kind:'request-context',before:[],after:[]});
 const view=owner.read({options});
 assert.equal(view.retainedMessageOrigins.length,origins.length);
 for(const [index,origin] of origins.entries())assert.equal(view.retainedMessageOrigins[index],origin);
+assert.equal(new Set(origins.map(origin=>origin.source.occurrence)).size,origins.length);
+assert.equal(new Set(origins.map(origin=>origin.publication)).size,origins.length);
 assert.equal(owner.read({options}),view,'Repeated observation preserves the original immutable view');
+appendMessage({role:'user',content:[{type:'text',text:'A different retained input.'}]});
+const changed=owner.read({options});
+assert.equal(changed.retainedMessageOrigins.length,origins.length+1);
+assert.notEqual(changed.retainedMessageOrigins.at(-1).source.sha256,origins[0].source.sha256);
 root.current=Object.freeze({});
 assert.throws(function retiredRoot(){owner.read({options});});
 console.log(JSON.stringify({complete:true,inputs:origins.length,bytes:pool.inputUsage().bytes,
-  engineStringLimit:constants.MAX_STRING_LENGTH,originalOccurrences:true,retiredRootRejected:true}));
+  retainedHeapBytes:retainedHeap,engineStringLimit:constants.MAX_STRING_LENGTH,
+  originalOccurrences:true,distinctPublications:true,changedInput:true,retiredRootRejected:true}));
 //endregion
