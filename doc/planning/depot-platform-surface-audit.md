@@ -402,6 +402,30 @@ and the same USD 1 timestamp-compute ceiling.
 That model is not proof of an invoice cap or aggregate account expenditure.
 The shared image and project remain held for independent native CI and GitHub consumers.
 
+## Derived CI image consumer control
+
+A separate campaign is queued for an ordinary OCI job image derived from the exact owned service index.
+The original service image stays unchanged and retained for active consumers.
+Parent-run GitHub job `117622633314` in workflow run `39109462308` retained the service's healthcheck,
+reached healthy state,
+then encountered checkout's GitHub REST download fallback because the job image lacked Git.
+The job reached its five-minute guard during archive-download retries.
+This differs from the local Podman healthcheck loss and does not establish a shared runtime limitation.
+
+The derived image will add the actual operating-system prerequisites of the pinned setup actions,
+record installed package and tool versions,
+disable the inherited HTTP-service healthcheck for job-container use,
+and retain a separate immutable digest and attestations.
+The audited action inputs are `jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c`,
+Mise `2026.10.9`,
+`install: false`,
+and `cache: false`.
+Checkout is pinned to `de0fac2e4500dabe0009e67214ff5f5447ce83dd`.
+The consumer harness source is `1438ecde4b643a606e0a75f85067e3d0153e9bb5`.
+The next action is source inspection and local prerequisite controls,
+followed by a bounded two-architecture build if its reserved timestamp-compute estimate fits the same USD 1 ceiling.
+No account-wide billing or usage query is authorized or required by this campaign.
+
 ## Unreleased CLI changes expose additional research cases
 
 The open [CLI upgrade pull request][cli-upgrade] documents differences from the installed release:
