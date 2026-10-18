@@ -64,6 +64,15 @@ mise run //package/module/translation-repair:lint:types
 mise run //package/module/translation-repair:test:unit
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:build`
+to `//package/translation-repair/<package>:build`.
+Moved on 2026-10-18 from `//package/module/translation-repair:lint`
+to `//package/translation-repair/<package>:lint`.
+Moved on 2026-10-18 from `//package/module/translation-repair:lint:types`
+to `//package/translation-repair/<package>:lint:types`.
+Moved on 2026-10-18 from `//package/module/translation-repair:test:unit`
+to `//package/translation-repair/<package>:test:unit`.
+
 ### The commit, and the trap in it
 
 `CPN`:
@@ -80,42 +89,71 @@ Verify with `git status --short` afterwards that nothing is left untracked.
 New files,
 all of which must appear in the pathspec:
 
-    package/module/translation-repair/src/candidate-ledger.ts
-    package/module/translation-repair/src/candidate-ledger.unit.test.ts
-    package/module/translation-repair/src/candidate-select-record.ts
-    package/module/translation-repair/src/corpus-run/hyper-price.ts
-    package/module/translation-repair/src/corpus-run/hyper-price.unit.test.ts
-    package/module/translation-repair/src/corpus-run/ledger-parse.ts
-    package/module/translation-repair/src/corpus-run/ledger-read.ts
-    package/module/translation-repair/src/corpus-run/ledger-read.unit.test.ts
-    package/module/translation-repair/src/corpus-run/ledger-report.ts
-    package/module/translation-repair/src/corpus-run/spend-cost.ts
-    package/module/translation-repair/src/corpus-run/spend-cost.unit.test.ts
-    package/module/translation-repair/src/corpus-run/spend-read.ts
-    package/module/translation-repair/src/corpus-run/spend-read.unit.test.ts
-    package/module/translation-repair/src/corpus-run/spend-report.ts
-    package/module/translation-repair/src/spend-line.ts
-    package/module/translation-repair/src/spend-line.unit.test.ts
+    package/module/translation-repair/src/candidate-ledger.ts (moved on 2026-10-18 to
+    `package/translation-repair/house-rule/src/candidate-ledger.ts`)
+    package/module/translation-repair/src/candidate-ledger.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/house-rule/src/candidate-ledger.unit.test.ts`)
+    package/module/translation-repair/src/candidate-select-record.ts (moved on 2026-10-18 to
+    `package/translation-repair/translate-stage/src/candidate-select-record.ts`)
+    package/module/translation-repair/src/corpus-run/hyper-price.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/hyper-price.ts`)
+    package/module/translation-repair/src/corpus-run/hyper-price.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/hyper-price.unit.test.ts`)
+    package/module/translation-repair/src/corpus-run/ledger-parse.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/ledger-parse.ts`)
+    package/module/translation-repair/src/corpus-run/ledger-read.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/ledger-read.ts`)
+    package/module/translation-repair/src/corpus-run/ledger-read.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/ledger-read.unit.test.ts`)
+    package/module/translation-repair/src/corpus-run/ledger-report.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/ledger-report.ts`)
+    package/module/translation-repair/src/corpus-run/spend-cost.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/spend-cost.ts`)
+    package/module/translation-repair/src/corpus-run/spend-cost.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/spend-cost.unit.test.ts`)
+    package/module/translation-repair/src/corpus-run/spend-read.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/spend-read.ts`)
+    package/module/translation-repair/src/corpus-run/spend-read.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/spend-read.unit.test.ts`)
+    package/module/translation-repair/src/corpus-run/spend-report.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/corpus-run/spend-report.ts`)
+    package/module/translation-repair/src/spend-line.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider/src/spend-line.ts`)
+    package/module/translation-repair/src/spend-line.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider/src/spend-line.unit.test.ts`)
 
 Modified files:
 
-    package/module/translation-repair/mise.toml
-    package/module/translation-repair/rolldown.node.config.ts
-    package/module/translation-repair/src/anthropic-delta-scan.ts
-    package/module/translation-repair/src/anthropic-delta-scan.unit.test.ts
-    package/module/translation-repair/src/ballot-barrel.ts
-    package/module/translation-repair/src/candidate-select.ts
-    package/module/translation-repair/src/corpus-run/sentinel-probe.ts
-    package/module/translation-repair/src/editor-ensemble.ts
-    package/module/translation-repair/src/hyper-client.ts
-    package/module/translation-repair/src/judge-fidelity.ts
-    package/module/translation-repair/src/pipeline-barrel.ts
-    package/module/translation-repair/src/provider-barrel.ts
-    package/module/translation-repair/src/refine-stage.ts
-    package/module/translation-repair/src/stream-idle-guard.ts
-    package/module/translation-repair/src/stream-idle-guard.unit.test.ts
-    package/module/translation-repair/src/synthetic-client.ts
-    package/module/translation-repair/src/translate-judge.ts
+    package/module/translation-repair/mise.toml (moved on 2026-10-18 to `package/translation-repair/*/mise.toml`)
+    package/module/translation-repair/rolldown.node.config.ts (moved on 2026-10-18 to
+    `package/translation-repair/*/rolldown.node.config.ts`)
+    package/module/translation-repair/src/anthropic-delta-scan.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider-stream/src/anthropic-delta-scan.ts`)
+    package/module/translation-repair/src/anthropic-delta-scan.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider-stream/src/anthropic-delta-scan.unit.test.ts`)
+    package/module/translation-repair/src/ballot-barrel.ts (removed before 2026-10-18)
+    package/module/translation-repair/src/candidate-select.ts (moved on 2026-10-18 to
+    `package/translation-repair/translate-stage/src/candidate-select.ts`)
+    package/module/translation-repair/src/corpus-run/sentinel-probe.ts (moved on 2026-10-18 to
+    `package/translation-repair/bench/src/corpus-run/sentinel-probe.ts`)
+    package/module/translation-repair/src/editor-ensemble.ts (moved on 2026-10-18 to
+    `package/translation-repair/repair/src/editor-ensemble.ts`)
+    package/module/translation-repair/src/hyper-client.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider/src/hyper-client.ts`)
+    package/module/translation-repair/src/judge-fidelity.ts (moved on 2026-10-18 to
+    `package/translation-repair/run/src/judge-fidelity.ts`)
+    package/module/translation-repair/src/pipeline-barrel.ts (removed before 2026-10-18)
+    package/module/translation-repair/src/provider-barrel.ts (removed before 2026-10-18)
+    package/module/translation-repair/src/refine-stage.ts (moved on 2026-10-18 to
+    `package/translation-repair/repair/src/refine-stage.ts`)
+    package/module/translation-repair/src/stream-idle-guard.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider-stream/src/stream-idle-guard.ts`)
+    package/module/translation-repair/src/stream-idle-guard.unit.test.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider-stream/src/stream-idle-guard.unit.test.ts`)
+    package/module/translation-repair/src/synthetic-client.ts (moved on 2026-10-18 to
+    `package/translation-repair/provider/src/synthetic-client.ts`)
+    package/module/translation-repair/src/translate-judge.ts (moved on 2026-10-18 to
+    `package/translation-repair/translate-stage/src/translate-judge.ts`)
 
 ### The three measurements owed immediately after, before anything else is built
 

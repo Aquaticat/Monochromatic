@@ -191,7 +191,8 @@ guard `03af65966`).
 The attempt store warns on each reset and each count read as zero,
 and writes atomically (`b9d5c8009`,
 guard `e68733836`).
-`src/log-context.ts` (`907805225`) carries an `AsyncLocalStorage` context:
+`src/log-context.ts` (moved on 2026-10-18 to `package/translation-repair/typography/src/log-context.ts`) (`907805225`)
+carries an `AsyncLocalStorage` context:
 the pass runs each entry under its name and pipeline,
 and the repair,
 translate,
@@ -315,7 +316,7 @@ Owner,
 2026-09-27:
 "There is no need to eliminate extra newlines,
 because markdown doesn't care",
-recorded in `doc/design-commitments.md`.
+recorded in `doc/design-commitments.md` (moved on 2026-10-18 to `package/translation-repair/doc/design-commitments.md`).
 Measured before the ruling:
 30 of 272 published pages carry a run of three newlines,
 most where the archive does too;
@@ -364,7 +365,8 @@ so publishing first makes "done implies published" true by construction (`publis
 A crash between the two writes leaves a page no artifact records;
 none exists among the 214 pages in 372 run directories (a planted page was found,
 as a positive control).
-The owner then ruled that a run always ships (`doc/design-commitments.md`),
+The owner then ruled that a run always ships (`doc/design-commitments.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/design-commitments.md`)),
 so such a page ships and is reported,
 never refused.
 
@@ -474,7 +476,7 @@ and 2 depart elsewhere too (a straight double quote,
 and one letter).
 Told this,
 the owner chose again that a pass rewrites such pages to the running build's reading
-(`doc/design-commitments.md`).
+(`doc/design-commitments.md` (moved on 2026-10-18 to `package/translation-repair/doc/design-commitments.md`)).
 
 ### A17: a handle every writer left in Han ships romanised with no literal meaning
 

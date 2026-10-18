@@ -221,7 +221,8 @@ a scratch sweep over every tracked Markdown file under the package and `doc/`
 read 69 invocations and found no undeclared flag,
 and reported both invocations planted in a control file.
 The full suite on `3d8776f9f`
-(`mise run //package/module/translation-repair:buildAndTest`)
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`))
 printed 1,489 PASS lines and no FAIL line.
 Later,
 with `reportingRefusals` running the body once on a placeholder line before reading the real one,
@@ -309,7 +310,8 @@ strays let through failed both new cases;
 a stray written twice named twice failed the `askedAmong` case;
 strays named unquoted failed both.
 The full suite on `e009f5d28`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,490 PASS lines and no FAIL line.
 

@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, the re-review and the refusal run
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The independent re-review of the tenth review's fixes (n148) and the fixes that answered it in n149.
 The re-review confirmed R1 (the screen) on every generator it wrote and on the three of the tenth review:
 in 18,500 pages of four generators of its own the made set was the largest in all but two,
@@ -50,7 +54,8 @@ W1 to WA,
 K1 to K7,
 Z04,
 A11c) and the guard labels A to D of n149 are the sources' own and are no ledger ids.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the merged tree `w158`
 by searches of declarations on the day of writing,

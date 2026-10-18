@@ -195,7 +195,8 @@ the late bench and the slate on the fidelity probe of that day
 (14 of 14 distinct questions chose the complete text,
 no damaged pick,
 no decline;
-recorded on its card in `src/model-cards.ts`),
+recorded on its card in `src/model-cards.ts` (moved on 2026-10-18 to
+`package/translation-repair/shared-contract/src/model-cards.ts`)),
 and held out of every writing seat by `WRITER_UNMEASURED` until the 40-round producer calibration is read;
 a model one provider alone serves holds no seat until a measurement seats it,
 whichever provider it is.

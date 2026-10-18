@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, the fixes of the eighth review and the oracle residue
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The findings of the eighth review (n131) that the second fix round (n134) took in hand,
 the flags of the first fix round (n133) that the lead decided on 2026-10-14 to fix after the merge of the two rounds,
 and the residue that the rerun of the independent oracle and n143's attention list left for n144.
@@ -49,7 +53,8 @@ and the lead's notes of that day.
 The labels J3 to J7 and the letters of flags are the review's and the hand-back's own and are no ledger ids.
 The guard labels collide between hand-backs,
 so each entry says whose guard it names.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the merged tree `w158`
 by searches of declarations on the day of writing,

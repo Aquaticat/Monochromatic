@@ -87,7 +87,8 @@ every one disclosed by its author in the review (`s217/review.md`).
   and the probe outputs `v-typo.out` (100),
   `v-r2x.out` (60) and `v-typo2.out` (57).
 - Terminal output over 50 lines twice:
-  a search of the page option over `src/corpus-run` (about 90 lines),
+  a search of the page option over `src/corpus-run` (moved on 2026-10-18 to
+  `package/translation-repair/*/src/corpus-run`) (about 90 lines),
   and a search with context in `v-r2.out` (about 100).
 - Pipes and `head`,
   three times:

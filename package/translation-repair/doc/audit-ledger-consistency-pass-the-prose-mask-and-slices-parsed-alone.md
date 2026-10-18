@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, the prose mask and slices parsed alone
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Typography may change only what the page parse shows as prose text.
 It curls a mark,
 restores the ellipsis,
@@ -47,7 +51,8 @@ n159 (`s230/handback-n159.md`) and n161 (`s232/handback-n161.md`)
 and the lead's notes of that day.
 The labels W1 and X2 to X11 are the reviews' own and are no ledger ids.
 The labels of probe scenarios and the names of probes and logs are the sources' own too.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the tree `w158`
 by searches of declarations on the day of writing.

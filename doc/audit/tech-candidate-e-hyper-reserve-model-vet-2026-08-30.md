@@ -71,7 +71,8 @@ and browser overlays are not applicable.
 ### Repository and parallel systems
 
 - `rg --line-number 'minimax-m3|deepseek-v4|gemma-4|gpt-oss-120b|qwen3.8-27b|kimi-k3' .`
-- Read `package/module/translation-repair/src/hyper-catalog.ts` and its unit tests.
+- Read `package/module/translation-repair/src/hyper-catalog.ts` (moved on 2026-10-18 to
+  `package/translation-repair/shared-contract/src/hyper-catalog.ts`) and its unit tests.
 - Read prior provider probes,
   architecture comparison,
   and Hyper-only run evidence.
@@ -343,7 +344,8 @@ and zero retries.
 - Date: 2026-08-30.
 - Preflight: fresh live catalog still reported vision true and output at least 32,000;
   provider budget sample reported Hyper wet with balance 7,055.
-- Command: `mise run //package/module/translation-repair:prototype-hyper-reserve-evaluation`.
+- Command: `mise run //package/module/translation-repair:prototype-hyper-reserve-evaluation` (task removed before
+  2026-10-18 and tasks now live in `package/translation-repair/<package>/mise.toml`).
 - Build evidence: package `buildAndTest` passed 871 suite verdicts with no failures before spend.
 - Independent review: advisor found no pre-commit or pre-spend blocker and required fresh catalog plus budget preflight,
   both performed.

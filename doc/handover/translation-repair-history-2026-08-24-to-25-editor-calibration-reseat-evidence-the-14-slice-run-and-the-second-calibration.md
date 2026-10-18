@@ -546,6 +546,9 @@ TRANSLATION_REPAIR_RUNS_DIR=~/temp/agent/editor-calibrate-postguard-20260825 \
   mise run //package/module/translation-repair:editor-calibrate -- 40
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:editor-calibrate`
+to `//package/translation-repair/bench:editor-calibrate`.
+
 Log at `~/temp/agent/editor-calibrate-postguard-20260825.log`.
 
 THE SHAPE IS COPIED DELIBERATELY.

@@ -58,7 +58,8 @@ which lists every file of this record.
     stage quorum 4.
     The owner curates additions to the community glossary,
     but the handoff's claim that the file was empty was wrong.
-    `git show 2cfad6236:package/module/translation-repair/src/community-glossary.ts` already carries
+    `git show 2cfad6236:package/module/translation-repair/src/community-glossary.ts` (moved on 2026-10-18 to
+    `package/translation-repair/glossary/src/community-glossary.ts`) already carries
     自切 as `self-surgery` and 超天酱 as `KAngel` or `Needy Streamer Overload`.
     A call through frozen `5b228736b` emits both terms for `yuki418330012` and none for `Mio`,
     whose source contains neither.

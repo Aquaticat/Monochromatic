@@ -173,7 +173,8 @@ quietly fail rather than about the note itself:
     fires and the run verifies nothing,
     which is a finding to record rather
     than a failed verification.
--   Running a `//package/module/translation-repair` mise task that BUILDS,
+-   Running a `//package/module/translation-repair` (moved on 2026-10-18 to the packages under
+    `package/translation-repair`) mise task that BUILDS,
     while a pass is live,
     can destroy it.
     rolldown names chunks by content

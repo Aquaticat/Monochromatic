@@ -98,7 +98,8 @@ automatically requeue,
 publish partial bytes,
 or publish archive fallback.
 Current self-replenishing path in
-`package/module/translation-repair/src/corpus-run/entry-attempt-queue.ts`
+`package/module/translation-repair/src/corpus-run/entry-attempt-queue.ts` (moved on 2026-10-18 to
+`package/translation-repair/slice-cache/src/corpus-run/entry-attempt-queue.ts`)
 must be replaced rather than adapted.
 
 Shared ports:

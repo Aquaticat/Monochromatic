@@ -124,7 +124,8 @@ the first was measured again while writing this file.
 
 ## What the package is
 
-`package/module/translation-repair` takes a Chinese original and its existing English translation (the archive),
+`package/module/translation-repair` (moved on 2026-10-18 to the packages under `package/translation-repair`) takes a
+Chinese original and its existing English translation (the archive),
 asks a roster of models to critique and repair it slice by slice,
 and ships a repaired page.
 It is not production ready
@@ -245,7 +246,8 @@ git switch --create translation-repair-mimo-trial --no-track origin/translation-
 git log --max-count 1 --format='%h %s'
 ```
 
-- A path `git status --short` prints outside `package/module/translation-repair` and `doc` is someone else's work in progress:
+- A path `git status --short` prints outside `package/module/translation-repair` (moved on 2026-10-18 to the packages
+  under `package/translation-repair`) and `doc` is someone else's work in progress:
   leave it,
   never stage it,
   and never restore or stash it (`AGENTS.md` rule EC1).
@@ -281,6 +283,9 @@ mkdir --parents "${HOME}/temp/agent/mimo-trial"
 chmod 700 "${HOME}/temp/agent/mimo-trial"
 mise run //package/module/translation-repair:buildAndTest > "${HOME}/temp/agent/mimo-trial/suite-start.log" 2>&1
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:buildAndTest`
+to `//package/translation-repair/<package>:buildAndTest`.
 
 Read the log:
 `rg --count '\[FAIL\]' <log>` and `rg --count '\[PASS\]' <log>`.
@@ -405,6 +410,9 @@ take the baseline every T8 batch reads against:
 # from the worktree root
 mise run //package/module/translation-repair:coverage-census > "${HOME}/temp/agent/mimo-trial/census-base.log" 2>&1
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:coverage-census`
+to `//package/translation-repair/coverage-census:coverage-census`.
 
 - It refuses a failing suite.
   A census taken with uncommitted changes in the package says so on its first line,
@@ -545,6 +553,9 @@ Close the batch in this order:
     mise run //package/module/translation-repair:coverage-census -- --baseline <census.json> --source src/<a>.ts --source src/<b>.ts src/<a>.unit.test.ts > "${HOME}/temp/agent/mimo-trial/reach-<cluster>.log" 2>&1
     ```
 
+    Moved on 2026-10-18 from `//package/module/translation-repair:coverage-census`
+    to `//package/translation-repair/coverage-census:coverage-census`.
+
     Its `against <census.json> at <commit>: ...` line decides it
     (format measured on 2026-10-03):
     `still cold 0`,
@@ -599,29 +610,35 @@ redirecting long output to a log file under `${HOME}/temp/agent/mimo-trial/`,
 then read the result line named.
 
 - Build:
-  `mise run //package/module/translation-repair:build`
+  `mise run //package/module/translation-repair:build` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:build`)
   (measured;
   rolldown prints `Finished` at the end).
 - Build and full suite:
-  `mise run //package/module/translation-repair:buildAndTest`
+  `mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:buildAndTest`)
   (measured;
   read the `[PASS]` and `[FAIL]` counts).
 - Named test files,
   after a build:
-  `mise run //package/module/translation-repair:test:unit src/<a>.unit.test.ts src/<b>.unit.test.ts`
+  `mise run //package/module/translation-repair:test:unit src/<a>.unit.test.ts src/<b>.unit.test.ts` (moved on
+  2026-10-18 to `//package/translation-repair/<package>:test:unit`)
   (measured).
 - Lint:
-  `mise run //package/module/translation-repair:lint`,
+  `mise run //package/module/translation-repair:lint` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:lint`),
   whose result line is `Found 0 warnings and 0 errors.`
   (from the owner's commit messages;
   the cloud copy could not build the lint's own config package,
   so it was not run there).
 - Types:
-  `mise run //package/module/translation-repair:lint:types`
+  `mise run //package/module/translation-repair:lint:types` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:lint:types`)
   after any TypeScript edit (`AGENTS.md` rule CM6;
   not run in the cloud copy).
 - Source scans:
-  `mise run //package/module/translation-repair:source-scans`
+  `mise run //package/module/translation-repair:source-scans` (moved on 2026-10-18 to
+  `//package/translation-repair/source-scan:source-scans`)
   for every commit touching the package's source,
   docs,
   README or task file,
@@ -638,7 +655,8 @@ then read the result line named.
   T8 batches,
   one cluster at a time".
 - Cache versions before any launch:
-  `mise run //package/module/translation-repair:cache-account-audit`
+  `mise run //package/module/translation-repair:cache-account-audit` (moved on 2026-10-18 to
+  `//package/translation-repair/slice-cache:cache-account-audit`)
   (the prevention doc's "Before a run launches").
 
 ## Rules from `AGENTS.md` that bite in this package
@@ -709,7 +727,7 @@ these are the ones the code here trips most.
   each family of mistakes,
   its rule,
   and "Before a run launches".
-- [The package README](../../package/module/translation-repair/README.md),
+- [The package README](../../package/translation-repair/README.md),
   "Where the rest lives":
   configuration,
   roster,
@@ -877,5 +895,5 @@ and its commit.
   The owner may veto and restore the rethrow,
   which returns the stretch to T8's open count.
 
-[ledger]: ../../package/module/translation-repair/doc/audit-ledger.md
-[prevent]: ../../package/module/translation-repair/doc/mistake-prevention.md
+[ledger]: ../../package/translation-repair/doc/audit-ledger.md
+[prevent]: ../../package/translation-repair/doc/mistake-prevention.md

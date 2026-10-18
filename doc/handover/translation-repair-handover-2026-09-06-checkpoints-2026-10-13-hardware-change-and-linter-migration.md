@@ -219,16 +219,16 @@ the branch worktree is `/var/home/user/worktrees/translation-repair`.
     `audit-ledger-tense-check-and-consistency-pass.md`.
     That file was split on 2026-10-14 (UTC) by subject:
     B462 is now in
-    [`audit-ledger-consistency-pass-repeat-groups-and-the-carry.md`](../../package/module/translation-repair/doc/audit-ledger-consistency-pass-repeat-groups-and-the-carry.md),
+    [`audit-ledger-consistency-pass-repeat-groups-and-the-carry.md`](../../package/translation-repair/doc/audit-ledger-consistency-pass-repeat-groups-and-the-carry.md),
     B463 to B477 in
-    [`audit-ledger-consistency-pass-span-and-marks-beside-it.md`](../../package/module/translation-repair/doc/audit-ledger-consistency-pass-span-and-marks-beside-it.md),
+    [`audit-ledger-consistency-pass-span-and-marks-beside-it.md`](../../package/translation-repair/doc/audit-ledger-consistency-pass-span-and-marks-beside-it.md),
     B478 to B491 in
-    [`audit-ledger-consistency-pass-apostrophes-and-block-floors.md`](../../package/module/translation-repair/doc/audit-ledger-consistency-pass-apostrophes-and-block-floors.md),
+    [`audit-ledger-consistency-pass-apostrophes-and-block-floors.md`](../../package/translation-repair/doc/audit-ledger-consistency-pass-apostrophes-and-block-floors.md),
     and B492 onward in
-    [`audit-ledger-consistency-pass-page-wide-proof-forms-floors-and-limits.md`](../../package/module/translation-repair/doc/audit-ledger-consistency-pass-page-wide-proof-forms-floors-and-limits.md).
+    [`audit-ledger-consistency-pass-page-wide-proof-forms-floors-and-limits.md`](../../package/translation-repair/doc/audit-ledger-consistency-pass-page-wide-proof-forms-floors-and-limits.md).
     M167 goes in the file that holds M166,
     the last process mistake:
-    [`audit-ledger-process-agents-and-briefs.md`](../../package/module/translation-repair/doc/audit-ledger-process-agents-and-briefs.md).
+    [`audit-ledger-process-agents-and-briefs.md`](../../package/translation-repair/doc/audit-ledger-process-agents-and-briefs.md).
 6.  Commit the tests,
     then the code,
     with path lists generated from the worktree status immediately before each commit.

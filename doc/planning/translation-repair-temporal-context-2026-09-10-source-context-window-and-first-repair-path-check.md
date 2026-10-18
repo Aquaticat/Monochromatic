@@ -24,7 +24,8 @@ The current `neighbouringSource` call for prepared slice position four includes
 source slice three's childhood/SRS prose and slice five's heading,
 but not slice six's dated paragraph.
 This was reproduced in `~/temp/agent/Mio12-temporal-context-20260910.out`.
-The implementation in `package/module/translation-repair/src/fidelity-window.ts`
+The implementation in `package/module/translation-repair/src/fidelity-window.ts` (moved on 2026-10-18 to
+`package/translation-repair/repair/src/fidelity-window.ts`)
 budgets physical adjacent slices,
 although its historical comments discuss neighboring sections.
 

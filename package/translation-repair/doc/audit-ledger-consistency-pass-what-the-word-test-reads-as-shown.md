@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, what the word test reads as shown
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The word test at a span edge decides whether a quote ends inside a word that a reader sees.
 It reads the shown text:
 what the page shows after the parse,
@@ -47,7 +51,8 @@ The labels Y1,
 Y2 and Y4 are the review's own and are no ledger ids.
 The labels of probe scenarios,
 the names of probes and the names of logs are the sources' own too.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the tree `w153`
 at `277145a862`

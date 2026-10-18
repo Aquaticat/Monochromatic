@@ -110,7 +110,8 @@ which is the only panel-size variation observed.
 THE WORRY,
 WHICH IS REAL AND ALREADY ANSWERED.
 `isChunkRepairOutcome` in
-`package/module/translation-repair/src/corpus-run/slice-cache-store.ts` validates a cached outcome
+`package/module/translation-repair/src/corpus-run/slice-cache-store.ts` (moved on 2026-10-18 to
+`package/translation-repair/slice-cache/src/corpus-run/slice-cache-store.ts`) validates a cached outcome
 field by field,
 and it checks neither `checkerReadings` nor `recheckReadings`.
 A cache file written
@@ -412,6 +413,9 @@ The audit wants the
 mise run //package/module/translation-repair:rendering-audit-settled -- \
   --archive "${HOME}/<run dir>/artifacts" --cap 0
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:rendering-audit-settled`
+to `//package/translation-repair/probe:rendering-audit-settled`.
 
 THE REAL RESULT,
 measured that way:

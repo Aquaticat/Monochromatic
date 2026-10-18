@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, the independent oracle and the rules for marks
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The record of what an oracle written by someone else from the rule text found in the tree that n140 left,
 and of the rules for marks that the lead decided in answer (D1 to D9) and n143 built.
 The grids had read zero under the oracle that n140 had changed to its own rule.
@@ -64,7 +68,8 @@ P19,
 c1 to c3) and the guard names (d1a,
 d2,
 d4 and others) are the sources' own and are no ledger ids.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the merged tree `w158`
 by searches of declarations on the day of writing,

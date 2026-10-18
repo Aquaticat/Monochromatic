@@ -58,7 +58,8 @@ the mechanism is size-independent,
 so a mid-sized entry under a deliberately tight cap runs the same code path.
 
     TRANSLATION_REPAIR_RUNS_DIR=<throwaway> TRANSLATION_REPAIR_HARD_CAP_MINUTES=5 \
-      mise run //package/module/translation-repair:corpus-pass -- --only MocaKawai
+      mise run //package/module/translation-repair:corpus-pass (moved on 2026-10-18 to
+      `//package/translation-repair/corpus-pass:corpus-pass`) -- --only MocaKawai
 
 `--only` already existed;
 nothing had to be built to bound this.
@@ -285,7 +286,8 @@ Showing the composition needs a ceiling between one slice and one entry,
 which on these numbers means roughly 60 minutes:
 
     TRANSLATION_REPAIR_RUNS_DIR=<throwaway> TRANSLATION_REPAIR_HARD_CAP_MINUTES=60 \
-      mise run //package/module/translation-repair:corpus-pass -- --only Weideriche_
+      mise run //package/module/translation-repair:corpus-pass (moved on 2026-10-18 to
+      `//package/translation-repair/corpus-pass:corpus-pass`) -- --only Weideriche_
 
 Expect two or three attempts and about two and a half hours.
 It was not run because Synthetic quota is restorable only sometimes,

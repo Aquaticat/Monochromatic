@@ -63,7 +63,8 @@ consumers and deployment are deliberately out of scope for now.
 - Corpus-pass driver and sentinel probe are COMMITTED SOURCE (2026-07-24,
   user
   directive "driver and probe should be source code") under
-  `package/module/translation-repair/src/corpus-run/`:
+  `package/module/translation-repair/src/corpus-run/` (moved on 2026-10-18 to
+  `package/translation-repair/*/src/corpus-run/`):
   `run-config.ts` (shared roster,
   budgets,
   corpus pin,
@@ -78,7 +79,8 @@ consumers and deployment are deliberately out of scope for now.
   executable-in-src pattern (e.g. `package/dev-script/watch-restart/src/cli.ts`);
   no hardcoded dist path.
   Run via mise tasks (package `mise.toml`):
-  `mise run //package/module/translation-repair:corpus-pass` (append `-- --plan`
+  `mise run //package/module/translation-repair:corpus-pass` (moved on 2026-10-18 to
+  `//package/translation-repair/corpus-pass:corpus-pass`) (append `-- --plan`
   for the zero-quota setup check that verifies imports,
   corpus reads,
   filtering,
@@ -86,7 +88,8 @@ consumers and deployment are deliberately out of scope for now.
   key injection,
   and client construction),
   and
-  `mise run //package/module/translation-repair:sentinel-probe -- <id>...`.
+  `mise run //package/module/translation-repair:sentinel-probe -- <id>...` (moved on 2026-10-18 to
+  `//package/translation-repair/bench:sentinel-probe`).
   Only the RUN OUTPUTS stay gitignored and out of git:
   per-entry artifacts,
   `attempts.json`,

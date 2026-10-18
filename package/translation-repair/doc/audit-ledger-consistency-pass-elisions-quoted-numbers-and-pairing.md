@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, elisions, quoted numbers and pairing
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The pass restores typography in the words it writes:
 a straight mark on a curly page becomes `‘` or `’`,
 and the pairing of single marks decides which.
@@ -57,7 +61,8 @@ W3,
 W7,
 X7 and the item names of the notes are the reviews' own and are no ledger ids.
 The inputs of the probes are quoted as the reviews print them.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the tree `w158`
 by searches of declarations on the day of writing.

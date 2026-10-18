@@ -52,7 +52,8 @@ and retain observed raw-byte extent and SHA-256 separately from the decoded evid
 Neither field grants review or admission.
 
 The byte-owning I/O caller must enforce its authorized extent before decoding.
-`package/module/translation-repair/src/corpus-run/producer-input-bounds.ts` defines a metadata ceiling,
+`package/module/translation-repair/src/corpus-run/producer-input-bounds.ts` (removed before 2026-10-18) defines a
+metadata ceiling,
 not a root-input-body ceiling;
 it cannot reject the retained root artifact merely because that artifact exceeds metadata size.
 Do not invent an existing artifact limit.
@@ -62,8 +63,8 @@ reject proxies/detached buffers through owned fixed errors,
 use strict UTF-8 decoding,
 and retain no parser excerpt or foreign error cause.
 The native writer passes compact `JSON.stringify(inputs)` to the UTF-8 output writer:
-`package/module/translation-repair/src/corpus-run/producer-prepare-app.ts:206`
-and `package/module/translation-repair/src/corpus-run/producer-input-output.ts:84`.
+`package/module/translation-repair/src/corpus-run/producer-prepare-app.ts:206` (removed before 2026-10-18)
+and `package/module/translation-repair/src/corpus-run/producer-input-output.ts:84` (removed before 2026-10-18).
 A serialization-grammar check must match those actual bytes,
 not an assumed pretty-printed format.
 
@@ -75,7 +76,8 @@ No additional persisted projection or general executor is needed.
 
 ## Relationship constraints from current source
 
-`package/module/translation-repair/src/preparation-root-reference-model.ts` owns the closed unversioned DTO.
+`package/module/translation-repair/src/preparation-root-reference-model.ts` (removed before 2026-10-18) owns the closed
+unversioned DTO.
 Require its exact scope and key inventory;
 do not add or infer a `version` field.
 Scalar,
@@ -100,7 +102,7 @@ Do not conflate these collections:
   Reuse that substantive identity when checking alias membership.
 
 These distinctions follow
-`package/module/translation-repair/src/preparation-root-registration.ts:79`,
+`package/module/translation-repair/src/preparation-root-registration.ts:79` (removed before 2026-10-18),
 `:99`,
 `:173` and `:223`.
 A scoped design review's suggestions to resolve all registry records through selected parents
@@ -195,7 +197,7 @@ types,
 targeted tests and full-scope lint pass.
 The actual-artifact consumer then refuses `inputs.selection.selectionRuntimeDigest`:
 the new selection decoder incorrectly expected a bare SHA-256.
-`package/module/translation-repair/src/read-frozen-preparation-selection.ts:50`
+`package/module/translation-repair/src/read-frozen-preparation-selection.ts:50` (removed before 2026-10-18)
 and lines 175 to 178 require `sha256-tree-v1:` followed by the digest.
 The decoder and fixtures now preserve that original tagged grammar;
 the valid retained artifact is not edited to satisfy the mistaken reader.

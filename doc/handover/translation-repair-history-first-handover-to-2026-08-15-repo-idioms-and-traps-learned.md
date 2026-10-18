@@ -109,7 +109,8 @@ and the stop condition in the index applies.
   build from before that edit,
   and a test calling a function without a newly required argument passes both
   tasks until the bundle is rebuilt.
-  Always use `mise run //package/module/translation-repair:buildAndTest`.
+  Always use `mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:buildAndTest`).
   Measured rather than suspected:
   two green `test:unit` runs were collected in the 2026-08-09 session before
   this was noticed,

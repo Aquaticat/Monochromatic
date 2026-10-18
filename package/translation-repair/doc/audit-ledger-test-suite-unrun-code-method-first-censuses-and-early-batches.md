@@ -1,5 +1,9 @@
 # Audit ledger: code no unit test runs, method, first censuses and early batches
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 How the coverage of code no unit test runs was first measured on 2026-09-28 and 2026-09-29,
 the rule for when T8 closes and the census task that proves reach,
 the first whole-suite censuses,

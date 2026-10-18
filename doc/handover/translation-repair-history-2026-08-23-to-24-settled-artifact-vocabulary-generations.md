@@ -157,7 +157,8 @@ A blanket rename collapses two concepts into one name
 and recreates exactly the defect `#99` was opened on.
 The attempt surfaced as two `TS2451` redeclarations in `translate-document.ts`
 and would have been SILENT everywhere else.
-It was reverted whole with `git checkout -- package/module/translation-repair/src` and split in two:
+It was reverted whole with `git checkout -- package/module/translation-repair/src` (moved on 2026-10-18 to
+`package/translation-repair/*/src`) and split in two:
 
 1.  `sliceIndex` to `slicePosition`,
     122 sites in 19 files,

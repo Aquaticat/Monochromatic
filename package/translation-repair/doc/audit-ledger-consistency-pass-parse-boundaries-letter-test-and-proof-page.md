@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, parse boundaries, the letter test and the proof's page
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The defects that the second fix round of the eighth review (n134) and the rounds after it (n136,
 n137 and n139) found,
 or were told to fix by the lead:
@@ -29,7 +33,8 @@ The labels J3 to J8,
 the guard labels and the item numbers are the sources' own and are no ledger ids.
 The guard labels collide between hand-backs,
 so each entry says whose guard it names.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the merged tree `w158`
 by searches of declarations on the day of writing,

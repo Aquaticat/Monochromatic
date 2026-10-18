@@ -1,6 +1,7 @@
 # Debt layers in the translation-repair package
 
-Walked 2026-08-19 over 610 `.ts` files in `package/module/translation-repair/src`,
+Walked 2026-08-19 over 610 `.ts` files in `package/module/translation-repair/src` (moved on 2026-10-18 to
+`package/translation-repair/*/src`),
 zero quota,
 read-only,
 while the `#107` verification ran.

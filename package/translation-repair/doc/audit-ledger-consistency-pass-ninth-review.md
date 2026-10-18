@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, the ninth review
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The ninth independent review of the pass (n138) and the fixes that answered it in n140 and n141.
 The review confirmed the fixes of the second round:
 J1 to J5 were fixed on the inputs of the eighth review,
@@ -30,7 +34,8 @@ The labels L1 to L9,
 the guard labels (n01 to n09 are n141's,
 e1 to e3 are n140's) and the item numbers are the sources' own and are no ledger ids.
 L9 is a mistake of the lead's brief and is filed as M199.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the merged tree `w158`
 by searches of declarations on the day of writing,

@@ -149,7 +149,8 @@ if (opaque
 ```
 
 On one installed dependency tree,
-`mise run //package/module/translation-repair:lint:oxlint` produced:
+`mise run //package/module/translation-repair:lint:oxlint` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:lint:oxlint`) produced:
 
 - baseline:
   118 `prefer-readonly-parameter-types` errors;

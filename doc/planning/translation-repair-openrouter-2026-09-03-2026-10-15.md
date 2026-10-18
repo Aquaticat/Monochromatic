@@ -13,7 +13,8 @@ which lists every file of this record.
 
 TianqiChen66624 launched on 2026-10-15 at 08:30 UTC at `db6c26a486`
 through the runbook's unit form
-(`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666`)
+(`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666` (moved on 2026-10-18 to
+`//package/translation-repair/corpus-pass:corpus-pass`))
 into a throwaway runs directory,
 and settled in 10,629,332 ms
 (`TALLY TianqiChen666 status=SETTLED slices=24`):

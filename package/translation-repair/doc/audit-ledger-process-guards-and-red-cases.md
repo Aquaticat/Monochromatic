@@ -1,5 +1,9 @@
 # Audit ledger: process mistakes, guards and red cases
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Guards and failing-first cases that could not fail,
 never reached what they guarded,
 or were removed to please a census.
@@ -391,7 +395,7 @@ lines 80-81).
 The class was left unchecked,
 though `readBlockPairingOutcomes` records only a `BlockPairingError` as an unusable reply
 and rethrows any other.
-The rule in `doc/mistake-prevention.md`,
+The rule in `doc/mistake-prevention.md` (moved on 2026-10-18 to `package/translation-repair/doc/mistake-prevention.md`),
 that a refusal case checks the message beside the class,
 was not applied to the rewrite.
 Prevention:

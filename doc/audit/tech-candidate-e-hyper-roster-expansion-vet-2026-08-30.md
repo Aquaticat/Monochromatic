@@ -445,7 +445,8 @@ Interpretation is frozen before dispatch:
   K2.7 cannot disable thinking;
   both permit only automatic or no tool choice while thinking.
 - Consumer boundary:
-  `package/module/translation-repair/src/anthropic-request.ts` forces named answer tool
+  `package/module/translation-repair/src/anthropic-request.ts` (moved on 2026-10-18 to
+  `package/translation-repair/provider/src/anthropic-request.ts`) forces named answer tool
   and records owner instruction never to set thinking parameters.
 - Outcome: both exit without provider spend.
 

@@ -250,7 +250,8 @@ package has no runtime dynamic import and a running pass holds every module it w
 startup.
 A rebuild that renames hashed chunks therefore cannot reach it.
 
-`mise run //package/module/translation-repair:test:unit` DOES NOT BUILD.
+`mise run //package/module/translation-repair:test:unit` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:test:unit`) DOES NOT BUILD.
 The package declares two
 tasks with that name,
 and the bare one runs the suite against whatever `dist/` already holds.
@@ -348,6 +349,8 @@ The check to run is:
 # from package/module/translation-repair
 grep -oE '(^|[^.[:alnum:]_$])import\(' dist/final/node/*.mjs | grep -v 'import.meta' | wc -l
 ```
+
+`package/module/translation-repair` was split on 2026-10-18 into the packages under `package/translation-repair`.
 
 Anything that is not a `node:` specifier would break the guarantee.
 

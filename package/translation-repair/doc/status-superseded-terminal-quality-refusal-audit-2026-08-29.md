@@ -75,7 +75,8 @@ Audited terminal and bypass findings are integrated as follows:
   classified as `INCOMPLETE` rather than whole-entry quality retry;
   `1ba8f713a` (2026-09-01) removed it,
   and `finalSelectionFindings` reports the same condition beside the tally
-  (`src/corpus-run/final-selection-completeness.ts`).
+  (`src/corpus-run/final-selection-completeness.ts` (moved on 2026-10-18 to
+  `package/translation-repair/page-check/src/corpus-run/final-selection-completeness.ts`)).
 - One-sided front-matter support landed in `56a47cb81` and creates insertion slice for source-only metadata,
   deterministically admits it,
   and validates candidate against source YAML shape when archive has none.

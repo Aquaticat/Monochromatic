@@ -99,7 +99,8 @@ what was missing was the thing that turns token counts into money.
 
 ### The price table is an observation with a date on it
 
-`package/module/translation-repair/src/corpus-run/hyper-price.ts` carries all
+`package/module/translation-repair/src/corpus-run/hyper-price.ts` (moved on 2026-10-18 to
+`package/translation-repair/run/src/corpus-run/hyper-price.ts`) carries all
 twenty-six models Charm Hyper lists,
 with input,
 output,
@@ -115,7 +116,8 @@ Transcribing a hundred and four figures by eye is exactly where a silent error w
 
 ### The two cache columns are unreachable, which makes the input half exact
 
-Nothing in `package/module/translation-repair/src` sends `cache_control`,
+Nothing in `package/module/translation-repair/src` (moved on 2026-10-18 to `package/translation-repair/*/src`) sends
+`cache_control`,
 which is one grep to confirm.
 On the Anthropic protocol Hyper speaks,
 that means there are no cache-creation and no cache-read tokens,
@@ -140,6 +142,9 @@ The report names all three separately.
 ```sh
 mise run //package/module/translation-repair:spend-report -- <log> [<log> ...]
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:spend-report`
+to `//package/translation-repair/run:spend-report`.
 
 Positive control,
 on a throwaway fixture carrying every case at once:

@@ -587,7 +587,8 @@ happened 2026-10-06 (UTC),
 while the parse leftovers of B324 to B328 were being merged;
 the run only failed,
 and was repeated from the worktree.
-`mise run //package/module/translation-repair:source-scans` was started from the main repository's root
+`mise run //package/module/translation-repair:source-scans` (moved on 2026-10-18 to
+`//package/translation-repair/source-scan:source-scans`) was started from the main repository's root
 and not from the worktree that holds the branch,
 and found no such task (exit 1).
 Prevention:
@@ -633,8 +634,10 @@ and it came again on 2026-10-15.
   `find -not -readable -not -type l` over the branch worktree lists nothing,
   so every unreadable entry is a symbolic link.
   `Mittens-again.json` and `linked.mjs` are absolute symbolic links that two tests make in disposable folders
-  (the `symlink` calls in `src/corpus-run/artifact-file-name.unit.test.ts`
-  and `src/corpus-run/pipeline-digest.unit.test.ts`).
+  (the `symlink` calls in `src/corpus-run/artifact-file-name.unit.test.ts` (moved on 2026-10-18 to
+  `package/translation-repair/artifact-pool/src/corpus-run/artifact-file-name.unit.test.ts`)
+  and `src/corpus-run/pipeline-digest.unit.test.ts` (moved on 2026-10-18 to
+  `package/translation-repair/glossary/src/corpus-run/pipeline-digest.unit.test.ts`)).
   Copies of those folders kept under `node_modules/.monochromatic/comparison-evidence/`
   and `node_modules/.monochromatic/preparation-root-order*/` (dated 2026-09-14) hold the links with their targets gone,
   so the links dangle.

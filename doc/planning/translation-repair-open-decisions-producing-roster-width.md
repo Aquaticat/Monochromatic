@@ -96,7 +96,8 @@ WHAT ACTUALLY MOVES with width:
 
 ### Measured overnight, so this is no longer a guess
 
-`mise run //package/module/translation-repair:slice-census` reads the pinned
+`mise run //package/module/translation-repair:slice-census` (moved on 2026-10-18 to
+`//package/translation-repair/slice-cache:slice-census`) reads the pinned
 corpus,
 slices it exactly as the pipeline does,
 and spends no quota.
@@ -173,7 +174,8 @@ THE AGREEMENT LIMB IS BEING MEASURED NOW,
 and it is the half of this question
 the corpus cannot answer:
 whether more candidates make the judges converge less.
-`mise run //package/module/translation-repair:roster-bench` runs the same ten
+`mise run //package/module/translation-repair:roster-bench` (moved on 2026-10-18 to
+`//package/translation-repair/bench:roster-bench`) runs the same ten
 stratified slices through the translate lane at every width from two to the
 whole roster,
 interleaved so each width meets the same provider weather,

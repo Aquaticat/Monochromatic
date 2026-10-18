@@ -118,7 +118,8 @@ and `--cap 1 --candidates deepseek-v4.1-flash --candidates-alone`,
 with the clone variable set to an empty scratch folder,
 printed the `judges:` line and ended at a failed corpus read,
 exit 6.
-The lead's reading of `src/corpus-run/judge-fidelity-probe.ts` as it stood:
+The lead's reading of `src/corpus-run/judge-fidelity-probe.ts` (moved on 2026-10-18 to
+`package/translation-repair/probe/src/corpus-run/judge-fidelity-probe.ts`) as it stood:
 the argument read,
 `probeRosterWith`,
 `reviewedFidelityRequest` and `readReviewedFidelityReferences` all come before `createRunClient`,
@@ -139,7 +140,8 @@ because a wrong one fails without a word,
 as the first agent's did.
 
 Prevention:
-a built command is started only through `runBuiltCommand` or `runKeyless` of `src/child-environment.test-fixture.ts`,
+a built command is started only through `runBuiltCommand` or `runKeyless` of `src/child-environment.test-fixture.ts`
+(moved on 2026-10-18 to `package/translation-repair/adjudication/src/child-environment.test-fixture.ts`),
 by an agent as by a test,
 and an environment is never stripped,
 filtered or rebuilt by hand.
@@ -342,7 +344,8 @@ which keeps the archive unchanged and records the relabel as withheld,
 while a plain error passes that catch and stops the entry,
 by the lead's search of every caller.
 So on a wrong proof the change would have stopped an entry where the run had shipped its archive,
-against the owner's rule that a run always ships (`doc/design-commitments.md`).
+against the owner's rule that a run always ships (`doc/design-commitments.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/design-commitments.md`)).
 The agent's proofs for the six rested on library sources,
 and for one on mdast's phrasing content and a probe,
 none on a refusal the libraries name.

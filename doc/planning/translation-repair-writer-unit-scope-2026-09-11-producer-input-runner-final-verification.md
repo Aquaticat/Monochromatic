@@ -74,7 +74,7 @@ Other compared ASTs differ only in excluded location/comment/parenthesis represe
 It does not prove later refactors or independent runtime semantics.
 
 Regression ownership and native qualification limits are recorded in
-`package/module/translation-repair/producer-input-verification.md`.
+`package/module/translation-repair/producer-input-verification.md` (removed before 2026-10-18).
 Private native suites are artifact qualification,
 not portable committed native CI coverage or exhaustive package-path coverage.
 

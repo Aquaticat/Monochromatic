@@ -70,6 +70,9 @@ export type ClaimAttribution = {
 };
 ```
 
+Moved on 2026-10-18 from `package/module/translation-repair/src/critic-attribution.ts`
+to `package/translation-repair/adjudication/src/critic-attribution.ts`.
+
 The count is not decoration. `proposers.length` is independent support, how many
  distinct critics found the defect; `emissionCount` is self-repetition, one
  critic saying the same thing twice in one report. A plain `modelId[]` populated
@@ -257,7 +260,8 @@ THE TESTING LESSON, which cost a mutation to learn: the fold had tests and the
 
 ## The reader, and why it shipped the same night as the writer
 
-`mise run //package/module/translation-repair:score-attribution` reads a run's
+`mise run //package/module/translation-repair:score-attribution` (moved on 2026-10-18 to
+`//package/translation-repair/probe:score-attribution`) reads a run's
  settled artifacts and prints per-critic calibration. It takes the runs
  directory from `TRANSLATION_REPAIR_RUNS_DIR` exactly as every other reader
  does.

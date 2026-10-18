@@ -32,7 +32,8 @@ TianqiChen66620 was stopped at 17 min before slice 9.
 Every finding,
 its evidence path,
 fix,
-guard and status lives in `package/module/translation-repair/doc/audit-ledger.md`.
+guard and status lives in `package/module/translation-repair/doc/audit-ledger.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/audit-ledger.md`).
 
 ### The owner's answers
 

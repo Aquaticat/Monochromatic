@@ -20,7 +20,8 @@ most call it missing or empty translation content,
 while one criticizes a Chinese heading outside the candidate.
 The artifact is not missing the following English transcript.
 
-`package/module/translation-repair/src/archive-block-naturalness.ts`
+`package/module/translation-repair/src/archive-block-naturalness.ts` (moved on 2026-10-18 to
+`package/translation-repair/archive/src/archive-block-naturalness.ts`)
 supplies the whole Chinese section and corroborated picture readings as `sourceText`,
 the label as `candidateText`,
 and `[blockText]` as the numbered paragraphs.

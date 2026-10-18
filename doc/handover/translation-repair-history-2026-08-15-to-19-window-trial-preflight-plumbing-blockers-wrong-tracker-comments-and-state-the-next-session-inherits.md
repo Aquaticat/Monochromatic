@@ -528,14 +528,16 @@ matches the subject.
 MEASURED AT COMMIT `f44f82b60`,
 not carried forward from earlier in the night:
 
--   `mise run //package/module/translation-repair:test:unit` exits 0.
+-   `mise run //package/module/translation-repair:test:unit` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:test:unit`) exits 0.
     The whole
     unit suite,
     not a selection:
     1104 lines of output,
     zero `[error]` lines,
     zero assertion failures.
--   `mise run //package/module/translation-repair:lint` reports 0 warnings and
+-   `mise run //package/module/translation-repair:lint` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:lint`) reports 0 warnings and
     0 errors.
 -   Working tree is clean except four generated artifacts,
     described below.

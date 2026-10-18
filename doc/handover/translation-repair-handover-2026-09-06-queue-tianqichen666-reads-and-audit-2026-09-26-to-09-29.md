@@ -496,7 +496,8 @@ which lists every file of this record.
     for this pkg"):
     every finding,
     fix and status is in
-    `package/module/translation-repair/doc/audit-ledger.md`;
+    `package/module/translation-repair/doc/audit-ledger.md` (moved on 2026-10-18 to
+    `package/translation-repair/doc/audit-ledger.md`);
     the planning doc section "Whole-package audit,
     2026-09-27" lists the owner's answers and the commits.
     The owner was told the 治愈 安慰 misquotation.

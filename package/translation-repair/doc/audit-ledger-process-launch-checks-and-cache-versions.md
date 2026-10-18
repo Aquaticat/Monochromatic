@@ -209,7 +209,8 @@ had left a payload of copied run directories
 9 were the checkout's own source files named for the slice cache,
 the rest were copies of cached records with fresh times,
 and outside both the only match was a scratch output.
-The same check had also named the package's runs as `package/module/translation-repair/runs`,
+The same check had also named the package's runs as `package/module/translation-repair/runs` (split on 2026-10-18 into
+the packages under `package/translation-repair`),
 which does not exist
 (bfs said so in the error file);
 they live under the worktree's `node_modules/.monochromatic/translation-repair-runs*`,

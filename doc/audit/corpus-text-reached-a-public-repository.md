@@ -81,7 +81,8 @@ which the corpus repeats across dozens of entries.
 
 ### One real identifier is in tracked source
 
-`package/module/translation-repair/src/image-reading-sense.ts` carries a real Bilibili account UID
+`package/module/translation-repair/src/image-reading-sense.ts` (moved on 2026-10-18 to
+`package/translation-repair/slice-reading/src/image-reading-sense.ts`) carries a real Bilibili account UID
 as the example value in a TSDoc `@example` block for `readingAnchors`.
 
 It is small and it is not prose, but it is a live account identifier for a real person,

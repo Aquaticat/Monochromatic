@@ -485,7 +485,8 @@ so a permissions problem would have been reported as an answered roster question
 The refusal names the filesystem code rather than the message,
 because a code carries no path and a run directory path can name a person.
 
-The task is `mise run //package/module/translation-repair:ledger-report`,
+The task is `mise run //package/module/translation-repair:ledger-report` (moved on 2026-10-18 to
+`//package/translation-repair/run:ledger-report`),
 with the run directory taken from `TRANSLATION_REPAIR_RUNS_DIR`
 through the same `resolveRunsDir` every other reader in this family uses.
 

@@ -147,7 +147,8 @@ Use it that way next time instead of gating a long run behind a probe entry.
 
 ### Grading arithmetic is now reproducible from the sheets
 
-`mise run //package/module/translation-repair:score-agreement -- --sheet <abs path>`
+`mise run //package/module/translation-repair:score-agreement -- --sheet <abs path>` (moved on 2026-10-18 to
+`//package/translation-repair/probe:score-agreement`)
 reads a graded sheet and prints the numbers,
 so a verdict no longer depends on counting by hand.
 Pass an ABSOLUTE path:

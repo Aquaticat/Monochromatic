@@ -207,7 +207,8 @@ four hours and forty-eight minutes into the entry.
 
 `verify-published` closes that.
 It spends no quota and touches no model.
-Run it with `TRANSLATION_REPAIR_RUNS_DIR=<dir> mise run //package/module/translation-repair:verify-published`.
+Run it with `TRANSLATION_REPAIR_RUNS_DIR=<dir> mise run //package/module/translation-repair:verify-published` (moved on
+2026-10-18 to `//package/translation-repair/run:verify-published`).
 
 ### The first version passed a page with two hundred characters cut out of it
 

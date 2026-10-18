@@ -69,7 +69,8 @@ named for that subject and listed here.
 ## Scope and method
 
 Subject:
-`package/module/translation-repair` at `b20120fbb`
+`package/module/translation-repair` (moved on 2026-10-18 to the packages under `package/translation-repair`) at
+`b20120fbb`
 (worktree `/var/home/user/worktrees/translation-repair`,
 branch `translation-repair-rebased`).
 
@@ -124,14 +125,17 @@ and that slice is re-read by the main session.
 
 ## Baseline, measured before anything was touched
 
-- `mise run //package/module/translation-repair:lint:types`:
+- `mise run //package/module/translation-repair:lint:types` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:lint:types`):
   exit 0.
-- `mise run //package/module/translation-repair:lint:oxlint`:
+- `mise run //package/module/translation-repair:lint:oxlint` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:lint:oxlint`):
   0 warnings,
   0 errors,
   965 files,
   484 rules.
-- `mise run //package/module/translation-repair:buildAndTest`:
+- `mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:buildAndTest`):
   exit 0;
   750 suites carry the runner's `] PASS ` prefix,
   0 carry `] FAIL `
@@ -245,7 +249,8 @@ in which case it is scheduled as its own item.
   a reader starting from the planning document is told to decide things
   already decided.
 - `doc/handover/translation-repair.md` is 3440 lines against the 2000-line cap it sets for itself.
-- `package/module/translation-repair/README.md:418-423` documents the `#235` defect as a feature:
+- `package/module/translation-repair/README.md:418-423` (moved on 2026-10-18 to `package/translation-repair/README.md`)
+  documents the `#235` defect as a feature:
   the Charm Hyper key is "OPTIONAL,
   and its absence is not an error".
   Rewritten in the same commit as the `#235` fix.

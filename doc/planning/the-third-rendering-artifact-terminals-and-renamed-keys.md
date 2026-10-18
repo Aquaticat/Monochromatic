@@ -257,6 +257,9 @@ The template writes the literal word `pair` and interpolates the value:
 return `alignment ${finding.kind} (pair ${String(finding.pairIndex,)}: ${finding.detail})`;
 ```
 
+Moved on 2026-10-18 from `package/module/translation-repair/src/document-preparation.ts`
+to `package/translation-repair/adjudication/src/document-preparation.ts`.
+
 `alignment structure-mismatch (pair 0: ...)` is byte-identical whatever the
  TypeScript field is called.
 The field name never reaches an artifact.

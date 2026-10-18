@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, what the refusal run steps over
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The refusal run is the stretch of text that a gain looks across
 to decide whether a kept mark stands next to the arriving one.
 Its model is filed in
@@ -42,7 +46,8 @@ G6,
 K1 to K4,
 ZE to ZS)
 and the guard labels of the hand-backs are the sources' own too.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the tree `w158`
 by searches of declarations on the day of writing,

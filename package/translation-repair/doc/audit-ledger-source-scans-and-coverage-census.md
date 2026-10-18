@@ -1,5 +1,9 @@
 # Audit ledger: the source scans and the coverage census
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 What the source scans and the coverage census counted wrongly,
 could not see,
 or printed too little of when they failed,
@@ -183,7 +187,8 @@ so the same six stretches of the `wording-key` chunk read as not loaded at every
 under `wording-key-FnMvcg3m.mjs` and `wording-key-k661Sfmz.mjs`,
 and the reading printed "not loaded 6".
 Ten passages of the T8 batch records explained those six by hand
-(`rg 'not loaded are|chunk is renamed' doc/audit-ledger.md` before this entry).
+(`rg 'not loaded are|chunk is renamed' doc/audit-ledger.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/audit-ledger.md`) before this entry).
 The reading now leaves unmapped code out of every status,
 as it already did of "cold since then";
 the census's own report still counts it on its unmapped line.

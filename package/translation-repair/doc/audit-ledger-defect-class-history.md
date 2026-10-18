@@ -217,7 +217,8 @@ that a run-off repeats while it narrows (class eighty-two),
 and that a challenge declining with nothing left to narrow ships the judges' preference (owner,
 2026-09-27);
 the TSDoc was in `consolidate-settle-judge.ts`.
-`doc/slice-context.md` says a slate over an eligible standing keeps its single round on a decline
+`doc/slice-context.md` (moved on 2026-10-18 to `package/translation-repair/doc/slice-context.md`) says a slate over an
+eligible standing keeps its single round on a decline
 and that a tie or rejection is re-asked once;
 the TSDoc in `consolidate-settle.ts` says the same.
 
@@ -656,7 +657,7 @@ which made the slice fail at once under the owner's rule of 2026-09-04;
 then the owner ruled the same day that such a slice keeps the archive and the page ships
 ("Keep archive,
 ship",
-`doc/design-commitments.md`),
+`doc/design-commitments.md` (moved on 2026-10-18 to `package/translation-repair/doc/design-commitments.md`)),
 fixed in `7f79ada48`,
 `002f21f43` and `e7d409fdd` (red guards `4acd8bd40`),
 recorded as the eighteenth addendum of `doc/decision/translation-repair-ineligible-standing.md` at the repo root.
@@ -781,7 +782,8 @@ Measured over the 92 pinned entries before the fix:
 Four gained a pair only from an editor's comment or the front matter (two contributor links,
 two note lines read as headings),
 and windward0032 lost three real heading pairs because a heading-like line inside a comment broke the count alignment.
-The glossary now reads `visibleText` (`src/page-visible-text.ts`):
+The glossary now reads `visibleText` (`src/page-visible-text.ts` (moved on 2026-10-18 to
+`package/translation-repair/rendering-audit/src/page-visible-text.ts`)):
 the body with HTML comments,
 JSX comments and fenced code blanked.
 After it,
@@ -805,7 +807,7 @@ s,
 m,
 h and their words),
 with decimals and joined parts,
-in `src/retry-stated-wait.ts`.
+in `src/retry-stated-wait.ts` (moved on 2026-10-18 to `package/translation-repair/provider/src/retry-stated-wait.ts`).
 A mutant dropping case folding fails the guard.
 
 ### E12: the English-original recognizer is a list of exact wordings

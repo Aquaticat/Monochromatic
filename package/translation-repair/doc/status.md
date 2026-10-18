@@ -160,9 +160,11 @@ measured by block coverage mapped to source lines,
 which the next launch waits for;
 B30,
 B31 and B32 closed on its way,
-so `src/dead-code.unit.test.ts` now fails on any function,
+so `src/dead-code.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/dead-code.unit.test.ts`) now fails on any function,
 class or value production does not reach,
-and `src/unused-imports.unit.test.ts` on any import nothing reads.
+and `src/unused-imports.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/unused-imports.unit.test.ts`) on any import nothing reads.
 Every census is taken on an unminified build,
 since compressed code folds unreached guards into expressions coverage gives no range (ledger M79).
 The first batch tests the census's own placement (`5e27208c7`),

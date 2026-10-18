@@ -271,7 +271,8 @@ The prevention doc already said a removal counts the removed names' uses,
 because no configured check reports an unused import;
 none of the three commits applied it.
 Prevention:
-`src/unused-imports.unit.test.ts` now fails on an unread import,
+`src/unused-imports.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/unused-imports.unit.test.ts`) now fails on an unread import,
 and it runs in `mise run source-scans`,
 which every source commit runs.
 
@@ -307,7 +308,8 @@ Status:
 happened 2026-09-30 (UTC) during the ninth batch's `51b888ac2`,
 caught before the commit,
 and first misdiagnosed.
-The Markdown lint of `doc/slice-context.md` ran as `astral-safe-lint.mjs <path> > <log> || tail <log>`,
+The Markdown lint of `doc/slice-context.md` (moved on 2026-10-18 to `package/translation-repair/doc/slice-context.md`)
+ran as `astral-safe-lint.mjs <path> > <log> || tail <log>`,
 the shape every build and lint command in this audit takes.
 `astral-safe-lint.mjs` exits 0 whatever it finds,
 so the `tail` never ran,

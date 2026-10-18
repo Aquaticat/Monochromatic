@@ -397,7 +397,8 @@ distinguishes that branch from other paths returning the same value,
 
 - `isJsonRecord` is only
   object and non-null and not-array
-  (`package/module/translation-repair/src/json-guard.ts`),
+  (`package/module/translation-repair/src/json-guard.ts` (moved on 2026-10-18 to
+  `package/translation-repair/document-structure/src/json-guard.ts`)),
   so a check element like `{ issue: 'one', verdict: 'fixed' }`
   passes it and reaches the type guard behind it.
 

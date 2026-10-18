@@ -25,7 +25,7 @@ the two `.ts` comments fixed in `a25f09b2e` on 2026-09-28,
 found open while writing the status page's open list:
 V14 now says it is what the pass writes,
 and the older history says where versions 10 to 14 are recorded.
-`doc/configuration.md:326`,
+`doc/configuration.md:326` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`),
 `:334`,
 `:352` say generation 4 and three generations;
 `artifact-schema-version.ts:34` says V7;
@@ -40,11 +40,13 @@ and reads generations 1 to 14.
 Status:
 fixed in `4397d7d2a` (two probe variables were also missing);
 two repo docs outside the package still name the variable (D18).
-`doc/configuration.md:293-295` names `TRANSLATION_REPAIR_CORPUS_DIR` and an uncommitted fork;
+`doc/configuration.md:293-295` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) names
+`TRANSLATION_REPAIR_CORPUS_DIR` and an uncommitted fork;
 production reads `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
 (`corpus-run/corpus-pin-override.ts`),
 documented nowhere in the package.
-`doc/configuration.md:5` claims every knob is listed and omits six.
+`doc/configuration.md:5` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) claims every knob is
+listed and omits six.
 
 ## D4: the OpenRouter checker substitute is misnamed
 
@@ -52,7 +54,8 @@ Status:
 fixed in `4397d7d2a`,
 then superseded by `f10de5198`,
 which replaced the substitute with the measured order.
-`doc/design-commitments.md:177` says gemma-4-26b-a4b-it;
+`doc/design-commitments.md:177` (moved on 2026-10-18 to `package/translation-repair/doc/design-commitments.md`) says
+gemma-4-26b-a4b-it;
 `corpus-run/run-seats.ts:113` has `google.gemma-4-e2b`.
 
 ## D5: the removed preparation layer is described in the present tense
@@ -64,7 +67,8 @@ which this entry counted as two,
 ran through eight source files
 and were rewritten under D16 (`5a5079549`),
 and the two fields kept only for it were removed under D20 (`89a15887a`).
-`doc/seats-and-calibration.md:50-239` names about fifteen identifiers,
+`doc/seats-and-calibration.md:50-239` (moved on 2026-10-18 to `package/translation-repair/doc/seats-and-calibration.md`)
+names about fifteen identifiers,
 four artefacts and two mise tasks removed in `cbedea357`;
 `:124` claims a bootstrap build dependency `mise.toml` no longer has.
 `blockPairingQuestion`,
@@ -78,27 +82,34 @@ Markdown fixed in `4397d7d2a`;
 (the comment was right when written on 2026-07-26,
 at a 90 minute cap,
 and went stale at each raise).
-`doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22,
+`doc/pictures.md:89` (moved on 2026-10-18 to `package/translation-repair/slice-reading/doc/pictures.md`) says 8 MiB (7
+MiB since 2026-08-22,
 `image-reading-stage.ts:120`);
-`doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional,
+`doc/configuration.md:18` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) says a run without
+the Synthetic key throws (every key is optional,
 `corpus-run/run-providers.ts:94-130`);
-`doc/configuration.md:201` says a stalled entry drops after its second try (its first,
+`doc/configuration.md:201` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) says a stalled
+entry drops after its second try (its first,
 `corpus-run/entry-reattempt.ts:214-223`);
 the picture reader count is four or five in `README.md:353`,
-`doc/pictures.md:54`,
-`doc/slice-context.md:316` and `image-reading-stage.ts:17,21` (six);
+`doc/pictures.md:54` (moved on 2026-10-18 to `package/translation-repair/slice-reading/doc/pictures.md`),
+`doc/slice-context.md:316` (moved on 2026-10-18 to `package/translation-repair/doc/slice-context.md`) and
+`image-reading-stage.ts:17,21` (six);
 `README.md:109` says 20 Synthetic slots across four models (two models,
 10);
 `README.md:287` misdescribes stage quorum retries (`stage-quorum.ts:337-376`);
-`doc/seats-and-calibration.md:458` says ten editors (nine);
+`doc/seats-and-calibration.md:458` (moved on 2026-10-18 to `package/translation-repair/doc/seats-and-calibration.md`)
+says ten editors (nine);
 `corpus-run/run-config.ts:785` says a 90 minute entry ceiling (420);
-`doc/provider-availability.md:67,114,121` frames two providers (four meters).
+`doc/provider-availability.md:67,114,121` (moved on 2026-10-18 to
+`package/translation-repair/doc/provider-availability.md`) frames two providers (four meters).
 
 ## D7: the OpenRouter routing description is stale
 
 Status:
 fixed in `4397d7d2a`.
-`doc/configuration.md:73,81-85` and `doc/roster-changes.md:25-31`
+`doc/configuration.md:73,81-85` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) and
+`doc/roster-changes.md:25-31` (moved on 2026-10-18 to `package/translation-repair/doc/roster-changes.md`)
 against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
 
 ## D8: comments name functions that never existed
@@ -181,15 +192,19 @@ Markdown fixed in `4397d7d2a` except the ALL-CAPS paragraphs it did not touch (D
 `seat-tally.ts:326` fixed in `59fb991c7`,
 which gives the decision-seat tally its real reason
 (the `SEAT` lines and the dark-seat report).
-`doc/status.md` puts its history under the current heading,
+`doc/status.md` (moved on 2026-10-18 to `package/translation-repair/doc/status.md`) puts its history under the current
+heading,
 names a consolidation cache generation 14 that collides with artifact schema generation 14,
 says `assertFinalSelectionSettled` remains (removed in `1ba8f713a`),
 and calls a 2026-08-26 audit current evidence.
 ALL-CAPS emphasis across the docs,
-lines over 120 characters in `doc/slice-context.md` and `doc/status.md`,
-positional references (`doc/configuration.md:328`,
-`doc/status.md:105,123`),
-an italic (`doc/status.md:428`),
+lines over 120 characters in `doc/slice-context.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/slice-context.md`) and `doc/status.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/status.md`),
+positional references (`doc/configuration.md:328` (moved on 2026-10-18 to
+`package/translation-repair/doc/configuration.md`),
+`doc/status.md:105,123` (moved on 2026-10-18 to `package/translation-repair/doc/status.md`)),
+an italic (`doc/status.md:428` (moved on 2026-10-18 to `package/translation-repair/doc/status.md`)),
 unbackticked model ids,
 double blank lines,
 mixed list markers in the README.
@@ -202,7 +217,8 @@ fixed in `0df81f0c1`:
 `corpus-pass` prints `CORPUS PIN OVERRIDDEN`
 naming the clone,
 the commit and each one's source whenever either comes from the environment;
-`doc/configuration.md` said no launch line did until `f921e8f0e`.
+`doc/configuration.md` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) said no launch line
+did until `f921e8f0e`.
 `corpus-run/run-config.ts:875-879`:
 the `RUN_CORPUS_PIN_SETTING` TSDoc says "for launch logs",
 but nothing reads it,
@@ -300,18 +316,22 @@ bold where the stress carries meaning;
 the three seat states `producer-silence.ts` prints became code spans in prose rather than labelled bullets.
 A probe over every package Markdown file,
 not only the files this finding named,
-found four more in `doc/repetition.md` and four in this ledger,
+found four more in `doc/repetition.md` (moved on 2026-10-18 to `package/translation-repair/doc/repetition.md`) and four
+in this ledger,
 fixed in the same commit.
 Kept:
-the owner's words quoted in `doc/status.md` and sheet text quoted in this ledger.
+the owner's words quoted in `doc/status.md` (moved on 2026-10-18 to `package/translation-repair/doc/status.md`) and
+sheet text quoted in this ledger.
 `README.md`,
-`doc/configuration.md`,
-`doc/design-commitments.md`,
-`doc/pictures.md`,
-`doc/provider-availability.md`,
-`doc/roster-changes.md`,
-`doc/seats-and-calibration.md`,
-`doc/slice-context.md` and `doc/status.md` keep ALL-CAPS emphasis in paragraphs the D fixes did not reach
+`doc/configuration.md` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`),
+`doc/design-commitments.md` (moved on 2026-10-18 to `package/translation-repair/doc/design-commitments.md`),
+`doc/pictures.md` (moved on 2026-10-18 to `package/translation-repair/slice-reading/doc/pictures.md`),
+`doc/provider-availability.md` (moved on 2026-10-18 to `package/translation-repair/doc/provider-availability.md`),
+`doc/roster-changes.md` (moved on 2026-10-18 to `package/translation-repair/doc/roster-changes.md`),
+`doc/seats-and-calibration.md` (moved on 2026-10-18 to `package/translation-repair/doc/seats-and-calibration.md`),
+`doc/slice-context.md` (moved on 2026-10-18 to `package/translation-repair/doc/slice-context.md`) and `doc/status.md`
+(moved on 2026-10-18 to `package/translation-repair/doc/status.md`) keep ALL-CAPS emphasis in paragraphs the D fixes did
+not reach
 (the docs agent's report of 2026-09-27 lists the lines).
 
 ## D20: pairing fields kept only for the removed preparation layer
@@ -426,7 +446,8 @@ What was done:
     where the index links four historical ones and the current one;
     and the index described the snapshot as it stood on 2026-09-06
     and put the kill-and-relaunch rule in the package README,
-    whose section of that name moved to `doc/configuration.md` with the README's split (`bc0050366`,
+    whose section of that name moved to `doc/configuration.md` (moved on 2026-10-18 to
+    `package/translation-repair/doc/configuration.md`) with the README's split (`bc0050366`,
     2026-09-16).
 -   Every relative link in the two files resolves
     (`~/temp/agent/audit-glossary-fix/local-links.mjs`,
@@ -479,7 +500,9 @@ What was done:
     and the linter's `--fix` then broke the prose those spans had hidden.
 
 Guard:
-`src/living-docs.test-fixture.ts` adds the runbooks and troubleshooting docs as a kind,
+`src/living-docs.test-fixture.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/living-docs.test-fixture.ts`) adds the runbooks and troubleshooting docs as
+a kind,
 the task-list-number guard reads them with issue 541 allowed,
 and the clock guard reads them.
 A citation planted in the corpus-pass runbook failed the first,

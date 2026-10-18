@@ -206,7 +206,8 @@ Recorded because each one cost real time in this session.
 
 ### Exactly where to pick this up
 
-- The cause is `createRunClient` in `package/module/translation-repair/src/corpus-run/run-config.ts`;
+- The cause is `createRunClient` in `package/module/translation-repair/src/corpus-run/run-config.ts` (moved on
+  2026-10-18 to `package/translation-repair/run/src/corpus-run/run-config.ts`);
   the fix design (require the Hyper key,
   catalog guard in the Synthetic client,
   process-scoped seat tally reported by `reportingRefusals`,
@@ -215,7 +216,8 @@ Recorded because each one cost real time in this session.
   advisor-reviewed,
   and held until the `#236` audit closes.
 - Launch rule from now on:
-  a run starts through `mise run //package/module/translation-repair:<task>`
+  a run starts through `mise run //package/module/translation-repair:<task>` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:<task>`)
   from a worktree that holds `.env.local.json`,
   so sops injects BOTH keys.
   A fork made with `git worktree add` has no secrets file.

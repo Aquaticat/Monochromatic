@@ -96,7 +96,8 @@ Zero of everything is the shape that indicts the prompt.
 
 ### The probe is not deaf: sensitivity measured, not assumed
 
-`mise run //package/module/translation-repair:probe-sensitivity`
+`mise run //package/module/translation-repair:probe-sensitivity` (moved on 2026-10-18 to
+`//package/translation-repair/probe:probe-sensitivity`)
 (commit adds `corpus-run/probe-sensitivity.ts`).
 Cat-themed fixtures only,
 no corpus text,
@@ -164,7 +165,8 @@ Run it whenever the probe prompt changes.
 
 ### The checkers can say no, and are blind to collateral damage
 
-`mise run //package/module/translation-repair:checker-sensitivity`.
+`mise run //package/module/translation-repair:checker-sensitivity` (moved on 2026-10-18 to
+`//package/translation-repair/bench:checker-sensitivity`).
 Same experiment as the probe check,
 aimed at the older and more load-bearing
 stage.

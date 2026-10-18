@@ -518,7 +518,8 @@ and Candidate K regression tests passed after rebuilding `dist/`.
 Full package `buildAndTest` completed with 880 runner-prefixed `PASS` verdicts and zero `FAIL` verdicts.
 
 The reproducible harness is
-`package/module/translation-repair/src/corpus-run/prototype-risk-challenger-gfp.ts` and its three named helper modules.
+`package/module/translation-repair/src/corpus-run/prototype-risk-challenger-gfp.ts` (removed before 2026-10-18) and its
+three named helper modules.
 Its source-set SHA-256 is
 `903b1bd54ffdb86d99b5f0f4f35890f4122ca1d54c9e5cf041d59ff7991bd002`
 and is recorded by the adjacent sanitized JSON summary.

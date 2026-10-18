@@ -17,7 +17,8 @@ among the observations the lead's brief handed on.
 `reportLedger` (`corpus-run/ledger-report-run.ts`) and `reportMeters` (`corpus-run/meter-report-run.ts`)
 wrote `process.exitCode` inside the procedure,
 so a caller importing either had its own process status changed.
-By the agent's census of the 42 distinct entries `src/build-entries.ts` lists
+By the agent's census of the 42 distinct entries `src/build-entries.ts` (moved on 2026-10-18 to
+`package/translation-repair/coverage-census/src/build-entries.ts`) lists
 (it names `coverage-census.ts` twice),
 37 set no exit code themselves,
 leaving 4,
@@ -27,7 +28,8 @@ and after the fix five set one:
 `meter-report`,
 `model-health` and `verify-published` from what their procedure returns,
 and `editor-standing-read` inside its own `reportStandings`.
-By the agent's search with `git log -S 'process.exitCode'` over `src/corpus-run`,
+By the agent's search with `git log -S 'process.exitCode'` over `src/corpus-run` (moved on 2026-10-18 to
+`package/translation-repair/*/src/corpus-run`),
 23 commits touched such a write,
 and two removed one,
 each on purpose:
@@ -411,7 +413,8 @@ the lead's list,
 not fixed:
 the TSDoc in `corpus-run/corpus-pass-lines.ts` says "Until 2026-10-06" for the ordering wording and the literal 92,
 where both left the code on 2026-10-10 (`cfac5b981`);
-`doc/configuration.md` still names `RUN_CORPUS_PIN`,
+`doc/configuration.md` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) still names
+`RUN_CORPUS_PIN`,
 the removed constant;
 and the `INCOMPLETE` detail for an ordinary absent page still tells the operator to "check the path",
 a path the pass builds itself,
@@ -420,7 +423,8 @@ where the alternative is to reword it locally in `passIncompleteLine` and `readS
 Closed on 2026-10-10 (UTC) for the dates and the configuration page,
 by `34f669155d47ad0de95d674b21d8740b51ddff0d`:
 the TSDoc in `corpus-run/corpus-pass-lines.ts` says "Until 2026-10-10" for both,
-and the corpus pin paragraph of `doc/configuration.md` names `readRunCorpusPinSetting`
+and the corpus pin paragraph of `doc/configuration.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/configuration.md`) names `readRunCorpusPinSetting`
 and says each command reads the pin once,
 at the start of its run and inside its refusal boundary,
 where it said the pin was read when `run-config.ts` loads.

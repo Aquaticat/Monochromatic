@@ -301,7 +301,8 @@ under the production roster.
 
 The mechanism is in the source rather than inferred:
 `MIN_SELECTION_WEIGHT` is 2 and a self-vote
-counts a half (`package/module/translation-repair/src/candidate-select-model.ts`),
+counts a half (`package/module/translation-repair/src/candidate-select-model.ts` (moved on 2026-10-18 to
+`package/translation-repair/house-rule/src/candidate-select-model.ts`)),
 so a winner needs
 agreement between two judges,
 and every lost voice makes that threshold harder to reach.

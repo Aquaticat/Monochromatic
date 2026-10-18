@@ -134,7 +134,8 @@ then the write in a sequenced suite inside a concurrent one,
 12 findings for 13).
 
 The full suite on `99cf575d7`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,501 PASS lines and no FAIL line.
 

@@ -307,7 +307,8 @@ Red in `3fa45b1377073e74042d66fdb033f2533abbb7cc`,
 fixed in `9d558da592162f9765fb03a2280af9477ada147d`.
 
 Found on 2026-10-10 (UTC) by the agent working the runner leftovers,
-in its census of combinator calls in `src/corpus-run`:
+in its census of combinator calls in `src/corpus-run` (moved on 2026-10-18 to
+`package/translation-repair/*/src/corpus-run`):
 48 sites,
 five of them logging from inside a member.
 The census reads only function bodies written inline in a combinator's arguments,

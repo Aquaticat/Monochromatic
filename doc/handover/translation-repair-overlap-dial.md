@@ -33,7 +33,8 @@ The owner decided the editor calibration defaults to four slices in flight under
 The corpus pass was deliberately left alone until it is measured there,
 which is this task.
 The dial exists already:
-`readOverlap({ fallback, })` in `package/module/translation-repair/src/corpus-run/slice-overlap.ts`
+`readOverlap({ fallback, })` in `package/module/translation-repair/src/corpus-run/slice-overlap.ts` (moved on 2026-10-18
+to `package/translation-repair/slice-cache/src/corpus-run/slice-overlap.ts`)
 reads `TRANSLATION_REPAIR_SLICE_OVERLAP` and refuses anything that is not a whole number of at least one.
 The pass's fallback stays `1` until the measurement says otherwise.
 
@@ -458,8 +459,15 @@ mise run //package/module/translation-repair:lint:oxlint   # must print "Found 0
 mise run //package/module/translation-repair:lint:types
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:build`
+to `//package/translation-repair/<package>:build`.
+Moved on 2026-10-18 from `//package/module/translation-repair:lint:oxlint`
+to `//package/translation-repair/<package>:lint:oxlint`.
+Moved on 2026-10-18 from `//package/module/translation-repair:lint:types`
+to `//package/translation-repair/<package>:lint:types`.
+
 Then,
-from `package/module/translation-repair`,
+from `package/module/translation-repair` (moved on 2026-10-18 to the packages under `package/translation-repair`),
 the suites that cover the driver,
 for example:
 
@@ -492,6 +500,9 @@ LOG="${HOME}/temp/agent/buildAndTest-$(date -u +%Y%m%dT%H%M%SZ).log"
 mise run //package/module/translation-repair:buildAndTest > "$LOG" 2>&1
 echo "exit=$? PASS=$(grep -c '\] PASS ' "$LOG") FAIL=$(grep -c '\] FAIL ' "$LOG")"
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:buildAndTest`
+to `//package/translation-repair/<package>:buildAndTest`.
 
 The last whole-suite run before the repair driver was 832 PASS,
 0 FAIL,

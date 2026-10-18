@@ -92,7 +92,8 @@ WHAT CHANGED OVERNIGHT,
     the slate is rotated per slice
     and nothing recorded the order.
 -   THE ROSTER-WIDTH BENCH EXISTS AND IS RUNNING (`6602831ee`).
-    `mise run //package/module/translation-repair:roster-bench -- 10` over ten
+    `mise run //package/module/translation-repair:roster-bench -- 10` (moved on 2026-10-18 to
+    `//package/translation-repair/bench:roster-bench`) over ten
     stratified slices at every width from two to six,
     width inner so each width
     meets the same provider weather,

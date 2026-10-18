@@ -36,8 +36,10 @@ distinct model families.
 Candidate H's Kimi K3 author and all-candidate verifier both reached 16,000 output tokens with `max_tokens` stop reason.
 Candidate I reduces one verifier response to one candidate and replaces status arrays with exact compact status strings.
 
-Owner's standing instruction in `package/module/translation-repair/src/anthropic-request.ts` and
-`package/module/translation-repair/src/chat-contract.ts` forbids non-default thinking,
+Owner's standing instruction in `package/module/translation-repair/src/anthropic-request.ts` (moved on 2026-10-18 to
+`package/translation-repair/provider/src/anthropic-request.ts`) and
+`package/module/translation-repair/src/chat-contract.ts` (moved on 2026-10-18 to
+`package/translation-repair/provider/src/chat-contract.ts`) forbids non-default thinking,
 reasoning-budget,
 temperature,
 or effort knobs because prior serving stacks returned errors,
@@ -46,7 +48,8 @@ or truncation.
 A low-effort transport acceptance probe does not authorize changing that policy.
 Every candidate in this vet therefore ran at provider and model defaults.
 
-Repository route evidence at `package/module/translation-repair/src/hyper-catalog.ts:21-25` already said Hyper OpenAI Chat
+Repository route evidence at `package/module/translation-repair/src/hyper-catalog.ts:21-25` (moved on 2026-10-18 to
+`package/translation-repair/shared-contract/src/hyper-catalog.ts`) already said Hyper OpenAI Chat
 Completions accepts and ignores `response_format`.
 The initial plan did not honor that deciding source and was wrong to advance OpenAI structured output to spend.
 The equal-depth probe reproduced recorded failure and all Kimi alternatives exited.
@@ -417,7 +420,8 @@ No Kimi model advances to consumer validation.
   accessed 2026-08-31,
   documents model-side capability.
 - Deciding repository evidence:
-  `package/module/translation-repair/src/hyper-catalog.ts:21-25` records that Hyper accepts and ignores
+  `package/module/translation-repair/src/hyper-catalog.ts:21-25` (moved on 2026-10-18 to
+  `package/translation-repair/shared-contract/src/hyper-catalog.ts`) records that Hyper accepts and ignores
   `response_format`.
 - Runtime evidence:
   `~/temp/agent/probe-hyper-kimi-candidate-i-json-schema-20260831/summary.json`.
@@ -440,8 +444,10 @@ No Kimi model advances to consumer validation.
 - Status:
   pass by planned omission.
 - Primary source:
-  `package/module/translation-repair/src/anthropic-request.ts` and
-  `package/module/translation-repair/src/chat-contract.ts`.
+  `package/module/translation-repair/src/anthropic-request.ts` (moved on 2026-10-18 to
+  `package/translation-repair/provider/src/anthropic-request.ts`) and
+  `package/module/translation-repair/src/chat-contract.ts` (moved on 2026-10-18 to
+  `package/translation-repair/provider/src/chat-contract.ts`).
 - Counterevidence:
   low-effort K3 probe established transport acceptance only.
 - Outcome:

@@ -60,7 +60,8 @@ only what a measurement cannot settle goes to the owner.
 
 Status:
 corrected;
-the ruling is now in `doc/design-commitments.md`.
+the ruling is now in `doc/design-commitments.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/design-commitments.md`).
 A16 listed a triple newline as a defect,
 and a seam-spacing guard was written for it,
 though the owner had said extra newlines need no fixing,
@@ -73,7 +74,8 @@ Owner,
 because markdown doesn't care.
 I believe I said this before."
 Prevention:
-an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
+an owner ruling goes into `doc/design-commitments.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/design-commitments.md`) (or its decision record) the turn it is given,
 and a finding is checked against those commitments before any fix starts.
 
 ## M18: a count put to the owner that measured something narrower than the option it backed
@@ -95,7 +97,9 @@ every number in a question option names the check that produced it,
 and a claim about a state is backed by a run of the instrument that decides that state,
 with its positive control,
 before the question is asked;
-and the ledger is searched for the state (`rg` over `doc/audit-ledger.md` and `doc/status.md`)
+and the ledger is searched for the state (`rg` over `doc/audit-ledger.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/audit-ledger.md`) and `doc/status.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/status.md`))
 before any claim that it has never occurred.
 
 ## M30: quality calls put to the owner as design questions

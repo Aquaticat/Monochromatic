@@ -9,7 +9,8 @@ which lists every file of this record.
 ## Superseded consolidation cache generation 14 operation history
 
 This section records behavior of consolidation cache generation 14
-(`CONSOLIDATE_CACHE_VERSION` 14 in the version notes of `src/consolidate-key.ts`,
+(`CONSOLIDATE_CACHE_VERSION` 14 in the version notes of `src/consolidate-key.ts` (moved on 2026-10-18 to
+`package/translation-repair/artifact/src/consolidate-key.ts`),
 introduced by `cf14b379b` on 2026-08-29),
 not of artifact schema generation 14,
 and is not standing guidance.

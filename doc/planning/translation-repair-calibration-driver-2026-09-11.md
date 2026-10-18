@@ -36,7 +36,8 @@ The previous invalid-gold driver is retained only as a `.source.txt` artifact.
 The original private two-call bound was not a valid reading of the existing stage.
 The first simulation exposed identical-prompt retries.
 A later source read found another boundary that the four-call correction had missed:
-`package/module/translation-repair/src/stage-quorum.ts`
+`package/module/translation-repair/src/stage-quorum.ts` (moved on 2026-10-18 to
+`package/translation-repair/stage/src/stage-quorum.ts`)
 runs its initial call and `STAGE_RETRY_ROUNDS = 3` retries,
 then one separate recovery round when unreadable answers remain.
 That final round appends the exported `RECOVERY_NUDGE`.

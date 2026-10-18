@@ -20,7 +20,8 @@ by reading the live roster instead of the probe.
 
 The repair lane's rosters are a PARTITION of the six-model roster,
 not a selection from it.
-`RUN_MODELS` at `package/module/translation-repair/src/corpus-run/run-config.ts:192` seats
+`RUN_MODELS` at `package/module/translation-repair/src/corpus-run/run-config.ts:192` (moved on 2026-10-18 to
+`package/translation-repair/run/src/corpus-run/run-config.ts`) seats
 three editors,
 the same three as refiners,
 and the disjoint other three as checkers.
@@ -42,7 +43,8 @@ and no checker could be seated at all.
 
 NOTHING WOULD REFUSE THE SHRUNK ROSTER.
 The only floor on the checker roster is `assertRostersConfigured` at
-`package/module/translation-repair/src/roster-configuration.ts:72`,
+`package/module/translation-repair/src/roster-configuration.ts:72` (moved on 2026-10-18 to
+`package/translation-repair/stage/src/roster-configuration.ts`),
 which refuses an EMPTY role and nothing else.
 Every other assertion in the module was enumerated to check this;
 `assertJudgeableEditorRoster` and `assertJudgeableProducerRoster` both bound the PRODUCING side.

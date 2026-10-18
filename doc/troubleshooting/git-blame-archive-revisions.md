@@ -224,10 +224,12 @@ The executed verification is:
 ```text
 # Run from the translation-repair worktree after its package build and type check.
 mise run test -- \
-  package/module/translation-repair/src/archive-naming.unit.test.ts (removed before 2026-10-18) \
-  package/module/translation-repair/src/archive-naming-provenance.unit.test.ts (removed before 2026-10-18) \
+  package/module/translation-repair/src/archive-naming.unit.test.ts \
+  package/module/translation-repair/src/archive-naming-provenance.unit.test.ts \
   package/translation-repair/adjudication/src/corpus-source.unit.test.ts
 ```
+
+The first two test files named in this block were removed before 2026-10-18.
 
 `~/temp/agent/archive-provenance-green-20260910.out`
 records successful execution after rebuilding and type-checking.

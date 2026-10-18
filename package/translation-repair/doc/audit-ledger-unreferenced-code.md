@@ -161,7 +161,7 @@ The consolidate sheet's branch goes with the evidence,
 and the rendered-sheets census shows whether any sheet changes.
 
 Done:
-the guard (`src/dead-functions.unit.test.ts`) went in red in `eda99b687`
+the guard (`src/dead-functions.unit.test.ts` (removed before 2026-10-18)) went in red in `eda99b687`
 and passes from `32e07afb7`,
 with `resetRunSpend` its one allowed seam.
 `363b0ee60` removes the seven wrappers,
@@ -265,7 +265,8 @@ and the decisions spelling becomes a type union.
 
 Done:
 the guard went in red in `e91ce423b`,
-renamed `src/dead-code.unit.test.ts`:
+renamed `src/dead-code.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/dead-code.unit.test.ts`):
 it tracks every top-level function,
 class and value bound to a plain name,
 roots production at the module-level statements that declare nothing,
@@ -342,7 +343,8 @@ which built the run client on a handed transport).
 `git log -S` on each name in its file names the commit.
 
 Fix:
-`src/unused-imports.unit.test.ts` went in red in `40add2b70`,
+`src/unused-imports.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/unused-imports.unit.test.ts`) went in red in `40add2b70`,
 reading every package file through the source scan
 and counting a name a TSDoc link names as read;
 it named the ten and joined `mise run source-scans`.

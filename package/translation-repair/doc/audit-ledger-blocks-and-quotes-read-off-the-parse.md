@@ -297,7 +297,8 @@ the newest written 2026-09-27T04:26Z,
 and each of the seven versions was set after it.
 
 What enforces it:
-`src/blank-line-splits.unit.test.ts`,
+`src/blank-line-splits.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/blank-line-splits.unit.test.ts`),
 among the source scans,
 fails on a production call to `split`,
 `indexOf`,

@@ -209,7 +209,8 @@ the coverage census's own `parseArgs` catch.
 `5a3e38037` fixes both;
 `source-scans` then exits 0 with all 20 suites passing.
 The prevention stands:
-`mise run //package/module/translation-repair:source-scans` runs before each source commit,
+`mise run //package/module/translation-repair:source-scans` (moved on 2026-10-18 to
+`//package/translation-repair/source-scan:source-scans`) runs before each source commit,
 beside its named tests.
 
 Recurred 2026-10-01 (UTC) at the close of T8's twentieth batch,
@@ -369,7 +370,8 @@ Status:
 happened 2026-10-06 (UTC) in `3d36ba7b9`,
 found before the next commit,
 fixed in `c8196cf6c`.
-The start guard's fix added a paragraph to `doc/configuration.md`.
+The start guard's fix added a paragraph to `doc/configuration.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/configuration.md`).
 The lead ran the Markdown lint for docs-only commits,
 and this was a code commit that touched a doc,
 so the lint was not run;
@@ -383,7 +385,8 @@ whatever else the commit holds
 "Lint and edits".
 Recurred on 2026-10-11 (UTC) in `ee0706879`:
 the lead fixed the findings of a lint run and committed without running the lint again,
-and one line the run had flagged was left unfixed in `doc/design-commitments.md`
+and one line the run had flagged was left unfixed in `doc/design-commitments.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/design-commitments.md`)
 (a bold item title broken after its comma by the next commit).
 The rule now reads:
 the lint's last run before a commit is after the last edit,

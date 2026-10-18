@@ -43,7 +43,8 @@ Evidence:
 `~/temp/agent/Mio10-poem-replies-20260910.out`,
 `~/temp/agent/Mio10-poem-decisions-20260910.out`,
 `~/temp/agent/Mio10-20260910/artifacts/Mio.json`,
-and the source files under `package/module/translation-repair/src/`.
+and the source files under `package/module/translation-repair/src/` (moved on 2026-10-18 to
+`package/translation-repair/*/src/`).
 Raw provider payloads remain private.
 The settled run's `slice-cache/Mio` directory is absent;
 that is not evidence of an absent earlier stage or an absent inherited flag.

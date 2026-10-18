@@ -22,7 +22,8 @@ the new lane.
 
 ### The lane itself
 
-`runTranslateStage` in `package/module/translation-repair/src/translate-stage.ts`:
+`runTranslateStage` in `package/module/translation-repair/src/translate-stage.ts` (moved on 2026-10-18 to
+`package/translation-repair/translate-stage/src/translate-stage.ts`):
 
 -   fans `buildTranslateMessages` to the translator roster through
     `gatherStageVoices`,

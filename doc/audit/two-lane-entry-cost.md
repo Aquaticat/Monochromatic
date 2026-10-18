@@ -27,7 +27,8 @@ fit the 72 hour soft budget, whatever the cap is set to.
 ## What was run
 
 `mise run //package/module/translation-repair:corpus-pass -- --only
-Aniloviraw,zheermao101,aiyysk,XingZ60`, into a throwaway runs directory outside the repo, at
+Aniloviraw,zheermao101,aiyysk,XingZ60` (moved on 2026-10-18 to `//package/translation-repair/corpus-pass:corpus-pass`),
+into a throwaway runs directory outside the repo, at
 `tip=e79bb338 pipeline=sha256-tree-v1:e327ca8b`, which is the same pipeline hash the plan check ran
 at. Entries were picked by `page.md` blob size at corpus pin `a41fc607`, over a distribution whose
 minimum is 120 bytes, first quartile 1557, median 2497, third quartile 5050 and maximum 41720,

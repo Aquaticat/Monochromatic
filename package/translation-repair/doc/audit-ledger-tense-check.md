@@ -1,5 +1,9 @@
 # Audit ledger: building the tense check
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The record of building the tense candidates:
 what the review of the tense records and sheets found loose,
 and what was fixed.

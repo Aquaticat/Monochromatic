@@ -11,7 +11,8 @@ which lists every file of this record.
 ## Integration seams still to build
 
 `prepareDocumentPairWithRoster`
-in `package/module/translation-repair/src/prepare-with-pairing.ts` owns the block-round loop,
+in `package/module/translation-repair/src/prepare-with-pairing.ts` (moved on 2026-10-18 to
+`package/translation-repair/archive/src/prepare-with-pairing.ts`) owns the block-round loop,
 media-adjacent target normalization,
 footnote-definition separation and pure `prepareDocumentPair` handoff.
 A bounded parent-pool consumer needs the same block-round machinery without buying unrelated section rounds.
@@ -39,7 +40,8 @@ Independent review then identified the separate identity preconditions recorded 
 `Pairing identity verification`.
 
 Production also changes the actual writer surface after subdivision.
-`settleTranslateSlice` in `package/module/translation-repair/src/translate-slice.ts`:
+`settleTranslateSlice` in `package/module/translation-repair/src/translate-slice.ts` (moved on 2026-10-18 to
+`package/translation-repair/translate-lane/src/translate-slice.ts`):
 
 - Uses `splitTargetOnlyRun` before the whole writing/judging stage.
 - Derives absent/present mode from the target chunk variant,
@@ -101,7 +103,7 @@ it does not contain a safe new writer sampler.
 
 `prepare-block-pairing.ts`,
 `prepare-block-pairing-finish.ts` and `prepare-block-pairing-model.ts`
-live under `package/module/translation-repair/src/`.
+live under `package/module/translation-repair/src/` (moved on 2026-10-18 to `package/translation-repair/*/src/`).
 The before/after comparison verifies the old cache key,
 cold/warm media normalization,
 cache eligibility,
@@ -124,7 +126,8 @@ definition crossing,
 persistence failure and cancellation.
 
 The first test run exposed two incorrect fixture expectations:
-`declinedTargetBlocks` in `package/module/translation-repair/src/declined-target-runs.ts`
+`declinedTargetBlocks` in `package/module/translation-repair/src/declined-target-runs.ts` (moved on 2026-10-18 to
+`package/translation-repair/slice-reading/src/declined-target-runs.ts`)
 deliberately declines nothing while an original remains unplaced,
 and a usable empty agreement can be cached even though its execution state is fallback.
 The tests now preserve those existing policies and use a fully placed source plus an extra target block

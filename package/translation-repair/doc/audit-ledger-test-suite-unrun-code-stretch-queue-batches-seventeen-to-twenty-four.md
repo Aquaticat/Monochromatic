@@ -473,7 +473,8 @@ The two findings this batch left open close first,
 and the batch reads against the census taken once they close.
 
 The full suite on `7f7b1610a`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,505 PASS lines and no FAIL line.
 
@@ -519,7 +520,8 @@ so the twentieth batch takes `corpus-run/heading`
 against `census-IqLEk4`.
 
 The full suite on `143e786eb`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,509 PASS lines and no FAIL line.
 
@@ -569,7 +571,8 @@ so the twenty-first batch takes `assembly`
 against the census taken once this batch's docs close.
 
 The full suite on `7b61bb928`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1512 PASS lines and failed the package-wide case in `position-references.unit.test.ts`:
 the B84 entry this batch's docs commit wrote pointed at a count by position
@@ -653,7 +656,8 @@ so the twenty-second batch takes `anthropic`
 against the census taken once this batch's docs close.
 
 The full suite on `a44cf50c4`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1512 PASS lines and no FAIL line.
 
@@ -724,7 +728,8 @@ taken at `06b905d3e` once this batch's docs closed
 ran 0 and sources edited 0 against `census-Hq0z31`).
 
 The full suite on `06b905d3e`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1513 PASS lines and no FAIL line;
 the 13 lines holding the word are passing cases' names

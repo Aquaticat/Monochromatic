@@ -681,7 +681,8 @@ The read made three claims from less than the record held:
   so the line that the read took for the outcome was a stage on the way to it.
 - It called the 1.3 million "delivered chars" of Qwen the volume of the reply.
   The count is the `partialText.length` of the raw stream including its framing
-  (`src/abandon-kind.ts` and `src/stream-drain.ts`),
+  (`src/abandon-kind.ts` (moved on 2026-10-18 to `package/translation-repair/provider-stream/src/abandon-kind.ts`) and
+  `src/stream-drain.ts` (moved on 2026-10-18 to `package/translation-repair/provider-stream/src/stream-drain.ts`)),
   and the three streams cut at the straggler deadline held no content
   and 49,293,
   36,301 and 37,784 characters of reasoning,

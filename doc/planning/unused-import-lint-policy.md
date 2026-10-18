@@ -13,8 +13,10 @@ imports behind.
 Six names remained in the file: `buildLaneSliceTexts`, `buildChunkCriticRecords`,
 `ChunkCriticRecord`, `buildIssueRecords`, `RepairIssueRecord`, `repairReplacements`.
 Nothing in the file mentioned any of them except the import statement itself.
-Neither `mise run //package/module/translation-repair:lint` nor
-`mise run //package/module/translation-repair:lint:types` said a word, on a run that reported
+Neither `mise run //package/module/translation-repair:lint` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:lint`) nor
+`mise run //package/module/translation-repair:lint:types` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:lint:types`) said a word, on a run that reported
 zero warnings and zero errors.
 
 That is not a bug in either tool.
@@ -43,7 +45,7 @@ import line and nothing else.
 By package, the ones with more than two:
 
     33  package/oxlint-plugin/prefer-readonly-parameter-type/src
-    19  package/module/translation-repair/src
+    19  package/module/translation-repair/src (moved on 2026-10-18 to `package/translation-repair/*/src`)
      5  package/git-policy/cli/src
      4  package/figma/to-penpot/src
      4  package/pi-plugin/advisor/src
@@ -55,7 +57,8 @@ THE MEASUREMENT UNDER-COUNTS, deliberately, and the direction matters.
 A name mentioned in a comment or inside a string reads as used, so the real number is at least
 93.
 It never over-counts in the other direction: a name that appears once cannot be in use.
-The 19 in `module/translation-repair` were removed the same night, and the six that started this
+The 19 in `module/translation-repair` (split on 2026-10-18 into the packages under `package/translation-repair`) were
+removed the same night, and the six that started this
 were removed before them; both are verified by a full build, test, lint and type-check run.
 The other 74 are untouched, because they belong to packages this session was not working in.
 
@@ -114,5 +117,6 @@ friction the rule was turned off to avoid.
 ## If you want none of this
 
 Say so and the census stays a scratch script.
-The 19 names in `module/translation-repair` are already gone either way; nothing else in the repo
+The 19 names in `module/translation-repair` (split on 2026-10-18 into the packages under `package/translation-repair`)
+are already gone either way; nothing else in the repo
 changed.

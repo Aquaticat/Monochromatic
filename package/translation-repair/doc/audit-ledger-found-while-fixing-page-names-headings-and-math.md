@@ -90,7 +90,8 @@ reads the corpus as the old one did.
 Status:
 closed 2026-09-29,
 premise refuted by measurement;
-found the same day rereading `doc/repetition.md` ("The site's grammar is not this one").
+found the same day rereading `doc/repetition.md` (moved on 2026-10-18 to `package/translation-repair/doc/repetition.md`)
+("The site's grammar is not this one").
 The site compiles each page under `remark-math` and `rehype-katex`,
 so a `$...$` pair is a formula there,
 while this package parses it as prose;
@@ -194,7 +195,8 @@ What was done:
     so no answer cached under the current numbers exists to be served.
 
 Guard:
-`src/translate-formula.unit.test.ts`,
+`src/translate-formula.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/translate-floor/src/translate-formula.unit.test.ts`),
 committed red in `deb3406b2`:
 a pair of dollar amounts,
 a TeX command between dollar signs,

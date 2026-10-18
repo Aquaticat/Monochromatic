@@ -24,7 +24,7 @@ Repository:
 `/var/home/user/worktrees/translation-repair`,
 branch `translation-repair-rebased`.
 Package:
-`package/module/translation-repair`.
+`package/module/translation-repair` (moved on 2026-10-18 to the packages under `package/translation-repair`).
 Durable uncommitted evidence root:
 `package/module/translation-repair/node_modules/.monochromatic/preparation-input-reader/`.
 Agent scratch under `${HOME}/temp/agent` is ephemeral and reconstructable only.
@@ -315,7 +315,8 @@ do not invent a new harness shape.
   Node drivers inside `node_modules` use `.mjs`.
 - Package tasks run through Mise with explicit paths,
   for example
-  `mise run --no-deps --skip-tools //package/module/translation-repair:lint:types`.
+  `mise run --no-deps --skip-tools //package/module/translation-repair:lint:types` (moved on 2026-10-18 to
+  `//package/translation-repair/<package>:lint:types`).
   Flags precede the task name;
   `--no-deps` and `--skip-deps` differ;
   `format:oxlint` takes no file filters.

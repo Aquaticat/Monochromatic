@@ -42,15 +42,18 @@ and no successor implementation is authorized by this file.
 ## Required lifecycle migration
 
 Replacement must remove current terminal-looking outcomes in
-`package/module/translation-repair/src/corpus-run/pass-entry-contract.ts`.
+`package/module/translation-repair/src/corpus-run/pass-entry-contract.ts` (moved on 2026-10-18 to
+`package/translation-repair/slice-cache/src/corpus-run/pass-entry-contract.ts`).
 `resumable-failure` and `stopped` cannot remain normal translation results under new run contract.
-`package/module/translation-repair/src/corpus-run/pass-entry.ts`
+`package/module/translation-repair/src/corpus-run/pass-entry.ts` (moved on 2026-10-18 to
+`package/translation-repair/corpus-pass/src/corpus-run/pass-entry.ts`)
 must return published output after finite producer graph,
 not `TALLY status=ERROR`,
 `INCOMPLETE`,
 or visible suspended translation because ancillary model work failed.
 
-`package/module/translation-repair/src/corpus-run/entry-attempt-queue.ts`
+`package/module/translation-repair/src/corpus-run/entry-attempt-queue.ts` (moved on 2026-10-18 to
+`package/translation-repair/slice-cache/src/corpus-run/entry-attempt-queue.ts`)
 must not infer new work from cache growth or append same entry to queue.
 Deterministic restart may reuse completed nodes from same manifest after crash or exact caller cancellation;
 it cannot create another manifest automatically.

@@ -360,7 +360,8 @@ since they carry corpus quotes and the
 CLI output must stay safe to paste where artifacts are not.
 
 Run it with
-`mise run //package/module/translation-repair:score-probe`.
+`mise run //package/module/translation-repair:score-probe` (moved on 2026-10-18 to
+`//package/translation-repair/probe:score-probe`).
 
 Verified against a THROWAWAY fixture,
 not an empty directory,
@@ -478,6 +479,9 @@ mise run //package/module/translation-repair:score-probe -- \
   --repair-sheet /ABSOLUTE/path/to/repair-sheet-<seed>.md \
   --manifest /ABSOLUTE/path/to/sample-manifest-<seed>.json
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:score-probe`
+to `//package/translation-repair/probe:score-probe`.
 
 Verified end to end on a throwaway fixture,
 never on the run's own directory:

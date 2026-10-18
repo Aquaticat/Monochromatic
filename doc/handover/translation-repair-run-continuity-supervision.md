@@ -124,7 +124,8 @@ THE GUARD IS STALE AND THE SUPERVISOR CANNOT SEE ITS OWN CHILD.
 from when the pass ran straight from
  source.
 The mise task the supervisor launches,
- `//package/module/translation-repair:corpus-pass`,
+ `//package/module/translation-repair:corpus-pass` (moved on 2026-10-18 to
+ `//package/translation-repair/corpus-pass:corpus-pass`),
 now depends on `build` and
  runs `node dist/final/node/corpus-pass.mjs`.
 
@@ -244,7 +245,8 @@ and runs the real function through the real code path:
     `passRunning returned false`.
 -   A pass carrying `--only`:
     `passRunning returned true`.
--   A shell naming `//package/module/translation-repair:corpus-pass`,
+-   A shell naming `//package/module/translation-repair:corpus-pass` (moved on 2026-10-18 to
+    `//package/translation-repair/corpus-pass:corpus-pass`),
     which is the launcher shape that made a loose match useless:
     `passRunning returned false`.
 -   A `node --eval` one-liner naming the built path inside its code:
@@ -431,6 +433,9 @@ and it needs different
       -- --only lintong,gaoyanger,keyword233,Weideriche_,Zha_Ke,Acheron
     ```
 
+    Moved on 2026-10-18 from `//package/module/translation-repair:corpus-pass`
+    to `//package/translation-repair/corpus-pass:corpus-pass`.
+
     Log at `~/temp/agent/vub-run1.log`.
     Find it with
      `pgrep --full 'corpus-pass.mj[s]'`.
@@ -493,7 +498,8 @@ The rest of the section is kept because it explains WHY the digest matters,
 which the next cached run will need again.
 
 The historical constraint read:
-DO NOT EDIT ANYTHING UNDER `package/module/translation-repair/src/` UNTIL RUN 2
+DO NOT EDIT ANYTHING UNDER `package/module/translation-repair/src/` (moved on 2026-10-18 to
+`package/translation-repair/*/src/`) UNTIL RUN 2
  HAS FINISHED.
 The slice cache is keyed on the pipeline digest,
 which
@@ -586,7 +592,8 @@ would have
 ### Why zero was never reachable
 
 `consolidationWorthResuming` in
- `package/module/translation-repair/src/consolidate-driver.ts`
+ `package/module/translation-repair/src/consolidate-driver.ts` (moved on 2026-10-18 to
+ `package/translation-repair/corpus-pass/src/consolidate-driver.ts`)
  REFUSES TO PERSIST a `slate-kept-standing` settlement whose decision is
  `declined-indecision` or `declined-rejection`.
 Those two are `UNSETTLED_DECISIONS`,

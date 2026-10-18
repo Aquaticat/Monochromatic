@@ -171,7 +171,8 @@ each restored with `git diff` printing nothing after:
   ledger M100.
 
 The full suite on `3a6f92f13`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,500 PASS lines and no FAIL line.
 

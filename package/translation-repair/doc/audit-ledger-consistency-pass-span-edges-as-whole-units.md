@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, span edges as whole units
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The span the pass replaces is the words alone,
 and its two edges are where a quote of the judges ends and starts.
 This file holds the findings of the reviews of n150,
@@ -49,7 +53,8 @@ G1 to G8,
 M1 to M15,
 N1 to N9)
 and the guard labels of the hand-backs are the sources' own too.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 Every function,
 type and constant of the package named here was found declared in non-test source of the tree `w158`
 by searches of declarations on the day of writing,

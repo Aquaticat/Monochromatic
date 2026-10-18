@@ -225,7 +225,8 @@ The correction filed on `#166` said `draw-entry-load.ts`,
 `probe-relabel-*.ts`,
 `score-attribution.ts` and `score-crosscheck.ts` do not exist.
 All of them do,
-in `package/module/translation-repair/src/corpus-run/`.
+in `package/module/translation-repair/src/corpus-run/` (moved on 2026-10-18 to
+`package/translation-repair/*/src/corpus-run/`).
 
 The listing that produced the claim ran without recursion in the top-level
  `src`,
@@ -275,7 +276,8 @@ The shipped-scoped reader extends that set rather than introducing a new one.
 ## What would ship is derived, because nothing publishes it
 
 The reader `wouldShipTextFor` lands in
- `package/module/translation-repair/src/corpus-run/would-ship-text.ts`.
+ `package/module/translation-repair/src/corpus-run/would-ship-text.ts` (moved on 2026-10-18 to
+ `package/translation-repair/page-check/src/corpus-run/would-ship-text.ts`).
 It answers,
  for one slice,
  what a document assembled today would carry there.
@@ -418,7 +420,8 @@ and it is pending `#175` with the owner.
 So both consumers keep their lane question and gain an annotation beside it,
 which is what this task's decision 1 said in the first place.
 `SettledPageRelation` in
-`package/module/translation-repair/src/corpus-run/rendering-audit-settled-relation.ts`
+`package/module/translation-repair/src/corpus-run/rendering-audit-settled-relation.ts` (moved on 2026-10-18 to
+`package/translation-repair/probe/src/corpus-run/rendering-audit-settled-relation.ts`)
 carries four recorded kinds plus `unrecorded`:
 `undecided`,
 `survives`,
@@ -522,7 +525,8 @@ and the refutation has three separate legs.
 ### The pointed-at-nothing refusal exists and fires
 
 `EmptyPoolError` is raised from `selectEligible` in
-`package/module/translation-repair/src/corpus-run/artifact-eligible.ts`,
+`package/module/translation-repair/src/corpus-run/artifact-eligible.ts` (moved on 2026-10-18 to
+`package/translation-repair/artifact-pool/src/corpus-run/artifact-eligible.ts`),
 reached through `resolvePool`,
 which all four pool consumers call:
 `score-probe.ts`,

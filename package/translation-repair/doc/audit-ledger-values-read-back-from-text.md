@@ -552,7 +552,8 @@ each red case failed on its assertion against the unfixed code,
 and the scan's package case listed every site before the fix
 (`f0322ce6f` and `98f5b8861`).
 The full suite on `d2af668bd`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,493 PASS lines and no FAIL line.
 
@@ -828,11 +829,13 @@ a timer given a number and an abort signal rejects only when that signal aborts,
 so no input reaches the rethrow.
 It is an `unreachable:` throw that keeps the rejection as its cause.
 
-`doc/configuration.md` said a bad value of the variable was not refused and silently left the default,
+`doc/configuration.md` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) said a bad value of
+the variable was not refused and silently left the default,
 which the code had already stopped doing,
 by the agent's reading of the ledger;
 it says what is refused,
-and `doc/seats-and-calibration.md` says the rate is a whole number
+and `doc/seats-and-calibration.md` (moved on 2026-10-18 to `package/translation-repair/doc/seats-and-calibration.md`)
+says the rate is a whole number
 (both the lead's edits,
 in `040656c51`).
 

@@ -1,6 +1,7 @@
 # Throw assertions name the message, not the error
 
-Measured 2026-08-19 over `package/module/translation-repair`, zero quota, read-only,
+Measured 2026-08-19 over `package/module/translation-repair` (moved on 2026-10-18 to the packages under
+`package/translation-repair`), zero quota, read-only,
 while the `#107` verification ran.
 
 ## What was counted

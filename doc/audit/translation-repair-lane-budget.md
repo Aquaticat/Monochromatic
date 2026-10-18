@@ -99,7 +99,8 @@ here.
 That last sentence is a limit on the evidence,
 not a reassurance,
 and
-`mise run //package/module/translation-repair:slice-census` says how big a
+`mise run //package/module/translation-repair:slice-census` (moved on 2026-10-18 to
+`//package/translation-repair/slice-cache:slice-census`) says how big a
 limit.
 Incumbent chars per slice over all 1260:
  p50 299,
@@ -327,7 +328,8 @@ pairs rather than present with an empty side,
 and that counter could only ever
 report zero.
 The census now counts sections against pairs instead
-(`mise run //package/module/translation-repair:slice-census`).
+(`mise run //package/module/translation-repair:slice-census` (moved on 2026-10-18 to
+`//package/translation-repair/slice-cache:slice-census`)).
 Slices per entry:
  p50 8,
  p90 25,

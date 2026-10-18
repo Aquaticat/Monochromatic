@@ -213,10 +213,12 @@ because the run is the perishable thing.
     no note fires
     and the run verifies nothing,
     which is a finding rather than a failure.
-2.  `mise run //package/module/translation-repair:build`,
+2.  `mise run //package/module/translation-repair:build` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:build`),
     which only becomes
     safe once the pass has exited.
-3.  `mise run //package/module/translation-repair:test:unit`,
+3.  `mise run //package/module/translation-repair:test:unit` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:test:unit`),
     to confirm the
     baseline holds with the nine classes `56ba8f1dd` added.
 4.  The 24 of `#127`,

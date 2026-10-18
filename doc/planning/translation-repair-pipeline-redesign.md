@@ -39,9 +39,10 @@ round,
 or prompt wording cannot extend frontier.
 
 This requirement rejects current loops in
-`package/module/translation-repair/src/consolidation-naturalness-settle.ts`
+`package/module/translation-repair/src/consolidation-naturalness-settle.ts` (removed before 2026-10-18)
 and
-`package/module/translation-repair/src/consolidate-slice-buy.ts`
+`package/module/translation-repair/src/consolidate-slice-buy.ts` (moved on 2026-10-18 to
+`package/translation-repair/consolidate/src/consolidate-slice-buy.ts`)
 as replacement architecture.
 Moving them behind new interface would not fix design.
 
@@ -221,11 +222,13 @@ selection,
 and gate machinery.
 
 `FINAL_POLISH_MINIMUM_CHARS = 0` in
-`package/module/translation-repair/src/consolidation-polish-round.ts`
+`package/module/translation-repair/src/consolidation-polish-round.ts` (moved on 2026-10-18 to
+`package/translation-repair/consolidate/src/consolidation-polish-round.ts`)
 makes every structurally refinable paragraph eligible on every polish attempt.
-`package/module/translation-repair/src/absolute-naturalness-review-stage.ts`
+`package/module/translation-repair/src/absolute-naturalness-review-stage.ts` (moved on 2026-10-18 to
+`package/translation-repair/archive/src/absolute-naturalness-review-stage.ts`)
 makes any usable rejection decisive.
-`package/module/translation-repair/src/consolidation-naturalness-settle.ts`
+`package/module/translation-repair/src/consolidation-naturalness-settle.ts` (removed before 2026-10-18)
 adds each changed correction to prior evidence,
 so exact cycle detector does not fire while wording and findings continue to vary.
 

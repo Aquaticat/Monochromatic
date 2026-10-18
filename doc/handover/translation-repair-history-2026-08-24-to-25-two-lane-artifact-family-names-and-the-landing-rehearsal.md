@@ -180,6 +180,9 @@ mise run //package/module/translation-repair:run-timing-report -- <log>
     busy against span    21.00s of calls across 20.00s of run
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:run-timing-report`
+to `//package/translation-repair/run:run-timing-report`.
+
 The worktree was removed afterwards.
 What this buys is that the landing,
 when the calibration exits,

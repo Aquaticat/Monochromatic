@@ -1,5 +1,9 @@
 # Audit ledger: comments, TSDoc and source text
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Defects in what the source says about itself:
 TSDoc that documents nothing or the wrong thing,
 comments citing what does not exist,

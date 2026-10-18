@@ -24,7 +24,8 @@ The large band's candidates are wildly unequal:
  so two entries hold 81% of the band.
 
 That concentration does not reach the sample.
-`selectFromBand` in `package/module/translation-repair/src/sample-draw.ts`
+`selectFromBand` in `package/module/translation-repair/src/sample-draw.ts` (moved on 2026-10-18 to
+`package/translation-repair/house-rule/src/sample-draw.ts`)
  groups candidates by entry,
  ranks each entry's issues among themselves,
  and sorts by rank BEFORE entry,
@@ -355,7 +356,8 @@ which the package
 `*.unit.test.ts` files import `../dist/final/node/index.mjs`,
 the BUILT bundle,
  and `lint:types` does NOT type-check them.
-So `mise run //package/module/translation-repair:test:unit` on its own tests the
+So `mise run //package/module/translation-repair:test:unit` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:test:unit`) on its own tests the
  PREVIOUS build,
 and a green run right after a source edit means nothing.
 Use `buildAndTest`.

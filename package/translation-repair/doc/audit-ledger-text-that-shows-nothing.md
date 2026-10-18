@@ -431,7 +431,8 @@ Found on 2026-10-05 (UTC) by the same census:
 "Text that shows nothing" rested on habit and review,
 which let B128 and the twenty sites of B189 to B194 through.
 
-`src/blank-text-tests.unit.test.ts`,
+`src/blank-text-tests.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/blank-text-tests.unit.test.ts`),
 which `source-scans` runs,
 reads every production file's syntax tree for a comparison with the empty string,
 written as a string or an empty template,

@@ -129,7 +129,7 @@ extracting it would clobber them.
 It does not.
 The tarball holds 124 entries under exactly
 three prefixes,
-all inside `package/module/translation-repair`,
+all inside `package/module/translation-repair` (moved on 2026-10-18 to the packages under `package/translation-repair`),
 and contains no `doc/` path
 at all.
 The only file changed on the branch since the rehearsal base `9569f9d79` is

@@ -65,7 +65,8 @@ under "The verification run in flight",
 including why a cache poller exists and how to finish or stop it.
 
 The rule that matters here:
-DO NOT EDIT `package/module/translation-repair/src/` UNTIL RUN 2 HAS FINISHED.
+DO NOT EDIT `package/module/translation-repair/src/` (moved on 2026-10-18 to `package/translation-repair/*/src/`) UNTIL
+RUN 2 HAS FINISHED.
 The slice cache keys on a digest taken over the built output,
 so any source edit discards every namespace,
 and run 2 would re-buy everything and report a validator failure that never happened.

@@ -97,7 +97,9 @@ and left sources 3 to 7 and targets 3 to 6 unplaced between them.
 That is a third shape beside the two this census names:
 neither a decline nor a confident guess, but a merge the roster did not say out loud.
 Slicing read it as five insertions and a target-only run, which lost the passage on `mikaela12` and `mikaela13` and shipped it twice on `mikaela15`.
-Since a43c5d88d `pairUnpartneredGaps` (`package/module/translation-repair/src/unpartnered-gap-steps.ts`) reads every such interior gap as one merge.
+Since a43c5d88d `pairUnpartneredGaps` (`package/module/translation-repair/src/unpartnered-gap-steps.ts` (moved on
+2026-10-18 to `package/translation-repair/stage/src/unpartnered-gap-steps.ts`)) reads every such interior gap as one
+merge.
 A pairing-cache count of how many entries carry this shape has not been taken.
 
 ## Candidates this suggests for the bed

@@ -111,7 +111,8 @@ excluded,
    and
 `buildAndTest` passes so the library is unregressed by the addition.
    Pass 4 run
-002 relaunched via `mise run //package/module/translation-repair:corpus-pass`
+002 relaunched via `mise run //package/module/translation-repair:corpus-pass` (moved on 2026-10-18 to
+`//package/translation-repair/corpus-pass:corpus-pass`)
 (log `node_modules/.monochromatic/translation-repair-runs/pass4-run-002.log`) on
 tip `92f7b2c55`;
    the pipeline behavior is unchanged from `63baaa686` (the

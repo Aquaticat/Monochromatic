@@ -2,7 +2,8 @@
 
 ## Scope and conclusion
 
-This note compares the current `package/module/translation-repair` worktree with primary sources:
+This note compares the current `package/module/translation-repair` (moved on 2026-10-18 to the packages under
+`package/translation-repair`) worktree with primary sources:
 standards,
  published papers,
  and first-party project documentation.
@@ -39,20 +40,33 @@ but none combines all of these controls.
 
 ## Package architecture examined
 
-The comparison follows the contract in `package/module/translation-repair/README.md` and the current pipeline in:
+The comparison follows the contract in `package/module/translation-repair/README.md` (moved on 2026-10-18 to
+`package/translation-repair/README.md`) and the current pipeline in:
 
-- `package/module/translation-repair/src/repair-stages.ts` and
-  `package/module/translation-repair/src/adjudicate-model.ts` for critic aggregation and panel decisions.
-- `package/module/translation-repair/src/patch-model.ts`,
-  `package/module/translation-repair/src/edit-wire.ts`,
-  and `package/module/translation-repair/src/apply-patch.ts` for envelopes and guarded application.
-- `package/module/translation-repair/src/repair-edit-stages.ts` and
-  `package/module/translation-repair/src/select-candidate.ts` for checking and candidate selection.
-- `package/module/translation-repair/src/non-translation-evidence.ts` and
-  `package/module/translation-repair/src/repair-translation.ts` for local degradation and document blocking.
-- `package/module/translation-repair/src/derive-seeds.ts`,
-  `package/module/translation-repair/src/seeded-error.ts`,
-  and `package/module/translation-repair/src/repair-benchmark.ts` for planted-error evaluation.
+- `package/module/translation-repair/src/repair-stages.ts` (moved on 2026-10-18 to
+  `package/translation-repair/repair/src/repair-stages.ts`) and
+  `package/module/translation-repair/src/adjudicate-model.ts` (moved on 2026-10-18 to
+  `package/translation-repair/shared-contract/src/adjudicate-model.ts`) for critic aggregation and panel decisions.
+- `package/module/translation-repair/src/patch-model.ts` (moved on 2026-10-18 to
+  `package/translation-repair/shared-contract/src/patch-model.ts`),
+  `package/module/translation-repair/src/edit-wire.ts` (moved on 2026-10-18 to
+  `package/translation-repair/repair/src/edit-wire.ts`),
+  and `package/module/translation-repair/src/apply-patch.ts` (moved on 2026-10-18 to
+  `package/translation-repair/page-pass/src/apply-patch.ts`) for envelopes and guarded application.
+- `package/module/translation-repair/src/repair-edit-stages.ts` (moved on 2026-10-18 to
+  `package/translation-repair/repair/src/repair-edit-stages.ts`) and
+  `package/module/translation-repair/src/select-candidate.ts` (moved on 2026-10-18 to
+  `package/translation-repair/adjudication/src/select-candidate.ts`) for checking and candidate selection.
+- `package/module/translation-repair/src/non-translation-evidence.ts` (moved on 2026-10-18 to
+  `package/translation-repair/archive/src/non-translation-evidence.ts`) and
+  `package/module/translation-repair/src/repair-translation.ts` (moved on 2026-10-18 to
+  `package/translation-repair/repair/src/repair-translation.ts`) for local degradation and document blocking.
+- `package/module/translation-repair/src/derive-seeds.ts` (moved on 2026-10-18 to
+  `package/translation-repair/repair/src/derive-seeds.ts`),
+  `package/module/translation-repair/src/seeded-error.ts` (moved on 2026-10-18 to
+  `package/translation-repair/lane-contest/src/seeded-error.ts`),
+  and `package/module/translation-repair/src/repair-benchmark.ts` (moved on 2026-10-18 to
+  `package/translation-repair/repair/src/repair-benchmark.ts`) for planted-error evaluation.
 
 The central distinction is ownership of decisions.
 Models propose evidence,

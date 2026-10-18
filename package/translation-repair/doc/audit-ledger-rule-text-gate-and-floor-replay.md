@@ -16,7 +16,8 @@ fixed in `0b8788dae`;
 decision addenda thirteen to fifteen record the owner's answers.
 Since class one hundred eighty-five (`419605ff4`) a gate preferring an ineligible standing ships the slate's choice,
 but `buildConsolidateGateMessages` still says 'Choosing "standing" stops this entry with no page',
-and the `standingEligible` TSDoc in `src/consolidate-settle-gate.ts` says a gate keeping it ends the slice.
+and the `standingEligible` TSDoc in `src/consolidate-settle-gate.ts` (moved on 2026-10-18 to
+`package/translation-repair/consolidate/src/consolidate-settle-gate.ts`) says a gate keeping it ends the slice.
 Over an ineligible standing every gate verdict now ships the consolidation;
 whether the gate should still run there is an owner question.
 

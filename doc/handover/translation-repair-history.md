@@ -43,7 +43,8 @@ The decision records,
 the current handover
 and the package's own docs and source
 date owner answers by their UTC day
-(ledger D12 in `package/module/translation-repair/doc/audit-ledger.md`).
+(ledger D12 in `package/module/translation-repair/doc/audit-ledger.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/audit-ledger.md`)).
 
 Task numbers in the record (`#N`,
 "task N") are the writing session's task-tracker ids,
@@ -167,7 +168,7 @@ the document map's "Task numbers in these documents" says how to read them.
 ## Redaction timing
 
 The
-[package-local redaction policy](../../package/module/translation-repair/doc/redaction-timing.md)
+[package-local redaction policy](../../package/translation-repair/doc/redaction-timing.md)
 defers documentation redaction while the package remains unfinished and not production-ready.
 The historical files preserve corpus,
 review,

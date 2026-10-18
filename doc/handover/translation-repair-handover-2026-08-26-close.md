@@ -562,6 +562,9 @@ mise run //package/module/translation-repair:corpus-pass -- \
   --only ArtsEpiphany,gaoyanger,Zha_Ke,Weideriche_,keyword233,Acheron,wangzihao980,dogesir_,Toka_ls,XIEPT2
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:corpus-pass`
+to `//package/translation-repair/corpus-pass:corpus-pass`.
+
 -   Log:
     `~/temp/agent/fresh-read-20260826.log`.
 -   Runs directory:

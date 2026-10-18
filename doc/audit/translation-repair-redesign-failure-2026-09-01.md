@@ -608,7 +608,7 @@ not merely a missing prompt formulation.
 
 Documentation wording redaction is deferred while the package remains unfinished and not production-ready.
 The
-[package-local redaction policy](../../package/module/translation-repair/doc/redaction-timing.md)
+[package-local redaction policy](../../package/translation-repair/doc/redaction-timing.md)
 makes redaction a required readiness gate before the package may be declared finished or production-ready.
 Until that gate,
 preserve corpus,

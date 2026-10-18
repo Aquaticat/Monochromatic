@@ -23,7 +23,7 @@ Launch form verified on 2026-09-01 with the zero-quota `--plan` mode,
 both printing `PLAN ok` with
 `client=constructed` at tip `c4f707e3b`:
 
--   `TRANSLATION_REPAIR_RUNS_DIR=<throwaway> mise run //package/module/translation-repair:corpus-pass -- --only keyword233,Toka_ls,XIEPT2`
+-   `TRANSLATION_REPAIR_RUNS_DIR=<throwaway> mise run //package/module/translation-repair:corpus-pass -- --only keyword233,Toka_ls,XIEPT2` (moved on 2026-10-18 to `//package/translation-repair/corpus-pass:corpus-pass`)
     against the clone at `~/one-among-us/data`,
     verified at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
 -   The same with `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` at the PR-386 fixture
@@ -386,7 +386,8 @@ and puts an artifact in front of the reading step while the next runs.
 Tooling note from the day:
 twice,
 the package `lint` task's `build` dependency left `dist/final/node/index.d.mts`
-without the new exports until an explicit `mise run //package/module/translation-repair:build`,
+without the new exports until an explicit `mise run //package/module/translation-repair:build` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:build`),
 so
 `lint:types` read stale declarations.
 Reproduced,

@@ -22,7 +22,8 @@ pass is a NEW pass;
   prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this:
   run package tasks ONLY by scoped
-name (`//package/module/translation-repair:<task>`) -- a bare `mise run
+name (`//package/module/translation-repair:<task>` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:<task>`)) -- a bare `mise run
 build`/`test` from the worktree root fans out to the whole monorepo
 (cargo/podman/rust),
   spikes load,

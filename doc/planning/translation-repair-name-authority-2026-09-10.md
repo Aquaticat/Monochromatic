@@ -30,12 +30,14 @@ No good full-name candidate reaches selection.
 
 ## Existing rules and hypothesis
 
-`package/module/translation-repair/src/translate-wire.ts`
+`package/module/translation-repair/src/translate-wire.ts` (moved on 2026-10-18 to
+`package/translation-repair/translate-floor/src/translate-wire.ts`)
 explicitly tells the initial writer to keep existing reference names
 when they match the original neither phonetically nor semantically.
 Declared naming evidence still takes precedence.
 
-`package/module/translation-repair/src/name-form-policy.ts`
+`package/module/translation-repair/src/name-form-policy.ts` (moved on 2026-10-18 to
+`package/translation-repair/house-rule/src/name-form-policy.ts`)
 says an established translation-side name is not a generic term,
 but its shared paragraph does not spell out that nonliteral whole-name convention.
 It also leaves the phrase `declared authoritative name` open to being read as any source-language name in the body.

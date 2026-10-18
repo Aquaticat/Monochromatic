@@ -79,7 +79,7 @@ quote anchoring.
 ## The audit is rebuilt, run live, and measured (`#85`)
 
 Both arms ran on 2026-08-17, three times, through `mise run
-//package/module/translation-repair:audit-sensitivity`.
+//package/module/translation-repair:audit-sensitivity` (moved on 2026-10-18 to `//package/translation-repair/probe:audit-sensitivity`).
 
 THE CONTROL IS CLEAN, in every run: three auditors, three verdicts of `no-defect-found`, zero
 claims, zero corroborated, zero near misses. Nothing was invented about a faithful rendering.
@@ -203,7 +203,8 @@ Landed since the last note:
     directory: four artifacts read, all four verified, 40 subjects counted, nobody asked anything.
 -   `rendering-audit-settled-row.ts`, the shared row shape.
 -   `rendering-audit-settled-read.ts` and `-relocation.ts`, the readings, plus eight cases.
--   A `mise` task, `//package/module/translation-repair:rendering-audit-settled`.
+-   A `mise` task, `//package/module/translation-repair:rendering-audit-settled` (moved on 2026-10-18 to
+    `//package/translation-repair/probe:rendering-audit-settled`).
 
 TWO THINGS THE SMALL FIRST BUY PAID FOR, which is the entire argument for capping the first run:
 
@@ -239,6 +240,9 @@ spread on unchanged input, and the headline of `#115` is a comparison. When it l
 mise run //package/module/translation-repair:rendering-audit-settled-report -- \
   --against node_modules/.monochromatic/translation-repair-runs/rendering-audit-settled/2026-08-17T14-25-51.584Z-b7d84b5b.json
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:rendering-audit-settled-report`
+to `//package/translation-repair/probe:rendering-audit-settled-report`.
 
 Then write the band into the population doc beside the halves. That doc already says, in its own
 words, that the archive-versus-fresh difference is not quotable without it.
@@ -305,6 +309,9 @@ mise run //package/module/translation-repair:rendering-audit-settled-report -- \
   --against $R/2026-08-17T15-06-37.885Z-c157db5b.json
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:rendering-audit-settled-report`
+to `//package/translation-repair/probe:rendering-audit-settled-report`.
+
 Paths must be ABSOLUTE: the mise task runs from the package directory, so a repo-relative
 path gives `ENOENT` naming a path that exists. Run 1 pairs against nothing, because its
 rows predate the recorded text identity; the report says so in its own sentence rather
@@ -350,6 +357,9 @@ R=/var/home/user/worktrees/translation-repair/node_modules/.monochromatic/transl
 mise run //package/module/translation-repair:rendering-audit-settled-report -- \
   --run $R/<run3>.json --against $R/<run2>.json
 ```
+
+Moved on 2026-10-18 from `//package/module/translation-repair:rendering-audit-settled-report`
+to `//package/translation-repair/probe:rendering-audit-settled-report`.
 
 Paths must be ABSOLUTE. The mise task runs from the package directory, so a repo-relative path
 gives `ENOENT` naming a path that exists.

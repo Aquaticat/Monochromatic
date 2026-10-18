@@ -250,7 +250,8 @@ the change refuses only records whose named fields are arrays,
 which the package's writers never produce.
 
 What enforces it:
-`src/record-checks.unit.test.ts`,
+`src/record-checks.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/record-checks.unit.test.ts`),
 among the source scans,
 fails on any `typeof` compared with `object` in the package's source outside `isJsonRecord`
 and the seven checks it names with why

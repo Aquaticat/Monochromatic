@@ -37,9 +37,9 @@ this one says what changed after it.
   fix and guard,
   and every mistake made while fixing,
   is in the package's
-  [audit ledger](../../package/module/translation-repair/doc/audit-ledger.md);
+  [audit ledger](../../package/translation-repair/doc/audit-ledger.md);
   the rule that prevents each family of mistakes is in
-  [`mistake-prevention.md`](../../package/module/translation-repair/doc/mistake-prevention.md).
+  [`mistake-prevention.md`](../../package/translation-repair/doc/mistake-prevention.md).
   Open work is every ledger entry whose status reads open or recurring;
   L6 waits for the next launch by its own entry.
 - THE LAST PASS.
@@ -51,7 +51,7 @@ this one says what changed after it.
   No pass has launched since.
 - ROSTER.
   The checker seats were measured on 2026-09-27 and Mimo v2.6 Flash joined them;
-  [`roster-changes.md`](../../package/module/translation-repair/doc/roster-changes.md)
+  [`roster-changes.md`](../../package/translation-repair/doc/roster-changes.md)
   has every change with its date.
 - NEXT.
   The open ledger entries,
@@ -531,7 +531,7 @@ so a reader does not have to walk eighty headings to find out.
   (nine addenda:
   what ships when the archive's rendering cannot),
   and the slice rules in
-  [`slice-context.md`](../../package/module/translation-repair/doc/slice-context.md).
+  [`slice-context.md`](../../package/translation-repair/doc/slice-context.md).
   The latest,
   class one hundred ten (`457765221`):
   a source-only passage the roster found carried,
@@ -562,7 +562,7 @@ so a reader does not have to walk eighty headings to find out.
   and a class is fixed before the next launch.
 - ROSTER.
   Eight seats since `hf:openai/gpt-oss-120b` left every role on 2026-09-24 at the owner's instruction
-  ([`roster-changes.md`](../../package/module/translation-repair/doc/roster-changes.md),
+  ([`roster-changes.md`](../../package/translation-repair/doc/roster-changes.md),
   the blocklist decision):
   `deepseek-v4.1-flash`,
   `hf:zai-org/GLM-5.3-Flash`,

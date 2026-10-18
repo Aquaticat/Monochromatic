@@ -172,7 +172,8 @@ because a tarball carries whole files rather than a diff.
 Building each item on top of the previous removes that hazard entirely.
 
 No source file changed on the branch between the `#210` tarball's base and `e8430d094`:
-the last commit touching `package/module/translation-repair/src/` is `91fe0d0e6`,
+the last commit touching `package/module/translation-repair/src/` (moved on 2026-10-18 to
+`package/translation-repair/*/src/`) is `91fe0d0e6`,
 and everything after it is documentation.
 So extracting the older tarballs onto this base discarded nothing.
 

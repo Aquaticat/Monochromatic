@@ -412,7 +412,8 @@ A path written `s<N>/...`,
   all set in `277145a862`;
   `CONSISTENCY_CACHE_VERSION` 4 stays because its key hashes the sheet,
   and `PAIRING_CACHE_VERSION` 3 because the pairing sheets carry no tense rule
-  (read from `mise run //package/module/translation-repair:cache-account-audit` after the commit).
+  (read from `mise run //package/module/translation-repair:cache-account-audit` (moved on 2026-10-18 to
+  `//package/translation-repair/slice-cache:cache-account-audit`) after the commit).
   The commit that carries this checkpoint changes docs only.
 - The consistency pass had landed earlier the same day in three commits,
   oldest first:
@@ -444,7 +445,8 @@ A path written `s<N>/...`,
   (a stack exhaustion that used to escape is now the grammar's refusal,
   and `parseSliceBody` keeps its old reading of invisible-only lines by default),
   and the linter migration's wrap feeds only stages whose versions moved after it.
-  Read from `mise run //package/module/translation-repair:cache-account-audit` on 2026-10-15.
+  Read from `mise run //package/module/translation-repair:cache-account-audit` (moved on 2026-10-18 to
+  `//package/translation-repair/slice-cache:cache-account-audit`) on 2026-10-15.
 
 #### Verified, and where
 
@@ -765,7 +767,7 @@ Times are UTC.
 - THE OWNER'S ANSWERS.
   Two batches,
   each in the package's
-  [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
+  [design commitments](../../package/translation-repair/doc/design-commitments.md)
   under 2026-10-11:
   a majority of flawed contest ballots runs the slate off and forfeits an eligible standing past an undecided gate;
   a tie the standing drew no ballot in is run off among the tied;
@@ -955,7 +957,7 @@ The log opens with `OVERLAP <entry> value=4 source=fallback` and `WRITER GRACE b
 Every dial still works for a measured arm.
 The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 Since 16:45 UTC on 2026-09-09 a pass runs from a frozen copy of the built `dist`
-(`cp -r package/module/translation-repair/dist/final/node package/module/translation-repair/node_modules/.frozen-dist-<commit>`,
+(`cp -r package/module/translation-repair/dist/final/node package/module/translation-repair/node_modules/.frozen-dist-<commit>` (moved on 2026-10-18 to `package/translation-repair/*/dist/final/node`),
 inside the package so the bundle's bare imports resolve;
 the scratch launcher `launch-pass.mjs <runs-dir> <entry> <frozen-dir>` takes it as its third argument),
 so building the next fix cannot change the pass under way.

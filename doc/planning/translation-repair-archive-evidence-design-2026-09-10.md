@@ -53,7 +53,8 @@ The prototype still selects one known historical revision manually.
 
 ## Existing module facilities
 
-`package/module/translation-repair/src/corpus-source.ts`
+`package/module/translation-repair/src/corpus-source.ts` (moved on 2026-10-18 to
+`package/translation-repair/corpus-source/src/corpus-source.ts`)
 already reads blobs at `CorpusPin.commitSha`,
 rather than reading the working tree.
 It folds CRLF to LF through `foldCarriageReturns`.

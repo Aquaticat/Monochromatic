@@ -190,12 +190,18 @@ The `75b769026` checkpoint did not complete task 39 or approve calibration.
 
 The source trace currently covers:
 
-- `package/module/translation-repair/src/archive-footnote-closure.ts`.
-- `package/module/translation-repair/src/archive-footnote-relabel.ts`.
-- `package/module/translation-repair/src/archive-footnote-order.ts`.
-- `package/module/translation-repair/src/corpus-run/pass-footnote-relabel.ts`.
-- `package/module/translation-repair/src/footnote-graph.ts`.
-- `package/module/translation-repair/src/footnote-identifier.ts`.
+- `package/module/translation-repair/src/archive-footnote-closure.ts` (moved on 2026-10-18 to
+  `package/translation-repair/archive/src/archive-footnote-closure.ts`).
+- `package/module/translation-repair/src/archive-footnote-relabel.ts` (moved on 2026-10-18 to
+  `package/translation-repair/corpus-source/src/archive-footnote-relabel.ts`).
+- `package/module/translation-repair/src/archive-footnote-order.ts` (moved on 2026-10-18 to
+  `package/translation-repair/archive/src/archive-footnote-order.ts`).
+- `package/module/translation-repair/src/corpus-run/pass-footnote-relabel.ts` (moved on 2026-10-18 to
+  `package/translation-repair/corpus-pass/src/corpus-run/pass-footnote-relabel.ts`).
+- `package/module/translation-repair/src/footnote-graph.ts` (moved on 2026-10-18 to
+  `package/translation-repair/document-structure/src/footnote-graph.ts`).
+- `package/module/translation-repair/src/footnote-identifier.ts` (moved on 2026-10-18 to
+  `package/translation-repair/document-structure/src/footnote-identifier.ts`).
 
 The actual pinned `Y1Ran` consumer control passed on frozen `.frozen-dist-b3b6ee29c`,
 digest `sha256-tree-v1:7612f144d20cc33ccd9a0263801a50725401bca1ebb2e493785d9edc52cfa96f`.

@@ -32,7 +32,8 @@ which makes the series hard to read and easy to
 quote stale.
 The current figures live in the decision doc;
 refresh them there
-with `mise run //package/module/translation-repair:score-probe`,
+with `mise run //package/module/translation-repair:score-probe` (moved on 2026-10-18 to
+`//package/translation-repair/probe:score-probe`),
 which costs no
 quota and reads only local artifacts.
 

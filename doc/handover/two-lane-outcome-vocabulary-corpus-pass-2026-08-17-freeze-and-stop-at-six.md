@@ -98,7 +98,8 @@ BUILT AND COMMITTED, none of it wired into the drain yet, so nothing in the runn
 NOT BUILT OR LINTED YET. The worktree used for it had no `node_modules`, so everything was exercised
 by running `node` against the TypeScript source directly: 9 detector checks, 8 scanner checks driven
 end to end, 6 watch checks. Unit test files exist beside each module and import `dist`, so they have
-never run. RUN `mise run //package/module/translation-repair:test:unit` AND `lint:types` ONCE THE
+never run. RUN `mise run //package/module/translation-repair:test:unit` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:test:unit`) AND `lint:types` ONCE THE
 FREEZE LIFTS, and expect to fix things.
 
 THE ONE REAL FALSE POSITIVE FOUND AND FIXED: verse carrying a refrain scored 0.036 distinct, which
@@ -131,7 +132,8 @@ Genuinely new from the evening data:
 
 ## Pass state as of 2026-08-17 evening
 
--   Pass PID `3768707`, alive, cwd `package/module/translation-repair`, runs dir
+-   Pass PID `3768707`, alive, cwd `package/module/translation-repair` (moved on 2026-10-18 to the packages under
+    `package/translation-repair`), runs dir
     `/home/user/translation-repair-runs-20260817` via `TRANSLATION_REPAIR_RUNS_DIR`.
 -   Watcher PID `3953196` polls that artifacts dir every 60 s and kills the pass at 6 entries.
     VERIFIED to watch the same path the pass writes to.
@@ -144,7 +146,8 @@ Genuinely new from the evening data:
 
 ### A PRODUCING-PATH FREEZE IS IN FORCE while the corpus pass runs
 
-Started 2026-08-17 18:00Z: `mise run //package/module/translation-repair:corpus-pass` over 92
+Started 2026-08-17 18:00Z: `mise run //package/module/translation-repair:corpus-pass` (moved on 2026-10-18 to
+`//package/translation-repair/corpus-pass:corpus-pass`) over 92
 entries, `TRANSLATION_REPAIR_RUNS_DIR=~/translation-repair-runs-20260817`, log
 `~/temp/agent/corpus-pass-20260817.log`. This is `#108`, and it is also the only source of the
 more ENTRIES that `#115` proved the rendering audit needs.
@@ -174,6 +177,9 @@ answer it owes `#92` improves on its own:
 mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log
 ```
 
+Moved on 2026-10-18 from `//package/module/translation-repair:slice-cost-report`
+to `//package/translation-repair/slice-cache:slice-cost-report`.
+
 ### Where things stand at 18:45Z, with the pass still running
 
 THE PASS: 153 lane starts, 7 slices priced, no aborts, no entry settled yet. First artifacts land in
@@ -201,7 +207,8 @@ WHEN THE PASS LANDS, in order:
 1.  Re-read the cost telemetry; by then it will include translate-lane slices and the larger bands.
 2.  Re-run the settled rendering audit over the new artifacts. It reads the flat layout directly
     now, so point it at `~/translation-repair-runs-20260817/artifacts` with no copying:
-    `mise run //package/module/translation-repair:rendering-audit-settled -- --archive <that path>`.
+    `mise run //package/module/translation-repair:rendering-audit-settled -- --archive <that path>` (moved on 2026-10-18
+    to `//package/translation-repair/probe:rendering-audit-settled`).
     More ENTRIES is the one thing `#115` proved the audit needs.
 3.  `#108`'s replacement rate, which is what `#107`'s remaining decision waits on.
 4.  Lift the freeze: `#91`'s half-weight first, since it is settled, authorized and located.
@@ -294,13 +301,17 @@ stream diagnostics), and anything in `#90`, `#100` or `#106` touching slicing.
 2.  `#118`: keep the partial text on abort, emit the `drainBody` progress sample on the abort path
     too, and put the model id on that line. Small, and it makes `#68`'s latency axis answerable.
 3.  Re-read the slice cost telemetry, which by then includes translate-lane slices:
-    `mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log`
+    `mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log` (moved on
+    2026-10-18 to `//package/translation-repair/slice-cache:slice-cost-report`)
 4.  Re-run the settled rendering audit over the six artifacts. The reader takes the flat layout, so:
 
     ```sh
     mise run //package/module/translation-repair:rendering-audit-settled \
       -- --archive ~/translation-repair-runs-20260817/artifacts
     ```
+
+    Moved on 2026-10-18 from `//package/module/translation-repair:rendering-audit-settled`
+    to `//package/translation-repair/probe:rendering-audit-settled`.
 
     Verified working against the real artifacts at `--cap 0` on 2026-08-17.
 5.  `#60`'s redraw, now unblocked at the lowered bar of six.

@@ -191,7 +191,7 @@ That bears on `#84`, on `#96`, and on whether this pipeline is described as repa
      flagged run anywhere is three and every relocation pair is adjacent, so that window is enough
      in every case measured;
   4  optionally `mise run //package/module/translation-repair:rendering-audit-settled -- --archive
-     ~/translation-repair-runs-flagged-20260818/artifacts` which SPENDS QUOTA unless `--cap 0`, then
+     ~/translation-repair-runs-flagged-20260818/artifacts` (moved on 2026-10-18 to `//package/translation-repair/probe:rendering-audit-settled`) which SPENDS QUOTA unless `--cap 0`, then
      `rendering-audit-settled-report` for `#107`'s reading A, the relocation pairs.
 
 ### Sol is closed out: issue `#444` filed, no further effort this session
@@ -317,7 +317,8 @@ and the fix is always to give the absence its own name rather than let it borrow
 (`x?.y` in place of `x!.y`). Do not follow it.
 The fix in this repo is `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw/ts`,
 added as a `workspace:*` dependency where a package does not already carry one;
-`translation-repair` already does (`package/module/translation-repair/package.json:23`).
+`translation-repair` already does (`package/module/translation-repair/package.json:23` (moved on 2026-10-18 to
+`package/translation-repair/*/package.json`)).
 
 The suggestion is not merely stylistically off, it changes what the code MEANS:
 `x!.y` throws where the value is missing and `x?.y` yields `undefined`,

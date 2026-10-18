@@ -109,12 +109,12 @@ whose slice of the coverage chunk's text names the exact statement;
 the verdict line's words are derived from baseline stretch boundaries
 matched against merged spans and can misattribute;
 the coverage build is unminified for exactly this reason
-(`package/module/translation-repair/mise.toml`,
+(`package/module/translation-repair/mise.toml` (moved on 2026-10-18 to `package/translation-repair/*/mise.toml`),
 `coverage-census:build` says compression folds guards into expressions
 V8 gives no range for,
 ledger M79);
 and `isJsonRecord` is object and non-null and not-array
-(`src/json-guard.ts`).
+(`src/json-guard.ts` (moved on 2026-10-18 to `package/translation-repair/document-structure/src/json-guard.ts`)).
 
 ## Method adopted after the correction
 

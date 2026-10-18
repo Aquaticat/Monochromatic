@@ -607,7 +607,8 @@ Probe scripts:
 `hygiene.mjs`,
 `class-dates.mjs`,
 `pairing.mjs`).
-Roster values were computed from `src/corpus-run/run-config.ts` itself:
+Roster values were computed from `src/corpus-run/run-config.ts` (moved on 2026-10-18 to
+`package/translation-repair/run/src/corpus-run/run-config.ts`) itself:
 `RUN_ROSTER` 9 seats,
 `RUN_READER_MODELS` 6,
 7 wide seats,

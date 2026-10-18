@@ -464,7 +464,8 @@ and four
  passes of evidence pointed at a model that was answering correctly.
 
 THE DIAGNOSIS TOOK ONE CALL once the right question was asked.
-`mise run //package/module/translation-repair:model-health` asks every roster
+`mise run //package/module/translation-repair:model-health` (moved on 2026-10-18 to
+`//package/translation-repair/bench:model-health`) asks every roster
  model one trivial structured question and prints the raw reply.
 Reach for it FIRST the next time a model looks dead.
 

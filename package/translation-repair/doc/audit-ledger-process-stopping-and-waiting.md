@@ -78,4 +78,5 @@ otherwise a `systemd-run --user` unit and one blocking call to `wait-unit.ts`,
 and no Monitor,
 process loop
 or line count.
-`doc/mistake-prevention.md` holds it under "How an agent waits".
+`doc/mistake-prevention.md` (moved on 2026-10-18 to `package/translation-repair/doc/mistake-prevention.md`) holds it
+under "How an agent waits".

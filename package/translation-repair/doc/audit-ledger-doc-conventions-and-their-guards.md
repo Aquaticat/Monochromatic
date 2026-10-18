@@ -1,5 +1,9 @@
 # Audit ledger: doc conventions and their guards
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Conventions the docs broke across many files and the guards written for each:
 clock times with no zone,
 task-list numbers,
@@ -53,7 +57,7 @@ Corrected in `d01d359d1`:
     straggler-grace and ineligible-standing records,
     a planning doc,
     the README,
-    `doc/slice-context.md`
+    `doc/slice-context.md` (moved on 2026-10-18 to `package/translation-repair/doc/slice-context.md`)
     and this ledger.
 -   The answers of 2026-09-27 01:59 UTC,
     dated 2026-09-26 in 6 places the first fix missed because it touched only package files:

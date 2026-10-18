@@ -149,7 +149,8 @@ every one disclosed by its author in the review (`s233/review.md`,
   The copy `y8` was mutated before the notice and `y8b` after it.
 
 A cause named from reading alone:
-the review traced Z9 to the `]` and `(` branch of `closingJointsOf` in `src/consistency-closing-marks.ts`
+the review traced Z9 to the `]` and `(` branch of `closingJointsOf` in `src/consistency-closing-marks.ts` (moved on
+2026-10-18 to `package/translation-repair/consistency/src/consistency-closing-marks.ts`)
 from reading the loop and from `cutsShownWord` being false on the rows,
 and its own list of what it did not check says it did not instrument `closingJointsOf`.
 The lead's brief for n166 carried the pointer and told the author to confirm the cause by instrumenting a copy first,

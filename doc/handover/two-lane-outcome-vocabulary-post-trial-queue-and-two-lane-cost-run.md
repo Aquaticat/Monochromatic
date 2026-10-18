@@ -163,7 +163,7 @@ WHERE IT IS, so a killed session can find it without this transcript:
 -   Command, from the `translation-repair` worktree:
     `TRANSLATION_REPAIR_RUNS_DIR=<that dir> mise run
     //package/module/translation-repair:corpus-pass -- --only
-    Aniloviraw,zheermao101,aiyysk,XingZ60`
+    Aniloviraw,zheermao101,aiyysk,XingZ60` (moved on 2026-10-18 to `//package/translation-repair/corpus-pass:corpus-pass`)
 -   Code identity, from the run's OWN `START` line rather than from this document:
     `tip=e79bb338 pipeline=sha256-tree-v1:e327ca8b`. The tip is the run-record commit, one later than
     the `4fed9d7bd` the plan check ran at, and the PIPELINE HASH IS THE SAME in both, so the delta
@@ -250,10 +250,14 @@ DO THIS FIRST, BEFORE READING THE RUN, because it is the half that is not yet ve
 tests import from `dist/`, which the cost run is reading. Building would have swapped code under a
 live multi-hour run, so the build and the full sweep were deferred on purpose:
 
-1.  `mise run //package/module/translation-repair:build`
-2.  `mise run //package/module/translation-repair:test:unit`
-3.  `mise run //package/module/translation-repair:lint`
-4.  `mise run //package/module/translation-repair:lint:types`
+1.  `mise run //package/module/translation-repair:build` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:build`)
+2.  `mise run //package/module/translation-repair:test:unit` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:test:unit`)
+3.  `mise run //package/module/translation-repair:lint` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:lint`)
+4.  `mise run //package/module/translation-repair:lint:types` (moved on 2026-10-18 to
+    `//package/translation-repair/<package>:lint:types`)
 
 WHAT WAS ALREADY VERIFIED, so this is a sweep rather than an unknown: the source modules were
 exercised directly with node, outside `dist`, and every assertion held. The round trip between

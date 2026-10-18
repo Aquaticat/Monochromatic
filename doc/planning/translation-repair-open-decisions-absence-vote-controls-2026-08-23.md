@@ -70,7 +70,8 @@ The wiring itself stays where the owner left it,
 because what the pipeline should DO with a reachable absence verdict is a separate decision.
 
 Runner:
-`mise run //package/module/translation-repair:coverage-control-probe -- --only <entry>`.
+`mise run //package/module/translation-repair:coverage-control-probe -- --only <entry>` (moved on 2026-10-18 to
+`//package/translation-repair/coverage-census:coverage-control-probe`).
 
 ## AND THE NULL ITSELF WAS ONE ENTRY, measured the same day
 

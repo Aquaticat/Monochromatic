@@ -1,5 +1,9 @@
 # Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 The readers that parse a slice alone take the page's definitions with them (B609 and B615),
 read an edit-region fragment where it lands in its slice (B610)
 and share one memory of the prose masks they built (B611).
@@ -32,7 +36,8 @@ The labels Y5,
 Y7 and Y9 are the review's own and are no ledger ids.
 The labels of probe scenarios,
 the names of probes and the names of logs are the sources' own too.
-A path that starts with `src/` is under `package/module/translation-repair/`.
+A path that starts with `src/` is under `package/module/translation-repair/` (moved on 2026-10-18 to the packages under
+`package/translation-repair`).
 The functions,
 types and constants of the package named here
 (`pageDefinitionsOf`,

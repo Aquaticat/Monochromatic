@@ -14,7 +14,8 @@ fixed in `9d7bbbec2` (red case in `23137d784`),
 Found 2026-10-02 (UTC) reviewing what the T8 bundle 1 agent left,
 and written only into `23090a91d`'s commit message until 2026-10-03,
 when the handover to the trial model copied it here.
-`activeFootnoteMarkers` (`src/active-footnote-markers.ts`) walks the parsed body
+`activeFootnoteMarkers` (`src/active-footnote-markers.ts` (moved on 2026-10-18 to
+`package/translation-repair/shared-contract/src/active-footnote-markers.ts`)) walks the parsed body
 and reads each text node's raw bounds off `node.position`;
 a text node without one throws `FootnoteRewriteError` of kind `position`
 (the check reading `start` and `end` in the text-node arm of the walk).

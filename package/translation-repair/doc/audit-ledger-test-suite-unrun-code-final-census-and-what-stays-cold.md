@@ -223,7 +223,8 @@ every other caller of `activeFootnoteMarkers`,
 by the lead's search.
 So the change would have altered nothing off the relabel path,
 and on it would have turned a withheld relabel into a stopped entry,
-against the owner's rule that a run always ships (`doc/design-commitments.md`);
+against the owner's rule that a run always ships (`doc/design-commitments.md` (moved on 2026-10-18 to
+`package/translation-repair/doc/design-commitments.md`));
 the lead kept the refusals (M143).
 `footnote-parsed-spans.ts` is not on the relabel path
 (its only production importer beside the footnote barrel is `footnote-mentions.ts`),

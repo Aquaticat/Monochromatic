@@ -28,7 +28,9 @@ No child of any of these files calls a provider,
 so no key was used or shown.
 
 The fix:
-`src/child-environment.test-fixture.ts` is the one place a test may start a child.
+`src/child-environment.test-fixture.ts` (moved on 2026-10-18 to
+`package/translation-repair/adjudication/src/child-environment.test-fixture.ts`) is the one place a test may start a
+child.
 It hands the child the test process's environment with every variable whose name ends in `_API_KEY` removed,
 and every variable whose name starts `TRANSLATION_REPAIR_` too,
 then the variables the case names
@@ -41,7 +43,9 @@ which the merge inside `nano-spawn` and node's `spawn` both read as absent.
 Its test file starts real children that print the names they see,
 with a control case that hands a child a key-named variable and sees it arrive.
 
-`src/test-children-keyless.unit.test.ts` reads every test file and fixture but that one.
+`src/test-children-keyless.unit.test.ts` (moved on 2026-10-18 to
+`package/translation-repair/source-scan/src/test-children-keyless.unit.test.ts`) reads every test file and fixture but
+that one.
 It fails on an import of a spawning module
 (`nano-spawn`,
 `node:child_process`,
@@ -408,7 +412,8 @@ The fix:
 when the real parent path holds a colon,
 naming the clone and the parent,
 and saying to move the clone to a directory whose path holds no colon.
-`doc/configuration.md` says so beside `TRANSLATION_REPAIR_CORPUS_CLONE_DIR`.
+`doc/configuration.md` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) says so beside
+`TRANSLATION_REPAIR_CORPUS_CLONE_DIR`.
 
 Open to the owner's veto:
 The refusal says to move the clone only;
@@ -419,7 +424,8 @@ A clone whose real parent path holds a colon is refused as stated,
 working clones there included,
 by the agent's measurement;
 the report names no alternative.
-The paragraph in `doc/configuration.md` goes beyond what the review asked and was kept,
+The paragraph in `doc/configuration.md` (moved on 2026-10-18 to `package/translation-repair/doc/configuration.md`) goes
+beyond what the review asked and was kept,
 lint clean;
 the alternative is to drop it.
 

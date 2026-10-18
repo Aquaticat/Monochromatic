@@ -1,5 +1,9 @@
 # Audit ledger: labels and counts in messages
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Messages that named the wrong thing or stated a count wrongly:
 labels that did not fit,
 counts before a fixed plural,

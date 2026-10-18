@@ -48,7 +48,8 @@ GLM-4.7-Flash    accepted 11  control 23   neither
 ```
 
 Run it with
- `mise run //package/module/translation-repair:score-crosscheck`,
+ `mise run //package/module/translation-repair:score-crosscheck` (moved on 2026-10-18 to
+ `//package/translation-repair/probe:score-crosscheck`),
 and note that
  the task reads `resolveRunsDir()`,
 which defaults to

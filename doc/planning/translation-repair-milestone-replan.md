@@ -138,7 +138,8 @@ represented after it.
 BUILT 2026-08-13,
 and calibrated rather than tuned by taste.
 `checkPreservation`
-in `package/module/translation-repair/src/preservation-check.ts` states the rule
+in `package/module/translation-repair/src/preservation-check.ts` (moved on 2026-10-18 to
+`package/translation-repair/page-pass/src/preservation-check.ts`) states the rule
 as:
 everything in the replaced text that no accepted issue quoted as defective
 must still be present afterwards.

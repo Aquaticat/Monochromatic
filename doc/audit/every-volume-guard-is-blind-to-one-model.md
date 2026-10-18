@@ -159,7 +159,8 @@ editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace
 THE 1.45 HOUR FIGURE ABOVE REMAINS AN UPPER BOUND until a run emits these lines.
 The calibration running when they landed was launched from the older build,
 so the first real reading comes from the next pass.
-`mise run //package/module/translation-repair:run-timing-report -- <log>` reads them back,
+`mise run //package/module/translation-repair:run-timing-report -- <log>` (moved on 2026-10-18 to
+`//package/translation-repair/run:run-timing-report`) reads them back,
 and on a log written before this it says so rather than reporting zeros.
 
 What could be measured on the OLD log, as a floor rather than the figure:

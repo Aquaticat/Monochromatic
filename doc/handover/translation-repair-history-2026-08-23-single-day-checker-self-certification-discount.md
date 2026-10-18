@@ -391,7 +391,8 @@ A uniform discount over a fully overlapping roster is not a safeguard,
 it is a no-op.
 
 It is not uniform.
-The weight is chosen per issue at `package/module/translation-repair/src/tally-resolution.ts:265`,
+The weight is chosen per issue at `package/module/translation-repair/src/tally-resolution.ts:265` (moved on 2026-10-18
+to `package/translation-repair/adjudication/src/tally-resolution.ts`),
 by `wroteTextForIssue({ authorship, issueId, modelId, },)`,
 so a checker is halved only on the issues whose shipped text it actually helped write
 and keeps full weight on every other issue in the same slice.

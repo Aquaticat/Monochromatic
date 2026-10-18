@@ -12,7 +12,8 @@ which lists every file of this record.
 ## TianqiChen66622 read, 2026-10-11: SETTLED, two Bedrock seats dark all run
 
 TianqiChen66622 launched on 2026-10-11 at 18:31 UTC at `f58e30822`
-through the runbook's task (`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666`,
+through the runbook's task (`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666` (moved on
+2026-10-18 to `//package/translation-repair/corpus-pass:corpus-pass`),
 a systemd user unit,
 the owner's go-ahead of that day)
 into a throwaway runs directory,
@@ -146,7 +147,8 @@ it is shown to judges as candidates only
 
 TianqiChen66623 launched on 2026-10-12 at 08:58 UTC at `9c0406f113`
 through the runbook's unit form
-(`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666`,
+(`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666` (moved on 2026-10-18 to
+`//package/translation-repair/corpus-pass:corpus-pass`),
 `StandardError=inherit` read back from systemd right after the launch)
 into a throwaway runs directory,
 and settled in 7,339,457 ms

@@ -607,7 +607,8 @@ this interrupted pass cannot close it at the user boundary.
 
 No source changed while `Mio` ran.
 The glossary was not empty at handoff:
-`git show 2cfad6236:package/module/translation-repair/src/community-glossary.ts` contains both seed entries,
+`git show 2cfad6236:package/module/translation-repair/src/community-glossary.ts` (moved on 2026-10-18 to
+`package/translation-repair/glossary/src/community-glossary.ts`) contains both seed entries,
 and importing frozen `5b228736b` and calling `communityTermLines` against the pinned source pages returns
 both entries for `yuki418330012` and an empty list for `Mio`.
 The two named terms are absent from Mio's source,

@@ -50,7 +50,8 @@ The initial unapproved normalized pool also needed the existing source-authority
 A provider-free review of its frozen input texts identified
 `gqt/source-section/6/target-section/6` as part of a whole-page English original.
 Both raw and normalized archive readings return `whole-page`.
-`package/module/translation-repair/src/corpus-run/pass-entry.ts:155`
+`package/module/translation-repair/src/corpus-run/pass-entry.ts:155` (moved on 2026-10-18 to
+`package/translation-repair/corpus-pass/src/corpus-run/pass-entry.ts`)
 declines such an entry before any purchase.
 The initial prototype's selected `hakureico` parent also requires the existing sealed-span treatment.
 

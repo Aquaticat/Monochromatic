@@ -144,7 +144,8 @@ Guard-off on the fixed tree:
 the review handed the archive as it came again failed the new case alone in its file,
 and `git diff` printed nothing after the restore.
 The full suite on `5695cd5be`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,506 PASS lines and no FAIL line.
 
@@ -250,7 +251,8 @@ the open-comment refusal off failed the earlier case's open comment;
 comment-only acceptance off failed the comment-only blocks in both cases;
 and the reader's continuation off failed the continuation cases in the reader's tests and the check's.
 The full suite on `3788e8223`
-(`mise run //package/module/translation-repair:buildAndTest`,
+(`mise run //package/module/translation-repair:buildAndTest` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:buildAndTest`),
 with the worktree clean)
 printed 1,508 PASS lines and no FAIL line.
 

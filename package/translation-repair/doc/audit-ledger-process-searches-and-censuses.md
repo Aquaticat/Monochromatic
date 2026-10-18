@@ -258,9 +258,11 @@ with baselines read before the suite in `740dd721e`.
 A bundle chunk concatenates modules,
 and V8's cold runs merge across them,
 so a stretch recorded under its first character's source put every later source out of the census.
-The census of eight test files recorded bundle offsets 19,599 to 29,168 of the repair-chunk bundle as line 172 of `src/select-candidate.ts`
+The census of eight test files recorded bundle offsets 19,599 to 29,168 of the repair-chunk bundle as line 172 of
+`src/select-candidate.ts` (moved on 2026-10-18 to `package/translation-repair/adjudication/src/select-candidate.ts`)
 while listing `repairChunk` as never called,
-and gave `src/repair-chunk.ts` no stretch at all;
+and gave `src/repair-chunk.ts` (moved on 2026-10-18 to `package/translation-repair/repair/src/repair-chunk.ts`) no
+stretch at all;
 read against a baseline,
 that source's stretches then counted as ran.
 The same mapping wrote the baseline at `e22373347`,
@@ -275,7 +277,8 @@ which never cross a module.
 The fix maps every character of a stretch and records one stretch per run of one source;
 rerun on the same eight test files,
 the offsets once put at one line are four records,
-the last `src/repair-chunk.ts` lines 110 to 497,
+the last `src/repair-chunk.ts` (moved on 2026-10-18 to `package/translation-repair/repair/src/repair-chunk.ts`) lines
+110 to 497,
 which holds `repairChunk`'s first line.
 A second defect sat in the same reader:
 Node returns a map segment naming no source as an entry whose source is undefined,

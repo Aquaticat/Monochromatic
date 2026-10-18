@@ -82,7 +82,8 @@ kept as the record of that session:
 ## Steps for the round three grading and the probe shadow-mode ruling
 
 WHEN FIFTEEN SETTLE:
-1.    `mise run //package/module/translation-repair:draw-sample -- --final`.
+1.    `mise run //package/module/translation-repair:draw-sample -- --final` (moved on 2026-10-18 to
+      `//package/translation-repair/probe:draw-sample`).
     It now writes THREE files:
       both sheets and `sample-manifest-<seed>.json`.
     The manifest is not optional and cannot be regenerated later;

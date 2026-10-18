@@ -296,7 +296,8 @@ floated as the way to keep moving without touching the running pool's digest.
 but it carries no
 `node_modules`,
 at the root or in the package,
-so `mise run //package/module/translation-repair:build`
+so `mise run //package/module/translation-repair:build` (moved on 2026-10-18 to
+`//package/translation-repair/<package>:build`)
 there needs a full workspace install first.
 It was still going after two minutes and was
 stopped.
