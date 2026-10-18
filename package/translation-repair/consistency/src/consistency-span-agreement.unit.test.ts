@@ -397,6 +397,38 @@ await describe({
       },
     },),
     it({
+      name: 'REPORTS THE FAILURE OF THE LONGEST CANDIDATE, not of a shorter one: the longest quote stands nowhere and the shorter '
+        + 'stands twice, so the place is not found, and where the longest stands twice the place is ambiguous',
+      fn: async () => {
+        // "the cat naps in the shade" is inside two of three quotes; "the cat naps" is inside all three.
+        const longestNowhere = countAgainst({
+          voices: [
+            ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'the cat naps in the shade', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'the cat naps in the shade', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'the cat naps', }, choice: 'OCCURRENCE 1', },),
+          ],
+          english: ['the cat naps in the sun. the cat naps again.', 'The kitten naps.',],
+          quorum: 3,
+        },);
+        const longestTwice = countAgainst({
+          voices: [
+            ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'the cat naps in the sun', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'the cat naps in the sun', }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'the cat naps', }, choice: 'OCCURRENCE 1', },),
+          ],
+          english: ['the cat naps in the sun. the cat naps in the sun.', 'The kitten naps.',],
+          quorum: 3,
+        },);
+        expect([
+          longestNowhere.renderings[0],
+          longestTwice.renderings[0],
+        ],).toEqual([
+          { kind: 'unlocated', reason: 'not-found', },
+          { kind: 'unlocated', reason: 'ambiguous', },
+        ],);
+      },
+    },),
+    it({
       name: 'READS A COMBINING MARK AS PART OF THE WORD IT FOLLOWS, as the locator does: a quote "cafe" is no word of '
         + '"cafe" written with a combining acute accent, so it is contained only in itself and is no candidate',
       fn: async () => {
@@ -490,6 +522,55 @@ await describe({
           label: 'OCCURRENCE 1',
         },);
         expect(candidates,).toEqual(['abcd', 'x🐈🐈',],);
+      },
+    },),
+    it({
+      name: 'TELLS APART TWO CANDIDATES OF ONE LENGTH BY THEIR CODE POINTS, whichever ballot quoted them first, so the same ballots '
+        + 'always give the same order',
+      fn: async () => {
+        expect({
+          beeFirst: containedQuoteWordsOf({
+            voices: [
+              ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'bee', }, choice: 'OCCURRENCE 1', },),
+              ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'ant', }, choice: 'OCCURRENCE 1', },),
+              ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'ant bee', }, choice: 'OCCURRENCE 1', },),
+            ],
+            label: 'OCCURRENCE 1',
+          },),
+          antFirst: containedQuoteWordsOf({
+            voices: [
+              ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'ant', }, choice: 'OCCURRENCE 1', },),
+              ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'bee', }, choice: 'OCCURRENCE 1', },),
+              ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'ant bee', }, choice: 'OCCURRENCE 1', },),
+            ],
+            label: 'OCCURRENCE 1',
+          },),
+        },).toEqual({
+          beeFirst: ['ant', 'bee',],
+          antFirst: ['ant', 'bee',],
+        },);
+      },
+    },),
+    it({
+      name: 'ORDERS CANDIDATES OF ONE LENGTH BY CODE POINTS, NOT UTF-16 UNITS: a letter beyond the first plane follows a letter of '
+        + 'the first plane that has the greater code unit, though its first code unit is the lesser',
+      fn: async () => {
+        /**
+         A letter of the first plane whose single code unit is greater than the first code unit of any character beyond it.
+         */
+        const plain = 'a\u{A730}';
+        /**
+         A character beyond the first plane after the same letter.
+         */
+        const beyond = 'a🐈';
+        expect(containedQuoteWordsOf({
+          voices: [
+            ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': beyond, }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': plain, }, choice: 'OCCURRENCE 1', },),
+            ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': `${beyond} ${plain}`, }, choice: 'OCCURRENCE 1', },),
+          ],
+          label: 'OCCURRENCE 1',
+        },),).toEqual([plain, beyond,],);
       },
     },),
     it({

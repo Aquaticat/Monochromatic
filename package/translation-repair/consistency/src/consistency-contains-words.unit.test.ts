@@ -80,6 +80,18 @@ await describe({
           },
         },),
         it({
+          name: 'REFUSES WORDS THAT A COMBINING MARK STANDS DIRECTLY BEFORE, as it refuses one directly after them, since the mark runs '
+            + 'on from the letter it follows',
+          fn: async () => {
+            expect([
+              containsWords({ outer: 'the e\u{0301}cat naps', inner: 'cat', },),
+              containsWords({ outer: 'e\u{0301}cat', inner: 'cat', },),
+              containsWords({ outer: 'the cat\u{0301} naps', inner: 'cat', },),
+              containsWords({ outer: 'the e\u{0301} cat naps', inner: 'cat', },),
+            ],).toEqual([false, false, false, true,],);
+          },
+        },),
+        it({
           name: 'KEEPS LOOKING AFTER A MATCH INSIDE A WORD, so a later match at the edges of words counts',
           fn: async () => {
             expect(containsWords({ outer: 'cats and a cat', inner: 'cat', },),).toBe(true,);
