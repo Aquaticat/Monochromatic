@@ -37,7 +37,8 @@ At `package/git-policy/cli/src/native/real_index_lock.rs:255`,
 exclusive creation returns a boolean rather than retaining the opened file:
 
 ```rust
-//! package/git-policy/cli/src/native/real_index_lock.rs:257, frozen e02be6c8
+//! package/git-policy/cli/src/native/real_index_lock.rs:257,
+//! frozen e02be6c8
 let mut options: std::fs::OpenOptions = std::fs::OpenOptions::new();
 options.write(true).create_new(true).mode(0o600);
 match options.open(path) {
@@ -51,7 +52,8 @@ The direct release path at line 138 calls `assert_identity()` before removing th
 Its deciding Unix comparison is at line 212:
 
 ```rust
-//! package/git-policy/cli/src/native/real_index_lock.rs:218, frozen e02be6c8
+//! package/git-policy/cli/src/native/real_index_lock.rs:218,
+//! frozen e02be6c8
 if !metadata.is_file()
     || metadata.dev().to_string() != identity.file.device
     || metadata.ino().to_string() != identity.file.inode
@@ -65,7 +67,8 @@ The recovery path additionally compares the filesystem identity,
 as `package/git-policy/cli/src/native/recovery_files.rs:382` shows:
 
 ```rust
-//! package/git-policy/cli/src/native/recovery_files.rs:382, frozen e02be6c8
+//! package/git-policy/cli/src/native/recovery_files.rs:382,
+//! frozen e02be6c8
 if filesystem != journal.fs_id || device != journal.file.device || inode != journal.file.inode {
     return Ok(Some(format!(
         "Index lock identity changed: {}",
@@ -79,7 +82,8 @@ The install path opens the current path and compares its metadata at
 `package/git-policy/cli/src/native/recovery_files.rs:575`:
 
 ```rust
-//! package/git-policy/cli/src/native/recovery_files.rs:575, frozen e02be6c8
+//! package/git-policy/cli/src/native/recovery_files.rs:575,
+//! frozen e02be6c8
 let (device, inode, _) = metadata_identity(&opened);
 if device != journal.file.device || inode != journal.file.inode {
     return Err(RecoveryError(format!(
@@ -94,7 +98,8 @@ The actual replacement fixture at
 removes the original path and writes different replacement bytes before calling `release()`:
 
 ```rust
-//! package/git-policy/cli/src/native/real_index_lock_tests.rs:54, frozen e02be6c8
+//! package/git-policy/cli/src/native/real_index_lock_tests.rs:54,
+//! frozen e02be6c8
 std::fs::remove_file(&path).expect("remove the created lock");
 std::fs::write(&path, b"another process's lock").expect("replacement");
 let refusal: String = lock.release().expect_err("a replaced lock must not be released");

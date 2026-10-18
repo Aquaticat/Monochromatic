@@ -305,6 +305,9 @@ All three receipt ZIP digests,
 the GitHub mirror's outer ZIP and its original inner ZIP hash were verified.
 Across the combined campaign,
 21 artifact ZIPs and all 774 members have retained hash/CRC evidence.
+The [complete matched receipts](../audit/depot-reuse-lock-portability-2026-10-18.receipts.json.gz)
+are stored once as compressed JSON,
+with compressed/uncompressed hashes bound in the main evidence.
 Both collision-checked temporary object-URL secrets were deleted and their absence verified.
 The combined 21 job attempts span 20 workflow runs and produce a USD 1.407 timestamp-price proxy.
 The two GitHub windows each begin at their common workflow request and end at their own job completion;
@@ -576,10 +579,21 @@ This campaign does not launch or delegate emulator work.
 
 ## Campaign work queue
 
-- Reconcile the separate Android,
-  runtime and BuildKit agents' measured preparation boundaries without claiming their work as this campaign's probes.
-- Retain the reusable harness worktree while the portability comparison needs it,
-  then inspect and remove only its owned state with the repository's cleanup checks.
+The matched-control cleanup retained and removed only its inspected generated rule-cache file,
+then verified no ignored state remained.
+The root `HEAD`,
+`config`,
+`hooks`,
+`objects` and `refs` ignore patterns match,
+but directory listing verifies those entries are absent.
+The pushed isolated worktree is retained for the coordinator's subsequent frozen Rust coverage campaign.
+That new campaign owns the standalone crate catalog,
+current-source linter and five fuzz sidecars,
+with the same cumulative USD 5 compute proxy and two simultaneous jobs at most.
+
+The separate Android,
+runtime and BuildKit campaigns retain their own provenance and workload boundaries.
+Their consumers are not additional test credit for this cache campaign.
 
 The 18-attempt cache campaign and its three-attempt portability extension are complete
 within their declared consumer boundaries.
