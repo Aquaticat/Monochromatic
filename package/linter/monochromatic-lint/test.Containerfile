@@ -8,5 +8,7 @@ COPY jsonc-edit /work/package/rust-module/jsonc-edit
 COPY monochromatic-lint /work/package/linter/monochromatic-lint
 WORKDIR /work/package/linter/monochromatic-lint
 # Semantic-backend consumer controls used symbol-free development builds under the same memory cap.
+COPY cargo-nextest /usr/local/cargo/bin/cargo-nextest
+RUN ["cargo", "nextest", "--version"]
 ENV CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_NET_OFFLINE=true
-CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]
+CMD ["cargo", "nextest", "run", "--offline", "--locked", "--all-targets"]

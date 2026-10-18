@@ -163,10 +163,10 @@ try {
     'FROM ' + base,
     'COPY src /work/package/linter/monochromatic-lint/src',
     'COPY fixtures /work/package/linter/monochromatic-lint/fixtures',
-    'RUN ["cargo","test","--offline","--locked","--all-targets","--no-run"]',
+    'RUN ["cargo","nextest","run","--offline","--locked","--all-targets","--no-run"]',
     'RUN ["cargo","build","--offline","--locked","--lib"]',
     'RUN ["rustc","--edition=2024","--extern","monochromatic_lint=target/debug/libmonochromatic_lint.rlib","-L","dependency=target/debug/deps","src/processors_consumer.rs","--out-dir","target"]',
-    'CMD ["cargo","test","--offline","--locked","--all-targets","--","--test-threads=2"]',
+    'CMD ["cargo","nextest","run","--offline","--locked","--all-targets"]',
     '',
   ].join('\n'));
   command(['build', '--network=none', '--http-proxy=false', '--pull=never',
@@ -280,7 +280,7 @@ const evidence = await mkdtemp(join(process.cwd(), 'target/verification/processo
 const tool = join(process.env.CARGO_HOME ?? join(homedir(), '.cargo'), 'bin/cargo-mutants');
 const toolSha256 = createHash('sha256').update(await readFile(tool)).digest('hex');
 const filter = 'replace (has_main|verify|encoded|rewrite).* with (true|false|Ok\\(\\(\\)\\)|String::new\\(\\)|Ok\\(String::new\\(\\)\\))$';
-const command = ['cargo', 'mutants', '--in-place', '--baseline', 'run', '--no-config', '--no-shuffle',
+const command = ['cargo', 'mutants', '--in-place', '--baseline', 'run', '--no-config', '--no-shuffle', '--test-tool', 'nextest',
   '--jobserver-tasks', '2', '--build-timeout', '300', '--timeout', '180',
   '--file', 'src/processors_prepare.rs', '--file', 'src/processors_projection.rs', '--file', 'src/processors_rewrite.rs',
   '--exclude-re', 'replace \\+= with \\*=', '--exclude-re', 'replace -= with /=',
