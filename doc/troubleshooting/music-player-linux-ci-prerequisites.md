@@ -104,3 +104,16 @@ Its 96 files expand to `26,811,016` bytes;
 all recorded process-log hashes were verified after download.
 The consumer separately recorded 635 materialized input files totaling `8,201,667` bytes.
 Those working-byte receipts do not retrospectively prove the original producer's asset bytes.
+
+## Independent remaining sessions and native-dialog assertion
+
+Run `0jpk5bwpvs` executes the six remaining unchanged session bodies with an explicit research scheduler.
+Structured source summaries contain 41 passing outcomes and one failed dialog assertion.
+The recorder prints live outcomes and the final report separately; counting both doubles the result.
+The failed `browse/ctrl-shift-o` check observes zero changed pixels and no dialog covering the player.
+The focus-return check passes. No cause or repair is established for the absent covering dialog.
+Narrow layout, auto-play, quit, state, and visual sessions finish with their source assertions passing.
+The same cleanup checks restore sinks and verify zero active units, app/compositor processes,
+and retained containers. The artifact contains 90 PNG files.
+An additional workflow step names an undefined research `desktop:cleanup` task,
+which is a separate harness failure from both the source assertion and the already passed in-task cleanup.

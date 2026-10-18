@@ -1473,3 +1473,59 @@ These are list-rate planning proxies and conservative reservations,
 not invoices.
 Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
 No account-wide usage or invoice endpoint is queried.
+
+## Remaining desktop outcomes and current host admission
+
+Native run `0jpk5bwpvs`, job `scrrj4czcl`, attempt `9tx3p5369r`,
+executes all six prepared remaining authored session bodies without changing their assertions.
+The source-owned structured summaries record 41 passing outcomes and one failing outcome:
+`narrow` 10 passed; `dialog` one passed and one failed; `auto-play` four passed;
+`quit` one passed; `states` thirteen passed; `visual` twelve passed.
+Raw stdout prints outcomes live and again in its final summary,
+so 82 PASS lines and two FAIL lines are duplicate emissions, not case counts.
+The failed source assertion is `browse/ctrl-shift-o`: no folder-dialog window covers the player,
+with zero changed pixels. Its cause remains unproven.
+The independent focus-return check passes.
+The artifact retains 90 PNG files and their hashes.
+There are zero remaining app/compositor processes, active test units, or runtime containers;
+sinks are restored, overlay writes are discarded, and the temporary artifact URL credential is absent.
+A trailing research workflow step also names an undefined `desktop:cleanup` task;
+this is separate from the successful in-task cleanup and the source dialog assertion.
+The original default-wide invocation remains 69 live passing outcomes, one skip,
+and an uncaught folder-wait precondition; it did not write a final report.
+Neither observation is a passed complete desktop suite.
+
+Artifact `01a14f8b-0a70-75a3-afdc-3eb28dfa56d4` is 5550536 bytes,
+SHA-256 `c9257bd6fcaaefe3ec3d7b29ceac573acb4fdf70bce4bf9c4921dae8ac11d198`;
+182 members expand to 119656005 bytes with recorded call hashes verified.
+The provider run interval is 14:59:56 to 15:04:35 UTC, 279 seconds,
+with USD0.1116 list-rate interval proxy and USD0.36 conservative completed maximum.
+The original campaign now has 43 completed rows and a USD4.728 conservative guard sum;
+USD6 fallback remains unused.
+
+The next immutable host harness is `334a5b75f376eb467e30b426a14369690bc2795f`.
+Its actual Node bootstrap, generated task equality, actual Mise dry-run parsing,
+and module syntax preflight all pass locally.
+The public profile runs five sequential contexts, at most 30 minutes per job:
+macOS 15 native desktop plus logger/semantic/filesystem consumers;
+Windows 2025 MSVC x64 with the same owner set;
+the separately authored macOS-latest filesystem context;
+and native Windows 11 ARM64/MSVC and Windows 2025 x64/GNU desktop unit bodies.
+The latter Windows variants do not claim an ordinary release-binary smoke.
+Public standard compute is nominal USD0; artifact/storage cost remains unobserved.
+
+The equivalent Depot macOS 15 and Windows 2025 MSVC x64 controls use the same commands.
+Their labels are `depot-macos-15` and `depot-windows-2025-4`,
+with documented 8 CPU/24 GB and 4 CPU/16 GB capacities.
+At 20 minutes each, published list-rate maxima are USD1.60 and USD0.32,
+a separate USD1.92 reservation under USD2.
+Windows is a Developer capability; macOS requires the existing Startup trial availability.
+No subscription change is performed or implied.
+Source test assertions remain unchanged. The explicit nextest scheduler adapter adds only
+`--no-fail-fast`, preserving default build/test concurrency and retaining original/adapted hashes.
+Actual compiler host and emitted binary architecture are checked before native-consumer credit.
+
+The [sealed host admission evidence](../audit/depot-current-host-controls-admission-2026-10-18.evidence.json.gz)
+retains exact plans, workflow bytes, tool prerequisites, controls, and structured desktop results.
+Evidence bytes: `26778`; SHA-256:
+`f5755e11392506471c3461675c86b9bef97099f64eb841c0f296270beb8bebdd`.

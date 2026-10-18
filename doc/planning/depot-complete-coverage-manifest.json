@@ -1445,6 +1445,23 @@
       "workflowCommit": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
       "conclusion": "failure",
       "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz"
+    },
+    {
+      "profile": "desktop-remaining-sessions",
+      "run": "0jpk5bwpvs",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+      "structuredPassed": 41,
+      "structuredFailed": 1,
+      "skipped": 0,
+      "pngFiles": 90,
+      "sourceAssertionsEdited": false,
+      "schedulerAdaptation": true,
+      "cleanup": {
+        "containerAbsent": true,
+        "overlayWritesDiscarded": true
+      },
+      "evidence": "doc/audit/depot-current-host-controls-admission-2026-10-18.evidence.json.gz"
     }
   ],
   "familySummary": {
