@@ -379,7 +379,7 @@ function leadingBackticksOf({ text, }: { readonly text: string; },): number {
  What pads the content of inline code on each side: `spaces-and-line-endings` for the characters CommonMark reads as a space (a space,
  and each line ending once its line endings are turned into spaces), and `spaces` for a literal space alone, which is how the
  consistency pass read it before line endings padded code and how a recount of an artifact written then reads it
- (\`artifactGenerationReadsLineEndingsAsCodePadding\`, \`artifact-two-lane-contract.ts\`).
+ (`artifactGenerationReadsLineEndingsAsCodePadding`, `artifact-two-lane-contract.ts`).
  */
 export type CodePadding = 'spaces' | 'spaces-and-line-endings';
 
