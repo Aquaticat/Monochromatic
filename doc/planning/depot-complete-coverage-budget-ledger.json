@@ -1345,7 +1345,7 @@
   "activeReservation": {
     "profile": "public-host-controls",
     "provider": "github-public-standard",
-    "workflowSha": "334a5b75f376eb467e30b426a14369690bc2795f",
+    "workflowSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
     "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "resourceShape": {
       "maximumParallelJobs": 1,
@@ -1393,7 +1393,8 @@
         }
       ]
     },
-    "reservationUsd": 0
+    "reservationUsd": 0,
+    "preflightEvidence": "doc/audit/depot-current-host-controls-admission-2026-10-18.evidence.json.gz"
   },
   "nominalMeasuredGithubElapsedUsd": 1.1898000000000002,
   "conservativeCompletedGithubRoundedMinuteUsd": 1.4880000000000009,

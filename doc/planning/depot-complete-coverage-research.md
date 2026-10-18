@@ -1529,3 +1529,20 @@ The [sealed host admission evidence](../audit/depot-current-host-controls-admiss
 retains exact plans, workflow bytes, tool prerequisites, controls, and structured desktop results.
 Evidence bytes: `26778`; SHA-256:
 `f5755e11392506471c3461675c86b9bef97099f64eb841c0f296270beb8bebdd`.
+
+### Bounded host bootstrap correction before dispatch
+
+Prepared harness `334a5b75f376eb467e30b426a14369690bc2795f` was not dispatched.
+Each original bootstrap script measured 114331 characters.
+The current GitHub workflow syntax source limits each `run` to 21000 characters.
+The corrected harness `c50ed764237d45d5fc7aa123e86b3dc43891e9da` emits repeated task bodies at runtime
+and writes immutable configuration in a separate bounded step.
+Actual bootstrap execution verifies the generated task bytes are exactly equal;
+Mise parsing, Node syntax, source/finalizer positive controls,
+a tab/newline filename, a materialized-working-byte control,
+a positive LFS-pointer control, and rejection of a tracked-byte mutation all pass.
+The frozen application is not executed by these disposable local harness controls.
+No cloud allocation occurred for the superseded preparation.
+The public reservation remains USD0 and the separate Depot reservation remains USD1.92.
+The updated admission gzip is 25554 bytes, SHA-256
+`c25fc9c62a39f31922736e61ba53fe71217c96e0c77497a613543962331a5ef3`.
