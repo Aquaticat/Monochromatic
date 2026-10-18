@@ -46,6 +46,7 @@ const run = spawnSync('cargo', ['nextest', 'run', 'ui_tests::ui', '--no-fail-fas
 if (run.error) throw run.error;
 for (const name of readdirSync(scratch)) {
   if (name.endsWith('.stage-id.stderr')) {
+    // The harness pads each golden file with a blank line; the commit policy trims it again, and the test pads it back.
     copyFileSync(join(scratch, name), join('tests/ui', name.replace('.stage-id.stderr', '.stderr')));
     console.log('blessed ' + name);
   }
