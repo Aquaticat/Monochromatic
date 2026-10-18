@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, readFileSync, writeFileSync, statSync, existsSync, openSync, closeSync, fsyncSync, renameSync } from 'node:fs';
+import { chmodSync, mkdirSync, readFileSync, writeFileSync, statSync, existsSync, openSync, closeSync, fsyncSync, renameSync, copyFileSync, statfsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { strict as assert } from 'node:assert';
@@ -9,7 +10,7 @@ import { root, prefix, evidence, env, sha, run } from './reuse-context.mjs';
 //region Install only the checksum-audited research compiler wrapper, using the image's locked toolchain
 assert(process.env.DEPOT_CACHE_TOKEN);
 const phase = process.env.REUSE_PHASE;
-assert(['seed', 'warm', 'inputs', 'target'].includes(phase));
+assert(['seed', 'warm', 'inputs', 'target', 'diagnostic'].includes(phase));
 const project = join(root, 'package/git-policy/cli');
 run({ name: 'frozen-rust-source-admission', command: 'git', args: ['diff', '--exit-code', 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', '--', 'package/git-policy/cli', 'package/cli/forbidden-strings', 'package/rust-module/forbidden-regex', 'package/rust-module/jsonc-edit'] });
 const disk = '/mnt/aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1';
@@ -88,7 +89,29 @@ function consume({ label, expected = 'success', features = [] }) {
 //endregion
 
 try {
-  consume({ label: 'native-' + phase });
+  if (phase !== 'diagnostic') consume({ label: 'native-' + phase });
+  if (phase === 'diagnostic') {
+    const archive = join(evidence, 'diagnostic-native-nextest.tar.zst');
+    const help = run({ name: 'nextest-archive-help', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'archive', '--help'], childEnv: buildEnv });
+    assert(help.log.includes('--archive-file'));
+    run({ name: 'diagnostic-build-and-archive-native-tests', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'archive', '--locked', '--offline', '--lib', '--test', 'native_binary', '--test', 'native_candidates', '--archive-file', archive], cwd: project, childEnv: buildEnv, limit: 480_000 });
+    const members = run({ name: 'diagnostic-nextest-archive-members', command: 'tar', args: ['--list', '--zstd', '--file', archive] }).log.trim().split('\n');
+    assert(members.every(name => !name.startsWith('/') && !name.split('/').includes('..')));
+    const gitArchive = join(evidence, 'diagnostic-git-2.56.0.tar.zst');
+    run({ name: 'diagnostic-archive-required-git-prefix', command: 'tar', args: ['--create', '--zstd', '--file', gitArchive, '--directory', prefix, 'git-2.56.0'], limit: 60_000 });
+    const tools = join(privateRoot, 'diagnostic-host-tools');
+    mkdirSync(tools, { recursive: true });
+    const nextestPath = run({ name: 'diagnostic-nextest-binary-path', command: 'mise', args: ['which', 'cargo-nextest'], childEnv: buildEnv }).log.trim();
+    copyFileSync(nextestPath, join(tools, 'cargo-nextest'));
+    copyFileSync(linterPath, join(tools, 'monochromatic-lint'));
+    const toolsArchive = join(evidence, 'diagnostic-host-tools.tar.zst');
+    run({ name: 'diagnostic-archive-host-tools', command: 'tar', args: ['--create', '--zstd', '--file', toolsArchive, '--directory', tools, 'cargo-nextest', 'monochromatic-lint'], limit: 60_000 });
+    const replay = run({ name: 'diagnostic-archive-local-lock-cohort', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'run', '--archive-file', archive, '--extract-to', join(privateRoot, 'diagnostic-extract'), '--workspace-remap', project, '--no-fail-fast', '--filterset', 'test(real_index_lock::tests::)'], cwd: project, childEnv: buildEnv, expected: 'observe', limit: 120_000 });
+    const bundles = [archive, gitArchive, toolsArchive].map(path => ({ name: path.slice(evidence.length + 1), bytes: statSync(path).size, sha256: sha(readFileSync(path)) }));
+    assert(bundles.every(item => item.bytes <= 512 * 1024 * 1024));
+    const filesystem = [tmpdir(), root].map(path => { const fs = statfsSync(path, { bigint: true }); return { path, type: fs.type.toString(), blockSize: fs.bsize.toString() }; });
+    writeFileSync(join(evidence, 'diagnostic-archive-manifest.json'), JSON.stringify({ purpose: 'Failing-test diagnostic transport only, never success-only target-cache publication', baseSourceSha: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', producerRoot: root, sourceFiles, rootPolicySha256: sha(readFileSync(join(root, 'cli-git.config.jsonc'))), imageDigest: process.env.REUSE_IMAGE_DIGEST, rustc: run({ name: 'diagnostic-rustc-identity', command: 'mise', args: ['exec', 'rust', '--', 'rustc', '--version', '--verbose'], childEnv: buildEnv }).log, nextestVersion: '0.9.148', nextestSourceCommit: 'cd1d6d5467322dbc0d39a80cb671d000ac302798', nextestBinarySha256: sha(readFileSync(nextestPath)), gitSource: 'a018953688f1b10bddf91bff8747068f5f4746a4', gitPrefix: dirname(dirname(selectedGit)), gitBinarySha256: sha(readFileSync(selectedGit)), linterBinarySha256: sha(readFileSync(linterPath)), filesystem, localArchiveReplayExitStatus: replay.record.exitStatus, bundles, members, compileTimeManifestPathCaveat: 'config_repository_tests uses env!(CARGO_MANIFEST_DIR); workspace-remap does not prove that embedded strings are rewritten. Replacement-lock cases use runtime temporary fixtures.' }, null, 2) + '\n');
+  }
   if (phase === 'seed') {
     const finalArchive = join(disk, 'immutable-target.tar.zst');
     const finalManifest = join(disk, 'immutable-target.json');
