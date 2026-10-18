@@ -54,10 +54,39 @@ after a fresh JavaScript build against logger `0.4.2`.
 The emitted policy bundle is `native-policy-api-CtuEfa81.mjs`.
 The logger publishing commit `3befa69c14` is on `origin/main`;
 automatic npm release run `39104844467` has started.
-The new complete configured-host replays are running with explicit artifact receipts:
+The new complete configured-host replays pass with explicit artifact receipts:
 faithful fixture `pi-mimo-failure-rpc-7vxnGu` and fragmented fixture `pi-mimo-failure-rpc-LD83ST`.
 Their logs are `faithful-logger042-mmaT8k.log` and `fragmented-logger042-mmaT8k.log` in the current scratch.
-The final native verification matrix is also running as `native-logger042-matrix.log`.
+Both complete all 52 calls with 62 live Luna requests, zero selectors, exit 0 and no termination signal.
+Both actual payload audits pass their positive controls and find no excluded structured fields.
+The final native verification matrix passes as `native-logger042-matrix.log`.
+The configured prohibition, Stop, cancelled-confirmation and abort controls all withhold both members.
+Their logs are `prohibition-logger042-mmaT8k.log` in the older scratch
+and `configured-stop-logger042.log` in the current scratch.
+The additional `final-lifecycle` task passes host lifecycle, then fails session-action mode `tree`:
+`SourceCollectionError: Run message data has an unsupported prototype` while retaining a real navigation event.
+The private `session-prototype-probe` task identifies the rejected field and runtime kind before any repair.
+This additional failure prevents starting MiMo's lint edits yet.
+
+The automatic logger release run `39104844467` fails publishing with
+`ERR_PNPM_FAILED_TO_PUBLISH` and HTTP 404, matching the recorded `0.4.1` incident.
+The established targeted workflow is dispatched as run `39105453035`,
+but its pack step fails because `npm:module:pack` no longer exists in the generated root Mise config.
+`file-enforcer.config.ts` owns `mise.toml` from `mise.no-env.toml`.
+Restore the established pack/publish tasks in that source, regenerate only the managed root config,
+then repeat the targeted logger workflow and verify a registry consumer.
+Do not claim `0.4.2` is published yet.
+
+The stderr inventory is retained as `final-stderr-receipt.json` with the original raw files.
+It includes deliberate private `nativeRunReserve` stack probes, a Synthetic catalog route rejected by the offline hook,
+and tagged `SourceCollectionError: Collection cancelled` after deliberately withholding a group.
+Those are distinct from bare shutdown errors; the first broad error-word audit falsely treated probe stacks as failures.
+The direct connectivity pilot also reveals Pi's settings reader needs a write lock even to read project settings.
+This project's current `.pi/settings.json` contains only `_comment`, with no packages or extensions.
+The prepared direct MiMo controller now shadows the project `.pi` directory with a private writable copy,
+preserving the original files and allowing the actual settings reader to lock them.
+The persistent controller and atomic command sender are `mimo-rpc-session` and `mimo-rpc-command`
+in the current scratch; they are prepared but have not started lint editing.
 The corrected process-consumer audit detects both live `/fixture-node` hosts by Pi title and fixture inode.
 Cleanup must wait for every consumer to terminate.
 
