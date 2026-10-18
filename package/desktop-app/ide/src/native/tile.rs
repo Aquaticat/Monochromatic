@@ -266,6 +266,8 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         Ok(built) => built,
         Err(error) => {
             tracing::error!(%error, "source tile build failed");
+            // The job is over: the poll may stop, and a placement for the same tile may be queued again.
+            state.borrow_mut().tile_job = None;
             window.set_error_message(SharedString::from(format!(
                 "Cannot render source: {error:#}"
             )));
@@ -300,7 +302,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         {
             current.tiles_discarded += 1;
         }
-        if current.tile_job == Some(built.bounds) {
+        if current.tile_job == Some(built.requested) {
             current.tile_job = None;
         }
         // A tile is still wanted when the window waits for one: the displayed tile stays on screen until it arrives,
@@ -338,7 +340,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     current.count = bounds.count;
     current.clip = bounds.clip;
     current.scroll_wanted = None;
-    if current.tile_job == Some(bounds) {
+    if current.tile_job == Some(built.requested) {
         current.tile_job = None;
     }
     #[cfg(debug_assertions)]

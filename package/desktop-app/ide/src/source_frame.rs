@@ -9,7 +9,7 @@ use crate::document::Document;
 /// In-file find ranges are painted from the same shaped rows as selection.
 use crate::find::FindRanges;
 /// Physical tile geometry determines materialized rows and font scale.
-use crate::shaped_text::Viewport;
+use crate::shaped_text::{Clip, Viewport};
 /// Syntax spans belong to the source paint key even when text is unchanged.
 use crate::source_style::SourceStyles;
 /// Palette colors affect pixels but not caret geometry.
@@ -143,6 +143,22 @@ impl FrameStamp {
             annotations: Arc::new(Visible::default()),
             annotation_colors: None,
         };
+    }
+
+    /// What:
+    ///  Replace the clip of this stamp's viewport.
+    /// Why:
+    ///  The shaper cuts a frame to the raster limit when the lines are taller than the window's map held,
+    ///  and the frame's identity must name the clip it was really painted with.
+    ///  The stamp is consumed and returned so existing callers stay unchanged.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// withClip(clip?: Clip): FrameStamp;
+    /// ```
+    pub fn with_clip(mut self, clip: Option<Clip>) -> Self {
+        self.viewport.clip = clip;
+        return self;
     }
 
     /// Replace the in-file find ranges of this stamp;

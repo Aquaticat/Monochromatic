@@ -29,6 +29,9 @@ mod job;
 ///  and the test gates that hold it.
 mod worker_thread;
 
+/// The test switch that makes the next build refuse to paint.
+#[cfg(test)]
+pub(super) use job::FAIL_NEXT_BUILD;
 /// The tile types and the construction the window thread and the minimap worker also use.
 pub(super) use job::{TileBuilt, TileJob, build_tile, same_typography};
 /// Test gates that hold a build or a pass chunk in flight.
