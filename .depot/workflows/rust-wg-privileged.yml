@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         persist-credentials: false
-        fetch-depth: 64
+        fetch-depth: 96
         clean: false
     - name: Bind prepared image to its actual captured manifest
       run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
