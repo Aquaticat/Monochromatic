@@ -143,6 +143,22 @@ The 32-CPU/64-GB rate is USD 0.08 with multiplier 2;
 Larger builders require Startup or Business.
 Both the pricing page and build overview bill per minute tracked per second.
 
+The [build-parallelism guide][build-parallelism] establishes separate concurrent native builders per architecture.
+The autoscaling guide publishes the regular per-minute rate for additional builders.
+However,
+the inspected public documents do not state an explicit multi-platform debit equation.
+The CLI's `pkg/helpers/buildlist.go` reports `finishedAt - createdAt` as build duration,
+which is a request envelope rather than an architecture-specific usage counter.
+Its machine source sends health reports separately per architecture,
+but does not expose the private billing calculation.
+No architecture-specific billed interval was observed.
+
+For conservative reservations,
+model separate builder intervals rather than crediting parallelism as reduced aggregate compute.
+When only a request envelope is retained,
+multiply it by the maximum admitted architecture-builder count.
+Keep this model assumption separate from a proven invoice-debit rule.
+
 The earlier BuildKit campaign correctly reserved two builders at USD 0.04/minute each.
 Its retained 403,938 milliseconds are container-build request windows,
 not summed per-architecture builder intervals.
@@ -213,3 +229,4 @@ must apply each entitlement to its own admitted workload and meter.
 [runners]: https://depot.dev/docs/github-actions/runner-types
 [sdk]: https://depot.dev/docs/api/sandbox-sdk-reference
 [agents]: https://depot.dev/docs/agents/overview
+[build-parallelism]: https://depot.dev/docs/container-builds/build-parallelism

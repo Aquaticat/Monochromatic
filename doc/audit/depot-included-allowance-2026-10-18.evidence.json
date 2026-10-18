@@ -7,9 +7,9 @@
   "publicPricingObservedAt": "2026-10-18T12:23:28.074Z",
   "sourceArchive": {
     "path": "doc/audit/depot-included-allowance-2026-10-18.sources.json.gz",
-    "bytes": 79987,
-    "sha256": "2a1d025bb0c1d102c53832f4625ec5447a32858894264e0b3f0aebbf9ed83848",
-    "uncompressedBytes": 532347
+    "bytes": 112370,
+    "sha256": "197dac272cc047780d092b6b3740c61091805a0aa7b87211cd4406ec1ba784c0",
+    "uncompressedBytes": 651963
   },
   "liveCapture": {
     "path": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
@@ -194,7 +194,17 @@
       "mistakenSingleBuilderRepricingUsd": 0.269292,
       "retracted": true
     },
-    "actualInvoiceClaimed": false
+    "actualInvoiceClaimed": false,
+    "multiplatformMeterBoundary": {
+      "dedicatedParallelArchitectureBuildersDocumented": true,
+      "regularScaledBuilderRateDocumented": true,
+      "explicitMultiArchitectureDebitEquationFound": false,
+      "cliListedDurationIsCreatedToFinishedEnvelope": true,
+      "architectureSpecificBilledIntervalsObserved": false,
+      "privateBillingAlgorithmObserved": false,
+      "reservationAssumption": "Sum admitted per-builder interval bounds; if only a request window is retained, multiply it by maximum admitted builder count",
+      "sourceArchiveMember": "multiplatformMeter"
+    }
   },
   "storage": {
     "combinedProducts": [
