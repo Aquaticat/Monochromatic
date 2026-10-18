@@ -685,12 +685,18 @@ A test file covering sync matchers but skipping async matchers is the same as no
  The rule the agent must own stays (the hedge-phrase list);
  the fact that a hook backstops it is omitted.
 
-`ccsr`'s forced-continuation detector is the one exception to that reasoning,
- and the exception proves the rule.
- It reads none of the response text,
- so there is no surface pattern to swap:
- knowing it exists cannot help an agent rewrite its way past it,
- and satisfying it means doing the work.
+`ccsr`'s forced-continuation detector was the one exception to that reasoning while it read none of the response text:
+ there was no surface pattern to swap,
+ so knowing it existed could not help an agent rewrite its way past it,
+ and satisfying it meant doing the work.
+ Since 2026-10-18 it asks Luna what situation the final message describes
+ (announces a next step, waits on background work, waits on the user, pauses, or is closed),
+ so it now conditions on wording too,
+ and the reasoning for not naming it applies again.
+ Two properties keep it from being a pure wording gate:
+ the state-based releases (depth limit, no tool call since the last block) still read no text,
+ and a background wait is blocked only when no background task is running,
+ which is state the agent cannot rewrite.
  Every other detector conditions on wording,
  which is exactly why naming them would let an agent rewrite around them.
 
