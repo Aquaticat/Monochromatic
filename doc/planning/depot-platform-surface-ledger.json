@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T14:52:49.847Z",
+  "updatedAt": "2026-10-18T14:56:51.182Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -1503,7 +1503,7 @@
       "family": "ci",
       "applicability": "Native Linux workflow execution, sizing, architecture labels and separate included CI allowance",
       "retrievalValidated": true,
-      "reviewState": "Current deployed source explicitly establishes2CPU/8GB included-minute baseline and CPU multipliers; actual orchestration receipts linked separately; repository ARM functional profile remains queued",
+      "reviewState": "Current deployed source establishes2CPU/8GB included-minute baseline and CPU multipliers; actual orchestration receipts separate; ARM functional owners completed in p4xj5dsh3s; complete page reserved for parent source pass",
       "runtimeEvidence": [
         "doc/audit/depot-native-orchestration-2026-10-18.evidence.json",
         "doc/audit/depot-included-allowance-2026-10-18.evidence.json"
@@ -2293,8 +2293,20 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "a737fa19b22e37ac94213c48d0f2e521280667f7fcc1d2eb6b7ad174f9b7b2ff",
+        "findings": [
+          "Project token recommended; user token spans all projects and organizations allowed to its user",
+          "EC2 and Lambda coordinators supported; Lambda lacks privileged Docker daemon and cannot load locally",
+          "Lambda can remotely build and push using Docker authentication configuration; public/private registry IAM is a separate permission boundary",
+          "Sample ECR IAM uses broad Resource wildcard and is not an adopted least-privilege policy"
+        ],
+        "use": "No frozen CodeBuild configuration; remote builder portability only",
+        "limits": "No AWS resource, secret, IAM policy or external registry created"
+      }
     },
     {
       "title": "Bitbucket Pipelines",
@@ -2323,8 +2335,19 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "740ae4543783d1e7b6ee10f268f185ae9755f5fc40244913662a88fc06de09c2",
+        "findings": [
+          "Static project or user token injected as repository variable",
+          "Docker service in examples supports docker login/local Docker commands; remote BuildKit computation is a distinct service",
+          "Multiarch, push and load examples share the CLI exporter contract"
+        ],
+        "use": "No frozen Bitbucket pipeline; no new coordinator adoption implied",
+        "limits": "Provider variable/trust and Docker daemon integration unexercised; password-on-argv samples not copied"
+      }
     },
     {
       "title": "Buildkite",
@@ -2354,8 +2377,19 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "f7ef43f66f0c25d0c796ff8fc37a4c8159fead4ba246ee42c2f2481b0c36472f",
+        "findings": [
+          "Project trust relationship plus Buildkite OIDC recommended; static project/user token alternative",
+          "CLI detects Buildkite agent OIDC context after explicit trust setup",
+          "Agent hook credentials and local Docker loading are separate from remote image computation"
+        ],
+        "use": "No frozen Buildkite pipeline; possible external coordinator interoperability",
+        "limits": "No Buildkite agent/trust/token/hook or registry configured"
+      }
     },
     {
       "title": "CircleCI",
@@ -2387,8 +2421,20 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "91c301228ff42a3c755a6b2e6f8d2fc2f383372374839a78bb6fb96edd9e2b73",
+        "findings": [
+          "Project trust relationship plus CircleCI OIDC recommended; static project/user token alternatives",
+          "Both machine and Docker executors can coordinate remote builds",
+          "setup_remote_docker is needed for local Docker commands, not an unconditional requirement for remote computation",
+          "Multiarch, push and local load examples depend on corresponding exporter/daemon capabilities"
+        ],
+        "use": "No frozen CircleCI configuration; preserve source-only portability boundary",
+        "limits": "Executor, OIDC trust and local Docker integration unexercised"
+      }
     },
     {
       "title": "Container builds in Depot CI",
@@ -2430,8 +2476,23 @@
       "family": "container-integrations",
       "applicability": "Direct complementary-pool build route",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [
+        "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json"
+      ],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "f72b06d2c1c4abba3c108f0102d82ead1f5daddaa714480f00e80a3f34ff6ef1",
+        "findings": [
+          "Trusted native jobs receive short-lived reserved DEPOT_TOKEN for builds and org registry; fork PR jobs do not",
+          "Injected DEPOT_TOKEN overrides an existing secret with that name; project trust or stored token unnecessary for this route",
+          "save stores by build project; push with explicit org-hosted repository is a distinct address/export operation",
+          "Build-push action, Bake action and direct CLI variants are documented; ordinary no-output build is not a runnable export",
+          "External AWS/GCP/Azure role and registry authentication remain additional trust configurations"
+        ],
+        "use": "Directly relevant native CI to BuildKit integration; dedicated owned job-token campaign admitted and dispatched separately",
+        "limits": "Local-user builds and owned pull-token consumers are not automatic native-auth proof; no external cloud role or registry auth claim"
+      }
     },
     {
       "title": "Fly.io",
@@ -2459,8 +2520,20 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "83d9f4dcb5c1d1fd52471f5e308908a0f9489c0069aaeafc7c1772ea5644eb32",
+        "findings": [
+          "Fly CLI --depot and --build-depot integrate through Fly without connecting a Depot account",
+          "Independent Depot-account path builds/pushes to Fly registry after flyctl auth docker",
+          "Fly deployment/machine creation is a separate operational action from image production",
+          "Fly-organization shared caching claim does not establish debit against this Developer plan"
+        ],
+        "use": "No frozen fly.toml; deployment product is not required to expand repository CI",
+        "limits": "No Fly account/app/registry credential or deployment; Fly billing and Depot allowance interchange not established"
+      }
     },
     {
       "title": "Container builds in GitHub Actions",
@@ -2497,8 +2570,25 @@
       "family": "container-integrations",
       "applicability": "Direct complementary-pool build route",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+        "doc/audit/depot-service-containers-2026-10-18.evidence.json"
+      ],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "78d0f72f2f886bdb0062cfba923d9a75510acc4bfa7bbccd7d70716f2041847d",
+        "findings": [
+          "Remote container builds and Depot-managed GitHub runners are separate products",
+          "OIDC route requires explicit project trust plus id-token write; no trust change made",
+          "After first successful use a GitHub trust is repository-identity bound across rename/transfer; this is documented, not exercised here",
+          "Build action, Bake action and direct CLI routes inherit or accept tokens; setup-action oidc input defaults false",
+          "Action Git context default differs from checked-out path context and can omit local edits unless context is explicit",
+          "Load needs a compatible local Docker consumer; save and SBOM/provenance exports have separate artifacts"
+        ],
+        "use": "Actual frozen GitHub Actions coordinator exists; independent local-auth BuildKit campaign and image consumers are retained",
+        "limits": "No project OIDC trust or fork-token security probe; using Depot GHA compute does not itself prove remote-builder authorization"
+      }
     },
     {
       "title": "GitLab CI",
@@ -2529,8 +2619,20 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "c3c2d26becefc195209ad574a56767b45448266a5b41d4300b9aa1aff17b2074",
+        "findings": [
+          "Current document recommends GitLab OIDC with configured namespace/project trust",
+          "ID token variable DEPOT_OIDC_TOKEN uses audience https://depot.dev; protected-ref restriction checks ref_protected true when enabled",
+          "DOCKER_AUTH_CONFIG alternative avoids Docker-in-Docker for remote push",
+          "Docker-in-Docker is an alternative for local Docker commands; source samples are not current hardened daemon baselines"
+        ],
+        "use": "No frozen GitLab CI configuration; current documented additional OIDC provider merits chronology reconciliation",
+        "limits": "No GitLab trust/variable/deploy token, protected-ref control, registry or coordinator executed"
+      }
     },
     {
       "title": "Google Cloud Build",
@@ -2558,8 +2660,20 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "88252792c2d5bb0af74dffb4b9a70ee12735b7238f56fb015c9f08bac5f1f6e0",
+        "findings": [
+          "Project token recommended; user token alternative; injected through GCP Secret Manager",
+          "Official CLI container image can coordinate remote builds and push to Artifact Registry",
+          "Local load example still requires reachable compatible Docker daemon",
+          "Floating CLI latest in samples is not an immutable qualification"
+        ],
+        "use": "No frozen Cloud Build configuration; no GCP coordinator needed for current owners",
+        "limits": "No GCP secret/service account/registry/deployment or containerized-CLI integration exercised"
+      }
     },
     {
       "title": "Jenkins",
@@ -2588,8 +2702,19 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "79e594def0ecac515294ec204e82641fe46321f84611ce1e758682bf606d2b76",
+        "findings": [
+          "Project token recommended; user token alternative via Jenkins credentials binding",
+          "CLI remote build, multiarch, push and local Docker load documented",
+          "Global credential-store example and docker password argv are not an adopted scoping design"
+        ],
+        "use": "No frozen Jenkinsfile; optional external coordinator recipe only",
+        "limits": "No Jenkins credential/agent/daemon or registry integration executed"
+      }
     },
     {
       "title": "Travis CI",
@@ -2621,8 +2746,19 @@
       "family": "container-integrations",
       "applicability": "Ecosystem alternative; inspect auth and behavior without adopting another CI provider",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed integration page read; authentication, coordinator/daemon, exporter and repository applicability distinguished",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:56:51.182Z",
+        "sourceSha256": "150611ec1a1b3c45d74e19686d4a114513ad4c87675b74738c00500fea107ebc",
+        "findings": [
+          "Static project/user token injected through repository environment settings",
+          "Docker service examples support local Docker login and load, distinct from remote compute",
+          "Multiarch, push/load examples share ordinary CLI behavior"
+        ],
+        "use": "No frozen Travis configuration; optional coordinator portability only",
+        "limits": "No Travis environment, Docker daemon or registry setup; password argv samples not copied"
+      }
     },
     {
       "title": "Container build logs",
@@ -2934,9 +3070,9 @@
         "sourceSha256": "3cbc1940cc6e7160a97597e5c5274b44c614b41555003396ea8fa5d4a2fc74f0",
         "repositoryUse": "No owned Maven project marker; Gradle publication is a separate client",
         "findings": [
-          "Gradle template uses Java21/Gradle8.10, copies build.gradle and explicitly skips tests",
-          "Frozen Kotlin DSL, settings, catalogs/wrappers/plugins and JDK/tool identities need their owning configuration",
-          "Maven .m2/go-offline/package patterns are a different build system"
+          "Java21/Maven3.9.11 template caches .m2 and separates dependency:go-offline from package with tests skipped",
+          "No frozen Maven pom or .mvn marker; Gradle Maven publication is not a Maven build owner",
+          "Template skips are not repository owner tests and no Maven container was invented"
         ],
         "boundary": "Actual Gradle HTTP cache/Kotlin tests and Android builds do not qualify this unexecuted BuildKit Gradle/Maven recipe"
       }
@@ -16518,5 +16654,43 @@
         "package/rust-module/jsonc-edit/Cargo.toml"
       ]
     }
+  },
+  "containerIntegrationInventory": {
+    "measuredAt": "2026-10-18T14:56:51.181Z",
+    "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "trackedPaths": 13860,
+    "listingSha256": "d79ceefcbb2324a8891cb7c3d466856d5b3387d5d74d53d59e13f2a5c751cc21",
+    "inventory": {
+      "awsCodeBuild": [],
+      "bitbucket": [],
+      "buildkite": [],
+      "circleci": [],
+      "fly": [],
+      "github": [
+        ".github/workflows/cache-prune.yml",
+        ".github/workflows/cargo-publish.yml",
+        ".github/workflows/claude.yml",
+        ".github/workflows/codeql.yml",
+        ".github/workflows/forbidden-strings.yml",
+        ".github/workflows/fs-id.yml",
+        ".github/workflows/kotlin-linter-publish.yml",
+        ".github/workflows/logger-fuzz.yml",
+        ".github/workflows/music-player-alpine.yml",
+        ".github/workflows/music-player-release.yml",
+        ".github/workflows/music-player-windows.yml",
+        ".github/workflows/npm-publish.yml",
+        ".github/workflows/npm-release.yml",
+        ".github/workflows/pnpr-publish.yml",
+        ".github/workflows/readonly-semantic-bridge.yml",
+        ".github/workflows/scorecard.yml",
+        ".github/workflows/toml-edit-fuzz.yml"
+      ],
+      "gitlab": [],
+      "googleCloudBuild": [],
+      "jenkins": [],
+      "travis": [],
+      "nativeDepot": []
+    },
+    "scope": "Complete immutable tracked filename inventory; absence is not a ban or absence of configured/downloaded third-party tools"
   }
 }
