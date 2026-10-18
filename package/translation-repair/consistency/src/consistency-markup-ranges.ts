@@ -376,6 +376,16 @@ function leadingBackticksOf({ text, }: { readonly text: string; },): number {
 }
 
 /**
+ The characters CommonMark reads as a space in the content of inline code: a space, and each line ending once its line endings are
+ turned into spaces.
+ */
+const SPACES_AND_LINE_ENDINGS: ReadonlySet<string> = new Set([
+  ' ',
+  '\n',
+  '\r',
+],);
+
+/**
  How many units of one side of the content of inline code are a single space or line ending, which CommonMark reads as one space.
 
  @param text - the content as written
@@ -490,13 +500,15 @@ function codeContentOf(
    */
   const holdsNoSpace = Array.from(written,)
     .some(function isNoSpace(character,): boolean {
-      return (character !== ' ') && (character !== '\n') && (character !== '\r');
+      return !SPACES_AND_LINE_ENDINGS.has(character,);
     },);
   /**
    Whether one space or line ending pads each side: both ends are spaces or line endings and the content holds a character that is
    neither.
    */
-  const padded = (padding.start > 0) && (padding.end > 0) && holdsNoSpace;
+  const padded = (padding.start > 0)
+    && (padding.end > 0)
+    && holdsNoSpace;
   return padded
     ? {
       start: start + padding.start,
