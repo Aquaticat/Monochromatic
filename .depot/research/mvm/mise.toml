@@ -14,6 +14,7 @@ class LifecycleProbeFailure extends Error {}
 const source = process.cwd();
 const manifest = JSON.parse(fs.readFileSync('.depot/research/mvm/manifest.json', 'utf8'));
 const harness = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+if (spawnSync('git', ['cat-file', '-e', manifest.applicationBase + '^{tree}'], { stdio: 'ignore' }).status !== 0) execFileSync('git', ['fetch', '--no-tags', '--depth=1', 'origin', manifest.applicationBase], { timeout: 60000 });
 if (execFileSync('git', ['diff', '--name-only', manifest.applicationBase, '--', 'package', 'mise.toml', 'mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'], { encoding: 'utf8' }).trim()) throw new LifecycleProbeFailure('Application source or dependency inputs differ from the frozen base');
 if (process.arch !== 'x64' || os.cpus().length < 4 || os.totalmem() < 15 * 1024 ** 3) throw new LifecycleProbeFailure('Host does not satisfy the declared four-CPU/sixteen-GB VM profile');
 const evidence = join(source, '.depot/research/mvm/evidence');
@@ -31,7 +32,10 @@ const run = (id, command, args, options = {}) => {
   const startedAt = new Date().toISOString();
   const remaining = deadline - Date.now();
   if (!options.cleanup && remaining < 30000) throw new LifecycleProbeFailure('Lifecycle deadline reached with cleanup reserved');
-  const value = spawnSync(command, args, { cwd: source, env: options.environment ?? commandEnvironment, encoding: 'utf8', maxBuffer: 16777216, timeout: options.cleanup ? 30000 : Math.min(options.limit ?? 180000, remaining) });
+  const value = spawnSync(command, args, { cwd: source, env: options.environment ?? commandEnvironment, detached: true, encoding: 'utf8', maxBuffer: 16777216, timeout: options.cleanup ? 30000 : Math.min(options.limit ?? 180000, remaining) });
+  if (value.error?.code === 'ETIMEDOUT' && value.pid) {
+    try { process.kill(-value.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  }
   fs.writeFileSync(join(evidence, id + '.stdout.log'), value.stdout ?? '');
   fs.writeFileSync(join(evidence, id + '.stderr.log'), value.stderr ?? '');
   const record = { id, command: [command, ...args], startedAt, finishedAt: new Date().toISOString(), status: value.status, signal: value.signal, error: value.error?.message ?? null };

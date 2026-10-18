@@ -25,6 +25,7 @@ jobs:
       - run: mise install node pnpm
       - run: mise run prepare:pnpm:install -- --frozen-lockfile
       - run: mise run //.depot/research/mvm:lifecycle
+        working-directory: .depot/research/mvm
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
