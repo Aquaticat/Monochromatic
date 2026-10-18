@@ -7,7 +7,8 @@ jobs:
   gradle:
     runs-on:
       size: 8x32
-      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018@sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8
+      # The digest-shaped reference failed before dispatch; this unique tag is not overwritten.
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1
     timeout-minutes: 15
     env:
       CI: 'true'
