@@ -477,6 +477,99 @@ component identities,
 and published uptime denominators remain under audit.
 No availability percentage is inferred from an incomplete incident count.
 
+## Network integrations and dependency automation
+
+The deployed [egress-filtering contract][egress] permits Linux runner rules for IPs,
+CIDRs,
+and hostnames.
+It documents automatic control-plane allowances,
+loopback access,
+deny-before-allow ordering,
+and DNS results pinned in `/etc/hosts`.
+These filters are incompatible with Tailscale,
+and a root process can change them.
+They are not an isolation boundary against privileged untrusted build code.
+No organization network setting is read or changed in this audit.
+
+The [Tailscale integration][tailscale] covers GitHub runners,
+container builders,
+and native CI jobs as ephemeral nodes.
+It excludes Windows runners.
+Connection requires tailnet ACL changes,
+an OAuth client with auth-key write permission,
+and organization configuration.
+Disconnecting prevents future joins but leaves in-flight jobs connected until completion;
+immediate disconnection requires removing those nodes in Tailscale.
+The custom SDK controls explicitly disabled tailnet joining and do not exercise this integration.
+
+[Private-resource access][private-resources] offers VPN routes as alternatives to static addressing.
+VPC peering and dedicated static outbound addresses require Business deployments.
+Its blanket description of default public addresses as AWS addresses must be reconciled
+with the later Metal rollout before being used as an allowlist specification.
+No current origin-IP inventory or successful private-network consumer is established here.
+
+The current [Dagger integration page][dagger] explicitly marks its engine integration deprecated
+and scheduled for removal.
+Its described implementation creates a separate persistent-cache engine VM,
+requires a Dagger Cloud token,
+and charges USD 0.04 per minute in addition to runner time.
+This is a documented integration with a deprecation notice,
+not an executed Dagger consumer or a reason to create another paid service account.
+
+The [Dependabot integration][dependabot] documents a GitHub self-hosted-runner setting
+and automatic `depot-ubuntu-latest` routing.
+It specifically requires token authentication when Dependabot jobs invoke Depot builds,
+and says their OIDC authentication is unavailable.
+The frozen `.github` tree has workflows but no Dependabot configuration.
+No dependency-update job,
+GitHub setting change,
+or token provision is exercised.
+This page does not establish equivalent behavior for every pull-request workflow authored by a bot.
+
+The [account documentation][account] also exposes a role-contract discrepancy:
+its Member role can manage projects,
+whereas the security page describes a User role that can view projects and build,
+with project management reserved to Owners.
+Those differently named role descriptions must not be collapsed into a proven permission matrix.
+Account and organization deletion are documented as manual support requests.
+No account deletion,
+member change,
+or authenticated role inspection is performed.
+
+## Test candidate and upload identities
+
+The deployed [test-splitting guide][test-split] requires each candidate to match a JUnit `file`
+or `classname` value.
+`timings-type: testname` calculates each candidate's duration from individual test cases;
+it does not document test names as a third candidate identity.
+The guide's Go example therefore supplies package candidates while using individual-case timings.
+
+`split-key` distinguishes independent logical suites and must agree across shards of one suite.
+`report-key` distinguishes multiple report uploads within one job;
+ordinary matrix jobs do not require per-shard report keys.
+The deployed [reporting guide][test-results] describes report keys as upload-invocation deduplication,
+while suites are derived from JUnit content.
+
+Pinned CLI `pkg/cmd/tests/run.go` forwards the split key into candidate selection
+and the report key separately into report upload.
+`proto/depot/testresults/v1/test_results.proto` exposes `split_key`,
+candidate identity,
+and timing identity in `SplitTestsRequest`,
+but no report key.
+It also requires identical candidate sets across shard requests sharing the authenticated execution,
+split key,
+shard count,
+and identity choices.
+This public client source does not decide the private backend's cross-upload history lookup scope.
+
+The current Nextest cohort reports test-specific `testName` values
+but the same `className`,
+`monochromatic-git-policy-cli`.
+Submitting the test names as `classname` candidates does not satisfy the documented JUnit mapping.
+The parent experiment retains the passing physical partitions separately from the zero-timing result
+and is checking the actual binary classname as a positive control.
+No history-weighted per-test Nextest qualification follows from report ingestion alone.
+
 ## Owned BuildKit campaign and exporter boundaries
 
 The [BuildKit checkpoint receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
@@ -998,3 +1091,11 @@ No completion or interview-readiness conclusion is made.
 [ai]: https://depot.dev/docs/ai-at-depot
 [terms]: https://depot.dev/terms-of-service
 [status]: https://status.depot.dev/
+[account]: https://depot.dev/docs/account
+[egress]: https://depot.dev/docs/github-actions/how-to-guides/egress-filtering
+[tailscale]: https://depot.dev/docs/integrations/tailscale
+[private-resources]: https://depot.dev/docs/github-actions/how-to-guides/access-private-resources
+[dagger]: https://depot.dev/docs/github-actions/integrations/dagger
+[dependabot]: https://depot.dev/docs/github-actions/integrations/dependabot
+[test-split]: https://depot.dev/docs/ci/how-to-guides/split-tests
+[test-results]: https://depot.dev/docs/ci/observability/depot-ci-test-results
