@@ -204,31 +204,33 @@ internal val SETTINGS_SWITCH_ON_ICON: ImageVector = settingsIcon(name = "Setting
 /** Cross drawn in the thumb of an off switch. */
 internal val SETTINGS_SWITCH_OFF_ICON: ImageVector = settingsIcon(name = "Settings.SwitchOff", pathData = CLOSE_PATH)
 
-// What:     `private val DESCRIPTION_PATH: String` holds the Material Symbols `description` outline.
+// What:     `private val LICENSE_PATH: String` holds the Material Symbols `license` outline.
 // Why:      The text is the `d` attribute of
-//           `symbols/web/description/materialsymbolsoutlined/description_24px.svg` (weight 400, grade 0, optical
+//           `symbols/web/license/materialsymbolsoutlined/license_24px.svg` (weight 400, grade 0, optical
 //           size 24, unfilled) from google/material-design-icons at commit 49d4db35df873165d6bd6ba09b063c7dafbac2f4,
 //           copied unchanged; Apache 2.0, see `LICENSES/Apache-2.0.txt`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const DESCRIPTION_PATH = "<svg path data>";
+// const LICENSE_PATH = "<svg path data>";
 // ```
-/** SVG path data for the `description` icon on the upstream 960 unit grid, whose y axis starts at -960. */
-private val DESCRIPTION_PATH: String = listOf(
-    "M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320",
-    "l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z",
+/** SVG path data for the `license` icon on the upstream 960 unit grid, whose y axis starts at -960. */
+private val LICENSE_PATH: String = listOf(
+    "M480-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Z",
+    "M240-40v-309q-38-42-59-96t-21-115q0-134 93-227t227-93q134 0 227 93t93 227q0 61-21 115t-59 96v309l-240-80-240 80Z",
+    "m240-280q100 0 170-70t70-170q0-100-70-170t-170-70q-100 0-170 70t-70 170q0 100 70 170t170 70Z",
+    "M320-159l160-41 160 41v-124q-35 20-75.5 31.5T480-240q-44 0-84.5-11.5T320-283v124Zm160-62Z",
 ).joinToString(separator = "")
 
 // What:     `internal val SETTINGS_LICENSES_ICON: ImageVector` is the icon of the Licenses row.
-// Why:      A page of text is the thing the row opens, and `description` is the Material Symbol for a text document.
+// Why:      The desktop Licenses row draws the same `license` symbol, so both products show one icon for the row.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const SETTINGS_LICENSES_ICON = settingsIcon("Settings.Licenses", DESCRIPTION_PATH);
+// const SETTINGS_LICENSES_ICON = settingsIcon("Settings.Licenses", LICENSE_PATH);
 // ```
-/** Document with text lines, the icon of the Licenses row. */
+/** Ribbon badge on a certificate, the icon of the Licenses row. */
 internal val SETTINGS_LICENSES_ICON: ImageVector = settingsIcon(
     name = "Settings.Licenses",
-    pathData = DESCRIPTION_PATH,
+    pathData = LICENSE_PATH,
 )

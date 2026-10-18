@@ -1003,9 +1003,7 @@ at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
   and `check` and `close`,
   for the marks in the switch thumb.
 - `license`,
-  for the Licenses row (desktop).
-- `description`,
-  for the Licenses row of the Android app.
+  for the Licenses row of both apps.
 
 Each app embeds the path data as vector code,
 with no icon font and no network access at run time.

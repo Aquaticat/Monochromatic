@@ -208,7 +208,7 @@ Back returns to Settings; on the unfolded screen Escape does too.
 
 ## Settings icons
 
-The Settings rows carry the Material Symbols `queue_music`, `play_circle`, `autoplay` and `description` icons,
+The Settings rows carry the Material Symbols `queue_music`, `play_circle`, `autoplay` and `license` icons,
 and the switch thumb carries `check` and `close`,
 embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
 The icons are Apache License 2.0 material from `google/material-design-icons`,

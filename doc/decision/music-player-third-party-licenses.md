@@ -668,7 +668,8 @@ The Android app (branch `feat/music-player-android-licenses-row`) does this:
   Its one row is Licenses,
   with the supporting line "Open-source libraries used by this app",
   the 72 dp row form, the 40 dp icon circle and the same group rounding as the other rows,
-  and the Material Symbols `description` icon (same pinned commit as the other Settings icons).
+  and the Material Symbols `license` icon (same pinned commit as the other Settings icons;
+  it was `description` until 2026-10-18, when it became `license` to match the desktop row).
   The row is a button (role Button), a Tab stop after the Playback switch, and Enter and Space open it.
 - The row opens a page of its own on every window width,
   also on the unfolded screen where Settings has two panes:
@@ -695,7 +696,8 @@ The Android app (branch `feat/music-player-android-licenses-row`) does this:
   a build with `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` (the release workflow) still fails on a missing file.
   Checked on 2026-10-18: `:app:thirdPartyLicensesAsset` with the variable and no file failed,
   and `assembleDebug` without the variable and without the file packed the 258 byte note.
-- `desktop-app/bin/third-party-notices.mjs` names the `description` icon in the Android notice.
+- `desktop-app/bin/third-party-notices.mjs` names the `license` icon in both notices
+  (the Android notice named `description` until 2026-10-18).
 
 Measurements on 2026-10-18 (debug APK, Pixel 9 Pro Fold emulator on the host GPU, the real 1,748,364 character file,
 5 repeats each, run from logcat and `dumpsys gfxinfo`):
