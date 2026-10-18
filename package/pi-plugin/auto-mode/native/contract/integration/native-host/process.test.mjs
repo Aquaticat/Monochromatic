@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { createEnvironment } from '../native-batch/environment.mjs';
 
 if (process.env
@@ -10,6 +12,7 @@ if (process.env
   === '1')
   throw new Error('Recursive native CLI fixture is forbidden');
 const env = await createEnvironment();
+const requestReceipt = join(env.options.agentDir, 'native-cli-relevance-requests.json');
 const entry = fileURLToPath(new URL(
   '../../../cli.mjs',
   import.meta.url
@@ -45,7 +48,9 @@ const child = spawn(
       ...process.env,
       PI_OFFLINE: '1',
       PI_AUTO_MODE_CLI_FIXTURE_CHILD: '1',
-      QWEN_TOKEN_PLAN_API_KEY: 'synthetic-local-fixture-only'
+      QWEN_TOKEN_PLAN_API_KEY: 'synthetic-local-fixture-only',
+      AUTO_MODE_LLMGATEWAY_API_KEY: 'synthetic-local-fixture-only',
+      PI_AUTO_MODE_CLI_FIXTURE_REQUESTS: requestReceipt
     },
     stdio: [
       'pipe',
@@ -131,7 +136,7 @@ await using processScope = {
     readNativeState(),
     once(
       child,
-      'exit'
+      'close'
     )
   ]);
   assert.equal(
@@ -148,6 +153,12 @@ await using processScope = {
     '',
     'Native CLI lifecycle must not emit shutdown errors'
   );
+  const requests = JSON.parse(await readFile(requestReceipt, 'utf8'));
+  assert.ok(requests.length > 0, 'Positive control: startup classification must exercise the local transport');
+  for (const request of requests) {
+    assert.equal(request.url, 'https://api.llmgateway.io/v1/decisions');
+    assert.ok(request.questions > 0);
+  }
   console.log(JSON.stringify({
     complete: true,
     actualCliProcess: true,
@@ -157,6 +168,7 @@ await using processScope = {
     model: state.model
       .id,
     externalProviderRequests: 0,
+    localClassificationRequests: requests.length,
     cleanShutdown: true,
     genuineHumanApprovals: 0
   }));
