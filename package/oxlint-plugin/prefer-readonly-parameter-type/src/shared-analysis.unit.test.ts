@@ -43,6 +43,12 @@ const ALIAS_CALLEE_INPUT_SOURCE = "import { relay, } from '../shared/helper.js';
 /** Helper source whose only dependency does not resolve to any file. */
 const UNRESOLVED_HELPER_SOURCE = "import { missing, } from './missing.js';\nexport function inspect(value: { text: string; },): string { return missing(value); }\n";
 
+/** Helper source naming a module through an `import()` type whose argument is not a string literal. */
+const NON_LITERAL_IMPORT_TYPE_HELPER_SOURCE = "export function inspect(value: { text: string; },): string { return value.text; }\nexport type Loaded = import(SpecifierName);\n";
+
+/** Edited dependency body that keeps the callable shape but mutates its parameter. */
+const EDITED_DEPENDENCY_SOURCE = 'export function dependency(value: { text: string; },): string { value.text = value.text.trim(); return value.text; }\n';
+
 /** Helper source that is a global script rather than a module. */
 const SCRIPT_HELPER_SOURCE = 'function globalInspect(value: { text: string; },): string { return value.text; }\n';
 
@@ -85,6 +91,7 @@ type ProjectFixture = {
   readonly compilerOptions: string;
   readonly inputSource: string;
   readonly files: Readonly<Record<string, string>>;
+  readonly include?: string;
 };
 
 /**
@@ -107,7 +114,7 @@ function writeProject({
   mkdirSync(directory, { recursive: true, },);
   writeFileSync(
     join(directory, 'tsconfig.json',),
-    `{"compilerOptions":{${project.compilerOptions}},${INCLUDE}}\n`,
+    `{"compilerOptions":{${project.compilerOptions}},${project.include ?? INCLUDE}}\n`,
   );
   writeFileSync(join(directory, 'input.ts',), project.inputSource,);
   Object.entries(project.files,)
@@ -495,6 +502,87 @@ await describe({
         },);
         expect(stats.sharedSourceCacheHitCount,).toBe(0,);
         expect(stats.directSummaryBuildCount,).toBe(2,);
+        releaseCycle();
+      },
+    },),
+    it({
+      name: 'does not share a file whose import type names its module without a string literal',
+      fn: async () => {
+        using root = disposableFixtureRoot();
+        writeSharedDirectory({
+          root: root.path,
+          files: { 'helper.ts': NON_LITERAL_IMPORT_TYPE_HELPER_SOURCE, },
+        },);
+        /** Counters of the second project, whose helper has a reference no closure can resolve. */
+        const stats = buildBothProjects({
+          root: root.path,
+          first: {
+            name: 'first',
+            compilerOptions: STRICT_COMPILER_OPTIONS,
+            inputSource: INPUT_SOURCE,
+            files: {},
+          },
+          second: {
+            name: 'second',
+            compilerOptions: STRICT_COMPILER_OPTIONS,
+            inputSource: INPUT_SOURCE,
+            files: {},
+            /* The second program holds every file the first held, which is the one case where an
+             * entry that snapshots its whole scope could still validate. */
+            include: '"include":["*.ts","../shared/*.ts","../first/*.ts"]',
+          },
+        },);
+        expect(stats.sharedSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(2,);
+        releaseCycle();
+      },
+    },),
+    it({
+      name: 'does not share a file whose reachable dependency changed content at the same path',
+      fn: async () => {
+        using root = disposableFixtureRoot();
+        writeSharedDirectory({
+          root: root.path,
+          files: {
+            'helper.ts': ALIAS_CALLEE_HELPER_SOURCE,
+            'dependency-a.ts': DEPENDENCY_SOURCE,
+          },
+        },);
+        /** Persistent cache root outside every project. */
+        const cacheRoot = join(root.path, '.effect-cache',);
+        /** Project configuration shared by both builds. */
+        const project: ProjectFixture = {
+          name: 'first',
+          compilerOptions: `${STRICT_COMPILER_OPTIONS},"paths":{"@dependency":["../shared/dependency-a.ts"]}`,
+          inputSource: ALIAS_CALLEE_INPUT_SOURCE,
+          files: {},
+        };
+        buildProject({
+          inputPath: writeProject({
+            root: root.path,
+            project,
+          },),
+          inputSource: project.inputSource,
+          cacheRoot,
+        },);
+        writeSharedDirectory({
+          root: root.path,
+          files: { 'dependency-a.ts': EDITED_DEPENDENCY_SOURCE, },
+        },);
+        /** Counters of a second project reaching the dependency at the same path with new content. */
+        const stats = buildProject({
+          inputPath: writeProject({
+            root: root.path,
+            project: {
+              ...project,
+              name: 'second',
+            },
+          },),
+          inputSource: project.inputSource,
+          cacheRoot,
+        },);
+        expect(stats.sharedSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(3,);
         releaseCycle();
       },
     },),

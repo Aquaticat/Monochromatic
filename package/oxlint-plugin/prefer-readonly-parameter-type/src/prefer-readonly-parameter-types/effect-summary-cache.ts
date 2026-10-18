@@ -406,6 +406,13 @@ export function storeCreatedSummariesForSource({
     omissionReasons,
   },);
   writePersistentEffectSummaries({
+    /* A shared entry is written only when the dependency closure resolved. The cross-project key
+     * lists the module references the parser lists, which leaves out an `import()` type whose
+     * argument is not a string literal; `directModuleDependencies` fails the closure on that node
+     * kind, so a source that reaches one never gets a shared entry. The key and this gate rest on
+     * each other. An unresolved closure also snapshots its whole scope, which keeps it from
+     * validating in a program with another file list, so only a program holding every file of the
+     * first could read it back; `shared-analysis.unit.test.ts` holds that case. */
     address: persistentAddress({
       identity,
       shared: closure.resolved,
