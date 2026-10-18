@@ -32,7 +32,7 @@ try {
   run('owned-init-package-version', 'dpkg-query', ['--show', '--showformat=${binary:Package}\t${Version}\n', 'tini']);
   run('owned-init-package-verify', 'dpkg', ['--verify', 'tini']);
   run('owned-init-version', '/usr/bin/tini', ['--version']);
-  run('owned-init-help', '/usr/bin/tini', ['--help']);
+  run('owned-init-help', '/usr/bin/tini', ['-h']);
   const probe = join(root, 'package/dev-script/task-util/bin/rust-init-probe.mjs');
   const namespace = ['--non-interactive', 'unshare', '--mount', '--pid', '--fork', '--kill-child', '--mount-proc', '--propagation', 'private', '--'];
   run('node-init-orphan-positive-control', 'sudo', [...namespace, node, probe, 'zombie', join(evidence, 'node-init-orphan.json')]);
