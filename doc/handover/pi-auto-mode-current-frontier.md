@@ -65,7 +65,20 @@ the retired extension pipeline and whole-call adapters remain removed.
 
 ## Active MiMo checkpoint
 
-The live controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-dXedQJ`.
+The live controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-q83LlN`.
+Its current fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-eZNsLl`,
+controller command session `74937`.
+Actual resume and RPC compaction pass;
+subsequent real tool groups execute with captured Luna requests.
+The current assignment is the CLI guard,
+its process consumer and `src/native-process-network.unit.test.ts`.
+No completed semantic repair commit exists yet.
+The two changed CLI files contain the earlier formatter's edits.
+The original cancellation/compaction projection files and their tests remain supervisor-owned.
+
+### Original worker and completed progress repair
+
+The original controller pinned `native-release-dXedQJ`.
 Its fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-5F6ed2`.
 The controller command session is `82172`;
 its actionable-state watchers are short-lived;
@@ -136,9 +149,9 @@ Evidence is `confirmed-progress-suite.log` and its bounded-task receipt.
 A private source-copy rebuild removes only the confirmed-approval retention call.
 The maintained `unknown` regression fails with `1 !== 2` and the original callback-revision cause.
 `confirmed-progress-mutant-receipt.json` verifies unchanged production hashes and active publication.
-Next run the execution/ownership/phase safety tasks,
-then restart the RPC worker on the verified runtime with its saved session preserved.
-Add private actual-request capture and exercise RPC compaction before continuing the scoped edits.
+Execution,
+ownership and phase safety tasks subsequently pass in `confirmed-progress-safety.log`.
+The original saved session is preserved across the later captured-runtime restarts.
 
 ### Reopened persisted assistant-content capture failure
 
@@ -175,7 +188,8 @@ the maintained SDK persistence regression fails with the original message.
 `loaded-message-mutant-receipt.json` confirms unchanged production hashes and active publication.
 The qualified `pi` subtrees in `rKKphY` and `hGuAfo` have 513 byte-identical regular files;
 `qualified-sdk-differences.json` records the comparison.
-Actual resumed-session compaction/next-review verification remains pending.
+Actual resumed-session compaction and subsequent tool execution now pass on `q83LlN` in `eZNsLl`.
+Required/excluded provider-payload audit remains pending.
 
 The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
 session `44944`,
@@ -247,12 +261,40 @@ The actual configured resume/compact probe `eZNsLl` also passes on that artifact
 `tokensBefore: 145267`, original callback signal, 108 branch entries,
 and no retained capture diagnostic in its complete stderr at the compact response.
 The next actual tool review is running with MiMo's scoped CLI repair assignment.
-Collection guard mutations and actual provider-payload checks remain pending.
+Four private rebuilt collection mutations fail the maintained regression:
+event role,
+input phase,
+string members and complete own-property retention.
+`compaction-collection-mutants-receipt.json` confirms unchanged production hashes/publication.
+Actual provider-payload checks remain pending.
 The MiMo CLI worker `JTeYFr` has exited with code 139 after V8 heap exhaustion;
 it leaves formatting edits in its assigned pair and no completed repair commit.
 Preserve its original session, stderr and captured requests while diagnosing this separate incident.
 The new scoped worker uses `eZNsLl` after verified manual compaction,
 with the same configured extensions and real Luna transport.
+
+### Reopened growing native snapshot storage
+
+Private bounded probes on `q83LlN` distinguish receipt counts from distinct retained text.
+100,000 repeated query receipts use about 59.5 MB total heap after collection.
+2,000 repeated identical 256-KiB manager inputs use about 12.0 MB total heap.
+2,000 growing-prefix manager inputs use about 268.3 MB total heap.
+The actual native runner reproduces growing-prefix storage with 1,600 `message_update` emissions:
+heap grows from 43,653,184 to 374,210,744 bytes while the final thinking text is 204,800 characters.
+The SDK emits both `message` and `assistantMessageEvent.partial` in this event;
+the probe now uses that exact field layout and the maintained native loader.
+These results establish a storage defect,
+not yet the cause of the separate worker's heap exhaustion.
+All probes use 2-GiB,
+2-CPU disposable containers;
+the probe Node heap is capped at 512 MiB.
+Logs are `input-pool-pressure-queries.log`,
+`input-pool-pressure-same.log`,
+`input-pool-pressure-prefixes.log` and `native-streaming-input-pressure2.log`.
+The new maintained `test:native:streaming-context-capacity` regression preserves original callbacks,
+distinct publications,
+sampled complete before/after snapshots and their hashes while bounding retained storage.
+Run it red before replacing the full-string content cache with shared chunks.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.

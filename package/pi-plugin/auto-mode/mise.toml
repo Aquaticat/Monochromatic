@@ -965,6 +965,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/nativ
 description = "Verify native SDK compaction file sets cross only their declared input boundary"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-compaction-inputs.test.mjs"
 
+[tasks."test:native:streaming-context-capacity"]
+description = "Retain exact original streamed snapshots without complete-prefix storage growth"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-streaming-context-capacity.test.mjs"
+
 [tasks."test:native:retained-context-capacity"]
 description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"
 # The regression reaches the engine string limit before the disposable container's 2 GiB memory limit.
