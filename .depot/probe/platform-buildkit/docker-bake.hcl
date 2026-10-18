@@ -63,3 +63,35 @@ target "ci-node26" {
   output = ["type=image"]
   attest = ["type=provenance,mode=max", "type=sbom,generator=docker.io/docker/buildkit-syft-scanner@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9"]
 }
+
+group "forwarding-graph" { targets = ["source", "evidence", "network-a", "network-b"] }
+target "network-a" {
+  inherits = ["shared"]
+  platforms = ["linux/amd64"]
+  target = "network-a"
+  output = ["type=local,dest=${OUTPUT_DIRECTORY}/network-a"]
+}
+target "network-b" {
+  inherits = ["shared"]
+  platforms = ["linux/amd64"]
+  target = "network-b"
+  output = ["type=local,dest=${OUTPUT_DIRECTORY}/network-b"]
+}
+target "missing-secret" {
+  inherits = ["shared"]
+  platforms = ["linux/amd64"]
+  target = "evidence"
+  contexts = { fixtureinput = "fixture-input" }
+  args = { EXPECTED_SECRET_HASH = SECRET_HASH, EXPECTED_AGENT_NONCE = AGENT_NONCE }
+  ssh = ["fixture=${SSH_SOCKET}"]
+  output = ["type=local,dest=${OUTPUT_DIRECTORY}/missing-secret"]
+}
+target "missing-ssh" {
+  inherits = ["shared"]
+  platforms = ["linux/amd64"]
+  target = "evidence"
+  contexts = { fixtureinput = "fixture-input" }
+  args = { EXPECTED_SECRET_HASH = SECRET_HASH, EXPECTED_AGENT_NONCE = AGENT_NONCE }
+  secret = ["id=fixture,src=${SECRET_FILE}"]
+  output = ["type=local,dest=${OUTPUT_DIRECTORY}/missing-ssh"]
+}

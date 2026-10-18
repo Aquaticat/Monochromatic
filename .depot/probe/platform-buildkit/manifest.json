@@ -151,5 +151,26 @@
     "priorMissingLibraryDiagnostic": "error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory",
     "originalServiceUnchanged": true,
     "priorCiImageRetained": true
+  },
+  "forwardingGraphCampaign": {
+    "targets": [
+      "source",
+      "evidence",
+      "network-a",
+      "network-b"
+    ],
+    "negativeTargets": [
+      "missing-secret",
+      "missing-ssh"
+    ],
+    "syntheticSecret": true,
+    "keylessAgent": true,
+    "privateKeys": false,
+    "network": {
+      "port": 38429,
+      "holdMilliseconds": 20000,
+      "localCollisionPositiveControl": true
+    },
+    "maximumClientMilliseconds": 120000
   }
 }
