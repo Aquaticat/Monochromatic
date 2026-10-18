@@ -134,6 +134,9 @@ async function runGuarded(
     readonly startedBy: StartedBy;
   },
 ): Promise<ChildRun> {
+  /**
+   Scratch directory the case owns.
+   */
   await using scratch = await scratchDir({ prefix: 'task-runner-guard-', },);
   return await runBuiltCommand({
     command: guarded.command,
@@ -171,28 +174,44 @@ export function guardedSuite({ guarded, }: { readonly guarded: GuardedCommand; }
       it({
         name: `REFUSES as stated and exits 6 when the process holds a key and names no command, `
           + `before ${guarded.command} prints anything`,
-        fn: async () => {
-          expect(await runGuarded({ guarded, holdsKey: true, startedBy: 'nothing', },),).toEqual({
-            code: REFUSED_AS_STATED,
-            stdout: '',
-            stderr: guardRefusal({ command: guarded.command, owner: guarded.owner, },),
-          },);
+        fn: async function refusesWithoutMarker(): Promise<void> {
+          expect(await runGuarded({
+            guarded,
+            holdsKey: true,
+            startedBy: 'nothing',
+          },),)
+            .toEqual({
+              code: REFUSED_AS_STATED,
+              stdout: '',
+              stderr: guardRefusal({
+                command: guarded.command,
+                owner: guarded.owner,
+              },),
+            },);
         },
       },),
 
       it({
         name: `GOES ON to what ${guarded.command} did before when the process holds a key and names the `
           + 'command, as its own task does',
-        fn: async () => {
-          expect(await runGuarded({ guarded, holdsKey: true, startedBy: 'its own task', },),)
+        fn: async function goesOnWithMarker(): Promise<void> {
+          expect(await runGuarded({
+            guarded,
+            holdsKey: true,
+            startedBy: 'its own task',
+          },),)
             .toEqual(guarded.before,);
         },
       },),
 
       it({
         name: `GOES ON to what ${guarded.command} did before when the process holds no key and names no command`,
-        fn: async () => {
-          expect(await runGuarded({ guarded, holdsKey: false, startedBy: 'nothing', },),)
+        fn: async function goesOnWithoutKey(): Promise<void> {
+          expect(await runGuarded({
+            guarded,
+            holdsKey: false,
+            startedBy: 'nothing',
+          },),)
             .toEqual(guarded.before,);
         },
       },),

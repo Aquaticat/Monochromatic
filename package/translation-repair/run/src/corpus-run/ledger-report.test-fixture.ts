@@ -5,7 +5,7 @@ import {
 import { join, } from 'node:path';
 
 import { LEDGER_DIR, } from '@monochromatic-dev/translation-repair-house-rule';
-import { type ReadRound, } from '../../dist/final/node/index.mjs';
+import type { ReadRound, } from '../../dist/final/node/index.mjs';
 
 //region Ledger report fixture
 // Contests a cat-themed ledger holds, and the writer that puts them in a runs

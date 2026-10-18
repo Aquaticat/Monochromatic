@@ -19,7 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   mapOverlapped,

@@ -1,4 +1,4 @@
-import { type ScreenedDefectClaim, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { ScreenedDefectClaim, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,

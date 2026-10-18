@@ -16,9 +16,9 @@ import {
 import { join, } from 'node:path';
 
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type ArtifactConsistency, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ArtifactConsistency, } from '@monochromatic-dev/translation-repair-artifact';
 import {
   ballotText,
   firstPlaceWins,

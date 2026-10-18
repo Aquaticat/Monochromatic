@@ -23,12 +23,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   neighbouringIncumbent,
   neighbouringSource,
 } from '@monochromatic-dev/translation-repair-repair';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,

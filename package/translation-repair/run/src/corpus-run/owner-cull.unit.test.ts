@@ -18,7 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ROSTER_MODEL_IDS, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import { assertCheckerQuorumReachable, } from '@monochromatic-dev/translation-repair-assembly';
 import {
   judgeSeatsFor,

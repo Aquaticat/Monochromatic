@@ -7,22 +7,22 @@
  @module
  */
 
-import {
-  type ProviderRecord,
-  type RosterModelId,
+import type {
+  ProviderRecord,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
-import {
-  type BudgetView,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
+import type {
+  BudgetView,
+  ChatJsonOutcome,
+  ChatJsonRequest,
 } from '@monochromatic-dev/translation-repair-provider';
-import {
-  type ArtifactComparisonRow,
-  type ArtifactDeliveryRow,
+import type {
+  ArtifactComparisonRow,
+  ArtifactDeliveryRow,
 } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
   RUN_LATE_JUDGES,

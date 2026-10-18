@@ -21,10 +21,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import {
-  type ModelTransport,
-  type TransportExchange,
-  type TransportReply,
+import type {
+  ModelTransport,
+  TransportExchange,
+  TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup';
 import { sampleBudgets, } from '../../dist/final/node/index.mjs';

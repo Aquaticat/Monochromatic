@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import {
   belowFloorWritingBenches,
   benchesOf,
