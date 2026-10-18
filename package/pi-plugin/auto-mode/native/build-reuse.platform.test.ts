@@ -95,6 +95,9 @@ await describe({
         const second = await realpath(join(packageRoot, 'dist/native'));
         assert.notEqual(second, first);
         assert.equal((await stat(join(second, 'PI-LICENSE.txt'))).ino, (await stat(join(first, 'PI-LICENSE.txt'))).ino);
+        /** Sharing must visit real subdirectories as well as the release root. */
+        const nested = 'contract/integration/action-policy/approval.mjs';
+        assert.equal((await stat(join(second, nested))).ino, (await stat(join(first, nested))).ino);
         assert.deepEqual(await readFile(join(previous, 'PI-LICENSE.txt')), license);
         /** Borrowed directory contents are not owned build inputs or sharing candidates. */
         const external = await mkdtemp(join(previousMount, 'reuse-external-'));

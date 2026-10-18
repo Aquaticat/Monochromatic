@@ -132,7 +132,7 @@
       "package/webapp-productivity/rss",
       "package/webapp-productivity/syllable-break-demo"
     ],
-    "withNewExactRuntimeJoins": 9
+    "withNewExactRuntimeJoins": 14
   },
   "activePackages": {
     "owners": 208,
@@ -196,7 +196,7 @@
       "package/webapp-productivity/rss",
       "package/webapp-productivity/syllable-break-demo"
     ],
-    "withNewExactRuntimeJoins": 9
+    "withNewExactRuntimeJoins": 14
   },
   "materialExecution": {
     "observations": 1137,
@@ -5674,7 +5674,42 @@
         "Default-shaped TypeScript unit files have no package test:unit task."
       ],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/desktop-daemon/hall-monitor/src/analyze.unit.test.ts",
+          "passedSourceLeafLabels": 20,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/desktop-daemon/hall-monitor/src/infra/lock.unit.test.ts",
+          "passedSourceLeafLabels": 14,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/desktop-daemon/hall-monitor/src/analyze.unit.test.ts",
+          "passedNamedSourceLeafLabels": 20,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/desktop-daemon/hall-monitor/src/infra/lock.unit.test.ts",
+          "passedNamedSourceLeafLabels": 14,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        }
+      ],
       "exactNamedTestTasks": [],
       "smokeAndVerifyTaskCandidates": []
     },
@@ -6347,7 +6382,42 @@
         "Default-shaped TypeScript unit files have no package test:unit task."
       ],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/dev-script/page-weight/src/html.unit.test.ts",
+          "passedSourceLeafLabels": 15,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/dev-script/page-weight/src/url-detect.unit.test.ts",
+          "passedSourceLeafLabels": 16,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/dev-script/page-weight/src/html.unit.test.ts",
+          "passedNamedSourceLeafLabels": 15,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/dev-script/page-weight/src/url-detect.unit.test.ts",
+          "passedNamedSourceLeafLabels": 16,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        }
+      ],
       "exactNamedTestTasks": [],
       "smokeAndVerifyTaskCandidates": []
     },
@@ -6750,6 +6820,15 @@
           "sourceLeafLabelsJoinedToPassingOutput": 6,
           "actualPersonalExports": 0,
           "compiledArtifactConsumer": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/figma/kiwi/src/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 6,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -6829,6 +6908,15 @@
           "sourceLeafLabelsJoinedToPassingOutput": 18,
           "actualPersonalExports": 3,
           "compiledArtifactConsumer": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/figma/to-penpot/src/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 18,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -9056,7 +9144,59 @@
         "Default-shaped TypeScript unit files have no package test:unit task."
       ],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/css/index.unit.test.ts",
+          "passedSourceLeafLabels": 43,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/html/index.unit.test.ts",
+          "passedSourceLeafLabels": 9,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/xml/index.unit.test.ts",
+          "passedSourceLeafLabels": 19,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/css/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 43,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/html/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 9,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/xml/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 19,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        }
+      ],
       "exactNamedTestTasks": [],
       "smokeAndVerifyTaskCandidates": []
     },
@@ -11834,7 +11974,25 @@
       },
       "inventoryMissingAssertionSignals": [],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/module/test/src/it.unit.test.ts",
+          "passedSourceLeafLabels": 9,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": true
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/test/src/it.unit.test.ts",
+          "passedNamedSourceLeafLabels": 9,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": true
+        }
+      ],
       "exactNamedTestTasks": [
         "//package/module/test:test:browser",
         "//package/module/test:test:unit"
@@ -15788,7 +15946,49 @@
         "Default-shaped TypeScript unit files have no package test:unit task."
       ],
       "contractQualification": "README headings and static call/branch inventories do not prove per-feature assertion coverage",
-      "newTerminalRuntime": [],
+      "newTerminalRuntime": [
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/rolldown-plugin/import-attributes/src/import-attributes.unit.test.ts",
+          "passedSourceLeafLabels": 0,
+          "failedSourceLeafLabels": 4,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "remaining-local-authored-unit",
+          "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+          "file": "package/rolldown-plugin/import-attributes/src/transform-helpers.unit.test.ts",
+          "passedSourceLeafLabels": 15,
+          "failedSourceLeafLabels": 0,
+          "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "derived-fixture-path-counterfactual",
+          "evidence": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json",
+          "passedSourceLeafLabels": 4,
+          "originalSourceTopologyQualified": false,
+          "negativePlainImportBehaviorQualified": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/rolldown-plugin/import-attributes/src/import-attributes.unit.test.ts",
+          "passedNamedSourceLeafLabels": 4,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": true,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/rolldown-plugin/import-attributes/src/transform-helpers.unit.test.ts",
+          "passedNamedSourceLeafLabels": 15,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": true,
+          "builtHarnessControl": false
+        }
+      ],
       "exactNamedTestTasks": [],
       "smokeAndVerifyTaskCandidates": []
     },
@@ -18021,5 +18221,8 @@
     "negativeControl": true,
     "limits": "No named package test task does not establish no tests: source-owned external consumers, host hooks, fixtures and shared Rust owners remain separate; smoke/verify candidates are retained without reclassifying them as tests"
   },
-  "localFigmaSourceConsumerEvidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json"
+  "localFigmaSourceConsumerEvidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json",
+  "remainingLocalUnitEvidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+  "localCaptureCorrection": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json",
+  "correctedBothStreamCapture": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json"
 }

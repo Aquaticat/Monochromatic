@@ -1,5 +1,84 @@
 # Depot trial interview
 
+## Final local capture and publication checkpoint on 2026-10-18
+
+The corrected capture is terminal and its owned container is absent.
+Its real stdout/stderr positive control passes.
+The same twelve unchanged authored files produce 179 product source-case passes
+and nine separate built-harness outer control passes on the already-admitted derived fixture topology.
+All labels join actual per-case debug `PASS` records;
+24 exact streams contain 9990 stdout bytes and 92794 stderr bytes.
+No logger-internal diagnostic occurs.
+Eight deliberate inner failure diagnostics belong to the passing harness controls.
+All three private export identities match again,
+without publishing their payloads,
+filenames or hashes.
+The source receipt is `doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json`.
+Earlier empty successful-stderr fields remain unobserved placeholders.
+The original four fixture-path failures and the no-with assertion gap remain qualified.
+No new provider allocation or production source fix occurred.
+
+The first capture invocation was rejected before runtime because its admission commit had not completed.
+The still-prepared admission ran only after `b8c2dc9dcc` completed;
+there was no duplicate container allocation.
+The final capture archive,
+its admission and prior evidence pass their byte/hash joins.
+Scoped JSON formatting and Markdown checks pass with no remaining diagnostic.
+The six approved report sections render with no missing local links or italic spans.
+The completed local source-test worktree is removed normally after its ignored-output dry run
+and root Git-dir entry checks.
+All 162 generated output roots are retained privately;
+the compiled harness identity and all three original/copy private fixture identities still match.
+Canonical worktree absence is checked with the registered main worktree as a positive control
+(`doc/audit/depot-local-source-worktree-retirement-2026-10-18.evidence.json`).
+The remaining action is exact-tip isolated publication,
+then the first interview frontier on failure enforcement,
+workflow cadence and the order of Linux orchestration adoption.
+The service quota still prevents a fresh independent whole-report sufficiency review.
+
+## Local source-consumer checkpoint on 2026-10-18
+
+Cloud work remains terminal;
+no additional provider allocation is needed for this checkpoint.
+The frozen Figma parser and converter now pass all 24 authored leaf labels,
+including actual consumption of the three personal exports in a network-disabled container.
+Payloads,
+filenames and hashes remain private.
+The receipt is `doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json`.
+The remaining nine authored source-test files produced 151 passing leaf labels and four failures.
+Eight files pass;
+the import-attributes integration file fails during Rolldown entry resolution.
+It requests `src/fixtures`,
+while the frozen source contains `src/fixture`.
+The fresh owning Mise Node-harness build passes,
+and the existing built-export harness self-test passes its nine outer cases,
+including assertions about deliberate failures,
+timeouts and repeat termination.
+Those controls are separate from product coverage.
+Exact source identities and 22 process-output bodies are sealed in
+`doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json` and its source archive.
+Source-import successes do not establish compiled package assertion coverage.
+
+The committed three-leg local counterfactual admission is terminal:
+`doc/audit/depot-local-node-counterfactual-admission-2026-10-18.evidence.json`.
+The writable logger directory removes its diagnostic but retains all four entry failures.
+Adding only `MONOCHROMATIC_VERBOSE=true` produces ten debug lifecycle lines in failed-child stderr.
+Adding only the throwaway `fixtures -> fixture` alias then makes all four authored cases pass.
+Each network-disabled container has two CPUs,
+2 GiB RAM and a 150-second limit.
+Keep the entry-resolution and secondary logger diagnostics as separate incidents.
+The source-owned no-with case still does not assert absence of transformation on a plain import.
+Successful-child stderr was discarded by the local wrapper;
+its empty fields are placeholders,
+not observed empty streams.
+The correction is explicit in `doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json`.
+All 223 semantic owner projections and 1818 original log-hash joins are now published in
+`doc/audit/depot-semantic-package-publication-2026-10-18.evidence.json`.
+The next action is scoped formatting and rendered checks,
+then publication through the existing isolated merge worktree.
+The agent service limit still prevents a fresh independent whole-report review.
+The interview has not started.
+
 ## Terminal allocation closure on 2026-10-18
 
 Every newly admitted job is terminal.

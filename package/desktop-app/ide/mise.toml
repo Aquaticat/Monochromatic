@@ -363,7 +363,7 @@ runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'clippy', '--releas
 [tasks."lint:closures"]
 # The application binary embeds target/debug/runtime and target/crate-licenses.json, so its build needs both.
 depends = ["runtime", "notices"]
-description = "Run the avoidable_closure Dylint lint (package/linter/monochromatic-lint-closure) over every IDE target on the host with the shared nightly; fetches with the stable cargo and builds offline because the nightly cargo cannot reach crates.io on this host"
+description = "Run the avoidable_closure Dylint lint (package/linter/monochromatic-lint-closure) over every IDE target on the host with the shared nightly; fetches with the stable cargo and builds offline because an OpenSnitch rule on this host rejects the network of the shared nightly cargo path (doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md)"
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
@@ -375,7 +375,8 @@ const lintPackage = resolve(ide, '../../linter/monochromatic-lint-closure')
 if (!existsSync(join(ide, 'target', 'debug', 'runtime', 'manifest.json')) || !existsSync(join(ide, 'target', 'crate-licenses.json'))) {
   throw new Error('The runtime and notices tasks did not leave target/debug/runtime and target/crate-licenses.json; run them first.')
 }
-// The nightly cargo of this host cannot connect to crates.io (doc/troubleshooting/dylint-library-tests-and-shared-build-dir.md).
+// An OpenSnitch rule on this host rejects the network of the shared nightly cargo path, so it cannot connect to crates.io
+// (doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md).
 // The stable cargo fills the registry and git caches of the lint library and of the IDE, and every cargo below runs offline.
 for (const directory of [lintPackage, ide]) execFileSync('cargo', ['+stable', 'fetch', '--locked'], { cwd: directory, stdio: 'inherit' })
 // This build directory also receives the intermediates of the lint library, whose cargo reads the same variable.

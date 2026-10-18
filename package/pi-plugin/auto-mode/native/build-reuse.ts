@@ -15,7 +15,10 @@ import {
   rename
 } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tagged } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 import { caughtValueText } from '@monochromatic-dev/module-caught-value/ts';
 import { nativeBuildLog } from './build-contract.ts';
 
@@ -82,6 +85,91 @@ async function previousMetadata(original: string): Promise<Stats | typeof NO_PRE
   }
 }
 
+//region Traversal visits owned directory entries without entering borrowed links.
+/**
+ Visit owned directory entries without allowing borrowed links to expand the build's traversal scope.
+
+ @param output - unpublished release whose physical directory entries belong to this build
+
+ @param l - original build diagnostics extended with this traversal boundary
+
+ @returns relative regular-file paths eligible for immutable comparison
+
+ @throws original filesystem error when an owned directory cannot be read
+ */
+async function ownedBuildFiles({
+  output,
+  l: parentLog,
+}: Readonly<{
+  output: string;
+  l: Logger;
+}>): Promise<readonly string[]> {
+  /**
+   Traversal diagnostics retain the original build's logger and this boundary.
+   */
+  const l = tagged({
+    tag: ownedBuildFiles.name,
+    l: parentLog,
+  });
+  l.debug(`enumerating owned build files in ${output}`);
+  /**
+   Only actual child directories extend this work queue.
+   */
+  const directories = [''];
+  /**
+   Sequential queue consumption bounds directory reads before storage comparison starts.
+   */
+  const groups = await Array.fromAsync(
+    directories,
+    async function readOwnedDirectory(directory: string): Promise<readonly string[]> {
+      /**
+       Child-directory diagnostics retain their original traversal owner.
+       */
+      const dl = tagged({
+        tag: readOwnedDirectory.name,
+        l,
+      });
+      dl.debug(`reading owned directory ${directory}`);
+      /**
+       Nonrecursive enumeration reveals links before deciding which children belong to the build.
+       */
+      const entries = await readdir(
+        join(
+          output,
+          directory,
+        ),
+        { withFileTypes: true },
+      );
+      /**
+       Only this owned directory contributes regular-file candidates.
+       */
+      const files: string[] = [];
+      for (const entry of entries) {
+        /**
+         Relative identities remain rooted in the caller's unpublished release.
+         */
+        const relative = join(
+          directory,
+          entry.name,
+        );
+        if (entry.isDirectory()) {
+          dl.debug(`retaining owned directory ${relative}`);
+          directories.push(relative);
+          continue;
+        }
+        if (entry.isFile()) {
+          files.push(relative);
+          continue;
+        }
+        dl.debug(`leaving non-file build entry untouched: ${relative}`);
+      }
+      return files;
+    },
+  );
+  return groups.flat();
+}
+//endregion Owned directories extend traversal; borrowed entries remain untouched
+
 //region Only the new verified release is changed before publication.
 /**
  Share unchanged file content without rewriting paths owned by running sessions.
@@ -133,10 +221,10 @@ export async function reuseNativeBuildFiles({
   /**
    Enumeration stays inside the unpublished release and does not follow dependency links.
    */
-  const paths = await readdir(
+  const paths = await ownedBuildFiles({
     output,
-    { recursive: true }
-  );
+    l,
+  });
   /**
    Sequential mapping bounds open files and comparison memory independently of graph size.
    */

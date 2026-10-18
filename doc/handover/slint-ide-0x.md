@@ -790,11 +790,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     exemption (entry `ui-fixture-exemptions`) cleared the 86 fixture warnings; the package, on the shared nightly
     with `build` and `lint` task names again, passed 13 tests, clippy, rustfmt and `monochromatic-lint` from a clean
     shell, and the IDE copy still gave 62 of 67 allowed. The coordinator reran the package tests and the IDE
-    `test:cli` (13) on the new nightly after the final merge. Known host problem, not diagnosed: cargo from the
-    1.101 nightlies (`nightly-2026-10-17` and `nightly-2026-10-18`) cannot connect to crates.io on this host
-    (`Could not connect to server` in 17 ms; reproduced outside the sandbox in a user unit; curl over IPv4 and IPv6,
-    stable cargo and the 1.100 nightly `nightly-2026-09-22` work; no upstream issue found). Fetch with
-    `cargo +stable fetch --locked` and run nightly offline until it is understood.
+    `test:cli` (13) on the new nightly after the final merge. Known host problem, diagnosed afterwards: cargo
+    of `nightly-2026-10-13`, `-10-17` and `-10-18` fails to reach crates.io (`Could not connect to server` in
+    17 ms) because an OpenSnitch `reject-always` rule exists for each of those exact `cargo` paths
+    (`/etc/opensnitchd/rules/`); it destroys the socket (`ECONNABORTED`). It is not a 1.101 bug: the same
+    binary at an allowed path connects, and `nightly-2026-10-11` and `-10-12` (1.101) connect. An unanswered
+    OpenSnitch pop-up (30 s timeout, default action reject, duration forever) mints such a rule for every new
+    toolchain path. Fixed on 2026-10-18 at the owner's request: the rule `000-allow-cargo.json` (regexp on the
+    `cargo` of any rustup toolchain under the home directory or an agent scratch rustup home, with `precedence`) was
+    added, a fetch on `nightly-2026-10-18` then worked, and the six toolchain `cargo` reject rules were moved to
+    `/etc/opensnitchd/rules.removed-2026-10-18/`
+    (`doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md`). The pop-up default (reject, forever, 30 s)
+    is unchanged, so a path outside every rule still gets a permanent reject; `lint:closures` still fetches with the
+    stable cargo and builds offline, which stays valid.
     Stage 2b landed after review (branch `feat/ide-closure-lint`; see the bullet "Dylint gate over the IDE").
     The user also asked to look at their oxlint setup; findings: shared config
     `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
@@ -826,6 +834,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bundle 8 cases). Test suites on the branch: `test` 783, `test:native` 197, `test:language` 379, `test:syntax` 64,
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
+  - Queued work from the owner's requests of 2026-10-18 (answers through the question tool):
+    the IDE bug "Source viewport 1354x12548 exceeds the 64 MiB raster limit" on a very tall window (screenshot: blank
+    text area, line numbers and minimap drawn) is being fixed by an agent on branch `fix/ide-tall-window-tile`
+    (worktree `.claude/worktrees/ide-tall-tile`); the owner wants the failure to degrade, not blank the text, and the
+    minimap to stay crisp, never replaced by rectangles. After that lands, the minimap is redesigned: the owner chose
+    "downscale the real rendering", so the minimap becomes merely a zoomed-out reflection of the main window (the
+    window's own painted tiles with selection, find matches, diagnostics and virtual rows, shrunk to the minimap width),
+    replacing the separate pixel-per-column builder of `src/minimap/` and `src/native/minimap_build.rs`; it must be
+    tiled and cached so that a long file stays fast and under the raster limit. The comment-directive engine of
+    `monochromatic-lint` (decision D2) is being built by an agent on branch `feat/lint-directives`.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
     worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.

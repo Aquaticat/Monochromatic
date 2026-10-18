@@ -44339,7 +44339,7 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T21:48:49.890Z",
+  "latestEvidenceAt": "2026-10-18T22:29:08.708Z",
   "packedConsumerQualification": {
     "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "producerRun": 39130630504,
@@ -44776,5 +44776,43 @@
     "sourceLeafLabels": 24,
     "actualPersonalExports": 3,
     "compiledArtifactConsumer": false
+  },
+  "remainingLocalAuthoredSourceConsumers": {
+    "evidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
+    "ordinarySourceOwners": {
+      "files": 9,
+      "passingFiles": 8,
+      "failedFiles": 1,
+      "passingLeafLabels": 151,
+      "failedLeafLabels": 4
+    },
+    "builtHarnessSelfTest": {
+      "file": "package/module/test/src/it.unit.test.ts",
+      "exitCode": 0,
+      "passingOuterLeafLabels": 9,
+      "negativeControls": "Existing assertions verify caught failures, unexpected passes, timeouts and repeat termination; nested deliberate attempts are not added as owner case counts"
+    },
+    "compiledProductArtifactAssertions": false
+  },
+  "localNodeCounterfactuals": {
+    "evidence": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json",
+    "derivedTopologyIntegrationPasses": 4,
+    "originalTopologyIntegrationFailures": 4,
+    "successChildStderrUnobserved": true
+  },
+  "semanticPackagePublication": {
+    "evidence": "doc/audit/depot-semantic-package-publication-2026-10-18.evidence.json",
+    "archive": "doc/audit/depot-semantic-package-feature-assertion-manifest-2026-10-18.json.gz",
+    "directoryOwners": 223,
+    "originalCommandReceipts": 1818,
+    "originalCommandLogsRehashed": 1818,
+    "allBranchesOrFeaturesCovered": false
+  },
+  "correctedLocalBothStreamCapture": {
+    "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+    "ordinarySourceLeafLabels": 179,
+    "builtHarnessOuterLeafLabels": 9,
+    "derivedFixtureAliasRetained": true,
+    "originalFourIntegrationFailuresPreserved": true
   }
 }

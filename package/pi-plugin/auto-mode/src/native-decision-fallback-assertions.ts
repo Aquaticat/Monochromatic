@@ -20,6 +20,7 @@ import {
   assertQuestionEvidenceDetails,
   assertReviewCompleteDetails,
   isAssessmentRequestRecord,
+  isPolicyFragmentText,
   isQuestionEvidenceRecord
 } from './native-decision-fallback-evidence-types.ts';
 import { TRANSIENT_ASSESSMENT_ATTEMPTS } from './native-decision-fallback-modes.ts';
@@ -288,7 +289,8 @@ export function assertDecisionFallbackOutcome({
       );
       assert.ok(requestState.selectedPolicyMaterial[0]
         .fragments
-        .some(function policyRule(span: Readonly<{ text: string }>): boolean {
+        .some(function policyRule(span: unknown): boolean {
+          assert.ok(isPolicyFragmentText(span));
           return span.text
             .startsWith('RUL:');
         }));
