@@ -218,9 +218,18 @@ and `watch::tests::a_burst_of_changes_requests_one_rescan`.
 Repeated final-failure lines are not extra executed cases.
 The original duplicate-argument adapter ran zero bodies and retains no test credit;
 the corrected result preserves unchanged source assertions.
-The extra GNU watch failure's cause and repeat rate remain unmeasured,
-and its matched Depot target is still proposed
+The extra GNU watch failure's cause and repeat rate remain unmeasured
 ([retained GNU identities and original-member hashes](../audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz)).
+The matched Depot Windows GNU run executes the same 1494 binary/case identities:
+1493 pass and the unreadable-session-path/logging case fails,
+with one separate summary-only skip.
+The watch case passes in this sample;
+that status difference does not establish a provider cause or failure rate.
+Its actual probe records Windows Server 2025 Datacenter,
+release `10.0.26100`,
+four available/logical CPUs,
+16827592704 bytes of memory and CPU model `AMD EPYC 9R45`
+([matched GNU and design terminal receipt](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)).
 
 ### Execution infrastructure
 
@@ -746,12 +755,17 @@ IDE's real runtime producer stages 2500 files,
 and final source checks preserve the authored assertions.
 These are library/process/model/runtime consumers,
 without a new GUI or compositor launch.
-The retained design profile enumerates its 13 actual Node programs but executes zero:
+The initial design profile enumerates its 13 actual Node programs but executes zero:
 the copied locked Node binary exits 127 because the tool image lacks `libatomic.so.1`.
-Its separately admitted public-runner correction adds only the runtime library;
-the actual bootstrap preserves owning commands and assertions
+Its separately admitted public-runner correction adds only the runtime library,
+and all 13 actual owning programs now pass with ImageMagick.
+The source consumer verifies 997 selected asset/HTML inputs totaling 269996175 materialized bytes;
+these are verified input bytes,
+not published media.
+The actual bootstrap preserves owning commands and assertions
 ([primary case and producer receipt](../audit/depot-material-owner-primary-2026-10-18.evidence.json),
-[design correction admission](../audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json)).
+[design correction admission](../audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json),
+[actual GNU/design outcomes](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)).
 Static test attributes,
 successful compilation and an import-only fixture do not substitute for those runtime boundaries.
 
@@ -894,9 +908,8 @@ as do absent-owner cache/language recipes and external observability sinks
 
 Remaining factual work is explicitly owned in the
 [execution handover][depot-source-1]:
-the dispatched matched Depot-Windows GNU consumer,
 semantic feature/assertion reconciliation,
-existing-evidence joins and the design runtime-library correction,
+remaining existing-evidence joins,
 and final combined allocation/cost normalization.
 The capability-allocation source review and concrete rollout profiles are written;
 the primary IDE/file-manager/terminal case identities and real producer joins are sealed.

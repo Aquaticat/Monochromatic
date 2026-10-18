@@ -29,6 +29,34 @@ Its scan covers 188 tracked audit files and 251 decoded containers,
 finds zero original desktop ZIP/captured-PNG payloads and 836 hash references,
 and detects both actual private ZIPs and all 110 PNG occurrences in the positive control.
 No image inspection/masking/publication or new desktop launch is claimed.
+The matched GNU and design continuations are now both terminal,
+their watcher session `30378` is reaped at zero,
+and no newly dispatched cloud job remains active.
+GNU run `39165688015`,
+job `117788040975`,
+runs 469 seconds and executes the same 1494 identities as the public baseline:
+1493 pass,
+the unreadable-session-path/logging case fails,
+and the watch case changes from public FAIL to Depot PASS.
+One repeated final-failure status line is deduplicated;
+one summary-only skip remains separate.
+No provider cause or failure rate follows from this pair.
+Design correction `39166144807`,
+job `117789377100`,
+runs 162 seconds on the same public shape,
+passes all thirteen authored programs and verifies 997 selected inputs totaling 269996175 materialized bytes.
+Both artifacts pass SHA-256,
+CRC and member/receipt joins.
+Their 42 text bodies and source-bound outcomes are sealed in
+`doc/audit/depot-gnu-design-terminal-2026-10-18.evidence.json` and its source archive.
+The primary archive remains unchanged.
+Native CLI status omits timing fields;
+source inspection identifies `CIService/GetWorkflow` as the actual attempt-timestamp consumer.
+Exact owned workflow queries return first SSH attempt `18:37:37` to `18:39:53 UTC` (136 seconds)
+and correction `20:58:40` to `21:00:58 UTC` (138 seconds).
+At USD 0.006/minute their combined nominal attempt-window proxy is USD 0.0274,
+separate from the historical USD 0.036 reservation and any invoice.
+Raw bodies remain private pending the final selected-field/hash ledger projection.
 The primary material outcome is now sealed in
 `doc/audit/depot-material-owner-primary-2026-10-18.evidence.json`
 with 126 original-artifact-derived text bodies in its hash-bound source archive.

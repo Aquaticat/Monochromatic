@@ -209,7 +209,15 @@ owning program arguments,
 public runner profile and resource limits.
 Actual CommonJS bootstrap chunks reproduce the corrected tracked Mise/config bytes;
 reversing only the library addition restores the complete original workflow object.
-This is a proposed prerequisite remedy until the actual Node and authored programs execute.
+The correction ran as public GitHub job `117789377100`,
+run `39166144807`,
+from `21:03:55` to `21:06:37 UTC`.
+Its actual locked Node version check and all thirteen authored programs pass,
+including the actual ImageMagick consumers,
+with source assertions unchanged and the owned container absent afterward.
+The [terminal receipt](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)
+retains verified artifact members and actual program arguments/statuses.
+This verifies the Fedora prerequisite remedy for this image and binary.
 It is not a claim that the Debian package spelling works on Fedora,
 or that the local host's runtime libraries qualify the container.
 
