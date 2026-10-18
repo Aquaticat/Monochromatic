@@ -286,6 +286,65 @@ await describe({
     },),
 
     it({
+      name: 'MAPS THE OPENING BRACKET AND THE RESOURCE OF A LINK WITH A LABEL as two stretches that show a reader nothing, by their last '
+        + 'unit and by their first, for a link, a link with a title, a reference and a link of marks, and none for a link with no label, '
+        + 'a link of closing marks, an image or an autolink (n173)',
+      fn: async () => {
+        /**
+         The stretches that show nothing in a link with a label, as pairs sorted by their key: by last unit, then by first unit.
+         */
+        function hiddenOf(
+          { english, definitions = '', }: { readonly english: string; readonly definitions?: string; },
+        ): { readonly starts: readonly (readonly [number, number])[]; readonly ends: readonly (readonly [number, number])[]; } {
+          /**
+           What the fold makes of the links of the English.
+           */
+          const links = foldedLinksOf({
+            english,
+            folded: foldWithOffsets({ text: english, },),
+            definitions,
+          },);
+          return {
+            starts: [...links.hiddenStarts.entries(),].toSorted(function byKey([first,], [second,],): number {
+              return first - second;
+            },),
+            ends: [...links.hiddenEnds.entries(),].toSorted(function byKey([first,], [second,],): number {
+              return first - second;
+            },),
+          };
+        }
+        expect([
+          hiddenOf({ english: 'kit[kit](u)', },),
+          hiddenOf({ english: 'kit[kit](u "t")', },),
+          hiddenOf({ english: 'kit[kit][r]\n\n[r]: u', },),
+          hiddenOf({ english: 'kit[-](u)', },),
+          hiddenOf({ english: 'kit[kit][r]', definitions: '[r]: u', },),
+        ],).toEqual([
+          { starts: [[3, 3,], [10, 7,],], ends: [[3, 4,], [7, 11,],], },
+          { starts: [[3, 3,], [14, 7,],], ends: [[3, 4,], [7, 15,],], },
+          { starts: [[3, 3,], [10, 7,],], ends: [[3, 4,], [7, 11,],], },
+          { starts: [[3, 3,], [8, 5,],], ends: [[3, 4,], [5, 9,],], },
+          { starts: [[3, 3,], [10, 7,],], ends: [[3, 4,], [7, 11,],], },
+        ],);
+        expect([
+          hiddenOf({ english: 'kit[](u)', },),
+          hiddenOf({ english: 'kit[)](u)', },),
+          hiddenOf({ english: 'kit![kit](u)', },),
+          hiddenOf({ english: 'kit www.example.com', },),
+          hiddenOf({ english: 'kit[kit][r]', },),
+          hiddenOf({ english: 'kit[kit][r]', definitions: '[x]: u', },),
+        ],).toEqual([
+          { starts: [], ends: [], },
+          { starts: [], ends: [], },
+          { starts: [], ends: [], },
+          { starts: [], ends: [], },
+          { starts: [], ends: [], },
+          { starts: [], ends: [], },
+        ],);
+      },
+    },),
+
+    it({
       name: 'READS EVERY LINK OF A LONG TEXT, a thousand of them, each to its own first unit',
       fn: async () => {
         /**

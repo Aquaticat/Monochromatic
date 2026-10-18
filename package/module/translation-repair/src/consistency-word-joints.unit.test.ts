@@ -747,7 +747,8 @@ await describe({
               ['a [](u)kit', 'kit', 'last', false,],
               ['kit [](u)\'kit', 'kit', 'last', false,],
               ['kit[ ](u)\'kit', 'kit', 'first', false,],
-              ['kit[x](u)\'kit', 'kit', 'first', false,],
+              // n173: a link with a label shows its label, so `kit[x](u)'kit` reads as `kitx'kit` and the stand is cut.
+              ['kit[x](u)\'kit', 'kit', 'first', true,],
               ['kit[](u)kit', 'kit', 'first', true,],
               ['kit[](u)kit', 'kit', 'last', true,],
               ['kit[](u)tens', 'kit', 'first', true,],

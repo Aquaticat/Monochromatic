@@ -281,6 +281,56 @@ await describe({
     },),
 
     it({
+      name: 'COVERS the opening bracket and the resource of a link or a reference whose label shows a word or marks, and of no other '
+        + 'link: not one with no label, one of closing marks, an image or an autolink (n173)',
+      fn: async () => {
+        /**
+         English, the text of the opening bracket of each such link and the text of its resource.
+         */
+        const rows: readonly (readonly [string, readonly string[], readonly string[]])[] = [
+          ['kit[x](u) kit', ['[',], ['](u)',],],
+          ['kit[ x](u) kit', ['[',], ['](u)',],],
+          ['kit[-](u) kit', ['[',], ['](u)',],],
+          ['kit[*x*](u "t") kit', ['[',], ['](u "t")',],],
+          ['kit[x][r] kit\n\n[r]: u', ['[',], ['][r]',],],
+          ['kit[![a](b)](c) kit', ['[',], ['](c)',],],
+          ['kit[x](u) [y](v) kit', ['[', '[',], ['](u)', '](v)',],],
+          ['kit[](u) kit', [], [],],
+          ['kit[)](u) kit', [], [],],
+          ['kit![x](u) kit', [], [],],
+          ['kit www.example.com kit', [], [],],
+          ['kit https://u.example kit', [], [],],
+          ['kit <https://u.example> kit', [], [],],
+          ['kit [x] kit', [], [],],
+        ];
+        expect(rows.map(function partsOf([english,],): readonly (readonly string[])[] {
+          /**
+           The links with a label, in the order the parse listed them.
+           */
+          const { labelledLinks, } = proseViewOf({ english, },);
+          return [
+            labelledLinks.map(function openerOf({ opener, },): string {
+              return english.slice(
+                opener.start,
+                opener.end,
+              );
+            },)
+              .toSorted(),
+            labelledLinks.map(function resourceOf({ resource, },): string {
+              return english.slice(
+                resource.start,
+                resource.end,
+              );
+            },)
+              .toSorted(),
+          ];
+        },),).toEqual(rows.map(function expectedOf([, openers, resources,],): readonly (readonly string[])[] {
+          return [openers, resources,];
+        },),);
+      },
+    },),
+
+    it({
       name: 'HOLDS no stretch of any kind for an English the page grammar refuses, and for one without the markup',
       fn: async () => {
         /**
@@ -294,6 +344,7 @@ await describe({
         expect(plain.markOnlyLinks,).toEqual([],);
         expect(plain.closingLinks,).toEqual([],);
         expect(plain.linkResources,).toEqual([],);
+        expect(plain.labelledLinks,).toEqual([],);
         /**
          English the grammar refuses: a container nested past the bound.
          */
@@ -304,6 +355,7 @@ await describe({
         expect(refused.codeContents,).toEqual([],);
         expect(refused.emptyLinks,).toEqual([],);
         expect(refused.markOnlyLinks,).toEqual([],);
+        expect(refused.labelledLinks,).toEqual([],);
       },
     },),
   ],
