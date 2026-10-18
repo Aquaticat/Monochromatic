@@ -99,6 +99,30 @@ or source occurrence is discarded.
 The existing native receipt fixture expands this lossless representation before checking all original assertions.
 The source is committed but still needs a native rebuild and verification.
 
+The rebuilt output is `native-release-6z61x7`.
+The event-sharing regression retains all 60 phases from 30 callbacks in 36,476 bytes,
+against 30,984 bytes for a single callback.
+The complete native event receipt catalog,
+capacity,
+fallback,
+history,
+prompt capacity,
+message freshness,
+full units,
+and type check pass.
+Both complete host replays still terminate with Node exit 134:
+fragmented fixture `pi-mimo-failure-rpc-1RoD9a` after 28 live assessments,
+and faithful fixture `pi-mimo-failure-rpc-abwWtu` after 34.
+No readiness claim is renewed.
+The next private probe measures original pool retention by source kind and native method,
+unique content characters,
+metadata characters,
+and heap usage.
+Ranked hypotheses are retained source snapshots,
+other retained context versions,
+and pending diagnostic writes;
+the source counters can falsify the first hypothesis before another storage change.
+
 Next actions:
 
 - Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
