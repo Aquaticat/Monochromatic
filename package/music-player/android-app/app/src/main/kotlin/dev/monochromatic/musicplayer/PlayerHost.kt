@@ -217,13 +217,13 @@ import dev.monochromatic.musicplayer.core.SearchResultKind
 import dev.monochromatic.musicplayer.core.playingResultId
 import dev.monochromatic.musicplayer.core.searchStateFor
 
-// What:     `sealed interface PlayerRoute` names the four destinations the host can show.
+// What:     `sealed interface PlayerRoute` names the five destinations the host can show.
 // Why:      One closed type lets the host draw exactly one destination and makes Back a total function.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // type PlayerRoute = { kind: "player" } | { kind: "search" } | { kind: "settings" }
-//   | { kind: "templateEditor"; template: TemplateKind };
+//   | { kind: "templateEditor"; template: TemplateKind } | { kind: "licenses" };
 // ```
 /** The destinations of the player host. */
 sealed interface PlayerRoute {
@@ -269,6 +269,16 @@ sealed interface PlayerRoute {
         /** The template the editor is open on. */
         val kind: TemplateKind,
     ) : PlayerRoute
+
+    // What:     `data object Licenses` is the Licenses page reached from the About group of Settings.
+    // Why:      The notices are a page of their own on every window width, and Back returns to Settings.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // { kind: "licenses" }
+    // ```
+    /** The Licenses page, reached from the Licenses row of Settings. */
+    data object Licenses : PlayerRoute
 }
 
 // What:     `internal object PlayerRouteRules` holds the pure route rules: Back and the saved text of each route.
@@ -321,6 +331,16 @@ internal object PlayerRouteRules {
     /** Prefix of the saved token of a template editor, followed by the template kind's name. */
     private const val TOKEN_TEMPLATE_PREFIX: String = "template:"
 
+    // What:     `private const val TOKEN_LICENSES: String = "licenses"` names the Licenses route in the saved state.
+    // Why:      A fixed token keeps the saved text stable across builds.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const TOKEN_LICENSES = "licenses";
+    // ```
+    /** Saved token of the Licenses route. */
+    private const val TOKEN_LICENSES: String = "licenses"
+
     // What:     `fun backFrom(route: PlayerRoute): PlayerRoute` names the route Back leads to.
     // Why:      Search and Settings return to the player, and an editor returns to Settings.
     //
@@ -334,6 +354,26 @@ internal object PlayerRouteRules {
         PlayerRoute.Search -> PlayerRoute.Player
         PlayerRoute.Settings -> PlayerRoute.Player
         is PlayerRoute.TemplateEditor -> PlayerRoute.Settings
+        PlayerRoute.Licenses -> PlayerRoute.Settings
+    }
+
+    // What:     `fun backFromHost(route: PlayerRoute, settingsIsWide: Boolean): PlayerRoute` names where the Back button
+    //           and Escape lead on the screen the host draws.
+    // Why:      The wide Settings page shows its editor in place, so Back closes Settings from either route and
+    //           skips the Settings route; the Licenses page is a page of its own on every width and returns to Settings.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function backFromHost(route: PlayerRoute, wide: boolean): PlayerRoute {
+    //   if (route.kind === "licenses") return settings;
+    //   return wide && route.kind !== "search" ? player : backFrom(route);
+    // }
+    // ```
+    /** Returns the route that Back leads to from [route], given whether Settings is drawn in two panes. */
+    fun backFromHost(route: PlayerRoute, settingsIsWide: Boolean): PlayerRoute = when {
+        route == PlayerRoute.Licenses -> PlayerRoute.Settings
+        settingsIsWide && route != PlayerRoute.Search -> PlayerRoute.Player
+        else -> backFrom(route)
     }
 
     // What:     `fun encode(route: PlayerRoute): String` writes one route as its saved token.
@@ -349,6 +389,7 @@ internal object PlayerRouteRules {
         PlayerRoute.Search -> TOKEN_SEARCH
         PlayerRoute.Settings -> TOKEN_SETTINGS
         is PlayerRoute.TemplateEditor -> TOKEN_TEMPLATE_PREFIX + route.kind.name
+        PlayerRoute.Licenses -> TOKEN_LICENSES
     }
 
     // What:     `fun decode(token: String): PlayerRoute` reads one route from its saved token.
@@ -363,6 +404,7 @@ internal object PlayerRouteRules {
     fun decode(token: String): PlayerRoute = when {
         token == TOKEN_SEARCH -> PlayerRoute.Search
         token == TOKEN_SETTINGS -> PlayerRoute.Settings
+        token == TOKEN_LICENSES -> PlayerRoute.Licenses
         token.startsWith(TOKEN_TEMPLATE_PREFIX) -> templateRouteFor(token)
         else -> PlayerRoute.Player
     }
@@ -431,6 +473,7 @@ private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute = when (route) {
     PlayerRoute.Search -> HostKeyRoute.SEARCH
     PlayerRoute.Settings -> HostKeyRoute.SETTINGS
     is PlayerRoute.TemplateEditor -> HostKeyRoute.EDITOR
+    PlayerRoute.Licenses -> HostKeyRoute.SETTINGS
 }
 
 // What:     `@Composable fun playerHost(...)` draws the destination of the current route over the controller state.
@@ -450,6 +493,7 @@ private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute = when (route) {
  * @param firstRunContent Draws the first-run pane over the player when the open source needs it, given the
  *     callback that opens the Settings route; null when the player shows.
  * @param libraryName Name of the opened folder, or of the MediaStore library, shown above the unfolded folders.
+ * @param readLicenseNotices Reads the text of the Licenses page for a context; the APK's notice asset by default.
  */
 @Composable
 fun playerHost(
@@ -459,6 +503,7 @@ fun playerHost(
     emptyNotice: @Composable (PlayerUiState) -> Unit = {},
     firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = null,
     libraryName: String = libraryDisplayName(null),
+    readLicenseNotices: suspend (Context) -> String = ::readLicenseNoticesAsset,
 ) {
     /** Android context that the template preferences are read and written through. */
     val context: Context = LocalContext.current
@@ -1561,11 +1606,7 @@ fun playerHost(
         // ```
         /** Leaves Search by the route rule that the system Back handler uses. */
         override fun backFromSearch() {
-            if (settingsIsWide && route != PlayerRoute.Search) {
-                go(PlayerRoute.Player)
-            } else {
-                go(PlayerRouteRules.backFrom(route))
-            }
+            go(PlayerRouteRules.backFromHost(route = route, settingsIsWide = settingsIsWide))
         }
 
         // What:     `override fun closePopup()` clears the bound track so the menu closes.
@@ -1724,12 +1765,9 @@ fun playerHost(
     }
 
     BackHandler(enabled = route != PlayerRoute.Player) {
-        // The wide Settings page shows the editor in place, so Back closes Settings from either route.
-        if (settingsIsWide && route != PlayerRoute.Search) {
-            go(PlayerRoute.Player)
-        } else {
-            go(PlayerRouteRules.backFrom(route))
-        }
+        // The wide Settings page shows the editor in place, so Back closes Settings from either route; the Licenses
+        // page returns to Settings.
+        go(PlayerRouteRules.backFromHost(route = route, settingsIsWide = settingsIsWide))
     }
 
     // What:     `LaunchedEffect(nextExpiry)` waits until the earliest visible message is due and then expires it.
@@ -1954,6 +1992,7 @@ fun playerHost(
                             },
                             autoPlayOnSelect = autoPlayOnSelect,
                             onToggleAutoPlay = { toggleAutoPlayOnSelect() },
+                            onOpenLicenses = { go(PlayerRoute.Licenses) },
                             onBack = { go(PlayerRoute.Player) },
                             creaseWidthPx = creaseWidthPx,
                             editor = { kind, startInset ->
@@ -1978,6 +2017,16 @@ fun playerHost(
                             onToggleAutoPlay = { toggleAutoPlayOnSelect() },
                             onBack = { go(PlayerRoute.Player) },
                             onOpenTemplate = { kind -> openTemplate(kind) },
+                            onOpenLicenses = { go(PlayerRoute.Licenses) },
+                        )
+                    }
+                }
+                PlayerRoute.Licenses -> {
+                    // On a creased unfolded screen the page sits in the right half, so no text crosses the fold.
+                    rightPaneOnCreasedScreen(keyLayout = keyLayout, creaseWidthPx = creaseWidthPx) {
+                        licensesPage(
+                            readNotices = { readLicenseNotices(context) },
+                            onBack = { go(PlayerRoute.Settings) },
                         )
                     }
                 }
