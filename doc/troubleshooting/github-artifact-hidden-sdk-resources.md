@@ -95,21 +95,106 @@ The archive verifier also rejects an altered extracted file and accepts its rest
 These controls validate membership and byte comparison,
 not a restored application's runtime behavior.
 
-A separate immutable follow-up is dispatched as run `39124269347`,
+A separate immutable follow-up completed as run `39124269347`,
 harness `28bf38b0281f3bcace40b70d8b989d6e0ef7f875`,
 against the same application source `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
-It requests explicit hidden-file inclusion,
-then restores the one source-bound artifact into a fresh checkout without rebuilding the application.
-Its actual domain owner retains the known `none` frontier assertion failure.
-No successful inclusion or restored runtime result is credited until that run's receipts are validated.
+It explicitly included hidden files.
+Its producer passed all 44 owning invocations;
+the fresh consumer verified all 1,036 declared compiled file hashes,
+including the previously absent 3,762-byte resource,
+and restored all 33,802 ZIP members without rebuilding application source.
+The actual first domain import then failed with:
+
+```text
+SyntaxError: The requested module '.../runner.js' does not provide an export named 'nativeAssertActive'
+```
+
+This is a distinct restored topology boundary;
+it does not retract the verified hidden-resource inclusion.
+
+### Materialized symlinks change module identity and dependency resolution
+
+The frozen application source is `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Its `package/pi-plugin/auto-mode/native/build-activation.ts:43` activates an immutable release by symlink:
+
+```typescript
+// package/pi-plugin/auto-mode/native/build-activation.ts:43
+const link=`${output}.link`;
+await symlink(basename(output),link,'dir');
+```
+
+The pinned uploader's `followSymbolicLinks: true`,
+quoted in the root-cause section,
+collects regular bytes through that link.
+The measured ZIP extraction restores `dist/native` as a directory.
+The frozen `package/pi-plugin/auto-mode/native/contract/integration/current-sdk/paths.ts:28`
+derives the loader root from the loaded module URL:
+
+```typescript
+// package/pi-plugin/auto-mode/native/contract/integration/current-sdk/paths.ts:28
+export const nativeRoot: string = fileURLToPath(new URL(
+  '../../../',
+  import.meta.url
+));
+```
+
+`package/pi-plugin/auto-mode/native/loader.ts:51` maps exact original module URLs,
+and `loader.ts:153` looks up the resolved URL:
+
+```typescript
+// package/pi-plugin/auto-mode/native/loader.ts:153
+const hostModule = hostModules.get(resolved.url);
+```
+
+The flattened loader root produces a `dist/native/pi/coding-agent/.../runner.js` key,
+while the generated emitter requests `dist/native-release-rIbI0D/pi/coding-agent/.../runner.js`.
+The corrected measured probe records unequal URLs before activation and equal URLs afterward.
+The same runner bytes then expose the maintained `nativeAssertActive` export through the loader.
+This excludes SDK runner byte drift as the cause of the changed namespace.
+
+Activation alone is insufficient.
+In run `39126088565`,
+it advances the actual owner to `Error: Cannot find module 'which'` from `cross-spawn`.
+The frozen `package/pi-plugin/auto-mode/native/build-emission.ts:174`
+links each emitted package to its installed dependency graph:
+
+```typescript
+// package/pi-plugin/auto-mode/native/build-emission.ts:174
+await linkDependencies({
+  target: join(target, 'node_modules'),
+  source: dirname(dirname(installed)),
+});
+```
+
+The artifact materializes those dependency trees too.
+Run `39126304854`,
+harness `bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e`,
+preserves those directories,
+restores the exact source-owned dependency-link formula for coding-agent,
+agent,
+and AI,
+and invokes the actual source activation function.
+No application source is built and no unit suite runs in that consumer.
+Permission and prohibition then pass with zero HTTP/provider requests;
+`none` reaches the retained source assertion,
+actual `unresolved` versus expected `unspecified`.
+The observed namespace has `nativeAssertActive`,
+`nativeCreateContext`,
+and `nativeEmitError` only after the corrected topology.
 
 ## Verified workarounds
 
-No replacement is yet runtime-qualified by this document.
-The explicit-input follow-up separates uploader membership,
-source and dependency admission,
-restoration,
-and actual host execution.
+Explicit hidden-file inclusion is membership-qualified by run `39124269347`.
+For this native artifact,
+restoring the active-release and installed-dependency symlinks is additionally runtime-qualified
+through permission and prohibition by run `39126304854`.
+The source's `none` assertion remains red.
+The immutable control workflow records the runnable restoration and actual owner invocation;
+its six commands retain the flattened negative control and activated positive control.
+Generated absolute import locations restrict this result to the measured GitHub workspace layout.
+This does not qualify arbitrary relocation,
+another OS,
+or a dependency-free artifact.
 Broad hidden-file inclusion also requires keeping the upload path restricted to reviewed outputs;
 enabling it for a whole checkout could include unrelated files.
 
@@ -119,6 +204,12 @@ enabling it for a whole checkout could include unrelated files.
 - Treating an explicit hidden ancestor as proof that hidden descendants are included.
 - Silently dropping missing producer declarations from a verifier.
 - Calling the omitted resource a runtime requirement before exercising that consumer boundary.
+- Restoring regular bytes alone while dropping source-owned activation and dependency-link topology.
+- Treating activation alone as sufficient:
+  it removes the missing-export boundary but exposes the independent missing-dependency boundary.
+- Crediting the first topology run's namespace probes:
+  their `.mjs` spelling for `paths.ts` was a harness error,
+  corrected and rerun in `39126304854`.
 
 ## Upstream filing decision
 
@@ -131,7 +222,7 @@ the integration omitted an input whose false default is explicit in the pinned a
   but the integration already has a documented control.
 - No upstream change proposal is necessary for the measured omission.
 - The failure is reproducible as an artifact-membership comparison,
-  while restored runtime impact remains unmeasured.
-- A repository-side explicit-input consumer is being tested without changing production workflows.
+  while the separate restored topology controls qualify the stated native scenarios.
+- The repository-side explicit-input and topology controls run without changing production workflows.
 - No issue or comment was filed,
   and no defect-only duplicate search is represented as completed.
