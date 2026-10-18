@@ -31,8 +31,12 @@ The coordinator will separately add its forthcoming coherent-graph measurements 
   SDK VMs and build requests in distinct product boundaries.
   Architecture request wall time is not architecture-builder billing evidence.
 
-The active coverage and platform researchers have been asked for their canonical inventories.
-The source and resource joins proceed independently while those responses are pending.
+The active coverage and platform researchers supplied their canonical inventories.
+The first captured source set has normalized 113 native CI job attempts,
+72 GitHub job records,
+seven SDK VMs and 22 BuildKit build identities privately.
+All 115 CI workflow lookups match one exact immutable definition.
+The public rows and original-source archive await the latest owned-ID refresh and privacy checks.
 
 ## Arithmetic and review policy
 
@@ -49,3 +53,18 @@ The independent three-ZIP guest-transformation review remains queued after publi
 GitHub run `39132577785`,
 harness `3829831039cc43aa717c6c927f835b867e9313b6`.
 This is separate from the allocation normalization and admits no duplicate allocation.
+
+## Source qualifications recorded during normalization
+
+The Rust cumulative campaign total already includes its reuse predecessor;
+those campaign totals cannot be added together.
+Individual provider/job/attempt identities determine deduplication.
+The current SDK reference explicitly says SDK VMs use the Depot CI compute rate;
+SDK remains a distinct product and included-credit eligibility remains unresolved.
+The BuildKit request-window proxy remains separate from unobserved architecture-builder billing.
+
+A GitHub `started_at` value is insufficient to identify allocated compute.
+The coordinator's queued corrupt-expression control has that timestamp with empty runner assignments.
+The normalizer requires positive runner assignment and an actually started step before pricing execution.
+Skipped or setup-rejected records retain their missing execution boundaries explicitly.
+The later guest cohort remains uncredited pending its separate original-archive review.

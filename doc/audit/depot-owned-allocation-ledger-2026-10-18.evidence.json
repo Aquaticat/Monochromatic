@@ -20,7 +20,9 @@
     "nominalCompute": "List-price arithmetic, not invoice or observed VM billing",
     "standardPublicGitHubActions": "Separate zero-compute category",
     "reservations": "Separate maximum bounds, not added to observed nominal compute",
-    "buildKit": "Request/multiarch wall time does not identify per-architecture builder billing"
+    "buildKit": "Request/multiarch wall time does not identify per-architecture builder billing",
+    "githubExecutionEligibility": "Require nonempty runner assignment and an actually started step; started_at alone may be populated while queued",
+    "sdkRate": "Fresh SDK reference explicitly documents Depot CI per-vCPU-second compute rate; product/credit eligibility stay separate"
   },
   "workAreas": [
     {
@@ -153,6 +155,19 @@
     "sourceDocuments": 20,
     "candidateNativeRunIds": 75,
     "candidateGithubRunIds": 40,
-    "candidateClassification": "Exact owned identifiers from retained source; jobs/attempts, omitted prerequisites and cumulative mirrors still being reconciled"
+    "candidateClassification": "Exact owned identifiers from retained source; jobs/attempts, omitted prerequisites and cumulative mirrors still being reconciled",
+    "nativeWorkflowMetadataCaptured": 75,
+    "nativeJobAttemptsNormalizedPrivately": 113,
+    "githubJobRecordsNormalizedPrivately": 72,
+    "sdkVmRecordsNormalizedPrivately": 7,
+    "buildKitBuildIdentitiesNormalizedPrivately": 22,
+    "exactWorkflowDefinitionMatches": 115,
+    "latestOwnedIdsPendingFinalSnapshot": [
+      "3125s62dwd",
+      "39134064943",
+      "25jpltfpkq",
+      "39132577785"
+    ],
+    "rawPublicSourceArchive": "Assembly/privacy check pending; normalized rows are not yet published"
   }
 }
