@@ -61,7 +61,7 @@ try {
   writeFileSync(join(evidence, 'cgroups-after-tests.json'), JSON.stringify(remaining, null, 2) + '\n');
   const binary = join(process.env.CARGO_TARGET_DIR, 'debug/wg-quicker-exempt');
   for (const path of remaining.filter(path => /\/wg-quicker-exempt-[^/]+$/u.test(path))) command('cleanup-detach-' + path.split('/').at(-1), binary, ['detach', path], true);
-  const ownedPath = path => path.startsWith('/sys/fs/cgroup/wg-quicker-exempt-') || /^\/sys\/fs\/cgroup\/user.slice\/user-3[0-9]{9}\.slice(?:\/|$)/u.test(path) || path === '/sys/fs/cgroup/user.slice';
+  const ownedPath = path => path.startsWith('/sys/fs/cgroup/wg-quicker-exempt-') || /^\/sys\/fs\/cgroup\/user\.slice\/user-3[0-9]{9}\.slice(?:\/|$)/u.test(path) || path === '/sys/fs/cgroup/user.slice';
   writeFileSync(join(evidence, 'new-unrelated-cgroups-not-touched.json'), JSON.stringify(remaining.filter(path => !ownedPath(path)), null, 2) + '\n');
   for (const path of remaining.filter(ownedPath).sort((left, right) => right.length - left.length)) {
     if (statSync(path, { throwIfNoEntry: false })) rmdirSync(path);
@@ -70,7 +70,8 @@ try {
   writeFileSync(join(evidence, 'cgroups-after-cleanup.json'), JSON.stringify(leaked, null, 2) + '\n');
   assert.equal(leaked.length, 0);
   command('unmount-owned-bpffs', 'umount', ['/sys/fs/bpf']);
-  command('unmount-owned-cgroup2-binding', 'umount', ['/sys/fs/cgroup']);
+  const unmounted = command('unmount-owned-cgroup2-binding', 'umount', ['/sys/fs/cgroup'], true);
+  if (unmounted !== 0) command('detach-owned-cgroup2-binding', 'umount', ['--lazy', '/sys/fs/cgroup']);
 }
 assert.equal(status, 0, 'Existing privileged tests failed; retained JUnit and native output distinguish product assertions from prerequisites');
 //endregion

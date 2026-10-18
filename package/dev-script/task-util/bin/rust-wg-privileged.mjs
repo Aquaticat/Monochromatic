@@ -26,9 +26,20 @@ try {
   const nextest = run('installed-nextest-path', 'mise', ['which', 'cargo-nextest']).stdout.trim();
   const node = run('installed-node-path', 'mise', ['which', 'node']).stdout.trim();
   environment.PATH = [dirname(cargo), dirname(nextest), environment.PATH].join(':');
+  run('owned-package-manager-help', 'apt-get', ['--help']);
+  run('owned-package-index-refresh', 'sudo', ['--non-interactive', 'apt-get', 'update']);
+  run('owned-init-reaper-install', 'sudo', ['--non-interactive', 'apt-get', 'install', '--assume-yes', '--no-install-recommends', 'tini']);
+  run('owned-init-package-version', 'dpkg-query', ['--show', '--showformat=${binary:Package}\t${Version}\n', 'tini']);
+  run('owned-init-package-verify', 'dpkg', ['--verify', 'tini']);
+  run('owned-init-version', '/usr/bin/tini', ['--version']);
+  run('owned-init-help', '/usr/bin/tini', ['--help']);
+  const probe = join(root, 'package/dev-script/task-util/bin/rust-init-probe.mjs');
+  const namespace = ['--non-interactive', 'unshare', '--mount', '--pid', '--fork', '--kill-child', '--mount-proc', '--propagation', 'private', '--'];
+  run('node-init-orphan-positive-control', 'sudo', [...namespace, node, probe, 'zombie', join(evidence, 'node-init-orphan.json')]);
+  run('proper-init-orphan-reaping-control', 'sudo', [...namespace, '/usr/bin/tini', '--', node, probe, 'reaped', join(evidence, 'tini-init-orphan.json')]);
   const config = nextestConfig('wg-privileged');
   const variables = Object.entries(environment).filter(([key]) => ['PATH', 'HOME', 'TMPDIR', 'CARGO_HOME', 'CARGO_TARGET_DIR', 'CARGO_BUILD_JOBS', 'CARGO_INCREMENTAL', 'CARGO_PROFILE_DEV_DEBUG', 'RUSTUP_HOME'].includes(key)).map(([key, value]) => key + '=' + value);
-  const result = run('owned-root-network-mount-cgroup-pid-namespaces', 'sudo', ['--non-interactive', 'unshare', '--mount', '--net', '--cgroup', '--pid', '--fork', '--kill-child', '--mount-proc', '--propagation', 'private', '--', '/usr/bin/env', ...variables, node, join(root, 'package/dev-script/task-util/bin/rust-wg-namespace.mjs'), project, evidence, cargo, config], { allowFailure: true });
+  const result = run('owned-root-network-mount-cgroup-pid-namespaces', 'sudo', ['--non-interactive', 'unshare', '--mount', '--net', '--cgroup', '--pid', '--fork', '--kill-child', '--mount-proc', '--propagation', 'private', '--', '/usr/bin/tini', '--', '/usr/bin/env', ...variables, node, join(root, 'package/dev-script/task-util/bin/rust-wg-namespace.mjs'), project, evidence, cargo, config], { allowFailure: true });
   writeFileSync(join(evidence, 'privileged-boundary.json'), JSON.stringify({ owningTask: '//package/cli/wg-quicker-exempt:test:functional', adapter: 'Nextest selects the same ignored tests with default concurrency', admission: 'Private mount, network, cgroup and PID namespaces; new bpffs and private writable bind of inherited cgroup2; loopback only; no user namespace', status: result.status }, null, 2) + '\n');
   assert.equal(result.status, 0, result.output.slice(-6000));
 } finally { finish(); }
