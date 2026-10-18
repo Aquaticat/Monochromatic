@@ -37,6 +37,7 @@ globalThis.gc();
 const retainedHeap=process.memoryUsage()
   .heapUsed
   -initialHeap;
+assert.ok(retainedHeap<3_200_000,`Input-only source receipts retain ${retainedHeap} bytes, exceeding 3,200,000`);
 const origins=pool.readConstructedInputs();
 assert.equal(
   origins.length,
