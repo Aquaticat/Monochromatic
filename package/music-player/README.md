@@ -687,7 +687,9 @@ which binds its exact bytes to the workflow run that built it:
 
 ```bash
 # Fails if the file was changed after the workflow built it.
-gh attestation verify <file> --repo Aquaticat/Monochromatic
+gh attestation verify <file> --repo Aquaticats/Monochromatic
+
+# Releases up to 0.1.4 were attested under the earlier owner name, so verify those with --owner Aquaticat.
 
 # Compare against the checksum file attached to the release.
 sha256sum --check --ignore-missing SHA256SUMS

@@ -489,6 +489,17 @@ before saying it matches, QAB):
   and none import `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: the window
   itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
   0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
+  RELEASED `music-player-v0.1.5` on 2026-10-18 (bump commit `216ea6dedc`, run `39101350150`, all jobs green, after a
+  green dry run on main, `39098277889`): the Windows normal-close abort fix, startup message box, ANSI gating, batched
+  cache commits, the ten desktop review fixes and third-party license notices (two extra assets,
+  `-desktop-third-party-licenses.txt` and `-android-third-party-licenses.txt`, and `THIRD-PARTY-LICENSES.txt` in the
+  Linux archives). Eleven files. I downloaded them: `sha256sum --check` passed for all eleven, attestation exit 0
+  for all eleven, APK certificate `9de6e9a4...6926`, Linux x64 prints `music-player 0.1.5` and `--licenses` prints the
+  notices, the musl x64 binary prints it in `alpine:3.24`, `pefile` shows Subsystem 2 on the three Windows exes
+  (MSVC 14.51, GNU 2.47) with no C-runtime DLL imports. Attestation lookup changed with the repository owner name:
+  0.1.4 and older verify with `--owner Aquaticat`, 0.1.5 with `--repo Aquaticats/Monochromatic` (README and runbook
+  corrected). Not run by me: any Windows or macOS binary (so the normal-close fix is proven by CI only on forced
+  paths, not by closing a window on Windows), arm64 binaries, anything on a real device.
 
 - 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
   `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
