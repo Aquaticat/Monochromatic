@@ -74,9 +74,6 @@ await assert.rejects(()=>fetch(route,{method:'POST',body}),{name:'NativeCliFixtu
 assert.deepEqual(await readFile(receipt),before,'Rejected requests must not append a successful receipt');
 console.log('accepted-original-names-and-standard-jsonl-before-response');
 `;
-assert.equal(await run({script:acceptedScript,receipt:join(directory,'requests.jsonl')}),
- 'accepted-original-names-and-standard-jsonl-before-response\n');
-
 const failureScript=`
 import assert from 'node:assert/strict';
 await assert.rejects(()=>fetch(${JSON.stringify(route)},{method:'POST',body:${JSON.stringify(requestJSON)}}),function receiptWriteFailed(error){return error instanceof Error&&['EISDIR','EPERM'].includes(error.code);});
@@ -84,4 +81,6 @@ console.log('receipt-write-failure-prevents-local-response');
 `;
 assert.equal(await run({script:failureScript,receipt:directory}),
  'receipt-write-failure-prevents-local-response\n');
+assert.equal(await run({script:acceptedScript,receipt:join(directory,'requests.jsonl')}),
+ 'accepted-original-names-and-standard-jsonl-before-response\n');
 console.log(JSON.stringify({complete:true,acceptedRoutes:3,originalNames:true,standardJSONLBeforeResponse:true,rejectionsLeaveReceiptUnchanged:true,receiptFailurePreventsResponse:true,completeChildStderrEmpty:true}));
