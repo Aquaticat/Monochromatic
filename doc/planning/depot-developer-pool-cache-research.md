@@ -686,6 +686,46 @@ The retained final JSON was recovered from that combined capture without repeati
 This was a collector stream-separation error,
 not a failed CI job or a malformed stdout JSON response.
 
+## Independent review of the pnpm archive comparison
+
+The separate [pnpm experiment](depot-pnpm-store-fresh-job-research.md)
+now has a completed fresh-job comparison.
+Independent review checked its [retained evidence](../audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json)
+against frozen Git source,
+original job API receipts,
+downloaded ZIP bytes and current GitHub artifact metadata.
+All phases bind to source `2a155eec4935e5df225cb7a90af573357c3a94dc`.
+The checks covered five source-file hashes,
+16 ZIP digests,
+67 member hashes,
+224 step intervals and conclusions,
+and every reported summary calculation.
+Read-only artifact API requests at `2026-10-18T05:54:02Z` independently confirmed
+the 16 provider digests and their source/run bindings.
+Every install-bearing job passed its build and both existing consumer tasks.
+The separate branch jobs checked archive access and manifests without installing or exercising application consumers.
+
+For the measured workspace install,
+GitHub restore plus install takes 11 to 12 seconds warm versus 9 to 10 seconds with the cache action disabled.
+Depot takes 4 to 5 seconds warm versus 3 seconds disabled.
+The pnpm subprocess saves time and every warm log records 582 reused packages with zero downloads;
+archive restoration consumes that saving at the measured preparation boundary.
+Leaving this exact pnpm archive disabled by default is supported by the observed samples.
+The shorter Depot warm whole-job intervals also contain faster checkout before restoration,
+so they do not isolate a pnpm-cache benefit.
+Only two repetitions per comparative phase were collected,
+with varying GitHub CPU models and unmatched provider images.
+No provider-wide speed multiplier follows.
+
+The review recomputed the timestamp-price proxy for all 13 retained Depot jobs,
+including failed and cancelled harness attempts:
+1,121 seconds and USD $0.2242 at the recorded label rate.
+Allowance consumption,
+allocation billing boundaries and storage-inclusive cost remain unverified.
+Changed dependency/toolchain archive controls and untrusted-writer authorization remain separate unexercised cases.
+The missing experimental GitHub entry establishes neither a deletion nor its disappearance's cause.
+No additional cloud jobs or settings changes were needed for this review.
+
 ## Verification and retained fixtures
 
 Scoped Markdown lint,
@@ -709,8 +749,8 @@ No existing shared cache or account retention setting was changed.
 Official docs and open source establish supported interfaces and documented boundaries.
 Historical linked reports establish only their measured workloads.
 The persistent-disk and automatic-authorization ledgers establish their specific exercised boundaries.
-New archive comparisons,
-snapshot designs,
+The independently reviewed archive comparison establishes only its frozen Linux workspace-install workload.
+Snapshot designs
 and broader remote compiler-cache designs require their corresponding consumer runs before adoption.
 No overall cached speedup,
 cross-provider shared archive,
