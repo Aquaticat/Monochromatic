@@ -225,3 +225,6 @@ run = ["node --check bin/rust-bounded-profile.mjs", "node --check bin/rust-codex
 
 [tasks."research:rust:planted"]
 run = "node bin/rust-planted-profile.mjs"
+
+[tasks."research:rust:truepeak"]
+run = "node bin/rust-truepeak-all.mjs"
