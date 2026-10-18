@@ -13,6 +13,8 @@
 //! await autoPush({ gitPath, cwd, landedOid });
 //! ```
 
+/// The reconcile of a push that a moved remote branch rejected, and the lines it adds to the output.
+use super::auto_push_reconcile::{RECONCILE_FAILED_PREFIX, RECONCILE_LINE_PREFIX, reconcile_divergent_push};
 /// The single-flight coordinator, its Git command builder and its error type.
 use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, SingleFlightKind, SingleFlightOutcome, git_command,
@@ -107,7 +109,7 @@ pub fn filter_push_output(output: &str, exit_code: i64) -> String {
     return output
         .split('\n')
         .filter(|line| {
-            return line.starts_with(REMOTE_LINE_PREFIX);
+            return line.starts_with(REMOTE_LINE_PREFIX) || line.starts_with(RECONCILE_LINE_PREFIX);
         })
         .collect::<Vec<&str>>()
         .join("\n");
@@ -244,7 +246,8 @@ fn report_outcome(
             outcome.tip
         )?;
     }
-    if failed {
+    // A reconcile failure already says why the commit is unpublished; "run `git push`" would repeat a push that cannot succeed.
+    if failed && !outcome.output.contains(RECONCILE_FAILED_PREFIX) {
         writeln!(err, "{PUSH_FAILED_NOTE}")?;
     }
     return Ok(AutoPushResult {
@@ -314,7 +317,12 @@ pub fn auto_push(
     );
     let coordinated = {
         let mut push = || {
-            return run_push_command(git, push_arguments);
+            let attempt = run_push_command(git, push_arguments)?;
+            // Only a branch with an upstream can be rejected for a moved remote branch that a merge cures.
+            if has_upstream && attempt.exit_code != 0 {
+                return reconcile_divergent_push(git, &branch_ref, attempt);
+            }
+            return Ok(attempt);
         };
         let mut on_wait = || {
             let line = waiting_line(git, &branch_ref);

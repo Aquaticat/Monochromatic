@@ -810,6 +810,9 @@ pub mod bounded_push;
 /// Single-flight push coordination per branch: owner lock, record joins and the push itself.
 pub mod auto_push_single_flight;
 
+/// Publishing a landed commit that a moved remote branch rejected: the merge is made from objects alone and pushed.
+pub mod auto_push_reconcile;
+
 /// Post-commit auto-push of a landed commit: the push argv, the surfaced output and the failure reporting.
 pub mod auto_push;
 
