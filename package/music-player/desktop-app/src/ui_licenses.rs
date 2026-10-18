@@ -99,6 +99,8 @@ pub(crate) fn open_licenses(window: &AppWindow) {
     }
     project(window);
     tracing::info!(line_count, build_us = started.elapsed().as_micros(), "opened the Licenses page");
+    // The Licenses row handles Enter and Space itself, so no key line follows; the end-to-end run reads the route from this.
+    crate::ui_state_log::emit(window, "licenses");
 }
 
 /// What: `close_licenses` returns from the Licenses page to Settings and releases the notice lines.
@@ -112,6 +114,7 @@ pub(crate) fn close_licenses(window: &AppWindow) {
         state.route = Route::Settings;
     });
     project(window);
+    crate::ui_state_log::emit(window, "licenses-closed");
 }
 
 /// Unit tests in `ui_licenses_tests.rs`, pulled in at this point.
