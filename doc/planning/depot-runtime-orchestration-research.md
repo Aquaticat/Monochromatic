@@ -11,7 +11,9 @@ The original ZIP is retained and API-digest/CRC/member-hash verified.
 The preceding seventh attempt failed before guest initialization because its diagnostic workflow omitted pnpm setup.
 The corrected replay restores the original source-owned frozen install recipe.
 The successful guest does not identify the process that removed named device ACLs in the raw controls.
-Publication of the complete provider/diagnostic sequence and final KVM-note update remains parent-owned.
+The [complete provider/diagnostic sequence](../audit/depot-mvm-kvm-2026-10-18.evidence.json)
+and final KVM-note update are public,
+with all eight original ZIPs and an independently scoped job-interval cost ledger.
 
 The [process comparison receipt](../audit/depot-process-timeouts-2026-10-18.evidence.json)
 now retains all original ZIPs and actual step boundaries.

@@ -18,7 +18,13 @@ CRC and SHA verification.
 The named-ACL removal writer remains unidentified.
 The failed seventh attempt `39124932077` lacked workspace pnpm setup and did not exercise a guest;
 the eighth attempt restored the original frozen install recipe before execution.
-The parent owns publication of the complete VM/KVM sequence and its final troubleshooting correction.
+The [complete VM/KVM sequence](../audit/depot-mvm-kvm-2026-10-18.evidence.json)
+and final troubleshooting correction are public.
+All eight original ZIPs are retained.
+The job-level ledger is 619 observed seconds,
+USD 0.0498 gross Depot compute value before allowances,
+and a separately labeled USD 0.1238 all-provider four-CPU equivalent proxy.
+It does not establish an invoice or billable VM lifetime.
 
 The per-test identity adapter passed actual `st40hvmw90`:
 both physical shards found historical timings for all 34 candidates and passed their exact 17-case partitions.
@@ -62,8 +68,7 @@ The [source-backed note](../troubleshooting/depot-step-timeout-process-boundary.
 keeps that difference separate from unknown signal routing,
 VM release and billing.
 
-The parent queue is VM/KVM evidence publication,
-container Git/libatomic prerequisite notes,
+The parent queue is container Git/libatomic prerequisite notes,
 job-environment recurrence documentation,
 combined provider/cost/critical-path modeling,
 the approved six-section expanded report and independent sufficiency review.

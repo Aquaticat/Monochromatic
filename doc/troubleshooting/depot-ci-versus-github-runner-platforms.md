@@ -201,8 +201,49 @@ Standard GitHub KVM use is measured here rather than inferred from a vendor prom
 Contribution-policy and maintainer-intent conclusions await an identified component;
 no upstream fault is assigned to an unidentified writer.
 
+## Corrected actual GitHub guest lifecycle
+
+The corrected [eighth control][github-kvm-group-replay]
+at `64d6a666e63e4773ee56666148ae9c8ba371877a`
+restores the original workspace prerequisites and passes the actual frozen `mvm` owner.
+The child retains UID/GID `1001`,
+adds actual device group `993` and makes no group-database change.
+Its KVM monitor reports present and enabled.
+Guest stdout contains the nonce,
+the nonexistent-path stderr control returns exit `2`,
+and a 51-byte push/pull roundtrip matches
+`07442f8c71b3a17811a517cd5fceea7977e97e6f4a17d6a95a7602b7dc7daae8`.
+
+Cleanup finds no private domain,
+both owned daemon PIDs exited and the error list is empty.
+The [public sequence receipt][mvm-sequence-evidence]
+retains all eight original ZIPs:
+the native failed and successful attempts,
+the paired initial standard/Depot GitHub jobs and the four standard-GitHub diagnostic jobs.
+GitHub hashes match the advertised API digests;
+native archives have API-size,
+local SHA256 and CRC verification.
+
+Standard GitHub,
+Depot's GitHub runner and native Depot CI now each have a passing actual guest lifecycle in this cohort.
+The earlier failed standard-GitHub libvirt capability check remains a failed historical observation.
+It cannot establish that provider's general inability to execute this workload.
+The successful group-based replay qualifies a scoped process-identity workaround;
+it does not identify the ACL writer or establish that simple descriptor close caused the mutation.
+No Android emulator ran in any of these cloud controls.
+
+The final job-interval ledger totals 619 observed job seconds.
+Depot allocations have USD 0.0498 nominal compute value at list rates before allowances;
+the standard public-repository GitHub compute rate is zero.
+The separate all-provider four-CPU equivalent proxy is USD 0.1238.
+These are interval-based planning quantities,
+not an invoice or measured billable VM lifetime.
+Historical admission reservations remain preserved separately.
+
 [gha-kvm-doc]: https://depot.dev/docs/github-actions/troubleshooting
 [gha-kvm-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39104064329
 [gha-kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
 [gha-metal-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
 [github-kvm-access-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39123865841
+[github-kvm-group-replay]: https://github.com/Aquaticats/Monochromatic/actions/runs/39125868595
+[mvm-sequence-evidence]: ../audit/depot-mvm-kvm-2026-10-18.evidence.json
