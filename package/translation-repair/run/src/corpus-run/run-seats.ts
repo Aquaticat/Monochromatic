@@ -1,14 +1,14 @@
 import {
+  type BudgetView,
   NO_PROVIDER,
   OPENROUTER_WITHHELD,
   providerServing,
   reachOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
-import { holdSet, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  ProviderName,
-  RosterModelId,
+import {
+  holdSet,
+  type ProviderName,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   assertCheckerIndependence,

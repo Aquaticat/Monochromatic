@@ -13,10 +13,10 @@ import {
   type EntryAgreement,
   FIXED_TREE_DIR,
   pageAgreement,
+  type PageLengthCheck,
   PEOPLE_DIR,
 } from '@monochromatic-dev/translation-repair-page-check/ts';
 import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { PageLengthCheck, } from '@monochromatic-dev/translation-repair-page-check/ts';
 
 //region Verify published entry
 // One entry's artifact and page, read and judged by the one definition a pass

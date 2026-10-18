@@ -1,9 +1,9 @@
 import {
+  type BudgetView,
   NO_PROVIDER,
   providerServing,
   reachOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { rosterQuorumSize, } from '@monochromatic-dev/translation-repair-stage/ts';
 

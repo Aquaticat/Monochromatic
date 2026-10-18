@@ -9,6 +9,7 @@ import {
   armCallDeadline,
   type Decider,
   type DecisionReply,
+  type DecisionReplyShapeError,
   type DecisionRequest,
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
@@ -17,9 +18,14 @@ import {
   reportSpend,
   type RetryPolicy,
 } from '@monochromatic-dev/translation-repair-provider/ts';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { decisionsCardOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import {
+  type ModelTransport,
+  SyntheticHttpError,
+} from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import {
+  type DecisionsCardMissingError,
+  decisionsCardOf,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Decisions client
 // THE FIFTH TRANSPORT, and the first that is not a chat completion:
@@ -100,11 +106,11 @@ export function createDecisionsClient(
 
    @returns Answers, model and usage as the endpoint reported them
 
-   @throws {@link import('@monochromatic-dev/translation-repair-shared-contract/ts').DecisionsCardMissingError} when the seat is not a decision seat
+   @throws {@link DecisionsCardMissingError} when the seat is not a decision seat
 
    @throws {@link SyntheticHttpError} on a non-success status
 
-   @throws {@link import('@monochromatic-dev/translation-repair-provider/ts').DecisionReplyShapeError} on a body that is not the documented shape
+   @throws {@link DecisionReplyShapeError} on a body that is not the documented shape
 
    @example
    ```ts

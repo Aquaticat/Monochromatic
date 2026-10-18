@@ -6,14 +6,12 @@ import {
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
+  type Decider,
   type HyperClient,
   hyperRequestsPerHour,
   type OpenRouterClient,
   type ProviderBudgets,
-} from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  Decider,
-  SyntheticClient,
+  type SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { createDecisionsClient, } from '../decisions-client.ts';

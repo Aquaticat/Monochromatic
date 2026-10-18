@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  type BudgetView,
   HOLD_POLL_MS,
   shortestHold,
   waitOutHold,
@@ -12,7 +13,6 @@ import {
   RUN_SEATS,
   SEAT_WITHHOLD_ASKS,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   PROVIDER_ORDER,
   providerRecord,

@@ -1,7 +1,9 @@
 import { chunkByHeadings, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { repeatGroupsOf, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { RepeatGroup, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type RepeatGroup,
+  repeatGroupsOf,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   CONTROL_ENTRY_ID,
   CONTROL_MAXIMAL_LINES,

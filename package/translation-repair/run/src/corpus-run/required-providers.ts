@@ -12,14 +12,16 @@ import {
   openRouterIsDry,
   syntheticIsDry,
 } from '@monochromatic-dev/translation-repair-provider/ts';
-import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import {
+  exchangeFailureLogText,
+  type ModelTransport,
+} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   isProviderName,
   PROVIDER_ORDER,
   type ProviderName,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { idListFlag, } from './command-flags.ts';
 import type { ReadsFlag, } from './command-line-types.ts';
 

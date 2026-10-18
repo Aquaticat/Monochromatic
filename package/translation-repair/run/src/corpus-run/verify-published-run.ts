@@ -7,8 +7,8 @@ import {
   declinedEntryIds,
   digestPipeline,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { EntryAgreement, } from '@monochromatic-dev/translation-repair-page-check/ts';
 import {
+  type EntryAgreement,
   pairPublishedPages,
   publishedEntryIds,
   settledEntryIds,
