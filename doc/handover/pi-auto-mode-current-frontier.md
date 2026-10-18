@@ -1,129 +1,149 @@
 # Auto-mode current frontier
 
-## Latest verified boundary and user steering
+## Current checkpoints and supervision
 
-The next bounded MiMo assignment is an independent native policy-input cluster:
-`native/contract/integration/policy-source/system-slot*`,
-`policy-loader*` and necessary sibling type declarations only.
-The source worker retains exclusive `src/` ownership.
-The native assignment must preserve existing entry points and capability/currentness behavior,
-replace unsafe state typing with real contracts,
-avoid casts and lint suppression,
-and stop after one coherent committed cluster for supervisor verification.
-The supervisor owns private builds,
-consumer checks,
-guard mutations and package documentation.
-It must not publish into root `dist` while either worker is live.
-The user has explicitly authorized invoking and monitoring MiMo through Pi RPC.
-Each session remains bounded to 2 GiB and two CPUs with private state and a qualified Git wrapper.
+The work remains incomplete.
+Do not return another readiness handoff.
+The human keeps root `TCV` and `CPN` unchanged and wants missed-boundary lessons in package docs.
+The human's UX requirement is correct use by reasonable consumers without unexpected behavior;
+documentation alone does not excuse a surprising outcome.
+An owned Git-wrapper defect or UX issue should be filed in this repository's GitHub tracker.
 
-The private compaction projection cluster now passes scoped formatting with zero warnings and zero errors,
-private native build `jj5kwZ`,
-post-build fresh-cache types and the maintained `test:native:compaction-inputs` consumer.
-That consumer uses actual SDK file operations and confirms original callback identity,
-independent phase snapshots and continued ordinary-set rejection.
-Only `compaction-file-paths.ts` is adopted from the private candidate.
-The native iterator retains an explicit receiver contract and is called with the qualified native set.
-This is a declaration and normalization cleanup,
-not a code-size reduction claim.
-Committed-source checks and retargeted private guard mutations remain queued.
-The historical guard-mutation driver still pins `ae5358be05` and old source needles;
-do not rerun it unchanged.
+### Active workers and ownership
 
-Correction to the attempted RPC guidance timing:
-an empty set of active tool events does not establish a settled agent boundary.
-The model request can still be in flight.
-After the navigation guidance was accepted,
-the next fixture edit reached selector `162f589d-f975-4889-9552-17ae43c18ca2`
-with `Observed request is no longer current`.
-The supervisor inspected the complete edit,
-confirmed that it only changes the owned fixture's internal wrapper parameter shape,
-and supplied explicit Allow through RPC under the existing source-fix authorization.
-This is fresh approval of that exact operation,
-not a fix for automatic currentness failure.
-Further guidance must wait for actual settlement,
-not merely a tool-completion event.
+Both real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
+thinking high,
+2 GiB memory,
+two CPUs,
+private homes,
+private caches and qualified Git wrappers.
+The user explicitly authorizes invoking and monitoring MiMo.
 
-Subsequent affected-catalog checks on private `FGiMf5` pass startup relevance
-and judgment preparation.
+- Source worker: `pi-mimo-rpc-session-7O5MPn`,
+  controller session `91455`,
+  pinned native `EWv4wy`.
+  It exclusively owns `src/` and is checkpointing its native-return fixture changes.
+  Navigation assertion evidence is delivered,
+  but its correction is not yet independently verified.
+- Native worker: `pi-mimo-rpc-session-j2yRJI`,
+  controller session `41734`,
+  pinned native `LytMAt`.
+  It owns only `policy-source/system-slot*`,
+  `policy-loader*` and necessary sibling implementation/types for that boundary.
+  It must preserve capability identity,
+  source currentness,
+  reload and collector linkage,
+  then settle after one coherent committed cluster.
+- Supervisor: all other native code,
+  private builds,
+  consumer verification,
+  guard mutations and docs.
+  Do not publish root `dist` while workers are live.
+  Do not edit either worker's files concurrently.
+
+The native worker was deliberately aborted to an actual settled boundary after read-only commands
+violated shell conventions.
+The supervisor verified that its scope had no edits,
+then sent `mimo-native-command-guidance.json` as a fresh prompt.
+Its RPC receipt confirms acceptance.
+Use actual settlement for guidance;
+an empty set of active tools does not prove that a model request is idle.
+The earlier between-tools follow-up was followed by selector
+`162f589d-f975-4889-9552-17ae43c18ca2` with `Observed request is no longer current`.
+Explicit Allow followed inspection of that exact owned fixture edit.
+That approval does not fix automatic currentness failure.
+
+### Verified code checkpoints
+
+Compaction projection commit `6fac7c5648`:
+
+- Scoped committed-source lint: zero warnings and errors on one file with 486 rules.
+- Fresh-cache committed-source types pass.
+- Private native build `jj5kwZ` and actual SDK compaction-input consumer pass.
+- Event-role,
+  input-phase,
+  string-member and complete-property guard removals each rebuild successfully
+  and fail the maintained actual SDK consumer at `Missing expected exception`.
+  Each private source is restored and root source/publication hashes remain unchanged.
+  Receipt: `compaction-committed-guard-mutants-receipt.json` in the primary scratch directory.
+
+This cleanup keeps an explicit native iterator receiver and qualified `.call(value)`,
+fills declaration comments and separates the changed-field branch.
+It is not a code-size reduction claim.
+The first mutation harness attempt failed before building because its child cwd and container driver path were wrong.
+The supervisor corrected both and retained the failed logs.
+An owned fixture accidentally created at the repository root was moved to
+`recovered-guard-fixture-hRbmV3` under primary scratch.
+Cross-filesystem rename emitted `EXDEV`;
+verified copying preserved every file hash,
+mode and symlink before the originals were removed.
+The recovery is not product-regression evidence.
+
+Frozen `8b34f75c03` builds private JavaScript and native `FGiMf5` successfully.
+Full units,
+session-input aggregate,
+receipt consumer,
+fresh-cache types,
+startup relevance,
+judgment preparation,
+constructor and execution catalogs pass.
+The actual streaming runner retains 10,565,216 bytes for 1,600 events,
+inside the repaired measurement spread.
 The host-isolation catalog passes passive observer,
-passive prompt and permission-after-navigation checks,
-then fails prohibition-after-navigation at the assessment-count assertion:
-actual 2,
-expected 1.
-The independently frozen predecessor `68e7ce538a` reproduces the identical failure against `LytMAt`.
-This is not established as a formatting regression.
-`action-policy/decision-core.mjs` explicitly adjudicates a complete operation after a non-approve clause outcome;
-the stale assertion does not represent that branch.
-MiMo has received the evidence and a scoped request to preserve permission count 1,
+passive prompt and permission navigation,
+then fails prohibition navigation at actual assessment count 2 versus expected 1.
+Frozen predecessor `68e7ce538a` reproduces that same failure against `LytMAt`.
+`action-policy/decision-core.mjs` deliberately requests complete-operation adjudication after non-approval.
+MiMo is asked to retain permission count 1,
 prohibition count 2,
 denial,
-zero executions and stale-operation rejection.
+zero execution and stale-operation rejection.
 No loose positive-count assertion is authorized.
-The receipt confirms RPC `follow_up` acceptance,
-not completion of that correction.
 
-The latest committed documentation renders through the package renderer:
-30 files,
-no broken links.
-Commit `9f4f676ca2` contains exactly the intended five documentation and patch paths.
-GitHub issue 1768 is open with `needs-triage`.
+### Git wrapper and external formatter
 
-The next private native cluster is compaction-file-path projection,
-frozen from `8b34f75c03` in `native-compaction-candidate-sDcd8G`.
-It retains explicit native-iterator receiver ownership,
-fills the declaration documentation gaps,
-and separates the changed-field branch into one statement per line.
-Its formatter,
-types and real built consumer results are not yet claimed.
-No maintained native source is changed by that experiment.
+[Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) is open with `needs-triage`.
+The supervisor's RPC launcher omitted the wrapper from its replacement PATH.
+System Git therefore accepted an empty commit scope and included concurrent staged documents.
+Disposable controls prove that the actual wrapper rejects the empty scope with
+`commit-only/pathspec-required`,
+accepts the captured explicit scope and preserves concurrent staging.
+Both executables have the same generic Git version banner.
+The live source worker now resolves `git` to `/fixture-bin/git`;
+future launches mount and qualify the wrapper explicitly.
+Supervisor commits invoke `.cache/cli-git-bin/git` explicitly.
+This repairs the immediate fixture;
+the durable UX issue remains open.
+The wrapper parser is not blamed for a command it never received.
 
-The user keeps root `CPN` unchanged and places the checkpoint lesson in package docs.
-The user also states the UX requirement:
-reasonable consumers must use the tool correctly without unexpected behavior;
-documentation alone does not excuse surprises.
-The user authorizes filing a GitHub issue for an owned Git-wrapper defect or UX issue.
-
-Frozen source `8b34f75c03` builds private JavaScript and native release `FGiMf5` successfully.
-Full unit tests,
-the session-input aggregate,
-the process-network receipt consumer and fresh-cache types all pass.
-The actual streaming runner retains 10,565,216 bytes for 1,600 progress events,
-inside the previously measured repaired spread.
-These checks do not complete all affected standalone consumer catalogs or the package lint backlog.
-
-The supervisor found a separate launcher defect:
-the RPC fixture's replacement PATH omitted `.cache/cli-git-bin`.
-Ordinary `git` therefore invoked system Git,
-so the wrapper never saw the empty commit path list.
-Disposable probes prove the wrapper rejects that list,
-preserves an explicit commit scope,
-and system Git commits both owned and concurrently staged files with an empty list.
-The live fixture now resolves `git` to a verified wrapper link in `/fixture-bin`.
-Future launches mount that wrapper explicitly and qualify its policy namespace.
-Root commits must now invoke `.cache/cli-git-bin/git` explicitly.
-[Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) records the UX gap;
-issue 575 is related but targets explicit absolute-path bypasses.
-See `doc/troubleshooting/git-policy-wrapper-launcher-path.md` for exact diagnostics and receipts.
-
-The upstream prefer-readonly prototype is now verified:
-all added JavaScript filename cases fail before the guard,
+The upstream prefer-readonly prototype is verified:
+JavaScript filename regressions fail before the guard,
 the complete rule catalog passes after it,
-the standalone helper builds,
-and the actual formatter with the private helper preserves JavaScript grammar.
-Node accepts the result.
-The formatter still reports 60 warnings and zero errors on the scoped file;
-its exit 1 is not a completed lint check.
-The local patch and unpublished issue draft are in
-`doc/troubleshooting/oxlint-prefer-readonly-javascript.md` and its sibling patch artifact.
-Nothing is published upstream or installed into the workspace.
+the helper builds and the actual formatter preserves JavaScript grammar.
+Node accepts the output.
+The scoped formatter still reports 60 warnings and zero errors,
+so its exit 1 is not a completed lint check.
+The patch and unpublished issue draft stay in
+`doc/troubleshooting/oxlint-prefer-readonly-javascript.md` and its sibling patch.
+No upstream issue,
+installed helper or workspace dependency is changed.
 
-Next actions remain affected standalone consumer coverage,
-MiMo's source lint work,
-typed native clusters,
-final configured replay and provider-payload checks,
-runtime dependency census and final artifact cleanup.
-Do not end on a readiness handoff or treat these checkpoints as completion.
+### Remaining independently verifiable work
+
+- Finish and verify the source lint clusters,
+  including the precise navigation assertion correction.
+- Verify the native policy-input cluster and continue typed native consolidation without rule weakening.
+- Finish affected consumer catalogs and repeat original configured interaction,
+  compaction,
+  confirmation and provider-payload checks on a coherent final build.
+- Complete actual runtime module census,
+  final unique-byte footprint and reviewed artifact cleanup.
+- Reconcile package responsibility justifications,
+  final zero lint,
+  complete branch coverage and rendered documentation.
+
+The latest renderer receipt before this refresh reports 30 files and no broken links.
+Render this updated checkpoint before final documentation completion.
 
 ## Purpose and live status
 
@@ -138,7 +158,7 @@ It replaces a 14,000-line chronological checkpoint as the current resume surface
 
 The work is **not complete**.
 The native cancellation-control defect is repaired and consumer-verified.
-MiMo is now performing the first actual lint-editing checkpoint through supervised Pi RPC.
+MiMo source and native policy-input workers are active through supervised Pi RPC.
 Full-package lint completion,
 final configured replays,
 final measurement and final documentation remain open.
@@ -222,7 +242,7 @@ The original failing control remains retained;
 the explicit empty-string case still executes independently.
 The worker's fresh private home does not copy old session scratch files.
 Missing initial scratch in a resumed session is not evidence that every tool call gets a new home.
-The original cancellation/compaction projection files and their tests remain supervisor-owned.
+The cancellation and compaction projection code remains supervisor-owned; src tests belong to the source worker.
 The preceding `eZNsLl` controller closes with exit zero before its measured RSS reaches the configured limit again.
 Its command session is `74937`.
 Do not attribute that closed-controller result to the still-running `7O5MPn` worker.

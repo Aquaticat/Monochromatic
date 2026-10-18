@@ -229,6 +229,12 @@ own-property and string-member checks.
 Its private build,
 fresh-cache type check and actual SDK compaction consumer pass;
 the source file reports zero warnings and zero errors.
+Committed source `6fac7c5648` also passes fresh-cache types and scoped lint.
+Private rebuilt variants remove the event-role,
+input-phase,
+string-member and complete-property guards independently.
+Each removal makes the maintained SDK consumer fail at `Missing expected exception`.
+The private sources are restored and root source/publication hashes remain unchanged.
 
 The SDK's `CompactionPreparation.fileOps` contains native string sets for
 `read`,
