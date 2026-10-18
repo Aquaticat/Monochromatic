@@ -125,7 +125,7 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const fs = await import('node:fs');
 const { join } = await import('node:path');
-const { spawnSync } = await import('node:child_process');
+const { spawnSync, execFileSync } = await import('node:child_process');
 class PhysicalReportFailure extends Error {}
 const base = join(process.cwd(), '.depot/research/test-shards');
 const preparation = JSON.parse(fs.readFileSync(join(base, 'evidence/preparation.json'), 'utf8'));
@@ -133,6 +133,8 @@ const phase = process.env.PROBE_PHASE;
 const index = process.env.PROBE_SHARD_INDEX;
 if (phase !== 'seed' && (phase !== 'shard' || !['0', '1'].includes(index))) throw new PhysicalReportFailure('Unexpected physical seed/shard phase');
 const splitKey = 'research-physical-locks-e02be6c8-20261018';
+const cliVersion = execFileSync('depot', ['--version'], { encoding: 'utf8' }).trim();
+if (!/2\.102\.23/u.test(cliVersion)) throw new PhysicalReportFailure('Actual report CLI differs from the audited release: ' + cliVersion);
 const runs = [];
 for (const repeat of phase === 'seed' ? [1, 2, 3] : [1]) {
   const label = phase === 'seed' ? 'seed-' + repeat : 'shard-' + index;
@@ -140,10 +142,12 @@ for (const repeat of phase === 'seed' ? [1, 2, 3] : [1]) {
   const result = spawnSync('depot', args, { env: { ...process.env, PROBE_REPORT_LABEL: label }, encoding: 'utf8', timeout: 180000, maxBuffer: 8388608 });
   const log = (result.stdout ?? '') + (result.stderr ?? '');
   fs.writeFileSync(join(base, 'evidence', label + '.depot-tests.log'), log);
-  runs.push({ label, status: result.status, signal: result.signal, timedCandidates: /Depot found timings for (\d+) candidate/u.exec(log)?.[1] ?? null, execution: fs.existsSync(join(base, 'evidence', label + '.execution.json')) ? JSON.parse(fs.readFileSync(join(base, 'evidence', label + '.execution.json'), 'utf8')) : null });
+  const upload = /Depot uploaded (\d+) test report file\(s\), processed (\d+) file\(s\), reported (\d+) test\(s\), and skipped (\d+) file\(s\)/u.exec(log);
+  const execution = fs.existsSync(join(base, 'evidence', label + '.execution.json')) ? JSON.parse(fs.readFileSync(join(base, 'evidence', label + '.execution.json'), 'utf8')) : null;
+  runs.push({ label, status: result.status, signal: result.signal, timedCandidates: /Depot found timings for (\d+) candidate/u.exec(log)?.[1] ?? null, upload: upload ? { filesUploaded: Number(upload[1]), filesProcessed: Number(upload[2]), testsReported: Number(upload[3]), filesSkipped: Number(upload[4]) } : null, execution });
   if (result.status !== 0) break;
 }
-const record = { schemaVersion: 1, phase, shardIndex: phase === 'seed' ? null : Number(index), splitKey, preparation, runs, passed: runs.length === (phase === 'seed' ? 3 : 1) && runs.every(value => value.status === 0), observedAt: new Date().toISOString() };
+const record = { schemaVersion: 1, phase, shardIndex: phase === 'seed' ? null : Number(index), splitKey, preparation, cliVersion, runs, passed: runs.length === (phase === 'seed' ? 3 : 1) && runs.every(value => value.status === 0 && value.upload?.filesUploaded === 1 && value.upload.filesProcessed === 1 && value.upload.filesSkipped === 0 && value.upload.testsReported === value.execution?.actualCases.length), observedAt: new Date().toISOString() };
 fs.writeFileSync(join(base, 'evidence/cohort.json'), JSON.stringify(record, null, 2) + '\n');
 console.log(JSON.stringify(record));
 if (!record.passed) throw new PhysicalReportFailure('Actual physical test execution or Depot JUnit report upload failed; retained receipt distinguishes them');
