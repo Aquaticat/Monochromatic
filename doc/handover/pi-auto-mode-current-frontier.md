@@ -22,9 +22,10 @@ The user explicitly authorizes invoking and monitoring MiMo.
 - Source worker: `pi-mimo-rpc-session-7O5MPn`,
   controller session `91455`,
   pinned native `EWv4wy`.
-  It exclusively owns `src/` and is checkpointing its native-return fixture changes.
-  Navigation assertion evidence is delivered,
-  but its correction is not yet independently verified.
+  It is closed with exit 0 after withholding a pathspec-less commit attempt.
+  Its native-return fixture change is preserved in scoped commit `75e519aca9`.
+  Supervisor ownership of `src/` resumes at this settled boundary.
+  Navigation assertion evidence was delivered but its correction is still pending.
 - Native worker: `pi-mimo-rpc-session-j2yRJI`,
   controller session `41734`,
   pinned native `LytMAt`.
@@ -179,10 +180,15 @@ installed helper or workspace dependency is changed.
   final zero lint,
   complete branch coverage and rendered documentation.
 
-The latest renderer receipt before this refresh reports 30 files and no broken links.
+The latest renderer receipt before this refresh reports 31 files and no broken links.
 Render this updated checkpoint before final documentation completion.
 
-## Purpose and live status
+## Historical checkpoints retained for evidence
+
+The historical checkpoint sections preserve durable evidence and the state at each recorded step.
+Use `Current checkpoints and supervision` for current ownership and remaining work.
+
+## Historical purpose and status
 
 Continue the authorized auto-mode repair,
 architecture cleanup and complete lint queue without asking the human to request continuation.
@@ -195,7 +201,8 @@ It replaces a 14,000-line chronological checkpoint as the current resume surface
 
 The work is **not complete**.
 The native cancellation-control defect is repaired and consumer-verified.
-MiMo source and native policy-input workers are active through supervised Pi RPC.
+At this historical checkpoint,
+MiMo source and native policy-input workers were active through supervised Pi RPC.
 Full-package lint completion,
 final configured replays,
 final measurement and final documentation remain open.
@@ -245,7 +252,7 @@ unit and whole-operation fallbacks remain distinct.
 The canonical native interface supplies the generated bridges;
 the retired extension pipeline and whole-call adapters remain removed.
 
-## Active MiMo checkpoint
+## Historical MiMo checkpoint
 
 The active controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-EWv4wy`.
 Its fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,

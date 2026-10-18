@@ -256,8 +256,6 @@ The launcher recheck succeeded with the requested limits and child inheritance i
 That recovery does not establish the transport failure's cause.
 No command was retried outside the restricted cgroup.
 
-## Upstream filing decision
-
 ## Separate historical projection failure, 2026-10-18
 
 Auto-mode's actual Pi RPC session retains an aborted assistant tool-call fragment.
