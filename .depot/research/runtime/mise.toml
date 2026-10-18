@@ -1,0 +1,47 @@
+[tasks.platform]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { spawnSync } = await import('node:child_process');
+const os = await import('node:os');
+const { join } = await import('node:path');
+const provider = process.env.PROBE_PLATFORM_PROVIDER;
+if (!provider || !/^[a-zA-Z0-9_.-]{1,64}$/u.test(provider)) throw new Error('Invalid observation provider');
+const device = path => {
+  try {
+    const metadata = fs.statSync(path);
+    let readableWritable = false;
+    let accessError = null;
+    try { fs.accessSync(path, fs.constants.R_OK | fs.constants.W_OK); readableWritable = true; }
+    catch (error) { accessError = String(error); }
+    return { path, exists: true, characterDevice: metadata.isCharacterDevice(), readableWritable, accessError };
+  } catch (error) { return { path, exists: false, error: String(error), errorCode: error.code }; }
+};
+const positiveControl = device('/dev/null');
+if (!positiveControl.characterDevice || !positiveControl.readableWritable) throw new Error('Device-discovery positive control failed');
+const negativeControl = device('/dev/nonexistent-monochromatic-runtime-20261018');
+if (negativeControl.exists || negativeControl.errorCode !== 'ENOENT') throw new Error('Device-discovery negative control failed');
+const capture = (command, args) => {
+  const value = spawnSync(command, args, { encoding: 'utf8', timeout: 8000, maxBuffer: 1048576 });
+  return { command: [command, ...args], status: value.status, signal: value.signal, stdout: value.stdout ?? '', stderr: value.stderr ?? '', error: value.error?.message ?? null };
+};
+const read = path => { try { return { value: fs.readFileSync(path, 'utf8').trim() }; } catch (error) { return { error: String(error) }; } };
+const drm = fs.existsSync('/sys/class/drm') ? fs.readdirSync('/sys/class/drm') : [];
+const graphicsDevices = drm.filter(name => /^(card\d+|renderD\d+)$/u.test(name)).map(name => {
+  const base = join('/sys/class/drm', name, 'device');
+  return { name, vendor: read(join(base, 'vendor')), device: read(join(base, 'device')), driver: fs.existsSync(join(base, 'driver')) ? fs.readlinkSync(join(base, 'driver')) : null };
+});
+const cgroupPath = fs.readFileSync('/proc/self/cgroup', 'utf8').trim().split(':').at(-1);
+const cgroupObservations = ['/sys/fs/cgroup' + cgroupPath, '/sys/fs/cgroup'].map(path => ({ path, values: Object.fromEntries(['memory.max', 'memory.current', 'cpu.max', 'pids.max'].map(name => [name, read(join(path, name))])) }));
+const sdk = process.env.ANDROID_HOME ?? process.env.ANDROID_SDK_ROOT ?? join(os.homedir(), 'Android/Sdk');
+const emulator = join(sdk, 'emulator/emulator');
+const commands = [capture('systemctl', ['--user', 'is-system-running']), capture('systemctl', ['--user', 'show', '--property=Version']), capture('docker', ['version', '--format', '{{json .Server.Version}}']), capture('podman', ['--version']), capture('qemu-system-x86_64', ['--version']), capture('qemu-system-aarch64', ['--version'])];
+if (fs.existsSync(emulator)) commands.push(capture(emulator, ['-version']));
+const git = capture('git', ['rev-parse', 'HEAD']);
+if (git.status !== 0 || !/^[a-f0-9]{40}$/u.test(git.stdout.trim())) throw new Error('Cannot bind observation to checkout');
+const result = { schemaVersion: 1, observedAt: new Date().toISOString(), repositoryBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harnessCommit: git.stdout.trim(), provider, platform: process.platform, architecture: os.arch(), kernel: os.release(), cpuCount: os.cpus().length, cpuModels: [...new Set(os.cpus().map(cpu => cpu.model))], systemMemoryBytes: os.totalmem(), freeMemoryBytes: os.freemem(), node: process.version, sourceContext: Object.fromEntries(['GITHUB_SHA', 'GITHUB_REF', 'GITHUB_EVENT_NAME', 'GITHUB_RUN_ID', 'GITHUB_JOB', 'RUNNER_OS', 'RUNNER_ARCH', 'ImageVersion'].map(name => [name, process.env[name] ?? null])), display: Object.fromEntries(['DISPLAY', 'WAYLAND_DISPLAY', 'XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS'].map(name => [name, process.env[name] ?? null])), controls: { positiveControl, negativeControl }, devices: ['/dev/kvm', ...(fs.existsSync('/dev/dri') ? fs.readdirSync('/dev/dri').filter(name => /^(card\d+|renderD\d+)$/u.test(name)).map(name => join('/dev/dri', name)) : [])].map(device), graphicsDevices, cgroupObservations, sdk: { path: sdk, emulatorPresent: fs.existsSync(emulator), adbPresent: fs.existsSync(join(sdk, 'platform-tools/adb')) }, commands, unexercised: ['KVM guest execution', 'GPU rendering context', 'emulator launch', 'application runtime consumer', 'billable allocation lifetime'] };
+fs.mkdirSync('evidence', { recursive: true });
+const path = 'evidence/platform-' + provider + '-' + os.arch() + '.json';
+fs.writeFileSync(path, JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify({ artifact: path, provider, harnessCommit: result.harnessCommit, architecture: result.architecture, cpuCount: result.cpuCount, devices: result.devices, graphicsDevices: result.graphicsDevices, display: result.display }));
+'''

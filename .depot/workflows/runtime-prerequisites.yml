@@ -1,0 +1,39 @@
+name: research native runtime prerequisites
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_LOCKED: '1'
+jobs:
+  platform:
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        runner: [depot-ubuntu-24.04, depot-ubuntu-24.04-arm]
+    env:
+      PROBE_PLATFORM_PROVIDER: native-${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Freeze the already exercised bootstrap separately from workload source.
+          version: 2026.10.9
+          install: false
+          cache: false
+      - run: mise install node
+      - run: mise run //.depot/research/runtime:platform
+        working-directory: .depot/research/runtime
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: native-runtime-prerequisites-${{ matrix.runner }}
+          path: .depot/research/runtime/evidence/
+          if-no-files-found: error
+          retention-days: 7
