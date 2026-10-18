@@ -1,4 +1,4 @@
-name: depot-native-runner-followup-windows
+name: depot-native-long-path-recovery-windows
 
 # Builds, tests and smoke-runs the music player desktop app (package/music-player/desktop-app) on real
 # Windows runners, in three flavors that need three different toolchains. Decision and rationale:
@@ -121,6 +121,9 @@ jobs:
       FLAVOR: ${{ matrix.flavor }}
       JOB_NAME: ${{ matrix.name }}
     steps:
+    - name: Enable and verify Git long paths before checkout
+      working-directory: .
+      run: node --input-type=module -e 'const {spawnSync,execFileSync}=await import("node:child_process");const {strict:assert}=await import("node:assert");const query=["config","--show-origin","--get","core.longpaths"];const before=spawnSync("git",query,{encoding:"utf8"});assert(before.status===0||before.status===1);console.log(JSON.stringify({event:"windows-long-path-before",status:before.status,value:before.stdout.trim(),diagnostic:before.stderr.trim()}));execFileSync("git",["config","--global","core.longpaths","true"]);const value=execFileSync("git",["config","--get","core.longpaths"],{encoding:"utf8"}).trim();assert.equal(value,"true");console.log(JSON.stringify({event:"windows-long-path-after",value}));'
     - name: Record actual runner hardware and provider identity
       working-directory: .
       run: node --input-type=module -e 'const os = await import("node:os"); console.log(JSON.stringify({event:"depot-runner-hardware",platform:process.platform,architecture:process.arch,cpus:os.cpus().length,memoryBytes:os.totalmem(),runnerName:process.env.RUNNER_NAME,runnerOs:process.env.RUNNER_OS,runnerArchitecture:process.env.RUNNER_ARCH,githubSha:process.env.GITHUB_SHA}));'
