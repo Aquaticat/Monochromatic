@@ -71,22 +71,48 @@ controller command session `91455`.
 It resumes the closed `eZNsLl` session and receives `mimo-focused-editing.json`.
 Actual resume and RPC compaction pass on that preceding `q83LlN` controller;
 its subsequent real tool groups execute with captured Luna requests.
-The current assignment is the CLI guard,
-its process consumer and `src/native-process-network.unit.test.ts`.
-No completed semantic repair commit exists yet.
-The saved CLI files start with the earlier formatter's edits;
-the current worker has now applied the first actual guard rewrite.
-The JSONL consumer and disposable unit environment remain in progress.
-Review the coherent patch independently before rebuilding:
-check actual line-feed bytes rather than matching emitter/parser escape mistakes,
-keep disposable scratch under the injected home,
-and preserve missing/empty receipt-path validation.
+The CLI checkpoint is committed as `bdd8912c04`;
+independent review corrections are committed as `6c1dc11ea3`.
+Scoped Oxlint reports zero warnings/errors for its three files.
+Private-cache types pass for committed source snapshot `68e7ce538a`.
+The built `bdd8912c04` artifact is `WXGCDx`:
+its actual CLI/RPC/clean-shutdown consumer passes,
+and the new receipt contract verifies standard LF JSONL before responses,
+original adversarial names,
+string/URL/Request inputs,
+rejected requests leaving receipts unchanged,
+write failures preventing responses and complete raw empty child stderr.
+Removing the awaited write in a private rebuilt variant fails deterministically;
+production artifact and regression hashes remain unchanged.
+The corrected `68e7ce538a` contract builds as the current `native-release-LytMAt`.
+Its network unit passes with a clean parent environment.
+An independent inherited-variable control fails:
+`nano-spawn` merges parent environment values,
+so omitting `PI_AUTO_MODE_CLI_FIXTURE_REQUESTS` from the negative case does not make it absent.
+The child reaches `Unexpected fixture entry` instead of rejecting setup.
+Fix explicit environment absence before accepting the unit checkpoint.
 The worker's fresh private home does not copy old session scratch files.
 Missing initial scratch in a resumed session is not evidence that every tool call gets a new home.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
 The preceding `eZNsLl` controller closes with exit zero before its measured RSS reaches the configured limit again.
 Its command session is `74937`.
 Do not attribute that closed-controller result to the still-running `7O5MPn` worker.
+The live worker's actual RPC compaction now passes on `EWv4wy`:
+211,597 tokens before and an estimated 44,304 after.
+The next reviewed tool group still needs its post-compaction payload audit.
+The full frozen-package lint snapshot `68e7ce538a` reports 14,553 warnings and 133 errors
+on 828 files with 486 rules.
+The parsed diagnostic inventory reconciles every finding to that summary;
+one warning has no rule code and says `File is too long to fit on the screen`
+for `native/contract/integration/action-policy/clause-relation.mjs`.
+The `src` subset contains 2,734 warnings and 48 errors.
+Next MiMo scope is explicit environment isolation first,
+then `src` formatter convergence and remaining lint fixes without weakening behavior or coverage.
+Native contract source remains supervisor-owned.
+The full-unit and session-input aggregate consumers for frozen source `68e7ce538a` are running
+against `LytMAt`;
+their logs are `cli-corrected-full-units.log` and `native-session-input-aggregate.log`.
+They remain evidence for that frozen snapshot while later lint edits proceed.
 
 ### Original worker and completed progress repair
 

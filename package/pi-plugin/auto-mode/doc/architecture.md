@@ -26,9 +26,12 @@ Its committed-source type check,
 content-storage consumers,
 compaction and persistence consumers,
 and full progress/fallback catalog pass.
-The directly supervised MiMo worker has actual editing scope for the CLI fixture and network unit.
-The complete units currently fail on that unit's stale missing request-receipt path;
-the worker must repair it before full-unit success can be claimed again.
+The directly supervised MiMo worker commits the CLI receipt repair and independent review corrections.
+The actual CLI and receipt contract consumers pass on `native-release-WXGCDx`.
+The corrected contract builds as `native-release-LytMAt`.
+Its network unit passes in a clean environment;
+a contaminated-parent control exposes another owned negative-fixture isolation defect.
+Full-unit success for the corrected snapshot remains pending.
 Lint cleanup remains an unfinished measured task.
 
 The 2026-10-18 post-cleanup snapshot measures 22,933,936 regular-file bytes
@@ -39,6 +42,9 @@ The parser inventory at that verification frontier counts 66,392 nonblank code l
 including 29,291 verification lines.
 Full lint reports 83 errors and 13,834 warnings across 818 files and 486 rules.
 These named snapshots precede the new native-control regression and are not final post-lint measurements.
+The subsequent frozen `68e7ce538a` lint snapshot reports 14,553 warnings and 133 errors across 828 files.
+Its `src` subset contains 2,734 warnings and 48 errors.
+Three-file checkpoint success does not clear this package backlog.
 Warnings are diagnostics rather than a code-line count or an accepted size target.
 
 The user authorized consolidation and package-local justification on 2026-10-17.

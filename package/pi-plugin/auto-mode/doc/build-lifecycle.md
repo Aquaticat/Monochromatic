@@ -93,6 +93,25 @@ do not delete their possible release while they run.
 
 ## Alternatives and verification
 
+### Native CLI receipt fixture
+
+The CLI network guard appends a private JSONL receipt before returning each local classification response.
+It preserves original model and question names and rejects other routes or credentials.
+The actual CLI consumer waits for child close,
+requires nonempty classification evidence and checks complete captured stderr.
+The receipt consumer independently uses standard JSONL parsing and checks the final LF byte,
+so matching writer/reader escape mistakes cannot make the test pass.
+Its write-failure control rejects a response when the receipt cannot be written.
+A private rebuilt variant without the awaited write fails that maintained test.
+
+The network unit's new missing-path case initially depends on its parent environment.
+With `nano-spawn` `2.1.0`,
+an omitted override inherits the parent's value.
+The clean-parent run passes while an inherited nonempty receipt path reaches the forbidden probe.
+This is an owned fixture defect exposed by supported process behavior;
+the setup guard itself correctly rejects genuinely missing and empty paths.
+The explicit-absence repair and its contaminated-parent rerun remain pending.
+
 Overwriting the active directory would invalidate running module identities.
 Editing installed upstream output would detach source qualification from deployment.
 Rewriting a file shared with an earlier release could corrupt an active session.
