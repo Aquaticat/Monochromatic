@@ -132,7 +132,10 @@ import dev.monochromatic.musicplayer.core.pageIdentity
 // import type { TrackMeasure } from "./core/TrackMeasure";
 // ```
 import dev.monochromatic.musicplayer.core.TrackMeasure
+import dev.monochromatic.musicplayer.core.LoadOrigin
 import dev.monochromatic.musicplayer.core.UnplayableReport
+import dev.monochromatic.musicplayer.core.UnplayableWalk
+import dev.monochromatic.musicplayer.core.trackFileNameOf
 
 // What:     `class PlayerController(private val engine: AudioEngine) { ... }` declares a
 //           class with a PRIMARY CONSTRUCTOR. `private val engine: AudioEngine` is a
@@ -372,6 +375,15 @@ class PlayerController(private val engine: AudioEngine) {
      */
     var onUnplayableFiles: ((UnplayableReport) -> Unit)? = null
 
+    /** How the load now in flight was started; a failure of it walks on unless the person chose the track. */
+    private var latestLoadOrigin: LoadOrigin = LoadOrigin.TAP
+
+    /** Whether the load now in flight asked to play, so a walk past an unreadable track keeps that intent. */
+    private var latestLoadPlays: Boolean = false
+
+    /** The failed loads of the walk in progress, which the next load begun afresh forgets. */
+    private val unplayableWalk: UnplayableWalk = UnplayableWalk()
+
     /**
      * Records the artist tag of [uri] and republishes the media session so its notification shows the artist line.
      *
@@ -465,7 +477,14 @@ class PlayerController(private val engine: AudioEngine) {
             handleNaturalEnd()
         }
         engine.setOnLoadFailed { uri, reason ->
-            Log.w(LOG_TAG, "track could not be opened reason=${reason.name}")
+            Log.w(LOG_TAG, "track could not be opened reason=${reason.name} origin=${latestLoadOrigin.name}")
+            if (latestLoadOrigin != LoadOrigin.TAP) {
+                // A track the player moved to by itself is passed and reported, never an in-app message (D122, D123).
+                if (uri == loadedUri) {
+                    walkPastUnplayable(uri = uri, reason = reason)
+                }
+                return@setOnLoadFailed
+            }
             // Forget the failed track as loaded, so Play loads it again instead of resuming the previous track.
             loadedUri = null
             loadFailure = LoadFailureNotice(uri = uri, reason = reason, serial = (loadFailure?.serial ?: 0) + 1)
@@ -702,9 +721,7 @@ class PlayerController(private val engine: AudioEngine) {
         val savedIndex: Int = session.selected?.let { uris.indexOf(it) } ?: -1
         if (savedIndex >= 0) {
             queue.playIndex(savedIndex)
-            loadedUri = uris[savedIndex]
-            engine.load(uris[savedIndex], play = false)
-            onTrackLoaded?.invoke(uris[savedIndex])
+            loadTrack(index = savedIndex, play = false, origin = LoadOrigin.FORWARD)
             if (session.positionSecs > 0.0) {
                 engine.seekTo(session.positionSecs)
             }
@@ -923,7 +940,7 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.playCurrent();
         // ```
-        playCurrent()
+        playCurrent(LoadOrigin.TAP)
     }
 
     // What:     `fun selectIndex(index: Int) { ... }` declares a public method taking a load-order `Int` index,
@@ -945,9 +962,7 @@ class PlayerController(private val engine: AudioEngine) {
             return
         }
         engine.pause()
-        loadedUri = uris[index]
-        engine.load(uris[index], play = false)
-        onTrackLoaded?.invoke(uris[index])
+        loadTrack(index = index, play = false, origin = LoadOrigin.TAP)
         refresh(followCurrent = true)
     }
 
@@ -1024,7 +1039,7 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.playCurrent();
         // ```
-        playCurrent()
+        playCurrent(LoadOrigin.TAP)
         // What:     `if (positionSec > 0.0) { engine.seekTo(positionSec) }` seeks within the
         //           new track only when a positive start position was requested.
         // Why:      An external controller may seek to a specific item AND position; honour
@@ -1102,7 +1117,7 @@ class PlayerController(private val engine: AudioEngine) {
             // ```ts
             // this.playCurrent();
             // ```
-            playCurrent()
+            playCurrent(LoadOrigin.TAP)
         }
         // What:     `refresh()` rebuilds the snapshot after the play/pause change.
         // Why:      Repaint the play/pause icon.
@@ -1167,7 +1182,7 @@ class PlayerController(private val engine: AudioEngine) {
                 // ```ts
                 // this.playCurrent();
                 // ```
-                playCurrent()
+                playCurrent(LoadOrigin.TAP)
             }
         } else {
             // What:     `engine.pause()` pauses playback.
@@ -1217,7 +1232,7 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.playCurrent();
         // ```
-        playCurrent()
+        playCurrent(LoadOrigin.FORWARD)
     }
 
     // What:     `fun prev() { ... }` declares a public method, block body, `Unit`.
@@ -1247,7 +1262,7 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.playCurrent();
         // ```
-        playCurrent()
+        playCurrent(LoadOrigin.BACKWARD)
     }
 
     // What:     `fun setPlaybackMode(mode: PlaybackMode) { ... }` declares a public method taking
@@ -1682,7 +1697,7 @@ class PlayerController(private val engine: AudioEngine) {
         if (queue.advance(natural = true) == null) {
             stopAtScopeEnd()
         } else {
-            playCurrent()
+            playCurrent(LoadOrigin.NATURAL_END)
         }
     }
 
@@ -1714,12 +1729,109 @@ class PlayerController(private val engine: AudioEngine) {
             refresh()
             return
         }
-        loadedUri = uris[first]
-        engine.load(uris[first], play = false)
         // The readied first track is the loaded track, so its artist tag is read like that of any other load.
-        onTrackLoaded?.invoke(uris[first])
+        loadTrack(index = first, play = false, origin = LoadOrigin.FORWARD)
         refresh(followCurrent = true)
     }
+
+    // What:     `private fun loadTrack(index: Int, play: Boolean, origin: LoadOrigin, continuesWalk: Boolean = false)`
+    //           records the track being loaded and hands it to the engine.
+    // Why:      Every load goes through here so the origin of the load in flight is always known when its failure
+    //           arrives, however late. A load the walk makes after a failure continues that walk; every other load
+    //           begins a new one.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private loadTrack(index, play, origin, continuesWalk = false): void {
+    //   if (!continuesWalk) this.walk.reset();
+    //   this.loadedUri = this.uris[index]; this.latestOrigin = origin; this.latestPlays = play;
+    //   this.engine.load(this.uris[index], play); this.onTrackLoaded?.(this.uris[index]);
+    // }
+    // ```
+    /** Loads the track at [index], remembering how the load started; a walk's own next load keeps its walk. */
+    private fun loadTrack(index: Int, play: Boolean, origin: LoadOrigin, continuesWalk: Boolean = false) {
+        if (!continuesWalk) {
+            unplayableWalk.reset()
+        }
+        loadedUri = uris[index]
+        latestLoadOrigin = origin
+        latestLoadPlays = play
+        engine.load(uris[index], play = play)
+        onTrackLoaded?.invoke(uris[index])
+    }
+
+    // What:     `private fun walkPastUnplayable(uri: String, reason: LoadFailure)` answers the failed load of a track
+    //           the player moved to by itself.
+    // Why:      D122 and D128: a playback-driven move keeps walking past unreadable files and reports them, and D123
+    //           keeps that report out of the app. The report grows with every file passed and the host replaces its
+    //           notification. The walk steps the way the move went, stops when every track has had one try (so a
+    //           queue of bad files cannot spin) and stops at once on a timeout, because a library that does not
+    //           answer would stall the next file too and each try waits for the limit.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private walkPastUnplayable(uri: string, reason: LoadFailure): void {
+    //   this.loadedUri = null;
+    //   const more = this.walk.record(uri, this.queue.len());
+    //   this.onUnplayableFiles?.({ fileNames: names, timedOut: reason === "TIMED_OUT" });
+    //   if (!more || reason === "TIMED_OUT") { this.engine.pause(); this.refresh(); return; }
+    //   const next = this.stepAfterFailure(); /* load it, or ready the first track of the folder */
+    // }
+    // ```
+    /** Passes the unreadable track [uri] by loading the next one the move would have reached, and reports it. */
+    private fun walkPastUnplayable(uri: String, reason: LoadFailure) {
+        loadedUri = null
+        /** Whether the walk may still try another track. */
+        val mayTryAnother: Boolean = unplayableWalk.record(uri = uri, limit = queue.len())
+        /** Whether this failure says the music library was slow rather than the file broken. */
+        val timedOut: Boolean = reason == LoadFailure.TIMED_OUT
+        /** Bare names of every file this walk has passed so far, in the order met. */
+        val fileNames: List<String> = unplayableWalk.failedUris().map { failed -> bareNameOf(failed) }
+        onUnplayableFiles?.invoke(UnplayableReport(fileNames = fileNames, timedOut = timedOut))
+        if (!mayTryAnother || timedOut) {
+            engine.pause()
+            refresh()
+            return
+        }
+        /** How the move that began this walk was going, which decides the direction of the next try. */
+        val origin: LoadOrigin = latestLoadOrigin
+        /** Whether the move started playback, which the next try keeps. */
+        val play: Boolean = latestLoadPlays
+        /** Load-order index of the next track to try, or null at the end of an In order folder. */
+        val next: Int? = when {
+            origin == LoadOrigin.BACKWARD -> queue.prev()
+            origin == LoadOrigin.NATURAL_END && queue.playbackMode() != PlaybackMode.REPEAT ->
+                queue.advance(natural = true)
+            else -> queue.advance(natural = false)
+        }
+        if (next == null) {
+            engine.pause()
+            /** First track of the folder, readied paused as when a folder plays to its end. */
+            val first: Int? = queue.rewindScope()
+            if (first == null) {
+                refresh()
+                return
+            }
+            loadTrack(index = first, play = false, origin = LoadOrigin.FORWARD, continuesWalk = true)
+        } else {
+            loadTrack(index = next, play = play, origin = origin, continuesWalk = true)
+        }
+        refresh(followCurrent = true)
+    }
+
+    // What:     `private fun bareNameOf(uri: String): String` is the file name the report shows for a track.
+    // Why:      The report names files, never folders; the library knows the track's display path, and a track the
+    //           library no longer lists falls back to the last segment of its URI.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private bareNameOf(uri: string): string {
+    //   return fileNameOf(this.trackAt(this.indexOfUri(uri))?.displayPath ?? uri);
+    // }
+    // ```
+    /** Bare file name of the track at [uri], as the library names it. */
+    private fun bareNameOf(uri: String): String =
+        trackFileNameOf(trackAt(indexOfUri(uri))?.displayPath ?: uri)
 
     // What:     `private fun startOfScope(): Int?` selects the first track of the folder on screen in the queue
     //           and returns it, or returns null for an empty library.
@@ -1753,7 +1865,7 @@ class PlayerController(private val engine: AudioEngine) {
      * Defines play current behavior for this music-player component; the TypeScript-oriented notes above explain
      * its call shape and effects.
      */
-    private fun playCurrent() {
+    private fun playCurrent(origin: LoadOrigin) {
         // What:     `val index = queue.currentIndex()` declares a read-only local `index`
         //           (type INFERRED as `Int?`) from the queue's current load-order index.
         // Why:      Decide whether there is a track to play.
@@ -1766,7 +1878,9 @@ class PlayerController(private val engine: AudioEngine) {
          * Defines index value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        val index = queue.currentIndex() ?: startOfScope()
+        val selected: Int? = queue.currentIndex()
+        /** Load-order index to load: the selected track, else the first track of the folder on screen. */
+        val index = selected ?: startOfScope()
         // What:     `if (index == null) { refresh(); return }` handles the empty-queue case:
         //           when there is no current track, repaint idle state and bail.
         // Why:      Nothing to load when the queue is empty.
@@ -1804,18 +1918,15 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.loadedUri = this.uris[index];
         // ```
-        loadedUri = uris[index]
-        // What:     `engine.load(uris[index], play = true)` loads the URI at `index` and
-        //           starts it. `uris[index]` reads the parallel URI list; `play = true` is a
-        //           NAMED argument meaning "begin playing immediately."
-        // Why:      Actually open and play the current track.
+        // What:     `loadTrack(...)` records the URI being loaded and loads it, starting it.
+        // Why:      A Play with nothing selected starts at the first track by itself, so the person named no row and
+        //           a failure walks on (D128); every other call passes the origin it was started with.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.engine.load(this.uris[index], true);
+        // this.loadTrack(index, true, selected === null ? "forward" : origin);
         // ```
-        engine.load(uris[index], play = true)
-        onTrackLoaded?.invoke(uris[index])
+        loadTrack(index = index, play = true, origin = if (selected == null) LoadOrigin.FORWARD else origin)
         // What:     `refresh(followCurrent = true)` rebuilds the snapshot, switching to the
         //           current track's page (named arg `followCurrent = true`).
         // Why:      Keep the highlighted row on screen after loading a track.
