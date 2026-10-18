@@ -44,6 +44,13 @@ Read-only commands,
    then pushes the branch.
   A branch without an upstream is pushed to `origin` with `--set-upstream` when that remote exists.
   A branch with an upstream is pushed to it.
+  When the remote refuses that push because its branch moved after the commit landed,
+   the wrapper merges the remote tip into the branch tip from Git objects alone and pushes the merge without force,
+   at most three times.
+  The local branch, the index, the worktree and untracked files are not read or changed,
+   so another session's uncommitted files cannot block the push.
+  A conflict is reported with the conflicting paths and publishes nothing.
+  An amended or rebased branch is not merged, and its rejection is shown as before.
   A failed push never fails the commit,
    and no configuration key turns the push off.
   Automatic maintenance,

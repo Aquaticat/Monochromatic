@@ -539,6 +539,36 @@ and distinct on case-insensitive filesystems.
   `git push --set-upstream origin HEAD` without one),
   and records the attempt,
   successful or failed.
+- A push of a branch with an upstream that the remote refuses as stale
+  (its output holds `[rejected]`, the marker Git does not translate)
+  is reconciled by the same attempt, under the same lock, when all of these hold:
+  the push destination is the upstream (`@{push}` equals `@{upstream}`, and the remote is not `.`);
+  and the branch tip contains the commit that the last successful record names
+  (the upstream tracking tip when there is no such record),
+  because a branch that no longer contains it was amended or rebased,
+  a merge would bring the replaced commits back,
+  and its rejection stays visible as before.
+  The attempt fetches the remote branch into the private ref `refs/cli-git/auto-push/fetch-<pid>`
+  (never `FETCH_HEAD`, which every fetch shares),
+  deletes that ref,
+  and branches on the two ancestor questions.
+  A remote tip that the branch contains means the rejection was not a divergence and is returned unchanged.
+  A remote tip that contains the branch means the commit is delivered, and nothing is pushed.
+  Otherwise `git merge-tree --write-tree --no-messages --name-only` computes the merge from objects alone
+  and `git commit-tree` records it with the branch tip first and the remote tip second.
+  The merge is pushed with a plain push to `<remote> <merge>:<merge ref>`, never forced.
+  A conflict (merge-tree exit `1`) publishes nothing and names the conflicting paths.
+  A push that is refused as stale again repeats the fetch, the merge and the push,
+  at most `MAX_RECONCILE_ATTEMPTS` (3) times in all.
+  The local branch, the index, the worktree and the untracked files are never read or written by the reconcile,
+  so another consumer's uncommitted files cannot block it or be changed by it.
+  The merge commit skips commit-time hooks and policies because it is made from objects.
+  Every line the reconcile adds begins with `cli-git: auto-push: `;
+  a line that begins with `cli-git: auto-push: not published: `
+  explains a failure and replaces the generic "run `git push`" note,
+  which would repeat a push that cannot succeed.
+  The published merge leaves the local branch behind the remote,
+  and the note names `git merge --ff-only <remote>/<branch>` for when the worktree allows it.
 - An invocation finishes auto-push once a successful push covers its OID,
   or once the push that would cover it has failed.
   Covering is `git merge-base --is-ancestor <landed OID> <tip>`
