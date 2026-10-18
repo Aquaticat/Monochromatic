@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 15:52 UTC
+## Execution checkpoint on 2026-10-18 at 16:09 UTC
 
 Research remains active;
 do not start the interview.
@@ -64,9 +64,29 @@ restored sinks and absent credential.
 The Rust cache campaign is terminal and its slot released at `15:48:32 UTC`.
 Native graph `gb01kjx2qk` is dispatched on exact source `234ccc92dabb81e998e0a0bb5e838713924dd83f`,
 with two sequential samples and one native job maximum.
-Its finite terminal watcher is process session `84977`;
-the GitHub terminal watcher remains session `63906`.
-The parent now has at most two active research jobs across those graph products.
+Its finite terminal watcher process session `84977` is reaped:
+native run is terminal failed at `16:04:04 UTC` and produced both graph artifacts.
+Both exact job/attempt/sandbox identities are retained in the private terminal receipt.
+The native collector is process session `52194`;
+recover from `expanded-graph-corrected-native-verified-samples.json` before repeating any interrupted download.
+The GitHub terminal watcher remains session `63906`.
+Completed GitHub samples already have CRC/API-size/API-digest-verified original ZIPs:
+GitHub one `12142265999`,
+199494 bytes,
+SHA256 `761b6d70731dc17c86771d34cb090644c30588c2e1c786c6db83f85f63c85635`;
+Depot one `12142052987`,
+222777 bytes,
+SHA256 `48071e722f955b1be4b9758e2d5fef627845c83a1f6ca047dcb0f1bf2aa8234e`.
+Private canonical sample bodies are `graph-corrected-github-1.json` and `graph-corrected-depot-1.json`.
+Both completed all 42 shared builds and both actual Rust owners.
+GitHub one has 28 commands not started because of the campaign budget and six command-budget outcomes;
+Depot one has all 222 command logs and 25 failing commands requiring source/prerequisite classification.
+Thus their full graph durations are not yet a like-for-like speed comparison.
+Shared and Rust completed subgraphs can be compared after unchanged-input spread and output validation.
+Never count a populated outcome `startedAt` or `log` field as proof of a child invocation:
+unstarted budget placeholders also carry them;
+join actual original ZIP member presence and explicit state.
+Inspect all failure families and both remaining GHA samples before publication.
 
 Packed consumers are sealed at `898fd6ab03`:
 25 actual runtime imports,
@@ -84,6 +104,14 @@ frozen working-byte manifests and actual emitted-binary consumers.
 The owner corrected GitHub's 21,000-character per-step limit using byte-identical runtime bootstrap generation,
 then ran positive and negative source-hash controls before dispatch.
 Depot Mac/Windows allocation remains separate and has not started.
+The first public Mac/Windows contexts exposed a research logger filename containing `/`
+and an omitted hidden-artifact upload option.
+Their raw logs retain actual filesystem/native-debug/emitted-version successes,
+but no artifact consumer or case-level Nextest acceptance follows from that failed handoff.
+The coverage owner preserves the failed cohort and corrects only research logging/upload configuration,
+with actual controls before repeated finite public contexts and matched Depot allocation.
+The coverage owner also confirms whether public desktop source archives contain image bytes or only identities,
+closing the existing screenshot publication/privacy boundary without relaunching desktop or emulator work.
 
 The parent finished substantive review of 18 deployed native-CI documentation pages,
 156,769 exact source bytes and 95 claim-level findings.
@@ -152,6 +180,11 @@ The platform owner has now finished all 120 deployed documentation rows:
 No retrieval-only generic rows remain.
 The source owner finishes publication and command/API applicability mapping without new allocations,
 then remains available for independent report sufficiency review after factual queues close.
+Its publication checks now pass,
+with all 99 distinct CLI invocations,
+31 protobuf services/208 method declarations and 63 deployed operations mapped with explicit runtime limits.
+It closes two previously tracked local troubleshooting/prototype gates for empty image JSON and the old Semgrep wrapper,
+using bounded isolated fixtures and no new cloud allocation or upstream message.
 Material final constraints include soft BuildKit cache-size policy,
 deprecated Dagger integration,
 root-modifiable Linux-only egress and distinct GHA/container minute caps without a demonstrated combined dollar cap.
@@ -165,6 +198,13 @@ including the 1,067,303-byte handover AST and 215,831-byte HTML.
 Actual cache,
 allocation and Git-recursion HTML have been read;
 the latest handover/report changes still need their final render/read.
+The 16:03 rerender now passes all fifteen targets,
+with current report 26,045 bytes,
+handover HTML 218,574 bytes and handover AST 1,080,555 bytes.
+The current report HTML,
+latest handover top,
+new buffer section and Git-worktree recurrence have now been read.
+Later edits require scoped final rerender/read.
 After factual queues close,
 obtain an independent sufficiency review,
 finish the approved report sections and only then start the decision interview.
