@@ -120,15 +120,15 @@ the observation does not identify a Node regression.
 The `.out-of-scope/` inventory contains no Node VM exemption.
 No upstream change or filing is proposed:
 
-- Upstream fault: no defect is established;
+- The upstream-fault gate has no established defect;
   the deciding source intentionally reuses an already contextified object.
-- Fixability: the consumer has a verified independent-context correction;
+- The consumer has a verified independent-context correction;
   no upstream repair is needed for this incident.
-- Supported use: the inspected API explicitly accepts and reuses context objects.
-- Contribution policy: not assessed for a contribution because no upstream defect or contribution is proposed.
-- Fix inclination: no maintainer refusal or willingness is inferred;
+- The inspected API explicitly accepts and reuses context objects.
+- Contribution policy was not assessed because no upstream defect or contribution is proposed.
+- No maintainer refusal or willingness is inferred;
   the consumer correction resolves the observed failure.
-- Prototype: the actual consumer correction and failing/passing controls are recorded;
+- The actual consumer correction and failing/passing controls are recorded;
   no upstream prototype is justified after the fault gate fails.
 
 The bounded tracker queries on 2026-10-18 were

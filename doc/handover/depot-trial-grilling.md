@@ -58,7 +58,7 @@ Public GitHub compute is modeled separately at zero nominal charge.
 The private controller retains the admission,
 source verification and dispatch response.
 
-Next: retain terminal graph job/attempt metadata and original evidence ZIPs,
+The next parent action is retaining terminal graph job/attempt metadata and original evidence ZIPs,
 measure unchanged-input spread and actual overlapping critical paths,
 join them into the Rust researcher's allocation ledger,
 finish remaining owner-specific factual queues and obtain an independent sufficiency review.
