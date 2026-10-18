@@ -704,9 +704,10 @@ the items after it are the record of 2026-10-05 and older.
     inside Rust doc comments, which the rule checks too and `--fix` repairs) and 1135 `rust/no-anonymous-functions`
     warnings (not fixable by the tool) in `package/desktop-app/ide`. Done on 2026-10-18: `monochromatic-lint --fix`
     over the IDE package (86 files, zero `markdown/semantic-line-breaks`, `rust/max-lines` and `rust/require-rustdoc`
-    findings left; the 28 gates passed on the merged tree, IDE tree `3145c409fc`) and landed on `main`. In flight:
-    branch `refactor/ide-closures` (an agent): first the IDE container lint gets the root `clippy.toml` (issue 1756;
-    about 64 `Result::unwrap` sites must be fixed first), then the 1135 `rust/no-anonymous-functions` warnings.
+    findings left; the 28 gates passed on the merged tree, IDE tree `3145c409fc`) and landed on `main`. Then branch
+    `refactor/ide-closures` (an agent; see the bullet "Closures named in the IDE"): the IDE container lint gets the
+    root `clippy.toml` (issue 1756; about 64 `Result::unwrap` sites were fixed first), and the 1135
+    `rust/no-anonymous-functions` warnings fell to 67.
     Landed on 2026-10-18 from open issues: the nested compositor 0.6.1 (owner-only control socket bound through a
     private staging directory and a rename, so no instant of wider access; startup and frame failures reported as
     errors instead of eight panics; root `clippy.toml` in its container lint; nextest for its container tests;
@@ -740,7 +741,17 @@ the items after it are the record of 2026-10-05 and older.
     that the callee's signature requires and that own state: 38 Slint `on_*` callbacks, 8 `Timer::start` bodies, 17
     `thread::spawn` or `Builder::spawn` bodies, 2 `catch_unwind` bodies inside thread work, and the two `tree_house`
     callbacks in `src/syntax_loader.rs`. Stable Rust has no named item that owns state for an `FnMut` or `FnOnce`
-    parameter, so they stay reported; a decision to suppress them, or to move that state into thread locals, is open.
+    parameter, so they stay reported. Thread locals are not a way out: a spawned thread cannot read the parent's
+    thread locals (`src/find_worker.rs:179` hands two channel ends to its worker), and for the UI callbacks they
+    would swap `Rc<RefCell<..>>` captures for hidden global state. Decided on 2026-10-18 (the user chose it from three
+    options): the remaining sites call generic helpers, one for thread spawns, one per Slint callback arity and one
+    for timers, so that only the helpers keep a closure, each with a justified disable comment and a doc that cites
+    the rule and shows that configuration cannot express it (rule `LN3`). The user's earlier approval to remove every
+    finding without suppressing any is superseded for those helper closures only. Next action: build the helpers on a
+    new branch after this one lands, then count again; the 67 call sites are listed in
+    `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
+    before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
+    guards) before the fast-forward.
     Files added: `src/json_value.rs`, `src/language/diagnostics/store/pulled.rs`,
     `src/language/request/answer/trouble.rs`, `src/minimap/paint.rs`, `src/native/waiting_tests.rs` and
     `src/bin/ide-language-inspect/session/condition.rs`. Guard anchors moved in six `bin/inspect-*-guards.mjs` scripts;
