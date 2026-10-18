@@ -47,8 +47,12 @@ export function fixture({
     .filter(function eventSource(origin){return origin.source
       .inputOrigin
       ==='native-event-handler';})
-    .map(function readEmission(origin){return JSON.parse(origin.source
-      .content);});
+    .map(function readEmission(origin){
+     const snapshot=JSON.parse(origin.source.content);
+     return snapshot.records.map(function readPhase({valueOrdinal,...metadata}){
+      return {...metadata,...snapshot.values[valueOrdinal]};
+     });
+    });
  }
  return {
    manager,

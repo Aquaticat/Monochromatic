@@ -78,6 +78,65 @@ The revised full replay remains required before readiness is renewed.
 The native-root guard mutation is running in a private module loader;
 production source and output remain untouched.
 
+The native-root guard mutation is killed by the new regression;
+the production owner hash remains `71858a7f9c81f979050396fba9f629f437d5642a34b5446032511dc308e757a8`.
+The fragmented replay still exhausts the heap on `native-release-iQw5fd` after 26 live assessments.
+The faithful assistant-text replay instead hits the old private bridge's 30-request limit;
+that is a separate harness failure.
+The bridge now permits at most 128 requests for the complete original proposal corpus.
+Real configured-host prohibition control `pi-hyper-rpc-allow-SSsGVq` withholds both process and Bash members,
+with zero selectors and three live Luna responses.
+
+`test:native:event-sharing` reproduces callback-phase payload duplication through the actual native runner.
+The old build fails its storage assertion while retaining all phase values correctly.
+The new event snapshot stores distinct copied values once per emission,
+with ordered phase records referencing their original value ordinal.
+This changes storage only:
+no callback phase,
+mutation,
+output,
+or source occurrence is discarded.
+The existing native receipt fixture expands this lossless representation before checking all original assertions.
+The source is committed but still needs a native rebuild and verification.
+
+The rebuilt output is `native-release-6z61x7`.
+The event-sharing regression retains all 60 phases from 30 callbacks in 36,476 bytes,
+against 30,984 bytes for a single callback.
+The complete native event receipt catalog,
+capacity,
+fallback,
+history,
+prompt capacity,
+message freshness,
+full units,
+and type check pass.
+Both complete host replays still terminate with Node exit 134:
+fragmented fixture `pi-mimo-failure-rpc-1RoD9a` after 28 live assessments,
+and faithful fixture `pi-mimo-failure-rpc-abwWtu` after 34.
+No readiness claim is renewed.
+The next private probe measures original pool retention by source kind and native method,
+unique content characters,
+metadata characters,
+and heap usage.
+Ranked hypotheses are retained source snapshots,
+other retained context versions,
+and pending diagnostic writes;
+the source counters can falsify the first hypothesis before another storage change.
+
+Next actions:
+
+- Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
+- Repeat full native units,
+  both configured-host replays,
+  outgoing-payload audits,
+  source-root mutation,
+  and the live prohibition control against the final output.
+- Resolve only new lint findings,
+  record the remaining full-package debt for MiMo,
+  update package/troubleshooting/handoff docs,
+  render Markdown,
+  and review inactive generated releases before final footprint measurement.
+
 ## Verified MiMo lint handoff on 2026-10-17
 
 The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).

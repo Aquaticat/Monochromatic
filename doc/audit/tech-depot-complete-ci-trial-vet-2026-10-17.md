@@ -1,10 +1,10 @@
 <!--
-status: interim evaluation; native Depot runner follow-up authorized
+status: historical initial cohort; expanded native evaluation recorded separately
 lifecycle-phase: validation incomplete; no validated finalist
 subject: Depot complete CI trial
 scope: Frozen four-case complete affected CI graph; no migration or adoption
 started: 2026-10-17
-last-updated: 2026-10-17
+last-updated: 2026-10-18
 governing-skill: .agents/skills/choosing-technology/SKILL.md
 governing-skill-commit: 37117e36397e30233062828581a5e38217da9458
 governing-skill-sha256: 552ac9955299b65a9f921a4e836b60a3fabc15d3477eeb8ec2bfb3f400647f9b
@@ -28,6 +28,10 @@ overlays:
   - Native and prebuilt artifact boundaries
 -->
 # Depot complete CI trial evaluation
+
+The [expanded native runner and hybrid routing evaluation](tech-depot-complete-ci-trial-vet-2026-10-18.md)
+records the authorized follow-up and current scoped verdict.
+This document retains the original frozen cohort and its acceptance limits.
 
 ## Decision and acceptance limits
 

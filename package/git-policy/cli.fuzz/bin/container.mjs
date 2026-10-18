@@ -196,6 +196,8 @@ async function main() {
     ].join('\n'));
     execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', runImage, '--file', join(context, 'Run.Containerfile'), context] });
     console.log(`Fuzz evidence: ${evidence}`);
+    // A failed target is recorded and the campaign goes on, so one finding never hides the targets after it.
+    const failedTargets = [];
     for (const target of selectedTargets) {
       const container = execute({ command: 'podman', args: [
         'create', ...limits, runImage,
@@ -225,10 +227,15 @@ async function main() {
       const executedUnits = statistics ? Number(statistics[1]) : 0;
       await writeFile(join(evidence, target.name, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, executedUnits }) + '\n');
       // Exit 0 alone is not evidence: a dictionary or corpus setup failure also ends quickly.
-      if (result.status !== 0 || executedUnits < 1)
-        throw new FuzzVerificationError(`${target.name} exited ${result.status} after ${executedUnits} verified executions; retained inputs and logs are in ${evidence}.`);
+      if (result.status !== 0 || executedUnits < 1) {
+        failedTargets.push(`${target.name} exited ${result.status} after ${executedUnits} verified executions`);
+        console.log(`${target.name}: FAILED, exit ${result.status}, ${executedUnits} executions; evidence ${join(evidence, target.name)}`);
+        continue;
+      }
       console.log(`${target.name}: ${executedUnits} executions, exit 0; evidence ${join(evidence, target.name)}`);
     }
+    if (failedTargets.length > 0)
+      throw new FuzzVerificationError(`${failedTargets.join('; ')}; retained inputs and logs are in ${evidence}.`);
   } finally {
     for (const container of containers)
       execute({ command: 'podman', args: ['rm', '--force', container], capture: true });
