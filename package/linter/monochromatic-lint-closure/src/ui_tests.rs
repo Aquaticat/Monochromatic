@@ -16,12 +16,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// What:
-///  Copy a fixture directory, giving every `.stderr` file that ends in a warning summary the trailing blank line that
-///  rustc prints after it.
+///  Copy a fixture directory,
+///  giving every `.stderr` file that ends in a warning summary the trailing blank line that rustc prints after it.
 /// Why:
-///  The repository's commit policy trims a text file to exactly one final newline, while the output that the UI
-///  harness compares against ends a warning summary with an empty line; staging restores that line in a scratch copy
-///  and leaves the committed files in the canonical form. Output that ends in an error summary has no such line.
+///  The repository's commit policy trims a text file to exactly one final newline,
+///  while the output that the UI harness compares against ends a warning summary with an empty line;
+///  staging restores that line in a scratch copy and leaves the committed files in the canonical form.
+///  Output that ends in an error summary has no such line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,13 +44,14 @@ fn stage(source: &Path, target: &Path) {
             let text: String = fs::read_to_string(&path).expect("golden output reads");
             let trimmed: &str = text.trim_end();
             let summary: &str = trimmed.lines().last().unwrap_or("");
-            let padded: String = if summary.starts_with("warning: ") && summary.ends_with(" emitted") {
-                format!("{trimmed}\n\n")
-            } else if trimmed.is_empty() {
-                String::new()
-            } else {
-                format!("{trimmed}\n")
-            };
+            let padded: String =
+                if summary.starts_with("warning: ") && summary.ends_with(" emitted") {
+                    format!("{trimmed}\n\n")
+                } else if trimmed.is_empty() {
+                    String::new()
+                } else {
+                    format!("{trimmed}\n")
+                };
             fs::write(&destination, padded).expect("staged golden output is written");
             continue;
         }
@@ -60,8 +62,8 @@ fn stage(source: &Path, target: &Path) {
 /// What:
 ///  Run every fixture with this library loaded and the `dylint_lib` cfg declared.
 /// Why:
-///  Each fixture names its own edition in a header comment; `--check-cfg` stops rustc from warning about the
-///  `dylint_lib` cfg that the suppression attribute tests.
+///  Each fixture names its own edition in a header comment;
+///  `--check-cfg` stops rustc from warning about the `dylint_lib` cfg that the suppression attribute tests.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,7 +71,10 @@ fn stage(source: &Path, target: &Path) {
 /// ```
 #[test]
 fn ui() {
-    let staged: PathBuf = std::env::temp_dir().join(format!("monochromatic-lint-closure-ui-{}", std::process::id()));
+    let staged: PathBuf = std::env::temp_dir().join(format!(
+        "monochromatic-lint-closure-ui-{}",
+        std::process::id()
+    ));
     if staged.exists() {
         fs::remove_dir_all(&staged).expect("a stale staging directory is removed");
     }

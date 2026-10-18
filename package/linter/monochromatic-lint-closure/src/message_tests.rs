@@ -1,7 +1,8 @@
 //! What:
 //!  Unit tests for the message and help wording.
 //! Why:
-//!  Every placement and capture combination must name the failed condition and a concrete remedy, in neutral terms.
+//!  Every placement and capture combination must name the failed condition and a concrete remedy,
+//!  in neutral terms.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +14,8 @@ use crate::message::{LIBRARY_NAME, LINT_NAME, capture_list, help_message, primar
 /// Import the placement categories to enumerate.
 use crate::placement::Placement;
 
-/// Every placement, so a new variant added later fails the exhaustiveness of the loops below.
+/// Every placement,
+/// so a new variant added later fails the exhaustiveness of the loops below.
 const PLACEMENTS: [Placement; 5] = [
     Placement::KeptByCallee,
     Placement::NotKeptByCallee,
@@ -23,7 +25,9 @@ const PLACEMENTS: [Placement; 5] = [
 ];
 
 /// Words that would judge code or authors instead of naming an operation or evidence.
-const JUDGING_WORDS: [&str; 8] = ["bad", "wrong", "poor", "smell", "lazy", "mistake", "sloppy", "ugly"];
+const JUDGING_WORDS: [&str; 8] = [
+    "bad", "wrong", "poor", "smell", "lazy", "mistake", "sloppy", "ugly",
+];
 
 /// Build an owned name list from literals.
 fn names(items: &[&str]) -> Vec<String> {
@@ -34,7 +38,9 @@ fn names(items: &[&str]) -> Vec<String> {
     return list;
 }
 
-/// An empty list renders as nothing, one name as a backticked identifier, several joined by commas.
+/// An empty list renders as nothing,
+/// one name as a backticked identifier,
+/// several joined by commas.
 #[test]
 fn capture_list_renders_zero_one_and_many_names() {
     assert_eq!(capture_list(&names(&[])), "");
@@ -42,13 +48,17 @@ fn capture_list_renders_zero_one_and_many_names() {
     assert_eq!(capture_list(&names(&["a", "b", "c"])), "`a`, `b`, `c`");
 }
 
-/// With captures, the message names each capture and the failed placement condition.
+/// With captures,
+/// the message names each capture and the failed placement condition.
 #[test]
 fn message_with_captures_names_them_and_the_failed_condition() {
     let captures: Vec<String> = names(&["state", "count"]);
     let expectations: [(Placement, &str); 4] = [
         (Placement::NotKeptByCallee, "not required to be `'static`"),
-        (Placement::LetInitializer, "initializer of a `let` statement"),
+        (
+            Placement::LetInitializer,
+            "initializer of a `let` statement",
+        ),
         (Placement::UnresolvedCallee, "not a declared function"),
         (Placement::Other, "not a direct argument"),
     ];
@@ -59,14 +69,20 @@ fn message_with_captures_names_them_and_the_failed_condition() {
     }
 }
 
-/// Without captures, the message says that nothing is captured, and also names a failed placement when there is one.
+/// Without captures,
+/// the message says that nothing is captured,
+/// and also names a failed placement when there is one.
 #[test]
 fn message_without_captures_says_nothing_is_captured() {
     let alone: String = primary_message(&names(&[]), Placement::KeptByCallee);
     assert!(alone.contains("captures no variables"), "{alone}");
     assert!(!alone.contains("also"), "{alone}");
     let both: String = primary_message(&names(&[]), Placement::Other);
-    assert!(both.contains("captures no variables") && both.contains("also, it is not a direct argument"), "{both}");
+    assert!(
+        both.contains("captures no variables")
+            && both.contains("also, it is not a direct argument"),
+        "{both}"
+    );
 }
 
 /// The remedy for a closure without captures is a named function.
@@ -82,7 +98,9 @@ fn help_without_captures_names_a_function() {
 /// The remedy for captured state shows the exact suppression attribute with this library and lint name.
 #[test]
 fn help_with_captures_shows_the_suppression_attribute() {
-    let expected: String = format!("#[cfg_attr(dylint_lib = \"{LIBRARY_NAME}\", expect({LINT_NAME}, reason = \"...\"))]");
+    let expected: String = format!(
+        "#[cfg_attr(dylint_lib = \"{LIBRARY_NAME}\", expect({LINT_NAME}, reason = \"...\"))]"
+    );
     for placement in PLACEMENTS {
         let help: String = help_message(&names(&["state"]), placement);
         assert!(help.contains(&expected), "{help}");
@@ -93,7 +111,10 @@ fn help_with_captures_shows_the_suppression_attribute() {
 #[test]
 fn help_for_let_initializer_mentions_the_statement_and_e0658() {
     let help: String = help_message(&names(&["state"]), Placement::LetInitializer);
-    assert!(help.contains("`let` statement") && help.contains("E0658") && help.contains("restructure"), "{help}");
+    assert!(
+        help.contains("`let` statement") && help.contains("E0658") && help.contains("restructure"),
+        "{help}"
+    );
     let other: String = help_message(&names(&["state"]), Placement::Other);
     assert!(!other.contains("E0658"), "{other}");
 }
@@ -103,7 +124,11 @@ fn help_for_let_initializer_mentions_the_statement_and_e0658() {
 fn messages_use_neutral_terms() {
     for placement in PLACEMENTS {
         for captures in [names(&[]), names(&["state"])] {
-            let text: String = format!("{} {}", primary_message(&captures, placement), help_message(&captures, placement));
+            let text: String = format!(
+                "{} {}",
+                primary_message(&captures, placement),
+                help_message(&captures, placement)
+            );
             for word in JUDGING_WORDS {
                 assert!(!text.to_lowercase().contains(word), "{word} in {text}");
             }

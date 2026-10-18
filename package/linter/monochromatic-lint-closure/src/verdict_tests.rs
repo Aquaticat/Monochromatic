@@ -1,8 +1,9 @@
 //! What:
 //!  Check every fixture's compiler output against the verdict markers written in the fixture itself.
 //! Why:
-//!  The `.stderr` golden files are produced by running the lint, so by themselves they would record a wrong verdict as
-//!  readily as a right one; the markers are written by hand before the golden file exists and decide independently.
+//!  The `.stderr` golden files are produced by running the lint,
+//!  so by themselves they would record a wrong verdict as readily as a right one;
+//!  the markers are written by hand before the golden file exists and decide independently.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -13,7 +14,8 @@
 
 /// Import an ordered map so differences print in line order.
 use std::collections::BTreeMap;
-/// Import the borrowed operating-system string type, to compare a file extension without a closure.
+/// Import the borrowed operating-system string type,
+/// to compare a file extension without a closure.
 use std::ffi::OsStr;
 /// Import file reading and directory listing.
 use std::fs;
@@ -38,7 +40,8 @@ enum Kind {
     Unfulfilled,
     /// rustc's `unknown_lints` warning.
     UnknownLint,
-    /// A compiler error with its code, such as `E0658`.
+    /// A compiler error with its code,
+    /// such as `E0658`.
     Error(String),
 }
 
@@ -46,11 +49,17 @@ enum Kind {
 type Tally = BTreeMap<(usize, Kind), usize>;
 
 /// What:
-///  Read the verdict markers of one fixture: a comment line `// verdict: <word>` describes the next line.
-///  Words: `allowed` and `suppressed` (no report), `reported` or `reported N`, `unfulfilled`, `unknown-lint`,
+///  Read the verdict markers of one fixture:
+///  a comment line `// verdict: <word>` describes the next line.
+///  Words:
+///  `allowed` and `suppressed` (no report),
+///  `reported` or `reported N`,
+///  `unfulfilled`,
+///  `unknown-lint`,
 ///  `error CODE`.
 /// Why:
-///  Markers sit beside the code they judge, so a reader sees the expectation without opening the golden file.
+///  Markers sit beside the code they judge,
+///  so a reader sees the expectation without opening the golden file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,7 +73,9 @@ fn parse_markers(source: &str) -> Tally {
         };
         let target: usize = index + 2;
         let mut parts = word.split_whitespace();
-        let name: &str = parts.next().expect("a verdict word follows the marker prefix");
+        let name: &str = parts
+            .next()
+            .expect("a verdict word follows the marker prefix");
         let argument: Option<&str> = parts.next();
         match name {
             "allowed" | "suppressed" => {}
@@ -95,7 +106,8 @@ fn parse_markers(source: &str) -> Tally {
 ///  Decide the kind of a diagnostic header line (`warning: ...` or `error[E0000]: ...` at column zero).
 ///  `None` means the line is a summary such as `warning: 3 warnings emitted`.
 /// Why:
-///  Unknown headers panic, so an unexpected diagnostic cannot slip into a golden file unnoticed.
+///  Unknown headers panic,
+///  so an unexpected diagnostic cannot slip into a golden file unnoticed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,7 +124,10 @@ fn header_kind(line: &str) -> Option<Kind> {
         return Some(Kind::UnknownLint);
     }
     if let Some(rest) = line.strip_prefix("error[") {
-        let code: &str = rest.split(']').next().expect("an error header has a closing bracket");
+        let code: &str = rest
+            .split(']')
+            .next()
+            .expect("an error header has a closing bracket");
         return Some(Kind::Error(String::from(code)));
     }
     if line.starts_with("error: aborting") || line.contains(" emitted") {
@@ -125,7 +140,8 @@ fn header_kind(line: &str) -> Option<Kind> {
 }
 
 /// What:
-///  Count the diagnostics of a normalised `.stderr` file by primary line and kind, for one fixture file name.
+///  Count the diagnostics of a normalised `.stderr` file by primary line and kind,
+///  for one fixture file name.
 /// Why:
 ///  The first `--> $DIR/<file>:<line>:<column>` after a header is the diagnostic's primary location.
 ///
@@ -148,17 +164,23 @@ fn parse_stderr(stderr: &str, fixture_name: &str) -> Tally {
         let Some(kind) = pending.take() else {
             continue;
         };
-        let number: &str = location.split(':').next().expect("a location has a line number");
-        let number: usize = number.parse().expect("a line number is numeric");
+        let digits: &str = location
+            .split(':')
+            .next()
+            .expect("a location has a line number");
+        let number: usize = digits.parse().expect("a line number is numeric");
         *tally.entry((number, kind)).or_insert(0) += 1;
     }
     return tally;
 }
 
 /// What:
-///  List the differences between marked and observed diagnostics as readable lines; empty means they agree.
+///  List the differences between marked and observed diagnostics as readable lines;
+///  empty means they agree.
 /// Why:
-///  A report without a marker, or a marker without a report, both mean the lint and the fixture's author disagree.
+///  A report without a marker,
+///  or a marker without a report,
+///  both mean the lint and the fixture's author disagree.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -169,19 +191,26 @@ fn differences(marked: &Tally, observed: &Tally) -> Vec<String> {
     for (key, count) in observed {
         let wanted: usize = marked.get(key).copied().unwrap_or(0);
         if wanted != *count {
-            lines.push(format!("line {} {:?}: observed {count}, marked {wanted}", key.0, key.1));
+            lines.push(format!(
+                "line {} {:?}: observed {count}, marked {wanted}",
+                key.0, key.1
+            ));
         }
     }
     for (key, count) in marked {
         if !observed.contains_key(key) {
-            lines.push(format!("line {} {:?}: observed 0, marked {count}", key.0, key.1));
+            lines.push(format!(
+                "line {} {:?}: observed 0, marked {count}",
+                key.0, key.1
+            ));
         }
     }
     return lines;
 }
 
 /// What:
-///  The fixture source files under `tests/ui`, sorted by name.
+///  The fixture source files under `tests/ui`,
+///  sorted by name.
 /// Why:
 ///  The check must cover every fixture without a hand-kept list that could go stale.
 ///
@@ -205,45 +234,76 @@ fn fixture_paths() -> Vec<PathBuf> {
 #[test]
 fn golden_output_equals_the_verdict_markers_of_every_fixture() {
     let paths: Vec<PathBuf> = fixture_paths();
-    assert!(paths.len() >= 6, "expected at least six fixtures, found {}", paths.len());
+    assert!(
+        paths.len() >= 6,
+        "expected at least six fixtures, found {}",
+        paths.len()
+    );
     let mut failures: Vec<String> = Vec::new();
     for path in paths {
-        let name: String = path.file_name().expect("file name").to_string_lossy().into_owned();
+        let name: String = path
+            .file_name()
+            .expect("file name")
+            .to_string_lossy()
+            .into_owned();
         let source: String = fs::read_to_string(&path).expect("fixture reads");
-        let stderr: String = fs::read_to_string(path.with_extension("stderr")).expect("golden output exists");
-        assert!(source.contains("// verdict: "), "{name} has no verdict markers");
-        let found: Vec<String> = differences(&parse_markers(&source), &parse_stderr(&stderr, &name));
+        let stderr: String =
+            fs::read_to_string(path.with_extension("stderr")).expect("golden output exists");
+        assert!(
+            source.contains("// verdict: "),
+            "{name} has no verdict markers"
+        );
+        let found: Vec<String> =
+            differences(&parse_markers(&source), &parse_stderr(&stderr, &name));
         for line in found {
             failures.push(format!("{name}: {line}"));
         }
     }
-    assert!(failures.is_empty(), "fixtures disagree with their markers:\n{}", failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "fixtures disagree with their markers:\n{}",
+        failures.join("\n")
+    );
 }
 
-/// Positive control: an unmarked report is a difference.
+/// Positive control:
+/// an unmarked report is a difference.
 #[test]
 fn an_unmarked_report_is_flagged() {
     let stderr = "warning: this closure captures `n`, but x\n  --> $DIR/a.rs:7:5\n";
-    let found: Vec<String> = differences(&parse_markers("// verdict: allowed\nlet f = 1;\n"), &parse_stderr(stderr, "a.rs"));
+    let found: Vec<String> = differences(
+        &parse_markers("// verdict: allowed\nlet f = 1;\n"),
+        &parse_stderr(stderr, "a.rs"),
+    );
     assert_eq!(found.len(), 1, "{found:?}");
 }
 
-/// Positive control: a marker whose report is missing is a difference.
+/// Positive control:
+/// a marker whose report is missing is a difference.
 #[test]
 fn a_report_marker_without_a_report_is_flagged() {
-    let found: Vec<String> = differences(&parse_markers("// verdict: reported\nlet f = 1;\n"), &parse_stderr("", "a.rs"));
+    let found: Vec<String> = differences(
+        &parse_markers("// verdict: reported\nlet f = 1;\n"),
+        &parse_stderr("", "a.rs"),
+    );
     assert_eq!(found.len(), 1, "{found:?}");
 }
 
-/// Control: a matching marker and report agree, including a count.
+/// Control:
+/// a matching marker and report agree,
+/// including a count.
 #[test]
 fn matching_markers_and_reports_agree() {
     let stderr = "warning: this closure captures `n`, but x\n  --> $DIR/a.rs:2:5\n\nwarning: this closure captures `m`, but x\n  --> $DIR/a.rs:2:20\n";
-    let found: Vec<String> = differences(&parse_markers("// verdict: reported 2\nlet f = 1;\n"), &parse_stderr(stderr, "a.rs"));
+    let found: Vec<String> = differences(
+        &parse_markers("// verdict: reported 2\nlet f = 1;\n"),
+        &parse_stderr(stderr, "a.rs"),
+    );
     assert!(found.is_empty(), "{found:?}");
 }
 
-/// Control: an unknown diagnostic header aborts the check.
+/// Control:
+/// an unknown diagnostic header aborts the check.
 #[test]
 #[should_panic(expected = "unexpected diagnostic")]
 fn an_unknown_diagnostic_header_aborts() {

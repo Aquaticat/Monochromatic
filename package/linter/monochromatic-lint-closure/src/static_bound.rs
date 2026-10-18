@@ -1,29 +1,35 @@
 //! What:
 //!  Whether a callee's declared parameter requires its argument to be `'static`.
 //! Why:
-//!  A callee that requires `'static` keeps or runs the callable past the call, so only a closure that owns state can
-//!  serve it; this is the callee half of the lint criterion.
+//!  A callee that requires `'static` keeps or runs the callable past the call,
+//!  so only a closure that owns state can serve it;
+//!  this is the callee half of the lint criterion.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! function parameterRequiresStatic(callee: DefId, index: number, boxed: boolean): boolean;
 //! ```
 
-/// Import the lint context that gives access to compiler queries.
-use rustc_lint::LateContext;
 /// Import the definition identifier type of the callee.
 use rustc_hir::def_id::DefId;
+/// Import the lint context that gives access to compiler queries.
+use rustc_lint::LateContext;
+/// Import the supertrait elaborator:
+/// it expands `F: Task` into `F: Task` plus everything `trait Task: ..` implies.
+use rustc_middle::ty::elaborate::elaborate;
 /// Import clause kinds (the compiler's name for where-clauses and bounds) and type kinds.
 use rustc_middle::ty::{ClauseKind, Ty, TyKind};
-/// Import the supertrait elaborator: it expands `F: Task` into `F: Task` plus everything `trait Task: ..` implies.
-use rustc_middle::ty::elaborate::elaborate;
 
 /// What:
 ///  True when the declared parameter at `index` of `callee` must outlive `'static`.
-///  `index` counts a method receiver as parameter zero; `boxed` means the argument is wrapped in `Box::new(..)`.
+///  `index` counts a method receiver as parameter zero;
+///  `boxed` means the argument is wrapped in `Box::new(..)`.
 /// Why:
-///  The bound sits in three places: a generic parameter's outlives clause (including `impl Trait` arguments, impl and
-///  trait parents, and supertraits), or the lifetime of a `dyn Trait` object inside a `Box` parameter.
+///  The bound sits in three places:
+///  a generic parameter's outlives clause (including `impl Trait` arguments,
+///  impl and trait parents,
+///  and supertraits),
+///  or the lifetime of a `dyn Trait` object inside a `Box` parameter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,7 +39,12 @@ use rustc_middle::ty::elaborate::elaborate;
 ///   return typeRequiresStatic(boxed ? unwrapBoxes(declared) : declared);
 /// }
 /// ```
-pub fn parameter_requires_static(cx: &LateContext<'_>, callee: DefId, index: usize, boxed: bool) -> bool {
+pub fn parameter_requires_static(
+    cx: &LateContext<'_>,
+    callee: DefId,
+    index: usize,
+    boxed: bool,
+) -> bool {
     // What: fn_sig is a query returning the declared signature wrapped in two binders (generic and late-bound
     // lifetimes); skip_binder twice reads the types without instantiating them.
     // Why: Only the declared parameter types matter, not any particular call's substitutions.
@@ -54,8 +65,8 @@ pub fn parameter_requires_static(cx: &LateContext<'_>, callee: DefId, index: usi
 }
 
 /// What:
-///  True when `parameter` is a generic type with a `'static` outlives clause in `callee`'s environment, or a
-///  `dyn Trait` object whose lifetime bound is `'static`.
+///  True when `parameter` is a generic type with a `'static` outlives clause in `callee`'s environment,
+///  or a `dyn Trait` object whose lifetime bound is `'static`.
 /// Why:
 ///  These are the two ways a declared parameter type forces `'static` without naming a concrete type.
 ///
@@ -74,8 +85,8 @@ fn type_requires_static<'tcx>(cx: &LateContext<'tcx>, callee: DefId, parameter: 
 /// What:
 ///  Scan the elaborated where-clauses of `callee` for `parameter: 'static`.
 /// Why:
-///  `param_env` already merges the impl and trait parents' clauses; elaboration adds the clauses that a supertrait
-///  such as `trait Task: 'static` implies for `F: Task`.
+///  `param_env` already merges the impl and trait parents' clauses;
+///  elaboration adds the clauses that a supertrait such as `trait Task: 'static` implies for `F: Task`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,7 +97,11 @@ fn type_requires_static<'tcx>(cx: &LateContext<'tcx>, callee: DefId, parameter: 
 ///   return false;
 /// }
 /// ```
-fn environment_requires_static<'tcx>(cx: &LateContext<'tcx>, callee: DefId, parameter: Ty<'tcx>) -> bool {
+fn environment_requires_static<'tcx>(
+    cx: &LateContext<'tcx>,
+    callee: DefId,
+    parameter: Ty<'tcx>,
+) -> bool {
     let environment = cx.tcx.param_env(callee);
     for clause in elaborate(cx.tcx, environment.caller_bounds()) {
         let ClauseKind::TypeOutlives(outlives) = clause.kind().skip_binder() else {

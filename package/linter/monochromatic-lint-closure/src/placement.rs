@@ -10,26 +10,30 @@
 //! function classifyPlacement(closure: Expr): Placement;
 //! ```
 
-/// Import the compiler's high-level IR node types: expressions, call kinds, nodes.
-use rustc_hir::{Expr, ExprKind, Node};
-/// Import the compiler's type kind enum to inspect what a callee expression is.
-use rustc_middle::ty::TyKind;
-/// Import the lint context that gives access to type information.
-use rustc_lint::LateContext;
-/// Import the interned symbol table for the standard library's diagnostic item names.
-use rustc_span::sym;
 /// Import the shared test for a declared `'static` parameter.
 use crate::static_bound::parameter_requires_static;
 /// Import the compiler's definition kind to separate functions from constructors.
 use rustc_hir::def::DefKind;
 /// Import the definition identifier type of the callee.
 use rustc_hir::def_id::DefId;
+/// Import the compiler's high-level IR node types:
+/// expressions,
+/// call kinds,
+/// nodes.
+use rustc_hir::{Expr, ExprKind, Node};
+/// Import the lint context that gives access to type information.
+use rustc_lint::LateContext;
+/// Import the compiler's type kind enum to inspect what a callee expression is.
+use rustc_middle::ty::TyKind;
+/// Import the interned symbol table for the standard library's diagnostic item names.
+use rustc_span::sym;
 
 /// What:
 ///  The placement categories of a closure expression.
 ///  `#[derive(Clone, Copy, Debug, Eq, PartialEq)]` lets values be copied and compared like TS string-literal unions.
 /// Why:
-///  The lint message names exactly which placement failed, so each category is its own variant.
+///  The lint message names exactly which placement failed,
+///  so each category is its own variant.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -43,14 +47,23 @@ pub enum Placement {
     NotKeptByCallee,
     /// Initializer of a `let` statement.
     LetInitializer,
-    /// Direct call argument, but the callee is not a declared function (a value, a function pointer, a constructor).
+    /// Direct call argument,
+    /// but the callee is not a declared function (a value,
+    /// a function pointer,
+    /// a constructor).
     UnresolvedCallee,
-    /// Any other position: returned, stored in a field, wrapped in a type other than `Box`, a method receiver.
+    /// Any other position:
+    /// returned,
+    /// stored in a field,
+    /// wrapped in a type other than `Box`,
+    /// a method receiver.
     Other,
 }
 
 /// What:
-///  Where one call-like expression sends an argument: a declared function and parameter index, or nothing usable.
+///  Where one call-like expression sends an argument:
+///  a declared function and parameter index,
+///  or nothing usable.
 /// Why:
 ///  Separates "which parameter is it" from "does that parameter need `'static`".
 ///
@@ -59,8 +72,14 @@ pub enum Placement {
 /// type Slot = { kind: 'declared'; callee: DefId; index: number } | { kind: 'unresolved' } | { kind: 'not-argument' };
 /// ```
 enum Slot {
-    /// The declared function and the zero-based parameter index, counting a method receiver as parameter zero.
-    Declared(DefId, usize),
+    /// The declared function and the zero-based parameter index,
+    /// counting a method receiver as parameter zero.
+    Declared {
+        /// The callee function or method.
+        callee: DefId,
+        /// The zero-based parameter index.
+        index: usize,
+    },
     /// The expression is an argument of a call whose callee has no declared parameter list.
     Unresolved,
     /// The expression is not an argument of a call.
@@ -68,9 +87,11 @@ enum Slot {
 }
 
 /// What:
-///  Decide the placement of `closure`, looking through one `Box::new(..)` call.
+///  Decide the placement of `closure`,
+///  looking through one `Box::new(..)` call.
 /// Why:
-///  `Box::new(closure)` is how a closure reaches a `Box<dyn FnMut() + 'static>` parameter, so the box is transparent.
+///  `Box::new(closure)` is how a closure reaches a `Box<dyn FnMut() + 'static>` parameter,
+///  so the box is transparent.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,10 +101,10 @@ pub fn classify_placement<'tcx>(cx: &LateContext<'tcx>, closure: &'tcx Expr<'tcx
     let (subject, boxed): (&'tcx Expr<'tcx>, bool) = look_through_box(cx, closure);
     let parent: Node<'tcx> = cx.tcx.parent_hir_node(subject.hir_id);
     if let Node::LetStmt(local) = parent {
-        if let Some(init) = local.init {
-            if init.hir_id == subject.hir_id {
-                return Placement::LetInitializer;
-            }
+        if let Some(init) = local.init
+            && init.hir_id == subject.hir_id
+        {
+            return Placement::LetInitializer;
         }
         return Placement::Other;
     }
@@ -91,7 +112,7 @@ pub fn classify_placement<'tcx>(cx: &LateContext<'tcx>, closure: &'tcx Expr<'tcx
         return Placement::Other;
     };
     return match declared_slot(cx, parent_expr, subject) {
-        Slot::Declared(callee, index) => {
+        Slot::Declared { callee, index } => {
             if parameter_requires_static(cx, callee, index, boxed) {
                 Placement::KeptByCallee
             } else {
@@ -104,15 +125,21 @@ pub fn classify_placement<'tcx>(cx: &LateContext<'tcx>, closure: &'tcx Expr<'tcx
 }
 
 /// What:
-///  If `closure` is the only argument of a `Box::new(..)` call, return that call and `true`; else the closure and `false`.
+///  If `closure` is the only argument of a `Box::new(..)` call,
+///  return that call and `true`;
+///  else the closure and `false`.
 /// Why:
-///  The declared parameter type belongs to the box, not to the closure inside it.
+///  The declared parameter type belongs to the box,
+///  not to the closure inside it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function lookThroughBox(closure: Expr): [Expr, boolean];
 /// ```
-fn look_through_box<'tcx>(cx: &LateContext<'tcx>, closure: &'tcx Expr<'tcx>) -> (&'tcx Expr<'tcx>, bool) {
+fn look_through_box<'tcx>(
+    cx: &LateContext<'tcx>,
+    closure: &'tcx Expr<'tcx>,
+) -> (&'tcx Expr<'tcx>, bool) {
     let Node::Expr(parent) = cx.tcx.parent_hir_node(closure.hir_id) else {
         return (closure, false);
     };
@@ -132,10 +159,14 @@ fn look_through_box<'tcx>(cx: &LateContext<'tcx>, closure: &'tcx Expr<'tcx>) -> 
 }
 
 /// What:
-///  The declared function definition a callee expression names, when its type is a plain function item.
+///  The declared function definition a callee expression names,
+///  when its type is a plain function item.
 /// Why:
-///  Constructors (`Some`, tuple structs), function pointers, closures and generic callee values have no declared
-///  parameter list whose bounds can be read, so they yield nothing.
+///  Constructors (`Some`,
+///  tuple structs),
+///  function pointers,
+///  closures and generic callee values have no declared parameter list whose bounds can be read,
+///  so they yield nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -156,20 +187,28 @@ fn function_definition<'tcx>(cx: &LateContext<'tcx>, callee: &'tcx Expr<'tcx>) -
 /// What:
 ///  Find which declared parameter of `parent` receives `argument`.
 /// Why:
-///  A call and a method call count parameters differently: a method call's receiver is parameter zero.
+///  A call and a method call count parameters differently:
+///  a method call's receiver is parameter zero.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function declaredSlot(parent: Expr, argument: Expr): Slot;
 /// ```
-fn declared_slot<'tcx>(cx: &LateContext<'tcx>, parent: &'tcx Expr<'tcx>, argument: &'tcx Expr<'tcx>) -> Slot {
+fn declared_slot<'tcx>(
+    cx: &LateContext<'tcx>,
+    parent: &'tcx Expr<'tcx>,
+    argument: &'tcx Expr<'tcx>,
+) -> Slot {
     match parent.kind {
         ExprKind::Call(callee, arguments) => {
             let Some(index) = argument_index(arguments, argument) else {
                 return Slot::NotArgument;
             };
             return match function_definition(cx, callee) {
-                Some(definition) => Slot::Declared(definition, index),
+                Some(definition) => Slot::Declared {
+                    callee: definition,
+                    index,
+                },
                 None => Slot::Unresolved,
             };
         }
@@ -178,7 +217,10 @@ fn declared_slot<'tcx>(cx: &LateContext<'tcx>, parent: &'tcx Expr<'tcx>, argumen
                 return Slot::NotArgument;
             };
             return match cx.typeck_results().type_dependent_def_id(parent.hir_id) {
-                Some(definition) => Slot::Declared(definition, index + 1),
+                Some(definition) => Slot::Declared {
+                    callee: definition,
+                    index: index + 1,
+                },
                 None => Slot::Unresolved,
             };
         }
@@ -187,7 +229,8 @@ fn declared_slot<'tcx>(cx: &LateContext<'tcx>, parent: &'tcx Expr<'tcx>, argumen
 }
 
 /// What:
-///  The position of `argument` in `arguments`, found by comparing node identifiers.
+///  The position of `argument` in `arguments`,
+///  found by comparing node identifiers.
 /// Why:
 ///  A loop keeps this readable and avoids a closure in the lint's own source.
 ///

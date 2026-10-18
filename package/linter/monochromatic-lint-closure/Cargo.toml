@@ -7,6 +7,7 @@ license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticats/Monochromatic.git"
 publish = false
+homepage = "https://github.com/Aquaticats/Monochromatic/tree/main/package/linter/monochromatic-lint-closure"
 
 [lib]
 name = "monochromatic_lint_closure"
@@ -21,3 +22,17 @@ dylint_testing = "6.2"
 
 [package.metadata.rust-analyzer]
 rustc_private = true
+
+# Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
+[lints.clippy]
+complexity = { level = "allow", priority = -1 }
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
+[workspace]
