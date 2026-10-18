@@ -321,6 +321,12 @@ fn a_scan_batch_that_does_not_continue_the_index_is_ignored() {
     assert_eq!(result_count(&service.search_now("fresh")), 10);
 }
 
+// What:     `running_threads`, how many threads the service still has to join.
+// Why:      `shutdown` empties the list, so the count tells whether a second call has anything left to do.
+fn running_threads(service: &SearchService) -> usize {
+    return service.threads.lock().expect("no thread of the service panics while holding the list").len();
+}
+
 // What:     `shutdown` joins the three threads once, and the later `drop` and a second `shutdown` find nothing to join.
 // Why:      `main` calls it while the threads are alive; the thread-local handle is dropped later, during process exit,
 //           where a join on a killed thread panics on Windows.
@@ -331,11 +337,11 @@ fn shutdown_ends_all_three_threads_and_a_second_call_does_nothing() {
     service.append_for(generation, &names(0..10, "song"));
     let sequence: u64 = service.query("song");
     wait_for(&receiver, |answer| return answer.sequence == sequence);
-    assert_eq!(service.threads.lock().unwrap().len(), 3);
+    assert_eq!(running_threads(&service), 3);
     service.shutdown();
-    assert!(service.threads.lock().unwrap().is_empty());
+    assert_eq!(running_threads(&service), 0);
     service.shutdown();
-    assert!(service.threads.lock().unwrap().is_empty());
+    assert_eq!(running_threads(&service), 0);
 }
 
 // What:     After `shutdown`, a query is not answered and nothing panics.
