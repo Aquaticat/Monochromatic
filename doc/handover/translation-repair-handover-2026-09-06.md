@@ -445,8 +445,9 @@ before the other queued work.
     oldest first:
     the delegated items (finalist extension,
     guard demos);
-    the docs batch's leftovers (the batch itself landed in `065353a34f` to `8194356f4d`):
-    `design-commitments.md` still calls the carry run-off of B641 "not landed",
+    the docs batch's leftovers (the batch itself landed in `065353a34f` to `8194356f4d`;
+    `1939670f87` brought `design-commitments.md` up to the B619 landing and the B641 carry run-off;
+    gate g102 runs on `1939670f87` in `w179`, unit `gate-g102`, output `s245/split/gate-g102/`):
     n171 and n173 left no hand-back to source their breaches,
     and Z4 has no recorded fix;
     a `pi` sol review;
