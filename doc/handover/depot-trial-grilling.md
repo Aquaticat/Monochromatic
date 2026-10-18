@@ -38,6 +38,38 @@ A repository-scoped Actions runner query returned an empty list;
 this does not establish failure of Depot's ephemeral runners.
 An unrelated concurrent edit to `package/git-policy/cli.fuzz/bin/container.mjs` must be preserved.
 
+The supplemental cohort is now dispatched as `native-runners-20261018T034256508Z`.
+Its [bound manifest](../audit/depot-complete-cohort-native-runners-20261018T034256508Z.json)
+preserves the historical case digests and binds the new provider-specific harness revisions.
+The [dispatch and placement evidence](../audit/depot-native-runner-followup-2026-10-17.evidence.json)
+retains all workflow bytes and initial provider job responses.
+The original consumer step values are independently compared with the frozen harnesses;
+only runner selection,
+the native cache namespace and the added hardware probe differ.
+
+- Native source:
+  run `39094759518`,
+  Depot Windows job `117578770519` and Depot macOS job `117578770694`.
+- Desktop source on Depot macOS:
+  run `39094764609`,
+  job `117578785599`.
+- Desktop Windows matrix:
+  run `39094767696`,
+  Depot GNU job `117578793896`,
+  Depot MSVC x64 job `117578794032`,
+  unchanged GitHub ARM job `117578794097`.
+
+All six initial jobs are in progress.
+All five Depot-labelled jobs have actual `depot-*` runner names.
+The private `wait-native-followup-terminals` task waits for all routes in command session `75523`,
+writing terminal receipts under `depot-native-followup-dispatches/`.
+It emits only terminal results.
+Continue independent source-issue reconciliation while those inputs remain unchanged.
+Then collect actual logs and archives,
+validate hardware,
+source/common pairs and every original consumer boundary,
+and retain all allocation intervals before measuring unchanged repetitions.
+
 The user-approved reader report is complete:
 [Depot complete CI trial evaluation](../audit/tech-depot-complete-ci-trial-vet-2026-10-17.md).
 It uses the approved sections and makes no adoption recommendation.
