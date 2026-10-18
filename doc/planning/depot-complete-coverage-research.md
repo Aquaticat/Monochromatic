@@ -1020,7 +1020,8 @@ arbitrary filesystem relocation and another platform are unmeasured.
 
 Run `39126466632`,
 immutable harness `552831830ef2f059b7efa5149fe20f053428c220`,
-is terminal with all 50 owning invocations reached: 47 passed and 3 failed.
+is terminal with all 50 owning invocations reached:
+47 passed and 3 failed.
 Its finite plan has 50 owning invocations:
 42 shared builds,
 the authored browser-property bundle and product page build,
@@ -1067,4 +1068,22 @@ The finite remaining queue includes the explicit active E2E consumer,
 TOML Go conformance,
 deepmerge declared-type/compiler controls,
 and the actual mutation fixture container lifecycle.
-Packed installs and feature/assertion inventory remain separate open boundaries.
+The research coverage lane retains these separate independently verifiable queue items:
+
+- Qualify the frozen desktop compositor,
+  ImageMagick executable lookup,
+  and PNG decoding prerequisites;
+  invoke the actual owning consumer with disposable bounded GUI state.
+- Run isolated packed-install consumers through the existing packing and manifest-transformation owners;
+  keep the dependency-free import failure as a negative control.
+- Complete the semantic package,
+  feature,
+  assertion,
+  generator,
+  and consumer manifest;
+  distinguish active and inactive roots and unexecuted surfaces.
+
+These items remain owned work after active E2E and the finite mutation/conformance profiles.
+Each allocation requires the campaign's measured and reserved budget reconciliation,
+finite resource limits,
+and no overlapping coverage cloud job.
