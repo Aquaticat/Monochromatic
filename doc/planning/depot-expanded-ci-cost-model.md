@@ -38,6 +38,10 @@ The six-section report must distinguish measured trial intervals from future wor
   Shared producer work appears once;
   parallel branches contribute through their critical path,
   not the sum of their elapsed durations.
+- After owner and producer reconciliation,
+  assemble a coherent immutable experimental graph for the selected expanded CI workload.
+  Repeated unchanged inputs and actual final-report completion times are required for any whole-graph speed claim.
+  Do not substitute sums of independent research job intervals for that measurement.
 - Keep current-source functional profiles distinct from unchanged-input timing cohorts.
   Preserve run-to-run spread before assigning a speed ratio.
 - Calculate waiting value using the retained CAD input and dated FX observation.

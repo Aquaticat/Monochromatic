@@ -11,6 +11,12 @@ The [combined pricing model](../audit/depot-combined-product-pricing-2026-10-18.
 has executed separate-product scenarios,
 including the counterexample to an all-product Developer cost-dominance claim.
 Actual whole-graph allocation and critical paths remain parent-owned.
+After completing its active Truepeak fixture and publication,
+the Rust researcher owns independent review of the parent's eight policy ZIPs,
+three process ZIPs,
+eight VM/KVM ZIPs and combined pricing arithmetic.
+The review also checks the working report outside that researcher's own Rust claims,
+with no new cloud allocation.
 The coverage researcher published its separate
 [per-job budget ledger](../planning/depot-complete-coverage-budget-ledger.json).
 The corrected standard-GitHub `mvm` lifecycle passed in `39125868595`,
