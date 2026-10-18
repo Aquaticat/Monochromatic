@@ -188,11 +188,7 @@ used by tests):
 
 ### Used by
 
-No family package lists it in `dependencies`.
-
-Packages that list it only in `devDependencies`:
-
-- `source-scan`
+No family package lists it in `dependencies` or `devDependencies`.
 
 ## Tests
 

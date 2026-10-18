@@ -72,7 +72,6 @@ because there is no production code.
 
 Development dependencies other than `test-fixture` (`devDependencies`):
 
-- `coverage-census`
 - `document-structure`
 - `markup`
 - `run`
@@ -91,9 +90,9 @@ The scans import the built entries of `document-structure`,
 `markup`,
 `run` and `typography` through their package names,
 which resolve to each sibling's `dist/final/node/index.mjs`.
-`coverage-census` is listed in `package.json` but no scan imports it;
-the scans read its source as text,
-like every other family package's.
+The scans read the source of every family package as text,
+`coverage-census` among them,
+so none of them is a dependency.
 The `test:unit` task declares no `depends`,
 so build those four first with `mise run //package/translation-repair/<sibling>:build`.
 The `source-scans` task builds them first.
