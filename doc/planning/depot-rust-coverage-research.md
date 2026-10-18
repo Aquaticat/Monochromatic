@@ -1146,3 +1146,8 @@ their original hashes,
 and their raw-text search.
 None contains a literal selected owner alias.
 The receipt makes no global absence claim about other private filesystem material.
+
+The [separate retained-input version join](../audit/depot-rust-legacy-input-version-joins-2026-10-18.evidence.json)
+binds all `169` inventoried input hashes to exact retained Git commits and blob IDs.
+It preserves reproducible source versions after concurrent evidence updates
+without changing the immutable outcome-search receipt or repeating its workload scan.

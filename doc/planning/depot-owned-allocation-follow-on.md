@@ -145,6 +145,29 @@ Their complete private originals remain retained with byte counts and SHA-256 va
 Catalog memory is labelled GB;
 this allocation projection does not convert catalog values into measured RAM.
 
+The [current verification receipt](../audit/depot-owned-allocation-follow-on-verification-2026-10-18.evidence.json)
+rejoins `39` source bodies,
+`35` allocation intervals and identities,
+`1,350` selected provider values,
+`74` source pointers,
+and seven private-original hashes.
+The frozen baseline remains unchanged.
+It separately verifies the snapshot absence and legacy-search source bundles.
+The legacy search's complete input inventory is joined to retained Git blobs.
+
+## Mise preflight source lookup
+
+The fresh selected-tool preflight used official Mise `2026.10.9`,
+binary SHA-256 `6ab6646b52b83f6bbd51c9d0d3ae54264ffa90efd1ac6d7c0ec5a86bbc6a0030`.
+The [preflight receipt](../audit/depot-expanded-graph-preflight-2026-10-18.evidence.json)
+retains the exact isolated installation sequence and release record.
+The retained Cargo-backend source clone is `temp/agent/depot-mise-2026.10.9-source-20261018`
+relative to the user home,
+at revision `ac91d06fa6100935b7a07b08bebf03dd6dd9a0dd`.
+The deciding paths are `src/backend/cargo.rs` and `src/backend/mod.rs`.
+The preflight did not compile its binary from this clone.
+Newly observed selector and task-output-cache behavior needs its own deciding version/source check.
+
 ## Independent Rust projection
 
 The coverage researcher requested a read-only package-result projection from the sealed Rust receipts.
