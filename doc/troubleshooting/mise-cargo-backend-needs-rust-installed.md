@@ -248,15 +248,24 @@ mise install --locked cargo:cargo-nextest
 ```
 
 The additional installer download is part of measured setup.
-The correction is pending independent fresh-state preflight and a new immutable cloud attempt;
+Independent local preflight used the exact frozen configuration,
+fresh tool/home/cache state and anonymous public downloads in a two-CPU,
+two-GiB container.
+The official mise executable's SHA-256 is
+`6ab6646b52b83f6bbd51c9d0d3ae54264ffa90efd1ac6d7c0ec5a86bbc6a0030`.
+The prerequisite command passed in 35,568 ms;
+the separate Nextest install passed in 6,487 ms.
+Actual binary probes reported Node `26.12.0`,
+pnpm `12.14.0` and Nextest `0.9.148`.
+These are single local setup observations,
+not a matched cloud speed comparison or application-test execution.
+A new immutable cloud attempt remains pending;
 the successful historical Mac/Windows setup is not substituted for this Linux cohort's result.
 The upstream filing decision remains unchanged:
 this fixture repeated an already documented repository prerequisite,
 so there is no new upstream defect or additive filing.
 
 [expanded-prerequisite-failure]: https://github.com/Aquaticats/Monochromatic/actions/runs/39135886118
-The failure does not establish any package build or test outcome.
-The upstream filing decision remains unchanged because the adapter omitted a configured prerequisite.
 
 [native-prerequisite-failure]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842242564
 [native-prerequisite-recovery]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230

@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 15:08 UTC
+## Execution checkpoint on 2026-10-18 at 15:25 UTC
 
 Research remains active;
 do not start the interview.
@@ -19,6 +19,14 @@ Correction `fdca95cc72` installs locked Node,
 pnpm,
 Rust and `cargo-binstall` before locked Nextest.
 The Rust researcher independently preflights the actual final driver and setup locally before repeat dispatch.
+The exact staged tool install passed in fresh isolated tool state under two CPU and two GiB limits.
+Independent driver controls also found a staged-source detection gap and surviving detached commands after external
+`SIGTERM`.
+Correction `234ccc92dabb81e998e0a0bb5e838713924dd83f`
+compares tracked state to `HEAD` and adds signal-driven cancellation,
+bounded group termination and final cancellation receipts.
+Independent rechecks of that exact correction are pending;
+stub owner commands provide no application execution credit.
 The browser branch already contains `prepare:matched-image`;
 an incomplete-plan reading that alleged its omission was retracted.
 
@@ -28,10 +36,19 @@ then the fixture combined incompatible local export and `--save`,
 emitting `multiple outputs currently unsupported`.
 This is a fixture error already covered by the exporter troubleshooting documentation,
 not a token rejection.
-The actual image consumer and separate registry authorization remain unqualified.
-Desktop continuation `0jpk5bwpvs` has also reached terminal failure;
-its owner is collecting the actual remaining-session results.
-The coordinated native order is the platform owner's authorized local-export-only auth correction,
+Local-export-only correction `pxx75mxnw2` is terminal finished;
+the platform owner is validating its actual image consumer before assigning execution credit.
+The separate project-scoped registry auth control is now authorized before the parent graph,
+using the same owned project and cumulative USD 0.69 conservative reservation under the existing USD 1 guard.
+Desktop continuation `0jpk5bwpvs` executed all six remaining authored sessions.
+Its structured summaries contain 41 passing and one failing assertion,
+with no skips;
+duplicated raw output lines are not additional cases.
+The failing dialog assertion is `Ctrl+Shift+O opens the system folder dialog`.
+The owner verified zero retained app/compositor processes,
+units or container,
+restored sinks and absent credential.
+The coordinated native order is the platform owner's separate registry auth control,
 then the parent's corrected graph after independent preflight.
 No native graph has been dispatched.
 
@@ -51,6 +68,26 @@ under the parent's expansion controller.
 The platform owner is merging those findings into the public source ledger,
 preserving the separately reviewed split-tests page.
 The parent owns a concise canonical interpretation note and the final report integration.
+The parent also finished reading the eleven remaining Cache integration pages,
+69,290 verified source bytes,
+and owns their substantive finding/ledger join.
+The GitHub Cache integration guide explicitly documents no branch isolation on Depot;
+the parent owns a bounded cross-branch cache control before closing that trust-scope finding.
+No account setting or broad credential is needed.
+
+The original graph admission's USD 1.20 Depot nominal full-window reservation was incorrect.
+Current runner-types documentation gives four-CPU Linux USD 0.012 per minute,
+so two native and two Depot GitHub jobs at thirty minutes each reserve USD 1.44 before allowances.
+Public GitHub nominal compute remains zero.
+The six-sample uniform Depot-rate proxy is USD 2.16,
+not an observed all-provider invoice.
+The original four failed job intervals total 148 seconds,
+including 71 seconds on Depot runners:
+USD 0.0142 nominal Depot compute and USD 0.0296 uniform admission proxy.
+The corrected six-sample proxy plus USD 0.72 correction reserve and observed failed proxy is USD 2.9096,
+within the existing USD 3 campaign guard.
+The [failed setup receipt](../audit/depot-expanded-graph-setup-failure-2026-10-18.evidence.json)
+retains the original admission correction and exact four artifact digests.
 
 The combined allocation ledger at `acf8a8c195` freezes 223 records and known partial nominal compute
 USD 6.1999959,
