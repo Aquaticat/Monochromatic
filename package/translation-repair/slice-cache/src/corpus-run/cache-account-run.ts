@@ -29,7 +29,10 @@ import {
 } from './cache-account-sources.ts';
 import type { VersionSetting, } from './cache-account-commits.ts';
 import { reportSliceCaches, } from './cache-account-slice-report.ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  type CommandLineOf,
+  taskPathOf,
+} from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Cache account run
 // THE PRE-LAUNCH CACHE VERSION CHECK (ledger M28), read-only: git log, git
@@ -217,7 +220,7 @@ export async function auditCacheAccounts(
   if (versions.length === 0) {
     throw new StatedRefusalError({
       says: `no cache version is declared under ${sources}; run this from the package directory, as `
-        + 'mise run //package/module/translation-repair:cache-account-audit does.',
+        + `mise run ${taskPathOf({ command: 'cache-account-audit', },)} does.`,
     },);
   }
 

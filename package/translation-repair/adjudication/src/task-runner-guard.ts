@@ -188,6 +188,9 @@ function anotherMarkerNote({ marker, }: { readonly marker: string; },): string {
 
  @param command - the command's own name, which names its task
 
+ @param owner - directory name, under `package/translation-repair/`, of the package that owns the command, whose
+ `mise.toml` holds the task; handed in because only the packages that list the runners know it
+
  @returns Allowed when the process holds no provider key or the marker names
  this command; otherwise a refusal whose text says how many key variables the
  process holds, both ways to start the command (its task, which builds first,
@@ -196,16 +199,18 @@ function anotherMarkerNote({ marker, }: { readonly marker: string; },): string {
 
  @example
  ```ts
- const verdict = taskRunnerVerdict({ env: process.env, command: 'spend-report', },);
+ const verdict = taskRunnerVerdict({ env: process.env, command: 'spend-report', owner: 'run', },);
  ```
  */
 export function taskRunnerVerdict(
   {
     env,
     command,
+    owner,
   }: {
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly command: string;
+    readonly owner: string;
   },
 ): TaskRunnerVerdict {
   /**
@@ -242,7 +247,7 @@ export function taskRunnerVerdict(
     allowed: false,
     says: `will not run in a process that holds provider keys (${held} ${noun} whose name ends in _API_KEY ${verb} `
       + 'a value) unless that process names this command as the one it means to start. '
-      + `The command's task does that: mise run //package/module/translation-repair:${command} `
+      + `The command's task does that: mise run //package/translation-repair/${owner}:${command} `
       + '(the task builds the package first). '
       + 'To start the built file without building, as when a pass is running and nothing may rebuild, '
       + `set ${STARTED_BY_VARIABLE}=${command} for that one start. `

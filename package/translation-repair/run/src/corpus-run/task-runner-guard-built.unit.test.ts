@@ -309,7 +309,7 @@ await describe({
             },),).toEqual({
               code: REFUSED_AS_STATED,
               stdout: '',
-              stderr: `${guardRefusal({ command: 'probe-sensitivity', },).trimEnd()} `
+              stderr: `${guardRefusal({ command: 'probe-sensitivity', owner: 'probe', },).trimEnd()} `
                 + 'TRANSLATION_REPAIR_STARTED_BY is set in this process to spend-report, which names another '
                 + 'command.\n',
             },);

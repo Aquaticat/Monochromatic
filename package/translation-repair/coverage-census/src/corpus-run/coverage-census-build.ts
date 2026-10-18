@@ -10,6 +10,7 @@ import {
 import {
   type BundleMaps,
   bundleMapsOf,
+  COVERAGE_CENSUS_TASK,
   requireUnminifiedBuild,
 } from './coverage-bundle-maps.ts';
 import type { ReadText, } from './coverage-census-read-text.ts';
@@ -48,8 +49,8 @@ async function builtFilesOf({ distDirectory, }: { readonly distDirectory: string
   if (listing.kind === 'unreadable')
     throw new StatedRefusalError({
       says: `${distDirectory} could not be listed (${listing.reason}), so no build has written it there; run the `
-        + 'census from the package directory through mise run '
-        + '//package/translation-repair/coverage-census:coverage-census, which builds with maps first',
+        + `census from the package directory through mise run ${COVERAGE_CENSUS_TASK}, `
+        + 'which builds with maps first',
     },);
   return listing.names;
 }

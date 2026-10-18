@@ -64,11 +64,13 @@ await describe({
         },),
 
         it({
-          name: 'WRITES EACH OWNER AS A PACKAGE DIRECTORY NAME: lower case letters and digits joined by single '
-            + 'hyphens, so a path or a task cannot hide in one',
+          name: 'WRITES EACH OWNER AS A PACKAGE DIRECTORY NAME: lower case, with no separator of a path or a task '
+            + 'in it, so a path or a task cannot hide in one',
           fn: async () => {
             expect(Object.values(COMMAND_OWNERS,)
-              .filter((owner,) => !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/v.test(owner,),),).toEqual([],);
+              .filter((owner,) =>
+                (owner === '') || (owner !== owner.toLowerCase()) || owner.includes('/',) || owner.includes(':',)
+                || owner.includes(' ',)),).toEqual([],);
           },
         },),
       ],

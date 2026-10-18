@@ -410,6 +410,22 @@ async function invokingDocs(): Promise<readonly string[]> {
   ];
 }
 
+/**
+ A runner with its owner, as one line, so two lists of them compare by order of text.
+
+ @param pair - runner's name, then the directory name of the package that owns it
+
+ @returns The two joined by a space
+
+ @example
+ ```ts
+ lineOf(['corpus-pass', 'corpus-pass',],); // 'corpus-pass corpus-pass'
+ ```
+ */
+function lineOf([command, owner,]: readonly [string, string,],): string {
+  return `${command} ${owner}`;
+}
+
 await describe({
   name: 'COMMAND_LINES',
   children: [
@@ -423,7 +439,8 @@ await describe({
       name: 'OWNS each runner in the package whose build entries list it, so the task a refusal names is the task '
         + 'that starts the runner',
       fn: async () => {
-        expect(Object.entries(COMMAND_OWNERS,).toSorted(),).toEqual([...RUNNER_OWNERS,].toSorted(),);
+        expect(Object.entries(COMMAND_OWNERS,).map(lineOf,).toSorted(),).toEqual([...RUNNER_OWNERS,].map(lineOf,)
+          .toSorted(),);
       },
     },),
     it({

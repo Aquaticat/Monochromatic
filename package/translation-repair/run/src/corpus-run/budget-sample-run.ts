@@ -14,6 +14,7 @@ import {
 import { PROVIDER_ORDER, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { readProviderKeys, } from './budget-sample-keys.ts';
+import { taskPathOf, } from './command-owners.ts';
 
 //region Budget sample run
 // Takes ONE reading of every provider's meter and leaves it in the log.
@@ -131,7 +132,7 @@ export async function sampleBudgets(
   },);
   rl.info(
     `SAMPLED: routing would ${verdicts.join(', ',)}. The reading this command logged is the record; `
-      + 'read a collection of them with `mise run //package/translation-repair/run:meter-report`',
+      + `read a collection of them with \`mise run ${taskPathOf({ command: 'meter-report', },)}\``,
   );
 }
 

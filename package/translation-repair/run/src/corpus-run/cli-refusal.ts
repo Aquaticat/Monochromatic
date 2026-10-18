@@ -13,6 +13,7 @@ import {
   type CommandLineOf,
   type CommandName,
 } from './command-lines.ts';
+import { COMMAND_OWNERS, } from './command-owners.ts';
 
 //region CLI refusal
 // Turns ANY failure out of a CLI body into a report that quotes nothing.
@@ -252,6 +253,7 @@ export async function reportingRefusals<const Command extends CommandName>(
     const verdict = taskRunnerVerdict({
       env,
       command: what,
+      owner: COMMAND_OWNERS[what],
     },);
     if (!verdict.allowed)
       throw new StatedRefusalError({ says: verdict.says, },);

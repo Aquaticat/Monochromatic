@@ -54,6 +54,10 @@ export {
 } from './corpus-run/command-line-types.ts';
 export { readCommandLine, } from './corpus-run/command-line.ts';
 export {
+  COMMAND_OWNERS,
+  taskPathOf,
+} from './corpus-run/command-owners.ts';
+export {
   COMMAND_LINES,
   type CommandLineOf,
   type CommandName,

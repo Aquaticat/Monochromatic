@@ -1,5 +1,6 @@
 import { textsInCodePointOrder, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { taskPathOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Coverage bundle maps
@@ -14,6 +15,11 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 // (ledger B31), and the census, which then refused any bundle without a map,
 // refused the whole build. The census now needs a map only where it places
 // code, and refuses by name where one is missing there.
+
+/**
+ The task that builds with maps first and then runs the census, which every refusal about the build points to.
+ */
+export const COVERAGE_CENSUS_TASK: string = taskPathOf({ command: 'coverage-census', },);
 
 /**
  A build's bundles, split by whether a source map stands beside each.
@@ -90,7 +96,7 @@ export function bundleMapsOf(
   if (bundles.length === 0) {
     throw new StatedRefusalError({
       says: `${distDirectory} holds no bundle, so no build has written it; run the census through `
-        + 'mise run //package/translation-repair/coverage-census:coverage-census, which builds with maps first',
+        + `mise run ${COVERAGE_CENSUS_TASK}, which builds with maps first`,
     },);
   }
   if (mapped.length === 0) {
@@ -103,7 +109,7 @@ export function bundleMapsOf(
         },)
       } and no source map beside any of them, `
         + 'so it is the normal build; run the census through '
-        + 'mise run //package/translation-repair/coverage-census:coverage-census, which builds with maps first',
+        + `mise run ${COVERAGE_CENSUS_TASK}, which builds with maps first`,
     },);
   }
   return {
@@ -165,7 +171,7 @@ export function requireMapFor(
       + 'cannot say which sources it carries';
   throw new StatedRefusalError({
     says: `${loss}; the coverage build writes a map for every bundle that holds code, so this one came from `
-      + 'another build: run the census through mise run //package/translation-repair/coverage-census:coverage-census, '
+      + `another build: run the census through mise run ${COVERAGE_CENSUS_TASK}, `
       + 'which builds with maps first',
   },);
 }
@@ -245,7 +251,7 @@ export function requireUnminifiedBuild(
     } with a source map and no module region `
       + 'comment in any of them, so the build was minified, and minification folds guards into expressions '
       + 'the coverage gives no range, which would read as run (ledger M79): run the census through '
-      + 'mise run //package/translation-repair/coverage-census:coverage-census, whose build keeps the code as written, '
+      + `mise run ${COVERAGE_CENSUS_TASK}, whose build keeps the code as written, `
       + 'or restore minify: false in rolldown.coverage.config.ts if it was changed',
   },);
 }
