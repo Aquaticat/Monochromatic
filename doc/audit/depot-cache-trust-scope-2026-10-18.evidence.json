@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "admittedAt": "2026-10-18T15:38:47.083340+00:00",
+  "status": "admitted_not_dispatched",
+  "campaign": "repository sibling-branch benign-marker cache scope",
+  "guardUsd": 0.1,
+  "jobCount": 6,
+  "maxActiveJobs": 1,
+  "jobTimeoutMinutes": 2,
+  "uniformTwoCpuReferenceRateUsdPerMinute": 0.006,
+  "uniformInitialFullWindowProxyUsd": 0.072,
+  "oneCorrectionFullWindowProxyUsd": 0.012,
+  "maximumAdmittedUniformProxyUsd": 0.084,
+  "depotRequestedShape": {
+    "cpu": 2,
+    "memoryGb": 8,
+    "label": "depot-ubuntu-24.04"
+  },
+  "depotInitialFullWindowNominalUsd": 0.036,
+  "standardPublicGithubNominalComputeUsd": 0,
+  "invoiceMeasured": false,
+  "cacheStorageCostMeasured": false,
+  "config": {
+    "nonce": "79189ea4841acfbebdeb",
+    "path": "cache-scope-marker-79189ea4841acfbebdeb",
+    "branches": {
+      "a": "research/depot-cache-scope-a-20261018",
+      "b": "research/depot-cache-scope-b-20261018"
+    },
+    "actionSha": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+    "keys": {
+      "github": "monochromatic-cache-scope-79189ea4841acfbebdeb-github",
+      "depot": "monochromatic-cache-scope-79189ea4841acfbebdeb-depot"
+    },
+    "markers": {
+      "github": {
+        "body": "monochromatic-cache-scope:79189ea4841acfbebdeb:github\n",
+        "bytes": 54,
+        "sha256": "d8d6275ac443ff96981ac25193ded30fd84aac41a2613a005224cfdfc44a5303"
+      },
+      "depot": {
+        "body": "monochromatic-cache-scope:79189ea4841acfbebdeb:depot\n",
+        "bytes": 53,
+        "sha256": "23ddb91abfb44c16158dbbf775ad6ce87eb8b583ae13b2979572cdf1bb218fd6"
+      }
+    }
+  },
+  "queue": [
+    {
+      "provider": "github",
+      "phase": "seed",
+      "branch": "research/depot-cache-scope-a-20261018"
+    },
+    {
+      "provider": "github",
+      "phase": "restore-same",
+      "branch": "research/depot-cache-scope-a-20261018"
+    },
+    {
+      "provider": "github",
+      "phase": "restore-cross",
+      "branch": "research/depot-cache-scope-b-20261018"
+    },
+    {
+      "provider": "depot",
+      "phase": "seed",
+      "branch": "research/depot-cache-scope-a-20261018"
+    },
+    {
+      "provider": "depot",
+      "phase": "restore-same",
+      "branch": "research/depot-cache-scope-a-20261018"
+    },
+    {
+      "provider": "depot",
+      "phase": "restore-cross",
+      "branch": "research/depot-cache-scope-b-20261018"
+    }
+  ]
+}
