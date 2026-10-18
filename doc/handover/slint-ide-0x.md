@@ -756,7 +756,12 @@ the items after it are the record of 2026-10-05 and older.
     `'static` question for resolvable callees and the Slint setters are `impl FnMut + 'static`, but under the
     shipped `SourceOnly` load only 14 of the 67 pass (the generated setters and `Timer::start` do not resolve),
     11 sit in unloaded test sidecars, and the semantic rule costs 5.9 s against 0.067 s on the IDE package.
-    Acceptance and the choice between a callee allow-list and a build-generated load mode are open.
+    Acceptance and the choice between a callee allow-list and a build-generated load mode are open: the user
+    answered "Not enough research" to the choice between directives only, directives plus an allow-list, and
+    directives plus a build-generated load. Two agents run on 2026-10-18: one researches precedent (directive
+    syntax in oxlint, ESLint, Biome, Ruff and Clippy; closure bans elsewhere; a Dylint or rustc-driver route), one
+    closes the measured gaps (test sidecars under `cfg(test)`, the IDE dependency graph and generated code, the
+    5.9 s breakdown, wrapper cases). Their reports decide the next question to the user.
     Until then the 67 stay reported as warnings, listed in `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
     before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
     guards) before the fast-forward.
