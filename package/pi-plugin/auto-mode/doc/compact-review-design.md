@@ -173,6 +173,14 @@ The correction keeps the issued operations nonenumerable during staged construct
 before the object enters its ownership map or is frozen.
 The maintained consumer checks this behavior without printing the serialized loader state.
 Absence of an in-repository serialization caller does not justify surprising implicit data exposure.
+Mutation testing also exposes a false positive in the borrowed `assertCurrent` case:
+an invalid binding still throws when receiver authentication is removed.
+Each borrowed operation must receive valid arguments,
+so its observed rejection isolates receiver ownership.
+The binding comes from the actual current publication rather than a fabricated object.
+All readers and the reload test share one sequential suite because reload changes that publication;
+the module-test harness otherwise dispatches concurrent children.
+The corrected tests must reject the rebuilt authentication-removal variant and pass restored code.
 The temporary loader declaration is an interop boundary;
 it does not establish that the underlying JavaScript implementation is type-checked.
 The root `TCV` rule remains unchanged;
