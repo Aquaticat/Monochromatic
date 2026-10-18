@@ -77,7 +77,8 @@ Rates come from the captured primary
 [Depot CI sandbox table](https://depot.dev/docs/ci/overview#depot-ci-sandboxes),
 [runner types](https://depot.dev/docs/github-actions/runner-types),
 and [pricing](https://depot.dev/pricing).
-The source archive retains original bodies and immutable workflow sources.
+The source archive retains unchanged public inputs and immutable workflow sources.
+Provider metadata uses explicit selected projections with private-original byte counts and SHA-256 values.
 Full-window maxima remain historical reservations,
 separate from observed provider interval proxies.
 
@@ -234,3 +235,27 @@ This is an authentication prerequisite failure,
 not evidence of image absence or a completed deletion.
 No deletion or new credential ran.
 The documented OCI bridge remains queued for source inspection and an exact owned-image read.
+
+## Provider metadata publication correction
+
+The first desktop hydration archive included the complete CLI workflow output.
+The desktop and both native graph CLI outputs contained no actor/email fields,
+signed URLs,
+credentials,
+or connection material.
+They now use explicitly labelled selections of the required allocation fields.
+Private original bytes and hashes remain retained.
+
+The imported root GitHub run body contained `actor`,
+`triggering_actor`,
+and `head_commit` author/committer metadata,
+including two email fields.
+Both email values match the immutable commit returned by an unauthenticated public GitHub request.
+The current archive removes that unnecessary metadata and provider URL fields.
+The review found no credential,
+signed-URL,
+or connection material in these imported provider bodies.
+Replacing the current archive does not remove the original bytes from Git history.
+No history rewrite occurred.
+The exact superseded desktop interval remains retained,
+and allocation arithmetic is unchanged.

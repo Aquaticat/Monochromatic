@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
-  "recordedAt": "2026-10-18T16:52:20.554Z",
+  "recordedAt": "2026-10-18T17:07:41.638Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
     "record": "inputs/doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json@d265c963dbb0c95c",
@@ -80,7 +80,7 @@
         "seconds": "39",
         "scope": "assigned GitHub job interval; no VM invoice boundary",
         "source": {
-          "record": "metadata/original-graph-jobs@d163077a6978d444",
+          "record": "metadata/original-graph-jobs-selected@b8435941d598db12",
           "pointer": "/jobs/0"
         },
         "nominalListCompute": {
@@ -153,7 +153,7 @@
         "seconds": "36",
         "scope": "assigned GitHub job interval; no VM invoice boundary",
         "source": {
-          "record": "metadata/original-graph-jobs@d163077a6978d444",
+          "record": "metadata/original-graph-jobs-selected@b8435941d598db12",
           "pointer": "/jobs/1"
         },
         "nominalListCompute": {
@@ -232,7 +232,7 @@
         "seconds": "35",
         "scope": "assigned GitHub job interval; no VM invoice boundary",
         "source": {
-          "record": "metadata/original-graph-jobs@d163077a6978d444",
+          "record": "metadata/original-graph-jobs-selected@b8435941d598db12",
           "pointer": "/jobs/2"
         },
         "nominalListCompute": {
@@ -311,7 +311,7 @@
         "seconds": "38",
         "scope": "assigned GitHub job interval; no VM invoice boundary",
         "source": {
-          "record": "metadata/original-graph-jobs@d163077a6978d444",
+          "record": "metadata/original-graph-jobs-selected@b8435941d598db12",
           "pointer": "/jobs/3"
         },
         "nominalListCompute": {
@@ -836,7 +836,7 @@
         "seconds": "263",
         "scope": "provider native job-attempt execution interval; VM billing lifetime unmeasured",
         "source": {
-          "record": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+          "record": "metadata/desktop-qxqg28drpc-workflow-selected@8001ac7b372119bf",
           "pointer": "/jobs/0/attempts/0"
         },
         "nominalListCompute": {
@@ -861,7 +861,7 @@
           "pointer": "/rows/42"
         },
         {
-          "record": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+          "record": "metadata/desktop-qxqg28drpc-workflow-selected@8001ac7b372119bf",
           "pointer": "/jobs/0/attempts/0"
         }
       ],
@@ -1728,7 +1728,7 @@
         "milliseconds": 401000,
         "seconds": "401",
         "source": {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/0"
         },
         "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
@@ -1749,7 +1749,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/0"
         }
       ],
@@ -1796,7 +1796,7 @@
         "milliseconds": 414000,
         "seconds": "414",
         "source": {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/1"
         },
         "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
@@ -1817,7 +1817,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/1"
         }
       ],
@@ -1864,7 +1864,7 @@
         "milliseconds": 1131000,
         "seconds": "1131",
         "source": {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/2"
         },
         "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
@@ -1885,7 +1885,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/2"
         }
       ],
@@ -1932,7 +1932,7 @@
         "milliseconds": 1127000,
         "seconds": "1127",
         "source": {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/3"
         },
         "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
@@ -1953,7 +1953,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
           "pointer": "/jobs/jobs/3"
         }
       ],
@@ -1994,7 +1994,7 @@
         "milliseconds": 383000,
         "seconds": "383",
         "source": {
-          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "record": "terminal/expanded-graph-corrected-native-workflow.json-selected@140b49acfac957ab",
           "pointer": "/jobs/0/attempts/0"
         },
         "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
@@ -2019,7 +2019,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "record": "terminal/expanded-graph-corrected-native-workflow.json-selected@140b49acfac957ab",
           "pointer": "/jobs/0/attempts/0"
         }
       ],
@@ -2060,7 +2060,7 @@
         "milliseconds": 388000,
         "seconds": "388",
         "source": {
-          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "record": "terminal/expanded-graph-corrected-native-workflow.json-selected@140b49acfac957ab",
           "pointer": "/jobs/1/attempts/0"
         },
         "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
@@ -2085,7 +2085,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "record": "terminal/expanded-graph-corrected-native-workflow.json-selected@140b49acfac957ab",
           "pointer": "/jobs/1/attempts/0"
         }
       ],
@@ -2126,7 +2126,7 @@
         "milliseconds": 390000,
         "seconds": "390",
         "source": {
-          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "record": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d",
           "pointer": "/jobs/0/attempts/0"
         },
         "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
@@ -2151,7 +2151,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "record": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d",
           "pointer": "/jobs/0/attempts/0"
         }
       ],
@@ -2192,7 +2192,7 @@
         "milliseconds": 388000,
         "seconds": "388",
         "source": {
-          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "record": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d",
           "pointer": "/jobs/1/attempts/0"
         },
         "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
@@ -2217,7 +2217,7 @@
       },
       "sourceReferences": [
         {
-          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "record": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d",
           "pointer": "/jobs/1/attempts/0"
         }
       ],
@@ -2371,10 +2371,10 @@
   "actualVmBillingIntervalsObserved": false,
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-follow-on-2026-10-18.sources.json.gz",
-    "bytes": 366374,
-    "sha256": "0558f48b95141b4df77f38b934277cd358ce3e1cd38c795b14c162ad3922eae4",
-    "uncompressedBytes": 3061792,
-    "records": 33
+    "bytes": 386655,
+    "sha256": "432995e41d635dc4a15b4934259a2da6cbaf06159c400404446e73251e720999",
+    "uncompressedBytes": 3120903,
+    "records": 34
   },
   "nominalKnownProviderWindowListProxyTotal": {
     "usd": "0.6041",
@@ -2428,23 +2428,294 @@
     },
     {
       "source": "expanded-graph-corrected-github-completed-samples.metadata.json",
-      "sha256": "4e4a03039a0bff79ddd69d3f921d6ed4e6246afd52f1d0cea90bc939cc032280"
+      "sha256": "4e4a03039a0bff79ddd69d3f921d6ed4e6246afd52f1d0cea90bc939cc032280",
+      "sha256Scope": "Private original bytes before selected projection",
+      "selectedArchiveRecord": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d"
     },
     {
       "source": "expanded-graph-corrected-native-workflow.json",
-      "sha256": "f9c28ba5d5f2c72970374fe47effee85f029f44b9e0d424f66bb477189548699"
+      "sha256": "f9c28ba5d5f2c72970374fe47effee85f029f44b9e0d424f66bb477189548699",
+      "sha256Scope": "Private original bytes before selected projection",
+      "selectedArchiveRecord": "terminal/expanded-graph-corrected-native-workflow.json-selected@140b49acfac957ab"
     },
     {
       "source": "expanded-graph-native-podman-workflow.json",
-      "sha256": "a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc"
+      "sha256": "a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc",
+      "sha256Scope": "Private original bytes before selected projection",
+      "selectedArchiveRecord": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d"
     }
   ],
   "desktopBoundaryHydration": {
     "recordedAt": "2026-10-18T16:52:20.554Z",
-    "record": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+    "record": "metadata/desktop-qxqg28drpc-workflow-selected@8001ac7b372119bf",
     "original279SecondRunEnvelopePreserved": true,
     "exactAttemptSeconds": 263,
     "nominalReductionUsd": "0.0064",
     "noNewAllocation": true
+  },
+  "privacyProjectionReview": {
+    "recordedAt": "2026-10-18T17:07:41.638Z",
+    "records": [
+      {
+        "originalRecord": "metadata/original-graph-jobs@d163077a6978d444",
+        "selectedRecord": "metadata/original-graph-jobs-selected@b8435941d598db12",
+        "derivedProjection": true,
+        "privateOriginalSha256": "d163077a6978d4440d28d6d105bf88813703a56601475ee80ccda86312b7c2c0",
+        "privateOriginalBytes": 17215,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/d163077a6978d4440d28d6d105bf88813703a56601475ee80ccda86312b7c2c0.json",
+        "retainedFields": "Only source/run/workflow/job/attempt/status/time and assigned-runner/step eligibility fields; no provider actor, email, arbitrary URLs, artifact download data or connection material.",
+        "fieldsActuallyPresent": [],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": false,
+        "connectionMaterialFound": false,
+        "publicEmailControl": null,
+        "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+        "selectedRecord": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json-selected@a304d3881378e88d",
+        "derivedProjection": true,
+        "privateOriginalSha256": "4e4a03039a0bff79ddd69d3f921d6ed4e6246afd52f1d0cea90bc939cc032280",
+        "privateOriginalBytes": 37174,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/4e4a03039a0bff79ddd69d3f921d6ed4e6246afd52f1d0cea90bc939cc032280.json",
+        "retainedFields": "Only source/run/workflow/job/attempt/status/time and assigned-runner/step eligibility fields; no provider actor, email, arbitrary URLs, artifact download data or connection material.",
+        "fieldsActuallyPresent": [
+          {
+            "path": "/metadata/head_commit/committer/email",
+            "present": true
+          },
+          {
+            "path": "/metadata/head_commit/author/email",
+            "present": true
+          },
+          {
+            "path": "/metadata/head_commit/author/name",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/site_admin",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/user_view_type",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/type",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/received_events_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/events_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/repos_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/organizations_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/subscriptions_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/starred_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/gists_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/following_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/followers_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/html_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/gravatar_id",
+            "present": false
+          },
+          {
+            "path": "/metadata/triggering_actor/avatar_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/node_id",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/id",
+            "present": true
+          },
+          {
+            "path": "/metadata/triggering_actor/login",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/site_admin",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/user_view_type",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/type",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/received_events_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/events_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/repos_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/organizations_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/subscriptions_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/starred_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/gists_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/following_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/followers_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/html_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/gravatar_id",
+            "present": false
+          },
+          {
+            "path": "/metadata/actor/avatar_url",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/node_id",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/id",
+            "present": true
+          },
+          {
+            "path": "/metadata/actor/login",
+            "present": true
+          }
+        ],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": false,
+        "connectionMaterialFound": false,
+        "publicEmailControl": {
+          "url": "https://api.github.com/repos/Aquaticats/Monochromatic/commits/234ccc92dabb81e998e0a0bb5e838713924dd83f",
+          "httpStatus": 200,
+          "authorizationHeaderSent": false,
+          "allEmailValuesMatchPublicCommit": true,
+          "checkedFields": [
+            "/metadata/head_commit/committer/email",
+            "/metadata/head_commit/author/email"
+          ]
+        },
+        "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+        "selectedRecord": "terminal/expanded-graph-corrected-native-workflow.json-selected@140b49acfac957ab",
+        "derivedProjection": true,
+        "privateOriginalSha256": "f9c28ba5d5f2c72970374fe47effee85f029f44b9e0d424f66bb477189548699",
+        "privateOriginalBytes": 2280,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/f9c28ba5d5f2c72970374fe47effee85f029f44b9e0d424f66bb477189548699.json",
+        "retainedFields": "Only source/run/workflow/job/attempt/status/time and assigned-runner/step eligibility fields; no provider actor, email, arbitrary URLs, artifact download data or connection material.",
+        "fieldsActuallyPresent": [],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": false,
+        "connectionMaterialFound": false,
+        "publicEmailControl": null,
+        "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+        "selectedRecord": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d",
+        "derivedProjection": true,
+        "privateOriginalSha256": "a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc",
+        "privateOriginalBytes": 2280,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc.json",
+        "retainedFields": "Only source/run/workflow/job/attempt/status/time and assigned-runner/step eligibility fields; no provider actor, email, arbitrary URLs, artifact download data or connection material.",
+        "fieldsActuallyPresent": [],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": false,
+        "connectionMaterialFound": false,
+        "publicEmailControl": null,
+        "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "metadata/desktop-qxqg28drpc-workflow@f90979eefbb7cc77",
+        "selectedRecord": "metadata/desktop-qxqg28drpc-workflow-selected@8001ac7b372119bf",
+        "derivedProjection": true,
+        "privateOriginalSha256": "f90979eefbb7cc77d2e556eec933cd9edf79cad3267ece7eeabca0253a08fd81",
+        "privateOriginalBytes": 1637,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/f90979eefbb7cc77d2e556eec933cd9edf79cad3267ece7eeabca0253a08fd81.json",
+        "retainedFields": "Only source/run/workflow/job/attempt/status/time and assigned-runner/step eligibility fields; no provider actor, email, arbitrary URLs, artifact download data or connection material.",
+        "fieldsActuallyPresent": [],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": false,
+        "connectionMaterialFound": false,
+        "publicEmailControl": null,
+        "gitHistoryRemoved": false
+      }
+    ],
+    "fullPrivateOriginalsRetained": true,
+    "currentArchiveReplacedOnly": true,
+    "gitHistoryRemoved": false,
+    "allocationArithmeticChanged": false,
+    "nonpublicActorEmailObserved": false,
+    "credentialOrSignedUrlMaterialFound": false
   }
 }
