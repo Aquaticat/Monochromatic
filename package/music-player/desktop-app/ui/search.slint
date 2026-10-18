@@ -30,6 +30,9 @@ export struct SearchRow {
     current: bool,
     // Whether the current track is playing. Reported to assistive technology only.
     playing: bool,
+    // What a screen reader announces for the row: the name once, the kind, and the parent folder of a track (D77). It is
+    // built in Rust because the title and the parent line arrive as pieces that an expression cannot join.
+    spoken: string,
     // Caller-chosen handle that `open` reports back, such as the library index of a track.
     index: int,
 }
@@ -443,6 +446,14 @@ export component SearchPage inherits Rectangle {
                     width: parent.width;
                     height: parent.height;
                     mouse-cursor: pointer;
+                    // A result is one button that opens it, announced with its name, kind and parent folder; the playing
+                    // track reads as checked, like a track row in the list. The pieces of the title and the parent line
+                    // stay as they are and add no label of their own to the row.
+                    accessible-role: button;
+                    accessible-label: row.spoken;
+                    accessible-checkable: row.kind == 1;
+                    accessible-checked: row.current;
+                    accessible-action-default => { root.open(row.index); }
                     clicked => { root.open(row.index); }
                 }
             }

@@ -217,6 +217,7 @@ fn a_search_result_title_wider_than_the_page_ends_in_an_ellipsis() {
             has_parent: true,
             current: false,
             playing: false,
+            spoken: "".into(),
             index: 0,
         }];
         app.set_search_rows(ModelRc::new(VecModel::from(rows)));

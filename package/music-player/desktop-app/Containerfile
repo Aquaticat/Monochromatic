@@ -3,7 +3,9 @@
 # work happens inside this container (see mise.toml tasks). The image also
 # carries the GUI/audio runtime libraries so the `run` task can drive the
 # Slint UI against the host's Wayland + PipeWire sockets (passed through).
-FROM registry.fedoraproject.org/fedora:41
+# Pinned by digest (the multi-arch index of fedora:41, resolved 2026-10-18) so a moving tag cannot change the build
+# input. Refresh on purpose: skopeo inspect --raw docker://registry.fedoraproject.org/fedora:41 | sha256sum
+FROM registry.fedoraproject.org/fedora@sha256:893f7eeffce8e3e2bb2bc62786ba5603fb1e0bd6ba07091acb892266b95bafdf
 
 # Build toolchain:
 #   rustup-installed stable  Rust compiler + cargo + clippy. NOT Fedora's `rust`

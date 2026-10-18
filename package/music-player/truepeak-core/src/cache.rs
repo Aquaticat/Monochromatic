@@ -207,6 +207,20 @@ const SELECT_EXACT: &str = "SELECT fingerprint FROM decisions \
 const DELETE_STALE: &str = "DELETE FROM decisions WHERE schema_version < ?1";
 
 /// What:
+///      `pub const WRITE_BATCH_LIMIT: usize = 256;`.
+///  The most rows a caller should hand to one `put_batch`.
+///  `usize` is the platform's index-sized integer.
+/// Why:
+///       Bounds how long one commit holds the single connection,
+///  so a read queued behind a write waits for at most this many upserts.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const WRITE_BATCH_LIMIT = 256;
+/// ```
+pub const WRITE_BATCH_LIMIT: usize = 256;
+
+/// What:
 ///      `pub struct CacheError { pub message: String }`.
 ///  A turso-free error wrapping a
 ///           message.
@@ -579,12 +593,142 @@ impl DecisionCache {
     ///  `&Decision` borrows it read-only.
     /// Why:
     ///       Persist a resolved decision so later plays hit the cache.
+    ///  Each call is its own transaction, so each call pays one durable commit;
+    ///  a caller storing many rows at once uses `put_batch`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// async put(fingerprint, identity, decision): Promise<void> { ... }
     /// ```
     pub async fn put(
+        &self,
+        fingerprint: u64,
+        identity: CacheIdentity,
+        decision: &Decision,
+    ) -> Result<(), CacheError> {
+        // What:     `self.upsert(...).await?;`. Run the upsert in autocommit mode.
+        // Why:      One statement, one commit.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // await this.upsert(fingerprint, identity, decision);
+        // ```
+        self.upsert(fingerprint, identity, decision).await?;
+        // What:     `Ok(())`. Nothing to return on success. Tail -> return.
+        // Why:      The write succeeded.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return;
+        // ```
+        return Ok(())
+    }
+
+    /// What:
+    ///      `pub async fn put_batch(&self, identity: CacheIdentity, entries: &[(u64, Decision)]) ->
+    ///           Result<(), CacheError>`.
+    ///  Store or upgrade every `(fingerprint, decision)` pair in one transaction,
+    ///  with the same never-downgrade rule as `put`.
+    ///  `&[(u64, Decision)]` is a borrowed view of a list of pairs.
+    ///  When the transaction fails,
+    ///  every row is retried on its own so one bad row cannot discard its neighbours.
+    /// Why:
+    ///       A commit is the expensive step (one disk flush under the default durability),
+    ///  so a cold sweep that stores thousands of rows pays it once per batch instead of once per row.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async putBatch(identity, entries): Promise<void> { ... }
+    /// ```
+    pub async fn put_batch(
+        &self,
+        identity: CacheIdentity,
+        entries: &[(u64, Decision)],
+    ) -> Result<(), CacheError> {
+        // An empty batch has nothing to store and must not open a transaction.
+        if entries.is_empty() {
+            return Ok(())
+        }
+        // What:     `match self.put_batch_in_transaction(identity, entries).await { Ok(()) => return Ok(()), Err(error) => ... }`.
+        //           Try the single-transaction path first.
+        // Why:      The common case is one commit for the whole batch.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // try { await this.putBatchInTransaction(identity, entries); return; } catch (e) { warn(e); }
+        // ```
+        let Err(batch_error) = self.put_batch_in_transaction(identity, entries).await else {
+            tracing::debug!(rows = entries.len(), "cache put batch committed");
+            return Ok(())
+        };
+        tracing::warn!(error = %batch_error, rows = entries.len(), "cache put batch failed; retrying row by row");
+        // What:     `for (fingerprint, decision) in entries { ... }`. Store each row in its own transaction and count
+        //           the ones that fail.
+        // Why:      The failed batch was rolled back, so every row is still unstored.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (const [fingerprint, decision] of entries) { try { await put(...) } catch { failed++ } }
+        // ```
+        let mut failed = 0_usize;
+        for (fingerprint, decision) in entries {
+            if let Err(error) = self.put(*fingerprint, identity, decision).await {
+                failed += 1;
+                tracing::warn!(error = %error, fingerprint, "cache row failed after batch failure");
+            }
+        }
+        if failed > 0 {
+            return Err(CacheError { message: format!("{failed} of {} rows could not be stored", entries.len()) })
+        }
+        return Ok(())
+    }
+
+    /// What:
+    ///      `async fn put_batch_in_transaction(&self, identity: CacheIdentity, entries: &[(u64, Decision)]) ->
+    ///           Result<(), CacheError>`.
+    ///  Begin a transaction,
+    ///  upsert every pair,
+    ///  commit;
+    ///  roll back when any step fails.
+    /// Why:
+    ///       The all-or-nothing path `put_batch` tries first.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async putBatchInTransaction(identity, entries) { await begin(); ...; await commit(); }
+    /// ```
+    async fn put_batch_in_transaction(
+        &self,
+        identity: CacheIdentity,
+        entries: &[(u64, Decision)],
+    ) -> Result<(), CacheError> {
+        let transaction = self.conn.unchecked_transaction().await?;
+        for (fingerprint, decision) in entries {
+            if let Err(error) = self.upsert(*fingerprint, identity, decision).await {
+                // The statement error is the cause worth returning; a failed rollback is logged.
+                if let Err(rollback_error) = transaction.rollback().await {
+                    tracing::warn!(error = %rollback_error, "cache batch rollback failed");
+                }
+                return Err(error)
+            }
+        }
+        transaction.commit().await?;
+        return Ok(())
+    }
+
+    /// What:
+    ///      `async fn upsert(&self, fingerprint: u64, identity: CacheIdentity, decision: &Decision) ->
+    ///           Result<(), CacheError>`.
+    ///  Run the upsert statement on the connection,
+    ///  inside whatever transaction is open (autocommit when none is).
+    /// Why:
+    ///       `put` and `put_batch` share the statement and its parameter binding.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async upsert(fingerprint, identity, decision): Promise<void> { ... }
+    /// ```
+    async fn upsert(
         &self,
         fingerprint: u64,
         identity: CacheIdentity,
@@ -619,13 +763,6 @@ impl DecisionCache {
             .await?;
         // The upsert ran; `affected == 0` means the precedence WHERE refused a probe downgrade.
         tracing::debug!(fingerprint, affected, applied = affected > 0, "cache put");
-        // What:     `Ok(())`. Nothing to return on success. Tail -> return.
-        // Why:      The write succeeded.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return;
-        // ```
         return Ok(())
     }
 

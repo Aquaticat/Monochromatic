@@ -268,6 +268,17 @@ before saying it matches, QAB):
   Android `Invalid column last_modified` logged 772 to 1,005 times per 15 s at 10,000 tracks, and scroll jank at
   10,000 tracks with the emulator-crash confound separated.
   Merge procedure for all four as above, then bump the patch version and release.
+- (e) cachebatch, continued by a Sonnet agent on 2026-10-18, branch `fix/music-player-cache-batched-commits`,
+  worktree `music-player-cachebatch` under `/var/mnt/encrypted/temp/agent/`, NOT MERGED, open to veto. Cause read in
+  the Turso 0.8.2 source: every connection defaults to `SyncMode::Full`, so each autocommit `DecisionCache::put` is
+  one WAL `fsync`. The desktop actor now drains its write queue (up to 256 rows) into one `DecisionCache::put_batch`
+  transaction. Benchmark on a real disk (btrfs on the encrypted device), 10,000 rows, five repeats: 75.9 to 87.1 s and
+  10,070 `fsync` calls before, 0.49 to 0.64 s and 47 after. Tests: truepeak-core with a kill -9 test (shown to fail
+  when the transaction is removed) and desktop 1464 passed; Android verification is recorded in the report to the
+  caller. Decision and rejected alternatives: `doc/decision/music-player-analysis-cache-commits.md`.
+  Open: the Android actor still commits per row (its warm path waits on each row, so draining would not batch, and
+  the `fsync` cost on a device was not measured); the desktop cold start was not rerun end to end; the 180 ms CPU per
+  added file and the 23 to 25 s busy tail from the audit were not investigated.
 - Measurements MERGED to `main` at `d5748ffd54` on 2026-10-15 (agent `a36ecdbfa335190de`, doc
   `doc/audit/music-player-release-build-measurements-2026-10-15.md`, no hedge words found by `rg`). Findings 1 to 4
   of that doc are the work of (e) and (f); finding 4 (desktop refresh CPU grows with library size, 180 ms at 10,000
@@ -429,6 +440,22 @@ before saying it matches, QAB):
   and none import `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: the window
   itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
   0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
+
+- 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
+  `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
+  All ten were real and are fixed, each commit closing its own issue: the session file is saved by temporary file,
+  sync and rename and a failed load is logged with its path (1453, 1452), `PlayerError::source` forwards the wrapped
+  error (1455), the queue wrap comments quote the code they document (1456), each Search result row is a named button
+  (1451, new `SearchRow.spoken` label built in Rust), a single probe window starts at the final legal start (1460),
+  the bench feasibility search reads `Policy::max_too_loud_db` (1463, new `truepeak-core.bench:test` task), and the
+  `truepeak-core` README, `Cargo.toml`, `mise.toml` and `lib.rs` header and `HANDOVER.md` describe the shipped crate and
+  dependency versions (1457, 1458, 1454). Verified on the branch after merging `main`: desktop `lint:slint` exit 0,
+  nextest 1476 passed and 1 skipped (1460 passed before), `lint:clippy` exit 0; `truepeak-core` 83 passed and clippy
+  exit 0; `truepeak-core.bench` 3 passed and clippy exit 0; the Android native crate has no Rust tests, so
+  `android-app:lint:clippy` compiled it against the changed `truepeak-core` for both ABIs (exit 0). Open for the human:
+  whether one window should sit at the end (chosen, per the module contract) or at frame 0; the Search row announces
+  name, kind and parent folder but not the D77 action wording (Select track, Play track), which needs the Auto-play
+  setting threaded into `search_view_of`; `PlayerError` now prints the wrapped error text twice in a full chain.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 

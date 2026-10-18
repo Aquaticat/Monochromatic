@@ -1,8 +1,110 @@
 # Depot trial interview
 
+## Native follow-up terminal result on 2026-10-18
+
+The authorized Depot native runner follow-up is complete at the consumer boundary.
+The [expanded evaluation](../audit/tech-depot-complete-ci-trial-vet-2026-10-18.md)
+records the final scoped verdict:
+intentional GitHub/Depot routing,
+with Developer plus selective overage as the planning baseline.
+Developer includes Depot Windows runners;
+Depot Mac runners require Startup.
+Free GitHub-hosted native work remains applicable under the chosen budget.
+All six workflow runs and 12 allocated job rows are terminal.
+Ten rows use actual Depot runners;
+the two preserved Windows ARM rows use GitHub.
+No application source was fixed,
+no production workflow routing was changed,
+and no subscription or account-wide usage setting was inspected.
+
+The [first wave](../audit/depot-native-runner-first-wave-2026-10-18.evidence.json),
+[recovery wave](../audit/depot-native-recovery-wave-2026-10-18.evidence.json)
+and [consumer reconciliation](../audit/depot-native-consumers-and-variation-2026-10-18.evidence.json)
+retain source/common pairs,
+Git-verified input hashes,
+provider artifact digests,
+per-step logs and individual nextest identities.
+Private validator assertions were corrected after reading the frozen harnesses:
+`caseName` is the `PROVENANCE_CASE` execution profile (`native` or `windows`),
+while `commonManifest.caseId` identifies the frozen source case (`native` or `desktop`).
+Both bindings and the exact source revision are checked independently.
+
+- Native Mac,
+  both repetitions:
+  1382 executed identities,
+  1356 passed,
+  26 failed and one additional summary skip.
+  Outcomes match the last GitHub native Mac retry.
+- Desktop Mac,
+  both repetitions:
+  1433 executed identities,
+  1406 passed,
+  27 failed and one additional summary skip.
+  Identities and outcomes match the GitHub reference.
+- Native Windows:
+  original release build and CLI consumer pass;
+  test compilation retains the frozen source's `E0433` errors.
+- Recovered desktop Windows:
+  both Depot x64 variants and the GitHub ARM row each pass 1432 nextest identities,
+  with one additional summary skip.
+  Original PE,
+  Bash runtime and launch consumers pass.
+  Keep the failed original PowerShell file assertion beside its passing independent stream probes.
+
+The [path measurements](../audit/depot-native-checkout-paths-2026-10-18.evidence.json)
+establish a 260-character Depot harness fixture path,
+versus 247 characters on GitHub ARM and 243 with the shorter Depot native harness path.
+The long-path bootstrap fixes checkout at the original 260-character path.
+The first failed allocations remain included in both label-proration estimates.
+
+Mac hardware is heterogeneous:
+the four probes report seven,
+seven,
+seven and nine CPUs,
+all with `18253611008` memory bytes.
+All native cache lookups miss and failed jobs skip post-save.
+The desktop timing difference therefore cannot isolate a provider effect or warm-cache benefit.
+The native Mac pair reports the same CPU count and memory but does not identify the physical CPU model.
+
+The original recovery watcher session `46364` ended on local GitHub CLI TLS handshake timeouts;
+the real provider runs remained active.
+Read-only watch resumed in session `84033`,
+which is now complete.
+No workflow was redispatched for that transport failure.
+All artifact collection and source/consumer checks are complete.
+
+The native follow-up label-proration estimates total USD `3.231466666666667`
+using GitHub job intervals,
+or USD `3.089866666666667` using first-step-to-terminal intervals.
+Neither is a provider invoice.
+The [hybrid model](../audit/depot-native-hybrid-routing-model-2026-10-18.evidence.json)
+uses the dated Bank of Canada observation `2026-10-16`,
+CAD `1.4154` per USD.
+For CI usage alone,
+Developer plus overage is always cheaper than Startup at the published rates:
+the extra USD 180 fee buys USD 108 more CI allowance.
+Other product pools and native Mac access remain separate considerations.
+
+The expanded report has the approved section list,
+passes scoped Markdown checks and has verified local evidence links.
+Its rendered output was inspected.
+The [cleanup receipt](../audit/depot-native-worktree-cleanup-2026-10-18.evidence.json)
+records removal of only this follow-up's disposable worktrees after clean-status,
+ignored-file preview and stray Git-root checks.
+The frozen branches remain available.
+The [final verification receipt](../audit/depot-native-final-verification-2026-10-18.evidence.json)
+binds the published report and native evidence bytes.
+
+No native follow-up execution remains queued.
+The earlier source-failure ownership,
+historical resource gaps,
+unexecuted surfaces and missing invoice remain explicit acceptance limits.
+They are not a pending source-fix or migration queue.
+No complete trial invoice or accepted complete-graph latency is claimed.
+
 ## Completed trial execution and remaining acceptance gaps
 
-### Reopened native Depot runner evaluation
+### Historical reopening of the native Depot runner evaluation
 
 The user challenged the statement that macOS and Windows require another provider,
 then instructed:
@@ -16,9 +118,9 @@ retains the fresh primary documentation and limits.
 The real objective remains intentional GitHub/Depot routing under the USD $200 monthly ceiling,
 with Developer preferred where practical and elapsed waiting valued at CAD $8.975 per hour.
 The user did not ask for wholesale migration.
-The original evaluation report does not finish the authorized trial work.
+The original evaluation report did not finish the authorized native follow-up.
 
-Active independently verifiable work:
+The authorized follow-up comprised these independently verifiable areas:
 
 - Execute the missing native Windows and macOS consumers on Depot GitHub Actions runners.
   Preserve historical source revisions and original frozen harnesses;
@@ -31,6 +133,8 @@ Active independently verifiable work:
   and update the intentional-routing and combined-cost verdict from actual evidence.
 - Complete the remaining authorized source-issue and evidence reconciliation;
   keep unrecoverable archived evidence distinct from unexecuted work.
+
+The expanded evaluation and native terminal result record the completed follow-up and retained limits.
 
 Account-wide access and subscription changes remain excluded.
 The current Startup trial was already authorized for evaluation use.

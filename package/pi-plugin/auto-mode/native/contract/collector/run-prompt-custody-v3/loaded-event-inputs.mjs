@@ -8,16 +8,18 @@ export function createLoadedEventInputs({poolState,InputCaptureError,reserve,ret
 
 /** Group one native emission while copying each callback phase before its borrowed value can change. */
 function createEventHandlerCapture(){
-   const eventState={records:[],retainedBytes:0,part:0,closed:false};
+   const eventState={records:[],values:[],valueOrdinals:new Map(),retainedBytes:0,part:0,closed:false};
+   const envelopeBytes=Buffer.byteLength(JSON.stringify({records:[],values:[]}));
    
    
    
    function publish(){
     if(eventState.records.length===0)return;
+    const snapshot=Object.freeze({records:Object.freeze(eventState.records),values:Object.freeze(eventState.values)});
     poolState.pendingEventBytes-=eventState.retainedBytes;
     retainConstructedInput({
-      carrier:Object.freeze({records:eventState.records}),
-      value:eventState.records,
+      carrier:snapshot,
+      value:snapshot,
       metadata:{
         method:eventState.records[0]
           .kind,
@@ -26,23 +28,33 @@ function createEventHandlerCapture(){
       inputField:'eventHandler',
       inputOrigin:'native-event-handler'
     });
-    eventState.records=[];eventState.retainedBytes=0;eventState.part++;
+    eventState.records=[];eventState.values=[];eventState.valueOrdinals.clear();
+    eventState.retainedBytes=0;eventState.part++;
    }
    function capture(input){
     if(poolState.failure)return;
     try{
      if(eventState.closed)throw new SourceCollectionError('Native event source was already completed');
+     const value=Object.freeze({value:copyToolMetadata({value:input.value})});
+     const serialized=JSON.stringify(value);
+     const previous=eventState.valueOrdinals.get(serialized);
+     const valueOrdinal=previous??eventState.values.length;
+     let valueBytes=0;
+     if(previous===undefined){
+      valueBytes=Buffer.byteLength(serialized)+(eventState.values.length===0?0:1);
+      eventState.values.push(value);eventState.valueOrdinals.set(serialized,valueOrdinal);
+     }
      const record=Object.freeze({
        kind:input.kind,
        phase:input.phase,
        ordinal:input.ordinal,
        path:input.path,
-       value:copyToolMetadata({value:input.value})
+       valueOrdinal
      });
      const recordBytes=Buffer.byteLength(JSON.stringify(record));
      if(eventState.records.length===0)reserve();
-     // Array delimiters and commas are charged before any complete emission publication.
-     const addedBytes=recordBytes+(eventState.records.length===0?2:1);
+     // The complete value dictionary and every ordered phase are counted before publication.
+     const addedBytes=recordBytes+valueBytes+(eventState.records.length===0?envelopeBytes:1);
      eventState.records.push(record);eventState.retainedBytes+=addedBytes;poolState.pendingEventBytes+=addedBytes;
     }catch(error){
      poolState.failure=new InputCaptureError(error);

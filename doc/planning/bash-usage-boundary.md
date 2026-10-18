@@ -59,8 +59,8 @@ No fix or fresh execution of this scope step was performed during this investiga
 ### Workflow configuration
 
 The workflow scan found explicit Bash selection in `cargo-publish.yml`,
-explicit Node selection in `cli-git-performance.yml`,
-`cli-git-trust.yml`,
+explicit Node selection in `cli-git-performance.yml` (deleted on 2026-10-13 in commit `724d70bfa7`),
+`cli-git-trust.yml` (deleted on 2026-10-13 in commit `642b6d72cb`),
 and `kotlin-linter-publish.yml`,
 and implicit interpreter selection in the toml-edit scope step.
 Runner operating system and job defaults determine implicit execution.
@@ -73,8 +73,10 @@ and third-party implementation languages would require separate consumer-level a
 
 ### Parallel implementations and their contents
 
-[`.github/workflows/cli-git-performance.yml`](../../.github/workflows/cli-git-performance.yml):37
-already performs a pre-install decision under `shell: node {0}`.
+Line 37 of `.github/workflows/cli-git-performance.yml`
+(deleted on 2026-10-13 in commit `724d70bfa7`; readable with
+`git show 4c815fb13f5e31fc481d75dde215e5ef274e4ff1:.github/workflows/cli-git-performance.yml`)
+already performed a pre-install decision under `shell: node {0}`.
 Its body reads JSON,
 invokes Git with an argument array,
 validates inputs,
