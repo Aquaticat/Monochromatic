@@ -261,3 +261,6 @@ const{strict:assert}=await import('node:assert');const{execFileSync,spawnSync}=a
 
 [tasks."research:rust:corpus-audit"]
 run = "node bin/rust-corpus-audit.mjs"
+
+[tasks."research:rust:truepeak-positive"]
+run = "node bin/rust-truepeak-benchmark-positive.mjs"
