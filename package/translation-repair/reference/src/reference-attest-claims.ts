@@ -1,8 +1,8 @@
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   ADDITION_CATEGORY,
+  type AdjudicatedIssue,
   computeIssueClaimId,
   type IssueClaim,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';

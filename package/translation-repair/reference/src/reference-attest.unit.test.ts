@@ -18,15 +18,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type IssueClaim, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { IssueClaim, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   CITED_REFERENCE_CANDIDATE_RULE,
   CITED_REFERENCE_RULE,
 } from '@monochromatic-dev/translation-repair-slice-reading';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   attestationVerdicts,

@@ -32,13 +32,11 @@ import {
   type ReferenceAttestWire,
 } from './reference-attest-wire.ts';
 import {
+  type FanOutMode,
   gatherStageVoices,
   MIN_STAGE_VOICES,
   rosterQuorumSize,
-} from '@monochromatic-dev/translation-repair-stage/ts';
-import type {
-  FanOutMode,
-  StageSettings,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
