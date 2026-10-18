@@ -73,7 +73,10 @@ export async function createEnvironment({
  for(const name of Object.keys(process.env))if(![
    'PATH',
    'LANG'
- ].includes(name))Reflect.deleteProperty(process.env,name);
+ ].includes(name))Reflect.deleteProperty(
+   process.env,
+   name
+ );
  process.env
    .HOME=home;process.env
      .PI_CODING_AGENT_DIR=agentDir;process.env
@@ -232,7 +235,10 @@ export async function createEnvironment({
      root:cwd,
      relativePath:'AGENTS.md',
      requiredMode:0o600,
-     ...(createRelevance?{relevance:createRelevance({root:cwd,parse:parser.parse})}:{})
+     ...(createRelevance?{relevance:createRelevance({
+       root:cwd,
+       parse:parser.parse
+     })}:{})
    },
    authority:{
      tier:'user',

@@ -3,6 +3,7 @@ import {
   assertPolicyInput
 } from './system-slot.mjs';
 import { GoverningPolicyBindingError } from './governing-error.mjs';
+
 export { GoverningPolicyBindingError } from './governing-error.mjs';
 
 /**
@@ -20,11 +21,15 @@ export function bindGoverningPolicySource({
 }){
  const link=readPolicyInput(policyInput);
    const receipt=observer.observationFor(response);
- const bindingState={failure:undefined,sources:undefined};
+ const bindingState={
+   failure:undefined,
+   sources:undefined
+ };
  function current(){
   if(bindingState.failure)throw new GoverningPolicyBindingError(
     'Original governing source lost eligibility',
-    {cause:bindingState.failure.cause}
+    {cause:bindingState.failure
+      .cause}
   );
   try{
    if(producerOwner.judgmentFor({

@@ -7,16 +7,40 @@ import {createDomainFixtureStream} from './domain-fixture-stream.mjs';
 import {createDomainFixtureAssessment} from './domain-fixture-assessment.mjs';
 
 //region Original native runtime owns the authored assessment and transport callbacks.
-export function createDomainFixtureRuntime({settings,observations,env,session,root,lifecycle,code,programProfile,approvalHost}){
- const {unconfiguredPolicies,operatingPolicy,sdkStream,nextDecision,providerMetadata,receiptControl}=settings;
+export function createDomainFixtureRuntime({
+  settings,
+  observations,
+  env,
+  session,
+  root,
+  lifecycle,
+  code,
+  programProfile,
+  approvalHost
+}){
+ const {
+   unconfiguredPolicies,
+   operatingPolicy,
+   sdkStream,
+   nextDecision,
+   providerMetadata,
+   receiptControl
+ }=settings;
 function policy(definitionId) { return {
   model:ruleAssessmentModel,
   definitionId,
   programProfile,
   accepts:function acceptAuthoredDomainRelation() { return (true); }
 }; }
- const controlledSdkStream=createDomainFixtureStream({session,providerMetadata,receiptControl});
- const sendAssessment=createDomainFixtureAssessment({settings,observations});
+ const controlledSdkStream=createDomainFixtureStream({
+   session,
+   providerMetadata,
+   receiptControl
+ });
+ const sendAssessment=createDomainFixtureAssessment({
+   settings,
+   observations
+ });
 const runtime=bindNativePolicyRuntime({
   approvalHost,
   root,

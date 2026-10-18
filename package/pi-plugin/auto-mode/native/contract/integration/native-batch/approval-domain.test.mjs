@@ -1,7 +1,21 @@
 import assert from 'node:assert/strict';
 import {inspect} from 'node:util';
-import {mode, freshSessionApproval, uncertainContext, headless, useNativeContext, reloadContext, fixtureState} from './approval-fixture-options.mjs';
-import {session, runtime, env, VERDICT_ENTRY_TYPE, flushPolicyDiagnostics} from './approval-fixture.mjs';
+import {
+  mode,
+  freshSessionApproval,
+  uncertainContext,
+  headless,
+  useNativeContext,
+  reloadContext,
+  fixtureState
+} from './approval-fixture-options.mjs';
+import {
+  session,
+  runtime,
+  env,
+  VERDICT_ENTRY_TYPE,
+  flushPolicyDiagnostics
+} from './approval-fixture.mjs';
 
 //region Original approval assertions and fixture-owned cleanup.
 const handler=session.agent
@@ -11,9 +25,11 @@ session.agent
 {
  await using fixtureScope={
   async [Symbol.asyncDispose]() {
-   session.agent.executeToolBatch=handler;
+   session.agent
+     .executeToolBatch=handler;
    session.dispose();
-   await session.agent.waitForIdle();
+   await session.agent
+     .waitForIdle();
    runtime.detach();
    await env.drain();
    await flushPolicyDiagnostics();
@@ -41,7 +57,9 @@ session.agent
   assert.throws(
     function accessRetiredNativeUi() { return (originalContext.ui); },
     function matchesRetiredContext(error) {
-      return Error.isError(error) && error.message.includes('This extension ctx is stale after session replacement or reload');
+      return Error.isError(error)
+        && error.message
+        .includes('This extension ctx is stale after session replacement or reload');
     }
   );
  }

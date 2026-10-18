@@ -131,8 +131,13 @@ const eventObserverUrl=new URL(
   'event-observer.ts',
   import.meta.url
 ).href;
-/** Capture failure handling is supplied by this release's passive native event boundary. */
-const passiveEventsUrl=new URL('passive-events.mjs',import.meta.url).href;
+/**
+ Capture failure handling is supplied by this release's passive native event boundary.
+ */
+const passiveEventsUrl=new URL(
+  'passive-events.mjs',
+  import.meta.url
+).href;
 /**
  Qualified native manager edits are rebased onto the original module dependency graph.
  */
@@ -185,7 +190,11 @@ const sessionCore=imports({
   path:sessionPath,
   overrides:{
  [resourceReloadUrl]:resourceReloadUrl,
- './agent-loop.mjs':pathToFileURL(join(output,'agent-loop.mjs')).href,
+ './agent-loop.mjs':pathToFileURL(join(
+   output,
+   'agent-loop.mjs'
+ ))
+   .href,
  './session-manager.js':pathToFileURL(join(
    output,
    'session-manager.mjs'

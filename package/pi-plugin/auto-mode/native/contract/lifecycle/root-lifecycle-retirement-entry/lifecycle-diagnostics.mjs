@@ -1,8 +1,18 @@
-import {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
+import {
+  RootLeaseError,
+  RootLeaseOwnershipError,
+  RootLeaseSuspendedError,
+  RootLeaseRetiredError,
+  RootTransitionError
+} from './lifecycle-errors.mjs';
 //region Diagnostics retain failure evidence without replacing lifecycle outcomes.
 export function createLifecycleDiagnostics(trace){
     const traceFailures=[];
-  const state={busy:false,suppressedTraceEvents:0,traceDisabled:false};
+  const state={
+    busy:false,
+    suppressedTraceEvents:0,
+    traceDisabled:false
+  };
   // Diagnostics cannot hide a returned handle or change an operation's completion outcome.
   function emit(event){
     if(state.traceDisabled){state.suppressedTraceEvents+=1;return;}
@@ -23,6 +33,10 @@ export function createLifecycleDiagnostics(trace){
     };
     return operation();
   }
- return {emit,diagnostics,exclusive};
+ return {
+   emit,
+   diagnostics,
+   exclusive
+ };
 }
 //endregion

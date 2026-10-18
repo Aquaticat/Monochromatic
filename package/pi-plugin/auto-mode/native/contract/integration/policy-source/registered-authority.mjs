@@ -11,9 +11,22 @@ import {bindRetainedRunSources} from './run-history.mjs';
 import {bindResourceReceiptSources} from './resource-receipt-bindings.mjs';
 import {bindDecisionConversation} from './decision-context.mjs';
 
-import {bindHostPromptSource,bindResourceSystemSource,bindAppendPromptSources,bindContextPromptSources} from './resource-prompt-bindings.mjs';
-import {bindForcedPromptSource,bindRunGuidelineSources,bindMappedPromptSources} from './run-prompt-bindings.mjs';
-import {bindSkillDescriptionSources,bindBuiltInPromptSources,bindResourceToolSources} from './generated-prompt-bindings.mjs';
+import {
+  bindHostPromptSource,
+  bindResourceSystemSource,
+  bindAppendPromptSources,
+  bindContextPromptSources
+} from './resource-prompt-bindings.mjs';
+import {
+  bindForcedPromptSource,
+  bindRunGuidelineSources,
+  bindMappedPromptSources
+} from './run-prompt-bindings.mjs';
+import {
+  bindSkillDescriptionSources,
+  bindBuiltInPromptSources,
+  bindResourceToolSources
+} from './generated-prompt-bindings.mjs';
 
 /**
  Bind the startup authority declaration to a proven original source/request link.
@@ -74,10 +87,14 @@ export function bindRegisteredPolicy(context){
    ...builtIn,
    ...resourceTools
  ]);
- const selected=source.view.sources.decisionContext?.sources;
+ const selected=source.view
+   .sources
+   .decisionContext
+   ?.sources;
  const conversation=bindDecisionConversation(source);
  const additionalSources=Object.freeze([
-   ...provenanceSources.filter(function isSelected(binding){return selected===undefined||selected.includes(binding.view.source);}),
+   ...provenanceSources.filter(function isSelected(binding){return (selected===undefined)||selected.includes(binding.view
+     .source);}),
    ...(conversation?[conversation]:[])
  ]);
  /** Validate each local binding between fresh reads of their common original parent. */

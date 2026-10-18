@@ -27,9 +27,12 @@ export const fixtureState = {
   replacementCallbacks: 0
 };
 function observeExtensions(pi) {
-  pi.on('session_before_tree', function chooseTreeCancellation() {
+  pi.on(
+    'session_before_tree',
+    function chooseTreeCancellation() {
     return {cancel:fixtureState.cancelNavigation};
-  });
+  }
+  );
   pi.on(
     'session_before_switch',
     function chooseFixtureCancellation() { return ( ({ cancel: fixtureState.cancelReplacement })); }

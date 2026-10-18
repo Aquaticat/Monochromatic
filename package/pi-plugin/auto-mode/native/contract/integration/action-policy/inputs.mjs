@@ -48,7 +48,9 @@ export async function capturePolicyInputs({
  function sourceViewFor(handle){
   const rule=readRule(handle);
   for(const source of sources){
-   if(rule.sourceOccurrence!==source.view.sourceOccurrence)continue;
+   if(rule.sourceOccurrence
+     !==source.view
+     .sourceOccurrence)continue;
    source.assertCurrent(source.view);
    return source.view;
   }
@@ -61,7 +63,9 @@ export async function capturePolicyInputs({
   const rule=readRule(handle);
   for(const source of sources){
    if(!source.authority)continue;
-   if(rule.sourceOccurrence!==source.authority.sourceOccurrence)continue;
+   if(rule.sourceOccurrence
+     !==source.authority
+     .sourceOccurrence)continue;
    source.assertAuthorityCurrent(source.authority);
    return source.authority;
   }
@@ -76,7 +80,10 @@ export async function capturePolicyInputs({
  const members=[];
  for(const {id} of states){
   const member=judgment.memberFor(id);
-  const {prepared,programInspection} = judgment.preparedMemberFor(member);
+  const {
+    prepared,
+    programInspection
+  } = judgment.preparedMemberFor(member);
   const owner=effectOwnerFor?.({
     judgment,
     member,
@@ -104,7 +111,8 @@ export async function capturePolicyInputs({
  function assertCurrent(){
   if(inputState.failure)throw new PolicyInputBindingError(
     'Original policy inputs lost eligibility',
-    {cause:inputState.failure.cause}
+    {cause:inputState.failure
+      .cause}
   );
   try{
    if(sourceBinding)sourceBinding.assertAllCurrent();

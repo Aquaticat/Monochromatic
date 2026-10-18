@@ -1,9 +1,26 @@
 import {SourceCollectionError} from '../collector.mjs';
-import {readOriginalMessagePublication,observeMessageCopies} from './handler-publication.mjs';
+import {
+  readOriginalMessagePublication,
+  observeMessageCopies
+} from './handler-publication.mjs';
 
 //region Keep native message copies attached to their original run publications.
 /** Keep native message copies attached to their original run publications. */
-export function createRunContext({state,phase,check,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}){
+export function createRunContext({
+  state,
+  phase,
+  check,
+  known,
+  assertLive,
+  assertSessionInputs,
+  readRoot,
+  readConstructedInputs,
+  readHandlerOptionOrigins,
+  originalMessageInput,
+  assertRetainedInput,
+  retainAppendedInput,
+  retainSelectedPath
+}){
 /** Resolve retained native context inputs through existing run scopes, never through text or saved IDs. */
   function retainContextInputs(messages){
     const scope=state.current;
@@ -41,9 +58,14 @@ export function createRunContext({state,phase,check,known,assertLive,assertSessi
         originalMessageInput(readOriginalMessagePublication(message)),
       );
       // Re-read the native root at use; historical source identities are not a cached currentness result.
-      if(state.selectedPathInputs&&(state.selectedPathInputs.rootOccurrence===readRoot())){
-        if(state.selectedPathInputs.failure)throw state.selectedPathInputs.failure;
-        for(const origin of state.selectedPathInputs.origins){assertRetainedInput(origin);append(origin);}
+      if(state.selectedPathInputs&&(state.selectedPathInputs
+        .rootOccurrence
+        ===readRoot())){
+        if(state.selectedPathInputs
+          .failure)throw state.selectedPathInputs
+            .failure;
+        for(const origin of state.selectedPathInputs
+          .origins){assertRetainedInput(origin);append(origin);}
       }
       if(scope.view
         .retainedMessageOrigins
@@ -67,7 +89,9 @@ export function createRunContext({state,phase,check,known,assertLive,assertSessi
     if(value.kind==='appended-entry'){retainAppendedInput(value);return;}
     if(value.kind==='completed-context'){
       assertLive();
-      if(value.contextRun!==state.current?.handle)throw new SourceCollectionError('Native context completion requires its original published run');
+      if(value.contextRun
+        !==state.current
+        ?.handle)throw new SourceCollectionError('Native context completion requires its original published run');
       if(state.current){
         const completion=value.contextObservation;
         if((!completion)||(!Object.isFrozen(completion))
@@ -79,10 +103,13 @@ export function createRunContext({state,phase,check,known,assertLive,assertSessi
           ||(completion.kinds[1]!=='context_with_system'))
           throw new SourceCollectionError('Native context completion requires both original observed handler traversals');
         retainContextInputs(value.messages);
-        state.current.view=Object.freeze({
-          ...state.current.view,
+        state.current
+          .view=Object.freeze({
+          ...state.current
+            .view,
           contextHandlerReceipt:Object.freeze({
-          runOccurrence:state.current.handle,
+          runOccurrence:state.current
+            .handle,
           observation:completion
         })
         });
@@ -92,7 +119,8 @@ export function createRunContext({state,phase,check,known,assertLive,assertSessi
     observeMessageCopies(value);
     if((value.kind==='handler-entry')||(value.kind==='projection'))return;
     // Known message copies outlive active-run preparation; system publication still requires its current run.
-    state.current?.captureContextClone?.(value);
+    state.current
+      ?.captureContextClone?.(value);
     if((value.kind==='request-context')&&state.current){const {handle} = state.current;retainContextInputs(value.before);return handle;}
   }
 /** Bind the actual native user construction to this original expanded-text handoff. */
@@ -152,6 +180,12 @@ export function createRunContext({state,phase,check,known,assertLive,assertSessi
         .capture(message);check(scope);}
     });
   }
-return {retainContextInputs,captureContextClone,captureExpandedPromptMessage,captureHandlerMessage,captureForcedMessage};
+return {
+  retainContextInputs,
+  captureContextClone,
+  captureExpandedPromptMessage,
+  captureHandlerMessage,
+  captureForcedMessage
+};
 }
 //endregion

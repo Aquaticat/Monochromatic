@@ -1,5 +1,28 @@
-import {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
-export function createRootConstructions({emit,stateFor,pending,unchangedEpoch,retired,exhausted,constructions,constructionCurrent,constructionFor,ownedPair,nativeOccurrence,active,leases,retireRecord,abandonedSessions}) {
+import {
+  RootLeaseError,
+  RootLeaseOwnershipError,
+  RootLeaseSuspendedError,
+  RootLeaseRetiredError,
+  RootTransitionError
+} from './lifecycle-errors.mjs';
+
+export function createRootConstructions({
+  emit,
+  stateFor,
+  pending,
+  unchangedEpoch,
+  retired,
+  exhausted,
+  constructions,
+  constructionCurrent,
+  constructionFor,
+  ownedPair,
+  nativeOccurrence,
+  active,
+  leases,
+  retireRecord,
+  abandonedSessions
+}) {
   //region Factory occurrences share canonical manager state; observation does not confer human authority.
   function beginConstruction({
     manager,
@@ -116,5 +139,10 @@ export function createRootConstructions({emit,stateFor,pending,unchangedEpoch,re
   }
   //endregion
 
- return {beginConstruction,bindConstruction,publishConstruction,abandonConstruction};
+ return {
+   beginConstruction,
+   bindConstruction,
+   publishConstruction,
+   abandonConstruction
+ };
 }

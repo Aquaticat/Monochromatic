@@ -3,7 +3,23 @@ import {isCustomDataInput} from './custom-data-input.mjs';
 
 //region Read and refresh the current run without treating retained ancestry as current.
 /** Read and refresh the current run without treating retained ancestry as current. */
-export function createRunLifecycle({state,history,known,phase,check,publishScope,reserve,base,fail,reject,assertLive,readConstructedInputs,retainContextInputs,assertSessionInputs,readRoot}){
+export function createRunLifecycle({
+  state,
+  history,
+  known,
+  phase,
+  check,
+  publishScope,
+  reserve,
+  base,
+  fail,
+  reject,
+  assertLive,
+  readConstructedInputs,
+  retainContextInputs,
+  assertSessionInputs,
+  readRoot
+}){
 function publish({
     scope:handle,
     result
@@ -69,9 +85,14 @@ function read({options}){
       ||scope.constructedInputs
       ?.length)){
       const previous=scope.constructedInputs??[];
-      const customOnly=constructedInputs!==undefined&&constructedInputs.length>=previous.length
-        &&previous.every((origin,index)=>origin===constructedInputs[index])
-        &&constructedInputs.slice(previous.length).every(isCustomDataInput);
+      const customOnly=(constructedInputs!==undefined)
+        &&(constructedInputs.length>=previous.length)
+        &&previous.every((
+          origin,
+          index
+        )=>origin===constructedInputs[index])
+        &&constructedInputs.slice(previous.length)
+        .every(isCustomDataInput);
       // Pending custom data has not changed this run's governing inputs or its serialized request.
       // Its original publication remains available when a real context callback admits the message.
       if(customOnly)scope.constructedInputs=constructedInputs;
@@ -121,7 +142,8 @@ function inspect(){
     return Object.freeze({
       retainedOnly:true,
       pending:state.active!==undefined,
-      currentOrdinal:state.current?.ordinal,
+      currentOrdinal:state.current
+        ?.ordinal,
       history:Object.freeze(history.map(function snapshotRunDiagnostics(scope) { return (Object.freeze({
         ordinal:scope.ordinal,
         kind:scope.kind,
@@ -139,6 +161,13 @@ function inspect(){
       })); }))
     });
   }
-return {publish,refresh,reset,read,readOrAbsent,inspect};
+return {
+  publish,
+  refresh,
+  reset,
+  read,
+  readOrAbsent,
+  inspect
+};
 }
 //endregion

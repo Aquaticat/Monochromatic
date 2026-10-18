@@ -37,7 +37,8 @@ export async function executeWithOwnedContext({
   try {
     if((typeof tool.createExecutionContext)!=='function')throw new ExecutionContextOwnershipError('Selected native tool lacks its required execution context factory');
     const member=child===undefined?judgment.memberFor(toolCallId):child.member;
-    if(child!==undefined)signal=judgment.preparedMemberFor(member).signal;
+    if(child!==undefined)signal=judgment.preparedMemberFor(member)
+      .signal;
     token=judgment.beginExecution(member);reserved=true;
     const origin=judgment.executionFor(token);
     const carrier=Object.freeze({
@@ -97,6 +98,16 @@ export async function executeWithOwnedContext({
 }
 
 /** Child entry retains its admitted member signal and post-factory entry check through the same lifecycle. */
-export async function executeWithOwnedMember({judgment,member,tool,args}){
-  return await executeWithOwnedContext({judgment,tool,args,child:{member}});
+export async function executeWithOwnedMember({
+  judgment,
+  member,
+  tool,
+  args
+}){
+  return await executeWithOwnedContext({
+    judgment,
+    tool,
+    args,
+    child:{member}
+  });
 }

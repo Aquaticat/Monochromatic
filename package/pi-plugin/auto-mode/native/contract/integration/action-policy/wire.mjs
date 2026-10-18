@@ -1,11 +1,18 @@
-import {RuleAssessmentWireError,sha} from './wire-source.mjs';
+import {
+  RuleAssessmentWireError,
+  sha
+} from './wire-source.mjs';
 import {appendAdoptionQuestion} from './wire-adoption.mjs';
 import {appendHeadingQuestion} from './wire-heading.mjs';
 import {appendClauseQuestion} from './wire-clause.mjs';
 import {appendOperationDecisionQuestion} from './wire-operation.mjs';
 import {operationDecisionDefinition} from './operation-decision-definition.ts';
 import {captureAssessmentDiagnostics} from './assessment-diagnostics.mjs';
-import {projectPolicyMaterial,projectVisibleOperation,projectPreparedOperation} from './wire-material.mjs';
+import {
+  projectPolicyMaterial,
+  projectVisibleOperation,
+  projectPreparedOperation
+} from './wire-material.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
 import {parseBatchAnswer} from '../../research/instruction-prerequisite-relation/protocol.mjs';
@@ -98,7 +105,13 @@ export function bindRuleAssessmentWire(request){
    const pairs=[];
    const seen=new Set();
    const clauseRelations=new Set();
- const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,hasOperationDecision:false,unitAdoptionCount:0};
+ const membership={
+   hasHeadingContent:false,
+   hasOperation:false,
+   hasRequestMaterial:false,
+   hasOperationDecision:false,
+   unitAdoptionCount:0
+ };
  for(const [index,head] of input.entries()){
   if((head?.id!==`q${
     index}`)||(!Object.hasOwn(
@@ -111,24 +124,72 @@ export function bindRuleAssessmentWire(request){
   if(JSON.stringify(head.definition)!==JSON.stringify(definition))throw new RuleAssessmentWireError('Fixed question definition changed');
   const {binding} = head;
   if(head.definitionId==='operation_decision'){
-   appendOperationDecisionQuestion({head,binding,definition,index,membership,questions,pairs,proposedOperation});
+   appendOperationDecisionQuestion({
+     head,
+     binding,
+     definition,
+     index,
+     membership,
+     questions,
+     pairs,
+     proposedOperation
+   });
    continue;
   }
   if(head.definitionId==='unit_adoption'){
-   appendAdoptionQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
+   appendAdoptionQuestion({
+     sources,
+     head,
+     binding,
+     definition,
+     index,
+     seen,
+     membership,
+     questions,
+     pairs
+   });
    continue;
   }
   if(head.definitionId==='request_instruction_content'){
    throw new RuleAssessmentWireError('Complete hidden provider requests are outside human-readable approval inputs');
   }
   if(head.definitionId==='heading_instruction_content'){
-   appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
+   appendHeadingQuestion({
+     sources,
+     head,
+     binding,
+     definition,
+     index,
+     seen,
+     membership,
+     questions,
+     pairs
+   });
    continue;
   }
-  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation});
+  appendClauseQuestion({
+    sources,
+    head,
+    binding,
+    definition,
+    index,
+    seen,
+    membership,
+    questions,
+    pairs,
+    operation,
+    categorical,
+    clauseRelations,
+    question,
+    proposedOperation
+  });
  }
  const state={
-   selectedPolicyMaterial:projectPolicyMaterial({sources,material:envelope.policyMaterial,questions:input}),
+   selectedPolicyMaterial:projectPolicyMaterial({
+     sources,
+     material:envelope.policyMaterial,
+     questions:input
+   }),
    parentProgram:JSON.stringify(proposedOperation.parent),
    preparedProgram:JSON.stringify(proposedOperation.prepared),
    catalogSHA256:request.catalogSHA256,
@@ -138,18 +199,26 @@ export function bindRuleAssessmentWire(request){
    ...(membership.hasHeadingContent?{headingInstructionDefinition:headingInstructionContent}:{}),
    ...(membership.unitAdoptionCount?{unitAdoptionDefinition:unitAdoptionRelation}:{}),
    ...(membership.hasOperationDecision?{reviewPurpose:'Final decision for the complete prepared operation under current instructions and selected user authorization'}:{
-   establishedEffectFacts:[],
-   effectFactCoverage:'not-established',
-   authority:'not-established',
-   semanticQualification:'not-established',
-   permission:false})
+     establishedEffectFacts:[],
+     effectFactCoverage:'not-established',
+     authority:'not-established',
+     semanticQualification:'not-established',
+     permission:false
+   })
  };
  const body=JSON.stringify({
    model,
    state,
    questions
  });
- const recordResponse=captureAssessmentDiagnostics({request:{...request,model},state,questions});
+ const recordResponse=captureAssessmentDiagnostics({
+   request:{
+     ...request,
+     model
+   },
+   state,
+   questions
+ });
  function answerText(raw){
   function parseOriginalResponse(){
    try{return parseBatchAnswer({
@@ -159,7 +228,10 @@ export function bindRuleAssessmentWire(request){
       questions
     }
    });}
-   catch(error){recordResponse({error,raw});throw error;}
+   catch(error){recordResponse({
+     error,
+     raw
+   });throw error;}
   }
   const parsed=parseOriginalResponse();
   recordResponse({parsed});

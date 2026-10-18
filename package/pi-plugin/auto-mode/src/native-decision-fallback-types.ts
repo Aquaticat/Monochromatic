@@ -95,10 +95,13 @@ export type DecisionFallbackObservations = {
 
 /**
  Live fixture state shared by transport, host, and operation callbacks.
+
+ Captured SDK capability and abort retention stay optional properties so
+ absence is established before use instead of travelling as a nullish union.
  */
 export type DecisionFallbackState = {
-  pi: ExtensionAPI | undefined;
-  abortTask: Promise<void> | undefined;
+  pi?: ExtensionAPI;
+  abortTask?: Promise<void>;
   ordinaryChatPending: boolean;
   requestCount: number;
   clockOffset: number;
@@ -282,5 +285,5 @@ export type DecisionFallbackOperation = Readonly<{
  Disposal owner reproducing the original cleanup order at scope exit.
  */
 export type DecisionFallbackDisposal = {
-  [Symbol.asyncDispose](): Promise<void>;
+  [Symbol.asyncDispose]: () => Promise<void>;
 };

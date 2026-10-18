@@ -118,7 +118,9 @@ export function inspectNativeSourceDomain({
    coverage.sourceOccurrence,
    coverage
  ]); }));
- const selected=snapshot.decisionContext?.sources??expected;
+ const selected=snapshot.decisionContext
+   ?.sources
+   ??expected;
  if((indexed.size!==selected.length)||selected.some(function lacksIndexedOccurrence(source) { return (!indexed.has(source?.occurrence)); }))missing('Selected decision sources do not all have their own structural source-unit inspection.');
  for(const coverage of sourceCoverage){
   if(coverage.stale||coverage.failure

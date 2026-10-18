@@ -1,7 +1,11 @@
 import {matchesSemanticOperationProfile} from '../maintained-policy.mjs';
 
 //region Original scheduler and inspected program shape gate estimated operation coverage.
-export function inspectOperationCoverage({inputs,clauseEnabled,policy}){
+export function inspectOperationCoverage({
+  inputs,
+  clauseEnabled,
+  policy
+}){
  // Multiple root programs need the original dispatcher schedule, not order inferred from their array positions.
  // Legacy single-member inputs have no outer inter-member scheduling obligation.
  const groupExecutionMode=inputs.effects[0]

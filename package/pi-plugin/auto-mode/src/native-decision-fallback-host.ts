@@ -6,7 +6,10 @@
  */
 import assert from 'node:assert/strict';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
-import type { AgentSession } from '@earendil-works/pi-coding-agent';
+import type {
+  AgentSession,
+  ExtensionUIContext
+} from '@earendil-works/pi-coding-agent';
 import type { MaintainedPolicyEntries } from './native-decision-fallback-harness.ts';
 import { replaceFixturePolicyWithProhibition } from './native-decision-fallback-state.ts';
 import type {
@@ -17,6 +20,30 @@ import type {
   DecisionFallbackState,
   HarnessEnvironment
 } from './native-decision-fallback-types.ts';
+
+//region Shared host callbacks stay outside the host factory scope.
+
+/**
+ Host trace stub keeps runtime approval diagnostics quiet in the fixture.
+ */
+function traceHostEvent(): void {
+  return undefined;
+}
+
+/**
+ Notification runner replaces the host terminal utility deterministically.
+
+ @returns settled notification receipt without host subprocess activity
+ */
+function ignoreNotification(): Promise<DecisionFallbackNotificationReceipt> {
+  return Promise.resolve({
+    exitCode: 0,
+    stdout: '',
+    stderr: ''
+  });
+}
+
+//endregion
 
 //region The approval host assembles the original requester and dialog surface.
 
@@ -38,8 +65,29 @@ import type {
  @param environment - built environment owning the fixture workspace
 
  @returns approval host factory returning one host per approval round
+
+ @example
+ ```ts
+ const approvalHost = createDecisionFallbackApprovalHostFactory({
+   plan,
+   state,
+   session,
+   maintained,
+   observations,
+   commands,
+   environment
+ });
+ ```
  */
-export function createDecisionFallbackApprovalHostFactory({ plan, state, session, maintained, observations, commands, environment }: Readonly<{
+export function createDecisionFallbackApprovalHostFactory({
+  plan,
+  state,
+  session,
+  maintained,
+  observations,
+  commands,
+  environment
+}: Readonly<{
   plan: DecisionFallbackPlan;
   state: DecisionFallbackState;
   session: AgentSession;
@@ -48,37 +96,44 @@ export function createDecisionFallbackApprovalHostFactory({ plan, state, session
   commands: readonly string[];
   environment: HarnessEnvironment;
 }>): () => DecisionFallbackApprovalHost {
-  return function fixtureApprovalHost(): DecisionFallbackApprovalHost {
+  /**
+   Workspace cwd drives the allow-stale policy replacement.
+   */
+  const { cwd } = environment.options;
+  /**
+   Each approval round assembles one host from the live fixture state.
+
+   @returns approval host carrying the original requester and dialog surface
+   */
+  function fixtureApprovalHost(): DecisionFallbackApprovalHost {
     return {
       pi: nonNullishOrThrow(state.pi),
       askUser: maintained.askUser,
       verdictEntryType: maintained.VERDICT_ENTRY_TYPE,
-      trace: function traceHostEvent(): void {
-        return undefined;
-      },
-      notificationInvoker: async function ignoreNotification(): Promise<DecisionFallbackNotificationReceipt> {
-        return {
-          exitCode: 0,
-          stdout: '',
-          stderr: ''
-        };
-      },
+      trace: traceHostEvent,
+      notificationInvoker: ignoreNotification,
       ctx: {
         hasUI: plan.mode !== 'headless',
         abort(): void {
           state.abortTask = session.abort();
         },
         ui: {
-          async select(title: string, options: string[]): Promise<string | undefined> {
+          async select(
+            title,
+            options
+          ): ReturnType<ExtensionUIContext['select']> {
             observations.selections++;
             assert.equal(
               observations.attempts,
-              plan.expectedAttempts,
+              plan.startupFailure ? 0 : 2,
               'Dialog must follow the available automatic path'
             );
             assert.deepEqual(
               options,
-              ['Allow', 'Stop']
+              [
+                'Allow',
+                'Stop'
+              ]
             );
             for (const command of commands)
               assert.ok(title.includes(command));
@@ -87,7 +142,7 @@ export function createDecisionFallbackApprovalHostFactory({ plan, state, session
               return undefined;
             }
             if (plan.mode === 'allow-stale')
-              await replaceFixturePolicyWithProhibition({ cwd: environment.options.cwd });
+              await replaceFixturePolicyWithProhibition({ cwd });
             if (plan.mode === 'allow-abort')
               state.abortTask = session.abort();
             return plan.mode === 'stop' ? 'Stop' : 'Allow';
@@ -95,7 +150,8 @@ export function createDecisionFallbackApprovalHostFactory({ plan, state, session
         }
       }
     };
-  };
+  }
+  return fixtureApprovalHost;
 }
 
 //endregion

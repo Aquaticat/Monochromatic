@@ -1,12 +1,20 @@
 import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
-import {copyMessageData,copyToolMetadata} from "../run-prompt-custody/messages.mjs";
+import {
+  copyMessageData,
+  copyToolMetadata
+} from "../run-prompt-custody/messages.mjs";
 import {snapshotToolMetadata} from "./tool-metadata.mjs";
 import {snapshotToolLoadoutInput} from "./tool-loadout-input.mjs";
 import {dataField} from './loaded-fields.mjs';
 //region Retain tool registration and loadout observations at native call boundaries.
 /** Retain tool registration and loadout observations at native call boundaries. */
-export function createLoadedToolInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
+export function createLoadedToolInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+}){
 
 function captureToolLoadoutQuery({
     frame,

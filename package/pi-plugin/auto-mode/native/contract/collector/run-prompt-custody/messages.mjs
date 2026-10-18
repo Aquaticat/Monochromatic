@@ -59,7 +59,10 @@ function copyOrdinaryData({
     if(((typeof value)!=='object')||((!sharedReferences)&&seen.has(value)))throw new SourceCollectionError('Run message data requires a non-aliased ordinary tree');
     if(active.has(value))throw new SourceCollectionError('Tool metadata contains a cycle');
     active.add(value);
-    pending.push({leave:true,value});
+    pending.push({
+      leave:true,
+      value
+    });
     seen.add(value);const array=Array.isArray(value);
     const prototype=Object.getPrototypeOf(value);
     if(array?prototype!==Array.prototype:prototype!==Object.prototype)throw new SourceCollectionError('Run message data has an unsupported prototype');

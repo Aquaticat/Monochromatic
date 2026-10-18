@@ -26,20 +26,30 @@ export function bindRunMessageSources({governing}){
    value
  ]); }));
  const retainedBySource=new Map();
- for(const origin of run?.retainedMessageOrigins??snapshot.nativeConstructedInputs??[]){
+ for(const origin of run?.retainedMessageOrigins??snapshot.nativeConstructedInputs
+   ??[]){
   const {source}=origin;
-  if(!retainedBySource.has(source))retainedBySource.set(source,origin);
+  if(!retainedBySource.has(source))retainedBySource.set(
+    source,
+    origin
+  );
  }
  const issuedBindings=new WeakSet();
  /** Authenticate the original frozen record before reading its immutable view. */
  function assertBindingIdentity(value){
-  if(!issuedBindings.has(this)||value!==this.view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
+  if((!issuedBindings.has(this))||(value!==this.view))throw new GoverningPolicyBindingError('Message input view is not this original source binding');
  }
  /** Revalidate the shared governing snapshot on every use of an original source. */
  function assertCurrent(value){
-  assertBindingIdentity.call(this,value);
+  assertBindingIdentity.call(
+    this,
+    value
+  );
   governing.assertCurrent(governing.view);
-  assertBindingIdentity.call(this,value);
+  assertBindingIdentity.call(
+    this,
+    value
+  );
  }
  const bindings=sources.map(function bindOriginalRunMessage(source) {
   const publication=publications.get(source.runOccurrence);

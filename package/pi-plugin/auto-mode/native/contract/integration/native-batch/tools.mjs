@@ -18,7 +18,10 @@ export function registerOwnedExecutionTools({
 }){
  const {agent} = session;
  const previous=agent.prepareRequest;
- const wrappers=createExecutionWrappers({wrapToolDefinition,readBypass});
+ const wrappers=createExecutionWrappers({
+   wrapToolDefinition,
+   readBypass
+ });
  const installationState={active:true};
  /** Capture the positional native callback without detaching a method or changing its receiver. */
  function createRequestHook(){
@@ -148,7 +151,8 @@ export function registerOwnedExecutionTools({
    });
    const toolState={retirement:undefined};
    function current(){
-    if(toolState.retirement)throw toolState.retirement.cause;
+    if(toolState.retirement)throw toolState.retirement
+      .cause;
     try{
      if((!installationState.active)||(agent.prepareRequest!==prepareRequest)
        ||(session.extensionRunner!==runner)

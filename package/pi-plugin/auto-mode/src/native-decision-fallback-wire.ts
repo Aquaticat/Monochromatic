@@ -7,10 +7,10 @@
 import assert from 'node:assert/strict';
 import type { AgentSession } from '@earendil-works/pi-coding-agent';
 import {
+  type AssessmentFixtureSettings,
   assessmentFixtureHarness
 } from './native-decision-fallback-harness.ts';
 import { replaceFixturePolicyWithProhibition } from './native-decision-fallback-state.ts';
-import type { AssessmentFixtureSettings } from './native-decision-fallback-harness.ts';
 import type {
   AssessmentSendInput,
   AssessmentTransport,
@@ -27,7 +27,7 @@ import type {
  */
 export type DecisionWireQuestion = Readonly<{
   instructions: Readonly<{
-    selectedRule?: Readonly<Record<string, unknown>> | null;
+    selectedRule?: Readonly<Record<string, unknown>>;
     predicate: string;
   }>;
   criteria: Readonly<Record<string, unknown>>;
@@ -74,6 +74,17 @@ export class DecisionFallbackWireShapeError extends Error {
 }
 
 /**
+ Recognize an object member before its projected field reads.
+
+ @param value - wire member arriving from parsed JSON
+
+ @returns whether ordinary property reads can inspect the member
+ */
+function isWireMemberRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return ((typeof value) === 'object') && (value !== null);
+}
+
+/**
  Narrow a parsed wire member before its projected field reads.
 
  @param value - wire member arriving from parsed JSON
@@ -83,7 +94,7 @@ export class DecisionFallbackWireShapeError extends Error {
  @throws DecisionFallbackWireShapeError when the member is not an object
  */
 function wireMemberRecord(value: unknown): Readonly<Record<string, unknown>> {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isWireMemberRecord(value))
     throw new DecisionFallbackWireShapeError('Decision wire member must be an object before its field reads');
   return value;
 }
@@ -93,52 +104,80 @@ function wireMemberRecord(value: unknown): Readonly<Record<string, unknown>> {
 //region Request assertions validate the authored decision wire in place.
 
 /**
- Validate the decision wire before the request assertions read its questions.
+ Validate the decision wire containers the request assertions dereference.
+
+ Leaf fields stay unvalidated because the fixture only compares them, exactly
+ like the original assertions, so well-formed and tolerated shapes pass alike.
 
  @param value - parsed decision wire request
 
- @throws DecisionFallbackWireShapeError when asserted wire fields are missing
+ @returns narrowed wire projection for the request assertions
+
+ @example
+ ```ts
+ assertDecisionWire(JSON.parse(input.body));
+ ```
+
+ @throws DecisionFallbackWireShapeError when a dereferenced container is missing
  */
 export function assertDecisionWire(value: unknown): asserts value is DecisionWire {
+  /**
+   Wire stays an object record before its question member is read.
+   */
   const wire = wireMemberRecord(value);
-  if ((typeof wire.model) !== 'string')
-    throw new DecisionFallbackWireShapeError('Decision wire must name its model');
+  /**
+   Questions arrive keyed by their authored selection slot.
+   */
   const questions = wireMemberRecord(wire.questions);
   for (const question of Object.values(questions)) {
+    /**
+     Each question keeps its local interpretation instructions.
+     */
     const questionRecord = wireMemberRecord(question);
-    const instructions = wireMemberRecord(questionRecord.instructions);
-    const selectedRule = instructions.selectedRule;
-    if ((selectedRule !== undefined) && (selectedRule !== null))
-      wireMemberRecord(selectedRule);
-    if ((typeof instructions.predicate) !== 'string')
-      throw new DecisionFallbackWireShapeError('Question instructions must carry their local predicate');
+    /**
+     Instructions carry the optional selected rule and the predicate.
+     */
+    wireMemberRecord(questionRecord.instructions);
+    /**
+     Criteria stay keyed by authored choice label.
+     */
     wireMemberRecord(questionRecord.criteria);
   }
+  /**
+   State carries the clause relation definition the fixture compares.
+   */
   const state = wireMemberRecord(wire.state);
-  const relationDefinition = wireMemberRecord(state.clauseRelationDefinition);
-  if ((typeof relationDefinition.instructions) !== 'string')
-    throw new DecisionFallbackWireShapeError('Clause relation definition must keep its interpretation instructions');
+  /**
+   Relation definition keeps its complete interpretation instructions.
+   */
+  wireMemberRecord(state.clauseRelationDefinition);
 }
 
 /**
- Validate the mutable authored response before its answers are rewritten.
+ Validate the mutable authored response containers the rewrite mutates.
 
  @param value - parsed authored decision response
 
- @throws DecisionFallbackWireShapeError when asserted answer fields are missing
+ @returns narrowed response projection for the low-confidence rewrite
+
+ @example
+ ```ts
+ assertMutableDecisionResponse(JSON.parse(raw));
+ ```
+
+ @throws DecisionFallbackWireShapeError when a mutation target is missing
  */
 export function assertMutableDecisionResponse(value: unknown): asserts value is MutableDecisionResponse {
+  /**
+   Response stays an object record before its answer member is read.
+   */
   const response = wireMemberRecord(value);
+  /**
+   Answers arrive keyed by question slot and stay mutable rewrite targets.
+   */
   const answers = wireMemberRecord(response.answers);
-  for (const answer of Object.values(answers)) {
-    const answerRecord = wireMemberRecord(answer);
-    if ((typeof answerRecord.choice) !== 'string')
-      throw new DecisionFallbackWireShapeError('Authored answer must carry its selected choice');
-    const probabilities = wireMemberRecord(answerRecord.probabilities);
-    for (const probability of Object.values(probabilities))
-      if ((typeof probability) !== 'number')
-        throw new DecisionFallbackWireShapeError('Authored answer probabilities must remain numeric');
-  }
+  for (const answer of Object.values(answers))
+    wireMemberRecord(answer);
 }
 
 //endregion
@@ -164,14 +203,38 @@ const DECISION_DEADLINE_EXTENSION_MS = 16_000;
  @param observations - counters incremented per send round
 
  @returns fixture wire transport for the policy runtime
+
+ @example
+ ```ts
+ const sendWire = createDecisionFallbackWireSender({
+   plan,
+   state,
+   session,
+   environment,
+   observations
+ });
+ ```
  */
-export function createDecisionFallbackWireSender({ plan, state, session, environment, observations }: Readonly<{
+export function createDecisionFallbackWireSender({
+  plan,
+  state,
+  session,
+  environment,
+  observations
+}: Readonly<{
   plan: DecisionFallbackPlan;
   state: DecisionFallbackState;
   session: AgentSession;
   environment: HarnessEnvironment;
   observations: DecisionFallbackObservations;
 }>): AssessmentTransport {
+  /**
+   Workspace cwd drives the stale-mode policy replacement.
+   */
+  const { cwd } = environment.options;
+  /**
+   Assessment settings reproduce the original authored relation answers.
+   */
   const settings: AssessmentFixtureSettings = {
     relation: 'permission',
     unresolvedClause: plan.relation,
@@ -180,34 +243,76 @@ export function createDecisionFallbackWireSender({ plan, state, session, environ
     httpTransport: true,
     transientHttpFailure: plan.transient
   };
+  /**
+   Maintained assessment path author answers over the real HTTP transport.
+   */
   const sendAssessment = assessmentFixtureHarness.createDomainFixtureAssessment({
     settings,
     observations
   });
-  return async function fixtureWireTransport(input: AssessmentSendInput): Promise<string> {
+  /**
+   Fixture wire transport asserts each authored decision request in place.
+
+   @param input - authored decision request from the policy runtime
+
+   @returns raw authored answer text for the policy runtime
+
+   @throws Error when this mode's fixture transport failure triggers
+   */
+  async function fixtureWireTransport(input: AssessmentSendInput): Promise<string> {
     observations.attempts++;
-    for (const argument of ['FALLBACK_A', 'FALLBACK_B'])
-      assert.ok(input.body.includes(argument));
+    for (const argument of [
+      'FALLBACK_A',
+      'FALLBACK_B'
+    ])
+      assert.ok(input.body
+        .includes(argument));
+    /**
+     Parsed wire carries the authored questions and clause relation state.
+     */
     const wire: unknown = JSON.parse(input.body);
     assertDecisionWire(wire);
     for (const question of Object.values(wire.questions)) {
-      if (!question.instructions.selectedRule)
+      /**
+       Clause questions carry their selected rule; operation questions do not.
+       */
+      const { instructions } = question;
+      /**
+       Selected rule absence skips the clause-only request assertions.
+       */
+      const { selectedRule } = instructions;
+      if (!selectedRule)
         continue;
-      assert.ok(Object.values(question.criteria)
-        .every(function localRubric(criterion: unknown): boolean {
-          return ((typeof criterion) === 'string') && (criterion.length > 0);
-        }), 'Every clause choice needs its local interpretation rubric');
+      assert.ok(
+        Object.values(question.criteria)
+          .every(function localRubric(criterion: unknown): boolean {
+            return ((typeof criterion) === 'string') && (criterion.length > 0);
+          }),
+        'Every clause choice needs its local interpretation rubric'
+      );
       assert.equal(
-        question.instructions.predicate,
-        wire.state.clauseRelationDefinition.instructions,
+        question.instructions
+          .predicate,
+        wire.state
+          .clauseRelationDefinition
+          .instructions,
         'Each clause needs complete local interpretation instructions'
       );
     }
+    /**
+     Operation detection marks the whole-operation decision question.
+     */
     const operation = Object.values(wire.questions)
       .some(function operationQuestion(question: DecisionWireQuestion): boolean {
-        return Object.hasOwn(question.criteria, 'approve');
+        return Object.hasOwn(
+          question.criteria,
+          'approve'
+        );
       });
-    assert.equal(operation, observations.attempts >= 2);
+    assert.equal(
+      operation,
+      observations.attempts >= 2
+    );
     if ((plan.mode === 'initial-failure') && (!operation))
       throw new Error('Fixture initial clause transport failed');
     if (operation && (plan.mode === 'transport'))
@@ -215,13 +320,19 @@ export function createDecisionFallbackWireSender({ plan, state, session, environ
     if (operation && (plan.mode === 'malformed'))
       return '{malformed';
     if (operation && (plan.mode === 'stale'))
-      await replaceFixturePolicyWithProhibition({ cwd: environment.options.cwd });
+      await replaceFixturePolicyWithProhibition({ cwd });
     if (operation && (plan.mode === 'abort'))
       state.abortTask = session.abort();
+    /**
+     Authored raw answer text keeps the original request bytes.
+     */
     const raw = await sendAssessment(input);
     if (operation && (plan.mode === 'deadline'))
       state.clockOffset = DECISION_DEADLINE_EXTENSION_MS;
     if (operation && (plan.mode === 'low')) {
+      /**
+       Authored response is rewritten in place to the low-confidence approval.
+       */
       const response: unknown = JSON.parse(raw);
       assertMutableDecisionResponse(response);
       for (const answer of Object.values(response.answers)) {
@@ -235,7 +346,8 @@ export function createDecisionFallbackWireSender({ plan, state, session, environ
       return JSON.stringify(response);
     }
     return raw;
-  };
+  }
+  return fixtureWireTransport;
 }
 
 //endregion

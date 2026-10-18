@@ -267,7 +267,10 @@ export function managerSource(source: string): string {
  return `import {observeMessageCopies,recordMessageInputProjection} from ${JSON.stringify(publicationUrl)};\nimport {captureLoadedInputs} from ${JSON.stringify(loadedUrl)};\n`
   +`import {createLoadoutQueryObserver} from ${JSON.stringify(queryUrl)};\n`
    +`import {createNativeEventObserver as createEventObserver} from ${JSON.stringify(eventObserverUrl)};\n`
-   +`import {createPassiveEventObserver,createPassiveContextObserver} from ${JSON.stringify(new URL('passive-events.mjs',import.meta.url).href)};\n`
+   +`import {createPassiveEventObserver,createPassiveContextObserver} from ${JSON.stringify(new URL(
+     'passive-events.mjs',
+     import.meta.url
+   ).href)};\n`
    +`export function createNativeEventObserver(manager) { return createPassiveEventObserver(createEventObserver(bindEventHandlerCapture(manager))); }\n`
    +`import {createNativeContextObserver as createContextObserver} from ${JSON.stringify(contextObserverUrl)};\n`
    +`export function createNativeContextObserver(manager) { return createPassiveContextObserver(createContextObserver(bindContextHandlerCapture(manager))); }\n`

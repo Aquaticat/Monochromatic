@@ -5,7 +5,20 @@ export class OriginalTuiApprovalError extends Error {
 
 //region Native presentation owns the exact selector response and recorded verdict.
 /** Present an already captured group without requiring automatic assessment evidence. */
-export function bindPreparedTuiApproval({pi,ctx,askUser,verdictEntryType,explanation,notificationInvoker,trace,action,approvalFingerprint,closure,signal,assertPreparedCurrent}){
+export function bindPreparedTuiApproval({
+  pi,
+  ctx,
+  askUser,
+  verdictEntryType,
+  explanation,
+  notificationInvoker,
+  trace,
+  action,
+  approvalFingerprint,
+  closure,
+  signal,
+  assertPreparedCurrent
+}){
   const {ui} = ctx;
     const {select} = ui;
     const {appendEntry} = pi;
@@ -122,8 +135,11 @@ export function bindPreparedTuiApproval({pi,ctx,askUser,verdictEntryType,explana
         ...(notificationInvoker?{notificationInvoker}:{})
       });
       if((!selectionState.forwarded)||(!selectionState.entry))throw new OriginalTuiApprovalError('Incumbent verdict was not recorded');
-      if((!selectionState.decision.block)&&((!selectionState.selectionReturned)||(selectionState.choice!=='Allow')
-        ||(selectionState.entry.verdict!=='user-approve')))throw new OriginalTuiApprovalError('Allow result lacks its original selection and verdict append');
+      if((!selectionState.decision
+        .block)&&((!selectionState.selectionReturned)||(selectionState.choice!=='Allow')
+          ||(selectionState.entry
+            .verdict
+            !=='user-approve')))throw new OriginalTuiApprovalError('Allow result lacks its original selection and verdict append');
       selectionState.result=Object.freeze({
         decision:Object.freeze({...selectionState.decision}),
         action,
@@ -132,7 +148,8 @@ export function bindPreparedTuiApproval({pi,ctx,askUser,verdictEntryType,explana
         origin:'incumbent-askUser-invocation',
         productionPermission:false
       });
-      if(!selectionState.decision.block)current();
+      if(!selectionState.decision
+        .block)current();
       selectionState.phase='responded';trace('tui-approval-complete');return selectionState.result;
     }catch(error){selectionState.failure=error;selectionState.phase='failed';trace('tui-approval-failed');throw error;}
   }

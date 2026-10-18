@@ -24,7 +24,10 @@ export function createBootstrapPolicySelection({
     maxBytes:null
   });
     const records=new WeakMap();
-  const selection={current:undefined,ordinal:0};
+  const selection={
+    current:undefined,
+    ordinal:0
+  };
   function observe(){
     const observed=observeDeclaredFile(location);
     const content=observed.bytes

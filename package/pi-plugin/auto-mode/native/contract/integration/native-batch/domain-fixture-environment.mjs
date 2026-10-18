@@ -4,8 +4,26 @@ import {createRootSessionFactory} from './session-root.ts';
 import {createOwnedCodemodeDefinition} from './generated/program-definition.mjs';
 
 //region One native environment and session retain the fixture's original callbacks and observations.
-export async function createDomainFixtureEnvironment({settings,observations,readRuntime,extensionFactories=[]}){
- const {text,sdkStream,configuredExtensions,unobservedContext,observedContext,observedProgress,throwingContext,nextDecision,nextInput,nextResult,extensionManifestArgument,changeControl}=settings;
+export async function createDomainFixtureEnvironment({
+  settings,
+  observations,
+  readRuntime,
+  extensionFactories=[]
+}){
+ const {
+   text,
+   sdkStream,
+   configuredExtensions,
+   unobservedContext,
+   observedContext,
+   observedProgress,
+   throwingContext,
+   nextDecision,
+   nextInput,
+   nextResult,
+   extensionManifestArgument,
+   changeControl
+ }=settings;
 const env=await createEnvironment({
   policyText:`RUL:\n ${text}\n`,
   hostPrompt:'Fixture background.',
@@ -14,7 +32,9 @@ const env=await createEnvironment({
   expectedBlockedNetworkUrls:configuredExtensions.some(function syntheticCatalog(resource){return resource.metadata
     ?.source
     ==='npm:@benvargas/pi-synthetic-provider';})?['https://api.synthetic.new/openai/v1/models']:[],
-  extensionFactories:[...extensionFactories,...(unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on(
+  extensionFactories:[
+    ...extensionFactories,
+    ...(unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on(
     'input',
     function countUnobservedContextCall() {observations.contextCalls++;}
   );}]:observedContext?[function registerObservedContextHandlers(pi) {
@@ -70,7 +90,8 @@ const env=await createEnvironment({
     return undefined;
    }
    );
-  }]:[])]
+  }]:[])
+  ]
 });
 if(extensionManifestArgument!==undefined){
  const loaded=env.policyInput
@@ -106,7 +127,8 @@ const leaf={
     session,
     env,
     executions:observations.executions,
-    judgment:readRuntime().inspect()
+    judgment:readRuntime()
+      .inspect()
       .lastJudgment
   });return {
     content:[{
@@ -135,6 +157,11 @@ const {
 session.agent
   .getApiKey=function readDomainFixtureApiKey() { return (process.env
     .FIXTURE_API_KEY); };
- return {env,session,root,lifecycle};
+ return {
+   env,
+   session,
+   root,
+   lifecycle
+ };
 }
 //endregion

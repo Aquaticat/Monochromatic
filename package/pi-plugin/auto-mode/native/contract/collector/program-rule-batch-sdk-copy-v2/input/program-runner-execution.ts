@@ -94,8 +94,11 @@ export async function executeReachedProgramGroup({
   assertParentCurrent();
   origin.signal
     .throwIfAborted();
-  /** Preparation uses the same context snapshot for every original reached member. */
-  const context = runner.host.getContext();
+  /**
+   Preparation uses the same context snapshot for every original reached member.
+   */
+  const context = runner.host
+    .getContext();
   await dispatchPreparedBatch({
     calls,
     tools,

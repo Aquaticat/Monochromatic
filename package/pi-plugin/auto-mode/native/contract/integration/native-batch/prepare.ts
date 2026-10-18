@@ -134,7 +134,11 @@ await mkdir(
 /**
  The native policy entry shares canonical implementation without evaluating the extension's SDK imports.
  */
-const maintainedEntry=pathToFileURL(join(nativeRoot,'policy/native-policy.mjs')).href;
+const maintainedEntry=pathToFileURL(join(
+  nativeRoot,
+  'policy/native-policy.mjs'
+))
+  .href;
 // The incumbent stager owns import aliases. Native fixtures may change HOME after this link is prepared.
 await writeFile(
   join(

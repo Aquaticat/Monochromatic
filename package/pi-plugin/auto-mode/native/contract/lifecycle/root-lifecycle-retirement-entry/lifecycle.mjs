@@ -1,8 +1,21 @@
-import {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
+import {
+  RootLeaseError,
+  RootLeaseOwnershipError,
+  RootLeaseSuspendedError,
+  RootLeaseRetiredError,
+  RootTransitionError
+} from './lifecycle-errors.mjs';
 import {createLifecycleDiagnostics} from './lifecycle-diagnostics.mjs';
 import {createRootTransitions} from './lifecycle-transitions.mjs';
 import {createRootConstructions} from './lifecycle-constructions.mjs';
-export {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
+
+export {
+  RootLeaseError,
+  RootLeaseOwnershipError,
+  RootLeaseSuspendedError,
+  RootLeaseRetiredError,
+  RootTransitionError
+} from './lifecycle-errors.mjs';
 //region Lifecycle leases share registry-owned epochs, not IDs, roles or mutable action metadata.
 function reference(value){return (value!==null)&&(((typeof value)==='object')||((typeof value)==='function'));}
 
@@ -18,7 +31,11 @@ export function createLifecyclePath({
     const sessionManagers=new WeakMap();
     const constructions=new WeakMap();
     const abandonedSessions=new WeakSet();
-  const {emit,diagnostics,exclusive}=createLifecycleDiagnostics(trace);
+  const {
+    emit,
+    diagnostics,
+    exclusive
+  }=createLifecycleDiagnostics(trace);
   function ownedPair({
     session,
     manager
@@ -80,7 +97,10 @@ export function createLifecyclePath({
       ?.candidate
       ===root);}
   function readObservedNativeOccurrence(root){
-    try{return nativeOccurrence({session:root.session,manager:root.manager});}
+    try{return nativeOccurrence({
+      session:root.session,
+      manager:root.manager
+    });}
     catch(error){retireObserved(root);throw error;}
   }
   function observeNative(root){
@@ -193,8 +213,54 @@ export function createLifecyclePath({
     active(root);const lease=issue(root);active(root);return lease;
   }
   function assertActive(lease){emit('lifecycle.assert.entry');const root=rootFor(lease);active(root);emit('lifecycle.assert.active');active(root);}
-  const {begin,beginRetirement,markMutation,cancelUnchanged,commit,completeRetirement,retireFailed,reopen}=createRootTransitions({emit,rootFor,active,transitions,observeNative,retired,retireRecord,unchangedEpoch,pending,ownedPair,exhausted,nativeOccurrence,leases,createRoot,issue});
-  const {beginConstruction,bindConstruction,publishConstruction,abandonConstruction}=createRootConstructions({emit,stateFor,pending,unchangedEpoch,retired,exhausted,constructions,constructionCurrent,constructionFor,ownedPair,nativeOccurrence,active,leases,retireRecord,abandonedSessions});
+  const {
+    begin,
+    beginRetirement,
+    markMutation,
+    cancelUnchanged,
+    commit,
+    completeRetirement,
+    retireFailed,
+    reopen
+  }=createRootTransitions({
+    emit,
+    rootFor,
+    active,
+    transitions,
+    observeNative,
+    retired,
+    retireRecord,
+    unchangedEpoch,
+    pending,
+    ownedPair,
+    exhausted,
+    nativeOccurrence,
+    leases,
+    createRoot,
+    issue
+  });
+  const {
+    beginConstruction,
+    bindConstruction,
+    publishConstruction,
+    abandonConstruction
+  }=createRootConstructions({
+    emit,
+    stateFor,
+    pending,
+    unchangedEpoch,
+    retired,
+    exhausted,
+    constructions,
+    constructionCurrent,
+    constructionFor,
+    ownedPair,
+    nativeOccurrence,
+    active,
+    leases,
+    retireRecord,
+    abandonedSessions
+  });
   return Object.freeze({
     beginConstruction:function beginExclusiveConstruction(input) { return (exclusive(function reserveConstruction() { return (beginConstruction(input)); })); },
     bindConstruction:function bindExclusiveConstruction(input) { return (exclusive(function bindReservedConstruction() { bindConstruction(input); })); },

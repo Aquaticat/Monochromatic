@@ -1,5 +1,8 @@
 import {NativeSourceAssociationError} from './source-association-error.mjs';
-import {dataRecord,envelopeReason} from './source-association-shape.mjs';
+import {
+  dataRecord,
+  envelopeReason
+} from './source-association-shape.mjs';
 
 //region Original section contributions retain their native visibility and source occurrence.
 /** Slots with fixed native rendering; rule additions also require their captured insertion result. */

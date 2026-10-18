@@ -218,9 +218,18 @@ and `watch::tests::a_burst_of_changes_requests_one_rescan`.
 Repeated final-failure lines are not extra executed cases.
 The original duplicate-argument adapter ran zero bodies and retains no test credit;
 the corrected result preserves unchanged source assertions.
-The extra GNU watch failure's cause and repeat rate remain unmeasured,
-and its matched Depot target is still proposed
+The extra GNU watch failure's cause and repeat rate remain unmeasured
 ([retained GNU identities and original-member hashes](../audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz)).
+The matched Depot Windows GNU run executes the same 1494 binary/case identities:
+1493 pass and the unreadable-session-path/logging case fails,
+with one separate summary-only skip.
+The watch case passes in this sample;
+that status difference does not establish a provider cause or failure rate.
+Its actual probe records Windows Server 2025 Datacenter,
+release `10.0.26100`,
+four available/logical CPUs,
+16827592704 bytes of memory and CPU model `AMD EPYC 9R45`
+([matched GNU and design terminal receipt](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)).
 
 ### Execution infrastructure
 
@@ -532,9 +541,24 @@ the Root graph subtotal remains USD 0.487,
 and the separate BuildKit request-window proxy remains USD 0.015897333333.
 These are interval-derived proxies before allowances,
 with invoice and allocated-builder compute unmeasured.
-Later GNU,
-material-owner and debug attempts need their own terminal joins
 ([37-row successor verification](../audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json)).
+
+The final follow-on snapshot preserves those historical inputs and has 49 distinct terminal rows:
+23 public GitHub jobs,
+13 Depot GitHub jobs,
+10 native jobs and the same three BuildKit requests.
+All 53 retained source bodies and 49 exact timestamp-pointer joins verify.
+Its known provider-window list proxy is USD 1.685366666667:
+Depot GitHub USD 1.233566666667 and native USD 0.4518,
+with public nominal compute zero.
+The final append adds USD 0.422866666667:
+material Depot jobs USD 0.2704,
+matched GNU USD 0.125066666667 and both SSH attempts USD 0.0274.
+BuildKit's USD 0.015897333333 request-window proxy remains separate.
+The frozen baseline,
+historical follow-on snapshots and full-window reservations are not added again
+([49-row terminal ledger](../audit/depot-owned-allocation-final-2026-10-18.evidence.json),
+[source/hash/BigInt verification](../audit/depot-owned-allocation-final-source-verification-2026-10-18.evidence.json)).
 
 The current-source four-CPU Linux comparison has two completed repetitions on each GitHub runner pool.
 All 42 shared Node build commands pass in every sample.
@@ -732,8 +756,31 @@ for IDE,
 terminal,
 file-manager variants and the actual design Node/ImageMagick owners.
 Its seven primary profiles and two conditional corrections share a USD 5 nominal guard.
-Admission is not execution evidence;
-results enter this allocation only after their source/producers and runtime joins close.
+All seven primary workflows are now terminal,
+and the compiled Nextest inventories match their actual executed identities.
+IDE full passes 783 cases with one ignored;
+its separately executed library subset passes 316 cases with the same ignored case.
+Terminal passes 16,
+GTK passes 13,
+sticky passes eight with one ignored,
+and Qt passes its authored QString/default-state consumer.
+The 1137 execution observations contain 821 unique binary/case identities:
+the IDE subset overlaps full and is not additive unique coverage.
+IDE's real runtime producer stages 2500 files,
+and final source checks preserve the authored assertions.
+These are library/process/model/runtime consumers,
+without a new GUI or compositor launch.
+The initial design profile enumerates its 13 actual Node programs but executes zero:
+the copied locked Node binary exits 127 because the tool image lacks `libatomic.so.1`.
+Its separately admitted public-runner correction adds only the runtime library,
+and all 13 actual owning programs now pass with ImageMagick.
+The source consumer verifies 997 selected asset/HTML inputs totaling 269996175 materialized bytes;
+these are verified input bytes,
+not published media.
+The actual bootstrap preserves owning commands and assertions
+([primary case and producer receipt](../audit/depot-material-owner-primary-2026-10-18.evidence.json),
+[design correction admission](../audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json),
+[actual GNU/design outcomes](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)).
 Static test attributes,
 successful compilation and an import-only fixture do not substitute for those runtime boundaries.
 
@@ -876,13 +923,18 @@ as do absent-owner cache/language recipes and external observability sinks
 
 Remaining factual work is explicitly owned in the
 [execution handover][depot-source-1]:
-the terminal public GNU correction and proposed matched Depot-Windows GNU consumer,
 semantic feature/assertion reconciliation,
-existing-evidence joins and admitted execution of remaining IDE/file-manager/terminal/design owners,
-the finite native debug consumer,
+remaining existing-evidence joins,
 and final combined allocation/cost normalization.
 The capability-allocation source review and concrete rollout profiles are written;
-the newly admitted material-owner execution and final source-failure dispositions remain open.
+the primary IDE/file-manager/terminal case identities and real producer joins are sealed.
+The two-attempt native debug campaign is complete with partial transport qualification:
+both direct OpenSSH challenges execute with client exit 255,
+both native CLI PTY challenges execute with exit zero,
+but no paused-session target or final workflow readback qualifies.
+The corrected attempt verifies the exact admitted tmate binary before its watchdog cancels the run;
+this does not establish a tmate failure cause or lack of support
+([final bounded SSH result](../audit/depot-native-ssh-correction-runtime-2026-10-18.evidence.json)).
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
 The repeated GitHub and corrected native graph phases,
 case parity and independent failure classifications are sealed;

@@ -8,7 +8,29 @@ import {createDomainFixtureRuntime} from './domain-fixture-runtime.mjs';
 /** Run one original native decision with the selected authored contrast. */
 async function runDomainFrontier(){
  const settings=await readDomainFixtureSettings();
- const {relation,requireResolution,unobservedContext,observedContext,observedProgress,nextDecision,approvedChange,changeControl,nextInput,nextResult,throwingContext,httpTransport,operatingPolicy,unconfiguredPolicies,singleCall,expectedExecutions,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,providerMetadata}=settings;
+ const {
+   relation,
+   requireResolution,
+   unobservedContext,
+   observedContext,
+   observedProgress,
+   nextDecision,
+   approvedChange,
+   changeControl,
+   nextInput,
+   nextResult,
+   throwingContext,
+   httpTransport,
+   operatingPolicy,
+   unconfiguredPolicies,
+   singleCall,
+   expectedExecutions,
+   lowConfidenceClause,
+   unresolvedClause,
+   sdkStream,
+   receiptControl,
+   providerMetadata
+ }=settings;
 const observations={
   contextCalls:0,
   lateContextMutations:0,
@@ -21,10 +43,28 @@ const observations={
   firstDecision:undefined,
   nextInputQuestions:0
 };
- const {env,session,root,lifecycle}=await createDomainFixtureEnvironment({settings,observations,readRuntime(){return runtime;}});
+ const {
+   env,
+   session,
+   root,
+   lifecycle
+ }=await createDomainFixtureEnvironment({
+   settings,
+   observations,
+   readRuntime(){return runtime;}
+ });
 const code=singleCall==='direct'?'return await tools.fixture_value({path:"seed"});':singleCall==='binding'?'const value = await tools.fixture_value({path:"seed"}); return value;':'const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);';
 const programProfile=singleCall===undefined?'awaited-string-result-then-literal-parallel':'awaited-literal-single-call';
- const runtime=createDomainFixtureRuntime({settings,observations,env,session,root,lifecycle,code,programProfile});
+ const runtime=createDomainFixtureRuntime({
+   settings,
+   observations,
+   env,
+   session,
+   root,
+   lifecycle,
+   code,
+   programProfile
+ });
 await using cleanup={async [Symbol.asyncDispose](){await changeControl.drain();session.dispose();await session.agent
   .waitForIdle();runtime.detach();await env.drain();}};
 try{

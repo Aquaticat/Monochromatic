@@ -1,10 +1,25 @@
 import {SourceCollectionError} from "../collector.mjs";
-import {copyMessageData,assertTextMessageContent} from "../run-prompt-custody/messages.mjs";
+import {
+  copyMessageData,
+  assertTextMessageContent
+} from "../run-prompt-custody/messages.mjs";
 import {assertManagerMessageContent} from './manager-message-content.mjs';
-import {dataField,messageMetadata,systemInputFields,assertSystemInput,bashInput} from './loaded-fields.mjs';
+import {
+  dataField,
+  messageMetadata,
+  systemInputFields,
+  assertSystemInput,
+  bashInput
+} from './loaded-fields.mjs';
 //region Loaded history retains original entry identity.
 /** Capture loaded and appended historical inputs through the original pool. */
-export function createLoadedHistory({occurrence,reserve,retain,poolState,InputCaptureError}){
+export function createLoadedHistory({
+  occurrence,
+  reserve,
+  retain,
+  poolState,
+  InputCaptureError
+}){
 function captureSystem({
    carrier,
    message,
@@ -184,6 +199,10 @@ try{
   }
  }catch(error){poolState.failure=new InputCaptureError(error);}
 }
-return {captureSummary,captureEdit,captureLoadedEntries};
+return {
+  captureSummary,
+  captureEdit,
+  captureLoadedEntries
+};
 }
 //endregion

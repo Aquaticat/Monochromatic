@@ -3,8 +3,20 @@ import {inspect} from 'node:util';
 import {alteredContribution} from './domain-receipt-controls.mjs';
 
 //region Assert original request bytes, admitted relation data, and field-specific serializer receipts.
-export function assertDomainTransport({review,settings,originalBody}){
- const {providerMetadata,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,observedContext,unobservedContext}=settings;
+export function assertDomainTransport({
+  review,
+  settings,
+  originalBody
+}){
+ const {
+   providerMetadata,
+   lowConfidenceClause,
+   unresolvedClause,
+   sdkStream,
+   receiptControl,
+   observedContext,
+   unobservedContext
+ }=settings;
  assert.equal(
    review.inputs
      .requestObservation

@@ -1,7 +1,17 @@
 import {RuleAssessmentWireError} from './wire-source.mjs';
 
 //region Validate the original binding before publishing its correlated wire question.
-export function appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs}){
+export function appendHeadingQuestion({
+  sources,
+  head,
+  binding,
+  definition,
+  index,
+  seen,
+  membership,
+  questions,
+  pairs
+}){
    if((!binding)||(Object.keys(binding)
      .toSorted()
      .join(',')

@@ -11,7 +11,12 @@ import {createGuidelineInputs} from './guideline-inputs.mjs';
 
 //region Publish immutable run ancestry using the existing source capabilities.
 /** Publish immutable run ancestry using the existing source capabilities. */
-export function createRunPublication({state,check,base,requireRenderCapture}){
+export function createRunPublication({
+  state,
+  check,
+  base,
+  requireRenderCapture
+}){
 function publishScope(scope){
     check(scope);const publishedBase=base();
     const republished=republishBaseInputs({

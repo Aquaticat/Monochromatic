@@ -224,7 +224,9 @@ export type NativeReturnInspection = {
  Original reached-group consumer separates execution, live access, and inspection.
  */
 export type NativeReturnConsumer = {
-  /** Reserve an actual native call before asynchronous preparation starts. */
+  /**
+   Reserve an actual native call before asynchronous preparation starts.
+   */
   readonly open: (input: NativeReturnInput) => NativeReturnEntry;
   
   /**
@@ -240,13 +242,17 @@ export type NativeReturnConsumer = {
   readonly inspect: (handle: object) => NativeReturnInspection;
 };
 
-/** Native phases retain completion through the original slot without consulting live parent eligibility. */
+/**
+ Native phases retain completion through the original slot without consulting live parent eligibility.
+ */
 export type NativeReturnEntry = Readonly<{
   complete: (outcome: unknown) => NativeReturnOutcome;
   fail: (error: unknown) => void;
 }>;
 
-/** Factory-owned slots expose their native lifetime instead of requiring an invocation-handle round trip. */
+/**
+ Factory-owned slots expose their native lifetime instead of requiring an invocation-handle round trip.
+ */
 export type NativeCallSlot = Readonly<{
   open: (call: NativeReturnCall) => NativeReturnEntry;
 }>;

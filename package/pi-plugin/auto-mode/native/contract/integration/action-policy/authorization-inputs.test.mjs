@@ -14,7 +14,11 @@ function fixture(){
    sourceOccurrence:{},
    request
  };
- const state={captures:0,current:true,ownerCurrent:true};
+ const state={
+   captures:0,
+   current:true,
+   ownerCurrent:true
+ };
  const authorization={
    satisfaction:'unsatisfied',
    channel:'incumbent-approval'
@@ -116,7 +120,9 @@ for(const field of [
  await assert.rejects(
    function captureAuthoredInputs() { return (captureAuthorizationInputs(input.args)); },
    function matchesOriginalBindingFailure(error) {
-     return Error.isError(error) && error.message.includes('differs from the original');
+     return Error.isError(error)
+       && error.message
+       .includes('differs from the original');
    }
  );
 }
@@ -168,7 +174,9 @@ Object.defineProperty(
 await assert.rejects(
   function captureAccessorEvidence() { return (captureAuthorizationInputs(accessor.args)); },
   function matchesEvidenceAccessor(error) {
-    return Error.isError(error) && error.message.includes('data properties');
+    return Error.isError(error)
+      && error.message
+      .includes('data properties');
   }
 );
 const methodAccessor=fixture();
@@ -183,7 +191,9 @@ Object.defineProperty(
 await assert.rejects(
   function captureMethodAccessorEvidence() { return (captureAuthorizationInputs(methodAccessor.args)); },
   function matchesCapabilityAccessor(error) {
-    return Error.isError(error) && error.message.includes('data properties');
+    return Error.isError(error)
+      && error.message
+      .includes('data properties');
   }
 );
 assert.equal(
@@ -212,7 +222,9 @@ asynchronous.owner
 await assert.rejects(
   function captureAsynchronousRetirement() { return (captureAuthorizationInputs(asynchronous.args)); },
   function matchesRetiredInputs(error) {
-    return Error.isError(error) && error.message.includes('Original inputs changed');
+    return Error.isError(error)
+      && error.message
+      .includes('Original inputs changed');
   }
 );
 const copied=fixture();copied.owner
@@ -225,8 +237,14 @@ for(const change of [
 ]){
  const input=fixture();
    const binding=await captureAuthorizationInputs(input.args);
-   const method=Object.getOwnPropertyDescriptor(input.owner,'capture');
- assert.ok(method && Object.hasOwn(method,'value'));
+   const method=Object.getOwnPropertyDescriptor(
+     input.owner,
+     'capture'
+   );
+ assert.ok(method && Object.hasOwn(
+   method,
+   'value'
+ ));
  if(change==='owner')input.retireOwner();
  if(change==='facts')input.authorization
    .satisfaction='satisfied';
@@ -239,7 +257,9 @@ for(const change of [
  assert.throws(
    binding.assertCurrent,
    function matchesLostEligibility(error) {
-     return Error.isError(error) && error.message.includes('lost eligibility');
+     return Error.isError(error)
+       && error.message
+       .includes('lost eligibility');
    }
  );
 }

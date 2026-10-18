@@ -1,4 +1,8 @@
-import {field,dense,textPart} from './message-publication-shape.mjs';
+import {
+  field,
+  dense,
+  textPart
+} from './message-publication-shape.mjs';
 import {createMessagePublication} from './message-publication-owner.mjs';
 import {SourceCollectionError} from '../collector.mjs';
 import {publishSystemToolInput} from './system-tool-publication.ts';
@@ -9,7 +13,10 @@ import {tagged} from '@monochromatic-dev/module-logger/ts';
 const aliases=new WeakMap();
 
 /** Original loaded values retain input identity only; no text-part or payload capability is issued. */
-export function createInputOnlyPublication({source,systemInput}){
+export function createInputOnlyPublication({
+  source,
+  systemInput
+}){
  const publication=createMessagePublication({
    aliases,
    source,
@@ -57,10 +64,16 @@ export function createExpandedPromptPublication(source){
    capture(message){
   if(captureState.observed)throw new SourceCollectionError('Expanded prompt publication cannot reuse its original construction');
   captureState.observed=true;
-  if(field({value:message,key:'role'})
+  if(field({
+    value:message,
+    key:'role'
+  })
     ?.value
     !=='user')return;
-  const content=field({value:message,key:'content'})
+  const content=field({
+    value:message,
+    key:'content'
+  })
     ?.value;
   if((!dense(content))||(content.length!==1)
     ||(!textPart(content[0]))
@@ -108,16 +121,25 @@ export function recordMessageInputProjection({
 /** The native projection's existing sourceEntry/message relation is the bridge, never an entry ID match. */
 export function recordHandlerProjection(projection){
  const edited=new Set(projection.entries
-   .filter(function isContextEditEntry(row) { return (field({value:row.sourceEntry,key:'type'})
+   .filter(function isContextEditEntry(row) { return (field({
+     value:row.sourceEntry,
+     key:'type'
+   })
      ?.value
      ==='context_edit'); })
-   .map(function readContextEditTarget(row) { return (field({value:row.sourceEntry,key:'targetId'})
+   .map(function readContextEditTarget(row) { return (field({
+     value:row.sourceEntry,
+     key:'targetId'
+   })
      ?.value); }));
  for(const {
    sourceEntry,
    messages
  } of projection.entries){
-  if(edited.has(field({value:sourceEntry,key:'id'})
+  if(edited.has(field({
+    value:sourceEntry,
+    key:'id'
+  })
     ?.value)||(messages.length!==1))continue;
   recordMessageInputProjection({
     before:sourceEntry,
@@ -157,7 +179,10 @@ export function recordHandlerPayload({
   before,
   after
 }){
- const content=field({value:before,key:'content'})
+ const content=field({
+   value:before,
+   key:'content'
+ })
    ?.value;
  if((!dense(content))||(content.length === 0))return;
  aliases.get(content[0])

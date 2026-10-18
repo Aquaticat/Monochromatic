@@ -6,17 +6,30 @@ export class SourceCoverageError extends Error {
   }
 }
 /** Check ordered spans and return the first offset after their complete coverage. */
-function coveredEnd({source,intervals}){
+function coveredEnd({
+  source,
+  intervals
+}){
   let cursor=0;
-  for(const {start,end} of intervals){
-    if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)
-      ||start<0||end<=start||end>source.length)throw new SourceCoverageError();
+  for(const {
+    start,
+    end
+  } of intervals){
+    if((!Number.isSafeInteger(start))||(!Number.isSafeInteger(end))
+      ||(start<0)
+      ||(end<=start)
+      ||(end>source.length))throw new SourceCoverageError();
     if(start<cursor){
       // Comments inside an outer statement are covered by its complete source span.
       if(end>cursor)throw new SourceCoverageError();
       continue;
     }
-    if(source.slice(cursor,start).trim()!=='')throw new SourceCoverageError();
+    if(source.slice(
+      cursor,
+      start
+    )
+      .trim()
+      !=='')throw new SourceCoverageError();
     cursor=end;
   }
   return cursor;
@@ -34,7 +47,12 @@ export function assertSourceCoverage({
     left,
     right
   ) { return ( (left.start - right.start) || (right.end - left.end)); });
-  const cursor=coveredEnd({source,intervals});
-  if(source.slice(cursor).trim()!=='')throw new SourceCoverageError();
+  const cursor=coveredEnd({
+    source,
+    intervals
+  });
+  if(source.slice(cursor)
+    .trim()
+    !=='')throw new SourceCoverageError();
 }
 //endregion

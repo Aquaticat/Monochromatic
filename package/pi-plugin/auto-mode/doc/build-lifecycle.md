@@ -54,13 +54,14 @@ records the skipped optimization and continues publication.
 Other link errors still propagate.
 
 `native/build-reuse.platform.test.ts` exercises actual distinct mounts with equal device identifiers.
-Its direct-link control first proves that the fixture returns `EXDEV`;
-the maintained reuse assertion then checks intact old and new bytes,
-zero reused files and no temporary link entries.
-A same-mount control checks successful inode sharing.
+Its direct-link control first proves that the fixture returns `EXDEV`.
+The actual native build command must then publish intact old and new bytes,
+report zero reused files and leave no temporary link entries.
+A subsequent real build on the same mount checks successful inode sharing.
 The named task is `test:native:build-reuse:mount`,
 with previous-file and output-directory arguments supplied by a disposable bounded mount fixture.
-Frozen `532c20e618` fails the intact-output assertion with the real `EXDEV` error.
+Frozen `532c20e618` first reproduces the defect through the helper;
+the maintained consumer regression invokes the actual build command.
 Changed files retain independent inodes.
 It does not follow dependency symlinks or rewrite an old release.
 The 2026-10-17 checkpoint `native-release-qWSxFz` shares 1,000 files totaling 7,518,255 bytes.
@@ -137,7 +138,7 @@ Generation completes in a fresh release before identical files are shared;
 later builds do not rewrite those paths.
 Any deduplication must preserve independent immutable module paths and generated import identity.
 Sequential file comparison bounds hashing and file-descriptor use.
-Missing previous files are ordinary non-reuse cases;
+Missing previous files and cross-mount hard-link refusal retain independent output;
 other filesystem failures stop publication.
 
 `build:native`,

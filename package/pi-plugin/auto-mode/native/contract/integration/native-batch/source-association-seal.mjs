@@ -2,7 +2,11 @@ import {isDeepStrictEqual} from 'node:util';
 import {NativeSourceAssociationError} from './source-association-error.mjs';
 
 //region Serialized output consumes retained original contribution evidence once.
-export function createAssociationSealer({state,reason,toolAssociation}){
+export function createAssociationSealer({
+  state,
+  reason,
+  toolAssociation
+}){
  function seal(parsed){
   if(state.sealed)throw new NativeSourceAssociationError('Native source contribution was already sealed');
   state.sealed=true;
