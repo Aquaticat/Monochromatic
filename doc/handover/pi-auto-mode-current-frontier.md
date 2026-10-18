@@ -88,6 +88,57 @@ The delivered artifact stays pinned at `kFkBoY` throughout live workers and repl
 The source worker's second inconclusive read-only group is inspected and allowed through
 selector `8e8690e5-8dcd-4cc4-b0cc-0378ee3c5bcf`.
 
+Logger `0.4.4` is published by workflow `39143652303`.
+Fresh installed consumer `logger044-published-consumer.log` passes the public API,
+large/reentrant records,
+read-only default fallback,
+strict explicit failure and real adversarial control-byte diagnostics.
+Both internal-diagnostic guard removals build,
+fail the maintained catalog,
+restore and rebuild to a passing control.
+Receipt: `logger-control-mutants-receipt.json`.
+The first control-mutant generator accidentally replaced its own string needle and failed before execution;
+the corrected generator edits the generated driver rather than another generator's source text.
+Full local units,
+fresh types and full lint still pass with zero warnings and errors on 69 files.
+
+The original-interaction checkpoint completes with 52 successful tools,
+zero selectors and 62 HTTP 200 Luna responses.
+`reported-replay-payload-audit.json` checks 1,025 questions,
+60 review requests,
+two required-data and four excluded-data positive controls,
+with no excluded structured fields.
+Corrected module census resolves every file URL:
+2,509 unique regular files and 14,229,802 bytes for the configured host's executed module set.
+The first analyzer missed four npm mount aliases; corrected mapping preserves all files.
+Native binaries,
+assets,
+loader bootstrap,
+unexercised paths and system libraries are excluded.
+This checkpoint is not the final coherent post-repair replay.
+
+Raw replay stderr has no bare shutdown/fatal errors,
+but exposes fixture setup problems that must be fixed rather than filtered:
+the Synthetic provider's public models URL is unserved by the offline route,
+only Hyper/MiMo model definitions were copied despite preserving other enabled-model patterns,
+and real project `.pi` settings lack a private writable overlay.
+The installed Synthetic provider documents that its model-list endpoint requires no API key.
+Next prepare a faithful harness preserving all model catalog metadata,
+capturing that public catalog for the isolated route,
+and copying/mounting private project `.pi` state as the live MiMo controllers already do.
+Run a short catalog/startup positive control first,
+then reuse that corrected harness for the final replay after source repairs and the final build.
+
+MiMo discovery reached native 68 completed tools and source 59 without source edits.
+Both workers were deliberately aborted to actual settled boundaries before corrective prompts.
+Native settled with one error result after that abort;
+the exact error still needs classification from retained events.
+Guidance now gives actual TypeScript config paths,
+disallows more broad config/linter discovery and requires implementation of the existing owned cluster.
+The submitted prompt IDs are `native-implement-after-settled-discovery`
+and `source-implement-after-settled-discovery`.
+No readiness handoff is authorized while these changes and full lint remain unfinished.
+
 The current package-directory measurement is 23,899,438 bytes from
 `du --bytes --max-depth=2 package/pi-plugin/auto-mode`.
 It counts shared hard links once within that traversal and excludes symlinked dependency contents.
