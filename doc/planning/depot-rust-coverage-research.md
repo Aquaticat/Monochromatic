@@ -1033,3 +1033,62 @@ subscription/settings mutation or paid provider call is authorized.
 Owned branches and temporary files require cleanup;
 cache retention/deletion limits must be explicit.
 No cache cloud allocation has occurred at this queue boundary.
+
+Completion update on 2026-10-18:
+the separate [cache-scope receipt](../audit/depot-cache-trust-scope-2026-10-18.evidence.json)
+now retains all six terminal jobs and their original ZIPs.
+Both same-branch controls passed;
+the sibling branch missed on standard public GitHub and restored exact marker bytes on Depot GitHub.
+The workflow omitted `cache-mode`;
+GitHub setup explicitly reported default `write`.
+This does not test default-branch seeding,
+explicit mode overrides,
+forks,
+cross-repository isolation,
+or write poisoning.
+The nominal Depot elapsed list-compute proxy is `USD 0.0025`,
+the uniform rounded-completed proxy is `USD 0.036`,
+and no reservation remains.
+Owned remote/local probe branches and job temporary paths were removed;
+benign cache entries remain subject to unqueried existing retention policy.
+
+The next independent local-only queue is
+[the separately sourced allocation follow-on](depot-owned-allocation-follow-on.md).
+It will deduplicate post-baseline owned terminal controls against the frozen `223`-row baseline,
+without editing the baseline or allocating cloud resources.
+Root and coverage owners retain their active watcher ownership;
+their final graph and OS rows join only after terminal receipts are available.
+
+## Sealed package-result projection
+
+The coverage lane's requested read-only join is now
+[the package-result projection](../audit/depot-rust-package-result-projection-2026-10-18.evidence.json).
+It preserves `23` frozen Cargo package roots,
+their owning Mise task pointers,
+actual recorded commands,
+immutable provider run/job/attempt identities,
+retained JUnit or original Nextest-summary count bases,
+failures,
+skips,
+and source pointers.
+The `61` execution contexts across `15` roots include repeated suites,
+bounded fuzz targets,
+benchmarks,
+and functional consumers;
+they are not a summed unit-test denominator.
+An empty Rust-lane execution list does not classify a separately owned GUI or Android package as unexecuted.
+The derivation records no new test execution or cloud allocation.
+
+## Materialized source archive availability
+
+The benchmark and same-image audit materialized the frozen export inside their ephemeral VM.
+The qualified archive is `602,992,640` bytes with SHA-256
+`47698c6be07012ab111e7586c1fd23d8b1f610ca5d3f570e53147da9a30ad368`.
+Its `13,860` members include `1,464` content-addressed LFS materializations.
+The raw receipts retain member hashes;
+the full archive was not uploaded as a benchmark artifact.
+A hidden and ignored-file-inclusive tar inventory of the retained Rust controller
+found no full host archive to hand to another owner.
+The receipt ZIPs therefore do not supply a reusable materialized source tar.
+The [Git archive input-identity contract](../troubleshooting/git-archive-lfs-input-identity.md)
+remains the reconstruction and admission boundary.

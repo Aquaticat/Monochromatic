@@ -226,3 +226,20 @@ the integration omitted an input whose false default is explicit in the pinned a
 - The repository-side explicit-input and topology controls run without changing production workflows.
 - No issue or comment was filed,
   and no defect-only duplicate search is represented as completed.
+
+## A hidden receipt root also needs explicit inclusion
+
+Current-source public run `39141147245` used the same pinned uploader
+with the path `.coverage-host-evidence` and omitted `include-hidden-files`.
+It emitted `No files were found with the provided path: .coverage-host-evidence`
+and uploaded no artifacts.
+The actual pinned deployed bundle, SHA-256 `eea594941d8ee535974e0fbc03bbdf567f3abc78194f224b93f2df9a887ee2e9`,
+was fetched from its immutable official commit.
+A bounded local Node26.12 control exposed its unchanged `findFilesToUpload` function
+by removing only the upload startup and exporting that function.
+It found zero files in the hidden root with default exclusion,
+and four files including the child `.manifest.json` with explicit inclusion.
+No upload or network request ran in this control.
+The correction restricts uploads to that reviewed receipt directory,
+sets `include-hidden-files: true`, and makes missing files an upload error.
+The first public run remains failed and has no case-level artifact credit.

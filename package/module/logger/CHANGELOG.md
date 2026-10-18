@@ -1,5 +1,14 @@
 # @monochromatic-dev/module-logger
 
+## 0.4.4
+
+### Patch changes
+
+- Neutralize terminal control characters in direct internal diagnostics,
+  including default-file fallback notices and strict destination failures.
+  Reuse the console sink's existing neutralizer so caught filesystem paths cannot inject terminal commands.
+  Preserve diagnostic text and ordinary multiline output.
+
 ## 0.4.3
 
 ### Patch changes

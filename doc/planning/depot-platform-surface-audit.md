@@ -1112,7 +1112,8 @@ and the retained standard CI device observations.
 
 These optional products have concrete repository applicability and authorization boundaries in the ledger.
 Reviewing them does not require adopting them or manufacturing unrelated workloads.
-The remaining generic page/command entries still require their substantive pass.
+That checkpoint still had generic page/command entries.
+The complete deployed-page reconciliation now replaces those retrieval-only states in the ledger.
 
 ## Selected repository owners actually execute on Linux ARM64 CI
 
@@ -1149,15 +1150,127 @@ These are upstream author's claims until reconciled with deciding source and app
 An unmerged change receives no deployed capability credit.
 The installed Docker configuration uninstall path will not be exercised against shared state.
 
-## Active source and runtime gaps
+## Complete deployed-page contract reconciliation
 
-- Reconcile every indexed page and command with a concrete repository use,
-  a non-applicability reason,
-  or an explicit unresolved question.
-- Compare deployed schemas,
-  bundled CLI schemas,
+The complete current bodies of all 120 indexed documentation pages have a substantive applicability review.
+The ledger retains 119 explicit `sourceReview` records
+and the separate split-tests candidate-identity/physical-adapter review.
+No generic retrieval-only documentation state remains.
+The parent independently reviewed eighteen native CI pages and eleven Cache integration pages;
+their exact source hashes,
+findings,
+and repository applicability are joined in durable source archives.
+
+The CLI applicability map covers 99 distinct actual help/parser invocations.
+Ninety-eight returned help successfully;
+the Cargo wrapper instead rejected its missing local `sccache` prerequisite.
+The API map covers 31 captured protobuf service declarations,
+208 method declarations,
+and 63 deployed CI/GHA OpenAPI operations.
+Declarations duplicated across source packages remain separate source evidence,
+not a count of uniquely deployed endpoints.
+These maps classify repository uses,
+token/settings restrictions,
+and exact runtime limits.
+They do not claim every method,
+example,
+format,
+or optional integration was executed.
+
+The complete container-build pass records soft cache GC limits,
+cache-parent retention,
+autoscaling's per-instance threshold,
+Compose/Bake/default-Docker distinctions,
+public log sharing,
+and installed exporter restrictions.
+The complete GitHub runner pass records deprecated Dagger support,
+Dependabot's separate credential/settings route,
+Linux-only root-modifiable egress rules,
+Mac fixed-capacity queues,
+and the difference between CLI analytics and dashboard flaky-test cards.
+Source-only optional products do not receive runtime acceptance credit.
+
+Current runner-type pricing explicitly lists Linux two-CPU at `USD 0.006/minute`,
+Linux four-CPU at `USD 0.012/minute`,
+Windows four-CPU at `USD 0.016/minute`,
+and Mac eight-CPU at `USD 0.08/minute`.
+Windows/Linux allowance multipliers differ from their cash rates;
+Mac debit/credit mechanics remain unresolved.
+No silent universal normalized-minute cash price is used.
+
+The [native automatic-authentication follow-up](depot-native-buildkit-auth-research.md)
+now separately qualifies a local exporter
+and an image-only project-registry consumer using only injected native job credentials.
+All three source-bound native runs and build requests are terminal,
+all three original ZIPs are retained,
+and the solely owned image/project deletion has fresh absence controls.
+
+## Working-report allocation completeness
+
+The narrow completeness review compares the working report captured at
+SHA-256 `ae19f1ece34860bf483bf54b2a713ee314a1cf340ccbdab1c97d9018e9a08970`
+with all 120 substantively reviewed deployed documentation pages and the linked actual consumers.
+It is not a whole-report sufficiency sign-off.
+The [ledger](depot-platform-surface-ledger.json) records the evidence-linked gaps and paste-ready paragraphs
+under `reportAllocationReview`,
+mapped to the existing six report sections.
+No report edits,
+cloud operations,
+service activation or settings changes are part of this review.
+
+The material omissions are allocation and operating dispositions:
+
+- Native event/check ownership,
+  protected-environment and reusable-workflow compatibility,
+  retry persistence and parallel shared state.
+- Tests report producers and identity lineage,
+  exact attempts,
+  source-only analytics,
+  temporary SSH,
+  logs and resource metrics.
+- Native thin snapshots,
+  ordinary OCI job images,
+  immutable dependency/target archives,
+  organization-global Disk and custom SDK runtimes as distinct formats and trust boundaries.
+- Actual BuildKit contexts and immutable source selection,
+  attestations versus signature trust,
+  bounded autoscaling,
+  registry promotion,
+  pull-through,
+  CDN transfer and retention/deletion.
+- Trusted versus untrusted cache access,
+  the measured lack of pnpm-store benefit,
+  Linux-only root-modifiable egress and the separate Dependabot credential route.
+- Controlled workload admission under the USD 200 ceiling and the account-access restriction,
+  with retention/export and unknown external charges kept explicit.
+- Source-only Managed/customer AWS,
+  GPU/custom GHA images,
+  Code/mirrors,
+  Agents/model credentials,
+  deprecated Dagger and absent-owner integrations.
+
+The priority is trust,
+budget and lifecycle conditions,
+then concrete product-to-owner allocation,
+then explicit optional-product dispositions.
+The first group prevents unreviewed authority or spend;
+the second turns measured consumers into a usable proposal;
+the third prevents research coverage from being mistaken for product activation.
+The repository's Codex fixture does not qualify Depot Agents,
+and successful custom SDK thin-image execution does not qualify every OCI or named runtime.
+
+Generic ledger tasks that still described all-page and CLI reconciliation as unfinished
+are preserved under `supersededOpenGaps` and replaced with the current factual limits.
+This does not mark every marketing/context page,
+private backend method or optional integration as exercised.
+Independent whole-report review remains queued for the separately owned operating-system and semantic results.
+
+## Follow-up qualification and upstream diagnostic work
+
+- Preserve the source/deployment distinction for the mapped schemas,
+  bundled CLI protobuf versions,
   SDK exports,
-  and source release dates method by method.
+  and unexercised methods.
 - Reconcile the executed BuildKit graph,
   Git contexts,
   mounts,
@@ -1166,13 +1279,17 @@ The installed Docker configuration uninstall path will not be exercised against 
   Preserve the native OCI empty attestation subject-array distinction,
   unexecuted autoscaling,
   and lack of measured lazy-pull startup improvement.
-- Finish the built-in Dockerfile lint diagnosis:
+- Preserve the built-in Dockerfile lint qualification boundary:
   Hadolint has a working positive control,
   but the configured old Semgrep image did not match the selected missing-user control.
   The separate current pinned scanner detects the same control.
-  Finish source and upstream recording without counting it as a repaired built-in integration.
-- Document the verified empty image-catalog `--output json` plaintext branch
-  and complete its upstream contribution gate.
+  The [source and diagnostic record](../troubleshooting/depot-builtin-semgrep-engine.md)
+  now includes a source-derived invocation candidate and 14 local controls.
+  This does not count as a compiled or repaired complete BuildKit integration.
+- The [empty image-catalog JSON diagnostic](../troubleshooting/depot-image-list-empty-output.md)
+  now includes the minimal upstream source patch and 14 passing actual-command controls.
+  The contribution gates and local draft are recorded;
+  the installed CLI is unchanged and no external issue or PR was sent.
 - Keep successful service/job-container receipts separate from the
   [parent's orchestration evidence](../audit/depot-native-orchestration-2026-10-18.evidence.json)
   and [isolated job-policy/history controls](../audit/depot-job-policy-history-2026-10-18.evidence.json).
@@ -1197,13 +1314,12 @@ The installed Docker configuration uninstall path will not be exercised against 
   secret authorization,
   retained-log gaps,
   and unexercised ordinary OCI or named runtimes.
-- Replace generic page and command states with cited applicability and evidence boundaries,
-  including source-only network,
+- Keep source-only network,
   Code,
   Agents,
   managed AWS,
   external CI integrations,
-  and language recipes.
+  and absent language owners distinct from the recorded actual consumers.
 - Finish public status-history pagination and component coverage before interpreting reliability;
   no uptime denominator is currently established.
 - Reconcile the completed identity-adapter receipt into the complete test-producer applicability map.
@@ -1213,7 +1329,7 @@ The installed Docker configuration uninstall path will not be exercised against 
   It qualifies selected functional owners,
   with one 8-CPU job and no performance ratio.
 
-The source/evidence ledger will distinguish discovered,
+The source/evidence ledger distinguishes discovered,
 retrieved,
 source-audited,
 exercised,

@@ -6,6 +6,16 @@ import { groupContextModule } from './native-group-context-module-fixture.ts';
 import type { ConstructorFixtureInput } from './native-constructor-module-fixture.ts';
 
 /**
+ Original tool-call data exposes getter timing without supplying a replacement runtime owner.
+ */
+type ConstructorToolCall = Readonly<{
+  type: 'toolCall';
+  id: string;
+  name: string;
+  arguments: Readonly<{ path: string }>;
+}>;
+
+/**
  All mutable observations belong to one disposable construction fixture.
  */
 type ConstructorFixture = Readonly<{
@@ -93,7 +103,7 @@ export function createConstructorFixture(): ConstructorFixture {
     /**
      Original content getter exposes the observation before returning native tool values.
      */
-    get content() {
+    get content(): readonly ConstructorToolCall[] {
       step('content');
       return [{
         type: 'toolCall',

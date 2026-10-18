@@ -1,5 +1,77 @@
 # Auto-mode current frontier
 
+## Current verified state
+
+Work remains incomplete; no readiness handoff has been established.
+The user keeps root `TCV` and `CPN` unchanged and puts the lessons in package documentation.
+The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
+Logger `0.4.4` is published and passes fresh installed-consumer checks,
+including read-only fallback and escaped terminal-control diagnostics.
+Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
+The deployed pnpr trust configuration has not been inspected.
+
+Default native release `kFkBoY` remains pinned while the live workers use it.
+A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
+MiMo native controller `42230`, fixture `pi-mimo-rpc-session-I79zzb`,
+reached 92 tools without source edits and was aborted to an actual settled boundary.
+Its new prompt `native-implement-error-class-only-20261018` narrows ownership to
+`system-slot-error.mjs` and a new `system-slot-error.ts` only.
+The supervisor retains the queued `system-slot` and `policy-loader` changes.
+MiMo source controller `53002`, fixture `pi-mimo-rpc-session-B7AghW`,
+still owns only `native-decision-fallback.test.mjs` and new siblings for that catalog.
+Its observed errors are ordinary command/path failures, not the reported preparation diagnostic.
+
+Native aborts produce three error tool results containing
+`Complete group preparation or assessment failed`.
+The fresh second abort is acknowledged and the worker settles.
+This cancellation incident needs its own retained-cause investigation;
+it is not evidence that the ordinary reported-inspection repair failed.
+Reusing a previous RPC command ID is ignored by the controller's deduplication.
+Every new supervisory command now needs its own ID.
+
+Supervisor commit `26b6aec284` completes constructor/group fixture declarations
+and names the receipt output callbacks.
+Frozen fresh-cache types and the constructor,
+program-owner and process-network receipt consumers pass.
+The three-file semantic lint still reports 54 warnings and one async-disposal error in the legacy `.mjs` catalog.
+That file is outside the TypeScript project's include list;
+the scoped result does not clear the old full-source backlog of 1,037 warnings and 47 errors.
+
+The reported-interaction checkpoint retains 52 successful tools,
+zero selectors,
+62 successful live Luna requests and positive-controlled payload inspection.
+Its setup remains insufficient for final completion.
+The corrected short startup probe serves the frozen public Synthetic catalog,
+uses private writable project settings,
+writes the private credential store rather than merely parsing it,
+preserves the absence of provider credential overrides,
+and supplies the configured Deepseek credential presence with a fixture value.
+Startup diagnostics pass,
+but a stronger catalog comparison finds 164 models versus 185 in the worker's initial response.
+All remaining differences are OpenAI Fast physical routing targets.
+Current source-worker catalog observation is being compared at the matching session phase
+before attributing that difference to the fixture.
+
+Remaining independently verified work areas:
+
+- Complete source and native lint repairs without weakening rules or changing worker inputs.
+- Investigate cancellation diagnostics and verify Allow,
+  Stop,
+  cancellation,
+  stale evidence and compaction through the configured host.
+- Rebuild the coherent final artifact and repeat the corrected reported-interaction replay,
+  real MiMo editing,
+  payload positive controls and complete raw-stderr checks.
+- Finish dependency/import measurements and review any artifact cleanup against actual live consumers.
+- Inspect deployed pnpr trust after the requested access route is available,
+  then verify the intended private shared-analyzer release.
+- Render the updated package documents and this handover after the new evidence is recorded.
+
+## Earlier checkpoint record
+
+This section preserves historical checkpoints and their then-pending work.
+`Current verified state` supersedes their status claims.
+
 ## Current checkpoints and supervision
 
 The work remains incomplete.
@@ -57,6 +129,87 @@ Both destination guard removals rebuild, fail the maintained regression, restore
 Their receipt is `logger-destination-mutants-receipt.json`.
 Logger `0.4.3` is bumped for publishing; registry delivery verification remains queued next.
 The package-local logger contract is `package/module/logger/doc/file-destinations.md`.
+
+Public npm workflow `39142362598` succeeds on `8c2743ee33` and publishes logger `0.4.3`.
+Fresh installed consumer `logger043-registry-MfVZDg` passes public exports,
+large/reentrant JSONL records,
+packaged documentation and real read-only fallback controls.
+The first fresh install returns `ETARGET`; a later direct metadata request and fresh install succeed.
+Retain that failed log rather than claiming every attempt succeeded.
+The README update preserves its concurrent paragraph reflow explicitly in commit `af65103f95`.
+Markdown rendering covers 35 files with no broken local links.
+
+Additional adversarial filename tests in `aa81cca003` fail on built `0.4.3`:
+both fallback and strict-destination diagnostics pass raw terminal control bytes to the host console.
+The next fix reuses the console sink's existing neutralizer in both internal reporters.
+Build, fresh types, lint, full tests, guard removal proof and a version bump to `0.4.4` remain required.
+
+Private pnpr run `39142278997` again returns npm `E401 Unauthorized` for logger `0.4.3`
+and blocks shared analyzer `0.0.2` through that dependency.
+Repository source trust IDs match the actual GitHub repository and owner IDs.
+Deployed server trust is not inspected yet.
+CLI environment discovery finds no pnpr/Coolify credential route.
+Browser bootstrap discovery fails and its documented recovery lists no connected browsers.
+An asynchronous question requests an existing Coolify browser connection or SSH/API entry point;
+never request that the human paste a secret.
+Continue independent work while that access question is pending.
+
+Original-interaction replay with a Node module-load census runs in command session `65218`,
+fixture `pi-mimo-failure-rpc-OsQwRd` and log `census-reported-replay.log`.
+The delivered artifact stays pinned at `kFkBoY` throughout live workers and replay.
+The source worker's second inconclusive read-only group is inspected and allowed through
+selector `8e8690e5-8dcd-4cc4-b0cc-0378ee3c5bcf`.
+
+Logger `0.4.4` is published by workflow `39143652303`.
+Fresh installed consumer `logger044-published-consumer.log` passes the public API,
+large/reentrant records,
+read-only default fallback,
+strict explicit failure and real adversarial control-byte diagnostics.
+Both internal-diagnostic guard removals build,
+fail the maintained catalog,
+restore and rebuild to a passing control.
+Receipt: `logger-control-mutants-receipt.json`.
+The first control-mutant generator accidentally replaced its own string needle and failed before execution;
+the corrected generator edits the generated driver rather than another generator's source text.
+Full local units,
+fresh types and full lint still pass with zero warnings and errors on 69 files.
+
+The original-interaction checkpoint completes with 52 successful tools,
+zero selectors and 62 HTTP 200 Luna responses.
+`reported-replay-payload-audit.json` checks 1,025 questions,
+60 review requests,
+two required-data and four excluded-data positive controls,
+with no excluded structured fields.
+Corrected module census resolves every file URL:
+2,509 unique regular files and 14,229,802 bytes for the configured host's executed module set.
+The first analyzer missed four npm mount aliases; corrected mapping preserves all files.
+Native binaries,
+assets,
+loader bootstrap,
+unexercised paths and system libraries are excluded.
+This checkpoint is not the final coherent post-repair replay.
+
+Raw replay stderr has no bare shutdown/fatal errors,
+but exposes fixture setup problems that must be fixed rather than filtered:
+the Synthetic provider's public models URL is unserved by the offline route,
+only Hyper/MiMo model definitions were copied despite preserving other enabled-model patterns,
+and real project `.pi` settings lack a private writable overlay.
+The installed Synthetic provider documents that its model-list endpoint requires no API key.
+Next prepare a faithful harness preserving all model catalog metadata,
+capturing that public catalog for the isolated route,
+and copying/mounting private project `.pi` state as the live MiMo controllers already do.
+Run a short catalog/startup positive control first,
+then reuse that corrected harness for the final replay after source repairs and the final build.
+
+MiMo discovery reached native 68 completed tools and source 59 without source edits.
+Both workers were deliberately aborted to actual settled boundaries before corrective prompts.
+Native settled with one error result after that abort;
+the exact error still needs classification from retained events.
+Guidance now gives actual TypeScript config paths,
+disallows more broad config/linter discovery and requires implementation of the existing owned cluster.
+The submitted prompt IDs are `native-implement-after-settled-discovery`
+and `source-implement-after-settled-discovery`.
+No readiness handoff is authorized while these changes and full lint remain unfinished.
 
 The current package-directory measurement is 23,899,438 bytes from
 `du --bytes --max-depth=2 package/pi-plugin/auto-mode`.

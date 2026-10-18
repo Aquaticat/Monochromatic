@@ -1,6 +1,202 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 15:52 UTC
+## Execution checkpoint on 2026-10-18 at 17:24 UTC
+
+Research remains active and the interview has not started.
+All parent graph cloud jobs are terminal,
+all parent graph watchers and collectors are reaped,
+and no parent cloud allocation remains active.
+Corrected native run `fnvwqfg0bb` on `72af18d5b130dabef7ff5b656ffdc1b58df4fcde`
+produced both complete 222-command logs;
+actual attempt intervals are 390 and 388 seconds.
+Both repetitions pass browser prerequisites,
+Chromium and Firefox;
+WebKit reaches the OPFS assertion and root E2E fails discovery before running cases.
+Original and corrected native results are sealed in
+`doc/audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json` at `f53c920cb2`.
+Repeated GitHub results are sealed in
+`doc/audit/depot-expanded-graph-github-repetition-2026-10-18.evidence.json` at `05d02428a0`.
+All eight originals independently pass ZIP scope checks and 1720 retained command-log byte/hash joins.
+The source-failure classification is
+`doc/planning/depot-expanded-graph-independent-review.md` through `31c4622c6a`.
+Two original WebKit streams mix stderr notices with stdout JSON;
+their explicitly derived cleaned views classify assertions without qualifying an original-JSON consumer.
+Corrected-native Rust parity at `e0790e738d` retains 652 emitted PASS statuses,
+with the same 89 Truepeak and 237 forbidden-strings identities per sample.
+Changed-case/status controls reject equality;
+skip identities remain unenumerated.
+
+Completed-phase mean ratios are 2.86825 for shared builds and 2.21112 for Rust on Depot GHA.
+Corrected native ratios are 3.37416 and 2.20532 respectively.
+No complete-CI multiplier is claimed.
+Critical-path receipt
+`doc/audit/depot-expanded-graph-critical-path-2026-10-18.evidence.json`
+is committed at `df360379b0` and binds the original public source archives.
+Shared builds followed by a Node branch form all six observed longest paths;
+Rust is not on those paths.
+The cost note replaces its stale claim that no aggregate ledger exists.
+The frozen 223-row baseline stays unchanged;
+the current 30-row follow-on separately records a USD 0.6105 known-provider-window proxy,
+including the qualified USD 0.1116 desktop run-envelope fallback.
+The parent's exact nominal Depot graph subtotal is USD 0.487.
+These figures are not invoices or evidence of VM/builder deallocation.
+
+Coverage owns public OS recovery `39144499822`,
+then the admitted matched Depot Mac/Windows controls,
+semantic assertion/generator reconciliation and the metadata-only screenshot-publication receipt.
+Rust owns exact desktop attempt boundaries,
+the final follow-on ledger and deletion/absence checks for the three owned prepared native images.
+Platform owns a narrow report capability-allocation completeness pass;
+the final whole-report independent sufficiency review follows factual closure.
+The parent owns its graph source-archive checks,
+rendered report/handover checks,
+independent cost-ledger reconciliation,
+final capability/OS/semantic integration and publication ancestry checks.
+Read the grilling skill and begin the interview only after those research queues close.
+
+Coverage's semantic reconciliation corrects the original package census:
+227 candidates included four documentation blobs;
+the frozen tree has 223 package directories,
+208 active,
+13 paused and two archived.
+Task and execution counts are unchanged.
+The report records this correction;
+the parent independently checks candidate types against the frozen tree before final acceptance.
+The parent's three new graph receipts pass JSON formatting,
+all 44 retained original source-body byte/hash joins and targeted Markdown lint.
+All fifteen parent Markdown documents pass rendering/link checks;
+the changed handover checkpoint and cost note have been read as actual rendered HTML.
+The Bash builtin rejected the parent's invented `kill --signal` option;
+the actual `help kill` contract supports `-s`,
+which terminated the exact owned overbroad search and produced a reaped status of 143.
+Platform owns the separate source-backed troubleshooting note;
+this is an invocation error,
+not an upstream defect or a Depot result.
+
+The independent package census now passes at `16:59:07 UTC`:
+`doc/audit/depot-package-directory-census-independent-2026-10-18.evidence.json`
+joins all third-level package trees and the four excluded blob identities.
+Prepared commit `ed8cf6e5b4` records that independent evidence.
+The report's capability allocation now explicitly covers native/GHA scheduling,
+Tests/report identities,
+snapshots/OCI/Disk/SDK format separation,
+BuildKit/registry lifecycle,
+cache/PR/network/Dependabot trust and optional-product dispositions.
+Its scoped commit publisher is session `65826`;
+reap it and verify its actual landed identity before final ancestry checks.
+
+Coverage's semantic join identifies material authored owners with no retained execution:
+IDE,
+file-manager variants,
+terminal,
+Kotlin and design.
+Static test attributes are not executed-case counts.
+Coverage is preparing exact finite profiles for actual owner tests and real prerequisites,
+including the IDE's pinned grammar producer and terminal font/Zig dependencies.
+No allocation is authorized until that concrete proposal is reviewed.
+The parent can admit a separate maximum USD 5 campaign,
+at most two concurrent cloud jobs,
+with default Cargo/Nextest concurrency and existing no emulator/desktop relaunch boundary.
+The raw-Git graph does not prove materialized font/media payload equivalence.
+Coverage must name materialized LFS source hashes wherever those consumers need them.
+This research is not deferred to production acceptance.
+
+Platform additionally source-checks a finite native debug-access consumer,
+before any allocation,
+with a proposed two-CPU three-minute job and USD 0.036 maximum including correction.
+The installed `depot ci ssh` uses a PTY RPC;
+its `--info --output json` alone is not remote-command execution.
+The documented direct OpenSSH bridge and paused-step tmate injection are distinct transports.
+The parent must review exact noninteractive identity and cleanup controls before dispatch.
+Rust replaced desktop's 279-second envelope with exact workflow attempt evidence:
+263 seconds,
+status failed,
+USD 0.1052 nominal,
+giving a 30-row follow-on subtotal USD 0.6041.
+The archive had retained full workflow responses;
+Rust is inspecting all actual fields and replacing unnecessary public metadata with explicit selected projections,
+while retaining private originals/hashes and correcting source pointers.
+Current archive replacement does not erase Git history.
+The parent independently reconciles the sanitized final ledger,
+including subsequent OS/owner/debug attempts,
+before publishing a final combined subtotal.
+
+The sanitized follow-on snapshot independently passes at `17:14:07 UTC`:
+30 exact timestamp-pointer/rate joins,
+35 retained source-body hashes,
+zero frozen-baseline duplicates and exact BigInt arithmetic.
+Frozen coordinator receipt and nested original snapshot archive are
+`doc/audit/depot-owned-allocation-follow-on-independent-2026-10-18.evidence.json`
+and its sources archive,
+committed at `846d2c1301`.
+USD 0.6041 remains a nominal provider-window proxy;
+USD 0.015897333333 remains a separate BuildKit request proxy.
+The public metadata projection correction found no nonpublic actor/email,
+credential,
+signed URL or connection material.
+Unnecessary public actor/email fields in the full GitHub REST body were replaced by explicit selected metadata.
+The selected workflow responses and private-original hash boundaries remain distinct;
+no Git history was rewritten.
+
+The conditional waiting model is sealed at `6553733993`:
+`doc/audit/depot-expanded-graph-conditional-waiting-value-2026-10-18.evidence.json`.
+The original dated Bank of Canada source was re-fetched and retained.
+CAD 8.975/hour divided by CAD 1.4154/USD gives USD 6.340963685/hour.
+Completed shared-build phase differences have conditional full-blocking values USD 0.24117 for Depot GHA
+and USD 0.26053 for corrected native.
+Actual human blocking is unmeasured,
+no overlapping Rust time is added and no whole-CI benefit or ROI is claimed.
+Both new cost receipts pass hashes/bytes for six frozen wrapper bodies and 35 nested retained bodies,
+JSON formatting and targeted Markdown lint.
+All fifteen parent documents render with valid relative links and no unintended emphasis.
+The new report allocation sections,
+failure-classification paragraphs,
+native parity,
+follow-on figures and conditional cost note were read as actual HTML.
+Direct remote main `3cddf3617afbde0c13fc532db20ae05a6c39b9f9`
+contains all eight checked parent landed commits through `296ecf41c8` at `17:17:04 UTC`.
+The later cost commits need a subsequent remote ancestry check.
+
+Public OS recovery `39144499822` is terminal.
+Actual Windows x64 and ARM each run 1494 Nextest cases,
+1493 pass and one unreadable-session-path failure,
+plus one skip.
+Mac runs 1495 cases,
+1468 pass and 27 fail,
+plus one skip.
+These are per-binary runtime outcomes,
+not unique authored-assertion totals.
+The GNU adapter duplicates the owner's `--no-fail-fast` and reaches zero test bodies;
+Coverage retains that harness error and owns one GNU-only correction after the matched OS run.
+Matched Depot OS `39148580870` runs on `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`
+under `doc/audit/depot-current-host-matched-admission-2026-10-18.evidence.json`,
+two sequential 20-minute caps with 17-minute inner bounds,
+USD 1.92 reserved under USD 2.
+Coverage owns its finite watcher and cleanup.
+
+Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
+The missing semantic projection alone did not prove missing execution.
+Coverage and Rust match the exact frozen Kotlin subtree `fa0167ad3af17896374a22b40ede76e9e9f51250`
+and all six `dev.monochromatic.detekt.RequireKDocTest` method tuples in four original warm/off JUnit reports.
+All six pass in each sample.
+The experiment executes the authored Gradle `test` task via Mise with cache-specific flags,
+not the literal package Mise wrapper.
+The separate `r328mp420m` emitted-JAR consumer is not the six-case basis.
+No new Kotlin run is needed;
+Rust seals the source/task/JUnit projection and Coverage joins it semantically.
+Coverage also checks actual OS Nextest binary/package identities and older receipts for the other proposed owners.
+The new owner campaign remains unallocated until its concrete proposal and existing-evidence scope checks close.
+Platform's Bash diagnosis is complete at `3cddf3617a`:
+`doc/troubleshooting/bash-builtin-kill-signal-option.md`,
+exact patchlevel-nine source and safe signal-zero controls.
+Its pending real-debug proposal remains separate.
+Rust may use one two-CPU three-minute owned cleanup job,
+maximum USD 0.018 within its existing guard,
+only if deciding source establishes injected-token namespace access and exact digest checks.
+No broader token or account enumeration is authorized;
+coordinate at most two active cloud jobs across owners.
+
+## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 
 Research remains active;
 do not start the interview.
@@ -31,7 +227,7 @@ The sealed preflight receipt is
 `doc/audit/depot-expanded-graph-preflight-2026-10-18.evidence.json`,
 with original-source/log joins and publication checks committed at `2ca0bda544`.
 Corrected GitHub run `39140975786` was dispatched once at `15:32:53.075 UTC` on that exact source;
-its finite terminal watcher remains active.
+its finite terminal watcher is reaped with terminal failure at `16:24:13 UTC`.
 Stub owner commands provide no application execution credit.
 The browser branch already contains `prepare:matched-image`;
 an incomplete-plan reading that alleged its omission was retracted.
@@ -64,9 +260,79 @@ restored sinks and absent credential.
 The Rust cache campaign is terminal and its slot released at `15:48:32 UTC`.
 Native graph `gb01kjx2qk` is dispatched on exact source `234ccc92dabb81e998e0a0bb5e838713924dd83f`,
 with two sequential samples and one native job maximum.
-Its finite terminal watcher is process session `84977`;
-the GitHub terminal watcher remains session `63906`.
-The parent now has at most two active research jobs across those graph products.
+Its finite terminal watcher process session `84977` is reaped:
+native run is terminal failed at `16:04:04 UTC` and produced both graph artifacts.
+Both exact job/attempt/sandbox identities are retained in the private terminal receipt.
+The native collector process session `52194` is reaped zero;
+both original ZIPs passed CRC/API-size checks and all 222 original command-log byte/hash joins per sample.
+Shared builds passed all 42 commands in 61.660 and 61.439 seconds;
+both Rust owners passed in 283.541 and 296.024 seconds.
+Browser preparation reproduced the exact documented rootless Podman group-identity rejection in both samples.
+Those samples give no browser-case credit.
+The isolated correction `72af18d5b130dabef7ff5b656ffdc1b58df4fcde`
+uses the existing verified `sudo --non-interactive` Podman boundary only for native Depot.
+Independent execution of its exact bootstrap passed 24 bounded provider/command controls;
+receipt `doc/audit/depot-expanded-graph-podman-preflight-2026-10-18.evidence.json`
+is sealed at commit `5edbdadcc2`.
+The native correction admission retains the existing two-sample USD 0.72 reserve within the USD 3 guard;
+its cumulative conservative campaign proxy remains USD 2.9096.
+The real corrected native consumer remains required;
+local fake-executable routing controls give no application case credit.
+The GitHub terminal watcher session `63906` is reaped.
+Completed GitHub samples already have CRC/API-size/API-digest-verified original ZIPs:
+GitHub one `12142265999`,
+199494 bytes,
+SHA256 `761b6d70731dc17c86771d34cb090644c30588c2e1c786c6db83f85f63c85635`;
+Depot one `12142052987`,
+222777 bytes,
+SHA256 `48071e722f955b1be4b9758e2d5fef627845c83a1f6ca047dcb0f1bf2aa8234e`.
+Private canonical sample bodies are `graph-corrected-github-1.json` and `graph-corrected-depot-1.json`.
+Both completed all 42 shared builds and both actual Rust owners.
+GitHub one has 28 commands not started because of the campaign budget and six command-budget outcomes;
+Depot one has all 222 command logs and 25 failing commands requiring source/prerequisite classification.
+Thus their full graph durations are not yet a like-for-like speed comparison.
+Shared and Rust completed subgraphs can be compared after unchanged-input spread and output validation.
+Never count a populated outcome `startedAt` or `log` field as proof of a child invocation:
+unstarted budget placeholders also carry them;
+join actual original ZIP member presence and explicit state.
+Depot's second GHA sample is also collected:
+artifact `12141519578`,
+223331 bytes,
+SHA256 `452edf15dabd5cf769e1fb3965db010518ceda8024dd832a28b94494462191a5`.
+It retains all 222 original command logs,
+with 196 passing commands and 26 requiring classification.
+Shared builds passed in 72.591 seconds and Rust owners in 340.119 seconds.
+The private inspector now counts actual ZIP members,
+replacing its erroneous placeholder-based `actuallyStartedCommands` projection.
+All 1082 retained original command logs across these five samples pass exact byte/hash joins.
+The last public GitHub repetition is collected:
+artifact `12142748843`,
+199971 bytes,
+SHA256 `90209f8bfe7778673f7f3b83ba851440542b045adc584360096ee4da228948b2`.
+It also has 194 actual command logs,
+six command-budget outcomes and 28 unstarted commands.
+The independent platform reviewer verifies all six original CRC/ZIP-byte/digest records
+and all 1276 retained command-log hashes.
+Both complete shared-build programs and Rust owner programs match across all four GHA repetitions.
+Shared-build mean times are GitHub 210.210 seconds versus Depot GHA 73.2885 seconds,
+with observed spreads 6.962 and 1.395 seconds:
+a 2.86825 ratio of means.
+Rust owner means are 720.5195 versus 325.8625 seconds,
+with observed spreads 10.631 and 28.513 seconds:
+a 2.21112 ratio of means.
+These compare completed phases,
+not complete pipelines or a fixed randomized property-test corpus.
+The first Rust identity projection erroneously included Nextest's changing progress ordinals;
+the actual format was inspected and the corrected case-only projection matches all four samples.
+It contains 89 Truepeak and 237 forbidden-strings passing identities per sample;
+the two Truepeak skips are summary counts,
+not enumerated skip identities in this projection.
+The Rust owner independently validates that normalization and its negative controls before final publication.
+Both original native ZIP digests also match their actual upload-action log digests;
+the action's exact message is `SHA256 digest of uploaded artifact zip is ...`.
+Native correction run `fnvwqfg0bb` is dispatched once on `72af18d5b1`;
+its finite terminal watcher is process session `20838`.
+Inspect all failure families and seal corrected native consumers before publication.
 
 Packed consumers are sealed at `898fd6ab03`:
 25 actual runtime imports,
@@ -84,6 +350,19 @@ frozen working-byte manifests and actual emitted-binary consumers.
 The owner corrected GitHub's 21,000-character per-step limit using byte-identical runtime bootstrap generation,
 then ran positive and negative source-hash controls before dispatch.
 Depot Mac/Windows allocation remains separate and has not started.
+The first public Mac/Windows contexts exposed a research logger filename containing `/`
+and an omitted hidden-artifact upload option.
+Their raw logs retain actual filesystem/native-debug/emitted-version successes,
+but no artifact consumer or case-level Nextest acceptance follows from that failed handoff.
+The coverage owner preserves the failed cohort and corrects only research logging/upload configuration.
+Pinned uploader controls prove zero default-hidden matches versus four explicit-hidden matches;
+logger controls accept hostile task names and reject an existing output before child execution.
+The exact corrected public recovery is run `39144499822`,
+harness `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`,
+with the same five sequential contexts and finite watcher.
+Matched Depot allocation follows this actual public handoff.
+The coverage owner also confirms whether public desktop source archives contain image bytes or only identities,
+closing the existing screenshot publication/privacy boundary without relaunching desktop or emulator work.
 
 The parent finished substantive review of 18 deployed native-CI documentation pages,
 156,769 exact source bytes and 95 claim-level findings.
@@ -147,6 +426,22 @@ The root report now integrates packed and desktop consumers,
 native automatic BuildKit/registry success,
 static/property/mutation dispositions and the baseline arithmetic,
 while retaining pending graph/OS/source-semantic closure.
+The platform owner has now finished all 120 deployed documentation rows:
+119 full source-review objects plus the separately retained split-tests identity/adapter review.
+No retrieval-only generic rows remain.
+The source owner finishes publication and command/API applicability mapping without new allocations,
+then remains available for independent report sufficiency review after factual queues close.
+Its publication checks now pass,
+with all 99 distinct CLI invocations,
+31 protobuf services/208 method declarations and 63 deployed operations mapped with explicit runtime limits.
+It closes two previously tracked local troubleshooting/prototype gates for empty image JSON and the old Semgrep wrapper,
+using bounded isolated fixtures and no new cloud allocation or upstream message.
+Material final constraints include soft BuildKit cache-size policy,
+deprecated Dagger integration,
+root-modifiable Linux-only egress and distinct GHA/container minute caps without a demonstrated combined dollar cap.
+The Root cache note now integrates the sealed six-job result,
+actual GitHub default `write` mode and untested default-branch sharing,
+fork/write-poisoning and retention boundaries.
 The private renderer crossed Node's default output buffer on the growing handover AST;
 following the existing bounded-buffer troubleshooting entry fixed the parent capture policy.
 All fourteen render targets now pass,
@@ -154,6 +449,13 @@ including the 1,067,303-byte handover AST and 215,831-byte HTML.
 Actual cache,
 allocation and Git-recursion HTML have been read;
 the latest handover/report changes still need their final render/read.
+The 16:03 rerender now passes all fifteen targets,
+with current report 26,045 bytes,
+handover HTML 218,574 bytes and handover AST 1,080,555 bytes.
+The current report HTML,
+latest handover top,
+new buffer section and Git-worktree recurrence have now been read.
+Later edits require scoped final rerender/read.
 After factual queues close,
 obtain an independent sufficiency review,
 finish the approved report sections and only then start the decision interview.

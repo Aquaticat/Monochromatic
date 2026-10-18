@@ -274,7 +274,8 @@ they do not establish provider causation or a stable source defect without contr
 ## Durable source and execution evidence
 
 The [coverage manifest](depot-complete-coverage-manifest.json)
-indexes all 227 canonical active and inactive roots,
+indexes 223 canonical active and inactive package-directory roots
+and separately retains four documentation blobs previously counted as package candidates,
 their declared APIs,
 task families,
 Node/Cargo manifests,
@@ -1546,3 +1547,205 @@ No cloud allocation occurred for the superseded preparation.
 The public reservation remains USD0 and the separate Depot reservation remains USD1.92.
 The updated admission gzip is 25554 bytes, SHA-256
 `c25fc9c62a39f31922736e61ba53fe71217c96e0c77497a613543962331a5ef3`.
+
+## Current-source public host handoff and finite recovery
+
+Run `39141147245` at harness `c50ed764237d45d5fc7aa123e86b3dc43891e9da` is terminal.
+Its five allocated standard GitHub jobs ran sequentially;
+public compute has nominal USD0, while artifact and storage charges remain unmeasured.
+The unselected Depot matrix has no allocated runner and is excluded from cost rows.
+Mac 15 and Windows x64 each built the actual frozen desktop binary and passed its `--version` consumer.
+Their Nextest commands exited 1, but individual cases and failure causes are unobserved.
+The research logger used slashes in task names as path components,
+so the first shared-build and logger calls lost their output at an `ENOENT` write.
+The uploader then reported `No files were found with the provided path: .coverage-host-evidence`.
+No artifact was uploaded.
+Mac latest completed the actual authored filesystem owner successfully.
+The Windows ARM and GNU contexts retain their failed dispositions without invented case totals.
+
+The corrected research harness is `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`.
+It sanitizes log basenames and exclusively creates each log before child execution;
+it explicitly includes hidden files in the restricted receipt directory.
+The actual pinned uploader bundle found zero files with its default hidden-root filter
+and four fixture files with explicit inclusion.
+The real logger accepted adversarial names and rejected an existing log before executing its child.
+This local control used Node26.12, 2 CPU, 2 GiB, 128 PIDs,
+no network, a read-only root and a 90-second bound; the container is absent.
+It qualifies the deployed uploader function on that local runtime, not the runner action Node version.
+The bootstrap and decoded task preflight passed for the corrected harness.
+Application assertions and frozen owners are unchanged.
+
+The same five public contexts are admitted for one bounded recovery matrix,
+maximum one parallel job and 30 minutes per job.
+The ledger has 48 completed owned rows and USD4.7280 committed and reserved
+under the original USD5 guard; the USD6 fallback is unused.
+The separately admitted Depot OS profile remains unallocated with USD1.92 reserved under its USD2 guard.
+The immutable first-handoff evidence is [`depot-current-host-first-handoff-2026-10-18.evidence.json.gz`](../audit/depot-current-host-first-handoff-2026-10-18.evidence.json.gz),
+121319 bytes, SHA-256 `c7d97ade72711bc3386591871419757f97f05afb5055f03b8e671dfeadd1cf85`.
+The finite queue still owns matched Depot Mac/Windows execution,
+the per-package semantic assertion manifest, and the desktop screenshot publication audit.
+
+## Desktop publication boundary and source assertion identities
+
+The desktop receipt is now metadata-only.
+It preserves the actual producer binaries, source/tool identities, archive identities,
+69 default-wide passing observations and one authored skip before the retained folder-wait exception,
+and the separate continuation result of 41 passed and one failed structured outcome.
+Repeated stdout emitted 82 pass and two fail lines for those same continuation outcomes;
+those duplicate emissions are not additional cases.
+The authored dialog failure and the trailing undefined cleanup-task failure remain separate.
+The in-task cleanup proves no retained application/compositor process, test unit or owned container,
+and restored sink identities.
+The requested nested Node26.12 runtime was not independently observed;
+the producer outer Node22.23.2 observation is retained without widening it to the nested owner.
+
+The published evidence snapshots retain PNG identities only.
+The bounded audit read 188 tracked Depot JSON/gzip/ZIP/tgz files,
+167,250,283 actual bytes,
+and decoded 251 nested containers with 746,820,806 expanded bytes.
+It found zero matching original desktop ZIP payloads and zero matching captured PNG payloads,
+with 836 identity references.
+Its actual positive control nested both private original ZIPs inside gzip, JSON and base64,
+and detected both archives and all 110 PNG member occurrences,
+20 default-wide and 90 continuation members.
+The audit records each actual input file hash and its exact scope.
+Original PNG/ZIP bytes remain in private artifacts and controller evidence.
+No public image-inspection, masking or publication claim follows from this identities-only receipt.
+
+The unchanged external generator was also executed locally with bounded resources.
+Its seed-7 preset produced 1,000 unique materialized paths and deterministic repeated path bytes.
+A second finite control used 64 artists and 16 tracks per artist,
+1,024 paths,
+covering all six script categories and the source subfolder branches.
+All extension variants still contain the same FLAC bytes.
+No player consumer, mixed-codec decoder result or large-library performance claim follows.
+Private corpus contents, generated names, path lists and input script payload are omitted.
+
+The source parser measured 5,878 exact frozen script files,
+30,611,062 actual bytes and zero parser failures.
+Its controlled static map retains 20,692 assertion candidates,
+44,812 imported calls inside static test scopes,
+32,931 branch candidates,
+1,045 generator sites and 106 authored desktop recorder declarations.
+These are source identities, not runtime cases or measured branch coverage.
+The per-package join covers all 223 directory roots and is enriched with the sealed Rust projection
+and the actual failure-log boundaries before the semantic seal.
+
+The first public handoff used a misleading `documentedMemoryGiB` field for catalog GB values.
+That field is retracted as a unit label; the corrected owned rows use `documentedMemoryGB`,
+with actual CPU/memory observation still unmeasured for that handoff.
+The original sealed handoff is preserved; the corrected row projection is in the desktop receipt.
+
+- [`depot-complete-coverage-desktop-receipts.json.gz`](../audit/depot-complete-coverage-desktop-receipts.json.gz): 22756 bytes,
+  SHA-256 `8b9be6f1b2cfb29540226d0a8c4b520d867d8d6a24b0eddda516198b26b26885`.
+- [`depot-complete-coverage-external-generation-receipts.json.gz`](../audit/depot-complete-coverage-external-generation-receipts.json.gz): 1910 bytes,
+  SHA-256 `899467f33d5eccfb01a1f053db71c773bf4406db86887131698ab59193f67c6b`.
+- [`depot-complete-coverage-source-feature-assertions.json.gz`](../audit/depot-complete-coverage-source-feature-assertions.json.gz): 3341685 bytes,
+  SHA-256 `11e25bc960076fd330bb923c3bd0aa586b52ec47824c7633198d1a9bd7910204`.
+
+The remaining finite factual queue is independently owned:
+
+- Complete the active corrected public Mac/Windows matrix and preserve actual owner bodies and failures.
+- Execute the matched admitted Depot Mac/Windows matrix under its separate USD2 guard.
+- Seal the per-package source feature/assertion and observed execution manifest,
+  retaining counts, missing reach, cross-lane contexts and historical hash boundaries separately.
+- Finish source-backed troubleshooting notes and rendered Markdown checks.
+
+## Current Mac owner evidence and proposed handoff clarification
+
+The recovery Mac receipt independently verified all 63 recorded command-log hashes.
+Its observed runtime is Node26.12 on ARM64, three available CPUs,
+and 7,516,192,768 memory bytes.
+All 42 shared builds passed.
+The plugin semantic-host and external-consumer owners and the filesystem owner passed.
+Logger retained two file-batch child failures, Promise identity and invalid JSON,
+without treating them as one proven cause.
+Nextest reported 1,495 executed binary/case identities,
+1,468 passed and 27 failed, plus one skipped summary entry.
+Its 1,522 status lines include repeated final failure emissions;
+those are deduplicated by binary target and case name.
+The actual emitted ARM64 Mach-O debug binary passed `--version`,
+and all tracked working-byte hashes remained unchanged.
+
+The logger correction left auxiliary generated-task and task-source hash fields stale in the old plan.
+The immutable deployed workflow and actual decoded bootstrap equality were already qualified.
+The original public admission is preserved as recorded;
+future Depot plan fields now carry the actual corrected hashes,
+and dispatch checks the generated-task hash against every actual bootstrap result.
+No application source or assertion changed.
+
+The evidence-handoff failures expose an instruction gap.
+The proposed concrete edit tightens `QIV` in `AGENTS.md` to:
+
+> Before trusting a null or count, validate scope, cache, harness, evidence transport, and generator reach with controls; list unexercised surfaces.
+
+This is a planning proposal, not an applied instruction-file edit.
+The completed local logger and deployed-uploader controls implement that boundary for this profile.
+
+## Corrected package-directory count and semantic join
+
+The original 227 candidate records included four documentation blobs.
+The frozen Git tree proves 223 package-directory roots:
+208 active, 13 paused and two archived.
+The former 211 active and 14 paused counts are retracted as directory counts.
+The [source-directory receipt](../audit/depot-complete-coverage-source-directory-scope.json)
+retains the four exact blob paths and Git identities.
+The canonical manifest keeps their original records separately.
+Source-script, byte, import, assertion and actual execution counts are unaffected.
+
+The semantic workset separately joins 11,052 static specification declarations,
+root-script scope, the exact ARM describe-group receipt,
+23 Rust crate roots and 61 qualified Rust contexts,
+25 proper packed namespace consumers and the actual Linux GUI and current Mac owner boundaries.
+All 121 failed command logs were rehashed successfully before diagnostic classification.
+No runtime branch coverage, assertion instrumentation, complete package test success,
+or execution of every declared owner is claimed.
+Current host controls remain a separate finite queue item.
+
+## Material owner completion queue after the current host controls
+
+The source audit found authored existing owners without an execution receipt in the current semantic join.
+These are execution gaps, not a claim that authored assertions are absent.
+The finite preparation queue is now explicit:
+
+- `package/desktop-app/ide`: full owning test with its real pinned Helix grammar producer,
+  plus a separately labelled reader-lifecycle subset/control.
+- `package/desktop-app/file-manager`: actual release Nextest owner.
+- `package/desktop-app/file-manager-gtk-sticky`: actual release Nextest owner,
+  excluding its compositor-launch Wayland task.
+- `package/desktop-app/file-manager-qt`: actual release Nextest owner.
+- `package/desktop-app/terminal`: actual Nextest owner with the real Zig/font/native prerequisites
+  or its authored Containerfile.
+- `package/linter/kotlin`: actual JVM Gradle test owner, with no Android or publication task.
+- `package/music-player/design`: the actual authored Node and browser owners,
+  with PNG/HTML/font materialization qualified and screenshot bytes excluded from publication.
+
+The proposed separate nominal guard is at most USD5,
+with at most two concurrent jobs in that later campaign,
+a maximum of 30 minutes per job and at most 16 CPU/64 GB for a justified native profile.
+This is a request to prepare concrete admission profiles, not an admitted allocation.
+No emulator, compositor-launch or desktop application relaunch is included.
+The current public and matched Depot host controls keep their existing guards and allocation boundary.
+Raw Git pointer bytes, materialized LFS payloads, source test markers and runtime cases remain distinct.
+
+## Terminal public recovery and matched Depot admission
+
+Public run `39144499822` is terminal with five allocated standard GitHub contexts.
+The unselected scheduler placeholder has no runner and is excluded from allocated rows.
+The actual typed command logs restore source-failure and owner-body evidence;
+the public compute model remains USD0 and storage remains unmeasured.
+The original campaign now has 53 completed rows,
+no active reservation and USD4.7280 under its USD5 guard.
+The USD6 fallback is unused.
+
+The separately admitted matched Depot profile uses harness `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`,
+frozen application `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`, one parallel job,
+and two 20-minute caps with 17-minute inner campaigns.
+Mac uses `depot-macos-15`, eight CPU and 24 GB, at USD0.08/minute;
+Windows uses `depot-windows-2025-4`, four CPU and 16 GB, at USD0.016/minute.
+The conservative compute reservation is USD1.92 under the separate USD2 guard.
+Mac availability is the existing Startup trial, not Developer entitlement;
+Windows is Developer-supported.
+No subscription, deployment, provider/model call or source assertion changes are included.
+The [concrete immutable admission](../audit/depot-current-host-matched-admission-2026-10-18.evidence.json)
+retains all finite commands, corrected hashes, actual bootstrap and source/ledger boundaries.
