@@ -368,6 +368,16 @@ named for that subject and listed here.
   a chosen place that no quote located,
   an abandonment line that counted the wire,
   and the two defects that n171 found in its own span agreement.
+- [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
+  What the split of the package into 36 found in the moved code and its tooling:
+  a build config that lacked a plugin,
+  a task that depended on a missing build,
+  exports of files that do not exist,
+  a scan that read nothing after the move,
+  refusals that named a task that no longer exists,
+  audit queries that covered only the new paths,
+  workspace cycles made by tests,
+  and a lint ignore that matched a package.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write.
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
@@ -505,6 +515,13 @@ named for that subject and listed here.
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
   The lead's own slips as they were collected at the close of each batch of work,
   and in merging the work of two rounds.
+- [Audit ledger: process mistakes, the package split](audit-ledger-process-the-package-split.md):
+  The mistakes of the split of the package into 36:
+  a dry run that never linted,
+  briefs that left out the owner of shared helpers and the scans,
+  shell and commit rules broken again,
+  estimates and probes of the lint cost,
+  and a control and a link checker that read the wrong thing.
 - [Audit ledger: process mistakes, checks run before a commit](audit-ledger-process-commit-gates.md):
   Commits made without the suite,
   the lint,
@@ -736,6 +753,7 @@ Filed in:
 - [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md)
 - [Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md)
 - [Audit ledger: the consistency pass, voices lost and places left unlocated](audit-ledger-consistency-pass-voices-lost-and-places-left-unlocated.md)
+- [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md)
 
 ## Process mistakes in this audit
 
@@ -758,5 +776,6 @@ Filed in:
 - [Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds](audit-ledger-process-agents-and-briefs-reference-edge-and-prose-mask-rounds.md)
 - [Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md)
+- [Audit ledger: process mistakes, the package split](audit-ledger-process-the-package-split.md)
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md)
 - [Audit ledger: process mistakes, questions and handoffs to the owner](audit-ledger-process-questions-to-the-owner.md)

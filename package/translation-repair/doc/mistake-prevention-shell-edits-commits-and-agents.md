@@ -158,6 +158,9 @@ or by the task id of the call that started it,
 never by name or pattern.
 A count that may be zero is a call of its own,
 since `rg --count` exits 1 on zero.
+A count of files or lines uses `--count` or a script over `--files-with-matches`:
+`--count-matches '.'` printed 27,234 and 11,802,
+counts of characters (ledger M245).
 The path of an `rg` is a file or a directory:
 the input of a pipe is written to a file in the scratch folder first,
 and `/dev/stdin` is no path (ledger M186).
@@ -180,6 +183,8 @@ The rate fell while slips were recorded by hand but never reached zero,
 so until the hook lands,
 count the `&&` and look for `;` before sending,
 and rerun the M1 census before an entry claims a count.
+The split lead's session chained with `;` five times (ledger M244),
+and its notes conclude that the rule needs a mechanical check and not memory.
 
 ## Tasks, builds and bulk output
 
@@ -604,6 +609,10 @@ immediately before the commit and at no other time,
 since the lists written at merge time went stale as soon as the next author added files (M173).
 An inaccurate message is never amended:
 a commit comment corrects it.
+No commit is amended even when it is unpushed:
+a docs agent and a merge agent of the split each amended one of their own (ledger M246),
+and the briefs now say "never amend,
+even unpushed".
 
 What enforces it:
 habit,

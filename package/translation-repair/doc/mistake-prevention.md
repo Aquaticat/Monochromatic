@@ -150,6 +150,17 @@ named for that subject and listed here.
   - [Counts in printed text](mistake-prevention-messages-labels-and-counts.md#counts-in-printed-text)
   - [What a catch charges](mistake-prevention-messages-labels-and-counts.md#what-a-catch-charges)
   - [Log lines that report nothing done](mistake-prevention-messages-labels-and-counts.md#log-lines-that-report-nothing-done)
+- [Preventing mistakes: moves, splits and rewrite scripts](mistake-prevention-moves-splits-and-rewrite-scripts.md):
+  Rules for moving or rewriting many files at once:
+  the dry run,
+  the slices handed to parallel agents,
+  the scans and controls that must read the same set after the move,
+  and the estimates and measurements of what the move costs.
+  Sections:
+  - [A move's dry run](mistake-prevention-moves-splits-and-rewrite-scripts.md#a-moves-dry-run)
+  - [Slices of one move](mistake-prevention-moves-splits-and-rewrite-scripts.md#slices-of-one-move)
+  - [Scans and controls across a move](mistake-prevention-moves-splits-and-rewrite-scripts.md#scans-and-controls-across-a-move)
+  - [Estimating and measuring a cost](mistake-prevention-moves-splits-and-rewrite-scripts.md#estimating-and-measuring-a-cost)
 - [Preventing mistakes: shared code, loops and keyed tables](mistake-prevention-shared-code-loops-and-keyed-tables.md):
   Rules for the shape of the code:
   one copy of shared code,

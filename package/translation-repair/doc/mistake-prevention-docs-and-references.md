@@ -226,6 +226,9 @@ a file that nears the limit is divided by a narrower subject or a shorter span,
 and the index lists the new files.
 A reference definition stands in every file whose links use it.
 A guard that reads a record reads its index and every file that says it is part of it.
+`wc --lines` is read on every Markdown file a commit touches before the commit:
+the split's handover edits took one file to 1,076 lines,
+and the guard that reads the limit runs in `source-scan:test:unit` and not in the `source-scans` task (ledger M250).
 
 What enforces it:
 `doc-line-limit.unit.test.ts` reads the package's docs,

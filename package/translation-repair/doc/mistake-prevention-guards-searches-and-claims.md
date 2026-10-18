@@ -381,6 +381,11 @@ and eight small pages the seventh review built lost a quotation mark (ledger M18
 The scope of a rule is decided from what the language allows,
 and each shape a count shows as zero gets a hand-built input before the rule leans on its absence.
 
+A link checker parses Markdown and not text:
+one reported an escaped bracket in quoted output as a dead link,
+and the line held no link (ledger M255).
+A finding of a checker is read in its file before it is reported or fixed.
+
 What enforces it:
 habit,
 the control-byte scan in the checklist,
