@@ -59,7 +59,8 @@ try {
       // Each target gets the owning dictionary, retained as data in its own mount-free image.
       for (const binary of binaries) {
         const named = dictionaries.find(file => file.endsWith('/' + binary.name + '.dict'));
-        const generic = path.includes('git-policy') && ['global_arguments', 'config_loading'].includes(binary.name) ? join(dictionaryDirectory, 'arguments.dict') : dictionaries.length === 1 ? join(root, dictionaries[0]) : undefined;
+        const gitDictionary = { global_arguments: 'arguments.dict', config_loading: 'arguments.dict', wrapper_controls: 'controls.dict' }[binary.name];
+        const generic = path.includes('git-policy') && gitDictionary ? join(dictionaryDirectory, gitDictionary) : dictionaries.length === 1 ? join(root, dictionaries[0]) : undefined;
         const dictionary = named ? join(root, named) : generic;
         assert(!path.includes('git-policy') || dictionary, binary.name + ' dictionary must match owner');
         const runtime = prepareRuntime({ binaries: [binary], corpora: { [binary.name]: corpora[binary.name] }, dictionary, directory: join(runtimeDirectory, binary.name), image: 'localhost/rust-research-fuzz-' + index + '-' + binary.name + ':' + profile, run: (name, command, args, options) => run(key + '-' + binary.name + '-' + name, command, args, options) });
