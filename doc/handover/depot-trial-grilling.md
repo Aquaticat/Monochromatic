@@ -3,7 +3,8 @@
 ## Research reopened and interview withdrawn on 2026-10-18
 
 The user rejected the readiness claim:
-"Not enough research. You're missing so much that it's hard to name them all."
+"Not enough research.
+You're missing so much that it's hard to name them all."
 They will return in the morning to inspect further research.
 The parent withdrew the readiness claim and the three pending operating questions.
 Do not wait for answers,

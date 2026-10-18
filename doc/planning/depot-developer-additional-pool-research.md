@@ -4,7 +4,8 @@
 
 On 2026-10-18,
 the user rejected the claim that research was sufficient:
-"Not enough research. You're missing so much that it's hard to name them all."
+"Not enough research.
+You're missing so much that it's hard to name them all."
 They will return in the morning to inspect the work.
 The readiness claim and pending interview are withdrawn.
 Do not ask the user to enumerate omissions or answer the three premature operating questions.
