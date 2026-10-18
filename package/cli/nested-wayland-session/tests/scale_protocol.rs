@@ -15,12 +15,12 @@ fn scale(text: &str) -> OutputScale {
 /// The verb takes exactly the values the `--scale` startup option takes.
 #[test]
 fn scale_values_match_the_startup_option() {
-    assert_eq!(parse_command("scale 1.25").unwrap(), Command::Scale(scale("1.25")));
-    assert_eq!(parse_command("scale 2").unwrap(), Command::Scale(scale("2")));
+    assert_eq!(parse_command("scale 1.25").expect("parse_command accepts a well-formed scale line"), Command::Scale(scale("1.25")));
+    assert_eq!(parse_command("scale 2").expect("parse_command accepts a well-formed scale line"), Command::Scale(scale("2")));
     // A trailing line terminator belongs to the socket framing, not to the value.
-    assert_eq!(parse_command("scale 1.5\r\n").unwrap(), Command::Scale(scale("1.5")));
+    assert_eq!(parse_command("scale 1.5\r\n").expect("parse_command accepts a well-formed scale line"), Command::Scale(scale("1.5")));
     // Runs of separators collapse like every other token verb.
-    assert_eq!(parse_command("scale \t 1").unwrap(), Command::Scale(OutputScale::ONE));
+    assert_eq!(parse_command("scale \t 1").expect("parse_command accepts a well-formed scale line"), Command::Scale(OutputScale::ONE));
 }
 
 /// The verb itself is known,

@@ -116,14 +116,23 @@ struct BusLauncher {
     address: String,
 }
 
-/// The `GetAddress` method toolkits call.
-#[zbus::interface(name = "org.a11y.Bus")]
-impl BusLauncher {
-    /// Return the accessibility bus address.
-    fn get_address(&self) -> String {
-        return self.address.clone()
+// The zbus::interface expansion below calls Result::unwrap, which the repository clippy.toml bans;
+// the allow covers only this block. The reason is in
+// doc/troubleshooting/zbus-interface-macro-clippy-disallowed-unwrap.md.
+#[allow(
+    clippy::disallowed_methods,
+    reason = "zbus::interface expands to writeln!(..).unwrap() in its generated introspection method"
+)]
+const _: () = {
+    /// The `GetAddress` method toolkits call.
+    #[zbus::interface(name = "org.a11y.Bus")]
+    impl BusLauncher {
+        /// Return the accessibility bus address.
+        fn get_address(&self) -> String {
+            return self.address.clone()
+        }
     }
-}
+};
 
 /// `org.a11y.Status`:
 ///  reports that accessibility is wanted.
@@ -140,21 +149,30 @@ impl BusLauncher {
 /// ```
 struct Status;
 
-/// The two properties toolkits read.
-#[zbus::interface(name = "org.a11y.Status")]
-impl Status {
-    /// Accessibility is enabled.
-    #[zbus(property)]
-    fn is_enabled(&self) -> bool {
-        return true
-    }
+// The zbus::interface expansion below calls Result::unwrap, which the repository clippy.toml bans;
+// the allow covers only this block. The reason is in
+// doc/troubleshooting/zbus-interface-macro-clippy-disallowed-unwrap.md.
+#[allow(
+    clippy::disallowed_methods,
+    reason = "zbus::interface expands to writeln!(..).unwrap() in its generated introspection method"
+)]
+const _: () = {
+    /// The two properties toolkits read.
+    #[zbus::interface(name = "org.a11y.Status")]
+    impl Status {
+        /// Accessibility is enabled.
+        #[zbus(property)]
+        fn is_enabled(&self) -> bool {
+            return true
+        }
 
-    /// A screen reader is running.
-    #[zbus(property)]
-    fn screen_reader_enabled(&self) -> bool {
-        return true
+        /// A screen reader is running.
+        #[zbus(property)]
+        fn screen_reader_enabled(&self) -> bool {
+            return true
+        }
     }
-}
+};
 
 /// `org.a11y.atspi.Socket`:
 ///  the registry's `Embed` request.
@@ -177,26 +195,35 @@ struct Registry {
     unique_name: Arc<OnceLock<String>>,
 }
 
-/// The `Embed` method applications call.
-#[zbus::interface(name = "org.a11y.atspi.Socket")]
-impl Registry {
-    /// Remember the application and return the desktop root.
-    fn embed(&self, plug: (String, OwnedObjectPath)) -> (String, OwnedObjectPath) {
-        let (bus_name, path) = plug;
-        info!(%bus_name, path = %path.as_str(), "an application registered its accessibility root");
-        let mut applications = self.applications.lock().unwrap_or_else(PoisonError::into_inner);
-        let entry = Application { bus_name, path: path.as_str().to_string() };
-        if !applications.contains(&entry) {
-            applications.push(entry);
+// The zbus::interface expansion below calls Result::unwrap, which the repository clippy.toml bans;
+// the allow covers only this block. The reason is in
+// doc/troubleshooting/zbus-interface-macro-clippy-disallowed-unwrap.md.
+#[allow(
+    clippy::disallowed_methods,
+    reason = "zbus::interface expands to writeln!(..).unwrap() in its generated introspection method"
+)]
+const _: () = {
+    /// The `Embed` method applications call.
+    #[zbus::interface(name = "org.a11y.atspi.Socket")]
+    impl Registry {
+        /// Remember the application and return the desktop root.
+        fn embed(&self, plug: (String, OwnedObjectPath)) -> (String, OwnedObjectPath) {
+            let (bus_name, path) = plug;
+            info!(%bus_name, path = %path.as_str(), "an application registered its accessibility root");
+            let mut applications = self.applications.lock().unwrap_or_else(PoisonError::into_inner);
+            let entry = Application { bus_name, path: path.as_str().to_string() };
+            if !applications.contains(&entry) {
+                applications.push(entry);
+            }
+            drop(applications);
+            let desktop = OwnedObjectPath::try_from(ROOT_PATH).unwrap_or_else(|_| return OwnedObjectPath::default());
+            // The desktop reference must name a unique bus name,
+            //  which is what a real registry daemon answers with.
+            let owner = self.unique_name.get().cloned().unwrap_or_else(|| return REGISTRY_NAME.to_string());
+            return (owner, desktop)
         }
-        drop(applications);
-        let desktop = OwnedObjectPath::try_from(ROOT_PATH).unwrap_or_else(|_| return OwnedObjectPath::default());
-        // The desktop reference must name a unique bus name,
-        //  which is what a real registry daemon answers with.
-        let owner = self.unique_name.get().cloned().unwrap_or_else(|| return REGISTRY_NAME.to_string());
-        return (owner, desktop)
     }
-}
+};
 
 /// The running accessibility service.
 ///

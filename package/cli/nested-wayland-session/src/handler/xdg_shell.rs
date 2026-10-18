@@ -356,11 +356,11 @@ pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>, surface: 
         .cloned()
     {
         // What:     `let initial_configure_sent = with_states(surface, |states| { states
-        //           .data_map.get::<XdgToplevelSurfaceData>().unwrap().lock().unwrap()
+        //           .data_map.get::<XdgToplevelSurfaceData>().unwrap().lock().expect(..)
         //           .initial_configure_sent });`. `with_states` runs the closure with the
         //           surface's stored state maps. `data_map.get::<T>()` fetches the
-        //           per-surface xdg data; `.lock().unwrap()` locks its mutex; we read the
-        //           boolean flag.
+        //           per-surface xdg data; `.lock().expect(...)` locks its mutex (it fails only
+        //           when another thread panicked while holding it); we read the boolean flag.
         // Why:      Decide whether the first configure still needs sending.
         let initial_configure_sent = with_states(surface, |states| {
             return states
@@ -368,7 +368,7 @@ pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>, surface: 
                 .get::<XdgToplevelSurfaceData>()
                 .unwrap()
                 .lock()
-                .unwrap()
+                .expect("XdgToplevelSurfaceData mutex is poisoned: a thread panicked while it held the lock")
                 .initial_configure_sent
         });
 

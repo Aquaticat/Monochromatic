@@ -10,17 +10,17 @@ use nested_wayland_session::{
 #[test]
 fn color_scheme_values_match_the_startup_option() {
     assert_eq!(
-        parse_command("color-scheme dark").unwrap(),
+        parse_command("color-scheme dark").expect("parse_command accepts a well-formed color-scheme line"),
         Command::ColorScheme(ColorSchemePreference::Dark),
     );
     // A trailing line terminator belongs to the socket framing, not to the value.
     assert_eq!(
-        parse_command("color-scheme light\r\n").unwrap(),
+        parse_command("color-scheme light\r\n").expect("parse_command accepts a well-formed color-scheme line"),
         Command::ColorScheme(ColorSchemePreference::Light),
     );
     // Runs of separators collapse like every other token verb.
     assert_eq!(
-        parse_command("color-scheme \t dark").unwrap(),
+        parse_command("color-scheme \t dark").expect("parse_command accepts a well-formed color-scheme line"),
         Command::ColorScheme(ColorSchemePreference::Dark),
     );
 }

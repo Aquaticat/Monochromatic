@@ -93,6 +93,18 @@ fn start_without_a_display_and_without_the_flag_names_the_headless_option() {
     assert!(text.contains("winit backend init failed"), "{text}");
 }
 
+/// A headless start without `XDG_RUNTIME_DIR` cannot create the Wayland listening socket,
+///  so it exits 1 with a message naming the variable instead of panicking (a panic exits 101).
+#[test]
+fn start_without_a_runtime_directory_reports_an_error_not_a_panic() {
+    // execute removes XDG_RUNTIME_DIR, so the listening socket has no directory to live in.
+    let output = execute(&["--headless", "--", "true"]);
+    let text = String::from_utf8(output.stderr.clone()).expect("UTF-8 error");
+    assert_eq!(output.status.code(), Some(1), "{text}");
+    assert!(text.contains("XDG_RUNTIME_DIR"), "{text}");
+    assert!(!text.contains("panicked"), "{text}");
+}
+
 /// `--gpu` without `--headless` exits 1 before any startup and names `--headless`.
 #[test]
 fn gpu_without_headless_fails_naming_headless() {

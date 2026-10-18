@@ -55,6 +55,9 @@ use smithay::{
 /// ```
 use crate::state::Compositor;
 
+/// Context names the failed frame step in the error that stops the session.
+use anyhow::{Context, Result};
+
 /// Dark grey clear colour (RGBA,
 ///  0..=1) behind the hosted window.
 ///
@@ -82,7 +85,7 @@ pub const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 /// Composite the hosted window into the nested framebuffer and present one frame.
 ///
 /// What:
-///      `pub fn redraw(state: &mut Compositor)`.
+///      `pub fn redraw(state: &mut Compositor) -> Result<()>`.
 ///  Mutably borrows the whole state;
 ///           internally it borrows several disjoint fields (backend,
 ///  output,
@@ -94,16 +97,22 @@ pub const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 ///       The single place that turns committed client buffers into a presented
 ///           frame and asks the client for its next one.
 ///
+/// Errors:
+///       Binding the nested window's framebuffer,
+///  rendering into it,
+///  or presenting it fails (for example the parent display or its GPU context is lost).
+///  The caller ends the session with that error.
+///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function redraw(state) { ... }
+/// function redraw(state) { ... } // throws when the frame cannot be drawn or presented
 /// ```
 ///
 /// @example
 /// ```ts
 /// redraw(state); // called on each WinitEvent.Redraw
 /// ```
-pub fn redraw(state: &mut Compositor) {
+pub fn redraw(state: &mut Compositor) -> Result<()> {
     // What:     `if state.recorder.is_some() { return; }`. Skip the live present while a
     //           recording is running.
     // Why:      During a 60fps recording the recorder's timer drives rendering + readback
@@ -112,7 +121,7 @@ pub fn redraw(state: &mut Compositor) {
     //           visible window is intentionally frozen while recording; `stop` requests a
     //           redraw to unfreeze it.
     if state.recorder.is_some() {
-        return;
+        return Ok(());
     }
 
     // What:     `let size = winit.window_size();`. The framebuffer size as
@@ -122,7 +131,7 @@ pub fn redraw(state: &mut Compositor) {
     //           window has a framebuffer to present; a headless session never requests a redraw.
     // Why:      Headless pacing and captures do not go through this live present.
     let Some(winit) = state.backend.as_winit_mut() else {
-        return;
+        return Ok(());
     };
     let size = winit.window_size();
 
@@ -136,13 +145,16 @@ pub fn redraw(state: &mut Compositor) {
     // Why:      `bind` mutably borrows the backend; releasing that borrow at the block's
     //           end lets `submit` (also `&mut backend`) run afterwards.
     {
-        // What:     `let (renderer, mut framebuffer) = state.backend.bind().unwrap();`.
+        // What:     `let (renderer, mut framebuffer) = winit.bind().context(...)?;`.
         //           `bind()` returns `Result<(&mut GlesRenderer, Framebuffer), _>`;
-        //           `.unwrap()` panics on bind failure. `renderer` is the GLES renderer;
+        //           `.context(...)?` returns a bind failure to the caller. `renderer` is the GLES renderer;
         //           `framebuffer` is the target we draw into (`mut` because
         //           `render_output` borrows it mutably).
         // Why:      Get the drawing surface and renderer for this frame.
-        let (renderer, mut framebuffer) = winit.bind().unwrap();
+        let (renderer, mut framebuffer) = winit.bind().context(
+            "binding the nested window's framebuffer failed; the parent display or its GPU context may have been \
+             lost, so restart the session on a working display",
+        )?;
 
         // What:     `render_output::<_, WaylandSurfaceRenderElement<GlesRenderer>, _, _>(
         //           &state.output, renderer, &mut framebuffer, 1.0, 0, [&state.space],
@@ -151,7 +163,7 @@ pub fn redraw(state: &mut Compositor) {
         //           arguments are: output, renderer, framebuffer, scale `1.0`, buffer age
         //           `0` (force full redraw), the spaces to draw `[&state.space]`, extra
         //           custom elements `&[]` (none), the damage tracker, and the clear
-        //           colour. `.unwrap()` panics on a rendering error.
+        //           colour. `.context(...)?` returns a rendering error to the caller.
         // Why:      Composite the hosted window onto the framebuffer.
         //
         // In TS you'd write (pseudocode):
@@ -169,15 +181,17 @@ pub fn redraw(state: &mut Compositor) {
             &mut state.damage_tracker,
             CLEAR_COLOR,
         )
-        .unwrap();
+        .map_err(|error| return anyhow::anyhow!("rendering the hosted window into the nested framebuffer failed: {error}"))?;
     }
 
     // What:     `winit.submit(Some(&[damage])).unwrap();`. Presents the frame,
     //           telling the parent which region changed. `Some(&[damage])` is a
-    //           one-element slice of the whole-framebuffer rectangle. `.unwrap()` panics
-    //           on swap failure.
+    //           one-element slice of the whole-framebuffer rectangle. `.context(...)?`
+    //           returns a swap failure to the caller.
     // Why:      Actually show the composited frame in the nested window.
-    winit.submit(Some(&[damage])).unwrap();
+    winit
+        .submit(Some(&[damage]))
+        .context("presenting the frame to the parent display failed; restart the session on a working display")?;
 
     // What:     `Instant::now()` reads the monotonic clock; the pacing record stores it.
     // Why:      Only a frame the parent accepted counts as presentation. While these keep
@@ -204,6 +218,10 @@ pub fn redraw(state: &mut Compositor) {
     //           `Redraw` event.
     // Why:      Keep the render loop going so the hosted app keeps animating.
     state.backend.window().request_redraw();
+
+    // What:     `Ok(())`. The frame was presented.
+    // Why:      Tell the caller the session can continue.
+    return Ok(())
 }
 
 /// Send frame callbacks to every mapped window and refresh space/popup bookkeeping.

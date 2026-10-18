@@ -18,8 +18,8 @@ fn start_portal(preference: ColorSchemePreference) -> anyhow::Result<AppearanceP
 /// Confirms CLI accepts exact supported scheme names and rejects others.
 #[test]
 fn color_scheme_parser_accepts_dark_and_light() {
-    assert_eq!(ColorSchemePreference::parse("dark").unwrap(), ColorSchemePreference::Dark);
-    assert_eq!(ColorSchemePreference::parse("light").unwrap(), ColorSchemePreference::Light);
+    assert_eq!(ColorSchemePreference::parse("dark").expect("dark is a valid color scheme"), ColorSchemePreference::Dark);
+    assert_eq!(ColorSchemePreference::parse("light").expect("light is a valid color scheme"), ColorSchemePreference::Light);
     assert!(ColorSchemePreference::parse("system").is_err());
 }
 

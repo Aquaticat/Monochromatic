@@ -108,73 +108,82 @@ fn job_changes(properties: &HashMap<String, OwnedValue>) -> JobChanges {
     };
 }
 
-/// The methods and signals of `org.kde.JobViewV3`.
-#[zbus::interface(name = "org.kde.JobViewV3")]
-impl JobView {
-    /// Records an update and applies the properties it carries.
-    ///
-    /// Properties other than `title`,
-    ///  `infoMessage`,
-    ///  `percent`,
-    ///  and `suspended` are logged and not applied,
-    ///  and `descriptionField` is ignored,
-    ///  as in Plasma's `job_p.cpp`.
-    #[zbus(name = "update")]
-    async fn update(&self, properties: HashMap<String, OwnedValue>, #[zbus(header)] header: Header<'_>) {
-        let no_reply = header.primary().flags().contains(Flags::NoReplyExpected);
-        let call = UpdateCall {
-            id: self.id,
-            no_reply,
-            changes: job_changes(&properties),
-            properties: summarize_map(&properties),
-        };
-        self.store.lock().update(self.store.now_ms(), call);
-        debug!(id = self.id, no_reply, "recorded a job update");
-    }
-
-    /// Records the end of the job and removes the object,
-    ///  as Plasma's `finish()` does.
-    #[zbus(name = "terminate")]
-    async fn terminate(
-        &self,
-        error_code: u32,
-        error_message: String,
-        hints: HashMap<String, OwnedValue>,
-        #[zbus(header)] header: Header<'_>,
-        #[zbus(object_server)] server: &ObjectServer,
-    ) {
-        let no_reply = header.primary().flags().contains(Flags::NoReplyExpected);
-        let call = TerminateCall {
-            id: self.id,
-            no_reply,
-            code: error_code,
-            message: error_message,
-            hints: summarize_map(&hints),
-        };
-        self.store.lock().terminate(self.store.now_ms(), call);
-        info!(id = self.id, code = error_code, no_reply, "recorded the end of a job");
-        match server.remove::<Self, _>(self.path.as_str()).await {
-            Ok(removed) => debug!(id = self.id, removed, "unregistered the ended job object"),
-            Err(error) => warn!(id = self.id, %error, "could not unregister the ended job object"),
+// The zbus::interface expansion below calls Result::unwrap, which the repository clippy.toml bans;
+// the allow covers only this block. The reason is in
+// doc/troubleshooting/zbus-interface-macro-clippy-disallowed-unwrap.md.
+#[allow(
+    clippy::disallowed_methods,
+    reason = "zbus::interface expands to writeln!(..).unwrap() in its generated introspection method"
+)]
+const _: () = {
+    /// The methods and signals of `org.kde.JobViewV3`.
+    #[zbus::interface(name = "org.kde.JobViewV3")]
+    impl JobView {
+        /// Records an update and applies the properties it carries.
+        ///
+        /// Properties other than `title`,
+        ///  `infoMessage`,
+        ///  `percent`,
+        ///  and `suspended` are logged and not applied,
+        ///  and `descriptionField` is ignored,
+        ///  as in Plasma's `job_p.cpp`.
+        #[zbus(name = "update")]
+        async fn update(&self, properties: HashMap<String, OwnedValue>, #[zbus(header)] header: Header<'_>) {
+            let no_reply = header.primary().flags().contains(Flags::NoReplyExpected);
+            let call = UpdateCall {
+                id: self.id,
+                no_reply,
+                changes: job_changes(&properties),
+                properties: summarize_map(&properties),
+            };
+            self.store.lock().update(self.store.now_ms(), call);
+            debug!(id = self.id, no_reply, "recorded a job update");
         }
+
+        /// Records the end of the job and removes the object,
+        ///  as Plasma's `finish()` does.
+        #[zbus(name = "terminate")]
+        async fn terminate(
+            &self,
+            error_code: u32,
+            error_message: String,
+            hints: HashMap<String, OwnedValue>,
+            #[zbus(header)] header: Header<'_>,
+            #[zbus(object_server)] server: &ObjectServer,
+        ) {
+            let no_reply = header.primary().flags().contains(Flags::NoReplyExpected);
+            let call = TerminateCall {
+                id: self.id,
+                no_reply,
+                code: error_code,
+                message: error_message,
+                hints: summarize_map(&hints),
+            };
+            self.store.lock().terminate(self.store.now_ms(), call);
+            info!(id = self.id, code = error_code, no_reply, "recorded the end of a job");
+            match server.remove::<Self, _>(self.path.as_str()).await {
+                Ok(removed) => debug!(id = self.id, removed, "unregistered the ended job object"),
+                Err(error) => warn!(id = self.id, %error, "could not unregister the ended job object"),
+            }
+        }
+
+        /// Asks the owner to send all properties again.
+        #[zbus(signal, name = "updateRequested")]
+        pub async fn update_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
+
+        /// The user pressed Pause.
+        #[zbus(signal, name = "suspendRequested")]
+        pub async fn suspend_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
+
+        /// The user pressed Resume.
+        #[zbus(signal, name = "resumeRequested")]
+        pub async fn resume_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
+
+        /// The user pressed Cancel.
+        #[zbus(signal, name = "cancelRequested")]
+        pub async fn cancel_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
     }
-
-    /// Asks the owner to send all properties again.
-    #[zbus(signal, name = "updateRequested")]
-    pub async fn update_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
-
-    /// The user pressed Pause.
-    #[zbus(signal, name = "suspendRequested")]
-    pub async fn suspend_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
-
-    /// The user pressed Resume.
-    #[zbus(signal, name = "resumeRequested")]
-    pub async fn resume_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
-
-    /// The user pressed Cancel.
-    #[zbus(signal, name = "cancelRequested")]
-    pub async fn cancel_requested(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
-}
+};
 
 /// Unit tests for the property decoding.
 #[cfg(test)]

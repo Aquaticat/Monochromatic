@@ -11,6 +11,38 @@ export const compositor = 'monochromatic-nested-wayland-session';
 // 0.4.0 is the oldest version these checks have run against that launches the window minimized.
 export const oldestCompositor = [0, 4, 0];
 
+// The first `major.minor.patch` run of ASCII digits in `text` as three numbers, or null when there is none.
+// What: a cursor scan with no regular expression. A candidate starts at the first digit of a digit run, the run must be
+// followed by `.`, a second run, `.`, and a third run; a failed candidate resumes at the end of its first run, because a
+// start inside the same run sees the same tail and fails the same way.
+// Why: the unanchored leftmost match of `(\d+)\.(\d+)\.(\d+)` is what a `--version` line needs, and the scan answers it in
+// one linear pass. `\d` is ASCII only there, so the scan accepts only the characters 0 to 9 and not other Unicode digits.
+export function readVersion(text) {
+  const isDigit = index => index < text.length && text.charCodeAt(index) >= 48 && text.charCodeAt(index) <= 57;
+  const runEnd = from => {
+    let end = from;
+    while (isDigit(end)) end += 1;
+    return end;
+  };
+  let start = 0;
+  while (start < text.length) {
+    if (!isDigit(start)) {
+      start += 1;
+      continue;
+    }
+    const majorEnd = runEnd(start);
+    const minorStart = majorEnd + 1;
+    const minorEnd = runEnd(minorStart);
+    const patchStart = minorEnd + 1;
+    const patchEnd = runEnd(patchStart);
+    if (text[majorEnd] === '.' && minorEnd > minorStart && text[minorEnd] === '.' && patchEnd > patchStart) {
+      return [text.slice(start, majorEnd), text.slice(minorStart, minorEnd), text.slice(patchStart, patchEnd)].map(Number);
+    }
+    start = majorEnd;
+  }
+  return null;
+}
+
 // Throws when no compositor is on PATH or the one found is older than `oldestCompositor`.
 export function demandCurrentCompositor() {
   const result = spawnSync(compositor, ['--version'], { encoding: 'utf8' });
@@ -18,10 +50,9 @@ export function demandCurrentCompositor() {
     throw new Error('The nested compositor is not on PATH (' + result.error.message + '). Run `mise install`'
       + ' so the cargo:monochromatic-nested-wayland-session tool is installed, and start the check through `mise run`.');
   }
-  const found = /(\d+)\.(\d+)\.(\d+)/.exec(result.stdout);
-  if (found === null) throw new Error('Could not read a version from `' + compositor + ' --version` (status ' + result.status + '): '
+  const version = readVersion(result.stdout);
+  if (version === null) throw new Error('Could not read a version from `' + compositor + ' --version` (status ' + result.status + '): '
       + result.stdout + result.stderr);
-  const version = found.slice(1).map(Number);
   const older = oldestCompositor.reduce((verdict, part, index) => verdict ?? (version[index] === part ? null : version[index] < part), null);
   if (older === true) {
     throw new Error('The nested compositor on PATH is ' + version.join('.') + ', older than ' + oldestCompositor.join('.')
