@@ -1,5 +1,44 @@
 # Depot trial interview
 
+## Research reopened and interview withdrawn on 2026-10-18
+
+The user rejected the readiness claim:
+"Not enough research. You're missing so much that it's hard to name them all."
+They will return in the morning to inspect further research.
+The parent withdrew the readiness claim and the three pending operating questions.
+Do not wait for answers,
+ask the user to enumerate omissions,
+or restart grilling before adequate research.
+The earlier independent review of selected evidence remains valid only for its checked boundaries;
+its sufficiency conclusion is withdrawn.
+
+New frozen source:
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The [reopened plan](../planning/depot-developer-additional-pool-research.md)
+records independently verifiable platform-surface,
+complete-coverage,
+reuse,
+orchestration,
+runtime,
+Test,
+economics and operations work.
+The three research agents are active again.
+Their new owned notes are `depot-platform-surface-audit.md`,
+`depot-reuse-strategy-research.md` and `depot-complete-coverage-research.md`
+in `doc/planning/`.
+The parent owns actual event/status/gate probes,
+runtime feasibility and integration.
+All executable mutations remain isolated;
+main receives documentation and evidence only.
+Prior account-wide-access,
+subscription,
+production routing and external-provider restrictions persist.
+
+Next action:
+record and inspect the missing source/runtime surfaces,
+execute the applicable current-source graph and deeper reuse/orchestration experiments,
+and reconcile actual outcomes without declaring selected passing probes comprehensive.
+
 ## Active Developer additional-pool research on 2026-10-18
 
 The user requested Depot Developer as an additional pool alongside GitHub,
