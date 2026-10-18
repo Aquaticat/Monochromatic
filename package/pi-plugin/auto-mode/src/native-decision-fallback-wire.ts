@@ -99,6 +99,26 @@ function wireMemberRecord(value: unknown): Readonly<Record<string, unknown>> {
   return value;
 }
 
+/**
+ Validate the clause relation containers the clause comparison dereferences.
+
+ @param value - decision wire state member
+
+ @returns narrowed state projection for the clause comparison
+
+ @throws DecisionFallbackWireShapeError when a dereferenced container is missing
+ */
+function assertClauseRelationDefinition(value: unknown): asserts value is DecisionWire['state'] {
+  /**
+   State carries the clause relation definition the fixture compares.
+   */
+  const state = wireMemberRecord(value);
+  /**
+   Relation definition keeps its complete interpretation instructions.
+   */
+  wireMemberRecord(state.clauseRelationDefinition);
+}
+
 //endregion
 
 //region Request assertions validate the authored decision wire in place.
@@ -143,14 +163,6 @@ export function assertDecisionWire(value: unknown): asserts value is DecisionWir
      */
     wireMemberRecord(questionRecord.criteria);
   }
-  /**
-   State carries the clause relation definition the fixture compares.
-   */
-  const state = wireMemberRecord(wire.state);
-  /**
-   Relation definition keeps its complete interpretation instructions.
-   */
-  wireMemberRecord(state.clauseRelationDefinition);
 }
 
 /**
@@ -290,6 +302,10 @@ export function createDecisionFallbackWireSender({
           }),
         'Every clause choice needs its local interpretation rubric'
       );
+      /**
+       Clause relation state is dereferenced only by the clause comparison.
+       */
+      assertClauseRelationDefinition(wire.state);
       assert.equal(
         question.instructions
           .predicate,
