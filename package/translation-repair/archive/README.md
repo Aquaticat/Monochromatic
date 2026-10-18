@@ -1,3 +1,172 @@
 # @monochromatic-dev/translation-repair-archive
 
-The archive part of the translation-repair pipeline, split out of `package/module/translation-repair`.
+Handling of the translation a page already carries in the archive:
+the archive block review,
+disputes over archive wording,
+revision checks,
+coverage verdicts,
+non-translation screening,
+the naturalness review,
+and the preparation of sections and blocks.
+It is its own package because the passes,
+the artifact builder,
+the consolidation lane and the page checks all read these records,
+and it sits above `lane-contest` and `translate-stage`.
+
+## What it provides
+
+`src/index.ts` re-exports each public name from the module that declares it.
+The groups below name the main ones.
+
+- Archive block review:
+  review whether an archive block should be kept,
+  and collect the evidence for the choice.
+  Names:
+  `runArchiveBlockReviewStage`,
+  `buildArchiveBlockReviewMessages`,
+  `isVerifiableEditorialArchiveBlock`,
+  `archiveBlockSelectionEvidence`,
+  `withArchiveOriginal`.
+  Declared in `archive-block-review-stage.ts`,
+  `archive-block-review-wire.ts`,
+  `archive-block-evidence.ts`,
+  and `archive-block-selection-evidence.ts`.
+- Archive disputes:
+  record and log where an archive wording is disputed.
+  Names:
+  `archiveDisputesOf`,
+  `archiveDisputeNotesOf`,
+  `describeArchiveDispute`,
+  `logArchiveDisputes`,
+  `disputedWordingsOf`.
+  Declared in `archive-dispute.ts`.
+- Revisions and footnotes:
+  check a revision keeps the footnotes and shape of its block,
+  and relabel and reorder footnote definitions.
+  Names:
+  `revisionFootnoteFindings`,
+  `revisionShapeFindings`,
+  `BlockOutsideArchiveError`,
+  `closeFootnoteRelabel`,
+  `reorderFootnoteDefinitions`.
+  Declared in `archive-revision-footnotes.ts`,
+  `archive-revision-shape.ts`,
+  `archive-footnote-closure.ts`,
+  and `archive-footnote-order.ts`.
+- Coverage verdicts:
+  ask whether the translation covers each passage,
+  and read the untranslated tail of a slice.
+  Names:
+  `runCoverageStage`,
+  `judgeCoverage`,
+  `buildCoverageMessages`,
+  `listCoverageCandidates`,
+  `readUntranslatedTail`,
+  `interiorShortfall`.
+  Declared in `coverage-stage.ts`,
+  `coverage-verdict.ts`,
+  `coverage-wire.ts`,
+  `coverage-candidates.ts`,
+  and `coverage-tail.ts`.
+- Non-translation screening:
+  decide whether a slice holds text that is not a translation of its source.
+  Names:
+  `assessNonTranslationDominance`,
+  `screenNonTranslationVotes`,
+  `nonTranslationVotesStand`,
+  `nonTranslationDominanceFinding`.
+  Declared in `non-translation-evidence.ts` and `non-translation-finding.ts`.
+- Naturalness review:
+  review a candidate's naturalness before it ships,
+  and confirm an acceptance with a second reading.
+  Names:
+  `reviewAbsoluteNaturalness`,
+  `confirmAbsoluteNaturalness`,
+  `buildAbsoluteNaturalnessReviewMessages`.
+  Declared in `absolute-naturalness-review-stage.ts`,
+  `absolute-naturalness-confirmation.ts`,
+  and `absolute-naturalness-review-wire.ts`.
+- Section and block preparation:
+  pair the blocks and sections of an archive with a source before the lanes run.
+  Names:
+  `prepareBlockPairing`,
+  `buySectionPairing`,
+  `prepareDocumentPairWithRoster`.
+  Declared in `prepare-block-pairing.ts`,
+  `prepare-section-round.ts`,
+  and `prepare-with-pairing.ts`.
+
+## Family dependencies
+
+Short names are directory names under `package/translation-repair`;
+a package is named `@monochromatic-dev/translation-repair-<short name>`.
+
+### Depends on
+
+Production dependencies (`dependencies` in `package.json`):
+
+- `adjudication`
+- `assembly`
+- `corpus-source`
+- `document-structure`
+- `glossary`
+- `house-rule`
+- `lane-contest`
+- `markup`
+- `page-pass`
+- `provider`
+- `reference`
+- `shared-contract`
+- `slice-reading`
+- `stage`
+- `translate-floor`
+- `translate-stage`
+- `typography`
+
+### Used by
+
+Packages that list it in `dependencies`:
+
+- `artifact`
+- `consolidate`
+- `corpus-pass`
+- `coverage-census`
+- `insertion`
+- `page-check`
+- `probe`
+- `repair`
+- `translate-lane`
+
+## Tests
+
+Tests sit beside the sources as `*.unit.test.ts` and import built output:
+this package through its own build,
+`../dist/final/node/index.mjs`,
+and the siblings they need through their package names,
+which resolve to each sibling's built entry.
+
+Build before testing:
+`mise run //package/translation-repair/archive:build` builds this package,
+and the library build keeps family siblings external,
+so this package's built entry imports the siblings' built entries.
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
+listed in `package.json`,
+and the siblings build first.
+
+Run the tests with `mise run //package/translation-repair/archive:test:unit`,
+or build and test together with `mise run //package/translation-repair/archive:buildAndTest`.
+Pass test file paths to run only those files.
+
+Test helpers used across the family,
+such as scratch directories and capturing loggers,
+come from `test-fixture`,
+imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
+
+## Family docs
+
+- `../../module/translation-repair/README.md`:
+  the overview of the pipeline,
+  from before the split.
+- `../../../doc/planning/translation-repair-package-split.md`:
+  the split plan,
+  with the package map and the rules the move keeps.
