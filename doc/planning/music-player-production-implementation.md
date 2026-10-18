@@ -235,6 +235,25 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
+- 2026-10-18, READY TO MERGE, NOT merged, not released: branch `fix/music-player-android-load-failure-routing`,
+  worktree `music-player-loadfail`, `main` merged in (at `df76fca699`). Two follow-ups of #1438. (1) The ledger edge:
+  load N queued and failed, N+1 requested before the next poll and its descriptor open failed, so the poll reported N
+  after N+1's message; `QueuedLoadLedger.requested()` (called from `RustEngine.load`) now drops the failure while the
+  newest request has not been queued (red `QueuedLoadLedgerTest` case first, 1 of 8 failed, then 8 of 8 passed).
+  (2) Non-tap failures (D131): before, every failed load, tap or not, set the in-app "Could not play" message and
+  stopped (`engine.setOnLoadFailed` in `PlayerController`, shown by `PlayerHost`); now a natural end, Next, Previous, a
+  Play with nothing selected, the restore and the readied first track walk past the file and report it as one system
+  notification on the `analysis-failure` channel under id 4203, and a tap keeps the in-app message. Red first:
+  `PlayerControllerUnplayableWalkTest` 13 of 14 failed before the change, 14 of 14 pass; notice and notification tests
+  10 of 38 failed before. Verification fresh on the merged head: detekt, `lintDebug` clean, 1,361 unit tests, 0
+  failures, 132 result files. Device pass on the headful emulator (invented library, private AVD copy, since deleted):
+  natural end onto a corrupt `.flac` walked to the next track with one notification and no message, two corrupt files in
+  a row gave one notification naming 2 files, the restore of a corrupt saved track readied the next track paused with
+  one notification, a tap on the corrupt row showed the in-app message. Not done: the descriptor-open failure path and
+  `TIMED_OUT` on a device, `nativeEngineLoad` returning non-zero, the walk on API levels other than 37, an instrumented
+  test of the ledger edge, Android native clippy (no Rust touched). Open for the human: the channel is still named
+  "Analysis problems"; the separate id 4203 and the stop on a timeout are implementer readings (D131).
+
 - 2026-10-18, READY TO MERGE, NOT merged and NOT released (the agent that finished it was told not to merge, release
   or bump versions): branch `feat/music-player-license-notices`, worktree `music-player-licenses`, `main` merged in at
   `60ba6d71bf`, code head `29ccfb516b` (the commits after it only change docs). Run fresh on that head: notices tasks
@@ -550,8 +569,9 @@ Queued, not started (an agent slot frees when one of the above reports; the cap 
   error in the feedback order, chosen from the issue's suggestion; today's behavior put it above Undo), #1440 (the
   readied first track at the end of a folder is reported as loaded). Open choice for the human: #1438 reports
   through the in-app "Could not play" message of D123 (the tap-time path), not a system notification, because that
-  message stays in the app by D123; D122 covers the desktop launch and sweep report. Also unchanged: an auto-advance
-  onto an undecodable file shows the same in-app message.
+  message stays in the app by D123; D122 covers the desktop launch and sweep report. Superseded on 2026-10-18 by D131:
+  an auto-advance, Next, Previous or restore onto an undecodable file is now walked past and reported by notification,
+  only a tap keeps the in-app message.
 - The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
