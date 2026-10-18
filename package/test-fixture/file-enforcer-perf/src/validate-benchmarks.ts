@@ -89,7 +89,7 @@ export async function runParallelCpuBenchmark(workerCount: number,
     'let acc = 0;',
     `for (let loopIndex = 0; loopIndex < ${String(hashesPerWorker,)}; loopIndex++) {`,
     '  const h = createHash("sha256");',
-    '  h.update("parallel-" + String(i));',
+    '  h.update("parallel-" + String(loopIndex));',
     '  acc += h.digest("hex").length;',
     '}',
   ]
