@@ -60,3 +60,37 @@ fn a_backlog_is_cut_at_the_batch_limit() {
     assert_eq!(rest.len(), 10);
     assert_eq!(rest.last().map(|upsert| return upsert.fingerprint), Some(backlog));
 }
+
+// What:     A real actor over a real database file: more writes than one batch holds all become visible, and the
+//           exact-decision snapshot a read returns matches what was sent.
+// Why:      `drain_writes` is tested above without a database; this shows the actor wiring (drain, one
+//           `put_batch` per batch, read-biased loop) stores every row.
+#[tokio::test]
+async fn the_actor_stores_a_backlog_larger_than_one_batch() {
+    let rows = u64::try_from(WRITE_BATCH_LIMIT).expect("limit fits u64") * 2 + 37;
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("clock is after the epoch")
+        .as_nanos();
+    let dir = std::env::temp_dir().join(format!("mp_peakcache_batch_{nanos}"));
+    std::fs::create_dir_all(&dir).expect("scratch dir should be created");
+    let (read_tx, write_tx) = spawn(Some(dir.join("decisions.db")));
+    for fingerprint in 1..=rows {
+        assert!(write_tx.send(put(fingerprint)).is_ok(), "the actor should accept a write");
+    }
+    let mut seen = HashSet::new();
+    for _ in 0..20_000 {
+        let (reply, answer) = oneshot::channel();
+        assert!(read_tx.send(Read::Known { reply }).is_ok(), "the actor should accept a read");
+        seen = answer.await.expect("the actor should answer a snapshot read");
+        if u64::try_from(seen.len()).expect("length fits u64") == rows {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let expected: HashSet<u64> = (1..=rows).collect();
+    assert_eq!(seen, expected);
+    drop(read_tx);
+    drop(write_tx);
+    let _ = std::fs::remove_dir_all(&dir);
+}
