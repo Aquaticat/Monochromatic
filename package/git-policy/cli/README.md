@@ -67,7 +67,7 @@ Read-only commands,
 - Linux with glibc 2.39 or newer.
   Release archives exist for `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` only.
   They are built on the `ubuntu-latest` runner and link `pidfd_spawnp` and `pidfd_getpid`, which glibc added in 2.39
-  (measured on the 0.1.5 x86_64 archive with `objdump -T`), so they do not start on Debian 12 or Ubuntu 22.04.
+  (measured on the 0.1.6 x86_64 archive with `objdump -T`), so they do not start on Debian 12 or Ubuntu 22.04.
   The crate does not compile for Windows: `cargo check --target x86_64-pc-windows-gnu --lib` fails with 16 errors in
   eight files (the `tempfile` and `ignore` dependencies are unix-only and several modules use `std::os::unix`),
   so the Windows-specific branches in the sources have never run; each is marked `UNTESTED ON WINDOWS` in the source.
