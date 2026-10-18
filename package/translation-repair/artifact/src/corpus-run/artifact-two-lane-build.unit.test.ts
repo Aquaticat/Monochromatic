@@ -22,16 +22,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   type PreparationIdentity,
   preparationIdentity,
   type PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   ArtifactPreparationMismatchError,
   buildSettledTwoLaneArtifact,

@@ -1,4 +1,5 @@
 import {
+  type ArtifactDeliveryRow,
   ArtifactParseError,
   requireArray,
   requireRecord,
@@ -29,7 +30,6 @@ import {
   assertIndexSetsMatchLedger,
   assertTranslateCountsAgree,
 } from './artifact-two-lane-read-set-relations.ts';
-import type { ArtifactDeliveryRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Artifact version 2 lane reading

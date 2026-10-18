@@ -10,12 +10,12 @@
  @module
  */
 
-import { type SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   preparationIdentity,
   type PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
+import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
 import {
   assertPipelineDigest,
   type PipelineDigest,

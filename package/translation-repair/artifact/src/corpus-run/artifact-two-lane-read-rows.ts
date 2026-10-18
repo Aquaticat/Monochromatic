@@ -1,4 +1,6 @@
 import {
+  type ArtifactComparisonRow,
+  type ArtifactDeliveryRow,
   requireCount,
   requireRecord,
   requireString,
@@ -15,10 +17,6 @@ import {
   parseSliceDelivery,
   parseSliceOutcome,
 } from './artifact-two-lane-read-vocabulary.ts';
-import type {
-  ArtifactComparisonRow,
-  ArtifactDeliveryRow,
-} from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Artifact version 2 row parsing

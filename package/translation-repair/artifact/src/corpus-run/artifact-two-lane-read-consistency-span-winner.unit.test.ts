@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ConsistencyRendering, } from '@monochromatic-dev/translation-repair-consistency';
+import type { ConsistencyRendering, } from '@monochromatic-dev/translation-repair-consistency';
 import {
   type ArtifactConsistencyBallot,
   type ArtifactConsistencyGroup,

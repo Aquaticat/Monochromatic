@@ -1,11 +1,9 @@
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type {
-  DisputedWording,
-  LaneText,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
+  type DisputedWording,
+  type LaneText,
   sameWording,
   validateTranslatedSlice,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';

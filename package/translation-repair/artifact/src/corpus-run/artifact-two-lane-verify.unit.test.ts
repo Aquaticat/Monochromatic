@@ -36,8 +36,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type IdentifiedDeliveryLedger, } from '@monochromatic-dev/translation-repair-lane-contest';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { IdentifiedDeliveryLedger, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   assertPreparationIdentity,
   type PreparationIdentity,

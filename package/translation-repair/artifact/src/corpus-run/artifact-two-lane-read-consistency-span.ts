@@ -1,8 +1,8 @@
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type { ConsistencyRendering, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   agreedWordsOf,
   consistencyLabels,
+  type ConsistencyRendering,
   containedQuoteWordsOf,
   foldedWordsOf,
   isKeptByMajority,

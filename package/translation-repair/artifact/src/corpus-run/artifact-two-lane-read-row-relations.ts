@@ -1,4 +1,5 @@
 import {
+  type ArtifactDeliveryRow,
   ArtifactParseError,
   outcomesEqual,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
@@ -14,7 +15,6 @@ import {
   WordingCoherenceError,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { ArtifactEvidenceRow, } from './artifact-two-lane-read-contract.ts';
-import type { ArtifactDeliveryRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 
 //region Artifact version 2 row relations
 // What has to hold between a lane's LEDGER and the raw result recorded beside

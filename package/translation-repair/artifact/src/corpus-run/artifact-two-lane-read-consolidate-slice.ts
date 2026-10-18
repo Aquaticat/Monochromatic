@@ -18,8 +18,10 @@ import {
   parseVerdict,
 } from './artifact-two-lane-read-consolidate-parts.ts';
 import { parseRecordedTenseCandidates, } from './artifact-two-lane-read-tense.ts';
-import { shippedTenseLabelOf, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
-import type { TenseCandidateGroup, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
+import {
+  shippedTenseLabelOf,
+  type TenseCandidateGroup,
+} from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import { parseConsolidationPolish, } from './artifact-two-lane-read-polish.ts';
 
 //region Artifact consolidated slice read

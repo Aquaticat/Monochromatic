@@ -8,9 +8,9 @@ import {
   requireStringList,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { ConsolidationPolishGateOutcome, } from '@monochromatic-dev/translation-repair-consolidate/ts';
 import {
   type ConsolidationPolishBallot,
+  type ConsolidationPolishGateOutcome,
   POLISH_NAMES,
   type PolishChoice,
 } from '@monochromatic-dev/translation-repair-consolidate/ts';

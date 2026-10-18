@@ -2,13 +2,11 @@ import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artif
 import {
   carriesOrCutsMarkup,
   ConsistencyInvariantError,
+  type ConsistencyRendering,
   holdsEdgeApostrophe,
   isSingleMark,
   locateWords,
-} from '@monochromatic-dev/translation-repair-consistency/ts';
-import type {
-  ConsistencyRendering,
-  UnlocatedReason,
+  type UnlocatedReason,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consistency.ts';

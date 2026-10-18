@@ -3,6 +3,7 @@ import {
   requireOneOf,
 } from '../artifact-exact-guard.ts';
 import {
+  type ArtifactComparisonRow,
   ArtifactParseError,
   requireRecord,
   requireString,
@@ -12,7 +13,6 @@ import {
   frontMatterContestEligibility,
   type LaneContestEligibility,
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { ArtifactComparisonRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 
 //region Contest eligibility reading
 // Source-backed syntax admission is parsed separately from raw contest ballots

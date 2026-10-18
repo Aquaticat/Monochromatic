@@ -33,9 +33,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ArtifactContestSlice,
-  type ArtifactLaneSelection,
+import type {
+  ArtifactContestSlice,
+  ArtifactLaneSelection,
 } from '@monochromatic-dev/translation-repair-lane-contest';
 import {
   type ArtifactConsolidateSlice,

@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ConsistencyWinner, } from '@monochromatic-dev/translation-repair-consistency';
+import type { ConsistencyWinner, } from '@monochromatic-dev/translation-repair-consistency';
 import {
   type ArtifactConsistencyGroup,
   assertSeatsHeardOnce,

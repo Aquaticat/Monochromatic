@@ -2,15 +2,15 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type {
   CorpusPin,
+  PreparedDocumentPair,
   readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import {
   type BlockPair,
   requireBlockPairingRefusal,
+  type SectionPair,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { SectionPair, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V12,
   ARTIFACT_SCHEMA_VERSION_V5,

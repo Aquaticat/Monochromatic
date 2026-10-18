@@ -37,9 +37,9 @@ import {
   type SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { archiveDisputesOf, } from '@monochromatic-dev/translation-repair-archive';
-import {
-  type AdjudicatedIssue,
-  type RosterModelId,
+import type {
+  AdjudicatedIssue,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   archiveStandInFor,

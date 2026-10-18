@@ -9,8 +9,10 @@ import {
   requireRecord,
   requireString,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type { UnlocatedReason, } from '@monochromatic-dev/translation-repair-consistency/ts';
-import { isCountedSingleMark, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  isCountedSingleMark,
+  type UnlocatedReason,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   artifactGenerationCountsBySpan,
   artifactGenerationRecordsMarks,

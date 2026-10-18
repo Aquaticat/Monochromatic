@@ -24,9 +24,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ConsolidationSettlement,
-  type ConsolidationTerminal,
+import type {
+  ConsolidationSettlement,
+  ConsolidationTerminal,
 } from '@monochromatic-dev/translation-repair-consolidate';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {

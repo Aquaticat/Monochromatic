@@ -1,9 +1,11 @@
-import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
+import {
+  type ArtifactDeliveryRow,
+  ArtifactParseError,
+} from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import type {
   ArtifactRepairEvidence,
   ArtifactTranslateEvidence,
 } from './artifact-two-lane-read-contract.ts';
-import type { ArtifactDeliveryRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Artifact version 2 set relations

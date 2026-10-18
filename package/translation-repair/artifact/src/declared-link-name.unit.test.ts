@@ -29,7 +29,7 @@ import {
   type SliceValidation,
   validateTranslatedSlice,
 } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { readStandingVerdict, } from '@monochromatic-dev/translation-repair-consolidate';
 import { laneContestChoiceVerdict, } from '@monochromatic-dev/translation-repair-lane-contest';
 import { floorTranslateVoices, } from '@monochromatic-dev/translation-repair-translate-stage';

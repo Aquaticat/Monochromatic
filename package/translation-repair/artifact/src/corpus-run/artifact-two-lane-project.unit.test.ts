@@ -37,11 +37,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceLaneComparison, } from '@monochromatic-dev/translation-repair-lane-contest';
-import {
-  type LaneSliceOutcome,
-  type SliceDelivery,
-  type SliceDeliveryRecord,
+import type { SliceLaneComparison, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type {
+  LaneSliceOutcome,
+  SliceDelivery,
+  SliceDeliveryRecord,
 } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   toArtifactComparisonRow,

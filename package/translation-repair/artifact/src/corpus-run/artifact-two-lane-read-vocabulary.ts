@@ -1,5 +1,10 @@
 import {
+  type ArtifactDecisionComparison,
+  type ArtifactDeliveryRow,
+  type ArtifactLaneRelation,
   ArtifactParseError,
+  type ArtifactSliceDelivery,
+  type ArtifactSliceOutcome,
   requireArray,
   requireRecord,
   requireString,
@@ -8,13 +13,6 @@ import {
   requireExactKeys,
   requireKeyOf,
 } from '../artifact-exact-guard.ts';
-import type {
-  ArtifactDecisionComparison,
-  ArtifactDeliveryRow,
-  ArtifactLaneRelation,
-  ArtifactSliceDelivery,
-  ArtifactSliceOutcome,
-} from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 
 //region Artifact version 2 union parsing
 // Reading the three small unions a version 2 row dispatches on, back off disk.

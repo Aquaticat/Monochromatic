@@ -4,13 +4,13 @@ import {
   agreedSlotOf,
   ConsistencyInvariantError,
   consistencyLabels,
+  type ConsistencyRendering,
   isKeptByMajority,
   majorityChoiceOf,
   planConsistencyEdit,
   usableVoicesOf,
   winnerOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import type { ConsistencyRendering, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   artifactGenerationCountsBySpan,
   type TwoLaneArtifactGeneration,

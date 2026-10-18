@@ -2,15 +2,13 @@ import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artif
 import {
   choiceTallyOf,
   consistencyLabels,
+  type ConsistencyRendering,
+  type ConsistencyWinner,
   majorityChoiceOf,
   runOffWinnerOf,
   tiedForFirstOf,
   usableVoicesOf,
   winnerOf,
-} from '@monochromatic-dev/translation-repair-consistency/ts';
-import type {
-  ConsistencyRendering,
-  ConsistencyWinner,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type { ArtifactConsistencyGroup, } from './artifact-two-lane-consistency.ts';
 

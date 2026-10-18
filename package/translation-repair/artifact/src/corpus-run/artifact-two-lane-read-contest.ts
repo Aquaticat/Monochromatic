@@ -3,6 +3,7 @@ import {
   requireKeyOf,
 } from '../artifact-exact-guard.ts';
 import {
+  type ArtifactComparisonRow,
   ArtifactParseError,
   requireArray,
   requireCount,
@@ -14,10 +15,10 @@ import {
   contestEligibleIndexes,
   describeContestSlice,
   describeSoleLaneSlice,
+  type LaneContestBallot,
   settleEligibleLaneContestBallots,
   soleLaneOf,
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { LaneContestBallot, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { parseContestBallot, } from './artifact-two-lane-read-contest-ballot.ts';
 import { parseRecordedTenseCandidates, } from './artifact-two-lane-read-tense.ts';
 import { CONTEST_TENSE_LABELS, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
@@ -26,7 +27,6 @@ import {
   parseContestEligibility,
 } from './artifact-two-lane-read-contest-eligibility.ts';
 import { assertContestVerdictMatches, } from './artifact-two-lane-read-contest-verdict.ts';
-import type { ArtifactComparisonRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V6,

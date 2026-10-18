@@ -10,7 +10,10 @@ import {
   straightenQuotes,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import { foldedLine, } from '@monochromatic-dev/translation-repair-rendering-audit/ts';
+import {
+  foldedLine,
+  type RepeatedTitleSpan,
+} from '@monochromatic-dev/translation-repair-rendering-audit/ts';
 import {
   buildPageTitleLexiconMessages,
   isPageTitleLexiconWire,
@@ -19,12 +22,11 @@ import {
   type PageTitleLexiconWire,
   resolvePageTitleAnswers,
 } from './page-title-lexicon-wire.ts';
-import type { RepeatedTitleSpan, } from '@monochromatic-dev/translation-repair-rendering-audit/ts';
-import type {
-  FanOutMode,
-  StageSettings,
+import {
+  type FanOutMode,
+  gatherStageVoices,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Page title lexicon stage

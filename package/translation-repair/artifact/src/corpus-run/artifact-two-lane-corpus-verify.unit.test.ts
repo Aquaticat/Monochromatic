@@ -26,14 +26,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   preparationIdentity,
   type PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
-import { type DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
   buildSettledTwoLaneArtifact,

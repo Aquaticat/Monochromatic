@@ -1,10 +1,10 @@
 import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
-import { compareLanes, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import { toArtifactRow, } from './artifact-two-lane-project.ts';
-import type {
-  ArtifactComparisonRow,
-  ArtifactDeliveryRow,
+import {
+  type ArtifactComparisonRow,
+  type ArtifactDeliveryRow,
+  compareLanes,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
+import { toArtifactRow, } from './artifact-two-lane-project.ts';
 
 //region Artifact version 2 derivation
 // Both ledgers as version 2 rows, and what version 2`s own rules make of them.

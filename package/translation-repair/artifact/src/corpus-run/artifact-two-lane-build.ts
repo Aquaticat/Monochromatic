@@ -1,12 +1,16 @@
 import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
-import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { compareDocumentLanes, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { preparationIdentity, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type ArtifactLaneSelection,
+  compareDocumentLanes,
+} from '@monochromatic-dev/translation-repair-lane-contest/ts';
+import {
+  preparationIdentity,
+  type PreparedDocumentPair,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { sourceBytesOf, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
 import type { ArtifactConsistency, } from './artifact-two-lane-consistency.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
-import type { ArtifactLaneSelection, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V17,

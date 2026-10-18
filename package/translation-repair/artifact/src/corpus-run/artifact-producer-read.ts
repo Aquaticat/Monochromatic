@@ -5,8 +5,10 @@ import {
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { requireKeyOf, } from '../artifact-exact-guard.ts';
 import type { CandidateProducer, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { ROSTER_MODEL_IDS, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  ROSTER_MODEL_IDS,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { UnhandledMemberInvariantError, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Artifact producer read
