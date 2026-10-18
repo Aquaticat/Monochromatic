@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {env,fixture} from '../dist/native/contract/integration/native-batch/event-receipt-fixture.mjs';
 import {copyToolMetadata,copyMessageData} from '../dist/native/contract/collector/run-prompt-custody/messages.mjs';
 
-//region Real native callbacks keep their signal while manager receipts retain immutable state
+//region Native callbacks own cancellation while receipts retain only opaque control identity
 
 await using cleanup={async [Symbol.asyncDispose](){await env.drain();}};
 const controller=new AbortController();
@@ -31,21 +31,53 @@ const [records]=event.records();
 assert.equal(records.length,4);
 assert.deepEqual(records.map(record=>record.phase),['input','after','input','after']);
 assert.deepEqual(records.map(record=>record.ordinal),[0,0,1,1]);
-assert.deepEqual(records.map(record=>record.value.value.signal.aborted),[false,true,true,true]);
+for(const record of records)assert.deepEqual(record.value.value.signal,{
+ nativeControl:'cancellation-signal',reference:0
+});
 for(const record of records){
  assert.equal(record.value.value.type,original.type);
  assert.deepEqual(record.value.value.preparation,preparation);
 }
-assert.deepEqual(records.map(record=>record.value.value.signal.aborted),[false,true,true,true]);
+const replacement=new AbortController().signal;
+const originalReference=new AbortController().signal;
+const changed={type:'session_before_tree',preparation,signal:originalReference};
+const identities=fixture({kind:changed.type,handlers:[
+ function replaceControl(input){input.signal=replacement;},
+ function restoreControl(input){input.signal=originalReference;}
+]});
+await identities.runner.emit(changed);
+const [identityRecords]=identities.records();
+assert.deepEqual(identityRecords.map(record=>record.value.value.signal.reference),[0,1,1,0]);
+assert.equal(changed.signal,originalReference);
 
-//endregion Real native callbacks keep their signal while manager receipts retain immutable state
+const preAborted=new AbortController();
+preAborted.abort();
+let controlReads=0;
+Object.defineProperty(preAborted.signal,'aborted',{get(){controlReads++;throw new Error('Control internals were read');}});
+const compact=fixture({kind:'session_before_compact',handlers:[function preserveCompactControl(input){
+ assert.equal(input.signal,preAborted.signal);
+}]});
+await compact.runner.emit({type:'session_before_compact',preparation,signal:preAborted.signal});
+const [compactRecords]=compact.records();
+assert.equal(compactRecords.length,2);
+assert.deepEqual(compactRecords[0].value.value.signal,{nativeControl:'cancellation-signal',reference:0});
+assert.equal(controlReads,0);
+
+// The platform's prototype is compatibility information, not constructor authentication.
+const lookalike=Object.create(AbortSignal.prototype);
+const opaque=fixture({kind:'session_before_tree',handlers:[function preserveOpaqueValue(input){assert.equal(input.signal,lookalike);}]});
+await opaque.runner.emit({type:'session_before_tree',preparation,signal:lookalike});
+const [opaqueRecords]=opaque.records();
+assert.deepEqual(opaqueRecords[0].value.value.signal,{nativeControl:'cancellation-signal',reference:0});
+
+//endregion Native callbacks own cancellation while receipts retain only opaque control identity
 
 //region Ordinary data and untrusted native lookalikes keep their rejection boundaries
 
 assert.throws(function ordinaryToolSignal(){copyToolMetadata({signal:controller.signal});});
 assert.throws(function ordinaryMessageSignal(){copyMessageData({signal:controller.signal});});
 const rejected=[
- {name:'forged signal',kind:'session_before_tree',signal:Object.create(AbortSignal.prototype)},
+ {name:'unrelated control class',kind:'session_before_tree',signal:new Date(0)},
  {name:'proxy signal',kind:'session_before_tree',signal:new Proxy(new AbortController().signal,{})},
  {name:'signal on another event kind',kind:'turn_start',signal:new AbortController().signal}
 ];
@@ -57,7 +89,20 @@ for(const value of rejected){
  assert.equal(calls[0],value.signal);
  assert.throws(function rejectMissingEvidence(){candidate.records();},undefined,value.name);
 }
-console.log(JSON.stringify({complete:true,originalSignalPreserved:true,immutableCancellationStates:true,
- originalCallbackOrder:true,ordinaryDataStillStrict:true,forgedAndProxySignalsRejected:true}));
+const nested=fixture({kind:'session_before_tree',handlers:[function preserveNestedInput(){return undefined;}]});
+await nested.runner.emit({type:'session_before_tree',preparation:{...preparation,signal:new AbortController().signal},signal:new AbortController().signal});
+assert.throws(function rejectNestedControl(){nested.records();});
+const output=fixture({kind:'session_before_tree',handlers:[function returnExtensionControl(){return {signal:new AbortController().signal};}]});
+await output.runner.emit({type:'session_before_tree',preparation,signal:new AbortController().signal});
+assert.throws(function rejectExtensionControl(){output.records();});
+let signalReads=0;
+const accessorInput={type:'session_before_tree',preparation};
+Object.defineProperty(accessorInput,'signal',{get(){signalReads++;return controller.signal;},enumerable:true});
+const accessor=fixture({kind:'session_before_tree',handlers:[function preserveAccessorInput(){return undefined;}]});
+await accessor.runner.emit(accessorInput);
+assert.throws(function rejectAccessor(){accessor.records();});
+assert.equal(signalReads,0);
+console.log(JSON.stringify({complete:true,originalSignalPreserved:true,opaqueControlReferences:true,
+ originalCallbackOrder:true,ordinaryDataStillStrict:true,proxyAndUnrelatedClassesRejected:true,controlGettersNotRead:true}));
 
 //endregion Ordinary data and untrusted native lookalikes keep their rejection boundaries
