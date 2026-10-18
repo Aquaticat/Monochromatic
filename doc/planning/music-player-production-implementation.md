@@ -519,6 +519,26 @@ before saying it matches, QAB):
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
+- Android large library (written 2026-10-18, branch `fix/music-player-android-large-library`, not merged): the media
+  store was asked for the document column `last_modified` once per fingerprint (sweep, page measure pass, track load)
+  and the provider logged a stack each time; the audit's "idle" count was the page pass that follows every start.
+  Fixed in `cfd1d882c2`: 0 exceptions in every cold run and idle window on the fixed build against 27,137 in a cold run of
+  `main` at 10,000 tracks; 25 of 25 media store fingerprints identical, so no cache version bump. Root cause, counts
+  and spread: `doc/troubleshooting/music-player-android-mediastore-last-modified-column.md`.
+  Scroll jank at 10,000 tracks (audit finding 3) re-measured in two sessions without an emulator crash: 4 of 20 windows
+  slow against 2 of 40 at 1,000 tracks (p = 0.089), 2 of 10 before and 2 of 10 after the fix, time lost in render-thread
+  draw commands, tracking host CPU pressure. Not profiled: two later sessions crashed after 4 and 2 minutes (gRPC
+  `SIGABRT`, gfxstream `SIGSEGV`) and the relaunch limit was used. Owed: a `perfetto` trace of slow and normal windows on
+  a quiet host with a Settings-app control window (the driver for it was written in the agent scratch, not committed).
+  The page measure pass still reads the size of every row at each start (9.2 to 21.9 s at 10,000 tracks); not changed.
+- Android issues fixed on the same branch, each with a test that failed before: #1438 (a file that opens but does not
+  decode now reaches `onLoadFailed` through a worker failure number and `QueuedLoadLedger`; instrumented
+  `RustEngineLoadFailureTest` failed on a build of `main` and passes), #1439 (the notice kind sits between Undo and
+  error in the feedback order, chosen from the issue's suggestion; today's behavior put it above Undo), #1440 (the
+  readied first track at the end of a folder is reported as loaded). Open choice for the human: #1438 reports through the
+  in-app "Could not play" message of D123 (the tap-time path), not a system notification, because that message stays in
+  the app by D123; D122 covers the desktop launch and sweep report. Also unchanged: an auto-advance onto an undecodable
+  file shows the same in-app message.
 - The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
