@@ -76,6 +76,12 @@ No completed semantic repair commit exists yet.
 The saved CLI files start with the earlier formatter's edits;
 the current worker has now applied the first actual guard rewrite.
 The JSONL consumer and disposable unit environment remain in progress.
+Review the coherent patch independently before rebuilding:
+check actual line-feed bytes rather than matching emitter/parser escape mistakes,
+keep disposable scratch under the injected home,
+and preserve missing/empty receipt-path validation.
+The worker's fresh private home does not copy old session scratch files.
+Missing initial scratch in a resumed session is not evidence that every tool call gets a new home.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
 This controller closes with exit zero before its measured RSS reaches the configured limit again.
 The current restarted fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,
@@ -326,6 +332,14 @@ the new artifact passes with 10,508,712 bytes and 327,177,600 serialized receipt
 `native-input-content-green.log` passes exact-code-unit,
 escaped-boundary,
 surrogate digest and original-accessor checks with zero foreign-getter reads.
+The SDK agent loop shallow-copies `message` while sharing its content with the streamed partial.
+The maintained capacity test now matches that layout and includes quotes,
+backslashes and newlines in growing text.
+The same updated test runs against private `q83LlN` and current `EWv4wy` artifacts:
+342,565,888 retained heap bytes fail the prior artifact;
+10,544,896 bytes pass the repaired artifact with 366,034,224 logical receipt bytes.
+Evidence is `native-streaming-context-escaped-red.log` and `native-streaming-context-escaped-green.log`.
+The standalone compaction and persisted-content consumers also pass again on `EWv4wy`.
 The complete progress/fallback suite passes in `native-content-progress-safety.log`.
 The broader `verify-retention-final` task reaches full units after passing its native safety consumers;
 full units fail on the already-known stale `native-process-network.unit.test.ts` fixture:

@@ -13,8 +13,10 @@ The [architecture and size record](doc/architecture.md) documents the shared pre
 each major responsibility,
 verified behavior,
 and remaining lint debt.
-The package occupies about 22.9 MB including active output and a verified rollback,
+The last reviewed cleanup measures about 22.9 MB including active output and a verified rollback,
 excluding shared dependency symlink targets.
+Later verification builds add retained artifacts;
+this historical checkpoint is not a current deployment-closure measurement.
 
 ## Current native behavior
 

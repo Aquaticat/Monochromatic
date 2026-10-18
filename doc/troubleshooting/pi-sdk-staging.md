@@ -9171,3 +9171,149 @@ The test retains the complete stream rather than filtering diagnostic lines.
 `node-stdio-close-receipt.json`,
 `node-stdio-close-probe.log` and `node26-child-process-source.js`
 in `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018` retain the causal probe and deciding source.
+
+## Pi 1.2.0 streaming reveals full-prefix retention in the owned collector
+
+### Symptom and scope
+
+Node `v26.12.0` reports `ERR_ASSERTION` from the maintained native capacity consumer:
+`Original native streaming snapshots retain 342565888 bytes, exceeding 33554432`.
+The case emits 1,600 growing `message_update` inputs,
+retaining complete original before/after snapshots while the final text has 203,200 UTF-16 code units.
+This reproduces a consumer storage defect.
+It does not establish the cause of a separate actual MiMo worker's
+`FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`.
+
+### Source trace
+
+Qualified Pi source commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`,
+`packages/agent/src/agent-loop.ts:433`,
+forwards each partial through a shallow outer message copy:
+
+```ts
+// Qualified Pi source: packages/agent/src/agent-loop.ts:433
+partialMessage = event.partial;
+context.messages[context.messages.length - 1] = partialMessage;
+await emit({
+  type: "message_update",
+  assistantMessageEvent: event,
+  message: { ...partialMessage },
+});
+```
+
+The top-level objects differ;
+the content still belongs to the same streaming partial.
+`packages/coding-agent/src/core/agent-session.ts:1311` forwards those fields to extension callbacks:
+
+```ts
+// Qualified Pi source: packages/coding-agent/src/core/agent-session.ts:1311
+const extensionEvent: MessageUpdateEvent = {
+  type: "message_update",
+  message: event.message,
+  assistantMessageEvent: event.assistantMessageEvent,
+};
+await this._extensionRunner.emit(extensionEvent);
+```
+
+Our `package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/loaded-event-inputs.mjs:40`
+copies each original callback phase before the borrowed input changes:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/loaded-event-inputs.mjs:40
+const value=Object.freeze({value:copyToolMetadata({value:projectEventInput(input)})});
+```
+
+Before repair commit `0666bd3dcb`,
+`loaded-pool.mjs:42` retains each distinct complete serialization:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/loaded-pool.mjs:42 at 9b4bb6258d
+const serialized=contentFormat==='text'?value:JSON.stringify(value??[]);
+let data=sourceDataByContent.get(serialized);
+if(data===undefined){
+  data=Object.freeze({content:serialized,sha256:createHash('sha256').update(serialized).digest('hex')});
+  sourceDataByContent.set(serialized,data);
+}
+```
+
+Identical content shares storage,
+but every growing prefix is a distinct key and complete string.
+The native event layout can contain the same growing content in both message fields.
+This storage belongs to the owned collector;
+Pi's supported streaming behavior is the trigger.
+
+### Verification and working catalogs
+
+Run the maintained consumers from a built package:
+
+```sh
+# Repository root; executed here inside a disposable 2-GiB, 2-CPU verification container.
+mise run //package/pi-plugin/auto-mode:test:native:streaming-context-capacity
+mise run //package/pi-plugin/auto-mode:test:native:input-content
+```
+
+The task limits the probe Node heap to 512 MiB and enables explicit collection.
+The updated same-test comparison uses a private copy of `native-release-q83LlN`
+and repaired `native-release-EWv4wy` without changing production publication during the checks.
+The prior artifact retains 342,565,888 heap bytes and fails;
+the repaired artifact retains 10,544,896 bytes and passes.
+Original callback inputs,
+distinct publications,
+sampled earlier/later content and source hashes remain checked.
+The logical serialized receipt count remains 366,034,224 bytes.
+
+Working catalogs include repeated identical inputs,
+repeated tool queries,
+plain and JSON text,
+escaped delimiters,
+newlines,
+Unicode and unpaired surrogate code units.
+Failing catalogs include growing-prefix storage on the prior artifact,
+copied content accessors on a different source,
+and foreign getters,
+which are rejected without invocation.
+
+### Verified consumer repair and limits
+
+`input-content.ts:77` interns exact chunk-identity sequences;
+`input-content-chunks.ts:18` resets bounded chunk alignment at generated JSON string tokens.
+The package-local [storage explanation](../../package/pi-plugin/auto-mode/doc/instruction-collection.md#retained-native-input-storage)
+records the component,
+tradeoffs and maintained tests.
+The source still returns the complete original string through a pure producer-owned accessor.
+`manager-source-growth.mjs:20` accepts only the exact registered source/accessor pair,
+after the caller's original-owner authentication.
+Other fields and foreign accessors retain their strict rejection.
+Reads reconstruct strings as needed;
+the store does not retain a flat string for every distinct prefix.
+
+Private rebuilt mutations detect loss of JSON token alignment,
+exact accessor identity and UTF-16 preservation.
+Removing explicit chunk copies does not fail this runtime's capacity case;
+that observation is not claimed as a detecting guard proof.
+Digest-only equality is not used:
+the exact-content test proves different unpaired surrogates can encode to identical UTF-8 bytes.
+This is an encoding equivalence,
+not a SHA-256 collision.
+
+Deduplicating only identical complete strings does not address growing prefixes.
+Removing transient RPC recorder output does not remove the host's actual callback inputs.
+Dropping observations or merging original publications would change the required source contract.
+The actual repaired MiMo session still needs its own completed editing and final replay verification.
+
+### Upstream filing decision
+
+1.  Upstream fault: no demonstrated Pi or Node defect;
+    our complete-prefix cache owns the reproduced retention.
+2.  Upstream fixability: no upstream change is required for the verified consumer repair.
+3.  Supported use: Pi explicitly forwards streamed message updates to extension callbacks.
+4.  Contribution policy: not assessed because no external contribution is proposed.
+5.  Upstream movement: not assessed because no upstream defect is established.
+6.  Prototype: the owned consumer repair is built and tested;
+    an upstream patch is neither needed nor drafted.
+
+The `.out-of-scope/` catalog was checked.
+Its `pi-gpt55-long-context.md` concerns model-window changes,
+not this MiMo collector-storage case.
+There is no upstream filing artifact or duplicate-tracker claim:
+no external issue is proposed for this owned defect.
