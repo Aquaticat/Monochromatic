@@ -17,6 +17,7 @@ import {
   contentDigest,
 } from './effect-summary-cache-identity.ts';
 import {
+  recordSharedClosure,
   recordSharedEligible,
   recordSharedFallback,
 } from './shared-analysis-telemetry.ts';
@@ -54,6 +55,7 @@ export type SharedKey =
   | {
     readonly eligible: true;
     readonly digest: string;
+    readonly parts: Readonly<Record<string, string>>;
   }
   | {
     readonly eligible: false;
@@ -435,20 +437,29 @@ export function createSharedKeyResolver({
         ...(closure.detail === undefined) ? {} : { detail: closure.detail, },
       };
     }
+    /**
+     Digest of each component, kept apart so a split between projects can be traced to one.
+     */
+    const parts = {
+      schema: String(SHARED_KEY_SCHEMA,),
+      analyzer: analyzerDigest(),
+      fileName: sourceFile.fileName,
+      source: contentDigest(sourceFile.text,),
+      closure: contentDigest(JSON.stringify(closure.entries,),),
+      ambient: shared.ambientSurfaceDigest,
+      augmentation: surfaces.augmentationSurfaceDigest,
+      lockfile: surfaces.lockfileDigest,
+      options: checkingOptions.digest,
+      analysisRoot: analysisRoot ?? '',
+    };
+    recordSharedClosure({
+      fileName: sourceFile.fileName,
+      entries: closure.entries,
+    },);
     return {
       eligible: true,
-      digest: contentDigest(JSON.stringify([
-        SHARED_KEY_SCHEMA,
-        analyzerDigest(),
-        sourceFile.fileName,
-        contentDigest(sourceFile.text,),
-        closure.entries,
-        shared.ambientSurfaceDigest,
-        surfaces.augmentationSurfaceDigest,
-        surfaces.lockfileDigest,
-        checkingOptions.digest,
-        analysisRoot ?? '',
-      ],),),
+      digest: contentDigest(JSON.stringify(parts,),),
+      parts,
     };
   }
 
@@ -468,8 +479,14 @@ export function createSharedKeyResolver({
         sourceFile.fileName,
         key,
       );
-      if (key.eligible)
-        recordSharedEligible();
+      if (key.eligible) {
+        recordSharedEligible({
+          fileName: sourceFile.fileName,
+          project: project.configFileName,
+          digest: key.digest,
+          parts: key.parts,
+        },);
+      }
       else {
         recordSharedFallback({
           fileName: sourceFile.fileName,

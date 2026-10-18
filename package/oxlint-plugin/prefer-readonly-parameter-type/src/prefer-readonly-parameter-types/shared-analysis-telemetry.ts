@@ -6,6 +6,7 @@
  */
 
 import {
+  appendFileSync,
   mkdirSync,
   writeFileSync,
 } from 'node:fs';
@@ -28,6 +29,11 @@ export const VERIFY_SHARED_ENVIRONMENT_VARIABLE = 'PRPT_VERIFY_SHARED';
  Environment variable naming the directory that receives one counter file per process.
  */
 export const VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE = 'PRPT_VERIFY_SHARED_DIR';
+
+/**
+ Environment variable that adds the closure entries behind each key to the trace when set to `1`.
+ */
+export const TRACE_CLOSURES_ENVIRONMENT_VARIABLE = 'PRPT_VERIFY_SHARED_CLOSURES';
 
 /**
  Mismatch records kept per process so the counter file stays small.
@@ -139,18 +145,115 @@ function flush(): void {
 }
 
 /**
- Counts one source whose cross-project key was computed.
+ Appends one line to a per-process trace file next to the counter file.
+ 
+ @param suffix - Trace file name suffix.
+ 
+ @param record - JSON-safe record written as one line.
+ */
+function trace({
+  suffix,
+  record,
+}: {
+  readonly suffix: string;
+  readonly record: unknown;
+},): void {
+  /**
+   Directory receiving counter files, absent when none was named.
+   */
+  const directory = process.env[VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE];
+  if (directory === undefined)
+    return;
+  try {
+    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Verification traces must reach disk before the host process can end.
+    mkdirSync(
+      directory,
+      { recursive: true, },
+    );
+    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Verification traces must reach disk before the host process can end.
+    appendFileSync(
+      join(
+        directory,
+        `${String(process.pid,)}-${String(threadId,)}-${suffix}`,
+      ),
+      `${JSON.stringify(record,)}\n`,
+    );
+  }
+  catch (error) {
+    l.debug(`trace skipped: ${String(error,)}`,);
+  }
+}
+
+/**
+ Counts one source whose cross-project key was computed and traces its components.
+ 
+ @param fileName - Source path.
+ 
+ @param project - Configuration path of the project that computed the key.
+ 
+ @param digest - Key digest.
+ 
+ @param parts - Digest of each key component.
  
  @example
  ```ts
- recordSharedEligible();
+ recordSharedEligible({ fileName, project, digest, parts });
  ```
  */
-export function recordSharedEligible(): void {
+export function recordSharedEligible({
+  fileName,
+  project,
+  digest,
+  parts,
+}: {
+  readonly fileName: string;
+  readonly project: string;
+  readonly digest: string;
+  readonly parts: Readonly<Record<string, string>>;
+},): void {
   if (!sharedVerificationEnabled())
     return;
   state.eligible++;
+  trace({
+    suffix: 'keys.jsonl',
+    record: {
+      fileName,
+      project,
+      digest,
+      parts,
+    },
+  },);
   flush();
+}
+
+/**
+ Traces the closure entries of one source when closure tracing is switched on.
+ 
+ @param fileName - Source path.
+ 
+ @param entries - Closure entries behind the key.
+ 
+ @example
+ ```ts
+ recordSharedClosure({ fileName, entries });
+ ```
+ */
+export function recordSharedClosure({
+  fileName,
+  entries,
+}: {
+  readonly fileName: string;
+  readonly entries: readonly string[];
+},): void {
+  if ((!sharedVerificationEnabled()) || (process.env[TRACE_CLOSURES_ENVIRONMENT_VARIABLE] !== '1'))
+    return;
+  trace({
+    suffix: 'closures.jsonl',
+    record: {
+      fileName,
+      entries,
+    },
+  },);
 }
 
 /**
