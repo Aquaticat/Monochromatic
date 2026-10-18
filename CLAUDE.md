@@ -26,7 +26,7 @@ the child then will not read the repo `CLAUDE.md`,
 and Claude Code's cwd handling is unreliable.
 
 Use
-`timeout 3600 pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<question>"`
+`timeout 3600 pi --model openai/gpt-6.1-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<question>"`
 alongside advisor,
 never instead:
 advisor reads the transcript,
