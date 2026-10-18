@@ -72,6 +72,20 @@ let gitOutput = await this.execGit(['version'])
 
 The same method rejects an unparsable version at line `683`
 and an insufficient version at line `688`.
+The deciding checks are:
+
+```ts
+// actions/checkout src/git-command-manager.ts:683 to 691.
+if (!this.gitVersion.isValid()) {
+  throw new Error('Unable to determine git version')
+}
+if (!this.gitVersion.checkMinimum(MinimumGitVersion)) {
+  throw new Error(
+    `Minimum required git version is ${MinimumGitVersion}. Your git ('${this.gitPath}') is ${this.gitVersion}`
+  )
+}
+```
+
 Its minimum at line `15` is:
 
 ```ts
@@ -111,6 +125,13 @@ The actual consumer at `5485cc0d12805f330d568b358e5ff0bb988d4d37`,
 `.depot/research/service/mise.toml:49`,
 reads loaded library mappings and rejects a different Node version,
 executable hash or missing `libatomic` mapping.
+The actual admission condition is:
+
+```js
+// .depot/research/service/mise.toml:50.
+if (process.version !== 'v26.12.0' || actualNodeSha256 !== tools.repositoryNode.binarySha256 || libatomicMappings.length === 0) throw new ServiceConsumerFailure('Actual repository Node binary or loaded libatomic mapping does not match the qualified image prerequisite');
+```
+
 The receipt retains those actual runtime measurements.
 
 ## Verification catalog
@@ -166,20 +187,12 @@ These functional fixtures do not execute the repository's application suites.
 
 ## Verified workarounds
 
-The immutable workflow correction moves the dynamic endpoint to the consuming step:
-
-```diff
-# .github/workflows/readonly-semantic-bridge.yml, 6b3c75517e to 1438ecde4b, abridged.
-       "env": {
--        "PROBE_SERVICE_URL": "http://127.0.0.1:${{ job.services.fixture.ports[8080] }}",
-@@
-           "run": "mise run //.depot/research/service:consume",
--          "working-directory": ".depot/research/service"
-+          "working-directory": ".depot/research/service",
-+          "env": {
-+            "PROBE_SERVICE_URL": "http://127.0.0.1:${{ job.services.fixture.ports[8080] }}"
-+          }
-```
+The exact
+[immutable workflow patch](depot-service-job-container-prerequisites.patch)
+from `6b3c75517e798161e79ddb7e496b78cf1ffc4240`
+to `1438ecde4b643a606e0a75f85067e3d0153e9bb5`
+moves the dynamic endpoint to the consuming step.
+It also binds the job-container endpoint at the consuming step.
 
 The tradeoff is step-local availability;
 other steps needing that value must bind it in their own supported context.

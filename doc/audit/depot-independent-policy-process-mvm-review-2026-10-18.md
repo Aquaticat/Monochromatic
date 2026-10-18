@@ -455,6 +455,9 @@ This supports moving `job.services` to the consuming step.
 The zero-job failed workflow record still does not recover its original hosted parser diagnostic.
 The independent Node 26 loader failure explicitly names missing `libatomic.so.1`;
 it is a separate incident from REST fallback selection and download lifetime.
+The quoted source trace,
+exact context-placement patch and qualified workaround catalog are retained in
+[`depot-service-job-container-prerequisites.md`](../troubleshooting/depot-service-job-container-prerequisites.md).
 
 No additional material correction was established in these cohorts.
 Their original compressed bundles remain unchanged.
