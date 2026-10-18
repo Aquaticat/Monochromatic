@@ -35,8 +35,8 @@ The version file names a release that does not exist on GitHub yet.
 Every workflow in this repository that used `jdx/mise-action` without a `version` input
  (`npm-release.yml`,
  `cargo-publish.yml`,
- `cli-git-performance.yml`,
- `cli-git-trust.yml`,
+ `cli-git-performance.yml` (deleted on 2026-10-13 in commit `724d70bfa7`),
+ `cli-git-trust.yml` (deleted on 2026-10-13 in commit `642b6d72cb`),
  `kotlin-linter-publish.yml`,
  `logger-fuzz.yml`,
  `readonly-semantic-bridge.yml`,
@@ -342,7 +342,7 @@ Patterns that work:
    the rerun of 34228368589 at 13:57Z installed `2026.9.3`).
 - Every `jdx/mise-action` step at `v4.3.0` with `minimum_release_age: 1d`:
    commit `02fe85b3d` (2026-09-08) triggered `npm-release.yml`,
-   `cli-git-trust.yml` (Linux and Windows),
+   `cli-git-trust.yml` (Linux and Windows; deleted on 2026-10-13 in commit `642b6d72cb`),
    `readonly-semantic-bridge.yml` (Linux and Windows),
    `logger-fuzz.yml`,
    and `toml-edit-fuzz.yml`.
