@@ -188,8 +188,26 @@ Application inputs,
 the command plan and the graph driver remain unchanged.
 The corrected bootstrap SHA-256 is
 `d6adb8579ea9888147d0b3f5eba90f730630a243b03db07d4753feb1b8f0f85a`.
-Independent wrapper controls and actual corrected native consumers remain required;
-the committed correction alone supplies no new passing browser evidence.
+The [independent local wrapper receipt](../audit/depot-expanded-graph-podman-preflight-2026-10-18.evidence.json)
+executes that exact bootstrap in a disposable Node container bounded at 2 CPUs,
+2 GiB,
+256 PIDs,
+and no network.
+Its 24 provider/command controls preserve native-only noninteractive sudo,
+the original absolute Podman target despite a competing `PATH` entry,
+and the run resource flags.
+Image probes,
+builds,
+runs,
+inspection,
+cleanup commands,
+and exit-status propagation share the expected boundary.
+Removing fake sudo produces the explicit `spawnSync sudo ENOENT` failure.
+The fixture is removed.
+These controls use fake sudo and Podman executables;
+they establish generated dispatch and arguments,
+not actual rootful Podman operation or application case execution.
+Actual corrected native consumers remain required for passing browser evidence.
 
 ## Mutation work tmpfs ownership on 2026-10-17
 
