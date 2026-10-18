@@ -9,6 +9,40 @@ The actual full-package task runs under 2 GiB memory and two CPUs.
 The scan excludes the workers' uncommitted partial ports.
 It is a stable remaining-debt measurement,
 not evidence of imminent completion or a reliable time estimate.
+The repeated JSON scan confirms those totals and supplies every diagnostic's actual rule and file.
+The default reporter replaces a clause-relation diagnostic with
+`File is too long to fit on the screen`;
+the JSON receipt avoids losing its attribution.
+Leading clusters are native-batch (2,550 warnings and 23 errors),
+run-prompt-custody-v3 (2,046 warnings and two errors),
+policy-source (1,639 warnings and four errors),
+and action-policy (1,146 warnings and four errors).
+Leading warnings are unsafe member access (3,794),
+unsafe assignment (2,886) and unsafe calls (1,307).
+The structured inventory is `backlog-current-json-summary.json` in the canonical scratch directory.
+This identifies module/type boundaries as the primary remaining lint responsibility.
+The clean configured replay `pi-mimo-failure-rpc-GL67Zf` now closes normally:
+52 successful tool results,
+zero approval selections and 62 successful Luna requests.
+Its completed payload audit checks every saved request,
+60 review requests and 1,025 questions,
+with required-field and excluded-field positive controls passing.
+The complete stderr is three lines and 547 bytes:
+model-retirement information,
+the settled-agent desktop notification's headless `notify-send` warning,
+and ask-user shutdown cleanup information.
+There are no legacy native-transform hooks,
+no resource-reserve traces and no bare shutdown/fatal errors.
+The audit receipt is `coherent-replay-audit-KNN50u`.
+This closes the clean replay queue item for compiled `native-release-sT3Ufn`;
+it does not qualify the workers' unfinished ports or clear the lint backlog.
+The current profiled worker's sampled allocation stacks identify native session-projection clones,
+owned context-emission clones and retained input chunks.
+At its 22:47:44 UTC sample the heap is 358,413,792 bytes,
+with 98,444,104 sampled bytes attributed to `structuredClone` and 53,289,928 to `internChunk`.
+These are allocation attribution,
+not a retainer graph,
+post-GC live-size measurement or proof of the older heap failure's cause.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
