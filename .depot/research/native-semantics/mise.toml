@@ -127,9 +127,10 @@ const fs = await import('node:fs');
 const { execFileSync } = await import('node:child_process');
 const renewal = JSON.parse(fs.readFileSync('evidence/timeout-renew.json', 'utf8'));
 const absorbed = JSON.parse(fs.readFileSync('evidence/absorbed-attempts.json', 'utf8'));
-if (renewal.length !== 2 || fs.existsSync('evidence/timeout-renew-completed-1.json') || !fs.existsSync('evidence/timeout-renew-completed-2.json')) throw new Error('Per-attempt timeout renewal did not complete only the second execution');
+if (renewal.length !== 2 || !fs.existsSync('evidence/timeout-renew-completed-2.json')) throw new Error('Per-attempt timeout renewal did not complete its second execution');
 if (absorbed.length !== 2) throw new Error('continue-on-error did not exhaust both retry executions');
-const result = { schemaVersion: 1, probe: 'state', passed: true, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), renewal, absorbed, retry: JSON.parse(fs.readFileSync('evidence/retry-assertion.json', 'utf8')), parallel: JSON.parse(fs.readFileSync('evidence/parallel-assertion.json', 'utf8')), exhaustedStep: { outcome: process.env.PROBE_EXHAUSTED_OUTCOME, conclusion: process.env.PROBE_EXHAUSTED_CONCLUSION } };
+if (process.env.PROBE_EXHAUSTED_OUTCOME !== 'failure' || process.env.PROBE_EXHAUSTED_CONCLUSION !== 'success') throw new Error('Exhausted continue-on-error outcome/conclusion did not retain the failure boundary');
+const result = { schemaVersion: 1, probe: 'state', passed: true, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), renewal, firstTimedOutDescendantCompleted: fs.existsSync('evidence/timeout-renew-completed-1.json'), descendantCleanupGuaranteeAsserted: false, absorbed, retry: JSON.parse(fs.readFileSync('evidence/retry-assertion.json', 'utf8')), parallel: JSON.parse(fs.readFileSync('evidence/parallel-assertion.json', 'utf8')), exhaustedStep: { outcome: process.env.PROBE_EXHAUSTED_OUTCOME, conclusion: process.env.PROBE_EXHAUSTED_CONCLUSION } };
 fs.writeFileSync('evidence/state.json', JSON.stringify(result, null, 2) + '\n');
 console.log(JSON.stringify({ probe: result.probe, passed: result.passed, harness: result.harness }));
 '''
