@@ -1,5 +1,11 @@
 # Native CI job authentication for container builds
 
+Native run `dzsf27t0xx` authenticated and connected to its owned AMD64 builder,
+then failed before executing the Dockerfile because our fixture combined incompatible exporters.
+The source consumer and registry reads remain unqualified.
+Its native slot was released after fresh terminal status;
+no recovery allocation has been made.
+
 ## Scope and admission
 
 This follow-up closes a cross-product boundary identified during the complete documentation audit.
@@ -46,7 +52,10 @@ The source is retained in the [platform source archive][sources].
 
 `pkg/buildx/commands/build.go` authenticates before beginning a build.
 `pkg/registry/cli.go:WithDepotSave` preserves a local exporter and appends an image exporter for `--save`.
-That permits an exported-file consumer and a saved image from one build request.
+The initial admission incorrectly concluded this permitted both outputs from one request.
+That conclusion is retracted:
+`pkg/buildx/build/build.go:443` rejects multiple exporters in the installed release.
+The existing [exporter troubleshooting record][exporters] already established this behavior.
 Successful export, build authorization, and a subsequent registry request remain distinct assertions.
 
 The [GitHub Actions integration][github-builds] requires a project trust relationship for its
@@ -127,6 +136,59 @@ build identity, exporter and image digests, raw artifact checks,
 negative-control output, independent consumer results, and deletion or absence responses.
 Failures remain evidence and do not authorize an unrecorded replacement allocation.
 
+## First native result
+
+Committed harness `e0bd5030fb0efde9b4b3982583229e10b74525fc` was dispatched at
+`2026-10-18T14:54:05.816Z` as native run `dzsf27t0xx`.
+Fresh status confirmed `failed` at `2026-10-18T14:54:55.510Z`.
+The attempt was `2r16tj84qh`,
+job `l1qjrcg80f`,
+and sandbox `j14m9v5vk3w06g81t85l`.
+The terminal watcher did not invoke its watchdog.
+The native slot was released to the next coordinated profile.
+
+The original `profile.json` records actual `x64`,
+two available CPUs,
+`8336855040` memory bytes,
+and an injected token with no alternative Depot credential.
+The missing-token command exited one with
+`missing API token, please run depot login`.
+The positive ordinary CLI request then obtained `200` responses for one `CreateBuild`,
+BuildKit connection lookup,
+health/status reporting,
+and `FinishBuild`.
+Its actual relay admitted the original injected credential,
+forwarded twenty permitted requests,
+and forwarded no account or project listing.
+The CLI reported an AMD64 machine launch and connection.
+This establishes build admission and connection authorization,
+not a successful exported build.
+
+Our `--save` plus `--output type=local` fixture repeated the known incompatible exporter combination.
+The CLI exited one after `7948` milliseconds with `multiple outputs currently unsupported`.
+The Dockerfile consumer did not execute,
+build metadata was not produced,
+and registry reads were not reached.
+This is a fixture defect and a failed preflight scope,
+not evidence that native job credentials lack build authorization.
+
+The original seven-member ZIP is `2758` bytes,
+with SHA-256 `2455167ace5a106c67f332a4579208265a4b7622ac48f6257de9d3d3a35dba03`.
+Its bytes match the artifact API size and Action log digest;
+all member CRCs pass.
+The artifact API did not return a vendor digest.
+The [campaign receipt][receipt] preserves the raw source and controls.
+
+A correction must use a single exporter,
+retain this failure,
+and separately admit another native request before allocation.
+The proposed local-only consumer would reserve a further `USD 0.23`,
+for `USD 0.46` cumulative full-window timestamp-compute arithmetic under the admitted `USD 1` guard.
+Registry image-read authorization would remain a distinct boundary if no image were exported.
+The solely owned project remains pending exact cleanup or a separately admitted correction.
+
 [native-builds]: https://depot.dev/docs/container-builds/integrations/depot-ci
 [github-builds]: https://depot.dev/docs/container-builds/integrations/github-actions
 [sources]: ../audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz
+[exporters]: ../troubleshooting/depot-buildkit-exporters.md
+[receipt]: ../audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json
