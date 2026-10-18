@@ -329,6 +329,22 @@
       "passed": 64,
       "failed": 5,
       "evidence": "doc/planning/depot-complete-coverage-typescript-fuzz-receipts.json.gz"
+    },
+    "nativeRestoration": {
+      "state": "qualified_same_layout_through_permission_and_prohibition",
+      "run": 39126304854,
+      "sourceAssertion": "none actual unresolved versus expected unspecified",
+      "arbitraryRelocationQualified": false
+    },
+    "browserAndE2e": {
+      "state": "browser_terminal_e2e_discovery_blocked",
+      "run": 39126466632,
+      "browserPassed": 82,
+      "browserFailed": 1,
+      "browserSkipped": 1,
+      "browserFiles": 8,
+      "e2eBodiesExecuted": 0,
+      "pending": "Source owning root E2E with explicit four active DOM spec selectors"
     }
   },
   "coverageReviewComplete": false,
@@ -638,6 +654,14 @@
       "sha256": "0f8a23ad24fc94ef3fac95ec8be759566f7ddf52132a5e93de3d57b82e2a63fa",
       "artifact": 12134106934,
       "run": 39120929405
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 8319868,
+      "sha256": "27f3d6eab5756c66207278995784ccb21b24d16200abce96c98c6bd62e6d7d74",
+      "rawBytes": 58691244,
+      "rawSha256": "6e66fab3d1d05ed8d286c14a2ece00aa614e3dcf00daf6e5ab1d316e95d71d75"
     }
   ],
   "execution": [
@@ -1183,6 +1207,112 @@
           ]
         }
       ]
+    },
+    {
+      "profile": "browser-owner-baseline",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39123458425,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39123458425",
+      "workflowCommit": "6328647d8b7113a920d777044944612f3bc47a58",
+      "invocations": 45,
+      "passed": 42,
+      "failed": 3,
+      "artifacts": [
+        {
+          "id": 12134739685,
+          "sha256": "sha256:154c06a48203ca9a316e9014701f5e97308fdd542bc5fe760b0ba098e1dee765",
+          "memberCount": 66,
+          "declaredArtifactSetComplete": true
+        }
+      ],
+      "classification": "Image1.63 versus runner1.64: 6 enumerated cases, zero bodies",
+      "evidence": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz"
+    },
+    {
+      "profile": "native-restored",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39124269347,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39124269347",
+      "workflowCommit": "28bf38b0281f3bcace40b70d8b989d6e0ef7f875",
+      "invocations": 45,
+      "passed": 44,
+      "failed": 1,
+      "artifacts": [
+        {
+          "id": 12135985129,
+          "sha256": "sha256:6048f08c656d01ca9742fc53c1907ca94b854323907369016a0fc54262c0e3df",
+          "memberCount": 33802,
+          "declaredArtifactSetComplete": true
+        },
+        {
+          "id": 12135386453,
+          "sha256": "sha256:3e8b0d58390cb99c4e266f1a897d9617084afd9fae61a53c8fcc1fdf9be8c8e9",
+          "memberCount": 6,
+          "declaredArtifactSetComplete": true
+        }
+      ],
+      "classification": "Producer44 pass; restored1036 declared hashes but materialized topology prevents first import",
+      "evidence": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz"
+    },
+    {
+      "profile": "native-topology",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39126088565,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39126088565",
+      "workflowCommit": "0d8123ea327f5beddedcf3ba99d698288ea6d979",
+      "invocations": 5,
+      "passed": 1,
+      "failed": 4,
+      "artifacts": [
+        {
+          "id": 12136396934,
+          "sha256": "sha256:6bcbc202745bca2b8fcb955242c07f81683cb69c59f56cd1ac550d7b2c6af505",
+          "memberCount": 11,
+          "declaredArtifactSetComplete": true
+        }
+      ],
+      "classification": "Activation-only control changes missing export to missing which; namespace suffix harness error",
+      "evidence": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz"
+    },
+    {
+      "profile": "native-dependency-topology",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39126304854,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39126304854",
+      "workflowCommit": "bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e",
+      "invocations": 6,
+      "passed": 4,
+      "failed": 2,
+      "artifacts": [
+        {
+          "id": 12136680105,
+          "sha256": "sha256:6892d24a750435fd48cf3fdc7c13a69737bb5f2f4488faf6dd49b0f67599dec6",
+          "memberCount": 15,
+          "declaredArtifactSetComplete": true
+        }
+      ],
+      "classification": "Source-owned symlink topology restores actual permission/prohibition; none assertion remains red",
+      "evidence": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz"
+    },
+    {
+      "profile": "browser-matched",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39126466632,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39126466632",
+      "workflowCommit": "552831830ef2f059b7efa5149fe20f053428c220",
+      "invocations": 50,
+      "passed": 47,
+      "failed": 3,
+      "artifacts": [
+        {
+          "id": 12136217024,
+          "sha256": "sha256:65e76133bf5235774ff6dd8acaf5ce9c39dea777e04c73cc3c2954fed177a4bf",
+          "memberCount": 55,
+          "declaredArtifactSetComplete": true
+        }
+      ],
+      "classification": "Browser82 pass1 failed1 skipped; E2E discovery blocked on paused package, zero bodies",
+      "evidence": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz"
     }
   ],
   "familySummary": {
@@ -43614,5 +43744,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T11:34:24.277Z"
+  "latestEvidenceAt": "2026-10-18T12:19:31.019Z"
 }

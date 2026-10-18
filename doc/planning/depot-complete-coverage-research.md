@@ -1020,7 +1020,7 @@ arbitrary filesystem relocation and another platform are unmeasured.
 
 Run `39126466632`,
 immutable harness `552831830ef2f059b7efa5149fe20f053428c220`,
-is the sole active coverage job.
+is terminal with all 50 owning invocations reached: 47 passed and 3 failed.
 Its finite plan has 50 owning invocations:
 42 shared builds,
 the authored browser-property bundle and product page build,
@@ -1039,4 +1039,32 @@ The job remains bounded to 8 CPUs,
 one worker,
 zero retries,
 and finite per-task and suite limits.
-No terminal result is credited before collection.
+The actual browser owners execute all eight planned specifications in each engine.
+Chromium passes 28 cases;
+Firefox passes 28;
+WebKit passes 26,
+fails the authored OPFS availability assertion (false versus true),
+and skips the authored fs-path OPFS write case.
+These are 82 passing browser cases,
+one failed assertion,
+and one authored skip.
+The property owner requests 25 runs per browser property;
+its per-backend report remains in the exact task log.
+Both product page color-scheme screenshot assertions pass in every engine.
+
+The original root E2E discovery also imports the inactive
+`package-paused/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts`
+and fails its missing `@monochromatic-dev/module-or-throw` import before any E2E body.
+The four active DOM specifications therefore still require explicit source-owner selectors.
+This discovery failure is retained rather than silently excluding the inactive root.
+All terminal logs,
+original archive member hashes,
+native topology controls,
+and parsed browser cases are retained in
+`depot-complete-coverage-artifact-browser-receipts.json.gz`.
+
+The finite remaining queue includes the explicit active E2E consumer,
+TOML Go conformance,
+deepmerge declared-type/compiler controls,
+and the actual mutation fixture container lifecycle.
+Packed installs and feature/assertion inventory remain separate open boundaries.
