@@ -69,8 +69,34 @@ The operating frontier is spending authority,
 qualified-check enforcement and infrastructure-recovery autonomy.
 Use the [frontier review](../planning/depot-developer-interview-frontier-review.md)
 for its option costs and rankings.
-Begin that entire frontier together after final parent-document verification;
-do not implement production routing until shared understanding is confirmed.
+Final parent verification passed:
+scoped Markdown lint,
+rendered inspection,
+JSON formatting,
+source and cleanup assertions,
+and 11 local links in the new parent notes.
+The independent cache review verified 16 ZIPs,
+67 member hashes,
+224 step intervals and 42 successful build/consumer task invocations.
+Its fresh GitHub API reads independently confirmed every artifact digest.
+
+The entire first post-research frontier was asked together in the question tool on 2026-10-18:
+
+- Q1:
+  standing monthly owner-reserved headroom or approval of each paid batch.
+- Q2:
+  qualify new checks and then enforce them at publication boundaries,
+  or keep them advisory.
+- Q3:
+  bounded automatic infrastructure retry and eligible-provider fallback,
+  or require an explicit rerun.
+
+The recommended choices are standing headroom,
+qualified enforcement and bounded automatic recovery.
+Answers are pending;
+preselected options are not answers or authorization.
+Recompute dependent decisions after the response.
+Do not implement production routing until shared understanding is confirmed.
 The main agent owns experiment harnesses and the combined decision tree.
 The research agents own separate cited capability,
 routing and cache notes.
