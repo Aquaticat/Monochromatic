@@ -42,6 +42,29 @@ The retained collector separates original source capture,
 selection,
 and interpretation.
 
+## Retained input storage
+
+Retained context contains original immutable source occurrences and publication capabilities.
+Its aggregate is not a transport string.
+The run owner no longer serializes the entire collection to update an unused byte counter.
+That counter caused `RangeError: Invalid string length` during a real MiMo lint session,
+before its proposed commands reached assessment.
+Removing the counter also removes its wiring through emission,
+rendering,
+publication,
+and context capture.
+Actual manager receipt accounting remains in `run-prompt-custody-v3/loaded-pool.mjs`;
+its counters have consumers and count separate source records.
+
+`test:native:retained-context-capacity` passes genuine manager argument frames through the original pool
+and run context owner.
+Its separate records total 686,653,200 bytes,
+exceeding the tested engine's 536,870,888-character string limit.
+The test checks original publication identities,
+repeat observation,
+and rejection after the native root changes.
+The old build fails at the same `charge()` call as the reported session.
+
 ## Verification
 
 `test:native:resource-input`,
