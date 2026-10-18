@@ -469,7 +469,9 @@ before the other queued work.
     is a finalist (`runOff` only renames the stage, `pass-consistency-carry-ask.ts:328`),
     and `promptUniqueClient` replays the first reply for a repeated digest, so the run-off never decides;
     the finalist extension makes that case commoner (2-1-1 over three candidates),
-    so one fix round for R1 to R7, each red first, runs on top of the extension once it lands;
+    so one fix round for R1 to R7, each red first, runs in `w184` on top of the extension's head `114c8dbc52`;
+    the first stored-artifact check searched only the pooled runs directory (164 legacy artifacts, none with a
+    consistency record) and is re-run over the throwaway TianqiChen666 run directories;
     a relaunch waits for it);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
