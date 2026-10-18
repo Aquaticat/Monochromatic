@@ -1,0 +1,33 @@
+name: depot-cache-auth-probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+jobs:
+  identity:
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Freeze the experiment bootstrap and avoid release-discovery API calls.
+          version: 2026.10.9
+          install: false
+          cache: false
+      - run: mise install node
+      - name: Inspect job identity and conditionally probe tiny Cache roundtrip
+        id: probe
+        working-directory: .depot/probe/cache-auth
+        run: mise run //.depot/probe/cache-auth:observe
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: depot-cache-job-identity
+          path: ${{ steps.probe.outputs.evidence-path }}
+          if-no-files-found: error
+          retention-days: 7
