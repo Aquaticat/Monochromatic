@@ -574,13 +574,15 @@ pub fn fixed_facts(mode: u8) -> FixedFacts {
 ///  `--porcelain`,
 ///  `--long` and `-z`/`--null`.
 ///  Each start is
-///       the shortest abbreviation Git accepts for that option.
+///       the shortest abbreviation Git accepts for that option (`--l` for `--long`),
+///  except `--po`,
+///       which Git itself refuses as ambiguous and which is kept as a looser start.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const COMMIT_DRY_RUN_STARTS = ['--dr', '--sh', '--po', '--lo', '--nu'];
+/// const COMMIT_DRY_RUN_STARTS = ['--dr', '--sh', '--po', '--l', '--nu'];
 /// ```
-const COMMIT_DRY_RUN_STARTS: &[&[u8]] = &[b"--dr", b"--sh", b"--po", b"--lo", b"--nu"];
+const COMMIT_DRY_RUN_STARTS: &[&[u8]] = &[b"--dr", b"--sh", b"--po", b"--l", b"--nu"];
 
 /// The short option of `git commit` that implies a dry run:
 ///  `-z`.

@@ -450,7 +450,79 @@ failure/skip counts,
 source identities,
 and command logs accompany the APKs for the parent's headful device consumer.
 
+### Successful Android artifacts and JVM consumers
+
+The corrected run `1jxc80q7q7` finished successfully at workflow `8256d8bb9d`,
+still checking out the identical frozen application source.
+Its [retained receipts and actual JUnit case index][android-receipts]
+are 96,498 compressed bytes,
+with SHA-256 `b517d9c2ff726f96c1afedc8c5bbb5ed2a389125ccc41913a1c3292bcf7d85e1`.
+The downloaded ZIP matches the provider's 68,983,121-byte metadata.
+Native CI metadata did not provide a server archive digest;
+the local archive digest and all captured APK,
+native payload,
+JUnit,
+and command-log hashes are retained and checked.
+
+The pair passed signature,
+ZIP,
+package,
+instrumentation-target,
+runner,
+and certificate-agreement checks:
+
+- Debug APK:
+  164,612,582 bytes,
+  SHA-256 `96c1c48857fc6d6acf0f8bb488586cfefb39fd2950cb202685f15c7520c82eca`.
+- AndroidTest APK:
+  491,989 bytes,
+  SHA-256 `f1e75619b158d07ce3fdec9af1cd6fa084e4645acec2aff9af7f83865cd4aa49`.
+
+The APKs are retained privately and handed to the parent device lane as a matching pair.
+Their common certificate differs from the first run's certificate.
+No installed-device compatibility is inferred from APK signatures alone.
+The complete debug ZIP contains 10 native libraries:
+AndroidX graphics-path libraries for all 4 advertised ABIs,
+and the engine plus Turso SDK/sync libraries for the 2 declared 64-bit build targets.
+Both engine libraries expose 27 Java JNI symbols.
+Every packaged library matches its corresponding Gradle stripped-native intermediate.
+Every applicable ELF LOAD and RELRO check passes the corrected classifier.
+No native libraries are packaged in the AndroidTest APK.
+The extra 32-bit graphics-path libraries do not establish a working 32-bit engine.
+
+The second JVM run again produced 127 reports and 1,289 passing cases,
+with zero skipped cases,
+failures,
+or errors.
+The case-identity multiset matches the first run.
+Tracked source remained unchanged.
+The byte comparison is narrower:
+the 4 AndroidX payloads match between builds,
+while the 6 engine/Turso payloads differ.
+The retained evidence records both hashes;
+the cause is not established,
+and source identity is not being promoted into a bit-reproducibility claim.
+
+The parent consumed the exact second-run pair on a private headful API 37,
+`x86_64` device using emulator `37.2.12` and host GPU rendering.
+Its actual page size was 16,384 bytes.
+APK hashes and installation passed,
+the invented FLAC/Opus/MP3 fixture rows were indexed,
+and `MainActivity` became the actual top-resumed activity.
+The frozen source's 4 instrumentation Kotlin files declare 16 cases;
+the source-derived catalog matched all 16 executed identities.
+Of those,
+14 passed,
+2 failed,
+and zero were skipped.
+The runner completed normally and the parent retained the raw failures and verified cleanup.
+The public device receipt and exact failure identities are pending incorporation.
+These are consumer assertion failures,
+separate from successful APK assembly and host-JVM tests.
+The newer main checkout's 3 additional instrumentation classes are outside the frozen cohort.
+
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
+[android-receipts]: depot-complete-coverage-android-receipts.json.gz
 
 ## Remaining Node static and build campaign
 
@@ -495,26 +567,67 @@ then cancellation was requested.
 It is excluded from static-wave coverage.
 The corrected dispatch occurs only after the push completes and `git ls-remote` verifies the expected head.
 Cancellation acknowledgement and terminal job states remain separate evidence.
+The stale run is terminal `cancelled`,
+including both jobs.
+The intended static wave is run `39109937957`,
+whose actual API record binds head `82ea6108c57c9ef9cf6880e6d4506679812a6776`
+and workflow name `Research remaining Linux Node quality and build graph`.
+That run is now terminal.
+All 465 scheduled commands ran:
+418 succeeded and 47 failed.
+The failures comprise a product build,
+39 Oxlint tasks,
+and 7 type-check tasks.
+The Doodle Widget build reports `Could not resolve 'canvg'` from its `jspdf` consumer.
+Type failures involving an absent Auto Mode build remain prerequisite failures pending the owning build;
+they are not being counted wholesale as source type defects.
+All cloud inventories match the frozen 2,425-task names hash.
+The builds also regenerated 17 tracked derived outputs,
+including Claude plugin bundles and the IntelliJ JAR.
+Those paths are retained explicitly;
+this wave does not support an unchanged-tracked-tree claim.
+
+The next default-test profile selects 24 roots with 75 tracked default-shaped files.
+It runs the owning tasks and reviewed build prerequisites in 2 sequential 8 CPU/32 GB jobs,
+with a 15-minute job cap,
+90-second command cap,
+and 9-minute campaign cap.
+Its 127 scheduled invocations include shared build prerequisites.
+Reviewed Electron cases import the produced app domain modules or perform disposable dry-run staging;
+they do not establish a launched Electron application.
+The terminal-launch test only checks the exported function's type,
+and KWin cases exercise pure command selection.
+The VM builder's default task has zero tracked default-shaped files;
+its exit is a discovery control,
+not credit for executed tests or a VM consumer.
+Agent-host,
+transport,
+process,
+and native-prerequisite profiles remain separate pending work.
+The profile is dispatched as run `39112145763`,
+with the API-confirmed workflow head `588275a55c7efefef93dbbc529078d31fdcfafd8`.
+
+Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
+They are not covered by the Cargo campaign.
+Its source owner checks installed Pi `1.2.0`
+and the external upstream revision `06a466935536f8c9bcacb2d5efc0fc021be1bdff`
+before emitting the host graph.
+This qualified external checkout is an additional build input,
+distinct from the frozen first-party tree.
+The build already rejects recursive invocation through `PI_AUTO_MODE_NATIVE_BUILD`.
+Its actual session/transport fixtures and capacity cases still require separate bounded profiles.
 
 The active queue remains independently verifiable:
 
-- Review and execute the frozen Android product's SDK/NDK setup,
-  debug APK build,
-  AndroidTest APK build,
-  and applicable host JVM unit tests.
-  Use a single 8 CPU/32 GB cloud job capped at 30 minutes.
-  Preserve actual tool,
-  ABI,
-  layout,
-  source,
-  and APK hashes for the parent's local headful device consumer.
-  No emulator runs in this lane.
+- Incorporate the parent's public receipt for the completed source-bound device consumer,
+  preserving its 2 failed assertions and the current-main source drift.
+  Investigate the measured engine/Turso byte differences before making any reproducible-build claim.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
   and native/Kotlin/Slint/build-tool consumers.
-- Complete the matched provider repeat and filesystem-watch positive control
-  for the four failed default suites.
+- Publish the completed matched provider repeat `39106784923`
+  and filesystem-watch positive controls for the four failed default suites.
 - Execute remaining applicable Node quality,
   product,
   plugin,
@@ -543,8 +656,7 @@ The active queue remains independently verifiable:
 
 ## Current next action
 
-Complete the immutable package/feature/command manifest,
-inspect the first wave's terminal receipts,
-and use measured setup,
-execution,
-and failure evidence to form subsequent applicable Linux shards.
+Collect the running static wave's terminal receipts,
+finish default-test process and recursion review,
+then execute the applicable default-test and bounded non-default profiles.
+The immutable feature and consumer manifest remains under semantic review.

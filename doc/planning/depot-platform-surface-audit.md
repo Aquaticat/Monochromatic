@@ -65,6 +65,19 @@ The expanded checkpoint contains 542 source files from those repositories,
 including the complete installed CLI implementation and additional SDK and integration source.
 Retrieval state and substantive review state are separate fields.
 
+A further source pass captures metadata for all 93 enumerated official repositories
+and 142 additional root README,
+license,
+policy,
+and dependency-manifest files.
+The public `depot/docs` repository at `e40bfe1683ae561156d415513f2a648f89e82f12` contains 117 MDX pages.
+Every public-source route matched a deployed page.
+The deployed GitHub Actions API,
+Nx Cache,
+and Xcode Cache pages are absent from that public source tree.
+The compressed receipt preserves this route map and the exact public MDX source.
+Claim-level content differences and supplementary implementation relevance remain under review.
+
 The installed CLI is audited against release `v2.102.23`,
 source commit `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
 Visible help traversal initially missed a single-space command column;
@@ -400,11 +413,33 @@ The authorized recovery used a fresh five-minute request guard,
 the same builder sizes,
 and the same USD 1 timestamp-compute ceiling.
 That model is not proof of an invoice cap or aggregate account expenditure.
-The shared image and project remain held for independent native CI and GitHub consumers.
+The shared images and project remain held for independent native CI and GitHub consumers.
+
+Build `d0xtstnptt` exercised a multi-node local filesystem exporter with the base stage forced to execute.
+The exported x64 identity reports 16 CPUs,
+32,997,220,352 memory bytes,
+and AMD EPYC 9R45.
+The ARM identity reports 16 CPUs,
+33,020,604,416 memory bytes,
+and Neoverse-V2.
+Both report Node 24.22.0 and the exact committed harness and frozen repository source.
+This is actual builder geometry and local-export evidence.
+
+Build `31w6c0wlvk` produced a native single-architecture OCI archive without `--save`.
+Skopeo separately copied the saved multi-architecture registry image into an OCI archive with all digests preserved.
+Archive consumers verified every reachable blob's size and digest,
+the runtime program,
+the healthcheck configuration,
+and platform identities.
+Native OCI statements contain empty `subject` arrays;
+their descriptor annotations associate the attestation manifest with the AMD64 runtime digest.
+The registry-derived archive retains SPDX and provenance statements whose subjects match both runtime digests.
+These representations are not equivalent for consumers that require in-toto subject fields.
+The deciding exporter source and consequences remain under research.
 
 ## Derived CI image consumer control
 
-A separate campaign is queued for an ordinary OCI job image derived from the exact owned service index.
+A separate campaign built an ordinary OCI job image from the exact owned service index.
 The original service image stays unchanged and retained for active consumers.
 Parent-run GitHub job `117622633314` in workflow run `39109462308` retained the service's healthcheck,
 reached healthy state,
@@ -412,18 +447,56 @@ then encountered checkout's GitHub REST download fallback because the job image 
 The job reached its five-minute guard during archive-download retries.
 This differs from the local Podman healthcheck loss and does not establish a shared runtime limitation.
 
-The derived image will add the actual operating-system prerequisites of the pinned setup actions,
-record installed package and tool versions,
-disable the inherited HTTP-service healthcheck for job-container use,
-and retain a separate immutable digest and attestations.
+Derived build `6hb1g0j21b` passed with AMD64 and ARM64 outputs at source
+`0b471538cd549cb2181088803c1e0a6d542d791e`.
+Its distinct immutable index digest is
+`sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346`.
+Actual local build and runtime Git controls passed before remote allocation.
+The derived image adds Git 2.39.5,
+curl 7.88.1,
+CA certificates,
+GNU tar 1.34,
+gzip 1.12,
+xz 5.4.1,
+and zstd 1.5.4.
+Git meets checkout's minimum;
+Git-policy tests still require their separate Git 2.56 toolchain.
+Both derived configurations use `CMD ["bash"]` and have no active service healthcheck.
+`/opt/depot-research/image-tools.json` records each platform's actual tools,
+Debian package versions,
+immutable base,
+and derived source identity.
 The audited action inputs are `jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c`,
 Mise `2026.10.9`,
 `install: false`,
 and `cache: false`.
 Checkout is pinned to `de0fac2e4500dabe0009e67214ff5f5447ce83dd`.
 The consumer harness source is `1438ecde4b643a606e0a75f85067e3d0153e9bb5`.
-The next action is source inspection and local prerequisite controls,
-followed by a bounded two-architecture build if its reserved timestamp-compute estimate fits the same USD 1 ceiling.
+The local control caught the original service's inherited `BUILD_HARNESS_SHA` environment value
+overriding a derived argument with the same name.
+The corrected fixture uses a distinct `CI_IMAGE_HARNESS_SHA` argument to identify the derived build.
+The original service's environment remains inherited and separately identified.
+
+Independent registry reads verified both derived configurations and their SPDX/provenance subject bindings.
+The token issued for original build `fxzj58r8m2` before the derived build existed
+successfully read the derived index,
+configurations,
+attestations,
+and final filesystem layers.
+This proves cross-build read access inside the same project;
+cross-project isolation remains unexercised.
+After positive authenticated reads,
+an owned empty blob-upload initiation returned HTTP 403 with registry error `DENIED`.
+No upload was created.
+
+The next action is the independent GitHub and native CI job-container consumer,
+while forwarding,
+remote source,
+and firstparty cache-mount campaigns continue.
+The timestamp-compute model covers 139,103 milliseconds across native requests,
+giving USD 0.1854707 at the declared two-builder rate.
+This is a request-window estimate,
+not billed usage or an aggregate invoice guarantee.
 No account-wide billing or usage query is authorized or required by this campaign.
 
 ## Unreleased CLI changes expose additional research cases

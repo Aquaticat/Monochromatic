@@ -1634,6 +1634,24 @@ that is verification, not a decision for the user.
   `bin/test-container.mjs`, `bin/mutate-container.mjs` with `--cargo-test-arg` filters); `wg-quicker-exempt` and
   `ide` belong to other owners. Next: release-artifact performance gates (the harness is gone, a new one is
   needed) and the scanner Windows pathname mutation rerun (task 23, needs a Windows VM).
+  Later on 2026-10-18: the nextest gate passed 1951 tests and all 78 planted controls were noticed on `main` after the
+  matcher accepted nextest's `FAIL + LEAK` line (`480c6a768a`). Fuzzing found a scratch leak in the manual push
+  probe: the cleanup guard was created after early error returns, so a probe whose Git could not start, or whose
+  hook captured nothing, left `cli-git-push-facts-<uuid>` (ref names and tips) in the temp directory, and the leaked
+  directories made a later fuzz run stall in `mkdir`; fixed in `f8cd9595c6` with a test that fails on the old
+  code. The scoped mutation run over `manual_push_probe.rs` left two survivors, `>` replaced by `==` or `>=` in the
+  capture size check; the check is now `exceeds_capture_limit`, tested at the limit and one byte past it
+  (`f28643eb9e`). The `wrapper_controls` fuzz target then crashed on `commit --l`: Git 2.56.0 accepts `--l` for
+  `--long`, a dry run, so the wrapper was right and the oracle's start list said `--lo`; fixed in `0537053603`
+  with a fixed case that failed first. Queued, in order: (1) rerun the gate (image tag `nxt3`, unit `cli-git-nxt3`,
+  logs `~/temp/agent/nxt3-container.log` and `nxt3-mutation.log`) and confirm the two survivors are killed; (2) read
+  the `wrapper_controls` rerun (unit `cli-git-fuzz-wc`, log `~/temp/agent/fuzz-wc-20261018.log`); the other 11
+  targets passed 900 s; (3) release 0.1.6 of `monochromatic-git-policy-cli` for the probe leak fix (bump
+  `Cargo.toml`, `README.md`, `Cargo.lock`, run `cli.fuzz:lock:members`, dry-run publish, push, verify crates.io and
+  the GitHub release, `mise upgrade cargo:monochromatic-git-policy-cli`, `git checkout -- mise.lock`); (4) move the
+  `monochromatic-lint` container test and mutation flows to nextest; (5) remove the worktree
+  `.claude/worktrees/cli-git-nextest-gate`, the branch `chore/cli-git-nextest-gate` and the image tags `nxt`, `nxt2`,
+  `nxt3`.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers

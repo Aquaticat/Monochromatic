@@ -8,7 +8,7 @@ run = "cargo fuzz list --fuzz-dir ."
 
 [tasks.test]
 description = "Run generator and invariant controls"
-run = "cargo test --lib"
+run = "cargo nextest run --lib"
 
 [tasks."test:planted"]
 description = "Plant one defect per fuzz target in a copy of the linter and require the generator controls to fail"

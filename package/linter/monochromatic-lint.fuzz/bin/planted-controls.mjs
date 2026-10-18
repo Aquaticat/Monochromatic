@@ -78,7 +78,7 @@ const plants = [
 
 /** Run the generator controls in the copied sidecar; report status and the failing control names. */
 function controls({ root, targetDirectory }) {
-  const run = spawnSync('cargo', ['test', '--lib', '--offline', '--locked', '--', '--test-threads=2'], {
+  const run = spawnSync('cargo', ['nextest', 'run', '--lib', '--offline', '--locked'], {
     cwd: join(root, 'package/linter/monochromatic-lint.fuzz'),
     encoding: 'utf8',
     env: { ...process.env, CARGO_TARGET_DIR: targetDirectory, CARGO_BUILD_JOBS: '2' },
@@ -89,8 +89,10 @@ function controls({ root, targetDirectory }) {
   const output = `${run.stdout}\n${run.stderr}`;
   return {
     status: run.status,
-    failed: [...output.matchAll(/^test (\S+) \.\.\. FAILED$/gmu)].map(match => match[1]),
-    passed: [...output.matchAll(/^test (\S+) \.\.\. ok$/gmu)].length,
+    // nextest prints `FAIL [ 0.012s] ( 3/38) <binary id> <test name>`, or `FAIL + LEAK [` when the failed test left a
+    // child process behind, and repeats each failure in its closing recap; the test name ends the line.
+    failed: [...new Set([...output.matchAll(/^\s*FAIL\b[^[]*\[.*\s(\S+)$/gmu)].map(match => match[1]))],
+    passed: [...output.matchAll(/^\s*PASS\b[^[]*\[/gmu)].length,
     output,
   };
 }

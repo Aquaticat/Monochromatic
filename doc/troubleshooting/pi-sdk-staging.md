@@ -9132,4 +9132,42 @@ not a signal's name or prototype.
 The repair needs a narrowly scoped native-control representation while leaving ordinary message/tool copying strict.
 `node26-abort-signal-probe.log` and `node26-abort-controller-source.js` in
 `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018` preserve the probe and deciding source.
-The source repair and its final consumer verification remain open in the canonical frontier.
+The opaque-control repair passes the dedicated consumer,
+all 14 real session-action modes with manager-evidence assertions,
+the affected native matrix and six separately rebuilt guard mutations.
+The canonical frontier retains the remaining lint and final configured-consumer queue.
+
+## CLI startup classification and complete stderr
+
+The extra native CLI process test initially reports
+`AssessmentTransportError: AUTO_MODE_LLMGATEWAY_API_KEY is unavailable for the assessment request`
+under the `reload-policy-relevance` logger tag.
+Its selected primary model already has a synthetic credential,
+but startup policy classification uses a separate credential and transport.
+The fixture rejects every fetch,
+so supplying the missing credential alone would still leave a fixture transport failure.
+This is separate from the native cancellation-control defect.
+
+The isolated child now has a synthetic classifier credential.
+Its preload answers only the actual startup decisions route locally,
+binds predicate answers to the received question names,
+and rejects every other fetch.
+A private exit receipt proves one local classification request in the passing run.
+The actual CLI returns its requested RPC state,
+makes zero external provider requests and closes with empty captured stderr.
+`native-cli-local-classification.log` records that result on `native-release-dXedQJ`.
+
+The parent also waits for child `close` before asserting stderr,
+replacing its earlier wait for `exit`.
+Node process termination and inherited stream closure are different boundaries.
+The installed Node `v26.12.0` source emits `close` after its expected stream-close count is reached.
+The positive-control probe gives a descendant the child's stderr pipe,
+observes the child exit,
+then releases the descendant's write.
+Captured stderr is empty at `exit` and contains `late-fixture-stderr` at `close`.
+The earlier wait could therefore miss a shutdown diagnostic.
+The test retains the complete stream rather than filtering diagnostic lines.
+
+`node-stdio-close-receipt.json`,
+`node-stdio-close-probe.log` and `node26-child-process-source.js`
+in `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018` retain the causal probe and deciding source.

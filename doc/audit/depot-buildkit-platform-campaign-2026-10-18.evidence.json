@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T07:47:35.301Z",
+  "collectedAt": "2026-10-18T08:40:38.392Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
-  "status": "Research checkpoint; remaining advanced exporters and repository cache mounts unresolved",
+  "status": "Research ongoing: native filesystem and OCI exports, registry bridge and derived OCI job image exercised; archive statement subjects differ; forwarding and repository cache mounts pending",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 679922,
-    "sha256": "b66f1e5dc0dc8bbc7e3769bf170180d105661ddea6250b4dc2cc181627897aeb"
+    "bytes": 1725200,
+    "sha256": "6eeb3a2ad560c5c55962f472ace24347f01d4a8bd08b27d7707d073872c58b8a"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -145,7 +145,9 @@
     "d9cf7458443c5c4b7d169ba18cdb80a7fcf34cbf",
     "b00f8c834b51bed8ba619dddb15b24274f4350ad",
     "898e2fdd6aac05471cf340231a50042ba6e43bc7",
-    "5cfc1d90f92154cf62fa95789fad9bd7deeda208"
+    "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+    "0b471538cd549cb2181088803c1e0a6d542d791e",
+    "aa89e372f09c82286695d80cddf7f86b602051c9"
   ],
   "attempts": [
     {
@@ -157,7 +159,8 @@
       "startedAt": "2026-10-18T07:08:39.522Z",
       "finishedAt": "2026-10-18T07:08:50.509Z",
       "elapsedMilliseconds": 10986,
-      "guardFired": false
+      "guardFired": false,
+      "projectId": "27m5m3vjlv"
     },
     {
       "receipt": "service-build-v2.json",
@@ -168,7 +171,8 @@
       "startedAt": "2026-10-18T07:13:35.925Z",
       "finishedAt": "2026-10-18T07:13:48.649Z",
       "elapsedMilliseconds": 12724,
-      "guardFired": false
+      "guardFired": false,
+      "projectId": "27m5m3vjlv"
     },
     {
       "receipt": "service-build-v3.json",
@@ -179,7 +183,8 @@
       "startedAt": "2026-10-18T07:18:30.779Z",
       "finishedAt": "2026-10-18T07:18:46.657Z",
       "elapsedMilliseconds": 15878,
-      "guardFired": false
+      "guardFired": false,
+      "projectId": "27m5m3vjlv"
     },
     {
       "receipt": "service-build-v4.json",
@@ -190,9 +195,1038 @@
       "startedAt": "2026-10-18T07:25:44.512Z",
       "finishedAt": "2026-10-18T07:26:12.515Z",
       "elapsedMilliseconds": 28003,
-      "guardFired": false
+      "guardFired": false,
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "source-export.json",
+      "buildId": "d0xtstnptt",
+      "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T07:57:21.923Z",
+      "finishedAt": "2026-10-18T07:57:34.954Z",
+      "elapsedMilliseconds": 13030,
+      "guardFired": false,
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "single-architecture-oci-export.json",
+      "buildId": "31w6c0wlvk",
+      "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T07:59:24.744Z",
+      "finishedAt": "2026-10-18T07:59:47.771Z",
+      "elapsedMilliseconds": 23026,
+      "guardFired": false,
+      "phase": "single-architecture-oci",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "ci-derived-image-build.json",
+      "buildId": "6hb1g0j21b",
+      "source": "0b471538cd549cb2181088803c1e0a6d542d791e",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T08:19:48.202Z",
+      "finishedAt": "2026-10-18T08:20:23.658Z",
+      "elapsedMilliseconds": 35456,
+      "guardFired": false,
+      "phase": "ci-derived",
+      "projectId": "27m5m3vjlv"
     }
   ],
+  "localExport": {
+    "kind": "native-build",
+    "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+    "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "projectId": "27m5m3vjlv",
+    "args": [
+      "bake",
+      "--file",
+      "docker-bake.hcl",
+      "--project",
+      "27m5m3vjlv",
+      "--set",
+      "source.no-cache-filter=base",
+      "--metadata-file",
+      "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/source-export/metadata.json",
+      "--progress",
+      "plain",
+      "source"
+    ],
+    "startedAt": "2026-10-18T07:57:21.923Z",
+    "maximumMilliseconds": 60000,
+    "maximumArchitectureBuilders": 2,
+    "cpuPerBuilder": 16,
+    "memoryGiBPerBuilder": 32,
+    "budget": {
+      "priorObservedMilliseconds": 67591,
+      "reservedUsd": 0.17012133333333335,
+      "ceilingUsd": 1,
+      "invoiceCapProven": false
+    },
+    "purpose": "Fresh runtime identity and actual multi-node local filesystem export; no image registry save",
+    "finishedAt": "2026-10-18T07:57:34.954Z",
+    "elapsedMilliseconds": 13030,
+    "exitCode": 0,
+    "signal": null,
+    "guardFired": false,
+    "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/source-export/build.log",
+    "metadata": {
+      "depot.build": {
+        "buildID": "d0xtstnptt",
+        "projectID": "27m5m3vjlv",
+        "targets": [
+          "source"
+        ]
+      }
+    },
+    "consumerProofs": [
+      {
+        "platform": "linux_amd64",
+        "identity": {
+          "architecture": "x64",
+          "targetArchitecture": "amd64",
+          "targetOs": "linux",
+          "cpuCount": 16,
+          "memoryBytes": 32997220352,
+          "cpuModels": [
+            "AMD EPYC 9R45"
+          ],
+          "nodeVersion": "v24.22.0",
+          "harnessCommit": "5cfc1d90f92154cf62fa95789fad9bd7deeda208"
+        },
+        "payload": {
+          "cohort": "monochromatic-platform-buildkit-20261018-v1",
+          "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+          "sourceMarker": "committed-source"
+        }
+      },
+      {
+        "platform": "linux_arm64",
+        "identity": {
+          "architecture": "arm64",
+          "targetArchitecture": "arm64",
+          "targetOs": "linux",
+          "cpuCount": 16,
+          "memoryBytes": 33020604416,
+          "cpuModels": [
+            "Neoverse-V2"
+          ],
+          "nodeVersion": "v24.22.0",
+          "harnessCommit": "5cfc1d90f92154cf62fa95789fad9bd7deeda208"
+        },
+        "payload": {
+          "cohort": "monochromatic-platform-buildkit-20261018-v1",
+          "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+          "sourceMarker": "committed-source"
+        }
+      }
+    ]
+  },
+  "ociExports": {
+    "startedAt": "2026-10-18T08:23:56.191Z",
+    "finishedAt": "2026-10-18T08:23:56.923Z",
+    "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+    "skopeoArgs": [
+      "--command-timeout",
+      "2m",
+      "copy",
+      "--all",
+      "--preserve-digests",
+      "--image-parallel-copies",
+      "2",
+      "--src-authfile",
+      "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/service-podman-auth.private.json",
+      "docker://registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+      "oci-archive:[home]/temp/agent/depot-platform-buildkit-evidence-20261018/multiarch-service.oci.tar"
+    ],
+    "skopeoVersion": "skopeo version 1.22.3 commit: 92397d5ba399784c6e2f9f229a4244b724743dba",
+    "cloudAllocation": false,
+    "nativeSingleArchitectureArchive": true,
+    "registryToMultiArchitectureArchive": true,
+    "results": [
+      {
+        "archivePath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/single-architecture-oci-export/service.oci.tar",
+        "archiveBytes": 83632640,
+        "indexes": [
+          {
+            "digest": "sha256:77a9f0717cc91f4d3da62a5227f3b57a050c60953193dfb8ab2afc97c2510b37",
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "outerArchiveIndex": true
+          },
+          {
+            "digest": "sha256:cdaed0fa9bff073bd5b8a6f9d67f4d579aecfc1450b7bc5ee083581c2980313e",
+            "mediaType": "application/vnd.oci.image.index.v1+json"
+          }
+        ],
+        "runtimes": [
+          {
+            "digest": "sha256:f80e89ab639340f1b0b992db6f148cbf0b27fabe0fba23d9304d7274b238997b",
+            "architecture": "amd64",
+            "configDigest": "sha256:d4884e580f582b47a9eddc4718108f0d6bb6fc82fb767ba13ed2ea3367353cf5",
+            "commandProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+            "healthcheck": {
+              "Test": [
+                "CMD",
+                "node",
+                "--input-type=module-typescript",
+                "-e",
+                "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+              ],
+              "Interval": 1000000000,
+              "Timeout": 2000000000,
+              "StartPeriod": 1000000000,
+              "Retries": 3
+            },
+            "layers": [
+              {
+                "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 28249323
+              },
+              {
+                "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 3314
+              },
+              {
+                "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 51041014
+              },
+              {
+                "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 1713055
+              },
+              {
+                "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 446
+              },
+              {
+                "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 99
+              },
+              {
+                "digest": "sha256:e1219aa1062ae6e846a3f8597f1a00301bebca9121f14159875ec17b1a634386",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 273
+              },
+              {
+                "digest": "sha256:effa7a9f2259116f9a8b82caf8f10cf024e3a4cd8ed63b694e62982a1c023592",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 310
+              }
+            ]
+          }
+        ],
+        "attestations": [
+          {
+            "manifestDigest": "sha256:ab4247f499e7c58bf7422e6682a969fb4a6394f21f531ee69589cb32e9933ec0",
+            "predicateType": "https://spdx.dev/Document",
+            "subjects": [],
+            "annotatedRuntimeSubject": "sha256:f80e89ab639340f1b0b992db6f148cbf0b27fabe0fba23d9304d7274b238997b"
+          },
+          {
+            "manifestDigest": "sha256:ab4247f499e7c58bf7422e6682a969fb4a6394f21f531ee69589cb32e9933ec0",
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subjects": [],
+            "annotatedRuntimeSubject": "sha256:f80e89ab639340f1b0b992db6f148cbf0b27fabe0fba23d9304d7274b238997b"
+          }
+        ],
+        "subjectBindings": [
+          {
+            "runtimeDigest": "sha256:f80e89ab639340f1b0b992db6f148cbf0b27fabe0fba23d9304d7274b238997b",
+            "spdxSubjectMatched": false,
+            "provenanceSubjectMatched": false,
+            "indexAnnotationAssociation": true
+          }
+        ],
+        "allInTotoSubjectsMatch": false,
+        "verifiedBlobs": [
+          {
+            "digest": "sha256:cdaed0fa9bff073bd5b8a6f9d67f4d579aecfc1450b7bc5ee083581c2980313e",
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "bytes": 15636
+          },
+          {
+            "digest": "sha256:f80e89ab639340f1b0b992db6f148cbf0b27fabe0fba23d9304d7274b238997b",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "bytes": 1808
+          },
+          {
+            "digest": "sha256:d4884e580f582b47a9eddc4718108f0d6bb6fc82fb767ba13ed2ea3367353cf5",
+            "mediaType": "application/vnd.oci.image.config.v1+json",
+            "bytes": 12073
+          },
+          {
+            "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 28249323
+          },
+          {
+            "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 3314
+          },
+          {
+            "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 51041014
+          },
+          {
+            "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 1713055
+          },
+          {
+            "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 446
+          },
+          {
+            "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 99
+          },
+          {
+            "digest": "sha256:e1219aa1062ae6e846a3f8597f1a00301bebca9121f14159875ec17b1a634386",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 273
+          },
+          {
+            "digest": "sha256:effa7a9f2259116f9a8b82caf8f10cf024e3a4cd8ed63b694e62982a1c023592",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 310
+          },
+          {
+            "digest": "sha256:ab4247f499e7c58bf7422e6682a969fb4a6394f21f531ee69589cb32e9933ec0",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "bytes": 841
+          },
+          {
+            "digest": "sha256:e67c172eef88c2a329ce183ee0f2834c084c7d6a688e49b6cededf9f5962b055",
+            "mediaType": "application/vnd.oci.image.config.v1+json",
+            "bytes": 241
+          },
+          {
+            "digest": "sha256:e10ff5a6bc1219f7ee3550e903e3b854f93c64b885bbf5a15ba6a1c45cec90fc",
+            "mediaType": "application/vnd.in-toto+json",
+            "bytes": 2544918
+          },
+          {
+            "digest": "sha256:24ac12610b3a4f2a265a48d78818f40ae7615b61f4fb425a7d30af4f03335d3d",
+            "mediaType": "application/vnd.in-toto+json",
+            "bytes": 16690
+          }
+        ]
+      },
+      {
+        "archivePath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/multiarch-service.oci.tar",
+        "archiveBytes": 167060480,
+        "indexes": [
+          {
+            "digest": "sha256:6a6ce02cf0be68cd9a67eee76dfc08bb9884a43e7fb16f3ac797c7fad3ce0fbb",
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "outerArchiveIndex": true
+          },
+          {
+            "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+            "mediaType": "application/vnd.oci.image.index.v1+json"
+          }
+        ],
+        "runtimes": [
+          {
+            "digest": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+            "architecture": "amd64",
+            "configDigest": "sha256:aedf411bcd17538e70d87272ba16677ed7ec62f2211cf4f30a3f38ec8ce6b55a",
+            "commandProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+            "healthcheck": {
+              "Test": [
+                "CMD",
+                "node",
+                "--input-type=module-typescript",
+                "-e",
+                "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+              ],
+              "Interval": 1000000000,
+              "Timeout": 2000000000,
+              "StartPeriod": 1000000000,
+              "Retries": 3
+            },
+            "layers": [
+              {
+                "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 28249323
+              },
+              {
+                "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 3314
+              },
+              {
+                "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 51041014
+              },
+              {
+                "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 1713055
+              },
+              {
+                "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 446
+              },
+              {
+                "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 99
+              },
+              {
+                "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 273
+              },
+              {
+                "digest": "sha256:36375cfa8f3c2b1fa65f723c41f73d7856c1ff39c20abf93e25843cd205d3f22",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 314
+              }
+            ]
+          },
+          {
+            "digest": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+            "architecture": "arm64",
+            "configDigest": "sha256:2c23ac87b73f3de90bbfbf4e71b052919759111932d92f0ffba288861b3f94f6",
+            "commandProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+            "healthcheck": {
+              "Test": [
+                "CMD",
+                "node",
+                "--input-type=module-typescript",
+                "-e",
+                "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+              ],
+              "Interval": 1000000000,
+              "Timeout": 2000000000,
+              "StartPeriod": 1000000000,
+              "Retries": 3
+            },
+            "layers": [
+              {
+                "digest": "sha256:c75f989a229d12b2d2613a5997de9ff3546f664c22da9248720033a2410220f6",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 28137179
+              },
+              {
+                "digest": "sha256:f3b7fa076fe63b12118c87ec7c84133db790c4942081273fd6f71f91598d297d",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 3314
+              },
+              {
+                "digest": "sha256:0c847615531065f69ea6ddc554bb40067455e42aa9274e29bf1245dc03140888",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 51021488
+              },
+              {
+                "digest": "sha256:f8951e871b2569bbd90a0461aadc9526beb7da501769f25e02a0c921ed819c80",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 1712994
+              },
+              {
+                "digest": "sha256:66095d3064d1b18399d076b3b93108d12a0f352ade634c55c11fc1770d14dd5d",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 448
+              },
+              {
+                "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 99
+              },
+              {
+                "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 273
+              },
+              {
+                "digest": "sha256:965a7ac3622ae34644035cc13f77183b075f12b7718029176c285487c0333694",
+                "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                "size": 306
+              }
+            ]
+          }
+        ],
+        "attestations": [
+          {
+            "manifestDigest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+            "predicateType": "https://spdx.dev/Document",
+            "subjects": [
+              {
+                "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+                "digest": {
+                  "sha256": "6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+                }
+              }
+            ],
+            "annotatedRuntimeSubject": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+          },
+          {
+            "manifestDigest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subjects": [
+              {
+                "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+                "digest": {
+                  "sha256": "6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+                }
+              }
+            ],
+            "annotatedRuntimeSubject": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+          },
+          {
+            "manifestDigest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+            "predicateType": "https://spdx.dev/Document",
+            "subjects": [
+              {
+                "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+                "digest": {
+                  "sha256": "25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+                }
+              }
+            ],
+            "annotatedRuntimeSubject": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+          },
+          {
+            "manifestDigest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subjects": [
+              {
+                "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+                "digest": {
+                  "sha256": "25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+                }
+              }
+            ],
+            "annotatedRuntimeSubject": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+          }
+        ],
+        "subjectBindings": [
+          {
+            "runtimeDigest": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+            "spdxSubjectMatched": true,
+            "provenanceSubjectMatched": true,
+            "indexAnnotationAssociation": true
+          },
+          {
+            "runtimeDigest": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+            "spdxSubjectMatched": true,
+            "provenanceSubjectMatched": true,
+            "indexAnnotationAssociation": true
+          }
+        ],
+        "allInTotoSubjectsMatch": true,
+        "verifiedBlobs": [
+          {
+            "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "bytes": 1609
+          },
+          {
+            "digest": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "bytes": 1808
+          },
+          {
+            "digest": "sha256:aedf411bcd17538e70d87272ba16677ed7ec62f2211cf4f30a3f38ec8ce6b55a",
+            "mediaType": "application/vnd.oci.image.config.v1+json",
+            "bytes": 12067
+          },
+          {
+            "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 28249323
+          },
+          {
+            "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 3314
+          },
+          {
+            "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 51041014
+          },
+          {
+            "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 1713055
+          },
+          {
+            "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 446
+          },
+          {
+            "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 99
+          },
+          {
+            "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 273
+          },
+          {
+            "digest": "sha256:36375cfa8f3c2b1fa65f723c41f73d7856c1ff39c20abf93e25843cd205d3f22",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 314
+          },
+          {
+            "digest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "bytes": 841
+          },
+          {
+            "digest": "sha256:ce197b696f9d533f63bf63914170a324f6bb1388a41ed4fac71c44e32f40db0f",
+            "mediaType": "application/vnd.oci.image.config.v1+json",
+            "bytes": 241
+          },
+          {
+            "digest": "sha256:c61883fd65656c7d8c206496129975aad03ba702e79d03d3005b2fad6a39a23c",
+            "mediaType": "application/vnd.in-toto+json",
+            "bytes": 2545086
+          },
+          {
+            "digest": "sha256:1fa0c322c504ff68efae3d9bc404a852cc7dc6522321d2635593721c1f1b54b5",
+            "mediaType": "application/vnd.in-toto+json",
+            "bytes": 15787
+          },
+          {
+            "digest": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "bytes": 1808
+          },
+          {
+            "digest": "sha256:2c23ac87b73f3de90bbfbf4e71b052919759111932d92f0ffba288861b3f94f6",
+            "mediaType": "application/vnd.oci.image.config.v1+json",
+            "bytes": 12073
+          },
+          {
+            "digest": "sha256:c75f989a229d12b2d2613a5997de9ff3546f664c22da9248720033a2410220f6",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 28137179
+          },
+          {
+            "digest": "sha256:f3b7fa076fe63b12118c87ec7c84133db790c4942081273fd6f71f91598d297d",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 3314
+          },
+          {
+            "digest": "sha256:0c847615531065f69ea6ddc554bb40067455e42aa9274e29bf1245dc03140888",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 51021488
+          },
+          {
+            "digest": "sha256:f8951e871b2569bbd90a0461aadc9526beb7da501769f25e02a0c921ed819c80",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 1712994
+          },
+          {
+            "digest": "sha256:66095d3064d1b18399d076b3b93108d12a0f352ade634c55c11fc1770d14dd5d",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 448
+          },
+          {
+            "digest": "sha256:965a7ac3622ae34644035cc13f77183b075f12b7718029176c285487c0333694",
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "bytes": 306
+          },
+          {
+            "digest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "bytes": 841
+          },
+          {
+            "digest": "sha256:96409a48378834370c786f7ff72d441ec95d235e3d4820b6417ba6065d1156ae",
+            "mediaType": "application/vnd.oci.image.config.v1+json",
+            "bytes": 241
+          },
+          {
+            "digest": "sha256:e10b693cd6cdbc5ddcc63b0e2035faecf32610c21b15b1ed944b064043974447",
+            "mediaType": "application/vnd.in-toto+json",
+            "bytes": 2545113
+          },
+          {
+            "digest": "sha256:6af5991ee540b16c0d84bcfb691b635547ed07f1ceb8e2a19d4a0bc268278d5f",
+            "mediaType": "application/vnd.in-toto+json",
+            "bytes": 15787
+          }
+        ]
+      }
+    ],
+    "consumerLimit": "Content-addressed OCI archive/export consumer; runtime import and independent builder cache reuse are separate"
+  },
+  "derivedCiImage": {
+    "nativeBuild": {
+      "kind": "native-build",
+      "phase": "ci-derived",
+      "source": "0b471538cd549cb2181088803c1e0a6d542d791e",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--save",
+        "--save-tag",
+        "monochromatic-platform-ci-20261018-v1",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/ci-derived-image-build/metadata.json",
+        "--progress",
+        "plain",
+        "ci"
+      ],
+      "startedAt": "2026-10-18T08:19:48.202Z",
+      "maximumMilliseconds": 300000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 103647,
+        "reservedUsd": 0.538196,
+        "ceilingUsd": 1,
+        "invoiceCapProven": false
+      },
+      "purpose": "Separate two-architecture custom OCI job image with checkout and pinned Mise-action prerequisites",
+      "finishedAt": "2026-10-18T08:20:23.658Z",
+      "elapsedMilliseconds": 35456,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/ci-derived-image-build/build.log",
+      "indexDigest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+      "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+      "holdUntilParentConsumersFinish": true
+    },
+    "registry": {
+      "verifiedAt": "2026-10-18T08:22:22.948Z",
+      "source": "0b471538cd549cb2181088803c1e0a6d542d791e",
+      "buildId": "6hb1g0j21b",
+      "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+      "indexDigest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+      "runtimes": [
+        {
+          "architecture": "amd64",
+          "manifestDigest": "sha256:f78b650a9f83b2b38b51ddef742b8a3816cb11f4d18dd0d0f0181b121e0b152e",
+          "configDigest": "sha256:87cf71d4e9dc385e62bf7e54e57ac04ae2a1ea8b20179f65b5681331cb38a625",
+          "cmd": [
+            "bash"
+          ],
+          "healthcheckDisabled": true,
+          "layers": [
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+              "size": 28249323
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+              "size": 3314
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+              "size": 51041014
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+              "size": 1713055
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+              "size": 446
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+              "size": 99
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+              "size": 273
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:36375cfa8f3c2b1fa65f723c41f73d7856c1ff39c20abf93e25843cd205d3f22",
+              "size": 314
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:7eb3865777b69a8cc4b5196916f664c4b47d8d6f7230539e6cc369ccde73428f",
+              "size": 38768514
+            }
+          ]
+        },
+        {
+          "architecture": "arm64",
+          "manifestDigest": "sha256:fdd2ae05aa1edc23b43e72d1d3b6252249a186596d33c754e6f2bbbddeba810b",
+          "configDigest": "sha256:2614e8510c18c63f03c7f8803497ff5087e2bde836cb8535fe20064127fd445a",
+          "cmd": [
+            "bash"
+          ],
+          "healthcheckDisabled": true,
+          "layers": [
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:c75f989a229d12b2d2613a5997de9ff3546f664c22da9248720033a2410220f6",
+              "size": 28137179
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:f3b7fa076fe63b12118c87ec7c84133db790c4942081273fd6f71f91598d297d",
+              "size": 3314
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:0c847615531065f69ea6ddc554bb40067455e42aa9274e29bf1245dc03140888",
+              "size": 51021488
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:f8951e871b2569bbd90a0461aadc9526beb7da501769f25e02a0c921ed819c80",
+              "size": 1712994
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:66095d3064d1b18399d076b3b93108d12a0f352ade634c55c11fc1770d14dd5d",
+              "size": 448
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+              "size": 99
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+              "size": 273
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:965a7ac3622ae34644035cc13f77183b075f12b7718029176c285487c0333694",
+              "size": 306
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:111a0faca818842e0c5429dd69f9982fbc093276ac2fd61113c2c573464f6a26",
+              "size": 38366497
+            }
+          ]
+        }
+      ],
+      "attestations": [
+        {
+          "manifestDigest": "sha256:6e4aa37c9d81d52aa460d458258b743dd9fba1f5eb1c1bea8943ab7c6434f2a0",
+          "annotatedRuntimeSubject": "sha256:f78b650a9f83b2b38b51ddef742b8a3816cb11f4d18dd0d0f0181b121e0b152e",
+          "predicateType": "https://spdx.dev/Document",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+              "digest": {
+                "sha256": "f78b650a9f83b2b38b51ddef742b8a3816cb11f4d18dd0d0f0181b121e0b152e"
+              }
+            }
+          ]
+        },
+        {
+          "manifestDigest": "sha256:6e4aa37c9d81d52aa460d458258b743dd9fba1f5eb1c1bea8943ab7c6434f2a0",
+          "annotatedRuntimeSubject": "sha256:f78b650a9f83b2b38b51ddef742b8a3816cb11f4d18dd0d0f0181b121e0b152e",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+              "digest": {
+                "sha256": "f78b650a9f83b2b38b51ddef742b8a3816cb11f4d18dd0d0f0181b121e0b152e"
+              }
+            }
+          ]
+        },
+        {
+          "manifestDigest": "sha256:4a723622cac113f2b109b50683a08d766bcde185d393f685b7d6ea1916f6c8d7",
+          "annotatedRuntimeSubject": "sha256:fdd2ae05aa1edc23b43e72d1d3b6252249a186596d33c754e6f2bbbddeba810b",
+          "predicateType": "https://spdx.dev/Document",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+              "digest": {
+                "sha256": "fdd2ae05aa1edc23b43e72d1d3b6252249a186596d33c754e6f2bbbddeba810b"
+              }
+            }
+          ]
+        },
+        {
+          "manifestDigest": "sha256:4a723622cac113f2b109b50683a08d766bcde185d393f685b7d6ea1916f6c8d7",
+          "annotatedRuntimeSubject": "sha256:fdd2ae05aa1edc23b43e72d1d3b6252249a186596d33c754e6f2bbbddeba810b",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+              "digest": {
+                "sha256": "fdd2ae05aa1edc23b43e72d1d3b6252249a186596d33c754e6f2bbbddeba810b"
+              }
+            }
+          ]
+        }
+      ],
+      "crossBuildRead": {
+        "pullTokenRequestedForBuildId": "fxzj58r8m2",
+        "imageFromBuildId": "6hb1g0j21b",
+        "tokenRefreshedBeforeDerivedBuild": true,
+        "readSucceeded": true,
+        "scope": "This token reads another build in the same project; cross-project isolation untested"
+      },
+      "holdUntilParentConsumersFinish": true,
+      "rawRequestCount": 11,
+      "rawRequestsPreservedInCompressedArchive": true
+    },
+    "filesystemAndReadOnlyScope": {
+      "verifiedAt": "2026-10-18T08:25:11.538Z",
+      "source": "0b471538cd549cb2181088803c1e0a6d542d791e",
+      "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+      "crossBuildRead": {
+        "pullTokenRequestedForBuildId": "fxzj58r8m2",
+        "imageFromBuildId": "6hb1g0j21b",
+        "tokenRefreshedBeforeDerivedBuild": true,
+        "readSucceeded": true,
+        "scope": "This token reads another build in the same project; cross-project isolation untested"
+      },
+      "tools": [
+        {
+          "architecture": "amd64",
+          "layerDigest": "sha256:7eb3865777b69a8cc4b5196916f664c4b47d8d6f7230539e6cc369ccde73428f",
+          "layerBytes": 38768514,
+          "receiptPath": "/opt/depot-research/image-tools.json",
+          "receiptSha256": "4d25b511586a006a6904f6b117927213d74a6da6ef48ff6a8cfe7896de2e2516",
+          "receiptBytes": 2216,
+          "value": {
+            "architecture": "x64",
+            "nodeVersion": "v24.22.0",
+            "harnessCommit": "0b471538cd549cb2181088803c1e0a6d542d791e",
+            "serviceBase": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+            "miseAction": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+            "tools": {
+              "git": "git version 2.39.5\n",
+              "curl": "curl 7.88.1 (x86_64-pc-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.22 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13\nRelease-Date: 2023-02-20, security patched: 7.88.1-10+deb12u15\nProtocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp\nFeatures: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM NTLM_WB PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd\n",
+              "tar": "tar (GNU tar) 1.34\nCopyright (C) 2021 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n",
+              "gzip": "gzip 1.12\nCopyright (C) 2018 Free Software Foundation, Inc.\nCopyright (C) 1993 Jean-loup Gailly.\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <https://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Jean-loup Gailly.\n",
+              "xz": "xz (XZ Utils) 5.4.1\nliblzma 5.4.1\n",
+              "zstd": "*** Zstandard CLI (64-bit) v1.5.4, by Yann Collet ***\n",
+              "bash": "GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+            },
+            "installedPackages": "ca-certificates\t20250419~deb12u1\ncurl\t7.88.1-10+deb12u15\ngit\t1:2.39.5-0+deb12u3\ngzip\t1.12-1\ntar\t1.34+dfsg-1.2+deb12u1\nxz-utils\t5.4.1-1+deb12u2\nzstd\t1.5.4+dfsg2-5\n"
+          }
+        },
+        {
+          "architecture": "arm64",
+          "layerDigest": "sha256:111a0faca818842e0c5429dd69f9982fbc093276ac2fd61113c2c573464f6a26",
+          "layerBytes": 38366497,
+          "receiptPath": "/opt/depot-research/image-tools.json",
+          "receiptSha256": "90434388dd952415203c2ac9b944f956bd96fd4506e6005c46ae5d30492a4e7d",
+          "receiptBytes": 2230,
+          "value": {
+            "architecture": "arm64",
+            "nodeVersion": "v24.22.0",
+            "harnessCommit": "0b471538cd549cb2181088803c1e0a6d542d791e",
+            "serviceBase": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+            "miseAction": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+            "tools": {
+              "git": "git version 2.39.5\n",
+              "curl": "curl 7.88.1 (aarch64-unknown-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.22 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13\nRelease-Date: 2023-02-20, security patched: 7.88.1-10+deb12u15\nProtocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp\nFeatures: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM NTLM_WB PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd\n",
+              "tar": "tar (GNU tar) 1.34\nCopyright (C) 2021 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n",
+              "gzip": "gzip 1.12\nCopyright (C) 2018 Free Software Foundation, Inc.\nCopyright (C) 1993 Jean-loup Gailly.\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <https://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Jean-loup Gailly.\n",
+              "xz": "xz (XZ Utils) 5.4.1\nliblzma 5.4.1\n",
+              "zstd": "*** Zstandard CLI (64-bit) v1.5.4, by Yann Collet ***\n",
+              "bash": "GNU bash, version 5.2.15(1)-release (aarch64-unknown-linux-gnu)\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+            },
+            "installedPackages": "ca-certificates\t20250419~deb12u1\ncurl\t7.88.1-10+deb12u15\ngit\t1:2.39.5-0+deb12u3\ngzip\t1.12-1\ntar\t1.34+dfsg-1.2+deb12u1\nxz-utils\t5.4.1-1+deb12u2\nzstd\t1.5.4+dfsg2-5\n"
+          }
+        }
+      ],
+      "emptyUploadControl": {
+        "path": "/v2/27m5m3vjlv/blobs/uploads/",
+        "method": "POST",
+        "status": 403,
+        "bodyBytesSent": 0,
+        "permissionDenialProven": true,
+        "responseBody": "{\"errors\":[{\"code\":\"DENIED\",\"message\":\"requested access to the resource is denied\"}]}\n"
+      },
+      "cloudAllocation": false
+    },
+    "localControl": {
+      "source": "0b471538cd549cb2181088803c1e0a6d542d791e",
+      "startedAt": "2026-10-18T08:18:32.158Z",
+      "finishedAt": "2026-10-18T08:18:42.337Z",
+      "elapsedMilliseconds": 10178,
+      "args": [
+        "build",
+        "--pull=never",
+        "--format",
+        "docker",
+        "--memory",
+        "2g",
+        "--cpu-period",
+        "100000",
+        "--cpu-quota",
+        "200000",
+        "--jobs",
+        "1",
+        "--http-proxy=false",
+        "--build-arg",
+        "CI_IMAGE_HARNESS_SHA=0b471538cd549cb2181088803c1e0a6d542d791e",
+        "--tag",
+        "localhost/depot-ci-image-control-0b471538cd54:research",
+        "[home]/temp/agent/depot-platform-buildkit-20261018/.depot/probe/platform-buildkit/ci-context"
+      ],
+      "image": "localhost/depot-ci-image-control-0b471538cd54:research",
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/ci-image-local-control-v3.log",
+      "cloudAllocation": false,
+      "consumer": {
+        "architecture": "x64",
+        "nodeVersion": "v24.22.0",
+        "harnessCommit": "0b471538cd549cb2181088803c1e0a6d542d791e",
+        "serviceBase": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "miseAction": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+        "tools": {
+          "git": "git version 2.39.5\n",
+          "curl": "curl 7.88.1 (x86_64-pc-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.22 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13\nRelease-Date: 2023-02-20, security patched: 7.88.1-10+deb12u15\nProtocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp\nFeatures: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM NTLM_WB PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd\n",
+          "tar": "tar (GNU tar) 1.34\nCopyright (C) 2021 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n",
+          "gzip": "gzip 1.12\nCopyright (C) 2018 Free Software Foundation, Inc.\nCopyright (C) 1993 Jean-loup Gailly.\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <https://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Jean-loup Gailly.\n",
+          "xz": "xz (XZ Utils) 5.4.1\nliblzma 5.4.1\n",
+          "zstd": "*** Zstandard CLI (64-bit) v1.5.4, by Yann Collet ***\n",
+          "bash": "GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+        },
+        "installedPackages": "ca-certificates\t20250419~deb12u1\ncurl\t7.88.1-10+deb12u15\ngit\t1:2.39.5-0+deb12u3\ngzip\t1.12-1\ntar\t1.34+dfsg-1.2+deb12u1\nxz-utils\t5.4.1-1+deb12u2\nzstd\t1.5.4+dfsg2-5\n"
+      },
+      "healthcheckNone": true
+    }
+  },
   "registry": {
     "complete": true,
     "anonymousStatus": 401,
@@ -384,12 +1418,12 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 67591,
+    "observedNativeRequestMilliseconds": 139103,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.09012133333333333,
+    "nominalWindowEstimateUsd": 0.18547066666666667,
     "ceilingUsd": 1,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true
@@ -400,12 +1434,12 @@
     "deletionDeferredUntilSharedConsumersFinish": true
   },
   "unresolved": [
-    "OCI archive/local exports",
+    "Native OCI empty statement subjects versus registry subjects: deciding source and consumer consequences",
     "Synthetic secret and keyless SSH forwarding consumers",
     "Remote Git immutable context and local overlay control",
     "Real firstparty BuildKit cache-mount consumer",
-    "OCI health metadata runtime controls",
-    "Build-specific versus project-path pull-token scope",
+    "OCI health metadata runtime controls and deciding source",
+    "Cross-project pull-token isolation",
     "Independent parent nativeCI and GitHub consumers",
     "Image/project deletion after shared consumers"
   ]

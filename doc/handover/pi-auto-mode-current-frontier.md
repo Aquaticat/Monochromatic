@@ -68,11 +68,20 @@ the retired extension pipeline and whole-call adapters remain removed.
 The live controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-dXedQJ`.
 Its fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-5F6ed2`.
 The controller command session is `82172`;
-its current actionable-state watcher is `34555`.
+its actionable-state watchers are short-lived;
+the newest one is recorded by the current command tool session.
 Its log is `mimo-rpc-session-lint-cluster1.log` in the investigation scratch.
 The actual command is stored in `mimo-lint-cluster1-command.json`.
 That prompt is supervisory-agent delegation within the human's existing authorization,
 not a new human request or a source of additional permission.
+The initial group is withheld for command-chain and long-flag violations;
+the new idle-turn prompt in `mimo-resume-cluster1-command.json` restates the same authorized checkpoint.
+The first scoped diagnostic run reports 412 warnings and eight errors in 3,511 output lines.
+At 33 tool results,
+the supervisor allows only the displayed private-log histogram commands
+through selector `8fae1bc3-3ebf-48e8-a050-f0d718b9c744`.
+These are scoped diagnostics,
+not a clean-lint or completed-edit claim.
 
 The first checkpoint clears all findings in these package-relative files:
 
@@ -220,6 +229,10 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
   prohibition,
   confirmation,
   cancellation and complete cleanup/stderr checks.
+  Also exercise actual configured-host compaction and the next tool review,
+  with a positive control that reaches `session_before_compact` and an actual provider-payload audit.
+  The standalone control fixture reaches that event kind,
+  but its authored preparation is not the full configured compactor's preparation.
 - Finish the native-control component rationale and refresh architecture/handoff docs against the final evidence.
   Every major responsibility keeps its package-local justification.
 - Measure final source/runtime/verification/build inventories and footprint.

@@ -338,6 +338,8 @@ fn generated_arguments_reach_every_frontier_ending() {
             FrontierSeen::Forwarded,
         ),
         (vec!["commit", "-z", "file"], 0, FrontierSeen::Forwarded),
+        // Git accepts `--l` for `--long`, the shortest abbreviation of any status format (probed on Git 2.56.0).
+        (vec!["commit", "--l", "file"], 0, FrontierSeen::Forwarded),
         (vec!["commit", "--dry-run", "-a"], 0, FrontierSeen::Rejected),
         (vec!["push", "origin"], 0, FrontierSeen::Refused),
         (vec!["push", "-n", "origin"], 0, FrontierSeen::Forwarded),

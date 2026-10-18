@@ -357,9 +357,54 @@ both owned libvirt daemon PIDs were gone,
 and the cleanup error list was empty.
 The group-normalized diagnostic fixture and retained daemon logs distinguish this result
 from the first failed final guest.
-GitHub-hosted and Depot GitHub runner controls remain unexecuted.
+The matched GitHub controls completed in run `39110201120`
+at harness `1438ecde4b643a606e0a75f85067e3d0153e9bb5`.
+Depot's four-CPU GitHub runner passed the complete guest consumer and explicit daemon/domain cleanup.
+Its 51-byte roundtrip SHA256 was
+`9b4c766cc6c5c13b1b4ad52e30fd62ee726026e55e33be9e70cdc3b85fda8165`.
+GitHub-hosted Ubuntu passed the scoped KVM-device permission adjustment,
+then libvirt rejected guest definition with
+`Emulator '/usr/bin/qemu-system-x86_64' does not support virt type 'kvm'`.
+That failed consumer also completed explicit daemon/domain cleanup.
+Filesystem access to `/dev/kvm` is not a successful KVM API or guest-start control.
+A raw QEMU/libvirt capability diagnostic remains necessary before attributing that failure.
 
 ### Container and Android consumer progress
+
+The completed local Android consumer is retained in
+[`depot-android-consumer-2026-10-18.evidence.json`](../audit/depot-android-consumer-2026-10-18.evidence.json).
+It installed the matching debug and AndroidTest APKs from native producer `1jxc80q7q7`,
+with producer harness `8256d8bb9dd20b8c9b373c2c08b0a73560d93564`.
+The headful private emulator reported Android API 37,
+`x86_64`,
+and 16,384-byte pages.
+The test catalog was derived from frozen application commit
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+All 16 catalog identities were reported:
+14 passed,
+two failed,
+and none skipped.
+Both failing `SessionStoreTest` methods encountered a null-context `getSharedPreferences` call,
+matching the still-open fixture problem described in
+[issue 1002](https://github.com/Aquaticats/Monochromatic/issues/1002).
+This does not establish a production storage defect.
+The report preserves the failed aggregate and compressed raw instrumentation output.
+The private emulator and ADB server stopped,
+their owned ports had no listeners,
+and the original device configuration still matched its preflight content.
+New instrumentation classes added to main after the frozen source are outside this cohort.
+
+The derived CI-image repair is executing in native run `rvvg2kv0jk`
+and GitHub run `39112162357`,
+both at harness `9779cb896b92969b84f45e2737117231638aa700`.
+The HTTP service still uses its original immutable image.
+Job containers use the separate derived image
+`registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346`.
+The derived image contains Git 2.39.5 and the measured Mise-action prerequisite tools.
+Its actual tool-receipt bytes and architecture must match the builder's retained hashes.
+The original build's read-only token fetched both new architecture layers;
+an empty owned registry upload initiation returned 403 after authenticated GET positives.
+Those controls establish the observed token scope without inferring its closed server implementation.
 
 GitHub run `39109462308`,
 at harness `1438ecde4b643a606e0a75f85067e3d0153e9bb5`,
