@@ -41,7 +41,8 @@ On 2026-10-18 the owner answered three questions through the question tool, and 
   so refreshing the lock also moved the floating nightly from `nightly-2026-10-17` to `nightly-2026-10-18`.
 - Exempt `**/tests/ui/**` from `rust/no-anonymous-functions` in `monochromatic-lint.config.jsonc`,
   because the lint's fixtures contain closures on purpose
-  (the exemption was removed together with the rule; see the section "Removal of `rust/no-anonymous-functions`").
+  (the exemption was removed together with the rule,
+  see the section "Removal of `rust/no-anonymous-functions`").
 - The two stray mise symlinks under `~/.local/share/mise/installs` were repaired by the coordinator.
 
 The package therefore has no `rust-toolchain.toml` and no `RUSTUP_TOOLCHAIN` override;
@@ -69,25 +70,38 @@ the package README says so.
 
 ## Removal of `rust/no-anonymous-functions`
 
-On 2026-10-18, after the IDE gate landed (stage 2b),
+On 2026-10-18,
+after the IDE gate landed (stage 2b),
 the owner decided through the question tool to remove the syntax-only `rust/no-anonymous-functions` rule
-of `package/linter/monochromatic-lint` altogether, repo-wide.
+of `package/linter/monochromatic-lint` altogether,
+repo-wide.
 This closes the third staging step.
-No other rule is loosened: `rust/max-lines`, `rust/require-rustdoc`, `rust/tests-in-sidecars`,
-`rust/require-explicit-types` and the Markdown rules are unchanged.
+No other rule is loosened:
+`rust/max-lines`,
+`rust/require-rustdoc`,
+`rust/tests-in-sidecars`,
+`rust/require-explicit-types`,
+and the Markdown rules are unchanged.
 
 What was removed:
 
-- The rule module and its tests, its settings key, its dispatch arms (host files and virtual Rust in fences and
-  doc tests), its registry entry in `--rules` and in the starter configuration, and its rule identifier.
+- The rule module and its tests,
+  its settings key,
+  its dispatch arms (host files and virtual Rust in fences and doc tests),
+  its entry in `--rules` and in the starter configuration,
+  and its rule identifier.
 - The rule's setting and the `ui-fixture-exemptions` block in `monochromatic-lint.config.jsonc`
   (the block existed only to exempt the lint's UI fixtures from this rule).
 - The fuzz and mutation plumbing that named the rule.
 
 What a configuration that still names the rule gets:
-an unknown built-in rule, the same setup error as any other unregistered rule id
-(`Unknown built-in rule rust/no-anonymous-functions.`, exit status 2, nothing linted).
-The linter has no aliases or deprecation list for removed ids, so no special case was added.
+an unknown built-in rule,
+the same setup error as any other unregistered rule id
+(`Unknown built-in rule rust/no-anonymous-functions.`,
+exit status 2,
+nothing linted).
+The linter has no aliases or deprecation list for removed ids,
+so no special case was added.
 
 What replaced it:
 the Dylint lint `avoidable_closure` of `package/linter/monochromatic-lint-closure`,
@@ -98,11 +112,15 @@ Consequences:
 
 - Rust packages other than the IDE no longer have any closure check
   until each gets its own `lint:closures` Dylint gate.
-  Before the removal the syntax-only rule reported at warning severity in every package.
-- The Dylint lint's known limits (next section) apply to the only gate that remains:
-  wrappers such as `Arc::new(closure)` are not recognised, and only code that compiles is linted,
-  so features, `cfg` and the selected targets decide coverage.
-- Closures inside macro token trees that the syntax-only rule never saw are now seen by the Dylint lint
+  Before the removal,
+  the syntax-only rule reported at warning severity in every package.
+- The lint's known limits (section "Known limits to carry into the lint's README") apply to the only gate that remains.
+  Wrappers such as `Arc::new(closure)` are not recognised,
+  and only code that compiles is linted,
+  so features,
+  `cfg`,
+  and the selected targets decide coverage.
+- Closures inside macro arguments that the syntax-only rule never saw are reported by the Dylint lint
   where the closure span is in the author's own code.
 
 ## Known limits to carry into the lint's README
