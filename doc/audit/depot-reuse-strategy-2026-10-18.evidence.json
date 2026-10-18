@@ -698,7 +698,7 @@
     "Two samples per Gradle condition establish the recorded spread and command-boundary difference, not a provider or whole-job multiplier.",
     "The corrected absolute-Git and published-linter prerequisites leave frozen lock-replacement test failures; native target publication is success-only and has not occurred."
   ],
-  "updatedAt": "2026-10-18T09:10:40.773Z",
+  "updatedAt": "2026-10-18T09:18:09.581Z",
   "runs": [
     {
       "prefix": "gradle-controls",
@@ -39327,6 +39327,212 @@
       "compressedSha256": "2e2a331991486c50af1fac361f04f99dcd964c4deb7b4b4dc599cd936b5f5609",
       "uncompressedBytes": 999962,
       "uncompressedSha256": "468f3cb8cad5795519e2eb8cca2d861ecb182185a98fc0270b0494b6a65a8853"
+    },
+    "finalVerification": {
+      "recordedAt": "2026-10-18T09:18:09.581Z",
+      "rendered": [
+        {
+          "file": "doc/planning/depot-reuse-strategy-research.md",
+          "sourceSha256": "e16f1a91b7fa424ea71f0483cb8801f41669bcc8e54910deb58e7bbc120c5e8f",
+          "htmlSha256": "1d7001d5e4b33169189678032534983090d94fbbebbd864205a9ca3ee4907d40",
+          "renderer": "marked18.0.11",
+          "headings": [
+            "Depot reuse strategy research",
+            "Active research boundary",
+            "Repository inventory",
+            "Installed tools, download stores and generated state have different owners",
+            "Current execution checkpoint",
+            "Independent successful target archive and fresh reader",
+            "Diagnostic archive and matched control extension",
+            "Repeated Gradle task-output comparison",
+            "Planned command tree and execution manifest",
+            "Captured preparation and active consumers",
+            "Historical 16-job admission",
+            "Campaign work queue",
+            "Measured fresh Gradle reuse",
+            "Required-Git tool image",
+            "Cache trust and lifecycle boundaries",
+            "Primary sources"
+          ],
+          "links": 14,
+          "output": "doc-planning-depot-reuse-strategy-research.md.rendered.html"
+        },
+        {
+          "file": "doc/troubleshooting/git-policy-replaced-lock-filesystem.md",
+          "sourceSha256": "4d04336b74693c1c55b7616a03d2cad3bd1b511438182103a1a62818f51d7e00",
+          "htmlSha256": "16d84d70e4dc12123f83b40a103e1cc7eb1b8eccf288160d68b401e657dad0f6",
+          "renderer": "marked18.0.11",
+          "headings": [
+            "Git-policy CLI at e02be6c8 accepts replacement locks in the measured ordinary CI directories",
+            "Symptom",
+            "Root cause boundary",
+            "Verification",
+            "Verified diagnostic control and tradeoffs",
+            "What does not establish a fix",
+            "Upstream filing decision"
+          ],
+          "links": 4,
+          "output": "doc-troubleshooting-git-policy-replaced-lock-filesystem.md.rendered.html"
+        },
+        {
+          "file": "doc/troubleshooting/depot-native-nextest-completion.md",
+          "sourceSha256": "7ff95a2baa5ae5fbf4d24c1ae24cc29ae9670666d5d2590ba9089fd5398150fa",
+          "htmlSha256": "69970646764d7bb67b269b1f4c781497ded8f72b59aa76fa1d7addd48d315cc6",
+          "renderer": "marked18.0.11",
+          "headings": [
+            "Depot native tests with nextest 0.9.148 stop before complete coverage",
+            "Symptom",
+            "Root cause",
+            "Verification",
+            "Verified workaround and tradeoff",
+            "What does not work",
+            "Separate Clippy prerequisite incident",
+            "Upstream filing decision",
+            "Coherent replay controls",
+            "Common provenance must gate independent consumers",
+            "Upstream filing decision for provenance dependencies",
+            "Nextest archive extraction requires an existing explicit destination",
+            "Symptom and deciding source",
+            "Verified recovery and transport limits",
+            "Upstream filing decision for extraction"
+          ],
+          "links": 12,
+          "output": "doc-troubleshooting-depot-native-nextest-completion.md.rendered.html"
+        }
+      ],
+      "lint": {
+        "command": "mise run lint:monochromatic-lint -- doc/planning/depot-reuse-strategy-research.md doc/troubleshooting/git-policy-replaced-lock-filesystem.md doc/troubleshooting/depot-native-nextest-completion.md",
+        "exitStatus": 0,
+        "errors": 0,
+        "remainingWarning": {
+          "file": "doc/troubleshooting/depot-native-nextest-completion.md",
+          "line": 40,
+          "code": "rust/require-rustdoc",
+          "message": "Missing rustdoc on file.",
+          "boundary": "Preexisting historical upstream Rust excerpt; new lock-identity document has no remaining findings."
+        }
+      },
+      "ownedWorktreeCleanup": {
+        "recordedAt": "2026-10-18T09:16:29.747Z",
+        "root": "/home/user/temp/agent/depot-reuse-worktree-20261018",
+        "receipts": [
+          {
+            "command": [
+              "pwd"
+            ],
+            "status": 0,
+            "stdout": "/var/mnt/encrypted/temp/agent/depot-reuse-worktree-20261018\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "git",
+              "rev-parse",
+              "--show-toplevel"
+            ],
+            "status": 0,
+            "stdout": "/var/mnt/encrypted/temp/agent/depot-reuse-worktree-20261018\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "ls",
+              "--directory",
+              "--",
+              "HEAD",
+              "config",
+              "hooks",
+              "objects",
+              "refs"
+            ],
+            "status": 2,
+            "stdout": "",
+            "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+          },
+          {
+            "command": [
+              "git",
+              "check-ignore",
+              "--verbose",
+              "--",
+              "HEAD",
+              "config",
+              "hooks",
+              "objects",
+              "refs"
+            ],
+            "status": 0,
+            "stdout": ".gitignore:30:/HEAD\tHEAD\n.gitignore:31:/config\tconfig\n.gitignore:32:/hooks\thooks\n.gitignore:33:/objects\tobjects\n.gitignore:34:/refs\trefs\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "git",
+              "clean",
+              "--dry-run",
+              "-d",
+              "-X"
+            ],
+            "status": 0,
+            "stdout": "Would remove .cache/\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "git",
+              "status",
+              "--short"
+            ],
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "git",
+              "ls-files",
+              "--others",
+              "--exclude-standard"
+            ],
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "git",
+              "check-ignore",
+              "--verbose",
+              "--",
+              ".cache/forbidden-strings.rules.txt"
+            ],
+            "status": 0,
+            "stdout": ".gitignore:68:.cache/\t.cache/forbidden-strings.rules.txt\n",
+            "stderr": ""
+          }
+        ],
+        "removed": [
+          {
+            "relativePath": ".cache/forbidden-strings.rules.txt",
+            "bytes": 14482,
+            "sha256": "b7fd81d10e2bfb1baf72fb00ad0d110155bfb294c54471b34c86ad507d2d03a0",
+            "retainedPrivateCopy": "retained-owned-forbidden-strings.rules.txt"
+          }
+        ],
+        "after": {
+          "command": [
+            "git",
+            "clean",
+            "--dry-run",
+            "-d",
+            "-X"
+          ],
+          "status": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        "worktreeRetainedFor": "Parent-assigned frozen Rust/current-source linter and fuzz-sidecar research; source branch remains pushed."
+      }
     }
   }
 }
