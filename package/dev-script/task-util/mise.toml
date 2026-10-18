@@ -207,3 +207,9 @@ run = "node bin/reuse-lock-prepare.mjs"
 description = "Run the exact archived34-case lock cohort repeatedly across owned ordinary/tmpfs fixtures"
 run = "node bin/reuse-lock-portability.mjs"
 
+[tasks."research:rust:consumer"]
+run = "node bin/rust-artifact-consumer.mjs"
+
+[tasks."research:rust:consumer-check"]
+run = "node --check bin/rust-artifact-consumer.mjs"
+
