@@ -10,6 +10,7 @@ import { prepareRuntime, runRuntime } from './rust-fuzz-runtime.mjs';
 const groups = {
   'fuzz-small': ['package/rust-module/jsonc-edit.fuzz', 'package/rust-module/forbidden-regex.fuzz', 'package/cli/forbidden-strings.fuzz'],
   'fuzz-scanner-tail': ['package/cli/forbidden-strings.fuzz'],
+  'fuzz-tails': ['package/cli/forbidden-strings.fuzz', 'package/git-policy/cli.fuzz'],
   'fuzz-git': ['package/git-policy/cli.fuzz'],
   'fuzz-linter': ['package/linter/monochromatic-lint.fuzz'],
 };
@@ -52,7 +53,7 @@ try {
       failed = controls.status !== 0 || failed;
       const built = rust(key + '-asan-gnu-build', ['cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', '--target-dir', output], { cwd: project, allowFailure: true });
       if (built.status !== 0) { failed = true; outcomes.push({ path, boundary: 'instrumented-build', status: built.status }); continue; }
-      const binaries = list.filter(name => profile !== 'fuzz-scanner-tail' || name === 'fuzz_scan_format').map(name => ({ name, path: join(output, 'x86_64-unknown-linux-gnu/release', name) }));
+      const binaries = list.filter(name => profile === 'fuzz-tails' ? name === (path.includes('git-policy') ? 'wrapper_controls' : 'fuzz_scan_format') : profile !== 'fuzz-scanner-tail' || name === 'fuzz_scan_format').map(name => ({ name, path: join(output, 'x86_64-unknown-linux-gnu/release', name) }));
       const corpora = Object.fromEntries(list.map(target => [target, seedPaths.filter(seed => seed.startsWith(path + '/') && seed.split('/').at(-2) === target).map(seed => join(root, seed))]));
       const runtimeDirectory = join(owned, 'runtime-' + index);
       const dictionaryDirectory = join(project, 'dictionary');
