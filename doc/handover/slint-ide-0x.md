@@ -774,7 +774,8 @@ the items after it are the record of 2026-10-05 and older.
     copy of the IDE; no IDE edit and no root toolchain edit (not approved then). Stage 1 reported (verified by the
     coordinating session: 13 tests pass in an independent run, and disabling the capture guard fails
     `adversarial.rs` and `not_kept_by_callee.rs`): package `package/linter/monochromatic-lint-closure`, lint
-    `avoidable_closure`, library `monochromatic_lint_closure`; on a disposable IDE copy 62 of the 67 pass and 5 report (`language/actions.rs:134`
+    `avoidable_closure`, library `monochromatic_lint_closure`; on a disposable IDE copy 62 of the 67 pass and 5
+    report (`language/actions.rs:134`
     let-bound, `minimap_build.rs:399` and `tile_build.rs:140` `catch_unwind(AssertUnwindSafe(..))`,
     `syntax_loader.rs:188` and `:311` `tree_house`); all 37 generated Slint setters resolve under rustc. It also
     reports 78 closures the syntax rule never saw (46 in `tests/`, 27 in `*_tests.rs`, 5 in `src/bin`, all inside
@@ -785,7 +786,8 @@ the items after it are the record of 2026-10-05 and older.
     lock, config, package clean-shell proof). Stage 2b (queued): IDE `check-cfg` through file-enforcer, `expect`
     attributes on the 4 non-let reports, the let-bound site, the 78 conversions, an IDE `lint:closures` task, then
     the fate of the syntax-only rule. The user also asked to look at their oxlint setup; findings: shared config
-    `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with `denyWarnings: true`; the repository holds 861
+    `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
+    `denyWarnings: true`; the repository holds 861
     `oxlint-disable-next-line`, 401 `oxlint-disable` and 332 `oxlint-enable` directives, 698 of 734 next-line ones with
     a ` -- reason`; an audit (`doc/audit/oxlint-unused-disable-directives.md`) found and removed 301 unused ones; the
     plugin `no-restricted-syntax` bans disabling chosen rules (`no-disable-*`, built by `_ban-disable-factory.ts`),
