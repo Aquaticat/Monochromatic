@@ -622,6 +622,27 @@ The locked `yuku-analyzer` `0.19.0` declarations and implementation instead expo
 The VM-builder discovery control exits successfully with zero default-shaped files,
 so it receives no executed-test credit.
 
+The reviewed process profile is dispatched as run `39114552347`,
+with API-confirmed harness commit `8fa5b508c061e9caec82847037a40a5ef414aa7b`.
+Its 17 owning default tasks have 191 files confirmed by the actual filesystem glob,
+with a source hash for each discovered file.
+It invokes 131 commands across 2 sequential Depot `8CPU/32GB` jobs,
+with a 15-minute job cap,
+3-minute command cap,
+and 9-minute campaign cap.
+Both shards build the reviewed cross-package prerequisites before their assigned default tasks.
+The CPU-cap and desktop-E2E owning configurations declare no build task;
+their selected tests use source scripts or pure and stand-in-socket helpers.
+The profile uses injected provider transports,
+temporary Git repositories,
+temporary file-enforcer configurations,
+fake `sudo`,
+fixture hardware paths,
+and an invalid VM backend sentinel.
+Actual paid provisioning,
+physical compositor control,
+and host hardware writes are outside these fixture tests.
+
 Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
 They are not covered by the Cargo campaign.
 Its source owner checks installed Pi `1.2.0`
@@ -634,15 +655,17 @@ Its actual session/transport fixtures and capacity cases still require separate 
 
 The active queue remains independently verifiable:
 
-- Incorporate the parent's public receipt for the completed source-bound device consumer,
-  preserving its 2 failed assertions and the current-main source drift.
-  Investigate the measured engine/Turso byte differences before making any reproducible-build claim.
+- Keep the completed source-bound device consumer's 2 failed assertions
+  and current-main source drift visible in aggregate acceptance.
+  The isolated Turso build-script seed controls are complete;
+  full normalized native-library or APK rebuild equivalence remains unmeasured.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
   and native/Kotlin/Slint/build-tool consumers.
-- Publish the completed matched provider repeat `39106784923`
-  and filesystem-watch positive controls for the four failed default suites.
+- Classify the published static,
+  matched-provider,
+  and default-task receipts against the exact first-party source assertions.
 - Execute remaining applicable Node quality,
   product,
   plugin,
@@ -671,7 +694,8 @@ The active queue remains independently verifiable:
 
 ## Current next action
 
-Collect the running static wave's terminal receipts,
-finish default-test process and recursion review,
-then execute the applicable default-test and bounded non-default profiles.
+Collect process run `39114552347` at its terminal state.
+While it runs,
+finish the guarded Pi-host command review
+and prepare the remaining applicable default and bounded non-default profiles.
 The immutable feature and consumer manifest remains under semantic review.
