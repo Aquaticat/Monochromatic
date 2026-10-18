@@ -141,7 +141,7 @@ pub fn run(config: Config) -> Result<i32> {
     // What:     `let mut state = Compositor::new(&mut event_loop, display, pieces);`.
     //           Construct the full state, consuming the display and backend pieces.
     // Why:      Produce the value the event loop carries.
-    let mut state = Compositor::new(&mut event_loop, display, pieces);
+    let mut state = Compositor::new(&mut event_loop, display, pieces)?;
 
     // What:     `let shm_formats = state.backend.renderer().shm_formats();`. Ask the GLES
     //           renderer which shared-memory formats it supports (method from the
@@ -302,11 +302,16 @@ pub fn run(config: Config) -> Result<i32> {
 
     // What: Run the event loop and flush protocol replies after each dispatch cycle.
     // Why: Registry, configure, clipboard, and input delivery must not wait for GPU redraws.
-    event_loop
-        .run(None, &mut state, |current| {
-            crate::protocol_flush::finish_dispatch(&mut current.display_handle);
-        })
-        .context("event loop failed")?;
+    let outcome = event_loop.run(None, &mut state, |current| {
+        crate::protocol_flush::finish_dispatch(&mut current.display_handle);
+    });
+
+    // What:     Return the failure an event-source callback stored, before the loop's own result.
+    // Why:      A callback that failed stopped the loop on purpose, so its error is the cause.
+    if let Some(error) = state.fatal_error.take() {
+        return Err(error);
+    }
+    outcome.context("event loop failed")?;
 
     // What:     `Ok(state.child_exit_code.unwrap_or(0))`. Return the recorded child code,
     //           or 0 if the loop stopped for another reason. Tail expression.
@@ -346,9 +351,11 @@ fn handle_winit_event(event: WinitEvent, state: &mut Compositor) {
             crate::screen::parent_resized(state, size);
         }
         WinitEvent::Redraw => {
-            // What:     `redraw(state);`. Composite and present one frame.
+            // What:     `redraw(state)`. Composite and present one frame; a failure ends the session.
             // Why:      A redraw was requested (by us or the parent).
-            redraw(state);
+            if let Err(error) = redraw(state) {
+                state.fail(error);
+            }
         }
         WinitEvent::CloseRequested => {
             // What:     `state.loop_signal.stop();`. End the event loop.

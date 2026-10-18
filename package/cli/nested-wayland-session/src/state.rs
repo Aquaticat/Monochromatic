@@ -47,6 +47,10 @@
 /// ```
 use std::{ffi::OsString, process::Child, sync::Arc};
 
+/// Context turns a failed startup step into an error that names the step,
+///  so the process reports it and exits nonzero instead of panicking.
+use anyhow::{Context, Result};
+
 /// Clipboard management globals are owned by this nested display,
 ///  never the host.
 use crate::handler::clipboard::ClipboardProtocols;
@@ -475,6 +479,20 @@ pub struct Compositor {
     ///       `main` propagates this as its own exit code.
     pub child_exit_code: Option<i32>,
 
+    /// The failure that stopped the event loop,
+    ///  else `None`.
+    ///
+    /// What:
+    ///      `pub fatal_error: Option<anyhow::Error>`.
+    ///  Set by `Compositor::fail`,
+    ///  taken by `run` after the loop stops.
+    /// Why:
+    ///       Event-source callbacks return `()`,
+    ///  so a failure inside one (the nested window's frame,
+    ///  a client that cannot be registered) reaches `main` through this slot and becomes an error exit,
+    ///  not a panic.
+    pub fatal_error: Option<anyhow::Error>,
+
     /// The active 60fps frame recorder,
     ///  if `record` is running.
     ///
@@ -592,7 +610,7 @@ impl Compositor {
     ///
     /// What:
     ///      `pub fn new(event_loop: &mut EventLoop<Compositor>, display:
-    ///           Display<Compositor>, pieces: BackendPieces) -> Self`.
+    ///           Display<Compositor>, pieces: BackendPieces) -> Result<Self>`.
     ///  Takes a mutable
     ///           borrow of the loop (to register sources and read its stop signal),
     ///           consumes the `display` by value (it is moved into an event source),
@@ -603,9 +621,16 @@ impl Compositor {
     ///           socket,
     ///  then packages it all into the state value the loop carries.
     ///
+    /// Errors:
+    ///       The default keymap cannot be compiled,
+    ///  or the Wayland listening socket cannot be created
+    ///  (`XDG_RUNTIME_DIR` unset,
+    ///  missing,
+    ///  or not writable).
+    ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// static new(eventLoop, display, pieces): Compositor { ... }
+    /// static new(eventLoop, display, pieces): Compositor { ... } // throws on setup failure
     /// ```
     ///
     /// @example
@@ -616,7 +641,7 @@ impl Compositor {
         event_loop: &mut EventLoop<'static, Compositor>,
         display: Display<Compositor>,
         pieces: BackendPieces,
-    ) -> Self {
+    ) -> Result<Self> {
         // What:     `let start_time = std::time::Instant::now();`. Reads the monotonic
         //           clock now.
         // Why:      Baseline for frame-callback timestamps.
@@ -677,18 +702,20 @@ impl Compositor {
         // Why:      The single seat all synthetic input is routed through.
         let mut seat: Seat<Self> = seat_state.new_wl_seat(&dh, "winit");
 
-        // What:     `seat.add_keyboard(Default::default(), DEFAULT_REPEAT_DELAY_MS, DEFAULT_REPEAT_RATE).unwrap();`.
+        // What:     `seat.add_keyboard(Default::default(), 200, 25).context(...)?;`.
         //           `Default::default()` supplies a default `XkbConfig` (US layout);
         //           `200, 25` are the key repeat delay (ms) and rate (keys/s).
-        //           `.unwrap()` panics if keymap compilation fails (it should not with
-        //           the default layout).
+        //           `.context(...)?` returns the keymap compilation failure to `run`.
         // Why:      Advertise a keyboard so the app accepts synthetic key input.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // seat.addKeyboard(defaultXkbConfig, 200, 25); // throws on keymap failure
         // ```
-        seat.add_keyboard(Default::default(), 200, 25).unwrap();
+        seat.add_keyboard(Default::default(), 200, 25).context(
+            "compiling the default US keyboard layout for the nested seat failed; \
+             check that the xkeyboard-config package (the xkb data files) is installed",
+        )?;
 
         // What:     `seat.add_pointer();`. Adds a pointer capability, returning a
         //           `PointerHandle` we ignore here (fetched later via `get_pointer`).
@@ -716,7 +743,7 @@ impl Compositor {
         //           returns the chosen socket name.
         // Why:      Start accepting Wayland client connections; capture the name for the
         //           child's `WAYLAND_DISPLAY`.
-        let socket_name = Self::init_wayland_listener(display, event_loop);
+        let socket_name = Self::init_wayland_listener(display, event_loop)?;
 
         // What:     `let loop_signal = event_loop.get_signal();`. A handle to stop the
         //           loop later.
@@ -738,7 +765,7 @@ impl Compositor {
         // ```ts
         // return { startTime, socketName, displayHandle: dh, space, /* ... */ };
         // ```
-        return Self {
+        return Ok(Self {
             start_time,
             socket_name,
             display_handle: dh,
@@ -770,6 +797,7 @@ impl Compositor {
             held_pointer_buttons: HeldButtons::default(),
             frame_pacing: FramePacing::new(start_time),
             child_exit_code: None,
+            fatal_error: None,
             recorder: None,
             loop_handle,
             pending_dnd_uri_list: None,
@@ -778,7 +806,30 @@ impl Compositor {
             cursor_image: smithay::input::pointer::CursorImageStatus::default_named(),
             _cursor_shape: cursor_shape,
             repeat_info: (DEFAULT_REPEAT_RATE, DEFAULT_REPEAT_DELAY_MS),
+        })
+    }
+
+    /// Record the failure that ends the session and stop the event loop.
+    ///
+    /// What:
+    ///      `pub fn fail(&mut self, error: anyhow::Error)`.
+    ///  Keeps the first error given,
+    ///  drops later ones,
+    ///  and signals the loop to stop.
+    /// Why:
+    ///       Event-source callbacks cannot return an error,
+    ///  and the first failure is the cause of any that follow it.
+    pub fn fail(&mut self, error: anyhow::Error) {
+        // What:     Keep the error when no earlier failure is stored,
+        //           otherwise log it as a later consequence.
+        // Why:      `run` returns the first failure,
+        //           and a later one must not vanish without a trace.
+        if self.fatal_error.is_none() {
+            self.fatal_error = Some(error);
+        } else {
+            tracing::warn!("a later failure after the session was already stopping: {error:#}");
         }
+        self.loop_signal.stop();
     }
 
     /// Create the client-listening socket and register both it and the display with
@@ -787,7 +838,7 @@ impl Compositor {
     ///
     /// What:
     ///      `fn init_wayland_listener(display: Display<Compositor>, event_loop:
-    ///           &mut EventLoop<Compositor>) -> OsString`.
+    ///           &mut EventLoop<Compositor>) -> Result<OsString>`.
     ///  Private helper;
     ///  consumes the
     ///           display (moves it into a loop source),
@@ -804,13 +855,16 @@ impl Compositor {
     fn init_wayland_listener(
         display: Display<Compositor>,
         event_loop: &mut EventLoop<Compositor>,
-    ) -> OsString {
-        // What:     `let source = ListeningSocketSource::new_auto().unwrap();`. Creates
-        //           a listening Unix socket, auto-picking the next free `wayland-N`
-        //           name in `$XDG_RUNTIME_DIR`. `.unwrap()` panics on failure (no
-        //           runtime dir).
+    ) -> Result<OsString> {
+        // What:     `let source = ListeningSocketSource::new_auto().context(...)?;`.
+        //           Creates a listening Unix socket, auto-picking the next free
+        //           `wayland-N` name in `$XDG_RUNTIME_DIR`. `.context(...)?` returns the
+        //           failure (no runtime dir) to `run`.
         // Why:      This is the socket the hosted child connects to.
-        let source = ListeningSocketSource::new_auto().unwrap();
+        let source = ListeningSocketSource::new_auto().context(
+            "creating the Wayland listening socket wayland-N in XDG_RUNTIME_DIR failed; \
+             set XDG_RUNTIME_DIR to an existing directory you can write to, such as /run/user/<your user id>",
+        )?;
 
         // What:     `let socket_name = source.socket_name().to_os_string();`.
         //           `.socket_name()` borrows the name as `&OsStr`; `.to_os_string()`
@@ -843,12 +897,18 @@ impl Compositor {
                 //           new client. `Arc::new(...)` puts the per-client data on the
                 //           heap behind a shared, thread-safe pointer (wayland-server
                 //           requires `Arc`, not `Box`, because it may access the data
-                //           from its own threads). `.unwrap()` panics on insert failure.
+                //           from its own threads). A failure goes to `fail`, which ends the
+                //           session with an error.
                 // Why:      Give the client a place to keep its compositor-side state.
-                state
+                let inserted = state
                     .display_handle
-                    .insert_client(stream, Arc::new(ClientState::default()))
-                    .unwrap();
+                    .insert_client(stream, Arc::new(ClientState::default()));
+                if let Err(error) = inserted {
+                    state.fail(
+                        anyhow::Error::new(error)
+                            .context("registering a connecting Wayland client with the nested display failed"),
+                    );
+                }
             })
             .expect("failed to register the Wayland listening socket");
 
@@ -869,7 +929,7 @@ impl Compositor {
             .insert_source(
                 Generic::new(display, Interest::READ, Mode::Level),
                 |_, pending_display, state: &mut Compositor| {
-                    // What:     `unsafe { display.get_mut().dispatch_clients(state).unwrap(); }`.
+                    // What:     `unsafe { display.get_mut().dispatch_clients(state)...?; }`.
                     //           `unsafe` marks a block whose safety the compiler cannot
                     //           check: here it is sound because we never drop the display
                     //           while dispatching. `get_mut` yields the inner `Display`;
@@ -877,8 +937,14 @@ impl Compositor {
                     // Why:      Advance every connected client's protocol state.
                     // Gotcha:   `unsafe` in Rust does not mean "wrong"; it means the
                     //           caller vouches for an invariant (display stays alive).
+                    // A failure ends the event loop; `run` reports it as "event loop failed".
                     unsafe {
-                        pending_display.get_mut().dispatch_clients(state).unwrap();
+                        pending_display.get_mut().dispatch_clients(state).map_err(|error| {
+                            return std::io::Error::new(
+                                error.kind(),
+                                format!("dispatching Wayland client requests failed: {error}"),
+                            )
+                        })?;
                     }
                     // What:     `Ok(PostAction::Continue)`. Tell calloop the source is
                     //           healthy and should keep listening. Tail expression.
@@ -888,9 +954,9 @@ impl Compositor {
             )
             .expect("failed to register the Wayland display source");
 
-        // What:     `socket_name`. Bare tail expression returning the owned name.
+        // What:     `Ok(socket_name)`. Tail expression returning the owned name.
         // Why:      Hand the chosen socket name back to `new`.
-        return socket_name
+        return Ok(socket_name)
     }
 
     /// Find the surface (and its position) under a point on the plane,
