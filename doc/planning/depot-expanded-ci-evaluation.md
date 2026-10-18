@@ -114,8 +114,11 @@ Depot-managed GitHub Actions and standard GitHub now each have a passing actual 
 The standard-GitHub replay preserves UID/GID and adds the actual device group only to the disposable child.
 All three passing consumers verify guest stdout,
 exit-two stderr,
-a 51-byte file roundtrip and private-domain/daemon cleanup
+a 51-byte shared-directory CLI roundtrip and private-domain/daemon cleanup
 ([all eight original archives and outcomes](../audit/depot-mvm-kvm-2026-10-18.evidence.json)).
+That roundtrip did not separately assert guest payload visibility or a guest write.
+An independent source review identified this test gap;
+an explicit guest transformation consumer is now in the execution queue.
 The earlier failed probes remain historical observations;
 the named-ACL mutation's writer is not identified.
 

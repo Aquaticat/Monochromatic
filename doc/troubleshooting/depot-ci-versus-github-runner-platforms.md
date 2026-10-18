@@ -211,8 +211,31 @@ adds actual device group `993` and makes no group-database change.
 Its KVM monitor reports present and enabled.
 Guest stdout contains the nonce,
 the nonexistent-path stderr control returns exit `2`,
-and a 51-byte push/pull roundtrip matches
+and a 51-byte host shared-directory CLI push/pull roundtrip matches
 `07442f8c71b3a17811a517cd5fceea7977e97e6f4a17d6a95a7602b7dc7daae8`.
+This does not independently prove guest payload visibility or guest writes.
+The 2026-10-18 independent receipt review found that the harness only creates a guest directory,
+then pushes and pulls the same shared-host filename.
+Frozen `package/cli/mvm/src/file-transfer.ts:282` copies the input into `sharedHostPath`:
+
+```typescript
+// package/cli/mvm/src/file-transfer.ts:282
+await copyFile(
+  hostPath,
+  sharedHostPath,
+);
+```
+
+Its pull path reads that host file at `package/cli/mvm/src/file-transfer.ts:409`:
+
+```typescript
+// package/cli/mvm/src/file-transfer.ts:409
+const content = await readFile(sharedHostPath,);
+```
+
+The guest execution and cleanup assertions remain valid.
+The historical archive bytes remain unchanged;
+guest payload read/transformation/write needs its separate consumer.
 
 Cleanup finds no private domain,
 both owned daemon PIDs exited and the error list is empty.

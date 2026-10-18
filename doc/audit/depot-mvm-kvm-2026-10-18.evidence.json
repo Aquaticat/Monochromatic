@@ -2,6 +2,15 @@
   "schemaVersion": 1,
   "recordedAt": "2026-10-18T12:26:01.540Z",
   "applicationBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "fileTransferScopeCorrection": {
+    "recordedAt": "2026-10-18T13:09:00Z",
+    "basis": "Independent receipt and frozen-source review",
+    "proven": "51-byte host shared-directory CLI push/pull roundtrip; actual guest stdout, exit2, KVM and cleanup are separately asserted",
+    "notSeparatelyAsserted": "Guest payload visibility, read or write",
+    "source": "package/cli/mvm/src/file-transfer.ts:282 and:409; .depot/research/mvm/mise.toml:251 to259 at64d6a666e63e4773ee56666148ae9c8ba371877a",
+    "originalArchiveBytesChanged": false,
+    "nextConsumer": "Guest reads pushed payload, creates a distinct output, transforms it, then host pulls and checks exact transformed bytes"
+  },
   "native": [
     {
       "run": "mcht0wwlg6",

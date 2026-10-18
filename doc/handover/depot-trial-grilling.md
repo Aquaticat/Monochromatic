@@ -3515,6 +3515,28 @@ pending acceptance:
 require relevant configuration and recent execution history to be inspected before asking behavior questions
 that those artifacts can answer.
 
+## Independent review correction and remaining execution, 2026-10-18
+
+The independent Rust-lane reviewer verified all nineteen root policy/process/MVM ZIPs and 566 members.
+It identified a substantive MVM scope error:
+the 51-byte push/pull check reads and writes the host shared directory,
+without separately asserting guest payload visibility or guest writes.
+The working report,
+MVM receipt qualification and KVM troubleshooting note now retract the stronger interpretation.
+The root lane must execute an explicit guest read,
+distinct output creation and transformation consumer on native Depot,
+Depot-managed GitHub and standard GitHub,
+with original-source identities and cleanup retained.
+This is an active factual task;
+it is not a future production acceptance condition.
+
+The coverage lane also owns current-source desktop/logger Mac and Windows controls after desktop and packed consumers.
+Historical cross-platform owner/dependency hashes and locked toolchains differ from the frozen expanded source.
+Use standard public-GitHub runners sequentially,
+with maximum thirty-minute jobs and a retained admission ledger;
+record actual runtime versus compile-only boundaries and preserve source failures.
+The root lane retains ownership of the coherent Linux graph and repeated whole-graph timing comparison.
+
 [release-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/38785821860
 [runner-docs]: https://depot.dev/docs/github-actions/overview
 [ci-docs]: https://depot.dev/docs/ci/overview
