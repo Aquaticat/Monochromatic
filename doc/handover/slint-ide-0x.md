@@ -743,12 +743,14 @@ the items after it are the record of 2026-10-05 and older.
     callbacks in `src/syntax_loader.rs`. Stable Rust has no named item that owns state for an `FnMut` or `FnOnce`
     parameter, so they stay reported. Thread locals are not a way out: a spawned thread cannot read the parent's
     thread locals (`src/find_worker.rs:179` hands two channel ends to its worker), and for the UI callbacks they
-    would swap `Rc<RefCell<..>>` captures for hidden global state. Decided on 2026-10-18 (the user chose it from three
-    options): the remaining sites call generic helpers, one for thread spawns, one per Slint callback arity and one
-    for timers, so that only the helpers keep a closure, each with a justified disable comment and a doc that cites
-    the rule and shows that configuration cannot express it (rule `LN3`). The user's earlier approval to remove every
-    finding without suppressing any is superseded for those helper closures only. Next action: build the helpers on a
-    new branch after this one lands, then count again; the 67 call sites are listed in
+    would swap `Rc<RefCell<..>>` captures for hidden global state. The helper route the user picked first (generic
+    helpers with a suppression each) is withdrawn: `monochromatic-lint` has no inline suppression, and a Rust
+    `#[allow]` does not reach it (`src/rust_no_anonymous_functions.rs` has no option but severity). The user then
+    asked to change the rule itself, with type resolution and ignore comments. The proposal is
+    `doc/planning/linter-selective-anonymous-functions.md` (not accepted): directive comments with a mandatory
+    reason, and a semantic criterion (a closure that captures state and is passed to a callee requiring `'static`
+    stays unreported; `ra_ap_hir` 0.0.336 gives `Closure::captured_items`). Open: the user's acceptance, then a
+    spike on the unverified points. Until then the 67 stay reported as warnings, listed in
     `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
     before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
     guards) before the fast-forward.
