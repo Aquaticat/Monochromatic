@@ -1660,6 +1660,18 @@ that is verification, not a decision for the user.
   mutation scope caught 38 of 41 mutants (3 unviable) and the executable scope over `path_inputs.rs` caught 24 of 25
   (1 unviable) after the second `--` was restored before nextest's `--skip` filters. Issue 1757 has a progress
   comment; `wg-quicker-exempt` and `ide` belong to others and keep it open.
+  Issues 1768 to 1770 (2026-10-18, user chose the recommended option on 1769 and 1770; each has a triage comment):
+  1768 is a launcher defect (a child `PATH` without `.cache/cli-git-bin`), so the wrapper binary does not change and
+  the launcher owner verifies `realpath "$(command -v git)"` against the link target plus `git-lfs` in the final
+  child environment. 1769 is implemented in the wrapper: on a non-fast-forward rejection, auto-push merges origin's
+  tip with the landed commit in a temporary private worktree, pushes with a plain push, retries a bounded number of
+  times, never touches the active worktree, index or untracked files, and keeps an overlapping conflict unmerged with
+  a diagnosis (`auto_push.rs` `PUSH_FAILED_NOTE` and `UPSTREAM_PUSH_ARGUMENTS`); it needs a disposable bare-remote
+  regression, a gate, mutation of the new code and a minor release. 1770 starts with a harness: three variants did not
+  reproduce it (host, Fedora 44 container with disposable HOME, real `.git/lfs` absent or without `tmp`); the
+  shadow's `lfs` entry is a link to the real `.git/lfs` (`shadow_links.rs`), so the harness removes or blocks that
+  target mid-commit and mounts `.git` partly read-only, with a deliberate-failure control; no fix without a
+  reproduction.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
