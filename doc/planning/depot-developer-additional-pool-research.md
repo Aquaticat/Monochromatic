@@ -129,6 +129,19 @@ No interview question is pending.
 
 ## Reporting-rule clarification
 
+## Runtime research ownership
+
+The [fresh-job pnpm-store experiment](depot-pnpm-store-fresh-job-research.md)
+compares GitHub and Depot GitHub Actions cache backends using the current workspace installer
+and existing semantic-bridge artifact consumers.
+The parent agent owns this probe.
+The cache researcher owns standalone Depot CI persistent-disk verification.
+The routing researcher owns GitHub/Depot pool selection and aggregate failure gates.
+The capabilities researcher owns the bounded Sandbox SDK lifecycle and runtime probe.
+All experiments are isolated from production routing and subscription settings.
+
+## Reporting-rule clarification
+
 The user corrected the vague statement that caching slowed unspecified jobs.
 The exact measured regression is GitHub Actions `actions/cache` for the pnpm store
 in `readonly-semantic-bridge.yml`'s cross-platform semantic-bridge jobs.
