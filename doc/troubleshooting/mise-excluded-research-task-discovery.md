@@ -36,7 +36,8 @@ commit `ac91d06fa6100935b7a07b08bebf03dd6dd9a0dd`,
 `src/config/mod.rs:5466` chooses explicit roots instead of walking the tree:
 
 ```rust
-//! jdx/mise, src/config/mod.rs:5466
+//! jdx/mise,
+//! src/config/mod.rs:5466
 if let Some(patterns) = config_roots
     && !patterns.is_empty()
 {
