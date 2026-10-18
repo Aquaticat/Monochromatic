@@ -123,7 +123,10 @@ with a six-minute inner deadline.
 The measured five prior intervals plus its full reservation have nominal proxy cost USD 0.1796,
 under the unchanged USD 1 campaign guard.
 
-The remaining parent queue includes troubleshooting-note lint and rendered checks,
+The default/step continuation notes and their updated rendered checks pass.
+The disposable PR cleanup is public and freshly reverified:
+the research base returns HTTP 404 and production branch protection still matches its baseline.
+The remaining parent queue includes the latest KVM-note verification and evidence publication,
 VM/process public receipts,
 container Git/libatomic prerequisite notes,
 job-environment recurrence documentation,
@@ -145,8 +148,48 @@ The routing researcher also owns the actual three-engine browser wave `391234584
 at `6328647d8b7113a920d777044944612f3bc47a58`.
 The platform researcher owns command/doc inventory reconciliation,
 the stopped-SDK evidence and the per-test JUnit identity adapter with physical consumer checks.
+Its adapter run is `st40hvmw90`,
+source `c6d25d092678b0933f1e3b43765fc46c02593a9e`,
+with one VM at a time and the unchanged USD 0.534 cumulative full-window admission.
+After that campaign and source-ledger reconciliation,
+the platform researcher owns an actual frozen Linux ARM64 repository CI check,
+or reconciliation of sufficient existing immutable evidence.
+The multi-platform BuildKit Node/ELF probe alone does not establish repository ARM CI execution.
+The initial separate guard is USD 1,
+one VM,
+eight CPUs and fifteen minutes;
+it provides functional evidence unless unchanged repetitions justify a performance comparison.
 That adapter may use one parent VM slot;
 the KVM follow-up reserves the other.
+
+The raw KVM access follow-up completed successfully with 46 sequential snapshots.
+The named runner ACL disappears after successful QEMU use,
+and regranting restores both machine types.
+The process-discovery positive and final cleanup controls passed.
+Its deciding device-open source and the unknown ACL-writer boundary are recorded in
+[`depot-ci-versus-github-runner-platforms.md`](../troubleshooting/depot-ci-versus-github-runner-platforms.md).
+The separate descriptor/group lifecycle control is GitHub `39124932077`,
+at `bafc75bb388a9f92dfc056f0bb409d86d48cc1ee`.
+Its full reservation plus six measured intervals is nominal USD 0.3938 under the unchanged USD 1 guard.
+It has a twenty-five-minute outer control envelope,
+a four-minute permission step and an eighteen-minute actual VM step.
+The actual guest remains four vCPUs and 8192 MiB;
+the original application manifest's twenty-minute reference is retained separately from the new outer envelope.
+Supplementary device-group access affects only the disposable child process,
+with no group database edit.
+Daemon log capture is now isolated from lifecycle cleanup before this full guest retry.
+
+The broader Rust work now has completed bounded ASan execution for all 35 frozen fuzz targets.
+Truepeak's actual all-features owning Nextest invocation passed 89 cases with two expected skips,
+separate from the earlier build/cache-only zero-test result.
+Git-policy planted faults were all detected,
+with exact JUnit identities corrected by independent XML parsing.
+The remaining benchmark and privileged WG campaigns remain active in the Rust-owned ledger.
+The fresh native artifact consumer verified all 1036 declared compiled hashes,
+including the formerly omitted hidden manifest,
+then failed its first actual domain import before any permission/prohibition/none cases ran.
+Its runtime topology diagnosis remains the routing researcher's active task;
+artifact membership success does not establish runtime portability.
 Independent sufficiency review precedes the interview.
 
 Research remains open;
