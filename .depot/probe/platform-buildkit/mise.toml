@@ -75,7 +75,7 @@ try{
 }
 '''
 [tasks."probe:build-service"]
-depends = ["probe:node-program-controls"]
+depends = ["probe:node-program-controls", "probe:local-service-control"]
 quiet = true
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -172,3 +172,68 @@ process.stdout.write(JSON.stringify({projectId,source,exitCode:code,elapsedMilli
 [tasks."probe:node-program-controls"]
 shell = "node --input-type=module-typescript -e"
 run = "import {readFileSync,writeFileSync} from 'node:fs';\nimport {join} from 'node:path';import {homedir} from 'node:os';\nimport {spawnSync,execFileSync} from 'node:child_process';\nimport {createHash} from 'node:crypto';import {strict as assert} from 'node:assert';\nimport {stripTypeScriptTypes} from 'node:module';\nconst source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();\nconst records=[];const dockerfile=readFileSync('context/Dockerfile','utf8');\nfor(const line of dockerfile.split('\\n')){\n  if(!/^(RUN |CMD |HEALTHCHECK .* CMD )/u.test(line))continue;\n  const args=JSON.parse(line.slice(line.indexOf('[')));assert.equal(args[0],'node');\n  const program=args.at(-1);assert(args.includes('--input-type=module-typescript'));\n  const stripped=stripTypeScriptTypes(program);\n  const result=spawnSync(process.execPath,['--input-type=module','--check'],{input:stripped,encoding:'utf8'});\n  assert.equal(result.error,undefined);assert.equal(result.status,0,result.stderr);\n  records.push({instruction:line.split(' ')[0],programSha256:createHash('sha256').update(program).digest('hex'),exitCode:result.status});\n}\nassert.equal(records.length,4);\nlet invalidControl;\ntry{stripTypeScriptTypes(\"const invalid: string = 'literal\\nnewline';\");}catch(error){\n  assert.equal(error.code,'ERR_INVALID_TYPESCRIPT_SYNTAX');invalidControl={errorCode:error.code,diagnostic:String(error)};}\nassert(invalidControl);\nconst proof={source,nodeVersion:process.version,records,invalidControl,\n  invocation:'Node stripTypeScriptTypes then --input-type=module --check; actual JSON-decoded instruction program',\n  cloudAllocation:false,programsExecuted:false};\nwriteFileSync(join(homedir(),'temp','agent','depot-platform-buildkit-evidence-20261018','node-program-controls-'+source+'.json'),\n  JSON.stringify(proof,null,2)+'\\n');process.stdout.write(JSON.stringify(proof)+'\\n');"
+[tasks."probe:local-service-control"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+import {readFileSync,writeFileSync,mkdirSync,copyFileSync,existsSync} from 'node:fs';
+import {join} from 'node:path';import {homedir} from 'node:os';
+import {execFileSync,spawnSync} from 'node:child_process';
+import {randomUUID,createHash} from 'node:crypto';import {strict as assert} from 'node:assert';
+const source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const manifest=JSON.parse(readFileSync('manifest.json','utf8'));
+const state=join(homedir(),'temp','agent','depot-platform-buildkit-evidence-20261018');
+const context=join(state,'local-service-'+source);assert(!existsSync(context));mkdirSync(context,{mode:0o700});
+const dockerfile=readFileSync('context/Dockerfile','utf8');
+const command=JSON.parse(dockerfile.split('\n').find(line=>line.startsWith('CMD ')).slice(4));
+assert.equal(command[0],'node');assert.equal(command[1],'--input-type=module-typescript');
+const program=command.at(-1);const name='depot-local-service-'+source.slice(0,12)+'-'+randomUUID().slice(0,8);
+const image='localhost/'+name+':control';const nonce=randomUUID();
+writeFileSync(join(context,'Dockerfile'),'FROM '+manifest.nodeBase+'\nWORKDIR /app\nCOPY probe.json /app/probe.json\n');
+copyFileSync('context/probe.json',join(context,'probe.json'));
+const buildArgs=['build','--file',join(context,'Dockerfile'),'--tag',image,'--memory','512m',
+  '--cpu-period','100000','--cpu-quota','200000','--jobs','1','--network','none','--http-proxy=false',context];
+const result={source,repositoryBase:manifest.repositoryBase,nodeBase:manifest.nodeBase,image,name,nonce,
+  serviceProgramSha256:createHash('sha256').update(program).digest('hex'),startedAt:new Date().toISOString(),
+  declaredResources:{cpus:2,memoryBytes:512*1024**2,pids:64,containerTimeoutSeconds:30,hostBindMounts:false,network:'none'},
+  buildArgs,cloudAllocation:false};
+let failure;
+try{
+  const build=spawnSync('podman',buildArgs,{encoding:'utf8',maxBuffer:4*1024*1024});
+  result.build={exitCode:build.status,stdout:build.stdout,stderr:build.stderr};assert.equal(build.error,undefined);
+  assert.equal(build.status,0,build.stderr);
+  const consumer=program+`; import {once as controlOnce} from 'node:events'; import {strict as controlAssert} from 'node:assert';
+await controlOnce(server,'listening'); const outcomes=[];
+for(const [path,expectedStatus] of [['/health',200],['/nonce',200],['/missing-positive-negative-control',404]]){
+  const response=await fetch('http://127.0.0.1:8080'+path,{signal:AbortSignal.timeout(1000)});
+  const body=await response.json();controlAssert.equal(response.status,expectedStatus);
+  controlAssert.equal(body.nonce,process.env.MONO_RESEARCH_NONCE);
+  controlAssert.equal(body.repositoryBase,'${manifest.repositoryBase}');
+  controlAssert.equal(body.harnessCommit,process.env.BUILD_HARNESS_SHA);
+  controlAssert.equal(body.nodeVersion,'v24.22.0');controlAssert.equal(body.architecture,'x64');
+  controlAssert.equal(body.path,path);outcomes.push({path,status:response.status,body});
+}
+const closed=controlOnce(server,'close');server.close();await closed;
+process.stdout.write(JSON.stringify({outcomes,nodeVersion:process.version,controlledServerClose:true}));`;
+  const args=['run','--name',name,'--memory','512m','--cpus','2','--pids-limit','64','--network','none',
+    '--read-only','--read-only-tmpfs=false','--http-proxy=false','--timeout','30','--env','MONO_RESEARCH_NONCE='+nonce,
+    '--env','BUILD_HARNESS_SHA='+source,image,...command.slice(0,-1),consumer];
+  const run=spawnSync('podman',args,{encoding:'utf8',maxBuffer:4*1024*1024});
+  result.run={exitCode:run.status,stdout:run.stdout,stderr:run.stderr};assert.equal(run.error,undefined);
+  const inspect=spawnSync('podman',['container','inspect',name],{encoding:'utf8',maxBuffer:4*1024*1024});
+  result.inspect=inspect.status===0?JSON.parse(inspect.stdout)[0]:{exitCode:inspect.status,stderr:inspect.stderr};
+  assert.equal(run.status,0,run.stderr);result.consumer=JSON.parse(run.stdout);
+  assert.equal(result.inspect.State.ExitCode,0);assert.equal(result.inspect.Mounts.length,0);
+  assert.equal(result.inspect.HostConfig.Memory,512*1024**2);
+  assert.equal(result.inspect.HostConfig.CpuQuota/result.inspect.HostConfig.CpuPeriod,2);
+  assert.equal(result.inspect.HostConfig.PidsLimit,64);
+}catch(error){failure=error;result.failure={name:error.name,message:error.message,stack:error.stack};}
+finally{
+  const exists=spawnSync('podman',['container','exists',name],{encoding:'utf8'});
+  if(exists.status===0){const cleanup=spawnSync('podman',['container','rm',name],{encoding:'utf8'});
+    result.cleanup={exitCode:cleanup.status,stdout:cleanup.stdout,stderr:cleanup.stderr};}
+  result.finishedAt=new Date().toISOString();writeFileSync(join(state,'local-service-'+source+'.json'),JSON.stringify(result,null,2)+'\n');
+}
+if(failure)throw failure;assert.equal(result.cleanup.exitCode,0);
+process.stdout.write(JSON.stringify({source,consumer:result.consumer,declaredResources:result.declaredResources,
+  containerRemoved:result.cleanup.exitCode===0,imageRetainedForLaterConsumers:image})+'\n');
+'''
