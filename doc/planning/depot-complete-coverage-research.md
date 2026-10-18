@@ -817,7 +817,8 @@ Expanded CI must preserve that limit when qualifying this existing image consume
 
 ## Guarded host terminal results and artifact boundary
 
-Run `39118106788` invoked all 108 commands in shard `a`: 105 passed and 3 default owners failed.
+Run `39118106788` invoked all 108 commands in shard `a`:
+105 passed and 3 default owners failed.
 Those failures are spread-rule assertions in `no-restricted-syntax`,
 retirement-table characterization (`570` actual versus `551` expected),
 and OpenAI Fast nested-option identity.
@@ -828,7 +829,8 @@ the actual pnpm dependency install had already completed.
 The incumbent coding-agent realpath/sibling lookup resolves the transitive SDK packages.
 
 Corrected immutable harness `47aef8d403e4151593725943456fa3b0a8bce626`
-ran as `39119985290`: 78 of 79 owning invocations passed.
+ran as `39119985290`:
+78 of 79 owning invocations passed.
 The actual native build,
 subsequent type check,
 native syntax check,
