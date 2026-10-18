@@ -125,3 +125,43 @@ The Podman troubleshooting note's `34` existing semantic-line-break findings rep
 Only those reported spaces were replaced with newlines,
 with identical non-whitespace content;
 targeted lint then passed.
+
+## Independent graph parity review
+
+Root's corrected GitHub graph `39140975786` is terminal.
+Its four exact completed samples and raw Rust command logs are retained in the root expansion controller.
+The [independent parity review](../audit/depot-expanded-graph-parity-review-2026-10-18.evidence.json)
+checks `840` original ZIP members by CRC,
+rejoins the eight Rust command logs by bytes and SHA-256,
+and retains `1,304` emitted status records across the four samples.
+Every sample has the same `237` forbidden-strings PASS identities
+and the same `89` Truepeak PASS identities.
+Controls change an actual raw-log case name or PASS status and correctly reject equality.
+Reordering cases or changing progress ordinals and timing prefixes preserves identity.
+Default terminal logs do not establish skipped-case identities.
+This review executes no source tests and allocates no cloud resources.
+
+Independent phase arithmetic reproduces the source-bound two-repetition ratios:
+shared producer `2.8682535459178453`
+and Rust `2.2111151175725956`.
+The retained means and spreads are per completed subgraph,
+not a whole-pipeline multiplier or a general provider estimate.
+
+Coverage's first public host handoff `39141147245` is terminal with five allocated jobs.
+Its skipped unassigned scheduler row `117715669048` must not become a compute allocation.
+Recovery `39144499822` remains owner-watched;
+the separate Depot OS admission remains unallocated.
+The documented host memory unit is GB,
+with actual CPU and RAM measurements missing from that handoff.
+
+## Prepared image cleanup queue
+
+Root requested exact owned `tools-r1`,
+`tools-r2`,
+and `tools-r3-fuzz-codex` image cleanup after their sealed consumers.
+The Rust lane will inspect retained identities,
+confirm coverage has no remaining consumer,
+read the current scoped deletion contract,
+and retain timestamp and exact absence receipts.
+No account-wide listing is authorized.
+Local worktrees and source archives remain retained.
