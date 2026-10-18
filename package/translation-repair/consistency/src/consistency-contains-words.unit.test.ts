@@ -49,6 +49,37 @@ await describe({
           },
         },),
         it({
+          name: 'READS A JOINT OF A LONGER WORD AS CUTTING THE WORD, as the locator does, unless the caller names the earlier reading '
+            + 'of an artifact written before joints counted, which asks for no letter, digit or combining mark beside the match and '
+            + 'nothing more',
+          fn: async () => {
+            /**
+             The pairs the readings differ on: a match beside an apostrophe, a hyphen and a joint of digits.
+             */
+            const pairs = [
+              { outer: 'the cat\'s bowl', inner: 'cat', },
+              { outer: 'the cat-nap', inner: 'cat', },
+              { outer: 'the 0.5 cup', inner: '5', },
+              { outer: 'the cats nap', inner: 'cat', },
+            ] as const;
+            expect({
+              byDefault: pairs.map(function byDefault(pair,): boolean {
+                return containsWords(pair,);
+              },),
+              locator: pairs.map(function byLocator(pair,): boolean {
+                return containsWords({ ...pair, edges: 'locator', },);
+              },),
+              letters: pairs.map(function byLetters(pair,): boolean {
+                return containsWords({ ...pair, edges: 'letters', },);
+              },),
+            },).toEqual({
+              byDefault: [false, false, false, false,],
+              locator: [false, false, false, false,],
+              letters: [true, true, true, false,],
+            },);
+          },
+        },),
+        it({
           name: 'KEEPS LOOKING AFTER A MATCH INSIDE A WORD, so a later match at the edges of words counts',
           fn: async () => {
             expect(containsWords({ outer: 'cats and a cat', inner: 'cat', },),).toBe(true,);

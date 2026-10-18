@@ -196,6 +196,50 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE SPAN WITH THE EARLIER READINGS A RECOUNT NAMES, those of an artifact written before joints and line endings '
+        + 'counted: a slot given beside a quote that holds the words before a joint counts under the edges of letters and not by '
+        + 'default, and a slot beside inline code padded by line endings is a stand under the padding of spaces and not by default',
+      fn: async () => {
+        /**
+         Ballots that quote a longer text with the slot `big`, and one that quoted the words alone.
+         */
+        const voices: readonly ConsistencyVoice[] = [
+          { quote: 'big cat\'s bowl', slot: 'big', },
+          { quote: 'big cat\'s bowl', slot: 'big', },
+          { quote: 'big cat', },
+        ].map(function ballotOf({ quote, slot, }, index,): ConsistencyVoice {
+          return {
+            seat: `seat ${String(index,)}`,
+            reason: 'It words the first place best.',
+            quotes: [{ label: 'OCCURRENCE 1', quote, ...((slot === undefined) ? {} : { slot, }), },],
+            choice: 'OCCURRENCE 1',
+            keep: [],
+          };
+        },);
+        /**
+         The span of code padded by line endings, whose ballots all gave the slot `kit`.
+         */
+        const padded = 'The kit`\ntens\n` ate';
+        expect({
+          byDefault: slotInSpan({ voices, label: 'OCCURRENCE 1', words: 'big cat', span: 'big cat', },),
+          letters: slotInSpan({ voices, label: 'OCCURRENCE 1', words: 'big cat', span: 'big cat', edges: 'letters', },),
+          codeByDefault: slotOf({ span: padded, slots: [['kit',], ['kit',],], },),
+          codeBySpaces: slotInSpan({
+            voices: ballotsGiving({ span: padded, slots: [['kit',], ['kit',],], },),
+            label: 'OCCURRENCE 1',
+            words: foldedWordsOf({ text: padded, },),
+            span: padded,
+            codePadding: 'spaces',
+          },),
+        },).toEqual({
+          byDefault: [],
+          letters: [{ slot: 'big', slotStart: 0, },],
+          codeByDefault: [],
+          codeBySpaces: [{ slot: 'kit', slotStart: 4, },],
+        },);
+      },
+    },),
+    it({
       name: 'GIVES NO SLOT THAT CUTS MARKUP, beside a slot of the same span that cuts none',
       fn: async () => {
         expect({

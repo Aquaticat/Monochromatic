@@ -306,6 +306,23 @@ await describe({
             ],).toEqual([['cat',], [], ['cat',],],);
           },
         },),
+        it({
+          name: 'COUNTS A SLOT GIVEN BESIDE A QUOTE THAT HOLDS THE AGREED WORDS BEFORE A JOINT only under the earlier reading of '
+            + 'containment of an artifact written before joints counted: "cat" is no word of "cat\'s bowl" by default or by the locator\'s '
+            + 'edges, and is one by the edges of letters',
+          fn: async () => {
+            const voices = [
+              voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'cat\'s bowl', slot: 'bowl', },], }, },),
+              voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'cat\'s bowl', slot: 'bowl', },], }, },),
+              voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'cat', },], }, },),
+            ];
+            expect([
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'cat', },),
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'cat', edges: 'locator', },),
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'cat', edges: 'letters', },),
+            ],).toEqual([[], [], ['bowl',],],);
+          },
+        },),
       ],
     },),
     describe({

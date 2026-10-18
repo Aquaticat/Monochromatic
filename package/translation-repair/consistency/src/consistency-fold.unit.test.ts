@@ -436,6 +436,37 @@ await describe({
           },
         },),
         it({
+          name: 'READS INLINE CODE AS PADDED BY SPACES ALONE when the caller names the earlier reading, as a recount of an artifact written '
+            + 'before line endings padded code reads it: the word beside code padded by line endings is a stand there, and the readings '
+            + 'agree where the code is padded by spaces or by no line ending at all',
+          fn: async () => {
+            /**
+             The kinds the locator gives for the cases of the line ending reading, under each reading of the padding.
+             */
+            function kindsUnder({ codePadding, }: { readonly codePadding?: 'spaces' | 'spaces-and-line-endings'; },): readonly string[] {
+              return [
+                'The kit`\ntens\n` ate.',
+                'The kit`\r\ntens\r\n` ate.',
+                'The kit`\ntens ` ate.',
+                'The kit`\ntens` ate.',
+                'The kit`\n` ate.',
+                'The kit` tens ` ate.',
+              ].map(function kindOf(haystack,): string {
+                return locateWords({ haystack, words: 'kit', ...((codePadding === undefined) ? {} : { codePadding, }), },).kind;
+              },);
+            }
+            expect({
+              earlier: kindsUnder({ codePadding: 'spaces', },),
+              later: kindsUnder({ codePadding: 'spaces-and-line-endings', },),
+              byDefault: kindsUnder({},),
+            },).toEqual({
+              earlier: ['once', 'once', 'once', 'once', 'once', 'none',],
+              later: ['none', 'none', 'none', 'once', 'once', 'none',],
+              byDefault: ['none', 'none', 'none', 'once', 'once', 'none',],
+            },);
+          },
+        },),
+        it({
           name: 'FINDS THE WORD ONCE beside the tags of a raw element, since the parser reads them to their closing tag and they end a word '
             + '(n166, Z7)',
           fn: async () => {

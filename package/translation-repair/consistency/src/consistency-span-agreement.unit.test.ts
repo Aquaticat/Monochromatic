@@ -439,6 +439,30 @@ await describe({
       },
     },),
     it({
+      name: 'READS A JOINT OF A LONGER WORD AS NO PART OF IT when the caller names the earlier reading of an artifact written before '
+        + 'joints counted: "cat" is a word of "cat\'s bowl" there, so two ballots that quoted the longer text and one that quoted '
+        + '"cat" agree on "cat", which the reading by default leaves out',
+      fn: async () => {
+        /**
+         The ballots: two quoted the longer text, one the short words.
+         */
+        const voices = [
+          ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': 'cat\'s bowl', }, choice: 'OCCURRENCE 1', },),
+          ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': 'cat\'s bowl', }, choice: 'OCCURRENCE 1', },),
+          ballotOf({ seat: 'c', quotes: { 'OCCURRENCE 1': 'cat', }, choice: 'OCCURRENCE 1', },),
+        ];
+        expect({
+          byDefault: containedQuoteWordsOf({ voices, label: 'OCCURRENCE 1', },),
+          locator: containedQuoteWordsOf({ voices, label: 'OCCURRENCE 1', edges: 'locator', },),
+          letters: containedQuoteWordsOf({ voices, label: 'OCCURRENCE 1', edges: 'letters', },),
+        },).toEqual({
+          byDefault: ['cat\'s bowl',],
+          locator: ['cat\'s bowl',],
+          letters: ['cat\'s bowl', 'cat',],
+        },);
+      },
+    },),
+    it({
       name: 'ENDS ON A BLANK QUOTE, which is contained only in another blank quote: a blank quote beside two that end in a '
         + 'letter is no candidate, and two blank quotes beside one of words are the one candidate',
       fn: async () => {
