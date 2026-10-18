@@ -523,6 +523,14 @@ Queued, not started (an agent slot frees when one of the above reports; the cap 
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+- 2026-10-18 done from that triage and merged to main: 1612 and 1610 (workflow fixes, release and cache-prune dry
+  runs green), 1639 (the four design runtime JS files tracked, negations recorded in
+  `doc/decision/gitignore-negations.md`; closed by the commit), the music player share of 1758 (fedora:41 index digest
+  pins in `Containerfile`, `.sign` and `.icons`; `Containerfile` and `.sign` were built from the pin; other packages'
+  Containerfiles stay floating, so 1758 stays open), the desktop share of 1756 (root `clippy.toml` mounted at
+  `/clippy.toml` in the container lint; probe: a crate with `Result::unwrap` passes without the mount and fails with it;
+  `ide`, `terminal` and `nested-wayland-session` stay open), the `musicplayer-native` README (1763 reopened for the
+  test-fixture packages). Still mine and not started: re-check 1079, 1080, 1081, 1069 against current main.
 - GitHub issues from the 2026-10-17 repository review that touch the music player (open, triaged 2026-10-17, 500+
   open in total, most are doc style findings): assigned to agents (f) 1438, 1439, 1440 and (g) 1451 to 1458, 1460,
   1463. Mine, not started: 1612 (`cache-prune.yml` FAMILIES omits `msys2-pkg-v1`), 1610 (`music-player-release.yml`
