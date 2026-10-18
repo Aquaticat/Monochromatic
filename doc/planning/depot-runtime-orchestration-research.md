@@ -280,3 +280,60 @@ headful local Android unit.
 The BuildKit researcher has produced a two-architecture service image;
 the parent next exercises native and GitHub job-container and service-container consumers
 after the digest and temporary pull credential are verified.
+
+### Job and service container admission
+
+The service image is pinned to
+`registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7`.
+Its builder harness is `5cfc1d90f92154cf62fa95789fad9bd7deeda208`.
+Native host and job-container consumers cover AMD64 and Arm64;
+GitHub consumers cover GitHub-hosted AMD64 and Depot AMD64 and Arm64.
+The host and job-container variants each require real service HTTP status,
+source identity,
+architecture and per-run nonce controls,
+including a deliberately absent route returning 404.
+Job-container consumers additionally read the actual image filesystem and builder proof.
+Each workflow runs at most one matrix member at a time.
+Native has four five-minute jobs;
+GitHub has six five-minute jobs.
+The parent keeps at most two jobs active across its campaigns.
+The nominal timestamp-compute guard for these container consumers is USD 1.
+
+The single pull token was requested for the owned build,
+is read-only,
+and has a documented one-hour lifetime.
+Its value is never in command arguments or committed files.
+It is temporarily stored as `MONO_RESEARCH_SERVICE_PULL_20261018`
+in this repository's GitHub Actions secrets and a native secret variant
+scoped to this repository and research branch.
+Both names were checked for collisions before creation.
+Remove those exact owned credentials after their consumers finish,
+then release the shared image and project for the builder researcher's cleanup.
+
+### First current-source VM result
+
+Native run `mcht0wwlg6`,
+at harness `414200586634f761e6001c944f4938fbee9f236a`,
+verified the declared image bytes,
+booted the Ubuntu template,
+and failed when QEMU connected to the final guest's virtiofs socket:
+`Failed to connect ... fs0-fs.sock: Connection refused`.
+This is a failed final guest consumer,
+not a successful VM lifecycle.
+The private domain inventory was empty after explicit cleanup,
+and both owned daemon PIDs were observed gone.
+The first fixture did not retain virtiofs daemon logs,
+so it does not establish why that daemon exited.
+
+The existing
+[`depot-vm-runtime-paths.md`](../troubleshooting/depot-vm-runtime-paths.md)
+records a separate,
+previously measured primary-group mismatch and its verified owned-process relaunch.
+The follow-up must record actual process and passwd identities,
+retain daemon logs before cleanup,
+and apply that workaround only when its measured prerequisite is present.
+The VM campaign now permits four total functional jobs within the same USD 1 guard:
+the first failed native job,
+one diagnostic native follow-up,
+and the two GitHub controls.
+Four full 20-minute windows at USD 0.012 per minute would total USD 0.96.
