@@ -1015,6 +1015,10 @@ source failures,
 discovery failures and artifact-integrity failures retain their blocking semantics.
 The scope correction stays in CI documents;
 `AUT` remains unchanged.
+The [concrete rollout plan](depot-expanded-ci-rollout.md) consolidates the accepted permanent allocation,
+cadence,
+ratchet,
+spend authority and recovery policy for the final shared-understanding check.
 The recommendation must retain its source cohorts,
 documented plan eligibility,
 exact consumer limits and USD 200 monthly scope.

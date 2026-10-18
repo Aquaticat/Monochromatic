@@ -65,8 +65,9 @@ The second interview round is answered through the question tool.
 Q4 accepts standing bounded authority for recurring overage.
 Q5 accepts one reserved automatic recovery attempt for classified infrastructure failures.
 Q6 keeps the correction in CI documents and leaves `AUT` unchanged.
-The next action is to consolidate the concrete rollout plan,
-verify its rendered form and obtain confirmation of shared understanding before implementation.
+The [concrete rollout plan](../planning/depot-expanded-ci-rollout.md) consolidates these answers.
+The next action is to verify its rendered form,
+publish the owned documentation and obtain confirmation of shared understanding before implementation.
 
 The posted second round covers independent decisions:
 
