@@ -31,7 +31,9 @@ export function reportLoggerFallback({
 },): void {
   if ((typeof console) === 'undefined')
     return;
-  /** Host console method avoids recursive sink discovery while reporting fallback. */
+  /**
+   Host console method avoids recursive sink discovery while reporting fallback.
+   */
   const report = (typeof console.warn) === 'function'
     ? console.warn
     : ((typeof console.error) === 'function' ? console.error : console.log);
@@ -78,7 +80,9 @@ export function reportLoggerInternalError(
   /**
    Available console method for reporting the internal failure.
    */
-  /** Host console method avoids recursive sink discovery while reporting fallback. */
+  /**
+   Host console method avoids recursive sink discovery while reporting fallback.
+   */
   const report = (typeof console.warn) === 'function'
     ? console.warn
     : ((typeof console.error) === 'function' ? console.error : console.log);

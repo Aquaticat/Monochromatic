@@ -41,9 +41,13 @@ export function userLogDirectory({
       'monochromatic',
     );
   if (platform === 'win32') {
-    /** Runtime path override is accepted only when absolute. */
+    /**
+     Runtime path override is accepted only when absolute.
+     */
     const configured = environment.LOCALAPPDATA;
-    /** Windows local application-data root, independent of cwd. */
+    /**
+     Windows local application-data root, independent of cwd.
+     */
     const local = (configured !== undefined) && win32.isAbsolute(configured,)
       ? configured
       : win32.join(
@@ -57,9 +61,13 @@ export function userLogDirectory({
       'Log',
     );
   }
-  /** Runtime path override is accepted only when absolute. */
+  /**
+   Runtime path override is accepted only when absolute.
+   */
   const configured = environment.XDG_STATE_HOME;
-  /** Persistent state root follows the XDG default for missing or invalid overrides. */
+  /**
+   Persistent state root follows the XDG default for missing or invalid overrides.
+   */
   const state = (configured !== undefined) && posix.isAbsolute(configured,)
     ? configured
     : posix.join(

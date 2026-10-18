@@ -24,9 +24,13 @@ import { userLogDirectory, } from './file-state.ts';
  @returns Exclusively owned and verified file path.
  */
 async function openFallback(reason: string,): Promise<string> {
-  /** Fallback destination is resolved only after default project selection fails. */
+  /**
+   Fallback destination is resolved only after default project selection fails.
+   */
   const directory = userLogDirectory();
-  /** Only this verified file can receive queued records. */
+  /**
+   Only this verified file can receive queued records.
+   */
   const filePath = await openLogFile(directory,);
   reportLoggerFallback({
     directory,
@@ -36,21 +40,19 @@ async function openFallback(reason: string,): Promise<string> {
 }
 
 /**
- Select and verify a file without silently redirecting explicit destinations.
-
- @param directory - caller-selected destination, absent for project discovery
+ Select a default project file or visibly fall back to verified user state.
  
  @returns Verified file owned by this sink.
 
  @example
  ```ts
- const file = await openFileDestination({ directory: undefined });
+ const file = await openDefaultLogFile();
  ```
  */
-export async function openFileDestination({ directory, }: { readonly directory: string | undefined; },): Promise<string> {
-  if (directory !== undefined)
-    return await openLogFile(directory,);
-  /** Nearest project dependency directory or the explicit missing-project sentinel. */
+export async function openDefaultLogFile(): Promise<string> {
+  /**
+   Nearest project dependency directory or the explicit missing-project sentinel.
+   */
   const nodeModules = await findNodeModulesUp({
     cwd: process.cwd(),
     stat,
@@ -59,7 +61,9 @@ export async function openFileDestination({ directory, }: { readonly directory: 
   },);
   if (nodeModules === NO_NODE_MODULES_FOUND)
     return await openFallback('No ancestor node_modules directory was found',);
-  /** Existing default project location remains first choice. */
+  /**
+   Existing default project location remains first choice.
+   */
   const projectDirectory = join(
     nodeModules,
     '.monochromatic',

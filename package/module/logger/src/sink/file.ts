@@ -1,4 +1,5 @@
-import { openFileDestination, } from './file-destination.ts';
+import { openDefaultLogFile, } from './file-destination.ts';
+import { openLogFile, } from './file-open.ts';
 
 import { reportLoggerInternalError, } from '../error-format.ts';
 
@@ -79,8 +80,12 @@ export function createFileSink({
    */
   async function runVerify(): Promise<boolean> {
     try {
-      /** Verified destination owns all subsequent queued appends for this instance. */
-      const filePath = await openFileDestination({ directory: explicitDirectory, });
+      /**
+       Verified destination owns all subsequent queued appends for this instance.
+       */
+      const filePath = explicitDirectory === undefined
+        ? await openDefaultLogFile()
+        : await openLogFile(explicitDirectory,);
       state.appends = createFileAppendQueue({ filePath, },);
       return true;
     }

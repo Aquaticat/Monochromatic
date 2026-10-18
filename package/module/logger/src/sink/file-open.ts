@@ -45,18 +45,24 @@ export async function openLogFile(directory: string,): Promise<string> {
       mode: 0o700,
     },
   );
-  /** Portable timestamp component for the exclusively created file. */
+  /**
+   Portable timestamp component for the exclusively created file.
+   */
   const timestamp = new Date().toISOString()
     .replaceAll(
       ':',
       '-',
     );
-  /** Unique sink-owned path, never shared with another instance. */
+  /**
+   Unique sink-owned path, never shared with another instance.
+   */
   const filePath = join(
     directory,
     `${timestamp}.${randomUUID()}.log.jsonl`,
   );
-  /** Exact probe record required to round-trip before append ownership is published. */
+  /**
+   Exact probe record required to round-trip before append ownership is published.
+   */
   const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
   await appendFile(
     filePath,
@@ -66,7 +72,9 @@ export async function openLogFile(directory: string,): Promise<string> {
       mode: 0o600,
     },
   );
-  /** Read-back must preserve the complete probe rather than a matching substring. */
+  /**
+   Read-back must preserve the complete probe rather than a matching substring.
+   */
   const content = await readFile(
     filePath,
     'utf8',
