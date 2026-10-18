@@ -155,7 +155,12 @@ and the probe confirms actual `session_before_compact`,
 an original cancellation handle and 108 branch entries.
 That success does not clear the retained history error or establish the next tool review.
 The maintained SDK persistence and live/load differential regression is committed before the repair.
-Its first run is pending.
+Commit `927ad36265` preserves the regression before repair.
+The actual SDK reopen fails with the same retained text-only error on `rKKphY`;
+evidence is `loaded-message-content-red.log`.
+The repair reuses the existing manager-content validator in loaded history,
+preserving supported blocks and its rejection of unsupported fields/types.
+Its committed source still needs an owned rebuild and the differential/SDK persistence checks.
 
 The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
 session `44944`,
