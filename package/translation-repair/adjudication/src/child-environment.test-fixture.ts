@@ -56,6 +56,17 @@ const PACKAGE_ROOT = join(
 );
 
 /**
+ The package's build directory, where built commands are found unless a case
+ names another package's.
+ */
+const BUILT_DIRECTORY = join(
+  PACKAGE_ROOT,
+  'dist',
+  'final',
+  'node',
+);
+
+/**
  Environment for a child: the parent's, with every variable the rule removes
  stated as absent, then the case's own variables.
 
@@ -307,6 +318,10 @@ function markerFor(
  @param startedBy - who the child's marker says started it: the task of this
  command unless the case says otherwise
 
+ @param builtDirectory - directory holding the built command, this package's
+ own build where absent; a case for a command another package owns passes that
+ package's build directory, found through the package's name
+
  @returns Exit code, then stdout and stderr whole
 
  @throws Error when the process never started
@@ -323,22 +338,21 @@ export async function runBuiltCommand(
     env = {},
     cwd = PACKAGE_ROOT,
     startedBy = 'its own task',
+    builtDirectory = BUILT_DIRECTORY,
   }: {
     readonly command: string;
     readonly args?: readonly string[];
     readonly env?: Readonly<Record<string, string>>;
     readonly cwd?: string;
     readonly startedBy?: StartedBy;
+    readonly builtDirectory?: string;
   },
 ): Promise<ChildRun> {
   return await runKeyless({
     file: process.execPath,
     args: [
       join(
-        PACKAGE_ROOT,
-        'dist',
-        'final',
-        'node',
+        builtDirectory,
         `${command}.mjs`,
       ),
       ...args,
