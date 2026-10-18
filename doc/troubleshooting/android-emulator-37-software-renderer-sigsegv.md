@@ -280,6 +280,18 @@ It is recorded as a separate incident: the cause is not shown.
 - Not done: no reproduction on purpose, no `-no-netsim` or other flag was tried, because the launch rule allows one
   form only.
 
+## Separate incident: crash consent dialog blocks the next headful launch (2026-10-18)
+
+Three headful launches (the working form above, a private reflink copy of the owned AVD, `-gpu host`) in one session:
+the first crashed with SIGSEGV in `gfxstream::host::gl::TextureResize` right after boot,
+the second aborted (SIGABRT, `grpc::internal::CallbackWithSuccessTag::Proceed`, the frame of the 2026-10-14 incident),
+and the third printed `Showing crashdialog to get consent.` at start, then `Vulkan emulation initialized`,
+and stayed alive for 15 minutes with no console port and no device in `adb devices`.
+The two earlier reports sit in `/tmp/android-user/emu-crash-37.2.12.db`, and the emulator asks for consent before it
+boots; the dialog is on the host session, which an agent cannot answer.
+Not tested: whether `-no-metrics` is ignored by that dialog, or whether removing the report database avoids it.
+The third launch was stopped with `systemctl --user stop` (the guest had not booted).
+
 ## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
 
 This is recorded here as the nearest topic.
