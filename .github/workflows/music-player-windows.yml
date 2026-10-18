@@ -1,5 +1,5 @@
 {
-  "name": "research GitHub KVM access-state repeated controls",
+  "name": "research GitHub descriptor permissions and actual MVM group consumer",
   "on": {
     "workflow_dispatch": {}
   },
@@ -13,9 +13,10 @@
   "jobs": {
     "capability": {
       "runs-on": "ubuntu-24.04",
-      "timeout-minutes": 8,
+      "timeout-minutes": 25,
       "env": {
-        "PROBE_PLATFORM_PROVIDER": "github-hosted-ubuntu-24.04"
+        "PROBE_PLATFORM_PROVIDER": "github-hosted-ubuntu-24.04",
+        "MVM_RESEARCH_KVM_GROUP": "device"
       },
       "steps": [
         {
@@ -36,15 +37,24 @@
           "run": "mise install node"
         },
         {
-          "run": "mise run //.depot/research/mvm:capability-access-repeats",
-          "working-directory": ".depot/research/mvm"
+          "name": "Isolate descriptor-close permission behavior",
+          "run": "mise run //.depot/research/mvm:permission-close-controls",
+          "working-directory": ".depot/research/mvm",
+          "timeout-minutes": 4,
+          "continue-on-error": true
+        },
+        {
+          "name": "Actual frozen MVM lifecycle with supplemental device group",
+          "run": "mise run //.depot/research/mvm:lifecycle",
+          "working-directory": ".depot/research/mvm",
+          "timeout-minutes": 18
         },
         {
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-github-kvm-access-repeats",
-            "path": ".depot/research/mvm/access-evidence/",
+            "name": "research-github-kvm-group-lifecycle",
+            "path": ".depot/research/mvm/evidence/\n.depot/research/mvm/permission-evidence/",
             "if-no-files-found": "error",
             "retention-days": 7
           }

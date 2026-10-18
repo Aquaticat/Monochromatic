@@ -444,3 +444,82 @@ try {
 if (!probes.some(value => value.accelerator === 'tcg' && value.status === 0 && value.qmpKvm?.return?.enabled === false)) throw new CapabilityDiagnosticFailure('KVM access diagnostic lacks its working TCG positive control');
 console.log(JSON.stringify({ probes: probes.map(value => ({ label: value.label, status: value.status, kvm: value.qmpKvm?.return ?? null, accessBefore: value.before.access.available, accessAfter: value.after.access.available })), snapshotCount: snapshots.length, actualGuestExecuted: false }));
 '''
+
+[tasks.permission-close-controls]
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const os = await import('node:os');
+const { join } = await import('node:path');
+const { execFileSync, spawnSync } = await import('node:child_process');
+const { setTimeout } = await import('node:timers/promises');
+class CapabilityDiagnosticFailure extends Error {}
+if (process.env.GITHUB_ACTIONS !== 'true' || process.env.RUNNER_OS !== 'Linux' || process.env.PROBE_PLATFORM_PROVIDER !== 'github-hosted-ubuntu-24.04') throw new CapabilityDiagnosticFailure('Diagnostic is restricted to the owned ephemeral GitHub Linux control');
+const source = process.cwd();
+const evidence = join(source, '.depot/research/mvm/permission-evidence');
+fs.mkdirSync(evidence, { recursive: true, mode: 0o700 });
+const scratch = join(os.homedir(), 'temp/agent');
+fs.mkdirSync(scratch, { recursive: true, mode: 0o700 });
+fs.chmodSync(scratch, 0o700);
+const privateHome = fs.mkdtempSync(join(scratch, 'depot-kvm-capability-'));
+const runtimeRoot = '/run/user/' + process.getuid();
+const commands = [];
+const deadline = Date.now() + 3 * 60 * 1000;
+let environment = { ...process.env };
+const run = (id, command, args, options = {}) => {
+  const remaining = deadline - Date.now();
+  if (!options.cleanup && remaining < 30000) throw new CapabilityDiagnosticFailure('Capability diagnostic deadline reached with cleanup reserved');
+  const startedAt = new Date().toISOString();
+  const value = spawnSync(command, args, { env: options.environment ?? environment, cwd: source, detached: true, encoding: 'utf8', input: options.input, timeout: options.cleanup ? 15000 : Math.min(options.limit ?? 30000, remaining), maxBuffer: 16777216 });
+  if (value.error?.code === 'ETIMEDOUT' && value.pid) {
+    try { process.kill(-value.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  }
+  fs.writeFileSync(join(evidence, id + '.stdout.log'), value.stdout ?? '');
+  fs.writeFileSync(join(evidence, id + '.stderr.log'), value.stderr ?? '');
+  commands.push({ id, command: [command, ...args], startedAt, finishedAt: new Date().toISOString(), status: value.status, signal: value.signal, error: value.error?.message ?? null });
+  fs.writeFileSync(join(evidence, 'capability-commands.json'), JSON.stringify(commands, null, 2) + '\n');
+  console.log(JSON.stringify(commands.at(-1)));
+  return value;
+};
+const requireSuccess = value => { if (value.status !== 0) throw new CapabilityDiagnosticFailure('Capability prerequisite failed; retained command output identifies its boundary'); return value; };
+const access = path => { try { fs.accessSync(path, fs.constants.R_OK | fs.constants.W_OK); return { available: true }; } catch (error) { return { available: false, diagnostic: String(error) }; } };
+const identity = { uid: process.getuid(), gid: process.getgid(), groups: process.getgroups(), passwd: execFileSync('getent', ['passwd', String(process.getuid())], { encoding: 'utf8' }).trim(), architecture: process.arch, cpus: os.cpus().length, memoryBytes: os.totalmem(), kernel: os.release() };
+const before = access('/dev/kvm');
+requireSuccess(run('capability-apt-update', 'sudo', ['--non-interactive', 'apt-get', 'update'], { limit: 180000 }));
+const packages = ['acl', 'libvirt-daemon', 'libvirt-daemon-driver-qemu', 'libvirt-clients', 'qemu-system-x86', 'qemu-utils', 'virtiofsd', 'ovmf'];
+requireSuccess(run('capability-apt-install', 'sudo', ['--non-interactive', 'apt-get', 'install', '--yes', '--no-install-recommends', ...packages], { limit: 180000, environment: { ...environment, DEBIAN_FRONTEND: 'noninteractive' } }));
+requireSuccess(run('capability-package-versions', 'dpkg-query', ['--show', '--showformat=${Package}=${Version}\n', ...packages]));
+const after = access('/dev/kvm');
+requireSuccess(run('capability-qemu-help', '/usr/bin/qemu-system-x86_64', ['--help']));
+requireSuccess(run('capability-qemu-accelerators', '/usr/bin/qemu-system-x86_64', ['-accel', 'help']));
+const qmpInput = ['qmp_capabilities', 'query-kvm', 'query-status', 'quit'].map((execute, index) => JSON.stringify({ execute, id: ['caps', 'kvm', 'status', 'quit'][index] })).join('\n') + '\n';
+const samples = [];
+const checks = [];
+const sample = label => { const acl = run('permission-' + label, 'getfacl', ['--absolute-names', '--numeric', '/dev/kvm']); const value = { label, at: new Date().toISOString(), access: access('/dev/kvm'), acl: acl.stdout, stat: fs.statSync('/dev/kvm') }; samples.push(value); return value; };
+const rules = [];
+for (const directory of ['/etc/udev/rules.d', '/usr/lib/udev/rules.d']) {
+  for (const name of fs.readdirSync(directory).sort()) {
+    const path = join(directory, name);
+    if (!name.endsWith('.rules') || !fs.statSync(path).isFile()) continue;
+    const text = fs.readFileSync(path, 'utf8');
+    const relevant = text.split('\n').flatMap((line, index) => /kvm|uaccess|watch/iu.test(line) ? [{ line: index + 1, text: line }] : []);
+    if (relevant.length) rules.push({ path, relevant });
+  }
+}
+run('permission-systemd-version', 'dpkg-query', ['--show', '--showformat=' + String.fromCharCode(36) + '{Package}=' + String.fromCharCode(36) + '{Version}\n', 'systemd', 'udev']);
+for (const [index, mode] of ['idle', 'r', 'r+', 'r', 'r+'].entries()) {
+  const label = index + '-' + mode.replace('+', 'write');
+  requireSuccess(run('permission-grant-' + index, 'sudo', ['--non-interactive', 'setfacl', '--modify', 'u:' + process.getuid() + ':rw', '/dev/kvm']));
+  const beforeOperation = sample(label + '-before');
+  let descriptor;
+  let diagnostic = null;
+  try { if (mode !== 'idle') { descriptor = fs.openSync('/dev/kvm', mode); fs.closeSync(descriptor); descriptor = undefined; } } catch (error) { diagnostic = { code: error.code, message: error.message }; } finally { if (descriptor !== undefined) fs.closeSync(descriptor); }
+  await setTimeout(300);
+  const afterOperation = sample(label + '-after');
+  checks.push({ label, mode, before: beforeOperation, after: afterOperation, diagnostic, applicationGuest: false, ioctlIssued: false });
+}
+fs.writeFileSync(join(evidence, 'permission-controls.json'), JSON.stringify({ schemaVersion: 1, source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), identity, rules, checks, samples, commands, noQemuExecutedByThisTask: true, noGuestExecutedByThisTask: true }, null, 2) + '\n');
+if (checks.some(value => value.diagnostic || !value.before.access.available)) throw new CapabilityDiagnosticFailure('Descriptor control did not reach its actual device-open input');
+console.log(JSON.stringify({ cases: checks.map(value => ({ mode: value.mode, before: value.before.access.available, after: value.after.access.available })), applicationGuest: false }));
+'''
