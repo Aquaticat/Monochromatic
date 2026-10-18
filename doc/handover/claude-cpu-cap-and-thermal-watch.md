@@ -744,6 +744,17 @@ logged; run-to-run spread was not measured. Still queued: the 180 to 200 W bucke
 (sustained load near 190 W for about 17 minutes). Next check: 2026-10-19 18:07 EDT by a session-only cron job; this
 paragraph is the durable record.
 
+Correction from the user (2026-10-18, after the 18:07 EDT rerun): the comparison is still not apples to apples,
+because the fan curves were changed once more after the first fix. The log supports this. The CPU fan on the new board
+ran a median 1486 to 1501 RPM at 70 to 90 degrees Tctl until about 01:00 to 02:00 EDT, then 960 to 1200 RPM for the
+rest of 2026-10-18, so the "after the fan curve fix" era from 04:30 UTC mixes at least two curves; the exact times of
+the user's changes are not recorded. On the old board the Corsair channels ran at their maximum while the CPU sat at
+95 degrees: medians at 120 to 140 W were 1996, 2589, 0 (unused), 2034, 1504 and 1491 RPM on `fan1_rpm` to `fan6_rpm`
+(3178 rows; which channels drive the cooler was not checked). So the fan settings were never matched between the boards,
+and the old board had the faster fans. Read the 120 to 140 W result above as: the new board holds 80 degrees at fan
+speeds well below the old maximum, not as a controlled comparison. A fair comparison needs equal watts and equal CPU
+fan RPM, or a curve held fixed for the measurement window.
+
 Decision (user, 2026-10-18): switch the sample log to the motherboard fans. The watcher no longer reads CoolerControl;
 the seven Corsair columns stay in the header as empty slots so older rows keep their positions, and eleven columns
 were appended (eight `nct6687` fan speeds and its System, VRM MOS and PCH temperatures). Rejected: keeping the
