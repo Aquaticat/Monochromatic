@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T08:28:18.460Z",
+  "collectedAt": "2026-10-18T08:40:38.392Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research ongoing: native filesystem and OCI exports, registry bridge and derived OCI job image exercised; archive statement subjects differ; forwarding and repository cache mounts pending",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 1690804,
-    "sha256": "583ec9d5a2a4583cf66f75597395781085c3f981a6152cf4b8cf0feb3dc77691"
+    "bytes": 1725200,
+    "sha256": "6eeb3a2ad560c5c55962f472ace24347f01d4a8bd08b27d7707d073872c58b8a"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
