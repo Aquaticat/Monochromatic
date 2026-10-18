@@ -41,3 +41,30 @@ fn embedded_notices_round_trip() {
     let joined = rows_of(NOTICES).join("\n");
     assert_eq!(joined, NOTICES.strip_suffix('\n').unwrap_or(NOTICES));
 }
+
+// What:     A sink that keeps the address of the one slice written to it.
+// Why:      `--licenses` writes the notice text from the library crate; the address shows which copy of the text it read.
+struct AddressSink {
+    address: Option<usize>,
+}
+
+impl std::io::Write for AddressSink {
+    fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize> {
+        self.address = Some(buffer.as_ptr() as usize);
+        return Ok(buffer.len());
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        return Ok(());
+    }
+}
+
+// What:     The text the Licenses page reads and the text `--licenses` writes are the same bytes in memory.
+// Why:      A `const` text is copied into each crate that uses it, which doubled the 2 MB notices in the release binary
+//           (55.5 MB became 57.8 MB when the page first read it); the `static` keeps one copy.
+#[test]
+fn the_page_and_the_licenses_flag_read_one_copy_of_the_notices() {
+    let mut sink = AddressSink { address: None };
+    music_player::licenses::write_notices(&mut sink).expect("writing to the sink succeeds");
+    assert_eq!(sink.address, Some(NOTICES.as_ptr() as usize), "the binary carries a second copy of the notice text");
+}
