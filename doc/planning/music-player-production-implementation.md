@@ -240,6 +240,14 @@ before saying it matches, QAB):
   failed as intended, release dry run green). Unmet by design: PowerShell `--version > out.txt` gives an empty
   file; I accepted that tradeoff (recorded in `doc/decision/music-player-windows-gui-subsystem.md`, veto open).
   Follow-up not done: 9 pre-existing Windows clippy findings (no Windows clippy task exists).
+- Standing rule from the human (2026-10-17): "You should never use Opus subagents!" Subagents use `model: sonnet`
+  (or haiku for trivial reads). The four agents below were first started on Opus and all died on 2026-10-17 on the
+  account's weekly limit (resets 2026-10-19 08:00 America/New_York); their partial work stayed in their worktrees
+  (now under `/var/mnt/encrypted/temp/agent/`) and fresh Sonnet agents continue it:
+  (c) `aa99a806ba461a022` (licenses), (d) `a507287f6e2fa8092` (winerr), (e) `ae0eaae6e38ca6ea1` (cachebatch),
+  (f) `a24e53faf2449563e` (andlarge, plus issues 1438, 1439, 1440), (g) `a4826ac87de5272d2`, branch
+  `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`: review issues 1451 to 1458, 1460,
+  1463 against desktop-app and truepeak-core (not the cache code). The older ids below are the dead Opus agents.
 - In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
   (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
@@ -421,6 +429,17 @@ Queued, not started (an agent slot frees when one of the above reports; the cap 
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+- GitHub issues from the 2026-10-17 repository review that touch the music player (open, triaged 2026-10-17, 500+
+  open in total, most are doc style findings): assigned to agents (f) 1438, 1439, 1440 and (g) 1451 to 1458, 1460,
+  1463. Mine, not started: 1612 (`cache-prune.yml` FAMILIES omits `msys2-pkg-v1`), 1610 (`music-player-release.yml`
+  hardcodes build-tools 37.0.0), 1758 (floating container bases: `Containerfile.sign` runs with Authenticode
+  credentials, then `Containerfile`, `Containerfile.icons`; `Containerfile.alpine` and `windows-gnu` already pin),
+  1756 (container clippy omits the root `clippy.toml` in `desktop-app/mise.toml`), 1763 (`musicplayer-native` has no
+  README), 1639 (root `.gitignore` `*.js` rule strands the design runtime JS). To check, may be stale: 1079, 1080, 1081
+  (Linux tests, filed 2026-10-16; the desktop suite passed 1460 of 1460 on 2026-10-15), 1069 (clippy on the schema
+  constant; clippy passed). Not music-player product work and left alone: the `drop the unnecessary regex` refactor
+  issues 727 to 982 (design JS and Kotlin lint refactors), 1173/1174/1172 prose-style gates, the macOS native
+  assertion issues 1082 to 1107, CI issues 1023 to 1029, Depot trial issues.
 
 Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
 desktop keeps an unreadable row selected D128; Search restyled within the decisions with no section labels and no

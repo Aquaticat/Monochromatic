@@ -5,7 +5,41 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-17.
+Updated 2026-10-18.
+
+## Reopened MiMo preparation failure on 2026-10-18
+
+The user supplied later MiMo calls that return `Complete group preparation or assessment failed`.
+The readiness claim applies only to the earlier replay corpus and does not establish readiness for these calls.
+The actual session is `2026-10-17T15-47-34-073Z_01a14a8c-0a38-760f-aca3-aa17ebd2a725`.
+Reported calls are `call_cec448f1353443bd88da096e`
+and `call_8cacc98bebf7433a9945f1d3`.
+They belong to one parallel group.
+Earlier Python heredocs in the same session succeed,
+including `call_fe5cc4c2d73542b097c79140`.
+The installed output remains `native-release-qWSxFz`.
+Private evidence and the active reproduction work live in
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
+The original log retains a `RangeError: Invalid string length` in run prompt owner `charge()`
+while capturing retained context inputs.
+Automatic review then presents a manual selector at `2026-10-17T16:14:03.781Z`.
+The selector returns at `2026-10-17T17:18:03.286Z`,
+records the verdict,
+and calls the native Stop path.
+The dispatcher replaces that result with the generic preparation failure after seeing the aborted signal.
+Configured-host replay `pi-mimo-failure-rpc-xWj1Z0` reproduces the generic failure after Stop;
+its assertion rejects the exact reported message.
+Restoring only persisted history does not reproduce the original capture chain:
+it instead loses usable request evidence and falls back to manual approval.
+The active full replay therefore recreates every original MiMo proposal from a fresh session,
+under a two-CPU and 2 GiB container bound,
+with the original repository read only.
+
+Next actions:
+
+- Measure capture growth through the original proposal sequence and repair the prompt capture failure.
+- Add a genuine native Stop regression and preserve its withheld reason through cancellation.
+- Rebuild and replay the reported group and denial controls before renewing the lint handoff.
 
 ## Verified MiMo lint handoff on 2026-10-17
 

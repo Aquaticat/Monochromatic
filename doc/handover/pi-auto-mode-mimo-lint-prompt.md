@@ -4,7 +4,10 @@
 
 MiMo's task is to clear the complete maintained lint scope for `package/pi-plugin/auto-mode`
 while preserving the verified native execution and review behavior.
-The refactor has passing behavioral verification; lint completion is still pending.
+The earlier replay corpus passes behavioral verification; lint completion is still pending.
+The handoff is reopened after later real MiMo calls return
+`Complete group preparation or assessment failed`.
+See the [current frontier](pi-auto-mode-current-frontier.md) for the active incident and evidence location.
 
 The 2026-10-17 full Oxlint run reports **83 errors and 13,686 warnings**
 across **813 files and 486 rules**, using one thread.
