@@ -487,10 +487,26 @@ before the other queued work.
     (787 of 823 source commits named by none, `s245/split/audit-3eb2.txt`),
     so the cache account since `29d606470` (n171's code, where seven versions were last set) is read from the code
     in `w185` (`w185-notes/cache-account.md`), n173's fold change being the one with no recorded cache decision;
-    then the relaunch; the `w177` hardening lands separately, as it changes lint only;
-    resuming into a generation-17 runs directory is refused, so the relaunch uses a fresh throwaway directory);
-    the cache-account audit;
-    the relaunch of TianqiChen666 through the runbook's keyed task.
+    it found no version that must move (every stored record is a judge reply keyed by its exact sheet,
+    or a derived result whose producing packages changed only in formatting,
+    checked by syntax-tree comparison with a positive control);
+    the owner kept the finalist extension on 2026-10-18 (`design-commitments.md`);
+    `TianqiChen66626` launched on 2026-10-18 at 20:59 UTC at `7c21a56fc2`
+    (`--only TianqiChen666`, runs directory `/var/home/user/temp/agent/corpus-pass-TianqiChen66626`,
+    log beside it, unit `corpus-pass-corpus-pass-TianqiChen66626`, streams truncate and inherit,
+    plan ok, meters: Synthetic unreadable and treated as spendable, Bedrock, Hyper and OpenRouter wet);
+    her page has no reference or footnote definitions (the pattern finds 158 in 67 other pages),
+    so the open emphasis-definitions gap cannot reach this pass.
+7.  Under way in `w186` at `7c21a56fc2`:
+    emphasis read with the page's definitions in the three calls that pass none
+    (`consistency-loose-marks.ts:340`, and the fallbacks in `consistency-marks-past-markup.ts:73`
+    and `consistency-joined-marks.ts:76`);
+    the cache-version TSDoc made consistent (a sheet change moves the key, not the version);
+    the pairing version's range `d614a0c1d..29d606470`;
+    the Synthetic meter reader for the provider's changed `/quotas` body.
+    In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
+    external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
+    and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
 6.  Done 2026-10-18:
     the owner authorized issue comments and added a permission rule;
     status comments posted on 527 and 541 (`cbedea3574` removed the code on the branch)

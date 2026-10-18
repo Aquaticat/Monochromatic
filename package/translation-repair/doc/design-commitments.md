@@ -588,10 +588,11 @@ Part of [the family README](../README.md).
   and the readers of generation 17 and earlier keep the rule they were written under, ties only (B664).
   A carry whose choice split and names finalists must record its run-off from generation 18 (B666).
   A located place of a frame also records the page definitions that move its slot from generation 18 (B665).
-  It is the lead's rule,
-  open to the owner's veto,
-  extending the owner's run-off rule of 2026-10-11 ("Run off the tied finalists"),
+  It extends the owner's run-off rule of 2026-10-11 ("Run off the tied finalists"),
   which covered ties only;
+  the lead proposed it,
+  and the owner kept it on 2026-10-18 when asked whether a 2-1-1 split should run off the labels in second place
+  or only labels tied for first;
   the consolidation's run-off of a tied slate is that rule itself and is unchanged.
   The words rule:
   the span the pass replaces is the words alone.
