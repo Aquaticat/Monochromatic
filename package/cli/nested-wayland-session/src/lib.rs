@@ -240,6 +240,9 @@ pub mod control_run;
 /// Session settings the control socket reads and changes.
 pub mod control_session;
 
+/// Binding of the control socket with owner-only access.
+pub mod control_socket;
+
 /// Keyboard focus order across several toplevels.
 pub mod focus;
 

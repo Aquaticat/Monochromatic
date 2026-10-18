@@ -52,13 +52,12 @@ use smithay::reexports::calloop::{
 use anyhow::{Context, Result};
 
 /// What:
-///      `use tracing::{info, warn};`.
-///  Structured log macros.
+///      `use tracing::warn;`.
+///  Structured log macro.
 /// Why:
-///       Report listening,
-///  accept errors,
+///       Report accept errors,
 ///  and connection errors.
-use tracing::{info, warn};
+use tracing::warn;
 
 /// What:
 ///      Grouped `use` of the protocol,
@@ -74,7 +73,7 @@ use tracing::{info, warn};
 /// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
 /// ```
 use crate::{
-    child, dnd, encoder, input,
+    child, control_socket::bind_listener, dnd, encoder, input,
     protocol::{format_response, parse_command, Command, Response},
     recorder, screenshot,
     state::Compositor,
@@ -162,39 +161,6 @@ pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) -> Result
     // What:     `Ok(())`. Success.
     // Why:      Signal the control API is up.
     return Ok(())
-}
-
-/// Bind (and clean up any stale) the control Unix socket.
-///
-/// What:
-///      `fn bind_listener(path: &Path) -> Result<UnixListener>`.
-///  Removes a stale
-///           socket file if present,
-///  then binds.
-/// Why:
-///       A leftover socket file from a previous run would make `bind` fail.
-fn bind_listener(path: &Path) -> Result<UnixListener> {
-    // What:     `if path.exists() { std::fs::remove_file(path).with_context(...)?; }`.
-    //           Remove a pre-existing socket file.
-    // Why:      `UnixListener::bind` errors if the path already exists.
-    if path.exists() {
-        std::fs::remove_file(path)
-            .with_context(|| format!("removing stale control socket {}", path.display()))?;
-    }
-
-    // What:     `let listener = UnixListener::bind(path).with_context(...)?;`. Bind the
-    //           socket.
-    // Why:      Start listening for control connections.
-    let listener = UnixListener::bind(path)
-        .with_context(|| format!("binding control socket {}", path.display()))?;
-
-    // What:     `info!(...)`. Log where the control socket lives.
-    // Why:      Make the address discoverable.
-    info!("control socket listening at {}", path.display());
-
-    // What:     `Ok(listener)`. Return the bound listener.
-    // Why:      Hand it to the control thread.
-    return Ok(listener)
 }
 
 /// The control thread body:

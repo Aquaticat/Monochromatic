@@ -278,6 +278,13 @@ printf 'screenshot /tmp/after.png\n'  | nc -U /tmp/nws.sock   # => ok
 printf 'quit\n'                       | nc -U /tmp/nws.sock   # => ok
 ```
 
+The socket is owner-only: its mode is `0600`,
+whatever the umask of the process that starts the session,
+so only the user who started it can connect.
+The `/tmp` path above is a convenience for a single-user machine;
+the mode, not the directory, is what keeps other local users out.
+See [Who can connect](#who-can-connect).
+
 ### Headless mode
 
 `--headless` hosts the app with no parent display.
@@ -1544,6 +1551,35 @@ text-range and selection queries,
 and change events.
 
 ## Control protocol
+
+### Who can connect
+
+The control protocol has no authentication.
+Whoever connects can type text,
+press keys,
+click,
+record,
+and capture screenshots of the hosted application,
+and can ask the session to quit.
+The only access control is the permission of the socket file,
+because connecting to a Unix socket needs write permission on its file.
+
+The session binds the socket inside a private directory (mode `0700`) beside `PATH`,
+sets its mode to `0600`,
+and then renames it to `PATH`.
+The socket is therefore never reachable with a looser mode,
+and a looser umask in the environment cannot widen it.
+A path that already exists is removed first.
+The directory that holds `PATH` must exist and be writable by the user.
+The staging directory, named `.nws-control-<pid>-<n>`, exists only for the instant of the bind;
+a session killed at that instant can leave it behind empty.
+
+Two cases are outside this guarantee.
+A process of the same user can always connect,
+so the control socket does not separate the session from other programs that user runs.
+Root can connect to any socket.
+
+### Requests
 
 Requests are newline-delimited text,
  one command per line.
