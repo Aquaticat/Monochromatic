@@ -220,7 +220,14 @@ await describe({
                 + 'violated expectations: rollingFiveHourLimit is not an object; received subscription:object, freeToolCalls:object)',
               ],
             ],);
-            expect(lines.flat().join('\n',),).not.toMatch(/135|41|whiskers-private-plan|2026-09-21/,);
+            /**
+             The warnings as one text.
+             */
+            const joined = lines.flat()
+              .join('\n',);
+            expect(['135', '41', 'whiskers-private-plan', '2026-09-21',].filter(function appears(value,): boolean {
+              return joined.includes(value,);
+            },),).toEqual([],);
           },
         },),
 
