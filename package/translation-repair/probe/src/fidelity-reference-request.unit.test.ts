@@ -21,7 +21,7 @@ import {
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { type FidelityDamageKind, } from '@monochromatic-dev/translation-repair-repair';
+import type { FidelityDamageKind, } from '@monochromatic-dev/translation-repair-repair';
 import {
   type FidelityReferenceSpec,
   REVIEWED_FIDELITY_REFERENCES,

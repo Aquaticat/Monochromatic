@@ -15,8 +15,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import { type RepairScorecard, } from '@monochromatic-dev/translation-repair-repair';
-import { type BenchmarkEntry, } from '@monochromatic-dev/translation-repair-archive';
+import type { RepairScorecard, } from '@monochromatic-dev/translation-repair-repair';
+import type { BenchmarkEntry, } from '@monochromatic-dev/translation-repair-archive';
 import {
   recallPlanLine,
   recallScorecardLines,

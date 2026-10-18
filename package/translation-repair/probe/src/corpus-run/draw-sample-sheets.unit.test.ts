@@ -28,7 +28,7 @@ import {
 import { poolGeneration, } from '@monochromatic-dev/translation-repair-insertion';
 import { GradedSheetExistsError, } from '@monochromatic-dev/translation-repair-glossary';
 import { formatRepairSheet, } from '@monochromatic-dev/translation-repair-assembly';
-import { type EligibleEntries, } from '@monochromatic-dev/translation-repair-artifact-pool';
+import type { EligibleEntries, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
   DEFAULT_PRECISION_BAR,
   formatGradingSheet,

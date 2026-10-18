@@ -34,7 +34,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ClaimAdmissibility, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { ClaimAdmissibility, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   formatVerifyManifest,
   formatVerifySheet,

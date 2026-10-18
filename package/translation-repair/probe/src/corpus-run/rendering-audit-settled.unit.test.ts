@@ -28,10 +28,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { CacheFileUnreadableError, } from '@monochromatic-dev/translation-repair-reference';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   auditOne,

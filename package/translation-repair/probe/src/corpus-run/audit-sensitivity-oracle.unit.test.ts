@@ -15,7 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { RUN_MODELS, } from '@monochromatic-dev/translation-repair-run';
-import { type RenderingAuditReport, } from '@monochromatic-dev/translation-repair-rendering-audit';
+import type { RenderingAuditReport, } from '@monochromatic-dev/translation-repair-rendering-audit';
 import {
   pointsAtOracle,
   shownText,

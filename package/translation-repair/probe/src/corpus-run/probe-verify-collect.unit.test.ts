@@ -17,7 +17,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { RUN_MODELS, } from '@monochromatic-dev/translation-repair-run';
-import { type ScreenedDefectClaim, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { ScreenedDefectClaim, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   collectFlagged,
   keepAdmissible,

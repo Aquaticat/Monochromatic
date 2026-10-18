@@ -29,10 +29,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
-import { type DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   type PreparationIdentity,
   preparationIdentity,

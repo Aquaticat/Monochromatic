@@ -36,7 +36,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import { type CommandLineOf, } from '@monochromatic-dev/translation-repair-run';
+import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run';
 import {
   readAuditArguments,
   readReportArguments,

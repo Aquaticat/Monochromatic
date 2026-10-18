@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type TelemetryProbeReading, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type { TelemetryProbeReading, } from '@monochromatic-dev/translation-repair-lane-contest';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import {
   countRefinedJoined,

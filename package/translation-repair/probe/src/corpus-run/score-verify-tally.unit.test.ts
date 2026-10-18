@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import { type GradedItem, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { GradedItem, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   tallyByKind,
   verifyKindLines,

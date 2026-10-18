@@ -13,9 +13,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type IntroducedDefectReport,
-  type RegionDefectTally,
+import type {
+  IntroducedDefectReport,
+  RegionDefectTally,
 } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   relabelCaseLines,

@@ -32,7 +32,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { RenderingAuditInvariantError, } from '@monochromatic-dev/translation-repair-rendering-audit';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type ParsedTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ParsedTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact';
 import {
   identityOf,
   type SettledIdentity,

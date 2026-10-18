@@ -32,7 +32,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {

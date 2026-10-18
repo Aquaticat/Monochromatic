@@ -15,8 +15,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type FidelityOutcome, } from '@monochromatic-dev/translation-repair-run';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { FidelityOutcome, } from '@monochromatic-dev/translation-repair-run';
 import {
   boundFidelityMatrix,
   fidelityJudgedLine,
