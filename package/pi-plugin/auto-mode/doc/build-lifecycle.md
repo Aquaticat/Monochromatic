@@ -110,7 +110,11 @@ an omitted override inherits the parent's value.
 The clean-parent run passes while an inherited nonempty receipt path reaches the forbidden probe.
 This is an owned fixture defect exposed by supported process behavior;
 the setup guard itself correctly rejects genuinely missing and empty paths.
-The explicit-absence repair and its contaminated-parent rerun remain pending.
+Commit `a6417c7303` explicitly masks the inherited value before applying each case's overrides.
+Independent frozen-source runs pass with both clean and contaminated parent environments.
+The explicit empty-string case remains separate.
+The source trace and reproduction are retained in
+[`nano-spawn` environment inheritance](../../../../doc/troubleshooting/nano-spawn-environment-inheritance.md).
 
 Overwriting the active directory would invalidate running module identities.
 Editing installed upstream output would detach source qualification from deployment.

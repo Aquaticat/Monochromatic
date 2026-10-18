@@ -90,7 +90,11 @@ An independent inherited-variable control fails:
 `nano-spawn` merges parent environment values,
 so omitting `PI_AUTO_MODE_CLI_FIXTURE_REQUESTS` from the negative case does not make it absent.
 The child reaches `Unexpected fixture entry` instead of rejecting setup.
-Fix explicit environment absence before accepting the unit checkpoint.
+MiMo commits the explicit-absence fix as `a6417c7303`.
+Independent frozen-source network units pass with both clean and contaminated parent environments:
+`environment-mask-independent-clean.log` and `environment-mask-independent-inherited.log`.
+The original failing control remains retained;
+the explicit empty-string case still executes independently.
 The worker's fresh private home does not copy old session scratch files.
 Missing initial scratch in a resumed session is not evidence that every tool call gets a new home.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
@@ -106,8 +110,8 @@ The parsed diagnostic inventory reconciles every finding to that summary;
 one warning has no rule code and says `File is too long to fit on the screen`
 for `native/contract/integration/action-policy/clause-relation.mjs`.
 The `src` subset contains 2,734 warnings and 48 errors.
-Next MiMo scope is explicit environment isolation first,
-then `src` formatter convergence and remaining lint fixes without weakening behavior or coverage.
+MiMo's environment-isolation checkpoint is verified.
+Its next scope is `src` formatter convergence and remaining lint fixes without weakening behavior or coverage.
 Native contract source remains supervisor-owned.
 The complete units for frozen source `68e7ce538a` pass against `LytMAt`:
 `cli-corrected-full-units.log`.
@@ -117,12 +121,14 @@ The private verification wrapper mounted `/fixture-bin/mise` without putting tha
 Correcting only that fixture PATH makes the aggregate pass:
 `native-session-input-aggregate-path-corrected.log`.
 Both results remain evidence for the frozen snapshot while later lint edits proceed.
-The inherited-receipt control still fails until its owned test repair is verified.
+The inherited-receipt control passes after the owned test repair in `a6417c7303`.
 The external process-wrapper diagnosis is retained in
 `doc/troubleshooting/nano-spawn-environment-inheritance.md`.
 The latest controlled streaming repetitions retain 342,556,400 to 342,565,888 bytes before the repair
-and 10,544,896 to 10,569,992 bytes after it.
+and 10,544,896 to 10,612,824 bytes after it.
 The difference exceeds the observed spread on unchanged test inputs.
+The latest package and selected root Markdown rendering checks 28 files with no broken rendered links.
+Native formatter convergence remains supervisor-owned and will use an isolated snapshot before live adoption.
 
 ### Original worker and completed progress repair
 

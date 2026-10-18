@@ -104,13 +104,29 @@ The absent-path assertion fails with the forbidden probe's actual error.
 `cli-corrected-unit-normal.log` and `cli-corrected-unit-inherited-receipt.log`
 retain the paired output.
 
-## Verified workaround and pending repair
+## Verified repair and workaround
 
 The controlled clean-parent invocation passes without changing the library.
 Its limitation is that it leaves the test dependent on caller state.
-The durable repair is being applied at the owned child-environment declaration,
-followed by both clean and contaminated-parent runs.
-Its implementation and final verification are not yet claimed by this record.
+Commit `a6417c7303` repairs the owned child-environment declaration:
+
+```typescript
+// package/pi-plugin/auto-mode/src/native-process-network.unit.test.ts:119 at a6417c7303
+env: {
+  PI_AUTO_MODE_CLI_FIXTURE_REQUESTS: undefined,
+  ...specificEnvironment
+},
+```
+
+The explicit undefined value masks the inherited variable.
+Spreading the case-specific environment afterward preserves the separate empty-string case.
+The fix neither mutates the parent environment nor changes the library.
+Its tradeoff is that each negative fixture must explicitly mask any parent variable it requires absent.
+
+Independent frozen-source runs repeat both catalog invocations with commit `a6417c7303`.
+Both exit zero against `native-release-LytMAt`:
+`environment-mask-independent-clean.log` and `environment-mask-independent-inherited.log`.
+The original contaminated-parent failure remains the positive control for the harness.
 
 ## What does not work
 
@@ -129,7 +145,7 @@ the paired contaminated-parent run disproves that conclusion.
 - Contribution policy: not assessed for a patch because no upstream defect or contribution is proposed.
 - Maintainer disposition: issue 11 explicitly approves the observed augmentation behavior.
 - Prototype: no upstream prototype is justified;
-  the owned fix and contaminated-parent verification remain the relevant work.
+  the owned fix passes clean and contaminated-parent verification.
 
 The `.out-of-scope` inventory was checked;
 no Nano-specific filing exemption determines this decision.
