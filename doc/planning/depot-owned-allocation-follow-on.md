@@ -419,3 +419,36 @@ under a separate `USD 5` guard,
 but supplies no completed allocation identity here.
 The platform SSH probe is being resealed without a supplied allocation identity.
 None of those pending items contributes a cost row at this snapshot.
+## Selector check and subsequent owner queue
+
+The [locked Mise selector receipt](../audit/depot-mise-locked-affected-2026-10-18.evidence.json)
+records a local offline metadata-only check of actual `2026.10.9`.
+The real frozen `e02` Node workspace cycle remains a selector blocker after positive acyclic controls.
+It adds no cloud allocation or owning-task credit.
+The sealed `37` row ledger and its host verification remain unchanged by that check.
+
+Subsequent owner states are recorded without inventing terminal cost rows:
+
+- Coverage reports public GNU run `39152147229`,
+  attempt `1`,
+  job `117747819418`,
+  source `b76aab1964bfe9ac21aec3e9c5d24de443ec4992`,
+  terminal with failure at `18:10:52Z` after a reported `18:00:26Z` start on `2026-10-18`.
+  Its retained artifact/API owner seal is still being collected.
+- Platform reports native SSH run `sqrz4sml30`,
+  job `q74vcmxkk1`,
+  attempt `fhxx4s51rf`,
+  sandbox `g64shw2rl3jzrxsmq92x`,
+  source `b6a60493c16087043a7043f50cd31d8aebf4bdee`,
+  live under parent admission `dc62a35802`.
+  Its `2` CPU and `8` GiB profile has a `3` minute job bound and a `150` second cancellation bound.
+  The at-most-two-job `USD 0.036` admission is a reservation,
+  not a measured charge.
+  Await the terminal exact-source successor before adding a row.
+- Coverage's material-owner campaign remains a separate admission with implementation pending;
+  no additional allocation identity has been supplied.
+- The separately retained host comparison successor
+  `depot-current-host-owner-comparison-2026-10-18.evidence.json.gz`
+  has owner-reported SHA-256 `c11ce61387c8675f99c303cad6093d444a13bc7c42adf24eb77f2bdd1f1677b7`.
+  Its measured resource context requires a separate source join;
+  it does not replace the preserved original `d29c7887` owner seal or create another allocation.

@@ -1151,3 +1151,22 @@ The [separate retained-input version join](../audit/depot-rust-legacy-input-vers
 binds all `169` inventoried input hashes to exact retained Git commits and blob IDs.
 It preserves reproducible source versions after concurrent evidence updates
 without changing the immutable outcome-search receipt or repeating its workload scan.
+## Locked Mise affected-selector version join
+
+The [actual locked-version metadata probe](../audit/depot-mise-locked-affected-2026-10-18.evidence.json)
+closes the version gap between installed Mise `2026.10.0` and CI's locked `2026.10.9`.
+The actual `2026.10.9` binary rejects frozen `e02` workspace metadata with the same Node dependency cycle
+before producing affected JSON,
+including with equal explicit committed revisions.
+A changed-producer acyclic fixture first selected its development consumer,
+an unrelated project was excluded,
+and equal fixture revisions returned a successful empty selection.
+The offline `2` CPU and `2` GiB probe executed no owning task,
+changed no dependency edge,
+and preserves all `419` source metadata hashes.
+The [existing troubleshooting entry](../troubleshooting/mise-affected-workspace-cycles.md)
+contains the exact arguments and deciding locked-version source excerpts.
+This is selector evidence only and adds no Rust test,
+benchmark,
+cache,
+or cloud-allocation credit.

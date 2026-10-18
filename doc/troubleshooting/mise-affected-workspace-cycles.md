@@ -1,4 +1,4 @@
-# Mise 2026.10.0 rejects cyclic workspace dependencies before selecting affected tasks
+# Mise 2026.10.0 and 2026.10.9 reject cyclic workspace dependencies before selecting affected tasks
 
 ## Symptom
 
@@ -98,6 +98,101 @@ The override control uses baseline `b0812458fea24edc4b493022ceab46a2a939f1a6`
 and changed-consumer head `3c47ba1c9ba7a035c796787c0023a6515062c869` in the disposable fixture.
 Its selected project list is exactly `["node:@selector-fixture/consumer"]`.
 It does not claim that the synthetic cycle is an application build-order requirement.
+
+## Locked CI version verification
+
+The installed-version observation is also reproduced with actual Mise `2026.10.9`,
+the locked version used by the frozen CI research.
+The [locked-version receipt](../audit/depot-mise-locked-affected-2026-10-18.evidence.json)
+and [retained sources](../audit/depot-mise-locked-affected-2026-10-18.sources.json.gz)
+preserve the exact arguments,
+stdout,
+stderr,
+release identity,
+input hashes,
+and controls.
+The official `v2026.10.9` Linux x64 executable has SHA-256
+`6ab6646b52b83f6bbd51c9d0d3ae54264ffa90efd1ac6d7c0ec5a86bbc6a0030`.
+It reports `2026.10.9 linux-x64 (2026-10-13)`.
+No shared tool installation or global upgrade was performed.
+
+The source checkout is `jdx/mise` commit `ac91d06fa6100935b7a07b08bebf03dd6dd9a0dd`.
+It was read from the trusted research directory without entering,
+trusting,
+or modifying the upstream checkout.
+In `src/cli/run.rs:453`,
+the locked version still validates the graph before calculating changed paths:
+
+```rust
+//! jdx/mise/src/cli/run.rs:453 at v2026.10.9
+let graph = config.workspace_project_graph()?;
+let changes = revisions.changed_paths(&workspace_root)?;
+```
+
+The cycle rejection remains in `src/task/workspace.rs:1054`:
+
+```rust
+//! jdx/mise/src/task/workspace.rs:1054 at v2026.10.9
+if let Some(path) = self.find_cycle() {
+    return Err(WorkspaceProjectCycleError { path }.into());
+}
+```
+
+The JSON mode returns before owning-task execution in `src/cli/run.rs:772`:
+
+```rust
+//! jdx/mise/src/cli/run.rs:772 at v2026.10.9
+if self.affected_json {
+    return Ok(());
+}
+```
+
+The runtime probe used an offline container capped at `2` CPUs,
+`2,147,483,648` memory bytes,
+and `256` PIDs,
+with a `100` second container lifetime and `20` second command deadlines.
+Its actual helper runtimes were Node `24.22.0` and Git `2.39.5`.
+The read-only input mount contained `419` exact metadata files from application source
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`,
+including the original authored root and package Mise configurations and workspace manifests.
+A disposable Git directory used the existing source object storage through a read-only mount.
+Both revisions resolved to that immutable application commit.
+The full application implementation,
+optional encrypted environment file,
+and credentials were not mounted.
+Every metadata hash was unchanged after the probes.
+The two cycle-defining package manifests also match their current repository bytes.
+
+Before testing the repository metadata,
+the same executable passed the acyclic controls:
+
+- A producer-only committed change selected exactly the producer and its development consumer.
+  The unrelated project was excluded.
+- Equal committed revisions returned successful JSON with no selected projects or tasks.
+- Adding the reverse development edge to that disposable fixture returned the cycle diagnostic and exit `1`.
+- The task-execution sentinel remained absent throughout.
+
+Both real-source metadata queries then exited `1` with the same
+`config-rolldown` to `module-test` to `config-rolldown` cycle shown in `Symptom`:
+
+```sh
+# Inside the isolated read-only /snapshot metadata mount.
+/tools/mise tasks graph --json
+/tools/mise run --affected --affected-json --affected-committed \
+  --affected-base e02be6c8b8fe9efb41a7f8f1a0b311c17796588a \
+  --affected-head e02be6c8b8fe9efb41a7f8f1a0b311c17796588a \
+  '//package/module/toml-edit:lint:types'
+```
+
+Neither query emitted a successful selection.
+No owning task ran.
+The extra `--affected-committed` flag excludes working-tree changes and still does not bypass graph validation.
+This qualifies the locked CI version's metadata selector;
+it is not a complete CI bootstrap or application execution result.
+No selector configuration,
+dependency edge,
+or upstream source was changed.
+The existing upstream filing decision remains unchanged because this matches the documented graph restriction.
 
 ## Verified workarounds
 
