@@ -3,8 +3,8 @@ import {
   CANDIDATE_NAMES,
   type LaneContestBallot,
   namesOneOf,
+  type LaneContestOutcome
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { LaneContestOutcome, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {

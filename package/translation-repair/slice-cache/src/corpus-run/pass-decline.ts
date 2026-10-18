@@ -19,13 +19,13 @@ import { rethrowUnlessMissingPath, } from '@monochromatic-dev/translation-repair
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   declinedEntryIds,
+  type PipelineDigest,
   writeDeclinedEntry,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type {
   CorpusPair,
   EntryOutcome,
 } from './pass-entry-contract.ts';
-import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { fixedPagePath, } from '@monochromatic-dev/translation-repair-page-check/ts';
 
 //region Pass decline

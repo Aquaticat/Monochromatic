@@ -2,16 +2,14 @@ import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
+  type BlockPair,
   everyStageHeard,
   isIndexPairList,
+  type PairedDocumentRecord,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { isStringList, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { PairedSectionRecord, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type {
-  BlockPair,
-  PairedDocumentRecord,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 import { isQuotedPassages, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { RefinedSliceSettlement, } from '@monochromatic-dev/translation-repair-repair/ts';
 import type { ChunkRepairOutcome, } from '@monochromatic-dev/translation-repair-assembly/ts';

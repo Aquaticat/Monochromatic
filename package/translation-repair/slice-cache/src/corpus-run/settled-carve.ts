@@ -10,6 +10,7 @@ import {
   rebuildPreparation,
   type RebuildReproduction,
   recipeOf,
+  type ParsedTwoLaneArtifact
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type {
   CorpusPin,
@@ -25,7 +26,6 @@ import {
   entryIdOfArtifact,
   listArtifactFiles,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type { ParsedTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact/ts';
 
 //region Settled carve
 // Carving a corpus entry the way the pass carved it when it settled.

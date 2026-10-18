@@ -4,10 +4,8 @@ import {
   type GateShipped,
   isGateChoice,
   settleGateBallots,
-} from '@monochromatic-dev/translation-repair-consolidate/ts';
-import type {
-  ConsolidationSettlement,
-  ConsolidationTerminal,
+  type ConsolidationSettlement,
+  type ConsolidationTerminal
 } from '@monochromatic-dev/translation-repair-consolidate/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';

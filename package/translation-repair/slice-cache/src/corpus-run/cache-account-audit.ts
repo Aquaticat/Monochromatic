@@ -1,9 +1,9 @@
 import { auditCacheAccounts, } from './cache-account-run.ts';
 import {
+  type CommandLineOf,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Cache account audit
 // The pre-launch cache version check (ledger M28), as a command: the wiring

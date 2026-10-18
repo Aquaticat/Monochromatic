@@ -18,9 +18,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChatTextRequest,
-  type SyntheticClient,
+import type {
+  ChatTextRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   modelPromptDigest,

@@ -29,10 +29,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { spawnKeyless, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
-import { type SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SliceDeliveryRecord, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
-import { type DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
 import {
   CorpusReadError,
   preparationIdentity,

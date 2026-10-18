@@ -41,7 +41,7 @@ import {
   type CorpusPin,
   CorpusReadError,
 } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import { gatherEntryPictures, } from '../../dist/final/node/index.mjs';
 import {
   LACKED_COMMIT_SHA,

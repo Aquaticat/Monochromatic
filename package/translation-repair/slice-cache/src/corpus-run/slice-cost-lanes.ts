@@ -1,7 +1,7 @@
-import type { SliceCostRow, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
+  type SliceCostRow,
   SLICE_COST_LANES,
-  type SliceCostLane,
+  type SliceCostLane
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   COUNT_WIDTH,

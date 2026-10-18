@@ -11,6 +11,8 @@ import { fileURLToPath, } from 'node:url';
  own name so the as-built suites start the audit from here and not from the
  package that owns the shared child fixture.
  */
-export const CACHE_ACCOUNT_BUILT_DIRECTORY: string = dirname(fileURLToPath(import.meta.resolve('@monochromatic-dev/translation-repair-slice-cache',),),);
+export const CACHE_ACCOUNT_BUILT_DIRECTORY: string = dirname(
+  fileURLToPath(import.meta.resolve('@monochromatic-dev/translation-repair-slice-cache',),),
+);
 
 //endregion Cache account built directory

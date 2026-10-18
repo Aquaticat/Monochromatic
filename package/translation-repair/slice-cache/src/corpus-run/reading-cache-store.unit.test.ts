@@ -28,7 +28,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading';
 import { openPictureReadingCache, } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
