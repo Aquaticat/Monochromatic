@@ -1027,8 +1027,8 @@ description = "Exercise clap parsing and real CLI help without a display in the 
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
-containerCargo(['test', '--lib', 'cli::tests'])
-containerCargo(['test', '--test', 'cli'])
+containerCargo(['nextest', 'run', '--lib', 'cli::tests'])
+containerCargo(['nextest', 'run', '--test', 'cli'])
 """
 
 [tasks."format:rust:container"]
