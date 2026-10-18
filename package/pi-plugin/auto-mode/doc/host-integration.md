@@ -52,7 +52,30 @@ separate from the earlier preparation catch-all and Git protocol incidents.
 The built `test:native:request-observation-size` catalog reproduces both default-size and configured-size failures
 before the fix,
 while its exact UTF-8 boundary and explicit smaller-limit controls pass.
-Its final passing run and configured-host long-session replay remain pending.
+Frozen `ebe81e3364` passes all five named size cases,
+fresh types,
+complete units,
+host isolation and the real receipt consumer.
+Frozen `9d3dae29d8` also passes fresh types and the five-file scoped lint with zero findings.
+Four private mutants reintroduce the default ceiling,
+remove the explicit-limit guard,
+remove configuration validation,
+or reject equality at the byte boundary.
+Each builds successfully,
+fails its named maintained guard,
+then passes after source restoration and rebuilding.
+The root source and live worker artifact remain unchanged throughout these probes.
+
+The source worker resumes its complete session history on private `native-release-IFS6IL`.
+A captured live checkpoint completes 24 tool calls without approval dialogs
+and records 13 non-Luna serialized requests larger than the former ceiling,
+from 1,146,627 to 1,279,294 bytes.
+Its 24 completed Luna requests return HTTP 200.
+The audit checks 493 questions,
+passes required-data and excluded-data controls,
+and finds no excluded thinking or raw command fields.
+This is a live coding checkpoint,
+not completion of the package's remaining lint or configured-consumer verification.
 
 ## Dependencies and alternatives
 
