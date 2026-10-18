@@ -646,8 +646,8 @@ async fn run_crash_cycles(write: &str, sync: &str, cycles: u32) -> Vec<CrashOutc
         // `println!` panic and end it before the kill, which the test would then mistake for a kill.
         let mut lines = reader.lines();
         let mut reported = start;
-        for line in lines.by_ref() {
-            let line = line.expect("the child's stdout should be readable");
+        for read in lines.by_ref() {
+            let line = read.expect("the child's stdout should be readable");
             if let Some(total) = line.strip_prefix("CRASH_COMMITTED ") {
                 reported = total.parse().expect("the child reports whole numbers");
                 if reported >= start + 5 * CRASH_BATCH {
@@ -714,9 +714,9 @@ async fn batched_writes_survive_kill_nine_with_whole_batches_only() {
 async fn row_writes_after_kill_nine_leave_partial_batches() {
     let outcomes = run_crash_cycles("row", "full", 12).await;
     assert!(
-        outcomes.iter().any(|outcome| outcome.found % CRASH_BATCH != 0),
+        outcomes.iter().any(|outcome| return outcome.found % CRASH_BATCH != 0),
         "no kill landed inside a batch of row commits: {:?}",
-        outcomes.iter().map(|outcome| (outcome.reported, outcome.found)).collect::<Vec<_>>()
+        outcomes.iter().map(|outcome| return (outcome.reported, outcome.found)).collect::<Vec<_>>()
     );
 }
 
