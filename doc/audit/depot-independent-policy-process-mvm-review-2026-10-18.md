@@ -294,3 +294,25 @@ The original-cohort review checkpoint `7d743ae989` passed the targeted
 `mise run lint:monochromatic-lint -- doc/audit/depot-independent-policy-process-mvm-review-2026-10-18.md` task.
 Its complete `marked` renderer output was inspected.
 The original compressed archive hashes were rechecked unchanged after the coordinator's correction.
+
+## Additional review queue
+
+The coordinator assigned independent review of these additional published cohorts:
+
+- `depot-service-containers-2026-10-18.evidence.json` and its ten original ZIPs:
+  original bytes,
+  CRC/member hashes,
+  consumer/source identity,
+  actual Node/Git versus base-image runtime and credential privacy.
+- `depot-runtime-pr-2026-10-18.evidence.json` and its eleven original ZIPs:
+  original bytes,
+  CRC/member hashes,
+  PR App/source/merge identities,
+  disposable-resource cleanup and credential privacy.
+- `depot-container-prerequisites-2026-10-18.evidence.json` and its source bundle:
+  prerequisite evidence and the pinned checkout-source reasoning.
+  No generic REST-stall cause is presumed.
+
+This work uses published/local evidence and read-only source inspection.
+It admits no cloud allocation or repository/billing settings change.
+The separate three-ZIP guest-transformation review remains queued after publication.
