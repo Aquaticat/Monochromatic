@@ -31,9 +31,9 @@ const BYTES_PER_KIBIBYTE = 1_024;
 const KIBIBYTES_PER_MEBIBYTE = 1_024;
 
 /**
- Mebibytes retained per dependency root.
+ Mebibytes retained per dependency root, about twice the 510 MB the translation-repair family needs.
  */
-const MAX_CACHE_ROOT_MEBIBYTES = 256;
+const MAX_CACHE_ROOT_MEBIBYTES = 1_024;
 
 /**
  Days retained before age eviction.
@@ -66,9 +66,9 @@ const MILLISECONDS_PER_SECOND = 1_000;
 const MAINTENANCE_WRITE_INTERVAL = 128;
 
 /**
- Maximum retained content-addressed entries per dependency root.
+ Maximum retained content-addressed entries per root, about twice the 8300 the translation-repair family needs.
  */
-const MAX_CACHE_ENTRY_COUNT = 4_096;
+const MAX_CACHE_ENTRY_COUNT = 16_384;
 
 /**
  Maximum retained bytes per dependency root.
