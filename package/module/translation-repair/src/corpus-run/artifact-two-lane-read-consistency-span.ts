@@ -1,5 +1,4 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import { slotInSpan, } from '../consistency-count.ts';
 import type { ConsistencyRendering, } from '../consistency-count-types.ts';
 import { foldedWordsOf, } from '../consistency-fold.ts';
 import {
@@ -7,6 +6,7 @@ import {
   isKeptByMajority,
   usableVoicesOf,
 } from '../consistency-majority.ts';
+import { slotInSpan, } from '../consistency-slot-in-span.ts';
 import { containedQuoteWordsOf, } from '../consistency-span-agreement.ts';
 import { planConsistencyEdit, } from '../consistency-splice.ts';
 import { consistencyLabels, } from '../consistency-wire.ts';

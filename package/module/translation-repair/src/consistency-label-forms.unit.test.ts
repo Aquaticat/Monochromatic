@@ -252,12 +252,14 @@ await describe({
           name: 'COUNTS A BALLOT WHOSE CHOICE, KEPT PLACES AND QUOTE LABELS NAME SHOWN PLACES IN OTHER FORMS',
           fn: async () => {
             const validate = usableConsistencyBallotFor({ labels: consistencyLabels({ count: 3, },), },);
-            expect(validate(ballotVoiceOf({
+            expect(
+              validate(ballotVoiceOf({
               seat: 'minimax',
               choice: 'occurrence 2',
               keep: ['1', ' Occurrence 3 ',],
               labels: ['1', ' OCCURRENCE 2 ', 'occurrence 3',],
-            },),),).toBe(true,);
+            },),),
+            ).toBe(true,);
           },
         },),
         it({
@@ -308,8 +310,8 @@ await describe({
                 labels: voice.quotes.map(function labelOf(quote,): string {
                   return quote.label;
                 },),
-                slots: voice.quotes.map(function slotOf(quote,): string | undefined {
-                  return quote.slot;
+                slots: voice.quotes.map(function slotOf(quote,): string {
+                  return quote.slot ?? '(no slot)';
                 },),
               };
             },),).toEqual([

@@ -1,9 +1,11 @@
 import { markPastRunOf, } from './consistency-closing-marks.ts';
-import { locateWords, } from './consistency-fold.ts';
+import {
+  locateWords,
+  type SpanSearch,
+} from './consistency-fold.ts';
 import { singleMarkAt, } from './consistency-loose-marks.ts';
 import { carriesOrCutsMarkup, } from './consistency-markup.ts';
 import {
-  agreedSlotWordsOf,
   isKeptByMajority,
   keepsByLabelOf,
   majorityChoiceOf,
@@ -13,6 +15,7 @@ import {
   tiedForFirstOf,
   usableVoicesOf,
 } from './consistency-majority.ts';
+import { slotInSpan, } from './consistency-slot-in-span.ts';
 import { containedQuoteWordsOf, } from './consistency-span-agreement.ts';
 import { unlessOverlapping, } from './consistency-count-overlap.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
@@ -60,9 +63,10 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // and in a frame alike.
 //
 // A SLOT IS NO CONDITION OF A SPAN. A frame's slot words are agreed the same way
-// inside the span, and a place whose slot is not agreed (or is all of the span,
-// or stands twice, or cuts markup) is still located, only without a slot, which
-// leaves the code splice unavailable for it and the writers to carry the slot.
+// inside the span (`consistency-slot-in-span.ts`), and a place whose slot is not
+// agreed (or is all of the span, or stands twice, or cuts markup) is still located,
+// only without a slot, which leaves the code splice unavailable for it and the
+// writers to carry the slot.
 //
 // A LOCATED RENDERING RECORDS THE SINGLE MARKS BESIDE ITS SPAN. The span is the
 // words and the proven apostrophe beside them, if there is one (`the parents’`,
@@ -96,85 +100,39 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // English holds, and the splice (`consistency-splice.ts`) only moves them.
 
 /**
- The slot words a strict majority gave inside a located span, as the English
- holds them.
-
- @param voices - usable ballots
-
- @param label - the place's label
-
- @param words - the folded words the span was agreed by
-
- @param span - the English's own words of the span
-
- @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
- group; read from the ballots where absent
-
- @returns The slot as the span holds it and its offset in the span, as a list of
- zero or one; none when the ballots do not agree on a slot, it shows a reader
- nothing, it does not stand once inside the span, it is all of the span, or it
- cuts markup
-
- @example
- ```ts
- const [slot,] = slotInSpan({ voices, label: 'OCCURRENCE 1', words: 'so she was a girl, wasn\'t she', span: 'So she was a girl, wasn’t she', },);
- ```
+ One candidate span of a place and where it stands in the English.
  */
-export function slotInSpan(
-  {
-    voices,
-    label,
-    words,
-    span,
-    quotesByLabel = quotesByLabelOf({ voices, },),
-  }: {
-    readonly voices: readonly ConsistencyVoice[];
-    readonly label: string;
-    readonly words: string;
-    readonly span: string;
-    readonly quotesByLabel?: QuotesByLabel;
-  },
-): readonly {
-  readonly slot: string;
-  readonly slotStart: number;
-}[] {
+type SearchedCandidate = {
   /**
-   The slot words a strict majority gave beside the agreed words.
+   The candidate's folded words.
    */
-  const [slotWords,] = agreedSlotWordsOf({
-    voices,
-    label,
-    quotesByLabel,
-    words,
-  },);
-  if ((slotWords === undefined) || rendersAsNothing({ text: slotWords, },))
-    return [];
+  readonly words: string;
+
   /**
-   Where the slot words stand in the span.
+   Where they stand in the English, or how they fail to stand once.
    */
-  const inside = locateWords({
-    haystack: span,
-    words: slotWords,
-    apostrophes: 'outside',
-  },);
-  if (inside.kind !== 'once')
-    return [];
+  readonly found: SpanSearch;
+};
+
+/**
+ A candidate that stands exactly once, with where it stands.
+ */
+type StandingCandidate = {
   /**
-   The slot as the span holds it.
+   The candidate's folded words.
    */
-  const slot = span.slice(
-    inside.start,
-    inside.end,
-  );
-  if ((slot === span) || carriesOrCutsMarkup({ text: slot, },))
-    return [];
-  return [
-    {
-      slot,
-      slotStart: inside.start,
-    },
-  ];
-}
+  readonly words: string;
+
+  /**
+   Offset in the English where the span starts.
+   */
+  readonly start: number;
+
+  /**
+   Offset in the English just past the span.
+   */
+  readonly end: number;
+};
 
 /**
  Locates the span a strict majority of the usable ballots named for one place,
@@ -257,7 +215,7 @@ function locatedRendering(
    Where each candidate stands in the English, the single marks a strict majority of the usable ballots copied beside it
    choosing between stands, in the order of the candidates.
    */
-  const searched = readable.map(function searchFor(words,) {
+  const searched = readable.map(function searchFor(words,): SearchedCandidate {
     return {
       words,
       found: locateWords({
@@ -275,16 +233,33 @@ function locatedRendering(
   },);
   // THE LONGEST CANDIDATE THAT STANDS EXACTLY ONCE LOCATES THE PLACE; one that stands nowhere or more than once is passed over
   // for the next longest, and when none stands once the place reports how the longest failed.
-  const [standing,] = searched.flatMap(function standsOnce({
+  /**
+   The candidates that stand once, longest first.
+   */
+  const standingOnce = searched.flatMap(function standsOnce({
     words,
     found,
-  },) {
-    return (found.kind === 'once') ? [{ words, start: found.start, end: found.end, },] : [];
+  }: SearchedCandidate,): readonly StandingCandidate[] {
+    return (found.kind === 'once') ? [{
+      words,
+      start: found.start,
+      end: found.end,
+    },] : [];
   },);
+  /**
+   The longest candidate that stands once.
+   */
+  const [standing,] = standingOnce;
   if (standing === undefined) {
+    /**
+     How the longest candidate failed to stand once, which the place reports.
+     */
+    const [longest,] = searched.map(function kindOf({ found, }: SearchedCandidate,): SpanSearch['kind'] {
+      return found.kind;
+    },);
     return {
       kind: 'unlocated',
-      reason: (searched[0]?.found.kind === 'many') ? 'ambiguous' : 'not-found',
+      reason: (longest === 'many') ? 'ambiguous' : 'not-found',
     };
   }
   /**

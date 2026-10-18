@@ -52,9 +52,13 @@ await describe({
         it({
           name: 'REFUSES A SHEET THAT NAMES NO FIELD, rather than writing a sentence that says the label goes nowhere',
           fn: async () => {
-            expect(String(caught(function namesNoField(): string {
+            /**
+             What the call threw.
+             */
+            const refusal = caught(function namesNoField(): string {
               return labelsSentenceOf({ labels: ['CANDIDATE 1', 'CANDIDATE 2',], fields: [], },);
-            },),),).toBe(
+            },);
+            expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: a sheet asks for a label and names no field it goes in',
             );
           },

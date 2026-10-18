@@ -3,9 +3,9 @@ export {
 } from './consistency-cache-version.ts';
 export {
   countConsistency,
-  slotInSpan,
   winnerOf,
 } from './consistency-count.ts';
+export { slotInSpan, } from './consistency-slot-in-span.ts';
 export { occurrencesOf, } from './consistency-occurrences.ts';
 export { type QuoteOccurrences, } from './consistency-occurrences.ts';
 export { edgeFreeWordsOf, } from './consistency-edge-marks.ts';
@@ -27,33 +27,6 @@ export {
 } from './consistency-whole-end.ts';
 export { edgeUnitsOf, } from './consistency-edge-units.ts';
 export { cutsShownWord, } from './consistency-shown-edge.ts';
-export {
-  asLocated,
-  locatedContradicted,
-  reasonContradicted,
-} from './corpus-run/artifact-two-lane-read-consistency-located.ts';
-export {
-  asLocatedBySpan,
-  locatedContradictedBySpan,
-  reasonContradictedBySpan,
-} from './corpus-run/artifact-two-lane-read-consistency-span-located.ts';
-export { assertSpanGroupCoherent, } from './corpus-run/artifact-two-lane-read-consistency-span.ts';
-export {
-  expectedWinnerOf,
-  sameWinner,
-} from './corpus-run/artifact-two-lane-read-consistency-span-winner.ts';
-export {
-  assertSeatsHeardOnce,
-  winningPositionOf,
-} from './corpus-run/artifact-two-lane-read-consistency-tally.ts';
-export {
-  parseConsistencyCarry,
-  parseConsistencyRunOff,
-} from './corpus-run/artifact-two-lane-read-consistency-carry.ts';
-export {
-  assertCarriesRecount,
-  outcomesAfter,
-} from './corpus-run/artifact-two-lane-read-consistency-carry-recount.ts';
 export { carriesOrCutsMarkup, } from './consistency-markup.ts';
 export { consistencyTenseLines, } from './consistency-tense.ts';
 export { shownLabelOf, } from './consistency-label-form.ts';
@@ -168,7 +141,6 @@ export {
   consistencyOverrideAt,
   NO_CONSISTENCY,
 } from './corpus-run/artifact-two-lane-consistency.ts';
-export { parseConsistency, } from './corpus-run/artifact-two-lane-read-consistency.ts';
 export {
   type ConsistencyCacheValue,
   type ConsistencyChoiceRecord,
@@ -214,6 +186,10 @@ export {
   carryWithoutChoice,
   choose,
 } from './corpus-run/pass-consistency-carry-choose.ts';
+export {
+  editsOf,
+  partlyCarriedFindingOf,
+} from './corpus-run/pass-consistency-carry-edits.ts';
 export {
   englishOf,
   englishOfUnit,
@@ -291,14 +267,3 @@ export {
   type PassSettlement,
   runPassSettlement,
 } from './corpus-run/pass-settlement.ts';
-export { assertGroupFits, } from './corpus-run/artifact-two-lane-read-consistency-fit.ts';
-export { assertAskedGroupCoherent, } from './corpus-run/artifact-two-lane-read-consistency-coherence.ts';
-export { assertSlicesCoherent, } from './corpus-run/artifact-two-lane-read-consistency-slices.ts';
-export { parseConsistencyOccurrence, } from './corpus-run/artifact-two-lane-read-consistency-occurrence.ts';
-export { parseConsistencyRendering, } from './corpus-run/artifact-two-lane-read-consistency-rendering.ts';
-export {
-  parseConsistencyBallot,
-  parseConsistencyRepeat,
-  parseConsistencyUnplaced,
-} from './corpus-run/artifact-two-lane-read-consistency-parts.ts';
-export { parseConsistencyVerdict, } from './corpus-run/artifact-two-lane-read-consistency-verdict.ts';

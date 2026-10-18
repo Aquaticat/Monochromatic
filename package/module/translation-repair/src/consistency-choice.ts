@@ -79,7 +79,10 @@ export function consistencyChoiceResponseFormat(
         // REASON DECLARED BEFORE CHOICE, as the sheets' reply shape shows it.
         properties: {
           reason: { type: 'string', },
-          choice: { type: 'string', enum: [...labels,], },
+          choice: {
+            type: 'string',
+            enum: [...labels,],
+          },
         },
       },
     },
@@ -172,7 +175,9 @@ export function isUsableChoice(
   return (!rendersAsNothing({ text: ballot.reason, },)) && (canonicalChoiceOf({
     ballot,
     labels,
-  },).length > 0);
+  },)
+    .length
+    > 0);
 }
 
 /**
@@ -241,6 +246,7 @@ export function usableChoicesOf(
  has more than half of the usable choices. A single leader without a majority is no tie, and neither is a majority.
 
  @param voices - every heard choice with its seat
+
  @param labels - labels the sheet showed, in sheet order
 
  @returns The tied labels in sheet order, none when no tie

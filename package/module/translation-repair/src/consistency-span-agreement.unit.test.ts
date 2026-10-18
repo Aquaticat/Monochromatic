@@ -83,26 +83,31 @@ async function candidatesInWorker({ quotes, }: { readonly quotes: readonly strin
     },
     env,
   },);
+  // Ending the worker ends a call that never returns, on every way out of this function.
+  await using _ended = {
+    [Symbol.asyncDispose]: async function endWorker(): Promise<void> {
+      await worker.terminate();
+    },
+  };
   /**
-   The stop for a hang, which no case waits for: ending the worker ends a call that never returns.
+   The stop for a hang, which no case waits for.
    */
   const stop = AbortSignal.timeout(HANG_STOP_MS,);
   try {
     /**
-     The worker's one message, which an error event the worker raises rejects.
+     The arguments of the worker's one message, which an error event the worker raises rejects.
      */
-    const [candidates,] = await once(
+    const message: readonly unknown[] = await once(
       worker,
       'message',
       { signal: stop, },
     );
-    return candidates;
-  } catch (error) {
+    return message[0];
+  }
+  catch (error) {
     if (stop.aborted)
       return 'hung';
     throw error;
-  } finally {
-    await worker.terminate();
   }
 }
 

@@ -232,11 +232,15 @@ function assertCarryRecounts(
     voices: carry.ballots,
     labels,
   },);
-  if ((tied.length !== runOff.finalists.length) || tied.some(function differs(
+  /**
+   The finalists the run-off records.
+   */
+  const { finalists, } = runOff;
+  if ((tied.length !== finalists.length) || tied.some(function differs(
     label,
     at,
   ): boolean {
-    return label !== runOff.finalists[at];
+    return label !== finalists[at];
   },)) {
     throw new ArtifactParseError({
       path: `${path}.runOff.finalists`,

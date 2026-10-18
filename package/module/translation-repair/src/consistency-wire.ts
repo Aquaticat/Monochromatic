@@ -182,6 +182,7 @@ export function isConsistencyBallotWire(value: unknown,): value is ConsistencyBa
  for two), or when two names stand for one place.
 
  @param names - what a ballot gave as labels
+
  @param shown - labels the sheet showed
 
  @returns The shown label of each name, as a list of zero or one
@@ -222,6 +223,7 @@ function shownOnceLabelsOf(
  no place is kept twice or quoted twice. Every other field of the ballot is kept.
 
  @param ballot - ballot of the right shape, with whatever else the reply carries
+
  @param labels - labels the sheet showed
 
  @returns The ballot with the shown labels, as a list of zero or one
@@ -264,7 +266,8 @@ export function canonicalBallotOf<BallotT extends ConsistencyBallotWire,>(
       },),
     shown: labels,
   },);
-  if ((chosen === undefined) || (kept === undefined) || (quoted === undefined))
+  if ((chosen === undefined) || (kept === undefined)
+    || (quoted === undefined))
     return [];
   return [
     {
@@ -316,7 +319,9 @@ export function isUsableConsistencyBallot(
   return canonicalBallotOf({
     ballot,
     labels,
-  },).length > 0;
+  },)
+    .length
+    > 0;
 }
 
 /**
@@ -387,16 +392,25 @@ export function consistencyResponseFormat(
               ],
               additionalProperties: false,
               properties: {
-                label: { type: 'string', enum: [...labels,], },
+                label: {
+                  type: 'string',
+                  enum: [...labels,],
+                },
                 quote: { type: 'string', },
                 slot: { type: 'string', },
               },
             },
           },
-          choice: { type: 'string', enum: [...labels,], },
+          choice: {
+            type: 'string',
+            enum: [...labels,],
+          },
           keep: {
             type: 'array',
-            items: { type: 'string', enum: [...labels,], },
+            items: {
+              type: 'string',
+              enum: [...labels,],
+            },
           },
         },
       },

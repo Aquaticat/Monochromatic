@@ -104,7 +104,11 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
    The stream as it arrived, framing included, which is not what the model wrote: the cuts of Qwen on the run of TianqiChen66625
    delivered 1,308,758 characters on the wire for 49,293 of reasoning.
    */
-  const wire = error.partialText.length;
+  const { partialText, } = error;
+  /**
+   How many characters the stream delivered, framing included.
+   */
+  const wire = partialText.length;
 
   /**
    The wire length, as a separate named field of the line.

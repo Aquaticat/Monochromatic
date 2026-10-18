@@ -1,10 +1,16 @@
-import { compareCodePoints, } from './code-points.ts';
+import {
+  codePointAt,
+  codePointBefore,
+  codePointLength,
+  compareCodePoints,
+} from './code-points.ts';
 import { foldedWordsOf, } from './consistency-fold.ts';
 import {
   type QuotesByLabel,
   quotesByLabelOf,
 } from './consistency-majority.ts';
 import type { ConsistencyVoice, } from './consistency-count-types.ts';
+import { isSpacedScriptWordCharacter, } from './latin-letters.ts';
 
 //region Consistency span agreement
 // WHICH WORDS OF A PLACE THE JUDGES' QUOTES AGREE ON, when they quoted different spans of it (the lead's ruling of 2026-10-15 on
@@ -22,17 +28,14 @@ import type { ConsistencyVoice, } from './consistency-count-types.ts';
 // same span.
 
 /**
- Whether a character is part of a word, for the edges at which a quote's words are contained in another quote's.
- */
-const WORD_CHARACTER = /[\p{L}\p{N}]/u;
-
-/**
  Whether the words stand in the text at the edges of words, not inside a longer word.
 
  @param outer - folded words of the quote that may contain them
+
  @param inner - folded words that may be contained
 
- @returns Whether `inner` stands in `outer` with no word character beside it on either side
+ @returns Whether `inner` stands in `outer` with no letter, digit or combining mark of a spaced script beside it on either side;
+ an empty `inner` stands only in an empty `outer`
 
  @example
  ```ts
@@ -48,6 +51,10 @@ function containsWords(
     readonly inner: string;
   },
 ): boolean {
+  // An empty text is found at every offset and once more past the last, so the search never runs out of finds; a blank
+  // quote is contained only in another blank one.
+  if (inner === '')
+    return outer === '';
   for (let from = outer.indexOf(inner,); from >= 0; from = outer.indexOf(
     inner,
     from + 1,
@@ -55,15 +62,20 @@ function containsWords(
     /**
      The character before the match, empty at the start of the quote.
      */
-    const before = [...outer.slice(
-      0,
-      from,
-    ),].at(-1,) ?? '';
+    const before = codePointBefore({
+      text: outer,
+      at: from,
+    },);
     /**
      The character after the match, empty at the end of the quote.
      */
-    const after = [...outer.slice(from + inner.length,),][0] ?? '';
-    if ((!WORD_CHARACTER.test(before,)) && (!WORD_CHARACTER.test(after,)))
+    const after = codePointAt({
+      text: outer,
+      at: from + inner.length,
+    },);
+    // A word runs on through a letter, a digit or a combining mark of a spaced script, as it does for the locator
+    // (`consistency-shown-edge.ts`): a decomposed accent after the match makes it part of a longer word.
+    if ((!isSpacedScriptWordCharacter({ character: before, },)) && (!isSpacedScriptWordCharacter({ character: after, },)))
       return true;
   }
   return false;
@@ -73,7 +85,9 @@ function containsWords(
  The folded words of the quotes a strict majority of the quotes naming a place contain, longest first.
 
  @param voices - usable ballots
+
  @param label - the place's label
+
  @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
  group; read from the ballots where absent
 
@@ -114,14 +128,15 @@ export function containedQuoteWordsOf(
           outer,
           inner: candidate,
         },);
-      },).length;
+      },)
+        .length;
       return (containing * 2) > voices.length;
     },)
     .toSorted(function longestFirst(
       left,
       right,
     ): number {
-      return ([...right,].length - [...left,].length) || compareCodePoints({
+      return (codePointLength({ text: right, },) - codePointLength({ text: left, },)) || compareCodePoints({
         left,
         right,
       },);

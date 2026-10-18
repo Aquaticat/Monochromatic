@@ -114,12 +114,15 @@ function formatRecording(
     formats,
   }: {
     readonly client: ReturnType<typeof scriptedJudgeClient>;
-    readonly formats: (JsonSchemaResponseFormat | undefined)[];
+    readonly formats: JsonSchemaResponseFormat[];
   },
 ): ReturnType<typeof scriptedJudgeClient> {
   return {
     ...client,
     chatJson: function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {
+      // A call with no response format is one a provider answers in any shape, so the case fails on it.
+      if (request.responseFormat === undefined)
+        throw new Error('the pass sent a consistency call with no response format',);
       formats.push(request.responseFormat,);
       return client.chatJson(request,);
     },
@@ -194,7 +197,7 @@ async function runOff(
   }: {
     readonly behave: SeatScript;
     readonly cache: SliceCache<ConsistencyCacheValue>;
-    readonly formats: (JsonSchemaResponseFormat | undefined)[];
+    readonly formats: JsonSchemaResponseFormat[];
     readonly sheets: string[];
   },
 ): ReturnType<typeof askRunOff> {
@@ -225,7 +228,7 @@ await describe({
             + 'asks with a sheet and a response format that name the labels it may use',
           fn: async () => {
             const persisted: { key: string; serialized: string; }[] = [];
-            const formats: (JsonSchemaResponseFormat | undefined)[] = [];
+            const formats: JsonSchemaResponseFormat[] = [];
             const sheets: string[] = [];
             const result = await askConsistencyBench({
               client: formatRecording({
@@ -254,7 +257,11 @@ await describe({
                 labels: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
               },);
             }
-            expect(JSON.parse(persisted[0]?.serialized ?? 'null',).voices,).toEqual(result.voices,);
+            expect(JSON.parse(persisted[0]?.serialized ?? 'null',) as unknown,).toEqual({
+              quorum: 2,
+              voices: result.voices,
+              findings: result.findings,
+            },);
             // The key is still the sheet's, whose messages now name the labels.
             expect(persisted.map(function keyOf(entry,): string {
               return entry.key;
@@ -264,8 +271,9 @@ await describe({
             for (const sheet of sheets) {
               expect(sheet.includes('exactly: OCCURRENCE 1, OCCURRENCE 2, OCCURRENCE 3.',),).toBe(true,);
             }
+            expect(formats.length,).toBeGreaterThan(0,);
             for (const format of formats) {
-              const properties = format?.json_schema.schema.properties as Record<string, { enum?: string[]; items?: unknown; }>;
+              const properties = format.json_schema.schema.properties as Record<string, { enum?: string[]; items?: unknown; }>;
               expect(properties.choice?.enum,).toEqual(['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],);
             }
           },
@@ -281,7 +289,7 @@ await describe({
             + 'format that name the finalists only',
           fn: async () => {
             const persisted: { key: string; serialized: string; }[] = [];
-            const formats: (JsonSchemaResponseFormat | undefined)[] = [];
+            const formats: JsonSchemaResponseFormat[] = [];
             const sheets: string[] = [];
             const result = await runOff({
               behave: runOffInOtherForms,
@@ -289,9 +297,11 @@ await describe({
               formats,
               sheets,
             },);
-            expect(new Map(result.voices.map(function entryOf(voice,): [string, string] {
+            expect(
+              new Map(result.voices.map(function entryOf(voice,): [string, string] {
               return [voice.seat, voice.choice,];
-            },),),).toEqual(CANONICAL,);
+            },),),
+            ).toEqual(CANONICAL,);
             expect(persisted.map(function keyOf(entry,): string {
               return entry.key;
             },),).toEqual([
@@ -305,8 +315,9 @@ await describe({
               expect(sheet.includes('exactly: OCCURRENCE 1, OCCURRENCE 2.',),).toBe(true,);
               expect(sheet.includes('OCCURRENCE 3',),).toBe(false,);
             }
+            expect(formats.length,).toBeGreaterThan(0,);
             for (const format of formats) {
-              const properties = format?.json_schema.schema.properties as Record<string, { enum?: string[]; }>;
+              const properties = format.json_schema.schema.properties as Record<string, { enum?: string[]; }>;
               expect(properties.choice?.enum,).toEqual(['OCCURRENCE 1', 'OCCURRENCE 2',],);
             }
           },

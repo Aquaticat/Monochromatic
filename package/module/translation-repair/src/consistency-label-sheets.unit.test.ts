@@ -43,6 +43,32 @@ function sheetsAskingForALabel(): readonly RenderedSheet[] {
 }
 
 /**
+ Whether a text has the shape of a label a consistency sheet shows: `OCCURRENCE` or `CANDIDATE`, one space, and a number.
+
+ @param label - text the sheet names as a label
+
+ @returns Whether it is a word of the two, a space and ASCII digits, and nothing else
+
+ @example
+ ```ts
+ const shaped = isLabelShape({ label: 'CANDIDATE 2', },); // true
+ ```
+ */
+function isLabelShape({ label, }: { readonly label: string; },): boolean {
+  /**
+   The label's word, its number, and anything after a second space.
+   */
+  const [word, number, ...rest] = label.split(' ',);
+  return ((word === 'OCCURRENCE') || (word === 'CANDIDATE'))
+    && (rest.length === 0)
+    && (number !== undefined)
+    && (number !== '')
+    && Array.from(number,).every(function isDigit(character,): boolean {
+      return (character >= '0') && (character <= '9');
+    },);
+}
+
+/**
  The labels a sheet names as the ones its reply may use.
 
  @param text - the sheet
@@ -59,7 +85,7 @@ function namedLabelsOf({ text, }: { readonly text: string; },): readonly string[
    Where the sentence's list starts.
    */
   const marker = text.indexOf(LABELS_MARKER,);
-  if (marker < 0)
+  if (marker === (-1))
     return [];
   /**
    The list, up to the full stop that ends it.
@@ -107,7 +133,7 @@ await describe({
               if (labels.length === 0)
                 faults.push(`${name} names no labels`,);
               for (const label of labels) {
-                if (!/^(OCCURRENCE|CANDIDATE) \d+$/u.test(label,))
+                if (!isLabelShape({ label, },))
                   faults.push(`${name}: ${label} is no label`,);
                 // The label is also a fence header of a block of the sheet, so the reply may use only what the sheet shows.
                 if (!text.includes(` ${label} `,))

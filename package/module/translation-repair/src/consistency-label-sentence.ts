@@ -11,6 +11,7 @@ import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
  The sentence that lists the labels a reply may use and says how to write one.
 
  @param labels - labels the sheet shows, in the order it shows them
+
  @param fields - phrases that name where in the reply a label is written, as the reply shape spells them
 
  @returns One sentence for the end of the sheet, before the reply shape

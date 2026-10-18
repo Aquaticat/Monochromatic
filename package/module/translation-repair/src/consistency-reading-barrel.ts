@@ -110,3 +110,42 @@ export {
   type ProvenApostrophes,
   provenApostrophesOf,
 } from './consistency-proven-apostrophes.ts';
+export {
+  asLocated,
+  locatedContradicted,
+  reasonContradicted,
+} from './corpus-run/artifact-two-lane-read-consistency-located.ts';
+export {
+  asLocatedBySpan,
+  locatedContradictedBySpan,
+  reasonContradictedBySpan,
+} from './corpus-run/artifact-two-lane-read-consistency-span-located.ts';
+export { assertSpanGroupCoherent, } from './corpus-run/artifact-two-lane-read-consistency-span.ts';
+export {
+  expectedWinnerOf,
+  sameWinner,
+} from './corpus-run/artifact-two-lane-read-consistency-span-winner.ts';
+export {
+  assertSeatsHeardOnce,
+  winningPositionOf,
+} from './corpus-run/artifact-two-lane-read-consistency-tally.ts';
+export {
+  parseConsistencyCarry,
+  parseConsistencyRunOff,
+} from './corpus-run/artifact-two-lane-read-consistency-carry.ts';
+export {
+  assertCarriesRecount,
+  outcomesAfter,
+} from './corpus-run/artifact-two-lane-read-consistency-carry-recount.ts';
+export { parseConsistency, } from './corpus-run/artifact-two-lane-read-consistency.ts';
+export { assertGroupFits, } from './corpus-run/artifact-two-lane-read-consistency-fit.ts';
+export { assertAskedGroupCoherent, } from './corpus-run/artifact-two-lane-read-consistency-coherence.ts';
+export { assertSlicesCoherent, } from './corpus-run/artifact-two-lane-read-consistency-slices.ts';
+export { parseConsistencyOccurrence, } from './corpus-run/artifact-two-lane-read-consistency-occurrence.ts';
+export { parseConsistencyRendering, } from './corpus-run/artifact-two-lane-read-consistency-rendering.ts';
+export {
+  parseConsistencyBallot,
+  parseConsistencyRepeat,
+  parseConsistencyUnplaced,
+} from './corpus-run/artifact-two-lane-read-consistency-parts.ts';
+export { parseConsistencyVerdict, } from './corpus-run/artifact-two-lane-read-consistency-verdict.ts';

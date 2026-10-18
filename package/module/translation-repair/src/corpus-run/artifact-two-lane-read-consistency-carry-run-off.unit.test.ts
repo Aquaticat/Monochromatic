@@ -75,6 +75,23 @@ const RUN_OFF_CARRY: ArtifactConsistencyCarry = {
   decision: { kind: 'chosen', label: 'CANDIDATE 3', },
 };
 
+/**
+ A value as the artifact stores it and a resumed run reads it back: through JSON, whose semantics are the point.
+
+ @param value - value as built
+
+ @returns The value read back from its JSON text
+
+ @example
+ ```ts
+ const stored = asStored({ value: RUN_OFF_CARRY, },);
+ ```
+ */
+function asStored({ value, }: { readonly value: unknown; },): unknown {
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON semantics are the point: the artifact is written as JSON, so a key whose value is undefined must drop and a field JSON cannot hold must fail here, both of which structuredClone would hide.
+  return JSON.parse(JSON.stringify(value,),);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -86,13 +103,13 @@ await describe({
         it({
           name: 'READS THE RUN-OFF OF A CARRY BESIDE ITS FIRST COUNT, and a carry without one as before',
           fn: async () => {
-            expect(parseConsistencyCarry({ value: JSON.parse(JSON.stringify(RUN_OFF_CARRY,),), path: 'cat', },),).toEqual(
+            expect(parseConsistencyCarry({ value: asStored({ value: RUN_OFF_CARRY, },), path: 'cat', },),).toEqual(
               RUN_OFF_CARRY,
             );
             const { runOff: _runOff, ...without } = RUN_OFF_CARRY;
             expect(
               parseConsistencyCarry({
-                value: JSON.parse(JSON.stringify({ ...without, decision: { kind: 'none', reason: 'no-majority', }, },),),
+                value: asStored({ value: { ...without, decision: { kind: 'none', reason: 'no-majority', }, }, },),
                 path: 'cat',
               },),
             ).toEqual({ ...without, decision: { kind: 'none', reason: 'no-majority', }, },);

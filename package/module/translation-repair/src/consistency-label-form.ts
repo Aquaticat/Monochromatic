@@ -1,3 +1,9 @@
+import {
+  isAsciiDigit,
+  isAsciiDigits,
+} from './ascii-letters.ts';
+import { isWhitespace, } from './present-tense-words.ts';
+
 //region Consistency label form
 // THE LABEL A JUDGE WROTE, READ AGAINST THE LABELS THE SHEET SHOWED (the lead's ruling of 2026-10-15 on the run of
 // TianqiChen66625). Seven replies of that run named the option that won anyway and were refused for the way they wrote
@@ -6,16 +12,6 @@
 // whether it is the label or only the number the label ends in; a name that stands for none, or for two, is still
 // refused, and so is the word of another sheet (a choice among candidates is shown places too, so `Occurrence 2` there
 // would name a place, not a candidate). The label a reply is stored under is the shown one, in the sheet's own form.
-
-/**
- Runs of white space, which a name may carry inside it or around it.
- */
-const WHITESPACE_RUN = /\s+/gu;
-
-/**
- Digits at the end of a label.
- */
-const TRAILING_NUMBER = /\d+$/u;
 
 /**
  A label or a name in the form labels are compared in: white space trimmed and collapsed to single spaces, upper case.
@@ -30,12 +26,56 @@ const TRAILING_NUMBER = /\d+$/u;
  ```
  */
 function comparisonFormOf({ text, }: { readonly text: string; },): string {
-  return text.trim()
-    .replaceAll(
-      WHITESPACE_RUN,
-      ' ',
-    )
+  /**
+   The characters of the trimmed name, each white space character read as one space.
+   */
+  const characters = Array.from(
+    text.trim(),
+    function spaced(character,): string {
+      return isWhitespace({ character, },) ? ' ' : character;
+    },
+  );
+  return characters
+    .filter(function startsNoRepeatSpace(
+      character,
+      at,
+    ): boolean {
+      return (character !== ' ') || (characters[at - 1] !== ' ');
+    },)
+    .join('',)
     .toUpperCase();
+}
+
+/**
+ The ASCII digits a label ends in.
+
+ @param label - shown label
+
+ @returns The digits as a list of one, none when the label does not end in a digit
+
+ @example
+ ```ts
+ const [number,] = trailingNumberOf({ label: 'OCCURRENCE 12', },); // '12'
+ ```
+ */
+function trailingNumberOf({ label, }: { readonly label: string; },): readonly string[] {
+  /**
+   The label's characters.
+   */
+  const characters = Array.from(label,);
+  /**
+   Where the last character that is no digit stands, before the start when every character is a digit.
+   */
+  const lastOther = characters.findLastIndex(function isOther(character,): boolean {
+    return !isAsciiDigit({ character, },);
+  },);
+  /**
+   The digits after it.
+   */
+  const digits = characters
+    .slice(lastOther + 1,)
+    .join('',);
+  return (digits === '') ? [] : [digits,];
 }
 
 /**
@@ -55,7 +95,9 @@ const INDEXES = new WeakMap<readonly string[], ShownIndex>();
  Appends a label to the list a key holds, in place, starting the list where the key has none.
 
  @param map - lookup being built
+
  @param key - comparison form or trailing number the label is found under
+
  @param label - shown label
 
  @example
@@ -74,9 +116,15 @@ function appendTo(
     readonly label: string;
   },
 ): void {
+  /**
+   The labels the key already holds.
+   */
   const list = map.get(key,);
   if (list === undefined) {
-    map.set(key, [label,],);
+    map.set(
+      key,
+      [label,],
+    );
     return;
   }
   list.push(label,);
@@ -95,6 +143,9 @@ function appendTo(
  ```
  */
 function shownIndexOf({ shown, }: { readonly shown: readonly string[]; },): ShownIndex {
+  /**
+   The index built when this list was first read.
+   */
   const known = INDEXES.get(shown,);
   if (known !== undefined)
     return known;
@@ -107,15 +158,29 @@ function shownIndexOf({ shown, }: { readonly shown: readonly string[]; },): Show
    */
   const byNumber = new Map<string, string[]>();
   for (const label of new Set(shown,)) {
-    appendTo({ map: byForm, key: comparisonFormOf({ text: label, },), label, },);
-    const number = TRAILING_NUMBER.exec(label,)?.[0];
+    appendTo({
+      map: byForm,
+      key: comparisonFormOf({ text: label, },),
+      label,
+    },);
+    /**
+     The digits the label ends in, if it ends in any.
+     */
+    const [number,] = trailingNumberOf({ label, },);
     if (number !== undefined)
-      appendTo({ map: byNumber, key: number, label, },);
+      appendTo({
+        map: byNumber,
+        key: number,
+        label,
+      },);
   }
   /**
    The index to keep.
    */
-  const index: ShownIndex = { byForm, byNumber, };
+  const index: ShownIndex = {
+    byForm,
+    byNumber,
+  };
   INDEXES.set(
     shown,
     index,
@@ -127,6 +192,7 @@ function shownIndexOf({ shown, }: { readonly shown: readonly string[]; },): Show
  Finds the one shown label a name stands for.
 
  @param name - what the judge wrote as a label
+
  @param shown - labels the sheet showed, the only labels a reply may use
 
  @returns The shown label as a list of one, none when the name stands for no shown label or for more than one
@@ -152,16 +218,30 @@ export function shownLabelOf(
   /**
    Whether the name is only a number.
    */
-  const isNumber = /^\d+$/u.test(form,);
+  const isNumber = isAsciiDigits({ text: form, },);
   /**
    The shown labels by comparison form and by trailing number, read from the list once however many names are looked up.
    */
-  const index = shownIndexOf({ shown, },);
+  const {
+    byForm: formTable,
+    byNumber: numberTable,
+  } = shownIndexOf({ shown, },);
+  /**
+   The shown labels in the name's comparison form.
+   */
+  const byForm = formTable.get(form,) ?? [];
+  /**
+   The shown labels ending in the number, when the name is only a number.
+   */
+  const byNumber = isNumber ? (numberTable.get(form,) ?? []) : [];
   /**
    Every distinct shown label the name stands for.
    */
   const standsFor = [
-    ...new Set([...(index.byForm.get(form,) ?? []), ...(isNumber ? (index.byNumber.get(form,) ?? []) : []),],),
+    ...new Set([
+      ...byForm,
+      ...byNumber,
+    ],),
   ];
   return (standsFor.length === 1) ? standsFor : [];
 }

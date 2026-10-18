@@ -271,13 +271,15 @@ export async function decideAskedGroup(
       asked,
       ...((runOff === undefined) ? {} : { runOff, }),
     },);
+    /**
+     What the bench decided for the group.
+     */
+    const { verdict, } = decided;
     // THE RUN-OFF'S FINAL COUNT IN ONE LINE: usable of heard, the quorum, and the winner or the reason for none.
-    if ((decided.verdict.kind === 'asked') && (decided.verdict.runOff !== undefined)) {
+    if ((verdict.kind === 'asked') && (verdict.runOff !== undefined)) {
       gl.info(runOffResultLine({
-        runOff: decided.verdict
-          .runOff,
-        winner: decided.verdict
-          .winner,
+        runOff: verdict.runOff,
+        winner: verdict.winner,
       },),);
     }
     return {

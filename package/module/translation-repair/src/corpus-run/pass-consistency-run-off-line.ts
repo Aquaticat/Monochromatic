@@ -11,6 +11,7 @@ import type { ArtifactConsistencyRunOff, } from './artifact-two-lane-consistency
  Says what a run-off came to, in one line.
 
  @param runOff - the run-off as the artifact records it
+
  @param winner - the winner after the run-off
 
  @returns The line, without a tag

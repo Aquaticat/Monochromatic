@@ -62,8 +62,8 @@ export function refusalTextOf({ read, }: { readonly read: () => unknown; },): st
  */
 export function recountRefusalOf({ carry, }: { readonly carry: ArtifactConsistencyCarry; },): string {
   return refusalTextOf({
-    read: function recounts(): unknown {
-      return assertCarriesRecount({
+    read: function recounts(): void {
+      assertCarriesRecount({
         carries: [carry,],
         path: 'cat.carries',
       },);

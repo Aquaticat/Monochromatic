@@ -3035,7 +3035,7 @@ await describe({
                 },);
               return (findings.length > 0)
                 && findings.every(function inOrder(finding, at,): boolean {
-                  return (possible.indexOf(finding,) >= 0)
+                  return (possible.includes(finding,))
                     && ((at === 0) || (possible.indexOf(finding,) > possible.indexOf(findings[at - 1] ?? '',)));
                 },);
             }

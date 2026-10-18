@@ -504,7 +504,11 @@ export function buildConsistencyMessages(
               return consistencyLabel({ position, },);
             },),
           // NO QUOTED FIELD NAME HERE: the reply shape that follows is where `"reason"` is shown before `"choice"`.
-          fields: ['the choice', 'the kept places', 'the label of each quote',],
+          fields: [
+            'the choice',
+            'the kept places',
+            'the label of each quote',
+          ],
         },)
       }\nReply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."${(subject.repeat
         .kind
