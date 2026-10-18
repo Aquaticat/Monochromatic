@@ -276,9 +276,60 @@ so the cache does not help that package at all; this is not investigated.
 - Program file order and call edges that are not module references are not in the key;
   the existing workspace-only dependency check is the only guard for the latter.
 - Verification compares only hits; it cannot see a source that should have shared and did not.
-- `EFFECT_CACHE_SCHEMA` is not bumped;
-  `readonly-declaration-ownership.ts` still classifies a symlink-reached workspace file as external;
-  the `projectSourceText` TSDoc is still wrong.
+- At the prototype: `EFFECT_CACHE_SCHEMA` was not bumped,
+  `readonly-declaration-ownership.ts` classified a symlink-reached workspace file as external,
+  and the `projectSourceText` TSDoc was wrong.
+  The hardening closed all three before landing (landed as `a6a42f8416`, `b88c34eec0`, `c501702670`).
 
 The prototype agent's summary said "6751 cross-project shared hits";
 its own counter files total 6628, and its detailed section said so.
+
+## Cold time after landing
+
+Profiled on 2026-10-18 at `f931308964` with the landed bundle, on a shared host (load 5 to 47 on 28 cores);
+the profiles, logs and scripts are in `w177-notes/profile/`.
+
+### Spread
+
+Three sequential cold family lints took 151.2, 155.1 and 161.7 s, and three warm ones 96.9, 82.9 and 84.5 s,
+so a difference under about 10 s cold or 14 s warm is noise.
+The prototype's 131 s was measured on a quieter host; how much of the gap is load was not separated.
+With no JavaScript plugin the family lints in about 20 s,
+with the other four JavaScript plugins in about 40 s,
+so this rule's own work is about 110 to 120 s of the cold time.
+
+### Where the time goes
+
+- Each package runs its own oxlint process, which starts two `tsc --api` children and one `tsgolint`;
+  every program is built from scratch, and a family source such as `shared-contract/src/index.ts`
+  is read once per engine per package (96 reads in one family lint).
+- 2.86 million requests to the TypeScript children cost 73.8 s as seen by Node:
+  30.0 s of server work and about 49 s of pipe round trip, wake-up and JSON codec.
+- 67.1 percent of those requests repeat a request already made on the same immutable snapshot
+  (`resolveName` 86.6 percent repeats, `getSymbolAtLocation` 65.6 percent),
+  35.9 s of the 73.4 s of request time.
+- Project fingerprint, program open and index scope together cost 21.6 s cold;
+  the shared-key walk 4.8 s; cache reads and writes 3.7 s; plugin load 1.8 s;
+  garbage collection 12.3 s; per-process start and tail about 30 s across the 36 processes.
+
+### Levers, ranked
+
+1. Memoize TypeScript requests per snapshot: at most 35.9 s, low risk because a snapshot is immutable,
+   provided the memo is dropped with the snapshot and bounded.
+2. One oxlint invocation for the family: 15 to 55 s on a sequential run, depending on load,
+   but the repository already lints packages in parallel, which hides most per-process cost,
+   and it costs 5.5 to 6.8 GB of peak memory and merges 36 reports into one.
+3. Cheaper project setup: at most about 6.6 s of fingerprint transport plus part of index scope,
+   medium risk because disk text can disagree with the analysed snapshot.
+4. Skip files the rule cannot report on: at most 2.8 to 15.2 s, and it changes cache population order.
+5. Share one program across packages: at most about 2 s.
+
+The first lever is being built;
+the second is recorded and not built, because parallel linting already takes most of its gain.
+
+### Coupling found on the way
+
+`no-restricted-syntax/src/rule/spread-evidence/expression-kind.ts` imports the semantic bridge.
+Without this plugin loaded, the bridge starts lazily mid-lint,
+and on `corpus-pass` it failed with `spawn ENOMEM`;
+what that rule loses then is being checked with the first lever.
