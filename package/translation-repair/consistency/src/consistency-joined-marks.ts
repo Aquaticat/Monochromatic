@@ -15,8 +15,9 @@ import {
 //region Consistency joined marks
 // THE APOSTROPHES THE PROOF READS AS JOINED TO THE WORD AFTER THEM, made from the reading the cut of a word makes
 // (`closingJointsOf`, `consistency-closing-links.ts`): the same fold, the same links of the English and the same twin of the
-// English a reader sees, so the proof and the cut agree about one unit. The proof reads an English alone, so it holds the links of
-// that English and none of the page's definitions; a reference whose definition stands in another slice is plain text to it.
+// English a reader sees, so the proof and the cut agree about one unit. The proof reads an English alone unless the caller hands
+// it the page's definitions, so it holds the links of that English and, with the definitions, those of the page; a reference
+// whose definition stands in another slice is plain text to it where they are not handed.
 
 /**
  The apostrophes of an English that join the letter or digit after them across closing marks, at the offsets of the English
@@ -29,7 +30,11 @@ import {
  @param english - the English as it was written
 
  @param emphasis - the delimiters of the English's emphasis by the parse, which the caller may hold already (`proseViewOf`);
- read from the English where absent
+ read from the English, with the definitions, where absent
+
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and its brackets and its `*` pair as plain text do
+ (n173). They are read with the English where the delimiters are, and with its links, so the two agree
 
  @returns The offsets of the apostrophes that stand after a run of closing marks and before a letter or a digit
 
@@ -42,9 +47,11 @@ export function joinedMarksOf(
   {
     english,
     emphasis,
+    definitions = '',
   }: {
     readonly english: string;
     readonly emphasis?: EmphasisDelimiters;
+    readonly definitions?: string;
   },
 ): ReadonlySet<number> {
   /**
@@ -73,12 +80,16 @@ export function joinedMarksOf(
       folded,
       originals,
       closing: offsetsInFold({
-        offsets: (emphasis ?? emphasisDelimitersOf({ english, },)).closing,
+        offsets: (emphasis ?? emphasisDelimitersOf({
+          english,
+          definitions,
+        },)).closing,
         folded: read,
       },),
       links: foldedLinksOf({
         english,
         folded: read,
+        definitions,
       },),
     },)
   ) {

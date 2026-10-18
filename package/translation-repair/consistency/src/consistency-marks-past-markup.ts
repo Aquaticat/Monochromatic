@@ -43,8 +43,12 @@ import type { MarksPastMarkup, } from './consistency-proven-apostrophes.ts';
  @param english - the English as it was written, where the markup is not blanked yet
 
  @param emphasis - the delimiters of the English's emphasis, strong emphasis and strikethrough by the parse, which the caller may
- hold already (`proseViewOf`); read from the English where absent. A `*`, `_` or `~` that is none of them is a character of the
- text and no part of a run.
+ hold already (`proseViewOf`); read from the English, with the definitions, where absent. A `*`, `_` or `~` that is none of them
+ is a character of the text and no part of a run.
+
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and an unresolved `[b*]` has a `*` that can pair with
+ an outer one (n173)
 
  @returns The offsets of the marks past closing markup
 
@@ -57,9 +61,11 @@ export function marksPastMarkupOf(
   {
     english,
     emphasis,
+    definitions = '',
   }: {
     readonly english: string;
     readonly emphasis?: EmphasisDelimiters;
+    readonly definitions?: string;
   },
 ): MarksPastMarkup {
   // An English with no apostrophe-like character has none to read.
@@ -70,7 +76,10 @@ export function marksPastMarkupOf(
   return {
     trailing: closingRunMarksOf({
       text: english,
-      closing: (emphasis ?? emphasisDelimitersOf({ english, },)).closing,
+      closing: (emphasis ?? emphasisDelimitersOf({
+        english,
+        definitions,
+      },)).closing,
     },),
   };
 }

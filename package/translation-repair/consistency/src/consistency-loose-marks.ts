@@ -79,6 +79,13 @@ import { continuesLatinWordOrCompatibilityForm, } from '@monochromatic-dev/trans
 // word and is no loose mark. Every caller reads the words of a rendering, so the
 // functions of this file read all their text that way.
 //
+// THE WORDS ARE READ ALONE UNLESS A CALLER HANDS THE PAGE'S DEFINITIONS. The mark that ends a reading run is found by the parse of the
+// words, and the parse of a fragment pairs the delimiters of emphasis by the definitions it can see: `*a [b*] c*’` ends in a
+// reading run where the page defines `[b*]` and does not where it does not. Every function of this file that reads the words
+// takes the definitions for that reason, and the planner, the apply stage and the reader of a record pass none, since the three
+// share these functions, the reader of a record holds no page to read them from, and a definition handed to two of them and not
+// the third would let the pass plan a splice that the reader of the record refuses.
+//
 // A CORNER BRACKET BESIDE A SPAN IS NOT RECORDED. A single mark directly beside
 // a located span that is no proven apostrophe is kept in the rendering
 // (`markBefore`, `markAfter`), and a generation 17 record stores one of the eight
@@ -319,14 +326,26 @@ type LoosePoint = {
 
  @param points - the whole characters of the words of a span, the last of them the mark asked about
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns Whether the last character is a mark past closing markup
 
  @example
  ```ts
- const past = endsReadingRun({ points: Array.from('*kittens*’',), },); // true
+ const past = endsReadingRun({ points: Array.from('*kittens*’',), definitions: '', },); // true
  ```
  */
-function endsReadingRun({ points, }: { readonly points: readonly string[]; },): boolean {
+function endsReadingRun(
+  {
+    points,
+    definitions,
+  }: {
+    readonly points: readonly string[];
+    readonly definitions: string;
+  },
+): boolean {
   // A run can end at the mark only when the character before it closes a stretch of emphasis or a link's destination.
   if (!(EMPHASIS_CHARACTERS.has(points.at(-2,) ?? '',) || (points.at(-2,) === ')')))
     return false;
@@ -337,7 +356,10 @@ function endsReadingRun({ points, }: { readonly points: readonly string[]; },): 
   /**
    The closing delimiters of emphasis in the words, by the parse.
    */
-  const { closing, } = emphasisDelimitersOf({ english: text, },);
+  const { closing, } = emphasisDelimitersOf({
+    english: text,
+    definitions,
+  },);
   return closingRunMarksOf({
     text,
     closing,
@@ -356,20 +378,26 @@ function endsReadingRun({ points, }: { readonly points: readonly string[]; },): 
 
  @param at - position of the character asked about, an edge of the span
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns Whether it is an apostrophe at the edge of a span, part of the word beside it
 
  @example
  ```ts
- const edge = isEdgeApostropheAt({ points: Array.from('the cats’',), at: 8, },); // true
+ const edge = isEdgeApostropheAt({ points: Array.from('the cats’',), at: 8, definitions: '', },); // true
  ```
  */
 function isEdgeApostropheAt(
   {
     points,
     at,
+    definitions,
   }: {
     readonly points: readonly string[];
     readonly at: number;
+    readonly definitions: string;
   },
 ): boolean {
   if (!APOSTROPHE_LIKE.has(points[at] ?? '',))
@@ -380,7 +408,10 @@ function isEdgeApostropheAt(
   if (at !== (points.length - 1))
     return false;
   // At the end the letter stands directly inside, or before a reading run of closing markup.
-  return continuesLatinWordOrCompatibilityForm({ character: points[at - 1] ?? '', },) || endsReadingRun({ points, },);
+  return continuesLatinWordOrCompatibilityForm({ character: points[at - 1] ?? '', },) || endsReadingRun({
+    points,
+    definitions,
+  },);
 }
 
 /**
@@ -388,14 +419,26 @@ function isEdgeApostropheAt(
 
  @param points - the whole characters of the words of a span, so a letter beyond the first plane is one neighbour
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns The loose marks in the order they stand
 
  @example
  ```ts
- const loose = looseMarkPointsOf({ points: Array.from('“It’s done,” she said',), },); // [{ at: 0, folded: '"' }, { at: 11, folded: '"' }]
+ const loose = looseMarkPointsOf({ points: Array.from('“It’s done,” she said',), definitions: '', },); // [{ at: 0, folded: '"' }, { at: 11, folded: '"' }]
  ```
  */
-function looseMarkPointsOf({ points, }: { readonly points: readonly string[]; },): readonly LoosePoint[] {
+function looseMarkPointsOf(
+  {
+    points,
+    definitions,
+  }: {
+    readonly points: readonly string[];
+    readonly definitions: string;
+  },
+): readonly LoosePoint[] {
   return points.flatMap(function looseAt(
     point,
     at,
@@ -424,6 +467,7 @@ function looseMarkPointsOf({ points, }: { readonly points: readonly string[]; },
     if (isEdgeApostropheAt({
       points,
       at,
+      definitions,
     },))
       return [];
     return [
@@ -454,6 +498,10 @@ function looseMarkPointsOf({ points, }: { readonly points: readonly string[]; },
 
  @param text - the words of a span
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns The loose marks as one text per mark, in the order they stand
 
  @example
@@ -461,8 +509,19 @@ function looseMarkPointsOf({ points, }: { readonly points: readonly string[]; },
  const marks = looseMarksOf({ text: '“It’s done,” she said', },); // ['"', '"']
  ```
  */
-export function looseMarksOf({ text, }: { readonly text: string; },): readonly string[] {
-  return looseMarkPointsOf({ points: Array.from(text,), },)
+export function looseMarksOf(
+  {
+    text,
+    definitions = '',
+  }: {
+    readonly text: string;
+    readonly definitions?: string;
+  },
+): readonly string[] {
+  return looseMarkPointsOf({
+    points: Array.from(text,),
+    definitions,
+  },)
     .map(function foldedOf({ folded, },): string {
       return folded;
     },);
@@ -476,6 +535,10 @@ export function looseMarksOf({ text, }: { readonly text: string; },): readonly s
 
  @param side - `start` for the first whole character, `end` for the last
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns Whether that edge is a proven apostrophe the span took in with its word
 
  @example
@@ -487,9 +550,11 @@ export function holdsEdgeApostrophe(
   {
     text,
     side,
+    definitions = '',
   }: {
     readonly text: string;
     readonly side: 'start' | 'end';
+    readonly definitions?: string;
   },
 ): boolean {
   /**
@@ -499,6 +564,7 @@ export function holdsEdgeApostrophe(
   return isEdgeApostropheAt({
     points,
     at: (side === 'start') ? 0 : (points.length - 1),
+    definitions,
   },);
 }
 
@@ -549,18 +615,33 @@ export function holdsEdgeMark(
 
  @param points - the whole characters of the words of a span
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns The positions, in the order they stand
 
  @example
  ```ts
- const at = apostrophePositionsOf({ points: Array.from('the cat’s bowl',), },); // [7]
+ const at = apostrophePositionsOf({ points: Array.from('the cat’s bowl',), definitions: '', },); // [7]
  ```
  */
-function apostrophePositionsOf({ points, }: { readonly points: readonly string[]; },): readonly number[] {
+function apostrophePositionsOf(
+  {
+    points,
+    definitions,
+  }: {
+    readonly points: readonly string[];
+    readonly definitions: string;
+  },
+): readonly number[] {
   /**
    The positions of the loose marks, which an apostrophe-like mark that is no part of a word is.
    */
-  const loose = new Set(looseMarkPointsOf({ points, },)
+  const loose = new Set(looseMarkPointsOf({
+    points,
+    definitions,
+  },)
     .map(function atOf({ at, },): number {
       return at;
     },),);
@@ -579,6 +660,10 @@ function apostrophePositionsOf({ points, }: { readonly points: readonly string[]
 
  @param text - the words of a span
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns The characters of those marks, one text per mark, none for words with no apostrophe of a word
 
  @example
@@ -586,12 +671,23 @@ function apostrophePositionsOf({ points, }: { readonly points: readonly string[]
  const marks = apostropheMarksOf({ text: 'the dog\'s and the cat’s bowl', },); // ['\'', '’']
  ```
  */
-export function apostropheMarksOf({ text, }: { readonly text: string; },): readonly string[] {
+export function apostropheMarksOf(
+  {
+    text,
+    definitions = '',
+  }: {
+    readonly text: string;
+    readonly definitions?: string;
+  },
+): readonly string[] {
   /**
    The whole characters of the words.
    */
   const points = Array.from(text,);
-  return apostrophePositionsOf({ points, },)
+  return apostrophePositionsOf({
+    points,
+    definitions,
+  },)
     .map(function markAt(at,): string {
       return points[at] ?? '';
     },);
@@ -606,6 +702,10 @@ export function apostropheMarksOf({ text, }: { readonly text: string; },): reado
 
  @param form - the character every apostrophe of a word is written as, one of the three apostrophe-like marks
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone: a reference in the
+ words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a `*` that can pair with an
+ outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a reading run
+
  @returns The words with those apostrophes in that form
 
  @example
@@ -617,9 +717,11 @@ export function withApostropheForm(
   {
     text,
     form,
+    definitions = '',
   }: {
     readonly text: string;
     readonly form: string;
+    readonly definitions?: string;
   },
 ): string {
   /**
@@ -629,7 +731,10 @@ export function withApostropheForm(
   /**
    The positions of the apostrophes of a word.
    */
-  const apostrophes = new Set(apostrophePositionsOf({ points, },),);
+  const apostrophes = new Set(apostrophePositionsOf({
+    points,
+    definitions,
+  },),);
   return points
     .map(function inForm(
       point,
@@ -653,6 +758,11 @@ export function withApostropheForm(
 
  @param like - the words whose loose marks give the characters, with a sequence of loose marks that equals the text's once folded
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for words read alone; both texts are read
+ with them: a reference in the words whose definition stands elsewhere on the page is then plain text, and an unresolved `[b*]` has a
+ `*` that can pair with an outer one, so the words' emphasis pairs another way (n173); read only where the last character may end a
+ reading run
+
  @returns The text with its loose marks in the form `like` wrote them
 
  @throws {@link ConsistencyInvariantError} when the two texts hold different numbers of loose marks, since the caller has compared the sequences
@@ -666,9 +776,11 @@ export function withLooseMarksOf(
   {
     text,
     like,
+    definitions = '',
   }: {
     readonly text: string;
     readonly like: string;
+    readonly definitions?: string;
   },
 ): string {
   /**
@@ -682,11 +794,17 @@ export function withLooseMarksOf(
   /**
    The loose marks of the text.
    */
-  const own = looseMarkPointsOf({ points, },);
+  const own = looseMarkPointsOf({
+    points,
+    definitions,
+  },);
   /**
    The loose marks of the other text.
    */
-  const model = looseMarkPointsOf({ points: modelPoints, },);
+  const model = looseMarkPointsOf({
+    points: modelPoints,
+    definitions,
+  },);
   if (own.length !== model.length) {
     throw new ConsistencyInvariantError({ invariant:
       `the words hold ${String(own.length,)} loose marks and the words they take the marks' form from hold ${
@@ -728,99 +846,6 @@ export function withLooseMarksOf(
       return written.get(at,) ?? point;
     },)
     .join('',);
-}
-
-/**
- The kind of character at one edge of a text, as far as a single mark beside the
- text can tell: `attaches` for a Latin letter with its accent, an ASCII digit or a compatibility character of
- those (the neighbour test of the consistency pass, `continuesLatinWordOrCompatibilityForm`), which is what a
- single mark needs on both sides to be attached; `other` for every other
- character; `none` for an edge with no character, the edge of an empty text.
- */
-export type EdgeClass = 'attaches' | 'other' | 'none';
-
-/**
- The class of the character at one edge of a text.
-
- @param text - the words whose edge is read
-
- @param side - `start` for the first whole character, `end` for the last
-
- @returns `attaches` for a Latin letter with its accent or an ASCII digit, `none` for an empty
- text, `other` for any other character
-
- @example
- ```ts
- const kind = edgeClassOf({ text: 'the **cat**', side: 'end', },); // 'other'
- ```
- */
-export function edgeClassOf(
-  {
-    text,
-    side,
-  }: {
-    readonly text: string;
-    readonly side: 'start' | 'end';
-  },
-): EdgeClass {
-  /**
-   The whole characters of the text, so a letter beyond the first plane is one character.
-   */
-  const points = Array.from(text,);
-  /**
-   The character at the edge asked about, absent for an empty text.
-   */
-  const [edge,] = (side === 'start') ? points : points.toReversed();
-  if (edge === undefined)
-    return 'none';
-  return continuesLatinWordOrCompatibilityForm({ character: edge, },) ? 'attaches' : 'other';
-}
-
-/**
- Whether two texts have a character of one class at the same edge. A single mark
- directly beside a text is attached to a word exactly when a letter or a digit
- stands on both of its sides, and a replacement of the text leaves the far side
- of the mark alone, so replacing a text by another whose edge is of the same
- class cannot change whether the mark is attached, and replacing it by one whose
- edge is of another class can.
-
- AN EMPTY EDGE IS A CLASS OF ITS OWN. A replacement by an empty text puts the
- character that stood on the far side of the replaced text beside the mark, and
- nothing the located words record says what that character is, so an empty edge
- equals only another empty one (two empty texts are the same text).
-
- @param left - one text
-
- @param right - the other
-
- @param side - `start` to compare the first characters, `end` to compare the last
-
- @returns Whether the two edges are of one class
-
- @example
- ```ts
- const same = sameEdgeClass({ left: 'the cats', right: 'the **cat**', side: 'end', },); // false
- ```
- */
-export function sameEdgeClass(
-  {
-    left,
-    right,
-    side,
-  }: {
-    readonly left: string;
-    readonly right: string;
-    readonly side: 'start' | 'end';
-  },
-): boolean {
-  return edgeClassOf({
-    text: left,
-    side,
-  },)
-    === edgeClassOf({
-      text: right,
-      side,
-    },);
 }
 
 //endregion Consistency loose marks

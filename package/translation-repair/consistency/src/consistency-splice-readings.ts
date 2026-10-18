@@ -258,6 +258,11 @@ export function gainsBesideKeptMark(
 
  @param written - the words that go in
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: the English
+ is one slice's wording, and a reference in it whose definition stands in another slice is a link, so words that make it an
+ undefined reference change how the emphasis around it pairs and how the marks outside the span read (n173). Both readings are
+ made with them
+
  @returns Whether a mark outside the span reads another way (attached, joint, trailing, leading or free) once the words are in
 
  @example
@@ -271,11 +276,13 @@ export function readingsChangeOutside(
     start,
     end,
     written,
+    definitions = '',
   }: {
     readonly english: string;
     readonly start: number;
     readonly end: number;
     readonly written: string;
+    readonly definitions?: string;
   },
 ): boolean {
   /**
@@ -296,13 +303,19 @@ export function readingsChangeOutside(
   /**
    The marks outside the span, read before the splice, as offset and reading.
    */
-  const outsideBefore = [...markReadingsInEnglish({ english, },),].filter(function standsOutside([at,],): boolean {
+  const outsideBefore = [...markReadingsInEnglish({
+    english,
+    definitions,
+  },),].filter(function standsOutside([at,],): boolean {
     return (at < start) || (at >= end);
   },);
   /**
    The marks outside the span, read after it.
    */
-  const outsideAfter = [...markReadingsInEnglish({ english: spliced, },),].filter(function standsOutside([at,],): boolean {
+  const outsideAfter = [...markReadingsInEnglish({
+    english: spliced,
+    definitions,
+  },),].filter(function standsOutside([at,],): boolean {
     return (at < start) || (at >= (start + written.length));
   },);
   if (outsideBefore.length !== outsideAfter.length)

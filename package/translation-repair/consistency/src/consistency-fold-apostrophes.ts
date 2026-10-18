@@ -37,6 +37,10 @@ import {
 
  @param english - the English of a page, or of the slice alone where no more is known
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and the delimiters of its emphasis pair as plain
+ text does (n173). An English that is the page itself holds its definitions already and needs none given
+
  @returns The offsets in the English of the proven marks, trailing and leading apart
 
  @example
@@ -44,11 +48,22 @@ import {
  const { trailing, } = provenApostrophesInEnglish({ english: 'The parents’ bowl', },); // trailing holds 11
  ```
  */
-export function provenApostrophesInEnglish({ english, }: { readonly english: string; },): ProvenApostrophes {
+export function provenApostrophesInEnglish(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ProvenApostrophes {
   /**
    What the proof reads of the English and proves of it.
    */
-  const view = proofViewOf({ english, },);
+  const view = proofViewOf({
+    english,
+    definitions,
+  },);
   return view.proven;
 }
 
@@ -103,13 +118,18 @@ export type WordApostrophe = {
 const REMEMBERED_VIEWS = 4;
 
 /**
- One English a view was read for, and the view.
+ One English a view was read for with the definitions it was read with, and the view.
  */
 type RememberedView = {
   /**
    The English the view was read from.
    */
   readonly english: string;
+
+  /**
+   The definitions the English was read with, empty for an English read alone.
+   */
+  readonly definitions: string;
 
   /**
    What the proof read of it.
@@ -119,7 +139,8 @@ type RememberedView = {
 
 /**
  The views of the most recent English texts, the newest last, so a page read once for one place is not read again for the
- next place of the same page. A view holds only what is read from the English, so remembering it changes no answer.
+ next place of the same page. A view holds only what is read from the English and the definitions it was read with, and a view is
+ found by both, so remembering it changes no answer.
  */
 const remembered: RememberedView[] = [];
 
@@ -156,6 +177,10 @@ export type ProofReading = {
 
  @param english - the English of a page, or of the slice alone where no more is known
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and the delimiters of its emphasis pair as plain
+ text does (n173). An English that is the page itself holds its definitions already and needs none given
+
  @returns The prose, the proven apostrophes, the marks read as joined and the reading of each apostrophe-like mark
 
  @example
@@ -163,20 +188,32 @@ export type ProofReading = {
  const { joined, } = readProof({ english: 'The *cats*’s bowl', },); // holds 10
  ```
  */
-export function readProof({ english, }: { readonly english: string; },): ProofReading {
+export function readProof(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ProofReading {
   /**
-   The prose of the English and the delimiters of its emphasis, from one parse.
+   The prose of the English and the delimiters of its emphasis, from one parse with the definitions.
    */
   const {
     prose,
     emphasis,
-  } = proseViewOf({ english, },);
+  } = proseViewOf({
+    english,
+    definitions,
+  },);
   /**
    The marks after closing markup, read on the English as written, where the closing marks are not yet blanked.
    */
   const joined = joinedMarksOf({
     english,
     emphasis,
+    definitions,
   },);
   /**
    The marks past closing markup (the trailing side only), read on the English as written for the same reason.
@@ -184,6 +221,7 @@ export function readProof({ english, }: { readonly english: string; },): ProofRe
   const pastMarkup = marksPastMarkupOf({
     english,
     emphasis,
+    definitions,
   },);
   return {
     prose,
@@ -251,6 +289,10 @@ export function isPartOfAWord(
 
  @param english - the English of a page, or of the slice alone where no more is known
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and the delimiters of its emphasis pair as plain
+ text does (n173). An English that is the page itself holds its definitions already and needs none given
+
  @returns The prose, the proven apostrophes, the marks read as joined and the apostrophes that are part of a word
 
  @example
@@ -258,7 +300,15 @@ export function isPartOfAWord(
  const { joined, } = readProofView({ english: 'The *cats*’s bowl', },); // holds 10
  ```
  */
-function readProofView({ english, }: { readonly english: string; },): ProofView {
+function readProofView(
+  {
+    english,
+    definitions,
+  }: {
+    readonly english: string;
+    readonly definitions: string;
+  },
+): ProofView {
   /**
    What the proof reads of the English.
    */
@@ -267,7 +317,10 @@ function readProofView({ english, }: { readonly english: string; },): ProofView 
     proven,
     joined,
     readings,
-  } = readProof({ english, },);
+  } = readProof({
+    english,
+    definitions,
+  },);
   return {
     prose,
     proven,
@@ -295,6 +348,10 @@ function readProofView({ english, }: { readonly english: string; },): ProofView 
 
  @param english - the English of a page, or of the slice alone where no more is known
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and the delimiters of its emphasis pair as plain
+ text does (n173). An English that is the page itself holds its definitions already and needs none given
+
  @returns The prose, the proven apostrophes (trailing and leading apart) and the marks read as joined
 
  @example
@@ -302,21 +359,33 @@ function readProofView({ english, }: { readonly english: string; },): ProofView 
  const { prose, proven, } = proofViewOf({ english: 'The parents’ `bowl`', },); // proven.trailing holds 11
  ```
  */
-export function proofViewOf({ english, }: { readonly english: string; },): ProofView {
+export function proofViewOf(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ProofView {
   /**
-   The view read before for an equal English, none when there is none.
+   The view read before for an equal English read with equal definitions, none when there is none.
    */
   const known = remembered.find(function isSame(entry,): boolean {
-    return entry.english === english;
+    return (entry.english === english) && (entry.definitions === definitions);
   },);
   if (known !== undefined)
     return known.view;
   /**
    What the proof reads of the English.
    */
-  const view = readProofView({ english, },);
+  const view = readProofView({
+    english,
+    definitions,
+  },);
   remembered.push({
     english,
+    definitions,
     view,
   },);
   if (remembered.length > REMEMBERED_VIEWS)
@@ -334,6 +403,10 @@ export function proofViewOf({ english, }: { readonly english: string; },): Proof
 
  @param english - the English, as one place holds it or as a page
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), none for an English read alone: a reference
+ in the English whose definition stands in another slice is then plain text, and the delimiters of its emphasis pair as plain
+ text does (n173). An English that is the page itself holds its definitions already and needs none given
+
  @returns The reading of each apostrophe-like mark by its offset in the English, in the order the marks stand
 
  @example
@@ -341,11 +414,22 @@ export function proofViewOf({ english, }: { readonly english: string; },): Proof
  const readings = markReadingsInEnglish({ english: 'The *cats*’s bowl.', },); // 10 reads as joint
  ```
  */
-export function markReadingsInEnglish({ english, }: { readonly english: string; },): ReadonlyMap<number, MarkReading> {
+export function markReadingsInEnglish(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ReadonlyMap<number, MarkReading> {
   /**
    How the proof reads each apostrophe-like mark of the English.
    */
-  const { readings, } = readProof({ english, },);
+  const { readings, } = readProof({
+    english,
+    definitions,
+  },);
   return readings;
 }
 

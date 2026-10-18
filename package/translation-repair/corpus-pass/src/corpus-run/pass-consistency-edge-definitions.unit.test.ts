@@ -119,7 +119,7 @@ await describe({
              What the second place comes to for the page the case gives.
              */
             function plannedOn({ page, }: { readonly page?: string; }): unknown {
-              const places = placesOn({ ...((page === undefined) ? {} : { page, }), },);
+              const places = (page === undefined) ? placesOn({}) : placesOn({ page, });
               const { outcome, receiver, edge, } = plannedPlace({
                 chosen: chosenPlaceOf({ places, renderings: [chosenRendering, rendering,], position: 0, },),
                 place: nonNullishOrThrow(places[1],),

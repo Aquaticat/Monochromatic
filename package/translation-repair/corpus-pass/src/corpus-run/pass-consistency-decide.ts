@@ -8,6 +8,7 @@ import {
   quoteReferencesIn,
   runOffWinnerOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
+import { pageDefinitionsOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type {
   ArtifactConsistencyRunOff,
   ConsistencyOccurrenceOutcome,
@@ -277,6 +278,17 @@ export function plannedPlace(
       ];
   }
   /**
+   The link and footnote definitions of the page the receiving slice stands in, which a reference in the slice's wording resolves
+   against whichever slice holds the definition; none where the pass holds one slice alone (n173).
+   */
+  const { page: receivingPage, } = place.slice;
+  /**
+   The page's definitions, empty for a slice read alone.
+   */
+  const definitions = (receivingPage === undefined)
+    ? ''
+    : pageDefinitionsOf({ pageText: receivingPage.text, },);
+  /**
    What putting the chosen words here by code amounts to.
    */
   const plan = planConsistencyEdit({
@@ -285,7 +297,12 @@ export function plannedPlace(
     framed,
     marks: 'compared',
     // The English is handed so the planner can read every mark outside the receiving words before and after the splice.
-    ...((receivingWording.kind === 'present') ? { english: receivingWording.text, } : {}),
+    ...((receivingWording.kind === 'present')
+      ? {
+        english: receivingWording.text,
+        definitions,
+      }
+      : {}),
     pageReference,
     // The English of the page is read only when the receiving words share no apostrophe form.
     pageApostrophe: function pageApostropheOfPage(): readonly string[] {
@@ -361,6 +378,7 @@ export function plannedPlace(
       target: rendering,
       framed,
       english: receivingWording.text,
+      definitions,
       pageReference,
     },)
     : 'unrefused';

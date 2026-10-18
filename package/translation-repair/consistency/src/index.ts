@@ -119,18 +119,20 @@ export {
 } from './consistency-link-twin.ts';
 export {
   apostropheMarksOf,
-  edgeClassOf,
   holdsEdgeApostrophe,
   holdsEdgeMark,
   isCountedSingleMark,
   isSingleMark,
   looseMarksOf,
   sameBesideMark,
-  sameEdgeClass,
   singleMarkAt,
   withApostropheForm,
   withLooseMarksOf,
 } from './consistency-loose-marks.ts';
+export {
+  edgeClassOf,
+  sameEdgeClass,
+} from './consistency-edge-class.ts';
 export {
   agreedQuoteOf,
   agreedSlotOf,

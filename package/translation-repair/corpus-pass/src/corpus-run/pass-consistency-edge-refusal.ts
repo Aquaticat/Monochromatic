@@ -75,6 +75,9 @@ function recordedLike({ rendering, }: { readonly rendering: Located; },): Locate
  @param pageReference - the character references of the page that decode to a quotation-like character, asked as the planner
  asks it, when the pass holds the page; absent where it holds none
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), which the planner reads the English with
+ where the pass holds the page, so the refusal is named for the reading the planner made; absent where it holds none (n173)
+
  @returns The refusal at the edge, `unrefused` when the planner did not call the splice unavailable with that English, or
  when it is unavailable on the recorded words and marks alone, which the reader of the record sees too; where more than one
  reason holds, the second mark first, then the reading that changes, then the reference
@@ -91,12 +94,14 @@ export function edgeRefusalOf(
     framed,
     english,
     pageReference,
+    definitions,
   }: {
     readonly chosen: Located;
     readonly target: Located;
     readonly framed: boolean;
     readonly english: string;
     readonly pageReference?: () => readonly string[];
+    readonly definitions?: string;
   },
 ): EdgeVerdict {
   /**
@@ -108,6 +113,7 @@ export function edgeRefusalOf(
     framed,
     marks: 'compared',
     english,
+    ...((definitions === undefined) ? {} : { definitions, }),
     ...((pageReference === undefined) ? {} : { pageReference, }),
   },);
   if (inPass.kind !== 'unavailable')
@@ -143,6 +149,7 @@ export function edgeRefusalOf(
     framed,
     marks: 'compared',
     english,
+    ...((definitions === undefined) ? {} : { definitions, }),
   },);
   return (withEnglish.kind === 'unavailable') ? 'edge-reading-changes' : 'edge-reference-mark';
 }

@@ -3,10 +3,10 @@ import { inReceivingForm, } from './consistency-apostrophe-forms.ts';
 import { blockBreaksIn, } from './consistency-block-breaks.ts';
 import type { ConsistencyRendering, } from './consistency-count-types.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
+import { sameEdgeClass, } from './consistency-edge-class.ts';
 import {
   looseMarksOf,
   sameBesideMark,
-  sameEdgeClass,
   withLooseMarksOf,
 } from './consistency-loose-marks.ts';
 import {
@@ -526,6 +526,13 @@ function keepsMarksAttached(
  splice that changes the reading of any is unavailable; absent for a caller that holds no English (a reader of the record),
  which cannot make the check, so the pass alone decides it
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`), read together with `english` and only with it: the
+ English is one slice's wording, and a reference in it whose definition stands in another slice is a link, so words that make it an
+ undefined reference change how the emphasis around it pairs and how the marks outside the span read (n173). Absent for a slice
+ read alone and for a caller that holds no English. The words of the places are read without them: the reader of a record plans the
+ same splice from the recorded words alone and holds no page, so a definition handed to the reading of the words would let the
+ pass plan what the reader refuses (`consistency-loose-marks.ts`)
+
  @returns That the receiving place already agrees, that the words cannot be
  moved by code (no slot to move a frame's words by, a mark beside the words
  that differs, loose marks inside the words that differ, a different number of
@@ -546,6 +553,7 @@ export function planConsistencyEdit(
     pageApostrophe,
     pageReference,
     english,
+    definitions = '',
   }: {
     readonly chosen: Extract<ConsistencyRendering, { readonly kind: 'located'; }>;
     readonly target: Extract<ConsistencyRendering, { readonly kind: 'located'; }>;
@@ -554,6 +562,7 @@ export function planConsistencyEdit(
     readonly pageApostrophe?: () => readonly string[];
     readonly pageReference?: () => readonly string[];
     readonly english?: string;
+    readonly definitions?: string;
   },
 ): ConsistencyPlan {
   /**
@@ -657,6 +666,7 @@ export function planConsistencyEdit(
     start: target.start,
     end,
     written,
+    definitions,
   },))
     return { kind: 'unavailable', };
   return {
