@@ -119,6 +119,32 @@ The ledger retains provider catalog GB separately from actual memory bytes,
 original owner unit spellings,
 and container binary memory limits.
 
+## Terminal public recovery append
+
+The current snapshot has `35` unique allocation rows,
+including the five terminal public GitHub jobs from `39144499822`.
+Its product counts are `17` standard public GitHub jobs,
+`7` Depot GitHub jobs,
+`8` native CI jobs,
+and `3` separate BuildKit requests.
+The source archive has `39` retained records.
+The known provider-window nominal list proxy remains `USD 0.6041`,
+and the root graph subtotal remains `USD 0.487`.
+Standard public compute adds `USD 0`;
+artifact/storage costs remain unmeasured.
+
+Each new row joins the immutable workflow source `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`,
+frozen application source `e02`,
+the exact assigned runner,
+started steps,
+and provider job timestamps to the owning receipt.
+The unassigned skipped row `117725490037` is excluded,
+including its invalid negative timestamp interval.
+Provider run/job bodies use explicit selected projections.
+Their complete private originals remain retained with byte counts and SHA-256 values.
+Catalog memory is labelled GB;
+this allocation projection does not convert catalog values into measured RAM.
+
 ## Independent Rust projection
 
 The coverage researcher requested a read-only package-result projection from the sealed Rust receipts.
@@ -202,7 +228,7 @@ and skipped totals remain part of that comparison.
 Coverage's first public host handoff `39141147245` is terminal with five allocated jobs.
 Its skipped unassigned scheduler row `117715669048` must not become a compute allocation.
 Recovery `39144499822` is terminal with five allocated public GitHub jobs.
-The follow-on queue is to append its exact owned rows after selected provider-metadata verification.
+Its exact owned rows are appended with selected provider-metadata joins.
 Its unassigned skipped scheduler row `117725490037` is excluded.
 Separate Depot OS run `39148580870` is terminal under its own USD 2 guard.
 Its exact Mac/Windows rows await the owner's retained artifact/API seal before final normalization.
