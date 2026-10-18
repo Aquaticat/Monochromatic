@@ -13,6 +13,7 @@ const groups = {
   'fuzz-tails': ['package/cli/forbidden-strings.fuzz', 'package/git-policy/cli.fuzz'],
   'fuzz-git': ['package/git-policy/cli.fuzz'],
   'fuzz-linter': ['package/linter/monochromatic-lint.fuzz'],
+  'fuzz-linter-tail': ['package/linter/monochromatic-lint.fuzz'],
 };
 const selected = groups[profile];
 assert(selected);
@@ -49,11 +50,14 @@ try {
       const declared = targetFiles.map(file => file.split('/').at(-1).slice(0, -3)).sort();
       assert.deepEqual([...list].sort(), declared);
       writeFileSync(join(evidence, key + '-target-sources.json'), JSON.stringify(targetFiles.map(file => ({ path: file, sha256: hash(readFileSync(join(root, file))), text: readFileSync(join(root, file), 'utf8') })), null, 2) + '\n');
-      const controls = rust(key + '-generator-nextest', ['cargo', 'nextest', '--config-file', nextestConfig(key), 'run', '--locked', '--offline', '--lib', '--release', '--no-fail-fast'], { cwd: project, allowFailure: true });
-      failed = controls.status !== 0 || failed;
+      if (profile !== 'fuzz-linter-tail') {
+        const controls = rust(key + '-generator-nextest', ['cargo', 'nextest', '--config-file', nextestConfig(key), 'run', '--locked', '--offline', '--lib', '--release', '--no-fail-fast'], { cwd: project, allowFailure: true });
+        failed = controls.status !== 0 || failed;
+      }
       const built = rust(key + '-asan-gnu-build', ['cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', '--target-dir', output], { cwd: project, allowFailure: true });
       if (built.status !== 0) { failed = true; outcomes.push({ path, boundary: 'instrumented-build', status: built.status }); continue; }
-      const binaries = list.filter(name => profile === 'fuzz-tails' ? name === (path.includes('git-policy') ? 'wrapper_controls' : 'fuzz_scan_format') : profile !== 'fuzz-scanner-tail' || name === 'fuzz_scan_format').map(name => ({ name, path: join(output, 'x86_64-unknown-linux-gnu/release', name) }));
+      const binaries = list.filter(name => profile === 'fuzz-linter-tail' ? ['rust_explicit_types', 'typescript'].includes(name) : profile === 'fuzz-tails' ? name === (path.includes('git-policy') ? 'wrapper_controls' : 'fuzz_scan_format') : profile !== 'fuzz-scanner-tail' || name === 'fuzz_scan_format').map(name => ({ name, path: join(output, 'x86_64-unknown-linux-gnu/release', name) }));
+      if (profile === 'fuzz-linter-tail') assert.equal(binaries.length, 2);
       const corpora = Object.fromEntries(list.map(target => [target, seedPaths.filter(seed => seed.startsWith(path + '/') && seed.split('/').at(-2) === target).map(seed => join(root, seed))]));
       const runtimeDirectory = join(owned, 'runtime-' + index);
       const dictionaryDirectory = join(project, 'dictionary');
