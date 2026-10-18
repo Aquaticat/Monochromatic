@@ -5,10 +5,12 @@
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
     "path": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz",
-    "bytes": 3413884,
-    "sha256": "2b2179b7ac68599084603cf8c2749bea14b07977e0bb463e17630bbeffbb7061",
+    "bytes": 3881763,
+    "sha256": "1481c97108b03a325bf5a3a22f88043470d240d824d2a8c342813c1c8a276ec6",
     "pinnedRepositories": 28,
-    "retrievedSourceFiles": 542
+    "retrievedSourceFiles": 542,
+    "supplementalRepositoryRootFiles": 142,
+    "publicDocumentationMdxFiles": 117
   },
   "indexes": {
     "llmIndexCount": 642,
@@ -14391,5 +14393,32 @@
       "buildId": "fxzj58r8m2",
       "status": "Native local and single-architecture OCI exports, multiarch registry-to-OCI bridge, derived job image and cross-build/read-only token controls exercised; remaining cases active"
     }
+  },
+  "publicDocumentationReconciliation": {
+    "repository": "depot/docs",
+    "commit": "e40bfe1683ae561156d415513f2a648f89e82f12",
+    "sourcePages": 117,
+    "sourceOnly": [],
+    "deployedOnly": [
+      {
+        "url": "https://depot.dev/docs/api/github-actions-api.md",
+        "title": "GitHub Actions API"
+      },
+      {
+        "url": "https://depot.dev/docs/cache/integrations/nx.md",
+        "title": "Configure Nx to use Depot Cache"
+      },
+      {
+        "url": "https://depot.dev/docs/cache/integrations/xcode.md",
+        "title": "Configure Xcode compilation caching to use Depot Cache"
+      }
+    ],
+    "status": "Route coverage recorded; deciding content differences still under review"
+  },
+  "officialRepositoryRootPass": {
+    "repositories": 93,
+    "additionalRootFiles": 142,
+    "fullImplementationAudits": 28,
+    "status": "Root metadata/readmes/licenses/manifests retrieved; supplementary implementation relevance review ongoing"
   }
 }
