@@ -3,14 +3,12 @@ import type {
   RootContent,
 } from 'mdast';
 
-import type {
-  AtomKind,
-  DeepReadonlyData,
-  LoneContainerTag,
-  ProtectedAtom,
-} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
+  type AtomKind,
+  type DeepReadonlyData,
+  type LoneContainerTag,
   parseSliceBody,
+  type ProtectedAtom,
   requireMdxRefusal,
   withMdxExhaustionRefused,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';

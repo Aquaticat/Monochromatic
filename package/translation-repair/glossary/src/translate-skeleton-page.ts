@@ -1,9 +1,9 @@
 import type { Root, } from 'mdast';
 
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { explicitBreakCounts, } from './source-only-breaks.ts';
 
 import {
+  type DeepReadonlyData,
   parseMarkdownBody,
   requireMarkdownRefusal,
   withMarkdownExhaustionRefused,

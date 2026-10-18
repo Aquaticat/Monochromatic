@@ -29,9 +29,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type AdjudicatedIssue,
-  type EditableEnvelope,
+import type {
+  AdjudicatedIssue,
+  EditableEnvelope,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { buildLicensedQuotes, } from '../dist/final/node/index.mjs';
 

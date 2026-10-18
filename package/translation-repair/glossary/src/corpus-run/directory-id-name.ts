@@ -1,7 +1,9 @@
 import { pinyin, } from 'pinyin-pro';
 
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { FrontMatterBlock, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type FrontMatterBlock,
+  isJsonRecord,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { isAsciiLetter, } from '@monochromatic-dev/translation-repair-markup/ts';
 
 //region Directory id as a name

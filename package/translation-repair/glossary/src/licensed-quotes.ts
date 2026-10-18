@@ -1,9 +1,9 @@
-import type {
-  AdjudicatedIssue,
-  EditableEnvelope,
-  IssueClaim,
+import {
+  ADDITION_CATEGORY,
+  type AdjudicatedIssue,
+  type EditableEnvelope,
+  type IssueClaim,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { ADDITION_CATEGORY, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Licensed quotes
 // What each envelope's issues quoted as the defect, which is what the
