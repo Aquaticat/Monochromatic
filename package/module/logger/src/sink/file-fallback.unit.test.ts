@@ -49,7 +49,8 @@ await sink.write({level:'info',timestamp:0,message:'fallback persisted control'}
   child.stderr.on('data', function capture(chunk: Buffer): void {
     errors.push(chunk);
   });
-  const [code, signal]: unknown[] = await once(child, 'close');
+  const status: unknown[] = await once(child, 'close');
+  const [code, signal] = status;
   const stderr = Buffer.concat(errors).toString();
   assert.equal(code, 0, stderr);
   assert.equal(signal, null);
@@ -64,10 +65,12 @@ async function checkRecords(directory: string): Promise<void> {
   assert.equal(typeof name, 'string');
   if (name === undefined) throw new Error('Missing sink-owned log file');
   const lines = (await readFile(join(directory, name), 'utf8')).trim().split('\n');
-  const values: unknown[] = lines.map(function parse(line) { return JSON.parse(line); });
+  const values = lines.map(function parse(line): unknown {
+    return JSON.parse(line);
+  });
   assert.ok(values.some(function isRecord(value) {
-    return typeof value === 'object' && value !== null && 'message' in value
-      && value.message === 'fallback persisted control';
+    return ((typeof value) === 'object') && (value !== null) && ('message' in value)
+      && (value.message === 'fallback persisted control');
   }));
 }
 //endregion

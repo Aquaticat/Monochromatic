@@ -79,6 +79,7 @@ export function createFileSink({
    */
   async function runVerify(): Promise<boolean> {
     try {
+      /** Verified destination owns all subsequent queued appends for this instance. */
       const filePath = await openFileDestination({ directory: explicitDirectory, });
       state.appends = createFileAppendQueue({ filePath, },);
       return true;

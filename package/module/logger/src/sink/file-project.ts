@@ -1,5 +1,8 @@
-import { stat, } from 'node:fs/promises';
-import { dirname, join, } from 'node:path';
+import type { stat, } from 'node:fs/promises';
+import type {
+  dirname,
+  join,
+} from 'node:path';
 import { reportLoggerInternalError, } from '../error-format.ts';
 
 //region Ancestor search
