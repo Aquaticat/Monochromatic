@@ -729,7 +729,8 @@ splits at the last row with `board1_c` filled and at the fix time taken as 04:30
 <lowest-watts-of-band>` prints per-chiplet medians for one band). The after-fix era spanned 17.6 hours
 (04:30 to 22:07 UTC; 23309 rows, because burst mode writes a row every 2 seconds; the first version of this note
 divided rows by 360 and overstated every span in this section) and had 885 settled samples. The stop condition
-(at least 100 settled samples in both the 120 to 140 W and 180 to 200 W buckets) was met only for the first: 170 samples at 120 to 140 W and 4 at 180 to 200 W.
+(at least 100 settled samples in both the 120 to 140 W and 180 to 200 W buckets) was met only for the first:
+170 samples at 120 to 140 W and 4 at 180 to 200 W.
 - 120 to 140 W settled: old board 95.4 degrees median (p90 96.0, 1033 samples, 4480 MHz); new board after the fix
   80.0 degrees (p90 85.8, max 87.8, 170 samples, 5057 MHz). Before the fix the new board read 82.1 degrees (18 samples).
 - 40 to 60 W: 51.9 old, 51.1 new. 100 to 120 W: 75.5 old, 75.8 new (385 samples). Both match.
