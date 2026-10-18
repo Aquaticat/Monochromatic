@@ -91,10 +91,12 @@ const containerCargo = (cargoArgs, containerOptions = {}) => {
   // /work, so each is mounted read-only where the same relative path from /work finds it: ../truepeak-core is the
   // Cargo path dependency, and ../android-app/app/src/test/resources holds the theme-roles-vector.txt fixture that
   // src/theme_roles_fixture_tests.rs compares with the Rust derivation. A missing source fails here by name, never
-  // as a skipped test or a bare podman statfs error.
+  // as a skipped test or a bare podman statfs error. The repository's root clippy.toml (the fleet-wide ban on
+  // Result::unwrap) is mounted at /clippy.toml: clippy searches the ancestors of /work, so the container lint runs
+  // with the same rules as the host lint (issue 1756).
   const { resolve } = process.getBuiltinModule('node:path')
   const { existsSync } = process.getBuiltinModule('node:fs')
-  const siblingMounts = [['../truepeak-core', '/truepeak-core'], ['../android-app/app/src/test/resources', '/android-app/app/src/test/resources']]
+  const siblingMounts = [['../truepeak-core', '/truepeak-core'], ['../android-app/app/src/test/resources', '/android-app/app/src/test/resources'], ['../../../clippy.toml', '/clippy.toml']]
   const siblingMountArgs = siblingMounts.flatMap(([relative, inside]) => {
     const host = resolve(process.cwd(), relative)
     if (!existsSync(host)) { throw new Error(`containerCargo needs ${host} (mounted read-only at ${inside}) but it does not exist; run the task from the checked-out package/music-player/desktop-app directory of a full checkout`) }
