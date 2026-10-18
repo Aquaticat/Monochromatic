@@ -61,6 +61,19 @@ later unit/entry style fixes still need a fresh check.
 The remaining dynamic-error-name finding requires source/configuration investigation.
 This does not clear the old full-source backlog of 1,037 warnings and 47 errors.
 
+Commit `5984de85c8` preserves dynamic inherited error naming with a declaration-scoped,
+documented `unicorn/custom-error-definition` exception.
+Actual configuration probes reject options;
+a literal-name positive control clears the warning but changes the consumer setter argument.
+Its frozen build,
+fresh-cache types,
+named built-error consumer and receipt catalog pass.
+The nine-file lint now reports zero warnings and one `import/unambiguous` error in the receipt entry.
+Commit `0df4fbcaa9` replaces that dynamic import with a static side-effect import;
+the fresh follow-up check remains pending.
+Built field and literal-name mutants are running against the maintained setter regression,
+with private input restoration and rebuilt passing controls required.
+
 The reported-interaction checkpoint retains 52 successful tools,
 zero selectors,
 62 successful live Luna requests and positive-controlled payload inspection.
@@ -92,9 +105,42 @@ Configuration probes remain pending:
 the first driver fails before spawning because an unopened WriteStream has `fd: null`.
 The corrected driver awaits an opened numeric file descriptor.
 
+The corrected probe completes all three cases.
+Its initial assertion wrongly expects unsupported options to be ignored;
+the actual parser rejects them with `This rule does not accept configuration options.`
+The retained-output validator checks that rejection,
+the one-warning dynamic case and zero-warning literal positive control.
+The native typed source and private built copy at `98add8596e` are byte-identical.
+Package-local `doc/error-name-contract.md` records the lint conflict and consumer behavior.
+The renderer checks 37 documents with no broken local links,
+including the new Node class-field diagnosis and package error contract.
+The subsequent entry/doc correction still needs its rendered follow-up.
+
+A fresh `du --bytes --max-depth=2` package snapshot records 23,977,499 apparent bytes,
+including 16,854,136 in retained build output.
+It excludes shared dependency symlink targets and is not a deployment-closure total.
+The cleanup dry run lists `.cache`, `dist` and `node_modules`;
+no cleanup has been performed from that listing.
+
+The supervisor incorrectly stops native diagnostic call `call_3295f42211d7470d867d0a18`
+after misreading JSON display escaping as actual source escapes.
+Parsing the captured Node source reports zero syntax errors.
+The supervisor retracts that claim in the new worker prompt and supplies a parsed,
+single-call local-path metadata probe.
+Native worker state reaches 110 tools and nine errors after that Stop;
+the next probe is pending.
+Its earlier diagnostic error is `ls: unrecognized option '--long'`,
+not a Node syntax failure.
+Source MiMo reaches 105 tools and continues delivering its outcome assertions;
+automatic review currently falls back on missing usable request evidence for some writes.
+Those supervisory Allows are not automatic-review success evidence.
+
 Remaining independently verified work areas:
 
-- Complete source and native lint repairs without weakening rules or changing worker inputs.
+- Complete the source fallback catalog,
+  its full mode/variant matrix and complete source lint without changing live worker inputs.
+- Complete native runtime typing and the remaining native lint backlog,
+  retaining behavior through original consumer boundaries.
 - Investigate cancellation diagnostics and verify Allow,
   Stop,
   cancellation,
