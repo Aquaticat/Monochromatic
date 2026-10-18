@@ -18,6 +18,10 @@ One release holds one file per platform and a checksum file:
 - `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz` (glibc)
 - `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz` (Alpine, musl)
 - `music-player-<version>-android.apk`
+- `music-player-<version>-desktop-third-party-licenses.txt` and
+  `music-player-<version>-android-third-party-licenses.txt`
+  (license notices;
+  see [License notices](#license-notices))
 - `SHA256SUMS`
 
 The tag is `music-player-v<version>`.
@@ -147,6 +151,54 @@ The same step prints the `subsystem` value of each file and fails unless it is 2
 because a console-subsystem file (3) opens a console window on a double-click;
 `objdump -p` prints the same field as `Subsystem`.
 
+Check the license notices of a dry run:
+
+- The `notices` job log lists,
+  for every desktop target,
+  how many third-party crates it links and that all are covered,
+  then the size of the file.
+- Every desktop job's step "Smoke test the binary (--version)" compares `--licenses` with that file byte for byte.
+- The Linux and Alpine archives must hold `THIRD-PARTY-LICENSES.txt` next to `LICENSE`
+  (`tar --list --file <archive>`),
+  and the disk image must hold it at its root and in `Music Player.app/Contents/Resources`.
+- The APK must hold `assets/THIRD-PARTY-LICENSES.txt`
+  (`unzip -l <apk> assets/THIRD-PARTY-LICENSES.txt`),
+  equal to `music-player-<version>-android-third-party-licenses.txt`.
+
+## License notices
+
+Every release carries the license notices of everything built into its programs
+(decision:
+`doc/decision/music-player-third-party-licenses.md`).
+The `notices` job writes the desktop file with `mise run //package/music-player/desktop-app:notices`;
+the Android job writes the APK's file with `mise run //package/music-player/android-app:notices`.
+Both run locally the same way,
+with network for `cargo fetch` and the repository's mise tools (`mise install cargo:cargo-about`).
+
+When one of them fails,
+nothing is released.
+Read the message:
+
+- cargo-about's `failed to satisfy license requirements` names a crate whose license is not on the allow-list of
+  `package/music-player/desktop-app/about.toml` or `package/music-player/android-app/rust/about.toml`.
+  Read the crate's license.
+  Add it to the `accepted` list only when it can be combined with the GPL version 3 (desktop) or the LGPL version 3
+  (Android),
+  and write the reason in the comment above the list and in the decision document;
+  otherwise replace or drop the dependency.
+- cargo-about naming `cfg_block` (or another crate with a `clarify` entry) means the crate's license file changed:
+  read the new file and update the license and the SHA-256 in that entry.
+- `links crates the notice does not cover` means `cargo tree` found a linked crate that cargo-about did not list;
+  compare the two for that target before changing anything.
+- `licenseeAndroidRelease` failing names an Android library whose license is not in the `licensee` block of
+  `package/music-player/android-app/app/build.gradle.kts`.
+  Only Apache-2.0 is allowed,
+  because the notices script carries only its text;
+  another license needs its text added to `desktop-app/bin/third-party-notices.mjs` as well.
+- A desktop build failing in `build.rs` with `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES is true`,
+  or the Android build failing in `thirdPartyLicensesAsset`,
+  means the notices file did not reach the build.
+
 ## When a job fails
 
 Before the release job started,
@@ -190,6 +242,8 @@ and the repository's cap is not spent on them.
 The Windows GNU job caches only the MSYS2 package downloads (about 70 MB,
  key `msys2-pkg-v1-...`),
 under the key that `.github/workflows/music-player-windows.yml` also uses.
+The `notices` job caches only the cargo registry downloads (key `music-player-notices-v1-...`),
+because cargo-about and `cargo tree` compile nothing.
 
 ```bash
 # List the entries with their sizes.
@@ -309,7 +363,10 @@ Each file carries build provenance that binds its bytes to this workflow run and
 
 ```bash
 # Verify one downloaded file; fails if the bytes were changed after the workflow built them.
-gh attestation verify music-player-<version>-linux-x64.tar.gz --repo Aquaticat/Monochromatic
+gh attestation verify music-player-<version>-linux-x64.tar.gz --repo Aquaticats/Monochromatic
+
+# Releases up to 0.1.4 were attested under the earlier owner name: use --owner Aquaticat for those
+# (checked on 2026-10-18: 0.1.4 verifies with --owner Aquaticat only, 0.1.5 with --repo Aquaticats/Monochromatic).
 
 # Compare the whole set with the checksum file (verify SHA256SUMS itself the same way).
 sha256sum --check --ignore-missing SHA256SUMS

@@ -32,11 +32,16 @@ use slint::ComponentHandle;
 use std::{cell::RefCell, rc::Rc};
 
 /// What:
-///  Scroll the view to `offset`, held to the scroll range, on the window thread's synchronous path:
-///  the tile for the new place is built before the next frame, as for a caret key or a revealed range.
+///  Scroll the view to `offset`,
+/// held to the scroll range,
+/// on the window thread's synchronous path:
+///  the tile for the new place is built before the next frame,
+/// as for a caret key or a revealed range.
 /// Why:
-///  A drag of the box over a long text moves the view by several view heights at a step; a tile built by the
-///  worker would be out of date when it arrived, and the text would stay blank while the pointer moved.
+///  A drag of the box over a long text moves the view by several view heights at a step;
+/// a tile built by the
+///  worker would be out of date when it arrived,
+/// and the text would stay blank while the pointer moved.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -60,12 +65,19 @@ fn scroll_to(window: &AppWindow, state: &Rc<RefCell<State>>, offset: f32) {
 }
 
 /// What:
-///  A press outside the viewport box: move the caret to the visual row under the pointer and the column under it
-///  (one column for each pixel), extend the selection from the old caret when Shift is held,
-///  and scroll that row to the middle of the view. The answer is the scroll offset it took.
+///  A press outside the viewport box:
+/// move the caret to the visual row under the pointer and the column under it
+///  (one column for each pixel),
+/// extend the selection from the old caret when Shift is held,
+///  and scroll that row to the middle of the view.
+/// The answer is the scroll offset it took.
 /// Why:
-///  CodeGlance Pro's defaults (`jumpOnMouseDown = MOUSE_DOWN`, `clickType = CODE_POSITION`, `moveOnly = false`):
-///  the caret goes to the clicked position, which is then centered, and a Shift press selects up to it.
+///  CodeGlance Pro's defaults (`jumpOnMouseDown = MOUSE_DOWN`,
+/// `clickType = CODE_POSITION`,
+/// `moveOnly = false`):
+///  the caret goes to the clicked position,
+/// which is then centered,
+/// and a Shift press selects up to it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -121,7 +133,10 @@ fn jump(window: &AppWindow, state: &Rc<RefCell<State>>, y: f32, x: f32, shift: b
     return offset;
 }
 
-/// Bind the minimap's pointer, drag, step, and size callbacks.
+/// Bind the minimap's pointer,
+/// drag,
+/// step,
+/// and size callbacks.
 pub(in crate::native) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) {
     let press_state = Rc::clone(shared);
     let press_window = window.as_weak();

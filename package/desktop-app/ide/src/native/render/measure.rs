@@ -16,10 +16,14 @@ use crate::native::{
 use ide_app::wrap::has_wrap_width;
 
 /// What:
-///  What measuring the requested tile found: the tile that holds only lines whose heights the map has, the offset the
-///  view moved to while the heights settled, and whether the measurement finished.
+///  What measuring the requested tile found:
+/// the tile that holds only lines whose heights the map has,
+/// the offset the
+///  view moved to while the heights settled,
+/// and whether the measurement finished.
 /// Why:
-///  A measurement that spends an allowance can stop short, and the caller then leaves the tile to the worker.
+///  A measurement that spends an allowance can stop short,
+/// and the caller then leaves the tile to the worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -28,7 +32,8 @@ use ide_app::wrap::has_wrap_width;
 pub(super) struct Measure {
     /// The tile asked for after the last round.
     pub(super) bounds: TileBounds,
-    /// The offset the window must take, when the heights above the view changed.
+    /// The offset the window must take,
+    /// when the heights above the view changed.
     pub(super) scrolled: Option<f32>,
     /// False when the allowance ran out before the tile's lines were all measured.
     pub(super) complete: bool,
@@ -37,13 +42,17 @@ pub(super) struct Measure {
 /// What:
 ///  Measure the lines of `requested` on the window thread and keep the view still across what that teaches,
 ///  until the tile asked for holds only lines whose heights the map already has.
-///  `offset` is the view's offset, changed when the heights above it changed;
+///  `offset` is the view's offset,
+/// changed when the heights above it changed;
 ///  the answer is the final offset and the final tile.
-///  With an `allowance` every line is charged before it is shaped, broken again, or packed,
+///  With an `allowance` every line is charged before it is shaped,
+/// broken again,
+/// or packed,
 ///  and the measurement stops at the first that does not fit.
 /// Why:
 ///  A tile built here must agree with the map it is placed by.
-///  The lines are shaped once on the way and kept in the shaper's cache, so the build that follows only copies them.
+///  The lines are shaped once on the way and kept in the shaper's cache,
+/// so the build that follows only copies them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

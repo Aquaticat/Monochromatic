@@ -227,3 +227,10 @@ mutants.out.old/
 # stray build artifacts hidden by the blanket `*.js` and `metadata.json` ignores.
 !/packages/kwin/key-helper/kwin-script/contents/code/main.js
 !/packages/kwin/key-helper/kwin-script/metadata.json
+
+# The music player design pages load these Design Component runtime files; they are tracked source, not build
+# output, so a clean clone renders every .dc.html page.
+!/package/music-player/design/support.js
+!/package/music-player/design/candidates/support.js
+!/package/music-player/design/candidates/artists.js
+!/package/music-player/design/candidates/buckets.js

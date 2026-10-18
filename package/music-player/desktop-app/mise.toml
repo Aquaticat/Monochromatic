@@ -91,10 +91,12 @@ const containerCargo = (cargoArgs, containerOptions = {}) => {
   // /work, so each is mounted read-only where the same relative path from /work finds it: ../truepeak-core is the
   // Cargo path dependency, and ../android-app/app/src/test/resources holds the theme-roles-vector.txt fixture that
   // src/theme_roles_fixture_tests.rs compares with the Rust derivation. A missing source fails here by name, never
-  // as a skipped test or a bare podman statfs error.
+  // as a skipped test or a bare podman statfs error. The repository's root clippy.toml (the fleet-wide ban on
+  // Result::unwrap) is mounted at /clippy.toml: clippy searches the ancestors of /work, so the container lint runs
+  // with the same rules as the host lint (issue 1756).
   const { resolve } = process.getBuiltinModule('node:path')
   const { existsSync } = process.getBuiltinModule('node:fs')
-  const siblingMounts = [['../truepeak-core', '/truepeak-core'], ['../android-app/app/src/test/resources', '/android-app/app/src/test/resources']]
+  const siblingMounts = [['../truepeak-core', '/truepeak-core'], ['../android-app/app/src/test/resources', '/android-app/app/src/test/resources'], ['../../../clippy.toml', '/clippy.toml']]
   const siblingMountArgs = siblingMounts.flatMap(([relative, inside]) => {
     const host = resolve(process.cwd(), relative)
     if (!existsSync(host)) { throw new Error(`containerCargo needs ${host} (mounted read-only at ${inside}) but it does not exist; run the task from the checked-out package/music-player/desktop-app directory of a full checkout`) }
@@ -194,6 +196,16 @@ run = """
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
 runCargo(['nextest', 'run'])
 """
+
+[tasks.notices]
+description = "Write target/THIRD-PARTY-LICENSES.txt: the license notices of every desktop release binary, checked with cargo-about against about.toml"
+# Runs on the HOST with the repository's cargo-about (mise.lock) and network for `cargo fetch`; no audio or font
+# libraries are needed, because cargo-about and `cargo tree` read metadata and sources without compiling.
+# The alsa-fallback feature is on so the Alpine builds' extra crates (cpal, alsa) are covered too.
+# A build embeds the file only when MUSIC_PLAYER_THIRD_PARTY_LICENSES names it (build.rs, src/licenses.rs):
+#   MUSIC_PLAYER_THIRD_PARTY_LICENSES="$PWD/target/THIRD-PARTY-LICENSES.txt" cargo build --release
+# Decision and allow-list: ../../../doc/decision/music-player-third-party-licenses.md.
+run = "node bin/third-party-notices.mjs --product desktop --features alsa-fallback --output target/THIRD-PARTY-LICENSES.txt"
 
 [tasks."image:windows-gnu"]
 description = "Build the Fedora cross-compile + Wine image for x86_64-pc-windows-gnu (Linux only)"

@@ -68,7 +68,8 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 Drag the divider between the tree and the source to resize the tree.
 The width starts at 256 px,
-stays between 160 px and the window width minus the divider's 1 px line and a 288 px source column (the 240 px it had, plus the 48 px the minimap takes at that size),
+stays between 160 px and the window width minus the divider's 1 px line and a 288 px source column (the 240 px it had,
+plus the 48 px the minimap takes at that size),
 and lasts for the session only.
 A window too narrow for the chosen width shows the tree narrower,
 down to 160 px,
@@ -157,9 +158,11 @@ read from their sources on 2026-10-05:
 - Qt gives a splitter handle narrower than 4 px a grab area of 4 or 5 px:
   `QSplitterHandle::resizeEvent` adds `(5 - handleWidth) / 2` px of margin on each side,
   5 px for a 1 px handle
-  (`qt/qtbase` at `f127f11f`, `src/widgets/widgets/qsplitter.cpp` lines 208 to 221).
+  (`qt/qtbase` at `f127f11f`,
+  `src/widgets/widgets/qsplitter.cpp` lines 208 to 221).
   KDE's Breeze style sets the handle width to 1 px
-  (`KDE/breeze` at `fab6402a`, `kstyle/breezemetrics.h` line 169),
+  (`KDE/breeze` at `fab6402a`,
+  `kstyle/breezemetrics.h` line 169),
   so Breeze applications show a 1 px line with that 5 px grab area.
   Once the pointer is on a handle,
   Breeze also places a 24 px square proxy under it that keeps the drag reachable
@@ -172,9 +175,11 @@ read from their sources on 2026-10-05:
   `workbench.sash.size` default 4 in `src/vs/workbench/contrib/sash/browser/sash.contribution.ts` lines 22 to 26,
   `src/vs/base/browser/ui/sash/sash.ts` lines 147 and 667).
 - GTK 4 extends a paned separator's pointer area by 6 px on every side unless `wide-handle` is set
-  (`GNOME/gtk` at `c2a232c4`, `gtk/gtkpaned.c` lines 131 and 297 to 310),
+  (`GNOME/gtk` at `c2a232c4`,
+  `gtk/gtkpaned.c` lines 131 and 297 to 310),
   and libadwaita draws the separator 1 px wide
-  (`GNOME/libadwaita` at `19098711`, `src/stylesheet/widgets/_paned.scss` lines 2 to 4),
+  (`GNOME/libadwaita` at `19098711`,
+  `src/stylesheet/widgets/_paned.scss` lines 2 to 4),
   which makes 13 px.
 
 Qt's 5 px for a 1 px handle is used.
@@ -215,15 +220,23 @@ The divider's accessible slider is tested under [Accessibility checks](#accessib
 
 ## Entries that git ignores
 
-The tree lists every entry of a folder, hidden names and ignored ones included, as `Workspace::list` reads them.
+The tree lists every entry of a folder,
+hidden names and ignored ones included,
+as `Workspace::list` reads them.
 Before this change an ignored entry looked like any other
 (measured on 2026-10-14 with the release bundle on a disposable repository:
-`app.log`, `build`, `old.bak`, `private.txt`, and a nested `scratch.tmp` were all drawn in the full ink).
+`app.log`,
+`build`,
+`old.bak`,
+`private.txt`,
+and a nested `scratch.tmp` were all drawn in the full ink).
 The name of an entry that git would ignore is now drawn at 0.8 opacity of its ink,
 in both color schemes.
 The user asked for the text only:
 the disclosure arrow and the slot badge keep the full ink,
-and the row's layout, weight, and size do not change.
+and the row's layout,
+weight,
+and size do not change.
 IntelliJ colors the name text of such an entry and leaves its icon alone
 (`NodeRenderer.customizeLegacyRenderer` in `platform/platform-api/src/com/intellij/ide/util/treeView/NodeRenderer.java`
 takes the descriptor's color for the text attributes and the presentation's icon unchanged),
@@ -233,21 +246,27 @@ A second signal does not depend on color or opacity:
 the row's accessible label is the name followed by `, ignored by git`,
 so a screen reader says it,
 and the accessibility tree the nested compositor serves (`a11y`) lists `app.log, ignored by git`.
-The row's description is unchanged (`Directory`, or `Source file` with the shortcut of its slot badge).
+The row's description is unchanged (`Directory`,
+or `Source file` with the shortcut of its slot badge).
 
 ### How an entry is judged
 
-The `ignore` crate (ripgrep's, 0.4.33, used for its `gitignore` module only) compiles each rule file;
+The `ignore` crate (ripgrep's,
+0.4.33,
+used for its `gitignore` module only) compiles each rule file;
 `src/git_ignore.rs` applies them in git's order.
 No git process runs and git's index is not read.
-For a listed directory the reader thread (`DirectoryWorker`) decides, beside the read,
+For a listed directory the reader thread (`DirectoryWorker`) decides,
+beside the read,
 which entries are ignored and sends the names with the listing,
 so the tree installs the answer with the listing it describes
 and a superseded reply is dropped with its answer by the same single-use request.
 The window thread only compares and draws rows.
 
-- The work tree is the nearest folder at or above the listed one that holds `.git`, a folder or a file.
-  Outside any work tree nothing is dimmed, and the reason is logged once at info level.
+- The work tree is the nearest folder at or above the listed one that holds `.git`,
+  a folder or a file.
+  Outside any work tree nothing is dimmed,
+  and the reason is logged once at info level.
   A `.git` file (linked work tree or submodule) names its git directory with a `gitdir:` line,
   and a `commondir` file there names the directory that holds `info/exclude`.
 - `.gitignore` files apply from the top of the work tree down to the listed folder,
@@ -265,13 +284,20 @@ The window thread only compares and draws rows.
   A directory pattern (`build/`) does not match a file or a symbolic link of that name.
   The directory row dims too.
 - `.ignore` and `.rgignore` are not read:
-  they are ripgrep's rules, and the tree follows git.
+  they are ripgrep's rules,
+  and the tree follows git.
 
-Compiled rule files are kept until their stamp (inode, length, modification time) changes,
+Compiled rule files are kept until their stamp (inode,
+length,
+modification time) changes,
 and each listing stats the rule files that apply to it:
-one `.gitignore` per level from the top of the work tree down, `info/exclude`, and the global file.
+one `.gitignore` per level from the top of the work tree down,
+`info/exclude`,
+and the global file.
 Matching costs about 3 microseconds per entry for four levels of twelve patterns
-(debug build, `test:ignored`: 60 ms for a directory at the 20,000 entry limit).
+(debug build,
+`test:ignored`:
+60 ms for a directory at the 20,000 entry limit).
 A directory with more entries than that shows nothing dimmed and the reason is logged,
 so one huge folder cannot hold the single reader.
 
@@ -293,40 +319,58 @@ and the global file are not watched:
 the one-second safety sweep of [Change watching](#recovery-and-timers) finds them.
 Measured on 2026-10-14 with the release bundle in the nested compositor,
 from the write of a rule file to the label in the accessibility tree
-(each polled every 20 ms, so about 45 ms of every figure is the tree read itself; six edits each way per source):
+(each polled every 20 ms,
+so about 45 ms of every figure is the tree read itself;
+six edits each way per source):
 a `.gitignore` of a shown folder took 49 to 120 ms,
 `.git/info/exclude` 48 to 973 ms,
 and the global excludes file 53 to 945 ms,
 the last two being the safety sweep's phase.
 A `.gitignore` edit that changed a row of an open folder inside it took 20 ms more to show in the same pass.
 Twelve expanded folders in a work tree cost the idle IDE 0.05 to 0.06 s of CPU in 30 s,
-against 0.06 to 0.08 s for the build before this change (three runs each; the clock ticks at 0.01 s).
+against 0.06 to 0.08 s for the build before this change (three runs each;
+the clock ticks at 0.01 s).
 
 ### Limits
 
-- Git's index is not read, so a tracked file that matches a pattern is dimmed,
+- Git's index is not read,
+  so a tracked file that matches a pattern is dimmed,
   where `git check-ignore` reports it as not ignored.
-  This is deliberate: telling tracked files needs the index or a git process,
+  This is deliberate:
+  telling tracked files needs the index or a git process,
   and the user chose the `ignore` crate.
   `a_file_that_matches_a_pattern_is_ignored_whether_or_not_git_tracks_it` pins the behavior.
 - Only the rule sources named above are read.
   Case-insensitive matching (`core.ignorecase`),
   `core.excludesFile` set only in a repository's own configuration,
   and `include` and `includeIf` sections of the configuration are not followed;
-  with `GIT_CONFIG_GLOBAL` set, the crate still falls back to the home configuration
+  with `GIT_CONFIG_GLOBAL` set,
+  the crate still falls back to the home configuration
   when the named file sets no excludes file,
   where git would not.
-- A symbolic link to a directory is a file for directory patterns, as in git.
+- A symbolic link to a directory is a file for directory patterns,
+  as in git.
 - Rules are judged from the files as they are on disk:
   an unreadable `.gitignore` counts as empty,
   and invalid lines are skipped with a warning in the log.
 
 ### Checks
 
-`test:ignored` runs the matcher tests (patterns, negation, anchoring, nested files, ignored directories,
-`info/exclude`, the global file, linked work trees, the top of the work tree, nested repositories,
-the entry limit, and the tracked file),
-the tree tests (marks per directory, the stale-answer drop, the reread flag),
+`test:ignored` runs the matcher tests (patterns,
+negation,
+anchoring,
+nested files,
+ignored directories,
+`info/exclude`,
+the global file,
+linked work trees,
+the top of the work tree,
+nested repositories,
+the entry limit,
+and the tracked file),
+the tree tests (marks per directory,
+the stale-answer drop,
+the reread flag),
 the reader tests,
 and the rule-file notification test,
 and prints the matching time.
@@ -337,20 +381,26 @@ and rewrites a `.gitignore` under a running window.
 
 Contrast of the name's strongest glyph pixel against its row fill,
 measured on rendered frames in `ignored_names_are_drawn_at_eighty_percent_with_measured_contrast`
-(plain name, then the same name ignored):
+(plain name,
+then the same name ignored):
 
-- Dark scheme: 17.04:1 to 11.16:1;
+- Dark scheme:
+  17.04:1 to 11.16:1;
   with the pointer over the ignored row 17.04:1 to 9.38:1 (the fill becomes `#2D2D2D`);
   with keyboard focus on it the same 9.38:1.
-- Light scheme: 17.01:1 to 9.19:1;
+- Light scheme:
+  17.01:1 to 9.19:1;
   with the pointer over the ignored row 17.01:1 to 8.46:1;
   with keyboard focus the same 8.46:1.
-- Selected row, both schemes: white on `#0078D4` 4.53:1 to 3.45:1;
+- Selected row,
+  both schemes:
+  white on `#0078D4` 4.53:1 to 3.45:1;
   under the pointer or keyboard focus (fill `#006EC3`) 4.53:1 to 3.92:1.
   The ignored selected name stays above the 3:1 floor of the selected-ink rule
   and falls below the 4.5:1 of WCAG 2 for normal text,
   which a plain selected row reaches at 4.53:1.
-  The user asked for 0.8 opacity, so it is kept on selected rows too;
+  The user asked for 0.8 opacity,
+  so it is kept on selected rows too;
   the row's label still says `ignored by git`.
 
 ## Combined search
@@ -893,7 +943,8 @@ The launcher is looked up for the displayed file,
 from the file's folder up to the project root,
 and the nearest `node_modules/typescript` decides,
 as Node and TypeScript resolve a package;
-a pnpm monorepo opened at its root, or a home folder opened as the project,
+a pnpm monorepo opened at its root,
+or a home folder opened as the project,
 therefore uses the install at the repository root.
 An install older than version 7 is reported as such and never skipped for a farther one.
 An install above the project root is never used,
@@ -943,10 +994,13 @@ nothing falls back to an unconfined launch.
 one child process per session.
 Its request timeout is the product default of 20 seconds (`PRODUCT_TIMEOUT` in `tests/language/support.rs`)
 wherever an assertion does not depend on it.
-`IDE_SCRIPTED_HINT_STEPS` and `IDE_SCRIPTED_PULL_STEPS` script, request by request,
-which inlay-hint or pull-diagnostics request is answered, left unanswered (`silent`),
+`IDE_SCRIPTED_HINT_STEPS` and `IDE_SCRIPTED_PULL_STEPS` script,
+request by request,
+which inlay-hint or pull-diagnostics request is answered,
+left unanswered (`silent`),
 held back until the next answer (`hold`),
-or superseded (`modified`, `modified-notify`),
+or superseded (`modified`,
+`modified-notify`),
 so `tests/language/again.rs` and `tests/language/windows.rs` do not depend on how busy the machine is.
 `IDE_SCRIPTED_INIT_GATE` names a file the server waits for before it answers `initialize`,
 so a test can act while the server is still starting.
@@ -955,9 +1009,14 @@ and every message the server writes adds a `sent` line.
 Each session keeps its project and report in `/dev/shm` when that exists:
 the scripted server writes its report before it answers,
 and on a disk the rest of the machine keeps busy one write blocked it for up to 10 seconds.
-The file-opening, reload, directory, and search worker tests take their fixtures from `tests/memory_fixture`,
-and the native external-reload tests from `memory_project` in `src/native/find_tests.rs`, both in `/dev/shm` when it exists:
-on btrfs, reading a fresh file or creating and removing files waits for filesystem transactions,
+The file-opening,
+reload,
+directory,
+and search worker tests take their fixtures from `tests/memory_fixture`,
+and the native external-reload tests from `memory_project` in `src/native/find_tests.rs`,
+both in `/dev/shm` when it exists:
+on btrfs,
+reading a fresh file or creating and removing files waits for filesystem transactions,
 which took longer than these tests wait while the machine flushed.
 The native external-reload tests also wait for the displayed file's watch before they change it,
 and change it as an atomic save does (`replace_file`),
@@ -992,22 +1051,28 @@ on shutdown error text such as `context canceled` at WARN or ERROR or outside a 
 when the healthy-server records `helix-lsp` writes are missing or not below WARN,
 and on any leftover process.
 Its second part ends the application process with `SIGKILL`
-and records which server and sandbox processes remain after 0, 1, 5, and 10 seconds.
+and records which server and sandbox processes remain after 0,
+1,
+5,
+and 10 seconds.
 The servers still print what they printed before:
 the TypeScript 7 server reports its own exit as `context canceled`
 (`doc/troubleshooting/typescript-7-lsp-exit-context-canceled.md`),
 and rust-analyzer warns about a user configuration file that does not exist
 (`doc/troubleshooting/rust-analyzer-notify-missing-user-config.md`).
-The application re-labels those lines, as described in "Log",
+The application re-labels those lines,
+as described in "Log",
 instead of letting `helix-lsp` log them at ERROR
 (`doc/troubleshooting/helix-lsp-transport-error-level-records.md`).
 `tests/language/quiet.rs` is the scripted-server form in the container suite:
 `quiet::clean_lifetime_logs_no_error_level_record` makes the scripted server produce all three re-labelled shapes
-(`IDE_SCRIPTED_STDERR` writes one line to standard error at `shutdown`, `IDE_SCRIPTED_HOVER=modified-once`)
+(`IDE_SCRIPTED_STDERR` writes one line to standard error at `shutdown`,
+`IDE_SCRIPTED_HOVER=modified-once`)
 and requires no ERROR record and each shape at its new level;
 `quiet::unknown_helix_error_records_keep_their_level` requires a refused `initialize` to log two ERROR records.
 `inspect:language-lifecycle-guards` observes both in a disposable copy,
-with each re-labelling removed, with the re-labelling widened to every transport error,
+with each re-labelling removed,
+with the re-labelling widened to every transport error,
 with a full log queue that waits for room,
 and with the worker's shutdown request,
 its wait for servers to end,
@@ -1016,8 +1081,10 @@ or its reaping removed.
 When its handle is dropped,
 the worker sends `shutdown` and `exit` to every server,
 waits up to one second for the processes to end,
-and drops its runtime, which kills every server that is left.
-It then waits, for at most two more seconds,
+and drops its runtime,
+which kills every server that is left.
+It then waits,
+for at most two more seconds,
 until the kernel lists no child process of the worker thread (`src/language/reap.rs`),
 so an ended server is not left in the process table as a zombie.
 `lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns` covers a server
@@ -1039,7 +1106,9 @@ The desktop launcher's `PATH` is a snapshot of the login session:
 it holds the mise shims directory but not the tool directories of a repository,
 and a shim run inside the sandbox stops with "No version is set for shim".
 Nothing of any repository is named in the code:
-no path, no tool list, no server name.
+no path,
+no tool list,
+no server name.
 `src/language/mise.rs` has the decision,
 `src/language/mise/command.rs` the sandboxed run,
 `src/language/mise/parse.rs` what mise prints,
@@ -1056,10 +1125,14 @@ so a name that starts with a dash cannot become an option):
 
 - `mise config ls --json` from the project folder and again from `/`.
   The files the first lists and the second does not are the project's own configuration,
-  whatever their names or layout (`mise.toml`, `.mise/config.toml`, `.tool-versions`, a parent's file);
+  whatever their names or layout (`mise.toml`,
+  `.mise/config.toml`,
+  `.tool-versions`,
+  a parent's file);
   the user's global configuration appears in both and says nothing about this folder.
   No file name is built into the code.
-- `mise bin-paths`, only when the project has a configuration of its own.
+- `mise bin-paths`,
+  only when the project has a configuration of its own.
   It prints the directories of the tools the configuration lists,
   one per line.
   Only absolute entries that are existing directories are kept.
@@ -1078,7 +1151,8 @@ so a hung mise never blocks the window.
 
 `mise exec -- SERVER` as the launched command would give every server the project's whole `[env]`.
 `mise env --json` in this repository prints 42 variables,
-26 of them with a name that contains `KEY` or `TOKEN` (names only were read, never values):
+26 of them with a name that contains `KEY` or `TOKEN` (names only were read,
+never values):
 decrypted secrets.
 That bypasses the cleared environment and allowlist of `src/language/confine/recipe.rs`.
 So mise is used only to say where the tools are,
@@ -1088,44 +1162,77 @@ and the servers start from those directories with the same environment as before
 
 A trusted configuration's `[env]` templates run shell commands on every mise command,
 including `mise config ls`
-(probe: a template that touches a marker file ran for `config ls`, `bin-paths`, `which`, `env` and `exec`;
+(probe:
+a template that touches a marker file ran for `config ls`,
+`bin-paths`,
+`which`,
+`env` and `exec`;
 a `[hooks]` entry did not run for any of them).
 Run on the bare host,
 that is project code with network access and write access.
 So mise runs through `confine_with`,
 the function every server goes through:
-bubblewrap, no network, the whole file system and the project read-only,
+bubblewrap,
+no network,
+the whole file system and the project read-only,
 a cleared environment plus the allowlist,
 a private `/tmp`,
 and the mise state kept read-only (mise's attempt to link the configuration into its state directory fails;
 that line is dropped from messages).
 This is a deviation from "resolve outside the sandbox" and was measured:
 
-- `mise bin-paths` in a two-tool project: 235 ms plain (standard deviation 43), 319 ms sandboxed (41), 15 runs each.
-- The same in this repository: 413 ms plain (80), 387 ms sandboxed (152); inside the spread.
-- `mise config ls --json`: 24 ms plain, `mise which taplo`: 35 ms plain, `mise exec -- true`: 114 ms plain.
-- Production runs on a loaded host (load average about 60): 179 to 639 ms for all three commands together
-  over four `inspect:language-mise` runs, and 415 ms in a headless window run.
+- `mise bin-paths` in a two-tool project:
+  235 ms plain (standard deviation 43),
+  319 ms sandboxed (41),
+  15 runs each.
+- The same in this repository:
+  413 ms plain (80),
+  387 ms sandboxed (152);
+  inside the spread.
+- `mise config ls --json`:
+  24 ms plain,
+  `mise which taplo`:
+  35 ms plain,
+  `mise exec -- true`:
+  114 ms plain.
+- Production runs on a loaded host (load average about 60):
+  179 to 639 ms for all three commands together
+  over four `inspect:language-mise` runs,
+  and 415 ms in a headless window run.
 
 Variables set for every mise run (`SAFE_ENVIRONMENT` in `command.rs`;
-an environment variable beats a project's `[settings]`, measured with `mise settings get`):
-`MISE_AUTO_INSTALL`, `MISE_EXEC_AUTO_INSTALL`, `MISE_NOT_FOUND_AUTO_INSTALL`, `MISE_TASK_RUN_AUTO_INSTALL`,
+an environment variable beats a project's `[settings]`,
+measured with `mise settings get`):
+`MISE_AUTO_INSTALL`,
+`MISE_EXEC_AUTO_INSTALL`,
+`MISE_NOT_FOUND_AUTO_INSTALL`,
+`MISE_TASK_RUN_AUTO_INSTALL`,
 `MISE_LOCKFILE` and `MISE_YES` are `false`,
 `MISE_OFFLINE` is `true`,
 and colors and the update notice are off.
-Control: in a disposable data directory,
+Control:
+in a disposable data directory,
 `mise exec -- true` with auto install on exits 1 while trying to fetch versions,
 and with it off exits 0.
-Variables that only name places (`MISE_DATA_DIR`, `MISE_CONFIG_DIR`, `MISE_STATE_DIR`, `MISE_GLOBAL_CONFIG_FILE`,
-`MISE_ENV`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_STATE_HOME` and a few others) are passed on when set;
+Variables that only name places (`MISE_DATA_DIR`,
+`MISE_CONFIG_DIR`,
+`MISE_STATE_DIR`,
+`MISE_GLOBAL_CONFIG_FILE`,
+`MISE_ENV`,
+`XDG_CONFIG_HOME`,
+`XDG_DATA_HOME`,
+`XDG_STATE_HOME` and a few others) are passed on when set;
 every other variable of the application is cleared.
-The application never runs `mise trust`, `mise install` or `mise exec`.
+The application never runs `mise trust`,
+`mise install` or `mise exec`.
 
 #### Trust
 
 Mise's own rule decides.
 A configuration with only `[tools]` needs no trust (measured);
-one with `[env]`, `[settings]`, hooks or templates is refused until the user runs `mise trust` on it.
+one with `[env]`,
+`[settings]`,
+hooks or templates is refused until the user runs `mise trust` on it.
 The state is read from mise's state directory,
 which the sandbox can read.
 When mise refuses or fails,
@@ -1145,28 +1252,43 @@ the servers are refused for that reason anyway.
 
 #### What the servers get
 
-Mise's directories lead the lookup, then the application's `PATH`;
+Mise's directories lead the lookup,
+then the application's `PATH`;
 the first executable regular file that is not a mise shim wins.
 A shim is a symbolic link whose final target is named `mise`.
-The `PATH` inside the sandbox is the same list (mise's directories, then the definition's or the application's `PATH`),
+The `PATH` inside the sandbox is the same list (mise's directories,
+then the definition's or the application's `PATH`),
 so a Node launcher's `#!/usr/bin/env node` finds the project's `node`.
 Directories whose name holds a colon cannot stand in a `PATH` and are left out with a warning.
-A tool directory below `/tmp`, `/run` or `/dev` is bound again read-only after the sandbox replaced those locations,
+A tool directory below `/tmp`,
+`/run` or `/dev` is bound again read-only after the sandbox replaced those locations,
 before the state bind,
-and never writable (`read_only_binds` in `LaunchRequest`, `src/language/confine/project.rs`).
+and never writable (`read_only_binds` in `LaunchRequest`,
+`src/language/confine/project.rs`).
 A tool that the configuration lists but that is not installed is reported with mise's own warning
 (`mise WARN missing: taplo@0.9.0`) in the reason of the server that is missing.
-Variables a tool would add to its environment (`GOROOT`, `JAVA_HOME`) are not passed.
+Variables a tool would add to its environment (`GOROOT`,
+`JAVA_HOME`) are not passed.
 
 #### Checks
 
 `test:language` holds the unit rules:
-listings, directories with spaces, quotes, newlines and leading dashes, messages with escape sequences,
-the sandbox request for mise (every safety variable, read-only mounts, the project never an argument),
-the time limit, the lookup order, the shim refusal, the retry rule and the notice text.
+listings,
+directories with spaces,
+quotes,
+newlines and leading dashes,
+messages with escape sequences,
+the sandbox request for mise (every safety variable,
+read-only mounts,
+the project never an argument),
+the time limit,
+the lookup order,
+the shim refusal,
+the retry rule and the notice text.
 `inspect:language-mise` runs the production setup on disposable projects with the launcher's `PATH`:
 a Node server (`bash-language-server`) answers a hover,
-a binary server (`taplo`) and the Markdown server (`marksman`, which also answers a hover on a wiki link) start,
+a binary server (`taplo`) and the Markdown server (`marksman`,
+which also answers a hover on a wiki link) start,
 an untrusted configuration gives the notice,
 a folder without mise keeps "was not found on PATH" for a server nobody installed,
 a fake `mise` that never answers is stopped at 10 seconds,
@@ -1175,10 +1297,13 @@ and every project tree is the same before and after (a control proves the compar
 The Markdown server roots its workspace at a folder with `.marksman.toml` or `.git`;
 without one it answers no hover.
 
-Details of the probes, the failure causes and the tradeoffs are in
+Details of the probes,
+the failure causes and the tradeoffs are in
 `doc/troubleshooting/mise-servers-for-the-confined-ide.md`.
 Mise run outside the sandbox with `MISE_TRUSTED_CONFIG_PATHS` left trust records in
-`~/.local/state/mise/trusted-configs`; the sandboxed run cannot write there, so the application never trusts anything.
+`~/.local/state/mise/trusted-configs`;
+the sandboxed run cannot write there,
+so the application never trusts anything.
 
 ## Language navigation
 
@@ -1306,7 +1431,9 @@ Each note names the reason and the remedy:
   by the advice to press the key again when it finishes;
 - a server that was not started because it could not be confined:
   `typescript-native was not started, so go to definition is not available for this file:`
-  followed by the cause and, last, the remedy the launch policy names;
+  followed by the cause and,
+  last,
+  the remedy the launch policy names;
 - a server that cannot follow external changes,
   a failed start,
   a server root outside the project,
@@ -1328,27 +1455,38 @@ so the remedy "press Ctrl+B again" works without switching files.
 
 ### Why a feature is missing
 
-Before 2026-10-14 a file whose server was missing, failing, or without hover or inlay hints looked like a file
+Before 2026-10-14 a file whose server was missing,
+failing,
+or without hover or inlay hints looked like a file
 where the features were broken:
 a resting pointer logged every failure and nothing on screen mentioned hints at all.
 Measured with the installed build on a disposable copy of the repository,
-opening the TypeScript package folder, or a folder above the repository, as the project showed no hint
+opening the TypeScript package folder,
+or a folder above the repository,
+as the project showed no hint
 and no hover for `index.unit.test.ts`,
-and left no `language` folder in the cache, the same as the user's real `~/.cache/monochromatic-ide`,
+and left no `language` folder in the cache,
+the same as the user's real `~/.cache/monochromatic-ide`,
 while opening the repository root showed both.
 The reasons are now on screen in two places.
 
 The entry:
 the Language module adds one `Information` entry named `language support` to the displayed file's diagnostics
-(`src/language/notice.rs`, joined to the snapshot in `Worker::publish`),
+(`src/language/notice.rs`,
+joined to the snapshot in `Worker::publish`),
 so the source view draws it as message rows over line 1 with the gutter letter `I`,
 for example `Information (language support): Hover, inlay hints, and go to definition are not available for this file.`
-Its range is empty at the first character, so no text is underlined.
+Its range is empty at the first character,
+so no text is underlined.
 It is made from the status the window already polls and says what is lost,
-the server, the cause, and the remedy:
+the server,
+the cause,
+and the remedy:
 
 - no server runs and none is starting:
-  that hover, inlay hints, and go to definition are not available,
+  that hover,
+  inlay hints,
+  and go to definition are not available,
   then one line for each server naming its state:
   a program not found (`the program 'taplo' for taplo was not found on PATH`),
   the TypeScript install that was not found and where it was looked for,
@@ -1357,7 +1495,8 @@ the server, the cause, and the remedy:
   a server that stopped,
   one that cannot follow the file,
   or one that would be rooted outside the project;
-  and, when displaying the file again can help,
+  and,
+  when displaying the file again can help,
   that servers are looked up again when a file is displayed;
 - a server runs but offers no hover or no inlay hints:
   `Inlay hints are not offered by slint-lsp, so none are shown.`
@@ -1375,19 +1514,27 @@ The entry stands on line 1 and leaves the view with it when the file is scrolled
 
 The resting pointer:
 the first rest on a displayed file whose answer is about the support itself,
-a failed request, a server that cannot follow the file, a feature the server does not offer,
+a failed request,
+a server that cannot follow the file,
+a feature the server does not offer,
 or no running server for a file that has servers configured,
-shows the same note Ctrl+Q shows, drawn as a note and ended like hover content.
+shows the same note Ctrl+Q shows,
+drawn as a note and ended like hover content.
 Each displayed file gets it once.
-An empty answer, a request the server set aside, and a server that is still starting stay silent,
+An empty answer,
+a request the server set aside,
+and a server that is still starting stay silent,
 because they describe one position or one moment.
-Decided on 2026-10-14: the entry is the permanent surface and the pointer note is the pointer's answer,
+Decided on 2026-10-14:
+the entry is the permanent surface and the pointer note is the pointer's answer,
 so a user who scrolled away from line 1 still learns why.
 
 A failed start states what the server wrote:
 `the server process ended before it finished starting` was all the window said,
 and the cause was in the log.
-The last four standard-error lines, each cut to 200 bytes, now follow the reason on lines of their own,
+The last four standard-error lines,
+each cut to 200 bytes,
+now follow the reason on lines of their own,
 once the server's standard error ended or the settle time of the log record passed (`Internal::EndCause`);
 the start deadline carries the lines directly.
 The log record of the ended server is unchanged because the hand-over reads a copy of the kept lines.
@@ -1399,24 +1546,39 @@ Causes outside the IDE that the entry now names:
 a language server that is not installed,
 a project without TypeScript 7 in the project folder or below it,
 and a server version that does not announce the feature.
-Installing the server or the project's dependencies, then displaying the file again, ends the first two;
+Installing the server or the project's dependencies,
+then displaying the file again,
+ends the first two;
 the third is the server's own capability.
 
 Checks:
 `src/language/notice_tests.rs` holds the wording of every state without a server,
 `tests/language/notice.rs` the entry through the worker and the scripted server
-(`IDE_SCRIPTED_FEATURES=hover` for a server without hints, the hint step `error`, `IDE_SCRIPTED_HOVER=silent`),
+(`IDE_SCRIPTED_FEATURES=hover` for a server without hints,
+the hint step `error`,
+`IDE_SCRIPTED_HOVER=silent`),
 `tests/language/quiet.rs` the cause of a failed start,
 `src/language/config_tests.rs` the TypeScript lookup,
 and `native::language::hover_tests::resting_pointer_explains_a_missing_server_once_for_each_file` the pointer.
-`inspect:language-guards` removes the lookup from the file's folder, the nearest-install rule,
-the rebuild when the launcher moves, the publishing of the entry, its wait for a starting server,
-the kept hint failure, the copy of the lines for a failed start, and their arrival in the reason
-(`typescript-document-folder`, `typescript-nearest-install`, `typescript-launcher-moved`,
-`notice-published`, `notice-waits-for-start`, `hint-failure-kept`,
-`cause-hand-over-copies`, `cause-reaches-reason`),
+`inspect:language-guards` removes the lookup from the file's folder,
+the nearest-install rule,
+the rebuild when the launcher moves,
+the publishing of the entry,
+its wait for a starting server,
+the kept hint failure,
+the copy of the lines for a failed start,
+and their arrival in the reason
+(`typescript-document-folder`,
+`typescript-nearest-install`,
+`typescript-launcher-moved`,
+`notice-published`,
+`notice-waits-for-start`,
+`hint-failure-kept`,
+`cause-hand-over-copies`,
+`cause-reaches-reason`),
 and `inspect:language-navigation-guards` the pointer note and its once-per-file rule
-(`pointer-explains-support-problem`, `pointer-explains-once`),
+(`pointer-explains-support-problem`,
+`pointer-explains-once`),
 each observed failing with the named test.
 
 ### Stale results
@@ -1605,19 +1767,24 @@ the design record compares the two as the question `hint-packing`.
 Every diagnostic that starts on a line gets rows of its own in that line's block,
 starting at the pixel x of the diagnostic's first character.
 
-- Text: `Error E0308 (rustc): mismatched types`,
+- Text:
+  `Error E0308 (rustc): mismatched types`,
   that is the severity in words,
   the code and the source when the server gave them,
   and the message.
-- Ink: the severity's ink.
+- Ink:
+  the severity's ink.
   The severity word is the second channel besides color,
   and the underline style is a third.
-- Order: worst severity first,
+- Order:
+  worst severity first,
   then source order.
-- Line breaks: each line of a message starts a row.
+- Line breaks:
+  each line of a message starts a row.
   Blank lines are dropped;
   indentation is kept.
-- Long lines: a line first wraps at a blank once it reaches 80 characters (`WRAP_COLUMNS`),
+- Long lines:
+  a line first wraps at a blank once it reaches 80 characters (`WRAP_COLUMNS`),
   wide characters counting as two;
   a longer word is cut.
   Every row after a message's first is indented by 16 px (`CONTINUATION_INDENT`).
@@ -1625,12 +1792,15 @@ starting at the pixel x of the diagnostic's first character.
   so the rows at the first break are known without shaping their text.
   A row wider than the text area is then broken again to fit it
   (see [Rows fitted to the text area](#rows-fitted-to-the-text-area)).
-- Cap per message: 12 rows (`MESSAGE_ROWS`).
+- Cap per message:
+  12 rows (`MESSAGE_ROWS`).
   The last row of a longer message reads `… N more lines`.
-- Cap per line: 8 messages (`LINE_MESSAGES`).
+- Cap per line:
+  8 messages (`LINE_MESSAGES`).
   One more row then reads `N more on this line, the worst: Warning`,
   naming the worst severity left out.
-- A range over several lines: its message stands over the first line of the range only;
+- A range over several lines:
+  its message stands over the first line of the range only;
   every line of the range is underlined.
 
 A message cut by either cap is spelled out in full in the source view's accessible description
@@ -1649,30 +1819,41 @@ none of it wraps a block inlay or draws a diagnostic message in the text.
 They therefore wrap at the same width as the code.
 `design/screenshots/2026-10-12-wrap-annotations-applied/` shows them at two window widths in both schemes.
 
-- A block stands over the first visual row of its line, whatever row its hints and messages belong to.
-  The user decided that virtual rows stand over the code line (2026-10-05, see [Placement](#placement)).
+- A block stands over the first visual row of its line,
+  whatever row its hints and messages belong to.
+  The user decided that virtual rows stand over the code line (2026-10-05,
+  see [Placement](#placement)).
   IntelliJ places a block inlay over the visual row that holds its offset;
   see [Known differences from IntelliJ](#known-differences-from-intellij).
-- A hint is packed against the line as it is broken at the wrap width, not against the unbroken line.
+- A hint is packed against the line as it is broken at the wrap width,
+  not against the unbroken line.
   Its x is the x of its character on the visual row the character is drawn on.
   A hint that would pass the right edge of the text area ends at the edge instead.
-  A label wider than the text area breaks, with the shaper that paints it, into pieces on rows of their own;
+  A label wider than the text area breaks,
+  with the shaper that paints it,
+  into pieces on rows of their own;
   the later pieces start at the left edge.
 - A message line with a row wider than the text area is joined and broken again at its width as a whole
-  (`MessageRow::gap` records how a row follows the one before it: a blank, or nothing where a word was cut),
+  (`MessageRow::gap` records how a row follows the one before it:
+  a blank,
+  or nothing where a word was cut),
   so only its last row is short and a cut word stays whole.
   The first row of a message may use all of the width and every later row is 16 px in,
   so a row that is not itself continued breaks in two steps.
   The pieces after the first are continued rows.
 - A message keeps its cap of 12 rows after this second break.
-  The last row then reads `… N more lines`, where N counts the rows left out.
-- A message whose widest row would pass the text area from the x of its diagnostic moves left, as a whole,
+  The last row then reads `… N more lines`,
+  where N counts the rows left out.
+- A message whose widest row would pass the text area from the x of its diagnostic moves left,
+  as a whole,
   until the widest row ends at the edge.
 - The height of a block is the number of its rows after these breaks,
   so the vertical map and the scroll extent follow the width.
 - The width of every message row is measured once for each display scale and kept,
   so a new width shapes again only the rows wider than it.
-  `Annotations::work` counts the lines packed, the rows measured, and the rows broken by shaping;
+  `Annotations::work` counts the lines packed,
+  the rows measured,
+  and the rows broken by shaping;
   the structural tests compare the counts before and after a resize.
 - A new wrap width makes the packing of a hinted line stale.
   The lines near the view (the requested tile and one tile on each side) are packed again at once;
@@ -1680,14 +1861,20 @@ They therefore wrap at the same width as the code.
   which the row key records (`Annotations::stale_in`),
   so a resize costs the window thread one packing for each hinted line near the view
   and not for each line the view ever passed.
-  Lines that wait keep the heights of the old width, which move the lines after them, never the lines in view.
+  Lines that wait keep the heights of the old width,
+  which move the lines after them,
+  never the lines in view.
 - A hint or message that arrives while the worker builds the tile for a new width makes that tile stale.
-  The window drops it and asks the worker for another at once (`tile::apply`), because the displayed tile stays on
+  The window drops it and asks the worker for another at once (`tile::apply`),
+  because the displayed tile stays on
   screen meanwhile and no later event is certain to ask.
-- The block of a wrapped line and the hover, press, and Ctrl+click rules are those of any block:
+- The block of a wrapped line and the hover,
+  press,
+  and Ctrl+click rules are those of any block:
   a point over the block belongs to its line and to no character,
   and a press on it acts on the first visual row of the line.
-  Underlines stand on the visual rows they mark, with or without a block.
+  Underlines stand on the visual rows they mark,
+  with or without a block.
 
 #### Virtual rows are not source text
 
@@ -1751,31 +1938,46 @@ nothing else multiplies a row number by a row height.
 A line takes one code row for each visual row it is wrapped to (see [Soft wrap](#soft-wrap)),
 so the map also holds the visual row count of every line (`src/line_rows.rs`),
 in shared chunks of 256 lines with the rows above each chunk summed,
-and `locate`, `page`, and the extents count a wrapped line by its height.
+and `locate`,
+`page`,
+and the extents count a wrapped line by its height.
 Blocks come from `Annotations::assemble` (`src/annotation/blocks.rs`),
-which packs a line's hints once per snapshot, scale, and wrap width,
+which packs a line's hints once per snapshot,
+scale,
+and wrap width,
 and breaks message rows to the text area (see [Rows fitted to the text area](#rows-fitted-to-the-text-area)).
 
 ### Overscan tile
 
 The materialized lines span three view heights:
-one view height above the view, the view, and one view height below it.
+one view height above the view,
+the view,
+and one view height below it.
 `viewport::place` keeps that tile while the view stays inside it with `RECENTER_EDGE_VIEWS` (0.25 view heights)
-of room at each edge, and re-centers it only when that room runs out,
+of room at each edge,
+and re-centers it only when that room runs out,
 so a re-center comes after about 0.75 view heights of scrolling.
 The first line of a re-centered tile starts one view height above the view's top line,
 and the tile runs `TILE_SPARE_LINES` (2) lines past its bottom edge.
 The window's scroll moves the image on its own:
-a `viewport-changed` callback for a view inside the tile returns before any shaping, painting, or model update.
-Syntax-highlight and text changes still render at once, because their own callbacks call `render`.
-The frame stamp keeps the tile's first line, line count, and wrap width, so it does not change inside the tile.
-A diagnostic or hint inside the tile repaints the tile once, even when it is above the view.
+a `viewport-changed` callback for a view inside the tile returns before any shaping,
+painting,
+or model update.
+Syntax-highlight and text changes still render at once,
+because their own callbacks call `render`.
+The frame stamp keeps the tile's first line,
+line count,
+and wrap width,
+so it does not change inside the tile.
+A diagnostic or hint inside the tile repaints the tile once,
+even when it is above the view.
 The document position's viewport line follows the view's top line on every scroll step,
 so reload anchoring and navigation see the line the reader is looking at.
 
 Shaped rows are cached by line (`src/shaped_row_cache.rs`) for one text revision and display scale.
 A re-centered tile shapes only the lines it did not hold,
-and the cache keeps at most `ROW_CACHE_LINES` (512) lines, evicting those farthest from the view;
+and the cache keeps at most `ROW_CACHE_LINES` (512) lines,
+evicting those farthest from the view;
 the bound is above the lines one window-thread step for a new width may bring in (`REWRAP_LINES`),
 so a step never evicts its own lines.
 A change of syntax styles clears the cache (`TextShaper::forget_rows`).
@@ -1785,18 +1987,38 @@ A re-center caused by the reader's own scrolling is built on a worker thread
 its thread loop in `src/native/tile_build/worker_thread.rs`);
 so is the tile for a new wrap width when the window thread's allowance does not cover it
 (see [A new width on the window thread](#a-new-width-on-the-window-thread)).
-The window thread queues an owned job with a document snapshot, the styles, the row map, and the paint inputs.
-The worker keeps its own `TextShaper` and `TextRaster`, and it builds only the newest queued job.
+The window thread queues an owned job with a document snapshot,
+the styles,
+the row map,
+and the paint inputs.
+The worker keeps its own `TextShaper` and `TextRaster`,
+and it builds only the newest queued job.
 A `slint::Timer` polls the worker every 20 ms (`src/native/tile.rs`).
-The displayed tile stays on screen until the result arrives, so a scroll never shows a blank frame.
+The displayed tile stays on screen until the result arrives,
+so a scroll never shows a blank frame.
 A result is swapped in only when it still holds the view and its paint inputs still match,
-and the image, its offset, the line numbers, and the rectangles arrive in one step.
-A result that no longer matches is discarded, and the next scroll queues a new job.
+and the image,
+its offset,
+the line numbers,
+and the rectangles arrive in one step.
+A result that no longer matches is discarded,
+and the next scroll queues a new job.
 Every other tile change builds on the window thread as before:
-edits, reloads, selections, find, theme, scale, annotation changes, keyboard and pointer moves,
-reveal or follow, and a new wrap width within the allowance.
+edits,
+reloads,
+selections,
+find,
+theme,
+scale,
+annotation changes,
+keyboard and pointer moves,
+reveal or follow,
+and a new wrap width within the allowance.
 
-`overscan_tile_tests` counts renders, painted tiles, shaped rows, and images on the window thread.
+`overscan_tile_tests` counts renders,
+painted tiles,
+shaped rows,
+and images on the window thread.
 All four stay at zero while the view moves inside the tile and during a scroll re-center,
 and the worker's own counts rise for each re-center.
 A swapped-in tile matches a fresh render at the same offset,
@@ -1806,163 +2028,260 @@ and a result built before an edit is discarded.
 
 The source view always wraps long lines to the width of its text area.
 There is no setting and no horizontal scrolling:
-the content is exactly as wide as the view, the `Flickable` cannot move sideways,
+the content is exactly as wide as the view,
+the `Flickable` cannot move sideways,
 a Shift+wheel turn scrolls nothing,
-and no scroll range, horizontal tile, or caret-room widening exists.
+and no scroll range,
+horizontal tile,
+or caret-room widening exists.
 Every open detail follows IntelliJ IDEA Community
 (`doc/planning/slint-ide-soft-wrap.md` names the source file of each rule).
 
-- The wrap width is the text area's width, which is the view minus the gutter,
+- The wrap width is the text area's width,
+  which is the view minus the gutter,
   minus 2 px of caret room (`CARET_ROOM` in `src/native/viewport.rs`),
   so a caret after the last glyph of a full row stays inside the view.
   The minimap at the right edge of the view (see Minimap) is taken from the width as well,
-  and the source view draws no scroll bar, so that is the only term for a scroll control.
+  and the source view draws no scroll bar,
+  so that is the only term for a scroll control.
   There is no minimum.
   A width of zero or less means the view has no layout yet:
   wrapping waits and the last width is kept.
   Until the first width arrives the view is not wrapped.
-- Where a row breaks, and the continuation indent,
-  are IntelliJ's rules (`src/wrap.rs`, `src/wrap_tests.rs`, `tests/wrap.rs`):
-  a space or tab, or after `,` `;` `)` or before `(` and `.`, with the rightmost candidate winning,
+- Where a row breaks,
+  and the continuation indent,
+  are IntelliJ's rules (`src/wrap.rs`,
+  `src/wrap_tests.rs`,
+  `tests/wrap.rs`):
+  a space or tab,
+  or after `,` `;` `)` or before `(` and `.`,
+  with the rightmost candidate winning,
   every code point from U+2F00 up is a break opportunity,
   and a token without a candidate breaks where the width is exceeded.
   A continuation row starts at the x of the line's first non-blank character plus one space for the mark.
 - The gutter has one entry for each visual row.
-  The first row of a line shows its number and, where a diagnostic starts, its severity letter.
-  A continuation row shows the wrap indicator instead, in `c0c0c0` in the light and the dark scheme,
+  The first row of a line shows its number and,
+  where a diagnostic starts,
+  its severity letter.
+  A continuation row shows the wrap indicator instead,
+  in `c0c0c0` in the light and the dark scheme,
   the color IntelliJ gives `SOFT_WRAP_SIGN_COLOR` (the Darcula scheme inherits it).
   Shape and color are the two channels that tell it from a line number.
   The indicator is IntelliJ's own mark for a row that starts after a soft wrap:
-  the second symbol of the first pair among U+2926 with U+2925, U+21B2 with U+21B3,
-  U+2936 with U+2937, and U+21A9 with U+21AA whose two symbols the source font and its fallbacks display,
+  the second symbol of the first pair among U+2926 with U+2925,
+  U+21B2 with U+21B3,
+  U+2936 with U+2937,
+  and U+21A9 with U+21AA whose two symbols the source font and its fallbacks display,
   and an arrow drawn by hand when no pair is displayable.
   The check shapes the symbols with the same shaper that sets the source text and looks for the missing-glyph box
   (`TextShaper::can_display` and `choose_sign` in `src/wrap_sign.rs`),
   and the image the gutter shows is set in that shaper and painted by the same raster,
   so the check is about what is drawn.
-  Which pair a machine gets depends on its fonts; the choice is logged at debug level.
+  Which pair a machine gets depends on its fonts;
+  the choice is logged at debug level.
 - A click picks the visual row under the pointer.
   A click right of the last character of a wrapped row puts the caret at the end of that row (upstream),
   and a click on the lower row's first character puts it at the start of the lower row (downstream).
   Hover and Ctrl+click resolve the visual row too.
-  Selection, find matches, and underlines are painted per visual row.
-- Home, End, Up, Down, PageUp, and PageDown move by visual rows
+  Selection,
+  find matches,
+  and underlines are painted per visual row.
+- Home,
+  End,
+  Up,
+  Down,
+  PageUp,
+  and PageDown move by visual rows
   (see [Source view keys](#source-view-keys)),
   and following the caret scrolls its visual row into view.
-- A blank that overflows the last row of a line hangs on that row, as IntelliJ keeps it.
+- A blank that overflows the last row of a line hangs on that row,
+  as IntelliJ keeps it.
   Parley then adds one more line with no characters after it;
-  `ShapedRow::visual_rows` does not count that line, so the gutter, the vertical map, and the keys never see an empty
-  row, and a caret at the end of the text stands at the end of the last real row.
+  `ShapedRow::visual_rows` does not count that line,
+  so the gutter,
+  the vertical map,
+  and the keys never see an empty
+  row,
+  and a caret at the end of the text stands at the end of the last real row.
 
 #### Measuring every line without waiting
 
-The vertical map needs the height of every line, but only the lines of the tile are laid out on the window thread.
+The vertical map needs the height of every line,
+but only the lines of the tile are laid out on the window thread.
 The tile worker therefore also measures the whole text at the wrap width (`src/native/tile_pass.rs`),
-in chunks of 128 lines from the view outward, between the tile jobs it is given, never before one:
+in chunks of 128 lines from the view outward,
+between the tile jobs it is given,
+never before one:
 a waiting tile job always goes first.
-It keeps the laid-out lines in its own row cache (`KEPT_LAYOUTS` in `src/native/tile_build/worker_thread.rs`, the 50,000 lines nearest the view;
-measured on 2026-10-11 as about 158 MB, 3.2 KB a line).
-A line that is not yet measured counts as one row, or as its last known height after a resize.
+It keeps the laid-out lines in its own row cache (`KEPT_LAYOUTS` in `src/native/tile_build/worker_thread.rs`,
+the 50,000 lines nearest the view;
+measured on 2026-10-11 as about 158 MB,
+3.2 KB a line).
+A line that is not yet measured counts as one row,
+or as its last known height after a resize.
 What the worker has measured waits in a coalescing slot;
 the window thread takes at most `TAKE_LIMIT` (4,096) lines per poll,
 puts them into its table of visual rows,
 and renders only when a count changed.
-It never touches the lines of the displayed tile, so a measurement cannot move the picture on screen.
+It never touches the lines of the displayed tile,
+so a measurement cannot move the picture on screen.
 
 The vertical map follows the table.
 Rows that change height above the first visible row move the scroll offset with them,
-so no visible pixel moves (`rows::settle`, the keep-view-still machinery that annotation rows already use),
+so no visible pixel moves (`rows::settle`,
+the keep-view-still machinery that annotation rows already use),
 and the scroll extent settles as chunks arrive.
-While the reader scrolls, a change above the view waits until scrolling has stopped, as before.
-A finished tile is the exception: its own lines have the heights it was painted with,
-so it is swapped in at once, moving the offset if it must, which cuts a running wheel animation short.
+While the reader scrolls,
+a change above the view waits until scrolling has stopped,
+as before.
+A finished tile is the exception:
+its own lines have the heights it was painted with,
+so it is swapped in at once,
+moving the offset if it must,
+which cuts a running wheel animation short.
 A tile built on the worker measures its own lines first and returns their heights;
-the window thread merges them into its table, brings the map up to date, and compares only the tile's own lines.
+the window thread merges them into its table,
+brings the map up to date,
+and compares only the tile's own lines.
 Anything else that moved is handled by `ShapedView::rebase`.
-A tile built on the window thread (an edit, a selection, a jump) measures its lines first in the same way.
+A tile built on the window thread (an edit,
+a selection,
+a jump) measures its lines first in the same way.
 
-A new wrap width, from a window or sidebar resize, makes the worker break its kept rows again
-(`TextShaper::rebreak`: about a microsecond a line, against about fifteen to shape one)
+A new wrap width,
+from a window or sidebar resize,
+makes the worker break its kept rows again
+(`TextShaper::rebreak`:
+about a microsecond a line,
+against about fifteen to shape one)
 instead of shaping them.
-A line whose tabs are not all on its first visual row is shaped again, because a tab widened to its stop
+A line whose tabs are not all on its first visual row is shaped again,
+because a tab widened to its stop
 depends on where the row broke.
 The worker does this for the whole file after the window thread has taken the lines near the view
 (see [A new width on the window thread](#a-new-width-on-the-window-thread)).
-Measured on 2026-10-11, breaking 50,000 kept layouts again took 40 to 80 ms.
+Measured on 2026-10-11,
+breaking 50,000 kept layouts again took 40 to 80 ms.
 
 Tab correction on a wrapped line repeats shaping until the corrections agree (`layout_wrapped_with_tabs`).
-Row `n` of a line is right after `n + 1` passes, because a row depends only on the rows before it,
+Row `n` of a line is right after `n + 1` passes,
+because a row depends only on the rows before it,
 so a line with tabs inside it is exact up to as many rows as it gets passes.
-The first bound, four passes, was not enough:
+The first bound,
+four passes,
+was not enough:
 `tab_correction_settles_at_every_width` swept widths from 40 to 700 px at two scales over two tab-heavy lines
 and found tabs off their stops at 40 px.
 A tab that ends its row can make two corrections repeat forever;
-the loop then ends with the layout whose corrections are smaller, the one in which that tab fits.
+the loop then ends with the layout whose corrections are smaller,
+the one in which that tab fits.
 
 Whether the correction can settle at a bounded cost was measured on 2026-10-12 in the release profile,
-on a host with a load of 40 to 90, with the bound lifted:
+on a host with a load of 40 to 90,
+with the bound lifted:
 
 - A line with a tab every few characters settled after 76 passes at 20,000 and 40,000 characters
   and after 74 at 100,000 characters (255 to 1,265 rows).
-- A line of irregular words, blanks, and tabs settled after 4, 7, and 54 passes
-  at 5,000, 20,000, and 100,000 characters.
-- The count never came near the number of rows, but it is not known beforehand and it passed the former bound of 40.
+- A line of irregular words,
+  blanks,
+  and tabs settled after 4,
+  7,
+  and 54 passes
+  at 5,000,
+  20,000,
+  and 100,000 characters.
+- The count never came near the number of rows,
+  but it is not known beforehand and it passed the former bound of 40.
 - Every pass shapes the whole line.
-  With 40 passes the 100,000 character lines took 2.3 s and 4.8 s on the window thread, where a first tile is built;
+  With 40 passes the 100,000 character lines took 2.3 s and 4.8 s on the window thread,
+  where a first tile is built;
   the 20,000 character line of the first kind took 0.43 s.
 
-A correction that settles at a bounded cost therefore cannot be promised, and the bound stays,
-now as a budget of characters shaped rather than a count of passes (`passes_for`, `TAB_BUDGET`):
+A correction that settles at a bounded cost therefore cannot be promised,
+and the bound stays,
+now as a budget of characters shaped rather than a count of passes (`passes_for`,
+`TAB_BUDGET`):
 a line gets 40 passes (`TAB_PASSES`) up to 25,000 characters,
-a longer line gets the budget of 1,000,000 characters divided by its length, and never fewer than 4 (`TAB_MIN_PASSES`).
-A line of 100,000 characters gets 10 passes; after the budget the same lines took about 0.4 to 0.6 s
+a longer line gets the budget of 1,000,000 characters divided by its length,
+and never fewer than 4 (`TAB_MIN_PASSES`).
+A line of 100,000 characters gets 10 passes;
+after the budget the same lines took about 0.4 to 0.6 s
 (shaping one such line without tabs takes 50 to 70 ms).
 A line that wraps over more rows than it gets passes keeps the corrections of its last pass:
-bounded and deterministic, but its tabs on the later rows may stand off their stops.
+bounded and deterministic,
+but its tabs on the later rows may stand off their stops.
 That is the one place where the wrap trades exactness for a bound on the window thread's work.
-`row_of`, which finds the row of a tab, is a binary search, and the shaper counts its passes (`TextShaper::tab_passes`).
+`row_of`,
+which finds the row of a tab,
+is a binary search,
+and the shaper counts its passes (`TextShaper::tab_passes`).
 
 #### Lines taller than one raster
 
-A tile is one image, and an image may hold 64 MiB (`MAX_RASTER_BYTES`).
-The raster is as wide as the text area plus 24 px, so its height is limited:
+A tile is one image,
+and an image may hold 64 MiB (`MAX_RASTER_BYTES`).
+The raster is as wide as the text area plus 24 px,
+so its height is limited:
 at a text width of 782 px that is 866 code rows at scale 1 and 215 at scale 2
 (about 74,000 and 18,500 characters of ordinary text in one line).
 A window whose three view heights pass the limit is limited the same way:
-at a text width of 1918 px and scale 2 the cap is 2,135 px, less than three views of 1,080 px.
-`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels, one code row short of the limit for rounding.
-A tile of lines taller than that is clipped instead of refused (`Viewport::clip`, `viewport::band_clip`):
+at a text width of 1918 px and scale 2 the cap is 2,135 px,
+less than three views of 1,080 px.
+`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels,
+one code row short of the limit for rounding.
+A tile of lines taller than that is clipped instead of refused (`Viewport::clip`,
+`viewport::band_clip`):
 
-- The clip is the three view heights around the view, cut to the cap,
-  with its edges on whole code rows, as two distances below the top of the first materialized line's block
-  (so a row that appears above the tile moves the clip with it, `ShapedView::rebase`).
-- The tile's identity (`TileBounds`, the frame stamp) carries the clip,
+- The clip is the three view heights around the view,
+  cut to the cap,
+  with its edges on whole code rows,
+  as two distances below the top of the first materialized line's block
+  (so a row that appears above the tile moves the clip with it,
+  `ShapedView::rebase`).
+- The tile's identity (`TileBounds`,
+  the frame stamp) carries the clip,
   the view must stay a quarter of a view height clear of its edges (`viewport::holds`),
   and leaving them re-centers the tile on the worker as for any tile.
-  Scrolling inside a clip does no work, as inside any built tile.
+  Scrolling inside a clip does no work,
+  as inside any built tile.
 - `TextRaster::draw` already skips the visual rows of a layout that lie outside the raster,
   so a line of thousands of rows costs only the rows in the clip.
   The gutter lists only the rows in the clip (`rows::measure`).
-- A reveal (a search result, a jump target) measures the visual rows of its own line first (`viewport::reveal`),
+- A reveal (a search result,
+  a jump target) measures the visual rows of its own line first (`viewport::reveal`),
   so a match on a late row of a wrapped last line that the background measurement has not reached is not cut off by
-  the extent the map has for it; `native_find_paints_visible_matches_only_and_reveals_far_rows` failed 3 times in 16 runs
+  the extent the map has for it;
+  `native_find_paints_visible_matches_only_and_reveals_far_rows` failed 3 times in 16 runs
   on the tree before this slice for that reason.
 - A view so tall that it and a quarter of its height on each side pass the cap can never be held,
-  so such a tile is placed again at every scroll step; a window that tall has no better answer.
-- The raster still refuses a tile past the limit with its diagnostic, for a caller that did not clip.
+  so such a tile is placed again at every scroll step;
+  a window that tall has no better answer.
+- The raster still refuses a tile past the limit with its diagnostic,
+  for a caller that did not clip.
 
 The caret stops of a line were found in time that grew with the square of its length:
-`project_line` walked the graphemes through a flat string view, and every lookup scanned the string.
+`project_line` walked the graphemes through a flat string view,
+and every lookup scanned the string.
 A line of 100,000 characters took longer than 90 s to open in a debug build.
-Measured on 2026-10-12 in a debug build on a loaded host, the projection alone took 0.37 s at 10,000 characters,
-1.2 s at 20,000, and 5.1 s at 40,000, a factor of four for every doubling,
-while shaping and breaking the same lines took 29, 65, and 123 ms.
-A line past 1 KiB (`FLAT_LINE_BYTES`) is now copied into a rope first, whose chunks bound each lookup;
-the projection of 100,000 characters took 0.5 s in the same build, and in the release profile 13 to 20 ms
-(the former walk took 8 ms at 20,000 and 190 ms at 100,000 characters there, measured in isolation).
+Measured on 2026-10-12 in a debug build on a loaded host,
+the projection alone took 0.37 s at 10,000 characters,
+1.2 s at 20,000,
+and 5.1 s at 40,000,
+a factor of four for every doubling,
+while shaping and breaking the same lines took 29,
+65,
+and 123 ms.
+A line past 1 KiB (`FLAT_LINE_BYTES`) is now copied into a rope first,
+whose chunks bound each lookup;
+the projection of 100,000 characters took 0.5 s in the same build,
+and in the release profile 13 to 20 ms
+(the former walk took 8 ms at 20,000 and 190 ms at 100,000 characters there,
+measured in isolation).
 `text_projection_tests` counts the bytes the lookups scan and compares the stops with a flat walk.
 Shaping and breaking a line of 100,000 characters without tabs takes 50 to 70 ms in the release profile,
-about 1.2 s in a debug build, and the window thread does it once, when the tile that holds the line is first built.
+about 1.2 s in a debug build,
+and the window thread does it once,
+when the tile that holds the line is first built.
 
 #### A new width on the window thread
 
@@ -1974,196 +2293,370 @@ and in the event loop pass that follows the size event when it holds the redraw 
 about 9 ms before the redraw request).
 So the viewport-changed callback of a new window or sidebar size runs before the frame at that size is drawn,
 and the window thread breaks the lines near the view again and paints the tile for the new width before that frame
-(`src/native/rewrap.rs`, `render::render`).
+(`src/native/rewrap.rs`,
+`render::render`).
 The width is the layout width of the `Flickable` that `ui/app.slint` reports through `changed width`
-(`viewport-changed`, `bind_viewport`, `place_scrolled`),
+(`viewport-changed`,
+`bind_viewport`,
+`place_scrolled`),
 and at every one of 715 recorded draws of five sessions the width the view had last reported was the window width
-the toolkit drew minus 333 px (sidebar and gutter), so the wrap width never arrived a frame late.
+the toolkit drew minus 333 px (sidebar and gutter),
+so the wrap width never arrived a frame late.
 
 - `place_scrolled` marks `State::rewrap` when the wrap width differs from the width of the displayed tile.
-  The next render asks `rewrap::begin` for an `Allowance`, which holds at most `REWRAP_LINES` (384) lines
+  The next render asks `rewrap::begin` for an `Allowance`,
+  which holds at most `REWRAP_LINES` (384) lines
   and `REWRAP_WORK` (24,000) units of work.
-- A unit of work is a character shaped or broken, as `ide_app::shaped_text::line_work` counts it:
-  `LINE_WORK` (32) for each line, plus its length for each shaping.
+- A unit of work is a character shaped or broken,
+  as `ide_app::shaped_text::line_work` counts it:
+  `LINE_WORK` (32) for each line,
+  plus its length for each shaping.
   A line with a tab counts one shaping and one more for each corrective pass of its tabs (`passes_for`),
   and a line over `WORK_SCAN_LIMIT` (65,536) characters counts as more than any allowance.
   A line the row cache already holds at the new width costs nothing.
   Every other line is charged before it is shaped or broken again (`TextShaper::measure_lines_within` and `Budget`),
   so a line that does not fit stops the step before any work is done on it.
 - Within the allowance the window thread measures the lines of the requested tile at the new width:
-  kept rows are broken again without shaping (`TextShaper::rebreak`), and the others are shaped.
-  Their heights go into the table, `rows::settle` brings the map up to date with the view kept still,
+  kept rows are broken again without shaping (`TextShaper::rebreak`),
+  and the others are shaped.
+  Their heights go into the table,
+  `rows::settle` brings the map up to date with the view kept still,
   and the tile is painted and shown in the same render.
-  Selection, find rectangles, the caret, the gutter rows, and the annotation blocks come from the same render,
+  Selection,
+  find rectangles,
+  the caret,
+  the gutter rows,
+  and the annotation blocks come from the same render,
   so they agree with the new width in the first frame.
-- Where the bound would be exceeded, the change goes to the tile worker as before and the displayed tile stays on
-  screen until the worker's tile arrives (`rewrap::defer`, which logs `left a new width to the tile worker`).
+- Where the bound would be exceeded,
+  the change goes to the tile worker as before and the displayed tile stays on
+  screen until the worker's tile arrives (`rewrap::defer`,
+  which logs `left a new width to the tile worker`).
   That happens when the requested tile holds more than `REWRAP_LINES` lines
   (a window about 3,300 px tall over lines of one row each),
-  when its lines need more than `REWRAP_WORK` units (two lines of 12,000 characters, one line of 200,000 characters,
-  or wrapped lines with tabs), and when its raster would pass `REWRAP_RASTER_BYTES` (32 MiB, half of the limit of a
+  when its lines need more than `REWRAP_WORK` units (two lines of 12,000 characters,
+  one line of 200,000 characters,
+  or wrapped lines with tabs),
+  and when its raster would pass `REWRAP_RASTER_BYTES` (32 MiB,
+  half of the limit of a
   tile the worker builds).
 - The worker's whole-file measurement for the new width runs after the step as it did before,
   and ends at the heights of a fresh shaping.
-  It never touches the lines of the displayed tile, so a tile that arrives later from the worker asks for the
+  It never touches the lines of the displayed tile,
+  so a tile that arrives later from the worker asks for the
   measurement again (`pass_posted` is cleared in `tile::apply`) and the lines only the old tile held are measured then.
 
-`wrap_resize_tests` (debug counters, no wall time) asserts the structure.
+`wrap_resize_tests` (debug counters,
+no wall time) asserts the structure.
 After one change of width the displayed tile holds the new width and has no row wider than the text area
 except a row of one token that has no break opportunity,
-and the gutter, selection, find rectangles, caret, and annotation blocks agree with a fresh shaping at that width.
-The step is bounded in lines shaped or broken, in work charged, and in rasters painted for 2,000 lines of 600
-characters, one line of 200,000 characters, a view taller than the clip cap (a window of `tile_cap` plus 400 px
-at a text width of 3,600 px), a window about 3,300 px tall, and a file of 50,000 lines.
+and the gutter,
+selection,
+find rectangles,
+caret,
+and annotation blocks agree with a fresh shaping at that width.
+The step is bounded in lines shaped or broken,
+in work charged,
+and in rasters painted for 2,000 lines of 600
+characters,
+one line of 200,000 characters,
+a view taller than the clip cap (a window of `tile_cap` plus 400 px
+at a text width of 3,600 px),
+a window about 3,300 px tall,
+and a file of 50,000 lines.
 A change over any bound is left to the worker with nothing shaped on the window thread beyond the first refused line.
-The guards `resize-on-window-thread`, `drawn-frame-after-resize`, `rewrap-lines-bound`, `rewrap-work-budget`,
-`rewrap-tab-passes`, `rewrap-raster-bound`, `rewrap-view-past-cap`, `pass-again-after-new-width`,
+The guards `resize-on-window-thread`,
+`drawn-frame-after-resize`,
+`rewrap-lines-bound`,
+`rewrap-work-budget`,
+`rewrap-tab-passes`,
+`rewrap-raster-bound`,
+`rewrap-view-past-cap`,
+`pass-again-after-new-width`,
 and (annotations) `deferred-width-stays-on-worker` and `discarded-tile-asked-again`
 remove each rule in a disposable copy and must make the named test fail.
 
-Measured on 2026-10-13 with the release bundle (sha1 `2d8e01e9`, built from commit `f851815582`; the later commits
-change only tests, the guard script, and a subtraction in `Allowance::lines` and `Allowance::work` that differs
+Measured on 2026-10-13 with the release bundle (sha1 `2d8e01e9`,
+built from commit `f851815582`;
+the later commits
+change only tests,
+the guard script,
+and a subtraction in `Allowance::lines` and `Allowance::work` that differs
 only on overflow) in the nested compositor 0.4.0,
-at 1100 by 660 pixels, the frame recorder at 60 frames a second and synthetic input through the control socket.
-The drag goes from 1100 to 600 pixels and back in steps of 25 pixels, 16 ms apart, in two sweeps.
-Six sessions of each of the two files, none discarded (the recorder dropped nothing), at a host load of 12 to 20.3
-(one-minute average at the start of each session); the 20 to 100 band was reached by 2 of 12 sessions, at 20.3.
-Run-to-run spread comes first, because it is as large as most differences:
-the longest gap between painted frames of one build and file varied from 17 to 83 ms (code50k, median 33.3)
-and from 17 to 43 ms (long2000, median 25.7).
-The earlier build (`final`, the worker-only tile) varied from 17.7 to 50 ms and from 17.3 to 60 ms in the same protocol.
+at 1100 by 660 pixels,
+the frame recorder at 60 frames a second and synthetic input through the control socket.
+The drag goes from 1100 to 600 pixels and back in steps of 25 pixels,
+16 ms apart,
+in two sweeps.
+Six sessions of each of the two files,
+none discarded (the recorder dropped nothing),
+at a host load of 12 to 20.3
+(one-minute average at the start of each session);
+the 20 to 100 band was reached by 2 of 12 sessions,
+at 20.3.
+Run-to-run spread comes first,
+because it is as large as most differences:
+the longest gap between painted frames of one build and file varied from 17 to 83 ms (code50k,
+median 33.3)
+and from 17 to 43 ms (long2000,
+median 25.7).
+The earlier build (`final`,
+the worker-only tile) varied from 17.7 to 50 ms and from 17.3 to 60 ms in the same protocol.
 By load band:
 
-- Below 20: `final` had 3 sessions per file, longest gap median 33.3 ms (17.7 to 33.3) on code50k and 17.3 ms
+- Below 20:
+  `final` had 3 sessions per file,
+  longest gap median 33.3 ms (17.7 to 33.3) on code50k and 17.3 ms
   (17.3 to 43.7) on long2000;
-  the new build had 5 sessions per file, median 33.3 ms (17 to 83) and 33.3 ms (17.7 to 42.7).
-- 20 to 100: `final` had 2 sessions per file (37.3 and 50 ms; 33.3 and 59.7 ms); the new build had 1 session per file
+  the new build had 5 sessions per file,
+  median 33.3 ms (17 to 83) and 33.3 ms (17.7 to 42.7).
+- 20 to 100:
+  `final` had 2 sessions per file (37.3 and 50 ms;
+  33.3 and 59.7 ms);
+  the new build had 1 session per file
   (35.7 ms and 17 ms).
   Too few sessions to compare in this band.
-- No frame was blank or flat in any session, the last frame fit the width in every one,
+- No frame was blank or flat in any session,
+  the last frame fit the width in every one,
   and the longest gap is no worse than that of the worker-only tile within the spread.
   No claim is made here that either build is smoother.
-- Frames whose text does not fit the width (the detector of the earlier report: ink in the last two columns, ink
-  stopping 120 px short of the edge, or a flat or empty frame): 64 to 79 of about 100 frames per session on code50k and
-  72 to 78 on long2000, against 72 to 81 and 73 to 79 for `final`.
+- Frames whose text does not fit the width (the detector of the earlier report:
+  ink in the last two columns,
+  ink
+  stopping 120 px short of the edge,
+  or a flat or empty frame):
+  64 to 79 of about 100 frames per session on code50k and
+  72 to 78 on long2000,
+  against 72 to 81 and 73 to 79 for `final`.
   The longest stretch of such frames was 635 to 1,319 ms (new) against 384 to 1,371 ms (`final`).
   This measure did not change.
-- The step itself, from the allowance to the last setter of the frame (log line
-  `window thread re-wrapped for a new width`; 42 to 79 steps per session, none left to the worker,
-  no worker tile applied), in the five sessions of each file other than round 5:
-  on code50k the median was 3.2 to 4.9 ms, the 95th percentile 8.0 to 20.5 ms,
-  and the largest 16.9 to 60.0 ms; on long2000 the median was 6.0 to 6.9 ms, the 95th percentile 10.7 to 12.7 ms,
+- The step itself,
+  from the allowance to the last setter of the frame (log line
+  `window thread re-wrapped for a new width`;
+  42 to 79 steps per session,
+  none left to the worker,
+  no worker tile applied),
+  in the five sessions of each file other than round 5:
+  on code50k the median was 3.2 to 4.9 ms,
+  the 95th percentile 8.0 to 20.5 ms,
+  and the largest 16.9 to 60.0 ms;
+  on long2000 the median was 6.0 to 6.9 ms,
+  the 95th percentile 10.7 to 12.7 ms,
   and the largest 18.3 to 29.0 ms.
   The first step of a session took 8.1 to 21.2 ms (code50k) and 13.1 to 17.4 ms (long2000).
   The most one step charged was 70 lines and 5,702 units (code50k) and 13 lines and 8,229 units (long2000).
-  One session of each file (round 5) ran with a slower window thread, 45 and 42 steps, median 9.2 and 15.4 ms,
-  largest 64 and 91 ms, recorder at 52.5 and 57.3 frames a second, while the load average read 14 to 16;
+  One session of each file (round 5) ran with a slower window thread,
+  45 and 42 steps,
+  median 9.2 and 15.4 ms,
+  largest 64 and 91 ms,
+  recorder at 52.5 and 57.3 frames a second,
+  while the load average read 14 to 16;
   the cause was not found.
   A step takes a few milliseconds typically and up to a few frame periods at the largest,
   so it can still make one frame late.
 
-A second series on 2026-10-13 ran after the host's CPU was replaced (`nproc` reports 30; one-minute load 5.7 to 10.8
-at the start of every session, so every session is in the band below 20) with the bundle of the final tree
-(sha1 `9c60b963`, from tree `1a7214f4f9`) and, in the same series and order, the earlier `final` bundle:
-six sessions of each build and file in the 16 ms drag, none excluded (the recorder dropped nothing).
-Run-to-run spread is small here: the longest gap was 17.1 to 17.7 ms in 11 of 12 `final` sessions (33.3 ms once)
+A second series on 2026-10-13 ran after the host's CPU was replaced (`nproc` reports 30;
+one-minute load 5.7 to 10.8
+at the start of every session,
+so every session is in the band below 20) with the bundle of the final tree
+(sha1 `9c60b963`,
+from tree `1a7214f4f9`) and,
+in the same series and order,
+the earlier `final` bundle:
+six sessions of each build and file in the 16 ms drag,
+none excluded (the recorder dropped nothing).
+Run-to-run spread is small here:
+the longest gap was 17.1 to 17.7 ms in 11 of 12 `final` sessions (33.3 ms once)
 and 17.0 to 18.0 ms in all 12 sessions of the new build.
 Frames that do not fit were 76 to 82 per session for `final` and 74 to 77 for the new build;
-the longest stretch of them was 650 to 767 ms for `final` on code50k and 650 to 1,302 ms on long2000, and 633 to 650 ms
+the longest stretch of them was 650 to 767 ms for `final` on code50k and 650 to 1,302 ms on long2000,
+and 633 to 650 ms
 for the new build on both files;
 the picture settled after the last resize step in 24.0 to 26.7 ms for the new build
 against 23.2 to 109.1 ms for `final`.
-No frame was blank or flat, and the last frame fitted in every session.
-The window-thread step took a median of 3.0 to 3.3 ms on code50k (largest 5.7 to 10.7 ms, first step 5.5 to 10.7 ms)
-and 5.9 to 6.8 ms on long2000 (largest 13.5 to 15.3 ms); every step of every session was taken at once and none
+No frame was blank or flat,
+and the last frame fitted in every session.
+The window-thread step took a median of 3.0 to 3.3 ms on code50k (largest 5.7 to 10.7 ms,
+first step 5.5 to 10.7 ms)
+and 5.9 to 6.8 ms on long2000 (largest 13.5 to 15.3 ms);
+every step of every session was taken at once and none
 was left to the worker.
-In the 100 ms drag of this series (3 sessions each) frames that do not fit were 44, 42, and 50 of about 265 for `final`
-and 0, 8, and 19 for the new build, and the longest stretch of such frames was 33 to 50 ms against 0 to 17 ms.
+In the 100 ms drag of this series (3 sessions each) frames that do not fit were 44,
+42,
+and 50 of about 265 for `final`
+and 0,
+8,
+and 19 for the new build,
+and the longest stretch of such frames was 33 to 50 ms against 0 to 17 ms.
 
 The unchanged count of frames that do not fit has a cause that was looked at in the frames themselves.
-In the 16 ms drag, kept frames of one session show the window at the new size with the previous step's content:
-at 1075 pixels the text is wrapped for 1100 and cut by the edge, and on the way back a strip of another shade stands
-at the right edge beside text wrapped for the previous, narrower size.
-These are the detector's `clipped` and `band` frames (38 and 39 in that session, two sweeps of about 20 steps).
-The strip of another shade stands where no tile of the application is, so those frames were composed at the new size
+In the 16 ms drag,
+kept frames of one session show the window at the new size with the previous step's content:
+at 1075 pixels the text is wrapped for 1100 and cut by the edge,
+and on the way back a strip of another shade stands
+at the right edge beside text wrapped for the previous,
+narrower size.
+These are the detector's `clipped` and `band` frames (38 and 39 in that session,
+two sweeps of about 20 steps).
+The strip of another shade stands where no tile of the application is,
+so those frames were composed at the new size
 from a buffer drawn for the previous one.
-The `clipped` frames could come from either side, so the first draw after a size event was checked in the headless
-backend: `a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width` reports the new size, takes a snapshot
-at once with no timer or handler run between them (the draw runs the change handlers), and finds no row of ink at the
-right edge; with the window-thread step turned off, 198 rows of that frame run to the edge.
+The `clipped` frames could come from either side,
+so the first draw after a size event was checked in the headless
+backend:
+`a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width` reports the new size,
+takes a snapshot
+at once with no timer or handler run between them (the draw runs the change handlers),
+and finds no row of ink at the
+right edge;
+with the window-thread step turned off,
+198 rows of that frame run to the edge.
 So in the headless backend the first frame is already wrapped for the new width.
 The compositor's recorded frames still show the previous step's content at each new size in the 16 ms drag,
 and that delay was measured on 2026-10-13 (`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`):
-it is the recorder's capture model and winit's redraw gate, not the application.
-The compositor changes the output mode, which is the recorded frame size, when the `resize` command arrives,
-captures before it sends the frame callbacks, and sends them only from the recorder tick,
+it is the recorder's capture model and winit's redraw gate,
+not the application.
+The compositor changes the output mode,
+which is the recorded frame size,
+when the `resize` command arrives,
+captures before it sends the frame callbacks,
+and sends them only from the recorder tick,
 and winit withholds the redraw of a Wayland window until the callback of its last swap arrives.
 A size that reaches the application between two ticks is therefore drawn right after the next capture
-and first captured one tick later, on a canvas that already has the newest size.
+and first captured one tick later,
+on a canvas that already has the newest size.
 In three 16 ms sessions 76 to 77 of 81 to 82 captures held a buffer of another width than the output mode,
-all 77 recorded frames that did not fit in the first session were among them, and no frame whose buffer had the
-output's width failed to fit (7 of 7 in that session, 459 of 459 in two 100 ms sessions).
+all 77 recorded frames that did not fit in the first session were among them,
+and no frame whose buffer had the
+output's width failed to fit (7 of 7 in that session,
+459 of 459 in two 100 ms sessions).
 The debug lines at the target `monochromatic_ide::native::frame` (`src/native/frame_trace.rs`) place the winit size
-event, the redraw request, the view report, and the start and end of each draw on the log's clock.
+event,
+the redraw request,
+the view report,
+and the start and end of each draw on the log's clock.
 Opening the gate at the command in a copy of the compositor cut the stale captures from 94 to 56 to 61 percent
-and the commit from 13 to 8 ms after the command; the rest is the re-wrap (4 ms) and the draw (3.5 ms) against a
+and the commit from 13 to 8 ms after the command;
+the rest is the re-wrap (4 ms) and the draw (3.5 ms) against a
 16.7 ms tick.
-So the requirement that no frame shows old-width text is met in the headless draw, and in the compositor every frame
+So the requirement that no frame shows old-width text is met in the headless draw,
+and in the compositor every frame
 whose buffer has the output's width is wrapped for it.
-A slower drag (100 ms between steps, one sweep, 3 sessions each, load 15 to 23) separates the two builds:
-frames that do not fit were 14, 29, and 46 of about 260 for the new build against 94, 47, and 97 of about 250 for
-`final`, and the longest stretch was 33 to 50 ms against 200 to 319 ms.
+A slower drag (100 ms between steps,
+one sweep,
+3 sessions each,
+load 15 to 23) separates the two builds:
+frames that do not fit were 14,
+29,
+and 46 of about 260 for the new build against 94,
+47,
+and 97 of about 250 for
+`final`,
+and the longest stretch was 33 to 50 ms against 200 to 319 ms.
 The new build therefore leaves at most about three recorded frames of old-width content after a step and `final`
-several more, and the remaining ones are the capture delay above, not wrapping by the application.
+several more,
+and the remaining ones are the capture delay above,
+not wrapping by the application.
 
 #### What the window thread pays
 
-Measured on 2026-10-12 with the release bundle (`dist/monochromatic-ide`, sha1 `13505a6f`, built from commit
-`9151379037`) in the nested compositor at 1100 by 660 pixels, with the debug lines of `tile.rs` and `render.rs` timing
+Measured on 2026-10-12 with the release bundle (`dist/monochromatic-ide`,
+sha1 `13505a6f`,
+built from commit
+`9151379037`) in the nested compositor at 1100 by 660 pixels,
+with the debug lines of `tile.rs` and `render.rs` timing
 the window-thread functions.
-The host's load was 37 to 43 throughout, so the numbers are not those of an idle machine.
+The host's load was 37 to 43 throughout,
+so the numbers are not those of an idle machine.
 The later commit `ff16f9a3d9` changes only what the window does after it discards a stale tile (it renders again),
-which none of these sessions did, and the numbers were not measured again.
-Only sessions in which the frame recorder dropped nothing count; all 10 sessions were counted and none was discarded.
-Each session opened the file, waited for the pass to finish, scrolled 60 wheel notches down and 60 up with a 16 ms wait
+which none of these sessions did,
+and the numbers were not measured again.
+Only sessions in which the frame recorder dropped nothing count;
+all 10 sessions were counted and none was discarded.
+Each session opened the file,
+waited for the pass to finish,
+scrolled 60 wheel notches down and 60 up with a 16 ms wait
 after each notch and the recorder running,
 and resized the window to 900 and back to 1100 pixels.
-The times are the time inside the window-thread functions, never the time to the next frame:
+The times are the time inside the window-thread functions,
+never the time to the next frame:
 the toolkit's image upload happens after them and is not in these numbers,
 and the longest gap between painted frames was not measured.
 
-A file of 50,000 lines of about 110 characters, most of them wrapped to two rows (6 sessions):
+A file of 50,000 lines of about 110 characters,
+most of them wrapped to two rows (6 sessions):
 
-- Taking in a finished tile (`tile::apply`, timed in `tile::poll`):
-  while opening, 19 tiles, median 0.14 ms, 95th percentile 0.38 ms, largest 0.38 ms;
-  while scrolling, 123 re-centers, median 0.26 ms, 95th percentile 1.0 ms, largest 16 ms;
-  after the resizes, 12 tiles, median 0.44 ms, 95th percentile 0.54 ms, largest 0.54 ms.
-- Taking in the output of the measurement pass (`tile::pass::apply_pass`, timed in `tile::poll`):
-  while opening, 1,649 outputs, median 0.07 ms, 95th percentile 0.39 ms, largest 4.2 ms;
-  after the resizes, 172 outputs, median 0.11 ms, 95th percentile 0.28 ms, largest 1.2 ms.
-  The pass was done during the opening of each session; the scroll window held no output.
-- Building a tile on the window thread (measuring its lines and painting it): 18 builds while opening,
-  median 1.6 ms, largest 23 ms (the first tile and the two that follow it); none while scrolling or resizing.
+- Taking in a finished tile (`tile::apply`,
+  timed in `tile::poll`):
+  while opening,
+  19 tiles,
+  median 0.14 ms,
+  95th percentile 0.38 ms,
+  largest 0.38 ms;
+  while scrolling,
+  123 re-centers,
+  median 0.26 ms,
+  95th percentile 1.0 ms,
+  largest 16 ms;
+  after the resizes,
+  12 tiles,
+  median 0.44 ms,
+  95th percentile 0.54 ms,
+  largest 0.54 ms.
+- Taking in the output of the measurement pass (`tile::pass::apply_pass`,
+  timed in `tile::poll`):
+  while opening,
+  1,649 outputs,
+  median 0.07 ms,
+  95th percentile 0.39 ms,
+  largest 4.2 ms;
+  after the resizes,
+  172 outputs,
+  median 0.11 ms,
+  95th percentile 0.28 ms,
+  largest 1.2 ms.
+  The pass was done during the opening of each session;
+  the scroll window held no output.
+- Building a tile on the window thread (measuring its lines and painting it):
+  18 builds while opening,
+  median 1.6 ms,
+  largest 23 ms (the first tile and the two that follow it);
+  none while scrolling or resizing.
 
 A file of one line of 200,000 characters (4 sessions):
 the first build of a tile on the window thread took 164 to 228 ms in every session,
-which is the time to shape that line once, a second build took 10 to 13 ms, and a third took 167 to 174 ms in two sessions and 4 to 6 ms in the others;
-taking in a re-centered tile took a median of 0.11 ms, a 95th percentile of 2.7 ms, and at most 7.2 ms (88 tiles).
+which is the time to shape that line once,
+a second build took 10 to 13 ms,
+and a third took 167 to 174 ms in two sessions and 4 to 6 ms in the others;
+taking in a re-centered tile took a median of 0.11 ms,
+a 95th percentile of 2.7 ms,
+and at most 7.2 ms (88 tiles).
 Shaping and breaking 100,000 characters without tabs takes 50 to 70 ms in the same profile when timed alone.
-The window thread therefore still waits once, about the time of one shaping of the line, when such a file is opened,
+The window thread therefore still waits once,
+about the time of one shaping of the line,
+when such a file is opened,
 and once more in two of the four sessions;
-no scroll step entered a build, which is what these counts show, and not that no frame was late.
+no scroll step entered a build,
+which is what these counts show,
+and not that no frame was late.
 
-Structural tests, independent of host load, count what the window thread does.
+Structural tests,
+independent of host load,
+count what the window thread does.
 `wrap_tests` opens 50,000 lines and asserts that the window thread shaped almost nothing
 and that one poll applied at most `TAKE_LIMIT` lines.
-A re-center during the pass is built on the worker with no row shaped on the window thread, and it is not discarded.
+A re-center during the pass is built on the worker with no row shaped on the window thread,
+and it is not discarded.
 A resize that the window thread takes shapes nothing again and re-breaks only the lines of its allowance.
 A mixed file proves that no visible pixel moves when rows above the view change height.
 `wrap_clip_tests` scrolls inside a built tile of a wrapped file and inside the clip of one tall line:
-no render, no shaped row, no painted tile, and no image on the window thread (guard `wrapped-tile-holds`);
+no render,
+no shaped row,
+no painted tile,
+and no image on the window thread (guard `wrapped-tile-holds`);
 it walks the view through a 100,000 character line and asserts the raster stays within the limit and holds the view,
-that the gutter lists only the rows of the clip, and that opening the file shapes each of its lines once.
+that the gutter lists only the rows of the clip,
+and that opening the file shapes each of its lines once.
 `wrap_annotation_tests` shows that a resize with hints and messages on a wrapped line paints one tile on the window
 thread within the allowance and packs only the hinted lines near the view,
 and that a width the allowance does not cover paints none there.
@@ -2172,26 +2665,40 @@ and that a width the allowance does not cover paints none there.
 #### Known differences from IntelliJ
 
 Everything the user did not decide follows IntelliJ IDEA Community (`doc/planning/slint-ide-soft-wrap.md`).
-These are the places where the source view differs, and why:
+These are the places where the source view differs,
+and why:
 
-- The wrap mark stands in the gutter, on every continuation row, because the user said so;
-  IntelliJ paints it in the text area and, by default, only on the caret's line.
+- The wrap mark stands in the gutter,
+  on every continuation row,
+  because the user said so;
+  IntelliJ paints it in the text area and,
+  by default,
+  only on the caret's line.
 - A block of hints and messages stands over the first visual row of its line.
   IntelliJ puts a block inlay over the visual row that holds its offset (`VisualLinesIterator.setInlays`),
   and a block below a line under the visual row that holds it.
-  The user decided that virtual rows stand over the code line (2026-10-05); no block stands under a line here.
+  The user decided that virtual rows stand over the code line (2026-10-05);
+  no block stands under a line here.
 - Hints and messages are broken at the width of the code.
   The IntelliJ source read for this work does not wrap a block inlay and draws no diagnostic message in the text.
 - The caret cannot stand in the indent of a continuation row or in virtual space,
   so Home has one step fewer on a continuation row and on a line of blanks only.
 - IntelliJ gives its identifier-symbol break rule a lower weight than the others.
-  Parley keeps the rightmost opportunity whatever its weight, so the rule counts like the others.
+  Parley keeps the rightmost opportunity whatever its weight,
+  so the rule counts like the others.
 - A line that wraps over more rows than its tab-correction passes keep their last corrections
-  (see [Soft wrap](#soft-wrap)); IntelliJ measures each tab on the row it stands on.
-- A tile of a very tall line holds only the rows near the view; IntelliJ paints the rows in the view.
-- Lines the background measurement has not reached count as one row, so the scroll extent grows while it runs.
-- There is no switch for soft wrap, because the user asked for it to be always on.
-- Thai, Lao, Khmer, and Myanmar get no dictionary-based breaks (Parley's `complex-scripts` feature is off).
+  (see [Soft wrap](#soft-wrap));
+  IntelliJ measures each tab on the row it stands on.
+- A tile of a very tall line holds only the rows near the view;
+  IntelliJ paints the rows in the view.
+- Lines the background measurement has not reached count as one row,
+  so the scroll extent grows while it runs.
+- There is no switch for soft wrap,
+  because the user asked for it to be always on.
+- Thai,
+  Lao,
+  Khmer,
+  and Myanmar get no dictionary-based breaks (Parley's `complex-scripts` feature is off).
 
 ### Stability
 
@@ -2210,9 +2717,12 @@ so the rules for what may move are part of the placement.
   a change that would move the scroll offset waits until the offset has been still for 200 ms
   (`rows::quiet::SCROLL_QUIET`),
   so a wheel animation is never cut short.
-  The rule reads the time through `rows::quiet_now`, which a test can hold still and move by exactly the time it means
-  (`rows_above_the_view_wait_until_scrolling_has_stopped` does, so no host load can run the 200 ms out between a
-  scroll and the rows that must wait for it; with the former real sleeps it failed whenever a stall passed 200 ms).
+  The rule reads the time through `rows::quiet_now`,
+  which a test can hold still and move by exactly the time it means
+  (`rows_above_the_view_wait_until_scrolling_has_stopped` does,
+  so no host load can run the 200 ms out between a
+  scroll and the rows that must wait for it;
+  with the former real sleeps it failed whenever a stall passed 200 ms).
   A render that comes after a scroll step whose change handler has not run yet
   (the window's offset differs from the one last placed) counts as scrolling too;
   under host load a recording showed such a render moving the first visible line by 3 px before this rule.
@@ -2230,12 +2740,14 @@ so the rules for what may move are part of the placement.
 - The vertical scroll range is the sum of the visual rows and the blocks known so far.
   It grows as hints arrive for lines further on and as the background measurement reaches wrapped lines.
   The source view has no scroll bar;
-  the minimap is its scroll control, and its box shrinks as the range grows.
+  the minimap is its scroll control,
+  and its box shrinks as the range grows.
 - A caret line before the view is revealed together with its block.
   A search result or jump target is revealed from the top of its block.
 
 Measured on frames recorded from the nested compositor
-(commands and frame names are in `design/README.md`, entry "2026-10-05 hint rows"):
+(commands and frame names are in `design/README.md`,
+entry "2026-10-05 hint rows"):
 
 - Injected hints for the first lines of the scene moved line 2 by 26 px,
   line 3 by 68 px,
@@ -2251,8 +2763,11 @@ Measured on frames recorded from the nested compositor
 - An external change with annotations returning 0.3 s and 0.7 s later changed three frames
   and moved no code row.
 - With diagnostics returning 3 s later,
-  message space was given up 1.01 s after the reload (lines moved up by 16, 42, and 164 px)
-  and taken again when the diagnostics arrived, 3.16 s after it.
+  message space was given up 1.01 s after the reload (lines moved up by 16,
+  42,
+  and 164 px)
+  and taken again when the diagnostics arrived,
+  3.16 s after it.
 - With a TypeScript 7.0.2 server,
   hints and diagnostics arrived within 1 ms of each other at the first open
   and moved lines once;
@@ -2285,16 +2800,21 @@ the underline style,
 the severity word that starts each message row,
 and a letter in the gutter.
 
-- Error: a wavy line and `E`.
-- Warning: a dashed line and `W`.
-- Information: a dotted line and `I`.
-- Hint: sparse dots and `H`.
+- Error:
+  a wavy line and `E`.
+- Warning:
+  a dashed line and `W`.
+- Information:
+  a dotted line and `I`.
+- Hint:
+  sparse dots and `H`.
 
 #### Gutter letters
 
 The user decided on 2026-10-06 that severity is a plain letter in front of the line number,
 not an icon or a boxed marker,
-and then that the letter stands close to the number, not a long space away.
+and then that the letter stands close to the number,
+not a long space away.
 A line where diagnostics start shows the letter of the worst of them in that severity's ink:
 JetBrains Mono at the line numbers' 15 px,
 bold,
@@ -2302,8 +2822,11 @@ in a cell one letter wide that ends 4 px before that line's own number,
 whatever the number's digit count.
 Measured on rendered frames
 (`the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers`),
-6 blank pixel columns lie between the letter's ink and the number's ink before `1`, `10`, and `100` alike
-(the 4 px gap plus the side bearings of the two glyphs, antialiased edges counted as ink),
+6 blank pixel columns lie between the letter's ink and the number's ink before `1`,
+`10`,
+and `100` alike
+(the 4 px gap plus the side bearings of the two glyphs,
+antialiased edges counted as ink),
 where 1 blank column lies between the digits of `10`:
 the letter reads as a mark before the number and not as one more digit,
 and stands closer to it than one digit advance.
@@ -2312,10 +2835,13 @@ From its left edge the gutter holds 6 px,
 the 9 px letter cell,
 the 4 px gap,
 the number column,
-and the 12 px before the text, unchanged.
-The number column is as wide as the displayed file's widest line number, with at least three digits,
+and the 12 px before the text,
+unchanged.
+The number column is as wide as the displayed file's widest line number,
+with at least three digits,
 which is Helix's default minimum
-(`min_width: 3` in `helix-view/src/editor.rs`, applied in `line_numbers_width` in `helix-view/src/gutter.rs`).
+(`min_width: 3` in `helix-view/src/editor.rs`,
+applied in `line_numbers_width` in `helix-view/src/gutter.rs`).
 Both widths are measured from the font (`letter-probe` and `number-probe` in `ui/app.slint`)
 and rounded to whole pixels:
 9 px per digit and per letter,
@@ -2342,9 +2868,12 @@ A range over several lines shows its letter on its first line only,
 where its message rows stand.
 The letter belongs to the diagnostics of the displayed text:
 after an external change it goes with the message rows and returns with the new diagnostics.
-`I` and `H` extend the user's `E` and `W` by the same rule; that extension is open to the user's veto.
-Native code hands the window one number per materialized line (`State::line_marks`, set in `rows::window::present`),
-taken from the first message row of the line's block, which names the worst severity,
+`I` and `H` extend the user's `E` and `W` by the same rule;
+that extension is open to the user's veto.
+Native code hands the window one number per materialized line (`State::line_marks`,
+set in `rows::window::present`),
+taken from the first message row of the line's block,
+which names the worst severity,
 and the line count that sizes the number column.
 
 Open to the user's veto:
@@ -2355,7 +2884,8 @@ Without the minimum,
 text in a file of fewer than 10 lines would start 18 px further left than in a file of 100 lines or more,
 and would move whenever the line count crosses 9 or 99.
 
-A diagnostic without a severity is shown as a warning, as Helix shows it.
+A diagnostic without a severity is shown as a warning,
+as Helix shows it.
 A range over several lines underlines each of its rows and marks a crossed line end like a selected terminator,
 so an empty line inside it stays visible.
 A point range gets a mark one terminator wide:
@@ -2384,7 +2914,8 @@ against the dark background 8.78:1,
 12.91:1,
 9.47:1,
 and 8.22:1.
-Gutter letters, measured the same way (`gutter_letters_show_the_worst_severity_in_front_of_the_line_number`),
+Gutter letters,
+measured the same way (`gutter_letters_show_the_worst_severity_in_front_of_the_line_number`),
 reach 5.42:1 (`E`),
 5.10:1 (`W`),
 and 6.05:1 (`I`) against the light background,
@@ -2450,18 +2981,23 @@ editord draws the same rows over each line in Inter,
 hints first and each diagnostic on a row of its own at its column.
 Deliberate differences:
 
-- Position: editord pads rows with spaces whose width it estimates from one measured ratio.
+- Position:
+  editord pads rows with spaces whose width it estimates from one measured ratio.
   Here a hint or message starts at the pixel x the shaper gives its character.
-- Hint gap: editord lets a hint follow the previous one as soon as its column is reached,
+- Hint gap:
+  editord lets a hint follow the previous one as soon as its column is reached,
   counted in characters.
   Here 8 px must stay free,
   measured in pixels.
-- Hint labels: editord strips a type hint's leading `: ` and a parameter hint's trailing `:`.
+- Hint labels:
+  editord strips a type hint's leading `: ` and a parameter hint's trailing `:`.
   Here labels are shown as the server sent them.
-- Message text: editord writes `error(rustc): message`.
+- Message text:
+  editord writes `error(rustc): message`.
   Here the row reads `Error E0308 (rustc): message`,
   with the code.
-- Message ink: editord colors a line's whole block,
+- Message ink:
+  editord colors a line's whole block,
   hints included,
   in the worst severity's color,
   and shows severity by color alone.
@@ -2469,13 +3005,16 @@ Deliberate differences:
   hints keep the hint ink,
   underline styles differ,
   and the gutter shows the worst severity's letter in front of the line number.
-- Order and caps: editord lists messages in the server's order and wraps them to the editor's width without a cap.
+- Order and caps:
+  editord lists messages in the server's order and wraps them to the editor's width without a cap.
   Here they are listed worst first,
   wrap at 80 characters,
   and are capped per message and per line.
-- Spacing: editord gives every row a line height of 1.5 and no extra gap.
+- Spacing:
+  editord gives every row a line height of 1.5 and no extra gap.
   Here rows are 16 px with a 10 px gap before the block.
-- Arrival: editord lets the page reflow when rows arrive.
+- Arrival:
+  editord lets the page reflow when rows arrive.
   Here the view is held still for rows before it,
   waits for scrolling to stop,
   and holds row space across a reload.
@@ -2496,227 +3035,428 @@ and `test:native` includes it.
 The source view has no scroll bar.
 The minimap at the right edge of the view is its scroll control:
 it shows the whole file as a picture and a box over it that marks what the view shows.
-Pressing, dragging, and turning the wheel on it scroll the view, and the keys that scroll the view work as before.
-Every open detail follows CodeGlance Pro and, where that is silent, IntelliJ IDEA Community.
+Pressing,
+dragging,
+and turning the wheel on it scroll the view,
+and the keys that scroll the view work as before.
+Every open detail follows CodeGlance Pro and,
+where that is silent,
+IntelliJ IDEA Community.
 The sources read for this work are the `Nasller/CodeGlancePro` repository (the project that continues
 `Vektah/CodeGlance`;
 a repository named `Vektah/CodeGlancePro` does not exist) and the original `vektah/CodeGlance`.
-Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/ScrollState.kt`,
+Its defaults are in `core/.../CodeGlanceConfig.kt`;
+the behavior is in `render/ScrollState.kt`,
 `panel/scroll/ScrollBar.kt`,
-`panel/GlancePanel.kt`, `render/BaseMinimap.kt`, and `render/MainMinimap.kt`.
+`panel/GlancePanel.kt`,
+`render/BaseMinimap.kt`,
+and `render/MainMinimap.kt`.
 
 ### What it shows
 
-- The picture shows every line in visual rows, so soft wrap is respected:
-  a line that wraps to three rows is three rows of the picture, and the blocks of virtual rows above annotated lines
+- The picture shows every line in visual rows,
+  so soft wrap is respected:
+  a line that wraps to three rows is three rows of the picture,
+  and the blocks of virtual rows above annotated lines
   are blank stretches.
-  The rows come from the one vertical mapping (`RowMap`), never from a second estimate of the height.
-- One pixel stands for one source column, a tab for four columns, and a row of text for four pixel rows,
+  The rows come from the one vertical mapping (`RowMap`),
+  never from a second estimate of the height.
+- One pixel stands for one source column,
+  a tab for four columns,
+  and a row of text for four pixel rows,
   of which the first stays empty so rows can be told apart (CodeGlance Pro's "clean" renderer:
-  `BaseMinimap.renderClean`, weights 0.8 for printable ASCII and 0.4 for other glyphs, 0.6 for each pixel row of the
+  `BaseMinimap.renderClean`,
+  weights 0.8 for printable ASCII and 0.4 for other glyphs,
+  0.6 for each pixel row of the
   glyph).
-  Columns past the minimap's width are not drawn, as in CodeGlance Pro.
+  Columns past the minimap's width are not drawn,
+  as in CodeGlance Pro.
   The whole picture is drawn at 0.8 opacity (`srcOver0_8` in `GlancePanel.paintComponent`).
 - A text that fits the view at four pixels a row is drawn at that size and ends above the bottom of the view.
-  A longer text is scaled so the whole file fits the height of the view, and each pixel row shows the row of the text
+  A longer text is scaled so the whole file fits the height of the view,
+  and each pixel row shows the row of the text
   at its center.
-  This is CodeGlance Pro's "Fit" mode (`curDocumentHeight > visibleArea.height`); its default "Proportional" mode
+  This is CodeGlance Pro's "Fit" mode (`curDocumentHeight > visibleArea.height`);
+  its default "Proportional" mode
   slides a picture of the file with the scroll and cannot show a whole file of fifty thousand lines.
 - The glyphs take the syntax classes and the palette of the source text in the dark and the light scheme
-  (`CodeColors`, the same inks the tile uses).
+  (`CodeColors`,
+  the same inks the tile uses).
   A change of scheme builds the picture again.
-- The viewport box is the share of the text the view shows, never shorter than 20 px (CodeGlance Pro's
-  `MIN_VIEWPORT_HEIGHT`), so a very long file keeps a box that can be grabbed.
-  Its fill is the foreground ink at 0.15 opacity at rest, 0.25 under the pointer, and 0.35 while it is dragged, as in
-  CodeGlance Pro, and its border is 1 px at rest and 2 px under the pointer and while dragged.
-  CodeGlance Pro's border thickness is zero; the border is added so that no state is told by one channel only.
-  The pointer cursor is the third channel: a hand over the picture outside the box, where a press jumps, and the arrow
-  over the box, while it is dragged, and below the end of a picture shorter than the view (CodeGlance Pro shows the hand
+- The viewport box is the share of the text the view shows,
+  never shorter than 20 px (CodeGlance Pro's
+  `MIN_VIEWPORT_HEIGHT`),
+  so a very long file keeps a box that can be grabbed.
+  Its fill is the foreground ink at 0.15 opacity at rest,
+  0.25 under the pointer,
+  and 0.35 while it is dragged,
+  as in
+  CodeGlance Pro,
+  and its border is 1 px at rest and 2 px under the pointer and while dragged.
+  CodeGlance Pro's border thickness is zero;
+  the border is added so that no state is told by one channel only.
+  The pointer cursor is the third channel:
+  a hand over the picture outside the box,
+  where a press jumps,
+  and the arrow
+  over the box,
+  while it is dragged,
+  and below the end of a picture shorter than the view (CodeGlance Pro shows the hand
   only where `y` is above the end of the drawn picture).
   The fill and the border change only while the pointer is on the box (`isInRect` in `ScrollBar.updateAlpha`).
-- The minimap is 110 px wide, or a sixth of the source column in a narrow window, down to 15 px
-  (CodeGlance Pro uses a twelfth of the editor in a splitter, with the same minimum of 15 px).
-  The text area, and so the wrap width, is the source column minus the gutter, the minimap, and the caret room.
-  The source column's minimum is 288 px (the 240 px it had, plus the 48 px the minimap takes at that size), so the
+- The minimap is 110 px wide,
+  or a sixth of the source column in a narrow window,
+  down to 15 px
+  (CodeGlance Pro uses a twelfth of the editor in a splitter,
+  with the same minimum of 15 px).
+  The text area,
+  and so the wrap width,
+  is the source column minus the gutter,
+  the minimap,
+  and the caret room.
+  The source column's minimum is 288 px (the 240 px it had,
+  plus the 48 px the minimap takes at that size),
+  so the
   minimap
   never narrows the text below its old minimum.
 
 ### How it scrolls
 
-- A press outside the box moves the caret to the row under the pointer and, in the same row, to the column under it
-  (one column for each pixel), and scrolls that row to the middle of the view, also near the ends of the file
+- A press outside the box moves the caret to the row under the pointer and,
+  in the same row,
+  to the column under it
+  (one column for each pixel),
+  and scrolls that row to the middle of the view,
+  also near the ends of the file
   where the scroll range stops the view short of the middle.
-  This is CodeGlance Pro's default (`jumpOnMouseDown = MOUSE_DOWN`, `clickType = CODE_POSITION`, `moveOnly = false`,
+  This is CodeGlance Pro's default (`jumpOnMouseDown = MOUSE_DOWN`,
+  `clickType = CODE_POSITION`,
+  `moveOnly = false`,
   `ScrollType.CENTER`).
   A press with Shift held keeps the anchor of the selection and extends it to that place.
   On a line too long to shape within a click's allowance the caret goes to the start of the line.
   A press in the virtual rows above a line jumps to that line's first row.
 - A press on the box starts a drag without a jump.
   A press outside the box jumps and then continues as a drag of the box from where the jump left it
-  (`ScrollBar.mousePressed`: `dragStart`, `dragStartDelta`).
-  A drag moves the view by the pointer's distance over the room the box has, times the scroll range
-  (`ScrollBar.mouseDragged`: `maxViewportStart / movableHeight`), so the box follows the pointer one to one;
+  (`ScrollBar.mousePressed`:
+  `dragStart`,
+  `dragStartDelta`).
+  A drag moves the view by the pointer's distance over the room the box has,
+  times the scroll range
+  (`ScrollBar.mouseDragged`:
+  `maxViewportStart / movableHeight`),
+  so the box follows the pointer one to one;
   above and below the track the view stops at its ends.
   A drag never moves the caret.
-- A wheel turn over the minimap scrolls the view exactly as over the text: the minimap is a child of the scrolling
-  view, counter-translated so it stands still, and its touch area has no scroll handler, so the toolkit's own wheel
+- A wheel turn over the minimap scrolls the view exactly as over the text:
+  the minimap is a child of the scrolling
+  view,
+  counter-translated so it stands still,
+  and its touch area has no scroll handler,
+  so the toolkit's own wheel
   physics get the event.
   CodeGlance Pro also hands the wheel to the editor (`MouseEventAdapter.redispatch`).
-- The box follows the scroll live, from the scroll offset and the height of the text alone, in markup bindings.
+- The box follows the scroll live,
+  from the scroll offset and the height of the text alone,
+  in markup bindings.
   Native code does nothing for a scroll step beyond what it did before the minimap.
-- The keys keep working: PageUp, PageDown, the arrows, Home, and End are unchanged, and a press on the minimap leaves
+- The keys keep working:
+  PageUp,
+  PageDown,
+  the arrows,
+  Home,
+  and End are unchanged,
+  and a press on the minimap leaves
   the
   keyboard focus on the source view.
-- A drag, a press, and a page step set the offset and paint the tile of the new place before the next frame, the way a
+- A drag,
+  a press,
+  and a page step set the offset and paint the tile of the new place before the next frame,
+  the way a
   caret
-  key does, because a tile built by the worker for a place the drag has already left would arrive out of date and leave
+  key does,
+  because a tile built by the worker for a place the drag has already left would arrive out of date and leave
   the text blank while the pointer moves over a long file.
-- The minimap is a slider for assistive tools, labelled "Source minimap", with the offset as its value, the scroll
+- The minimap is a slider for assistive tools,
+  labelled "Source minimap",
+  with the offset as its value,
+  the scroll
   range as
-  its maximum, and a page up or down as its increment and decrement.
-- The editor's own scroll bar: CodeGlance Pro keeps it by default (`hideOriginalScrollBar = false`).
-  This view never had one, so the minimap is the only scroll control and nothing is hidden.
+  its maximum,
+  and a page up or down as its increment and decrement.
+- The editor's own scroll bar:
+  CodeGlance Pro keeps it by default (`hideOriginalScrollBar = false`).
+  This view never had one,
+  so the minimap is the only scroll control and nothing is hidden.
 
 ### Decisions where CodeGlance Pro is silent or differs
 
 - CodeGlance Pro draws an empty picture for a file over 20,000 lines (`maxLinesCount` with `outLineEmpty`).
-  The picture here has no such limit, because its cost follows the height of the track and not the length of the text.
+  The picture here has no such limit,
+  because its cost follows the height of the track and not the length of the text.
 - Its preview of the code under the pointer after 400 ms (`showEditorToolTip`) and its 7 px gutter for resizing the
   minimap are not implemented (see Limits and follow-ups).
-- A press below the end of a short picture jumps to the last line (`fitLineToEditor` clamps), and only the left button
+- A press below the end of a short picture jumps to the last line (`fitLineToEditor` clamps),
+  and only the left button
   presses.
-- The box's rounded corners (radius 5) are kept for boxes taller than 20 px and square below, as in CodeGlance Pro.
+- The box's rounded corners (radius 5) are kept for boxes taller than 20 px and square below,
+  as in CodeGlance Pro.
 
 ### Performance bounds
 
-- The picture is built on its own thread (`ide-minimap`, `src/native/minimap_build.rs`), never on the window thread.
+- The picture is built on its own thread (`ide-minimap`,
+  `src/native/minimap_build.rs`),
+  never on the window thread.
   The window thread takes a finished picture with one comparison and one image setter (`apply` in `src/native/minimap/picture.rs`).
   The window's side is split by what each part answers for in `src/native/minimap/`:
   `state.rs` holds the state and the drag,
   `pace.rs` decides when a request is posted,
   `request.rs` makes the key and posts the request,
   `picture.rs` takes in the finished pictures,
-  and `pointer.rs` turns a press, a drag, and a page step into scroll offsets.
-- The picture depends on the text, its syntax classes, the vertical mapping, the wrap width, the palette, the display
-  scale, and the size of the minimap, and on nothing else; in particular not on the scroll offset
+  and `pointer.rs` turns a press,
+  a drag,
+  and a page step into scroll offsets.
+- The picture depends on the text,
+  its syntax classes,
+  the vertical mapping,
+  the wrap width,
+  the palette,
+  the display
+  scale,
+  and the size of the minimap,
+  and on nothing else;
+  in particular not on the scroll offset
   (`Key` in `src/native/minimap_build.rs`).
   A render that changes none of these costs a comparison of a few words.
-- A request is posted at once for the first picture of a file, a new palette, and a new scale; at most every 250 ms
+- A request is posted at once for the first picture of a file,
+  a new palette,
+  and a new scale;
+  at most every 250 ms
   while
-  only the vertical mapping changes, which is how a long file's measurement shows in the picture while it runs;
-  and 120 ms after the last change for everything else, such as the size steps of a resize drag.
-  The newest request wins: the build of an older one stops at its next look at the flag, every 16 pixel rows,
+  only the vertical mapping changes,
+  which is how a long file's measurement shows in the picture while it runs;
+  and 120 ms after the last change for everything else,
+  such as the size steps of a resize drag.
+  The newest request wins:
+  the build of an older one stops at its next look at the flag,
+  every 16 pixel rows,
   and an older request that was never started is dropped.
 - A finished picture is shown only when its text stamp is the displayed text's and its request is not older than the
   picture on screen.
-- The work is bounded by the track, not by the text: at most one source line is read for each pixel row of the track
-  (a text with more rows than the track has pixel rows is sampled), and each row reads at most the minimap's width in
-  columns, so one line of two hundred thousand characters costs no more than any other.
-  Wrapped lines need their break positions: lines that cost more to shape than the budget allows are cut into rows of
+- The work is bounded by the track,
+  not by the text:
+  at most one source line is read for each pixel row of the track
+  (a text with more rows than the track has pixel rows is sampled),
+  and each row reads at most the minimap's width in
+  columns,
+  so one line of two hundred thousand characters costs no more than any other.
+  Wrapped lines need their break positions:
+  lines that cost more to shape than the budget allows are cut into rows of
   equal
-  width instead of shaped, 250,000 units for the first (quick) picture and 5,000,000 for the full one, which follows
+  width instead of shaped,
+  250,000 units for the first (quick) picture and 5,000,000 for the full one,
+  which follows
   only
   when the quick one left a rough line.
-- The picture is `4 * width * track` bytes at the display scale squared, and the worker's job holds a rope snapshot,
+- The picture is `4 * width * track` bytes at the display scale squared,
+  and the worker's job holds a rope snapshot,
   the row
-  map, and the shared syntax classes, not copies of the text.
+  map,
+  and the shared syntax classes,
+  not copies of the text.
 
 ### Measured cost
 
-The numbers are from release bundles of `main` at `be51f5b314`, the commit this branch started from (the baseline), and
-of this branch merged with `main` at `ec0ae6dbaf` (bundle sha1 `9317d00b9081a1e76373bf42905888167ffa6be5`), on one
-host, in the nested compositor 0.6.0 with its recorder at 60 frames a second and the application isolated in its own
+The numbers are from release bundles of `main` at `be51f5b314`,
+the commit this branch started from (the baseline),
+and
+of this branch merged with `main` at `ec0ae6dbaf` (bundle sha1 `9317d00b9081a1e76373bf42905888167ffa6be5`),
+on one
+host,
+in the nested compositor 0.6.0 with its recorder at 60 frames a second and the application isolated in its own
 cgroup.
 Every run listed has zero frames dropped by the recorder and a one-minute load average below 20 when it started
-(7.4 to 13.2 here; earlier batches taken while other sessions kept the host at a load of 20 to 60 were set aside).
-The harness is a copy kept outside the repository; each condition has four runs on each side, alternated in order.
+(7.4 to 13.2 here;
+earlier batches taken while other sessions kept the host at a load of 20 to 60 were set aside).
+The harness is a copy kept outside the repository;
+each condition has four runs on each side,
+alternated in order.
 
-- Scrolling a long file by wheel (160 notches down and 80 up, one every 16 ms, 230 recorded slots): in all 16 runs of
-  each build, over the 50,000-line plain text at 1100 px and at 600 px, the 50,000-line Rust file, and the 2,000-line
-  text, the longest gap between painted frames is 16.7 to 17.0 ms, 228 of 230 slots are painted, and no gap exceeds
+- Scrolling a long file by wheel (160 notches down and 80 up,
+  one every 16 ms,
+  230 recorded slots):
+  in all 16 runs of
+  each build,
+  over the 50,000-line plain text at 1100 px and at 600 px,
+  the 50,000-line Rust file,
+  and the 2,000-line
+  text,
+  the longest gap between painted frames is 16.7 to 17.0 ms,
+  228 of 230 slots are painted,
+  and no gap exceeds
   100 ms.
   The window thread's time to draw a frame has a median of 0.30 to 0.37 ms for `main` and 0.33 to 0.41 ms with the
-  minimap, and a 95th percentile of 2.0 to 3.9 ms in both, so a scroll step costs the same with the minimap.
-- Dragging the window's width from 1100 px to 600 px and back in steps of 25 px, one every 16 ms, two sweeps
-  (78 slots): the longest gap is 17.0 to 17.7 ms in all runs of both builds after leaving out the one slot at the
+  minimap,
+  and a 95th percentile of 2.0 to 3.9 ms in both,
+  so a scroll step costs the same with the minimap.
+- Dragging the window's width from 1100 px to 600 px and back in steps of 25 px,
+  one every 16 ms,
+  two sweeps
+  (78 slots):
+  the longest gap is 17.0 to 17.7 ms in all runs of both builds after leaving out the one slot at the
   junction of the sweeps where the harness commands the same width twice (it appears in 1 of 8 runs of `main` and 2 of 8
-  runs of the minimap build; the frames of that slot are identical).
-  Painted slots are 75 to 77 of 78 in both builds, and no gap exceeds 100 ms.
+  runs of the minimap build;
+  the frames of that slot are identical).
+  Painted slots are 75 to 77 of 78 in both builds,
+  and no gap exceeds 100 ms.
   The window thread's step for a new width has a median of 3.06 to 3.20 ms for `main` and 2.78 to 2.99 ms with the
-  minimap on the 50,000-line text, and 5.9 to 6.7 ms against 5.3 to 6.2 ms on the 2,000-line text.
-- The picture settles after the last width of a drag: 41 to 60 ms later on the 50,000-line text and 242 to 260 ms
-  later on the 2,000-line text (a debounce of 120 ms and the build), where `main` settles in 24 to 26 ms
+  minimap on the 50,000-line text,
+  and 5.9 to 6.7 ms against 5.3 to 6.2 ms on the 2,000-line text.
+- The picture settles after the last width of a drag:
+  41 to 60 ms later on the 50,000-line text and 242 to 260 ms
+  later on the 2,000-line text (a debounce of 120 ms and the build),
+  where `main` settles in 24 to 26 ms
   because it has no picture.
-  The text itself is current at once; only the picture is a step behind, and it is never built on the window thread.
+  The text itself is current at once;
+  only the picture is a step behind,
+  and it is never built on the window thread.
 - The frames the harness counts as not fitting the output are recorder frames that hold the buffer of the previous
   width (`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`).
   Its detector for `main` looks for ink in the last two columns of a frame and counts 45 to 53 of 102 on the
-  50,000-line text and 60 to 66 on the 2,000-line text; it cannot be used for the minimap build, whose rows reach those
+  50,000-line text and 60 to 66 on the 2,000-line text;
+  it cannot be used for the minimap build,
+  whose rows reach those
   columns.
   A detector that compares the minimap box's border against the width of the frame counts 37 to 42 of 102 on the
-  50,000-line text and 56 to 70 on the 2,000-line text in the minimap build (four runs each, on the final bundle).
-- A picture of the 50,000-line fixture is built in 13.0 to 14.7 ms (628 pixel rows at the window's height, 212 lines
-  shaped); the pictures before it, drawn while the measurement reaches more lines, take 3.1 to 16.0 ms.
-  The first picture of the right size is on screen 0.99 to 1.03 s after launch, 0.25 to 0.26 s after the first frame of
-  the text (six runs); the last, complete one, 2.48 to 2.53 s after launch, when the measurement of the whole file has
+  50,000-line text and 56 to 70 on the 2,000-line text in the minimap build (four runs each,
+  on the final bundle).
+- A picture of the 50,000-line fixture is built in 13.0 to 14.7 ms (628 pixel rows at the window's height,
+  212 lines
+  shaped);
+  the pictures before it,
+  drawn while the measurement reaches more lines,
+  take 3.1 to 16.0 ms.
+  The first picture of the right size is on screen 0.99 to 1.03 s after launch,
+  0.25 to 0.26 s after the first frame of
+  the text (six runs);
+  the last,
+  complete one,
+  2.48 to 2.53 s after launch,
+  when the measurement of the whole file has
   ended.
-  The Rust file of the same length builds pictures of 3.3 to 18.8 ms as its highlights arrive, the last at 3.8 to 4.0 s.
-  Before the last merge, the 2,000-line wrapped text took 94 to 114 ms for the quick picture and 243 to 262 ms for the
-  full one, a single line of 200,000 characters took 1.1 to 2.5 ms, and a picture for the transient height at start
+  The Rust file of the same length builds pictures of 3.3 to 18.8 ms as its highlights arrive,
+  the last at 3.8 to 4.0 s.
+  Before the last merge,
+  the 2,000-line wrapped text took 94 to 114 ms for the quick picture and 243 to 262 ms for the
+  full one,
+  a single line of 200,000 characters took 1.1 to 2.5 ms,
+  and a picture for the transient height at start
   took 0.7 to 1.1 ms.
-- Memory, median resident size of six runs: the minimap bundle holds 445.1 MB on the 50,000-line text against 443.3 MB
+- Memory,
+  median resident size of six runs:
+  the minimap bundle holds 445.1 MB on the 50,000-line text against 443.3 MB
   for the baseline `main` and 444.7 MB for the current `main` (bundle sha1 `c46d89cd7b1850a0f607aa34170f5fec41d03926`),
   and 592.1 MB on the Rust file against 588.1 MB and 592.3 MB.
-  Against the current `main` the minimap bundle is 0.4 MB above on the text and 0.2 MB below on the Rust file, which is
-  less than the spread between runs of one bundle (1.5 to 10.2 MB); the difference to the baseline comes with the work
+  Against the current `main` the minimap bundle is 0.4 MB above on the text and 0.2 MB below on the Rust file,
+  which is
+  less than the spread between runs of one bundle (1.5 to 10.2 MB);
+  the difference to the baseline comes with the work
   merged from `main`.
-  The picture itself is `4 * width * track` bytes, 276 KB at 110 by 628 px.
+  The picture itself is `4 * width * track` bytes,
+  276 KB at 110 by 628 px.
   The minimap bundle runs 28 or 29 threads against 26 to 29 for the two `main` bundles.
 
 ### Limits and follow-ups
 
 - Marks are not drawn.
-  CodeGlance Pro paints the caret line, the selection, the highlighters of the error stripe (find matches and
+  CodeGlance Pro paints the caret line,
+  the selection,
+  the highlighters of the error stripe (find matches and
   diagnostics),
-  and version control marks into the picture, and IntelliJ's error stripe shows find matches and problems on its scroll
+  and version control marks into the picture,
+  and IntelliJ's error stripe shows find matches and problems on its scroll
   bar.
-  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`, kept cheap by building
+  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`,
+  kept cheap by building
   them
-  with the picture (a diagnostic and a find match each name a source position, so no shaping is needed), and they would
+  with the picture (a diagnostic and a find match each name a source position,
+  so no shaping is needed),
+  and they would
   need a key part for the find and diagnostic snapshots.
-- The code preview after 400 ms, the resizable width, and a drag with the middle button are not implemented.
-- A picture of a text with many long wrapped lines may be rough for a moment after a new wrap width, because the quick
-  picture cuts what it cannot afford into rows of equal width; the full picture follows within a second.
-- A picture is drawn at the size of the minimap, so a very wide display scale makes a larger picture
+- The code preview after 400 ms,
+  the resizable width,
+  and a drag with the middle button are not implemented.
+- A picture of a text with many long wrapped lines may be rough for a moment after a new wrap width,
+  because the quick
+  picture cuts what it cannot afford into rows of equal width;
+  the full picture follows within a second.
+- A picture is drawn at the size of the minimap,
+  so a very wide display scale makes a larger picture
   (`4 * width * track` bytes at that scale squared).
-- The minimap shows the first 110 columns of each row, like CodeGlance Pro; text farther right is not drawn.
+- The minimap shows the first 110 columns of each row,
+  like CodeGlance Pro;
+  text farther right is not drawn.
 
 ### Minimap checks
 
 `mise run //package/desktop-app/ide:test:minimap` runs the integration tests of the geometry and the picture
-(`tests/minimap.rs`), and `test:native` runs the window tests (`src/native/minimap_tests.rs`):
-the box against the geometry at every offset, a short text, a press that jumps and the keys afterwards, a drag with both
-clamps and the release, hover with two channels, the wheel over the minimap against the wheel over the text,
-a picture built on the worker within its bounds, no request or picture for a scroll, a worker held at its gate
-that never blocks the view, a new wrap width, the accept rule for stale pictures, the palette inks in both schemes
-and the new highlights, fifty thousand lines, and the pace of requests for each kind of change.
+(`tests/minimap.rs`),
+and `test:native` runs the window tests (`src/native/minimap_tests.rs`):
+the box against the geometry at every offset,
+a short text,
+a press that jumps and the keys afterwards,
+a drag with both
+clamps and the release,
+hover with two channels,
+the wheel over the minimap against the wheel over the text,
+a picture built on the worker within its bounds,
+no request or picture for a scroll,
+a worker held at its gate
+that never blocks the view,
+a new wrap width,
+the accept rule for stale pictures,
+the palette inks in both schemes
+and the new highlights,
+fifty thousand lines,
+and the pace of requests for each kind of change.
 `inspect:source-guards` removes each rule in a disposable copy and checks that its named test fails:
-`minimap-box-share`, `minimap-drag-ratio`, `minimap-position-clamp`, `minimap-work-budget`, `minimap-press-centers`,
-`minimap-press-caret`, `minimap-shift-anchor`, `minimap-drag-scrolls`, `minimap-release-ends-drag`,
-`minimap-wheel-reaches-view`, `minimap-key-has-no-scroll`, `minimap-built-on-worker`, `minimap-stale-text`,
-`minimap-older-request`, `minimap-follows-measurement`, `minimap-resize-keeps-wait`, and `minimap-throttle-period`.
+`minimap-box-share`,
+`minimap-drag-ratio`,
+`minimap-position-clamp`,
+`minimap-work-budget`,
+`minimap-press-centers`,
+`minimap-press-caret`,
+`minimap-shift-anchor`,
+`minimap-drag-scrolls`,
+`minimap-release-ends-drag`,
+`minimap-wheel-reaches-view`,
+`minimap-key-has-no-scroll`,
+`minimap-built-on-worker`,
+`minimap-stale-text`,
+`minimap-older-request`,
+`minimap-follows-measurement`,
+`minimap-resize-keeps-wait`,
+and `minimap-throttle-period`.
 
 Two native tests failed in full runs of the suite that run its tests in parallel (`mise run test:native` without a
-filter; a filtered run is serial, and none of its 42 runs on this branch or on `main` failed).
-In 23 such runs on this branch, `the_view_follows_the_caret_through_every_visual_row` failed 3 times (for example
-"after 161 Down presses the caret is on the drawn row 120 of 162", with a row map of 121 rows) and
+filter;
+a filtered run is serial,
+and none of its 42 runs on this branch or on `main` failed).
+In 23 such runs on this branch,
+`the_view_follows_the_caret_through_every_visual_row` failed 3 times (for example
+"after 161 Down presses the caret is on the drawn row 120 of 162",
+with a row map of 121 rows) and
 `find_box_context_menu_runs_each_entry` failed once (the menu's Select All did not select the whole find text).
-In 10 such runs on `main` the first of these failed once with the same assertion (left 120, right 147).
-The row count the test reads before its Down presses is larger than the row map's count afterwards, so the test reads
-the map before the measurement has finished shrinking it; the find box failure was seen once and its cause is not
+In 10 such runs on `main` the first of these failed once with the same assertion (left 120,
+right 147).
+The row count the test reads before its Down presses is larger than the row map's count afterwards,
+so the test reads
+the map before the measurement has finished shrinking it;
+the find box failure was seen once and its cause is not
 determined.
 The layout tests were adjusted for the 288 px source column and the minimap's width in
-`src/native/sidebar_tests.rs` (`minimap_beside`, `text_area`).
+`src/native/sidebar_tests.rs` (`minimap_beside`,
+`text_area`).
 
 ## Fonts and appearance
 
@@ -2830,7 +3570,9 @@ and the second channel is a weight or the real italic face of JetBrains Mono.
   because the line itself cannot be drawn.
 - `markup.raw.inline`:
   green;
-  the backticks, which stay in the default ink, mark the boundary.
+  the backticks,
+  which stay in the default ink,
+  mark the boundary.
 - `markup.link` (text and reference labels):
   blue,
   semibold (plus 200).
@@ -2858,7 +3600,8 @@ at least 6.6:1 in both schemes against an assumed near black and white backgroun
   backticks,
   `>`,
   table pipes,
-  `---`) are `punctuation` captures, which paint in the default ink in every language.
+  `---`) are `punctuation` captures,
+  which paint in the default ink in every language.
 - The text of a fenced block has no block color:
   a block color would show through every token its own language leaves unpainted.
   A fence in a language without a bundled grammar and an indented code block stay in the default ink.
@@ -2912,18 +3655,23 @@ Every movement key also has a Shift form that extends the selection from its anc
   digits,
   and underscores;
   a run of punctuation is a stop of its own.
-- Home and End follow the visual rows of a wrapped line, as IntelliJ's smart Home and End do
-  (`EditorActionUtil.moveCaretToLineStart` and `moveCaretToLineEnd`; `src/line_boundary.rs`).
+- Home and End follow the visual rows of a wrapped line,
+  as IntelliJ's smart Home and End do
+  (`EditorActionUtil.moveCaretToLineStart` and `moveCaretToLineEnd`;
+  `src/line_boundary.rs`).
   Home goes to the start of the visual row.
   At the start of a continuation row it goes to the first non-blank character of the line's first row.
-  On the first row it alternates: from the line start to the first non-blank character,
+  On the first row it alternates:
+  from the line start to the first non-blank character,
   from a place after that character to it,
   and from it or from inside the indent to the line start.
   End goes to the end of the visual row without its trailing blanks,
   then to the end of the row,
   and from the end of a row that is not the last to the end of the line before its terminator,
   again without trailing blanks first.
-  On the last row, End at the end of the line goes back before its trailing blanks, as IntelliJ's does.
+  On the last row,
+  End at the end of the line goes back before its trailing blanks,
+  as IntelliJ's does.
   Ctrl+Home and Ctrl+End move to the start and the end of the text.
 - Up and Down move by one visual row and aim for the horizontal pixel position
   where the run of vertical movements started (IntelliJ's `CaretImpl.myDesiredX`),
@@ -2934,11 +3682,13 @@ Every movement key also has a Shift form that extends the selection from its anc
   A caret that aims past the end of a shorter upper row stops at its end and stays drawn on that row.
 - PageUp and PageDown move the caret and the view by the whole visual rows in view.
   A block of virtual rows counts with the first row of its line.
-- Ctrl+Left and Ctrl+Right move by document offset, so a wrap offset is no stop and no obstacle.
+- Ctrl+Left and Ctrl+Right move by document offset,
+  so a wrap offset is no stop and no obstacle.
 - A caret at the offset where a visual row breaks stands on one of two sides:
   at the end of the upper row or at the start of the lower row.
   The side is part of the reading position (`ReadingPosition::affinity`).
-  A click keeps the clicked side, End on the upper row leaves the caret at its end,
+  A click keeps the clicked side,
+  End on the upper row leaves the caret at its end,
   and every other move puts it at the start of the lower row.
 - Ctrl+A selects everything,
   and Ctrl+C copies the selection as original source text.
@@ -2965,10 +3715,13 @@ A double click selects a word,
 a punctuation run,
 or a run of blanks,
 the whole of it when it spans several visual rows;
-a triple click selects the whole logical line with its terminator, all its visual rows.
-Two quick presses on different visual rows of one line are two single clicks, as the distance between them is a row.
+a triple click selects the whole logical line with its terminator,
+all its visual rows.
+Two quick presses on different visual rows of one line are two single clicks,
+as the distance between them is a row.
 Shift+click extends from the anchor.
-A drag extends by the unit of its press, across visual rows and lines,
+A drag extends by the unit of its press,
+across visual rows and lines,
 and scrolls when it passes an edge of the view.
 A selected line terminator is shown as a mark after the line's text,
 so a selected empty line stays visible.
@@ -3068,7 +3821,9 @@ The concrete caret and replacement-selection cases in the accepted scope pass th
 ## Change watching
 
 The tree and the displayed file follow external changes through Linux inotify,
-using the `notify` crate 8.2.0 (`INotifyWatcher` by name, default features off, no polling backend).
+using the `notify` crate 8.2.0 (`INotifyWatcher` by name,
+default features off,
+no polling backend).
 The same inotify instance also watches the project's source folders for the language servers;
 see [Watching for the language servers](#watching-for-the-language-servers).
 Only what is shown is watched,
@@ -3220,7 +3975,9 @@ The IDE holds one watch per shown folder:
 and 101 with 100,
 counted from its inotify descriptors in `/proc` (`inspect:idle-cost`).
 Watching only the folders in the tree's viewport was measured as the alternative
-(`inspect:watch-scope`, 60 expanded folders, three runs each):
+(`inspect:watch-scope`,
+60 expanded folders,
+three runs each):
 it held 5 watches instead of 61,
 but in 48 of 60 trials a folder changed while out of view showed its old listing
 for a median of 61 to 85 ms per run,
@@ -3234,12 +3991,15 @@ The language servers count against the same limit;
 see [Watching for the language servers](#watching-for-the-language-servers).
 
 The IDE's own podman tasks run their containers with `--network=none`,
-except `fetch` and `runtime`, which download;
+except `fetch` and `runtime`,
+which download;
 podman's default network starts a pasta helper per container,
 which holds an inotify watch and warns when the limit is reached.
 
 A positive control runs the IDE in a disposable user namespace whose own watch limit is 4
-(`inspect:watch-limit`, 12 expanded folders, the host limit untouched):
+(`inspect:watch-limit`,
+12 expanded folders,
+the host limit untouched):
 in each of two runs,
 one warning,
 no per-folder warning,
@@ -3358,18 +4118,29 @@ and its displayed file imports a constant whose export is removed outside the ID
 
 #### Before: the build at `45db45d02`
 
-- rust-analyzer watched by itself: 3081 watches in both runs, 1080 for sources and 2001 for `node_modules`.
-- TypeScript: no watches at all.
+- rust-analyzer watched by itself:
+  3081 watches in both runs,
+  1080 for sources and 2001 for `node_modules`.
+- TypeScript:
+  no watches at all.
 
 #### After: the IDE watches for the servers
 
-- Rust: 1082 watches in both runs, all held by the IDE and all on source folders; rust-analyzer held none.
+- Rust:
+  1082 watches in both runs,
+  all held by the IDE and all on source folders;
+  rust-analyzer held none.
   The displayed file's diagnostic appeared 2008 and 745 ms after the write.
-- TypeScript: 42 watches in both runs, all held by the IDE; the diagnostic appeared after 102 and 60 ms.
+- TypeScript:
+  42 watches in both runs,
+  all held by the IDE;
+  the diagnostic appeared after 102 and 60 ms.
 
 #### Positive control: the same build without forwarding
 
-- Rust and TypeScript: no watches, and the diagnostics stayed unchanged for 60 s in both runs of each.
+- Rust and TypeScript:
+  no watches,
+  and the diagnostics stayed unchanged for 60 s in both runs of each.
 
 On this repository,
 ripgrep lists files in 1549 folders,
@@ -3476,18 +4247,42 @@ ranges give the lowest and highest run.
 
 #### One expanded folder
 
-- 1 s sweep: 3.0 to 3.2 ms of CPU per second, 59 to 67 read calls, 2 listings, 301 system calls per second.
-- 10 s sweep: 2.5 to 2.8 ms of CPU per second, 50 to 52 read calls, 0.2 listings, 256 system calls per second.
+- 1 s sweep:
+  3.0 to 3.2 ms of CPU per second,
+  59 to 67 read calls,
+  2 listings,
+  301 system calls per second.
+- 10 s sweep:
+  2.5 to 2.8 ms of CPU per second,
+  50 to 52 read calls,
+  0.2 listings,
+  256 system calls per second.
 
 #### 12 expanded folders
 
-- 1 s sweep: 7.3 to 8.2 ms of CPU per second, 84 to 90 read calls, 12.9 listings, 561 system calls per second.
-- 10 s sweep: 4.7 to 5.2 ms of CPU per second, 54 to 57 read calls, 1.3 listings, 284 system calls per second.
+- 1 s sweep:
+  7.3 to 8.2 ms of CPU per second,
+  84 to 90 read calls,
+  12.9 listings,
+  561 system calls per second.
+- 10 s sweep:
+  4.7 to 5.2 ms of CPU per second,
+  54 to 57 read calls,
+  1.3 listings,
+  284 system calls per second.
 
 #### 100 expanded folders
 
-- 1 s sweep: 45.0 to 45.5 ms of CPU per second, 154 to 168 read calls, 49.9 listings, 1353 system calls per second.
-- 10 s sweep: 26.0 to 26.3 ms of CPU per second, 73 to 90 read calls, 10.1 listings, 480 system calls per second.
+- 1 s sweep:
+  45.0 to 45.5 ms of CPU per second,
+  154 to 168 read calls,
+  49.9 listings,
+  1353 system calls per second.
+- 10 s sweep:
+  26.0 to 26.3 ms of CPU per second,
+  73 to 90 read calls,
+  10.1 listings,
+  480 system calls per second.
 
 #### Reading the numbers
 
@@ -3505,7 +4300,8 @@ it sweeps too,
 at 10 listings per second with 100 folders,
 and what else grows with the tree was not separated.
 The IDE logged at debug level during these measurements
-(since 2026-10-06 the default is warnings, and the measurement sets `RUST_LOG` for the records it reads),
+(since 2026-10-06 the default is warnings,
+and the measurement sets `RUST_LOG` for the records it reads),
 four lines per listing:
 9,
 52,
@@ -3633,87 +4429,134 @@ By default it holds warnings and errors.
 The standard `RUST_LOG` variable adds detail in `tracing-subscriber`'s directive syntax,
 for example `RUST_LOG=ide_app=debug,monochromatic_ide=debug` for every record of the application,
 which was the fixed level before 2026-10-06.
-A directive in `RUST_LOG` replaces an earlier one for the same target, so it can also reduce the log.
+A directive in `RUST_LOG` replaces an earlier one for the same target,
+so it can also reduce the log.
 `helix-lsp` writes every protocol message in full at INFO,
-so it stays at warnings whatever `RUST_LOG` says, unless `RUST_LOG` names a `helix_lsp` target itself;
-a bare level below warnings, such as `RUST_LOG=error`, applies to it too (`src/logging.rs`).
+so it stays at warnings whatever `RUST_LOG` says,
+unless `RUST_LOG` names a `helix_lsp` target itself;
+a bare level below warnings,
+such as `RUST_LOG=error`,
+applies to it too (`src/logging.rs`).
 
 `helix-lsp` logs three kinds of record at ERROR for servers that work as intended.
-The application lowers exactly those, keeping their text, target, and source location
+The application lowers exactly those,
+keeping their text,
+target,
+and source location
 (`src/logging/relabel.rs`):
 
-- a line the server wrote to its standard error, `{name} err <- "{line}"`, to INFO;
-- the end of that stream, on every server exit, `{name} err: <- StreamClosed`, to DEBUG;
+- a line the server wrote to its standard error,
+  `{name} err <- "{line}"`,
+  to INFO;
+- the end of that stream,
+  on every server exit,
+  `{name} err: <- StreamClosed`,
+  to DEBUG;
 - an error answer with code `-32801` (content modified) or `-32800` (request cancelled),
-  which the worker asks again for, to DEBUG.
+  which the worker asks again for,
+  to DEBUG.
 
 Every other `helix-lsp` record keeps its level,
 including error answers with any other code and failures to read or write a server's streams.
 `RUST_LOG=helix_lsp=debug` shows the re-labelled records together with the protocol messages.
 
 Each server's last standard-error lines are kept whatever the log shows (`src/logging/stderr_tail.rs`):
-the newest 8 lines per server, each cut to 512 bytes at a character boundary and then marked ` [cut]`.
-`helix-lsp` passes every line on as an ERROR record, so they are kept unless the log is off entirely.
-When a server process ends without being asked to, during its start or after it,
-the worker's warning `language server process ended` lists them in its `stderr_tail` field, oldest first.
+the newest 8 lines per server,
+each cut to 512 bytes at a character boundary and then marked ` [cut]`.
+`helix-lsp` passes every line on as an ERROR record,
+so they are kept unless the log is off entirely.
+When a server process ends without being asked to,
+during its start or after it,
+the worker's warning `language server process ended` lists them in its `stderr_tail` field,
+oldest first.
 That warning waits up to 1 s for the end of the server's standard error,
 because `helix-lsp` can report the end of the process before its last lines;
-the session state does not wait, and a warning still waiting when the worker stops is written then.
+the session state does not wait,
+and a warning still waiting when the worker stops is written then.
 When the worker stops a server that did not answer `initialize` in time,
 the start-deadline error is followed by the warning
 `language server wrote this to standard error before it was stopped`
-with the lines so far, and only when there are some.
-A clean shutdown, and a server the worker stops for any other reason, log nothing more.
+with the lines so far,
+and only when there are some.
+A clean shutdown,
+and a server the worker stops for any other reason,
+log nothing more.
 The log keeps all of them;
-the window shows the last four of a failed start, each cut to 200 bytes, in the reason of that start
+the window shows the last four of a failed start,
+each cut to 200 bytes,
+in the reason of that start
 ([Why a feature is missing](#why-a-feature-is-missing)).
-`helix-lsp` names a line's server by its configured name only, so two processes of one name share a tail;
-lines a process writes after its lines were reported, or after the worker stopped it,
-are dropped until its standard error ends, so they are never reported as a later process's words.
+`helix-lsp` names a line's server by its configured name only,
+so two processes of one name share a tail;
+lines a process writes after its lines were reported,
+or after the worker stopped it,
+are dropped until its standard error ends,
+so they are never reported as a later process's words.
 
 Records go through a queue to one writer thread (`src/logging/background.rs`),
-so no thread of the application, the interface thread included, waits for the output.
-A reader that stops reading, or a disk that holds an append for seconds, blocks only that writer thread.
+so no thread of the application,
+the interface thread included,
+waits for the output.
+A reader that stops reading,
+or a disk that holds an append for seconds,
+blocks only that writer thread.
 The queue holds at most 8 MiB of formatted records.
 A record that does not fit is dropped and counted;
 the next record that fits is preceded by one warning line,
 `N log records (B bytes) were not written because the log output did not accept them in time; the log has a gap here`,
-which the writer thread writes itself, without a level filter.
-A clean exit waits up to one second for the queue to be written, then exits anyway;
+which the writer thread writes itself,
+without a level filter.
+A clean exit waits up to one second for the queue to be written,
+then exits anyway;
 records still queued then are lost without a report,
 because the only place to report them is the output that is not accepting.
-The inspection tool `ide-language-inspect` logs the worker's debug records by default, to standard error,
-through the same filter and re-labelling, and writes synchronously.
+The inspection tool `ide-language-inspect` logs the worker's debug records by default,
+to standard error,
+through the same filter and re-labelling,
+and writes synchronously.
 
 Checks:
-`test:language logging` runs the filter, re-labelling, and queue tests,
+`test:language logging` runs the filter,
+re-labelling,
+and queue tests,
 among them `logging::background::tests::a_blocked_output_never_delays_the_logging_thread`,
 which logs 5000 records through the real subscriber while the output stalls for 4 s;
 `inspect:language-lifecycle-guards` makes the full queue wait for room and observes that test fail.
 The kept lines have unit tests in `src/logging/stderr_tail_tests.rs` and `src/language/attach/report_tests.rs`,
 and scripted-server tests in `tests/language/quiet.rs`:
 a server that writes a line at its start and one right before it exits with status 7,
-one that exits with status 3 when `initialize` arrives, one that never answers `initialize`,
-and the clean lifetime, which must log neither the field nor an ended-server record.
-The guard tool stops keeping lines, stops waiting for the end of the stream,
-and reports the lines on a clean shutdown, and observes the named test fail each time.
+one that exits with status 3 when `initialize` arrives,
+one that never answers `initialize`,
+and the clean lifetime,
+which must log neither the field nor an ended-server record.
+The guard tool stops keeping lines,
+stops waiting for the end of the stream,
+and reports the lines on a clean shutdown,
+and observes the named test fail each time.
 `mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
 runs the IDE in the nested compositor with every application record on
 and its standard output on a FIFO that is never read,
 moves the caret with key presses for 30 s,
 and reads from the IDE's own records the longest pause between two keys the window handled;
-it also records how long the window's Slint MCP server, which runs on the event loop, takes to answer.
+it also records how long the window's Slint MCP server,
+which runs on the event loop,
+takes to answer.
 The same sources with the writer replaced by plain standard output are the control.
-On 2026-10-06, at a load average near 90 on 16 processors,
+On 2026-10-06,
+at a load average near 90 on 16 processors,
 the shipped build handled 494 keys with a longest pause of 2.2 s and answered every probe within 5 s,
-and the control handled 8 keys, then paused 31.8 s and left 6 probes unanswered
+and the control handled 8 keys,
+then paused 31.8 s and left 6 probes unanswered
 (`~/temp/agent/ide-log-stall-RMpmMv/results.json`).
-A pause of 5 s or more fails the shipped build; single slower answers occur on a busy host without any log involved.
+A pause of 5 s or more fails the shipped build;
+single slower answers occur on a busy host without any log involved.
 
 A bare `RUST_LOG=debug` also turns on the debug records of every library:
 the log up to the first window grew from about 60 KB to about 747 KB,
 while the time to the first window stayed within the spread of three sessions each
-(0.7 to 10.5 s with the application's records, 1.4 to 2.6 s with every record, load average near 80).
+(0.7 to 10.5 s with the application's records,
+1.4 to 2.6 s with every record,
+load average near 80).
 
 ## Build boundary
 
@@ -3759,7 +4602,8 @@ in the bounded container described under [Build boundary](#build-boundary).
 unstripped,
 to `dist/monochromatic-ide`:
 one executable that carries its language runtime and its license texts
-(decided on 2026-10-06: "Ship as single file").
+(decided on 2026-10-06:
+"Ship as single file").
 It runs from any location,
 alone,
 without the source tree and without `HELIX_RUNTIME` in the environment.
@@ -3805,22 +4649,28 @@ LICENSES/crates.json             license texts of the Rust crates, collected by 
 ```
 
 On 2026-10-06 that was 1,254 files and 34,659,293 bytes:
-27 parser libraries (33,463,328 bytes, from 11,098,288 for `sql.so` down to 20,464 for `json.so`),
+27 parser libraries (33,463,328 bytes,
+from 11,098,288 for `sql.so` down to 20,464 for `json.so`),
 1,193 query files of 341 languages (1,087,532 bytes),
 28 grammar notices (39,593 bytes),
 Helix's license,
 the two application license texts,
 the two font notices,
 and the manifest.
-Inter and JetBrains Mono themselves are compiled in through Slint, as before.
+Inter and JetBrains Mono themselves are compiled in through Slint,
+as before.
 `monochromatic-ide --licenses` prints the embedded license and notice texts
-(decided on 2026-10-06: "--licenses flag"; `src/runtime/notices.rs`):
+(decided on 2026-10-06:
+"--licenses flag";
+`src/runtime/notices.rs`):
 every file below `LICENSES/` and `runtime/licenses/`,
 and every other file whose name contains `LICENSE` or `LICENCE` or starts with `COPYING` or `NOTICE`,
 which adds `runtime/Helix-LICENSE` and `runtime/queries/snakemake/LICENSE`;
 34 files on 2026-10-06.
-The two read-me files among the queries (`ecma/README.md`, a description of query inheritance,
-and `ripple/readme.md`, a source link) are not license terms and are left out.
+The two read-me files among the queries (`ecma/README.md`,
+a description of query inheritance,
+and `ripple/readme.md`,
+a source link) are not license terms and are left out.
 Each text comes in full under a framed heading that names its component and its embedded path,
 for example `Language grammar rust: LICENSE` above `Embedded as runtime/licenses/rust/LICENSE`.
 Every text is digest-checked before anything is printed,
@@ -3835,48 +4685,64 @@ The table's key (`c47e913b79bf6a42` for that runtime) is a digest of every path 
 ### Rust crate license texts
 
 The user decided on 2026-10-06 to collect every Rust crate's license text with a notice generator,
-and narrowed the choice the same day: "No need to consider any alternatives. Just it." (cargo-about).
+and narrowed the choice the same day:
+"No need to consider any alternatives.
+Just it."
+(cargo-about).
 
 #### What was established before wiring it in
 
 - Version:
-  cargo-about 0.9.2, the latest release (2026-08-18).
+  cargo-about 0.9.2,
+  the latest release (2026-08-18).
   Its crates.io archive (sha256 `0cd19d99696eb83f0a2d6ab7a347b14968d2980416c8cca827ded220e6e9c4bb`)
   names commit `f7394d5c8f618623573072caadf6594821c789b6` in `.cargo_vcs_info.json`,
   and its files equal that tag's apart from Cargo's normalized manifest.
   The command needs the `cli` feature:
   `cargo install --locked --features cli --version 0.9.2 cargo-about`
   (without `--features cli` the install compiles for minutes and then installs nothing).
-  Its book documents `-L, --log-level`; 0.9.2 accepts only `-L`.
+  Its book documents `-L, --log-level`;
+  0.9.2 accepts only `-L`.
 - License:
   cargo-about is MIT OR Apache-2.0 and runs only while building;
   none of its code is compiled into the executable.
   What the executable gains is each crate's own license file,
-  or, when a crate ships none that cargo-about recognizes,
+  or,
+  when a crate ships none that cargo-about recognizes,
   the standard text of the chosen license from the SPDX License List data compiled into cargo-about
   (`spdx` 0.13.4).
 - Offline:
   with `--frozen` (`--locked` plus `--offline`) cargo-about creates no HTTP client
-  (`src/cargo-about/generate.rs`, the `client` binding after "gathered {} crates"),
+  (`src/cargo-about/generate.rs`,
+  the `client` binding after "gathered {} crates"),
   so license files that a configuration would fetch from a crate's git repository are not used,
   and Cargo resolves the graph from the local registry.
   Its license store is compiled in (`Store::load_inline` in `src/licenses.rs`).
   The crate sources come from the `ide-cargo` volume that the `fetch` task fills.
   Installing the tool is the one step that needs the network,
-  so it belongs to the image build (`Containerfile`), as `rustfmt` already does.
+  so it belongs to the image build (`Containerfile`),
+  as `rustfmt` already does.
   The trial ran with `--network=none`,
   the package and `ide-cargo` mounted read-only,
   and exited with status 0.
 - Trial against the IDE at commit `4b8b03663`
-  (target `x86_64-unknown-linux-gnu`, build and dev dependencies ignored, the unpublished package itself ignored):
-  - 424 crates, 6 of them Helix crates from git.
+  (target `x86_64-unknown-linux-gnu`,
+  build and dev dependencies ignored,
+  the unpublished package itself ignored):
+  - 424 crates,
+    6 of them Helix crates from git.
     `cargo tree --edges normal,no-proc-macro` names 369 crates besides the IDE linked into the executable,
     all among them;
-    the other 55 are procedural-macro crates and their dependencies, which run only while compiling.
+    the other 55 are procedural-macro crates and their dependencies,
+    which run only while compiling.
     The 187 registry crates whose source paths appear inside that release executable are all among them too.
   - 29 distinct license expressions.
-    The most common: `MIT OR Apache-2.0` (188 crates), `MIT` (82), `Apache-2.0 OR MIT` (47),
-    `Unicode-3.0` (25), `Apache-2.0` (15),
+    The most common:
+    `MIT OR Apache-2.0` (188 crates),
+    `MIT` (82),
+    `Apache-2.0 OR MIT` (47),
+    `Unicode-3.0` (25),
+    `Apache-2.0` (15),
     Slint's `GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0` (10),
     and `MPL-2.0` (9).
     Unusual spellings parse as well:
@@ -3888,7 +4754,8 @@ and narrowed the choice the same day: "No need to consider any alternatives. Jus
     As a positive control,
     the same run without `GPL-3.0-only` among the accepted licenses failed with status 1,
     naming all ten Slint crates.
-  - Two runs gave byte-identical output; one took 55.7 s on 2 CPUs.
+  - Two runs gave byte-identical output;
+    one took 55.7 s on 2 CPUs.
   - cargo-about reads no NOTICE files.
     In the fetched registry only `cfg_aliases` ships one (`NOTICES.md`),
     and it is a build dependency outside the graph.
@@ -3901,9 +4768,15 @@ and narrowed the choice the same day: "No need to consider any alternatives. Jus
   in an image built before this change,
   stops and names the `image` task.
 - `notices` runs after `fetch`:
-  cargo-about's `generate` with `--frozen`, `--fail`, `--config about.toml`,
-  and `--output-file target/crate-licenses.json`, on the template `about.json.hbs`.
-  It keeps the file while a SHA-256 over `Cargo.lock`, `Cargo.toml`, `about.toml`, `about.json.hbs`,
+  cargo-about's `generate` with `--frozen`,
+  `--fail`,
+  `--config about.toml`,
+  and `--output-file target/crate-licenses.json`,
+  on the template `about.json.hbs`.
+  It keeps the file while a SHA-256 over `Cargo.lock`,
+  `Cargo.toml`,
+  `about.toml`,
+  `about.json.hbs`,
   and the cargo-about version is unchanged (`target/crate-licenses.inputs`).
   Every task that builds the application binary with the `gui` feature depends on it;
   `build.rs` embeds the file as `LICENSES/crates.json`
@@ -3920,18 +4793,33 @@ and narrowed the choice the same day: "No need to consider any alternatives. Jus
   then the crates by name and version wrapped to 78 columns,
   then `Text from the crate file annotate-snippets-0.12.16/LICENSE-MIT`
   or `Text: the standard text of this license (no crate file was recognized)`.
-- `about.toml` accepts, in this order of preference for crates offered under several licenses:
-  MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, Zlib, Unicode-3.0, MPL-2.0, CC0-1.0, Unlicense, GPL-3.0-only.
+- `about.toml` accepts,
+  in this order of preference for crates offered under several licenses:
+  MIT,
+  Apache-2.0,
+  ISC,
+  BSD-2-Clause,
+  BSD-3-Clause,
+  Zlib,
+  Unicode-3.0,
+  MPL-2.0,
+  CC0-1.0,
+  Unlicense,
+  GPL-3.0-only.
   A dependency under any other license stops the task until it is reviewed.
 - On 2026-10-06 the list held 197 texts for 424 crates,
   193 of them read from the crates' own files,
   402,423 bytes of text in a 461,974-byte file.
-  Standard texts cover 12 MIT crates, 5 Apache-2.0 crates,
-  the ten Slint crates (GPL-3.0-only; the `slint` crate keeps that text in a `LICENSES/` folder,
+  Standard texts cover 12 MIT crates,
+  5 Apache-2.0 crates,
+  the ten Slint crates (GPL-3.0-only;
+  the `slint` crate keeps that text in a `LICENSES/` folder,
   which cargo-about did not pick),
-  and five Helix crates (MPL-2.0; Helix keeps its license file only at its repository root,
+  and five Helix crates (MPL-2.0;
+  Helix keeps its license file only at its repository root,
   which `runtime/Helix-LICENSE` already carries).
-  Preferring Apache-2.0 over MIT gave 117 texts of 621,736 bytes, 66 crates on the standard Apache-2.0 text;
+  Preferring Apache-2.0 over MIT gave 117 texts of 621,736 bytes,
+  66 crates on the standard Apache-2.0 text;
   preferring BSD-3-Clause over Apache-2.0 gave 224 texts,
   because cargo-about then took every BSD header among the source files of moxcms and pxfm as its own text.
   The task took 99 s with its `fetch` step.
@@ -3950,7 +4838,8 @@ and narrowed the choice the same day: "No need to consider any alternatives. Jus
 - Slint under `GPL-3.0-only`,
   whose text the executable already carries,
   rather than the royalty-free license,
-  which asks for Slint's attribution (the `AboutSlint` widget in an About screen, or a badge on a public page).
+  which asks for Slint's attribution (the `AboutSlint` widget in an About screen,
+  or a badge on a public page).
 
 ### Where language files come from
 
@@ -3982,13 +4871,16 @@ and reads grammars and queries through `src/runtime.rs`:
   Only the languages of displayed files (and of their injections) are unpacked.
 - Every load first checks the embedded bytes against their build-time digest,
   then compares the cached file with them byte for byte.
-  A missing, shortened, or altered cached file is written again and logged as a warning;
+  A missing,
+  shortened,
+  or altered cached file is written again and logged as a warning;
   a damaged embedded part is reported under the source
   ("The file runtime/grammars/sql.so embedded in … is damaged …"),
   the file stays readable as plain text,
   and nothing is unpacked for it.
 - When the highlighting engine cannot start at all,
-  a file no language applies to, such as a `.txt` file,
+  a file no language applies to,
+  such as a `.txt` file,
   is plain text without a message or a warning;
   whether a language applies is decided by the compiled-in filename and shebang rules,
   which need no runtime.
@@ -3999,7 +4891,9 @@ and reads grammars and queries through `src/runtime.rs`:
   a reader sees either complete file,
   and a process that already loaded the old file keeps it.
 - Folders of other builds go once they have been unused for 30 days
-  (decided on 2026-10-06: "Remove after N days unused", with 30 days;
+  (decided on 2026-10-06:
+  "Remove after N days unused",
+  with 30 days;
   `src/runtime/retention.rs`).
   At start,
   before any window,
@@ -4091,7 +4985,9 @@ and `package/music-player/desktop-app/share/applications/`:
 
 - `Exec=monochromatic-ide %f`.
   The Desktop Entry Specification's `%f` is "a single file name (including the path)",
-  and "if the application should not open any file the %f, %u, %F and %U field codes must be removed
+  and "if the application should not open any file the %f,
+  %u,
+  %F and %U field codes must be removed
   from the command line and ignored",
   so an application menu starts it with no argument (the home folder)
   and "open with" on a folder passes that folder's path.
@@ -4215,8 +5111,11 @@ without changing either:
   before its display connection fails on purpose.
 - `crate-licenses`:
   `--licenses` prints one section per entry of `target/crate-licenses.json`,
-  with the same license, the same crates in the same order, and the text in full;
-  every crate in `target/linked-crates.txt` (the `linked-crates` task, which both bundle tasks run first)
+  with the same license,
+  the same crates in the same order,
+  and the text in full;
+  every crate in `target/linked-crates.txt` (the `linked-crates` task,
+  which both bundle tasks run first)
   and every registry crate whose source path the executable itself contains is among the crates printed.
 
 The other startup checks need a Wayland session and the release build of `package/cli/nested-wayland-session`;
@@ -4300,12 +5199,18 @@ with the parser load no longer renewing the marker,
   for the 11,098,288-byte `sql.so`:
   unpacking took 7 to 586 ms (median 71 ms),
   the byte comparison of a later start 8 to 34 ms (median 10 ms);
-  preparing the language as a whole (digest check, unpack or comparison, loading, and compiling its rules)
+  preparing the language as a whole (digest check,
+  unpack or comparison,
+  loading,
+  and compiling its rules)
   took 218 to 776 ms on a first start (median 449 ms) and 130 to 204 ms on a later one (median 162 ms).
 - Home folder:
   a disposable home of 283,450 files and 359,585,884 bytes
-  (hidden caches and toolchains, documents, three 64 MiB binary downloads,
-  ten git projects with ignored `node_modules` and `target`, one project without git)
+  (hidden caches and toolchains,
+  documents,
+  three 64 MiB binary downloads,
+  ten git projects with ignored `node_modules` and `target`,
+  one project without git)
   showed its tree 519 to 2,641 ms after the compositor started (three starts),
   with one inotify watch.
   Of its files,
@@ -4315,11 +5220,13 @@ with the parser load no longer renewing the marker,
   and its content search in 4,618 ms;
   a common word reached the 30-result cap in 33 ms.
   Run directly with the same arguments,
-  the content search for a query that matches nothing took 456 ms to 11,383 ms (three runs, cold page cache first).
+  the content search for a query that matches nothing took 456 ms to 11,383 ms (three runs,
+  cold page cache first).
 - After the 30-day cleanup and `--licenses` (commit `0fe1d7ed8`):
   the executable is 81,766,496 bytes,
   22,512 more,
-  with the same embedded table (1,254 files, key `c47e913b79bf6a42`);
+  with the same embedded table (1,254 files,
+  key `c47e913b79bf6a42`);
   `--licenses` printed 34 texts in 117,354 bytes;
   the start-time sweep of the runtime cache folder took 36 to 116 µs in the ten bundle-check sessions
   that had nothing to remove,

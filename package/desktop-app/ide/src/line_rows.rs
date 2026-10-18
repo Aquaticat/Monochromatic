@@ -111,7 +111,8 @@ impl LineRows {
         return self.lines;
     }
 
-    /// Extra rows of `line`, nothing for a line the table does not have.
+    /// Extra rows of `line`,
+    /// nothing for a line the table does not have.
     fn extra(&self, line: usize) -> u32 {
         if line >= self.lines {
             return 0;
@@ -190,7 +191,9 @@ impl LineRows {
         return true;
     }
 
-    /// Whether `line` has a count of its own, that is, takes more than one row.
+    /// Whether `line` has a count of its own,
+    /// that is,
+    /// takes more than one row.
     pub fn is_wrapped(&self, line: usize) -> bool {
         return self.extra(line) > 0;
     }

@@ -1,8 +1,10 @@
+import java.util.zip.ZipFile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("app.cash.licensee")
 }
 
 // One version for the whole product. The desktop crate's Cargo.toml is the single source of truth, so the Android
@@ -248,3 +250,125 @@ dependencies {
     // PeakSweepWorkerTest), the same way the engine is verified on a device.
     androidTestImplementation("androidx.work:work-testing:2.12.0")
 }
+
+// region Third-party license notices
+// The release APK carries assets/THIRD-PARTY-LICENSES.txt: the license notices of the app, its Android libraries and
+// its native Rust library. The android-app mise task `notices` writes the file into build/third-party-licenses/ (it
+// runs licenseeAndroidRelease and collectAndroidLibraryNotices below, then cargo-about over rust/); the release build
+// packages it. Decision and allow-list: doc/decision/music-player-third-party-licenses.md.
+
+// Only the Apache License 2.0 is allowed: every one of the 121 libraries in the release runtime classpath uses it
+// (licensee report, 2026-10-15), it is compatible with the app's LGPL-3.0-or-later, and the notices task carries its
+// full text. A library under any other license fails licenseeAndroidRelease (and so the notices task and the release)
+// until someone checks that the license can be combined with LGPL-3.0-or-later and adds its text to the notices.
+licensee {
+    allow("Apache-2.0")
+}
+
+/** Where the notices task writes the APK's license notices and the NOTICE files collected below. */
+val thirdPartyLicensesDir: Provider<Directory> = layout.buildDirectory.dir("third-party-licenses")
+
+/**
+ * Copies the NOTICE files of the release libraries into one text file. Section 4(d) of the Apache License 2.0 asks
+ * that a NOTICE file shipped with a work travels with its redistribution, and the notices task adds this file to the
+ * APK's license notices. The libraries are read through their Java resources (the files beside the classes,
+ * META-INF included), because APK packaging drops META-INF/NOTICE* files. The configuration is looked up when the
+ * task is configured: AGP creates releaseRuntimeClasspath after this script has run.
+ */
+val collectAndroidLibraryNotices = tasks.register("collectAndroidLibraryNotices") {
+    description = "Collect the META-INF NOTICE files of the release libraries into build/third-party-licenses"
+    val releaseLibraryResources: ArtifactCollection = configurations.getByName("releaseRuntimeClasspath").incoming
+        .artifactView {
+            attributes {
+                attribute(Attribute.of("artifactType", String::class.java), "android-java-res")
+            }
+        }
+        .artifacts
+    inputs.files(releaseLibraryResources.artifactFiles)
+    val output = thirdPartyLicensesDir.map { it.file("android-library-notices.txt") }
+    outputs.file(output)
+    doLast {
+        val noticeName = Regex("""(^|/)META-INF/(.+/)?NOTICE[^/]*$""", RegexOption.IGNORE_CASE)
+        val sections = releaseLibraryResources.artifacts.sortedBy { it.id.componentIdentifier.displayName }
+            .flatMap { artifact ->
+                val file = artifact.file
+                val notices: List<Pair<String, String>> = when {
+                    file.isDirectory -> file.walkTopDown().filter { it.isFile }
+                        .map { it.relativeTo(file).invariantSeparatorsPath to it }
+                        .filter { (path, _) -> noticeName.containsMatchIn(path) }
+                        .map { (path, notice) -> path to notice.readText() }.toList()
+                    file.isFile -> ZipFile(file).use { zip ->
+                        zip.entries().asSequence().filter { !it.isDirectory && noticeName.containsMatchIn(it.name) }
+                            .map { entry -> entry.name to zip.getInputStream(entry).use { it.readBytes().decodeToString() } }
+                            .toList()
+                    }
+                    else -> emptyList()
+                }
+                notices.map { (path, text) ->
+                    "${artifact.id.componentIdentifier.displayName}: $path\n\n${text.trim()}\n"
+                }
+            }
+        val target = output.get().asFile
+        target.parentFile.mkdirs()
+        target.writeText(sections.joinToString("\n"))
+        logger.lifecycle(
+            "Collected ${sections.size} NOTICE files from ${releaseLibraryResources.artifacts.size} release libraries " +
+                "into $target",
+        )
+    }
+}
+
+/**
+ * Puts the license notices into the release APK as assets/THIRD-PARTY-LICENSES.txt. With
+ * MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true (the release workflow) a missing notice file fails the build;
+ * otherwise a local build packages a short note saying how to write the notices.
+ */
+abstract class ThirdPartyLicensesAssetTask : DefaultTask() {
+    /** The notice file the notices task writes; it may be absent in a development build. */
+    @get:InputFiles
+    abstract val notices: ConfigurableFileCollection
+
+    /** Whether a missing notice file fails the build. */
+    @get:Input
+    abstract val required: Property<Boolean>
+
+    /** The generated assets directory AGP adds to the release variant. */
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    /** Copies the notices, or writes the note, into [outputDirectory]. */
+    @TaskAction
+    fun write() {
+        val source = notices.files.firstOrNull { it.isFile }
+        if (source == null && required.get()) {
+            throw GradleException(
+                "MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES is true, but ${notices.files.joinToString()} does not " +
+                    "exist. Write it with `mise run //package/music-player/android-app:notices` before building.",
+            )
+        }
+        val text = source?.readText() ?: (
+            "This build of Music Player for Android carries no third-party license notices.\n" +
+                "Release builds include them: run `mise run //package/music-player/android-app:notices` before the\n" +
+                "release build. Every release also ships them as a separate file next to the APK.\n"
+            )
+        if (source != null && !text.contains("Android libraries (")) {
+            throw GradleException("$source lists no Android library, so it is not a notice file of the notices task.")
+        }
+        val directory = outputDirectory.get().asFile
+        directory.deleteRecursively()
+        directory.mkdirs()
+        directory.resolve("THIRD-PARTY-LICENSES.txt").writeText(text)
+    }
+}
+
+val thirdPartyLicensesAsset = tasks.register<ThirdPartyLicensesAssetTask>("thirdPartyLicensesAsset") {
+    notices.from(thirdPartyLicensesDir.map { it.file("THIRD-PARTY-LICENSES.txt") })
+    required.set(providers.environmentVariable("MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES").map { it == "true" }.orElse(false))
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(thirdPartyLicensesAsset, ThirdPartyLicensesAssetTask::outputDirectory)
+    }
+}
+// endregion

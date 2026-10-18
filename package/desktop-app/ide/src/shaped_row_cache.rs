@@ -23,8 +23,10 @@ use std::collections::BTreeMap;
 /// Why:
 ///  A tile of three view heights holds about a hundred lines at typical sizes,
 ///  so a few hundred lines let a re-centered tile reuse the lines it shares with the previous one.
-///  The window thread also builds a tile at once when the width changes, for as many lines as it may spend work on
-///  (`native::rewrap::REWRAP_LINES`), and a cache smaller than that tile would evict the lines it just broke.
+///  The window thread also builds a tile at once when the width changes,
+/// for as many lines as it may spend work on
+///  (`native::rewrap::REWRAP_LINES`),
+/// and a cache smaller than that tile would evict the lines it just broke.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -33,7 +35,8 @@ use std::collections::BTreeMap;
 pub const ROW_CACHE_LINES: usize = 512;
 
 /// What:
-///  The shaped rows of a text, keyed by line,
+///  The shaped rows of a text,
+/// keyed by line,
 ///  with the text revision and display scale they were shaped for.
 /// Why:
 ///  Shaping is the expensive part of a tile;
@@ -115,7 +118,8 @@ impl RowCache {
         }
     }
 
-    /// The shaped row of `line`, if it was shaped for the synced text and scale and broken at `wrap`.
+    /// The shaped row of `line`,
+    /// if it was shaped for the synced text and scale and broken at `wrap`.
     pub fn get(&self, line: usize, wrap: Option<f32>) -> Option<&ShapedRow> {
         return self
             .rows

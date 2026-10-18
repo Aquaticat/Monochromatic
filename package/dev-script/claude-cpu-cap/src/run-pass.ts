@@ -15,7 +15,6 @@ import {
   SAMPLE_EVERY_ITERATIONS,
   TONE_DOWN_STEP,
 } from './constants.ts';
-import { readCorsairFields, } from './corsair.ts';
 import { samplePower, } from './power.ts';
 import { readPressure, } from './pressure.ts';
 import { writeSample, } from './samples.ts';
@@ -455,17 +454,6 @@ export async function writeDue({
     };
   }
   /**
-   Fan speeds and probe temperature of this pass.
-   */
-  const corsair = await readCorsairFields({
-    tokenFile: inputs.paths
-      .tokenFile,
-    statusUrl: inputs.paths
-      .statusUrl,
-    failing: state.fanReadFailing,
-    l: inputs.l,
-  },);
-  /**
    Local date of the sample file written.
    */
   const sampleDay = await writeSample({
@@ -473,7 +461,6 @@ export async function writeDue({
     sensors: inputs.sensors,
     power,
     cap,
-    corsairFields: corsair.fields,
     burst,
     sampleDay: state.sampleDay,
   },);
@@ -482,7 +469,6 @@ export async function writeDue({
     burstUntil,
     previousPassWatts,
     sampleDay,
-    fanReadFailing: corsair.failing,
   };
 }
 
@@ -494,5 +480,4 @@ export const INITIAL_STATE_BASE: Omit<WatchState, 'streaks' | 'reading' | 'previ
   burstUntil: 0,
   previousPassWatts: NOT_MEASURED,
   sampleDay: '',
-  fanReadFailing: false,
 };

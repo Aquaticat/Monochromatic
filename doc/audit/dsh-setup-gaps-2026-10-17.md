@@ -309,6 +309,104 @@ so the effective mount came from the web-app override.
 Confirming this needs a fresh server start and a new session,
 neither of which has happened.
 
+### Second pass, 2026-10-18
+
+Every open item in the `Remediation` subsection is now closed,
+and the fix that landed is not the one this section recommended.
+
+The cap raise was observed.
+A new session's injected context carries both an `Instructions from: AGENTS.md`
+and an `Instructions from: CLAUDE.md` block,
+which the 65536 default cannot produce from a 67895-byte pair,
+so the preset override is live.
+
+The default candidate order was read from source.
+`dsh-agent-instructions/lib/index.js:17` sets
+`DEFAULT_INSTRUCTION_FILE_CANDIDATES = ["AGENTS.md", "CLAUDE.md"]`,
+and line 18 sets the local overlay default to
+`["AGENTS.local.md", "CLAUDE.local.md"]`.
+Neither overlay file exists in the repo root or in either user-global root,
+so the two project files were the whole payload.
+
+The row-state question is settled too.
+`dsh --profile web --dump-config` composes the tree without booting and shows
+the host `agent-instructions` row as `disabled: true` with `maxBytes: 65536`,
+while the `preset-cordis` child row carries the override.
+The live session loaded more than the host row's cap allows,
+so the preset child row is what loads instructions for preset-selected agents.
+
+Rather than add a third file,
+the profile now drops the second candidate:
+
+```yaml
+# ~/.dsh/profiles/web/cordis.patch.yml, inside the `preset-cordis` override
+- id: agent-instructions
+  name: "@deepseek-ai/dsh-agent-instructions"
+  config:
+    maxBytes: 131072
+    instructionFileCandidates: ["AGENTS.md"]
+```
+
+This is strictly better than the third-file option this section proposed,
+because `diff AGENTS.md CLAUDE.md` reports `0a1,49`:
+`CLAUDE.md` is `AGENTS.md` plus a 49-line,
+2029-byte Claude Code preamble with no deletions,
+so a DSH-specific third file would have kept the duplication and merely
+outranked it.
+Dropping the candidate removes the duplication and the contradiction together.
+
+Three of the preamble's blocks are Claude Code-specific and one is false here.
+The rule that every session's Bash commands share one `claude-code-bash` cgroup
+and should be wrapped in `systemd-run --user` describes Claude Code's Bash tool,
+while DSH provides managed background jobs through `run_in_background` and
+`job_output`.
+The Agent-tool caveat says subagent results forward reliably but steering does
+not,
+which inverts DSH's `subagent` and `spawn_teammate` semantics.
+The `spawn-claude` guidance is framed around the Claude Code UI,
+though that binary is on `PATH` here.
+Two blocks are harness-neutral:
+the `pi --print` external-advisor recipe,
+and the ban on publishing agent-authored pages off-machine.
+The owner decision was to drop all 49 lines rather than relocate those two.
+
+Measured by calling the plugin's own `loadBaselineInstructions` and
+`discoverBaselineInstructionFiles` from the installed bundle,
+once per candidate config:
+
+- Shipped defaults at cap 65536 discovered `["AGENTS.md","CLAUDE.md"]`,
+  omitted `["AGENTS.md"]`,
+  and rendered 35327 bytes.
+  This confirms this section's central claim at the code path rather than by
+  arithmetic:
+  the model received the Claude Code preamble and not the canonical file.
+- The raised cap alone discovered both,
+  omitted nothing,
+  and rendered 68231 bytes,
+  so every rule was injected twice.
+- The applied override discovered `["AGENTS.md"]`,
+  omitted nothing,
+  and rendered 33237 bytes,
+  a 51.3 percent reduction.
+- The same override at the shipped 65536 cap rendered an identical 33237 bytes,
+  so `maxBytes: 131072` is no longer load-bearing and survives only as
+  headroom for `AGENTS.local.md` and for nested-directory instructions.
+
+`--dump-config` also shows the new key under `preset-cordis` and absent from
+`preset-standard`,
+`preset-ptc`,
+and `preset-minimal`,
+which scopes the change to the preset this profile selects.
+The one step still unverified is the injected context of a session started
+after the change,
+because restarting the server would end the session that made it.
+
+`localInstructionFileCandidates` still defaults to a list naming
+`CLAUDE.local.md`.
+That is inert today because the file does not exist.
+Narrowing it was proposed and not taken,
+so a future `CLAUDE.local.md` would be injected.
+
 ## Fourteen user skills are invisible to DSH
 
 Severity:
@@ -374,6 +472,34 @@ or those skills lose the flag and accept model invocation,
 or the workflow layer is re-expressed as DSH commands.
 `include:commands` and `include:ui-commands` are both active,
 so the third path has an existing home.
+
+### Cost of the third path, measured 2026-10-18
+
+The claim that the third path has an existing home understates the work.
+`dsh-commands` is a code-level runtime registry,
+not a markdown or directory drop-in.
+Its public surface is a `CommandRuntime` service whose `define` takes discovery
+metadata and a UI handler,
+and its 478-line bundle contains no reference to `SKILL.md`,
+to frontmatter,
+or to `disable-model-invocation`.
+Re-expressing the workflow layer therefore means writing a plugin of the same
+kind as `package/dsh-plugin/search-fetch`,
+not adding files to a directory.
+The second path is cheaper but changes Pi and Claude Code too,
+since all three read `~/.agents/skills/`,
+and the flag exists deliberately:
+model-invoking `handoff` or `to-tickets` unprompted is the failure mode it
+prevents.
+
+The store was re-measured at the same time and the count holds.
+`~/.agents/skills/` has 29 directories,
+29 `SKILL.md` files,
+and exactly 14 carrying `disable-model-invocation: true`.
+`~/.claude/skills/` holds a 30th,
+`pre-compact`,
+with no `~/.agents/skills/` counterpart,
+which matches the `pre-compact` finding in this section's opening measurement.
 
 ## No MCP server bridge is composed
 
@@ -773,6 +899,17 @@ and `claude-haiku-5-5` (1000000 / 128000) plus `mimo-v2.6-pro`
 (1048576 / 131072) on `opencode-go`.
 The default is `qwen-token-plan-individual` with `qwen3.8-max`.
 
+Note 2026-10-18:
+the two-provider count is stale.
+The patch now declares five providers under `llm-pi-ai`,
+adding `synthetic`,
+`llmgateway-devpass`,
+and `neuralwatt` to the two measured for this audit.
+The default is unchanged:
+`--dump-config` composes `agent-default-model` as
+`qwen-token-plan-individual` with `qwen3.8-max` and `reasoningEffort: xhigh`.
+The total model count was not re-measured.
+
 Pi's `~/.pi/agent/settings.json` lists 16 `enabledModels` across three
 provider namespaces (`hyper`,
 `synthetic`,
@@ -800,19 +937,25 @@ for `gpt-6-luna`,
 and `gpt-6-astra` under `providers/openai`,
 with two further overrides under `providers/openai-fast`.
 
-Security finding,
-and it runs against the direction of this audit:
-`~/.pi/agent/models.json` stores the `llmgateway-devpass` API key in
-plaintext in the `apiKey` field.
-The file is mode `0644`,
-world-readable.
-DSH does not do this.
-Its providers use `apiKeyEnv` indirection
-(`QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY`,
-`OPENCODE_GO_API_KEY`),
-and its credential store `~/.dsh/.credentials.yaml` is mode `0600`.
-This is a Pi defect worth fixing,
-not a DSH gap.
+Credential handling on this machine was measured as part of the audit,
+and it produced findings on the Pi and Claude Code sides.
+Those concern local file permissions,
+key placement,
+and one key that reached a session transcript,
+so they are recorded in a companion file matching the `*.local.*` pattern at
+`.gitignore:11` rather than here.
+This repository is public and auto-pushes,
+and a tracked audit is not the place for them.
+The split is dated 2026-10-18;
+earlier revisions of this document carried the detail in the open.
+
+The DSH side of the comparison belongs in this document,
+and it is a positive finding.
+Every provider in the profile patch declares `apiKeyEnv` indirection and no
+inline key,
+five of each measured,
+and the credential store `~/.dsh/.credentials.yaml` is mode `0600`.
+The two harnesses it was compared against do not match that.
 
 Two genuine DSH gaps in this area.
 The DSH patch declares no reasoning or thinking-level configuration for its
@@ -969,6 +1112,19 @@ done or settled rather than open.
    DSH agents continue to receive Claude Code's 49-line preamble,
    and only a DSH-specific instruction file removes that contradiction.
    The change needs a server start to take effect and has not been observed.
+   Resolved 2026-10-18,
+   and not by the DSH-specific file this item proposed.
+   The cap raise was observed live in a new session,
+   and the profile now sets `instructionFileCandidates: ["AGENTS.md"]` on the
+   same preset row,
+   which drops `CLAUDE.md` and its preamble entirely.
+   The rendered instruction payload fell from 68231 to 33237 bytes,
+   measured through the plugin's own loader.
+   The second-pass subsection of the instruction budget section records the
+   probe,
+   the four measured configurations,
+   and the owner decision to drop the two harness-neutral preamble rules
+   rather than relocate them.
 
 2. Decide what to do about the 14 hidden workflow skills.
    These are the handoff,
@@ -994,6 +1150,35 @@ done or settled rather than open.
    and its Claude Code allow-list entries are historical.
    Copy Pi's deferred-exposure idea rather than mounting every
    server's schema eagerly.
+   Correction 2026-10-18:
+   `morph` is not installed on this host,
+   so the named candidate does not exist here and that recommendation is
+   withdrawn.
+   The measured inventory is thinner than this item assumed.
+   Claude Code's global config declares six servers:
+   `linkup` over HTTP,
+   which duplicates the Linkup fallback already wired into `search-fetch`;
+   `serena`,
+   which Pi deliberately disables;
+   `idea` on `127.0.0.1:64342`;
+   `safari-mcp-stp`,
+   which shells through `ssh` to a macOS Safari Technology Preview path;
+   `BrowserOS` on `127.0.0.1:9001`;
+   and `mvm`,
+   a stdio server pointing at `package/mcp/mvm/dist/final/node/index.mjs`.
+   Pi declares four:
+   `browseros`,
+   `linear`,
+   `serena` disabled,
+   and `safari-mcp-stp`.
+   Only `mvm` is repo-owned and viable on this Linux host,
+   and its CLI is already on `PATH`,
+   so bridging it would add typed schemas and discoverability rather than
+   capability.
+   `linear` is the only genuinely new capability in either inventory,
+   and it needs a token.
+   MCP breadth is therefore a lower-value direction than this item implied.
+   The deferred-exposure advice stands independently of that.
 
 4. Settled:
    both fetch tools stay.
@@ -1025,15 +1210,28 @@ done or settled rather than open.
    It is the one hook with a direct,
    measurable context cost.
 
-7. Rotate the plaintext `llmgateway-devpass` API key in
-   `~/.pi/agent/models.json` and move it to an environment variable.
-   This is a Pi defect surfaced by the comparison,
-   and the file is mode `0644`.
+7. Guard the `preset-cordis` override against upgrade drift.
+   Measured 2026-10-18:
+   the override restates all 35 ids of the shipped preset in the same order,
+   23 of them top-level plugin rows and the rest nested group children,
+   and a diff of the two id lists is empty.
+   Nothing was dropped,
+   which is what the check was for.
+   It also means the entire shipped preset is shadowed,
+   so any upstream change to `presets/cordis.patch.yml` at the next upgrade is
+   lost silently,
+   with the `MAINTENANCE` comment in the profile patch as the only defence.
+   A repo task that diffs the shipped preset against the override and fails on
+   drift would turn that into a loud failure,
+   and it would also protect the `agent-instructions` and `tool-web` settings
+   that items 1 and 3 depend on.
+   Proposed and not taken,
+   so it stays open.
 
-8. Fix the stale `enabledMcpjsonServers` entries in
-   `.claude/settings.local.json`,
-   which name two servers with no
-   `.mcp.json` behind them.
+Machine-local findings from this audit,
+covering credential handling and local harness configuration,
+are tracked in a companion file matching the `*.local.*` pattern at
+`.gitignore:11` and are deliberately not listed here.
 
 ## Surfaces this audit did not exercise
 
@@ -1043,7 +1241,14 @@ Stated so the gaps are not mistaken for verified absences.
   so every claim about what a new
   session would load is inference from config,
   not observation.
+  Superseded 2026-10-18 for instruction loading and the tool catalog:
+  a new session observed both instruction files being injected,
+  which the 65536 default cannot produce,
+  and observed native `web_search` absent with native `web_fetch` present,
+  matching `tool-web: {search: false, fetch: true}`.
+  Claims about other surfaces still rest on config.
 - The default `instructionFileCandidates` order was not read from source.
+  Read 2026-10-18 at `dsh-agent-instructions/lib/index.js:17-18`.
 - The models exposed by `include:llm-deepseek` and
   `include:llm-deepseek-account` were not enumerated.
 - `.claude/settings.local.json` was read in full for structure but the 583
@@ -1143,3 +1348,35 @@ result logged after the install,
 and every earlier "search-fetch" hit is the Pi plugin path.
 Any claim about what an earlier turn could see has to be checked against
 session events.
+
+Two verification techniques added on 2026-10-18 are worth keeping,
+because both replace inference with measurement inside a session that cannot
+restart its own server.
+
+`dsh --profile web --dump-config` composes the full profile tree and exits
+without booting,
+so a patch edit can be checked against the real Loader result in the same
+session that made it.
+It also annotates which bundle or patch last touched each row,
+which is how the host `agent-instructions` row was confirmed `disabled: true`
+while the `preset-cordis` child row carried the override.
+
+Importing a plugin's built bundle and calling its exported functions measures
+the deciding code path directly.
+`dsh-agent-instructions` exports `discoverBaselineInstructionFiles` and
+`loadBaselineInstructions`,
+and the returned `omitted` list names exactly which files the byte budget
+dropped.
+That turned the instruction-budget finding from arithmetic on file sizes into an
+observation,
+and it produced the sharpest single result in this audit:
+under the shipped defaults the loader discovered both files and omitted
+`AGENTS.md`,
+so sessions were receiving Claude Code's preamble instead of the canonical
+rules.
+One trap came with it.
+`loadBaselineInstructionSet` is declared in the package's type surface but is
+absent from the runtime export list,
+so a probe written against the `.d.ts` files fails at import.
+Reading the bundle's own `export` statement is the reliable way to find what is
+actually callable.

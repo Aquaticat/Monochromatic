@@ -1,0 +1,68 @@
+# cargo-about configuration for the third-party license notices of the desktop binaries.
+# The `notices` task (mise.toml) runs `cargo-about generate --format json --frozen --fail` with this file and turns the
+# result into target/THIRD-PARTY-LICENSES.txt, which the release workflow embeds into every desktop binary (printed by
+# `music-player --licenses`) and ships beside it. Decision: ../../../doc/decision/music-player-third-party-licenses.md.
+
+# Licenses the crates may be used under, in order of preference: for a crate offered under `A OR B`, the first listed
+# one is chosen. Every entry can be combined into one binary with the GNU GPL version 3, because Slint is used under
+# GPL-3.0-only (see the decision document) and that makes each desktop binary a GPL-3.0 combined work:
+# - MIT, ISC, BSD-2-Clause, BSD-3-Clause, Zlib, Unicode-3.0, BSL-1.0, CC0-1.0, Unlicense: permissive licenses the
+#   Free Software Foundation lists as GPL-compatible; most ask only that the notice travels with the binary.
+# - Apache-2.0: compatible with GPL version 3 (not version 2); it asks for the license text and any NOTICE file.
+# - MPL-2.0: compatible with the GPL through its section 3.3 unless a file is marked "Incompatible With Secondary
+#   Licenses"; the source of MPL files stays available on crates.io.
+# - GPL-3.0-only: Slint's crates, which offer it among three licenses.
+# MIT comes first because the crates' own MIT files carry the copyright lines that license asks to reproduce, which
+# also keeps the notice shorter (the IDE found the same: package/desktop-app/ide/about.toml).
+# A dependency under any other license, or one whose license cannot be determined, stops the task and so the release,
+# until someone reviews it and either adds the license here (with its GPL-3.0 compatibility) or drops the crate.
+# GPL-2.0-only, the SSPL, and licenses with field-of-use or non-commercial limits can never be added.
+accepted = [
+  "MIT",
+  "Apache-2.0",
+  "ISC",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "Zlib",
+  "Unicode-3.0",
+  "BSL-1.0",
+  "MPL-2.0",
+  "CC0-1.0",
+  "Unlicense",
+  "GPL-3.0-only",
+]
+
+# Every target a release builds. The notice is one file for all of them, so each binary's notice also names the
+# crates that only another platform compiles in; the reverse (a crate missing) cannot happen.
+# The Alpine builds use Alpine's own host triples (x86_64-alpine-linux-musl, aarch64-alpine-linux-musl), whose
+# configuration predicates (linux, musl, x86_64 or aarch64) are the same as the unknown-linux-musl triples here.
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "aarch64-unknown-linux-gnu",
+  "x86_64-unknown-linux-musl",
+  "aarch64-unknown-linux-musl",
+  "aarch64-apple-darwin",
+  "x86_64-pc-windows-msvc",
+  "x86_64-pc-windows-gnu",
+  "aarch64-pc-windows-msvc",
+]
+
+# Build scripts and tests run while building; they are not part of the binary.
+# Procedural-macro crates follow normal edges, so cargo-about keeps them and their dependencies.
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+
+# The unpublished crates of this repository (music-player and truepeak-core) carry the project's own license, which
+# the notices task prints first from the repository's LICENSE and LICENSES/ files.
+private = { ignore = true }
+
+# cfg_block (through turso_core) names no SPDX expression, only `license-file = "LICENSE"`, and that file is the
+# Apache License 2.0 short notice with the copyright line "Copyright 2022 Trevor Gross". The checksum is the SHA-256 of
+# that file in cfg_block 0.1.1; if a later release changes the file, cargo-about stops until this is reviewed again.
+[cfg_block.clarify]
+license = "Apache-2.0"
+
+[[cfg_block.clarify.files]]
+path = "LICENSE"
+license = "Apache-2.0"
+checksum = "408bbc4d10bdf74d8c9b74b64ea4910603257e24133da18edc4d16198e3b4010"

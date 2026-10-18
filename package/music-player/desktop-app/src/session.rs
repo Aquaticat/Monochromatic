@@ -173,12 +173,24 @@ impl Session {
 
     /// What: `load_at` reads the session file at `path`, with the same fallbacks as `load`.
     /// Why: the persistence tests read a file in a temporary directory, never the user's own session file.
+    ///
+    /// A missing file is a first run and stays quiet. A file that exists but cannot be read, or whose text is not a
+    /// session, resets the saved state to defaults, so each is logged with the error and the path.
     fn load_at(path: &Path) -> Session {
-        let Ok(text) = std::fs::read_to_string(path) else {
-            return Session::default();
+        let text = match std::fs::read_to_string(path) {
+            Ok(text) => text,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Session::default(),
+            Err(error) => {
+                tracing::warn!(?error, path = %path.display(), "failed to read the playback session; using defaults");
+                return Session::default();
+            }
         };
-        let Ok((stored, has_current_mode)) = Session::parse_stored(&text) else {
-            return Session::default();
+        let (stored, has_current_mode) = match Session::parse_stored(&text) {
+            Ok(parsed) => parsed,
+            Err(error) => {
+                tracing::warn!(?error, path = %path.display(), "failed to parse the playback session; using defaults");
+                return Session::default();
+            }
         };
         let (session, should_rewrite) = Session::from_stored(stored, has_current_mode);
         if should_rewrite && let Err(error) = session.save_at(path) {
@@ -239,14 +251,58 @@ impl Session {
     }
 
     /// What: `save_at` writes the playback record as JSON to the file at `path`, creating its directory.
-    /// Why: `save` and the persistence tests share one writer.
+    /// Why: `save` and the persistence tests share one writer, and it replaces the file whole (see `replace_file`), so
+    /// an interrupted save leaves the previous complete session.
     fn save_at(&self, path: &Path) -> std::io::Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
         let json = serde_json::to_string_pretty(self).map_err(std::io::Error::other)?;
-        return std::fs::write(path, json);
+        return replace_file(path, json.as_bytes());
     }
+}
+
+/// What: `SAVE_LOCK` serializes the replacements of session files inside this process.
+/// Why: the controller and the settings and template editors save from different threads, and the replacement uses one
+/// temporary file name per target, so two overlapping saves would write into the same temporary file.
+static SAVE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+/// What: `replace_file` writes `bytes` to a temporary file beside `path`, flushes it to disk and renames it over `path`.
+/// Why: `std::fs::write` truncates the target before the new bytes land, so a crash, kill or power loss during the
+/// write left a half-written session that failed to parse on the next launch. A rename inside one directory is atomic
+/// on one filesystem, so `path` is always either the previous complete file or the new complete file. The temporary
+/// file shares the directory because a rename across filesystems is not atomic.
+/// A failed save removes its temporary file and leaves `path` as it was; a temporary file left by a killed save is
+/// truncated by the next one.
+fn replace_file(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let Some(name) = path.file_name() else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("the session path {} has no file name", path.display()),
+        ));
+    };
+    let mut temporary_name = name.to_os_string();
+    temporary_name.push(".tmp");
+    let temporary = path.with_file_name(temporary_name);
+    let _guard = SAVE_LOCK.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let written = write_synced(&temporary, bytes).and_then(|()| return std::fs::rename(&temporary, path));
+    if written.is_err()
+        && let Err(error) = std::fs::remove_file(&temporary)
+        && error.kind() != std::io::ErrorKind::NotFound
+    {
+        tracing::warn!(?error, path = %temporary.display(), "failed to remove the temporary playback session file");
+    }
+    return written;
+}
+
+/// What: `write_synced` creates (or truncates) the file at `path`, writes `bytes` and flushes them to the disk.
+/// Why: the rename in `replace_file` must only publish bytes that already reached the disk, or a power loss after the
+/// rename could leave the new name on an empty file.
+fn write_synced(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    use std::io::Write;
+    let mut file = std::fs::File::create(path)?;
+    file.write_all(bytes)?;
+    return file.sync_all();
 }
 
 /// Resolves the app-private session JSON path.

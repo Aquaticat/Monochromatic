@@ -1,5 +1,7 @@
 //! Display order of sibling names in the file tree:
-//!  mixed folders and files, case folded, digit runs compared as numbers.
+//!  mixed folders and files,
+//! case folded,
+//! digit runs compared as numbers.
 
 /// Native names are compared through their lossy text,
 ///  with the raw name last so equal-looking names keep one fixed order.
@@ -14,24 +16,28 @@ use std::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Piece {
     /// A run of decimal digits without its leading zeros:
-    ///  the longer run is the larger number, and equal lengths compare digit by digit.
+    ///  the longer run is the larger number,
+    /// and equal lengths compare digit by digit.
     Number {
         /// Digit count after leading zeros are dropped.
         length: usize,
         /// The digits themselves.
         digits: String,
     },
-    /// One character folded to lower case, so `B` and `b` compare equal and `a` sorts before `B`.
+    /// One character folded to lower case,
+    /// so `B` and `b` compare equal and `a` sorts before `B`.
     Character(
         /// The character after lower-casing.
         char,
     ),
 }
 
-/// A piece compares by the character it stands for, then by value among numbers.
+/// A piece compares by the character it stands for,
+/// then by value among numbers.
 impl Piece {
     /// The character a piece takes its place from;
-    ///  no `Character` is ever a digit, because digits always become a `Number`.
+    ///  no `Character` is ever a digit,
+    /// because digits always become a `Number`.
     fn rank(&self) -> char {
         return match self {
             Piece::Number { .. } => '0',
@@ -79,7 +85,8 @@ impl PartialOrd for Piece {
 pub struct NameKey {
     /// Case folded pieces with numbers compared by value.
     pieces: Vec<Piece>,
-    /// Names that fold to the same pieces (`A` and `a`, `01` and `1`) fall back to their raw bytes.
+    /// Names that fold to the same pieces (`A` and `a`,
+    /// `01` and `1`) fall back to their raw bytes.
     raw: OsString,
 }
 

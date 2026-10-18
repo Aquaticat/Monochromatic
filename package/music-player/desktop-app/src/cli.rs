@@ -111,6 +111,23 @@ pub struct Cli {
     pub start_playing: bool,
 
     /// What:
+    ///      `#[arg(long = "licenses")] pub licenses: bool`.
+    ///  A presence flag like `--start-playing`.
+    /// Why:
+    ///       Prints the license notices the binary carries (`src/licenses.rs`) and exits without opening a window;
+    ///  the single Windows executable has no other place for them.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // @option("--licenses") licenses: boolean = false;
+    /// ```
+    #[arg(
+        long = "licenses",
+        help = "Print the license notices of the program and of every component built into it, then exit"
+    )]
+    pub licenses: bool,
+
+    /// What:
     ///      `pub path: Option<PathBuf>`.
     ///  A field with NO `#[arg(...)]` flag attribute
     ///           is a POSITIONAL argument;
@@ -136,6 +153,45 @@ pub struct Cli {
     /// ```
     #[arg(help = "One folder (scanned recursively) or one file (its parent folder becomes the source root)")]
     pub path: Option<PathBuf>,
+}
+
+/// What:
+///      `pub fn command_with_color(color: clap::ColorChoice) -> clap::Command`.
+///  The clap command `Cli` derives, with its color setting replaced by `color`.
+/// Why:
+///       clap reads the setting when it prints help and errors, so the parser below builds from this command.
+pub fn command_with_color(color: clap::ColorChoice) -> clap::Command {
+    return <Cli as clap::CommandFactory>::command().color(color);
+}
+
+/// What:
+///      `pub fn try_parse_from_with_color<I, T>(arguments: I, color: clap::ColorChoice) -> Result<Cli, clap::Error>`.
+///  Parses `arguments` (program name first) with clap's color setting replaced by `color`.
+/// Why:
+///       The Windows build turns clap's colors off when a console refused ANSI escape sequences
+///           (`console_color::cli_color`); the setting has to reach the help and error text clap prints.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tryParseWithColor(argv: string[], color: "auto" | "never"): Cli { ... } // throws on bad input
+/// ```
+pub fn try_parse_from_with_color<I, T>(arguments: I, color: clap::ColorChoice) -> Result<Cli, clap::Error>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<std::ffi::OsString> + Clone,
+{
+    let matches = command_with_color(color).try_get_matches_from(arguments)?;
+    return <Cli as clap::FromArgMatches>::from_arg_matches(&matches);
+}
+
+/// What:
+///      `pub fn parse_with_color(color: clap::ColorChoice) -> Cli`.
+///  `Cli::parse()` with clap's color setting replaced by `color`: reads the process arguments, and on `--help`,
+///  `--version` or a bad argument prints and exits the process as `Cli::parse()` does.
+/// Why:
+///       Same contract as `Cli::parse()`, so `main` swaps one call for the other on Windows only.
+pub fn parse_with_color(color: clap::ColorChoice) -> Cli {
+    return try_parse_from_with_color(std::env::args_os(), color).unwrap_or_else(|error| error.exit());
 }
 
 /// What:

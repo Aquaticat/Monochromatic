@@ -50,6 +50,7 @@ fn the_search_result_ring_is_just_inside_the_rounded_shape_of_the_row() {
                 has_parent: true,
                 current: false,
                 playing: false,
+                spoken: "".into(),
                 index,
             };
         })

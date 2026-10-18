@@ -14,6 +14,7 @@ import {
   isMissingFile,
   readMicroWatts,
   readMilliCelsius,
+  readRpm,
   readTextOrEmpty,
 } from './files.ts';
 
@@ -100,6 +101,23 @@ await describe({
             expect(await readMilliCelsius({ dir, name: 'temp1_input', },),).toBe('61.5',);
             expect(await readMilliCelsius({ dir, name: 'temp9_input', },),).toBe(ABSENT,);
             expect(await readMilliCelsius({ dir: ABSENT, name: 'temp1_input', },),).toBe(ABSENT,);
+          },
+        },),
+        it({
+          name: 'readRpm formats whole revolutions per minute, keeps a stopped fan at 0 and is empty without a sensor',
+          fn: async function revolutions() {
+            /**
+             Directory with a fan input.
+             */
+            const dir = await sensorDir({ name: 'fan1_input', text: '1509\n', },);
+            /**
+             Directory with a fan input of a header with no fan plugged in.
+             */
+            const stopped = await sensorDir({ name: 'fan2_input', text: '0\n', },);
+            expect(await readRpm({ dir, name: 'fan1_input', },),).toBe('1509',);
+            expect(await readRpm({ dir: stopped, name: 'fan2_input', },),).toBe('0',);
+            expect(await readRpm({ dir, name: 'fan9_input', },),).toBe(ABSENT,);
+            expect(await readRpm({ dir: ABSENT, name: 'fan1_input', },),).toBe(ABSENT,);
           },
         },),
         it({

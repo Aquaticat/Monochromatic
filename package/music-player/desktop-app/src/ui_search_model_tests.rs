@@ -112,3 +112,23 @@ fn title_segments_join_back_to_the_title_text() {
     let joined: String = view.rows[0].title.iter().map(|piece| return piece.text.as_str()).collect();
     assert_eq!(joined, "Dancing Queen");
 }
+
+#[test]
+fn a_track_row_is_spoken_as_its_name_its_kind_and_its_parent_folder() {
+    let view = search_view("waterloo", &library(), None, false);
+    assert_eq!(view.rows[0].spoken, "Waterloo, Track, Abba");
+}
+
+#[test]
+fn a_folder_row_is_spoken_as_its_name_and_its_kind() {
+    let view = search_view("abba", &library(), None, false);
+    let folder = view.rows.iter().find(|row| return row.kind == 0).expect("a folder result for abba");
+    assert_eq!(folder.spoken, "Abba, Folder");
+}
+
+#[test]
+fn a_root_level_track_has_no_parent_in_its_spoken_label() {
+    let tracks = vec![Track { uri: String::new(), display_path: "Solo.mp3".to_string() }];
+    let view = search_view("solo", &tracks, None, false);
+    assert_eq!(view.rows[0].spoken, "Solo, Track");
+}

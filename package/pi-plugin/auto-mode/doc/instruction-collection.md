@@ -42,6 +42,109 @@ The retained collector separates original source capture,
 selection,
 and interpretation.
 
+## Retained input storage
+
+Retained context contains original immutable source occurrences and publication capabilities.
+Its aggregate is not a transport string.
+The run owner no longer serializes the entire collection to update an unused byte counter.
+That counter caused `RangeError: Invalid string length` during a real MiMo lint session,
+before its proposed commands reached assessment.
+Removing the counter also removes its wiring through emission,
+rendering,
+publication,
+and context capture.
+Actual manager receipt accounting remains in `run-prompt-custody-v3/loaded-pool.mjs`;
+its counters have consumers and count separate source records.
+
+`test:native:retained-context-capacity` passes genuine manager argument frames through the original pool
+and run context owner.
+Its repeated JSON records and final distinct record total 713,092,714 bytes,
+exceeding the tested engine's 536,870,888-character string limit.
+The test checks original publication identities,
+repeat observation,
+and rejection after the native root changes.
+The old build fails at the same `charge()` call as the reported session.
+
+The existing manager pool shares equal immutable content,
+content hashes,
+and serialized metadata within that pool's lifetime.
+Every receipt still has its own source occurrence and publication capability.
+Equal text does not merge provenance,
+and receipt accounting still counts every occurrence.
+The capacity fixture checks distinct publications and a later changed input as separate boundaries.
+
+The pool stages appended origins in its own private array and publishes a cached frozen snapshot on read.
+Appending invalidates only that cache;
+existing published arrays remain unchanged and repeated reads preserve identity until another append.
+This avoids copying every retained prefix for every native query observation.
+Three 50,000-input baseline probes consume 9,125,882 to 9,450,071 process CPU microseconds.
+Three private snapshot probes consume 441,879 to 543,405 microseconds.
+The committed CPU regression fails at 9,989,359 microseconds against a 4,000,000-microsecond budget,
+then passes on the maintained snapshot implementation at 483,453 microseconds.
+These CPU measurements describe the bounded Node 26 Linux fixture.
+The private snapshot probe retains more final heap than its baseline,
+about 95.6 MB against 90.8 MB;
+the measured benefit is append work, not a retained-memory reduction.
+
+Input-only publication views share a function that always rejects message-payload eligibility.
+They retain their distinct occurrence and publication identities without retaining the full text-projection owner.
+Live aliases still hold their original owner for native copy propagation;
+actual message and system/tool contribution validation keep their existing paths.
+The capacity fixture's input-only publications retain 3,607,008 to 3,608,432 bytes before this change.
+Its committed memory guard fails at 3,607,384 bytes against a 3,200,000-byte budget;
+the private shared-function probe passes at 2,753,832 bytes with the same receipt and root checks.
+
+Native event snapshots keep an ordered phase list and a per-emission dictionary of copied values.
+Each phase retains its kind,
+input/output position,
+callback ordinal,
+path,
+and value ordinal.
+Equal copied values share storage within that emission;
+changed values receive separate entries.
+The dictionary wraps each value so that omitted `undefined` and explicit `null` remain distinct in JSON.
+Every phase and distinct value contributes to pending-byte accounting before the source is published.
+This belongs to the existing event-input owner rather than another execution or permission layer.
+
+`test:native:event-sharing` compares actual native emissions with separate callback registrations.
+For its payload,
+one callback retains 30,984 bytes and 30 callbacks retain 36,476 bytes.
+All 60 input/after phases preserve their original order and copied values after the borrowed event changes.
+The complete native event receipt catalog also expands the representation and checks the original
+mutation,
+output,
+error,
+nested emission,
+and cancellation cases.
+The full-session heap failure remains under investigation;
+these measurements establish callback sharing rather than complete-session capacity.
+
+## Source-binding ownership
+
+Every original message source has a distinct frozen plain view bound to its request and source occurrence.
+`native/contract/integration/policy-source/run-messages.mjs` keeps identity checks with the governing snapshot.
+Its methods are shared within that snapshot;
+a private weak set authenticates each original binding before a method reads its view.
+Every freshness check still revalidates the governing parent.
+Equal content and shared checking code establish neither source identity nor permission.
+
+Per-source closures previously multiplied retained allocation across successive decisions.
+The real host's 100,000-receipt sampling profile attributes 476,526,736 bytes to that binding callback.
+The profile retains a separate positive-control allocation.
+This identifies an allocation owner rather than proving complete-session repair.
+
+`test:native:source-binding-capacity` creates genuine manager inputs and retains complete source collections
+across separate governing snapshots.
+Its committed red run retains 48,724,128 bytes and exceeds the 36 MiB regression budget.
+The test also requires original source ordering,
+distinct views,
+frozen plain records,
+foreign receiver rejection,
+source substitution rejection,
+and retired-parent rejection.
+The class alternative is rejected because it changes the binding's prototype and constructor surface.
+Complete configured-host replays remain required after the maintained source rebuild.
+
 ## Verification
 
 `test:native:resource-input`,

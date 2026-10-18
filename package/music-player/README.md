@@ -566,6 +566,10 @@ A release holds one file per platform and a `SHA256SUMS` file:
   These are for Alpine 3.24 or newer (musl libc) on x86_64 or aarch64;
   the Linux archives above do not run on Alpine.
 - Android: `music-player-<version>-android.apk`.
+- License notices:
+   `music-player-<version>-desktop-third-party-licenses.txt` and
+   `music-player-<version>-android-third-party-licenses.txt`
+  (see [Third-party licenses](#third-party-licenses)).
 
 ### What has been tested
 
@@ -603,7 +607,14 @@ so `music-player.exe --version > file.txt` leaves an empty file there;
 use `music-player.exe --version | Out-File file.txt`, `| Out-String`,
 or `Start-Process -Wait -NoNewWindow -RedirectStandardOutput file.txt music-player.exe --version`.
 Started by a double-click, the program has no console,
-so its log lines and startup error messages are not shown anywhere.
+so its log lines are not shown anywhere.
+When such a start fails (the program cannot open its connection to the desktop,
+cannot create its window, its window stops working, or it hits an internal error),
+a Windows message box names the step that failed, what Windows reported, and what you can do.
+Started from a terminal, the program prints the same text there instead and shows no box
+(after an internal error it prints the standard panic message).
+Log lines are colored only on a console that shows the colors;
+redirected to a file or a pipe, they are plain text.
 The program takes one optional folder or file to open: `music-player.exe C:\Music`.
 
 ### macOS
@@ -676,7 +687,9 @@ which binds its exact bytes to the workflow run that built it:
 
 ```bash
 # Fails if the file was changed after the workflow built it.
-gh attestation verify <file> --repo Aquaticat/Monochromatic
+gh attestation verify <file> --repo Aquaticats/Monochromatic
+
+# Releases up to 0.1.4 were attested under the earlier owner name, so verify those with --owner Aquaticat.
 
 # Compare against the checksum file attached to the release.
 sha256sum --check --ignore-missing SHA256SUMS
@@ -720,6 +733,8 @@ Silicon,
 The desktop application accepts one optional file or directory path;
  a file selects its parent directory.
 Pass `--start-playing` only when automatic playback on launch is required.
+`--licenses` prints the license notices the program carries and exits
+(see [Third-party licenses](#third-party-licenses)).
 
 See [`desktop-app/README.md`](desktop-app/README.md) for platform prerequisites,
  codecs,
@@ -909,6 +924,47 @@ The method of this gallery, and the facts for retaking the Android gallery, are 
 ## License
 
 Music Player is licensed under the [GNU Lesser General Public License, version 3 or later](../../LICENSE).
+
+### Third-party licenses
+
+Every release ships the license notices of everything built into each program:
+the program's own license texts,
+the bundled typeface and icons,
+the Rust standard library,
+every Rust crate,
+and for Android every Android library with its NOTICE files.
+
+- Desktop:
+   `music-player --licenses` prints them;
+   the Linux and Alpine archives hold them as `THIRD-PARTY-LICENSES.txt`,
+   the disk image beside the app and in `Contents/Resources`,
+   and the release file `music-player-<version>-desktop-third-party-licenses.txt` serves the single-file Windows
+  programs.
+  On Windows,
+   PowerShell leaves an empty file for `music-player.exe --licenses > licenses.txt`;
+   use `music-player.exe --licenses | Out-File licenses.txt`,
+   `cmd.exe` redirection,
+   or the release file.
+- Android:
+   the APK holds them as `assets/THIRD-PARTY-LICENSES.txt`,
+   and the release file is `music-player-<version>-android-third-party-licenses.txt`.
+  The app has no screen that shows them yet;
+   that needs a design decision.
+
+The desktop programs are built with Slint,
+which this project uses under the GNU General Public License,
+version 3,
+so each desktop program as a whole is distributed under the GPL version 3;
+the code of this repository stays LGPL-3.0-or-later.
+Dependencies are checked against allow-lists:
+cargo-about with `desktop-app/about.toml` and `android-app/rust/about.toml` for the Rust crates,
+and licensee in `android-app/app/build.gradle.kts` for the Android libraries.
+A dependency under any other license fails the `notices` tasks and the release.
+Write the notices locally with `mise run //package/music-player/desktop-app:notices` or
+`mise run //package/music-player/android-app:notices`.
+Decision,
+allow-lists and open questions:
+[`doc/decision/music-player-third-party-licenses.md`](../../doc/decision/music-player-third-party-licenses.md).
 
 ### Third-party icons
 

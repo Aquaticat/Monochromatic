@@ -49,7 +49,7 @@ and complete SHA-256 contents,
 then atomically replaces only the new release's matching file with a hard link.
 Changed files retain independent inodes.
 It does not follow dependency symlinks or rewrite an old release.
-The final checked build `native-release-qWSxFz` shares 1,000 files totaling 7,518,255 bytes.
+The 2026-10-17 checkpoint `native-release-qWSxFz` shares 1,000 files totaling 7,518,255 bytes.
 It contains 1,030 regular files totaling 8,211,396 bytes.
 The emitted graph records five computed import sites and finds no missing static targets.
 Its 794 conservatively reachable files total 6,099,319 bytes.
@@ -69,6 +69,27 @@ Maintenance removes 43 inactive releases and retains active `native-release-qWSx
 plus verified `native-release-mHAoem`.
 Dependency links and source are preserved.
 This is reviewed maintenance rather than automatic eviction of a running session's output.
+
+## Process lifetime evidence
+
+The 2026-10-18 cleanup audit exposes behaviors that invalidate a command-name-only process search.
+The bounded replay mounts Node as `/fixture-node`.
+Pi's qualified `dist/native/pi/coding-agent/dist/cli/setup.js` assigns `process.title` from `APP_NAME`,
+which can replace the original module arguments visible through Linux `/proc/<pid>/cmdline`.
+The repository is also accessible through paths that resolve to the same directory.
+A search restricted to executable basenames or one literal repository path can therefore miss a running consumer.
+
+The corrected audit examines all readable process command lines,
+canonical and configured repository paths,
+and the qualified package's configured application title and RPC title.
+Executable,
+working directory,
+release references,
+and disposable-home inode identify matched processes without printing their complete arguments.
+The positive control finds both running configured-host replays under their `/fixture-node` aliases.
+An empty result is usable cleanup evidence only after that positive control and after the replays terminate.
+Unreadable processes and consumers whose release cannot be established remain explicit uncertainty;
+do not delete their possible release while they run.
 
 ## Alternatives and verification
 

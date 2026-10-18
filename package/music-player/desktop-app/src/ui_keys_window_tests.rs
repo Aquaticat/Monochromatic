@@ -836,6 +836,7 @@ fn seed_results(app: &crate::AppWindow, count: usize) {
                 has_parent: false,
                 current: false,
                 playing: false,
+                spoken: String::new(),
                 index: i32::try_from(position).unwrap_or(0),
             };
         })

@@ -1,6 +1,451 @@
 # Depot trial interview
 
+## Research reopened and interview withdrawn on 2026-10-18
+
+The user rejected the readiness claim:
+"Not enough research.
+You're missing so much that it's hard to name them all."
+They will return in the morning to inspect further research.
+The parent withdrew the readiness claim and the three pending operating questions.
+Do not wait for answers,
+ask the user to enumerate omissions,
+or restart grilling before adequate research.
+The earlier independent review of selected evidence remains valid only for its checked boundaries;
+its sufficiency conclusion is withdrawn.
+
+New frozen source:
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The [reopened plan](../planning/depot-developer-additional-pool-research.md)
+records independently verifiable platform-surface,
+complete-coverage,
+reuse,
+orchestration,
+runtime,
+Test,
+economics and operations work.
+The three research agents are active again.
+Their new owned notes are `depot-platform-surface-audit.md`,
+`depot-reuse-strategy-research.md` and `depot-complete-coverage-research.md`
+in `doc/planning/`.
+The parent owns actual event/status/gate probes,
+runtime feasibility and integration.
+All executable mutations remain isolated;
+main receives documentation and evidence only.
+Prior account-wide-access,
+subscription,
+production routing and external-provider restrictions persist.
+
+Next action:
+record and inspect the missing source/runtime surfaces,
+execute the applicable current-source graph and deeper reuse/orchestration experiments,
+and reconcile actual outcomes without declaring selected passing probes comprehensive.
+
+## Active Developer additional-pool research on 2026-10-18
+
+The user requested Depot Developer as an additional pool alongside GitHub,
+then required comprehensive research before grilling.
+They clarified that migration is the wrong framing:
+use Depot's full capabilities and greatly expand the current lackluster CI setup.
+The research now covers all CI-relevant Depot capabilities and desired repository coverage,
+not only placement of existing jobs.
+Developer remains the intended base plan;
+record eligibility gaps rather than excluding capabilities from discovery.
+Depot and GitHub Actions research experiments are authorized.
+The [research plan](../planning/depot-developer-additional-pool-research.md)
+tracks independently verifiable areas and the stop condition for beginning the interview.
+Developer plus continued GitHub availability is settled;
+pool placement and operational preferences will be grilled after factual research.
+
+The capability and repository-routing research notes are complete.
+Actual routing probes cover both pools,
+single-pool selection,
+intentional worker failure and cancellation propagation through a stable gate.
+Fresh standalone Depot jobs verified automatic cache credentials,
+compiler reuse and changed-flag invalidation,
+plus concurrent persistent-disk consumers.
+Historical standalone KVM guest execution has been reverified from its retained artifact.
+SDK command and file consumers passed;
+every created sandbox was independently confirmed finished.
+
+The repeated fresh-job pnpm-store comparison is complete.
+An initial cold cohort passed,
+but seed run `39100149452` stalled in the parent-authored archive-size guard before saving.
+Both old seed jobs and the workflow are confirmed `cancelled` at `05:32:36Z`.
+This establishes terminal workflow state,
+not VM destruction or stopped billing.
+The corrected harness is `2a155eec49` on `research/depot-pnpm-cache-20261018`.
+Its real success and intentional-failure controls pass.
+The final cohort adds explicit cache-disabled controls,
+uses unique scope `20261018-pnpm-cache-v3`
+and has a 5-minute job timeout.
+Parent monitor session `14886` completed all sequential phases successfully and retained terminal receipts
+under private `depot-developer-pool-research/receipts-v3`.
+The superseded seed monitor `59066` stopped on cancellation without dispatching warm consumers.
+Initial v3 dispatch returned HTTP `422` for the unquoted `off` choice before allocating a job.
+Its failed receipt is retained;
+the quoted choice was accepted as run `39101112370`,
+which passed all cache-disabled jobs.
+Explicit-miss `39101194478`,
+seed `39101280802`,
+warm `39101349744` and branch probe `39101439840` also passed every job.
+The [verified parent receipt](../audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json)
+retains all 16 final-cohort jobs and verified artifact ZIP digests.
+Restore plus install takes 11 to 12 seconds warm versus 9 to 10 seconds disabled on GitHub,
+and 4 to 5 seconds warm versus 3 seconds disabled on Depot.
+The apparent Depot whole-job improvement also includes checkout falling from 15 to 16 seconds
+to 3 to 4 seconds before restore;
+do not attribute that complete-job change to the pnpm archive.
+The branch probe verifies a GitHub miss and Depot hit from a different branch at the same source.
+It deliberately executes no installer or application consumer.
+The GitHub archive was already absent before cleanup;
+an exact key/ref query confirms zero entries.
+No deletion command ran for that entry and no disappearance cause is established.
+The worktree is safely removed and both pushed source branches remain.
+The [pnpm research note](../planning/depot-pnpm-store-fresh-job-research.md)
+records protocol,
+storage ownership and failure details.
+The independent review is complete and identifies no additional universal research prerequisite.
+The operating frontier is spending authority,
+qualified-check enforcement and infrastructure-recovery autonomy.
+Use the [frontier review](../planning/depot-developer-interview-frontier-review.md)
+for its option costs and rankings.
+Final parent verification passed:
+scoped Markdown lint,
+rendered inspection,
+JSON formatting,
+source and cleanup assertions,
+and 11 local links in the new parent notes.
+The independent cache review verified 16 ZIPs,
+67 member hashes,
+224 step intervals and 42 successful build/consumer task invocations.
+Its fresh GitHub API reads independently confirmed every artifact digest.
+
+The entire first post-research frontier was asked together in the question tool on 2026-10-18:
+
+- Q1:
+  standing monthly owner-reserved headroom or approval of each paid batch.
+- Q2:
+  qualify new checks and then enforce them at publication boundaries,
+  or keep them advisory.
+- Q3:
+  bounded automatic infrastructure retry and eligible-provider fallback,
+  or require an explicit rerun.
+
+The recommended choices are standing headroom,
+qualified enforcement and bounded automatic recovery.
+Answers are pending;
+preselected options are not answers or authorization.
+Recompute dependent decisions after the response.
+Do not implement production routing until shared understanding is confirmed.
+The main agent owns experiment harnesses and the combined decision tree.
+The research agents own separate cited capability,
+routing and cache notes.
+Do not begin the interview while factual prerequisites remain investigable.
+Do not change production routing or the subscription before shared understanding is reached.
+Prior account-wide-access exclusions remain in force.
+The user also requires performance claims to name the exact jobs and cache system.
+The measured pnpm-store regression is GitHub `actions/cache`
+in `readonly-semantic-bridge.yml`'s semantic-bridge jobs,
+not Depot Cache and not separately measured logger/TOML regressions.
+The cache decision now names that boundary.
+The research plan retains a concrete proposed `QNB` tightening outside the Depot interview;
+`AGENTS.md` is unchanged.
+
+## Cache benefit clarification on 2026-10-18
+
+The user asked how caching changes the performance assessment.
+The approximately `3.26` GitHub/Depot elapsed-time ratio described cold compilation,
+not the repeat-workload cache benefit.
+No complete-graph cached speedup has been established.
+The [fresh-job pnpm comparison](../planning/depot-pnpm-store-fresh-job-research.md)
+has now completed for its named workload;
+its restore overhead consumes the observed pnpm-command saving on both pools.
+
+The corrected [default container builder trial](../audit/depot-runner-sizing-2026-10-15.md)
+records two cold samples of `268.558` and `265.417` seconds,
+averaging `266.987` seconds,
+and unchanged repetitions of `22.297` to `37.654` seconds including local artifact export.
+Dividing the cold mean by those warm observations gives approximately `7.09` to `11.97`.
+That is a within-Depot cold-to-unchanged comparison,
+not a provider speedup.
+
+In the corrected sixteen-CPU/sixteen-job runner trial,
+the source-change rebuild averages `122.5` seconds versus `246.6` seconds cold,
+approximately a twofold elapsed-time ratio.
+The changed CLI name is verified in the real executable.
+This edit rebuilds both local packages under conservative content invalidation;
+it is not a measurement of every possible source edit.
+
+The [earlier GitHub reference](../audit/depot-trial-2026-10-15.md)
+also records unchanged same-job builds of `1.716` and `1.975` seconds.
+Those keep artifacts on the runner and do not measure cache restoration into a fresh job.
+They cannot be compared directly with Depot's local-download boundary.
+The native Mac/Windows follow-up records only artifact-cache misses and skipped cache saves,
+so it establishes no warm-cache benefit on those platforms.
+
+The [prepared desktop experiment](../audit/depot-prepared-desktop-2026-10-16.md)
+does verify reuse across fresh consumers:
+installed packages and source-bound binaries are reused without installation or compilation.
+Fresh runtime services still need startup,
+and changed build inputs require new preparation.
+Preparation cost and storage cannot be omitted from a steady-workload model.
+
+The [Cargo cache investigation](../troubleshooting/cargo-buildkit-source-timestamps.md)
+caught an actual stale executable under timestamp-based reuse.
+Content-aware package invalidation recovered the fixture,
+and the corrected application matrices passed all 100 runtime output assertions.
+Reject the stale subsecond source rebuild as a cache-performance result.
+The workload's cold,
+unchanged and edited-input frequencies remain needed to quantify total waiting benefit.
+
+## Measured performance clarification on 2026-10-18
+
+The user asked whether the measured benefit was a fourfold speedup.
+No fourfold overall CI or complete-graph waiting improvement has been established.
+The prior response's statement that measured benefit did not justify Startup was too definite:
+the aggregate waiting-time saving needed for that return-on-cost conclusion remains unmeasured.
+Developer remains the budget and CI-only pricing baseline,
+not a conclusion that paid Mac capacity cannot repay its cost.
+
+The [historical compilation observations](../audit/depot-trial-2026-10-15.md)
+record GitHub's cold build at `869.508` seconds
+and Depot's four-CPU runner at `757.394` seconds:
+an observed ratio of approximately `1.15`,
+with `112.114` seconds saved in those individual observations.
+Each route has one successful cold observation;
+they do not establish a repeated provider effect.
+
+The [default-builder concurrency trial](../audit/depot-runner-sizing-2026-10-15.md)
+records cold samples of `268.558` and `265.417` seconds,
+averaging `266.987` seconds.
+Comparing the earlier GitHub observation to that mean gives an elapsed-time ratio of approximately `3.26`
+for that single build operation,
+or about 14 minutes 30 seconds versus 4 minutes 27 seconds.
+Hardware,
+compilation parallelism,
+harness revision and artifact export paths differ.
+This is an observational elapsed-time ratio,
+not an isolated provider effect or a complete-graph speedup.
+
+Within the repeated Depot sizing experiment,
+four CPUs/four Cargo jobs average `526.7` seconds
+and sixteen CPUs/sixteen jobs average `246.6` seconds:
+approximately `2.14` times as fast,
+saving `280.1` seconds per measured cold build.
+Both allocation and concurrency change;
+each configuration's repetitions occur on one allocated runner.
+
+The native Mac and Windows follow-up established capability and consumer outcomes.
+It did not establish a controlled GitHub-versus-Depot speedup or monthly waiting-time reduction.
+The private `recorded-provider-speed-comparison.json` retains the arithmetic inspection.
+The prior final verification receipt remains a timestamped record of its original document bytes.
+
+## Native follow-up terminal result on 2026-10-18
+
+The authorized Depot native runner follow-up is complete at the consumer boundary.
+The [expanded evaluation](../audit/tech-depot-complete-ci-trial-vet-2026-10-18.md)
+records the final scoped verdict:
+intentional GitHub/Depot routing,
+with Developer plus selective overage as the planning baseline.
+Developer includes Depot Windows runners;
+Depot Mac runners require Startup.
+Free GitHub-hosted native work remains applicable under the chosen budget.
+All six workflow runs and 12 allocated job rows are terminal.
+Ten rows use actual Depot runners;
+the two preserved Windows ARM rows use GitHub.
+No application source was fixed,
+no production workflow routing was changed,
+and no subscription or account-wide usage setting was inspected.
+
+The [first wave](../audit/depot-native-runner-first-wave-2026-10-18.evidence.json),
+[recovery wave](../audit/depot-native-recovery-wave-2026-10-18.evidence.json)
+and [consumer reconciliation](../audit/depot-native-consumers-and-variation-2026-10-18.evidence.json)
+retain source/common pairs,
+Git-verified input hashes,
+provider artifact digests,
+per-step logs and individual nextest identities.
+Private validator assertions were corrected after reading the frozen harnesses:
+`caseName` is the `PROVENANCE_CASE` execution profile (`native` or `windows`),
+while `commonManifest.caseId` identifies the frozen source case (`native` or `desktop`).
+Both bindings and the exact source revision are checked independently.
+
+- Native Mac,
+  both repetitions:
+  1382 executed identities,
+  1356 passed,
+  26 failed and one additional summary skip.
+  Outcomes match the last GitHub native Mac retry.
+- Desktop Mac,
+  both repetitions:
+  1433 executed identities,
+  1406 passed,
+  27 failed and one additional summary skip.
+  Identities and outcomes match the GitHub reference.
+- Native Windows:
+  original release build and CLI consumer pass;
+  test compilation retains the frozen source's `E0433` errors.
+- Recovered desktop Windows:
+  both Depot x64 variants and the GitHub ARM row each pass 1432 nextest identities,
+  with one additional summary skip.
+  Original PE,
+  Bash runtime and launch consumers pass.
+  Keep the failed original PowerShell file assertion beside its passing independent stream probes.
+
+The [path measurements](../audit/depot-native-checkout-paths-2026-10-18.evidence.json)
+establish a 260-character Depot harness fixture path,
+versus 247 characters on GitHub ARM and 243 with the shorter Depot native harness path.
+The long-path bootstrap fixes checkout at the original 260-character path.
+The first failed allocations remain included in both label-proration estimates.
+
+Mac hardware is heterogeneous:
+the four probes report seven,
+seven,
+seven and nine CPUs,
+all with `18253611008` memory bytes.
+All native cache lookups miss and failed jobs skip post-save.
+The desktop timing difference therefore cannot isolate a provider effect or warm-cache benefit.
+The native Mac pair reports the same CPU count and memory but does not identify the physical CPU model.
+
+The original recovery watcher session `46364` ended on local GitHub CLI TLS handshake timeouts;
+the real provider runs remained active.
+Read-only watch resumed in session `84033`,
+which is now complete.
+No workflow was redispatched for that transport failure.
+All artifact collection and source/consumer checks are complete.
+
+The native follow-up label-proration estimates total USD `3.231466666666667`
+using GitHub job intervals,
+or USD `3.089866666666667` using first-step-to-terminal intervals.
+Neither is a provider invoice.
+The [hybrid model](../audit/depot-native-hybrid-routing-model-2026-10-18.evidence.json)
+uses the dated Bank of Canada observation `2026-10-16`,
+CAD `1.4154` per USD.
+For CI usage alone,
+Developer plus overage is always cheaper than Startup at the published rates:
+the extra USD 180 fee buys USD 108 more CI allowance.
+Other product pools and native Mac access remain separate considerations.
+
+The expanded report has the approved section list,
+passes scoped Markdown checks and has verified local evidence links.
+Its rendered output was inspected.
+The [cleanup receipt](../audit/depot-native-worktree-cleanup-2026-10-18.evidence.json)
+records removal of only this follow-up's disposable worktrees after clean-status,
+ignored-file preview and stray Git-root checks.
+The frozen branches remain available.
+The [final verification receipt](../audit/depot-native-final-verification-2026-10-18.evidence.json)
+binds the published report and native evidence bytes.
+
+No native follow-up execution remains queued.
+The earlier source-failure ownership,
+historical resource gaps,
+unexecuted surfaces and missing invoice remain explicit acceptance limits.
+They are not a pending source-fix or migration queue.
+No complete trial invoice or accepted complete-graph latency is claimed.
+
 ## Completed trial execution and remaining acceptance gaps
+
+### Historical reopening of the native Depot runner evaluation
+
+The user challenged the statement that macOS and Windows require another provider,
+then instructed:
+"So do the work!"
+The statement was too broad and is withdrawn.
+Standalone Depot CI has Linux sandboxes;
+Depot separately offers Windows and macOS compute through GitHub Actions runners.
+The [product-scope correction](../troubleshooting/depot-ci-versus-github-runner-platforms.md)
+retains the fresh primary documentation and limits.
+
+The real objective remains intentional GitHub/Depot routing under the USD $200 monthly ceiling,
+with Developer preferred where practical and elapsed waiting valued at CAD $8.975 per hour.
+The user did not ask for wholesale migration.
+The original evaluation report did not finish the authorized native follow-up.
+
+The authorized follow-up comprised these independently verifiable areas:
+
+- Execute the missing native Windows and macOS consumers on Depot GitHub Actions runners.
+  Preserve historical source revisions and original frozen harnesses;
+  bind provider-specific follow-up harnesses and actual architectures separately.
+- Reconcile original assertions,
+  real artifact consumers,
+  source/common provenance,
+  all attempts and provider allocation for that follow-up.
+- Measure unchanged repetitions where a performance comparison is claimed,
+  and update the intentional-routing and combined-cost verdict from actual evidence.
+- Complete the remaining authorized source-issue and evidence reconciliation;
+  keep unrecoverable archived evidence distinct from unexecuted work.
+
+The expanded evaluation and native terminal result record the completed follow-up and retained limits.
+
+Account-wide access and subscription changes remain excluded.
+The current Startup trial was already authorized for evaluation use.
+A repository-scoped Actions runner query returned an empty list;
+this does not establish failure of Depot's ephemeral runners.
+An unrelated concurrent edit to `package/git-policy/cli.fuzz/bin/container.mjs` must be preserved.
+
+The supplemental cohort is now dispatched as `native-runners-20261018T034256508Z`.
+Its [bound manifest](../audit/depot-complete-cohort-native-runners-20261018T034256508Z.json)
+preserves the historical case digests and binds the new provider-specific harness revisions.
+The [dispatch and placement evidence](../audit/depot-native-runner-followup-2026-10-17.evidence.json)
+retains all workflow bytes and initial provider job responses.
+The original consumer step values are independently compared with the frozen harnesses;
+only runner selection,
+the native cache namespace and the added hardware probe differ.
+
+- Native source:
+  run `39094759518`,
+  Depot Windows job `117578770519` and Depot macOS job `117578770694`.
+- Desktop source on Depot macOS:
+  run `39094764609`,
+  job `117578785599`.
+- Desktop Windows matrix:
+  run `39094767696`,
+  Depot GNU job `117578793896`,
+  Depot MSVC x64 job `117578794032`,
+  unchanged GitHub ARM job `117578794097`.
+
+All six initial jobs are in progress.
+All five Depot-labelled jobs have actual `depot-*` runner names.
+
+The first desktop Mac route is terminal:
+`1433` nextest cases run,
+`1406` passed,
+`27` failed and one summary skip,
+plus the two existing Clippy `missing return` diagnostics.
+Do not claim identity parity until the individual test names are compared.
+Its hardware probe reports seven CPUs and `18253611008` memory bytes,
+which differs from the published eight-CPU,
+24-GB runner specification.
+Record measured hardware separately from the priced label.
+
+The first desktop Windows Depot rows stopped at harness checkout with `Filename too long`.
+They receive no desktop consumer credit.
+The original GitHub ARM row reached the existing PowerShell failure.
+All logs and the ARM provenance archive are retained under
+private `depot-native-followup-artifacts/` with provider digests checked.
+The [long-path recovery](../troubleshooting/depot-windows-long-path-checkout.md)
+uses new Windows harness `20b7e331ad5a4e29bd493aba1829fff5f07d27a8`.
+Recovery cohort `native-recovery-20261018T035939491Z`
+retains the original native harness for unchanged repetitions and all historical case digests.
+The recovery [bound manifest](../audit/depot-complete-cohort-native-recovery-20261018T035939491Z.json)
+is committed as `738e501267` and its published bytes are independently verified.
+All recovery routes are dispatched:
+native hosts run `39095637308`,
+desktop Mac run `39095642563` and desktop Windows run `39095647113`.
+The native harness remains `3e51a06848ba363a90d4ce30816760042153f349`.
+The private `depot-native-long-path-publication.json`
+and `depot-native-long-path-dispatches/` retain the authoritative clock and receipts.
+Inspect those receipts before any repeated dispatch.
+
+The first wave is fully terminal and command session `75523` has completed.
+Its terminal receipts are under `depot-native-followup-dispatches/`.
+The recovery `wait-native-long-path-terminals` task is active;
+it writes terminal receipts under `depot-native-long-path-dispatches/`
+and emits only terminal results.
+Continue independent source-issue reconciliation while those inputs remain unchanged.
+Then collect actual logs and archives,
+validate hardware,
+source/common pairs and every original consumer boundary,
+and retain all allocation intervals before measuring unchanged repetitions.
 
 The user-approved reader report is complete:
 [Depot complete CI trial evaluation](../audit/tech-depot-complete-ci-trial-vet-2026-10-17.md).

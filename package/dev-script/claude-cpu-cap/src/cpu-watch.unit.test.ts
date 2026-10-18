@@ -41,7 +41,6 @@ await describe({
             CPU_WATCH_HWMON_ROOT: paths.hwmonRoot,
             CPU_WATCH_PROC_ROOT: paths.procRoot,
             CPU_WATCH_SAMPLE_DIR: paths.sampleDir,
-            CPU_WATCH_TOKEN_FILE: paths.tokenFile,
           },
           stdio: ['ignore', 'pipe', 'pipe',],
         },);

@@ -8,7 +8,9 @@
 #   libicns-utils   png2icns: pack the PNGs into a macOS .icns
 #   icoutils        icotool: pack the PNGs into a Windows .ico
 #   ImageMagick     fallback rasteriser / format glue if needed
-FROM registry.fedoraproject.org/fedora:41
+# Pinned by digest (the multi-arch index of fedora:41, resolved 2026-10-18) so a moving tag cannot change the build
+# input. Refresh on purpose: skopeo inspect --raw docker://registry.fedoraproject.org/fedora:41 | sha256sum
+FROM registry.fedoraproject.org/fedora@sha256:893f7eeffce8e3e2bb2bc62786ba5603fb1e0bd6ba07091acb892266b95bafdf
 RUN dnf install -y \
       librsvg2-tools \
       libicns-utils \

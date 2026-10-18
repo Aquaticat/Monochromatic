@@ -54,6 +54,12 @@ logger.error('unexpected shutdown',);
 
 ## Runtime support
 
+The [write completion and file ownership explanation](doc/write-completion.md)
+documents completion tracking,
+file batching,
+ownership,
+and the regressions motivating those internal parts.
+
 Node 24 or newer (the build calls `Error.isError`),
  plus current browsers,
  Deno,

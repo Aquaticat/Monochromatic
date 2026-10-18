@@ -31,7 +31,9 @@ use std::sync::{
 ///  Most lines the worker's row cache keeps.
 /// Why:
 ///  The whole-file pass keeps every line it shaped so that a resize breaks them again instead of shaping them again;
-///  measured on 2026-10-11, 50,000 kept layouts hold about 158 MB (3.2 KB a line), re-breaking them takes 40 to 80 ms
+///  measured on 2026-10-11,
+/// 50,000 kept layouts hold about 158 MB (3.2 KB a line),
+/// re-breaking them takes 40 to 80 ms
 ///  where shaping them takes 1 to 2 s.
 ///  A file longer than this keeps the lines nearest the view.
 ///
@@ -42,7 +44,8 @@ use std::sync::{
 pub(in crate::native) const KEPT_LAYOUTS: usize = 50_000;
 
 /// What:
-///  The worker's own shaper and raster, plus what the shaper's row cache was built for.
+///  The worker's own shaper and raster,
+/// plus what the shaper's row cache was built for.
 /// Why:
 ///  The row cache keys on revision and scale and tags each row with its wrap width,
 ///  so a change of styles or typography must clear or replace it.
@@ -58,13 +61,16 @@ struct Tiler {
     raster: TextRaster,
     /// Typography the shaper was built with.
     typography: SourceTypography,
-    /// Syntax classifications the cached rows were shaped with, by identity.
+    /// Syntax classifications the cached rows were shaped with,
+    /// by identity.
     styles: Option<SourceStyles>,
 }
 
-/// Build one job with the worker's resources, clearing its row cache when styles or typography changed.
+/// Build one job with the worker's resources,
+/// clearing its row cache when styles or typography changed.
 impl Tiler {
-    /// Start from a shaper forked from the window's own, so the worker shares its fonts and typography.
+    /// Start from a shaper forked from the window's own,
+    /// so the worker shares its fonts and typography.
     fn new(mut shaper: TextShaper) -> Self {
         let typography = shaper.typography().clone();
         shaper.keep_layouts(KEPT_LAYOUTS);
@@ -96,25 +102,33 @@ impl Tiler {
         return Ok(());
     }
 
-    /// Build `job`, first making the shaper match its typography and styles.
+    /// Build `job`,
+    /// first making the shaper match its typography and styles.
     fn build(&mut self, job: TileJob) -> Result<TileBuilt> {
         self.adopt(&job.typography, &job.styles)?;
         return build_tile(&mut self.shaper, &mut self.raster, job);
     }
 }
 
-/// Test-only gate: the next build waits for one message before it starts, so a test can hold a job in flight.
+/// Test-only gate:
+/// the next build waits for one message before it starts,
+/// so a test can hold a job in flight.
 #[cfg(test)]
 pub(in crate::native) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> =
     std::sync::Mutex::new(None);
 
-/// Test-only gate: each chunk of the pass waits for one message before it starts, so a test can release chunks
-/// one at a time. Closing the sender releases the pass for good.
+/// Test-only gate:
+/// each chunk of the pass waits for one message before it starts,
+/// so a test can release chunks
+/// one at a time.
+/// Closing the sender releases the pass for good.
 #[cfg(test)]
 pub(in crate::native) static PASS_GATE: std::sync::Mutex<Option<Receiver<()>>> =
     std::sync::Mutex::new(None);
 
-/// Wait on the test gate once, if a test installed one; the sender stays with the test.
+/// Wait on the test gate once,
+/// if a test installed one;
+/// the sender stays with the test.
 #[cfg(test)]
 fn hold_at_test_gate() {
     let gate = BUILD_GATE
@@ -128,8 +142,12 @@ fn hold_at_test_gate() {
     }
 }
 
-/// Whether the next chunk of the pass may run: always, unless a test installed a gate and holds back its token.
-/// A token lets one chunk run; a closed gate lets the pass run freely. The worker keeps serving tile jobs meanwhile.
+/// Whether the next chunk of the pass may run:
+/// always,
+/// unless a test installed a gate and holds back its token.
+/// A token lets one chunk run;
+/// a closed gate lets the pass run freely.
+/// The worker keeps serving tile jobs meanwhile.
 #[cfg(test)]
 fn pass_gate_open() -> bool {
     let Ok(mut slot) = PASS_GATE.lock() else {

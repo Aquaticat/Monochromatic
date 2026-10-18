@@ -15,7 +15,8 @@ use std::path::{Path, PathBuf};
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Provided {
-    /// Existing absolute directories, in mise's order.
+    /// Existing absolute directories,
+    /// in mise's order.
     pub directories: Vec<PathBuf>,
     /// The project's own mise configuration files.
     pub configs: Vec<PathBuf>,
@@ -37,9 +38,11 @@ pub struct Provided {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Failed {
-    /// Mise's message, or what the application observed.
+    /// Mise's message,
+    /// or what the application observed.
     pub message: String,
-    /// The configuration file mise refused as not trusted, when that is the cause.
+    /// The configuration file mise refused as not trusted,
+    /// when that is the cause.
     pub untrusted: Option<String>,
 }
 
@@ -59,7 +62,10 @@ pub struct Failed {
 pub enum MiseState {
     /// The setup never runs mise.
     Disabled,
-    /// Mise does not apply: no mise program, no configuration for the project, or no sandbox.
+    /// Mise does not apply:
+    /// no mise program,
+    /// no configuration for the project,
+    /// or no sandbox.
     ///  The plain `PATH` lookup stays as it was.
     Unused(
         /// Why,
@@ -109,8 +115,11 @@ impl MiseState {
     ///  The paragraphs of the reader's notice about a failure,
     ///  or none when mise worked or did not apply.
     /// Why:
-    ///  The notice must name the configuration, quote mise, and say what the user does:
-    ///  the application never trusts a configuration, because trusting lets the project's
+    ///  The notice must name the configuration,
+    /// quote mise,
+    /// and say what the user does:
+    ///  the application never trusts a configuration,
+    /// because trusting lets the project's
     ///  `[env]` commands run.
     ///  The remedy stands before mise's own words:
     ///  the display keeps only the first dozen lines,

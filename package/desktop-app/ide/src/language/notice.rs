@@ -23,7 +23,8 @@ use super::status::{DocumentState, LanguageStatus, ServerState, ServerStatus};
 ///  for example `Information (language support): ...`.
 pub const SOURCE: &str = "language support";
 
-/// The failures kept per server process, and their wording.
+/// The failures kept per server process,
+/// and their wording.
 mod trouble;
 /// The failures kept for one server process.
 pub(super) use trouble::Trouble;

@@ -104,7 +104,6 @@ export function createRunPromptOwner({
       slots:[],
       next:0,
       running:undefined,
-      bytes:0,
       parent:undefined,
       node:undefined,
       view:undefined
@@ -134,24 +133,13 @@ export function createRunPromptOwner({
       ||(!Object.isFrozen(value.options)))throw new SourceCollectionError('Native run base reader did not return a ready owned base');
     return value;
   }
-  function charge({
-    scope,
-    value
-  }){
-    scope.bytes+=Buffer.byteLength(JSON.stringify(value));
-    return value;
-  }
   function capture({
-    scope,
     options,
     messages
   }){
-    return charge({
-      scope,
-      value:Object.freeze({
+    return Object.freeze({
         options:freezePromptOptions(options),
         messages:snapshotRunMessages(messages)
-      })
     });
   }
   function dense({
@@ -175,11 +163,11 @@ export function createRunPromptOwner({
     return value;
   }
 
-  const {start,enterNative,invokeHandler,leaveNative}=createRunEmission({state,reserve,phase,check,base,charge,fail,known,dense,capture,record,issuedErrors});
-const {render,captureSystemMessage}=createRunRendering({state,check,issuedErrors,record,guard,charge});
+  const {start,enterNative,invokeHandler,leaveNative}=createRunEmission({state,reserve,phase,check,base,fail,known,dense,capture,record,issuedErrors});
+const {render,captureSystemMessage}=createRunRendering({state,check,issuedErrors,record,guard});
 const {readHandlerOptionOrigins,readInputOrigins,readInputUsage,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}=createRunRetainedInputs({state,scopes,history,assertLive,readRoot,readSessionInput});
-const {retainContextInputs,captureContextClone,captureExpandedPromptMessage,captureHandlerMessage,captureForcedMessage}=createRunContext({state,phase,check,charge,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath});
-const {publishScope}=createRunPublication({state,check,base,charge,requireRenderCapture});
+const {retainContextInputs,captureContextClone,captureExpandedPromptMessage,captureHandlerMessage,captureForcedMessage}=createRunContext({state,phase,check,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath});
+const {publishScope}=createRunPublication({state,check,base,requireRenderCapture});
 const {publish,refresh,reset,read,readOrAbsent,inspect}=createRunLifecycle({state,history,known,phase,check,publishScope,reserve,base,fail,reject,assertLive,readConstructedInputs,retainContextInputs,assertSessionInputs,readRoot});
 return Object.freeze({
     start,

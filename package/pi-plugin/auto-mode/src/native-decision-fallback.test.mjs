@@ -94,6 +94,13 @@ if(startupFailure){
 }
 await session.prompt('Perform the complete proposed local inspection.');
 await fixture.abortTask;
+if(mode==='stop'||mode==='cancel'){
+ const withheld=session.messages.filter(function isToolResult(message){return message.role==='toolResult';});
+ assert.equal(withheld.length,commands.length);
+ for(const message of withheld)assert.equal(message.content.map(function readResultText(part){return part.text??'';}).join('\n'),
+  'The user stopped execution. Wait for their next instructions.',
+  'An original Stop outcome must survive native abort');
+}
 const allowed=['approve','transient','unknown','low','transport','malformed','initial-failure','deadline','fresh'].includes(mode);
 assert.equal(observations.executions,allowed?2:0);
 assert.equal(observations.attempts,startupFailure?0:mode.startsWith('transient')?3:2);

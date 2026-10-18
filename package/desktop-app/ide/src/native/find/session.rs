@@ -11,7 +11,8 @@ use super::{Find, tick};
 ///  the rendering boundary,
 ///  and scrolling a range into view.
 use crate::native::{AppWindow, State, render, viewport};
-/// A selected match is not a wrap-offset caret, so it stands on the default side.
+/// A selected match is not a wrap-offset caret,
+/// so it stands on the default side.
 use ide_app::document::ReadingAffinity;
 /// A match is a source character range,
 ///  the same unit as the reading selection.

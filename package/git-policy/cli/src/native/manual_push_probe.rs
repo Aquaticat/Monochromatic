@@ -254,14 +254,20 @@ pub fn capture_probed_updates(
 ) -> Result<Vec<ProbedUpdate>, ManualPushProbeError> {
     let hooks = scratch.join("hooks");
     let captures = scratch.join("captures");
-    for directory in [scratch, hooks.as_path(), captures.as_path()] {
-        create_private_directory(directory).map_err(|error| {
+    let created = |directory: &Path| -> Result<(), ManualPushProbeError> {
+        return create_private_directory(directory).map_err(|error| {
             return probe_error(format!(
                 "private probe directory {} could not be created: {error}",
                 directory.display()
             ));
-        })?;
-    }
+        });
+    };
+    // The scratch directory is created first, and its guard follows at once, so every later failure removes it.
+    // A scratch path that already exists is never adopted: creating it fails before any guard exists.
+    created(scratch)?;
+    let _scratch_guard = ScratchGuard(scratch.to_path_buf());
+    created(hooks.as_path())?;
+    created(captures.as_path())?;
     let hook_path = hooks.join(HOOK_NAME);
     fs::write(&hook_path, hook_source()).map_err(|error| {
         return probe_error(format!("hook write failed: {error}"));
@@ -299,7 +305,6 @@ pub fn capture_probed_updates(
         )));
     }
     let mut updates: Vec<ProbedUpdate> = Vec::new();
-    let _scratch_guard = ScratchGuard(scratch.to_path_buf());
     for path in names {
         let bytes = fs::read(&path).map_err(|error| {
             return probe_error(format!("capture unreadable: {error}"));
