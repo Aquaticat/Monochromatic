@@ -61,6 +61,22 @@
  this number. Every source commit since then rides inside it, those the
  accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
 
+ THE ACCOUNT OF 2026-10-18 (ledger B670) for the production commits from `d614a0c1d` to `29d606470`, which no account had read
+ (1,205 commits under the sources of the family and of the one package before the split, 27 of them touching the files of the
+ pairing stage): 3 need not move. The statement above that no slice-cache file had been written since 2026-09-28 holds no
+ longer: `corpus-pass-TianqiChen66626` wrote three block pairings under 3 between 16:58 and 17:00 UTC on 2026-10-18. What
+ retires a stored pairing when the code that settled it changes is not this number. The key holds the version, the question, the
+ texts, the pictures and the roster (`pairingQuestionKey`), so the sheet a seat was shown and the rules that closed the round
+ are in no key and no number could have retired a record when they changed. What does is the namespace's generation: both
+ pairing caches are opened under the digest of the built pipeline the pass runs (`openPairingCache` and
+ `openSectionPairingCache`, `slice-cache-store.ts`), and a build whose digest differs discards the namespace before it reads
+ it (`openNamespacedCache`; the case in `slice-cache-pairing.unit.test.ts` fills a directory under one build and finds it empty
+ under another). Every commit of the range that changed a byte the pipeline runs changed that digest, and a commit that
+ changed none left the record as the same code settled it, so no commit of the range lets a stored pairing outlive the code
+ that settled it. The number stays the belt beside that brace, and it moves for what the digest does not hold: a dependency,
+ the Node binary, or the environment, from which the straggler windows are read (`477bbd6601` moved where they are read, to the
+ entry, and not whether they are read from the environment). This account reads the sources of the range and not those three.
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAIRING_CACHE_VERSION, question, source, target, pictures, roster, },);

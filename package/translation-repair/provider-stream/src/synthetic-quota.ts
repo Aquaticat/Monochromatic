@@ -7,6 +7,18 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // reads are free per provider docs, so drivers may poll without budget cost.
 // A malformed body is a provider protocol failure and throws, unlike model-content
 // defects which flow as data.
+//
+// THE SHAPE READ HERE IS THE ONE OF 2026-07-16, AND NO PUBLIC SOURCE GIVES ANOTHER (ledger B671). A pre-launch reading on
+// 2026-10-18 met a body whose `rollingFiveHourLimit` was not an object, and this reader refuses such a body; the caller treats
+// the budget as spendable and warns (`meterRecordOf`, `provider-meters.ts`). Synthetic's documentation of the endpoint
+// (`dev.synthetic.new/docs/synthetic/quotas`) still shows only the older `subscription` block. Its maintainer wrote on
+// 2026-09-15, in `slkiser/opencode-quota` issue 276, that a bearer API key returns the full quota JSON with `weeklyTokenLimit`
+// and `rollingFiveHourLimit`, and that `subscription` and `freeToolCalls` are legacy keys the named limits replace. The same
+// issue records a key on an account the reporter took to be on the free tier answered with status 200 and the body `{}`,
+// which this reader refuses by the same message; Synthetic has not said whether `{}` is intended for such an account. The body
+// of the 2026-10-18 reading was not recorded, so whether it was `{}`, a block under another name or something else is not known,
+// and no second shape is read here. A reading that records the refused body would settle it (`QuotaShapeError` names the field
+// and never the body, by design).
 
 /**
  Budget-relevant quota state at one instant.
