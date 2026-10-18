@@ -21,7 +21,7 @@ cancellation controls,
 confirmed parallel-group progress,
 persisted assistant content,
 compaction file sets and growing streaming snapshots.
-The current native artifact is `native-release-EWv4wy`.
+The control and storage repair artifact is `native-release-EWv4wy`.
 Its committed-source type check,
 content-storage consumers,
 compaction and persistence consumers,

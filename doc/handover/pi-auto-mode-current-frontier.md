@@ -109,10 +109,20 @@ The `src` subset contains 2,734 warnings and 48 errors.
 Next MiMo scope is explicit environment isolation first,
 then `src` formatter convergence and remaining lint fixes without weakening behavior or coverage.
 Native contract source remains supervisor-owned.
-The full-unit and session-input aggregate consumers for frozen source `68e7ce538a` are running
-against `LytMAt`;
-their logs are `cli-corrected-full-units.log` and `native-session-input-aggregate.log`.
-They remain evidence for that frozen snapshot while later lint edits proceed.
+The complete units for frozen source `68e7ce538a` pass against `LytMAt`:
+`cli-corrected-full-units.log`.
+The new session-input aggregate initially exits 127 before any consumer:
+`sh: line 1: mise: command not found`.
+The private verification wrapper mounted `/fixture-bin/mise` without putting that directory on PATH.
+Correcting only that fixture PATH makes the aggregate pass:
+`native-session-input-aggregate-path-corrected.log`.
+Both results remain evidence for the frozen snapshot while later lint edits proceed.
+The inherited-receipt control still fails until its owned test repair is verified.
+The external process-wrapper diagnosis is retained in
+`doc/troubleshooting/nano-spawn-environment-inheritance.md`.
+The latest controlled streaming repetitions retain 342,556,400 to 342,565,888 bytes before the repair
+and 10,544,896 to 10,569,992 bytes after it.
+The difference exceeds the observed spread on unchanged test inputs.
 
 ### Original worker and completed progress repair
 
