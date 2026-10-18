@@ -1,4 +1,4 @@
-name: Research bounded guarded host and remaining Node consumers
+name: Research corrected installed SDK dependency admission
 on:
   workflow_dispatch:
     inputs:
@@ -25,7 +25,6 @@ jobs:
       max-parallel: 1
       matrix:
         shard:
-          - a
           - b
     env:
       COVERAGE_SOURCE: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
@@ -174,8 +173,9 @@ jobs:
               async function packageSnapshot() {
                 const {realpathSync,lstatSync}=await import('node:fs');
                 const records=[];
-                for (const name of ['pi-agent-core','pi-ai','pi-coding-agent','pi-tui']) {
-                  const candidates=[join(root,'package/pi-plugin/auto-mode/node_modules/@earendil-works',name),join(root,'node_modules/@earendil-works',name)];
+                for (const name of ['pi-agent-core','pi-ai','pi-coding-agent','pi-codemode','pi-tui']) {
+                  const installedSdk=realpathSync(join(root,'package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent'));
+                  const candidates=[join(installedSdk,'..',name)];
                   const candidate=candidates.find(path=>existsSync(join(path,'package.json')));
                   if (!candidate) throw new Error('Installed qualified SDK package is absent: '+name);
                   const actual=realpathSync(candidate),metadata=JSON.parse(readFileSync(join(actual,'package.json'),'utf8'));
