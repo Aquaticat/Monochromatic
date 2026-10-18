@@ -1337,6 +1337,50 @@ blocked,
 and unresolved surfaces.
 No completion or interview-readiness conclusion is made.
 
+## Native SSH acceptance proposal
+
+The [SSH proposal receipt](../audit/depot-native-ssh-acceptance-2026-10-18.evidence.json)
+and [source archive](../audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz)
+separate source review and local controls from provider execution.
+No native SSH job has been allocated under this proposal.
+
+The deployed debugger guide distinguishes raw sandbox access from a paused workflow environment.
+The CLI interactive terminal uses `OpenPtySession`;
+its noninteractive `--info --output json` returns connection metadata.
+The proposed actual SSH controls therefore use native OpenSSH shells with bounded stdin commands.
+The pinned tmate action is equivalent to the CLI injection source,
+without claiming execution of the mutable `--ssh-after-step` injection.
+
+The isolated fixture preserves application `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Its native job requests `2` CPU and `8` GiB,
+has a `3` minute job limit and a `1` minute paused-step limit.
+The source-gated controller requests cancellation after `150` seconds,
+bounds each SSH leg to `15` seconds and verifies fresh exact-run terminal status.
+One correction after terminal cleanup would reserve `USD 0.036` across both jobs at the documented list rate.
+This reservation is scoped arithmetic,
+not an invoice or aggregate account cap.
+Root source/admission review remains pending.
+
+Local controls validate synthetic askpass delivery and prompt rejection,
+source/challenge file consumers,
+paused environment rejection and canonical workspace identity.
+A mount-free network-disabled local container proves a UID `0` writer can restore UID `1000` and GID `1000`
+before a workflow reader consumes the `0600` result.
+The unrepaired root-owned `0600` control returns `EACCES`.
+The local container is terminal and absent.
+These are local fixture controls,
+not native SSH runtime qualifications.
+
+The live API password stays in controller memory and one private askpass socket.
+The tmate target is a bearer capability and remains private.
+The workflow consumer verifies actual writer identity,
+reader ownership,
+challenge hashes and resume state.
+Cleanup proves only the owned tmate socket and continue-file absence plus terminal CI status.
+No exact tmate process absence,
+SSH credential revocation,
+or instantaneous VM deallocation is claimed.
+
 [llms]: https://depot.dev/llms.txt
 [sitemap]: https://depot.dev/sitemap.xml
 [bundle]: https://depot.dev/llms-all.txt

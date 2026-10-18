@@ -22012,5 +22012,14 @@
       "BuildKit current-scanner comparison and empty image-list JSON source diagnosis remain active",
       "SDK custom thin-image success must remain separate from unexercised named/ordinary-OCI runtimes, snapshot persistence, secrets and detached log contracts"
     ]
+  },
+  "nativeSshAcceptanceProposal": {
+    "status": "Source and local controls qualified; no provider SSH runtime qualified; Root admission pending",
+    "source": "c3c694593e6a3a3cdd622aaeff00c4329305ec74",
+    "evidence": "doc/audit/depot-native-ssh-acceptance-2026-10-18.evidence.json",
+    "sourceArchive": "doc/audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz",
+    "nominalMaximumUsd": 0.036,
+    "cloudAllocations": [],
+    "nextAction": "Root source/admission review; do not dispatch before review"
   }
 }

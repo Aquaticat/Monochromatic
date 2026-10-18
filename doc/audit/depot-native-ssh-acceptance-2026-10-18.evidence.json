@@ -1,0 +1,453 @@
+{
+  "schemaVersion": 1,
+  "sealedAt": "2026-10-18T17:54:16.403Z",
+  "status": "Source and local controls qualified; no provider SSH runtime qualified; Root admission pending",
+  "applicationBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "fixture": {
+    "source": "c3c694593e6a3a3cdd622aaeff00c4329305ec74",
+    "branch": "research/depot-native-ssh-20261018",
+    "paths": [
+      ".depot/workflows/native-ssh-acceptance.yml",
+      ".depot/probe/native-ssh/mise.toml"
+    ],
+    "runner": "depot-ubuntu-24.04",
+    "cpu": 2,
+    "memoryGiB": 8,
+    "jobMinutes": 3,
+    "tmateStepMinutes": 1,
+    "pinnedAction": {
+      "commit": "35b54afac29c97fb54faba5b513f8fbd1882f113",
+      "relation": "Pinned equivalent of source-reviewed CLI@v3 injection; no CLI-injection execution credit"
+    }
+  },
+  "admission": {
+    "approved": false,
+    "maximumConcurrentJobs": 1,
+    "maximumJobsIncludingCorrection": 2,
+    "nominalPerJobUsd": 0.018,
+    "nominalMaximumUsd": 0.036,
+    "formula": "2jobs*3minutes*USD0.006/native2CPU-minute",
+    "invoiceOrAggregateCap": false,
+    "newCredentialsOrSecrets": false
+  },
+  "classification": {
+    "sourceDocumented": [
+      "Direct SSH uses existing API token and raw sandbox context",
+      "Paused tmate has full workflow environment and log target is a bearer capability"
+    ],
+    "sourceInspected": [
+      "Interactive depot ci ssh uses OpenPtySession RPC, while--info returns connection metadata",
+      "CLI--ssh-after-step injects mutable action-tmate@v3; pinned fixture is equivalent code without CLI-injection execution credit",
+      "Tmate packaged runtime watches/continue or workspace/continue; connect-timeout only bounds detached post path, so fixture omits that ineffective main-step setting",
+      "Tmate upstream source permits none auth only when session authorized_keys policy permits it; actual cloud gateway remains to qualify"
+    ],
+    "locallyQualified": [
+      "Owning-directory task discovery and plain-JavaScript syntax checks",
+      "Synthetic askpass positive and unexpected-prompt rejection without a real credential",
+      "Remote file consumers: direct/paused positives and source/workflow-env rejections",
+      "Privileged UID0 writer restores UID1000/GID1000 before0600 workflow-reader access; root-owned0600 negative returnsEACCES",
+      "OpenSSH direct and tmate shell-option syntax; actual local credential scalar shape admitted without displaying credential"
+    ],
+    "providerRuntimeQualified": false
+  },
+  "commands": {
+    "dispatch": [
+      "depot",
+      "ci",
+      "run",
+      "--org",
+      "l4zncjjbj5",
+      "--forge",
+      "github",
+      "--workflow",
+      ".depot/workflows/native-ssh-acceptance.yml",
+      "--job",
+      "ssh-proof"
+    ],
+    "info": [
+      "depot",
+      "ci",
+      "ssh",
+      "<owned-run>",
+      "--job",
+      "<exact-owned-job-key>",
+      "--org",
+      "l4zncjjbj5",
+      "--info",
+      "--output",
+      "json"
+    ],
+    "logs": [
+      "depot",
+      "ci",
+      "logs",
+      "<owned-attempt>",
+      "--org",
+      "l4zncjjbj5",
+      "--output",
+      "json"
+    ],
+    "rawSsh": {
+      "file": "ssh",
+      "options": [
+        "-F",
+        "/dev/null",
+        "-tt",
+        "-o",
+        "ConnectionAttempts=1",
+        "-o",
+        "ConnectTimeout=10",
+        "-o",
+        "ServerAliveInterval=2",
+        "-o",
+        "ServerAliveCountMax=2",
+        "-o",
+        "StrictHostKeyChecking=accept-new",
+        "-o",
+        "UserKnownHostsFile=<owned-private-dir>/known_hosts",
+        "-o",
+        "IdentityAgent=none",
+        "-o",
+        "PreferredAuthentications=password",
+        "-o",
+        "PubkeyAuthentication=no",
+        "-o",
+        "KbdInteractiveAuthentication=no",
+        "-o",
+        "NumberOfPasswordPrompts=1"
+      ],
+      "target": "<owned-sandbox>@exec.depot.dev",
+      "stdin": "Shell-quoted admitted absolute Node path + source-archived remote consumer + fresh challenge config, then exit $?; API password is delivered through one owned Unix askpass socket"
+    },
+    "pausedSsh": {
+      "file": "ssh",
+      "options": [
+        "-F",
+        "/dev/null",
+        "-tt",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "IdentityAgent=none",
+        "-o",
+        "PubkeyAuthentication=no",
+        "-o",
+        "PasswordAuthentication=no",
+        "-o",
+        "KbdInteractiveAuthentication=no",
+        "-o",
+        "GSSAPIAuthentication=no",
+        "-o",
+        "HostbasedAuthentication=no"
+      ],
+      "target": "<private-target-from-exact-attempt-log>",
+      "stdin": "Same source-archived remote consumer in paused mode; validate canonical workspace and synthetic workflow variable, write nonce continue marker"
+    },
+    "cancel": [
+      "depot",
+      "ci",
+      "cancel",
+      "<owned-run>",
+      "--org",
+      "l4zncjjbj5",
+      "--output",
+      "json"
+    ],
+    "terminal": [
+      "depot",
+      "ci",
+      "status",
+      "<owned-run>",
+      "--org",
+      "l4zncjjbj5",
+      "--wait",
+      "--output",
+      "json"
+    ]
+  },
+  "controller": {
+    "task": "run-native-ssh-acceptance",
+    "defaultMode": "plan-only; zero cloud calls",
+    "executeGate": "NATIVE_SSH_EXECUTE=1 plus exact-source Root-reviewed private admission file",
+    "watchdogCancelMsFromAdmissionDispatch": 150000,
+    "eachSshLegLimitMs": 15000,
+    "serverJobMinutes": 3,
+    "pausedStepMinutes": 1,
+    "localCleanupBeginsAtMs": 210000,
+    "finally": "Terminate owned SSH child, close askpass socket, cancel exact owned run if terminal not verified, fresh exact-run status; retain incomplete cleanup as failure instead of claiming absence",
+    "preDispatchGates": [
+      "Clean exact source",
+      "Exactly fixture paths changed from e02",
+      "Remote branch ancestry",
+      "Terminal prior attempt before a correction",
+      "Existing local credential shape admitted"
+    ]
+  },
+  "proofContract": [
+    "Exact owned run/job/attempt/sandbox match from fresh status plus CLI info",
+    "Source/fixture hashes and boot identity from workflow marker",
+    "Controller challenge responses are absent from SSH input and consumed from VM-written0600 files",
+    "Privileged writer preserves actual writer UID/GID while restoring marker-reader ownership",
+    "Paused workflow context and continued next-step consumer",
+    "Only continue-file and tmate-socket absence are claimed; no exact tmate PID/process or raw SSH credential revocation proof",
+    "Fresh terminal CI status; this is not an invoice or instantaneous VM-release observation"
+  ],
+  "localControls": {
+    "askpass": {
+      "positiveExit": 0,
+      "negativeExit": 1,
+      "connectionCount": 1,
+      "negativeCreatedConnection": false,
+      "socketAbsent": true,
+      "actualCredentialUsed": false
+    },
+    "fileConsumers": {
+      "checkedAt": "2026-10-18T17:39:22.165Z",
+      "source": "2b2f2fadc4067ad255e3068af6a2703e91551415",
+      "scope": "Local disposable file-consumer and challenge controls only; no remote SSH or Depot runtime credit",
+      "cases": [
+        {
+          "name": "direct-positive",
+          "status": 0,
+          "pass": true,
+          "shellInputBytes": 1969,
+          "proofSha256": "00a63d128a2f6a25b1d032cfdf7acc765d2c3dce016bcad177f6074e419d53ac",
+          "expectedResponseEmbeddedInInput": false
+        },
+        {
+          "name": "source-rejection",
+          "status": 1,
+          "pass": true,
+          "shellInputBytes": 1969,
+          "proofSha256": null,
+          "expectedResponseEmbeddedInInput": false
+        },
+        {
+          "name": "paused-env-rejection",
+          "status": 1,
+          "pass": true,
+          "shellInputBytes": 1971,
+          "proofSha256": null,
+          "expectedResponseEmbeddedInInput": false
+        },
+        {
+          "name": "paused-positive",
+          "status": 0,
+          "pass": true,
+          "shellInputBytes": 1971,
+          "proofSha256": "799157455b6f887a5735b7d765712e3e869c4ec744d8ed54cccd6f5efd2eba74",
+          "expectedResponseEmbeddedInInput": false
+        }
+      ],
+      "continueNonceHashMatched": true,
+      "actualCredentialUsed": false,
+      "cloudOperations": 0
+    },
+    "differentWriter": {
+      "observation": {
+        "node": "v24.22.0",
+        "architecture": "x64",
+        "markerUid": 1000,
+        "markerGid": 1000,
+        "writerUid": 0,
+        "writerGid": 0,
+        "restoredFileUid": 1000,
+        "restoredFileGid": 1000,
+        "restoredFileMode": "600",
+        "unprivilegedReaderExit": 0,
+        "rootOwnedNegativeReaderExit": 23,
+        "rootOwnedNegativeCode": "EACCES"
+      },
+      "container": {
+        "state": {
+          "OciVersion": "1.2.1",
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-18T13:46:32.925461468-04:00",
+          "FinishedAt": "2026-10-18T13:46:33.04478428-04:00",
+          "CheckpointedAt": "0001-01-01T00:00:00Z",
+          "RestoredAt": "0001-01-01T00:00:00Z"
+        },
+        "imageId": "aedf411bcd17538e70d87272ba16677ed7ec62f2211cf4f30a3f38ec8ce6b55a",
+        "mountCount": 0,
+        "memoryBytes": 2147483648,
+        "cpuQuota": 200000,
+        "cpuPeriod": 100000,
+        "pidsLimit": 64,
+        "networkMode": "none"
+      },
+      "containerAbsentAfter": true,
+      "priorFixtureSyntaxFailurePreserved": true
+    },
+    "openSshVersion": "",
+    "existingLocalCredentialShapeAdmitted": true
+  },
+  "preflightDefects": [
+    "Controller TOML nested literal fence fixed before execution; no worktree/cloud resource created by parse failure",
+    "git worktree has-b and no--branch; corrected per existing git-worktree-add-start-point diagnosis, explicit frozen base preserved",
+    "Generated newline literals corrected before runtime preflight",
+    "Record SSH UID/GID authority instead of assuming direct SSH has the workflow UID",
+    "Paused consumer positive exposed local home symlink spelling; compare canonical filesystem paths and retain original spellings",
+    "Local task discovery reports qualified monorepo names; scope corrected before runtime",
+    "Plain JavaScript syntax check uses--input-type=module per existing Node26.12 source diagnosis; runtime task shell remains module-typescript",
+    "Parent review caught0600 different-writer boundary: privileged remote writer restores marker UID/GID; workflow checks reader ownership and0600; consumer.json explicitly0600"
+  ],
+  "sourceArchive": {
+    "path": "doc/audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz",
+    "gzipBytes": 550478,
+    "gzipSha256": "4d49e64e6ae657a2327b021fd4452efc0a36c44039b4a3e50692be7380f5b0a9",
+    "uncompressedBytes": 2390794,
+    "uncompressedSha256": "206da4925137997fad99b2a13ce7eb9859b0fe7fb8c749649249207cdfce0bb9",
+    "sourceCount": 20
+  },
+  "sourceRecords": [
+    {
+      "id": "docs/ci/debug-with-ssh.md",
+      "repository": "https://depot.dev/docs/ci/how-to-guides/debug-with-ssh",
+      "revision": "deployed-capture-2026-10-18",
+      "bytes": 6942,
+      "sha256": "c0842723d35287d036523e9a16ed47c1b1b1c0d88a80492358debec2dd3c38e1"
+    },
+    {
+      "id": "depot-cli/pkg/cmd/ci/ssh.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 8867,
+      "sha256": "8fabaf0d0d10d3a13df927ee9b7380d95567ee3c2c4ef35bb10ddba5900abde9"
+    },
+    {
+      "id": "depot-cli/pkg/cmd/ci/run.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 28074,
+      "sha256": "fa83cc0a2dc49c977d6c3a2f7696aa7bde77c0c938668fc29d55dfa715ce1dc3"
+    },
+    {
+      "id": "depot-cli/pkg/cmd/ci/status.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 8271,
+      "sha256": "b38a4e8349dcb18ebad614591ae512fdbf96dd2ad9c0db5000d0a27c903e3d05"
+    },
+    {
+      "id": "depot-cli/pkg/cmd/ci/logs.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 35498,
+      "sha256": "7ad74cfabf3d7a94cac952b6811eff09c409bb28cf25b7fb6dd2e7b8bb03b716"
+    },
+    {
+      "id": "depot-cli/pkg/cmd/ci/cancel.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 3047,
+      "sha256": "a104be2427e412019db6a23dc8bc91624119805e344ac9b0e2cbc706b32ef756"
+    },
+    {
+      "id": "depot-cli/pkg/helpers/token.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 2603,
+      "sha256": "31a0786bcf4a572fb0a25415b8680157ae12a9a3cacfcdb214be821a55da3d03"
+    },
+    {
+      "id": "depot-cli/pkg/config/config.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 1552,
+      "sha256": "93e10c923d2b08caacb5d607fff1d59028e0fb5647098f103342e4ebdcbf1c30"
+    },
+    {
+      "id": "depot-cli/pkg/pty/session.go",
+      "repository": "https://github.com/depot/cli",
+      "revision": "1f96d6d",
+      "bytes": 3136,
+      "sha256": "4c23b7348acb06a7ce2ad3a18f450fb8dfb8e46d8c39286bcac3346c073cd318"
+    },
+    {
+      "id": "action-tmate/action.yml",
+      "repository": "https://github.com/mxschmitt/action-tmate",
+      "revision": "35b54afac29c97fb54faba5b513f8fbd1882f113",
+      "bytes": 2625,
+      "sha256": "6163a5b07609f5484f2a8d0b72f348fde969192a6f815fce6c67ae9aabf8ed46"
+    },
+    {
+      "id": "action-tmate/src/index.js",
+      "repository": "https://github.com/mxschmitt/action-tmate",
+      "revision": "35b54afac29c97fb54faba5b513f8fbd1882f113",
+      "bytes": 10717,
+      "sha256": "70855ed49eb89e1024844439edf752e2592409a5b56430f8b5faa22008b61026"
+    },
+    {
+      "id": "action-tmate/lib/index.js",
+      "repository": "https://github.com/mxschmitt/action-tmate",
+      "revision": "35b54afac29c97fb54faba5b513f8fbd1882f113",
+      "bytes": 1346956,
+      "sha256": "dff80637e6a575dd9b5d897fd38afd327267e3843e2dba581739a87d8c34a64c"
+    },
+    {
+      "id": "tmate-ssh-server/tmate-ssh-server.c",
+      "repository": "https://github.com/tmate-io/tmate-ssh-server",
+      "revision": "d7334ee4c3c8036c27fb35c7a24df3a88a15676b",
+      "bytes": 12733,
+      "sha256": "83fee333d40af8c05b186e3a01f33c5a18dc50cfd5b5dd42546842c550e1f5c6"
+    },
+    {
+      "id": "tmate-ssh-server/tmate-auth-keys.c",
+      "repository": "https://github.com/tmate-io/tmate-ssh-server",
+      "revision": "d7334ee4c3c8036c27fb35c7a24df3a88a15676b",
+      "bytes": 4737,
+      "sha256": "e16431f8148a71ea0ea18c0b642d06ee97ff97b26b8c1f9060894318b388817a"
+    },
+    {
+      "id": "fixture/.depot/workflows/native-ssh-acceptance.yml",
+      "repository": "Monochromatic research/depot-native-ssh-20261018",
+      "revision": "c3c694593e6a3a3cdd622aaeff00c4329305ec74",
+      "bytes": 1123,
+      "sha256": "84733e91627363fcd29d7abc174008211644338c6148cacc1436c4434db15234"
+    },
+    {
+      "id": "fixture/.depot/probe/native-ssh/mise.toml",
+      "repository": "Monochromatic research/depot-native-ssh-20261018",
+      "revision": "c3c694593e6a3a3cdd622aaeff00c4329305ec74",
+      "bytes": 4302,
+      "sha256": "002bb36a1d8a24a997b4b9b277aff7bb5933cdf149a5c6bc6ed9d18a961686fa"
+    },
+    {
+      "id": "controller/ssh-askpass.mjs",
+      "repository": "Owned isolated research controller",
+      "revision": "proposal-2026-10-18",
+      "bytes": 538,
+      "sha256": "6da0664744dba0a8a296c78e31c8967f0b5a61c031bccec568c2dafa29617db2"
+    },
+    {
+      "id": "controller/remote-consumer.mjs",
+      "repository": "Owned isolated research controller",
+      "revision": "proposal-2026-10-18",
+      "bytes": 1637,
+      "sha256": "3a495ab6d6833f3a2d2231cafd9c36ee893ccfcdcc5a3c016648982d01c782f0"
+    },
+    {
+      "id": "controller/mise.toml",
+      "repository": "Owned isolated research controller",
+      "revision": "proposal-2026-10-18",
+      "bytes": 787736,
+      "sha256": "eb083a5216b3ae9ca8fe1ee3e3dc13e38ddced7c2a747d8c2a8b71adbd0b97e7"
+    },
+    {
+      "id": "installed-openssh/ssh.1",
+      "repository": "Installed OpenSSH manual",
+      "revision": "OpenSSH_10.2p1",
+      "bytes": 47919,
+      "sha256": "9a40ca59983f95555a050b2c416b2b85c01bccd7e7656f0b59b1a960069fe974"
+    }
+  ],
+  "cloudAllocations": []
+}
