@@ -47,6 +47,53 @@ so it will take longer in total than one lint of the whole package does today.
 That cost is measured after the move,
 not estimated here.
 
+### After the move, measured
+
+The estimate in the paragraph just before this heading was wrong.
+All runs are at `8d09e8e092` in the keyless worktree `w165`,
+with the pre-split package at `76eb00d8fc` in `w175`,
+on a host shared with another session (one-minute load 3 to 14);
+the outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/`.
+
+- Three rounds,
+  each linting the pre-split package and then every family package once,
+  back to back (`times-paired.txt`):
+  the pre-split package 25.99 s and 25.46 s
+  (72.60 s in the first round,
+  the first run in a new worktree);
+  the 36 packages 352.19 s,
+  350.60 s and 332.89 s in total.
+  Leaf packages took 2.4 to 10 s,
+  but `corpus-pass` took 31.6 to 35.1 s,
+  `probe` 24.4 to 25.4 s,
+  `bench` 21.8 to 23.6 s,
+  `artifact` 15.7 to 17.9 s.
+  File count does not predict the time:
+  `translate-lane` (44 files) took 13 s and `artifact-pool` (36 files) 3 s.
+- Type-aware rules are not the cost (`cost-probe.txt`):
+  one oxlint run over the whole family took 232.71 s and 263.07 s with the root config,
+  and 259.98 s and 257.32 s with `typeAware` and `typeCheck` off.
+- The `prefer-readonly-parameter-type` JS plugin is the whole difference (`cost-probe2.txt`),
+  measured with a scratch config that drops the plugin and its four rules and changes nothing else:
+  the whole family lints in 11.54 s,
+  the pre-split package in 11.36 s,
+  and `corpus-pass` in 2.26 s and 2.20 s.
+- With the plugin,
+  `corpus-pass` takes 34.95 s with the plugin's cache emptied and 4.11 s run again straight after.
+  The plugin keeps one persistent cache for the repository
+  (`node_modules/.cache/prefer-readonly-parameter-type` at the lockfile's directory),
+  bounded at 256 MiB and 4096 entries;
+  after the runs it held 3582 entries in 46 project directories and 276,255,501 bytes,
+  past its byte bound,
+  so each package's lint evicts what the others cached,
+  and in the paired rounds every package ran cold.
+- Each package is its own TypeScript project for the plugin,
+  and a package's project reaches the source of every family package it imports,
+  so a module shared by many packages is analysed once per project that reaches it.
+  The pre-split package was one project.
+  This is read from the plugin's README and source,
+  not measured apart.
+
 ### A finding on the way
 
 Lint of the branch worktree reported 331 warnings and 96 errors
