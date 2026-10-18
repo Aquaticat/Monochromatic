@@ -49,7 +49,7 @@ await describe({
   name: 'file sink batch completion',
   children: [
     it({
-      name: 'captures same-frame records before their shared durable completion',
+      name: 'captures same-frame records before their shared append completion',
       fn: async () => {
         await withFileSink(async function checkBatch({ sink, readRecords, },): Promise<void> {
           /** Mutation after invocation must not replace the captured record. */

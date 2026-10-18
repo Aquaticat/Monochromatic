@@ -4,7 +4,7 @@ import { reportLoggerInternalError, } from '../error-format.ts';
 //region One completion covers each bounded batch of complete JSONL records
 
 /** Aggregation stays below one large engine string while an individual record remains indivisible. */
-const MAX_BATCH_BYTES = 64 * 1024;
+const MAX_BATCH_BYTES = 65_536;
 
 /** Queue nodes own captured strings and one completion, rather than a promise chain per record. */
 type AppendBatch = {
@@ -15,7 +15,7 @@ type AppendBatch = {
   next?: AppendBatch;
 };
 
-/** Captured records share this queue's append order and each batch's durable completion. */
+/** Captured records share this queue's append order and each batch's complete append. */
 type FileAppendQueue = {
   readonly append: (line: string,) => Promise<void>;
 };
@@ -33,7 +33,21 @@ export function createFileAppendQueue({ filePath, }: { readonly filePath: string
   } = { running: false, };
 
   /** Append completion includes every filesystem chunk, preserving the existing write-error reporting behavior. */
-  async function drain(): Promise<void> {
+  async function appendBatch(batch: AppendBatch,): Promise<AppendBatch> {
+    try {
+      await appendFile(filePath, batch.lines.join('',),);
+    }
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: 'file sink batch append failed',
+        error,
+      },);
+    }
+    return batch;
+  }
+
+  /** Async iteration starts each append only after the prior yielded append has completed. */
+  function* queuedAppends(): Generator<Promise<AppendBatch>> {
     while (state.queue !== undefined) {
       /** Detached batch remains owned by this drain until its complete append settles. */
       const batch = state.queue.head;
@@ -41,18 +55,16 @@ export function createFileAppendQueue({ filePath, }: { readonly filePath: string
         delete state.queue;
       else
         state.queue.head = batch.next;
-      try {
-        await appendFile(filePath, batch.lines.join('',),);
-      }
-      catch (error: unknown) {
-        reportLoggerInternalError({
-          context: 'file sink batch append failed',
-          error,
-        },);
-      }
-      batch.resolve();
+      yield appendBatch(batch,);
     }
+    // Release admission before the final async iterator step can yield to a new producer.
     state.running = false;
+  }
+
+  /** One consumer resolves each batch only after its complete serial append. */
+  async function drain(): Promise<void> {
+    for await (const batch of queuedAppends())
+      batch.resolve();
   }
 
   /** Microtask admission lets one synchronous producer frame fill batches before filesystem work starts. */

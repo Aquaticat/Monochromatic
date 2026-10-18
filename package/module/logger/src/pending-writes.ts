@@ -61,7 +61,7 @@ export function createPendingWrites(): PendingWrites {
 
   /** Snapshot only work admitted before this drain, preserving the logger's existing flush boundary. */
   async function drain(): Promise<void> {
-    await Promise.all([...pending,],);
+    await Promise.all(pending,);
   }
 
   /** Abandon observation without cancelling sink-owned writes or their rejection handlers. */

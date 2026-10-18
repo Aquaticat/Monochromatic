@@ -34,7 +34,7 @@ collect();
 const retainedHeapBytes = process.memoryUsage().heapUsed - before;
 await logger.flush();
 assert.equal(state.delivered, 100_000,);
-assert.ok(retainedHeapBytes < 8 * 1024 * 1024,
+assert.ok(retainedHeapBytes < 8_388_608,
   `Shared sink completion retained ${retainedHeapBytes} heap bytes`,);
 process.stdout.write(`${JSON.stringify({ records: state.delivered, retainedHeapBytes, },)}\n`,);
 

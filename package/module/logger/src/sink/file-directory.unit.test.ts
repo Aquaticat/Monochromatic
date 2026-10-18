@@ -6,7 +6,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { createFileSink } from './file.ts';
+import { createFileSink } from '../../dist/final/node/node.mjs';
 
 //region Actual filesystem and child-process boundaries retain independent destinations.
 /** Node owns subprocess cancellation and completion. */
@@ -22,8 +22,10 @@ async function workspace() {
 /** Read the real JSONL records rather than an intercepted write callback. */
 async function records(directory: string): Promise<unknown[]> {
   const result: unknown[] = [];
-  for (const name of await readdir(directory)) {
-    const content = await readFile(join(directory, name), 'utf8');
+  const contents = await Promise.all((await readdir(directory)).map(function readLog(name) {
+    return readFile(join(directory, name), 'utf8');
+  }));
+  for (const content of contents) {
     for (const line of content.trim().split('\n')) result.push(JSON.parse(line));
   }
   return result;
@@ -51,7 +53,7 @@ await describe({ name: createFileSink.name, children: [
     await mkdir(join(cwd, 'node_modules'), { recursive: true });
     const ordinary = join(cwd, 'node_modules', '.monochromatic');
     const configured = join(fixture.path, 'configured');
-    const source = `import {logger} from ${JSON.stringify(new URL('../index.ts', import.meta.url).href)}; logger.info(process.env.LOGGER_DIRECTORY_MARKER); await logger.flush();`;
+    const source = `import {logger} from ${JSON.stringify(new URL('../../dist/final/node/index.mjs', import.meta.url).href)}; logger.info(process.env.LOGGER_DIRECTORY_MARKER); await logger.flush();`;
     for (const contrast of [{ directory: '', marker: 'ancestor control' }, { directory: configured, marker: 'configured control' }]) {
       await run(process.execPath, ['--max-old-space-size=128', '--input-type=module', '--eval', source], {
         cwd, env: { ...process.env, HOME: fixture.path, MONOCHROMATIC_LOG_DIRECTORY: contrast.directory,
