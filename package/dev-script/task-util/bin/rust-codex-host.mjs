@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { strict as assert } from 'node:assert';
 import { root, prefix, owned, evidence, environment, hash, run, rust, sourceAdmission, nextestConfig } from './rust-bounded-profile.mjs';
@@ -10,7 +10,14 @@ const finish = sourceAdmission(['package/codex-plugin/bash-limit']);
 const manifest = JSON.parse(readFileSync(join(prefix, 'additional-tool-manifest.json')));
 assert.equal(hash(readFileSync(manifest.tools.codex.path)), manifest.tools.codex.sha256);
 environment.PATH = dirname(manifest.tools.codex.path) + ':' + environment.PATH;
-environment.HOME = join(owned, 'home');
+const bridge = join(owned, 'bridge');
+mkdirSync(bridge, { recursive: true, mode: 0o700 });
+copyFileSync(join(root, 'package/dev-script/task-util/bin/rust-codex-protocol-tee.mjs'), join(bridge, 'codex'));
+chmodSync(join(bridge, 'codex'), 0o700);
+environment.RESEARCH_REAL_CODEX = manifest.tools.codex.path;
+environment.RESEARCH_CODEX_PROTOCOL_DIRECTORY = join(evidence, 'protocol');
+environment.PATH = bridge + ':' + environment.PATH;
+environment.HOME = join(evidence, 'synthetic-home');
 mkdirSync(join(environment.HOME, 'temp/agent'), { recursive: true, mode: 0o700 });
 environment.CODEX_HOME = join(environment.HOME, '.codex');
 delete environment.OPENAI_API_KEY;
