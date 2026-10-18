@@ -396,12 +396,29 @@ before the other queued work.
     `source-scan`'s unused `coverage-census` development dependency,
     and `run`'s `budget-sample` description.
     Then gate `w172`'s head and fast-forward the branch to it.
-4.  The controls in a fresh keyless worktree
-    (suite names and counts against g100,
-    scans,
-    the decisions replay,
-    census and audit source sets),
-    then the measured lint times into the plan.
+4.  Done:
+    `w172` landed (36 commits ending `8d09e8e092`, gate g101 green);
+    the controls match at `8d09e8e092`
+    (suite 2506 passing against g100's 2484, every name accounted for;
+    census and audit source sets;
+    the TianqiChen66625 decisions replay;
+    the corpus measure),
+    recorded in the plan's "Measured after the move".
+    The lint times are in the plan's "After the move, measured":
+    one package lints faster than the old package did
+    (`corpus-pass` 4 s warm and 35 s cold, against 25.5 s warm and 72.6 s cold),
+    but the 36 packages one after another take 333 to 352 s.
+    The whole difference is the `prefer-readonly-parameter-type` plugin:
+    it analyses shared modules once per package project,
+    and its one repository cache (256 MiB, 4096 entries) overflows.
+    Open:
+    probe 4 (`s245/split/lint/cost-probe4.txt`,
+    the family cold then warm with the cache bounds raised in `w165`, uncommitted)
+    decides whether a larger bound is enough;
+    then the fix goes to the owner as a question,
+    since the plugin is shared repository tooling.
+    Delete `w165`'s and `w175`'s scratch `oxlint.no-*.config.ts` files
+    and revert `w165`'s plugin edit after the probe.
 5.  The queue the split went ahead of,
     oldest first:
     the delegated items (finalist extension,

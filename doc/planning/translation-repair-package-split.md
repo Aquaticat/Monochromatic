@@ -11,8 +11,9 @@ This document records the measurements behind the answer,
 the module map the split follows,
 the rules the move keeps,
 and the controls that prove the move changed no behaviour.
-It is written before any file moves,
-so the map and the rules can be read and vetoed as they stand.
+It was written before any file moved,
+so the map and the rules could be read and vetoed as they stood;
+the sections headed "After the move, measured" and "Measured after the move" were added after the move.
 
 ## Lint cost, measured
 
@@ -91,8 +92,14 @@ the outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/`.
   and a package's project reaches the source of every family package it imports,
   so a module shared by many packages is analysed once per project that reaches it.
   The pre-split package was one project.
-  This is read from the plugin's README and source,
-  not measured apart.
+  Measured (`cost-probe3.txt`):
+  after `corpus-pass`,
+  `probe` and `bench` linted in turn on a cache holding only `corpus-pass`'s entries,
+  615 of the 1257 source files in the cache sat under more than one project,
+  and the cache went from 991 to 2407 entries.
+  `corpus-pass` ran 4.24 s before the other two and 4.12 s after,
+  so three packages do not evict each other;
+  the eviction in the paired rounds needs more of the family than that.
 
 ### A finding on the way
 
