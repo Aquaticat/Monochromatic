@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T16:25:47.934Z",
+  "updatedAt": "2026-10-18T16:57:25.895Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -11815,13 +11815,13 @@
     }
   ],
   "openGaps": [
-    "Each indexed page and command needs claim-level repository applicability and evidence reconciliation; retrieved is not reviewed",
-    "Additional official backend/integration repositories need deciding-source review",
-    "Parent orchestration and identity-adapter results are now linked; complete producer/report-format and ARM workload applicability remain separate",
-    "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation",
-    "Source inventory is complete for captured indexes/help but page/command semantic reconciliation is incomplete; source capture does not establish feature qualification",
-    "BuildKit current-scanner comparison and empty image-list JSON source diagnosis remain active",
-    "SDK custom thin-image success must remain separate from unexercised named/ordinary-OCI runtimes, snapshot persistence, secrets and detached log contracts"
+    "All120deployed documentation pages have substantive applicability review; only exact linked consumers receive runtime qualification. Other indexed marketing/context pages and private backend implementations are not blanket-reviewed by this count.",
+    "No public-status uptime denominator or complete incident/component coverage is established; operating promises must retain that limitation.",
+    "Current native/GHA/BuildKit/SDK allowances and product-specific controls do not prove aggregateUSD200 invoice enforcement, configured account limits, unseen charges or Sandbox included-credit eligibility.",
+    "SDK ordinaryOCI/named runtimes, SDK snapshots/secrets, full executable transfer and retained detached logs remain unqualified; actual default/custom thin-runtime lifecycle and small-file consumers are separate.",
+    "Autoscale-out, pull-through/CDN speed, external network/OIDC trust, Dependabot, Managed/GPU/customerAWS, Code/mirrors, paid Agents/models and optional external telemetry remain source-reviewed but unactivated.",
+    "Complete-suite report producers and arbitrary JUnit identity adapters are not established by the passing34-case Nextest adapter; selected ARM owners do not qualify every ARM surface.",
+    "Working report needs explicit capability-to-owner allocation/adoption dispositions; see reportAllocationReview. Whole-report sufficiency still waits for separately owned OS/semantic queues."
   ],
   "apiInventory": {
     "collectedAt": "2026-10-18T06:27:53.629Z",
@@ -16696,7 +16696,8 @@
         "title": "Configure Xcode compilation caching to use Depot Cache"
       }
     ],
-    "status": "Route coverage recorded; deciding content differences still under review"
+    "status": "Public repository route comparison retained; all120captured deployed pages substantively reconciled. No blanket public-repository/deployed body-identity claim.",
+    "previousStatus": "Route coverage recorded; deciding content differences still under review"
   },
   "officialRepositoryRootPass": {
     "repositories": 93,
@@ -21835,5 +21836,181 @@
       "filing": "Local issue draft only"
     },
     "cloudAllocations": 0
+  },
+  "reportAllocationReview": {
+    "reviewedAt": "2026-10-18T16:57:25.895Z",
+    "scope": "Narrow allocation/adoption completeness, not final whole-report sufficiency",
+    "report": "doc/planning/depot-expanded-ci-evaluation.md",
+    "reportSha256": "ae19f1ece34860bf483bf54b2a713ee314a1cf340ccbdab1c97d9018e9a08970",
+    "deployedDocsReviewed": 120,
+    "sourceReviewRows": 119,
+    "splitGuideReviewedSeparately": true,
+    "cloudOperations": 0,
+    "reportEdits": 0,
+    "gaps": [
+      {
+        "id": "orchestration-allocation",
+        "missingDisposition": "Which Linux owner families use native CI versus Depot GHA, and which jobs retain GitHub permissions/protected environments/reusable-workflow semantics",
+        "alreadyPresent": "Measured repeated graph, job continuation mismatch and source review link; no capability-to-job allocation",
+        "primary": [
+          "https://depot.dev/docs/ci/compatibility",
+          "https://depot.dev/docs/ci/quickstart",
+          "https://depot.dev/docs/ci/how-to-guides/parallel-steps",
+          "https://depot.dev/docs/ci/how-to-guides/retry-steps"
+        ],
+        "source": "doc/planning/depot-native-ci-capability-review.md",
+        "runtime": "doc/audit/depot-native-orchestration-2026-10-18.evidence.json",
+        "limit": "Native parallel shared state and retry persistence remain source-documented; one-process graph does not qualify all native features. Native default-branch registration can duplicate side effects."
+      },
+      {
+        "id": "reporting-history-and-debug",
+        "missingDisposition": "Tests report producers/identity ownership, exact attempts, measured timed split versus source-only analytics, and temporary SSH/log/metrics use",
+        "alreadyPresent": "34-case adapter and aggregate result allowance; source-only automatic AI paragraph",
+        "primary": [
+          "https://depot.dev/docs/ci/observability/depot-ci-test-results",
+          "https://depot.dev/docs/github-actions/observability/github-actions-test-results",
+          "https://depot.dev/docs/ci/how-to-guides/debug-with-ssh"
+        ],
+        "source": "doc/planning/depot-native-ci-capability-review.md",
+        "runtime": "doc/audit/depot-tests-identity-adapter-2026-10-18.evidence.json",
+        "limit": "Nextest single-binary derived classname mapping is qualified; arbitrary reporters, full-suite analytics, SSH session and GHA/native analytics parity are not."
+      },
+      {
+        "id": "snapshots-disk-and-sdk",
+        "missingDisposition": "Prepared native tool snapshot, installed dependency/target archives, ordinary OCI job image, cache Disk and SDK runtime need separate operating/trust/storage rules",
+        "alreadyPresent": "Cache mechanisms named generically and SDK custom reader passes; no explicit allocation of these distinct runtime/storage formats",
+        "primary": [
+          "https://depot.dev/docs/ci/how-to-guides/custom-images",
+          "https://depot.dev/docs/ci/how-to-guides/cache-disks",
+          "https://depot.dev/docs/api/sandbox-sdk-reference"
+        ],
+        "source": "doc/planning/depot-reuse-strategy-research.md",
+        "runtime": "doc/audit/depot-reuse-strategy-2026-10-18.evidence.json",
+        "limit": "Thin block snapshot is not ordinary OCI rootfs; PATH/environment not automatically preserved. Disk names are org-global and concurrent mounts do not make mutations atomic. SDK snapshot/secrets/named/ordinary-OCI runtime surfaces remain unexercised or planned."
+      },
+      {
+        "id": "buildkit-and-registry-allocation",
+        "missingDisposition": "Actual container owners/contexts, immutable source selection, attestation verification, project trust, autoscaling admission and registry promotion/retention/pull-through/CDN",
+        "alreadyPresent": "Actual Bake/multiarch/secret/SSH/attestation and native token consumers; no full adoption/lifecycle disposition",
+        "primary": [
+          "https://depot.dev/docs/container-builds/how-to-guides/docker-bake",
+          "https://depot.dev/docs/container-builds/how-to-guides/autoscaling",
+          "https://depot.dev/docs/registry/overview",
+          "https://depot.dev/docs/registry/pull-through-cache"
+        ],
+        "source": "doc/planning/depot-platform-surface-audit.md",
+        "runtime": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+        "limit": "Actual remote Git/local-context difference, BuildKit cache mounts and CNI controls are qualified narrowly; real SSH signing, trust signatures, autoscale-out, pull-through and CDN speed are not. Project pull token is not arbitrary repository permission."
+      },
+      {
+        "id": "cache-and-pr-trust",
+        "missingDisposition": "Trusted branch versus untrusted PR read/write/secret policy; reject default universal pnpm-store caching; adopt measured Gradle/compiler/target mechanisms by owner",
+        "alreadyPresent": "Cross-branch Actions cache evidence and all measured cache timings; finished allocation still undecided",
+        "primary": [
+          "https://depot.dev/docs/security",
+          "https://depot.dev/docs/cache/integrations/github-actions",
+          "https://depot.dev/docs/container-builds/overview"
+        ],
+        "source": "doc/planning/depot-cache-capability-review.md",
+        "runtime": "doc/audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json",
+        "limit": "Repository-scoped Actions cache, org-global Disk and project BuildKit cache have different authorization boundaries. A digest admitted from the same mutable untrusted cache is not independent trust."
+      },
+      {
+        "id": "network-and-dependabot",
+        "missingDisposition": "Linux-only root-modifiable egress, private connectivity prerequisites, and Dependabot credential/event exception",
+        "alreadyPresent": "No direct allocation or exclusion paragraph",
+        "primary": [
+          "https://depot.dev/docs/github-actions/how-to-guides/egress-filtering",
+          "https://depot.dev/docs/github-actions/how-to-guides/access-private-resources",
+          "https://depot.dev/docs/github-actions/integrations/dependabot",
+          "https://depot.dev/docs/integrations/tailscale"
+        ],
+        "source": "doc/planning/depot-platform-surface-ledger.json",
+        "runtime": null,
+        "limit": "No network policy, tailnet, static IP/Business infra or Dependabot setting/secret was activated. Dependabot lacks regular GitHub OIDC; filtering is Linux-only/root-modifiable/incompatible with Tailscale."
+      },
+      {
+        "id": "spending-and-lifecycle",
+        "missingDisposition": "USD200 operating admission with forbidden invoice visibility; retention/export/delete policy and paid network/Agent/snapshot uncertainty",
+        "alreadyPresent": "Separate pools, shared storage, per-product limits and no aggregate-cap proof; no concrete admission condition",
+        "primary": [
+          "https://depot.dev/docs/registry/overview",
+          "https://depot.dev/docs/account",
+          "https://depot.dev/terms-of-service"
+        ],
+        "source": "doc/planning/depot-included-allowance-reconciliation.md",
+        "runtime": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json",
+        "limit": "Known controlled workload reservation can be enforced without invoices; unseen existing spend cannot. Registry logical absence is not immediate blob reclamation or billing release. Developer community support and beta terms do not establish uptime warranty."
+      },
+      {
+        "id": "optional-products-and-retired-integration",
+        "missingDisposition": "Explicit researched dispositions for Managed/customer AWS, GPU/custom GHA images, Code/mirrors, Agents/paid models, deprecated Dagger and unused integration families",
+        "alreadyPresent": "None of these products has a named adoption/exclusion disposition; Codex fixture could be mistaken for Depot Agents",
+        "primary": [
+          "https://depot.dev/docs/managed/overview",
+          "https://depot.dev/docs/managed/on-aws",
+          "https://depot.dev/docs/managed/using-gpus",
+          "https://depot.dev/docs/code/overview",
+          "https://depot.dev/docs/agents/overview",
+          "https://depot.dev/docs/github-actions/integrations/dagger"
+        ],
+        "source": "doc/planning/depot-platform-surface-audit.md",
+        "runtime": null,
+        "limit": "Business/AWS administrative delegation, Code transport writes and Anthropic credentials/model billing were neither authorized nor exercised. Deprecated Dagger is not selected merely because indexed. Repository Codex fixture is not Depot Agents proof."
+      }
+    ],
+    "draftParagraphs": [
+      {
+        "section": "Decision and acceptance limits",
+        "text": "Allocate these as complementary products: GitHub keeps the authoritative pull-request and release integration; eligible Linux AMD64/ARM64 and Windows owners can use Depot-managed GitHub runners, while native Depot CI is the candidate for Linux workflow orchestration, matrices, retries, snapshots and test splitting. Under the Developer baseline, Mac work retains GitHub-hosted compute; Startup-trial Mac receipts do not confer Developer eligibility. The demonstrated Linux ARM owners establish selected portability, not every ARM workload. No production trigger or required-check switch follows from this research ([native compatibility](https://depot.dev/docs/ci/compatibility), [runner eligibility](depot-included-allowance-reconciliation.md), [actual ARM consumer](depot-arm64-workload-research.md))."
+      },
+      {
+        "section": "Immutable workloads and scope",
+        "text": "Allocation preserves three evidence levels: current documentation describes a capability, inspected source establishes its client/schema behavior, and an exact source-bound consumer qualifies only its executed boundary. Native filesystem snapshots, ordinary OCI job/service images, compiled target archives and SDK custom runtimes retain different formats and source/tool identities. The SDK custom thin-image success does not qualify ordinary OCI or named runtimes; planned SDK snapshot and secret APIs are not delivered features ([platform ledger](depot-platform-surface-ledger.json), [reuse controls](depot-reuse-strategy-research.md))."
+      },
+      {
+        "section": "Gate and artifact-consumer results",
+        "text": "Native orchestration adoption needs explicit event/check ownership and content-bound artifact names, with selected reusable-workflow references and GitHub-only permissions/environment approvals retained on their supported scheduler. Native retries reuse filesystem/environment state, and native parallel branches share mutable directories; they do not create isolated samples. The completed graph is one job with parallel child branches, not proof of every native parallel-step merge rule. Tests reporting should retain raw JUnit and any validated identity transformation, use attempt-specific report keys, and use historical splitting only for admitted runnable identities. The34-case Nextest adapter qualifies that shape, while complete-framework reporting, dashboard flakiness and GHA/native analytics parity remain unqualified ([native contracts](depot-native-ci-capability-review.md), [physical adapter](depot-tests-identity-adapter-research.md))."
+      },
+      {
+        "section": "Reliability and source failures",
+        "text": "Debugging and observability are separately scoped capabilities. Native live/paused-step SSH and per-job logs/resource metrics are source-documented; no successful SSH consumer is credited here, and connection strings or signed artifact URLs must remain private. Automatic failed-attempt AI summaries may process masked logs even without an explicit model call; neither stopping diagnose nor disabling CLI tracing opts the organization out. Developer community support, beta terms and the incomplete incident-history denominator provide no repository availability guarantee, so the allocation retains exact-attempt diagnostics and a GitHub execution fallback rather than assuming independent forge availability ([native review](depot-native-ci-capability-review.md), [operating terms and status limits](depot-platform-surface-audit.md#security-and-operational-commitments-under-review))."
+      },
+      {
+        "section": "Provider allocation, cost, and critical paths",
+        "text": "Allocate reuse by actual owner: Gradle remote task outputs for the demonstrated Kotlin linter, direct sccache for the qualified Rust compiler consumers, and source/tool/ABI-bound dependency or target archives where their real readers pass. Do not enable pnpm content-store caching universally on the measured profiles: warm restore plus install did not improve their no-cache boundary. Native tool snapshots are prepared filesystems rather than portable Docker images; they require current checkout and executable/PATH admission. Organization-global Disk mounts need a single writer, partitioning or immutable content; concurrent mounts alone provide no atomicity. Prefer the demonstrated content-bound image and artifact consumers over mutable tag or self-authenticated archive trust ([reuse research](depot-reuse-strategy-research.md), [cache trust review](depot-cache-capability-review.md))."
+      },
+      {
+        "section": "Provider allocation, cost, and critical paths",
+        "text": "Use BuildKit/Bake for admitted container contexts and immutable multiarchitecture CI/service producers, preserving the exercised SBOM/provenance-to-runtime-digest checks. A valid subject is not a signature/trust decision. Keep autoscaling off while no total-builder bound is established; its per-instance threshold is not a cap, and minimum per-architecture cache policies are not reserved or hard-limited shared storage. Registry pull-through, Fast CDN and server-side promotion remain source-reviewed options, not measured speedups or activated integrations. Tagged retention is opt-in, saved project images default to unlimited retention, and deletion can precede blob reclamation; Standard transfer is documented free while Fast costs USD0.10/GB ([BuildKit evidence](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json), [registry lifecycle](depot-platform-surface-audit.md#registry-lifecycle-and-export-surface))."
+      },
+      {
+        "section": "Adoption conditions and unresolved evidence",
+        "text": "Before paid scheduling, define a fail-closed admission budget for the controlled jobs and include storage, Tests, SDK and optional products separately. With account-wide billing and usage inspection excluded, an aggregate USD200 invoice guarantee cannot be verified. An owner-issued current monthly headroom/expiry attestation, or explicit paid-admission approval when headroom is unknown, can authorize controlled reservations without granting account access; neither proves unseen charges. Reject unknown or expired admissions and keep the public GitHub compute fallback. Retention and deletion policy must name artifact exports, registry manifests/blobs, snapshots, Disk and logs separately ([allowances and limits](depot-included-allowance-reconciliation.md), [actual logical cleanup](depot-native-buildkit-auth-research.md))."
+      },
+      {
+        "section": "Adoption conditions and unresolved evidence",
+        "text": "Treat trust and network exceptions explicitly. Depot Actions caches have the measured cross-branch namespace; project BuildKit caches and organization-global Disk have different boundaries, so untrusted PRs must not inherit trusted cache-write or secret authority by analogy. Linux egress filtering is root-modifiable and incompatible with Tailscale; it is not a hostile-root exfiltration guarantee or a Windows/Mac policy. Static private connectivity requires its documented credentials/tier. Dependabot has a separate runner setting and lacks ordinary GitHub OIDC, so its Depot authentication cannot reuse the regular-job assumption. No such policy, network credential or Dependabot secret was activated ([trust](depot-cache-capability-review.md), [source-reviewed network and bot contracts](depot-platform-surface-ledger.json))."
+      },
+      {
+        "section": "Adoption conditions and unresolved evidence",
+        "text": "Keep researched adjacent products explicit rather than silently counting them as adopted: Business Managed/customer-AWS, GPU and custom GHA images require separate eligibility and administrative delegation; native snapshots and ordinary job images do not. Code is a public-beta Git transport/mirror with push-only native events, not a demonstrated independent GitHub recovery path. Depot Agents currently describes Claude Code, Anthropic authentication and separately billed agent minutes without included usage; the repository Codex fixture does not qualify that product. The Dagger engine integration is explicitly deprecated and adds a distinct engine charge, so it is not selected as an expansion route. These source-only integrations remain unactivated, alongside absent-owner cache/language recipes and external observability sinks ([optional-product boundaries](depot-platform-surface-audit.md#agents-code-and-customer-aws-are-distinct-optional-products), [Dagger source](https://depot.dev/docs/github-actions/integrations/dagger))."
+      }
+    ],
+    "priority": "Trust/budget/lifecycle conditions first; concrete product-to-owner allocation second; explicit optional-product dispositions third. The first prevent unreviewed access or spend, the second turns measured results into a usable proposal, and the third prevents a false all-platform-adoption claim.",
+    "notRequested": "No service activation, settings, subscription, user interview or final sufficiency sign-off"
+  },
+  "supersededOpenGaps": {
+    "replacedAt": "2026-10-18T16:57:25.895Z",
+    "reason": "Generic all-page/CLI semantic-review tasks predate the completed120-page source reconciliation; preserve old wording as historical, not current status",
+    "items": [
+      "Each indexed page and command needs claim-level repository applicability and evidence reconciliation; retrieved is not reviewed",
+      "Additional official backend/integration repositories need deciding-source review",
+      "Parent orchestration and identity-adapter results are now linked; complete producer/report-format and ARM workload applicability remain separate",
+      "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation",
+      "Source inventory is complete for captured indexes/help but page/command semantic reconciliation is incomplete; source capture does not establish feature qualification",
+      "BuildKit current-scanner comparison and empty image-list JSON source diagnosis remain active",
+      "SDK custom thin-image success must remain separate from unexercised named/ordinary-OCI runtimes, snapshot persistence, secrets and detached log contracts"
+    ]
   }
 }
