@@ -103,6 +103,37 @@ retained OCI graphs support offline image inspection.
 
 Build the job-container image with the exercised Git and runtime packages through the existing image owner.
 The derived image provides Git `2.39.5` and the measured `libatomic1` package.
+The exact tested recipes are retained in the
+[BuildKit source archive](../audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz):
+select `.sources[]` by commit and its `.files[]` by path,
+then read `.body`.
+The first Git-capable recipe is commit `0b471538cd549cb2181088803c1e0a6d542d791e`,
+path `ci-context/Dockerfile`;
+its tracked owner is `.depot/probe/platform-buildkit/ci-context/Dockerfile`.
+The corrected Node recipe is commit `7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f`,
+path `ci-node26-context/Dockerfile`,
+SHA256 `f282c0f6bb0ae4c13f80a715ecdfa6526b0f22da68f05562b431c46c4a0191d3`.
+Its existing Bake target is `ci-node26`.
+The measured package-install delta executes inside that derived image's Node build layer:
+
+```javascript
+// .depot/probe/platform-buildkit/ci-node26-context/Dockerfile, Node RUN program excerpt
+import { execFileSync } from 'node:child_process';
+const env = { ...process.env, DEBIAN_FRONTEND: 'noninteractive' };
+execFileSync('apt-get', ['update'], { stdio: 'inherit', env });
+execFileSync(
+  'apt-get',
+  ['install', '--assume-yes', '--no-install-recommends', 'libatomic1'],
+  { stdio: 'inherit', env },
+);
+```
+
+The actual recipe also downloads both lock-hashed Node archives,
+verifies ELF architecture and loaded libraries,
+executes a real Node 26 TypeScript/crypto consumer,
+and removes that temporary installation.
+The apt requests are not version-pinned;
+the observed package versions and final immutable image digest bind this completed result.
 The tradeoff is maintaining and checking those additional image prerequisites for each target architecture.
 The Node 26 consumer remains mandatory when an image health check uses Node 24.
 The declared frozen workload and lockfile remain unchanged.
