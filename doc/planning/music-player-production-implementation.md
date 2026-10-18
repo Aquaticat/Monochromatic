@@ -235,24 +235,99 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
+- 2026-10-18, READY TO MERGE, NOT merged and NOT released (the agent that finished it was told not to merge, release
+  or bump versions): branch `feat/music-player-license-notices`, worktree `music-player-licenses`, `main` merged in at
+  `60ba6d71bf`, code head `29ccfb516b` (the commits after it only change docs). Run fresh on that head: notices tasks
+  (desktop 438 crates for x86_64 Linux, cross-checked with `cargo tree` as 440 lines minus 2 path crates; 501 across
+  the eight targets; 570 cargo-about entries; Android 121 libraries against 124 `group:artifact` entries minus 3 BOMs,
+  232 native crates), desktop verification (1,466 nextest tests with 1 skipped, clippy and `lint:slint` clean),
+  Android verification (detekt and `lintDebug` clean, 1,289 unit tests, 0 failures, 127 result files), a debug build
+  whose `--licenses` output equals the file byte for byte, and release dry run `39094642435` green on every job
+  (notices, six desktop jobs, two Alpine jobs, Android, checksums, release), each desktop job comparing `--licenses` to
+  the notices job's 2,004,178 byte file. A first Android unit-test run failed only on a Gradle journal lock held by
+  another agent's container in the shared `aps-gradle-home`; the rerun passed. Not done: ff-merge to `main`, push of
+  `main`, the version bump that releases the notices; not run: the Windows and macOS binaries on real machines, any
+  device, a real release. Merge steps: `git merge main --no-edit` in the worktree, rerun both verification units, then
+  `git -C /var/home/user/Monochromatic merge --ff-only feat/music-player-license-notices`, push, bump both manifests.
+  Original entry (2026-10-15, agent `a861ba9cb4849c4bd`): third-party license notices for every release
+  asset, closing product gap (4) "no third-party license notices" of task 92. Decision
+  `doc/decision/music-player-third-party-licenses.md`. cargo-about 0.9.2 (mise tool) writes the Rust crate texts
+  against an accepted list in `desktop-app/about.toml` and `android-app/rust/about.toml`; `app.cash.licensee` 1.14.1
+  fails the Gradle build on any Android library outside Apache-2.0; `desktop-app/bin/third-party-notices.mjs`
+  composes one file per platform and checks every crate `cargo tree` links for each release target. The desktop
+  binary embeds the file and prints it with `--licenses`; the release workflow gains a `notices` job, ships
+  `music-player-<version>-desktop-third-party-licenses.txt` and `-android-third-party-licenses.txt`, puts the file
+  in the Linux archives, the `.dmg` and the APK assets, and compares each executable's `--licenses` output with the
+  file. No in-app screen: the design has no About screen, so that is a design decision for the human. Open for the
+  human: (1) Slint under GPL-3.0-only (chosen, the IDE precedent) or the royalty-free license with its attribution
+  badge; (2) the GPL source offer, the tag tree plus crates.io or an attached `cargo vendor` archive; (3) an in-app
+  licenses surface. Merge steps: merge main, desktop and Android verification fresh, a green release dry run on the
+  final head, ff-merge, push; the next version bump releases the notices.
 - 2026-10-15, agent `ad05bc0301c37d399` reported (head `1ce3b426e8`) and its work is MERGED and RELEASED as 0.1.4
   (see the release record below): GUI subsystem proven on all three Windows runner jobs (Subsystem 2, positive control
   failed as intended, release dry run green). Unmet by design: PowerShell `--version > out.txt` gives an empty
   file; I accepted that tradeoff (recorded in `doc/decision/music-player-windows-gui-subsystem.md`, veto open).
   Follow-up not done: 9 pre-existing Windows clippy findings (no Windows clippy task exists).
+- In flight on 2026-10-15 after the 0.1.4 release (cap five agents; (c) is the license notices entry above):
+  (d) agent `a9c8a6540c85f6042`, branch `fix/music-player-windows-startup-errors`, worktree `music-player-winerr`: a
+  message for a failed Windows GUI start (no message today) and ANSI escapes gated on a VT-enabled console (arm64
+  runner printed literal ESC characters), proven on the Windows runners with a positive control.
+- Standing rule from the human (2026-10-17): "You should never use Opus subagents!" Subagents use `model: sonnet`
+  (or haiku for trivial reads). The four agents below were first started on Opus and all died on 2026-10-17 on the
+  account's weekly limit; their partial work stayed in their worktrees
+  (now under `/var/mnt/encrypted/temp/agent/`) and fresh Sonnet agents continue it:
+  (c) `aa99a806ba461a022` (licenses), (d) `a507287f6e2fa8092` (winerr), (e) `ae0eaae6e38ca6ea1` (cachebatch),
+  (f) `a24e53faf2449563e` (andlarge, plus issues 1438, 1439, 1440), (g) `a4826ac87de5272d2`, branch
+  `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`: review issues 1451 to 1458, 1460,
+  1463 against desktop-app and truepeak-core (not the cache code). The older ids below are the dead Opus agents.
+- 2026-10-18 progress: MERGED to `main` after fresh desktop verification each (nextest 1476, 1480, 1518 and 1524
+  passed, 1 skipped; lint:slint and clippy clean; Android native clippy clean for the cache branch): (g) the ten
+  desktop review issues (1451 to 1458, 1460, 1463; each commit carries its own Closes), (e) batched cache commits
+  (isolated benchmark 83.5 s to 0.52 s median for 10,000 rows, 256 rows per transaction; the end-to-end cold start
+  was not re-measured; Android keeps per-row commits, needs a device measurement), (d) the Windows startup message
+  box, ANSI gating and a Search-service shutdown guard (a normal window close on Windows aborted with 0xC0000409 in
+  0.1.4 because `ui_search.rs` dropped a service from a thread-local during process exit; fixed on main, so the next
+  patch release is urgent), (c) license notices, and the CI fixes for issues 1612 and 1610 and the digest pins of
+  three music player Containerfiles (part of 1758). Reopened 1763 (the README for `musicplayer-native` landed, the
+  test-fixture packages did not). A dry run of the release workflow on main (`39098277889`) was started at
+  `d101ad91a2` before the 0.1.5 bump.
+- Human decisions 2026-10-18 (question tool): use the Slint royalty-free license for the desktop releases instead of
+  GPL-3.0-only; source offered as the tagged tree plus crates.io; add a Licenses row to Settings on both platforms,
+  "doesn't need mockups, just do it". Agents `ad19cbb1a5dabeac0` (desktop: license switch plus Settings row with
+  the AboutSlint widget, branch `feat/music-player-desktop-licenses-row`) and `a8d200663bbc131bb` (Android Settings
+  row, branch `feat/music-player-android-licenses-row`) are running; (f) `a24e53faf2449563e` (andlarge) is still
+  running.
 - In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
   (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
   `--licenses` flag or in-app view only if the design permits, decision `doc/decision/music-player-third-party-licenses.md`;
-  (d) agent `a9c8a6540c85f6042`, branch `fix/music-player-windows-startup-errors`, worktree `music-player-winerr`: a
-  message for a failed Windows GUI start (no message today) and ANSI escapes gated on a VT-enabled console (arm64
-  runner printed literal ESC characters), proven on the Windows runners with a positive control.
+  (d) branch `fix/music-player-windows-startup-errors`, worktree `/var/mnt/encrypted/temp/agent/music-player-winerr`:
+  FINISHED 2026-10-18 by a Sonnet agent (the Opus agents `a9c8a6540c85f6042` and `a507287f6e2fa8092` died on the
+  limit), main merged into the branch, NOT merged to `main`, no version bump, no release. A failed Windows start now
+  shows a message box when stderr reaches nobody (text in `src/startup_failure.rs`), ANSI colors are gated per console,
+  and a Windows exit abort found on the way is fixed (the Search service threads are joined in `main`, not in a
+  thread-local destructor during process exit). Proven on all three Windows jobs with a positive control (control run
+  38776373884 failed, fix runs passed); the run ids, head commit and the host verification counts are in the Evidence
+  sections of `doc/decision/music-player-windows-gui-subsystem.md`. Not seen: the dialog itself. Next: merge procedure
+  as above, then a patch version bump and release (the same drop runs when a person closes the window of 0.1.4;
+  no run did that).
   (e) agent `abe5d14bb8effe0d8`, branch `fix/music-player-cache-batched-commits`, worktree `music-player-cachebatch`:
   the per-row fsync in `DecisionCache::put` (10,073 fsync calls for 10,000 rows, 27 to 99 s cold analysis);
   (f) agent `aca4a721c4f906b9d`, branch `fix/music-player-android-large-library`, worktree `music-player-andlarge`:
   Android `Invalid column last_modified` logged 772 to 1,005 times per 15 s at 10,000 tracks, and scroll jank at
   10,000 tracks with the emulator-crash confound separated.
   Merge procedure for all four as above, then bump the patch version and release.
+- (e) cachebatch, continued by a Sonnet agent on 2026-10-18, branch `fix/music-player-cache-batched-commits`,
+  worktree `music-player-cachebatch` under `/var/mnt/encrypted/temp/agent/`, NOT MERGED, open to veto. Cause read in
+  the Turso 0.8.2 source: every connection defaults to `SyncMode::Full`, so each autocommit `DecisionCache::put` is
+  one WAL `fsync`. The desktop actor now drains its write queue (up to 256 rows) into one `DecisionCache::put_batch`
+  transaction. Benchmark on a real disk (btrfs on the encrypted device), 10,000 rows, five repeats: 75.9 to 87.1 s and
+  10,070 `fsync` calls before, 0.49 to 0.64 s and 47 after. Tests: truepeak-core with a kill -9 test (shown to fail
+  when the transaction is removed) and desktop 1464 passed; Android verification is recorded in the report to the
+  caller. Decision and rejected alternatives: `doc/decision/music-player-analysis-cache-commits.md`.
+  Open: the Android actor still commits per row (its warm path waits on each row, so draining would not batch, and
+  the `fsync` cost on a device was not measured); the desktop cold start was not rerun end to end; the 180 ms CPU per
+  added file and the 23 to 25 s busy tail from the audit were not investigated.
 - Measurements MERGED to `main` at `d5748ffd54` on 2026-10-15 (agent `a36ecdbfa335190de`, doc
   `doc/audit/music-player-release-build-measurements-2026-10-15.md`, no hedge words found by `rg`). Findings 1 to 4
   of that doc are the work of (e) and (f); finding 4 (desktop refresh CPU grows with library size, 180 ms at 10,000
@@ -415,12 +490,39 @@ before saying it matches, QAB):
   itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
   0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
 
+- 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
+  `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
+  All ten were real and are fixed, each commit closing its own issue: the session file is saved by temporary file,
+  sync and rename and a failed load is logged with its path (1453, 1452), `PlayerError::source` forwards the wrapped
+  error (1455), the queue wrap comments quote the code they document (1456), each Search result row is a named button
+  (1451, new `SearchRow.spoken` label built in Rust), a single probe window starts at the final legal start (1460),
+  the bench feasibility search reads `Policy::max_too_loud_db` (1463, new `truepeak-core.bench:test` task), and the
+  `truepeak-core` README, `Cargo.toml`, `mise.toml` and `lib.rs` header and `HANDOVER.md` describe the shipped crate and
+  dependency versions (1457, 1458, 1454). Verified on the branch after merging `main`: desktop `lint:slint` exit 0,
+  nextest 1476 passed and 1 skipped (1460 passed before), `lint:clippy` exit 0; `truepeak-core` 83 passed and clippy
+  exit 0; `truepeak-core.bench` 3 passed and clippy exit 0; the Android native crate has no Rust tests, so
+  `android-app:lint:clippy` compiled it against the changed `truepeak-core` for both ABIs (exit 0). Open for the human:
+  whether one window should sit at the end (chosen, per the module contract) or at frame 0; the Search row announces
+  name, kind and parent folder but not the D77 action wording (Select track, Play track), which needs the Auto-play
+  setting threaded into `search_view_of`; `PlayerError` now prints the wrapped error text twice in a full chain.
+
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
 - The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+- GitHub issues from the 2026-10-17 repository review that touch the music player (open, triaged 2026-10-17, 500+
+  open in total, most are doc style findings): assigned to agents (f) 1438, 1439, 1440 and (g) 1451 to 1458, 1460,
+  1463. Mine, not started: 1612 (`cache-prune.yml` FAMILIES omits `msys2-pkg-v1`), 1610 (`music-player-release.yml`
+  hardcodes build-tools 37.0.0), 1758 (floating container bases: `Containerfile.sign` runs with Authenticode
+  credentials, then `Containerfile`, `Containerfile.icons`; `Containerfile.alpine` and `windows-gnu` already pin),
+  1756 (container clippy omits the root `clippy.toml` in `desktop-app/mise.toml`), 1763 (`musicplayer-native` has no
+  README), 1639 (root `.gitignore` `*.js` rule strands the design runtime JS). To check, may be stale: 1079, 1080, 1081
+  (Linux tests, filed 2026-10-16; the desktop suite passed 1460 of 1460 on 2026-10-15), 1069 (clippy on the schema
+  constant; clippy passed). Not music-player product work and left alone: the `drop the unnecessary regex` refactor
+  issues 727 to 982 (design JS and Kotlin lint refactors), 1173/1174/1172 prose-style gates, the macOS native
+  assertion issues 1082 to 1107, CI issues 1023 to 1029, Depot trial issues.
 
 Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
 desktop keeps an unreadable row selected D128; Search restyled within the decisions with no section labels and no

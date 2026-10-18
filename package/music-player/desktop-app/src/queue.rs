@@ -1333,6 +1333,20 @@ impl Queue {
             // ```
             return Some(pick);
         }
+        // What:     `if self.sequential_start > 0 && pos < self.sequential_start { ... }`. The cursor sits on the retained
+        //           off-page current track that `rebuild_scope_order` put before the scope (slots before
+        //           `sequential_start`), so Next leaves that prelude: `self.order.drain(0..self.sequential_start);`
+        //           removes it, `self.sequential_start = 0;` makes the scope start at slot 0, `self.pos = Some(0);`
+        //           moves the cursor to the first scope track and `return Some(self.order[0]);` hands it back.
+        // Why:      The prelude is the track already playing from outside the scope, so Next moves into the scope and the
+        //           prelude is not repeated; after the drain slot 0 is the first track of the displayed page.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.sequentialStart > 0 && pos < this.sequentialStart) {
+        //   this.order.splice(0, this.sequentialStart); this.sequentialStart = 0; this.pos = 0; return this.order[0];
+        // }
+        // ```
         if self.sequential_start > 0 && pos < self.sequential_start {
             self.order.drain(0..self.sequential_start);
             self.sequential_start = 0;
@@ -1387,21 +1401,24 @@ impl Queue {
             tracing::info!(slot = pos, "In order reached the end of the scope; nothing follows");
             return None;
         }
-        // What:     `self.pos = Some(0);`. Past the end of the scope: wrap to its start.
-        //           `Some(0)` wraps index 0.
-        // Why:      A manual Next loops the page.
+        // What:     `self.pos = Some(self.sequential_start);`. Past the end of the scope: wrap to its start. The start
+        //           is `self.sequential_start`, the first scope slot, not slot 0.
+        // Why:      A manual Next loops the page. When the current track is outside the scope, `rebuild_scope_order`
+        //           puts it before the scope (slot 0) and sets `sequential_start` to 1, and the loop must not
+        //           return to that track.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.pos = 0;
+        // this.pos = this.sequentialStart;
         // ```
         self.pos = Some(self.sequential_start);
-        // What:     `Some(self.order[0])` tail expression: the wrapped track.
+        // What:     `Some(self.order[self.sequential_start])` tail expression: the wrapped track, the first track of
+        //           the scope.
         // Why:      Begin the next loop of the scope.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return this.order[0];
+        // return this.order[this.sequentialStart];
         // ```
         return Some(self.order[self.sequential_start])
     }
@@ -1560,6 +1577,21 @@ impl Queue {
             // ```
             return Some(self.order[pos]);
         }
+        // What:     `if self.sequential_start > 0 && pos < self.sequential_start { ... }`. The cursor sits on the retained
+        //           off-page current track before the scope, so Previous leaves that prelude: `self.order.drain(...)`
+        //           removes it, `self.sequential_start = 0;` makes the scope start at slot 0, and
+        //           `let last = self.order.len() - 1;` with `self.pos = Some(last);` and `return Some(self.order[last]);`
+        //           moves to the scope's last track and hands it back.
+        // Why:      There is no earlier scope track to step to, so Previous wraps to the end of the scope, as it does at
+        //           the scope's first slot. The prelude is dropped so it is not repeated.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.sequentialStart > 0 && pos < this.sequentialStart) {
+        //   this.order.splice(0, this.sequentialStart); this.sequentialStart = 0;
+        //   const last = this.order.length - 1; this.pos = last; return this.order[last];
+        // }
+        // ```
         if self.sequential_start > 0 && pos < self.sequential_start {
             self.order.drain(0..self.sequential_start);
             self.sequential_start = 0;
@@ -1567,12 +1599,13 @@ impl Queue {
             self.pos = Some(last);
             return Some(self.order[last]);
         }
-        // What:     `if pos > 0 { ... }` there is a previous slot in the scope (Off).
+        // What:     `if pos > self.sequential_start { ... }` there is a previous slot in the scope (Off). The bound is
+        //           `self.sequential_start`, the first scope slot, not 0, so a prelude slot is never stepped back to.
         // Why:      Normal backward step.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }
+        // if (pos > this.sequentialStart) { this.pos = pos - 1; return this.order[pos - 1]; }
         // ```
         if pos > self.sequential_start {
             // What:     `self.pos = Some(pos - 1);`. Decrement the cursor.

@@ -113,6 +113,13 @@ cargo-binstall = "latest"
 # container filesystem does not see host mise tools.
 "cargo:cargo-nextest" = "latest"
 
+# Third-party license notices of the music player (package/music-player): its notices tasks run cargo-about over
+# the desktop crate and the Android native crate, and the release workflow ships the result with every binary
+# (doc/decision/music-player-third-party-licenses.md). Not pinned: mise.lock records the resolved version, and the
+# cargo backend resolves through cargo-binstall to the prebuilt release archive. The IDE's build image installs its
+# own copy (package/desktop-app/ide/Containerfile), since the container does not see host mise tools.
+"cargo:cargo-about" = "latest"
+
 # The unified Rust, Markdown and MDX linter behind the root lint:monochromatic-lint
 # and format:monochromatic-lint tasks and the Markdown commit policy. Not pinned, because this
 # repository publishes it: mise.lock records the resolved version. The cargo backend resolves

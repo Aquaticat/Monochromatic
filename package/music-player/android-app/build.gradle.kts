@@ -22,4 +22,8 @@ buildscript {
 plugins {
     id("com.android.application") version "9.4.1" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.21" apply false
+    // Checks the license of every library the app ships against an allow-list and lists them for the license
+    // notices (doc/decision/music-player-third-party-licenses.md). 1.14.1 is the newest release (2025-10-09); it was
+    // run against this build's AGP 9.4.1 and Gradle 9.8.1 before adoption.
+    id("app.cash.licensee") version "1.14.1" apply false
 }

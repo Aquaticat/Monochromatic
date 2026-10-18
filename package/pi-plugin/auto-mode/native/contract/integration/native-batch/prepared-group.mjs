@@ -24,6 +24,7 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
   /** Original operation identity remains independent of automatic evidence availability. */
   function baseCurrent(){
     tagged({tag:baseCurrent.name,l}).debug('checking original operation');
+    if(state.closed)throw new PreparedGroupError('The prepared operation has ended');
     signal.throwIfAborted();assertOperationCurrent();
     if(JSON.stringify(response.content)!==parentJSON)throw new PreparedGroupError('The proposed operation changed during review');
     if(bypass&&!readBypass())throw new PreparedGroupError('Explicit bypass was disabled before this group completed; retry with guardrail checks');
@@ -160,8 +161,16 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
     return state.bypassed||state.reviewed?.outcome.verdict==='approve'?{block:false}:{block:true,
       reason:state.reviewed.outcome.reason??'Execution is withheld because the complete group has no established policy outcome'};
   }
-  /** Closing preparation does not erase retained native outcomes or an active child's own lifetime. */
-  function close(){state.closed=true;}
+  /** Closed contexts retain their terminal outcome; the runtime separately retains its latest full diagnostic. */
+  function close(){
+    tagged({tag:close.name,l}).debug('retiring completed group review inputs');
+    state.closed=true;
+    if(state.reviewed)state.reviewed=Object.freeze({
+      outcome:state.reviewed.outcome,
+      assertCurrent(){throw new PreparedGroupError('The prepared operation has ended');}
+    });
+    state.automaticReview=undefined;
+  }
   /** Retained review data is diagnostic and does not publish execution authority. */
   function review(){return state.reviewed;}
   const api=Object.freeze({current,assess,close,review,

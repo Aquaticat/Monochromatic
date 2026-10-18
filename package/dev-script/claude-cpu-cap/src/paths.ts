@@ -3,7 +3,6 @@ import { join, } from 'node:path';
 import {
   DEFAULT_BOOST_OFF_MHZ,
   DEFAULT_BURST_STEP_WATTS,
-  DEFAULT_STATUS_URL,
   DEFAULT_THERMAL_TARGET_CELSIUS,
 } from './constants.ts';
 import type {
@@ -164,12 +163,5 @@ export function resolvePaths({
       'claude-cpu-cap',
       'samples',
     ),
-    tokenFile: env.CPU_WATCH_TOKEN_FILE ?? join(
-      home,
-      '.config',
-      'claude-cpu-cap',
-      'cc-token',
-    ),
-    statusUrl: env.CPU_WATCH_STATUS_URL ?? DEFAULT_STATUS_URL,
   };
 }

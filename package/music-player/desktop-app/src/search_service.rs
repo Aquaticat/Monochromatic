@@ -206,11 +206,13 @@ impl SearchService {
     }
 }
 
-/// Teardown of `SearchService`.
-impl Drop for SearchService {
-    /// What: `drop` stops the worker and waits for it.
-    /// Why: the worker must not outlive the callback target.
-    fn drop(&mut self) {
+impl SearchService {
+    /// What: `shutdown` stops the worker, the warmer and the streamer and waits for all three; a second call does nothing.
+    /// Why: the window thread keeps the last handle in a `thread_local!`. On Windows that value is dropped while the
+    /// process is already ending, after the other threads were killed, and joining a killed thread panics inside the
+    /// thread-local destructor (`threads should not terminate unexpectedly`, then an abort with exit code 0xC0000409).
+    /// `main` calls this while every thread is still alive.
+    pub fn shutdown(&self) {
         let _worker_stop = self.shared.requests.send(Request::Stop);
         let _warmer_stop = self.shared.warm_signals.send(Request::Stop);
         let _streamer_stop = self.shared.stream.send(StreamRequest::Stop);
@@ -218,6 +220,15 @@ impl Drop for SearchService {
         for handle in running {
             let _joined = handle.join();
         }
+    }
+}
+
+/// Teardown of `SearchService`.
+impl Drop for SearchService {
+    /// What: `drop` stops the worker and waits for it.
+    /// Why: the worker must not outlive the callback target.
+    fn drop(&mut self) {
+        self.shutdown();
     }
 }
 

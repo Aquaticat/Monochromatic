@@ -139,11 +139,12 @@ export async function dispatchPreparedBatch({
       const members=Object.freeze(records.map(record=>record.member));
       snapshots.push(members);
       const decision=await assess({members,signal});
-      active('assessment-returned');
       if(!decision||typeof decision.block!=='boolean'
         ||(decision.block&&(typeof decision.reason!=='string'||!decision.reason))){
         throw new PreparedBatchContractError('Combined assessment returned an invalid decision');
       }
+      // Native Stop may abort before returning its blocking decision; withholding needs no execution eligibility.
+      if(!decision.block)active('assessment-returned');
       state.decision=Object.freeze(decision.block?{block:true,reason:decision.reason}:{block:false});
     }catch(error){
       l.debug('complete native group review failed');l.debug(error);

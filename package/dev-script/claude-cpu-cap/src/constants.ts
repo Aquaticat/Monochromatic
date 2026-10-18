@@ -94,16 +94,6 @@ export const DEFAULT_BOOST_OFF_MHZ = 4_490;
 export const DEFAULT_BURST_STEP_WATTS = 25;
 
 /**
- Timeout in milliseconds for the CoolerControl status request.
- */
-export const COOLERCONTROL_TIMEOUT_MS = 2_000;
-
-/**
- Address of the local CoolerControl status endpoint.
- */
-export const DEFAULT_STATUS_URL = 'http://127.0.0.1:11987/status';
-
-/**
  How many unlabeled motherboard temperature inputs the `gigabyte_wmi` driver exposes.
  */
 export const BOARD_SENSOR_COUNT = 6;
@@ -122,16 +112,52 @@ export const BOARD_SENSOR_INDEXES: readonly number[] = Array.from(
 );
 
 /**
- Names of the Corsair controller fan channels, in the order of the sample log columns.
+ How many columns the sample log keeps for the Corsair controller (six fan speeds and a probe temperature).
+ They stay in the header so rows written before 2026-10-18 keep their positions, and are empty in new rows.
  */
-export const CORSAIR_FAN_CHANNELS: readonly string[] = [
-  'fan1',
-  'fan2',
-  'fan3',
-  'fan4',
-  'fan5',
-  'fan6'
-];
+export const LEGACY_CORSAIR_COLUMN_COUNT = 7;
+
+/**
+ How many fan inputs the `nct6687` chip exposes (`fan1_input` to `fan8_input`), one per motherboard fan header.
+ */
+export const MB_FAN_COUNT = 8;
+
+/**
+ Numbers of the `nct6687` fan inputs, in the order of the sample log columns.
+ */
+export const MB_FAN_INPUTS: readonly number[] = Array.from(
+  { length: MB_FAN_COUNT, },
+  function fanNumber(
+    _unused,
+    index,
+  ): number {
+  return index + 1;
+},
+);
+
+/**
+ Number of the first logged `nct6687` temperature input, `temp2_input` (System). `temp1_input` (CPU) repeats
+ the CPU temperature and is not logged.
+ */
+export const MB_FIRST_TEMPERATURE_INPUT = 2;
+
+/**
+ How many `nct6687` temperature inputs are logged: System, VRM MOS and PCH (`temp2_input` to `temp4_input`).
+ */
+export const MB_TEMPERATURE_COUNT = 3;
+
+/**
+ Numbers of the logged `nct6687` temperature inputs, in the order of the sample log columns.
+ */
+export const MB_TEMPERATURE_INPUTS: readonly number[] = Array.from(
+  { length: MB_TEMPERATURE_COUNT, },
+  function temperatureNumber(
+    _unused,
+    index,
+  ): number {
+  return index + MB_FIRST_TEMPERATURE_INPUT;
+},
+);
 
 /**
  Marks a sensor directory or file that does not exist on this host; joined with a name it points nowhere,
@@ -146,9 +172,12 @@ export const NOT_MEASURED: number = Number.NaN;
 
 /**
  Header line of the sample log CSV; column order is part of the interface read by `summarize-samples.ts`.
+ New columns are appended, never inserted, so older rows keep their positions.
  */
 export const SAMPLE_HEADER: string =
   'utc_time,tctl_c,tccd1_c,tccd2_c,package_w,average_mhz,cpu_pressure_some_avg10,load1,cap_threads,'
   + 'fan1_rpm,fan2_rpm,fan3_rpm,fan4_rpm,fan5_rpm,fan6_rpm,corsair_probe_c,'
     + 'chiplet1_w,chiplet2_w,board1_c,board2_c,board3_c,board4_c,board5_c,board6_c,acpi_c,nvme_c,burst,'
-    + 'gpu_edge_c,gpu_w,igpu_edge_c,igpu_w\n';
+    + 'gpu_edge_c,gpu_w,igpu_edge_c,igpu_w,'
+    + 'cpu_fan_rpm,pump_fan_rpm,sys_fan1_rpm,sys_fan2_rpm,sys_fan3_rpm,sys_fan4_rpm,sys_fan5_rpm,sys_fan6_rpm,'
+    + 'mb_system_c,mb_vrm_c,mb_pch_c\n';

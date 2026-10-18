@@ -7,6 +7,8 @@
 //!   `ERROR_INVALID_HANDLE` when the parent has no console and with `ERROR_ACCESS_DENIED` when the process already has
 //!   one. It is meant for programs linked with `/SUBSYSTEM:WINDOWS`.
 //! - `SetStdHandle` and `CreateFileW("CONOUT$")` supply or put back a standard handle.
+//! - `GetConsoleMode` tells a console from a file or a pipe (it fails for those), and `SetConsoleMode` adds
+//!   `ENABLE_VIRTUAL_TERMINAL_PROCESSING` so the console turns ANSI color sequences into colors (`console_color.rs`).
 //!
 //! Rust's standard library reads the standard handle on the first print, not at startup, and treats a missing handle
 //! (`ERROR_INVALID_HANDLE`) as a successful write that goes nowhere, so a double-click start prints into the void
@@ -15,12 +17,14 @@
 use crate::console_attach::{
     ConsoleAttachOutcome, StdHandleAction, StreamReport, needs_console_attach, std_handle_action_after_attach,
 };
+use crate::console_color::{ConsoleColorSupport, ConsoleColors, has_virtual_terminal, mode_with_virtual_terminal};
 use windows::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE, HANDLE};
 use windows::Win32::Storage::FileSystem::{
     CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
 };
 use windows::Win32::System::Console::{
-    ATTACH_PARENT_PROCESS, AttachConsole, GetStdHandle, STD_ERROR_HANDLE, STD_HANDLE, STD_OUTPUT_HANDLE, SetStdHandle,
+    ATTACH_PARENT_PROCESS, AttachConsole, CONSOLE_MODE, GetConsoleMode, GetStdHandle, STD_ERROR_HANDLE, STD_HANDLE,
+    STD_OUTPUT_HANDLE, SetConsoleMode, SetStdHandle,
 };
 use windows::core::w;
 
@@ -120,4 +124,44 @@ pub fn attach_parent_console() -> ConsoleAttachOutcome {
         stdout: repair_stream(STD_OUTPUT_HANDLE, stdout_before),
         stderr: repair_stream(STD_ERROR_HANDLE, stderr_before),
     };
+}
+
+/// What:
+///      `fn color_support(kind: STD_HANDLE) -> ConsoleColorSupport`.
+///  Whether one standard output handle interprets ANSI escape sequences, switching the console mode on when it can.
+/// Why:
+///       Each handle is set on its own. `anstyle-query` 1.1.5 stops at the first handle that is not a console, so with
+///           stdout in a file it never switches the console behind stderr (`console_color.rs` has the details).
+fn color_support(kind: STD_HANDLE) -> ConsoleColorSupport {
+    // SAFETY: `GetStdHandle` only reads the process parameters and has no preconditions.
+    let Ok(handle) = (unsafe { GetStdHandle(kind) }) else {
+        return ConsoleColorSupport::NotConsole;
+    };
+    let mut mode = CONSOLE_MODE(0);
+    // A file or a pipe has no console mode, so the call fails for them: that is the answer, not an error to report.
+    // SAFETY: `handle` is a standard handle of this process and `mode` is a valid place to write the mode to.
+    if unsafe { GetConsoleMode(handle, &mut mode) }.is_err() {
+        return ConsoleColorSupport::NotConsole;
+    }
+    if has_virtual_terminal(mode.0) {
+        return ConsoleColorSupport::VirtualTerminal;
+    }
+    // SAFETY: `handle` is a console output handle (its mode was just read) and the mode is a plain value.
+    return match unsafe { SetConsoleMode(handle, CONSOLE_MODE(mode_with_virtual_terminal(mode.0))) } {
+        Ok(()) => ConsoleColorSupport::VirtualTerminal,
+        Err(error) => ConsoleColorSupport::NoVirtualTerminal { error_code: win32_code(&error) },
+    };
+}
+
+/// What:
+///      `pub fn enable_console_colors() -> ConsoleColors`.
+///  Switches every console behind stdout and stderr to interpret ANSI escape sequences, and reports what each handle
+///  does with them.
+/// Why:
+///       The logger and clap decide from the report whether to write colors, so a console never shows a literal ESC
+///           and a file never holds one.
+/// Gotcha:
+///       Must run after `attach_parent_console` (the handles are final then) and before the logger and argument parsing.
+pub fn enable_console_colors() -> ConsoleColors {
+    return ConsoleColors { stdout: color_support(STD_OUTPUT_HANDLE), stderr: color_support(STD_ERROR_HANDLE) };
 }

@@ -1,10 +1,10 @@
 <!--
-status: completed evaluation; no adoption recommendation
+status: historical initial cohort; expanded native evaluation recorded separately
 lifecycle-phase: validation incomplete; no validated finalist
 subject: Depot complete CI trial
 scope: Frozen four-case complete affected CI graph; no migration or adoption
 started: 2026-10-17
-last-updated: 2026-10-17
+last-updated: 2026-10-18
 governing-skill: .agents/skills/choosing-technology/SKILL.md
 governing-skill-commit: 37117e36397e30233062828581a5e38217da9458
 governing-skill-sha256: 552ac9955299b65a9f921a4e836b60a3fabc15d3477eeb8ec2bfb3f400647f9b
@@ -29,9 +29,13 @@ overlays:
 -->
 # Depot complete CI trial evaluation
 
+The [expanded native runner and hybrid routing evaluation](tech-depot-complete-ci-trial-vet-2026-10-18.md)
+records the authorized follow-up and current scoped verdict.
+This document retains the original frozen cohort and its acceptance limits.
+
 ## Decision and acceptance limits
 
-This trial does not establish acceptance of Depot as the replacement for the complete affected CI graph.
+This trial does not yet establish the intended GitHub/Depot routing under the user's budget and waiting-time objective.
 The reconciled registry contains 770 primary gates:
 654 pass,
 115 fail,
@@ -444,11 +448,18 @@ but has no complete-graph capacity,
 isolation or operating-cost comparison in this trial
 ([Android execution](depot-coherent-android-2026-10-17.evidence.json)).
 
-Depot currently documents Linux x86/Arm sandboxes and no native macOS or Windows support.
-Therefore the trial's existing mixed-provider arrangement remains necessary for those measured host boundaries.
-Unrecognized runner labels are mapped to Depot Ubuntu rather than establishing the named foreign platform
-([current compatibility documentation](https://depot.dev/docs/ci/compatibility),
-[retained primary text](depot-repository-accounting-2026-10-17.evidence.json)).
+#### Depot GitHub Actions runners
+
+The standalone Depot CI service provides Linux x86/Arm sandboxes.
+Its native OS restriction does not apply to Depot's separate GitHub Actions runner product,
+which offers Windows Server and Apple Silicon macOS runners.
+GitHub Actions orchestrates those jobs while Depot supplies the compute.
+The original native jobs in this report used GitHub-hosted machines;
+that placement is not evidence that another compute provider is required.
+The user has instructed execution of the missing Depot native-runner evaluation
+([Depot CI sandbox scope](https://depot.dev/docs/ci/overview),
+[Depot GitHub runner types](https://depot.dev/docs/github-actions/runner-types),
+[correction and follow-up](../troubleshooting/depot-ci-versus-github-runner-platforms.md)).
 
 This is a named-candidate workload evaluation,
 not saturated vendor discovery.

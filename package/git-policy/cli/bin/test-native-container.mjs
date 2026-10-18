@@ -24,6 +24,10 @@ import {
   vendorLinterDependencies,
 } from './native-linter-snapshot.mjs';
 import {
+  copyNextest,
+  nextestCopyLines,
+} from './native-nextest-snapshot.mjs';
+import {
   scannerSnapshotEntries,
   vendorLockedDependencies,
 } from './native-scanner-snapshot.mjs';
@@ -142,6 +146,7 @@ async function main() {
   await copySourceSnapshot({ context: context.path });
   await vendorLockedDependencies({ context: context.path });
   await vendorLinterDependencies({ context: context.path });
+  await copyNextest({ context: context.path });
   await writeFile(
     join(
       context.path,
@@ -151,6 +156,7 @@ async function main() {
       // The Markdown policy's linter is built from this snapshot in its own stage; only its executable is kept.
       ...linterStageLines({ base }),
       `FROM ${base}`,
+      ...nextestCopyLines(),
       ...linterCopyLines(),
       'COPY package /work/package',
       // Some crate archives carry files only their owner may read, so the tester must own the vendored copy.
@@ -168,8 +174,9 @@ async function main() {
       'WORKDIR /work/package/git-policy/cli',
       // Compile once while the image is built. The test run, each planted control and each mutant then rebuild
       // only what changed, instead of the linked scanner and its dependencies every time.
-      'RUN ["cargo", "test", "--offline", "--locked", "--all-targets", "--no-run"]',
-      'CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]',
+      'RUN ["cargo", "nextest", "run", "--offline", "--locked", "--all-targets", "--no-run"]',
+      // nextest's default concurrency: one test per CPU the container may use.
+      'CMD ["cargo", "nextest", "run", "--offline", "--locked", "--all-targets"]',
       '',
     ].join('\n'),
   );

@@ -11,7 +11,8 @@ The lowest branch is the maintained minimum supported runtime and the build deri
 `package/git-policy/cli/src/runtime-contract.host-evidence.ts` requires execution at the exact floor of any declared line,
 imports the built public MJS without extra output,
 and checks successful help plus invalid-usage behavior.
-`.github/workflows/cli-git-trust.yml` builds and runs unit and host evidence at every declared floor.
+`.github/workflows/cli-git-trust.yml` built and ran unit and host evidence at every declared floor;
+the workflow was deleted on 2026-10-13 in commit `642b6d72cb`, together with the TypeScript wrapper it tested.
 A separate CI check compares the lowest declared branch with Node's official release index each day,
 so a newly published LTS line that should advance the maintained minimum fails visibly.
 

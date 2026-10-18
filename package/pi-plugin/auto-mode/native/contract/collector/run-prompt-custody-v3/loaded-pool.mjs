@@ -19,7 +19,10 @@ export function createInputPool({
 }){
  const occurrence=Object.freeze({});
  const origins=new WeakMap();
- const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedInputs:Object.freeze([])};
+ const sourceDataByContent=new Map();
+ const metadataTexts=new Map();
+ const constructedInputs=[];
+ const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedSnapshot:Object.freeze([])};
 
  function reserve(){
   poolState.count++;
@@ -36,23 +39,26 @@ export function createInputPool({
    kind='native-session-message-input'
  }){
   const contentFormat=(typeof value)==='string'?'text':'native-content-json';
-  const content=contentFormat==='text'?value:JSON.stringify(value??[]);
+  const serialized=contentFormat==='text'?value:JSON.stringify(value??[]);
+  let data=sourceDataByContent.get(serialized);
+  if(data===undefined){
+   data=Object.freeze({content:serialized,sha256:createHash('sha256').update(serialized).digest('hex')});
+   sourceDataByContent.set(serialized,data);
+  }
+  const serializedMetadata=JSON.stringify({...metadata,contentFormat});
+  const metadataJSON=metadataTexts.get(serializedMetadata)??serializedMetadata;
+  if(!metadataTexts.has(serializedMetadata))metadataTexts.set(serializedMetadata,metadataJSON);
   const source=Object.freeze({
     kind,
-    content,
+    content:data.content,
     contentFormat,
     inputOrigin,
     inputLocation:Object.freeze({
       field:inputField,
       ...(ordinal===undefined?{}:{ordinal}),
-      metadataJSON:JSON.stringify({
-        ...metadata,
-        contentFormat
-      })
+      metadataJSON
     }),
-    sha256:createHash('sha256')
-      .update(content)
-      .digest('hex'),
+    sha256:data.sha256,
     occurrence:Object.freeze({}),
     ...(kind==='native-resource-tool-input'?{resourceInputOccurrence:inputOccurrence}:{sessionInputOccurrence:inputOccurrence}),
     registration:undefined,
@@ -76,10 +82,8 @@ export function createInputPool({
     ...input,
     inputOccurrence:Object.freeze({})
   });
-  poolState.constructedInputs=Object.freeze([
-    ...poolState.constructedInputs,
-    origin
-  ]);
+  constructedInputs.push(origin);
+  poolState.constructedSnapshot=undefined;
  }
 
  const {captureSummary,captureEdit,captureLoadedEntries}=createLoadedHistory({occurrence,reserve,retain,poolState,InputCaptureError});
@@ -108,7 +112,10 @@ const {captureQueuedInput,captureUninterceptedInput,captureCallInput,captureComm
   captureTransformedInput,
   captureInputEvent,
   captureCustomMessageInput,
-  readConstructedInputs(){return poolState.constructedInputs;},
+  readConstructedInputs(){
+    poolState.constructedSnapshot??=Object.freeze([...constructedInputs]);
+    return poolState.constructedSnapshot;
+  },
   inputUsage(){if(poolState.failure)throw poolState.failure;return Object.freeze({
     count:poolState.count,
     bytes:poolState.bytes+poolState.pendingEventBytes

@@ -422,6 +422,8 @@ use music_player::command::{Command, Update};
 /// ```ts
 /// import { Cli } from "music-player/cli";
 /// ```
+/// The Windows build parses through `cli::parse_with_color` instead, so it names neither `Cli` nor the trait.
+#[cfg(not(windows))]
 use music_player::cli::Cli;
 
 /// What:
@@ -519,7 +521,12 @@ use music_player::sweep_gate::SweepGate;
 /// ```ts
 /// import { parseArgs } from "some-cli-parser";
 /// ```
+#[cfg(not(windows))]
 use clap::Parser;
+
+/// What: the startup steps that end the program when they fail, and the debug-build hook that fails one on purpose.
+/// Why: a failed double-click start on Windows is reported in a message box (`src/startup_failure.rs`).
+use music_player::startup_failure::StartupStep;
 
 /// What:
 ///      `use i_slint_backend_winit::Backend;`.
@@ -896,6 +903,56 @@ fn start_unplayable_notifier() -> UnplayableNotifier {
 }
 
 /// What:
+///      `fn forced_failure(step: StartupStep) -> Result<(), slint::PlatformError>`.
+///  In a Windows debug build, fails `step` on purpose when `MUSIC_PLAYER_FORCE_STARTUP_FAILURE` names it.
+/// Why:
+///       The Windows runner proves the failure report by forcing each step and reading the message box back
+///           (`.github/workflows/music-player-windows.yml`). The error goes through the same path as a real one.
+#[cfg(all(windows, debug_assertions))]
+fn forced_failure(step: StartupStep) -> Result<(), slint::PlatformError> {
+    use music_player::startup_failure::{FORCE_STARTUP_FAILURE_ENV, forced_failure_detail, forced_startup_failure};
+    let value = std::env::var(FORCE_STARTUP_FAILURE_ENV).ok();
+    if forced_startup_failure(value.as_deref()) == Some(step) {
+        tracing::warn!(?step, "failing a startup step on purpose ({FORCE_STARTUP_FAILURE_ENV})");
+        return Err(slint::PlatformError::from(forced_failure_detail(step)));
+    }
+    return Ok(());
+}
+
+/// What:
+///      `fn forced_failure(_step: StartupStep) -> Result<(), slint::PlatformError>`.
+///  Release builds and non-Windows builds: never fails.
+/// Why:
+///       The test hook is compiled out of the release; the call sites stay the same on every build.
+#[cfg(not(all(windows, debug_assertions)))]
+fn forced_failure(_step: StartupStep) -> Result<(), slint::PlatformError> {
+    return Ok(());
+}
+
+/// What:
+///      `fn startup_failed(step: StartupStep, error: slint::PlatformError) -> anyhow::Error`.
+///  Windows: reports the failed step (a message box when stderr reaches nobody, the text on stderr otherwise), then
+///  hands the error on to `main`.
+/// Why:
+///       A double-click start has no console, so the error `main` returns would be written nowhere.
+#[cfg(windows)]
+fn startup_failed(step: StartupStep, error: slint::PlatformError) -> anyhow::Error {
+    music_player::startup_failure_win32::report_startup_failure(step, &error.to_string());
+    tracing::debug!(?step, "the startup failure was reported; main returns the error and drops its state");
+    return anyhow::Error::from(error);
+}
+
+/// What:
+///      `fn startup_failed(_step: StartupStep, error: slint::PlatformError) -> anyhow::Error`.
+///  Linux and macOS: hands the error on to `main` unchanged, which prints it as before.
+/// Why:
+///       Those builds always have a terminal or a session log for stderr.
+#[cfg(not(windows))]
+fn startup_failed(_step: StartupStep, error: slint::PlatformError) -> anyhow::Error {
+    return anyhow::Error::from(error);
+}
+
+/// What:
 ///      `fn main() -> Result<()>`.
 ///  The entry point.
 ///  The return type is
@@ -927,6 +984,12 @@ fn main() -> Result<()> {
     // ```
     #[cfg(windows)]
     let console_attach = music_player::console_attach_win32::attach_parent_console();
+    // What:     `let console_colors = enable_console_colors();`. Windows only: switch every console behind stdout and
+    //           stderr to interpret ANSI color sequences, and measure what each handle does with them.
+    // Why:      The logger and clap write colors only where they become colors: never into a file, never as literal
+    //           ESC characters on a console without VT processing (`src/console_color.rs`).
+    #[cfg(windows)]
+    let console_colors = music_player::console_attach_win32::enable_console_colors();
     // What:     `music_player::logging::init();`. Install the stderr tracing subscriber
     //           before anything else, so startup events have a sink. Idempotent.
     // Why:      Every `tracing` event from this crate and `truepeak-core` needs a sink;
@@ -936,11 +999,23 @@ fn main() -> Result<()> {
     // ```ts
     // logging.init();
     // ```
+    #[cfg(not(windows))]
     music_player::logging::init();
-    // What:     `log_console_attach(&console_attach);`. Windows only: write what the attach did at debug level.
-    // Why:      The attach ran before the logger existed, so its outcome is logged now.
     #[cfg(windows)]
-    music_player::console_attach::log_console_attach(&console_attach);
+    music_player::logging::init_with_ansi(music_player::console_color::log_colors_wanted(
+        console_colors.stderr,
+        std::env::var("NO_COLOR").ok().as_deref(),
+    ));
+    // What:     `log_console_attach(&console_attach);` and `log_console_colors(&console_colors);`. Windows only: write
+    //           what the attach and the color setup did at debug level, then add the panic message box.
+    // Why:      Both ran before the logger existed, so their outcome is logged now. The panic hook shows a panic of the
+    //           main thread in a message box when stderr reaches nobody (a double-click start).
+    #[cfg(windows)]
+    {
+        music_player::console_attach::log_console_attach(&console_attach);
+        music_player::console_color::log_console_colors(&console_colors);
+        music_player::startup_failure_win32::install_panic_message_box();
+    }
     // What:     `let cli = Cli::parse();`. Read and validate the command-line
     //           arguments FIRST, before any backend, window, or GPU setup.
     //           `Cli::parse()` (from the `clap::Parser` trait) reads the real process
@@ -957,7 +1032,31 @@ fn main() -> Result<()> {
     // ```ts
     // const cli = parseArgs(process.argv); // prints help / exits on bad args
     // ```
+    #[cfg(not(windows))]
     let cli = Cli::parse();
+    // Windows: the same parse, with clap's colors off when a console refused VT processing.
+    #[cfg(windows)]
+    let cli = music_player::cli::parse_with_color(music_player::console_color::cli_color(console_colors));
+    // A debug-build test hook: `MUSIC_PLAYER_FORCE_STARTUP_FAILURE=panic` panics here, on the main thread.
+    if let Err(error) = forced_failure(StartupStep::Panic) {
+        panic!("{error}");
+    }
+
+    // What:     `if cli.licenses { ... return Ok(()) }`. Print the embedded license notices to stdout and exit before
+    //           any backend, window or audio setup.
+    // Why:      The notices must be reachable from the program itself (the Windows release is one executable), and
+    //           printing them needs no display, so it works on a headless machine too. A closed pipe (`| head`)
+    //           ends the listing without an error (`write_notices`).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (cli.licenses) { writeNotices(process.stdout); return; }
+    // ```
+    if cli.licenses {
+        tracing::debug!("printing the license notices for --licenses");
+        music_player::licenses::write_notices(&mut std::io::stdout().lock())?;
+        return Ok(());
+    }
 
     // What:     Install Slint's winit backend explicitly, with a window-attributes
     //           hook that stamps the Wayland app id. This `{ ... }` is a BARE BLOCK
@@ -1039,7 +1138,9 @@ fn main() -> Result<()> {
         // ```ts
         // const backend = builder.build(); // throws PlatformError on failure
         // ```
-        let backend = builder.build()?;
+        let backend = forced_failure(StartupStep::WindowSystem)
+            .and_then(|()| return builder.build())
+            .map_err(|error| return startup_failed(StartupStep::WindowSystem, error))?;
         // What:     `slint::platform::set_platform(Box::new(backend)).expect("no Slint platform should already be set");`.
         //           `Box::new(backend)` moves the backend onto the heap behind an
         //           owning pointer (the API wants a `Box<dyn Platform>` trait object;
@@ -1068,7 +1169,9 @@ fn main() -> Result<()> {
     // ```ts
     // const app = new AppWindow();
     // ```
-    let app = AppWindow::new()?;
+    let app = forced_failure(StartupStep::Window)
+        .and_then(|()| return AppWindow::new())
+        .map_err(|error| return startup_failed(StartupStep::Window, error))?;
     // What:     `app.global::<Theme>().set_scheme_override(color_scheme_from_env());`.
     //           Apply the color scheme override before the first frame.
     // Why:      Verification runs fix the scheme with MUSIC_PLAYER_COLOR_SCHEME; unset follows the system.
@@ -1186,6 +1289,8 @@ fn main() -> Result<()> {
     let unplayable_engine_notifier = unplayable_notifier.clone();
     // The Search service answers on its own thread and takes scan batches from the engine thread (D111, D112).
     let search_service = ui_search::start_service(&app);
+    // Joins the service's threads when `main` ends, before the thread-local handle is dropped during process exit.
+    let _search_shutdown = ui_search::ServiceShutdown;
     let scan_service = search_service.clone();
     let engine = Rc::new(Engine::spawn(move |update| {
         // What:     post the sweep's progress to the system indicator before the window sees the update.
@@ -1435,10 +1540,10 @@ fn main() -> Result<()> {
     // What:     run the event loop, then close the indicator and release the sweep before the engine drops.
     // Why:      a Plasma job or notification must not outlive the app, and a sweep parked by Pause must not wait for a
     //           resume that can no longer come.
-    let run_result = app.run();
+    let run_result = forced_failure(StartupStep::EventLoop).and_then(|()| return app.run());
     analysis_notifier.shutdown();
     unplayable_notifier.shutdown();
     SweepGate::shared().close();
-    run_result?;
+    run_result.map_err(|error| return startup_failed(StartupStep::EventLoop, error))?;
     return Ok(())
 }

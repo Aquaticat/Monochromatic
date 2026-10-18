@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Build instrumented targets with a read-only compiler, then fuzz without host mounts. */
 import { spawnSync } from 'node:child_process';
-import { constants } from 'node:fs';
+import { closeSync, constants, openSync, readSync, statSync } from 'node:fs';
 import { access, copyFile, cp, mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
@@ -33,6 +33,23 @@ const targets = [
 const defaultSecondsPerTarget = 30;
 const maxSecondsPerTarget = 86_400;
 const secondsOption = '--seconds-per-target=';
+const targetsOption = '--targets=';
+/** How much of the end of each stream is searched for libFuzzer's final statistics. */
+const statisticsTailBytes = 256 * 1024;
+
+/** Last bytes of a possibly very large log, so a long campaign never loads the whole stream. */
+function readTail(file) {
+  const size = statSync(file).size;
+  const length = Math.min(size, statisticsTailBytes);
+  const buffer = Buffer.alloc(length);
+  const fd = openSync(file, 'r');
+  try {
+    readSync(fd, buffer, 0, length, size - length);
+  } finally {
+    closeSync(fd);
+  }
+  return buffer.toString('utf8');
+}
 const maxInputBytes = 4096;
 
 /** Preserve the failed verification boundary rather than masking it with a later copy error. */
@@ -91,8 +108,14 @@ async function copyInputs({ source, context }) {
 /** Build and run within explicit container limits and retain discoveries before cleanup. */
 async function main() {
   const options = process.argv.slice(2);
-  if (options.some(argument => argument !== '--build-only' && !argument.startsWith(secondsOption)))
-    throw new FuzzVerificationError(`Only --build-only and ${secondsOption}<seconds> are accepted.`);
+  if (options.some(argument => argument !== '--build-only' && !argument.startsWith(secondsOption) && !argument.startsWith(targetsOption)))
+    throw new FuzzVerificationError(`Only --build-only, ${secondsOption}<seconds> and ${targetsOption}<name,...> are accepted.`);
+  const targetsArgument = options.find(argument => argument.startsWith(targetsOption));
+  const chosenNames = targetsArgument === undefined ? undefined : targetsArgument.slice(targetsOption.length).split(',');
+  const unknownNames = (chosenNames ?? []).filter(name => !targets.some(target => target.name === name));
+  if (unknownNames.length > 0)
+    throw new FuzzVerificationError(`Unknown fuzz targets: ${unknownNames.join(', ')}.`);
+  const selectedTargets = targets.filter(target => chosenNames === undefined || chosenNames.includes(target.name));
   const buildOnly = options.includes('--build-only');
   const secondsArgument = options.find(argument => argument.startsWith(secondsOption));
   const secondsPerTarget = secondsArgument === undefined
@@ -173,7 +196,9 @@ async function main() {
     ].join('\n'));
     execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', runImage, '--file', join(context, 'Run.Containerfile'), context] });
     console.log(`Fuzz evidence: ${evidence}`);
-    for (const target of targets) {
+    // A failed target is recorded and the campaign goes on, so one finding never hides the targets after it.
+    const failedTargets = [];
+    for (const target of selectedTargets) {
       const container = execute({ command: 'podman', args: [
         'create', ...limits, runImage,
         `/fuzz/bin/${target.name}`, `/fuzz/corpus/${target.name}`, `-max_total_time=${secondsPerTarget}`,
@@ -181,20 +206,36 @@ async function main() {
         `-artifact_prefix=/fuzz/artifacts/${target.name}/`, `-dict=/fuzz/dictionary/${target.dictionary}`,
       ], capture: true }).stdout.trim();
       containers.push(container);
-      const result = execute({ command: 'podman', args: ['start', '--attach', container], capture: true, allowFailure: true });
       await mkdir(join(evidence, target.name), { recursive: true });
-      await writeFile(join(evidence, target.name, 'stdout.log'), result.stdout);
-      await writeFile(join(evidence, target.name, 'stderr.log'), result.stderr);
+      // A target may print on every execution, so both streams go straight to files instead of a bounded buffer.
+      const stdoutLog = join(evidence, target.name, 'stdout.log');
+      const stderrLog = join(evidence, target.name, 'stderr.log');
+      const stdoutFd = openSync(stdoutLog, 'w');
+      const stderrFd = openSync(stderrLog, 'w');
+      let result;
+      try {
+        result = spawnSync('podman', ['start', '--attach', container], { stdio: ['ignore', stdoutFd, stderrFd] });
+      } finally {
+        closeSync(stdoutFd);
+        closeSync(stderrFd);
+      }
+      if (result.error)
+        throw new FuzzVerificationError('podman could not start.', { cause: result.error });
       execute({ command: 'podman', args: ['cp', `${container}:/fuzz/corpus/${target.name}`, join(evidence, target.name, 'corpus')] });
       execute({ command: 'podman', args: ['cp', `${container}:/fuzz/artifacts/${target.name}`, join(evidence, target.name, 'artifacts')] });
-      const statistics = `${result.stdout}\n${result.stderr}`.match(/stat::number_of_executed_units:\s+(\d+)/u);
+      const statistics = `${readTail(stdoutLog)}\n${readTail(stderrLog)}`.match(/stat::number_of_executed_units:\s+(\d+)/u);
       const executedUnits = statistics ? Number(statistics[1]) : 0;
       await writeFile(join(evidence, target.name, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, executedUnits }) + '\n');
       // Exit 0 alone is not evidence: a dictionary or corpus setup failure also ends quickly.
-      if (result.status !== 0 || executedUnits < 1)
-        throw new FuzzVerificationError(`${target.name} exited ${result.status} after ${executedUnits} verified executions; retained inputs and logs are in ${evidence}.`);
+      if (result.status !== 0 || executedUnits < 1) {
+        failedTargets.push(`${target.name} exited ${result.status} after ${executedUnits} verified executions`);
+        console.log(`${target.name}: FAILED, exit ${result.status}, ${executedUnits} executions; evidence ${join(evidence, target.name)}`);
+        continue;
+      }
       console.log(`${target.name}: ${executedUnits} executions, exit 0; evidence ${join(evidence, target.name)}`);
     }
+    if (failedTargets.length > 0)
+      throw new FuzzVerificationError(`${failedTargets.join('; ')}; retained inputs and logs are in ${evidence}.`);
   } finally {
     for (const container of containers)
       execute({ command: 'podman', args: ['rm', '--force', container], capture: true });
