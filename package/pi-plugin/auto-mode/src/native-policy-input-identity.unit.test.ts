@@ -101,7 +101,7 @@ await describe({
   children: [
     it({
       name: 'reads and revalidates the original native capability without replacing its binding',
-      fn: function originalCapability() {
+      fn: async function originalCapability() {
         /** The native loader has already published its real current binding. */
         const binding = invoke({ namespace: policy, name: 'readPolicyInput', argument: input });
         assert.ok((binding !== null) && ((typeof binding) === 'object'));
@@ -120,7 +120,7 @@ await describe({
     ...readers.map(function readerCase(reader) {
       return it({
         name: `${reader.name} rejects counterfeit objects before invoking public property traps`,
-        fn: function counterfeitCapability() {
+        fn: async function counterfeitCapability() {
           /** Traps distinguish private ownership checks from public-property authentication. */
           const observations = { traps: 0 };
           /** Public property operations cannot establish ownership or leak a retained state. */
@@ -134,9 +134,11 @@ await describe({
               throw new Error('Counterfeit property membership trap ran');
             },
           });
-          for (const candidate of [undefined, null, false, '', [], {}, { '#state': {} }, { ...input }, Object.create(input), proxy]) {
+          /** Counterfeits remain unknown even when built-in prototype construction returns any. */
+          const candidates: readonly unknown[] = [undefined, null, false, '', [], {}, { '#state': {} }, { ...input }, Object.create(input), proxy];
+          for (const candidate of candidates) {
             /** Aggregates preserve the public function's original argument shape. */
-            const argument = reader.field === undefined ? candidate : { input: candidate, [reader.field]: undefined };
+            const argument: unknown = reader.field === undefined ? candidate : { input: candidate, [reader.field]: undefined };
             assert.throws(function rejectCounterfeit() {
               invoke({ namespace: policy, name: reader.name, argument });
             }, { name: 'PolicySlotBindingError', message: 'Requires original policy-input capability' });
@@ -152,9 +154,11 @@ await describe({
           /** The genuine descriptor provides the exact getter or method a consumer can borrow. */
           const descriptor = member({ capability: input, name });
           /** Descriptor values remain untrusted until their callable kind is checked. */
-          const operation: unknown = descriptor.get ?? descriptor.value;
+          const operation: unknown = Reflect.get(descriptor, 'get') ?? Reflect.get(descriptor, 'value');
           assert.ok((typeof operation) === 'function');
-          await Array.fromAsync([{}, { ...input }, Object.create(input), new Proxy(input, {})], async function rejectReceiver(receiver) {
+          /** Receiver identity remains uninspected until the built operation authenticates it. */
+          const receivers: readonly unknown[] = [{}, { ...input }, Object.create(input), new Proxy(input, {})];
+          await Array.fromAsync(receivers, async function rejectReceiver(receiver) {
             await assert.rejects(async function invokeBorrowedMember() {
               /** A copied operation receives only the counterfeit receiver and an invalid binding. */
               const result: unknown = Reflect.apply(operation, receiver, [{}]);
