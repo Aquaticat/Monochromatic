@@ -1345,9 +1345,9 @@ Remaining independently verifiable work is explicit:
   `quit`, `states`, and `visual` session bodies with an explicit research scheduler.
   Preserve the default owner invocation failure and identify the scheduler seam.
   Retain source-file hashes, actual outcomes, PNG receipts, and independent cleanup.
-- Packed installation: finish immutable archive restoration, supported pnpm workspace configuration,
-  a missing-dependency negative control, proper isolated install,
-  and actual installed library, CLI, and bundler consumers.
+- Packed installation: completed as a composite observation on 2026-10-18.
+  The qualified packed-consumer section records 25 runtime imports, five functional controls,
+  and a separate positive/negative compiler consumer of the types-only package.
 - Current cross-OS controls: run finite public GitHub macOS and Windows desktop and host owners
   after desktop and packed work, sequentially, without deployment or provider calls.
   Compare source, task, dependency, tool, and actual working-byte identities before historical carry-forward.
@@ -1384,3 +1384,62 @@ These are list-rate planning proxies and conservative reservations,
 not invoices.
 Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
 No account-wide usage or invoice endpoint is queried.
+
+## Qualified packed consumers and current finite queue
+
+Run `39134064943` completed the proper isolated pnpm install and 25 runtime namespace imports,
+plus four functional library/bundler consumers.
+Its research harness separately requested unsupported CLI `--help` and incorrectly imported a types-only package.
+Neither finding is an application assertion failure.
+Run `39135404757` is a distinct harness activation failure:
+its bootstrap restored the older build/pack plan instead of the intended consumer-only plan.
+The decoded plan/task equality and actual bootstrap preflight corrected that activation boundary.
+
+Run `39136177894`, harness `1aab4fb2eb81e8288cea56e800a0ae15fb179dfb`,
+then completed the same 25 runtime imports and all five functional controls.
+The real installed mutation-test bin reported two mutants and selected `src/value.unit.test.ts`
+with `Ignored by suppression: 0`; dry-run executes neither mutants nor fixture tests.
+The other controls cover caught-value shapes, unary/binary behavior, asynchronous positive/negative paths,
+and a real static/dynamic text-import bundler consumer producing a 718-byte executed bundle.
+The job remains red because the harness also tried a runtime import of the types-only ownership marker.
+Its declared `types`-only export correctly rejects runtime loading with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+A separate proper install of that exact producer archive in local bounded containers
+qualifies both exported marker types with TypeScript `7.0.2` and Node `26.12.0`:
+the valid consumer compiles, the invalid field rejects with `TS2322`,
+and the runtime-negative control confirms the declared rejection.
+The negative compiler returns status 1; the initial local harness incorrectly expected status 2.
+These local controls use 2 CPU, 2 GiB, 256 PIDs, no network, and read-only input mounts;
+no owned container remains.
+They are local consumer evidence, not an additional Depot allocation.
+Raw packed logs also retain a logger file-sink verification diagnostic;
+the functional checks do not claim complete logger coverage.
+
+The [sealed packed receipts](../audit/depot-complete-coverage-packed-consumer-receipts.json.gz)
+retain the 26 exact producer archives, plans, run boundaries, and actual consumer results.
+Compressed evidence bytes: `1701669`; SHA-256:
+`3a050fdd4e1dc025c0cff57efd77f056504b7fada677e25158f6b50b233a467b`.
+Git identities, materialized source hashes, packed archive hashes, and installed resolution paths remain separate.
+
+The original campaign now has 42 completed owned job rows, USD1.488 GitHub rounded-minute proxies,
+and USD2.88 native conservative maxima, totaling USD4.368 against USD5.
+No coverage cloud job is live at this checkpoint.
+The remaining desktop maximum USD0.36 brings the planned bound to USD4.728.
+The parent-authorized USD6 fallback remains unused.
+These are source-bound list-rate planning models, not invoice amounts.
+
+The remaining independent queue is:
+
+- Desktop: execute the six prepared remaining authored session bodies,
+  preserve the default-wide failure, inspect actual PNG captures, and verify independent cleanup.
+- Public macOS/Windows: execute frozen current-source desktop and logger/semantic/filesystem owners,
+  with sequential jobs, at most 30 minutes per job, and nominal public standard compute USD0.
+  Retain artifact/storage uncertainty and Windows MSVC ARM64/GNU context boundaries explicitly.
+- Depot macOS/Windows: retained historical host controls used standard GitHub labels,
+  so they do not qualify actual Depot host execution.
+  Prepare equivalent current-source `depot-macos-15` and `depot-windows-2025-4` controls,
+  each at most 20 minutes, with a separate USD1.92 reservation under the parent-admitted USD2 guard.
+  Developer Windows eligibility is separate from macOS availability through the active Startup trial.
+  No subscription changes are authorized.
+- Semantic manifest: complete feature/assertion ownership, actual versus import-only/compile-only consumers,
+  generator reach, cross-OS source/task/dependency matching, and explicit material gaps.
+- Durable notes: finish source-backed corrections, Markdown rendering, link checks, and sealed desktop evidence.
