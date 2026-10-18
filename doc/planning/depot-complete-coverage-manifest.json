@@ -221,10 +221,10 @@
     {
       "path": "depot-complete-coverage-harnesses.json.gz",
       "encoding": "gzip JSON",
-      "bytes": 50574,
-      "sha256": "89bf269ec5c277cd6f1711dd1bda310d5ce97edf64f2128c234633d67b1b2699",
-      "rawBytes": 301362,
-      "rawSha256": "1314a33f20cabcb15f14d0314088df3dd72ac9193d35d59c333c25b1ed313023"
+      "bytes": 115685,
+      "sha256": "5a6d9038c600711477afead2f7dc496b89c4d8c70f174fa3e0c00655e7036d4a",
+      "rawBytes": 589999,
+      "rawSha256": "50cd6a3df714ad8c0f116b7980885af16ea6c2951c0adb4b1ad040aaf43d4838"
     },
     {
       "path": "depot-complete-coverage-android-reproducibility.json.gz",
@@ -280,6 +280,14 @@
       "sha256": "4cdd02706562f9dc7d30db96cb41561374e793712b7c02bc3eb6e33bde4b5211",
       "rawBytes": 3801090,
       "rawSha256": "314691134ab341934cb9943e3b939b43bf7fde966911384ec3a15e10acc52999"
+    },
+    {
+      "path": "depot-complete-coverage-wg-companion-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 138936,
+      "sha256": "a31c47e47dcae8ea4619eb3c8b14e6eda24a67b4815b028b9976797a71344dae",
+      "rawBytes": 1908799,
+      "rawSha256": "cd4f8d02efd75167ea2a9898f32e99d95736602e4a236aff4e15741be2abf95a"
     }
   ],
   "execution": [
@@ -649,6 +657,27 @@
           "decoder": "Actual ImageMagick-producing command returned status -1; missing executable is not yet separately proven"
         }
       ]
+    },
+    {
+      "profile": "wg-companion",
+      "run": 39118628603,
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39118628603",
+      "workflowCommit": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "passedCommands": 44,
+      "failedCommands": 0,
+      "owningDefaultTasks": 1,
+      "repeatedCandidateFiles": 14,
+      "repeatReason": "Actual prerequisite release now supplied after the original missing-producer failure",
+      "consumerUid": 1001,
+      "actualSiblingLookupPositiveLine": "[info] [2026-10-18T10:18:07.518Z] [resolveApplicationExemptionCommand] [PASS] uses exact configured executable, rejects unavailable configured executable, resolves configured bare name through captured caller path, finds repository sibling release outside secure path (21ms)",
+      "producerRun": "lwp0vbb2vq",
+      "producerHarness": "3a7e85d395cb67a5d189224963782c9b45527c71",
+      "sourceFilesVerified": 23,
+      "binarySha256": "02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921",
+      "consumerExecutesElf": false,
+      "secretDeleted": true,
+      "exactSecretNameAbsent": true
     }
   ],
   "familySummary": {
@@ -9519,7 +9548,22 @@
       "apiDeclarationCount": 200,
       "importEdgeCount": 183,
       "resourceCandidateCount": 3,
-      "fullEvidence": "depot-complete-coverage-packages.json.gz"
+      "fullEvidence": "depot-complete-coverage-packages.json.gz",
+      "artifactConsumerEvidence": [
+        {
+          "producerTask": "//package/cli/wg-quicker-exempt:build",
+          "consumerTask": "//package/cli/wg-quicker:test:unit",
+          "sourceImplementation": "package/cli/wg-quicker/src/application-exemption-command.ts",
+          "sourceTest": "package/cli/wg-quicker/src/application-exemption-command.unit.test.ts",
+          "requiredArtifact": "package/cli/wg-quicker-exempt/target/release/wg-quicker-exempt",
+          "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+          "producerRun": "lwp0vbb2vq",
+          "consumerRun": 39118628603,
+          "binarySha256": "02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921",
+          "scope": "Actual unprivileged repository-sibling lookup; compiled helper execution occurs in the separate native producer, not this Node test",
+          "evidence": "depot-complete-coverage-wg-companion-receipts.json.gz"
+        }
+      ]
     },
     {
       "root": "package/cli/wg-quicker-exempt",
@@ -43065,5 +43109,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T10:11:49.375Z"
+  "latestEvidenceAt": "2026-10-18T10:27:12.592Z"
 }

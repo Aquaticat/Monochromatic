@@ -723,13 +723,32 @@ the root Mise lock,
 and the producer manifest hash.
 The producer exercised 15 ordinary Nextest cases;
 11 privileged ignored cases remain unexecuted.
-The 44-invocation `wg-companion` dispatch profile is prepared separately,
-so a fresh one-object signed GET can be downloaded before tool setup.
-Its URL is scoped to one exact owned repository Actions secret and one download step.
-The secret will be deleted after terminal output and artifacts are retained,
-then its exact-name absence will be checked.
-No URL is a dispatch input,
-and no ELF was committed or pushed.
+The separate 44-invocation `wg-companion` profile completed successfully as run `39118628603`,
+using the same immutable `3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2` harness.
+Its UID `1001` worker passed all 44 owning invocations.
+The exact `finds repository sibling release outside secure path` case appears in the passing receipt.
+All 14 owning-template candidate file hashes matched before execution.
+The download admitted the original ZIP,
+the producer's 23 source files,
+root Mise lock,
+manifest,
+and exact ELF hash.
+This closes the missing-producer lookup boundary without changing source.
+The Node case resolves the real ELF path;
+it does not execute that helper or exercise privileged BPF behavior.
+The separate native producer's real usage/zero-mark controls remain distinct evidence.
+The one-object signed URL was scoped to one exact owned repository Actions secret and one download step.
+Terminal logs and normal artifacts were retained and verified before secret deletion;
+the final exact-name API probe returned HTTP `404`.
+The signed URL was never a dispatch input.
+No ELF,
+ELF-bearing ZIP,
+or signed URL was committed.
+The public compressed JSON receipt retains admission,
+the actual passing line,
+source provenance,
+artifact digests,
+and secret cleanup metadata.
 The proposed untracked Git-transport copies were removed before publication.
 
 The active queue remains independently verifiable:
@@ -774,8 +793,8 @@ The active queue remains independently verifiable:
 ## Current next action
 
 Retain terminal output from guarded host/default run `39118106788`.
-Complete the short-lived companion download and actual sibling-release consumer,
-then remove and verify the exact owned secret.
+The actual sibling-release consumer and exact owned-secret cleanup are complete;
+retain that passing boundary alongside the original missing-producer failure.
 While cloud commands run,
 qualify the desktop lookup/decoder prerequisites,
 execute the isolated file-enforcer Git-config control,
