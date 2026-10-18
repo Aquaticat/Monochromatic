@@ -158,7 +158,7 @@ The earlier Node-path failure and operation with an unresolved read timeout rema
 The command-log query's empty response does not prove complete absence of execution logs.
 Fresh terminal VM reads prove the observed stop state,
 without establishing a billing-release instant
-([SDK and platform evidence](depot-platform-capability-research.md)).
+([SDK and platform evidence](depot-platform-surface-audit.md)).
 
 ## Reliability and source failures
 
@@ -187,12 +187,13 @@ the final derived image passed all ten actual service consumers
 ([prerequisite source and run controls](../audit/depot-container-prerequisites-2026-10-18.evidence.json),
 [retained executable image delta](../troubleshooting/github-actions-container-node-runtime-prerequisites.md)).
 
-The built-in Semgrep 1.34 scan missed the controlled missing-`USER` and non-JSON `CMD` cases.
-The same retained rule bytes executed by Semgrep 1.181 detected both,
+The built-in Semgrep 1.34.1 scan missed the controlled missing-`USER` case,
+and its `CMD $...VARS` pattern did not match the exercised JSON-form `CMD`.
+The same retained rule bytes executed by Semgrep 1.181.0 detected both,
 while the Hadolint root/non-root controls behaved as expected.
 This qualifies the replacement scan execution;
 it does not establish a repaired Depot built-in scanner
-([scanner and rule-source evidence](depot-platform-capability-research.md)).
+([scanner and rule-source evidence](depot-platform-surface-audit.md)).
 
 Every measured provider allowed the finite seventy-second writer past a sixty-second step deadline.
 Only native Depot's observation proves completion after the executor advanced to its next step;
