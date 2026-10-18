@@ -91,7 +91,7 @@ fn default_ok_stops_the_search() {
         opened.push(attempt.clone());
         return inner(attempt)
     })
-    .unwrap();
+    .expect("a working default device is selected");
     assert_eq!(selected.attempt, Attempt::MesaDefault);
     assert_eq!(selected.value, "default");
     assert!(selected.failures.is_empty());
@@ -106,7 +106,7 @@ fn default_fails_and_another_node_works() {
         &plan(&GpuChoice::Auto, &two_nodes()),
         outcomes(Err("permission denied"), [Err("no such device"), Ok("d129")], Ok("software")),
     )
-    .unwrap();
+    .expect("the first render node that opens is selected after the default fails");
     assert_eq!(selected.attempt, Attempt::RenderNode(PathBuf::from("/dev/dri/renderD129")));
     assert_eq!(selected.value, "d129");
     assert_eq!(
@@ -129,7 +129,7 @@ fn all_gpus_fail_then_software() {
         &plan(&GpuChoice::Auto, &two_nodes()),
         outcomes(Err("a"), [Err("b"), Err("c")], Ok("software")),
     )
-    .unwrap();
+    .expect("the software device is selected after every GPU fails");
     assert_eq!(selected.attempt, Attempt::Software);
     assert_eq!(selected.failures.len(), 3);
 }

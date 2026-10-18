@@ -22,7 +22,7 @@ fn percent_accepts_integer_widths_only() {
         (Value::from("50"), None),
         (Value::Bool(true), None),
     ] {
-        let properties = HashMap::from([("percent".to_string(), owned(value.try_clone().unwrap()))]);
+        let properties = HashMap::from([("percent".to_string(), owned(value.try_clone().expect("cloning a value without file descriptors succeeds")))]);
         assert_eq!(percent_property(&properties, "percent"), expected, "{value:?}");
     }
     assert_eq!(percent_property(&HashMap::new(), "percent"), None);

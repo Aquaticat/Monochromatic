@@ -18,6 +18,13 @@ fn args(values: &[&str]) -> Vec<String> {
     return result;
 }
 
+/// Parse arguments the parser must accept,
+///  failing the test with the parser's own message when it rejects them.
+fn parsed(values: &[&str]) -> Config {
+    // unwrap_or_else carries the rejected arguments into the failure message.
+    return parse_args(&args(values)).unwrap_or_else(|error| panic!("parse_args rejected {values:?}: {error}"));
+}
+
 /// Extract clap's typed error without requiring Config to implement Debug.
 fn error_kind(values: &[&str]) -> clap::error::ErrorKind {
     // What: err extracts failure; expect terminates the test if parsing succeeded.
@@ -45,7 +52,7 @@ fn help_is_not_an_application_error() {
 /// Default dimensions and optional values match the former parser.
 #[test]
 fn defaults_are_preserved() {
-    let config = parse_args(&args(&["app"])).unwrap();
+    let config = parsed(&["app"]);
     assert_eq!((config.width, config.height), (1280, 720));
     assert_eq!(config.child_command, ["app"]);
     assert_eq!(config.color_scheme, None);
@@ -61,9 +68,9 @@ fn defaults_are_preserved() {
 /// The key repeat pair is configurable and bounded.
 #[test]
 fn repeat_options_set_and_bound_the_announced_pair() {
-    let config = parse_args(&args(&["--repeat-rate", "30", "--repeat-delay=600", "app"])).unwrap();
+    let config = parsed(&["--repeat-rate", "30", "--repeat-delay=600", "app"]);
     assert_eq!((config.repeat_rate, config.repeat_delay), (30, 600));
-    let off = parse_args(&args(&["--repeat-rate", "0", "app"])).unwrap();
+    let off = parsed(&["--repeat-rate", "0", "app"]);
     assert_eq!(off.repeat_rate, 0);
     for bad in [["--repeat-rate", "1001"], ["--repeat-rate", "-1"], ["--repeat-delay", "10001"], ["--repeat-delay", "soon"]] {
         let mut argv = bad.to_vec();
@@ -75,13 +82,13 @@ fn repeat_options_set_and_bound_the_announced_pair() {
 /// The startup scale accepts the runtime verb's values in both option spellings.
 #[test]
 fn scale_option_accepts_integer_and_fractional_values() {
-    let fractional = parse_args(&args(&["--scale", "1.25", "app"])).unwrap();
+    let fractional = parsed(&["--scale", "1.25", "app"]);
     assert_eq!(fractional.scale.per_120(), 150);
-    let joined = parse_args(&args(&["--scale=2", "--size", "800x600", "app"])).unwrap();
+    let joined = parsed(&["--scale=2", "--size", "800x600", "app"]);
     assert_eq!(joined.scale.per_120(), 240);
     // The size stays logical; the scale does not multiply it here.
     assert_eq!((joined.width, joined.height), (800, 600));
-    let last = parse_args(&args(&["--scale", "2", "--scale", "1.5", "app"])).unwrap();
+    let last = parsed(&["--scale", "2", "--scale", "1.5", "app"]);
     assert_eq!(last.scale.per_120(), 180);
 }
 
@@ -101,12 +108,12 @@ fn invalid_scales_are_rejected() {
 /// Parent options retain their accepted values and existing field types.
 #[test]
 fn all_parent_options_are_preserved() {
-    let config = parse_args(&args(&[
+    let config = parsed(&[
         "--socket", "a socket.sock", "--size", "800X600",
         "--color-scheme", "dark", "--isolate",
         "--app-cpu-quota", "200", "--app-cpu-weight", "20",
         "--", "app", "a file.txt"
-    ])).unwrap();
+    ]);
     assert_eq!(config.control_socket, Some(PathBuf::from("a socket.sock")));
     assert_eq!((config.width, config.height), (800, 600));
     assert_eq!(config.color_scheme, Some(ColorSchemePreference::Dark));
@@ -119,8 +126,8 @@ fn all_parent_options_are_preserved() {
 /// Both documented appearance values remain accepted.
 #[test]
 fn color_scheme_flag_accepts_supported_values() {
-    let dark = parse_args(&args(&["--color-scheme", "dark", "--", "app"])).unwrap();
-    let light = parse_args(&args(&["--color-scheme", "light", "--", "app"])).unwrap();
+    let dark = parsed(&["--color-scheme", "dark", "--", "app"]);
+    let light = parsed(&["--color-scheme", "light", "--", "app"]);
     assert_eq!(dark.color_scheme, Some(ColorSchemePreference::Dark));
     assert_eq!(light.color_scheme, Some(ColorSchemePreference::Light));
 }
@@ -131,7 +138,7 @@ fn child_options_are_not_parent_options() {
     for prefix in [vec!["app"], vec!["--", "app"]] {
         let mut input = prefix;
         input.extend(["--help", "--size", "999x999", "--", "-h"]);
-        let config = parse_args(&args(&input)).unwrap();
+        let config = parsed(&input);
         assert_eq!(config.child_command, ["app", "--help", "--size", "999x999", "--", "-h"]);
         assert_eq!((config.width, config.height), (1280, 720));
     }
@@ -140,7 +147,7 @@ fn child_options_are_not_parent_options() {
 /// An explicit separator permits an executable name beginning with a hyphen.
 #[test]
 fn separator_protects_child_executable_name() {
-    let config = parse_args(&args(&["--", "--odd-command", "--help"])).unwrap();
+    let config = parsed(&["--", "--odd-command", "--help"]);
     assert_eq!(config.child_command, ["--odd-command", "--help"]);
 }
 
@@ -153,14 +160,14 @@ fn unknown_parent_option_is_rejected() {
 /// Repeated parent options keep the former parser's last-value behavior.
 #[test]
 fn later_parent_values_override_earlier_values() {
-    let config = parse_args(&args(&["--size", "800x600", "--size", "900x700", "app"])).unwrap();
+    let config = parsed(&["--size", "800x600", "--size", "900x700", "app"]);
     assert_eq!((config.width, config.height), (900, 700));
 }
 
 /// Standard joined values preserve spaces and flag-looking path values.
 #[test]
 fn joined_parent_values_are_supported() {
-    let config = parse_args(&args(&["--size=900x700", "--socket=--a socket", "app"])).unwrap();
+    let config = parsed(&["--size=900x700", "--socket=--a socket", "app"]);
     assert_eq!((config.width, config.height), (900, 700));
     assert_eq!(config.control_socket, Some(PathBuf::from("--a socket")));
     assert!(parse_args(&args(&["--size=", "app"])).is_err());
@@ -200,8 +207,8 @@ fn invalid_option_values_are_rejected() {
 /// without a color scheme.
 #[test]
 fn launcher_log_flag_is_off_by_default_and_parses_alone() {
-    assert!(!parse_args(&args(&["app"])).unwrap().launcher_log);
-    let config = parse_args(&args(&["--launcher-log", "--", "app"])).unwrap();
+    assert!(!parsed(&["app"]).launcher_log);
+    let config = parsed(&["--launcher-log", "--", "app"]);
     assert!(config.launcher_log);
     assert_eq!(config.color_scheme, None);
     assert_eq!(config.child_command, ["app"]);
@@ -210,16 +217,16 @@ fn launcher_log_flag_is_off_by_default_and_parses_alone() {
 /// The notification mode is `none` by default and takes exactly the three documented values.
 #[test]
 fn notifications_option_defaults_to_none_and_takes_three_values() {
-    assert_eq!(parse_args(&args(&["app"])).unwrap().notifications, NotificationMode::None);
+    assert_eq!(parsed(&["app"]).notifications, NotificationMode::None);
     for (value, mode) in [
         ("none", NotificationMode::None),
         ("freedesktop", NotificationMode::Freedesktop),
         ("kde", NotificationMode::Kde),
     ] {
-        let config = parse_args(&args(&["--notifications", value, "--", "app"])).unwrap();
+        let config = parsed(&["--notifications", value, "--", "app"]);
         assert_eq!(config.notifications, mode, "{value}");
         let joined = format!("--notifications={value}");
-        assert_eq!(parse_args(&args(&[&joined, "app"])).unwrap().notifications, mode, "{joined}");
+        assert_eq!(parsed(&[&joined, "app"]).notifications, mode, "{joined}");
     }
     for bad in ["", "plasma", "KDE", "freedesktop,kde"] {
         let error = parse_args(&args(&["--notifications", bad, "app"])).err().expect("expected validation error");
@@ -230,8 +237,8 @@ fn notifications_option_defaults_to_none_and_takes_three_values() {
 /// The accent color is absent by default and takes six hexadecimal digits only.
 #[test]
 fn accent_color_option_takes_six_hex_digits() {
-    assert_eq!(parse_args(&args(&["app"])).unwrap().accent_color, None);
-    let config = parse_args(&args(&["--accent-color", "3584e4", "--", "app"])).unwrap();
+    assert_eq!(parsed(&["app"]).accent_color, None);
+    let config = parsed(&["--accent-color", "3584e4", "--", "app"]);
     assert_eq!(config.accent_color.map(|color| return color.to_string()), Some("3584E4".to_string()));
     assert_eq!(config.color_scheme, None);
     for bad in ["", "#3584E4", "3584E", "3584E4FF", "blue"] {
@@ -245,9 +252,9 @@ fn accent_color_option_takes_six_hex_digits() {
 /// before the child command.
 #[test]
 fn headless_flag_is_off_by_default_and_opt_in() {
-    assert!(!parse_args(&args(&["app"])).unwrap().headless);
-    assert!(!parse_args(&args(&["--size", "800x600", "--", "app"])).unwrap().headless);
-    let config = parse_args(&args(&["--headless", "--size", "800x600", "app"])).unwrap();
+    assert!(!parsed(&["app"]).headless);
+    assert!(!parsed(&["--size", "800x600", "--", "app"]).headless);
+    let config = parsed(&["--headless", "--size", "800x600", "app"]);
     assert!(config.headless);
     assert_eq!(config.child_command, ["app"]);
 }
@@ -256,13 +263,13 @@ fn headless_flag_is_off_by_default_and_opt_in() {
 /// with or without the separator.
 #[test]
 fn headless_after_the_child_command_is_forwarded_to_the_child() {
-    let config = parse_args(&args(&["app", "--headless"])).unwrap();
+    let config = parsed(&["app", "--headless"]);
     assert!(!config.headless);
     assert_eq!(config.child_command, ["app", "--headless"]);
-    let separated = parse_args(&args(&["--", "app", "--headless"])).unwrap();
+    let separated = parsed(&["--", "app", "--headless"]);
     assert!(!separated.headless);
     assert_eq!(separated.child_command, ["app", "--headless"]);
-    let both = parse_args(&args(&["--headless", "--", "app", "--headless"])).unwrap();
+    let both = parsed(&["--headless", "--", "app", "--headless"]);
     assert!(both.headless);
     assert_eq!(both.child_command, ["app", "--headless"]);
 }
@@ -271,7 +278,7 @@ fn headless_after_the_child_command_is_forwarded_to_the_child() {
 /// like every other parent option.
 #[test]
 fn new_options_stop_at_the_child_command() {
-    let config = parse_args(&args(&["--notifications", "kde", "app", "--notifications", "none"])).unwrap();
+    let config = parsed(&["--notifications", "kde", "app", "--notifications", "none"]);
     assert_eq!(config.notifications, NotificationMode::Kde);
     assert_eq!(config.child_command, ["app", "--notifications", "none"]);
 }
@@ -282,10 +289,10 @@ fn new_options_stop_at_the_child_command() {
 #[test]
 fn headless_without_gpu_selects_auto() {
     use crate::gpu_choice::GpuChoice;
-    let config = parse_args(&args(&["--headless", "app"])).unwrap();
+    let config = parsed(&["--headless", "app"]);
     assert_eq!(config.gpu, GpuChoice::Auto);
     assert!(!config.list_gpus);
-    assert_eq!(parse_args(&args(&["app"])).unwrap().gpu, GpuChoice::Auto);
+    assert_eq!(parsed(&["app"]).gpu, GpuChoice::Auto);
 }
 
 /// `--gpu` takes `auto`,
@@ -296,11 +303,11 @@ fn headless_without_gpu_selects_auto() {
 fn gpu_option_parses_with_headless() {
     use crate::gpu_choice::GpuChoice;
     use std::path::PathBuf;
-    let node = parse_args(&args(&["--headless", "--gpu", "/dev/dri/renderD128", "--", "app"])).unwrap();
+    let node = parsed(&["--headless", "--gpu", "/dev/dri/renderD128", "--", "app"]);
     assert_eq!(node.gpu, GpuChoice::RenderNode(PathBuf::from("/dev/dri/renderD128")));
-    assert_eq!(parse_args(&args(&["--gpu", "software", "--headless", "app"])).unwrap().gpu, GpuChoice::Software);
-    assert_eq!(parse_args(&args(&["--headless", "--gpu", "auto", "app"])).unwrap().gpu, GpuChoice::Auto);
-    let forwarded = parse_args(&args(&["--headless", "app", "--gpu", "software"])).unwrap();
+    assert_eq!(parsed(&["--gpu", "software", "--headless", "app"]).gpu, GpuChoice::Software);
+    assert_eq!(parsed(&["--headless", "--gpu", "auto", "app"]).gpu, GpuChoice::Auto);
+    let forwarded = parsed(&["--headless", "app", "--gpu", "software"]);
     assert_eq!(forwarded.gpu, GpuChoice::Auto);
     assert_eq!(forwarded.child_command, ["app", "--gpu", "software"]);
 }
@@ -331,7 +338,7 @@ fn gpu_option_without_headless_is_an_error_naming_headless() {
 /// `--list-gpus` needs no client command and conflicts with a command or `--gpu`.
 #[test]
 fn list_gpus_needs_no_command() {
-    let config = parse_args(&args(&["--list-gpus"])).unwrap();
+    let config = parsed(&["--list-gpus"]);
     assert!(config.list_gpus);
     assert!(config.child_command.is_empty());
     assert_eq!(error_kind(&["--list-gpus", "app"]), clap::error::ErrorKind::ArgumentConflict);
@@ -339,7 +346,7 @@ fn list_gpus_needs_no_command() {
         error_kind(&["--list-gpus", "--headless", "--gpu", "software"]),
         clap::error::ErrorKind::ArgumentConflict,
     );
-    assert!(!parse_args(&args(&["app"])).unwrap().list_gpus);
+    assert!(!parsed(&["app"]).list_gpus);
 }
 
 /// A missing command is still an error without `--list-gpus`.

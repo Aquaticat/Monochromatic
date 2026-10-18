@@ -163,39 +163,48 @@ struct PortalSettings {
     served_accent: Arc<AtomicU32>,
 }
 
-/// Implements XDG Settings methods consumed by Slint and other toolkits.
-#[zbus::interface(name = "org.freedesktop.portal.Settings")]
-impl PortalSettings {
-    /// Serves Slint's `ReadOne` compatibility method.
-    #[zbus(name = "ReadOne")]
-    fn read_one(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
-        return self.read_setting(namespace, key);
-    }
-
-    /// Serves standard XDG portal `Read` method.
-    #[zbus(name = "Read")]
-    fn read(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
-        return self.read_setting(namespace, key);
-    }
-
-    /// Serves standard XDG portal `ReadAll` method for appearance consumers.
-    #[zbus(name = "ReadAll")]
-    fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, HashMap<String, OwnedValue>> {
-        if !namespaces_match_appearance(&namespaces) {
-            return HashMap::new();
+// The zbus::interface expansion below calls Result::unwrap, which the repository clippy.toml bans;
+// the allow covers only this block. The reason is in
+// doc/troubleshooting/zbus-interface-macro-clippy-disallowed-unwrap.md.
+#[allow(
+    clippy::disallowed_methods,
+    reason = "zbus::interface expands to writeln!(..).unwrap() in its generated introspection method"
+)]
+const _: () = {
+    /// Implements XDG Settings methods consumed by Slint and other toolkits.
+    #[zbus::interface(name = "org.freedesktop.portal.Settings")]
+    impl PortalSettings {
+        /// Serves Slint's `ReadOne` compatibility method.
+        #[zbus(name = "ReadOne")]
+        fn read_one(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
+            return self.read_setting(namespace, key);
         }
-        let mut appearance = HashMap::new();
-        for key in [COLOR_SCHEME_KEY, ACCENT_COLOR_KEY] {
-            if let Ok(value) = self.read_setting(APPEARANCE_NAMESPACE, key) {
-                appearance.insert(key.to_owned(), value);
+
+        /// Serves standard XDG portal `Read` method.
+        #[zbus(name = "Read")]
+        fn read(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
+            return self.read_setting(namespace, key);
+        }
+
+        /// Serves standard XDG portal `ReadAll` method for appearance consumers.
+        #[zbus(name = "ReadAll")]
+        fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, HashMap<String, OwnedValue>> {
+            if !namespaces_match_appearance(&namespaces) {
+                return HashMap::new();
             }
+            let mut appearance = HashMap::new();
+            for key in [COLOR_SCHEME_KEY, ACCENT_COLOR_KEY] {
+                if let Ok(value) = self.read_setting(APPEARANCE_NAMESPACE, key) {
+                    appearance.insert(key.to_owned(), value);
+                }
+            }
+            if appearance.is_empty() {
+                return HashMap::new();
+            }
+            return HashMap::from([(APPEARANCE_NAMESPACE.to_owned(), appearance)]);
         }
-        if appearance.is_empty() {
-            return HashMap::new();
-        }
-        return HashMap::from([(APPEARANCE_NAMESPACE.to_owned(), appearance)]);
     }
-}
+};
 
 /// Shares setting lookup between standard and compatibility methods.
 impl PortalSettings {

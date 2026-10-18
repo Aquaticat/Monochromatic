@@ -148,7 +148,7 @@ fn lookalike_verbs_are_unknown_commands() {
 /// The accent verb takes exactly one six-digit color and nothing else.
 #[test]
 fn accent_color_verb_parses_one_color() {
-    let expected = AccentColor::parse("3584e4").unwrap();
+    let expected = AccentColor::parse("3584e4").expect("3584e4 is a valid accent color");
     assert_eq!(parse_command("accent-color 3584E4"), Ok(Command::AccentColor(expected)));
     assert_eq!(parse_command("accent-color \t 3584e4\r\n"), Ok(Command::AccentColor(expected)));
     for command in [
