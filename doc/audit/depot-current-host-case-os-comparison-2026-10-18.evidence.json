@@ -288,7 +288,8 @@
     "originalProviderArchivesRemainPrivate": true,
     "scope": "Exactly the selected receipt members, not a universal secret or media inspection claim.",
     "derivedNormalizedViewCount": 312,
-    "originalTextBytesFieldMeaning": "Sum of privately hashed original member sizes; publishedText fields are derived normalized views, not a claim to embed original text bytes."
+    "originalTextBytesFieldMeaning": "Sum of privately hashed original member sizes; publishedText fields are derived normalized views, not a claim to embed original text bytes.",
+    "originalSourceArchivePreservedAtOriginalPath": true
   },
   "qualificationContainer": {
     "cpu": 2,
@@ -297,5 +298,7 @@
     "secondsCap": 120,
     "network": "none",
     "containerAbsent": true
-  }
+  },
+  "sourceArchivePath": "doc/audit/depot-current-host-owner-complete-2026-10-18.evidence.json.gz",
+  "archivePath": "doc/audit/depot-current-host-owner-comparison-2026-10-18.evidence.json.gz"
 }
