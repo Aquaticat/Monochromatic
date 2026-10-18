@@ -834,6 +834,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bundle 8 cases). Test suites on the branch: `test` 783, `test:native` 197, `test:language` 379, `test:syntax` 64,
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
+  - Queued work from the owner's requests of 2026-10-18 (answers through the question tool):
+    the IDE bug "Source viewport 1354x12548 exceeds the 64 MiB raster limit" on a very tall window (screenshot: blank
+    text area, line numbers and minimap drawn) is being fixed by an agent on branch `fix/ide-tall-window-tile`
+    (worktree `.claude/worktrees/ide-tall-tile`); the owner wants the failure to degrade, not blank the text, and the
+    minimap to stay crisp, never replaced by rectangles. After that lands, the minimap is redesigned: the owner chose
+    "downscale the real rendering", so the minimap becomes merely a zoomed-out reflection of the main window (the
+    window's own painted tiles with selection, find matches, diagnostics and virtual rows, shrunk to the minimap width),
+    replacing the separate pixel-per-column builder of `src/minimap/` and `src/native/minimap_build.rs`; it must be
+    tiled and cached so that a long file stays fast and under the raster limit. The comment-directive engine of
+    `monochromatic-lint` (decision D2) is being built by an agent on branch `feat/lint-directives`.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
     worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
