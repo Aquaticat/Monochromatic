@@ -15,11 +15,25 @@ const receipts=join(owned,'receipts');mkdirSync(receipts,{recursive:true,mode:0o
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const deadline=Date.now()+10*60*1000;
 const environment={...process.env,CI:'true',MISE_AUTO_INSTALL:'false',MISE_LOCKED:'1',CARGO_INCREMENTAL:'0',CARGO_PROFILE_DEV_DEBUG:'0',CARGO_PROFILE_RELEASE_DEBUG:'0',CARGO_TARGET_DIR:join(owned,'cargo-target'),TMPDIR:join(owned,'temp')};
-delete environment.CARGO_BUILD_JOBS;delete environment.RUSTC_WRAPPER;
+delete environment.CARGO_BUILD_JOBS;delete environment.RUSTC_WRAPPER;delete environment.NEXTEST_TEST_THREADS;
 mkdirSync(environment.TMPDIR,{recursive:true,mode:0o700});
 const record={schemaVersion:1,startedAt:new Date().toISOString(),frozenSource:frozen,harness:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),architecture:process.arch,platform:process.platform,node:process.version,sourceFiles:[],commands:[],defaultCargoAndNextestConcurrency:true,scope:'Truepeak release all-features and p-limit-fork built runtime owner only; no broad suite or speed-ratio claim'};
 function save(){writeFileSync(join(receipts,'profile.json'),JSON.stringify(record,null,2)+'\n');}
-function run(name,command,args,{cwd=root,env=environment,allowFailure=false}={}){const started=Date.now();const stdout=openSync(join(receipts,name+'.stdout'),'wx',0o600);const stderr=openSync(join(receipts,name+'.stderr'),'wx',0o600);const row={name,command:[command,...args],cwd,startedAt:new Date().toISOString()};record.commands.push(row);save();let result;try{result=spawnSync(command,args,{cwd,env,stdio:['ignore',stdout,stderr],timeout:Math.max(1,Math.min(deadline-Date.now(),240000)),killSignal:'SIGKILL'});}finally{closeSync(stdout);closeSync(stderr);}const output=readFileSync(join(receipts,name+'.stdout'),'utf8')+readFileSync(join(receipts,name+'.stderr'),'utf8');Object.assign(row,{finishedAt:new Date().toISOString(),elapsedMilliseconds:Date.now()-started,status:result.status,signal:result.signal,error:result.error?{name:result.error.name,code:result.error.code,message:result.error.message}:null,outputSha256:hash(output)});save();console.log(JSON.stringify(row));if(result.error)throw result.error;if(!allowFailure)assert.equal(result.status,0,name+': '+output.slice(-3000));return {output,status:result.status};}
+function run(name,command,args,{cwd=root,env=environment,allowFailure=false}={}){
+const started=Date.now();
+const stdout=openSync(join(receipts,name+'.stdout'),'wx',0o600);
+const stderr=openSync(join(receipts,name+'.stderr'),'wx',0o600);
+const row={name,command:[command,...args],cwd,startedAt:new Date().toISOString()};record.commands.push(row);save();
+let result;
+try{result=spawnSync(command,args,{cwd,env,detached:true,stdio:['ignore',stdout,stderr],timeout:Math.max(1,Math.min(deadline-Date.now(),240000)),killSignal:'SIGKILL'});}
+finally{closeSync(stdout);closeSync(stderr);}
+if(result.error?.code==='ETIMEDOUT'&&result.pid){try{process.kill(-result.pid,'SIGKILL');row.timedOutOwnedProcessGroupKilled=true;}catch(error){row.processGroupCleanupError={code:error.code,message:error.message};if(error.code!=='ESRCH')throw error;}}
+const out=readFileSync(join(receipts,name+'.stdout'),'utf8');const err=readFileSync(join(receipts,name+'.stderr'),'utf8');const output=out+err;
+Object.assign(row,{finishedAt:new Date().toISOString(),elapsedMilliseconds:Date.now()-started,status:result.status,signal:result.signal,error:result.error?{name:result.error.name,code:result.error.code,message:result.error.message}:null,outputSha256:hash(output)});save();console.log(JSON.stringify(row));
+if(result.error)throw result.error;
+if(!allowFailure)assert.equal(result.status,0,name+': '+output.slice(-3000));
+return {output,stdout:out,stderr:err,status:result.status};
+}
 function tool(name,args){return run(name,'mise',['exec','rust','cargo:cargo-nextest','--',...args],{cwd:join(root,'package/music-player/truepeak-core')});}
 function elf(path){const bytes=readFileSync(realpathSync(path));assert.equal(bytes.subarray(0,4).toString('hex'),'7f454c46');assert.equal(bytes[5],1);assert.equal(bytes.readUInt16LE(18),183);return {path,bytes:bytes.length,sha256:hash(bytes),elfMachine:183};}
 save();
@@ -28,7 +42,7 @@ assert.equal(process.platform,'linux');assert.equal(process.arch,'arm64');assert
 const tracked=execFileSync('git',['ls-tree','-r','--name-only',frozen,'--','package/music-player/truepeak-core','package/module/p-limit-fork','package/module/test','package/module/async-time','package/module/logger','mise.toml','mise.lock','pnpm-lock.yaml','pnpm-workspace.yaml','package.json'],{cwd:root,encoding:'utf8'}).trim().split('\n');
 record.sourceFiles=tracked.map(path=>({path,sha256:hash(readFileSync(join(root,path)))}));save();
 run('initial-source','git',['diff','--exit-code',frozen,'--','.',':!.depot']);
-run('kernel','uname',['--machine']);run('memory','cat',['/proc/meminfo']);run('processor-count','getconf',['_NPROCESSORS_ONLN']);
+run('kernel','uname',['--machine']);const memory=run('memory','cat',['/proc/meminfo']);const processors=run('processor-count','getconf',['_NPROCESSORS_ONLN']);assert.equal(Number(processors.stdout.trim()),8);const memBytes=Number(/^MemTotal:\s+(\d+)/mu.exec(memory.stdout)?.[1])*1024;assert(Number.isFinite(memBytes)&&memBytes>0&&memBytes<=32*1024**3);record.observedResources={cpus:Number(processors.stdout.trim()),memoryBytes:memBytes};save();
 record.nodeElf=elf(process.execPath);save();
 run('pnpm-version','pnpm',['--version']);
 run('frozen-package-install','pnpm',['install','--frozen-lockfile','--ignore-scripts']);
@@ -36,7 +50,7 @@ for(const [index,task] of ['//package/module/test:build','//package/module/logge
 const ts=run('ts-owner-unit','mise',['run','//package/module/p-limit-fork:test:unit']);
 record.ts={owningTask:'//package/module/p-limit-fork:test:unit',status:ts.status,matchedAmd64Run:'39105587003',expectedAmd64RuntimeDescribeGroups:11,individualCaseCountUnmeasured:true};save();
 const compiler=tool('compiler-version',['rustc','--version','--verbose']);assert(compiler.output.includes('5d8fec0669a64607db9ccbf663e7c23125bf4748'));assert(compiler.output.includes('host: aarch64-unknown-linux-gnu'));
-const compilerPath=run('compiler-path','mise',['which','rustc']).output.trim();record.compilerElf=elf(compilerPath);save();
+const compilerPath=run('compiler-path','mise',['which','rustc']).stdout.trim();record.compilerElf=elf(compilerPath);save();
 const nextest=tool('nextest-version',['cargo','nextest','--version']);assert(nextest.output.includes('0.9.148'));
 tool('locked-cargo-fetch',['cargo','fetch','--locked']);
 const home=join(owned,'home');mkdirSync(home,{mode:0o700});
