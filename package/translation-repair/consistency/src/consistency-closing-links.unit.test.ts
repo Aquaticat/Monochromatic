@@ -19,6 +19,7 @@ import {
   emphasisDelimitersOf,
   foldedLinksOf,
   foldWithOffsets,
+  locateWords,
   NO_FOLDED_LINKS,
 } from '../dist/final/node/index.mjs';
 
@@ -121,6 +122,67 @@ await describe({
           jointAt({ english: '"kit"[](u)[](v)\'s', at: 5, },),
           jointAt({ english: '"kit"[](u)[](v)\'s', at: 10, },),
         ],).toEqual([true, true, true, true,],);
+      },
+    },),
+
+    it({
+      name: 'COUNTS A LINK WITH A LABEL AS A CLOSING BRACKET ONLY WHEN ITS LABEL ENDS IN A CLOSING MARK: the destination of '
+        + '`[kit!](u)`, `[Kit.](u)` and `[kit ](u)` reads as no run of closing marks before the apostrophe, as the text a reader '
+        + 'sees (`kit!\'s`) reads, and `[kit)](u)\'s` keeps the joints of `kit)\'s`',
+      fn: async () => {
+        /**
+         The offsets at which a stand may end to lie inside a word, for each English.
+         */
+        const jointsOf = ['[kit!](u)\'s bowl', '[Kit.](u)\'s bowl', '[kit ](u)\'s bowl', '[kit)](u)\'s bowl',].map(
+          function jointsOfEnglish(english,): readonly number[] {
+            /**
+             The English in the fold.
+             */
+            const folded = foldWithOffsets({ text: english, },);
+            return [
+              ...closingJointsOf({
+                folded: folded.folded,
+                originals: folded.originals,
+                closing: emphasisDelimitersOf({ english, },).closing,
+                links: foldedLinksOf({
+                  english,
+                  folded,
+                },),
+              },),
+            ].toSorted(function ascending(
+              left,
+              right,
+            ): number {
+              return left - right;
+            },);
+          },
+        );
+        expect(jointsOf,).toEqual([[], [], [], [4, 5, 8, 9,],],);
+      },
+    },),
+
+    it({
+      name: 'CUTS A STAND THAT BEGINS AFTER THE APOSTROPHE OF A LINK WITH A LABEL ALIKE IN PLAIN TEXT AND IN THE LINK: `s bowl` '
+        + 'is no part of a longer word after `[kit!](u)\'`, `[Kit.](u)\'` or `[kit ](u)\'`, as after `kit!\'`, and is cut '
+        + 'after a label that ends in a closing mark, as after `kit)\'`',
+      fn: async () => {
+        /**
+         Each linked English and the English of the same text without the link.
+         */
+        const rows: readonly (readonly [string, string])[] = [
+          ['[kit!](u)\'s bowl', 'kit!\'s bowl',],
+          ['[Kit.](u)\'s bowl', 'Kit.\'s bowl',],
+          ['[kit ](u)\'s bowl', 'kit \'s bowl',],
+          ['[kit)](u)\'s bowl', 'kit)\'s bowl',],
+        ];
+        expect(rows.map(function linkedKind([linked,],): string {
+          return locateWords({ haystack: linked, words: 's bowl', },).kind;
+        },),).toEqual(rows.map(function plainKind([, plain,],): string {
+          return locateWords({ haystack: plain, words: 's bowl', },).kind;
+        },),);
+        expect(rows.map(function plainKind([, plain,],): string {
+          return locateWords({ haystack: plain, words: 's bowl', },).kind;
+        },),).toEqual(['once', 'once', 'once', 'none',],);
       },
     },),
 

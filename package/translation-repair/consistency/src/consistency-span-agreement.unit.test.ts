@@ -198,6 +198,7 @@ const GROUP_TWO_BALLOTS: readonly ConsistencyVoice[] = [
  @param voices - the ballots
  @param english - English of each place, in order
  @param quorum - quorum the gather closed on
+ @param framed - whether the group is a frame with a slot, a plain group by default
 
  @returns What the ballots come to
 
@@ -211,10 +212,12 @@ function countAgainst(
     voices,
     english,
     quorum,
+    framed = false,
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly english: readonly string[];
     readonly quorum: number;
+    readonly framed?: boolean;
   },
 ): ReturnType<typeof countConsistency> {
   return countConsistency({
@@ -225,9 +228,43 @@ function countAgainst(
         english: { kind: 'present' as const, text, },
       };
     },),
-    framed: false,
+    framed,
     quorum,
   },);
+}
+
+/**
+ Builds one ballot of a frame that chooses the first place and quotes one span of it with a slot beside it.
+
+ @param seat - seat that answered
+ @param quote - the span quoted
+ @param slot - the slot words given beside it
+
+ @returns The ballot
+
+ @example
+ ```ts
+ const voice = framedBallotOf({ seat: 'a', quote: 'cat naps in the sun', slot: 'naps', },);
+ ```
+ */
+function framedBallotOf(
+  {
+    seat,
+    quote,
+    slot,
+  }: {
+    readonly seat: string;
+    readonly quote: string;
+    readonly slot: string;
+  },
+): ConsistencyVoice {
+  return {
+    seat,
+    reason: 'The first place words it best.',
+    quotes: [{ label: 'OCCURRENCE 1', quote, slot, },],
+    choice: 'OCCURRENCE 1',
+    keep: [],
+  };
 }
 
 await describe({
@@ -398,6 +435,53 @@ await describe({
           label: 'OCCURRENCE 1',
         },);
         expect(candidates,).toEqual(['abcd', 'x🐈🐈',],);
+      },
+    },),
+    it({
+      name: 'COUNTS A SLOT GIVEN BESIDE ANY QUOTE THAT CONTAINS THE LOCATED WORDS, as the place is located by containment: '
+        + 'nested quotes Q1 (the big cat naps in the sun), Q2 (cat naps in the sun) and Q3 (cat naps) locate the place by Q2, '
+        + 'and the slot the two judges who quoted Q1 and Q2 gave agrees, two of three usable ballots',
+      fn: async () => {
+        const count = countAgainst({
+          voices: [
+            framedBallotOf({ seat: 'a', quote: 'the big cat naps in the sun', slot: 'naps', },),
+            framedBallotOf({ seat: 'b', quote: 'cat naps in the sun', slot: 'naps', },),
+            framedBallotOf({ seat: 'c', quote: 'cat naps', slot: 'cat', },),
+          ],
+          english: ['Today the big cat naps in the sun.', 'The kitten naps.',],
+          quorum: 3,
+          framed: true,
+        },);
+        expect(count.renderings[0],).toEqual({
+          kind: 'located',
+          quote: 'cat naps in the sun',
+          core: 'cat naps in the sun',
+          start: 14,
+          slot: 'naps',
+          slotStart: 4,
+        },);
+      },
+    },),
+    it({
+      name: 'COUNTS NO SLOT GIVEN BESIDE A QUOTE THAT DOES NOT CONTAIN THE LOCATED WORDS: the shorter quote Q3 (cat naps) is '
+        + 'not evidence for the slot of Q2 (cat naps in the sun), so one slot beside Q1 and two beside Q2 and Q3 agree on none',
+      fn: async () => {
+        const count = countAgainst({
+          voices: [
+            framedBallotOf({ seat: 'a', quote: 'the big cat naps in the sun', slot: 'naps', },),
+            framedBallotOf({ seat: 'b', quote: 'cat naps in the sun', slot: 'sun', },),
+            framedBallotOf({ seat: 'c', quote: 'cat naps', slot: 'sun', },),
+          ],
+          english: ['Today the big cat naps in the sun.', 'The kitten naps.',],
+          quorum: 3,
+          framed: true,
+        },);
+        expect(count.renderings[0],).toEqual({
+          kind: 'located',
+          quote: 'cat naps in the sun',
+          core: 'cat naps in the sun',
+          start: 14,
+        },);
       },
     },),
   ],

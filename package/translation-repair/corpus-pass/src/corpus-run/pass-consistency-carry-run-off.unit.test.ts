@@ -26,6 +26,7 @@ import {
   SEAT_OPENROUTER_ONLY_CHECKER,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { choose, } from '../../dist/final/node/index.mjs';
+import { promptUniqueClient, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   choosing,
   type SeatBehaviour,
@@ -132,6 +133,132 @@ await describe({
               edited: true,
             },);
             expect(scene.asked.length,).toBe(6,);
+          },
+        },),
+        it({
+          name: 'SENDS THE RUN-OFF A SHEET OF ITS OWN WHEN EVERY CANDIDATE IS A FINALIST: a three-way split makes all three '
+            + 'candidates finalists, and the run-off messages must differ from the first ask\'s so that a bench that replays '
+            + 'an identical sheet is asked a new question',
+          fn: async () => {
+            const scene = carryScene({
+              behave: function alwaysSplits({ seat, sheet, },): SeatBehaviour {
+                const candidates = candidateTextsOf({ sheet, },);
+                return choosing({
+                  choice: candidates[scene.context.judgeModelIds.indexOf(seat,) % candidates.length]?.label ?? '',
+                },);
+              },
+            },);
+            await choose({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: scene.unit,
+              offers: OFFERS,
+              findings: [],
+            },);
+            const [firstSheet, , , runOffSheet,] = scene.sheets;
+            expect({
+              asked: scene.sheets.length,
+              firstAsksAreAlike: new Set(scene.sheets.slice(0, 3,),).size,
+              runOffAsksAreAlike: new Set(scene.sheets.slice(3,),).size,
+              runOffDiffersFromFirst: runOffSheet !== firstSheet,
+            },).toEqual({
+              asked: 6,
+              firstAsksAreAlike: 1,
+              runOffAsksAreAlike: 1,
+              runOffDiffersFromFirst: true,
+            },);
+          },
+        },),
+        it({
+          name: 'BREAKS THE TIE OF A THREE-WAY SPLIT WHEN THE BENCH ANSWERS A NEW SHEET ANEW: seats that replay their ballot on an '
+            + 'identical sheet and choose the writer\'s paragraph on any other carry it, so the run-off decides',
+          fn: async () => {
+            /**
+             The ballot each seat gave to each sheet it has been shown.
+             */
+            const given = new Map<string, SeatBehaviour>();
+            const scene = carryScene({
+              behave: function replaysSameSheet({ seat, sheet, },): SeatBehaviour {
+                const key = `${seat}\n${sheet}`;
+                const earlier = given.get(key,);
+                if (earlier !== undefined)
+                  return earlier;
+                const candidates = candidateTextsOf({ sheet, },);
+                const ballot = (given.size < scene.context.judgeModelIds.length)
+                  ? choosing({
+                    choice: candidates[scene.context.judgeModelIds.indexOf(seat,) % candidates.length]?.label ?? '',
+                  },)
+                  : choosing({ choice: WRITER_LABEL, },);
+                given.set(
+                  key,
+                  ballot,
+                );
+                return ballot;
+              },
+            },);
+            const { carries, edits, } = await choose({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: scene.unit,
+              offers: OFFERS,
+              findings: [],
+            },);
+            expect({
+              decision: carries[0]?.decision,
+              runOffChoices: carries[0]?.runOff?.ballots.map(function choiceOf({ choice, },): string {
+                return choice;
+              },),
+              edited: edits.length > 0,
+            },).toEqual({
+              decision: { kind: 'chosen', label: WRITER_LABEL, },
+              runOffChoices: [WRITER_LABEL, WRITER_LABEL, WRITER_LABEL,],
+              edited: true,
+            },);
+          },
+        },),
+        it({
+          name: 'DOES NOT ANSWER THE RUN-OFF FROM THE FIRST ROUND\'S PAYLOADS: behind the client that replays a repeated model and '
+            + 'prompt, all three finalists of a three-way split are asked again and the provider is called for every seat twice',
+          fn: async () => {
+            const scene = carryScene({
+              behave: function splitsThenAgrees({ before, seat, sheet, },): SeatBehaviour {
+                const candidates = candidateTextsOf({ sheet, },);
+                return (before < scene.context.judgeModelIds.length)
+                  ? choosing({
+                    choice: candidates[scene.context.judgeModelIds.indexOf(seat,) % candidates.length]?.label ?? '',
+                  },)
+                  : choosing({ choice: WRITER_LABEL, },);
+              },
+            },);
+            const { client: scripted, } = scene.context;
+            const replaying = promptUniqueClient({
+              inner: {
+                ...scripted,
+                chatText: async function textOf(request,) {
+                  const outcome = await scripted.chatJson({
+                    ...request,
+                    validate: function acceptsAny(_value,): _value is unknown {
+                      return true;
+                    },
+                  },);
+                  return { text: ('rawText' in outcome) ? outcome.rawText : '', };
+                },
+              },
+            },);
+            const { carries, } = await choose({
+              context: { ...scene.context, client: replaying, },
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: scene.unit,
+              offers: OFFERS,
+              findings: [],
+            },);
+            expect({ decision: carries[0]?.decision, providerCalls: scene.asked.length, },).toEqual({
+              decision: { kind: 'chosen', label: WRITER_LABEL, },
+              providerCalls: 6,
+            },);
           },
         },),
         it({

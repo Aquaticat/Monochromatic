@@ -566,6 +566,52 @@ await describe({
           },
         },),
         it({
+          name: 'READS A LINK THAT SHOWS NOTHING AS THE CUT OF A WORD DOES: the apostrophe of `see [](u)\'kit here` starts a '
+            + 'word as the apostrophe of `see \'kit here` does, so it is joined to nothing and reads as the unlinked mark reads',
+          fn: async () => {
+            /**
+             The English with the empty link and the text a reader sees of it.
+             */
+            const [linked, twin,] = ['see [](u)\'kit here', 'see \'kit here',].map(function proofOf(english,) {
+              return readProof({ english, },);
+            },);
+            expect({
+              joined: [...(linked?.joined ?? []),],
+              reading: linked?.readings.get(9,),
+              twinJoined: [...(twin?.joined ?? []),],
+              twinReading: twin?.readings.get(4,),
+            },).toEqual({
+              joined: [],
+              reading: 'leading',
+              twinJoined: [],
+              twinReading: 'leading',
+            },);
+          },
+        },),
+        it({
+          name: 'READS A LINK THAT SHOWS A CLOSING MARK AS THE CUT OF A WORD DOES: the apostrophe of `see [\\]](u)\'kit here` is '
+            + 'joined to the word after it as the apostrophe of `see ]\'kit here` is',
+          fn: async () => {
+            /**
+             The English with the link of a closing mark and the text a reader sees of it.
+             */
+            const [linked, twin,] = [String.raw`see [\]](u)'kit here`, 'see ]\'kit here',].map(function proofOf(english,) {
+              return readProof({ english, },);
+            },);
+            expect({
+              joined: [...(linked?.joined ?? []),],
+              reading: linked?.readings.get(11,),
+              twinJoined: [...(twin?.joined ?? []),],
+              twinReading: twin?.readings.get(5,),
+            },).toEqual({
+              joined: [11,],
+              reading: 'joint',
+              twinJoined: [5,],
+              twinReading: 'joint',
+            },);
+          },
+        },),
+        it({
           name: 'READS AN ENGLISH WITH NO MARK AS HOLDING NONE, and reads it afresh each time, where the view of the proof '
             + 'remembers an equal English',
           fn: async () => {

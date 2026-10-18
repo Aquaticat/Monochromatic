@@ -113,6 +113,38 @@ await describe({
             }
           },
         },),
+
+        it({
+          name: 'REFUSES A PINNED START THAT IS NOT A WHOLE NUMBER FROM 0 TO BELOW THE SIZE OF THE BENCH, naming the value and the '
+            + 'size: -1, NaN, 1.5 and the size itself, where the rotation silently counted from the end, stayed unrotated or '
+            + 'truncated; and accepts 0 and the size less one',
+          fn: async () => {
+            /**
+             What each pinned start comes to: the error's name and message, or the order the bench was asked in.
+             */
+            const outcomes = [-1, Number.NaN, 1.5, BENCH.length,].map(function refusalOf(start,): unknown {
+              try {
+                return rotatedBench({ modelIds: BENCH, messages: [{ role: 'user', content: 'meow', },], start, },);
+              }
+              catch (error) {
+                return (error instanceof Error) ? { name: error.name, message: error.message, } : error;
+              }
+            },);
+            expect(outcomes.map(function nameOf(outcome,): unknown {
+              return (outcome as { readonly name?: unknown; }).name;
+            },),).toEqual(Array.from({ length: 4, }, () => 'StageBenchStartError',),);
+            expect(outcomes.map(function namesValueAndSize(outcome,): readonly boolean[] {
+              const { message, } = outcome as { readonly message: string; };
+              return [message.includes(String(BENCH.length,),), message.includes('whole number',),];
+            },),).toEqual(Array.from({ length: 4, }, () => [true, true,],),);
+            expect(outcomes.map(function valueNamed(outcome, at,): boolean {
+              return (outcome as { readonly message: string; }).message.includes(String([-1, Number.NaN, 1.5, BENCH.length,][at],),);
+            },),).toEqual([true, true, true, true,],);
+            expect([0, BENCH.length - 1,].map(function acceptedOrder(start,): readonly RosterModelId[] {
+              return rotatedBench({ modelIds: BENCH, messages: [{ role: 'user', content: 'meow', },], start, },);
+            },),).toEqual([BENCH, [BENCH.at(-1,) as RosterModelId, ...BENCH.slice(0, -1,),],],);
+          },
+        },),
       ],
     },),
 

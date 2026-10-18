@@ -21,9 +21,12 @@ import type { ConsistencyWinner, } from '@monochromatic-dev/translation-repair-c
 import {
   type ArtifactConsistencyBallot,
   type ArtifactConsistencyCarry,
+  type ArtifactConsistencyChoiceBallot,
   type ArtifactConsistencyGroup,
   type ArtifactConsistencyOccurrence,
+  type ArtifactConsistencyRunOff,
   assertSpanGroupCoherent,
+  type TwoLaneArtifactGeneration,
 } from '../../dist/final/node/index.mjs';
 import { refusalTextOf, } from './consistency-refusal.test-fixture.ts';
 
@@ -265,7 +268,7 @@ function coherenceRefusal(
     generation = 17,
   }: {
     readonly group: AskedGroup;
-    readonly generation?: 16 | 17;
+    readonly generation?: TwoLaneArtifactGeneration;
   },
 ): string {
   return refusalTextOf({
@@ -354,6 +357,150 @@ function outcomeRefusal({ place, expected, }: { readonly place: number; readonly
     + `expected ${expected}.`;
 }
 
+/**
+ The generation after seventeen, which reads a first round with a lone leader and no strict majority as one to run off and
+ reads a slot beside any quote that contains the located words (the lead's decision of 2026-10-18).
+ */
+const GENERATION_EIGHTEEN = Number('18',) as TwoLaneArtifactGeneration;
+
+/**
+ The labels of the split group's three places.
+ */
+const SPLIT_LABELS = ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',] as const;
+
+/**
+ A group of three places whose four usable ballots choose two, one and one, with the first place's quotes and slots as given: no
+ place has a strict majority, so the group ends with no winner and every place untouched.
+
+ @param first - the quote and the slot each of the four ballots gave for the first place
+
+ @param repeat - the repeated wording or frame
+
+ @param recorded - the first place's recorded rendering
+
+ @param runOff - the run-off recorded, none by default
+
+ @returns The group
+
+ @example
+ ```ts
+ const group = splitGroupOf({ first: [], repeat: groupOf().repeat, recorded: placeOf({ position: 0, }).rendering, },);
+ ```
+ */
+function splitGroupOf(
+  {
+    first,
+    repeat,
+    recorded,
+    runOff,
+  }: {
+    readonly first: readonly {
+      readonly quote: string;
+      readonly slot?: string;
+    }[];
+    readonly repeat: AskedGroup['repeat'];
+    readonly recorded: ArtifactConsistencyOccurrence['rendering'];
+    readonly runOff?: ArtifactConsistencyRunOff;
+  },
+): AskedGroup {
+  /**
+   The labels the four ballots choose, in the order of the seats.
+   */
+  const choices = [SPLIT_LABELS[0], SPLIT_LABELS[0], SPLIT_LABELS[1], SPLIT_LABELS[2],];
+  return {
+    repeat,
+    occurrences: SPLIT_LABELS.map(function placeAt(
+      label,
+      position,
+    ): ArtifactConsistencyOccurrence {
+      return {
+        label,
+        sliceIndex: position,
+        startOffset: 6,
+        endOffset: 18,
+        line: position + 1,
+        rendering: (position === 0) ? recorded : { kind: 'located', quote: 'the kitten naps', start: 6, },
+        outcome: 'untouched',
+      };
+    },),
+    unplaced: [],
+    verdict: {
+      kind: 'asked',
+      ballots: choices.map(function ballotFor(
+        choice,
+        seat,
+      ): ArtifactConsistencyBallot {
+        const given = first[seat];
+        return ballotOf({
+          seat: `seat-${String(seat,)}`,
+          over: {
+            choice,
+            quotes: [
+              { label: SPLIT_LABELS[0], quote: given?.quote ?? 'The cat naps', ...((given?.slot === undefined) ? {} : { slot: given.slot, }), },
+              { label: SPLIT_LABELS[1], quote: 'the kitten naps', },
+              { label: SPLIT_LABELS[2], quote: 'the kitten naps', },
+            ],
+          },
+        },);
+      },),
+      usable: 4,
+      quorum: 3,
+      winner: { kind: 'none', reason: (runOff === undefined) ? 'no-majority' : 'run-off-tied', },
+      ...((runOff === undefined) ? {} : { runOff, }),
+    },
+    carries: [],
+  };
+}
+
+/**
+ A run-off among the three places in which each of three seats chooses another place, so the second round splits too.
+ */
+const THREE_WAY_RUN_OFF: ArtifactConsistencyRunOff = {
+  finalists: [...SPLIT_LABELS,],
+  ballots: SPLIT_LABELS.map(function ballotFor(
+    choice,
+    seat,
+  ): ArtifactConsistencyChoiceBallot {
+    return { seat: `seat-${String(seat,)}`, reason: 'It words the original best.', choice, };
+  },),
+  usable: 3,
+  quorum: 2,
+};
+
+/**
+ The refusal of a run-off missing for a first round of two, one and one.
+ */
+const RUN_OFF_MISSING = `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
+  + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, OCCURRENCE 3, the finalists of ballots with no strict majority.';
+
+/**
+ The refusal of a run-off recorded for a first round the generation did not run off.
+ */
+const RUN_OFF_UNEXPECTED = `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
+  + 'expected no run-off, since the usable ballots left no finalists.';
+
+/**
+ The refusal of a slot that is not the one the ballots give inside the located words.
+ */
+const SLOT_REFUSAL = `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].rendering: `
+  + 'expected the slot a strict majority of the usable ballots gave inside those words, and none where they gave none.';
+
+/**
+ A frame whose ballots quoted nested spans of the first place: three of four quoted `cat naps in the sun` or a longer span that
+ contains it, each with the slot `naps`, and the fourth quoted `cat naps` with the slot `cat`.
+ */
+const NESTED_SLOT_BALLOTS = [
+  { quote: 'the big cat naps in the sun', slot: 'naps', },
+  { quote: 'cat naps in the sun', slot: 'naps', },
+  { quote: 'cat naps in the sun', slot: 'naps', },
+  { quote: 'cat naps', slot: 'cat', },
+] as const;
+
+/**
+ The frame the nested-slot cases repeat.
+ */
+const FRAME = { kind: 'refrain', prefix: '所以这只猫一定是', suffix: '的小宝贝', } as const;
+
 await describe({
   name: '',
   concurrency: 1,
@@ -362,6 +509,99 @@ await describe({
       name: assertSpanGroupCoherent.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'ACCEPTS A GENERATION SEVENTEEN GROUP OF TWO, ONE AND ONE WITH NO RUN-OFF, since the pass that wrote it ran off only the '
+            + 'labels tied for the top count, and refuses a run-off recorded for a lone leader there',
+          fn: async () => {
+            /**
+             The group as a generation seventeen pass wrote it.
+             */
+            const asWritten = splitGroupOf({
+              first: [],
+              repeat: groupOf().repeat,
+              recorded: { kind: 'located', quote: 'The cat naps', start: 0, },
+            },);
+            expect([
+              assertSpanGroupCoherent({ group: asWritten, path: GROUP, generation: 17, },),
+              coherenceRefusal({ group: { ...asWritten, verdict: { ...asWritten.verdict, runOff: THREE_WAY_RUN_OFF, }, }, },),
+            ],).toEqual([undefined, RUN_OFF_UNEXPECTED,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A GENERATION EIGHTEEN GROUP OF TWO, ONE AND ONE WITH NO RUN-OFF, and accepts one that records the run-off '
+            + 'among the three places, whose second round split too',
+          fn: async () => {
+            /**
+             The group without and with the run-off.
+             */
+            const [bare, run,] = [undefined, THREE_WAY_RUN_OFF,].map(function groupWith(runOff,): AskedGroup {
+              return splitGroupOf({
+                first: [],
+                repeat: groupOf().repeat,
+                recorded: { kind: 'located', quote: 'The cat naps', start: 0, },
+                ...((runOff === undefined) ? {} : { runOff, }),
+              },);
+            },);
+            expect([
+              coherenceRefusal({ group: nonNullishOrThrow(bare,), generation: GENERATION_EIGHTEEN, },),
+              assertSpanGroupCoherent({ group: nonNullishOrThrow(run,), path: GROUP, generation: GENERATION_EIGHTEEN, },),
+            ],).toEqual([RUN_OFF_MISSING, undefined,],);
+          },
+        },),
+        it({
+          name: 'READS A SLOT BESIDE ANY QUOTE THAT CONTAINS THE LOCATED WORDS FROM GENERATION EIGHTEEN, and by the exact quote before: '
+            + 'the slot three of four ballots gave beside nested quotes is recorded in the new generation and absent in the old',
+          fn: async () => {
+            /**
+             The group with the first place recorded with the slot or without it.
+             */
+            const [without, withSlot,] = [undefined, 'naps',].map(function groupWith(slot,): AskedGroup {
+              return splitGroupOf({
+                first: NESTED_SLOT_BALLOTS,
+                repeat: FRAME,
+                recorded: {
+                  kind: 'located',
+                  quote: 'cat naps in the sun',
+                  start: 14,
+                  ...((slot === undefined) ? {} : { slot, }),
+                },
+                runOff: THREE_WAY_RUN_OFF,
+              },);
+            },);
+            expect([
+              coherenceRefusal({ group: nonNullishOrThrow(without,), generation: GENERATION_EIGHTEEN, },),
+              assertSpanGroupCoherent({ group: nonNullishOrThrow(withSlot,), path: GROUP, generation: GENERATION_EIGHTEEN, },),
+            ],).toEqual([SLOT_REFUSAL, undefined,],);
+            // Generation seventeen recorded no run-off for the split, so the same slots are read there without one.
+            const old = function withoutRunOff(group: AskedGroup,): AskedGroup {
+              const { runOff: _dropped, ...verdict } = group.verdict;
+              return { ...group, verdict: { ...verdict, winner: { kind: 'none', reason: 'no-majority', }, }, };
+            };
+            expect([
+              assertSpanGroupCoherent({ group: old(nonNullishOrThrow(without,),), path: GROUP, generation: 17, },),
+              coherenceRefusal({ group: old(nonNullishOrThrow(withSlot,),), generation: 17, },),
+            ],).toEqual([undefined, SLOT_REFUSAL,],);
+          },
+        },),
+        it({
+          name: 'PINS THE LIMIT OF THE SLOT RECOUNT: a span that holds a shortcut reference (`a[b]c`) is read without the '
+            + 'definitions of the page, which the file does not hold, so a pass that recorded no slot there (with the definition '
+            + 'in another slice `b` is no stand) is refused, and the limit is the reader\'s to document, not to hide',
+          fn: async () => {
+            /**
+             The group whose ballots gave the slot `b` beside the span `a[b]c` and whose first place records no slot.
+             */
+            const group = splitGroupOf({
+              first: [1, 2, 3, 4,].map(function givenSlot(): { readonly quote: string; readonly slot: string; } {
+                return { quote: 'a[b]c', slot: 'b', };
+              },),
+              repeat: FRAME,
+              recorded: { kind: 'located', quote: 'a[b]c', start: 0, },
+              runOff: THREE_WAY_RUN_OFF,
+            },);
+            expect(coherenceRefusal({ group, generation: GENERATION_EIGHTEEN, },),).toBe(SLOT_REFUSAL,);
+          },
+        },),
         it({
           name: 'ACCEPTS A GROUP WHOSE COUNT, RENDERINGS, WINNER, CARRY AND OUTCOMES ARE WHAT ITS BALLOTS GIVE, the closing full '
             + 'stop of a quote and the words of the place\'s English counting as one span',
