@@ -32,11 +32,17 @@ Calling the package `native:cli` task instead changes cwd to the package,
 whose absent `AGENTS.md` makes this policy bootstrap fail before RPC starts.
 Initial container probes also corrected a missing canonical home mount and disabled automatic tool installation.
 
-Logger build, all units, burst capacity and types passed before the final file-owner probe.
-The unchanged 100,000-record burst retained 48,304 heap bytes in that verification.
-The new same-millisecond, separate-sink regression fails with malformed JSONL at position 349544:
-timestamp-only names let independently serialized append queues write the same file.
-That production repair and its follow-up verification are required before publishing the logger bump.
+The logger's final source build, all units and type check pass.
+Its complete Oxlint sweep reports zero warnings and zero errors across 63 files.
+Logs in the current scratch are `logger-release-build.log`, `logger-release-units.log`,
+`logger-release-types.log` and `logger-release-lint-final.log`.
+The unchanged 100,000-record burst retained 48,304 heap bytes in the preceding capacity verification.
+The same-millisecond, separate-sink regression first fails with malformed JSONL at position 349544;
+a serializer returning `undefined` separately produces invalid JSONL.
+Both committed regressions pass after unique, exclusively created files and serialization validation.
+The final suite also covers admission during an issued append and recovery after a real filesystem error.
+Private source-copy guard mutations are rebuilding and must produce their expected failures before the publishing bump.
+Their task is `logger-guard-mutations` in the current scratch.
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
 There is no adopted 13k line target.
 
@@ -66,27 +72,28 @@ An isolated logger burst delivers 100,000 records while retaining 93,858,312 to 
 across three unchanged runs.
 A private promise-deduplication change retains 37,120 to 37,152 bytes across three runs,
 with all 100,000 sink invocations preserved.
-Implement that ownership repair with asynchronous file batching and shared synchronous-sink completions,
-verify the logger and actual host,
-and bump the logger version before publication.
+That ownership repair is implemented with asynchronous file batching and shared synchronous-sink completions.
+Actual-host verification remains required after the logger's publishing bump and consumer rebuild.
 No compressed receipt representation is justified by the current retainer evidence.
 The maintained built-artifact burst regression fails at 93,863,816 retained bytes before the repair.
 The file regression also reproduces corrupted JSONL when a record's `toJSON` calls the same sink reentrantly.
 Source repairs now share pending observations,
 reuse synchronous sink completions,
 and batch captured complete file records under a 64 KiB aggregation bound.
-The initial logger rebuild and type check pass;
-narrow regression checks are running.
-New lint findings still require cleanup,
-including the sequential append loop's expression and a preexisting source import in the directory test.
-The logger remains version `0.4.1` until verification closes;
-the required publishing bump is still queued.
-Then rebuild both auto-mode JavaScript and native output,
-run the complete configured-host replay variants,
-audit actual Luna payloads and prohibitions,
-and finish cleanup,
-measurements,
-documentation and the MiMo handoff.
+The logger's package-local explanation is `package/module/logger/doc/write-completion.md`.
+The source directory test now uses built artifacts and captures actual child stderr through clean shutdown.
+The logger remains version `0.4.1` until the guard mutations finish;
+the required `0.4.2` publishing bump is next.
+The remaining independently verifiable work is:
+
+- Finish private logger guard mutations, bump to `0.4.2`, and verify the publishing commit reaches the remote.
+- Rebuild auto-mode JavaScript, then its owned native output against the repaired logger.
+- Run both complete configured-host replay variants with corrected terminal validators.
+- Audit actual Luna payloads and exercise prohibition, Stop, cancellation and cleanup boundaries.
+- Render the package and canonical documents; update the architecture and handoff measurements to the final artifact.
+- Complete the positive-control consumer audit, cleanup dry run, reviewed inactive-artifact removal and footprint measurement.
+- Invoke MiMo through Pi RPC, monitor the lint repair, and validate its resulting changes.
+
 Earlier outputs still exit 134 from Node heap exhaustion;
 the private retirement-only replay instead reaches its 600-second driver limit after 58 live assessments.
 The immediate work is diagnosing the remaining fragmented-stream retention,
