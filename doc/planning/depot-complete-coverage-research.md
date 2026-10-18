@@ -481,12 +481,20 @@ the static-site generator,
 font generation,
 and roots lacking a build aggregate remain named entries in the plan for separate prerequisite review.
 Their absence from this wave is not evidence that the packages have no applicable consumer.
-The waveform preserves every command's failure and every not-started budget state.
+The workflow preserves every command's failure and every not-started budget state.
 It retains generated `dist` artifacts and checks that tracked source did not change.
 Default tests are a separate campaign after process,
 service,
 and agent-recursion review;
 the static wave cannot establish runtime coverage.
+
+The first dispatch raced the Git push and selected old workflow head `8256d8bb9d`,
+not the reviewed static-wave head `82ea6108c5`.
+Run `39109746777` was identified from its actual `headSha` and workflow name,
+then cancellation was requested.
+It is excluded from static-wave coverage.
+The corrected dispatch occurs only after the push completes and `git ls-remote` verifies the expected head.
+Cancellation acknowledgement and terminal job states remain separate evidence.
 
 The active queue remains independently verifiable:
 
