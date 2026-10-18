@@ -1,5 +1,136 @@
 # A Depot CI snapshot consumer waits on an additional mise cache restore
 
+## Mise 2026.10.9 offline snapshot controls need the runner's home context
+
+### Symptom and source boundary
+
+Research allocation `wh76h0pjpx` booted the prepared image and verified its tool hashes,
+but the network-isolated availability control failed:
+
+```text
+# Mise 2026.10.9 inside the research network/user namespace
+[WARN] migrate: failed create_dir_all: ~/.local/state/mise/incomplete-installs
+mise ERROR failed create_dir_all: ~/.local/state/mise/trusted-configs
+mise ERROR Permission denied (os error 13)
+```
+
+The research wrapper switched user/group through `sudo unshare` without explicitly passing the runner's home context.
+This was a harness failure;
+it was not an observed missing-tool download or snapshot corruption.
+Mise source revision `ac91d06fa6100935b7a07b08bebf03dd6dd9a0dd`
+derives its trust directory from its state directory in `crates/mise-util/src/dirs.rs:27`:
+
+```rust
+// jdx/mise, crates/mise-util/src/dirs.rs:27
+pub static TRUSTED_CONFIGS: Lazy<PathBuf> = Lazy::new(|| STATE.join("trusted-configs"));
+```
+
+The default state path follows the resolved home context in `crates/mise-util/src/env.rs:102` and `:160`:
+
+```rust
+// jdx/mise, crates/mise-util/src/env.rs:102 and :160
+pub static XDG_STATE_HOME: Lazy<PathBuf> =
+    Lazy::new(|| var_path("XDG_STATE_HOME").unwrap_or_else(|| HOME.join(".local").join("state")));
+pub static MISE_STATE_DIR: Lazy<PathBuf> =
+    Lazy::new(|| var_path("MISE_STATE_DIR").unwrap_or_else(|| XDG_STATE_HOME.join("mise")));
+```
+
+### Verified correction and limits
+
+Pushed harness `997db20b3bd5f1cdf3413c645d964c34dac63518`
+passes the original runner's `HOME`,
+`USER` and `LOGNAME` explicitly to the dropped-user namespace.
+Actual allocation `x1psl3qf94` then passes `mise install` for the installed,
+locked tool subset with networking disabled.
+Its empty isolated Mise tool home fails in the same offline namespace;
+online installation into that empty home recovers the expected locked Node binary hash.
+The positive and negative controls distinguish installed-tool availability from an accidental download.
+They do not benchmark complete snapshot boot or every installed tool.
+
+The successful consumers also use the prepared Mise executable directly,
+avoiding an additional setup-action cache restore.
+The image's tool manifest and frozen source/lock/policy hashes are checked before actual consumers run.
+Changing the checkout does not update the prepared tools automatically.
+
+## Depot native snapshot tags and block metadata are separate boundaries
+
+### Symptom and deciding-source limit
+
+Allocation `6wt5gm6t75` failed before creating a sandbox with the full registry digest reference:
+
+```text
+# Depot native CI dispatch, 2026-10-18
+Dispatch failed: [not_found] image "9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8" not found
+```
+
+The unique documented registry tag boots successfully in `x1psl3qf94`,
+`s9w4jkv0hc` and `rrlzfmp2qv`.
+Depot CLI revision `67a618f86b05d925f317e3d3a4f656f2fc8ff447`
+serializes workflow content and sends it to the service in `pkg/cmd/ci/run.go:225`:
+
+```go
+// depot/cli, pkg/cmd/ci/run.go:225
+yamlBytes, err := yaml.Marshal(workflow)
+```
+
+The deciding server-side image resolver is not present in that public source.
+This particular digest-form failure does not establish that Depot universally prohibits digest references.
+The verified research bridge uses a unique tag and checks the resolved manifest digest before and after execution.
+This detects a changed resolution within the observed run;
+it does not make the tag immutable or exclude every resolution race.
+
+### Native block-image metadata correction
+
+The working `tools-r1` manifest resolves to
+`sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8`.
+Its configuration descriptor is 6,502,729 bytes and has media type
+`application/vnd.depot.thin.snapshot.config.v2+json`.
+The verified configuration keys are `chunk_size_bytes`,
+`disk_size_bytes`,
+`metadata_chunks`,
+`layers` and `chunks`.
+It is block-map metadata,
+not a conventional Docker image configuration.
+An absent Docker `config.Env` field cannot be interpreted as evidence that no environment was captured.
+Searching this JSON for synthetic plaintext also does not inspect referenced filesystem blocks.
+Fresh-consumer filesystem and runtime-environment checks provide separate,
+bounded observations.
+
+The snapshot helper's uploaded sparse-layer digest is also distinct from the final manifest digest.
+For `tools-r2-git256`,
+the uploaded layer is `sha256:14702a111207f4051bdc1767a8646cfbc74385570f6554e903e7230d6fe13afc`,
+while the resolved manifest is `sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd`.
+Use the manifest when binding a fresh-image consumer.
+Neither the helper's `max-age: 6h` input nor a successful push proves registry deletion after that interval.
+
+### Research verification and upstream filing decision
+
+The [reuse campaign](../planning/depot-reuse-strategy-research.md)
+and [digest-bound receipts](../audit/depot-reuse-strategy-2026-10-18.evidence.json)
+retain the exact workflows,
+provider identities,
+uploaded artifact digests and successful/failed controls.
+Only disposable research workflows changed.
+
+The `.out-of-scope/` filename inventory contains no Depot or Mise exemption.
+Current open/closed issue and pull-request searches for `"trusted-configs" "Permission denied"` in `jdx/mise`
+and `snapshot image digest` in `depot/cli` returned no results.
+Those narrow searches are not exhaustive duplicate checks.
+
+1.  The home-context failure is at our harness boundary;
+    an upstream defect is not established.
+2.  Fixing our environment is verified;
+    server-side digest-resolution fixability is not established without its deciding source.
+3.  Prepared tools and native image tags are supported use cases;
+    this particular digest-form contract remains unverified.
+4.  Contribution policies were not exhaustively audited because no upstream defect or patch is proposed.
+5.  Maintainer intent about this specific digest reference was not established.
+6.  No upstream patch was prototyped;
+    the tested corrections are consumer configuration and evidence interpretation.
+
+There is no justified upstream filing to add.
+No external issue or comment was sent.
+
 ## Symptom
 
 In trial run `qrjbnf2gbv` on 2026-10-15,
