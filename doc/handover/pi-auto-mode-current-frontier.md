@@ -18,7 +18,9 @@ Inspect actual Pi, Node, Linux, dependencies, and the configured consumer wherev
 The user clarified that their concern is platform behavior exposing defects in our code,
 not suspected defects in Pi, Node, or Linux themselves.
 The user authorizes shared logger repairs and requires a version bump to trigger auto-publish if it changes.
-The measured logger version is `0.4.1`; no logger repair is applied in the current memory investigation.
+The measured logger version is `0.4.1`; source repairs are under verification and the publishing bump remains pending.
+The user authorizes invoking and monitoring MiMo directly through Pi RPC.
+After readiness verification, run that agent and monitor the lint work rather than returning a manual handoff.
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
 There is no adopted 13k line target.
 
