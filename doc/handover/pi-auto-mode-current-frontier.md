@@ -36,15 +36,21 @@ no resource-reserve traces and no bare shutdown/fatal errors.
 The audit receipt is `coherent-replay-audit-KNN50u`.
 This closes the clean replay queue item for compiled `native-release-sT3Ufn`;
 it does not qualify the workers' unfinished ports or clear the lint backlog.
-The current profiled worker's sampled allocation stacks identify native session-projection clones,
-owned context-emission clones and retained input chunks.
-At its 22:47:44 UTC sample the heap is 358,413,792 bytes,
-with 98,444,104 sampled bytes attributed to `structuredClone` and 53,289,928 to `internChunk`.
+Profiled source worker `RNZs7C` subsequently exhausts its 1,536-MiB V8 heap and exits 139.
+Node's exact diagnostic is
+`FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`.
+Its last completed interval reports heap usage of 1,543,711,144 bytes,
+with 530,163,688 sampled bytes in `structuredClone`,
+287,643,120 in OpenAI's `FallbackEncoder` and 182,788,256 in `internChunk`.
+Native session-projection clones and owned context-emission clones account for most sampled clone allocations.
 These are allocation attribution,
 not a retainer graph,
 post-GC live-size measurement or proof of the older heap failure's cause.
+Saved history and partial edits remain intact.
+Replacement `7HN2ZH` connects with the full saved history,
+unchanged immutable `IFS6IL` and the same two-GiB/two-CPU/1,536-MiB-heap bounds and allocation sampler.
 The next memory-diagnosis step is a private retained-heap snapshot at a worker's settled checkpoint,
-after a bounded throwaway inspector/snapshot smoke test.
+using the completed bounded inspector/snapshot positive control.
 Do not interrupt an active tool or mutate its immutable runtime artifact.
 The controller consumes commands by appending them to `controller-commands.jsonl`;
 it keeps `rpc-command.json` after consumption.
@@ -130,8 +136,8 @@ including read-only fallback and escaped terminal-control diagnostics.
 Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
 The deployed pnpr trust configuration has not been inspected.
 
-The current source worker is `pi-mimo-rpc-session-RNZs7C`,
-resumed from `QGwl5f` after normal closure with the full saved history and unchanged bounds.
+The current source worker is `pi-mimo-rpc-session-7HN2ZH`,
+resumed from `RNZs7C` after its heap failure with the full saved history and unchanged bounds.
 Its corrected evidence delivery is accepted as `ad1be29e0d` after original transient parity,
 complete fallback/startup matrices,
 fresh types and fourteen-file lint pass.
