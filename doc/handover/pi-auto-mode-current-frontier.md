@@ -10,7 +10,8 @@ including read-only fallback and escaped terminal-control diagnostics.
 Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
 The deployed pnpr trust configuration has not been inspected.
 
-Default native release `kFkBoY` remains pinned while the live workers use it.
+Default native release `kFkBoY` remains pinned.
+The resumed source worker uses a separate immutable corrected runtime.
 A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
 MiMo native controller `42230`, fixture `pi-mimo-rpc-session-I79zzb`,
 delivered `system-slot-error.mjs` and new `system-slot-error.ts` after the narrowed prompt.
@@ -27,11 +28,26 @@ with the local media directory under `.git/lfs/objects`.
 Normal-root recognition does not establish behavior inside the failed commit's filter environment.
 The supervisor retains the queued `system-slot` and `policy-loader` changes.
 MiMo source controller `53002`, fixture `pi-mimo-rpc-session-B7AghW`,
-still owns only `native-decision-fallback.test.mjs` and new siblings for that catalog.
+delivers only `native-decision-fallback.test.mjs` and thirteen new siblings for that catalog.
 Its observed errors are ordinary command/path failures, not the reported preparation diagnostic.
 Its typed catalog helpers and JavaScript task entry are written.
-The worker continues typing and validation at 111 tools;
-its complete delivery and full mode/variant checks remain pending.
+The old worker settles at 114 tools and three ordinary command errors,
+then closes normally with its complete stderr retained.
+Its 113-byte shutdown tail contains only the ask-user helper's informational cleanup message.
+Supervisor commit `d8a1d3cec624c1f12b065ae7df2486f02de895c5` checkpoints the unvalidated port.
+The supervisor captures the explicit fourteen-path list before staging,
+reuses that list for commit,
+and verifies the actual committed paths match exactly.
+The full mode/variant checks remain pending.
+
+Resumed source controller `2323`, fixture `pi-mimo-rpc-session-bkvsvW`,
+continues the complete old session history with `llmgateway-devpass/mimo-v2.6-pro` and high thinking.
+It mounts frozen `ebe81e3364` private runtime `native-release-IFS6IL` read-only,
+with a private home and writable project state under the existing 2 GiB and two-CPU bounds.
+The live source worker owns only the same fourteen catalog paths.
+It repairs its type errors and moves to the scoped lint backlog:
+229 findings are reported at the 33-tool checkpoint.
+No package-wide lint or catalog parity completion is claimed.
 
 Native aborts produce three error tool results containing
 `Complete group preparation or assessment failed`.
@@ -76,8 +92,8 @@ the follow-up instead reports `import/no-unassigned-import`.
 Commit `3c12d88f7f` exposes an explicit catalog runner called by the stable JavaScript entry.
 The next five-file check reports six warnings:
 five statement-layout findings in the new size regression and a missing import separator in that entry.
-Commit `ebe81e3364` includes those layout corrections;
-its fresh scoped check is running.
+Commit `ebe81e3364` includes those layout corrections.
+The later five-file scoped check at `9d3dae29d8` has zero warnings and zero errors.
 Both built field and literal-name mutants fail the maintained setter regression after successful builds,
 then pass after private source restoration and rebuilding.
 The root source and active native publication remain unchanged throughout those mutants.
@@ -101,17 +117,27 @@ The scoped lint reports two test-only warnings:
 `eslint/no-await-in-loop` and `no-restricted-syntax/no-low-information-symbol-description`.
 Commit `9d3dae29d8` maps independent invalid-limit checks through `Promise.all`
 and gives the invalid Symbol a descriptive label;
-its fresh scoped/type check remains pending.
-The configured-host long-session replay and guard mutants remain required.
-The live worker still uses pinned `kFkBoY`,
-so it has not received this runtime correction.
-The next resource verification is a coordinated source-worker restart:
-complete its pending readonly edits,
-settle and close its old controller with full stderr retained,
-then resume the same complete session history with the verified private `ebe81e3364` dist mounted read-only.
-The root default dist remains pinned.
-Measure the actual long primary request and review outcome,
-then continue the worker's full mode matrix and lint delivery.
+its fresh types and five-file scoped lint pass.
+Four request-observation mutants build successfully and fail their named maintained guards:
+restored default ceiling,
+missing explicit threshold,
+missing constructor validation and equality rejected at the UTF-8 boundary.
+Each restored private source rebuilds and passes its guard.
+The root source and both active native publications remain unchanged.
+
+The resumed configured consumer now demonstrates the correction with its actual long history.
+The retained audit checkpoint has 24 completed tool results,
+including ordinary command failures,
+zero approval dialogs and 24 completed Luna HTTP 200 requests.
+Its 493 questions pass required-data and excluded-data controls;
+no excluded thinking or raw structured command fields are observed.
+Byte-count-only metadata records thirteen non-Luna serialized requests above the old ceiling,
+from 1,146,627 to 1,279,294 bytes.
+This capture does not record endpoint URLs or primary request bodies.
+The fresh process reports no observation-ceiling or missing-evidence failure at that checkpoint.
+The restarted source catalog again starts at 185 names and later returns 164;
+the cause of that checkpoint difference remains unproven.
+Continue its full mode/variant matrix and lint delivery before final frozen verification.
 
 The reported-interaction checkpoint retains 52 successful tools,
 zero selectors,
@@ -160,6 +186,16 @@ including 16,854,136 in retained build output.
 It excludes shared dependency symlink targets and is not a deployment-closure total.
 The cleanup dry run lists `.cache`, `dist` and `node_modules`;
 no cleanup has been performed from that listing.
+
+Private native formatting of frozen `d8a1d3cec6` reports 10,067 warnings and 55 errors across 495 files.
+Its syntax classification passes eight positive difference controls and a parenthesis control.
+It finds 349 unchanged files,
+126 changed files with matching runtime ASTs,
+nineteen runtime-AST changes and one newly invalid file.
+All twenty excluded outputs are restored in the private candidate.
+No formatter output has been adopted into the root worktree.
+Private build and consumer qualification of the remaining changes are pending;
+AST equality does not establish source-qualification or complete runtime equivalence.
 
 The supervisor incorrectly stops native diagnostic call `call_3295f42211d7470d867d0a18`
 after misreading JSON display escaping as actual source escapes.
