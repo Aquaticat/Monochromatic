@@ -1,76 +1,77 @@
 # Owned Depot allocation normalization
 
-## Purpose and boundary
+The [normalized baseline](../audit/depot-owned-allocation-ledger-2026-10-18.evidence.json)
+reconciles expanded research targeting application
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Input captures start at `2026-10-18T13:59:27.911853+00:00`;
+the latest inventory refresh is `2026-10-18T14:33:35.609490+00:00`.
+This is a captured owned-ID inventory,
+not an account-wide usage or invoice census.
+No allocation or settings mutation was performed by the reviewer.
 
-The coordinator requested one independently normalized allocation ledger for the expanded frozen-source
-`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a` research and platform capability campaigns.
-The [machine-readable ledger](../audit/depot-owned-allocation-ledger-2026-10-18.evidence.json)
-is in progress.
-It will identify exact owned executions once,
-retain overlapping source pointers and make missing resource/time boundaries explicit.
-No cloud allocation,
-account-wide usage/billing query or settings mutation is admitted.
-The coordinator will separately add its forthcoming coherent-graph measurements and review the arithmetic.
+## Identities and measured boundaries
 
-## Independently verifiable work areas
+The baseline contains 222 distinct records:
+115 native job attempts from 77 runs,
+78 GitHub job records from 44 runs,
+seven SDK VMs and 22 BuildKit builds.
+The GitHub records distinguish 51 Depot-runner requests,
+25 standard public GitHub jobs and two unassigned corrupt-label jobs.
+Two additional zero-job workflow requests and one SDK request without a returned VM identity retain explicit unknowns.
+Fresh read-only metadata and 121 exact immutable workflow definitions support the CI joins.
+Overlapping receipt pointers do not create additional allocations.
 
-- Root runtime,
-  process,
-  MVM,
-  policy,
-  PR and service allocations:
-  join exact native/GitHub job and attempt identities from retained source receipts.
-- Coverage campaigns:
-  reconcile the owning inventory,
-  including prerequisite failures and distinct frozen application sources.
-- Rust/reuse campaigns:
-  normalize the existing exact run ledgers and deduplicate shared producer/consumer references.
-- Platform,
-  BuildKit and SDK campaigns:
-  keep actual native/GitHub jobs,
-  SDK VMs and build requests in distinct product boundaries.
-  Architecture request wall time is not architecture-builder billing evidence.
+## Nominal compute and reservations
 
-The active coverage and platform researchers supplied their canonical inventories.
-The first captured source set has normalized 113 native CI job attempts,
-72 GitHub job records,
-seven SDK VMs and 22 BuildKit build identities privately.
-All 115 CI workflow lookups match one exact immutable definition.
-The public rows and original-source archive await the latest owned-ID refresh and privacy checks.
+Priced observed intervals give native CI `USD 4.8546`,
+Depot GitHub runners `USD 1.3308` and SDK VMs `USD 0.0081959`.
+Standard public GitHub compute is `USD 0` under the current public-repository rule.
+Their known subtotal is `USD 6.1935959` before allowances.
+It excludes missing execution boundaries and unknown BuildKit architecture-builder intervals;
+it is not an invoice or observed VM billing lifetime.
 
-## Arithmetic and review policy
+The BuildKit campaign records 403938 milliseconds of request envelopes.
+Its separate maximum-admitted-two-builder proxy at `USD 0.04` per builder-minute is exactly `USD 0.538584`.
+Actual builder compute remains unknown.
+Per-request repeating values retain exact rational fractions.
+The SDK-specific reference supplies its CI-rate model;
+the pricing page's separate Agent-sandbox category is not substituted for that interface-specific source.
 
-Observed execution intervals support nominal list-compute arithmetic only when their resource identity matches.
-Standard public GitHub Actions compute remains a separate zero-compute category.
-Maximum reservations remain separate from measured execution arithmetic.
-Invoices,
-actual VM billing and missing architecture-builder intervals remain unmeasured unless exact retained evidence says otherwise.
-No account-wide totals or historical unrelated source cohorts will be inferred.
+Per-record full-timeout bounds and 100 reported historical/admission budget observations are separate fields.
+Their sums are counterfactual,
+not spending or active campaign reservations.
+The Rust cumulative model already includes reuse;
+the SDK third admission is not another VM;
+BuildKit summary mirrors are not another build.
+Queued `started_at` alone does not prove execution:
+the normalizer requires a runner assignment and an actually started step for GitHub pricing.
+Unknowns remain null.
 
-## Separate guest review
+## Retained source and follow-ons
 
-The initial queue named GitHub run `39132577785`
-and harness `3829831039cc43aa717c6c927f835b867e9313b6`.
-That attribution is corrected:
-these identify the cancelled corrupt-runner-expression control,
-which never reached an assigned runner.
-The successful new guest cohort is native `25jpltfpkq` and GitHub `39134227406`
-at immutable harness `1373e624739fbc93502b0c8ca502820c6ff99b45`.
-Its independent original three-ZIP and actual guest-command review passed;
-see the [independent review](../audit/depot-independent-policy-process-mvm-review-2026-10-18.md).
-It admits no duplicate allocation.
+The [source archive](../audit/depot-owned-allocation-ledger-2026-10-18.sources.json.gz)
+contains original UTF8 input bodies,
+owned metadata,
+immutable workflow bytes,
+fresh public rate sources and the normalizers' exact mapping/arithmetic inputs.
+Its record pointers apply to parsed `bodyUtf8` for JSON sources.
+Every input and original body has byte-length and SHA256 metadata.
+Currency strings avoid floating-point rounding in the normalized arithmetic.
+Functional coverage remains qualified by each owning receipt.
 
-## Source qualifications recorded during normalization
+The coordinator will append its coherent graph `39135886118` after measurement.
+Later coverage/platform follow-ons require separate measured appends.
+The native BuildKit authentication plan retains its separate `USD 0.23` full-window admission and `USD 1` guard;
+its admission is not added as observed compute.
+The coordinator's independent arithmetic review remains a separate completion gate for adopting these totals.
 
-The Rust cumulative campaign total already includes its reuse predecessor;
-those campaign totals cannot be added together.
-Individual provider/job/attempt identities determine deduplication.
-The current SDK reference explicitly says SDK VMs use the Depot CI compute rate;
-SDK remains a distinct product and included-credit eligibility remains unresolved.
-The BuildKit request-window proxy remains separate from unobserved architecture-builder billing.
-
-A GitHub `started_at` value is insufficient to identify allocated compute.
-The coordinator's queued corrupt-expression control has that timestamp with empty runner assignments.
-The normalizer requires positive runner assignment and an actually started step before pricing execution.
-Skipped or setup-rejected records retain their missing execution boundaries explicitly.
-The new guest cohort now has separate original-archive qualification.
+The new guest cohort's
+[independent review](../audit/depot-independent-policy-process-mvm-review-2026-10-18.md)
+passed original-byte,
+CRC/member,
+source,
+command and exact transformed-payload joins.
+The original queue attribution to `39132577785` at `3829831039cc43aa717c6c927f835b867e9313b6`
+is retained as a corrected cancelled-generator control.
+Actual guest consumers are native `25jpltfpkq` and GitHub `39134227406`
+at `1373e624739fbc93502b0c8ca502820c6ff99b45`.
