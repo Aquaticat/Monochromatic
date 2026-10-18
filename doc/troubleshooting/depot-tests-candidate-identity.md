@@ -32,19 +32,17 @@ TEST_CANDIDATE_IDENTITY_FILENAME = 1;
 TEST_CANDIDATE_IDENTITY_CLASSNAME = 2;
 ```
 
-`pkg/cmd/tests/selection.go:185` permits test-name timing with either candidate identity.
+`pkg/cmd/tests/selection.go:189` permits test-name timing with either candidate identity.
 It does not rewrite candidate strings into another identity:
 
 ```text
 # depot/cli, pkg/cmd/tests/selection.go
-if timingIdentity != TEST_TIMING_IDENTITY_TESTNAME &&
+if timingIdentity != testresultsv1.TestTimingIdentity_TEST_TIMING_IDENTITY_TESTNAME &&
     timingIdentity != timingIdentityForCandidate(candidateIdentity) {
-    return an identity-mismatch error
-}
 ```
 
-This is an annotated abbreviation of the enum-qualified source condition,
-not standalone Go.
+This excerpt ends at the condition;
+it does not reproduce the function body.
 `selection.go:227` sends both identities and the unchanged candidates to `SplitTests`.
 The private backend's history implementation is not in this public source.
 

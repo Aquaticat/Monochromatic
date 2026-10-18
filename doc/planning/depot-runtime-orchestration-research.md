@@ -1,6 +1,6 @@
 # Depot runtime and orchestration research
 
-## Current execution boundary on 2026-10-18 at 11:21 UTC
+## Current execution boundary on 2026-10-18 at 11:38 UTC
 
 Native single-job retry now has actual transport evidence:
 attempt two of `xgq2429hqv` downloaded the producer archives,
@@ -31,7 +31,12 @@ Native `kjf78stmkb` and GitHub `39122132487` both normalize the allowed failure'
 Native's aggregate and GitHub App suite still conclude failure,
 while the GitHub workflow concludes success.
 No cancelled timeout job explains that isolated difference.
-The default downstream and step-level controls are separately admitted as `pfzfjrqdpq` and `lrhfzwrwl2`.
+The separate default downstream control `pfzfjrqdpq` passed without an explicit `always()` condition;
+its native aggregate still failed.
+The separate step-level control `lrhfzwrwl2` passed its observer,
+job and workflow while preserving outcome `failure` and conclusion `success` on the advisory step.
+These controls use source `714a3cad36c20da75969454fe33f28dab7770e9b`
+and extend the public paired receipt to eight original ZIPs.
 Cumulative conservative semantics reservations are USD 0.960 under the USD 1 guard.
 
 The [earlier Tests trial](../audit/depot-test-feature-2026-10-16.md)
@@ -79,6 +84,19 @@ Per-probe access-state diagnosis and publication remain open.
 The inspected Libvirt `qemu_process.c:9538` capability launcher selects machine `none`
 for its KVM probe,
 which matches the failing machine choice but does not identify the changing access cause.
+The follow-up `39123865841`,
+source `fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef`,
+captures per-probe device stat,
+ACL and effective caller access through repeated machine,
+privilege,
+idle and ACL-grant controls.
+Its live paused-TCG positive control validates process discovery before cleanup absence is trusted.
+The maximum is one paused 128 MiB QEMU process,
+one vCPU,
+eight job minutes and six inner minutes,
+with no application guest.
+The measured five prior intervals plus the new full reservation total nominal proxy USD 0.1796,
+under the unchanged USD 1 campaign guard.
 
 ## Scope and execution manifest
 

@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 11:21 UTC
+## Execution checkpoint on 2026-10-18 at 11:38 UTC
 
 The actual single-job retry of native run `xgq2429hqv` completed artifact download on attempt two.
 Its consumer then correctly rejected the old fixture's failed assertion.
@@ -33,9 +33,15 @@ The isolated ordinary job-level comparison completed as native `kjf78stmkb` and 
 both expose `needs.allowed_failure.result` as `success`,
 while native aggregate and GitHub App suite report failure and the GitHub workflow reports success.
 There is no cancelled timeout in that isolated workflow.
-Default downstream eligibility and an isolated step-level workaround are separate admitted controls.
+Default downstream eligibility and an isolated step-level workaround are now verified controls.
 Their runs are `pfzfjrqdpq` and `lrhfzwrwl2`,
 at `714a3cad36c20da75969454fe33f28dab7770e9b`.
+The default-condition downstream ran successfully without `always()`;
+the native aggregate still failed.
+The separate one-operation step-level workaround finished its job and workflow successfully,
+retaining step outcome `failure` and conclusion `success`.
+The public paired policy/history receipt now contains all eight original ZIPs,
+including these controls.
 The semantics campaign's cumulative full-window reservations are USD 0.960 under the USD 1 guard.
 
 The earlier [Depot Tests trial](../audit/depot-test-feature-2026-10-16.md)
@@ -100,9 +106,24 @@ the access change between probes is not yet explained.
 The parent owns its public receipt and deciding-source note.
 The installed Libvirt source launches its KVM capability probe with machine `none`;
 the changing ordinary-user access still needs per-probe state evidence before assigning a cause.
+The bounded follow-up is GitHub `39123865841`,
+at `fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef`.
+It captures device inode,
+mode,
+owner,
+ACL and actual caller access around each raw QEMU control,
+including root identity,
+root QEMU,
+idle and repeated ACL-grant controls.
+Its process-discovery check must find a live paused TCG process before trusting cleanup absence.
+Only one 128 MiB paused QEMU process may exist at a time;
+there is no application guest.
+The job has eight minutes,
+with a six-minute inner deadline.
+The measured five prior intervals plus its full reservation have nominal proxy cost USD 0.1796,
+under the unchanged USD 1 campaign guard.
 
-The remaining parent queue includes final default/step continuation receipt collection,
-the timing-identity troubleshooting note and final canonical interpretation correction,
+The remaining parent queue includes troubleshooting-note lint and rendered checks,
 VM/process public receipts,
 container Git/libatomic prerequisite notes,
 job-environment recurrence documentation,
@@ -116,7 +137,16 @@ The Rust researcher owns GNU/ASan fuzz,
 actual deterministic Codex host completion,
 all-features Truepeak Nextest,
 and source-qualified benchmark/privileged-BPF applicability.
-The platform researcher owns command/doc inventory reconciliation and exact stopped-SDK log retrieval.
+The deterministic Codex host now has forty real successful command outputs in `1h6qf8j86f`;
+Bubblewrap was installed in the disposable job without changing the signed Codex binary.
+The TypeScript property/coverage/conformance wave reached all 69 owning invocations,
+with 64 passing and five retained domain or baseline failures.
+The routing researcher also owns the actual three-engine browser wave `39123458425`
+at `6328647d8b7113a920d777044944612f3bc47a58`.
+The platform researcher owns command/doc inventory reconciliation,
+the stopped-SDK evidence and the per-test JUnit identity adapter with physical consumer checks.
+That adapter may use one parent VM slot;
+the KVM follow-up reserves the other.
 Independent sufficiency review precedes the interview.
 
 Research remains open;
