@@ -475,7 +475,12 @@ before the other queued work.
     the new reader refuses `corpus-pass-TianqiChen66624` group 0 (generation 17, 2-1-1 of 4, no run-off),
     which the old reader accepts (`w180-notes/reader-check/results-throwaway-*.json`),
     so `w184` also bumps the artifact generation and recounts generation 17 and earlier under the tied-only rule;
-    a relaunch waits for it);
+    done in `w184` (`9684e3e00f`, `c351d52644`, `98d9089318`, ledger B657 to B664, generation 18,
+    all five stored TianqiChen666 artifacts accepted, `w184-notes/reader-check.txt`);
+    a follow-up triple there records the page definitions in generation 18 so the recount reads them (R5),
+    gates the carry reader's "no run-off read as written" tolerance to generation 17 and earlier,
+    and corrects a refusal string; then a gate, landing in order (`w177`, `w180`, `w184`) and the relaunch;
+    resuming into a generation-17 runs directory is refused, so the relaunch uses a fresh throwaway directory);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
 6.  Done 2026-10-18:
