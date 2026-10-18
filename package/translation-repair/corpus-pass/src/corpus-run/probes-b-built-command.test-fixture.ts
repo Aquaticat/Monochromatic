@@ -195,6 +195,10 @@ export const ONE_ENTRY_CORPUS: Readonly<Record<string, string>> = {
 
  @param args - arguments after the command
 
+ @param builtDirectory - directory holding the built probe, the shared keyless
+ fixture's own package where absent; a probe another package owns passes that
+ package's build directory
+
  @returns Exit code and both streams
 
  @example
@@ -207,10 +211,12 @@ export async function runProbeOver(
     command,
     files,
     args,
+    builtDirectory,
   }: {
     readonly command: string;
     readonly files: Readonly<Record<string, string>>;
     readonly args: readonly string[];
+    readonly builtDirectory?: string;
   },
 ): Promise<ChildRun> {
   /**
@@ -228,6 +234,7 @@ export async function runProbeOver(
       ...corpusEnvOf({ corpus, },),
       TRANSLATION_REPAIR_RUNS_DIR: runs.path,
     },
+    ...((builtDirectory === undefined) ? {} : { builtDirectory, }),
   },);
 }
 
