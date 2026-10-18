@@ -33,11 +33,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { type SliceNeighbourContext, } from '@monochromatic-dev/translation-repair-repair';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest';
-import { type ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive';
+import type { SliceNeighbourContext, } from '@monochromatic-dev/translation-repair-repair';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type { ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive';
 import {
   type TranslateDecision,
   type TranslateStageResult,

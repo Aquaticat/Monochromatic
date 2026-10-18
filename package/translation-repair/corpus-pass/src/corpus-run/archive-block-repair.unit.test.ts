@@ -16,16 +16,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type UnclaimedTargetBlock, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
-import { type PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type { UnclaimedTargetBlock, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { type BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   REVISION_SHAPE_REFUSED,
   revisionFootnoteFindings,

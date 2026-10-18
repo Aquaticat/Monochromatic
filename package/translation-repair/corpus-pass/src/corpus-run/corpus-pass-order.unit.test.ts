@@ -22,7 +22,7 @@ import {
   MEDIUM_PAGE_BYTES,
   SMALL_PAGE_BYTES,
 } from '@monochromatic-dev/translation-repair-insertion';
-import { type AttemptMap, } from '@monochromatic-dev/translation-repair-glossary';
+import type { AttemptMap, } from '@monochromatic-dev/translation-repair-glossary';
 import { orderPendingEntries, } from '../../dist/final/node/index.mjs';
 
 /**

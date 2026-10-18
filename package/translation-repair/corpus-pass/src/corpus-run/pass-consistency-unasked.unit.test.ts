@@ -14,8 +14,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RepeatGroup, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ArtifactConsistencyRepeat, } from '@monochromatic-dev/translation-repair-artifact';
+import type { RepeatGroup, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ArtifactConsistencyRepeat, } from '@monochromatic-dev/translation-repair-artifact';
 import {
   type ConsistencyPlace,
   settleFailed,

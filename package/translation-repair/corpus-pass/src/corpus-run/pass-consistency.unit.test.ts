@@ -26,7 +26,7 @@ import {
   RUN_LATE_JUDGES,
   RUN_TRANSLATORS,
 } from '@monochromatic-dev/translation-repair-run';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {

@@ -31,10 +31,10 @@ import {
   type RepairModels,
   type RepairSliceSeating,
 } from '@monochromatic-dev/translation-repair-assembly';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { slicePairOf, } from '@monochromatic-dev/translation-repair-slice-reading/ts/corpus-run/slice-pair-of.test-fixture.ts';

@@ -16,8 +16,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildConsistencyRunOffMessages,
   type ConsistencyRendering,

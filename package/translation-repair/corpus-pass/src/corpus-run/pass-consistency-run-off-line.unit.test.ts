@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ArtifactConsistencyRunOff, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ArtifactConsistencyRunOff, } from '@monochromatic-dev/translation-repair-artifact';
 import { runOffResultLine, } from '../../dist/final/node/index.mjs';
 
 /**

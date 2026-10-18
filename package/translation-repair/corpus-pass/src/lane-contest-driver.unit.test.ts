@@ -21,15 +21,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
-import {
-  type BenchSeating,
-  type SliceCache,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
+import type {
+  BenchSeating,
+  SliceCache,
 } from '@monochromatic-dev/translation-repair-translate-floor';
-import {
-  type ArtifactComparisonRow,
-  type ArtifactDeliveryRow,
+import type {
+  ArtifactComparisonRow,
+  ArtifactDeliveryRow,
 } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
   type ArtifactContestSlice,

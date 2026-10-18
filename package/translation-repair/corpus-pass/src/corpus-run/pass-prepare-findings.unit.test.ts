@@ -24,15 +24,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { REFERENCE_ATTEST_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-reference';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
 import { PAGE_TITLE_LEXICON_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-artifact';
-import { type EntryInfoRecord, } from '@monochromatic-dev/translation-repair-insertion';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type { EntryInfoRecord, } from '@monochromatic-dev/translation-repair-insertion';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-archive';
 import { preparePassEntry, } from '../../dist/final/node/index.mjs';

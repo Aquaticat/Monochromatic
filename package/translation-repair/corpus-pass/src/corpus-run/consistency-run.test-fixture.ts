@@ -9,14 +9,14 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import {
   assertPipelineDigest,
   type PipelineDigest,
 } from '@monochromatic-dev/translation-repair-glossary';
-import { type ArtifactConsistency, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ArtifactConsistency, } from '@monochromatic-dev/translation-repair-artifact';
 import { runPassConsistency, } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';

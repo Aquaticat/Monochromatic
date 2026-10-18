@@ -16,7 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import { type OverlapSetting, } from '@monochromatic-dev/translation-repair-slice-cache';
+import type { OverlapSetting, } from '@monochromatic-dev/translation-repair-slice-cache';
 import {
   entryOverlap,
   readPassOverlap,

@@ -19,12 +19,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SettledArtifact, } from '@monochromatic-dev/translation-repair-artifact';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type { SettledArtifact, } from '@monochromatic-dev/translation-repair-artifact';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NaturalnessCompletenessError, } from '@monochromatic-dev/translation-repair-adjudication';
 import {

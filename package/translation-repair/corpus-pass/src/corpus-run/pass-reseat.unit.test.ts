@@ -25,7 +25,7 @@ import {
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { judgeSeatsFor, } from '@monochromatic-dev/translation-repair-run';
 import { configuredConsolidationPolish, } from '@monochromatic-dev/translation-repair-consolidate';
-import { type BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import {
   consolidationHooksFor,
   contestHooksFor,

@@ -21,9 +21,9 @@ import {
   ConsistencyInvariantError,
   type ConsistencyVoice,
 } from '@monochromatic-dev/translation-repair-consistency';
-import {
-  type ArtifactConsistencyCarry,
-  type ArtifactConsistencyRepeat,
+import type {
+  ArtifactConsistencyCarry,
+  ArtifactConsistencyRepeat,
 } from '@monochromatic-dev/translation-repair-artifact';
 import {
   type ConsistencyAsked,

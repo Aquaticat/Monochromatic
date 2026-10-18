@@ -1,10 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run';
-import { type ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type BudgetView,
-  type SyntheticClient,
+import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  BudgetView,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type Reseated,

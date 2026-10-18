@@ -36,7 +36,7 @@ import {
   runClientFrom,
   RunsDirectoryBusyError,
 } from '@monochromatic-dev/translation-repair-run';
-import { type EntryOutcome, } from '@monochromatic-dev/translation-repair-slice-cache';
+import type { EntryOutcome, } from '@monochromatic-dev/translation-repair-slice-cache';
 import {
   digestPipeline,
   StatedRefusalError,

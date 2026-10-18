@@ -10,7 +10,7 @@ import {
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { foldCarriageReturns, } from '@monochromatic-dev/translation-repair-slice-reading';
-import { type CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
 import { passArchiveText, } from '../dist/final/node/index.mjs';
 import { spawnKeyless, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
 import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';

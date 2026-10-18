@@ -19,9 +19,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type RepairModels,
-  type RepairSliceSeating,
+import type {
+  RepairModels,
+  RepairSliceSeating,
 } from '@monochromatic-dev/translation-repair-assembly';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { buyRepairSlice, } from '@monochromatic-dev/translation-repair-repair';

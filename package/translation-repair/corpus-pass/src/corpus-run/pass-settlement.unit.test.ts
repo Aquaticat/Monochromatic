@@ -22,13 +22,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
+import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
 } from '@monochromatic-dev/translation-repair-provider';
-import { type ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest';
 import {
   runPassConsolidation,
   runPassSettlement,

@@ -17,9 +17,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type CarryBlock,
-  type CarryEdgeWords,
+import type {
+  CarryBlock,
+  CarryEdgeWords,
 } from '@monochromatic-dev/translation-repair-consistency';
 import {
   composeSlice,

@@ -18,8 +18,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StageRosterRepeatError, } from '@monochromatic-dev/translation-repair-stage';
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   consistencyChoiceResponseFormat,
   usableChoiceFor,

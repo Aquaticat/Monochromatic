@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ConsistencyEdit, } from '@monochromatic-dev/translation-repair-consistency';
+import type { ConsistencyEdit, } from '@monochromatic-dev/translation-repair-consistency';
 import {
   type ConsistencyFloorVerdict,
   floorsWithSplice,

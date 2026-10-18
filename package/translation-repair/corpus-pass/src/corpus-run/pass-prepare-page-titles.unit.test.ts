@@ -16,15 +16,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
 import { PAGE_TITLE_LEXICON_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-artifact';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { type BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { preparePassEntry, } from '../../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_ONLY,

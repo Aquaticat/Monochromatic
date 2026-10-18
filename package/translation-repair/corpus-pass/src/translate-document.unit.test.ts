@@ -19,8 +19,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type InsertionAdmission, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive';
+import type { InsertionAdmission, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive';
 import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   TranslationRepairInterruptedError,

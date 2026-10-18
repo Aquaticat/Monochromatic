@@ -16,7 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   type ConsistencyFloorVerdict,
   consistencyFloorVerdict,

@@ -15,12 +15,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  JsonSchemaResponseFormat,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildConsistencyMessages,

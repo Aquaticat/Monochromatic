@@ -17,7 +17,7 @@ import {
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { type PageLayout, } from '@monochromatic-dev/translation-repair-consistency';
+import type { PageLayout, } from '@monochromatic-dev/translation-repair-consistency';
 import {
   type ConsistencySliceFacts,
   type SettledGroup,

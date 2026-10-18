@@ -28,8 +28,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
 import { EXA_CONTENTS_URL, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   EXA_API_KEY_VAR,
@@ -37,10 +37,10 @@ import {
   LOOKUP_CACHE_DIR_VAR,
   REFERENCE_CACHE_SUBDIR,
 } from '@monochromatic-dev/translation-repair-reference';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   outsideReadsFrom,

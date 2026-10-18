@@ -14,9 +14,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type CarryBlock,
-  type PageEnglish,
+import type {
+  CarryBlock,
+  PageEnglish,
 } from '@monochromatic-dev/translation-repair-consistency';
 import { asLocatedBySpan, } from '@monochromatic-dev/translation-repair-artifact';
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool';

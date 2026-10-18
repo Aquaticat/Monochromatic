@@ -18,12 +18,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type InsertionAdmission,
-  type PreparedDocumentPair,
+import type {
+  InsertionAdmission,
+  PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
 import {
   type ChatJsonOutcome,

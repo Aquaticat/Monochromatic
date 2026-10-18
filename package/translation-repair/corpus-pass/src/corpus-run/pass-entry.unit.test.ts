@@ -32,8 +32,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RunClient, } from '@monochromatic-dev/translation-repair-run';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { RunClient, } from '@monochromatic-dev/translation-repair-run';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
 import { readEntryInfoRecord, } from '@monochromatic-dev/translation-repair-insertion';
 import { parseSettledTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact';
 import {

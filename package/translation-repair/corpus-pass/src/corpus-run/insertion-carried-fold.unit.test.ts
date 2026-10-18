@@ -19,11 +19,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
-import {
-  type CarriedInsertion,
-  type InsertionAdmission,
-  type PreparedDocumentPair,
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type {
+  CarriedInsertion,
+  InsertionAdmission,
+  PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   CARRIED_FOLDED_FINDING,

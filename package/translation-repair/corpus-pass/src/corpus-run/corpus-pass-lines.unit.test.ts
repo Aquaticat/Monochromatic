@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type CorpusPinSetting, } from '@monochromatic-dev/translation-repair-run';
+import type { CorpusPinSetting, } from '@monochromatic-dev/translation-repair-run';
 import {
   passDoneLine,
   passIncompleteLine,

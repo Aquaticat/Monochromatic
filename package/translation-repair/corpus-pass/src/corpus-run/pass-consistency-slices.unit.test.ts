@@ -17,8 +17,8 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { spliceSlices, } from '@monochromatic-dev/translation-repair-page-pass';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive';
 import {
   type ConsistencySliceFacts,
   consistencySlicesOf,

@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ConsistencyInvariantError, } from '@monochromatic-dev/translation-repair-consistency';
-import { type ArtifactConsistencyGroup, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ArtifactConsistencyGroup, } from '@monochromatic-dev/translation-repair-artifact';
 import {
   carriedPlaceName,
   editId,

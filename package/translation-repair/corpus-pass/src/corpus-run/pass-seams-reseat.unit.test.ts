@@ -20,10 +20,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
+import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   makeInsertionChunk,
   type RosterModelId,
@@ -32,16 +32,16 @@ import {
   judgeSeatsFor,
   type RunClient,
 } from '@monochromatic-dev/translation-repair-run';
-import { type DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
-import {
-  type BudgetView,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
+import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane';
+import type {
+  BudgetView,
+  ChatJsonOutcome,
+  ChatJsonRequest,
 } from '@monochromatic-dev/translation-repair-provider';
-import { type ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest';
-import {
-  type ArtifactComparisonRow,
-  type ArtifactDeliveryRow,
+import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type {
+  ArtifactComparisonRow,
+  ArtifactDeliveryRow,
 } from '@monochromatic-dev/translation-repair-artifact-pool';
 import { ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-archive';
 import {
