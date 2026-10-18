@@ -154,11 +154,11 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
     if current.minimap.posted == Some(key) {
         return;
     }
-    if current
-        .minimap
-        .shown
-        .is_some_and(|shown| return shown.stamp.file != key.stamp.file)
-    {
+    let other_file = match current.minimap.shown {
+        Some(shown) => shown.stamp.file != key.stamp.file,
+        None => false,
+    };
+    if other_file {
         // Another file: the picture on screen is wrong, not just old.
         current.minimap.shown = None;
         drop(current);
@@ -168,7 +168,10 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         post(window, state, &mut again, key);
         return;
     }
-    let since = current.minimap.last_post.map(|at| return at.elapsed());
+    let mut since = None;
+    if let Some(at) = current.minimap.last_post {
+        since = Some(at.elapsed());
+    }
     let wait = match plan(
         current.minimap.posted,
         before,

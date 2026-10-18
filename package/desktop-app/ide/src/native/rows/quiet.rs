@@ -57,13 +57,14 @@ thread_local! {
 /// or let it run again with `None`.
 #[cfg(test)]
 pub(in crate::native) fn hold_clock(at: Option<Instant>) {
-    HELD_CLOCK.with(|held| held.set(at));
+    HELD_CLOCK.set(at);
 }
 
 /// Whether the reader scrolled so recently that a wheel animation may still be running.
 pub(super) fn scrolling(current: &State) -> bool {
-    // `is_some_and` answers false when the view never scrolled and otherwise asks the closure.
-    return current
-        .scrolled_at
-        .is_some_and(|at| return quiet_now().saturating_duration_since(at) < SCROLL_QUIET);
+    // False when the view never scrolled; otherwise whether the last scroll is still recent.
+    return match current.scrolled_at {
+        Some(at) => quiet_now().saturating_duration_since(at) < SCROLL_QUIET,
+        None => false,
+    };
 }

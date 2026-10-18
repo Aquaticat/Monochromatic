@@ -13,7 +13,7 @@ use ide_app::document::Document;
 /// Which text a picture is for.
 use ide_app::language::identity::DocumentStamp;
 /// The picture build and its two work budgets.
-use ide_app::minimap::{FULL_WORK, Input, QUICK_WORK, Stats, build};
+use ide_app::minimap::{Cancel, FULL_WORK, Input, QUICK_WORK, Stats, build};
 /// The vertical mapping the picture is built from,
 /// copied into each job.
 use ide_app::row_map::RowMap;
@@ -181,14 +181,52 @@ pub(super) static MINIMAP_GATE: std::sync::Mutex<Option<Receiver<()>>> =
 /// the sender stays with the test.
 #[cfg(test)]
 fn hold_at_test_gate() {
-    let gate = MINIMAP_GATE
-        .lock()
-        .ok()
-        .and_then(|mut slot| return slot.take());
+    let gate = match MINIMAP_GATE.lock() {
+        Ok(mut slot) => slot.take(),
+        Err(_poisoned) => None,
+    };
     if let Some(pending) = gate
         && let Err(error) = pending.recv()
     {
         tracing::debug!(%error, "test minimap gate closed");
+    }
+}
+
+/// A build is cancelled once a newer request than its own was posted.
+struct Superseded<'a> {
+    /// The number of the newest request.
+    newest: &'a AtomicU64,
+    /// The number of the request being built.
+    id: u64,
+}
+
+/// A build asks whether a newer request replaced it.
+impl Cancel for Superseded<'_> {
+    /// Whether a newer request was posted since this build began.
+    fn is_cancelled(&self) -> bool {
+        return self.newest.load(Ordering::Relaxed) != self.id;
+    }
+}
+
+/// Where a build hands each finished picture.
+trait ReplySink {
+    /// Take one finished picture;
+    ///  false once nobody receives pictures any more.
+    fn deliver(&mut self, reply: Reply) -> bool;
+}
+
+/// Pictures go to the window thread through the reply channel.
+struct ChannelSink<'a> {
+    /// The reply channel of the worker.
+    replies: &'a Sender<Reply>,
+}
+
+/// The reply channel is where the window thread reads pictures.
+impl ReplySink for ChannelSink<'_> {
+    /// Send the picture;
+    ///  false when the receiving side is gone.
+    fn deliver(&mut self, reply: Reply) -> bool {
+        return self.replies.send(reply).is_ok();
     }
 }
 
@@ -225,7 +263,7 @@ impl Builder {
     /// and with the full one when the quick one left lines rough;
     ///  `send` takes each finished picture.
     /// A newer request stops the build between pixel rows.
-    fn run(&mut self, job: &Job, newest: &AtomicU64, send: &mut dyn FnMut(Reply) -> bool) {
+    fn run(&mut self, job: &Job, newest: &AtomicU64, send: &mut dyn ReplySink) {
         let started = Instant::now();
         #[cfg(debug_assertions)]
         if thread::current().name() != Some(THREAD_NAME) {
@@ -235,7 +273,7 @@ impl Builder {
             tracing::error!(%error, "minimap worker could not adopt its typography");
             return;
         }
-        let cancelled = || return newest.load(Ordering::Relaxed) != job.id;
+        let cancelled = Superseded { newest, id: job.id };
         for work in [QUICK_WORK, FULL_WORK] {
             let input = Input {
                 document: &job.document,
@@ -275,7 +313,7 @@ impl Builder {
                 rough = reply.stats.rough_lines,
                 "minimap worker built a picture"
             );
-            if !send(reply) || last {
+            if !send.deliver(reply) || last {
                 return;
             }
         }
@@ -309,9 +347,7 @@ fn serve(
             );
             continue;
         }
-        let mut send = |reply: Reply| {
-            return replies.send(reply).is_ok();
-        };
+        let mut send = ChannelSink { replies };
         builder.run(&job, newest, &mut send);
     }
     tracing::debug!("minimap request channel closed");
@@ -386,10 +422,9 @@ impl MinimapWorker {
             .jobs
             .as_ref()
             .context("The minimap worker is closed; a new one starts with the next picture")?;
-        sender
-            .send(job)
-            .map_err(|error| return anyhow::anyhow!("{error}"))
-            .context("Cannot send a minimap request")?;
+        if let Err(error) = sender.send(job) {
+            return Err(anyhow::anyhow!("{error}").context("Cannot send a minimap request"));
+        }
         return Ok(());
     }
 
@@ -426,11 +461,15 @@ impl Drop for MinimapWorker {
     }
 }
 
-/// Compile-time proof that jobs and replies may cross to the worker thread.
-const _: fn() = || {
-    /// Fails to compile when `T` cannot cross to another thread.
-    fn assert_send<T: Send>() {}
+/// Fails to compile when `T` cannot cross to another thread.
+fn assert_send<T: Send>() {}
+
+/// Names every type that crosses to the worker thread.
+fn assert_crossing_types_are_send() {
     assert_send::<Job>();
     assert_send::<Reply>();
     assert_send::<TextShaper>();
-};
+}
+
+/// Compile-time proof that jobs and replies may cross to the worker thread.
+const _: fn() = assert_crossing_types_are_send;

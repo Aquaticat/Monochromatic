@@ -29,12 +29,11 @@ fn activate(
         navigation.reveal = None;
         match navigation.tree.toggle(&row.entry.path) {
             Ok(expanded) => {
-                if !expanded
-                    && navigation
-                        .directory_error
-                        .as_ref()
-                        .is_some_and(|(path, _message)| return path == &row.entry.path)
-                {
+                let errored_here = match navigation.directory_error.as_ref() {
+                    Some((path, _message)) => path == &row.entry.path,
+                    None => false,
+                };
+                if !expanded && errored_here {
                     navigation.directory_error = None;
                 }
             }
@@ -69,10 +68,8 @@ fn navigate(
     if SharedString::from(slint::platform::Key::RightArrow) == key {
         if row.entry.is_directory && !row.expanded {
             activate(window, source, navigation, index);
-        } else if navigation
-            .rows
-            .get(index as usize + 1)
-            .is_some_and(|next| return next.depth > row.depth)
+        } else if let Some(next) = navigation.rows.get(index as usize + 1)
+            && next.depth > row.depth
         {
             window.invoke_reveal_tree(index + 1);
         }
@@ -80,9 +77,15 @@ fn navigate(
         if row.entry.is_directory && row.expanded {
             activate(window, source, navigation, index);
         } else {
-            let parent = navigation.rows[..index as usize]
-                .iter()
-                .rposition(|candidate| return candidate.depth < row.depth);
+            let mut parent = None;
+            for (candidate_index, candidate) in
+                navigation.rows[..index as usize].iter().enumerate().rev()
+            {
+                if candidate.depth < row.depth {
+                    parent = Some(candidate_index);
+                    break;
+                }
+            }
             if let Some(parent_index) = parent {
                 window.invoke_reveal_tree(parent_index as i32);
             }

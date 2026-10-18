@@ -113,6 +113,22 @@ const CLEAN_WEIGHTS: [[f32; 4]; 4] = [
 ];
 
 /// What:
+///  The question a build asks every few pixel rows:
+///  whether its result is still wanted.
+/// Why:
+///  A newer request or a closed window makes the rest of the build wasted work,
+///  and the build ends early with nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// interface Cancel { isCancelled(): boolean }
+/// ```
+pub trait Cancel {
+    /// Whether the build should stop.
+    fn is_cancelled(&self) -> bool;
+}
+
+/// What:
 ///  What a build reads:
 /// the text,
 /// its syntax classes,
@@ -440,7 +456,7 @@ fn cells(input: &Input, range: Range<usize>, first: usize, columns: usize) -> Ve
 /// drawn as syntax colored pixels,
 /// one for each source column.
 ///  `work` is the most it may spend shaping wrapped lines,
-/// and `cancelled` is asked every few rows;
+/// and `cancelled` is asked every few pixel rows;
 ///  the answer is nothing when it said so.
 /// Why:
 ///  The picture is the whole text at a fixed size,
@@ -450,13 +466,13 @@ fn cells(input: &Input, range: Range<usize>, first: usize, columns: usize) -> Ve
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function build(shaper: TextShaper, input: Input, work: number, cancelled: () => boolean): Built | undefined;
+/// function build(shaper: TextShaper, input: Input, work: number, cancelled: Cancel): Built | undefined;
 /// ```
 pub fn build(
     shaper: &mut TextShaper,
     input: &Input,
     work: usize,
-    cancelled: &dyn Fn() -> bool,
+    cancelled: &dyn Cancel,
 ) -> Option<Built> {
     let geometry = Geometry::new(input.map.height(), input.view);
     let scale = input.scale.max(1.0);
@@ -481,7 +497,7 @@ pub fn build(
     let mut described: Option<LineRows> = None;
     let mut drawn: Option<(usize, usize, Vec<Cell>)> = None;
     for pixel in 0..height {
-        if pixel % CANCEL_EVERY == 0 && cancelled() {
+        if pixel % CANCEL_EVERY == 0 && cancelled.is_cancelled() {
             tracing::debug!(pixel, "minimap build cancelled");
             return None;
         }

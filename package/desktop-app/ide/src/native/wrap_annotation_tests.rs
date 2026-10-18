@@ -191,7 +191,9 @@ fn row_of_line<'a>(
     panic!("{what}");
 }
 
-/// How many message rows, hint rows, and what height the block of `LINE` has.
+/// How many message rows,
+///  how many hint rows,
+///  and what height the block of `LINE` has.
 fn rows_at(reader: &Reader) -> (usize, usize, f32) {
     let found = block(reader, LINE).expect("block");
     return (found.messages.len(), found.hint_rows, found.height());

@@ -17,8 +17,8 @@ use ide_app::line_rows::LineRows;
 /// the picture build,
 /// and their constants.
 use ide_app::minimap::{
-    Built, FULL_WORK, Geometry, IMAGE_ALPHA, Input, MIN_BOX, NARROWEST, QUICK_WORK, Target, WIDTH,
-    build, width_for,
+    Built, Cancel, FULL_WORK, Geometry, IMAGE_ALPHA, Input, MIN_BOX, NARROWEST, QUICK_WORK, Target,
+    WIDTH, build, width_for,
 };
 /// The vertical mapping the minimap squeezes.
 use ide_app::row_map::{CODE_ROW, RowMap};
@@ -43,9 +43,24 @@ const LIGHT: CodeColors = CodeColors {
     dark: false,
 };
 
-/// Never cancelled.
-fn never() -> bool {
-    return false;
+/// A build that is never cancelled.
+struct Never;
+
+impl Cancel for Never {
+    /// Never cancelled.
+    fn is_cancelled(&self) -> bool {
+        return false;
+    }
+}
+
+/// A build that is cancelled before it starts.
+struct Always;
+
+impl Cancel for Always {
+    /// Always cancelled.
+    fn is_cancelled(&self) -> bool {
+        return true;
+    }
 }
 
 /// A text of `lines` lines of ordinary code,
@@ -89,7 +104,7 @@ fn picture(
         view,
         width: WIDTH,
     };
-    return build(&mut shaper, &input, work, &never).expect("a picture");
+    return build(&mut shaper, &input, work, &Never).expect("a picture");
 }
 
 /// The four bytes of one pixel.
@@ -436,7 +451,7 @@ fn a_line_is_cut_at_the_width_and_costs_no_shaping() {
         view: 600.0,
         width: WIDTH,
     };
-    let built = build(&mut shaper, &input, FULL_WORK, &never).expect("a picture");
+    let built = build(&mut shaper, &input, FULL_WORK, &Never).expect("a picture");
     assert_eq!(built.width, 110);
     assert_eq!(first_ink(&built, 1), Some(0));
     assert!(pixel(&built, 109, 1)[3] > 0, "the last column is drawn");
@@ -473,7 +488,7 @@ fn wrapped_lines_draw_one_band_for_each_visual_row() {
         view: 900.0,
         width: WIDTH,
     };
-    let built = build(&mut shaper, &input, FULL_WORK, &never).expect("a picture");
+    let built = build(&mut shaper, &input, FULL_WORK, &Never).expect("a picture");
     assert_eq!(built.stats.shaped_lines, 1);
     assert_eq!(built.stats.rough_lines, 0);
     // The picture is four pixels a row: `wrapped` bands of text, then the short line's band.
@@ -535,7 +550,7 @@ fn a_long_text_is_sampled_within_the_track_and_the_budget() {
         view: 700.0,
         width: WIDTH,
     };
-    let built = build(&mut shaper, &input, FULL_WORK, &never).expect("a picture");
+    let built = build(&mut shaper, &input, FULL_WORK, &Never).expect("a picture");
     assert_eq!(built.height, 1400);
     assert!(
         built.stats.lines <= built.stats.pixel_rows,
@@ -597,5 +612,5 @@ fn a_cancelled_build_answers_nothing() {
         view: 600.0,
         width: WIDTH,
     };
-    assert!(build(&mut shaper, &input, FULL_WORK, &|| return true).is_none());
+    assert!(build(&mut shaper, &input, FULL_WORK, &Always).is_none());
 }

@@ -81,13 +81,17 @@ pub(super) fn scrolled(window: &AppWindow, navigation: &mut Navigation, now: Ins
         return;
     }
     navigation.tree_scroll = offset;
-    let unwatched = navigation
-        .shown
-        .iter()
-        .any(|path| return !navigation.watched.contains(path));
-    let rested = navigation
-        .scroll_retry
-        .is_none_or(|at| return now.saturating_duration_since(at) >= SCROLL_RETRY_GAP);
+    let mut unwatched = false;
+    for path in navigation.shown.iter() {
+        if !navigation.watched.contains(path) {
+            unwatched = true;
+            break;
+        }
+    }
+    let rested = match navigation.scroll_retry {
+        Some(at) => now.saturating_duration_since(at) >= SCROLL_RETRY_GAP,
+        None => true,
+    };
     if unwatched && rested {
         tracing::debug!(
             offset,
@@ -163,7 +167,10 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     // const parent = filePath === undefined ? undefined : dirname(filePath);
     // ```
     let parent = current.file_path.as_deref().and_then(Path::parent);
-    let watched = parent.is_some_and(|directory| return navigation.watched.contains(directory));
+    let watched = match parent {
+        Some(directory) => navigation.watched.contains(directory),
+        None => false,
+    };
     let outside = current.outside_project;
     // A displayed file needs its folder watched; no displayed file, or one outside the project, needs nothing.
     let file_covered = watched || parent.is_none() || outside;
@@ -176,11 +183,14 @@ pub(super) fn update(source: &Rc<RefCell<State>>, navigation: &mut Navigation) {
     {
         // Retry failed watches once per sweep, and only while something shown lacks a watch,
         // so a fully watched window does not wake the watch thread every second.
-        let all_watched = file_covered
-            && navigation
-                .shown
-                .iter()
-                .all(|path| return navigation.watched.contains(path));
+        let mut shown_watched = true;
+        for path in navigation.shown.iter() {
+            if !navigation.watched.contains(path) {
+                shown_watched = false;
+                break;
+            }
+        }
+        let all_watched = file_covered && shown_watched;
         if !all_watched {
             navigation.watcher.retry();
         }

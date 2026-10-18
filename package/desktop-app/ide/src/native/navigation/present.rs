@@ -28,7 +28,14 @@ fn expand_reveal(navigation: &mut Navigation) {
     // Reverse the bounded ancestor walk so parents become visible before their children.
     for ancestor in ancestors.into_iter().rev() {
         let rows = navigation.tree.rows();
-        let Some(row) = rows.iter().find(|row| return row.entry.path == ancestor) else {
+        let mut found_row = None;
+        for candidate in rows.iter() {
+            if candidate.entry.path == ancestor {
+                found_row = Some(candidate);
+                break;
+            }
+        }
+        let Some(row) = found_row else {
             break;
         };
         if !row.entry.is_directory {
@@ -57,11 +64,13 @@ pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, navigation
     for (index, row) in navigation.rows.iter().enumerate() {
         // Native filenames may not be UTF-8; this lossy string is never used to reopen their paths.
         let label = SharedString::from(row.entry.name.to_string_lossy().into_owned());
-        let slot = navigation
-            .recent
-            .paths()
-            .iter()
-            .position(|path| return path == &row.entry.path);
+        let mut slot = None;
+        for (slot_position, path) in navigation.recent.paths().iter().enumerate() {
+            if path == &row.entry.path {
+                slot = Some(slot_position);
+                break;
+            }
+        }
         let recency = if let Some(slot_index) = slot {
             slot_index.to_string()
         } else {

@@ -168,12 +168,19 @@ fn accepts(current: &State, paint: &Paint, built: &TileBuilt, height: f32) -> bo
         && built.file == current.file_generation
         && built.active == paint.active
         && built.bounds.width == current.width
-        && built
-            .measured
-            .iter()
-            .all(|(line, rows)| return current.row_map.rows_of(*line) == *rows)
+        && measured_rows_match(current, built)
         && holds(current, built.bounds, current.offset, height)
         && stamp_for(current, built.bounds, paint) == built.stamp;
+}
+
+/// Whether every line the tile measured has the row count the map holds for it.
+fn measured_rows_match(current: &State, built: &TileBuilt) -> bool {
+    for (line, rows) in built.measured.iter() {
+        if current.row_map.rows_of(*line) != *rows {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Take at most one finished tile from the worker and what the pass measured,

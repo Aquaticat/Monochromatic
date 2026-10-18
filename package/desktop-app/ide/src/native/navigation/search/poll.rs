@@ -29,10 +29,10 @@ fn tick(window: &AppWindow, search: &mut Search) -> Result<()> {
     let Some(reply) = search.worker.try_take()? else {
         return Ok(());
     };
-    let content_only = search
-        .input
-        .as_ref()
-        .is_some_and(|input| return input.content_only);
+    let content_only = match search.input.as_ref() {
+        Some(input) => input.content_only,
+        None => false,
+    };
     let (hits, error) = present::results(&reply.results, content_only);
     search.hits = hits;
     window.set_search_error(error.into());

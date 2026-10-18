@@ -28,12 +28,11 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
             }
             if was_busy && !navigation.reader.is_busy() {
                 let completed = navigation.reading.take();
-                if changed
-                    && navigation
-                        .directory_error
-                        .as_ref()
-                        .is_some_and(|(path, _message)| return Some(path) == completed.as_ref())
-                {
+                let errored_there = match navigation.directory_error.as_ref() {
+                    Some((path, _message)) => Some(path) == completed.as_ref(),
+                    None => false,
+                };
+                if changed && errored_there {
                     navigation.directory_error = None;
                     return true;
                 }
@@ -45,10 +44,10 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
             if navigation.reader.is_busy() || navigation.reading.is_none() {
                 navigation.reader_available = false;
             }
-            let path = navigation
-                .reading
-                .take()
-                .unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
+            let path = match navigation.reading.take() {
+                Some(reading) => reading,
+                None => navigation.workspace.root().to_path_buf(),
+            };
             let retained = if navigation.tree.has_listing(&path) {
                 "The last directory snapshot is retained."
             } else {
@@ -77,17 +76,22 @@ fn schedule(navigation: &mut Navigation) -> Result<()> {
     if !navigation.reader_available || navigation.reader.is_busy() {
         return Ok(());
     }
-    let cooling = navigation
-        .last_read
-        .is_some_and(|time| return time.elapsed() < Duration::from_millis(500));
+    let cooling = match navigation.last_read {
+        Some(time) => time.elapsed() < Duration::from_millis(500),
+        None => false,
+    };
     let missing = navigation.tree.missing_listings();
-    let next_missing = missing.iter().find(|path| {
-        return !cooling
-            || !navigation
-                .directory_error
-                .as_ref()
-                .is_some_and(|(failed, _message)| return failed == *path);
-    });
+    let mut next_missing = None;
+    for path in missing.iter() {
+        let failed_there = match navigation.directory_error.as_ref() {
+            Some((failed, _message)) => failed == path,
+            None => false,
+        };
+        if !cooling || !failed_there {
+            next_missing = Some(path);
+            break;
+        }
+    }
     let target = if let Some(path) = next_missing {
         path.clone()
     } else {

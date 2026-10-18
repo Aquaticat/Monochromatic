@@ -91,11 +91,11 @@ impl Tiler {
             self.styles = None;
         }
         // A new styles snapshot can change glyph classes without changing the revision, so cached rows are dropped.
-        if !self
-            .styles
-            .as_ref()
-            .is_some_and(|known| return Arc::ptr_eq(known, styles))
-        {
+        let same_styles = match self.styles.as_ref() {
+            Some(known) => Arc::ptr_eq(known, styles),
+            None => false,
+        };
+        if !same_styles {
             self.shaper.forget_rows();
             self.styles = Some(Arc::clone(styles));
         }
@@ -131,10 +131,10 @@ pub(in crate::native) static PASS_GATE: std::sync::Mutex<Option<Receiver<()>>> =
 /// the sender stays with the test.
 #[cfg(test)]
 fn hold_at_test_gate() {
-    let gate = BUILD_GATE
-        .lock()
-        .ok()
-        .and_then(|mut slot| return slot.take());
+    let gate = match BUILD_GATE.lock() {
+        Ok(mut slot) => slot.take(),
+        Err(_poisoned) => None,
+    };
     if let Some(pending) = gate
         && let Err(error) = pending.recv()
     {
@@ -253,13 +253,17 @@ pub(super) fn run(
     }
 }
 
-/// Compile-time proof that jobs and results may cross to the worker thread.
-const _: fn() = || {
-    /// Compiles only for a type that is `Send`.
-    fn assert_send<T: Send>() {}
+/// Compiles only for a type that is `Send`.
+fn assert_send<T: Send>() {}
+
+/// Names every type that crosses to the worker thread.
+fn assert_crossing_types_are_send() {
     assert_send::<TileJob>();
     assert_send::<PassJob>();
     assert_send::<PassOutput>();
     assert_send::<Result<TileBuilt>>();
     assert_send::<TextShaper>();
-};
+}
+
+/// Compile-time proof that jobs and results may cross to the worker thread.
+const _: fn() = assert_crossing_types_are_send;

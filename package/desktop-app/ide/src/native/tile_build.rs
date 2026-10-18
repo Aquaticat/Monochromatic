@@ -256,10 +256,10 @@ impl TileWorker {
             .requests
             .as_ref()
             .context("Source tile worker is closed; restart the application")?;
-        sender
-            .try_send(Command::Tile(Box::new(job)))
-            .map_err(|error| return anyhow::anyhow!("{error}"))
-            .context("Cannot send a source tile request; restart the application")?;
+        if let Err(error) = sender.try_send(Command::Tile(Box::new(job))) {
+            return Err(anyhow::anyhow!("{error}")
+                .context("Cannot send a source tile request; restart the application"));
+        }
         self.busy = true;
         return Ok(());
     }

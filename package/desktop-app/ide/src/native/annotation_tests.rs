@@ -286,7 +286,8 @@ fn code_tops(reader: &Reader) -> Vec<f32> {
 }
 
 /// Press at `start` after a click on line 1 (so the press is no double click),
-///  move to `target`, release,
+///  move to `target`,
+///  release,
 ///  and return the caret and selection end.
 fn drag_to(reader: &Reader, start: LogicalPosition, target: LogicalPosition) -> (usize, usize) {
     let window = &reader.window;

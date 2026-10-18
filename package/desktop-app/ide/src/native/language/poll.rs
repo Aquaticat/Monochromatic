@@ -133,17 +133,23 @@ fn cancel_stale(
     language: &mut Language,
     displayed: DocumentStamp,
 ) {
-    if language
-        .hover
-        .as_ref()
-        .is_some_and(|pending| return pending.stamp != displayed)
-    {
+    let hover_stale = match language.hover.as_ref() {
+        Some(pending) => pending.stamp != displayed,
+        None => false,
+    };
+    if hover_stale {
         language.hover = None;
     }
-    let Some(pending) = language
-        .action
-        .take_if(|pending| return pending.stamp != displayed)
-    else {
+    let action_stale = match language.action.as_ref() {
+        Some(pending) => pending.stamp != displayed,
+        None => false,
+    };
+    let dropped = if action_stale {
+        language.action.take()
+    } else {
+        None
+    };
+    let Some(pending) = dropped else {
         return;
     };
     tracing::debug!(action = ?pending.action, ?displayed, "dropped a language request for text no longer displayed");
@@ -204,11 +210,19 @@ fn finish(
     navigation: &Rc<RefCell<Navigation>>,
     language: &mut Language,
 ) {
-    // `take_if` moves the request out only when its last answer arrived.
-    if let Some(pending) = language.hover.take_if(|pending| return pending.complete) {
+    // A request moves out only when its last answer arrived.
+    let hover_complete = match language.hover.as_ref() {
+        Some(pending) => pending.complete,
+        None => false,
+    };
+    if hover_complete && let Some(pending) = language.hover.take() {
         outcome::finish(window, source, navigation, language, pending);
     }
-    if let Some(pending) = language.action.take_if(|pending| return pending.complete) {
+    let action_complete = match language.action.as_ref() {
+        Some(pending) => pending.complete,
+        None => false,
+    };
+    if action_complete && let Some(pending) = language.action.take() {
         outcome::finish(window, source, navigation, language, pending);
     }
 }
@@ -258,9 +272,10 @@ fn snapshots(
     {
         accepted = true;
         // The accessor the renderer uses reports what was stored.
-        let count = annotations
-            .hints(displayed)
-            .map_or(0, |stored| return stored.hints.len());
+        let count = match annotations.hints(displayed) {
+            Some(stored) => stored.hints.len(),
+            None => 0,
+        };
         tracing::debug!(
             count,
             ?displayed,
@@ -271,9 +286,10 @@ fn snapshots(
         && annotations.accept_diagnostics(displayed, document.text(), snapshot)
     {
         accepted = true;
-        let groups = annotations
-            .diagnostics(displayed)
-            .map_or(0, |stored| return stored.groups.len());
+        let groups = match annotations.diagnostics(displayed) {
+            Some(stored) => stored.groups.len(),
+            None => 0,
+        };
         tracing::debug!(
             groups,
             ?displayed,
@@ -348,12 +364,55 @@ fn rest(
 /// function relayWatching(language, navigation) { feedServers(navigation, worker?.wantsFileChanges() ? worker.fileChangeSender() : undefined); }
 /// ```
 fn relay_watching(language: &Language, navigation: &Rc<RefCell<Navigation>>) {
-    let feed = language.worker.as_ref().and_then(|worker| {
-        return worker
-            .wants_file_changes()
-            .then(|| return worker.file_change_sender());
-    });
+    let mut feed = None;
+    if let Some(worker) = language.worker.as_ref()
+        && worker.wants_file_changes()
+    {
+        feed = Some(worker.file_change_sender());
+    }
     feed_servers(&mut navigation.borrow_mut(), feed);
+}
+
+/// What:
+///  The steps of one tick in order,
+///  stopping at the first worker error;
+///  `repaint` is set when new hints or diagnostics were stored.
+/// Why:
+///  `?` inside one function lets the first error end the steps and the caller turn support off.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function steps(window, source, navigation, language, displayed): { repaint: boolean } // throws
+/// ```
+fn steps(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+    navigation: &Rc<RefCell<Navigation>>,
+    language: &mut Language,
+    displayed: DocumentStamp,
+    repaint: &mut bool,
+) -> anyhow::Result<()> {
+    sync::update(language, source)?;
+    // A status for an earlier file generation is ignored.
+    if let Some(worker) = language.worker.as_mut()
+        && let Some(status) = worker.try_take_status()?
+        && status.file == Some(displayed.file)
+    {
+        language.status = status;
+    }
+    cancel_stale(window, source, language, displayed);
+    rest(window, source, language, displayed);
+    send(language, false, displayed)?;
+    send(language, true, displayed)?;
+    replies(language, displayed)?;
+    finish(window, source, navigation, language);
+    // A references request made by a finished definition goes out in the same tick.
+    send(language, false, displayed)?;
+    *repaint = snapshots(language, source, displayed)?;
+    if language.synced == Some(displayed) {
+        sync::hints(language, window, source, displayed)?;
+    }
+    return Ok(());
 }
 
 /// What:
@@ -383,31 +442,16 @@ pub(super) fn tick(
     let displayed = surface::displayed(&source.borrow());
     // Set by the steps when new hints or diagnostics were stored; read after them to repaint once.
     let mut repaint = false;
-    // A closure returning `anyhow::Result<()>` lets `?` stop the steps at the first worker error.
-    let mut steps = || -> anyhow::Result<()> {
-        sync::update(language, source)?;
-        // A status for an earlier file generation is ignored.
-        if let Some(worker) = language.worker.as_mut()
-            && let Some(status) = worker.try_take_status()?
-            && status.file == Some(displayed.file)
-        {
-            language.status = status;
-        }
-        cancel_stale(window, source, language, displayed);
-        rest(window, source, language, displayed);
-        send(language, false, displayed)?;
-        send(language, true, displayed)?;
-        replies(language, displayed)?;
-        finish(window, source, navigation, language);
-        // A references request made by a finished definition goes out in the same tick.
-        send(language, false, displayed)?;
-        repaint = snapshots(language, source, displayed)?;
-        if language.synced == Some(displayed) {
-            sync::hints(language, window, source, displayed)?;
-        }
-        return Ok(());
-    };
-    if let Err(error) = steps() {
+    // `?` inside the steps stops them at the first worker error.
+    let stepped = steps(
+        window,
+        source,
+        navigation,
+        language,
+        displayed,
+        &mut repaint,
+    );
+    if let Err(error) = stepped {
         stop(window, source, language, &error);
         return;
     }

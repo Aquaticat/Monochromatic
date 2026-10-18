@@ -26,7 +26,10 @@ use slint::ComponentHandle;
 /// ```ts
 /// type Shared<T> = { current: T };
 /// ```
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{RefCell, RefMut},
+    rc::Rc,
+};
 
 /// What:
 ///  Start an explicit action at `position`:
@@ -86,24 +89,25 @@ fn start(
 }
 
 /// What:
-///  Run `body` with the language state,
+///  Lend the language state for writing,
 ///  unless another callback holds it right now.
-///       `impl FnOnce(&mut Language)` is any closure that runs once with the state lent to it.
+///  The result is the borrow,
+///  or nothing.
 /// Why:
 ///  A window event delivered while the state is held is skipped and logged,
 ///  never a panic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function withLanguage(language: Shared<Language>, body: (state: Language) => void): void
+/// function held(language: Shared<Language>): Language | undefined
 /// ```
-fn with(language: &Rc<RefCell<Language>>, body: impl FnOnce(&mut Language)) {
+fn held(language: &Rc<RefCell<Language>>) -> Option<RefMut<'_, Language>> {
     // `try_borrow_mut` fails instead of panicking when the state is already lent.
-    let Ok(mut current) = language.try_borrow_mut() else {
+    let Ok(current) = language.try_borrow_mut() else {
         tracing::debug!("skipped a language callback while the state was held");
-        return;
+        return None;
     };
-    body(&mut current);
+    return Some(current);
 }
 
 /// What:
@@ -132,9 +136,9 @@ fn bind_caret(
             return;
         };
         let head = state.borrow().document.position().head;
-        with(&shared, |current| {
-            start(&window, &state, current, action, head)
-        });
+        if let Some(mut current) = held(&shared) {
+            start(&window, &state, &mut current, action, head);
+        }
     };
     if action == Action::Hover {
         owner.on_hover_request(callback);
@@ -157,25 +161,29 @@ fn bind_pointer(owner: &AppWindow, source: &Rc<RefCell<State>>, language: &Rc<Re
             tracing::debug!(y, x, "Ctrl+click over no source character");
             return;
         };
-        with(&click_language, |current| {
+        if let Some(mut current) = held(&click_language) {
             start(
                 &window,
                 &click_state,
-                current,
+                &mut current,
                 Action::PointerDefinition,
                 character,
             );
-        });
+        }
     });
     let move_state = Rc::clone(source);
     let move_language = Rc::clone(language);
     owner.on_pointer_moved(move |y, x| {
         let character = pointer::character_at(&move_state.borrow(), y, x);
-        with(&move_language, |current| current.rest.moved(character));
+        if let Some(mut current) = held(&move_language) {
+            current.rest.moved(character);
+        }
     });
     let exit_language = Rc::clone(language);
     owner.on_pointer_exited(move || {
-        with(&exit_language, |current| current.rest.left());
+        if let Some(mut current) = held(&exit_language) {
+            current.rest.left();
+        }
     });
 }
 
@@ -194,9 +202,9 @@ fn bind_surfaces(
         let Some(window) = escape_window.upgrade() else {
             return;
         };
-        with(&escape_language, |current| {
+        if let Some(mut current) = held(&escape_language) {
             current.shown = surface::dismiss(&window, &current.shown, "Escape");
-        });
+        }
     });
     let close_language = Rc::clone(language);
     let close_window = owner.as_weak();
@@ -204,9 +212,9 @@ fn bind_surfaces(
         let Some(window) = close_window.upgrade() else {
             return;
         };
-        with(&close_language, |current| {
+        if let Some(mut current) = held(&close_language) {
             current.shown = surface::dismiss(&window, &current.shown, "the list was closed");
-        });
+        }
     });
     let choose_state = Rc::clone(source);
     let choose_navigation = Rc::clone(navigation);
@@ -216,9 +224,15 @@ fn bind_surfaces(
         let Some(window) = choose_window.upgrade() else {
             return;
         };
-        with(&choose_language, |current| {
-            outcome::choose(&window, &choose_state, &choose_navigation, current, index);
-        });
+        if let Some(mut current) = held(&choose_language) {
+            outcome::choose(
+                &window,
+                &choose_state,
+                &choose_navigation,
+                &mut current,
+                index,
+            );
+        }
     });
 }
 

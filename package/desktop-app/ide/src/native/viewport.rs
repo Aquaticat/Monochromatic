@@ -376,9 +376,10 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         // ```ts
         // const changed = place(state.current, offset, width, height);
         // ```
-        let reported = weak
-            .upgrade()
-            .map(|window| return window.window().scale_factor());
+        let mut reported = None;
+        if let Some(window) = weak.upgrade() {
+            reported = Some(window.window().scale_factor());
+        }
         tracing::debug!(
             target: "monochromatic_ide::native::frame",
             viewport_width,

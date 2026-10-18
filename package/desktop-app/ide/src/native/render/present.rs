@@ -150,7 +150,10 @@ pub(in crate::native) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, fr
     let mut current = state.borrow_mut();
     let found = present(&current);
     let view = current.shaped.as_ref().expect("painted source view");
-    let matches = matches_changed.then(|| return model_rows(&view.matches));
+    let mut matches = None;
+    if matches_changed {
+        matches = Some(model_rows(&view.matches));
+    }
     let document = &current.document;
     let caret = view.caret(document);
     let selections = model_rows(&view.selections);

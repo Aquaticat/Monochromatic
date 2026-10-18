@@ -21,14 +21,13 @@ pub(super) fn remember(navigation: &mut Navigation, index: i32) {
     let Some(row) = navigation.rows.get(index as usize) else {
         return;
     };
-    navigation.search.directory = if row.entry.is_directory {
-        Some(row.entry.path.clone())
-    } else {
-        row.entry
-            .path
-            .parent()
-            .map(|parent| return parent.to_path_buf())
-    };
+    let mut directory = None;
+    if row.entry.is_directory {
+        directory = Some(row.entry.path.clone());
+    } else if let Some(parent) = row.entry.path.parent() {
+        directory = Some(parent.to_path_buf());
+    }
+    navigation.search.directory = directory;
 }
 
 /// Editing invalidates both the result model and subprocess generation immediately,
@@ -56,10 +55,10 @@ pub(super) fn start(window: &AppWindow, navigation: &mut Navigation) -> Result<(
         remember(navigation, window.get_tree_focused_row());
     }
     let search = &mut navigation.search;
-    search.scope = search
-        .directory
-        .clone()
-        .unwrap_or_else(|| return navigation.workspace.root().to_path_buf());
+    search.scope = match search.directory.clone() {
+        Some(directory) => directory,
+        None => navigation.workspace.root().to_path_buf(),
+    };
     if !window.get_search_open() {
         search.return_tree = window.get_tree_has_focus();
     }

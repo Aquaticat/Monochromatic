@@ -29,7 +29,7 @@ use ide_app::{cli::Options, workspace::Workspace};
 /// Toolkit handles bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString};
 /// Callbacks need the same document without cross-thread Arc/Mutex overhead.
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, path::Path, rc::Rc};
 
 /// What:
 ///  Success when this window may start language servers,
@@ -62,6 +62,24 @@ fn servers_wanted() -> anyhow::Result<()> {
     return Ok(());
 }
 
+/// What:
+///  Enter the project directory,
+///  check that servers are wanted,
+///  and start the language worker.
+/// Why:
+///  Either failure leaves the window usable;
+///  language features then explain the reason.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function startLanguageWorker(root: string): LanguageWorker // throws
+/// ```
+fn start_language_worker(root: &Path) -> anyhow::Result<LanguageWorker> {
+    enter_project_directory(root)?;
+    servers_wanted()?;
+    return LanguageWorker::new(root);
+}
+
 /// Run one project window after display-independent argument parsing has completed.
 pub fn run(options: Options) -> anyhow::Result<()> {
     // What: The writer thread owns standard output, where the log has always gone. `_log_flush` is
@@ -89,9 +107,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     // let worker: LanguageWorker | Error;
     // try { process.chdir(root); worker = new LanguageWorker(root); } catch (error) { worker = error; }
     // ```
-    let language_worker = enter_project_directory(workspace.root())
-        .and_then(|()| return servers_wanted())
-        .and_then(|()| return LanguageWorker::new(workspace.root()));
+    let language_worker = start_language_worker(workspace.root());
     let project_root = workspace.root().to_path_buf();
     // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
     let file_path = if let Some(file) = options.file {
@@ -114,16 +130,26 @@ pub fn run(options: Options) -> anyhow::Result<()> {
         // ```ts
         // source = await readFile(path, 'utf8');
         // ```
-        let metadata = std::fs::metadata(path)
-            .with_context(|| return format!("Cannot inspect source file {}", path.display()))?;
+        let metadata = match std::fs::metadata(path) {
+            Ok(found) => found,
+            Err(error) => {
+                return Err(anyhow::Error::new(error)
+                    .context(format!("Cannot inspect source file {}", path.display())));
+            }
+        };
         if !metadata.is_file() {
             bail!(
                 "Cannot open source {}: it is not a regular file",
                 path.display()
             );
         }
-        let text = std::fs::read_to_string(path)
-            .with_context(|| return format!("Cannot read UTF-8 source file {}", path.display()))?;
+        let text = match std::fs::read_to_string(path) {
+            Ok(read) => read,
+            Err(error) => {
+                return Err(anyhow::Error::new(error)
+                    .context(format!("Cannot read UTF-8 source file {}", path.display())));
+            }
+        };
         (text, path.display().to_string())
     } else {
         (String::new(), String::new())

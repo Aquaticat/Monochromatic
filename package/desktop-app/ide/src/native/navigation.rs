@@ -116,8 +116,9 @@ pub(super) fn bind(
     source: &Rc<RefCell<State>>,
     workspace: Workspace,
 ) -> Result<Timer> {
-    // `map` keeps only the timer; callers that open no language targets need no navigation handle.
-    return bind_shared(window, source, workspace).map(|(timer, _navigation)| return timer);
+    // Only the timer is kept; callers that open no language targets need no navigation handle.
+    let (timer, _navigation) = bind_shared(window, source, workspace)?;
+    return Ok(timer);
 }
 
 /// What:

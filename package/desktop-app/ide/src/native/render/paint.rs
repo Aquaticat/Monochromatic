@@ -127,9 +127,10 @@ pub(in crate::native) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport
     return Viewport {
         first: bounds.first,
         count: bounds.count,
-        width: wrap.map_or(UNWRAPPED_RASTER_WIDTH, |width| {
-            return (width + RASTER_MARGIN).ceil();
-        }),
+        width: match wrap {
+            Some(width) => (width + RASTER_MARGIN).ceil(),
+            None => UNWRAPPED_RASTER_WIDTH,
+        },
         scale,
         wrap,
         clip: bounds.clip,

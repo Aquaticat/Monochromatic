@@ -123,13 +123,14 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // What: A new wrap width the viewport just reported is taken here, within an allowance, or left to the worker.
     // Why: The frame that follows must not show the old width's text in a window of the new width.
     let mut allowance = rewrap::begin(&mut current);
-    let rewrap_started = allowance.as_ref().map(|_| {
-        return (
+    let mut rewrap_started = None;
+    if allowance.is_some() {
+        rewrap_started = Some((
             Instant::now(),
             current.shaper.shaped_rows(),
             current.shaper.rebroken_rows(),
-        );
-    });
+        ));
+    }
     // No frame is painted against a map that no longer describes the displayed text and its annotations.
     // The step for a new width installs the blocks even while the reader scrolls: the frame needs them now.
     let mut scrolled = rows::settle(&mut current, factor, view_now, allowance.is_some());
@@ -160,13 +161,11 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let mut same_inputs = current.frame_stamp.as_ref() == Some(&shown_stamp);
     // A new wrap width moves the blocks at once, while the displayed tile keeps the ones it was painted with until the
     // worker's tile for the new width arrives; that difference alone does not make the displayed tile stale.
-    if !same_inputs
-        && shown.width != requested.width
-        && current
-            .frame_stamp
-            .as_ref()
-            .is_some_and(|held| return held.same_except_annotations(&shown_stamp))
-    {
+    let differs_only_in_annotations = match current.frame_stamp.as_ref() {
+        Some(held) => held.same_except_annotations(&shown_stamp),
+        None => false,
+    };
+    if !same_inputs && shown.width != requested.width && differs_only_in_annotations {
         same_inputs = true;
     }
     let mut pixels = None;

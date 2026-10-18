@@ -104,16 +104,16 @@ pub(super) fn update(language: &mut Language, source: &Rc<RefCell<State>>) -> Re
     if language.synced == Some(stamp) && !language.reopen {
         return Ok(true);
     }
-    let same_file = language
-        .synced
-        .is_some_and(|synced| return synced.file == stamp.file);
+    let same_file = match language.synced {
+        Some(synced) => synced.file == stamp.file,
+        None => false,
+    };
     // A reload record for exactly the displayed revision continues what the worker holds.
     if same_file
         && !language.reopen
-        && let Some(reload) = current
-            .language_reload
-            .as_ref()
-            .filter(|record| return record.file == stamp.file && record.revision == stamp.revision)
+        && let Some(reload) = current.language_reload.as_ref()
+        && reload.file == stamp.file
+        && reload.revision == stamp.revision
     {
         let command = reload.clone();
         drop(current);
@@ -177,18 +177,22 @@ pub(super) fn hints(
     if language.hints.sent == Some((stamp, wanted)) {
         return Ok(());
     }
-    let new_text = language
-        .hints
-        .sent
-        .is_none_or(|(sent, _)| return sent != stamp);
-    // `map` reads the lines of the previous sighting, if any.
-    if language.hints.seen.map(|(lines, _)| return lines) != Some(wanted) {
+    let new_text = match language.hints.sent {
+        Some((sent, _)) => sent != stamp,
+        None => true,
+    };
+    // The lines of the previous sighting, if any.
+    let mut seen_lines = None;
+    if let Some((lines, _)) = language.hints.seen {
+        seen_lines = Some(lines);
+    }
+    if seen_lines != Some(wanted) {
         language.hints.seen = Some((wanted, Instant::now()));
     }
-    let settled = language
-        .hints
-        .seen
-        .is_some_and(|(_, since)| return since.elapsed() >= HINT_SETTLE);
+    let settled = match language.hints.seen {
+        Some((_, since)) => since.elapsed() >= HINT_SETTLE,
+        None => false,
+    };
     if !new_text && !settled {
         return Ok(());
     }

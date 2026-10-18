@@ -113,12 +113,15 @@ pub(in crate::native) fn plan(
         return Plan::Post;
     }
     // Only the vertical mapping differs from the previous look: the measurement of the text is arriving.
-    let rows_only = noted.is_some_and(|before| {
-        return (Key {
-            rows: key.rows,
-            ..before
-        }) == key;
-    });
+    let rows_only = match noted {
+        Some(before) => {
+            (Key {
+                rows: key.rows,
+                ..before
+            }) == key
+        }
+        None => false,
+    };
     if !rows_only {
         return Plan::Wait(DEBOUNCE);
     }

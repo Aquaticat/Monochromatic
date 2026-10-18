@@ -207,9 +207,10 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         // `None`: nothing a block depends on changed.
         return None;
     }
-    let blocks_current = current.row_key.is_some_and(|known| {
-        return (known.0, known.1, known.2, known.4) == (key.0, key.1, key.2, key.4);
-    });
+    let blocks_current = match current.row_key {
+        Some(known) => (known.0, known.1, known.2, known.4) == (key.0, key.1, key.2, key.4),
+        None => false,
+    };
     // What: Destructuring `&mut State` lends fields separately.
     // Why: Assembly changes the store's packing cache and uses the shaper while the document is only read.
     //
@@ -346,9 +347,10 @@ pub(super) fn settle(
     let layout = rebuilt(current, scale)?;
     let kept = anchored(&current.row_map, &layout.map, offset).min(limit(&layout.map, height));
     // A layout for the same text may wait; one for another text never does, its caller placed the view.
-    let same_text = current
-        .row_key
-        .is_some_and(|known| return known.0 == layout.key.0);
+    let same_text = match current.row_key {
+        Some(known) => known.0 == layout.key.0,
+        None => false,
+    };
     // What: `abs()` is the distance without its sign; the window's offset differs from the last one placed when
     //       a scroll step is under way whose change handler has not run yet.
     // Why: Under load a render can come between a wheel animation's last step and its change handler; that step
@@ -552,12 +554,13 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
             while next_block < current.blocks.len() && current.blocks[next_block].line < row.row {
                 next_block += 1;
             }
-            let mark = current
-                .blocks
-                .get(next_block)
-                .filter(|block| return block.line == row.row)
-                .and_then(|block| return block.messages.first())
-                .map_or(0, |worst| return i32::from(rank(worst.severity)) + 1);
+            let mut mark = 0;
+            if let Some(block) = current.blocks.get(next_block)
+                && block.line == row.row
+                && let Some(worst) = block.messages.first()
+            {
+                mark = i32::from(rank(worst.severity)) + 1;
+            }
             for visual in 0..row.visual_rows() {
                 let top = row.top + row.visual_row_offset(visual, view.viewport.scale);
                 // A clipped tile paints only the rows inside its raster, and the gutter has an entry for just those.

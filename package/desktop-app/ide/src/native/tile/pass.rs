@@ -135,13 +135,13 @@ pub(super) fn apply_pass(window: &AppWindow, state: &Rc<RefCell<State>>, output:
     }
     let held = current.shown.first..current.shown.first + current.shown.count;
     let count = output.lines.len();
-    let changed = rows::absorb(
-        &mut current,
-        output
-            .lines
-            .into_iter()
-            .filter(|(line, _)| return !held.contains(line)),
-    );
+    let mut unheld = Vec::new();
+    for (line, rows) in output.lines {
+        if !held.contains(&line) {
+            unheld.push((line, rows));
+        }
+    }
+    let changed = rows::absorb(&mut current, unheld);
     #[cfg(debug_assertions)]
     {
         current.pass_applied += 1;

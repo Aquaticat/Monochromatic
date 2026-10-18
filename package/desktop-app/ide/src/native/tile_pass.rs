@@ -203,12 +203,13 @@ impl PassOutbox {
     /// test-only.
     #[cfg(test)]
     pub(super) fn waiting_lines(&self) -> usize {
-        return self
-            .output
-            .lock()
-            .ok()
-            .and_then(|waiting| return waiting.as_ref().map(|held| return held.lines.len()))
-            .unwrap_or(0);
+        return match self.output.lock() {
+            Ok(waiting) => match waiting.as_ref() {
+                Some(held) => held.lines.len(),
+                None => 0,
+            },
+            Err(_poisoned) => 0,
+        };
     }
 
     /// Take at most `limit` measured lines;
