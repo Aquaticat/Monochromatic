@@ -143,6 +143,21 @@ fn best_scope(capture: &str, scopes: &[&str]) -> Option<Highlight> {
 }
 
 /// What:
+///  An error rendered with its whole chain of causes,
+///  as the `{:#}` format shows it.
+/// Why:
+///  The loader reports failures as plain text,
+///  so each fallible step converts its error with this one function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const alternateText = (error: Error): string => String(error);
+/// ```
+fn alternate_text<Failure: std::fmt::Display>(error: Failure) -> String {
+    return format!("{error:#}");
+}
+
+/// What:
 ///  Read one query kind of a language,
 ///  following `; inherits:` lines into other languages'
 ///       files.
@@ -212,7 +227,10 @@ impl OwnLoader {
         // ```ts
         // const configs = Array.from({ length: count }, () => ({}));
         // ```
-        let configs = (0..count).map(|_| return OnceCell::new()).collect();
+        let mut configs: Vec<OnceCell<Result<LanguageConfig, String>>> = Vec::new();
+        for _ in 0..count {
+            configs.push(OnceCell::new());
+        }
         return Self {
             helix,
             provisioned,
@@ -246,17 +264,17 @@ impl OwnLoader {
             tracing::debug!(language = %name, grammar = grammar_name, "language has no bundled grammar; it stays plain text");
             return Err(format!("the grammar {grammar_name} is not bundled"));
         }
-        // What: `map_err(|error| format!(...))` turns any error into its message text.
+        // What: `map_err(alternate_text)` turns any error into its message text.
         // Why: Cells keep plain text, which can be shown again for every file of the language.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const source = runtime.current(); // message on failure
         // ```
-        let source = runtime::current().map_err(|error| return format!("{error:#}"))?;
+        let source = runtime::current().map_err(alternate_text)?;
         let library = source
             .grammar_library(grammar_name)
-            .map_err(|error| return format!("{error:#}"))?;
+            .map_err(alternate_text)?;
         // SAFETY: `Grammar::new` opens a shared library and runs its initialization code. The library
         // is either the file in the prepared runtime directory of a test or tool program, or a cached
         // copy just compared byte for byte with the bytes the build embedded and digested.
@@ -270,19 +288,26 @@ impl OwnLoader {
         // ```ts
         // const grammar = loadNativeLibrary(library).symbol(`tree_sitter_${grammarName}`);
         // ```
-        let grammar = unsafe { Grammar::new(grammar_name, &library) }.map_err(|error| {
-            return format!(
-                "cannot load the parser library {}: {error}. If its directory is on a file system that forbids running code (mounted noexec), point XDG_CACHE_HOME at another directory and restart the application",
-                library.display()
-            );
-        })?;
+        let grammar = match unsafe { Grammar::new(grammar_name, &library) } {
+            Ok(loaded) => loaded,
+            Err(error) => {
+                return Err(format!(
+                    "cannot load the parser library {}: {error}. If its directory is on a file system that forbids running code (mounted noexec), point XDG_CACHE_HOME at another directory and restart the application",
+                    library.display()
+                ));
+            }
+        };
         let highlights = read_rules(source, name, "highlights.scm")?;
         let injections = read_rules(source, name, "injections.scm")?;
         let locals = read_rules(source, name, "locals.scm")?;
-        let compiled =
-            LanguageConfig::new(grammar, &highlights, &injections, &locals).map_err(|error| {
-                return format!("cannot compile the highlighting rules of {name}: {error}");
-            })?;
+        let compiled = match LanguageConfig::new(grammar, &highlights, &injections, &locals) {
+            Ok(configured) => configured,
+            Err(error) => {
+                return Err(format!(
+                    "cannot compile the highlighting rules of {name}: {error}"
+                ));
+            }
+        };
         compiled.configure(|capture| return best_scope(capture, self.scopes));
         tracing::debug!(language = %name, grammar = grammar_name, library = %library.display(), "language highlighting prepared from the application's own runtime");
         return Ok(compiled);
@@ -313,10 +338,15 @@ impl OwnLoader {
         // ```ts
         // cell.value ??= tryCompile(language); if (cell.value instanceof Error) throw cell.value; return cell.value;
         // ```
-        return cell
-            .get_or_init(|| return self.compile(language))
-            .as_ref()
-            .map_err(Clone::clone);
+        // The cell is filled on first use; compiling never touches this cell, so the set cannot fail.
+        if cell.get().is_none() {
+            let compiled = self.compile(language);
+            let _stored = cell.set(compiled);
+        }
+        let Some(outcome) = cell.get() else {
+            return Err(format!("language number {} was not stored", language.idx()));
+        };
+        return outcome.as_ref().map_err(Clone::clone);
     }
 }
 

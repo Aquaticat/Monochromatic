@@ -26,7 +26,7 @@
 //! drops results that no longer describe the displayed text.
 
 /// Errors name the operation that failed.
-use anyhow::{Context, Result};
+use anyhow::Result;
 /// What:
 ///  `Path` is a borrowed filesystem path.
 /// Why:
@@ -174,15 +174,18 @@ pub const HELIX_LOG_DIRECTIVE: &str = "helix_lsp=warn";
 /// function enterProjectDirectory(root: string): void { process.chdir(root); }
 /// ```
 pub fn enter_project_directory(root: &Path) -> Result<()> {
-    // What: `with_context` attaches a message built by the closure only on failure; `|| ...` is
-    //       a closure without parameters.
+    // What: `anyhow::Error::new(error).context(...)` attaches a message built only on failure.
     // Why: A failure here means language support cannot work, and the message must name the directory.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try { process.chdir(root); } catch (error) { throw new Error(`Cannot enter ${root}`, { cause: error }); }
     // ```
-    return std::env::set_current_dir(root).with_context(|| {
-        return format!("Cannot make {} the working directory", root.display());
-    });
+    if let Err(error) = std::env::set_current_dir(root) {
+        return Err(anyhow::Error::new(error).context(format!(
+            "Cannot make {} the working directory",
+            root.display()
+        )));
+    }
+    return Ok(());
 }

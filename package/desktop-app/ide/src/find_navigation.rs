@@ -16,6 +16,64 @@ use crate::find_worker::FindIdentity;
 use std::sync::Arc;
 
 /// What:
+///  Whether `range` starts before `limit`.
+/// Why:
+///  A sorted list of ranges is searched for the first one that does not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const startsBefore = (range: FindRange, limit: number) => range.start < limit;
+/// ```
+fn starts_before(range: &FindRange, limit: usize) -> bool {
+    return range.start < limit;
+}
+
+/// What:
+///  Whether `range` ends at or before `limit`.
+/// Why:
+///  A sorted list of ranges is searched for the first one that does not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const endsBy = (range: FindRange, limit: number) => range.end <= limit;
+/// ```
+fn ends_by(range: &FindRange, limit: usize) -> bool {
+    return range.end <= limit;
+}
+
+/// What:
+///  The index of the first range for which `before` is false,
+///  or the length when `before` holds for all of them.
+///  The ranges are sorted,
+///  so `before` holds for a prefix and a halving search finds the end of it.
+///  `fn(&FindRange, usize) -> bool` is a plain function pointer that receives `limit` explicitly.
+/// Why:
+///  Up to ten thousand ranges are consulted on every selection change.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function firstNotBefore(ranges: FindRange[], limit: number, before: (range: FindRange, limit: number) => boolean): number;
+/// ```
+fn first_not_before(
+    ranges: &[FindRange],
+    limit: usize,
+    before: fn(&FindRange, usize) -> bool,
+) -> usize {
+    let mut low = 0;
+    let mut high = ranges.len();
+    // Each step halves the candidates between `low` and `high`.
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if before(&ranges[middle], limit) {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low;
+}
+
+/// What:
 ///  `&[FindRange]` borrows a sorted list;
 ///  `Option<usize>` is an index or nothing.
 /// Why:
@@ -27,14 +85,14 @@ use std::sync::Arc;
 /// function active(ranges: FindRange[], start: number, end: number): number | undefined;
 /// ```
 pub fn active(ranges: &[FindRange], start: usize, end: usize) -> Option<usize> {
-    // What: `partition_point` binary-searches a sorted list; `|range|` is a closure parameter.
+    // What: `first_not_before` binary-searches a sorted list; `starts_before` is the named test it applies.
     // Why: Up to ten thousand ranges are consulted on every selection change.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const index = lowerBound(ranges, range => range.start < start);
     // ```
-    let index = ranges.partition_point(|range| return range.start < start);
+    let index = first_not_before(ranges, start, starts_before);
     // What: `get` returns `Some(&range)` inside the list or `None` past its end.
     // Why: A selection after the last match must not index out of bounds.
     //
@@ -61,7 +119,7 @@ pub fn at_or_after(ranges: &[FindRange], origin: usize) -> Option<usize> {
     if ranges.is_empty() {
         return None;
     }
-    let index = ranges.partition_point(|range| return range.start < origin);
+    let index = first_not_before(ranges, origin, starts_before);
     if index == ranges.len() {
         return Some(0);
     }
@@ -75,7 +133,7 @@ pub fn at_or_before(ranges: &[FindRange], origin: usize) -> Option<usize> {
     if ranges.is_empty() {
         return None;
     }
-    let index = ranges.partition_point(|range| return range.end <= origin);
+    let index = first_not_before(ranges, origin, ends_by);
     if index == 0 {
         return Some(ranges.len() - 1);
     }
@@ -92,8 +150,8 @@ pub fn at_or_before(ranges: &[FindRange], origin: usize) -> Option<usize> {
 /// function visible(ranges: FindRange[], start: number, end: number): FindRange[];
 /// ```
 pub fn visible(ranges: &[FindRange], start: usize, end: usize) -> &[FindRange] {
-    let first = ranges.partition_point(|range| return range.end <= start);
-    let last = ranges.partition_point(|range| return range.start < end);
+    let first = first_not_before(ranges, start, ends_by);
+    let last = first_not_before(ranges, end, starts_before);
     if last <= first {
         // What: `&ranges[0..0]` borrows an empty part of the same list.
         // Why: An inverted or empty window has no visible matches.

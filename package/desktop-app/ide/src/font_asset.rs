@@ -17,16 +17,29 @@ pub const UI_ROMAN: &[u8] = include_bytes!("../asset/font/InterVariable.ttf");
 /// Genuine Inter italic with its own optical-size and weight axes.
 pub const UI_ITALIC: &[u8] = include_bytes!("../asset/font/InterVariable-Italic.ttf");
 
+/// Build the shared blob of the roman code face.
+fn code_roman_blob() -> Blob<u8> {
+    return Blob::new(Arc::new(CODE_ROMAN));
+}
+
+/// Build the shared blob of the italic code face.
+fn code_italic_blob() -> Blob<u8> {
+    return Blob::new(Arc::new(CODE_ITALIC));
+}
+
+/// Build the shared blob of the roman interface face.
+fn ui_roman_blob() -> Blob<u8> {
+    return Blob::new(Arc::new(UI_ROMAN));
+}
+
 /// Shared roman identity lets cache tests distinguish variation coordinates rather than new font IDs.
-static CODE_ROMAN_BLOB: LazyLock<Blob<u8>> =
-    LazyLock::new(|| return Blob::new(Arc::new(CODE_ROMAN)));
+static CODE_ROMAN_BLOB: LazyLock<Blob<u8>> = LazyLock::new(code_roman_blob);
 /// The italic face has a distinct identity while sharing its bytes across all views.
-static CODE_ITALIC_BLOB: LazyLock<Blob<u8>> =
-    LazyLock::new(|| return Blob::new(Arc::new(CODE_ITALIC)));
+static CODE_ITALIC_BLOB: LazyLock<Blob<u8>> = LazyLock::new(code_italic_blob);
 
 /// The roman interface face has one identity for every shaper,
 ///  so cached glyph masks are shared between frames.
-static UI_ROMAN_BLOB: LazyLock<Blob<u8>> = LazyLock::new(|| return Blob::new(Arc::new(UI_ROMAN)));
+static UI_ROMAN_BLOB: LazyLock<Blob<u8>> = LazyLock::new(ui_roman_blob);
 
 /// Return shared handles for both real code faces;
 ///  cloning retains each blob's ID.

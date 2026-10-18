@@ -3,7 +3,7 @@
 /// Helix correspondence is prepared separately from applying current reading state.
 use crate::document::{Document, Reload};
 /// I/O failures retain their affected input and operation context.
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 /// What:
 ///  `Read` provides `read_to_string` on an open `File`;
 ///  `Path` borrows a filesystem name,
@@ -67,15 +67,20 @@ pub enum QuietRead {
 ///  read it as UTF-8,
 ///  and return the text with the still-open handle.
 fn read_regular(path: &Path) -> Result<(String, File)> {
-    // What: ? propagates failure; the closure supplies the affected path lazily.
+    // What: each failure returns early with a message that names the affected path.
     // Why: A read failure must not silently replace visible source with empty text.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const metadata = await stat(path); // throws with path context
     // ```
-    let metadata = std::fs::metadata(path)
-        .with_context(|| return format!("Cannot inspect source file {}", path.display()))?;
+    let metadata = match std::fs::metadata(path) {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(anyhow::Error::new(error)
+                .context(format!("Cannot inspect source file {}", path.display())));
+        }
+    };
     if !metadata.is_file() {
         // bail! returns an error rather than opening a directory or potentially blocking device.
         bail!(
@@ -83,8 +88,13 @@ fn read_regular(path: &Path) -> Result<(String, File)> {
             path.display()
         );
     }
-    let mut file = File::open(path)
-        .with_context(|| return format!("Cannot open source file {}", path.display()))?;
+    let mut file = match File::open(path) {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(anyhow::Error::new(error)
+                .context(format!("Cannot open source file {}", path.display())));
+        }
+    };
     // What: `String::new()` makes an empty owned string (the borrowed sibling `&str` cannot grow);
     //       `&mut source` lends it to `read_to_string`, which appends the whole file to it.
     // Why: Reading through the open handle lets the caller ask that same file for its modification time.
@@ -94,8 +104,12 @@ fn read_regular(path: &Path) -> Result<(String, File)> {
     // let source = ''; source += readFileSync(handle, 'utf8');
     // ```
     let mut source = String::new();
-    file.read_to_string(&mut source)
-        .with_context(|| return format!("Cannot read source file {} as UTF-8", path.display()))?;
+    if let Err(error) = file.read_to_string(&mut source) {
+        return Err(anyhow::Error::new(error).context(format!(
+            "Cannot read source file {} as UTF-8",
+            path.display()
+        )));
+    }
     // What: a tuple `(source, file)` returned inside `Ok`, like a TS array `[source, file]`.
     // Why: The quiet check needs the open handle after the read; the plain read just drops it.
     //
@@ -144,6 +158,21 @@ pub fn read_reload(snapshot: &Document, path: &Path) -> Result<Option<Reload>> {
     return Ok(compare(snapshot, path, &source));
 }
 
+/// What:
+///  The last modification time of an open file.
+/// Why:
+///  The open handle is the file whose bytes were read,
+///  and both steps fail with an I/O error the caller names with the path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const modificationTime = (handle: number): Date => fstatSync(handle).mtime;
+/// ```
+fn modification_time(file: &File) -> std::io::Result<SystemTime> {
+    let attributes = file.metadata()?;
+    return attributes.modified();
+}
+
 /// Read like `read_reload`,
 ///  but drop the bytes when the open file was modified less than `quiet` before
 /// the read began,
@@ -167,15 +196,15 @@ pub fn read_reload_if_quiet(
     // ```ts
     // const modified = fstatSync(handle).mtime;
     // ```
-    let modified = file
-        .metadata()
-        .and_then(|attributes| return attributes.modified())
-        .with_context(|| {
-            return format!(
+    let modified = match modification_time(&file) {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
                 "Cannot read the modification time of source file {}",
                 path.display()
-            );
-        })?;
+            )));
+        }
+    };
     // What: `duration_since` returns `Ok(age)` when `modified` is not after `started`, and `Err` when it is
     //       (a write during the read, or a modification time from a clock ahead of this one).
     // Why: Only a file untouched for the whole quiet period before the read is a finished save.

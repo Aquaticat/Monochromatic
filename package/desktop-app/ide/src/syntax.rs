@@ -155,9 +155,8 @@ struct Manifest {
 /// ```
 pub fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>> {
     let remedy = runtime::DIRECTORY_REMEDY;
-    // What: `fs::read_to_string` returns `Result<String, io::Error>`; `.with_context(|| ...)`
-    //       attaches a message built by the closure `|| ...` (a zero-argument arrow function)
-    //       only when reading failed; the trailing `?` returns that error to the caller early.
+    // What: `fs::read_to_string` returns `Result<String, io::Error>`; `.context(...)`
+    //       attaches a message only when reading failed, and the error returns to the caller early.
     // Why:  A missing manifest means language assets were never prepared, and the diagnostic
     //       must name the file and the remedy rather than a bare operating-system error.
     //
@@ -167,12 +166,15 @@ pub fn provisioned_grammars(manifest: &Path) -> Result<HashSet<String>> {
     // try { encoded = readFileSync(manifest, 'utf8'); }
     // catch (error) { throw new Error(`Cannot read ${manifest} ...`, { cause: error }); }
     // ```
-    let encoded = fs::read_to_string(manifest).with_context(|| {
-        return format!(
-            "Cannot read the language manifest {}. {remedy}",
-            manifest.display()
-        );
-    })?;
+    let encoded = match fs::read_to_string(manifest) {
+        Ok(text) => text,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Cannot read the language manifest {}. {remedy}",
+                manifest.display()
+            )));
+        }
+    };
     // `&encoded` lends the text; the location names the file in later messages.
     return provisioned_grammars_from(&encoded, &manifest.display().to_string(), remedy);
 }
@@ -202,9 +204,14 @@ pub fn provisioned_grammars_from(
     remedy: &str,
 ) -> Result<HashSet<String>> {
     // A wrong shape returns early with the location and the remedy.
-    let decoded: Manifest = serde_json::from_str(encoded).with_context(|| {
-        return format!("Cannot decode the language manifest {location}. {remedy}");
-    })?;
+    let decoded: Manifest = match serde_json::from_str(encoded) {
+        Ok(manifest) => manifest,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Cannot decode the language manifest {location}. {remedy}"
+            )));
+        }
+    };
     // What: `HashSet::new()` creates an empty set; `mut` allows the loop to insert into it.
     // Why:  Later lookups ask only "is this grammar bundled?".
     //
@@ -319,7 +326,7 @@ impl SyntaxEngine {
     pub fn names_a_language(path: &Path, text: &Rope) -> Result<bool> {
         // An empty grammar set: only the compiled-in filename and shebang rules are consulted.
         let rules = Self::with_provisioned(HashSet::new())?;
-        // What: `or_else` tries the shebang only when the filename named nothing; `is_some` asks
+        // What: the shebang is tried only when the filename named nothing; `is_some` asks
         //       whether either found a language.
         // Why: The same order `recognize` uses, without its check for a bundled grammar.
         //
@@ -327,11 +334,10 @@ impl SyntaxEngine {
         // ```ts
         // return (byFilename(path) ?? byShebang(text)) !== undefined;
         // ```
-        let found = rules
-            .loader
-            .helix
-            .language_for_filename(path)
-            .or_else(|| return rules.loader.helix.language_for_shebang(text.slice(..)));
+        let mut found = rules.loader.helix.language_for_filename(path);
+        if found.is_none() {
+            found = rules.loader.helix.language_for_shebang(text.slice(..));
+        }
         return Ok(found.is_some());
     }
 
@@ -348,11 +354,11 @@ impl SyntaxEngine {
         // const language = byFilename(path) ?? byShebang(text);
         // if (language === undefined) return undefined;
         // ```
-        let language = self
-            .loader
-            .helix
-            .language_for_filename(path)
-            .or_else(|| return self.loader.helix.language_for_shebang(text.slice(..)))?;
+        let mut found = self.loader.helix.language_for_filename(path);
+        if found.is_none() {
+            found = self.loader.helix.language_for_shebang(text.slice(..));
+        }
+        let language = found?;
         let config = self.loader.helix.language(language).config();
         // What: `as_deref()` views `Option<String>` as `Option<&str>` without copying;
         //       `unwrap_or(&config.language_id)` falls back to the language's own id.
@@ -423,16 +429,16 @@ impl SyntaxEngine {
         if !self.loader.provisioned.contains(grammar) {
             return Ok(false);
         }
-        // What: `map_err(|reason| anyhow!(...))` turns the stored message into an error value.
+        // What: `anyhow!(...)` turns the stored message into an error value.
         // Why: The caller collects every failing language with its reason.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // loader.prepared(language); // throws `${languageId}: ${reason}`
         // ```
-        self.loader
-            .prepared(language)
-            .map_err(|reason| return anyhow!("{language_id}: {reason}"))?;
+        if let Err(reason) = self.loader.prepared(language) {
+            return Err(anyhow!("{language_id}: {reason}"));
+        }
         return Ok(true);
     }
 
@@ -458,14 +464,19 @@ impl SyntaxEngine {
                 path.display()
             );
         }
-        let syntax = Syntax::new(text.slice(..), language, PARSE_TIMEOUT, &self.loader)
-            .map_err(|error| return parser_failure(path, name, error))?;
-        let length = u32::try_from(text.len_bytes()).with_context(|| {
-            return format!(
-                "Cannot highlight {}: source exceeds the parser byte-offset limit",
-                path.display()
-            );
-        })?;
+        let syntax = match Syntax::new(text.slice(..), language, PARSE_TIMEOUT, &self.loader) {
+            Ok(parsed) => parsed,
+            Err(error) => return Err(parser_failure(path, name, error)),
+        };
+        let length = match u32::try_from(text.len_bytes()) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                return Err(anyhow::Error::new(error).context(format!(
+                    "Cannot highlight {}: source exceeds the parser byte-offset limit",
+                    path.display()
+                )));
+            }
+        };
         let mut highlighter = Highlighter::new(&syntax, text.slice(..), &self.loader, ..);
         let mut spans = Vec::new();
         let mut start = 0;

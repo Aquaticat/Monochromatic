@@ -152,7 +152,8 @@ pub struct Matched<'text> {
 /// const shape = (target: string, level: Level, text: string) => matched(target, level, text)?.shape;
 /// ```
 pub fn shape(target: &str, level: log::Level, text: &str) -> Option<Shape> {
-    return matched(target, level, text).map(|found| return found.shape);
+    let found = matched(target, level, text)?;
+    return Some(found.shape);
 }
 
 /// What:
@@ -238,10 +239,9 @@ impl log::Log for Relabel {
     ///      the record's own level,
     ///  which is the most severe level it can end up with.
     fn enabled(&self, metadata: &log::Metadata<'_>) -> bool {
-        // `get_default` runs the closure with the current subscriber.
-        return tracing::dispatcher::get_default(|dispatch| {
-            return dispatch.enabled(&metadata.as_trace());
-        });
+        // `Dispatch::default()` is a handle to the current subscriber, the one `get_default` lends.
+        let dispatch = tracing::Dispatch::default();
+        return dispatch.enabled(&metadata.as_trace());
     }
 
     /// What:
@@ -329,10 +329,12 @@ static RELABEL: Relabel = Relabel;
 /// function install(): void { log.setLogger(relabel); log.setMaxLevel(currentTracingMaxLevel()); }
 /// ```
 pub fn install() -> anyhow::Result<()> {
-    // `map_err` turns the `log` crate's error into one that names what failed.
-    log::set_logger(&RELABEL).map_err(|error| {
-        return anyhow::anyhow!("Cannot install the helix-lsp log bridge: {error}");
-    })?;
+    // A failure of the `log` crate becomes an error that names what failed.
+    if let Err(error) = log::set_logger(&RELABEL) {
+        return Err(anyhow::anyhow!(
+            "Cannot install the helix-lsp log bridge: {error}"
+        ));
+    }
     log::set_max_level(tracing::level_filters::LevelFilter::current().as_log());
     return Ok(());
 }

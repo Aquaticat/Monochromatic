@@ -73,13 +73,17 @@ pub struct Projection {
 /// function caretStops(source: string, visible: number): number[];
 /// ```
 fn caret_stops(source: &str, visible: usize) -> Vec<usize> {
-    return caret_stops_visiting(source, visible, |_, _| {});
+    return caret_stops_visiting(source, visible, ignore_visit);
 }
+
+/// The visit that looks at nothing,
+///  for callers that only want the stops.
+fn ignore_visit(_grapheme: RopeSlice<'_>, _position: usize) {}
 
 /// What:
 ///  The caret stops of `source`,
 /// calling `visit` with the rope view and the position before each lookup.
-///  The production caller passes a closure that does nothing.
+///  The production caller passes a function that does nothing.
 /// Why:
 ///  The structural test counts the bytes each lookup has to scan through this hook,
 ///  and so proves the walk's work is bounded without timing it.

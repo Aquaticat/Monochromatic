@@ -72,10 +72,13 @@ impl DoubleShift {
         if !is_shift {
             return false;
         }
-        let timely = self
-            .last_release
-            .and_then(|last| return elapsed.checked_sub(last))
-            .is_some_and(|gap| return gap < Duration::from_millis(400));
+        // Timely means a previous release exists and the gap since it is under 400 milliseconds.
+        let mut timely = false;
+        if let Some(last) = self.last_release
+            && let Some(gap) = elapsed.checked_sub(last)
+        {
+            timely = gap < Duration::from_millis(400);
+        }
         if !self.intervening_key && timely {
             self.last_release = None;
             self.intervening_key = false;

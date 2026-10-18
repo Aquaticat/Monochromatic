@@ -36,17 +36,18 @@ impl FileTree {
     ///  actual I/O belongs to the worker.
     pub fn begin_listing(&mut self, directory: &Path) -> Result<DirectoryRequest> {
         if directory != self.root {
-            // What: Option::is_some_and runs the closure only for a present borrowed entry.
+            // What: the entry's directory flag is read only for a present borrowed entry.
             // Why: Unknown paths, files, and symlink dirents cannot become directory read requests.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // if (this.entry(directory)?.isDirectory !== true) throw new Error('Not a known directory');
             // ```
-            if !self
-                .entry(directory)
-                .is_some_and(|entry| return entry.is_directory)
-            {
+            let known_directory = match self.entry(directory) {
+                Some(entry) => entry.is_directory,
+                None => false,
+            };
+            if !known_directory {
                 bail!(
                     "Cannot request a listing for unknown or non-directory tree entry {}",
                     directory.display()
@@ -106,9 +107,10 @@ impl FileTree {
         // const current = pending.get(request.path);
         // if (current?.identity !== request.identity) return false;
         // ```
-        let current = self.pending.get(request.path()).is_some_and(|pending| {
-            return Arc::ptr_eq(&pending.path, &request.path);
-        });
+        let current = match self.pending.get(request.path()) {
+            Some(pending) => Arc::ptr_eq(&pending.path, &request.path),
+            None => false,
+        };
         if !current {
             // Log even discarded errors while keeping stale diagnostics out of the visible UI.
             if let Err(error) = result {

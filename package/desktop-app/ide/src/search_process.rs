@@ -104,9 +104,15 @@ async fn execute(
         return Ok(None);
     }
     tracing::debug!(?stream, query, root = %root.display(), "starting ripgrep search stream");
-    let child = command.spawn().with_context(|| return format!(
-        "Cannot start ripgrep for query {query:?} in {}. Install ripgrep and ensure rg is available on PATH", root.display()
-    ))?;
+    let child = match command.spawn() {
+        Ok(started) => started,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Cannot start ripgrep for query {query:?} in {}. Install ripgrep and ensure rg is available on PATH",
+                root.display()
+            )));
+        }
+    };
     return consume(child, root, query, stream, cancellation, signal).await;
 }
 
@@ -185,10 +191,15 @@ async fn consume(
         );
         return Ok(None);
     }
-    let Some(collected) = output.with_context(|| {
-        return format!("Cannot read {stream:?} search results for query {query:?}");
-    })?
-    else {
+    let read = match output {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(error.context(format!(
+                "Cannot read {stream:?} search results for query {query:?}"
+            )));
+        }
+    };
+    let Some(collected) = read else {
         return Ok(None);
     };
     if !collected.capped && !status.success() && status.code() != Some(1) {

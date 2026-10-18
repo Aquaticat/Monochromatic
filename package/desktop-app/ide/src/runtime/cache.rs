@@ -35,7 +35,7 @@
 //!    so builds with different files never share a cache.
 
 /// Errors name the cache directory and the remedy.
-use anyhow::{Context, Result};
+use anyhow::Result;
 /// Files,
 ///  the private file and directory modes,
 ///  the write counter,
@@ -96,9 +96,10 @@ pub(super) fn replace_atomically(
     // const number = nextWrite++;
     // ```
     let number = NEXT_WRITE.fetch_add(1, Ordering::Relaxed);
-    let name = target.file_name().map_or_else(String::new, |found| {
-        return found.to_string_lossy().into_owned();
-    });
+    let name = match target.file_name() {
+        Some(found) => found.to_string_lossy().into_owned(),
+        None => String::new(),
+    };
     let private = directory.join(format!(".{name}.{}-{number}.partial", std::process::id()));
     // What: `OpenOptions` builds an open call: `create_new` fails if the file exists, `mode(0o600)`
     //       makes it readable and writable by the user only. `?` returns an I/O error to the caller.
@@ -108,13 +109,19 @@ pub(super) fn replace_atomically(
     // ```ts
     // const file = fs.openSync(privatePath, 'wx', 0o600);
     // ```
-    let written = fs::OpenOptions::new()
+    let opened = fs::OpenOptions::new()
         .write(true)
         .create_new(true)
         .mode(0o600)
-        .open(&private)
-        .and_then(|mut file| return file.write_all(bytes))
-        .and_then(|()| return fs::rename(&private, target));
+        .open(&private);
+    // The bytes are written and the file renamed into place only while every earlier step succeeded.
+    let written = match opened {
+        Ok(mut file) => match file.write_all(bytes) {
+            Ok(()) => fs::rename(&private, target),
+            Err(error) => Err(error),
+        },
+        Err(error) => Err(error),
+    };
     // What: `if let Err(error) = &written` runs the block only for a failed write; `&` lends the result.
     // Why: A failed write must not leave its private file behind.
     //
@@ -172,20 +179,23 @@ pub fn unpack(directory: &Path, name: &str, bytes: &[u8]) -> Result<PathBuf> {
         }
     }
     // What: `DirBuilder` creates the directory and missing parents (`recursive`) with mode 0700.
-    //       `with_context(|| ...)` attaches a message to a failure, built only when it fails.
+    //       `.context(...)` attaches a message to a failure, built only when it fails.
     // Why: Unpacked libraries are code the application loads; only the user should be able to replace them.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
     // ```
-    fs::DirBuilder::new()
+    if let Err(error) = fs::DirBuilder::new()
         .recursive(true)
         .mode(0o700)
         .create(directory)
-        .with_context(|| return remedy(directory, name))?;
-    replace_atomically(directory, &target, bytes)
-        .with_context(|| return remedy(directory, name))?;
+    {
+        return Err(anyhow::Error::new(error).context(remedy(directory, name)));
+    }
+    if let Err(error) = replace_atomically(directory, &target, bytes) {
+        return Err(anyhow::Error::new(error).context(remedy(directory, name)));
+    }
     tracing::info!(path = %target.display(), bytes = bytes.len(), elapsed_us = started.elapsed().as_micros(), "language parser unpacked into the private cache");
     return Ok(target);
 }

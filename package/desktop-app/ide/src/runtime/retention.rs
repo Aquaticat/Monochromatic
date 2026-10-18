@@ -45,7 +45,7 @@
 /// The marker is written through the cache's private-file-and-rename step.
 use super::cache::{replace_atomically, unpack};
 /// Errors name the folder and the remedy.
-use anyhow::{Context, Result};
+use anyhow::Result;
 /// Folders,
 ///  metadata without following links,
 ///  times,
@@ -154,10 +154,33 @@ pub struct Sweep {
 /// function isKey(name: string): boolean { return /^[0-9a-f]{16}$/.test(name); }
 /// ```
 fn is_key(name: &str) -> bool {
-    return name.len() == 16
-        && name
-            .bytes()
-            .all(|byte| return matches!(byte, b'0'..=b'9' | b'a'..=b'f'));
+    if name.len() != 16 {
+        return false;
+    }
+    for byte in name.bytes() {
+        if !matches!(byte, b'0'..=b'9' | b'a'..=b'f') {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// What:
+///  Whether `text` is made only of ASCII digits and dashes.
+/// Why:
+///  The suffix of a removal's temporary name is a process number and a counter joined by a dash.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const allDigitsOrDashes = (text: string): boolean => /^[0-9-]*$/.test(text);
+/// ```
+fn all_digits_or_dashes(text: &str) -> bool {
+    for byte in text.bytes() {
+        if !(byte.is_ascii_digit() || byte == b'-') {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// What:
@@ -188,11 +211,23 @@ fn is_leftover(name: &str) -> bool {
     let Some((key, suffix)) = rest.split_once(".removing-") else {
         return false;
     };
-    return is_key(key)
-        && !suffix.is_empty()
-        && suffix
-            .bytes()
-            .all(|byte| return byte.is_ascii_digit() || byte == b'-');
+    return is_key(key) && !suffix.is_empty() && all_digits_or_dashes(suffix);
+}
+
+/// What:
+///  The message that names the folder whose use could not be recorded and how to fix it.
+/// Why:
+///  Both steps of recording the use fail with the same advice.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const useRecordRemedy = (keyFolder: string): string => `Cannot record the use of ${keyFolder}. Free disk space ...`;
+/// ```
+fn use_record_remedy(key_folder: &Path) -> String {
+    return format!(
+        "Cannot record the use of the language parser cache {}. Free disk space or fix its permissions, or point XDG_CACHE_HOME at a writable directory.",
+        key_folder.display()
+    );
 }
 
 /// What:
@@ -216,18 +251,16 @@ pub fn mark_used(key_folder: &Path) -> Result<()> {
     // ```ts
     // fs.mkdirSync(keyFolder, { recursive: true, mode: 0o700 });
     // ```
-    let remedy = || {
-        return format!(
-            "Cannot record the use of the language parser cache {}. Free disk space or fix its permissions, or point XDG_CACHE_HOME at a writable directory.",
-            key_folder.display()
-        );
-    };
-    fs::DirBuilder::new()
+    if let Err(error) = fs::DirBuilder::new()
         .recursive(true)
         .mode(0o700)
         .create(key_folder)
-        .with_context(remedy)?;
-    replace_atomically(key_folder, &key_folder.join(MARKER), MARKER_TEXT).with_context(remedy)?;
+    {
+        return Err(anyhow::Error::new(error).context(use_record_remedy(key_folder)));
+    }
+    if let Err(error) = replace_atomically(key_folder, &key_folder.join(MARKER), MARKER_TEXT) {
+        return Err(anyhow::Error::new(error).context(use_record_remedy(key_folder)));
+    }
     tracing::debug!(folder = %key_folder.display(), "language parser cache use recorded");
     return Ok(());
 }
@@ -351,7 +384,10 @@ fn decide(
     // ```ts
     // const isFolder = entry.isDirectory(); // Dirent from withFileTypes does not follow links
     // ```
-    let is_folder = entry.file_type().is_ok_and(|kind| return kind.is_dir());
+    let mut is_folder = false;
+    if let Ok(kind) = entry.file_type() {
+        is_folder = kind.is_dir();
+    }
     if is_folder && is_leftover(&name) {
         let doomed = runtime_folder.join(&name);
         match fs::remove_dir_all(&doomed) {

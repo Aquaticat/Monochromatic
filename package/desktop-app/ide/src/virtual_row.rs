@@ -268,11 +268,12 @@ fn columns(character: char) -> usize {
 /// function wrap(line: string, limit: number): string[];
 /// ```
 pub fn wrap(line: &str, limit: usize) -> Vec<String> {
-    // `map` keeps the text of each row and drops how it follows the row before it.
-    return wrap_gapped(line, limit)
-        .into_iter()
-        .map(|(text, _)| return text)
-        .collect();
+    // Each row keeps its text and drops how it follows the row before it.
+    let mut rows: Vec<String> = Vec::new();
+    for (text, _) in wrap_gapped(line, limit) {
+        rows.push(text);
+    }
+    return rows;
 }
 
 /// What:

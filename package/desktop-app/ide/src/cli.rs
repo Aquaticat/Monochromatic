@@ -112,16 +112,20 @@ fn command() -> Command {
 /// function homeFolder(): string | undefined { return isAbsolute(env.HOME) ? env.HOME : undefined; }
 /// ```
 pub fn home_folder() -> Option<PathBuf> {
-    return std::env::var_os("HOME")
-        .map(PathBuf::from)
-        // What: `|path| return path.is_absolute()` is an arrow function keeping absolute paths only.
-        // Why: An empty or relative HOME names no folder to open.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (path) => isAbsolute(path)
-        // ```
-        .filter(|path| return path.is_absolute());
+    // What: the trailing `?` returns `None` from this function when `HOME` is unset.
+    // Why: An unset HOME names no folder to open.
+    let home = PathBuf::from(std::env::var_os("HOME")?);
+    // What: `is_absolute` rejects empty and relative values.
+    // Why: An empty or relative HOME names no folder to open.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (isAbsolute(home)) return home;
+    // ```
+    if home.is_absolute() {
+        return Some(home);
+    }
+    return None;
 }
 
 /// Parse argv excluding the executable name,

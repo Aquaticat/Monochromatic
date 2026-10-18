@@ -67,7 +67,7 @@ mod embedded_runtime_tests;
 fn print_licenses() -> anyhow::Result<()> {
     let notices = ide_app::runtime::notices::collect(&embedded_runtime::EMBEDDED_RUNTIME)?;
     let mut out = std::io::stdout().lock();
-    // What: `and_then(|()| ...)` flushes only after every text was written; `match` then sorts the
+    // What: the flush runs only after every text was written; `match` then sorts the
     //       one outcome into success, a closed pipe, or a real error.
     // Why: Output is buffered, so a write error can surface at the flush.
     //
@@ -75,8 +75,11 @@ fn print_licenses() -> anyhow::Result<()> {
     // ```ts
     // try { write(notices, version, stdout); flush(stdout); } catch (error) { if (error.code !== 'EPIPE') throw error; }
     // ```
-    let written = ide_app::runtime::notices::write(&notices, env!("CARGO_PKG_VERSION"), &mut out)
-        .and_then(|()| return std::io::Write::flush(&mut out));
+    let written =
+        match ide_app::runtime::notices::write(&notices, env!("CARGO_PKG_VERSION"), &mut out) {
+            Ok(()) => std::io::Write::flush(&mut out),
+            Err(error) => Err(error),
+        };
     return match written {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == std::io::ErrorKind::BrokenPipe => Ok(()),

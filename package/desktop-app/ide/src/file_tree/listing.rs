@@ -12,9 +12,66 @@ use anyhow::{Result, bail};
 /// Sets detect duplicate paths without changing input order;
 ///  paths retain non-UTF-8 names.
 use std::{
-    collections::BTreeSet,
-    path::{Component, Path},
+    collections::{BTreeMap, BTreeSet},
+    path::{Component, Path, PathBuf},
 };
+
+/// What:
+///  Whether `path` or any of its ancestors is in `removed`.
+///  `Path::ancestors` yields the path itself first,
+///  then each parent.
+/// Why:
+///  A cached path below a replaced directory describes a subtree that no longer exists.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const liesUnder = (path: string, removed: Set<string>) => ancestors(path).some((parent) => removed.has(parent));
+/// ```
+fn lies_under(path: &Path, removed: &BTreeSet<PathBuf>) -> bool {
+    for parent in path.ancestors() {
+        if removed.contains(parent) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// What:
+///  Drop every entry of `cache` whose path lies under a removed directory.
+///  The doomed paths are copied out first,
+///  because a map cannot be changed while its keys are walked.
+/// Why:
+///  Prune each cache once,
+///  without comparing every cached path with every removed directory.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// for (const path of [...cache.keys()]) if (liesUnder(path, removed)) cache.delete(path);
+/// ```
+fn prune_map<Value>(cache: &mut BTreeMap<PathBuf, Value>, removed: &BTreeSet<PathBuf>) {
+    let mut doomed: Vec<PathBuf> = Vec::new();
+    for path in cache.keys() {
+        if lies_under(path, removed) {
+            doomed.push(path.clone());
+        }
+    }
+    for path in doomed {
+        cache.remove(&path);
+    }
+}
+
+/// The same pruning for a set of paths.
+fn prune_set(cache: &mut BTreeSet<PathBuf>, removed: &BTreeSet<PathBuf>) {
+    let mut doomed: Vec<PathBuf> = Vec::new();
+    for path in cache.iter() {
+        if lies_under(path, removed) {
+            doomed.push(path.clone());
+        }
+    }
+    for path in doomed {
+        cache.remove(&path);
+    }
+}
 
 /// Check one snapshot independently so a rejected reply cannot partly update expansion state.
 fn validate(directory: &Path, entries: &[DirectoryEntry]) -> Result<()> {
@@ -138,36 +195,20 @@ impl FileTree {
                 }
             }
         }
-        // What: retain closures keep only paths with no removed ancestor; ancestors includes the path itself.
+        // What: `prune_map` and `prune_set` keep only paths with no removed ancestor; ancestors includes the path itself.
         // Why: Prune each cache once, without comparing every cached path with every removed directory.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // keepPathsWhere(path => !ancestors(path).some(parent => removed.has(parent)));
         // ```
-        self.directories.retain(|path, _entries| {
-            return !path
-                .ancestors()
-                .any(|parent| return removed.contains(parent));
-        });
-        self.expanded.retain(|path| {
-            return !path
-                .ancestors()
-                .any(|parent| return removed.contains(parent));
-        });
+        prune_map(&mut self.directories, &removed);
+        prune_set(&mut self.expanded, &removed);
         // Detached requests cannot become current again if the same directory name is later recreated.
-        self.pending.retain(|path, _request| {
-            return !path
-                .ancestors()
-                .any(|parent| return removed.contains(parent));
-        });
+        prune_map(&mut self.pending, &removed);
         // A synchronous snapshot also supersedes any older in-flight read of this directory.
         self.pending.remove(directory);
-        self.ignores.retain(|path, _answer| {
-            return !path
-                .ancestors()
-                .any(|parent| return removed.contains(parent));
-        });
+        prune_map(&mut self.ignores, &removed);
         // A first listing has no earlier rules to differ from; later ones compare stamps, not names.
         if let Some(previous) = self.ignores.get(directory)
             && previous.stamps != answer.stamps

@@ -107,18 +107,18 @@ pub fn is_notice(path: &str) -> bool {
 /// ```
 pub fn collect(runtime: &EmbeddedRuntime) -> Result<Vec<Notice>> {
     let mut notices = Vec::new();
-    // What: `filter(|file| ...)` keeps the files the arrow function accepts.
+    // What: the loop skips every file that is not a notice.
     // Why: Only license and notice texts are printed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // for (const file of runtime.files.filter(file => isNotice(file.path))) { ... }
     // ```
-    for file in runtime
-        .files
-        .iter()
-        .filter(|file| return is_notice(file.path))
-    {
+    for file in runtime.files.iter() {
+        // Only notice files are listed.
+        if !is_notice(file.path) {
+            continue;
+        }
         // `required` checks the digest; the file is in the table, so only damage can fail here.
         let text = runtime.required(file.path)?;
         notices.push(Notice {

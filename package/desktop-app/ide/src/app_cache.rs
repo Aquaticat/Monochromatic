@@ -13,14 +13,61 @@
 use std::path::PathBuf;
 
 /// What:
+///  The value of one environment variable as an owned path,
+///  or `None` when it is unset or not an absolute path.
+///  `Option<PathBuf>` is an owned path or nothing (sibling:
+///  `&Path`,
+///  a borrowed path);
+///  `var_os` reads a variable without requiring UTF-8.
+/// Why:
+///  A relative value would depend on the working directory,
+///  which the application changes,
+///  and the XDG base directory specification says relative values must be ignored.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function absoluteVariable(name: string): string | undefined {
+///   const value = env[name];
+///   return value !== undefined && isAbsolute(value) ? value : undefined;
+/// }
+/// ```
+fn absolute_variable(name: &str) -> Option<PathBuf> {
+    // The trailing `?` returns `None` from this function when the variable is unset.
+    let path = PathBuf::from(std::env::var_os(name)?);
+    if path.is_absolute() {
+        return Some(path);
+    }
+    return None;
+}
+
+/// What:
+///  `$HOME/.cache`,
+///  or `None` when `$HOME` is not an absolute path.
+/// Why:
+///  The specification's fallback when `$XDG_CACHE_HOME` is unusable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function homeCache(): string | undefined {
+///   const home = absoluteVariable('HOME');
+///   return home && join(home, '.cache');
+/// }
+/// ```
+fn home_cache() -> Option<PathBuf> {
+    // The trailing `?` returns `None` from this function when `$HOME` is unusable.
+    let home = absolute_variable("HOME")?;
+    return Some(home.join(".cache"));
+}
+
+/// What:
 ///  The cache directory,
 ///  or `None` when neither variable is an absolute path.
 ///       `Option<PathBuf>` is an owned path or nothing (sibling:
 ///  `&Path`,
 ///  a borrowed path);
 ///       `var_os` reads a variable without requiring UTF-8;
-///  `.filter(...)` keeps only absolute values;
-///       `.or_else(...)` tries the home directory's `.cache` when the first is missing.
+///  `absolute_variable` keeps only an absolute `$XDG_CACHE_HOME`;
+///       `.or_else(home_cache)` tries the home directory's `.cache` when the first is missing.
 /// Why:
 ///  The XDG base directory specification names `$XDG_CACHE_HOME`,
 ///  falling back to `~/.cache`,
@@ -37,22 +84,7 @@ use std::path::PathBuf;
 /// ```
 pub fn application_cache() -> Option<PathBuf> {
     // The trailing `?` returns `None` from this function when neither variable is usable.
-    let cache = std::env::var_os("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        // What: `|path| return path.is_absolute()` is an arrow function given each candidate.
-        // Why: A relative value would depend on the working directory, which the application changes.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (path) => isAbsolute(path)
-        // ```
-        .filter(|path| return path.is_absolute())
-        .or_else(|| {
-            return std::env::var_os("HOME")
-                .map(PathBuf::from)
-                .filter(|path| return path.is_absolute())
-                .map(|home| return home.join(".cache"));
-        })?;
+    let cache = absolute_variable("XDG_CACHE_HOME").or_else(home_cache)?;
     // What: `Some(...)` wraps the joined path as the present variant of `Option`.
     // Why: Callers distinguish "no cache directory" from a usable one.
     //

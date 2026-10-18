@@ -180,7 +180,12 @@ pub(crate) fn tabs_on_first_row(layout: &Layout<u32>, tabs: &[usize]) -> bool {
         return true;
     };
     let end = first.text_range().end;
-    return tabs.iter().all(|byte| return *byte < end);
+    for byte in tabs.iter() {
+        if *byte >= end {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Index of the visual row that holds display byte `byte`,
@@ -201,10 +206,11 @@ fn row_of(layout: &Layout<u32>, byte: usize) -> usize {
     let (mut low, mut high) = (0, layout.len());
     while low < high {
         let middle = low + (high - low) / 2;
-        if layout
-            .get(middle)
-            .is_some_and(|line| return line.text_range().start <= byte)
-        {
+        let mut starts_by_byte = false;
+        if let Some(line) = layout.get(middle) {
+            starts_by_byte = line.text_range().start <= byte;
+        }
+        if starts_by_byte {
             low = middle + 1;
         } else {
             high = middle;
@@ -244,9 +250,10 @@ fn wrapped_spacings(
         }
         naturals.push(x_before(layout, *byte) - applied_on_row);
         rows.push(row);
-        let extra = applied.get(index).map_or(0.0, |(_, extra)| {
-            return *extra;
-        });
+        let extra = match applied.get(index) {
+            Some((_, found)) => *found,
+            None => 0.0,
+        };
         applied_on_row += extra * scale;
     }
     let mut spacings = Vec::new();
@@ -268,16 +275,25 @@ fn wrapped_spacings(
 /// Whether two correction lists name the same tabs with the same extra advance,
 /// within `SPACING_TOLERANCE`.
 fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
-    return left.len() == right.len()
-        && left.iter().zip(right).all(|(first, second)| {
-            return first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE;
-        });
+    if left.len() != right.len() {
+        return false;
+    }
+    for (first, second) in left.iter().zip(right) {
+        if !(first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Total extra advance of a correction list,
 /// the measure by which the fitting of two lists is compared.
 fn total_extra(spacings: &[(usize, f32)]) -> f32 {
-    return spacings.iter().map(|(_, extra)| return *extra).sum();
+    let mut total = 0.0;
+    for (_, extra) in spacings.iter() {
+        total += *extra;
+    }
+    return total;
 }
 
 /// What:

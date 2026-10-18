@@ -337,6 +337,60 @@ pub struct Annotations {
 }
 
 /// What:
+///  The sort key that orders problems by start,
+///  then end.
+/// Why:
+///  Window and caret searches binary-search by start.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const positionOrder = (problem: Problem): [number, number] => [problem.mark.start, problem.mark.end];
+/// ```
+fn position_order(problem: &Problem) -> (usize, usize) {
+    return (problem.mark.start, problem.mark.end);
+}
+
+/// What:
+///  The sort key that puts the worst problem first.
+///  `&&Problem` is what a sort over a list of lent problems hands its key function.
+/// Why:
+///  The stable sort keeps position order among equal severities.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const severityOrder = (problem: Problem): number => rank(problem.mark.severity);
+/// ```
+fn severity_order(problem: &&Problem) -> u8 {
+    return rank(problem.mark.severity);
+}
+
+/// What:
+///  The index of the first entry of `reach` that is not below `threshold`.
+///  `reach` never decreases,
+///  so a halving search finds it.
+/// Why:
+///  Window and caret searches skip every diagnostic that ends before the window without reading each one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function firstReaching(reach: number[], threshold: number): number;
+/// ```
+fn first_reaching(reach: &[usize], threshold: usize) -> usize {
+    let mut low = 0;
+    let mut high = reach.len();
+    // Each step halves the candidates between `low` and `high`.
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if reach[middle] < threshold {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low;
+}
+
+/// What:
 ///  Flatten every group of `diagnostics` into one list ordered by start,
 ///  then end,
 ///  with the furthest end so
@@ -378,14 +432,14 @@ fn indexed(diagnostics: Option<&DiagnosticsSnapshot>) -> (Vec<Problem>, Vec<usiz
             }
         }
     }
-    // What: `sort_by_key` orders by the pair `(start, end)`; `|problem|` is a closure parameter.
+    // What: `sort_by_key` orders by the pair `(start, end)` that `position_order` builds.
     // Why: Window and caret searches binary-search by start.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // problems.sort((a, b) => a.mark.start - b.mark.start || a.mark.end - b.mark.end);
     // ```
-    problems.sort_by_key(|problem| return (problem.mark.start, problem.mark.end));
+    problems.sort_by_key(position_order);
     let mut reach = Vec::new();
     let mut furthest = 0;
     for problem in &problems {
@@ -538,7 +592,7 @@ impl Annotations {
         let mut messages = BTreeMap::new();
         for (line, mut problems) in grouped {
             // `sort_by_key` is stable, so equal severities keep their position order.
-            problems.sort_by_key(|problem| return rank(problem.mark.severity));
+            problems.sort_by_key(severity_order);
             messages.insert(line, message_rows(&problems));
         }
         self.messages = messages;
@@ -562,20 +616,23 @@ impl Annotations {
     /// hints(displayed: DocumentStamp): HintsSnapshot | undefined;
     /// ```
     pub fn hints(&self, displayed: DocumentStamp) -> Option<&HintsSnapshot> {
-        // `filter` keeps the lent snapshot only when the closure accepts it.
-        return self
-            .hints
-            .as_deref()
-            .filter(|held| return held.stamp == displayed);
+        // The trailing `?` answers nothing when no snapshot is held.
+        let held = self.hints.as_deref()?;
+        // The snapshot is lent only while it describes the displayed text.
+        if held.stamp == displayed {
+            return Some(held);
+        }
+        return None;
     }
 
     /// The held diagnostics while they describe `displayed`,
     ///  otherwise nothing.
     pub fn diagnostics(&self, displayed: DocumentStamp) -> Option<&DiagnosticsSnapshot> {
-        return self
-            .diagnostics
-            .as_deref()
-            .filter(|held| return held.stamp == displayed);
+        let held = self.diagnostics.as_deref()?;
+        if held.stamp == displayed {
+            return Some(held);
+        }
+        return None;
     }
 
     /// What:
@@ -631,15 +688,19 @@ impl Annotations {
     /// staleIn(wrap: number | undefined, focus: Range): boolean;
     /// ```
     pub fn stale_in(&self, wrap: Option<f32>, focus: &Range<usize>) -> bool {
-        let hints = self
-            .placed
-            .range(focus.clone())
-            .any(|(_, placed)| return placed.wrap != wrap);
-        let messages = self
-            .wrapped
-            .range(focus.clone())
-            .any(|(_, fitted)| return fitted.wrap != wrap);
-        return hints || messages;
+        // A line whose hint rows were made for another width makes the blocks stale.
+        for (_, placed) in self.placed.range(focus.clone()) {
+            if placed.wrap != wrap {
+                return true;
+            }
+        }
+        // A line whose message rows were made for another width does too.
+        for (_, fitted) in self.wrapped.range(focus.clone()) {
+            if fitted.wrap != wrap {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// The change counter:
@@ -650,11 +711,11 @@ impl Annotations {
 
     /// Whether the held diagnostics describe exactly the displayed text.
     fn diagnostics_current(&self, stamp: DocumentStamp) -> bool {
-        // `is_some_and` answers false for no snapshot and otherwise asks the closure.
-        return self
-            .diagnostics
-            .as_ref()
-            .is_some_and(|snapshot| return snapshot.stamp == stamp);
+        // `if let Some(...)` answers false for no snapshot and otherwise compares the stamps.
+        if let Some(snapshot) = self.diagnostics.as_ref() {
+            return snapshot.stamp == stamp;
+        }
+        return false;
     }
 
     /// What:
@@ -685,9 +746,7 @@ impl Annotations {
             end = text.line_to_char(last);
         }
         // The first diagnostic whose range, or an earlier one's, reaches the window.
-        let from = self
-            .reach
-            .partition_point(|furthest| return *furthest < start);
+        let from = first_reaching(&self.reach, start);
         for problem in &self.problems[from..] {
             if problem.mark.start >= end {
                 break;
@@ -717,9 +776,7 @@ impl Annotations {
         if !self.diagnostics_current(stamp) {
             return result;
         }
-        let from = self
-            .reach
-            .partition_point(|furthest| return *furthest < position);
+        let from = first_reaching(&self.reach, position);
         for problem in &self.problems[from..] {
             if problem.mark.start > position {
                 break;
@@ -729,7 +786,7 @@ impl Annotations {
             }
         }
         // The worst problem is read first; the stable sort keeps position order among equals.
-        result.sort_by_key(|problem| return rank(problem.mark.severity));
+        result.sort_by_key(severity_order);
         return result;
     }
 }

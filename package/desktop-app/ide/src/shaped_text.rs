@@ -213,11 +213,22 @@ impl TextShaper {
         // const relevant = styles.slice(lowerBound(styles, (span) => span.end > sourceStart));
         // ```
         let source_end = source_start + text.line(row).len_chars();
-        let reaching = styles.partition_point(|span| return span.end <= source_start);
-        for span in styles[reaching..]
-            .iter()
-            .take_while(|span| return span.start < source_end)
-        {
+        // A halving search finds the first span that reaches this line.
+        let mut reaching = 0;
+        let mut high = styles.len();
+        while reaching < high {
+            let middle = reaching + (high - reaching) / 2;
+            if styles[middle].end <= source_start {
+                reaching = middle + 1;
+            } else {
+                high = middle;
+            }
+        }
+        for span in styles[reaching..].iter() {
+            // The spans that start at or after the line's end do not touch it.
+            if span.start >= source_end {
+                break;
+            }
             let start = span.start.saturating_sub(source_start).min(source_len);
             let end = span.end.saturating_sub(source_start).min(source_len);
             if start < end {
@@ -455,10 +466,10 @@ impl TextShaper {
         // const placed = wrap ? map.withMeasured(rows.map((r) => [r.row, r.visualRows])) : map;
         // ```
         let placed = if viewport.wrap.is_some() {
-            let measured: Vec<(usize, usize)> = shaped_rows
-                .iter()
-                .map(|shaped| return (shaped.row, shaped.visual_rows()))
-                .collect();
+            let mut measured: Vec<(usize, usize)> = Vec::new();
+            for shaped in shaped_rows.iter() {
+                measured.push((shaped.row, shaped.visual_rows()));
+            }
             map.with_measured(&measured)
         } else {
             map.clone()

@@ -50,11 +50,12 @@ impl FileTree {
             // rows.push({ entry: { ...entry }, depth, expanded });
             // ```
             // The answer for a directory's entries is stored under that directory's path.
-            let ignored = entry
-                .path
-                .parent()
-                .and_then(|parent| return self.ignores.get(parent))
-                .is_some_and(|answer| return answer.names.contains(&entry.name));
+            let mut ignored = false;
+            if let Some(parent) = entry.path.parent()
+                && let Some(answer) = self.ignores.get(parent)
+            {
+                ignored = answer.names.contains(&entry.name);
+            }
             rows.push(TreeRow {
                 entry: entry.clone(),
                 depth,

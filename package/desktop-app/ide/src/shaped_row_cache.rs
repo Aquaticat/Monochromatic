@@ -121,10 +121,11 @@ impl RowCache {
     /// The shaped row of `line`,
     /// if it was shaped for the synced text and scale and broken at `wrap`.
     pub fn get(&self, line: usize, wrap: Option<f32>) -> Option<&ShapedRow> {
-        return self
-            .rows
-            .get(&line)
-            .filter(|row| return same_wrap(row.wrap, wrap));
+        let row = self.rows.get(&line)?;
+        if same_wrap(row.wrap, wrap) {
+            return Some(row);
+        }
+        return None;
     }
 
     /// Whether a row is kept for `line` at any width.

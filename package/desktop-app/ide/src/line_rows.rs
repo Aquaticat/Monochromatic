@@ -72,13 +72,16 @@ impl PartialEq for LineRows {
     ///  same totals,
     ///  and chunk by chunk the same counts.
     fn eq(&self, other: &Self) -> bool {
-        return self.lines == other.lines
-            && self.before == other.before
-            && self
-                .chunks
-                .iter()
-                .zip(&other.chunks)
-                .all(|(left, right)| return Arc::ptr_eq(left, right) || **left == **right);
+        if self.lines != other.lines || self.before != other.before {
+            return false;
+        }
+        // Shared chunks are equal by identity; others are compared by their counts.
+        for (left, right) in self.chunks.iter().zip(&other.chunks) {
+            if !(Arc::ptr_eq(left, right) || **left == **right) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
@@ -176,16 +179,19 @@ impl LineRows {
             }
             let chunk = line / CHUNK;
             Arc::make_mut(&mut self.chunks[chunk])[line % CHUNK] = wanted;
-            first_changed = Some(first_changed.map_or(chunk, |known| return known.min(chunk)));
+            first_changed = match first_changed {
+                Some(known) => Some(known.min(chunk)),
+                None => Some(chunk),
+            };
         }
         let Some(from) = first_changed else {
             return false;
         };
         for index in from..self.chunks.len() {
-            let sum: usize = self.chunks[index]
-                .iter()
-                .map(|extra| return *extra as usize)
-                .sum();
+            let mut sum: usize = 0;
+            for extra in self.chunks[index].iter() {
+                sum += *extra as usize;
+            }
             self.before[index + 1] = self.before[index] + sum;
         }
         return true;

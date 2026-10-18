@@ -182,6 +182,44 @@ fn decide<'a>(rules: impl Iterator<Item = &'a Gitignore>, path: &Path, is_direct
     return false;
 }
 
+/// What:
+///  The compiled rules in decision order for a path inside the level at `depth`:
+///  deeper `.gitignore` files first,
+///  then `info/exclude`,
+///  then the global file.
+///  `&'a` ties the returned rules to the borrowed table of compiled files.
+/// Why:
+///  The first file with an opinion wins,
+///  so the order is the decision.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rulesFor(depth: number, compiled: Map<string, Compiled>, files: string[], excludeFile: string, global?: [string, Stamp]): Gitignore[];
+/// ```
+fn rules_for<'a>(
+    depth: usize,
+    compiled_files: &'a HashMap<PathBuf, Compiled>,
+    files: &[PathBuf],
+    exclude_file: &Path,
+    global: &Option<(PathBuf, Stamp)>,
+) -> Vec<&'a Gitignore> {
+    let mut found: Vec<&Gitignore> = Vec::new();
+    for file in files[..depth].iter().rev() {
+        if let Some(compiled) = compiled_files.get(file) {
+            found.push(&compiled.rules);
+        }
+    }
+    if let Some(compiled) = compiled_files.get(exclude_file) {
+        found.push(&compiled.rules);
+    }
+    if let Some((path, _stamp)) = global
+        && let Some(compiled) = compiled_files.get(path)
+    {
+        found.push(&compiled.rules);
+    }
+    return found;
+}
+
 /// Decisions read rule files only.
 impl IgnoreMatcher {
     /// A matcher with nothing compiled yet.
@@ -310,10 +348,13 @@ impl IgnoreMatcher {
         let exclude_file = repository.common_dir.join("info").join("exclude");
         let exclude = self.compile(&exclude_file, &repository.top);
         let global_file = self.global(Instant::now());
-        let global = global_file.map(|path| {
-            let stamp = self.compile(&path, &repository.top);
-            return (path, stamp);
-        });
+        let global = match global_file {
+            Some(path) => {
+                let stamp = self.compile(&path, &repository.top);
+                Some((path, stamp))
+            }
+            None => None,
+        };
         let stamps = RuleStamps {
             own,
             top: Some(repository.top.clone()),
@@ -334,31 +375,13 @@ impl IgnoreMatcher {
             };
         }
         self.reasons.remove(directory);
-        // Compiled rules in decision order for a path inside `levels[depth]`:
-        // deeper `.gitignore` files first, then `info/exclude`, then the global file.
-        let rules_for = |depth: usize| -> Vec<&Gitignore> {
-            let mut found: Vec<&Gitignore> = Vec::new();
-            for file in files[..depth].iter().rev() {
-                if let Some(compiled) = self.files.get(file) {
-                    found.push(&compiled.rules);
-                }
-            }
-            if let Some(compiled) = self.files.get(&exclude_file) {
-                found.push(&compiled.rules);
-            }
-            if let Some((path, _stamp)) = &global
-                && let Some(compiled) = self.files.get(path)
-            {
-                found.push(&compiled.rules);
-            }
-            return found;
-        };
         // A directory is ignored when its parent is,
         // or when the rules above it say so;
         // git never re-includes a file below an ignored directory.
         let mut inside_ignored = false;
         for (depth, level) in levels.iter().enumerate().skip(1) {
-            if decide(rules_for(depth).into_iter(), level, true) {
+            let rules = rules_for(depth, &self.files, &files, &exclude_file, &global);
+            if decide(rules.into_iter(), level, true) {
                 inside_ignored = true;
                 break;
             }
@@ -369,7 +392,7 @@ impl IgnoreMatcher {
                 names.insert(entry.name.clone());
             }
         } else {
-            let rules = rules_for(levels.len());
+            let rules = rules_for(levels.len(), &self.files, &files, &exclude_file, &global);
             for entry in entries {
                 if decide(rules.iter().copied(), &entry.path, entry.is_directory) {
                     names.insert(entry.name.clone());

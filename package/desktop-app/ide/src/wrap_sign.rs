@@ -128,7 +128,13 @@ impl TextShaper {
     /// The sign this shaper's fonts can show,
     /// chosen from IntelliJ's pairs.
     pub fn choose_sign(&mut self, scale: f32) -> Sign {
-        return choose_sign(|character| return self.can_display(character, scale));
+        // The same walk as the free `choose_sign`, with the coverage check of this shaper at `scale`.
+        for (before, after) in SIGN_PAIRS {
+            if self.can_display(before, scale) && self.can_display(after, scale) {
+                return Sign::Glyph(after);
+            }
+        }
+        return Sign::Arrow;
     }
 
     /// What:

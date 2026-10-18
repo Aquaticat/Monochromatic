@@ -321,6 +321,21 @@ pub fn pack(
 }
 
 /// What:
+///  The sort key of one underline run:
+///  `3 - rank` puts hints first and errors last.
+/// Why:
+///  Where ranges of different severities overlap,
+///  the worst line style is painted on top.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const paintOrder = (run: Underline): number => 3 - rank(run.severity);
+/// ```
+fn paint_order(run: &Underline) -> u8 {
+    return 3 - rank(run.severity);
+}
+
+/// What:
 ///  Position every visible annotation against the frame's rows.
 ///  `&mut TextShaper` is lent so virtual-row
 ///       texts can be shaped;
@@ -354,7 +369,7 @@ pub fn lay_out(
     let mut texts = Vec::new();
     let mut extent: f32 = 0.0;
     for block in &visible.blocks {
-        // What: `checked_sub` answers nothing for a line above the frame; `and_then` then asks the rows for
+        // What: `checked_sub` answers nothing for a line above the frame; `get` then asks the rows for
         //       the entry at that index, which is nothing past the last row; `let ... else` skips the block.
         // Why: Rows are materialized in line order from the frame's first line.
         //
@@ -362,11 +377,10 @@ pub fn lay_out(
         // ```ts
         // const row = view.rows[block.line - view.viewport.first]; if (!row) continue;
         // ```
-        let Some(row) = block
-            .line
-            .checked_sub(view.viewport.first)
-            .and_then(|index| return view.rows.get(index))
-        else {
+        let Some(index) = block.line.checked_sub(view.viewport.first) else {
+            continue;
+        };
+        let Some(row) = view.rows.get(index) else {
             continue;
         };
         for hint in &block.hints {
@@ -440,7 +454,7 @@ pub fn lay_out(
     // ```ts
     // underlines.sort((a, b) => rank(b.severity) - rank(a.severity));
     // ```
-    underlines.sort_by_key(|run| return 3 - rank(run.severity));
+    underlines.sort_by_key(paint_order);
     return AnnotationFrame {
         underlines,
         texts,

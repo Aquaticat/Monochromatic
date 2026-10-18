@@ -12,6 +12,8 @@
 use crate::content_digest::fnv1a;
 /// Damage and absence are errors with a message and a remedy.
 use anyhow::{Result, bail};
+/// Compares two paths during the halving search of the embedded table.
+use std::cmp::Ordering;
 
 /// What:
 ///  One embedded file.
@@ -71,7 +73,7 @@ pub struct EmbeddedRuntime {
 ///  Name the running executable for messages;
 ///  `std::env::current_exe()` returns
 ///       `Result<PathBuf>`,
-///  and `map_or` supplies a fallback when the lookup failed.
+///  and a fixed name is the fallback when the lookup failed.
 /// Why:
 ///  A damaged or incomplete executable is fixed by replacing that file,
 ///  so the message names it.
@@ -81,17 +83,17 @@ pub struct EmbeddedRuntime {
 /// function executableName(): string { try { return currentExe(); } catch { return 'the application executable'; } }
 /// ```
 pub fn executable_name() -> String {
-    return std::env::current_exe().map_or_else(
-        // What: `|_| ...` is an arrow function that ignores its argument (the lookup error).
-        // Why: Without a path the message still has to name what to replace.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (_error) => 'the application executable'
-        // ```
-        |_| return "the application executable".to_string(),
-        |path| return path.display().to_string(),
-    );
+    // What: a failed lookup falls back to a fixed name.
+    // Why: Without a path the message still has to name what to replace.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { return currentExe(); } catch { return 'the application executable'; }
+    // ```
+    return match std::env::current_exe() {
+        Ok(path) => path.display().to_string(),
+        Err(_) => "the application executable".to_string(),
+    };
 }
 
 /// Lookups and digest checks over the sorted table.
@@ -121,17 +123,24 @@ impl EmbeddedRuntime {
         // const files = this.files;
         // ```
         let files: &'static [EmbeddedFile] = self.files;
-        // What: `file.path.cmp(path)` orders two texts; the closure tells the search which way to go.
+        // What: `file.path.cmp(path)` orders two texts; its answer tells the search which way to go.
         // Why: The build script sorted the list by the same byte order.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const index = binarySearch(files, file => compare(file.path, path));
         // ```
-        let index = files
-            .binary_search_by(|file| return file.path.cmp(path))
-            .ok()?;
-        return files.get(index);
+        let mut low = 0;
+        let mut high = files.len();
+        while low < high {
+            let middle = low + (high - low) / 2;
+            match files[middle].path.cmp(path) {
+                Ordering::Less => low = middle + 1,
+                Ordering::Greater => high = middle,
+                Ordering::Equal => return files.get(middle),
+            }
+        }
+        return None;
     }
 
     /// What:

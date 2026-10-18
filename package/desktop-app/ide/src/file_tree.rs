@@ -163,8 +163,13 @@ impl FileTree {
         // ```
         let parent = path.parent()?;
         let entries = self.directories.get(parent)?;
-        // The closure lends each entry; find returns a borrowed match without copying its name.
-        return entries.iter().find(|entry| return entry.path == path);
+        // Each entry is lent in turn; the first match is returned borrowed, without copying its name.
+        for entry in entries.iter() {
+            if entry.path == path {
+                return Some(entry);
+            }
+        }
+        return None;
     }
 
     /// Whether a listing since the last call showed changed ignore rules,

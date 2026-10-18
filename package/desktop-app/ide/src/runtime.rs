@@ -30,7 +30,7 @@ use crate::app_cache::application_cache;
 /// Errors carry the file,
 ///  what happened,
 ///  and the remedy for the source in use.
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{Result, anyhow, bail};
 /// Paths,
 ///  the not-found error kind,
 ///  and the process-wide once-set value.
@@ -224,16 +224,19 @@ pub fn current() -> Result<&'static RuntimeSource> {
             "No language runtime is available to this program: it has no embedded language files and HELIX_RUNTIME names no directory. The application binary embeds its own; tests and development tools read the directory HELIX_RUNTIME names, which the package runtime task prepares (mise run //package/desktop-app/ide:runtime)."
         );
     };
-    // What: `get_or_init(|| ...)` stores the value built by the arrow function unless one is present.
+    // What: `set` stores the value unless one is present; `get` then reads the stored one.
     // Why: Concurrent first callers agree on one value.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // installed ??= { kind: 'directory', path: directory }; return installed;
     // ```
-    return Ok(INSTALLED.get_or_init(|| {
-        return RuntimeSource::Directory(PathBuf::from(directory));
-    }));
+    // `set` fails when another caller stored a value first; that value is the one every caller reads.
+    let _stored = INSTALLED.set(RuntimeSource::Directory(PathBuf::from(directory)));
+    let Some(installed) = INSTALLED.get() else {
+        bail!("The language runtime source was not stored");
+    };
+    return Ok(installed);
 }
 
 /// Reading the manifest,
@@ -304,20 +307,28 @@ impl RuntimeSource {
                 // ```ts
                 // const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
                 // ```
-                let text = String::from_utf8(bytes.to_vec())
-                    .with_context(|| return format!("The embedded {path} is not UTF-8 text"))?;
+                let text = match String::from_utf8(bytes.to_vec()) {
+                    Ok(found) => found,
+                    Err(error) => {
+                        return Err(anyhow::Error::new(error)
+                            .context(format!("The embedded {path} is not UTF-8 text")));
+                    }
+                };
                 let location = format!("{path} embedded in {}", embedded::executable_name());
                 return Ok((text, location));
             }
             Self::Directory(directory) => {
                 let path = directory.join("manifest.json");
-                let text = std::fs::read_to_string(&path).with_context(|| {
-                    return format!(
-                        "Cannot read the language manifest {}. {}",
-                        path.display(),
-                        self.remedy()
-                    );
-                })?;
+                let text = match std::fs::read_to_string(&path) {
+                    Ok(found) => found,
+                    Err(error) => {
+                        return Err(anyhow::Error::new(error).context(format!(
+                            "Cannot read the language manifest {}. {}",
+                            path.display(),
+                            self.remedy()
+                        )));
+                    }
+                };
                 return Ok((text, path.display().to_string()));
             }
         }
@@ -343,8 +354,11 @@ impl RuntimeSource {
                 let Some(bytes) = runtime.verified(&path)? else {
                     return Ok(String::new());
                 };
-                return String::from_utf8(bytes.to_vec())
-                    .with_context(|| return format!("The embedded {path} is not UTF-8 text"));
+                return match String::from_utf8(bytes.to_vec()) {
+                    Ok(found) => Ok(found),
+                    Err(error) => Err(anyhow::Error::new(error)
+                        .context(format!("The embedded {path} is not UTF-8 text"))),
+                };
             }
             Self::Directory(directory) => {
                 let path = directory.join("queries").join(language).join(file);

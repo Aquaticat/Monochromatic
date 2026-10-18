@@ -65,16 +65,17 @@ fn first_ready(
         return None;
     }
     for path in shown {
-        // What: `get` returns `Option<&Instant>`; `is_none_or` accepts a missing entry or an old enough one.
+        // What: `get` returns `Option<&Instant>`; a missing entry or an old enough one is rested.
         // Why: A folder changing continuously is reread at most once per `REREAD_GAP`; others are not delayed.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const rested = !started.has(path) || now - started.get(path) >= REREAD_GAP;
         // ```
-        let rested = started
-            .get(path)
-            .is_none_or(|at| return now.saturating_duration_since(*at) >= REREAD_GAP);
+        let rested = match started.get(path) {
+            Some(at) => now.saturating_duration_since(*at) >= REREAD_GAP,
+            None => true,
+        };
         if rested && pending.remove(path) {
             // `clone` returns an owned copy; the caller keeps its shown list intact.
             return Some(path.clone());
@@ -82,7 +83,15 @@ fn first_ready(
     }
     // Entries that are no longer shown are dropped; a later expansion reads them as a first listing
     // and again when their watch starts. Shown entries inside their gap stay pending.
-    pending.retain(|path| return shown.contains(path));
+    let mut doomed: Vec<PathBuf> = Vec::new();
+    for path in pending.iter() {
+        if !shown.contains(path) {
+            doomed.push(path.clone());
+        }
+    }
+    for path in doomed {
+        pending.remove(&path);
+    }
     return None;
 }
 
@@ -140,7 +149,15 @@ impl DirectoryRefresh {
             self.sweep.insert(path.clone());
         }
         // Forget read times of folders that are no longer shown, so the map stays as small as the tree.
-        self.started.retain(|path, _at| return shown.contains(path));
+        let mut doomed: Vec<PathBuf> = Vec::new();
+        for path in self.started.keys() {
+            if !shown.contains(path) {
+                doomed.push(path.clone());
+            }
+        }
+        for path in doomed {
+            self.started.remove(&path);
+        }
         tracing::debug!(
             directories = shown.len(),
             "started the safety reread of shown directories"
@@ -161,17 +178,18 @@ impl DirectoryRefresh {
         if let Some(path) = first_ready(&mut self.changed, shown, &self.started, now) {
             return Some(path);
         }
-        // What: `is_none_or` is true for `None` or when the closure accepts the contained time.
+        // What: the poll is due for `None` or when the contained time is old enough.
         // Why: Unwatched directories keep the old 500 ms round robin, never faster.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (this.lastUnwatched === undefined || now - this.lastUnwatched >= 500) { ... }
         // ```
-        if self
-            .last_unwatched
-            .is_none_or(|at| return now.saturating_duration_since(at) >= UNWATCHED_DIRECTORY_POLL)
-        {
+        let unwatched_due = match self.last_unwatched {
+            Some(at) => now.saturating_duration_since(at) >= UNWATCHED_DIRECTORY_POLL,
+            None => true,
+        };
+        if unwatched_due {
             let mut unwatched = Vec::new();
             for path in shown {
                 if !watched.contains(path) {

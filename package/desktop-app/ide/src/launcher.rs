@@ -141,8 +141,11 @@ pub fn install_backend() -> anyhow::Result<()> {
     // ```ts
     // slint.setPlatform(backend); // throws when a platform was already set
     // ```
-    slint::platform::set_platform(Box::new(backend))
-        .map_err(|error| return anyhow::anyhow!("Cannot install the window backend: {error}"))?;
+    if let Err(error) = slint::platform::set_platform(Box::new(backend)) {
+        return Err(anyhow::anyhow!(
+            "Cannot install the window backend: {error}"
+        ));
+    }
     tracing::debug!(
         app_id = APP_ID,
         "winit backend installed with the Wayland app id"

@@ -2,9 +2,9 @@
 //!  no mutation operations are exposed.
 
 /// Sibling names sort in the order the tree shows them.
-use crate::name_order::name_key;
+use crate::name_order::{NameKey, name_key};
 /// Every failure identifies the operation and affected input.
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 /// Paths retain native filenames rather than round-tripping lossy UI strings.
 use std::{
     ffi::OsString,
@@ -25,6 +25,21 @@ pub struct DirectoryEntry {
     pub is_directory: bool,
 }
 
+/// What:
+///  The sort key of a directory entry:
+///  its native name in natural order.
+///  `&DirectoryEntry` is lent by the sort.
+/// Why:
+///  Names are keyed once per entry rather than once per comparison.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const entryKey = (entry: DirectoryEntry): NameKey => nameKey(entry.name);
+/// ```
+fn entry_key(entry: &DirectoryEntry) -> NameKey {
+    return name_key(&entry.name);
+}
+
 /// One canonical project root bounds tree and project-search navigation.
 #[derive(Clone, Debug)]
 pub struct Workspace {
@@ -36,9 +51,13 @@ pub struct Workspace {
 impl Workspace {
     /// Open an existing local directory as the sole project root.
     pub fn new(path: &Path) -> Result<Self> {
-        let root = path
-            .canonicalize()
-            .with_context(|| return format!("Cannot open project directory {}", path.display()))?;
+        let root = match path.canonicalize() {
+            Ok(found) => found,
+            Err(error) => {
+                return Err(anyhow::Error::new(error)
+                    .context(format!("Cannot open project directory {}", path.display())));
+            }
+        };
         if !root.is_dir() {
             bail!(
                 "Cannot use {} as the project root: it is not a directory",
@@ -59,9 +78,15 @@ impl Workspace {
     /// Symlinks resolving outside the root are rejected for tree/project-search operations.
     pub fn resolve(&self, path: &Path) -> Result<PathBuf> {
         let candidate = self.root.join(path);
-        let resolved = candidate.canonicalize().with_context(|| {
-            return format!("Cannot resolve project path {}", candidate.display());
-        })?;
+        let resolved = match candidate.canonicalize() {
+            Ok(found) => found,
+            Err(error) => {
+                return Err(anyhow::Error::new(error).context(format!(
+                    "Cannot resolve project path {}",
+                    candidate.display()
+                )));
+            }
+        };
         if !resolved.starts_with(&self.root) {
             bail!(
                 "Project path {} resolves outside {}",
@@ -77,24 +102,38 @@ impl Workspace {
     ///  hidden entries remain visible as in editord.
     pub fn list(&self, path: &Path) -> Result<Vec<DirectoryEntry>> {
         let directory = self.resolve(path)?;
-        let entries = fs::read_dir(&directory).with_context(|| {
-            return format!("Cannot list project directory {}", directory.display());
-        })?;
+        let entries = match fs::read_dir(&directory) {
+            Ok(found) => found,
+            Err(error) => {
+                return Err(anyhow::Error::new(error).context(format!(
+                    "Cannot list project directory {}",
+                    directory.display()
+                )));
+            }
+        };
         let mut snapshot = Vec::new();
         for result in entries {
-            let entry = result.with_context(|| {
-                return format!("Cannot read an entry in {}", directory.display());
-            })?;
-            let kind = entry
-                .file_type()
-                .with_context(|| return format!("Cannot inspect {}", entry.path().display()))?;
+            let entry = match result {
+                Ok(found) => found,
+                Err(error) => {
+                    return Err(anyhow::Error::new(error)
+                        .context(format!("Cannot read an entry in {}", directory.display())));
+                }
+            };
+            let kind = match entry.file_type() {
+                Ok(found) => found,
+                Err(error) => {
+                    return Err(anyhow::Error::new(error)
+                        .context(format!("Cannot inspect {}", entry.path().display())));
+                }
+            };
             snapshot.push(DirectoryEntry {
                 name: entry.file_name(),
                 path: entry.path(),
                 is_directory: kind.is_dir(),
             });
         }
-        snapshot.sort_by_cached_key(|entry| return name_key(&entry.name));
+        snapshot.sort_by_cached_key(entry_key);
         tracing::debug!(path = %directory.display(), entries = snapshot.len(), "read directory snapshot");
         return Ok(snapshot);
     }

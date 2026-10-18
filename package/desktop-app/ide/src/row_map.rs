@@ -219,10 +219,18 @@ impl RowMap {
     /// const index = blocks.findIndex(([owner]) => owner >= line);
     /// ```
     fn index_of(&self, line: usize) -> usize {
-        // `partition_point` is a binary search for the first entry the closure rejects.
-        return self
-            .blocks
-            .partition_point(|(owner, _)| return *owner < line);
+        // A halving search finds the first block whose owning line is not above `line`.
+        let mut low = 0;
+        let mut high = self.blocks.len();
+        while low < high {
+            let middle = low + (high - low) / 2;
+            if self.blocks[middle].0 < line {
+                low = middle + 1;
+            } else {
+                high = middle;
+            }
+        }
+        return low;
     }
 
     /// Summed height of every block above `line`'s own block.
@@ -236,16 +244,17 @@ impl RowMap {
 
     /// Summed height of every block.
     fn raised(&self) -> f32 {
-        // What: `last()` lends the final entry or nothing; `map_or` reads it or answers zero.
+        // What: `last()` lends the final entry or nothing; the total is read from it or is zero.
         // Why: The total is the last prefix plus the last block's own height.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // return blocks.length ? before.at(-1) + blocks.at(-1)[1] : 0;
         // ```
-        return self.blocks.last().map_or(0.0, |(_, height)| {
+        if let Some((_, height)) = self.blocks.last() {
             return self.before[self.before.len() - 1] + *height;
-        });
+        }
+        return 0.0;
     }
 
     /// Height of the block above `line`'s code row;

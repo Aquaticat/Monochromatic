@@ -117,11 +117,14 @@ pub fn line_work(document: &Document, line: usize) -> usize {
     if length > WORK_SCAN_LIMIT {
         return usize::MAX;
     }
-    let shapings = if slice.chars().any(|character| return character == '\t') {
-        1 + passes_for(length)
-    } else {
-        1
-    };
+    let mut has_tab = false;
+    for character in slice.chars() {
+        if character == '\t' {
+            has_tab = true;
+            break;
+        }
+    }
+    let shapings = if has_tab { 1 + passes_for(length) } else { 1 };
     return LINE_WORK + length * shapings;
 }
 

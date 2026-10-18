@@ -242,14 +242,18 @@ pub fn continuation_indent(text: &str, space: f32) -> f32 {
 /// function firstRowInBlanks(layout: Layout, text: string): boolean;
 /// ```
 pub fn first_row_in_blanks(layout: &Layout<u32>, text: &str) -> bool {
-    let first_text = text
-        .find(|character| {
-            return !is_blank(character);
-        })
-        .unwrap_or(text.len());
-    return layout.lines().next().is_some_and(|line| {
+    // The first character that is not a blank starts the text; an all-blank line has none.
+    let mut first_text = text.len();
+    for (position, character) in text.char_indices() {
+        if !is_blank(character) {
+            first_text = position;
+            break;
+        }
+    }
+    if let Some(line) = layout.lines().next() {
         return line.text_range().end <= first_text;
-    });
+    }
+    return false;
 }
 
 /// What:

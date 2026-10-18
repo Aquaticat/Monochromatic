@@ -6,6 +6,8 @@
 
 /// Where the picture's rows come from and how tall it is.
 use super::geometry::Geometry;
+/// The glyph cells of a row and their painting.
+use super::paint::{Cell, paint_row};
 /// Canonical text as a rope,
 /// read by line and by character range.
 use crate::document::Document;
@@ -110,12 +112,6 @@ const CLEAN_WEIGHTS: [[f32; 4]; 4] = [
     [0.0, 0.6, 0.6, 0.6],
 ];
 
-/// Weight of a printable ASCII glyph in the clean renderer.
-const ASCII_WEIGHT: f32 = 0.8;
-
-/// Weight of any other drawn glyph in the clean renderer.
-const OTHER_WEIGHT: f32 = 0.4;
-
 /// What:
 ///  What a build reads:
 /// the text,
@@ -206,20 +202,6 @@ pub struct Built {
     pub bytes: Vec<u8>,
     /// What the build cost.
     pub stats: Stats,
-}
-
-/// One drawn glyph of a row:
-/// its column,
-/// its ink,
-/// and its weight class.
-struct Cell {
-    /// Column from the start of the picture row.
-    column: usize,
-    /// Syntax ink of the glyph.
-    rgb: [u8; 3],
-    /// Printable ASCII,
-    /// which weighs twice what any other glyph does.
-    ascii: bool,
 }
 
 /// What:
@@ -345,7 +327,9 @@ fn describe(
     let indent = indent_columns(input.document, line);
     let count = input.map.rows_of(line);
     stats.lines += 1;
-    let Some(wrap) = input.wrap.filter(|_| return count > 1) else {
+    // Only a line of several rows is measured against the wrap width.
+    let wrapped_width = if count > 1 { input.wrap } else { None };
+    let Some(wrap) = wrapped_width else {
         // One row holds the whole line: a list of one range of char positions.
         return LineRows {
             line,
@@ -371,13 +355,12 @@ fn describe(
     } else {
         usize::MAX
     };
-    let rows = (0..count)
-        .map(|row| {
-            let from = row.saturating_mul(columns).min(visible);
-            let to = from.saturating_add(columns).min(visible);
-            return start + from..start + to;
-        })
-        .collect();
+    let mut rows = Vec::new();
+    for row in 0..count {
+        let from = row.saturating_mul(columns).min(visible);
+        let to = from.saturating_add(columns).min(visible);
+        rows.push(start + from..start + to);
+    }
     return LineRows { line, rows, indent };
 }
 
@@ -402,9 +385,17 @@ fn describe(
 fn cells(input: &Input, range: Range<usize>, first: usize, columns: usize) -> Vec<Cell> {
     let mut found = Vec::new();
     let mut column = first;
-    let mut span = input.styles.partition_point(|candidate| {
-        return candidate.end <= range.start;
-    });
+    // A halving search finds the first style span that reaches this range.
+    let mut span = 0;
+    let mut high = input.styles.len();
+    while span < high {
+        let middle = span + (high - span) / 2;
+        if input.styles[middle].end <= range.start {
+            span = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
     for (offset, character) in input
         .document
         .text()
@@ -439,36 +430,6 @@ fn cells(input: &Input, range: Range<usize>, first: usize, columns: usize) -> Ve
         column += 1;
     }
     return found;
-}
-
-/// Write one drawn pixel row of `cells` into row `row` of `bytes`:
-///  each glyph fills the physical pixels of its column with its ink,
-///  weighed by `weight` and by the glyph's class,
-/// premultiplied.
-fn paint_row(bytes: &mut [u8], width: usize, row: usize, cells: &[Cell], weight: f32, scale: f32) {
-    if weight <= 0.0 {
-        return;
-    }
-    let line = &mut bytes[row * width * 4..(row + 1) * width * 4];
-    for cell in cells {
-        let class = if cell.ascii {
-            ASCII_WEIGHT
-        } else {
-            OTHER_WEIGHT
-        };
-        let alpha = (255.0 * IMAGE_ALPHA * class * weight).round() as u32;
-        let from = ((cell.column as f32) * scale).round() as usize;
-        let to = (((cell.column + 1) as f32) * scale)
-            .round()
-            .max(from as f32 + 1.0) as usize;
-        for pixel in from..to.min(width) {
-            for channel in 0..3 {
-                line[pixel * 4 + channel] =
-                    ((u32::from(cell.rgb[channel]) * alpha + 127) / 255) as u8;
-            }
-            line[pixel * 4 + 3] = alpha as u8;
-        }
-    }
 }
 
 /// What:
@@ -537,14 +498,17 @@ pub fn build(
         if weight <= 0.0 {
             continue;
         }
-        if drawn
-            .as_ref()
-            .is_none_or(|(line, kept, _)| return (*line, *kept) != (place.line, row))
-        {
-            if described
-                .as_ref()
-                .is_none_or(|rows| return rows.line != place.line)
-            {
+        // A row is drawn again only when it is not the one drawn last.
+        let new_row = match drawn.as_ref() {
+            Some((line, kept, _)) => (*line, *kept) != (place.line, row),
+            None => true,
+        };
+        if new_row {
+            let new_line = match described.as_ref() {
+                Some(rows) => rows.line != place.line,
+                None => true,
+            };
+            if new_line {
                 described = Some(describe(
                     shaper,
                     input,

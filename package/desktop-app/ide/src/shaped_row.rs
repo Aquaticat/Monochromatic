@@ -137,11 +137,13 @@ impl ShapedRow {
     /// ```
     pub fn has_empty_tail(&self) -> bool {
         let count = self.layout.len();
-        return count > 1
-            && self
-                .layout
-                .get(count - 1)
-                .is_some_and(|line| return line.text_range().is_empty());
+        if count <= 1 {
+            return false;
+        }
+        if let Some(line) = self.layout.get(count - 1) {
+            return line.text_range().is_empty();
+        }
+        return false;
     }
 
     /// Logical y of visual row `index` from the top of the line's first row,
@@ -157,9 +159,10 @@ impl ShapedRow {
     /// visualRowOffset(index: number, scale: number): number;
     /// ```
     pub fn visual_row_offset(&self, index: usize, scale: f32) -> f32 {
-        let height = self.layout.lines().next().map_or(CODE_ROW * scale, |line| {
-            return line.metrics().line_height;
-        });
+        let height = match self.layout.lines().next() {
+            Some(line) => line.metrics().line_height,
+            None => CODE_ROW * scale,
+        };
         return index as f32 * height / scale;
     }
 
@@ -206,11 +209,10 @@ impl ShapedRow {
         // const end = Math.min(range.end, text.length);
         // ```
         let length = self.projection.text.len();
-        return self
-            .layout
-            .lines()
-            .nth(index)
-            .map(|line| line.text_range().start..line.text_range().end.min(length));
+        if let Some(line) = self.layout.lines().nth(index) {
+            return Some(line.text_range().start..line.text_range().end.min(length));
+        }
+        return None;
     }
 
     /// Row-local source characters of visual row `index`,
@@ -239,10 +241,12 @@ impl ShapedRow {
     /// sourceRows(): [number, number][];
     /// ```
     pub fn source_rows(&self) -> Vec<Range<usize>> {
-        let mut rows: Vec<Range<usize>> = (0..self.visual_rows())
-            .filter_map(|index| return self.visual_row_sources(index))
-            .map(|local| return self.source_start + local.start..self.source_start + local.end)
-            .collect();
+        let mut rows: Vec<Range<usize>> = Vec::new();
+        for index in 0..self.visual_rows() {
+            if let Some(local) = self.visual_row_sources(index) {
+                rows.push(self.source_start + local.start..self.source_start + local.end);
+            }
+        }
         if rows.is_empty() {
             rows.push(self.source_start..self.source_start);
         }
@@ -279,9 +283,10 @@ impl ShapedRow {
         // ```ts
         // if (affinity === 'upstream' && row > 0 && rowStart(row) === byte) row -= 1;
         // ```
-        let starts_row = self.layout.lines().nth(row).is_some_and(|line| {
-            return line.text_range().start == byte;
-        });
+        let mut starts_row = false;
+        if let Some(line) = self.layout.lines().nth(row) {
+            starts_row = line.text_range().start == byte;
+        }
         if matches!(affinity, Affinity::Upstream) && row > 0 && starts_row {
             row -= 1;
         }
@@ -424,12 +429,12 @@ impl ShapedRow {
             .saturating_sub(self.source_start)
             .min(self.source_len());
         let byte = self.projection.source_to_byte[local];
-        let starts_next = row + 1 < self.visual_rows()
-            && self
-                .layout
-                .lines()
-                .nth(row + 1)
-                .is_some_and(|next| return next.text_range().start == byte);
+        let mut starts_next = false;
+        if row + 1 < self.visual_rows()
+            && let Some(next) = self.layout.lines().nth(row + 1)
+        {
+            starts_next = next.text_range().start == byte;
+        }
         if starts_next {
             return ReadingAffinity::Upstream;
         }
@@ -454,9 +459,10 @@ impl ShapedRow {
     /// Physical middle of the first visual row,
     /// the probe `hit` uses on a wrapped line.
     fn first_row_middle(&self) -> f32 {
-        return self.layout.lines().next().map_or(0.0, |line| {
+        if let Some(line) = self.layout.lines().next() {
             return line.metrics().block_min_coord + line.metrics().line_height / 2.0;
-        });
+        }
+        return 0.0;
     }
 
     /// Logical x of the caret standing before global source character `position` on this row,

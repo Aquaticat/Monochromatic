@@ -6,7 +6,7 @@ use super::{Request, SearchReply};
 ///  they narrow the existing read-only boundary.
 use crate::{search::SearchResults, search_process, workspace::Workspace};
 /// Resolution and directory-kind failures retain their affected input.
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 /// Native scope paths retain byte identity across relative and absolute input forms.
 use std::{fs, path::PathBuf};
 
@@ -18,8 +18,15 @@ fn scope(workspace: &Workspace, request: &Request) -> Result<PathBuf> {
     } else {
         workspace.root().to_path_buf()
     };
-    let metadata = fs::metadata(&path)
-        .with_context(|| return format!("Cannot inspect search directory {}", path.display()))?;
+    let metadata = match fs::metadata(&path) {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Cannot inspect search directory {}",
+                path.display()
+            )));
+        }
+    };
     if !metadata.is_dir() {
         bail!("Cannot search {}: it is not a directory", path.display());
     }

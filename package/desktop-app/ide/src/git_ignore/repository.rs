@@ -31,14 +31,18 @@ pub struct Repository {
     pub common_dir: PathBuf,
 }
 
+/// The first line of `text` without surrounding blanks,
+///  or `None` for empty text.
+fn trimmed_first_line(text: &str) -> Option<String> {
+    let line = text.lines().next()?;
+    return Some(line.trim().to_string());
+}
+
 /// First line of a text file without its line break,
 ///  or `None` when the file is missing or unreadable (logged unless it is missing).
 fn first_line(path: &Path) -> Option<String> {
     return match fs::read_to_string(path) {
-        Ok(text) => text
-            .lines()
-            .next()
-            .map(|line| return line.trim().to_string()),
+        Ok(text) => trimmed_first_line(&text),
         Err(error) if error.kind() == ErrorKind::NotFound => None,
         Err(error) => {
             tracing::debug!(path = %path.display(), %error, "cannot read a git pointer file");

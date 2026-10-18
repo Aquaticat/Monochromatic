@@ -142,8 +142,12 @@ pub fn unescape(quoted: &str) -> String {
             Some('u') if rest.peek() == Some(&'{') => {
                 rest.next();
                 let mut digits = String::new();
-                // `next_if` takes the next character only while the closure accepts it.
-                while let Some(digit) = rest.next_if(|next| return *next != '}') {
+                // `peek` looks at the next character without taking it; the digits end at the closing brace.
+                while let Some(digit) = rest.peek().copied() {
+                    if digit == '}' {
+                        break;
+                    }
+                    rest.next();
                     digits.push(digit);
                 }
                 rest.next();
@@ -222,9 +226,10 @@ pub fn ended(server: &str) {
 
 /// Whether a server's standard error ended after its newest line.
 pub fn is_closed(server: &str) -> bool {
-    return tails()
-        .get(server)
-        .is_some_and(|tail| return tail.closed && !tail.retired);
+    if let Some(tail) = tails().get(server) {
+        return tail.closed && !tail.retired;
+    }
+    return false;
 }
 
 /// What:
@@ -235,12 +240,15 @@ pub fn is_closed(server: &str) -> bool {
 ///  The worker shows why a start failed while the lines are still to be reported once
 ///      as the log record of the ended server.
 pub fn lines(server: &str) -> Vec<String> {
-    return tails()
-        .get(server)
-        .filter(|tail| return !tail.retired)
-        .map_or(Vec::new(), |tail| {
-            return tail.lines.iter().cloned().collect();
-        });
+    let mut kept: Vec<String> = Vec::new();
+    if let Some(tail) = tails().get(server)
+        && !tail.retired
+    {
+        for line in tail.lines.iter() {
+            kept.push(line.clone());
+        }
+    }
+    return kept;
 }
 
 /// What:

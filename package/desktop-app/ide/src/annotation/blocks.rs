@@ -47,7 +47,12 @@ use helix_core::Rope;
 /// ```ts
 /// type Shared<T> = Readonly<T>;
 /// ```
-use std::{collections::BTreeMap, ops::Range, sync::Arc, time::Instant};
+use std::{
+    collections::{BTreeMap, btree_map::Entry},
+    ops::Range,
+    sync::Arc,
+    time::Instant,
+};
 
 /// What:
 ///  The rows of one line's messages broken so that each fits `limit` logical pixels,
@@ -98,14 +103,19 @@ fn fit_messages(
         } else {
             0.0
         };
-        let fits = (from..to).all(|index| {
+        // Every row of the line must fit the limit for the line to stay as it was.
+        let mut fits = true;
+        for index in from..to {
             let own = if rows[index].continued {
                 CONTINUATION_INDENT
             } else {
                 0.0
             };
-            return own + widths[index] <= limit;
-        });
+            if !(own + widths[index] <= limit) {
+                fits = false;
+                break;
+            }
+        }
         if fits {
             fitted.extend_from_slice(&rows[from..to]);
             from = to;
@@ -202,11 +212,11 @@ impl Annotations {
         // ```ts
         // const stale = [...labels.keys()].filter(line => line >= first && line < last);
         // ```
-        let stale: Vec<usize> = self
-            .labels
-            .range(asked.clone())
-            .map(|(line, _)| return *line)
-            .collect();
+        // The lines in the answered range are copied out so the maps can be changed while they are walked.
+        let mut stale: Vec<usize> = Vec::new();
+        for (line, _) in self.labels.range(asked.clone()) {
+            stale.push(*line);
+        }
         for line in stale {
             self.labels.remove(&line);
             self.placed.remove(&line);
@@ -267,8 +277,11 @@ impl Annotations {
     /// expire(now: number): boolean;
     /// ```
     pub fn expire(&mut self, now: Instant) -> bool {
-        // `is_some_and` answers false without a deadline and otherwise asks the closure.
-        let due = self.held_until.is_some_and(|until| return now >= until);
+        // No deadline means nothing is due; otherwise the deadline must have passed.
+        let due = match self.held_until {
+            Some(until) => now >= until,
+            None => false,
+        };
         if !due {
             return false;
         }
@@ -400,23 +413,29 @@ impl Annotations {
                             Some(known) => known.wrap != wrap && focus.contains(&line),
                         };
                         if refit {
-                            let widths = self.natural.entry(line).or_insert_with(|| {
-                                self.work.measured += rows.len() as u64;
-                                return rows
-                                    .iter()
-                                    .map(|row| {
-                                        return shaper.row_layout(&row.text, scale).full_width()
-                                            / scale;
-                                    })
-                                    .collect();
-                            });
+                            // The natural widths are measured once per line and kept for later refits.
+                            let widths = match self.natural.entry(line) {
+                                Entry::Occupied(known) => known.into_mut(),
+                                Entry::Vacant(slot) => {
+                                    self.work.measured += rows.len() as u64;
+                                    let mut measured: Vec<f32> = Vec::new();
+                                    for row in rows.iter() {
+                                        measured.push(
+                                            shaper.row_layout(&row.text, scale).full_width()
+                                                / scale,
+                                        );
+                                    }
+                                    slot.insert(measured)
+                                }
+                            };
                             let (fitted, broken) = fit_messages(rows, widths, shaper, scale, limit);
                             self.work.broken += broken;
                             self.wrapped.insert(line, Fitted { wrap, rows: fitted });
                         }
-                        self.wrapped
-                            .get(&line)
-                            .map_or_else(|| return rows.clone(), |known| return known.rows.clone())
+                        match self.wrapped.get(&line) {
+                            Some(known) => known.rows.clone(),
+                            None => rows.clone(),
+                        }
                     }
                     None => rows.clone(),
                 };

@@ -254,7 +254,12 @@ impl TextShaper {
             builder.push_default(StyleProperty::OverflowWrap(OverflowWrap::Anywhere));
         }
         let mut layout = builder.build(text);
-        layout.break_all_lines(wrap.map(|width| return width * scale));
+        // A wrap width is scaled to physical pixels; no width means no wrapping.
+        let mut limit = None;
+        if let Some(width) = wrap {
+            limit = Some(width * scale);
+        }
+        layout.break_all_lines(limit);
         return layout;
     }
 

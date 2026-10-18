@@ -33,14 +33,20 @@ pub struct RecentFiles {
 impl RecentFiles {
     /// Record a successful file open and promote existing entries.
     pub fn opened(&mut self, path: PathBuf) {
-        // What: retain calls a closure for each borrowed path and keeps true results.
+        // What: `drain(..)` moves every held path out one by one; those that differ from `path` are kept.
         // Why: Remove duplicates before inserting the new most-recent entry.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // this.paths = this.paths.filter(existing => existing !== path);
         // ```
-        self.paths.retain(|existing| return existing != &path);
+        let mut kept: Vec<PathBuf> = Vec::new();
+        for existing in self.paths.drain(..) {
+            if existing != path {
+                kept.push(existing);
+            }
+        }
+        self.paths = kept;
         self.paths.insert(0, path);
         self.paths.truncate(10);
         tracing::debug!(count = self.paths.len(), "updated recent-file slots");

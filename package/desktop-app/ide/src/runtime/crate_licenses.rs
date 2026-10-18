@@ -17,7 +17,7 @@
 //!  so the listing prints one heading per text and names those crates under it.
 
 /// A malformed list is an error naming the embedded file and the remedy.
-use anyhow::{Context, Result};
+use anyhow::Result;
 /// The list is JSON that the template writes;
 ///  `serde` maps it onto these types.
 use serde::Deserialize;
@@ -124,11 +124,12 @@ pub struct CrateRef {
 /// function parse(bytes: Uint8Array): CrateLicenses // throws with the remedy
 /// ```
 pub fn parse(bytes: &[u8]) -> Result<CrateLicenses> {
-    return serde_json::from_slice(bytes).with_context(|| {
-        return format!(
+    return match serde_json::from_slice(bytes) {
+        Ok(parsed) => Ok(parsed),
+        Err(error) => Err(anyhow::Error::new(error).context(format!(
             "The Rust crate license list {PATH} embedded in the executable cannot be read. Replace the executable with a fresh copy of the application, or build it again from source."
-        );
-    });
+        ))),
+    };
 }
 
 /// What:
@@ -156,15 +157,20 @@ fn crate_relative(source: &str) -> &str {
     // const rest = source.split('/registry/src/')[1]; if (rest) return rest.split('/').slice(1).join('/');
     // ```
     if let Some((_, rest)) = source.split_once("/registry/src/") {
-        return rest
-            .split_once('/')
-            .map_or(rest, |(_, crate_part)| return crate_part);
+        return match rest.split_once('/') {
+            Some((_, crate_part)) => crate_part,
+            None => rest,
+        };
     }
     if let Some((_, rest)) = source.split_once("/git/checkouts/") {
-        let after_repository = rest.split_once('/').map_or(rest, |(_, part)| return part);
-        return after_repository
-            .split_once('/')
-            .map_or(after_repository, |(_, part)| return part);
+        let after_repository = match rest.split_once('/') {
+            Some((_, part)) => part,
+            None => rest,
+        };
+        return match after_repository.split_once('/') {
+            Some((_, part)) => part,
+            None => after_repository,
+        };
     }
     return source;
 }
@@ -253,15 +259,11 @@ impl CrateLicense {
         // ```ts
         // const items = crates.map((c, index) => `${c.name} ${c.version}${index < last ? ',' : ''}`);
         // ```
-        let items: Vec<String> = self
-            .crates
-            .iter()
-            .enumerate()
-            .map(|(index, used)| {
-                let comma = if index < last { "," } else { "" };
-                return format!("{} {}{comma}", used.name, used.version);
-            })
-            .collect();
+        let mut items: Vec<String> = Vec::new();
+        for (index, used) in self.crates.iter().enumerate() {
+            let comma = if index < last { "," } else { "" };
+            items.push(format!("{} {}{comma}", used.name, used.version));
+        }
         let mut lines = wrap("Used by: ", &items);
         lines.push(match &self.source {
             Some(source) => format!("Text from the crate file {}", crate_relative(source)),

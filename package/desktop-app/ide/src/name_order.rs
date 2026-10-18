@@ -63,9 +63,15 @@ impl Ord for Piece {
                     length: other_length,
                     digits: other_digits,
                 },
-            ) => length
-                .cmp(other_length)
-                .then_with(|| return digits.cmp(other_digits)),
+            ) => {
+                // Digits are compared only when the lengths are equal.
+                let by_length = length.cmp(other_length);
+                if by_length == Ordering::Equal {
+                    digits.cmp(other_digits)
+                } else {
+                    by_length
+                }
+            }
             _ => Ordering::Equal,
         };
     }

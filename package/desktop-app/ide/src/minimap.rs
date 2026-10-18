@@ -18,6 +18,8 @@
 /// the viewport box,
 /// and the maps between pixels and visual rows.
 mod geometry;
+/// Painting the glyph cells of one picture row.
+mod paint;
 /// The picture of the whole text,
 /// built within a work budget.
 mod raster;

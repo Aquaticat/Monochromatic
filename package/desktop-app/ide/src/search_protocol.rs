@@ -127,18 +127,25 @@ fn path(root: &Path, bytes: Vec<u8>) -> Result<PathBuf> {
     // const resultPath = nativePathFromBytes(bytes);
     // ```
     let result = PathBuf::from(OsString::from_vec(bytes));
-    let relative = result.strip_prefix(root).with_context(|| {
-        return format!(
-            "Ripgrep returned path {} outside project {}",
-            result.display(),
-            root.display()
-        );
-    })?;
-    if relative.as_os_str().is_empty()
-        || relative
-            .components()
-            .any(|part| return !matches!(part, Component::Normal(_)))
-    {
+    let relative = match result.strip_prefix(root) {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Ripgrep returned path {} outside project {}",
+                result.display(),
+                root.display()
+            )));
+        }
+    };
+    // A child path has only plain name components; `..`, roots, and prefixes name something else.
+    let mut only_names = true;
+    for part in relative.components() {
+        if !matches!(part, Component::Normal(_)) {
+            only_names = false;
+            break;
+        }
+    }
+    if relative.as_os_str().is_empty() || !only_names {
         bail!(
             "Ripgrep returned non-child path {} for project {}",
             result.display(),

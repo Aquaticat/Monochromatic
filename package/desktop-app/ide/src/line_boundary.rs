@@ -101,7 +101,12 @@ pub fn row_containing(rows: &[Range<usize>], head: usize, affinity: ReadingAffin
 /// Position of the first character of `row` that is not a blank,
 /// or nothing when the row is all blanks.
 fn first_non_blank(text: RopeSlice, row: &Range<usize>) -> Option<usize> {
-    return (row.start..row.end).find(|index| return !is_blank(text.char(*index)));
+    for index in row.start..row.end {
+        if !is_blank(text.char(index)) {
+            return Some(index);
+        }
+    }
+    return None;
 }
 
 /// What:
@@ -194,7 +199,15 @@ pub fn end(
     let mut index = offset;
     while index > line_start {
         index -= 1;
-        if rows.iter().skip(1).any(|other| return other.start == index) {
+        // A row other than the first that starts here cancels the walk.
+        let mut starts_row = false;
+        for other in rows.iter().skip(1) {
+            if other.start == index {
+                starts_row = true;
+                break;
+            }
+        }
+        if starts_row {
             trimmed = offset;
             break;
         }

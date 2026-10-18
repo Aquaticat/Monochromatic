@@ -33,6 +33,23 @@ fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u
 }
 
 /// What:
+///  The error that tells the reader highlighting could not start for `path`,
+///  with the engine's own failure as the reason.
+/// Why:
+///  Both branches that keep the failure visible build the same message.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const initializationFailure = (error: Error, path: string) => new Error(`Cannot initialize highlighting for ${path}: ${error}`);
+/// ```
+fn initialization_failure(error: &anyhow::Error, path: &Path) -> anyhow::Error {
+    return anyhow::anyhow!(
+        "Cannot initialize highlighting for {}: {error:#}",
+        path.display()
+    );
+}
+
+/// What:
 ///  The highlighting result when the engine could not start.
 ///  `Ok(None)` is plain text;
 ///  `Err` is
@@ -51,12 +68,6 @@ fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u
 /// function unstarted(error: Error, path: string, text: Rope): Styles | undefined // throws for a language file
 /// ```
 fn unstarted(error: &anyhow::Error, path: &Path, text: &Rope) -> Result<Option<SourceStyles>> {
-    let failure = || {
-        return anyhow::anyhow!(
-            "Cannot initialize highlighting for {}: {error:#}",
-            path.display()
-        );
-    };
     // What: `match` on the recognition result: `Ok(false)` is "no language applies", `Ok(true)` is
     //       "a language applies", and `Err` is a recognition failure.
     // Why: Only the first is plain text; the other two keep the initialization failure visible.
@@ -72,11 +83,11 @@ fn unstarted(error: &anyhow::Error, path: &Path, text: &Rope) -> Result<Option<S
             return Ok(None);
         }
         Ok(true) => {
-            return Err(failure());
+            return Err(initialization_failure(error, path));
         }
         Err(recognition) => {
             tracing::debug!(path = %path.display(), error = %recognition, "cannot tell whether a language applies to this file");
-            return Err(failure());
+            return Err(initialization_failure(error, path));
         }
     }
 }
