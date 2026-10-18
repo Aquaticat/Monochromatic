@@ -225,6 +225,11 @@ the implementation admits only bounded work against the allocation it is given.
 Both the opening allocation and its external commitments remain owner assertions,
 not independently verified invoices.
 Account-wide inspection is not required for this arrangement.
+The authorization needs an explicit validity period;
+missing or expired headroom fails closed.
+Where remaining included allowances cannot be inspected,
+reserve full published charges for the selected resource class
+rather than assuming unused credits or a universal price per normalized minute.
 
 An alternative is owner authorization of each paid batch.
 Without an applicable allocation or batch authorization,
@@ -244,7 +249,9 @@ not user-facing questions already sent.
 
 - Standing owner-reserved allocation:
   authorize bounded autonomous CI against a monthly allocation inside USD 200,
-  with admission paused when that allocation or an exposure bound is missing.
+  with admission paused when the allocation is missing,
+  expired,
+  or insufficient for the exposure bound.
   This supports agent-requested execution with fewer interruptions;
   the owner retains responsibility for unobserved commitments and the allocation itself.
 - Explicit paid-batch authorization:
