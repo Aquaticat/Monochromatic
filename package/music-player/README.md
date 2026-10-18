@@ -969,7 +969,9 @@ Mobile,
 and Web Applications License 2.0,
 so the code of this repository stays LGPL-3.0-or-later.
 That license asks for the "Made with Slint" widget in an About screen,
-which the Licenses page in the desktop Settings shows.
+which the Licenses page in the desktop Settings shows,
+or for the Slint attribution badge on the page the binaries are downloaded from;
+the notes of every GitHub release carry the badge too.
 Dependencies are checked against allow-lists:
 cargo-about with `desktop-app/about.toml` and `android-app/rust/about.toml` for the Rust crates,
 and licensee in `android-app/app/build.gradle.kts` for the Android libraries.

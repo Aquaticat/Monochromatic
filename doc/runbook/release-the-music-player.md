@@ -192,7 +192,11 @@ Read the message:
 - `does not match the checksum recorded in this script` or `does not ship ... with the vendored license text`
   means a Slint release changed its Royalty-free license file.
   Read the new text, and in particular its section 2 (attribution):
-  the Licenses page of the desktop Settings must keep showing the `AboutSlint` widget.
+  the Licenses page of the desktop Settings must keep showing the `AboutSlint` widget,
+  and the release notes template in `.github/workflows/music-player-release.yml` must keep the Slint attribution badge
+  (the `#MadeWithSlint` image line near the top; section 2(b)).
+  Reread the badge's file name and license in `logo/README.md` of the Slint repository,
+  and move the commit in the image URL to the current Slint `master` head.
   Then replace `desktop-app/notices/slint-royalty-free-2.0.md` and the SHA-256 in `bin/third-party-notices.mjs`.
   A new license identifier (a version other than `LicenseRef-Slint-Royalty-free-2.0`) fails the gate first;
   see `doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md` for why the script supplies the text.
