@@ -1531,7 +1531,7 @@
     "actualCleanupAbsenceRecords": 6,
     "credentialPatternCandidates": [],
     "denseMembersDecodedForInspection": true,
-    "targetedMarkdownLintAndRenderedInspection": "passed before final cache-mode clarification; final targeted recheck pending",
+    "targetedMarkdownLintAndRenderedInspection": "passed including final cache-mode qualification",
     "sourceBodyByteLengthAndSha256Joins": 86,
     "denseRemainingUniqueLogLinesInspected": 168
   },
