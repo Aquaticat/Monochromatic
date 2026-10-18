@@ -2010,6 +2010,24 @@ and why.
   and change events:
   `a11y` reads the tree only.
 
+## Changes in 0.6.1
+
+- The control socket is owner-only.
+  It is bound inside a private directory beside `--socket PATH`,
+  set to mode `0600`,
+  and renamed to `PATH`,
+  so a group or other user can no longer connect under a permissive umask,
+  and no window exists in which a looser mode is reachable.
+  See [Who can connect](#who-can-connect).
+- A failure to create the Wayland listening socket (for example `XDG_RUNTIME_DIR` unset),
+  to compile the default keymap,
+  to register a client,
+  or to bind,
+  render,
+  or present a frame now ends the session with an error message and exit status 1.
+  These steps panicked with exit status 101 before.
+- Nothing else changes.
+
 ## Changes in 0.6.0
 
 - New `--gpu auto|software|NODE` option picks the device of a headless session;
