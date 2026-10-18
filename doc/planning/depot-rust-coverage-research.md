@@ -611,3 +611,97 @@ WG privileged namespaces,
 bounded benchmark repetitions and one final Codex stderr-retention pass.
 The last pass retains successful shutdown stderr,
 which the original passing fixture deletes with its temporary home.
+
+### Completed generator, all-features and mutation boundaries
+
+All 35 targets now have a completed bounded ASan run with status `0`,
+a positive executed-unit count and no recorded container OOM.
+The target inventory comprises five scanner targets,
+15 Git-policy targets,
+six linter targets,
+five regex targets and four JSONC targets.
+The completed linter tail `6z1fwznlrx` ran `rust_explicit_types` for 460 units
+and `rust_style` for 881 units.
+The final replay source-admission checks passed.
+Earlier step-limit interruptions remain separately retained;
+they do not become successful whole-job receipts.
+These are smoke bounds of 30 seconds per target with maximum input length 4,096 bytes,
+not exhaustive fuzz coverage.
+The generator baselines have 67 distinct crate-qualified cases:
+scanner six,
+Git policy 38,
+linter ten and JSONC 13.
+The regex sidecar enumerates no ordinary generator tests.
+Repeated baselines and tail replays add no distinct-case credit.
+
+Truepeak all-features `221vdm1f21` at `a85e204f078db540c2a292342000ce5423bb8338` passed 89 tests,
+with two skips out of 91 enumerated.
+The exact skips are `cache::tests::bench_cold_write` and `cache::tests::crash_writer_child`.
+Parent-driven crash recovery cases executed;
+the writer child is invoked and killed by those parents.
+The existing service fixtures use fake samples,
+with disposable database paths and no real provider calls.
+The command retained `--release --all-features` and ordinary Nextest concurrency.
+This is a separate feature graph from the BuildKit `--no-default-features` producer.
+
+Linter planted owner `v8lrx25bl6` at `df00ddbcdfdc9e67759890873c9ca911923a727e` passed its ten-case baseline
+and detected every one of its six source-defined faults.
+Each faulty copy has real failed Rust tests in its exact retained JUnit report.
+The corrected adapter also independently matches Python's standard XML parser
+for every identity and status in all 1,140 cases across the 30 retained Git-policy reports.
+This local parser cross-check does not rerun application tests.
+The original wrong attributions remain preserved and superseded.
+
+A proposed tightening of the existing `AGENTS.md` `QIV` text addresses this evidence gap:
+"Before trusting a null or count,
+validate scope,
+cache,
+harness,
+generator reach and parsed case identities with a positive control;
+list unexercised surfaces."
+This is a proposal only;
+`AGENTS.md` is unchanged.
+
+### Final native reservations
+
+The first privileged WG attempt `42h9g5sczp` stopped before compilation or namespace creation.
+The harness incorrectly required status `0` from `ip --help`;
+the actual tool printed its valid usage text and returned `255`.
+Upstream `ip/ip.c` sends help through `usage()`,
+which calls `exit(-1)`.
+The corrected boundary accepts only status `0` or `255` together with the expected usage header,
+while functional commands still require success.
+The intervening `c9259269e5` workflow had an indentation error
+and was rejected by the dispatch parser before receiving a native run ID.
+The separate observed push-parse event is `ps_96gh1gkb1z`.
+The committed malformed workflow is now a positive control:
+PyYAML 6.0.3 rejects it,
+then parses all 16 current Rust workflows.
+The corrected actual WG retry is `8gts453b5g` at `d9127f3a9f1d92e09820703bf5844e73a86adb1b`,
+with a ten-minute job maximum and an eight-minute execution step.
+The 11 ignored tests retain their normal Nextest concurrency and existing per-test bound.
+This reserves USD 0.24.
+
+The benchmark native lifetime limit was expanded from the initial 300-second plan
+to 600 seconds per invocation before any benchmark dispatch.
+The source-defined 232-second minimum regex loop remains unchanged,
+with two complete repetitions of each executable.
+The job maximum is 50 minutes,
+with a 48-minute execution step,
+for a conservative USD 1.20 reservation.
+Frozen Git-object measurement found 13,860 entries totaling 366,655,696 blob bytes.
+That exposed an insufficient 256 MiB stdout buffer before execution.
+The driver now uses native `git archive --output` and streams its checksum.
+A retained 10,240-byte selected-file control verifies native file output and streamed hashing.
+The frozen attributes contain no export-ignore or export-subst directives.
+The corpus uses frozen Git-object bytes,
+including any checked-in LFS pointer text,
+not separately fetched media payloads.
+Actual benchmark job `hzfbgz4xq7` uses harness `111910f0352b0e65e8f3f0befa61282915b90e2c`.
+
+At this checkpoint completed compute proxy is USD 3.4492,
+with USD 1.5508 remaining.
+The benchmark and WG reservations give a cumulative bound of USD 4.8892.
+They are the only active owned jobs.
+The remaining independent queue is the final installed Codex stderr-retention pass;
+its admission waits for reconciled capacity and budget.
