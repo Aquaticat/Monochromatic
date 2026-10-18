@@ -1789,3 +1789,51 @@ Logger retains separate child failures and aggregate emissions, not an assertion
 The matched GNU context is still a finite continuation because its public adapter duplicated
 an authored scheduler argument; the [troubleshooting note](../troubleshooting/nextest-owning-task-scheduler-arguments.md)
 retains that pre-body boundary and the qualified parser controls.
+
+## Executable material-owner campaign and GNU continuation
+
+The [Parent admission][material-parent-admission] authorizes the unchanged seven-profile proposal.
+The proposal SHA-256 remains `8ebd2766f5e64f13d180ea6027853a97efa969748ba4ec04e9f0d6795becb82e`.
+The [executable admission][material-executable-admission] binds harness `e270285361b526793ff1db3af9f8224630c28e70`
+and the actual bootstrap, Mise activation, Node syntax, owning-argv and payload controls.
+The actual production payload validator rejects changed PNG bytes and LFS pointer text,
+then accepts restored admitted bytes.
+The actual publication predicate withholds synthetic PNG, data-image, SVG, wrapped-base64
+and binary-control fixtures while retaining an ordinary Nextest status line.
+Images, media, HTML and tool images stay private; public evidence carries metadata and sanitized text.
+
+The independently verifiable execution queue is:
+
+- `ide-full`, with the real pinned grammar producer and the full authored library/integration selection.
+- `ide-reader-lifecycle`, a separately labelled library subset without grammar-runtime credit.
+- `terminal-release`, with the real frozen Zig/font/tool image and compiled binary enumeration.
+- `file-manager-gtk-release`, with real GTK prerequisites and release Nextest bodies.
+- `file-manager-sticky-release`, with the authored Wayland ignore preserved and no compositor launch.
+- `file-manager-qt-release`, with its real QML/C++ producer and authored release test.
+- `design-authored-node-imagemagick`, with its actual thirteen Node programs and ImageMagick7 readers.
+
+The primary reservation is USD1.08; two conditional correction caps reserve USD2.88.
+Unpriced storage, LFS and other contingency is USD1.04 under the separate USD5 nominal guard.
+Every dispatch owns one job, with a thirty-minute job cap and twenty-seven-minute inner deadline.
+At most two globally coordinated cloud jobs may overlap.
+No material allocation existed at this admission checkpoint.
+
+The [public GNU terminal evidence][gnu-terminal-owner] closes the corrected parser activation boundary:
+1,494 unique binary/case identities ran, with 1,492 passed, two failed and one summary-only skip.
+The failures are the unreadable-session-path/logging case and
+`watch::tests::a_burst_of_changes_requests_one_rescan`.
+No cause, provider attribution or flake rate is established.
+The original source assertions remain unchanged.
+Job `117747819418` ran from `18:00:26Z` to `18:10:52Z`, a 626-second provider interval,
+with nominal standard-public compute USD0 and unmeasured artifact/storage charges.
+
+A separate matched Depot-Windows GNU proposal remains queued for Parent source review.
+It may request one four-CPU/sixteen-GB job for twenty minutes, nominal USD0.32,
+and at most one conditional harness-only correction with the same cap.
+That proposed job will record its own OS version/release, CPU models, available CPUs and total memory.
+Its observations cannot backfill uncaptured original Mac/MSVC environment fields.
+No matched Depot GNU allocation is admitted by this executable material-owner receipt.
+
+[material-parent-admission]: ../audit/depot-material-owner-parent-admission-2026-10-18.evidence.json
+[material-executable-admission]: ../audit/depot-material-owner-executable-admission-2026-10-18.evidence.json
+[gnu-terminal-owner]: ../audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz

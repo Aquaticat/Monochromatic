@@ -43951,5 +43951,134 @@
     "pausedDirectoryRoots": 13,
     "archivedDirectoryRoots": 2,
     "nonDirectoryDocumentationRecords": 4
+  },
+  "materialOwnerCompletionCampaign": {
+    "admission": "doc/audit/depot-material-owner-executable-admission-2026-10-18.evidence.json",
+    "harnessSha": "e270285361b526793ff1db3af9f8224630c28e70",
+    "state": "parent-admitted execution queued",
+    "profiles": [
+      {
+        "id": "ide-full",
+        "owner": "package/desktop-app/ide",
+        "shape": {
+          "provider": "depot-managed-github-actions",
+          "label": "depot-ubuntu-24.04-4",
+          "cpu": 4,
+          "documentedMemoryGB": 16,
+          "documentedDiskGB": 130,
+          "listRateUsdPerMinute": 0.012,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalReservationUsd": 0.36
+        },
+        "state": "queued"
+      },
+      {
+        "id": "ide-reader-lifecycle",
+        "owner": "package/desktop-app/ide",
+        "shape": {
+          "provider": "depot-managed-github-actions",
+          "label": "depot-ubuntu-24.04-4",
+          "cpu": 4,
+          "documentedMemoryGB": 16,
+          "documentedDiskGB": 130,
+          "listRateUsdPerMinute": 0.012,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalReservationUsd": 0.36
+        },
+        "state": "queued"
+      },
+      {
+        "id": "terminal-release",
+        "owner": "package/desktop-app/terminal",
+        "shape": {
+          "provider": "depot-managed-github-actions",
+          "label": "depot-ubuntu-24.04-4",
+          "cpu": 4,
+          "documentedMemoryGB": 16,
+          "documentedDiskGB": 130,
+          "listRateUsdPerMinute": 0.012,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalReservationUsd": 0.36
+        },
+        "state": "queued"
+      },
+      {
+        "id": "file-manager-gtk-release",
+        "owner": "package/desktop-app/file-manager",
+        "shape": {
+          "provider": "github-public-standard",
+          "label": "ubuntu-24.04",
+          "expectedCpu": 4,
+          "expectedMemoryGB": 16,
+          "expectedDiskGB": 14,
+          "actualMachineProbeRequired": true,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalComputeReservationUsd": 0
+        },
+        "state": "queued"
+      },
+      {
+        "id": "file-manager-sticky-release",
+        "owner": "package/desktop-app/file-manager-gtk-sticky",
+        "shape": {
+          "provider": "github-public-standard",
+          "label": "ubuntu-24.04",
+          "expectedCpu": 4,
+          "expectedMemoryGB": 16,
+          "expectedDiskGB": 14,
+          "actualMachineProbeRequired": true,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalComputeReservationUsd": 0
+        },
+        "state": "queued"
+      },
+      {
+        "id": "file-manager-qt-release",
+        "owner": "package/desktop-app/file-manager-qt",
+        "shape": {
+          "provider": "github-public-standard",
+          "label": "ubuntu-24.04",
+          "expectedCpu": 4,
+          "expectedMemoryGB": 16,
+          "expectedDiskGB": 14,
+          "actualMachineProbeRequired": true,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalComputeReservationUsd": 0
+        },
+        "state": "queued"
+      },
+      {
+        "id": "design-authored-node-imagemagick",
+        "owner": "package/music-player/design",
+        "shape": {
+          "provider": "github-public-standard",
+          "label": "ubuntu-24.04",
+          "expectedCpu": 4,
+          "expectedMemoryGB": 16,
+          "expectedDiskGB": 14,
+          "actualMachineProbeRequired": true,
+          "jobMinutes": 30,
+          "campaignMinutes": 27,
+          "nominalComputeReservationUsd": 0
+        },
+        "state": "queued"
+      }
+    ]
+  },
+  "gnuOwningRuntimeContinuation": {
+    "publicRun": 39152147229,
+    "publicJob": 117747819418,
+    "uniqueBinaryCaseIdentities": 1494,
+    "passed": 1492,
+    "failed": 2,
+    "summaryOnlySkipped": 1,
+    "sourceEvidence": "doc/audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz",
+    "matchedDepotProposalState": "queued exact-source proposal; no allocation"
   }
 }
