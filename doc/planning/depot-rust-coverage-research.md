@@ -694,9 +694,13 @@ That exposed an insufficient 256 MiB stdout buffer before execution.
 The driver now uses native `git archive --output` and streams its checksum.
 A retained 10,240-byte selected-file control verifies native file output and streamed hashing.
 The frozen attributes contain no export-ignore or export-subst directives.
-The corpus uses frozen Git-object bytes,
-including any checked-in LFS pointer text,
-not separately fetched media payloads.
+The initial plan described the corpus as raw Git-object bytes with LFS pointer text.
+That description was too strong:
+Git archive calls working-tree conversion before writing regular files.
+The executed archive is 602,992,640 bytes,
+with SHA-256 `47698c6be07012ab111e7586c1fd23d8b1f610ca5d3f570e53147da9a30ad368`.
+A same-image audit now checks every member and any LFS materialization
+against its content-addressed frozen source.
 Actual benchmark job `hzfbgz4xq7` uses harness `111910f0352b0e65e8f3f0befa61282915b90e2c`.
 
 At this checkpoint completed compute proxy is USD 3.4492,
@@ -705,3 +709,50 @@ The benchmark and WG reservations give a cumulative bound of USD 4.8892.
 They are the only active owned jobs.
 The remaining independent queue is the final installed Codex stderr-retention pass;
 its admission waits for reconciled capacity and budget.
+
+### Benchmark execution and final isolation checks
+
+Benchmark `hzfbgz4xq7` completed all four native invocations with status `0` and no recorded OOM.
+The regex repetitions each reached all throughput,
+bucket,
+set and line-matches sections over 3,783,920 lines.
+Their container intervals were 359.21 and 364.80 seconds.
+The same-engine throughput range was 9,162,279 to 10,054,431 lines per second.
+These are unchanged-input samples;
+no Depot/vendor performance comparison is established.
+Generic runtime fields named `finished` and `executedUnits` detect libFuzzer output
+and do not describe benchmark completion.
+Benchmark completion is established by actual exit status,
+full workload output and retained container state.
+The Truepeak debug Nextest owner passed three cases.
+Its unchanged search executable processed 24 synthetic tracks twice
+and reported no feasible candidate in either repetition.
+The winning-policy/output-file branch is not credited.
+The original bare Cargo run owner separately failed with status `101`
+because it declares two binaries without `default-run`;
+explicit execution used the produced `truepeak-core-bench` artifact.
+
+WG retry `p81kntfxgs` reached all 11 privileged cases:
+five passed and six failed in process-identity teardown checks.
+Actual protocol-hook marking/drop cases passed.
+The writable private cgroup bind and new bpffs mounts were admitted.
+The namespace used Node as PID 1;
+source `keeper_process.rs` polls `/proc` after signaling
+and only reaps a holder when it is the direct parent.
+Unreaped orphan state is therefore an explicit hypothesis,
+not yet a product-failure attribution.
+The next bounded retry `4hddgrkrk2` adds a real Tini init
+and independent zombie/reaping controls before running unchanged tests.
+Normal Nextest concurrency is preserved.
+The earlier non-lazy cgroup unmount failure remains retained.
+A fallback lazy detach is restricted to the private bind view;
+namespace and owned VM teardown end remaining process references.
+
+Installed Codex stderr-retention run `m138glct7m` passed its native host test.
+Its actual retained stderr and protocol receipts still require final classification.
+Completed compute proxy at this checkpoint is USD 4.024,
+leaving USD 0.976.
+The same-image corpus audit is `8ksdxnqq25`
+and the controlled-init WG retry is `4hddgrkrk2`.
+They are the only active owned jobs,
+with a conservative combined reservation of USD 0.48.
