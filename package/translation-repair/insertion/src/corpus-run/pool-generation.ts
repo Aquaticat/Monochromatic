@@ -1,9 +1,9 @@
 import type { SampleGeneration, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 
-import type { EligibleEntries, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import {
   type ArtifactFileName,
+  type EligibleEntries,
   entryIdOfArtifact,
 } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 

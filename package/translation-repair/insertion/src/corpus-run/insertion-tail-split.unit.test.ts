@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { readUntranslatedTail, } from '@monochromatic-dev/translation-repair-archive';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   classifyInsertionCoverage,
   type InsertionCoverageRow,

@@ -1,11 +1,11 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
+  type AnchorTarget,
   type ContentChunk,
   isInsertionChunk,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { codePointCount, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { locateQuote, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { AnchorTarget, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Carried evidence anchoring
 // WHERE A CARRIED PASSAGE'S EVIDENCE SITS. The coverage voices quote the

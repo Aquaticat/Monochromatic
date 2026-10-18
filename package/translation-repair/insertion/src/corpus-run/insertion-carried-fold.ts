@@ -5,8 +5,10 @@ import type {
   InsertionAdmission,
   PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { AnchorTarget, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type AnchorTarget,
+  parseDocument,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { decideFold, } from './insertion-carried-decide.ts';
 import {
   shiftedFinding,

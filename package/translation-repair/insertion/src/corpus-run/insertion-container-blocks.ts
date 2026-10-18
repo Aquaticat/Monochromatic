@@ -1,6 +1,6 @@
-import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { isInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type ChunkPair,
   type ContainerHalfPair,
   containerHalfPairs,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';

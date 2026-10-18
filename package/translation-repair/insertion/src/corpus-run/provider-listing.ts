@@ -1,12 +1,10 @@
 import {
   credentialsOfHeaders,
   maskCredentials,
+  type ModelTransport,
+  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type {
-  ModelTransport,
-  TransportReply,
-} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 
 //region Provider listing
 // Reads one provider's model listing over the transport the caller hands in,

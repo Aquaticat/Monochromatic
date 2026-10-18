@@ -1,8 +1,8 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   bothHalvesInserted,
+  type ChunkPair,
   type ContainerHalf,
   containerHalfPairs,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
