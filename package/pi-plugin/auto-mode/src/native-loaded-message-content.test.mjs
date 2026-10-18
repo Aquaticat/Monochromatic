@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {join} from 'node:path';
 import {env,nativeHost} from '../dist/native/contract/integration/native-host/lifecycle-fixture.mjs';
-import {assertNativeSessionInputCapture,readNativeSessionInputOrigin} from '../dist/native/contract/integration/native-batch/generated/session-manager.mjs';
+import {assertNativeSessionInputCapture} from '../dist/native/contract/integration/native-batch/generated/session-manager.mjs';
 import {captureLoadedInputs} from '../dist/native/contract/collector/run-prompt-custody-v3/loaded-inputs.mjs';
 import {readOriginalMessagePublication} from '../dist/native/contract/collector/run-prompt-custody-v3/handler-publication.mjs';
 
@@ -18,7 +18,7 @@ function assistant(content){
 /** Invoke the actual live capture with its original argument frame. */
 function appended(message){
  const pool=captureLoadedInputs([]);
- function appendMessage(input){pool.captureManagerInput({method:'appendMessage',frame:arguments});}
+ function appendMessage(input){assert.equal(arguments[0],input);pool.captureManagerInput({method:'appendMessage',frame:arguments});}
  appendMessage(message);
  return pool;
 }
@@ -44,10 +44,7 @@ const reopened=nativeHost.managers.open(persisted.getSessionFile());
 assertNativeSessionInputCapture(reopened);
 const history=reopened.getBranch().find(function originalAssistant(entry){return entry.type==='message'&&entry.message.role==='assistant';});
 assert.ok(history);
-const persistedOrigin=readNativeSessionInputOrigin(readOriginalMessagePublication(history));
-assert.ok(persistedOrigin);
-assert.deepEqual(JSON.parse(persistedOrigin.source.content),mixed);
-assert.equal(persistedOrigin.source.permission,false);
+assert.deepEqual(history.message.content,mixed);
 
 //endregion Actual SDK persistence must retain ordinary assistant thinking and tool-call blocks
 

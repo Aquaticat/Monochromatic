@@ -160,7 +160,13 @@ The actual SDK reopen fails with the same retained text-only error on `rKKphY`;
 evidence is `loaded-message-content-red.log`.
 The repair reuses the existing manager-content validator in loaded history,
 preserving supported blocks and its rejection of unsupported fields/types.
-Its committed source still needs an owned rebuild and the differential/SDK persistence checks.
+Repair commit `af6ac2a5c1` builds as `native-release-hGuAfo`.
+The first green attempt passes actual SDK capture after reopen,
+then exposes an incorrect test call to the internal input-origin reader.
+The test now uses the SDK's returned message content for persistence fidelity
+and the original pool publications for the live/load source comparison.
+Its rerun is pending;
+the source repair is not yet declared verified.
 
 The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
 session `44944`,
