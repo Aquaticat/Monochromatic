@@ -240,6 +240,35 @@ await describe({
       },
     },),
     it({
+      name: 'READS A SPAN ALONE AS DEFINING NOTHING, so an empty reference `[][r]` after the slot is text where no page and no '
+        + 'definitions are given and a link where they define it, and the slot is found in the first and not in the second',
+      fn: async () => {
+        /**
+         The span, whose slot is followed by an empty reference and a word.
+         */
+        const span = 'a kit[][r]tens';
+        /**
+         Three ballots that gave the slot.
+         */
+        const voices = ballotsGiving({ span, slots: [['kit',], ['kit',], ['kit',],], },);
+        /**
+         The arguments every reading shares.
+         */
+        const shared = { voices, label: 'OCCURRENCE 1', words: foldedWordsOf({ text: span, },), span, };
+        expect({
+          alone: slotInSpan(shared,),
+          defined: slotInSpan({ ...shared, definitions: '[r]: https://x.example/r', },),
+          pageDefines: slotInSpan({ ...shared, page: { text: `${span}\n\n[r]: https://x.example/r`, offset: 0, }, },),
+          pageDefinesOther: slotInSpan({ ...shared, page: { text: `${span}\n\n[x]: https://x.example/x`, offset: 0, }, },),
+        },).toEqual({
+          alone: [{ slot: 'kit', slotStart: 2, },],
+          defined: [],
+          pageDefines: [],
+          pageDefinesOther: [{ slot: 'kit', slotStart: 2, },],
+        },);
+      },
+    },),
+    it({
       name: 'GIVES THE SLOT AT ITS WORDS ALONE, leaving an apostrophe beside it outside the slot, as the span already holds the '
         + 'apostrophes of the located words',
       fn: async () => {
