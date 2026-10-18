@@ -394,6 +394,7 @@ The owned AVD remains unchanged.
 Initial preparation hit Node's `EINVAL` copying a measured `No_COW` temporary adb file.
 The existing verified cold-boot selection excludes `snapshots` and `tmpAdbCmds`;
 the corrected private copy and headful launch succeeded.
-Actual device settings,+APK installation,
+Actual device settings,
+APK installation,
 foreground activity,
 and instrumentation results remain separate consumer evidence.
