@@ -1008,6 +1008,13 @@ This rollout stays within a permanent hybrid with heavy GitHub-hosted runner use
 Promotion does not mean progressively draining eligible workloads from GitHub's own compute.
 The remaining interview settles the dependent adoption conditions;
 production routing still follows confirmation of shared understanding.
+The user also accepted standing bounded authority for recurring overage within the existing planning ceiling
+and one reserved automatic recovery attempt for classified infrastructure failures.
+The original failure remains visible;
+source failures,
+discovery failures and artifact-integrity failures retain their blocking semantics.
+The scope correction stays in CI documents;
+`AUT` remains unchanged.
 The recommendation must retain its source cohorts,
 documented plan eligibility,
 exact consumer limits and USD 200 monthly scope.

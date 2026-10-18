@@ -61,32 +61,32 @@ It does not reopen provider replacement as an interview choice.
 The Developer baseline,
 additional-pool approach and USD 200 all-provider planning ceiling remain settled.
 No production implementation is unlocked by posting this round.
-The second interview round is posted through the question tool and awaits Q4,
-Q5 and Q6.
-The next action is to record those answers,
-recompute the remaining frontier and obtain confirmation of shared understanding before implementation.
+The second interview round is answered through the question tool.
+Q4 accepts standing bounded authority for recurring overage.
+Q5 accepts one reserved automatic recovery attempt for classified infrastructure failures.
+Q6 keeps the correction in CI documents and leaves `AUT` unchanged.
+The next action is to consolidate the concrete rollout plan,
+verify its rendered form and obtain confirmation of shared understanding before implementation.
 
 The posted second round covers independent decisions:
 
-- Q4:
+- Q4 is accepted:
   standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
-  versus approval of each paid batch.
-  Recommend standing authority for unattended CI,
+  without approval of each paid batch.
+  Use standing authority for unattended CI,
   using conservative published charges and the repository-owned allocation ledger.
   This does not change subscriptions,
   authorize account-wide inspection or guarantee an aggregate invoice.
-- Q5:
+- Q5 is accepted:
   one bounded recovery attempt for a classified provider/startup failure,
-  versus recovery only on request.
-  Recommend automatic recovery with exposure reserved for both attempts and the first failure retained.
+  without requiring an individual recovery request.
+  Reserve exposure for both attempts and retain the first failure.
   Source failures,
   discovery failures and artifact-integrity failures cannot become successful checks by being ignored.
-- Q6:
-  retain the correction only in CI documents,
-  versus tightening the existing general `AUT` rule after this scope misreading.
-  Recommend the CI-document correction only,
+- Q6 is accepted:
+  retain the correction only in CI documents and leave the existing general `AUT` rule unchanged,
   consistent with the user's preference for narrowly scoped documentation changes.
-  The concrete alternative required by `AGENTS.md`'s correction rule is:
+  The rejected concrete alternative proposed under `AGENTS.md`'s correction rule was:
   "Execute requested work without expanding scope.
   Preserve accepted systems and workload allocations unless the user explicitly authorizes replacing them."
   No `AGENTS.md` edit has been applied.
