@@ -1,6 +1,7 @@
 import {
   alignDocumentSections,
   mostCarriedReading,
+  type PairedReading,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
@@ -8,7 +9,6 @@ import {
   parseDocument,
   photoReferences,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { archiveBlockIdentity, } from './archive-block-repair.ts';
 
 //region Archive block source context

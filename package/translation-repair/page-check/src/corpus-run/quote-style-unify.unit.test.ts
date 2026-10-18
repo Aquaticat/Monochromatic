@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass';
 import { unifyQuoteStyle, } from '../../dist/final/node/index.mjs';
 import { pairAt, } from '@monochromatic-dev/translation-repair-slice-reading/ts/corpus-run/archive-slice-pair.test-fixture.ts';
 

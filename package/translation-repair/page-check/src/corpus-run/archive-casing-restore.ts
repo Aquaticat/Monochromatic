@@ -1,7 +1,7 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   rowsChangedBy,
+  type SliceReplacement,
   slicesInOrder,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
 

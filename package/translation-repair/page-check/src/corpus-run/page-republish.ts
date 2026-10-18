@@ -10,13 +10,11 @@ import {
 import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { readRunJson, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { artifactFileNameOf, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type {
-  ParsedTwoLaneArtifact,
-  TwoLaneArtifactGeneration,
-} from '@monochromatic-dev/translation-repair-artifact/ts';
 import {
+  type ParsedTwoLaneArtifact,
   parseSettledTwoLaneArtifact,
   rebuildPreparation,
+  type TwoLaneArtifactGeneration,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import { pageAgreement, } from './page-agreement.ts';
 import {

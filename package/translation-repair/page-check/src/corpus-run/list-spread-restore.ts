@@ -11,12 +11,14 @@ import {
   spliceDisjointEdits,
   type SpliceEdit,
 } from '@monochromatic-dev/translation-repair-markup/ts';
-import { parseMarkdownBody, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
+import {
+  type DeepReadonlyData,
+  parseMarkdownBody,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   pageTextBySlice,
   pageTextOf,
+  type SliceReplacement,
   slicesInOrder,
   withRewrittenText,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';

@@ -13,7 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ArtifactContestVerdict, } from '@monochromatic-dev/translation-repair-lane-contest';
+import type { ArtifactContestVerdict, } from '@monochromatic-dev/translation-repair-lane-contest';
 import {
   finalSelectionFindings,
   type WouldShipSource,

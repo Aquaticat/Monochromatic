@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass';
 import { proseMaskBuilds, } from '@monochromatic-dev/translation-repair-typography';
 import { unifyQuoteStyle, } from '../../dist/final/node/index.mjs';
 import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';

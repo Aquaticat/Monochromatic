@@ -12,7 +12,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   assertCarriedInsertionsRemain,
   type WouldShipSource,

@@ -1,6 +1,8 @@
 import { NaturalnessCompletenessError, } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type { SettledArtifact, } from '@monochromatic-dev/translation-repair-artifact/ts';
-import { parseNaturalnessReview, } from '@monochromatic-dev/translation-repair-artifact/ts';
+import {
+  parseNaturalnessReview,
+  type SettledArtifact,
+} from '@monochromatic-dev/translation-repair-artifact/ts';
 
 //region Final naturalness completeness
 

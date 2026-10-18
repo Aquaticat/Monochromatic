@@ -3,6 +3,7 @@ import type {
   RootContent,
 } from 'mdast';
 import {
+  type DeepReadonlyData,
   isAutolinkLiteral,
   maskHtmlComments,
   maskInvisibleLines,
@@ -13,7 +14,6 @@ import {
   isTagWhitespace,
 } from '@monochromatic-dev/translation-repair-markup/ts';
 import { parseBodyTolerant, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { nextSchemeStart, } from '@monochromatic-dev/translation-repair-reference/ts';
 import {
   judgeDestinationRenderings,

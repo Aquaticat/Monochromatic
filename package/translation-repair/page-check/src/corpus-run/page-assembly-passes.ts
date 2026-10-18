@@ -1,6 +1,5 @@
 import type { ArchiveOriginalSpan, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import { restoreArchiveCasing, } from './archive-casing-restore.ts';
 import { restoreArchiveDestinations, } from './archive-destination-restore.ts';
 import { restoreArchiveItalicTitles, } from './archive-italic-title-restore.ts';
@@ -11,6 +10,7 @@ import {
   placeHandleGlosses,
   restoreCollidingHeadings,
   restoreContributorNames,
+  type SliceReplacement,
   unifyHeadingSeries,
   unifyTitleReferences,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';

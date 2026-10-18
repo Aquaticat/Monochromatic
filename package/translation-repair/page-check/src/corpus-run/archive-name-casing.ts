@@ -1,12 +1,14 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import { onHeadingLine, } from './archive-casing-restore.ts';
 import {
   midSentence,
   phraseOccurrences,
   titleRuns,
 } from './archive-name-runs.ts';
-import { slicesInOrder, } from '@monochromatic-dev/translation-repair-page-pass/ts';
+import {
+  type SliceReplacement,
+  slicesInOrder,
+} from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   inProse,
   protectedRanges,

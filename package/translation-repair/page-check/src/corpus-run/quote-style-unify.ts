@@ -4,9 +4,9 @@ import {
   pageTextBySlice,
   pageTextOf,
   restoreTypography,
+  type SliceReplacement,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import { pageDefinitionsOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   noteRefusedMask,
   type ProseMaskReading,

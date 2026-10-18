@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import { restoreJsxAttributes, } from '../../dist/final/node/index.mjs';
 import { pair, } from '@monochromatic-dev/translation-repair-page-pass/ts/corpus-run/title-reference.test-fixture.ts';
 

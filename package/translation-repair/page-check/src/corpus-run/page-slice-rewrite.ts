@@ -1,7 +1,9 @@
 import type { ArchiveOriginalSpan, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
-import { slicesInOrder, } from '@monochromatic-dev/translation-repair-page-pass/ts';
+import {
+  type SliceReplacement,
+  slicesInOrder,
+} from '@monochromatic-dev/translation-repair-page-pass/ts';
 
 //region Page slice rewrite
 // The loop the page-assembly passes that read every slice share (class one

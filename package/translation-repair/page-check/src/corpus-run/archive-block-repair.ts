@@ -6,9 +6,11 @@ import { runArchiveBlockReviewStage, } from '@monochromatic-dev/translation-repa
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { UnclaimedTargetBlock, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { sameWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  type BenchSeating,
+  sameWording,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Archive block repair

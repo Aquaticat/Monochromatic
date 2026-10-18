@@ -1,8 +1,8 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   pageTextBySlice,
   pageTextOf,
+  type SliceReplacement,
   slicesInOrder,
   withRewrittenText,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';

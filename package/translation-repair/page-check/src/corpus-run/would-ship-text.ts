@@ -1,16 +1,14 @@
-import type {
-  ArtifactConsolidateSlice,
-  ParsedArchiveText,
-  ParsedTwoLaneArtifact,
-} from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import {
   type ArtifactConsistency,
+  type ArtifactConsolidateSlice,
   type ArtifactPageAssembly,
   consistencyOverrideAt,
   NO_CONSISTENCY,
   NO_PAGE_ASSEMBLY,
   pageAssemblyOverrideAt,
+  type ParsedArchiveText,
+  type ParsedTwoLaneArtifact,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactComparisonRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
 import { restoreTypography, } from '@monochromatic-dev/translation-repair-page-pass/ts';
