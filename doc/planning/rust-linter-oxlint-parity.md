@@ -303,6 +303,28 @@ Settled alongside it,
   This is a superset of oxlint's behaviour,
    not parity with it.
 
+Built:
+ 2026-10-18,
+in `package/linter/monochromatic-lint`,
+on branch `feat/lint-directives`
+(engine commit `b564c7ad15`,
+rule declarations `82d69a4036`;
+`landing: pending`).
+The spelling is `monochromatic-lint-disable`,
+`-enable`,
+`-disable-line` and `-disable-next-line`;
+the grammar,
+the stricter readings taken where this document was silent,
+the new `directive/*` finding identifiers
+and the oxlint-spelled options
+`--report-unused-disable-directives` and `--report-unused-disable-directives-severity`
+are in the package README section "Inline directives".
+Rust directives are `//` and `/* */` comments;
+doc comments are not directives,
+although the coverage ledger listed "any comment token".
+Markdown directives are HTML comments,
+and MDX has none.
+
 ### D3. Config file format and location
 
 `AGENTS.md` AD2 prefers TypeScript config when logic is needed,
@@ -913,6 +935,9 @@ rather than one umbrella task:
     variant.
      Verified by a fixture where a directive targets a
     non-suppressible rule.
+     Built 2026-10-18 (`landing: pending`);
+    that fixture is `a_listed_unsuppressible_rule_is_refused_and_reported`
+    in `package/linter/monochromatic-lint/src/directive_apply_tests.rs`.
 6.  Autofix pipeline:
      fix model,
      three fix kinds,

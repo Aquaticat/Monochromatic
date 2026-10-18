@@ -324,6 +324,11 @@ parity).
    core,
    for both languages;
    spelling open (depends on the name).
+- Built 2026-10-18 (`landing: pending`) as `monochromatic-lint-disable` and siblings:
+   doc comments are not directives (this list said "any comment token"),
+   only full rule identifiers are accepted,
+   and the Markdown form is an HTML comment.
+   See the package README section "Inline directives".
 
 ### Autofix
 
