@@ -42,6 +42,12 @@ Setup on `m1` as of 2026-10-18:
   No entry on the Linux side is needed.
 - `utmctl` does not work over SSH (`OSStatus error -1743`, "does not work from SSH sessions");
   start or stop the VM from the UTM window on the host.
+  UTM Server (UTM 5.0.5 on `m1`) cannot help:
+  [its docs][utm-server] say "Currently, only QEMU backend virtual machines are supported",
+  and this VM uses the Apple backend.
+  Open gap: after an `m1` reboot nothing starts the VM;
+  a login LaunchAgent on `m1` running `utmctl start` in the GUI session would need
+  a one-time Automation permission grant at the console (untested).
 
 Guest settings that keep it rendering, applied with `sudo` in the guest:
 
@@ -198,3 +204,6 @@ Safari preference defaults,
 or content blockers.
 Prefer the VM;
 use this when the VM is down.
+
+[caramel-61]: https://github.com/caramelizedev/caramel/issues/61
+[utm-server]: https://docs.getutm.app/remote/server/
