@@ -16,6 +16,7 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
+import type { Logger } from '@monochromatic-dev/module-logger/ts';
 import { caughtValueText } from '@monochromatic-dev/module-caught-value/ts';
 import { nativeBuildLog } from './build-contract.ts';
 
@@ -82,6 +83,39 @@ async function previousMetadata(original: string): Promise<Stats | typeof NO_PRE
   }
 }
 
+/**
+ Visit owned directory entries without allowing borrowed links to expand the build's traversal scope.
+
+ @param output - unpublished release whose physical directory entries belong to this build
+ @param l - original build diagnostics extended with this traversal boundary
+ @returns relative regular-file paths eligible for immutable comparison
+ @throws original filesystem error when an owned directory cannot be read
+ */
+async function* ownedBuildFiles({
+  output,
+  l: parentLog,
+}: Readonly<{ output: string; l: Logger }>): AsyncGenerator<string> {
+  const l = tagged({ tag: ownedBuildFiles.name, l: parentLog });
+  l.debug(`enumerating owned build files in ${output}`);
+  const directories = [''];
+  for await (const directory of directories) {
+    const entries = await readdir(join(output, directory), { withFileTypes: true });
+    for (const entry of entries) {
+      const relative = join(directory, entry.name);
+      if (entry.isDirectory()) {
+        l.debug(`retaining owned directory ${relative}`);
+        directories.push(relative);
+        continue;
+      }
+      if (entry.isFile()) {
+        yield relative;
+        continue;
+      }
+      l.debug(`leaving non-file build entry untouched: ${relative}`);
+    }
+  }
+}
+
 //region Only the new verified release is changed before publication.
 /**
  Share unchanged file content without rewriting paths owned by running sessions.
@@ -133,10 +167,7 @@ export async function reuseNativeBuildFiles({
   /**
    Enumeration stays inside the unpublished release and does not follow dependency links.
    */
-  const paths = await readdir(
-    output,
-    { recursive: true }
-  );
+  const paths = ownedBuildFiles({ output, l });
   /**
    Sequential mapping bounds open files and comparison memory independently of graph size.
    */
