@@ -6,7 +6,6 @@
   "version": "0.0.1",
   "private": false,
   "exports": {
-    "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
   "dependencies": {},
