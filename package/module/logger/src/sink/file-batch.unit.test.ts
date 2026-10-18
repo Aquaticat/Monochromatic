@@ -75,7 +75,7 @@ await describe({
           /** Both records exceed an appendFile write chunk and contain JSON escapes. */
           const message = '"\\\n世界'.repeat(150_000,);
           /** The serializer owns this reentrant write and exposes its completion for drainage. */
-          const state: { inner: Promise<void> | undefined; } = { inner: undefined, };
+          const state: { inner?: Promise<void>; } = {};
           /** Serialization can call the same sink before the enclosing record is enqueued. */
           const outer = {
             level: 'info' as const,

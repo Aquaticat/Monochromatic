@@ -435,6 +435,8 @@ function verifyConsole(): Promise<boolean> {
  ```
  */
 export function createConsoleSink(): Sink {
+  /** Synchronous admission shares completion so a producer burst cannot allocate a promise per record. */
+  const completedWrite = Promise.resolve();
   /**
    Instance-local console-sink state. `buffer` holds records awaiting the
    next microtask flush; `scheduled` guards against redundant
@@ -518,10 +520,10 @@ export function createConsoleSink(): Sink {
   function write(record: LogRecord,): Promise<void> {
     if ((!getVerbose()) && SILENT_LEVELS
       .has(record.level,))
-      return Promise.resolve();
+      return completedWrite;
 
     if ((record.level === 'warn') && isWarnSuppressed())
-      return Promise.resolve();
+      return completedWrite;
 
     state.buffer
       .push(record,);
@@ -531,7 +533,7 @@ export function createConsoleSink(): Sink {
       queueMicrotask(flushBuffer,);
     }
 
-    return Promise.resolve();
+    return completedWrite;
   }
 
   /**
@@ -541,7 +543,7 @@ export function createConsoleSink(): Sink {
    */
   function flush(): Promise<void> {
     flushBuffer();
-    return Promise.resolve();
+    return completedWrite;
   }
 
   return {

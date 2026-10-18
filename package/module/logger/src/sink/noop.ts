@@ -3,6 +3,9 @@ import type {
   Sink,
 } from '../types.ts';
 
+/** Lazy immutable completion adds no asynchronous work at module import. */
+const memo: { completed?: Promise<void>; } = {};
+
 /**
  Noop verification: the sink is always available, so it never throws nor
  needs setup.
@@ -20,7 +23,8 @@ function verify(): Promise<boolean> {
  */
 function write(_record: LogRecord,): Promise<void> {
   // Intentionally discards all logs; resolves immediately to match the async Sink contract.
-  return Promise.resolve();
+  memo.completed ??= Promise.resolve();
+  return memo.completed;
 }
 
 /**
