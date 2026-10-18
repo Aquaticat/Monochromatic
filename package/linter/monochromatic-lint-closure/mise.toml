@@ -1,0 +1,30 @@
+[env]
+# The dated nightly of rust-toolchain.toml. The repository root mise.toml exports RUSTUP_TOOLCHAIN for a floating nightly
+# without rustc-dev, and that variable outranks rust-toolchain.toml, so this package restates its own pin.
+RUSTUP_TOOLCHAIN = "nightly-2026-10-17"
+# Bound compiler fan-out during local iteration, matching the sibling Rust packages.
+CARGO_BUILD_JOBS = "2"
+
+[tasks.build]
+description = "Build the Dylint library"
+run = "cargo build"
+
+[tasks.test]
+description = "Run the UI tests and the unit tests"
+run = "cargo nextest run --all-targets"
+
+[tasks."lint:clippy"]
+description = "Run Clippy over the library and tests, denying warnings"
+run = "cargo clippy --all-targets -- --deny warnings"
+
+[tasks."lint:rustfmt"]
+description = "Check formatting"
+run = "cargo fmt --check"
+
+[tasks."format:rust"]
+description = "Format the Rust sources"
+run = "cargo fmt"
+
+[tasks.lint]
+description = "Run every static check of the library"
+run = ["cargo check --all-targets", "cargo clippy --all-targets -- --deny warnings", "cargo fmt --check"]

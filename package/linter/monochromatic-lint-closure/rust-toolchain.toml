@@ -1,0 +1,7 @@
+# Dylint compiles a lint library against the compiler's own crates, so the library and every package it lints must
+# build with the same dated nightly that has the rustc-dev component. A floating nightly breaks the library whenever
+# rustc's internal API moves (the shipped Dylint template lagged two months behind). The repository root toolchain
+# (mise.toml, floating nightly without rustc-dev) is shared by every session and must not change for this package.
+[toolchain]
+channel = "nightly-2026-10-17"
+components = ["llvm-tools-preview", "rustc-dev", "clippy", "rustfmt"]

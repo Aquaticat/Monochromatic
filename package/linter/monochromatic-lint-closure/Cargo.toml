@@ -1,0 +1,23 @@
+[package]
+name = "monochromatic-lint-closure"
+version = "0.0.0"
+edition = "2024"
+description = "Dylint library lint that reports closures unless they own state for a callee that keeps it."
+license = "LGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/Aquaticats/Monochromatic.git"
+publish = false
+
+[lib]
+name = "monochromatic_lint_closure"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+dylint_linting = "6.2"
+
+[dev-dependencies]
+dylint_testing = "6.2"
+
+[package.metadata.rust-analyzer]
+rustc_private = true
