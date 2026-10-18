@@ -122,6 +122,7 @@ jobs:
       JOB_NAME: ${{ matrix.name }}
     steps:
     - name: Record actual runner hardware and provider identity
+      working-directory: .
       run: node --input-type=module -e 'const os = await import("node:os"); console.log(JSON.stringify({event:"depot-runner-hardware",platform:process.platform,architecture:process.arch,cpus:os.cpus().length,memoryBytes:os.totalmem(),runnerName:process.env.RUNNER_NAME,runnerOs:process.env.RUNNER_OS,runnerArchitecture:process.env.RUNNER_ARCH,githubSha:process.env.GITHUB_SHA}));'
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
