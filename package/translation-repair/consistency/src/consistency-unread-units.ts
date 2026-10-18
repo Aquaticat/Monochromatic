@@ -422,6 +422,25 @@ export function transparentUnitsOf(
     for (let at = start; at < end; at += 1)
       hidden[at] = false;
   }
+  // A LINE ENDING THAT PADS INLINE CODE shows a reader nothing, as the padding space does: CommonMark turns each line ending of the
+  // content into a space and strips one from each side, so the line ending directly outside a content stretch (a line feed, a
+  // carriage return, or the two together) is hidden. What stands directly outside a content stretch is a backtick when the code is
+  // not padded, so a line break between words is never reached from here.
+  for (const {
+    start,
+    end,
+  } of view.codeContents) {
+    if ((start > 0) && LINE_BREAKS.has(english.charAt(start - 1,),)) {
+      hidden[start - 1] = true;
+      if ((english.charAt(start - 1,) === '\n') && (english.charAt(start - 2,) === '\r'))
+        hidden[start - 2] = true;
+    }
+    if (LINE_BREAKS.has(english.charAt(end,),)) {
+      hidden[end] = true;
+      if ((english.charAt(end,) === '\r') && (english.charAt(end + 1,) === '\n'))
+        hidden[end + 1] = true;
+    }
+  }
   // A LINE BREAK INSIDE THE RESOURCE OF A LINK OR AN IMAGE (n169) is part of the link's destination, title or reference, which the
   // grammar reads across lines, and shows a reader nothing, so it is hidden with the rest of the resource. A line break between
   // words stays shown.

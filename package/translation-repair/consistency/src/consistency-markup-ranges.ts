@@ -376,9 +376,49 @@ function leadingBackticksOf({ text, }: { readonly text: string; },): number {
 }
 
 /**
+ How many units of one side of the content of inline code are a single space or line ending, which CommonMark reads as one space.
+
+ @param text - the content as written
+
+ @param side - which side to read
+
+ @returns One for a space, a line feed or a carriage return on the side, two for a carriage return followed by a line feed, none
+ where the side holds none of them
+
+ @example
+ ```ts
+ const width = paddingWidthOf({ text: '\r\ntens', side: 'start', },); // 2
+ ```
+ */
+function paddingWidthOf(
+  {
+    text,
+    side,
+  }: {
+    readonly text: string;
+    readonly side: 'end' | 'start';
+  },
+): number {
+  if (side === 'start') {
+    if (text.startsWith(' ',) || text.startsWith('\n',))
+      return 1;
+    if (text.startsWith('\r\n',))
+      return 2;
+    return text.startsWith('\r',) ? 1 : 0;
+  }
+  if (text.endsWith(' ',) || text.endsWith('\r',))
+    return 1;
+  if (text.endsWith('\r\n',))
+    return 2;
+  return text.endsWith('\n',) ? 1 : 0;
+}
+
+/**
  The content of an inline code stretch as CommonMark shows it: the stretch without the backticks that open it and the same number that
  close it, and without one space on each side when the content begins and ends with a space and is not all spaces (the padding that
- lets code begin or end with a backtick). Where only one side holds a space, or the content is spaces alone, every space is shown.
+ lets code begin or end with a backtick). CommonMark turns each line ending of the content into a space first, so a line ending (a
+ line feed, a carriage return or the two together) pads a side as a space does. Where only one side holds a space or a line ending,
+ or the content is spaces and line endings alone, every one of them is shown.
 
  @param english - the English the tree was read from
 
@@ -432,24 +472,35 @@ function codeContentOf(
     end,
   );
   /**
-   Whether the content begins and ends with a space.
+   How many units of the content pad its start and its end: one for a space or a line feed or a carriage return, two for a carriage
+   return and a line feed, none where the side holds neither.
    */
-  const bothEndsSpaced = written.startsWith(' ',) && written.endsWith(' ',);
+  const padding = {
+    start: paddingWidthOf({
+      text: written,
+      side: 'start',
+    },),
+    end: paddingWidthOf({
+      text: written,
+      side: 'end',
+    },),
+  };
   /**
-   Whether the content holds a character that is no space.
+   Whether the content holds a character that is no space and no line ending.
    */
   const holdsNoSpace = Array.from(written,)
     .some(function isNoSpace(character,): boolean {
-      return character !== ' ';
+      return (character !== ' ') && (character !== '\n') && (character !== '\r');
     },);
   /**
-   Whether one space pads each side: both ends are spaces and the content holds a character that is no space.
+   Whether one space or line ending pads each side: both ends are spaces or line endings and the content holds a character that is
+   neither.
    */
-  const padded = bothEndsSpaced && holdsNoSpace;
+  const padded = (padding.start > 0) && (padding.end > 0) && holdsNoSpace;
   return padded
     ? {
-      start: start + 1,
-      end: end - 1,
+      start: start + padding.start,
+      end: end - padding.end,
     }
     : {
       start,
