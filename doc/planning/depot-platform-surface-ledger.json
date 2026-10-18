@@ -11815,12 +11815,12 @@
     }
   ],
   "openGaps": [
-    "All120deployed documentation pages have substantive applicability review; only exact linked consumers receive runtime qualification. Other indexed marketing/context pages and private backend implementations are not blanket-reviewed by this count.",
+    "All 120 deployed documentation pages have substantive applicability review; only exact linked consumers receive runtime qualification. Other indexed marketing/context pages and private backend implementations are not blanket-reviewed by this count.",
     "No public-status uptime denominator or complete incident/component coverage is established; operating promises must retain that limitation.",
-    "Current native/GHA/BuildKit/SDK allowances and product-specific controls do not prove aggregateUSD200 invoice enforcement, configured account limits, unseen charges or Sandbox included-credit eligibility.",
-    "SDK ordinaryOCI/named runtimes, SDK snapshots/secrets, full executable transfer and retained detached logs remain unqualified; actual default/custom thin-runtime lifecycle and small-file consumers are separate.",
-    "Autoscale-out, pull-through/CDN speed, external network/OIDC trust, Dependabot, Managed/GPU/customerAWS, Code/mirrors, paid Agents/models and optional external telemetry remain source-reviewed but unactivated.",
-    "Complete-suite report producers and arbitrary JUnit identity adapters are not established by the passing34-case Nextest adapter; selected ARM owners do not qualify every ARM surface.",
+    "Current native/GHA/BuildKit/SDK allowances and product-specific controls do not prove aggregate USD 200 invoice enforcement, configured account limits, unseen charges or Sandbox included-credit eligibility.",
+    "SDK ordinary OCI/named runtimes, SDK snapshots/secrets, full executable transfer and retained detached logs remain unqualified; actual default/custom thin-runtime lifecycle and small-file consumers are separate.",
+    "Autoscale-out, pull-through/CDN speed, external network/OIDC trust, Dependabot, Managed/GPU/customer AWS, Code/mirrors, paid Agents/models and optional external telemetry remain source-reviewed but unactivated.",
+    "Complete-suite report producers and arbitrary JUnit identity adapters are not established by the passing 34-case Nextest adapter; selected ARM owners do not qualify every ARM surface.",
     "Working report needs explicit capability-to-owner allocation/adoption dispositions; see reportAllocationReview. Whole-report sufficiency still waits for separately owned OS/semantic queues."
   ],
   "apiInventory": {
@@ -16696,7 +16696,7 @@
         "title": "Configure Xcode compilation caching to use Depot Cache"
       }
     ],
-    "status": "Public repository route comparison retained; all120captured deployed pages substantively reconciled. No blanket public-repository/deployed body-identity claim.",
+    "status": "Public repository route comparison retained; all 120 captured deployed pages substantively reconciled. No blanket public-repository/deployed body-identity claim.",
     "previousStatus": "Route coverage recorded; deciding content differences still under review"
   },
   "officialRepositoryRootPass": {
@@ -21962,7 +21962,7 @@
     "draftParagraphs": [
       {
         "section": "Decision and acceptance limits",
-        "text": "Allocate these as complementary products: GitHub keeps the authoritative pull-request and release integration; eligible Linux AMD64/ARM64 and Windows owners can use Depot-managed GitHub runners, while native Depot CI is the candidate for Linux workflow orchestration, matrices, retries, snapshots and test splitting. Under the Developer baseline, Mac work retains GitHub-hosted compute; Startup-trial Mac receipts do not confer Developer eligibility. The demonstrated Linux ARM owners establish selected portability, not every ARM workload. No production trigger or required-check switch follows from this research ([native compatibility](https://depot.dev/docs/ci/compatibility), [runner eligibility](depot-included-allowance-reconciliation.md), [actual ARM consumer](depot-arm64-workload-research.md))."
+        "text": "Allocate these as complementary products: GitHub remains the authoritative forge and check consumer; retain its workflow orchestration where release permissions or protected environments require it. eligible Linux AMD64/ARM64 and Windows owners can use Depot-managed GitHub runners, while native Depot CI is the candidate for Linux workflow orchestration, matrices, retries, snapshots and test splitting. Under the Developer baseline, Mac work retains GitHub-hosted compute; Startup-trial Mac receipts do not confer Developer eligibility. The demonstrated Linux ARM owners establish selected portability, not every ARM workload. No production trigger or required-check switch follows from this research ([native compatibility](https://depot.dev/docs/ci/compatibility), [runner eligibility](depot-included-allowance-reconciliation.md), [actual ARM consumer](depot-arm64-workload-research.md))."
       },
       {
         "section": "Immutable workloads and scope",
@@ -21970,7 +21970,7 @@
       },
       {
         "section": "Gate and artifact-consumer results",
-        "text": "Native orchestration adoption needs explicit event/check ownership and content-bound artifact names, with selected reusable-workflow references and GitHub-only permissions/environment approvals retained on their supported scheduler. Native retries reuse filesystem/environment state, and native parallel branches share mutable directories; they do not create isolated samples. The completed graph is one job with parallel child branches, not proof of every native parallel-step merge rule. Tests reporting should retain raw JUnit and any validated identity transformation, use attempt-specific report keys, and use historical splitting only for admitted runnable identities. The34-case Nextest adapter qualifies that shape, while complete-framework reporting, dashboard flakiness and GHA/native analytics parity remain unqualified ([native contracts](depot-native-ci-capability-review.md), [physical adapter](depot-tests-identity-adapter-research.md))."
+        "text": "Native orchestration adoption needs explicit event/check ownership and content-bound artifact names, with selected reusable-workflow references and GitHub-only permissions/environment approvals retained on their supported scheduler. Native retries reuse filesystem/environment state, and native parallel branches share mutable directories; they do not create isolated samples. The completed graph is one job with parallel child branches, not proof of every native parallel-step merge rule. Tests reporting should retain raw JUnit and any validated identity transformation, use attempt-specific report keys, and use historical splitting only for admitted runnable identities. The 34-case Nextest adapter qualifies that shape, while complete-framework reporting, dashboard flakiness and GHA/native analytics parity remain unqualified ([native contracts](depot-native-ci-capability-review.md), [physical adapter](depot-tests-identity-adapter-research.md))."
       },
       {
         "section": "Reliability and source failures",
@@ -21982,7 +21982,7 @@
       },
       {
         "section": "Provider allocation, cost, and critical paths",
-        "text": "Use BuildKit/Bake for admitted container contexts and immutable multiarchitecture CI/service producers, preserving the exercised SBOM/provenance-to-runtime-digest checks. A valid subject is not a signature/trust decision. Keep autoscaling off while no total-builder bound is established; its per-instance threshold is not a cap, and minimum per-architecture cache policies are not reserved or hard-limited shared storage. Registry pull-through, Fast CDN and server-side promotion remain source-reviewed options, not measured speedups or activated integrations. Tagged retention is opt-in, saved project images default to unlimited retention, and deletion can precede blob reclamation; Standard transfer is documented free while Fast costs USD0.10/GB ([BuildKit evidence](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json), [registry lifecycle](depot-platform-surface-audit.md#registry-lifecycle-and-export-surface))."
+        "text": "Use BuildKit/Bake for admitted container contexts and immutable multiarchitecture CI/service producers, preserving the exercised SBOM/provenance-to-runtime-digest checks. A valid subject is not a signature/trust decision. Keep autoscaling off while no total-builder bound is established; its per-instance threshold is not a cap, and minimum per-architecture cache policies are not reserved or hard-limited shared storage. Registry pull-through, Fast CDN and server-side promotion remain source-reviewed options, not measured speedups or activated integrations. Tagged retention is opt-in, saved project images default to unlimited retention, and deletion can precede blob reclamation; Standard transfer is documented free while Fast costs USD 0.10/GB ([BuildKit evidence](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json), [registry lifecycle](depot-platform-surface-audit.md#registry-lifecycle-and-export-surface)). Actual credentialed Containerfiles still need their own context and cleanup review: the synthetic Git rewrite control retained its invented-token key, without supplying a real credential or proving exported-layer retention ([source-owned cleanup control](../troubleshooting/git-url-rewrite-cleanup-key.md))."
       },
       {
         "section": "Adoption conditions and unresolved evidence",
