@@ -517,7 +517,7 @@ backend = "cargo:monochromatic-git-policy-cli"
 specifiers = ["latest"]
 
 [[tools."cargo:monochromatic-lint"]]
-version = "0.1.3"
+version = "0.2.0"
 backend = "cargo:monochromatic-lint"
 specifiers = ["latest"]
 
