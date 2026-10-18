@@ -71,6 +71,27 @@ await describe({
             expect(shownLabelOf({ name: 'candidate 1', shown: ['CANDIDATE 1', 'OCCURRENCE 1',], },),).toEqual(['CANDIDATE 1',],);
           },
         },),
+        it({
+          name: 'READS THE LABELS IT IS GIVEN AT EACH CALL, so an array its owner changed between two calls answers for what it '
+            + 'holds now and not for what it held at the first',
+          fn: async () => {
+            /**
+             The labels a sheet showed, which their owner changes after the first lookup.
+             */
+            const shown = ['CANDIDATE 1',];
+            const before = shownLabelOf({ name: '1', shown, },);
+            shown[0] = 'CANDIDATE 2';
+            expect({
+              before,
+              oldNumber: shownLabelOf({ name: '1', shown, },),
+              newNumber: shownLabelOf({ name: '2', shown, },),
+            },).toEqual({
+              before: ['CANDIDATE 1',],
+              oldNumber: [],
+              newNumber: ['CANDIDATE 2',],
+            },);
+          },
+        },),
       ],
     },),
     describe({
