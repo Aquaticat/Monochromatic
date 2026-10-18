@@ -139,8 +139,8 @@ Build before testing:
 `mise run //package/translation-repair/page-pass:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/page-pass:test:unit`,
@@ -148,8 +148,7 @@ or build and test together with `mise run //package/translation-repair/page-pass
 Pass test file paths to run only those files.
 
 Its `./ts/*` export also serves test fixtures that sibling tests import,
-for example `corpus-run/title-reference.test-fixture.ts` and
-`whole-chunk-candidate.test-fixture.ts`.
+for example `corpus-run/title-reference.test-fixture.ts` and `whole-chunk-candidate.test-fixture.ts`.
 
 Test helpers used across the family,
 such as scratch directories and capturing loggers,
@@ -158,9 +157,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

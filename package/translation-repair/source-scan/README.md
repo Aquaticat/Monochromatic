@@ -23,13 +23,18 @@ so a function one package exports and another uses still counts as reached.
   `message-names-only.unit.test.ts`,
   `position-references.unit.test.ts`,
   `living-doc-links.unit.test.ts` and `own-unit-tests.unit.test.ts`.
-  The plan (section "Readers that find a file by path") has every scan read the `src` of every family
-  package.
+  The plan (section "Readers that find a file by path") has every scan read the `src` of every family package.
+  At this commit the helpers `readPackageSource` and `readPackageTexts` still resolve `src` and the package root
+  from `import.meta.dirname`,
+  so they read this package's own `src`,
+  `doc`,
+  README and task file.
+  `readRepositoryTexts` reads the living repository docs from the repository root,
+  four levels above `src`.
 - Scan fixtures:
   files named `*.test-fixture.ts` that only scans import,
   because they import no production code.
-  `source-scan.test-fixture.ts` parses TypeScript with the parser rolldown exposes and walks the
-  syntax tree.
+  `source-scan.test-fixture.ts` parses TypeScript with the parser rolldown exposes and walks the syntax tree.
   `source-text-scan.test-fixture.ts` holds the text helpers `matchingClose`,
   `topLevelPieces` and `withoutBlockAndLineComments`.
   `prose-texts.test-fixture.ts` reads package and repository texts through `readPackageTexts` and
@@ -91,9 +96,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

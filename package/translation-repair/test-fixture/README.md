@@ -29,8 +29,7 @@ The groups below name the main ones.
   which returns what a call threw.
   `scan-findings.test-fixture.ts` gives `expectNoFindings` and `expectFindingsAsListed` for the scans.
 - Scripted models and sheets:
-  `roster-seats.test-fixture.ts` names the seats unit tests sit models in by the role the test leans
-  on.
+  `roster-seats.test-fixture.ts` names the seats unit tests sit models in by the role the test leans on.
   `translate-ballot.test-fixture.ts` gives `candidateCarrying`,
   and `structural-ballot.test-fixture.ts` gives `ballot`.
   `tense-sheet.test-fixture.ts` and `sheet-fence.test-fixture.ts` read rendered sheets.
@@ -45,11 +44,10 @@ The groups below name the main ones.
 - Texts and generated data:
   `seeded-draws.test-fixture.ts`,
   `runs-of-pieces.test-fixture.ts`,
-  `sorted-number-sets.test-fixture.ts` and `element-reads.test-fixture.ts` support property-style
-  cases.
+  `sorted-number-sets.test-fixture.ts` and `element-reads.test-fixture.ts` support property-style cases.
   `han-findings.test-fixture.ts`,
-  `destination-address-texts.test-fixture.ts` and `consistency-marks-reading.test-fixture.ts` hold
-  texts and readings.
+  `destination-address-texts.test-fixture.ts` and `consistency-marks-reading.test-fixture.ts` hold texts and
+  readings.
 - Corpus-run fixtures:
   the `corpus-run/` directory holds fixtures for the runners and reports,
   such as `console-log-capture.test-fixture.ts`,
@@ -70,7 +68,7 @@ a package is named `@monochromatic-dev/translation-repair-<short name>`.
 ### Depends on
 
 No family package.
-Its development dependencies are `module-logger`,
+Its development dependencies include `module-logger`,
 `module-test` and `unified`,
 none of which is in the family.
 
@@ -127,9 +125,9 @@ for example `scratch-dir.test-fixture.ts`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

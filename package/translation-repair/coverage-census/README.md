@@ -2,10 +2,9 @@
 
 The coverage census and its control and probe:
 it finds the package code no unit test ran,
-by running the suite under V8 coverage against an unminified build with source maps and mapping the
-cold code back to source lines.
-The census is its own package because it builds coverage bundles and reads sources across the
-family,
+by running the suite under V8 coverage against an unminified build with source maps and mapping the cold code
+back to source lines.
+The census is its own package because it builds coverage bundles and reads sources across the family,
 and no production package depends on it.
 
 ## What it provides
@@ -87,8 +86,8 @@ Every runner has a task of the same name in `mise.toml`:
 and `coverage-census` runs `coverage-census:build` first.
 Start one with `mise run //package/translation-repair/coverage-census:<task>`,
 passing arguments after `--`.
-A built command refuses to run in a process that holds provider keys unless
-`TRANSLATION_REPAIR_STARTED_BY` names that command,
+A built command refuses to run in a process that holds provider keys unless `TRANSLATION_REPAIR_STARTED_BY` names
+that command,
 and each task sets it to its own name.
 
 - `coverage-probe`:
@@ -110,8 +109,7 @@ and each task sets it to its own name.
   and prints the package code no test ran,
   mapped to source lines,
   with each stretch that is nothing but invariant throws counted and listed apart.
-  Add `--baseline <census.json>` and `--source <src/file.ts>` after `--` to read an earlier census
-  against this run.
+  Add `--baseline <census.json>` and `--source <src/file.ts>` after `--` to read an earlier census against this run.
   It runs `coverage-census:build` first and rebuilds the normal build afterwards.
   The whole suite writes about 8 GB of coverage under the user cache directory,
   deleted once read.
@@ -127,8 +125,7 @@ whose fan-out would run it beside the normal build into the same directory.
 
 `src/build-entries.ts` lists only this package's three runners,
 so `runnerEntrySources` names those three as the census's runner entries.
-The plan (the coverage census item under its rules for runners) has the census read every runner
-package's list;
+The plan (the coverage census item under its rules for runners) has the census read every runner package's list;
 until it does,
 the census sees a subset.
 
@@ -183,13 +180,12 @@ Build before testing:
 `mise run //package/translation-repair/coverage-census:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/coverage-census:test:unit`,
-or build and test together with
-`mise run //package/translation-repair/coverage-census:buildAndTest`.
+or build and test together with `mise run //package/translation-repair/coverage-census:buildAndTest`.
 Pass test file paths to run only those files.
 
 Test helpers used across the family,
@@ -199,9 +195,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

@@ -69,8 +69,7 @@ The groups below name the main ones.
   `translate-repair.ts`,
   and `self-preference.ts`.
 - Slice delivery:
-  record what became of every slice and refuse delivery that contradicts the document or an earlier
-  record.
+  record what became of every slice and refuse delivery that contradicts the document or an earlier record.
   Names:
   `buildSliceDelivery`,
   `SliceDeliveryError`,
@@ -167,13 +166,12 @@ Build before testing:
 `mise run //package/translation-repair/translate-floor:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/translate-floor:test:unit`,
-or build and test together with
-`mise run //package/translation-repair/translate-floor:buildAndTest`.
+or build and test together with `mise run //package/translation-repair/translate-floor:buildAndTest`.
 Pass test file paths to run only those files.
 
 Its `./ts/*` export also serves test fixtures that sibling tests import,
@@ -188,9 +186,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

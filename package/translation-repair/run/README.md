@@ -128,8 +128,8 @@ and each runner is built to `dist/final/node/<runner>.mjs`.
 Every runner has a task of the same name in `mise.toml` that builds first.
 Start one with `mise run //package/translation-repair/run:<task>`,
 passing arguments after `--`.
-A built command refuses to run in a process that holds provider keys unless
-`TRANSLATION_REPAIR_STARTED_BY` names that command,
+A built command refuses to run in a process that holds provider keys unless `TRANSLATION_REPAIR_STARTED_BY` names
+that command,
 and each task sets it to its own name.
 
 - `budget-sample`:
@@ -138,8 +138,8 @@ and each task sets it to its own name.
   Capture both streams with `> log 2>&1`.
   Spends no generation.
 - `meter-report`:
-  reads provider availability back out of run logs and reports each provider's duty cycle and longest
-  outage as bounded ranges.
+  reads provider availability back out of run logs and reports each provider's duty cycle and longest outage as
+  bounded ranges.
   Name one or more log paths after `--`.
   Spends no quota.
 - `cap-census`:
@@ -239,8 +239,8 @@ Build before testing:
 `mise run //package/translation-repair/run:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/run:test:unit`,
@@ -259,9 +259,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

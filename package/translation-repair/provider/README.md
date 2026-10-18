@@ -8,8 +8,8 @@ Anthropic,
 Hyper and Synthetic clients and catalogues,
 retries,
 deadlines and spend reporting.
-It is its own package so the stage and lane layers above call one routing client and the clients
-load from one built file.
+It is its own package so the stage and lane layers above call one routing client and the clients load from one
+built file.
 
 ## What it provides
 
@@ -166,8 +166,8 @@ Build before testing:
 `mise run //package/translation-repair/provider:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/provider:test:unit`,
@@ -186,9 +186,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

@@ -8,8 +8,7 @@ model health and catalogue checks,
 the roster card printer,
 and the sentinel,
 displacement and translate probes.
-It is its own package because these runners calibrate the roster and the lanes from outside the
-pipeline,
+It is its own package because these runners calibrate the roster and the lanes from outside the pipeline,
 and no other family package depends on it.
 
 ## What it provides
@@ -120,16 +119,16 @@ and each runner is built to `dist/final/node/<runner>.mjs`.
 Every runner has a task of the same name in `mise.toml` that builds first.
 Start one with `mise run //package/translation-repair/bench:<task>`,
 passing arguments after `--`.
-A built command refuses to run in a process that holds provider keys unless
-`TRANSLATION_REPAIR_STARTED_BY` names that command,
+A built command refuses to run in a process that holds provider keys unless `TRANSLATION_REPAIR_STARTED_BY` names
+that command,
 and each task sets it to its own name.
 
 - `sentinel-probe`:
   runs named corpus entries through the pipeline to validate a change.
   Pass ids after `--`.
 - `displacement-probe`:
-  reads per-slice size ratios against each document's own median to find passages the translation
-  moved across a section boundary.
+  reads per-slice size ratios against each document's own median to find passages the translation moved across a
+  section boundary.
   Spends no quota.
 - `editor-calibrate`:
   ranks every model on the editor's own job by driving the whole repair lane,
@@ -168,8 +167,7 @@ and each task sets it to its own name.
   Spends no quota.
 - `model-catalog`:
   compares what the provider serves against the compiled catalogue,
-  so a model that vanished stops costing a silent lost voice and a model holding no run role becomes
-  visible.
+  so a model that vanished stops costing a silent lost voice and a model holding no run role becomes visible.
 - `checker-sensitivity`:
   asks whether the resolution checkers can say no:
   a genuine fix,
@@ -195,8 +193,8 @@ and each task sets it to its own name.
 - `window-trial-probe`:
   judges flagged slices and matched controls three times over one slate (narrow,
   narrow again,
-  then with the neighbouring original) and reports whether the window moved the replacement rate
-  further than two narrow runs move it.
+  then with the neighbouring original) and reports whether the window moved the replacement rate further than two
+  narrow runs move it.
   Resumes from its ledger;
   wants a throwaway `TRANSLATION_REPAIR_RUNS_DIR`.
   Spends quota.
@@ -255,8 +253,8 @@ Build before testing:
 `mise run //package/translation-repair/bench:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/bench:test:unit`,
@@ -270,9 +268,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

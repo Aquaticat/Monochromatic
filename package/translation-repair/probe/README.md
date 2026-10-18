@@ -115,13 +115,12 @@ and each runner is built to `dist/final/node/<runner>.mjs`.
 Every runner has a task of the same name in `mise.toml` that builds first.
 Start one with `mise run //package/translation-repair/probe:<task>`,
 passing arguments after `--`.
-A built command refuses to run in a process that holds provider keys unless
-`TRANSLATION_REPAIR_STARTED_BY` names that command,
+A built command refuses to run in a process that holds provider keys unless `TRANSLATION_REPAIR_STARTED_BY` names
+that command,
 and each task sets it to its own name.
 
 - `draw-sample`:
-  draws the stratified precision sample from settled artifacts into a grading sheet outside the
-  repository.
+  draws the stratified precision sample from settled artifacts into a grading sheet outside the repository.
   Append `-- --final` for the gate sheet.
 - `score-attribution`:
   reports per-critic calibration from a run's settled artifacts:
@@ -184,15 +183,14 @@ and each task sets it to its own name.
   `--cap 0` is a metadata-only preflight.
   Spends quota.
 - `damage-sample`:
-  draws shipped regions at random and asks a human the same source-anchored damage question the probe
-  asks,
+  draws shipped regions at random and asks a human the same source-anchored damage question the probe asks,
   with the probe's verdict kept in the manifest.
 - `probe-verify`:
   probes damaged and unread regions with the accepted issues withheld,
   and writes one blind sheet asking whether each flagged edit really damaged the text.
 - `score-verify`:
-  joins the graded blind verification sheet to its manifest and reports what the unlabelled probe's
-  flags are worth on regions nobody had read.
+  joins the graded blind verification sheet to its manifest and reports what the unlabelled probe's flags are worth
+  on regions nobody had read.
 - `probe-relabel`:
   re-probes the regions a human read as damaged under three arms (the production disclosure,
   the other prompt,
@@ -259,8 +257,8 @@ Build before testing:
 `mise run //package/translation-repair/probe:build` builds this package,
 and the library build keeps family siblings external,
 so this package's built entry imports the siblings' built entries.
-Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling
-listed in `package.json`,
+Its `build:js:node` task therefore declares `depends` on the `build:js:node` of every sibling listed in
+`package.json`,
 and the siblings build first.
 
 Run the tests with `mise run //package/translation-repair/probe:test:unit`,
@@ -274,9 +272,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

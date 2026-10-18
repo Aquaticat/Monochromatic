@@ -4,8 +4,7 @@ The lowest layer of the translation-repair pipeline:
 the atoms every other package reads text through.
 It holds the character and script classes,
 code-point helpers,
-MDX tag and markup-atom scanners and the nesting bounds that keep the parsers from exhausting the
-stack.
+MDX tag and markup-atom scanners and the nesting bounds that keep the parsers from exhausting the stack.
 It imports no other family package,
 so it comes first in the build order,
 and every other package with production code lists it.
@@ -176,9 +175,9 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- `../../module/translation-repair/README.md`:
+- [Pipeline overview](../../module/translation-repair/README.md):
   the overview of the pipeline,
   from before the split.
-- `../../../doc/planning/translation-repair-package-split.md`:
+- [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.
