@@ -29,13 +29,14 @@ The installed release source was inspected at Oxc commit
 
 - `crates/oxc_linter/src/rules/unicorn/custom_error_definition.rs:84`
   explicitly lists the dynamic assignment as invalid.
-- The same file's `check_name` logic at lines 248 to 260 checks assignments and fields.
+- The same file's constructor checks at lines 248 to 260 inspect assignments and fields.
   `is_expected_string_literal` at line 387 accepts a matching string literal.
 - `npm/oxlint/configuration_schema.json:8912` declares this rule as `RuleNoConfig`.
 
 A real configuration probe with an attempted dynamic-name allow-list fails with:
 
 ```text
+# error-name-rule-unsupported-options.log
 Invalid configuration for rule `unicorn/custom-error-definition`:
   This rule does not accept configuration options.
 ```
