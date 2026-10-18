@@ -40,8 +40,10 @@ rather than requiring an exception from the superseded confirmation flow.
 Denied,
 stopped and cancelled native-context traces each retain the original `program` identifier,
 exact Stop text and zero executions.
-The cancelled assertion is updated from its separate trace;
-its broader manual matrix still requires verification after that change.
+The cancelled assertion is updated from its separate trace.
+The rebuilt complete manual matrix passes,
+followed by decision context,
+approved dependencies and review retirement.
 `native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs`
 verifies the actual selection and recorded verdict.
 `src/ask-user.ts` owns the displayed Allow and Stop choice,

@@ -68,6 +68,20 @@ the terminal control receipt explicitly retracts the original empty-stream claim
 Passing source leaf labels remain backed by stdout.
 Source-import tests do not establish compiled product-artifact coverage.
 
+A final [corrected capture](../audit/depot-local-node-capture-correction-2026-10-18.evidence.json)
+first proves it can retain both streams with explicit stdout and stderr markers.
+It reruns the same twelve files on the already-admitted derived fixture topology.
+All 179 product source-case labels and the nine separate harness-control labels
+join named debug `PASS` records.
+The archive retains 24 exact streams:
+9990 stdout bytes and 92794 stderr bytes.
+No logger-internal diagnostic occurs in those captured streams.
+The harness's eight deliberate failure diagnostics remain part of its passing negative controls.
+All three private fixture identities match again;
+personal payloads,
+filenames and hashes remain local.
+This new complete capture does not retroactively qualify the old empty stderr placeholders.
+
 The detailed [semantic package publication](../audit/depot-semantic-package-publication-2026-10-18.evidence.json)
 now publishes all 223 directory-owner projections and 1818 exact command identities.
 All 1818 original log bodies were rehashed and joined to their artifact/outcome receipts;

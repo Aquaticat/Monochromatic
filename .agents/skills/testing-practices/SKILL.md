@@ -587,11 +587,11 @@ unless `MONOCHROMATIC_VERBOSE=true`).
  Failures remain at `error` and are always visible.
 
 ```text
-[info]  [iso] [outer] [inner] PASS childA, childB, ... (Nms)   -- happy-path enumeration
-[info]  [iso] [outer] [inner] PASS childA                       -- mixed-result: passing siblings only
-[error] [iso] [outer] [inner] [bad] FAIL (Nms)                  -- per-test failure with full hierarchy
-[error] [iso] [outer] [inner] FAIL (Nms)                        -- suite rollup with failure
-[debug] [iso] [outer] [inner] [test-name] PASS (Nms)            -- detail with MONOCHROMATIC_VERBOSE=true
+[info]  [iso] [outer] [inner] [PASS] childA, childB, ... (Nms) -- happy-path enumeration
+[info]  [iso] [outer] [inner] [PASS] childA                   -- mixed-result: passing siblings only
+[error] [iso] [outer] [inner] [bad] [FAIL] ...                 -- per-test failure with full hierarchy
+[error] [iso] [outer] [inner] [FAIL] ...                       -- suite rollup with failure
+[debug] [iso] [outer] [inner] [test-name] [PASS] (Nms)         -- detail with MONOCHROMATIC_VERBOSE=true
 ```
 
 Parent-children relationships are visible per line by default;
@@ -615,10 +615,12 @@ needed.
 The logger's environment switch is verified against
 `package/module/logger/src/sink/console.ts:55` at source
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
-The isolated verbosity-only control retains ten debug lifecycle lines from a failing child;
-see `doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json`.
-Its successful-child stderr was not captured,
-so that probe does not qualify successful per-test debug output.
+The isolated verbosity-only control retains ten debug lifecycle lines from a failing child.
+The subsequent both-stream capture passes an actual stdout/stderr positive control
+and joins all 179 product source-case labels and nine separate harness-control labels
+to named debug `PASS` records in successful-child stderr;
+see `doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json`.
+The earlier wrapper's empty successful-stderr fields remain unobserved placeholders.
 
 When a failure surfaces,
  read the rightmost (deepest) tag plus the `FAIL` line

@@ -114,6 +114,10 @@ The empty fields for those children are placeholders,
 not evidence of empty stderr.
 The terminal receipt explicitly corrects the original capture claim.
 Successful leaf labels remain backed by captured stdout.
+The subsequent [corrected capture][capture] retains both streams after a real channel-positive control.
+It records the same four integration cases passing on the derived topology,
+with 1994 bytes of successful-child stderr and no logger-internal diagnostic.
+The old successful-stderr placeholders remain unqualified.
 
 ## Verified workarounds
 
@@ -179,3 +183,4 @@ comment or patch was sent or drafted.
 [admission]: ../audit/depot-local-node-counterfactual-admission-2026-10-18.evidence.json
 [baseline]: ../audit/depot-remaining-local-unit-2026-10-18.evidence.json
 [controls]: ../audit/depot-local-node-counterfactual-2026-10-18.evidence.json
+[capture]: ../audit/depot-local-node-capture-correction-2026-10-18.evidence.json

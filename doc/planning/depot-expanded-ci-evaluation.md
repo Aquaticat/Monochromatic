@@ -402,9 +402,18 @@ not compiled product-package acceptance
 ([source consumers and exact qualifications][depot-source-5],
 [fixture controls](../audit/depot-local-node-counterfactual-2026-10-18.evidence.json)).
 The separately rebuilt Node harness passes its existing nine-case built-export self-test.
-Successful-child stderr was discarded by the local wrapper;
-empty fields are placeholders,
-while successful case labels remain backed by captured stdout.
+The initial local wrapper discarded successful-child stderr;
+its empty fields remain unobserved placeholders.
+The corrected capture first passes a real stdout/stderr positive control,
+then retains both streams from all twelve files.
+On the derived fixture topology,
+all 179 product source-case labels and the nine separate harness-control labels
+join actual named debug `PASS` records.
+The 92794 captured stderr bytes contain no logger-internal diagnostic;
+the harness control's eight deliberate failure records remain separate from product outcomes
+([corrected source capture](../audit/depot-local-node-capture-correction-2026-10-18.evidence.json)).
+Repeated cases do not add new distinct coverage,
+and the original missing-fixture failures remain recorded.
 
 The first repeated-graph dispatch `39135886118` failed tool setup in all four jobs,
 before any of its planned 222 owner commands ran.

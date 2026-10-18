@@ -44,8 +44,13 @@ It leaves observed symbolic links untouched.
 The real build passes that case,
 retains the opaque symlink and still shares eligible root and nested files by inode on the same mount.
 Its independent cross-mount control still proves `EXDEV` and preserves intact files during publication.
-Fresh types pass at the initial fixed checkpoint;
-the subsequent lint restructuring and rebuilt traversal guards remain subject to their own verification.
+Fresh package types and the actual three-build regression pass after the sequential-queue restructuring.
+Scoped lint checks both maintained files with zero warnings and errors across 486 rules.
+Restoring recursive enumeration in a separate private build fails the third actual command with `EACCES`.
+Skipping real child directories fails the nested-file inode assertion after the second actual command.
+Restoring the original implementation passes all three commands,
+retaining six independent raw stdout/stderr files.
+The mutation receipt is `reuse-traversal-built-mutants.json` beside the probe receipt.
 
 ## Diagnostic orchestration failure
 

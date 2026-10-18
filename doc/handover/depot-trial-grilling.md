@@ -1,5 +1,31 @@
 # Depot trial interview
 
+## Final local capture and publication checkpoint on 2026-10-18
+
+The corrected capture is terminal and its owned container is absent.
+Its real stdout/stderr positive control passes.
+The same twelve unchanged authored files produce 179 product source-case passes
+and nine separate built-harness outer control passes on the already-admitted derived fixture topology.
+All labels join actual per-case debug `PASS` records;
+24 exact streams contain 9990 stdout bytes and 92794 stderr bytes.
+No logger-internal diagnostic occurs.
+Eight deliberate inner failure diagnostics belong to the passing harness controls.
+All three private export identities match again,
+without publishing their payloads,
+filenames or hashes.
+The source receipt is `doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json`.
+Earlier empty successful-stderr fields remain unobserved placeholders.
+The original four fixture-path failures and the no-with assertion gap remain qualified.
+No new provider allocation or production source fix occurred.
+
+The first capture invocation was rejected before runtime because its admission commit had not completed.
+The still-prepared admission ran only after `b8c2dc9dcc` completed;
+there was no duplicate container allocation.
+Scoped JSON hashes and Markdown checks passed before this final capture update.
+The remaining action is the scoped final check/render and exact-tip isolated publication,
+then the first interview frontier.
+The service quota still prevents a fresh independent whole-report sufficiency review.
+
 ## Local source-consumer checkpoint on 2026-10-18
 
 Cloud work remains terminal;
