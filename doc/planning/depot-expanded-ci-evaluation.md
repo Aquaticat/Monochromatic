@@ -541,9 +541,24 @@ the Root graph subtotal remains USD 0.487,
 and the separate BuildKit request-window proxy remains USD 0.015897333333.
 These are interval-derived proxies before allowances,
 with invoice and allocated-builder compute unmeasured.
-Later GNU,
-material-owner and debug attempts need their own terminal joins
 ([37-row successor verification](../audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json)).
+
+The final follow-on snapshot preserves those historical inputs and has 49 distinct terminal rows:
+23 public GitHub jobs,
+13 Depot GitHub jobs,
+10 native jobs and the same three BuildKit requests.
+All 53 retained source bodies and 49 exact timestamp-pointer joins verify.
+Its known provider-window list proxy is USD 1.685366666667:
+Depot GitHub USD 1.233566666667 and native USD 0.4518,
+with public nominal compute zero.
+The final append adds USD 0.422866666667:
+material Depot jobs USD 0.2704,
+matched GNU USD 0.125066666667 and both SSH attempts USD 0.0274.
+BuildKit's USD 0.015897333333 request-window proxy remains separate.
+The frozen baseline,
+historical follow-on snapshots and full-window reservations are not added again
+([49-row terminal ledger](../audit/depot-owned-allocation-final-2026-10-18.evidence.json),
+[source/hash/BigInt verification](../audit/depot-owned-allocation-final-source-verification-2026-10-18.evidence.json)).
 
 The current-source four-CPU Linux comparison has two completed repetitions on each GitHub runner pool.
 All 42 shared Node build commands pass in every sample.
