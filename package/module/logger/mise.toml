@@ -40,3 +40,7 @@ hide = true
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
+
+[tasks."test:burst-capacity"]
+description = "Verify retained memory during synchronous logging bursts"
+run = "node --max-old-space-size=512 --expose-gc src/burst-capacity.test.ts"
