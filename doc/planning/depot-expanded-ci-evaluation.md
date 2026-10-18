@@ -57,8 +57,7 @@ The current-source tree has 223 package directories:
 13 paused and two archived.
 The initial 227-candidate census included four documentation blobs;
 the corrected directory count does not change task or execution counts.
-It has
-and 2,425 source-owned Mise tasks across 13,860 tracked paths.
+It has 2,425 source-owned Mise tasks across 13,860 tracked paths.
 Its source-language inventory includes JavaScript/TypeScript,
 Kotlin,
 Rust,

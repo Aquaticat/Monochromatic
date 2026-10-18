@@ -54,6 +54,25 @@ independent cost-ledger reconciliation,
 final capability/OS/semantic integration and publication ancestry checks.
 Read the grilling skill and begin the interview only after those research queues close.
 
+Coverage's semantic reconciliation corrects the original package census:
+227 candidates included four documentation blobs;
+the frozen tree has 223 package directories,
+208 active,
+13 paused and two archived.
+Task and execution counts are unchanged.
+The report records this correction;
+the parent independently checks candidate types against the frozen tree before final acceptance.
+The parent's three new graph receipts pass JSON formatting,
+all 44 retained original source-body byte/hash joins and targeted Markdown lint.
+All fifteen parent Markdown documents pass rendering/link checks;
+the changed handover checkpoint and cost note have been read as actual rendered HTML.
+The Bash builtin rejected the parent's invented `kill --signal` option;
+the actual `help kill` contract supports `-s`,
+which terminated the exact owned overbroad search and produced a reaped status of 143.
+Platform owns the separate source-backed troubleshooting note;
+this is an invocation error,
+not an upstream defect or a Depot result.
+
 ## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 
 Research remains active;
