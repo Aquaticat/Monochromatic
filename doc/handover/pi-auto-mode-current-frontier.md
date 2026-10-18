@@ -27,25 +27,72 @@ instead of importing the source-only reuse helper rejected by `test-import/requi
 This actual-command test passes for the frozen checkpoint containing `57c1ae4c03`.
 Its scoped lint and updated types remain assigned to the native worker.
 
-The screened formatter composition at frozen `6df4b5a423` passes fresh types,
+The screened formatter composition at frozen `6df4b5a423` passes fifteen of sixteen qualification tasks,
+including fresh types,
 complete units,
 real build-activation rollback and host isolation.
-Its source-freshness consumer fails `Each review captures its current native capabilities once`,
-with `2 !== 1`.
-The identical unformatted frozen revision builds independently and fails the same assertion.
-No formatter attribution is established.
-The source shows separate approval-host captures in automatic review and manual fallback;
-that cause still needs a retained call trace and a decision about the shared operation boundary.
-The rest of the independent native qualification runs without rerunning completed checks.
-No formatter output is adopted yet.
+Its only failure,
+`Each review captures its current native capabilities once` with `2 !== 1`,
+also reproduces in an independently built identical unformatted revision.
+The classifier's 126 runtime-AST-identical changes are adopted as `cbf101fc9f`,
+with exact committed-path verification.
+The twenty rejected formatter outputs remain excluded.
+Full frozen native lint still reports 10,541 warnings and 54 errors across 496 files and 486 rules.
+That count predates the current worker's repairs and is not package completion.
 
-Auto-push fails on divergent origin history.
-A wrapper merge stops safely because it would overwrite concurrent uncommitted edits in
-`doc/handover/slint-ide-0x.md` and `package/desktop-app/ide/README.md`.
-Neither file is changed,
-stashed or restored by this task.
-The owner-coordination question is pending;
-auto-mode commits and verification continue locally.
+The retained capability trace proves separate captures in automatic review and manual fallback.
+The maintained implementation now shares one lazy capture over an original prepared-group operation,
+retains absent and failed captures,
+releases it at closure and starts fresh next operation.
+The first frozen fix passes the real source-freshness consumer and complete host-isolation task.
+The approval matrix reaches a later denied-operation assertion requiring the old handler exception.
+A private real-host trace instead establishes one original `program` tool result,
+`isError: true`,
+with exactly `The user stopped execution. Wait for their next instructions.` and zero executions.
+The obsolete exception assertion needs replacement with that observable result contract,
+followed by the complete matrix.
+The newly committed built capability unit suite,
+its lint and types,
+and rebuilt mutation guards remain unverified.
+Do not rebuild the live workers' immutable release while advancing this fix.
+
+The user identifies divergent auto-push with concurrent dirty edits as another wrapper defect,
+authorizes another issue and directs recovery without waiting for the concurrent owner.
+[Issue 1769](https://github.com/Aquaticats/Monochromatic/issues/1769) is filed after duplicate searches.
+The isolated recovery's fetched upstream already contains the captured local history.
+Ancestry checks establish publication and hashes establish both originally blocking dirty files unchanged.
+The original checkout remains untouched and still requires its own reconciliation when its owner permits it.
+Later commits require a new reachability check.
+The private bridge and receipt are retained;
+see `doc/troubleshooting/git-policy-auto-push-reconciliation.md`.
+No wrapper implementation fix is claimed.
+
+The remaining independently verifiable areas are:
+
+- Approval operation scope: updated observable denial fixture,
+  built units,
+  scoped lint,
+  types,
+  complete host matrix and rebuilt mutants.
+- Source catalog: actual MiMo's original-versus-port parity,
+  complete mode and variant matrix,
+  scoped lint and types,
+  complete child stderr and explicit-path checkpoint.
+- Native build reuse: actual MiMo's two-file lint repair,
+  real two-mount build regression,
+  same-mount positive control and rebuilt regression mutant.
+- Architecture and footprint: finish the native lint backlog and typed boundary simplification,
+  justify major responsibilities and measure a runnable dependency closure.
+  Neither 13k code lines nor 100 MB is an accepted target.
+- Long-session failures: retain the heap-limit incident separately from generic supervisor-abort diagnostics
+  and the unresolved Git packet error.
+  Diagnose retention without treating a higher heap ceiling as a fix.
+- Final configured consumer: coherent logger `0.4.4` build,
+  original interaction replay,
+  long requests and required/excluded provider controls,
+  complete shutdown stderr,
+  refreshed documentation rendering and publication receipts.
+- Private publishing: inspect deployed pnpr trust once the requested existing access route is available.
 
 Default native release `kFkBoY` remains pinned.
 The resumed source worker uses a separate immutable corrected runtime.
