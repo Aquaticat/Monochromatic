@@ -460,7 +460,13 @@ before the other queued work.
     a `pi` sol review of the five rounds' landed production diff
     (`s245/sol-review/question.md` and `production.diff`;
     blocked: `pi` reports `No API key found for openai-codex`, so the owner must log in;
-    an independent Sonnet review of the same diff runs meanwhile, report `s245/sol-review/sonnet/review.md`);
+    an independent Sonnet review of the same diff found R1 to R7, report `s245/sol-review/sonnet/review.md`;
+    R1 is confirmed in the code: the carry run-off sheet is byte-identical to the first sheet when every candidate
+    is a finalist (`runOff` only renames the stage, `pass-consistency-carry-ask.ts:328`),
+    and `promptUniqueClient` replays the first reply for a repeated digest, so the run-off never decides;
+    the finalist extension makes that case commoner (2-1-1 over three candidates),
+    so one fix round for R1 to R7, each red first, runs on top of the extension once it lands;
+    a relaunch waits for it);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
 6.  Done 2026-10-18:
