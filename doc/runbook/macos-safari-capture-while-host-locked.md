@@ -140,11 +140,36 @@ after the guest reboot, all six pages of a site captured correctly with the host
 
 ### Display scale
 
-The guest display (1920x1200, `DynamicResolution` on) runs HiDPI:
-pages report `devicePixelRatio` 2,
-and a 1920x1080 Safari window gives a 1920x1028 viewport.
-That matches a 4K screen at 2x.
-A true 1x capture needs the guest's display mode changed to non-HiDPI (not done yet).
+The guest display is 1920x1200 with UTM's `DynamicResolution` on,
+which resizes the guest mode to follow the UTM window
+(it was found at 1043x652 scaled, with a 1920-wide Safari window hanging off-screen).
+Pin the mode before each capture with `displayplacer` 1.4.0
+(arm64 release binary from `jakehilborn/displayplacer`, installed at `/usr/local/bin/displayplacer` in the guest):
+
+```bash
+# in the guest, over SSH
+/usr/local/bin/displayplacer "id:35B36D67-6BAC-47B7-98B5-07877849011C mode:24 origin:(0,0) degree:0"
+```
+
+- Mode 24, 1920x1200 unscaled: `devicePixelRatio` 1, like a 1080p screen at 1x.
+- Mode 34, 1920x1200 HiDPI: `devicePixelRatio` 2, like a 4K screen at 2x.
+
+Either way a 1920x1080 Safari window gives a 1920x1028 viewport;
+screenshots come out 1920x1028 and 3840x2056 device pixels.
+`displayplacer list` shows the display id and modes.
+
+### Capture script
+
+A Node script that pins the mode,
+opens a WebDriver session through local port 4446,
+sizes the window,
+and saves one PNG per page and scroll offset:
+`/home/user/temp/agent/xinyanchen-build/vm-safari-shot.mjs`
+(`node vm-safari-shot.mjs <out-dir> 1920x1080@1 index.html@0 about.html@1500`).
+It uses only WebDriver's standard endpoints
+(`POST /session`, `POST /session/{id}/window/rect`, `POST /session/{id}/url`,
+`POST /session/{id}/execute/sync`, `GET /session/{id}/screenshot`, `DELETE /session/{id}`),
+so a copy works for any site served on the forwarded port.
 
 ## macOS WebKit fallback: `webkit-capture` on the host
 
