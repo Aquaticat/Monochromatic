@@ -337,14 +337,84 @@
       "arbitraryRelocationQualified": false
     },
     "browserAndE2e": {
-      "state": "browser_terminal_e2e_discovery_blocked",
+      "state": "browser_terminal_active_e2e_terminal",
       "run": 39126466632,
       "browserPassed": 82,
       "browserFailed": 1,
       "browserSkipped": 1,
       "browserFiles": 8,
-      "e2eBodiesExecuted": 0,
-      "pending": "Source owning root E2E with explicit four active DOM spec selectors"
+      "e2eBodiesExecuted": 34,
+      "pending": null,
+      "activeSelectorRun": 39126926119
+    },
+    "activeE2e": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39126926119,
+      "sourceOwner": "root test:e2e:chromium and test:e2e:firefox",
+      "explicitActiveSpecPaths": 4,
+      "caseOutcomes": {
+        "passed": 34,
+        "failed": 0,
+        "skipped": 0,
+        "retried": 0
+      },
+      "unfilteredDiscoveryFailurePreserved": 39126466632
+    },
+    "finiteTypescriptConformance": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "run": 39127382413,
+      "commands": 50,
+      "succeeded": 49,
+      "harnessOnlyNonexistentFixtureTask": 1,
+      "sourceFailures": 0,
+      "toml": {
+        "tool": "toml-test v2.2.0; go1.26.2 linux/amd64",
+        "toml10": {
+          "valid": 205,
+          "encoder": 205,
+          "invalid": 474
+        },
+        "toml11": {
+          "valid": 214,
+          "encoder": 214,
+          "invalid": 467
+        }
+      },
+      "declaredType": {
+        "seed": 7331,
+        "casesWithUnions": 8,
+        "casesWithoutUnions": 8,
+        "failed": 0,
+        "stray": 0,
+        "positiveControl": {
+          "clean": 65,
+          "tampered": 45,
+          "caught": 42,
+          "missedIds": [
+            70,
+            87,
+            94
+          ],
+          "sourceGate": "Requires at least one caught tamper, not complete sensitivity"
+        }
+      },
+      "mutationFixture": {
+        "killed": 11,
+        "survived": 6,
+        "compileError": 2,
+        "timeout": 0,
+        "runtimeError": 0,
+        "ignored": 0,
+        "shards": 6,
+        "classification": "native runner outcomes, not independent per-mutant assertion-entry proof",
+        "nativeReport": "finite-conformance-artifacts/frozen-linux-coverage-a-39127382413/runtime/mutation-integration-1792326590056.json"
+      },
+      "ownedRuntimeContainersAfter": 0
+    },
+    "finiteOwnerReceipt": {
+      "path": "doc/planning/depot-complete-coverage-finite-owner-receipts.json.gz",
+      "bytes": 391550,
+      "sha256": "e93b3f330656a5f7c7c7c629d915cc70e0dda8a1bfdc8fb6ad826556bba264c7"
     }
   },
   "coverageReviewComplete": false,
@@ -662,6 +732,12 @@
       "sha256": "27f3d6eab5756c66207278995784ccb21b24d16200abce96c98c6bd62e6d7d74",
       "rawBytes": 58691244,
       "rawSha256": "6e66fab3d1d05ed8d286c14a2ece00aa614e3dcf00daf6e5ab1d316e95d71d75"
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-finite-owner-receipts.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 391550,
+      "sha256": "e93b3f330656a5f7c7c7c629d915cc70e0dda8a1bfdc8fb6ad826556bba264c7"
     }
   ],
   "execution": [
@@ -1313,6 +1389,22 @@
       ],
       "classification": "Browser82 pass1 failed1 skipped; E2E discovery blocked on paused package, zero bodies",
       "evidence": "doc/planning/depot-complete-coverage-artifact-browser-receipts.json.gz"
+    },
+    {
+      "profile": "active-e2e",
+      "run": 39126926119,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "26d238d84acb484d50bbf2e35c6fba42f2300338",
+      "evidence": "doc/planning/depot-complete-coverage-finite-owner-receipts.json.gz",
+      "terminal": true
+    },
+    {
+      "profile": "finite-conformance",
+      "run": 39127382413,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "775d735adbc34c4caea7c626a43f27cd27d0d971",
+      "evidence": "doc/planning/depot-complete-coverage-finite-owner-receipts.json.gz",
+      "terminal": true
     }
   ],
   "familySummary": {

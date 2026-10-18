@@ -1056,7 +1056,8 @@ Both product page color-scheme screenshot assertions pass in every engine.
 The original root E2E discovery also imports the inactive
 `package-paused/webapp-edu/paper2vn/src/paper2vn.e2e.test.ts`
 and fails its missing `@monochromatic-dev/module-or-throw` import before any E2E body.
-The four active DOM specifications therefore still require explicit source-owner selectors.
+The four active DOM specifications require explicit source-owner selectors;
+the terminal selector control is recorded in the active E2E section.
 This discovery failure is retained rather than silently excluding the inactive root.
 All terminal logs,
 original archive member hashes,
@@ -1064,10 +1065,7 @@ native topology controls,
 and parsed browser cases are retained in
 `depot-complete-coverage-artifact-browser-receipts.json.gz`.
 
-The finite remaining queue includes the explicit active E2E consumer,
-TOML Go conformance,
-deepmerge declared-type/compiler controls,
-and the actual mutation fixture container lifecycle.
+The active E2E and finite TypeScript owners now have terminal receipts in their dedicated sections.
 The research coverage lane retains these separate independently verifiable queue items:
 
 - Qualify the frozen desktop compositor,
@@ -1087,3 +1085,59 @@ These items remain owned work after active E2E and the finite mutation/conforman
 Each allocation requires the campaign's measured and reserved budget reconciliation,
 finite resource limits,
 and no overlapping coverage cloud job.
+
+## Active E2E and finite TypeScript completion
+
+Run [`39126926119`](https://github.com/Aquaticats/Monochromatic/actions/runs/39126926119)
+uses immutable harness `26d238d84acb484d50bbf2e35c6fba42f2300338`.
+Its 45 calls pass,
+including the unchanged root E2E owners with the four active DOM spec paths as explicit arguments.
+Chromium passes 17 actual cases;
+Firefox passes 17.
+There are no skips or retries.
+The unfiltered discovery failure remains separate.
+
+Run [`39127382413`](https://github.com/Aquaticats/Monochromatic/actions/runs/39127382413)
+uses immutable harness `775d735adbc34c4caea7c626a43f27cd27d0d971`.
+It reaches all 50 planned calls:
+49 succeed and the harness-only call to the nonexistent fixture `build` task fails.
+The fixture declares no build task.
+The actual built mutation CLI integration owner still runs and passes its source assertions.
+Its native report contains 11 killed,
+6 survived,
+2 compile-error,
+zero timeout,
+and zero runtime-error outcomes across 6 shards.
+Native classifications do not independently establish assertion entry for every mutant.
+The final cleanup receipt contains zero owned containers.
+
+The actual TOML Go owner passes TOML 1.0 with 205 valid,
+205 encoder,
+and 474 invalid tests.
+TOML 1.1 passes 214 valid,
+214 encoder,
+and 467 invalid tests.
+The observed tool is `toml-test v2.2.0` built with `go1.26.2 linux/amd64`.
+Both finite declared-type campaigns use seed `7331`,
+size `8`,
+and produce zero failed cases and zero stray diagnostics,
+once with unions and once without.
+The separate positive control passes 65 clean cases and catches 42 of 45 tampered cases.
+Missed combined-case IDs `70`,
+`87`,
+and `94` remain retained in the generated source.
+The frozen gate requires at least one tamper detection,
+so its exit zero is not evidence of complete diagnostic sensitivity.
+
+The validated logs,
+source-bound plans,
+workflow bytes,
+parsed E2E reports,
+compiler-generated cases,
+mutation report,
+and cleanup receipt are retained in
+[`depot-complete-coverage-finite-owner-receipts.json.gz`](depot-complete-coverage-finite-owner-receipts.json.gz).
+Its 391550 bytes have SHA-256 `e93b3f330656a5f7c7c7c629d915cc70e0dda8a1bfdc8fb6ad826556bba264c7`.
+The desktop prerequisite,
+packed-install,
+and semantic-manifest queue items remain independently owned.

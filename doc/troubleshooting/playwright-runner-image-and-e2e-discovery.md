@@ -139,7 +139,13 @@ testIgnore: takeFirst(projectConfig.testIgnore, config.testIgnore, []),
 This preserves an actual repository discovery defect,
 distinct from browser-image launch and WebKit OPFS behavior.
 An additional source-owner control explicitly selects the four active DOM specification paths.
-Its terminal evidence must be retained before those E2E bodies receive credit.
+Run [`39126926119`](https://github.com/Aquaticats/Monochromatic/actions/runs/39126926119)
+now retains that exact source-owner control:
+17 Chromium cases and 17 Firefox cases pass with no skips or retries.
+All four active DOM specifications execute.
+The unfiltered root failure remains a separate observed discovery result.
+The source-bound logs and parsed cases are retained in
+[`depot-complete-coverage-finite-owner-receipts.json.gz`](../planning/depot-complete-coverage-finite-owner-receipts.json.gz).
 
 ## Upstream filing decision
 
