@@ -503,7 +503,7 @@ This is a request-window estimate,
 not billed usage or an aggregate invoice guarantee.
 No account-wide billing or usage query is authorized or required by this campaign.
 
-## Repository Node26 image prerequisite correction in progress
+## Repository Node26 image prerequisite correction
 
 The subsequent cloud job-image consumers reached checkout,
 then the frozen Node `26.12.0` loader failed with a missing `libatomic.so.1`.
@@ -518,7 +518,31 @@ TypeScript execution,
 and runtime versions must pass before that derivative receives consumer credit.
 The second Node installation is removed within the same build step.
 
-The isolated source `7590bcde15` contains that queued fixture.
+The isolated source `7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f` contains the executed correction.
+Build `1ng4qs1pmq` completed in 31,529 milliseconds and produced immutable index
+`sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`.
+The actual Node `26.12.0` module executed on both AMD64 and Arm64 builders
+after SHA256 verification against the frozen lock.
+The probes exercised TypeScript,
+crypto,
+and top-level `await`,
+and verified ELF machine 62 or 183 and resolved `libatomic.so.1`.
+Both architectures report Debian `libatomic1` version `12.2.0-14+deb12u1`.
+Base Node remains `24.22.0`.
+The temporary repository Node installation was removed in the same step
+and does not appear in the final filesystem layer.
+
+Independent registry reads verified the corrected configurations and their attestation subject bindings.
+The original-build token read the new index and both final layers;
+an empty blob-upload initiation again returned HTTP 403 `DENIED`.
+The corrected `/opt/depot-research/image-tools.json` hashes are
+`53d2d2c340ef8214c8b9caf2da0b94c38327c63655d4656729a3b54c5d1e7f96` for AMD64
+and `1229b983f4c529867d6a0fb1d0b1f1c1ba00f8b941c04d599ecd3d6845f3afa2` for Arm64.
+They contain 4,154 and 4,179 bytes respectively.
+The [BuildKit receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+records this derivative separately from the retained missing-library image.
+The parent owns the subsequent full checkout and Mise consumers.
+
 The same research branch now includes the frozen firstparty `truepeak-core` Cargo cache-mount fixture
 from source `7f22f25adb`.
 Its mount controls distinguish an empty offline failure,
