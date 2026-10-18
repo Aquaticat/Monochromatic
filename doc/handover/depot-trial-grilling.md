@@ -1,5 +1,27 @@
 # Depot trial interview
 
+## Active Developer additional-pool research on 2026-10-18
+
+The user requested Depot Developer as an additional pool alongside GitHub,
+then required comprehensive research before grilling.
+Depot and GitHub Actions research experiments are authorized.
+The [research plan](../planning/depot-developer-additional-pool-research.md)
+tracks independently verifiable areas and the stop condition for beginning the interview.
+Developer plus continued GitHub availability is settled;
+pool placement and operational preferences will be grilled after factual research.
+
+Current work:
+primary-source provider and billing research,
+repository routing and trust inventory,
+cache integration research,
+fresh-job cache measurements and orchestration probes.
+The main agent owns experiment harnesses and the combined decision tree.
+The research agents own separate cited capability,
+routing and cache notes.
+Do not begin the interview while factual prerequisites remain investigable.
+Do not change production routing or the subscription before shared understanding is reached.
+Prior account-wide-access exclusions remain in force.
+
 ## Cache benefit clarification on 2026-10-18
 
 The user asked how caching changes the performance assessment.
