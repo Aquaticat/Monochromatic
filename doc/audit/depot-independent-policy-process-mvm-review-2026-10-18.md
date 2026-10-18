@@ -112,6 +112,8 @@ Every decoded text member was included in credential-pattern inspection.
 Manual inspection of every resulting candidate found QEMU help placeholders
 (`password=password` and `password=<file>`)
 and captured source code invoking `getent passwd`.
+The broader context sweep also retained only system passwd identifiers,
+key-file help paths and udev rule placeholders.
 The dense QEMU logs name ephemeral master-key file paths;
 they do not include those key files or their contents.
 No credential material was found in this decoded-member review.
@@ -287,3 +289,8 @@ Independent decoding,
 CRC/hash/outcome joins and credential inspection of those three new ZIPs are queued
 after publication.
 They must remain a separate cohort from the original eight MVM ZIPs.
+
+The original-cohort review checkpoint `7d743ae989` passed the targeted
+`mise run lint:monochromatic-lint -- doc/audit/depot-independent-policy-process-mvm-review-2026-10-18.md` task.
+Its complete `marked` renderer output was inspected.
+The original compressed archive hashes were rechecked unchanged after the coordinator's correction.
