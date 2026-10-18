@@ -107,6 +107,7 @@ const MARKED_CLASSES: readonly string[] = [
   'EntryInfoParseError',
   'EnvelopeOverlapError',
   'EveryProviderDryError',
+  'FamilyEntryConflictError',
   'FidelityReferenceError',
   'FloorGroundDisagreementError',
   'FootnoteOverflowError',
@@ -420,6 +421,11 @@ const NAMED_PARTS: Record<string, string> = {
   'invariant': 'authored sentence at every throw site of the consistency pass, built from slice indexes, group '
     + 'numbers, OCCURRENCE labels, offsets and vocabulary words and quoting no page text, which each site was read '
     + 'for (ConsistencyInvariantError)',
+  'entry': 'name of a build entry, a key of a package\'s own list in src/build-entries.ts (FamilyEntryConflictError)',
+  'firstPath': 'path a package\'s own build entry list gives an entry (FamilyEntryConflictError)',
+  'firstOwner': 'directory name of a package of the family (FamilyEntryConflictError)',
+  'secondPath': 'path a package\'s own build entry list gives an entry (FamilyEntryConflictError)',
+  'secondOwner': 'directory name of a package of the family (FamilyEntryConflictError)',
 };
 
 /**

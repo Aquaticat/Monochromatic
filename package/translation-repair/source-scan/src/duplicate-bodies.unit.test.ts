@@ -81,18 +81,6 @@ const FROZEN_COPIES: readonly {
     ],
     reason: 'nested inside the frozen copy of uniqueFindings',
   },
-  {
-    locations: [
-      'bench/build-entries.ts#runnerEntrySources',
-      'corpus-pass/build-entries.ts#runnerEntrySources',
-      'coverage-census/build-entries.ts#runnerEntrySources',
-      'probe/build-entries.ts#runnerEntrySources',
-      'run/build-entries.ts#runnerEntrySources',
-      'slice-cache/build-entries.ts#runnerEntrySources',
-    ],
-    reason: 'the split gave each runner package its own build-entries.ts listing its own runners, each with the '
-      + 'same few lines reading that list',
-  },
 ];
 
 /**

@@ -148,6 +148,7 @@ await describe({
         }
 
         expect(thrown,).toBeInstanceOf(FamilyEntryConflictError,);
+        expect((thrown as FamilyEntryConflictError).messageNamesOnly,).toBe(true,);
         expect(String(thrown,),).toBe(
           'FamilyEntryConflictError: build entry purr is listed at ./src/corpus-run/purr.ts by tabby and at '
           + './src/corpus-run/other-purr.ts by calico, so the census cannot tell which runner it names',

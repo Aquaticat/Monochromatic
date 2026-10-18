@@ -1235,7 +1235,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: TOOL,
   },
-  'slice-cache/corpus-run/cache-account-run.ts#listed': {
+  'slice-cache/corpus-run/cache-account-sources.ts#listed': {
     tests: 1,
     why: TOOL,
   },
@@ -1285,6 +1285,10 @@ const HELD_TESTS: Readonly<Record<string, {
   },
   'coverage-census/corpus-run/coverage-census-commit.ts#packageCommit': {
     tests: 1,
+    why: TOOL,
+  },
+  'coverage-census/corpus-run/coverage-census-family.ts#isFamilyBundleName': {
+    tests: 2,
     why: TOOL,
   },
   'coverage-census/corpus-run/coverage-census-input.ts#readBaselineCensus': {
