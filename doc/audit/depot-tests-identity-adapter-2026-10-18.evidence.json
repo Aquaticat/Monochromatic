@@ -875,9 +875,9 @@
   },
   "sourceArchive": {
     "path": "doc/audit/depot-tests-identity-adapter-2026-10-18.sources.json.gz",
-    "bytes": 240430,
-    "sha256": "652e993e2a2cf379c2e067d602c2e4099b7abe4543dcfdb5cc6093f133dd5af3",
-    "uncompressedBytes": 1791114,
+    "bytes": 256546,
+    "sha256": "3b4525feba218b90c267124259fb9ad3eb8ab6701f98c38a36ff3ba2c40962bb",
+    "uncompressedBytes": 1843234,
     "originalEvidenceZipsIncluded": 4,
     "input98MbArchiveBytesOmitted": true
   },
@@ -888,5 +888,17 @@
     "The single-shard seed commands do not log a timing count; null is not a measured zero",
     "Provider artifact sizes were checked against API metadata; SHA256 values are independently computed",
     "Configured reservations are scoped proxies, not account usage or invoices"
-  ]
+  ],
+  "diagnosis": {
+    "path": "doc/troubleshooting/depot-nextest-test-identity.md",
+    "fixturePatch": {
+      "path": "doc/troubleshooting/depot-nextest-test-identity.patch",
+      "bytes": 48555,
+      "sha256": "bcb5e8bc5bb13f0b74d94d2e70ed46ff49f16a5b1ada135213593027786b1ffc"
+    },
+    "nextestDefectEstablished": false,
+    "upstreamMessagesSent": false,
+    "contributionPolicyObserved": true,
+    "precedentCommit": "24f9b6e46476b243f0e6f3c7422286c9347991a4"
+  }
 }
