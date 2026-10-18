@@ -53,18 +53,21 @@ then post the ready second interview round and obtain confirmation of shared und
 
 The ready second round covers independent decisions:
 
-- Q4: standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
+- Q4:
+  standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
   versus approval of each paid batch.
   Recommend standing authority for unattended CI,
   using conservative published charges and the repository-owned allocation ledger.
   This does not change subscriptions,
   authorize account-wide inspection or guarantee an aggregate invoice.
-- Q5: one bounded recovery attempt for a classified provider/startup failure,
+- Q5:
+  one bounded recovery attempt for a classified provider/startup failure,
   versus recovery only on request.
   Recommend automatic recovery with exposure reserved for both attempts and the first failure retained.
   Source failures,
   discovery failures and artifact-integrity failures cannot become successful checks by being ignored.
-- Q6: retain the correction only in CI documents,
+- Q6:
+  retain the correction only in CI documents,
   versus tightening the existing general `AUT` rule after this scope misreading.
   Recommend the CI-document correction only,
   consistent with the user's preference for narrowly scoped documentation changes.
