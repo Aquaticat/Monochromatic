@@ -262,7 +262,13 @@ Only those additional allocations use four CPUs,
 the two-simultaneous and cumulative USD 5 timestamp-price guard remain.
 Their total conservative reservation is USD 0.36,
 giving a USD 1.7312 forecast from the completed cache campaign.
-Each provider will run three unchanged repeats of the exact archived 34-case cohort,
+Pushed harness `8a615939f096ba0c4b0f1a28815b759be719368f` launched native run `ptxnhf1ppm`
+and GitHub Actions run `39113641724` for the two serial GitHub-provider jobs.
+The local isolated transport control passed three unchanged repeats,
+each with 34 passed cases and 1,922 filtered skips.
+Its rootless image has no `sudo`;
+that retained unsupported-mount boundary receives no tmpfs coverage credit.
+Each cloud provider runs three unchanged repeats of the exact archived 34-case cohort,
 then compare its ordinary owned fixture directory with an owned 256-MiB tmpfs when privileged mounting works.
 The providers are native Depot,
 GitHub-hosted Ubuntu 24.04 and a four-CPU Depot GitHub runner.
@@ -466,8 +472,8 @@ It restored dependencies from the prepared pnpm content store,
 passed the existing semantic plugin build/host/external consumers,
 built the Kotlin linter JAR and executed six JUnit tests with no failures or skips.
 The recording HTTP proxy observed cache misses and successful uploads through automatic job identity.
-Repeated fresh warm allocations are the next measurement;
-one seed does not establish a speed benefit.
+This seed alone establishes no speed benefit.
+The completed paired result is retained under Repeated Gradle task-output comparison.
 
 Rust seed `ldj6qhgjd5` from the same harness restored the installed-dependency archive,
 passed the same JavaScript consumers,
@@ -480,8 +486,8 @@ Those failures compare options against provider Git `2.55`,
 while the repository-owned native verification baseline requires Git `2.56.0`.
 The required Git revision is `a018953688f1b10bddf91bff8747068f5f4746a4`,
 already selected by `package/git-policy/cli/bin/build-git-test-image.mjs`.
-The next tool image will provision that prerequisite under a new tag,
-retain `tools-r1` unchanged and rerun actual tests.
+The subsequent `tools-r2-git256` image provisioned that prerequisite under a new tag,
+retained `tools-r1` unchanged and enabled the actual complete test reruns.
 The target archive is published only after tests pass,
 so this failed seed did not publish a supposedly reusable passing target.
 
@@ -494,9 +500,9 @@ Fresh jobs contain neither the synthetic source marker nor the synthetic secret 
 Both masked and unmasked synthetic runtime environment controls are absent;
 that observation alone cannot attribute their absence to masking.
 
-## Expanded campaign bound
+## Historical 16-job admission
 
-The expanded authorization permits at most 16 total owned jobs,
+The first expanded authorization permitted at most 16 total owned jobs,
 with the same two-job concurrency,
 eight-vCPU,
 32-GB and 15-minute per-job limits.
@@ -520,9 +526,10 @@ artifact storage,
 cache retention,
 registry requests and network charges remain separately unmeasured.
 
-The next two jobs use identical harness `9f59235436` and `reuse-gradle-warm.yml` on separate allocations.
-Each verifies the same `tools-r1` inputs,
-restores compilation from the same read-only remote task namespace and executes the existing JUnit consumers.
+The first paired warm jobs used identical harness `9f59235436` and `reuse-gradle-warm.yml` on separate allocations.
+Each verified the same `tools-r1` inputs,
+set its Gradle client to read-only for the same remote namespace and executed the existing JUnit consumers.
+The client setting does not establish a server-enforced read-only credential.
 The image's preserved Mise executable supplies the documented installation-free bootstrap.
 That bootstrap differs from the seed's Mise action,
 so whole-job timing will not be attributed solely to remote compilation reuse.
@@ -666,7 +673,9 @@ Mutable cache bytes are admitted with source,
 tool,
 profile and archive hashes retained outside the same cache.
 A manifest copied solely from that writable disk would not authenticate those bytes against another writer.
-The pending scanner reader is designed to reject changed real source and a partial archive before restoring outputs.
+Scanner reader `zq7cc1nd4b` rejected changed real source,
+a partial archive and a missing manifest before restoring the admitted complete archive.
+Its actual owned test consumer passed all 237 cases with no skips.
 Release artifacts require their own producer/run provenance and consumer verification;
 the diagnostic archive deliberately retains failing cases and cannot satisfy a success-only publication gate.
 
