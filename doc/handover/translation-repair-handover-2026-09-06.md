@@ -411,12 +411,14 @@ before the other queued work.
     The whole difference is the `prefer-readonly-parameter-type` plugin:
     it analyses shared modules once per package project,
     and its one repository cache (256 MiB, 4096 entries) overflows.
-    Open:
-    probe 4 (`s245/split/lint/cost-probe4.txt`,
-    the family cold then warm with the cache bounds raised in `w165`, uncommitted)
-    decides whether a larger bound is enough;
-    then the fix goes to the owner as a question,
-    since the plugin is shared repository tooling.
+    With the bounds raised (`s245/split/lint/cost-probe4b.txt`),
+    the warm family lint takes 70.93 s against 312 s;
+    the family needs 8269 entries and 508 MB.
+    The owner chose on 2026-10-18:
+    raise the bounds to 1 GiB and 16384 entries (in progress, tests first);
+    and investigate whether projects can share one module's analysis,
+    which would fix cold lints and gates too,
+    then propose it in `doc/planning/` before any change (queued after the bound change).
     Delete `w165`'s and `w175`'s scratch `oxlint.no-*.config.ts` files
     and revert `w165`'s plugin edit after the probe.
 5.  The queue the split went ahead of,
