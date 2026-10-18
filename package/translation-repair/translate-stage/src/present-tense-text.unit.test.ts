@@ -126,6 +126,18 @@ await describe({
             );
           },
         },),
+
+        it({
+          name: 'KEEPS the text between marks of two different pairs: an opening curly mark closed by a straight one, and a straight '
+            + 'one closed by a curly one, are no curly pair and blank nothing, narration between them included',
+          fn: async () => {
+            /**
+             Two quotations each opened and closed by marks of two kinds, with narration between them.
+             */
+            const text = '‘I nap.\' She naps. \'I sleep.’';
+            expect(maskQuotedSpeech({ text, },),).toBe(text,);
+          },
+        },),
       ],
     },),
 
