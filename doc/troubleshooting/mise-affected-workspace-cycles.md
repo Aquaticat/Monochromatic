@@ -31,14 +31,10 @@ tag `v2026.10.0`,
 commit `bc11f90c74eba23bf0d7350efb540e62fb7d9ffd`.
 It was read without modifying or executing upstream project code.
 
-`src/cli/run.rs:368` builds the workspace graph before resolving and diffing the requested revisions:
+`get_affected_task_list` builds the workspace graph before resolving and diffing the requested revisions:
 
 ```rust
-// jdx/mise/src/cli/run.rs:368
-Settings::get().ensure_experimental("affected tasks")?;
-let workspace_root = config
-    .monorepo_root()
-    .ok_or_else(|| eyre!("--affected requires a monorepo root configuration"))?;
+//! jdx/mise/src/cli/run.rs:375
 let graph = config.workspace_project_graph()?;
 let revisions = crate::task::workspace::git::WorkspaceGitRevisions::resolve(base, head);
 let changed_paths = revisions.changed_paths(&workspace_root)?;
@@ -47,13 +43,13 @@ let changed_paths = revisions.changed_paths(&workspace_root)?;
 The workspace graph validator rejects a cycle in `src/task/workspace.rs:1054`:
 
 ```rust
-// jdx/mise/src/task/workspace.rs:1054
+//! jdx/mise/src/task/workspace.rs:1054
 if let Some(path) = self.find_cycle() {
     return Err(WorkspaceProjectCycleError { path }.into());
 }
 ```
 
-`WorkspaceProjectCycleError::fmt` at `src/task/workspace.rs:488` formats the diagnostic
+`WorkspaceProjectCycleError::fmt` at `src/task/workspace.rs:490` formats the diagnostic
 and proposes graph overrides.
 The project graph supports development edges;
 the repository actually declares both sides of this cycle in
@@ -160,8 +156,12 @@ this investigation makes no claim that upstream cannot implement it.
   ordinary workspace affected selection is supported;
   cyclic final graphs are explicitly excluded by the current documentation.
 - Contribution policy:
-  the pinned `CONTRIBUTING.md` points to the contribution guide.
-  No contribution-policy refusal is inferred from maintenance status or missing tracker results.
+  the pinned `CONTRIBUTING.md` points to `docs/contributing.md`.
+  Its community-participation section welcomes reviewed and verified AI-assisted responses from connected contributors
+  and prohibits drive-by discussion spam.
+  Non-obvious code changes require discussion before a PR.
+  The issue template also routes ideas to Discussions.
+  Those conditions are not an AI-assistance ban or a maintenance prohibition.
   No external message is being proposed.
 - Likely movement:
   the documented restriction is evidence of current behavior,

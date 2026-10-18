@@ -1014,6 +1014,31 @@
       "package/dev-script/task-util/src/tsc-filter.expensive.unit.test.ts",
       "package/module/image-diff/src/client.expensive.unit.test.ts",
       "package/pi-plugin/bash-poke/src/tui.expensive.unit.test.ts"
+    ],
+    "allTrackedCargoManifests": [
+      "package/cli/forbidden-strings.fuzz/Cargo.toml",
+      "package/cli/forbidden-strings/Cargo.toml",
+      "package/cli/nested-wayland-session/Cargo.toml",
+      "package/cli/wg-quicker-exempt/Cargo.toml",
+      "package/codex-plugin/bash-limit/Cargo.toml",
+      "package/desktop-app/file-manager-gtk-sticky/Cargo.toml",
+      "package/desktop-app/file-manager-qt/Cargo.toml",
+      "package/desktop-app/file-manager/Cargo.toml",
+      "package/desktop-app/ide/Cargo.toml",
+      "package/desktop-app/terminal/Cargo.toml",
+      "package/git-policy/cli.fuzz/Cargo.toml",
+      "package/git-policy/cli/Cargo.toml",
+      "package/linter/monochromatic-lint.fuzz/Cargo.toml",
+      "package/linter/monochromatic-lint/Cargo.toml",
+      "package/music-player/android-app/rust/Cargo.toml",
+      "package/music-player/desktop-app/Cargo.toml",
+      "package/music-player/truepeak-core.bench/Cargo.toml",
+      "package/music-player/truepeak-core/Cargo.toml",
+      "package/rust-module/forbidden-regex.bench/Cargo.toml",
+      "package/rust-module/forbidden-regex.fuzz/Cargo.toml",
+      "package/rust-module/forbidden-regex/Cargo.toml",
+      "package/rust-module/jsonc-edit.fuzz/Cargo.toml",
+      "package/rust-module/jsonc-edit/Cargo.toml"
     ]
   },
   "consumerClosureAnalysis": {
@@ -2905,7 +2930,112 @@
       "limitation": "Node workspace metadata only; not a complete Rust, Gradle, generated-input or global-configuration impact selector",
       "exactDeclaredPackageClosureSetVerified": true
     },
-    "pnpmVersion": "12.14.0"
+    "pnpmVersion": "12.14.0",
+    "cycleOverrideControl": {
+      "base": "b0812458fea24edc4b493022ceab46a2a939f1a6",
+      "head": "3c47ba1c9ba7a035c796787c0023a6515062c869",
+      "cycle": {
+        "exit": 1,
+        "stderr": "mise ERROR workspace project dependency cycle detected: node:@selector-fixture/consumer -> node:@selector-fixture/producer -> node:@selector-fixture/consumer; adjust [monorepo.projects.\"node:@selector-fixture/consumer\"] depends, depends_add, or depends_remove to break the cycle\nmise ERROR Version: 2026.10.0 linux-x64 (2026-10-02)\nmise ERROR Run with --verbose or MISE_VERBOSE=1 for more information\n"
+      },
+      "graph": {
+        "projects": [
+          {
+            "id": "node:@selector-fixture/consumer",
+            "root": "package/consumer",
+            "metadata": {
+              "package_manager": "pnpm",
+              "workspace_source": "pnpm-workspace.yaml"
+            },
+            "dependencies": [
+              "node:@selector-fixture/producer"
+            ],
+            "provenance": {
+              "provider": "node",
+              "source": "package/consumer/package.json"
+            },
+            "dependency_provenance": {
+              "node:@selector-fixture/producer": {
+                "provider": "node",
+                "source": "package/consumer/package.json"
+              }
+            },
+            "tasks": {}
+          },
+          {
+            "id": "node:@selector-fixture/producer",
+            "root": "package/producer",
+            "metadata": {
+              "package_manager": "pnpm",
+              "workspace_source": "pnpm-workspace.yaml"
+            },
+            "dependencies": [],
+            "provenance": {
+              "provider": "node",
+              "source": "package/producer/package.json"
+            },
+            "dependency_provenance": {},
+            "tasks": {}
+          },
+          {
+            "id": "node:@selector-fixture/unrelated",
+            "root": "package/unrelated",
+            "metadata": {
+              "package_manager": "pnpm",
+              "workspace_source": "pnpm-workspace.yaml"
+            },
+            "dependencies": [],
+            "provenance": {
+              "provider": "node",
+              "source": "package/unrelated/package.json"
+            },
+            "dependency_provenance": {},
+            "tasks": {}
+          },
+          {
+            "id": "node:selector-fixture-root",
+            "root": ".",
+            "metadata": {
+              "package_manager": "pnpm",
+              "workspace_source": "pnpm-workspace.yaml"
+            },
+            "dependencies": [],
+            "provenance": {
+              "provider": "node",
+              "source": "./package.json"
+            },
+            "dependency_provenance": {},
+            "tasks": {}
+          }
+        ]
+      },
+      "selected": {
+        "base": "b0812458fea24edc4b493022ceab46a2a939f1a6",
+        "head": "3c47ba1c9ba7a035c796787c0023a6515062c869",
+        "projects": [
+          {
+            "id": "node:@selector-fixture/consumer",
+            "root": "package/consumer",
+            "reasons": [
+              {
+                "type": "changed-path",
+                "path": "package/consumer/index.js"
+              }
+            ]
+          }
+        ],
+        "tasks": [
+          {
+            "name": "//package/consumer:probe",
+            "projects": [
+              "node:@selector-fixture/consumer"
+            ]
+          }
+        ]
+      },
+      "overrideCanHideDeclaredImpact": true,
+      "explanation": "Producer still declares a development dependency on the changed consumer, but its removed graph edge prevents producer selection"
+    }
   },
   "routing": {
     "collectedAt": "2026-10-18T05:19:51.868Z",
