@@ -589,6 +589,118 @@ the retained source failures prevent treating every researched owner as a passin
 ([owner results](depot-complete-coverage-research.md),
 [Rust execution contexts](depot-rust-coverage-research.md)).
 
+The rollout should expose independently verifiable profiles,
+using the frozen owner map as its explicit starting scope.
+The commands named here are examples of existing owners,
+not a claim that selecting those examples covers the entire package inventory.
+The final selector must retain every admitted task from the
+[coverage manifest](depot-complete-coverage-manifest.json),
+including configuration,
+generated-file and producer influences.
+Its static import inventory is not yet a validated production change selector.
+
+#### Static checks and shared producers
+
+Select each admitted package's declared lint/type owners,
+including `//package/module/logger:lint:types`,
+then retain task-level diagnostics and the source-bound selected task list.
+Build `//package/module/test:build` and the other actual shared producers once per admitted graph.
+Preserve Mise dependency ownership and repository packing/generator owners;
+do not introduce a second package inventory as workflow YAML.
+The existing task utility's timestamp checks are incremental-build aids,
+not content authentication for restored artifacts
+(`package/dev-script/task-util/src/depends.ts`).
+Warnings denied by the frozen configuration remain failures,
+with their source dispositions visible.
+
+#### Node unit, process and nondefault tests
+
+Run each declared owner,
+including `//package/module/logger:test:unit` and `//package/module/p-map-fork:test:unit`,
+against its real built prerequisites.
+Retain runtime case reports separately from command exit counts.
+Process owners keep their subprocess and cleanup assertions;
+property,
+conformance and mutation owners keep their bounded inputs,
+seeds and native classifications.
+Keep those nondefault profiles independently schedulable,
+including `//package/module/p-map-fork:test:mutation`.
+The retained logger,
+matcher and p-map failures need explicit dispositions before required-check adoption.
+
+#### Rust, Kotlin and native prerequisites
+
+Use package Nextest owners,
+including `//package/cli/forbidden-strings:test`
+and `//package/music-player/truepeak-core:test`,
+with default build/test concurrency and the owner-declared feature/profile flags.
+Bind case identity to its binary and package context.
+Keep privileged WG,
+ASan fuzzing,
+benchmarks and installed-host controls as separate profiles with their actual prerequisites.
+The Kotlin profile invokes `//package/linter/kotlin:test`
+and retains its six-case JVM report plus the separate emitted-JAR consumer.
+Remaining IDE/file-manager/terminal owners enter only after their source/producers and execution joins close.
+Static test attributes,
+successful compilation and an import-only fixture do not substitute for those runtime boundaries.
+
+#### Browser and active E2E tests
+
+Expose the existing `test:browser:chromium`,
+`test:browser:firefox` and `test:browser:webkit` owners independently,
+with their real Podman/Playwright prerequisites and bounded container resources.
+Use the existing argument-bearing `test:e2e` owner with the explicit active DOM spec list
+qualified by the retained campaign.
+Keep unfiltered root discovery as a distinct unresolved owner;
+its paused-package import failure does not erase the active E2E result.
+Retain original stdout and stderr separately in the permanent collector,
+so consumers receive valid original JSON reports.
+The retained WebKit OPFS assertion failure still requires disposition.
+
+#### Packed artifacts and host consumers
+
+Produce package archives with the existing packing and manifest-transformation owners,
+then install/import/launch those exact artifacts in fresh consumers.
+Retain hidden SDK resources,
+native executable formats,
+source/tool hashes and the consumer's actual ABI.
+Type-only packages need their type consumer;
+runtime import expectations must follow actual exports.
+Reuse the exercised semantic-plugin owners
+`//package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host`
+and `//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host`.
+The source-bound artifact checks and actual host activation remain separate acceptance results.
+
+#### OS, architecture and application consumers
+
+Keep Linux x64/ARM64,
+Windows x64/ARM64/GNU and macOS contexts explicit rather than merging their case totals.
+Use public GitHub and eligible Depot-managed GitHub runners for the demonstrated OS boundaries;
+native Linux CI remains a separate scheduler.
+Retain machine shape and OS version in comparisons.
+VM,
+desktop and Android profiles keep their real runtime,
+display/device and cleanup consumers alongside build outputs.
+Their completed research does not authorize recurring device sessions or production releases.
+The current task does not relaunch the completed desktop or emulator campaigns.
+
+#### Control plane, artifacts and diagnostics
+
+Use content-bound cross-job artifacts and exact attempt IDs for producer/consumer handoff,
+with negative reader controls and actual rerun behavior retained.
+Tests uploads keep original JUnit identities,
+attempt IDs and shard boundaries;
+the existing passing physical-shard probe does not establish a universal splitting speedup.
+Keep retries,
+cancellation,
+timeout and remote-debug controls separately observable.
+Every paid profile needs finite resource/time admission,
+logical cleanup and a cost record;
+an API terminal state is not a measured billing or deallocation boundary.
+Required/advisory selection and event cadence remain interview decisions across these profiles.
+
+### Measured reuse and container producers
+
 Allocate reuse by measured owner:
 Gradle remote task outputs for the demonstrated Kotlin linter,
 direct sccache for qualified Rust compiler consumers,
