@@ -285,18 +285,41 @@ its error collector omitted the SDK error's `syscall` and `path` fields.
 The retained receipt therefore cannot establish which filesystem operation timed out.
 Cleanup again completed,
 and a fresh `Get` confirmed `finished`.
-Custom-image command execution and filesystem transfer remain unqualified by these attempts.
+Custom-image command execution and filesystem transfer remained unqualified by those attempts.
 The prior default-image command and small-file consumers remain separate positive controls.
 The next diagnostic must execute Git first,
 retain operation boundaries and the SDK error fields,
 and test a small file independently of executable transfer.
-A third and final currently admitted sandbox will execute the absolute Git command first
-and retain separate small-file operation results with ten-second filesystem RPC deadlines.
+A third sandbox executed the absolute Git command first
+and retained separate small-file operation results with ten-second filesystem RPC deadlines.
 The local error-collector positive control proves that the SDK preserves operation and path fields;
 the previous collector lost them.
 No full executable download or fourth allocation is admitted.
 Reserving the third full lifetime raises the scoped compute proxy to USD 0.574584.
-That sandbox has not yet been allocated in this checkpoint.
+Sandbox `dmdwcf07jzx2rxj` passed the primary consumer:
+absolute Git reported `git version 2.56.0`,
+the 15,557-byte image manifest was read,
+the two named synthetic exclusions were absent,
+and a 124-byte nonce artifact survived filesystem write/read/hash verification and deletion.
+Both registry reads matched the admitted immutable snapshot digest.
+No full executable hash was measured in this sandbox.
+A fresh `Get` confirmed `finished` after cleanup.
+
+The optional detached-command log stream hit its five-second abort.
+The fixture did not retain partial stream rows and did not reach its later historical fetch;
+this is not proof that detached output was absent or unretained.
+Log replay remains unqualified.
+There is no fourth allocation.
+
+The deployed SDK reference explicitly bills sandboxes per vCPU-second at the Depot CI compute rate.
+It also contains a material contract contradiction:
+the creation section accepts `runtime.imageRef`,
+but its `Coming soon` section says custom runtimes are unavailable and all sandboxes use the default image.
+The successful owned thin-snapshot consumer disproves that blanket default-only statement.
+It does not qualify arbitrary public OCI images or named runtimes.
+Installed SDK source directs detached consumers to `sandbox.logs.fetch()` and `sandbox.logs.stream()`,
+while the deployed page describes detached retrieval as future work.
+The timed-out optional probe does not settle that narrower discrepancy.
 
 ## Live plan eligibility and autoscaling boundary
 

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:41:09.811Z",
+  "updatedAt": "2026-10-18T10:43:49.908Z",
   "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "sdkVersion": "0.1.0-beta.7",
   "input": {
@@ -363,8 +363,210 @@
     "additionalComputeProxyReservationUsd": 0.012,
     "cumulativePriorBuildkitAndAllSandboxReservationsUsd": 0.574584,
     "ceilingUsd": 2,
-    "status": "admitted-not-yet-allocated",
+    "status": "executed",
     "priceScope": "Conservative reservation using the public 2-CPU CI rate; not an SDK invoice, aggregate account cap, included-allowance or storage-cost guarantee"
+  },
+  "smallFiles": {
+    "schemaVersion": 1,
+    "source": "3edf13d76b0f53b1612bbcb31bc3ff4fd0abf8b3",
+    "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "startedAt": "2026-10-18T10:41:18.979Z",
+    "sdkVersion": "0.1.0-beta.7",
+    "request": {
+      "resources": {
+        "vcpus": 2,
+        "memoryMb": 4096,
+        "diskGb": 150
+      },
+      "timeoutMinutes": 2,
+      "architecture": "amd64",
+      "disableTailnet": true,
+      "disableDepotCache": true,
+      "configuration": {
+        "secrets": {}
+      },
+      "name": "research-sdk-custom-8a29d77c-0c15-4e47-a8b0-6808aae900e1",
+      "runtime": {
+        "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+      }
+    },
+    "forecast": {
+      "priorBuildkitTimestampProxyUsd": 0.538584,
+      "publicTwoCpuCiRateUsdPerMinute": 0.006,
+      "maximumRequestedSandboxMinutes": 2,
+      "maximumAdditionalComputeProxyUsd": 0.012,
+      "previousSandboxReservedComputeProxyUsd": 0.024,
+      "cumulativeProxyUsd": 0.574584,
+      "admittedCumulativeCeilingUsd": 2,
+      "accountOrInvoiceCapProven": false
+    },
+    "createCallCount": 1,
+    "checks": [
+      {
+        "name": "custom-image-absolute-git-command",
+        "commandId": "cmd_gszvbl86cj",
+        "exitCode": 0,
+        "stdout": "git version 2.56.0\n",
+        "stderr": "",
+        "path": "/opt/depot-reuse-20261018-r1/git-2.56.0/bin/git",
+        "fullExecutableHashVerified": false
+      },
+      {
+        "name": "custom-image-small-manifest",
+        "bytes": 15557,
+        "sha256": "b4e7c5752f2df847c14f70cf1211097f18516ee4232e3f834531653dc21bfabe"
+      },
+      {
+        "name": "sdk-filesystem-artifact-roundtrip",
+        "bytes": 124,
+        "sha256": "f06186004032a5412dd3effeca4446ea9ed7f31ca326770b6d42c51900716aff",
+        "removed": true
+      },
+      {
+        "name": "specific-synthetic-exclusion-controls",
+        "exclusions": [
+          {
+            "path": "/home/runner/work/Monochromatic/Monochromatic/.reuse-synthetic-source-marker",
+            "present": false
+          },
+          {
+            "path": "/home/runner/.config/depot/reuse-synthetic-secret",
+            "present": false
+          }
+        ]
+      }
+    ],
+    "cleanup": {
+      "confirmed": {
+        "sandboxId": "dmdwcf07jzx2rxj",
+        "status": "finished",
+        "name": "research-sdk-custom-8a29d77c-0c15-4e47-a8b0-6808aae900e1",
+        "resources": {
+          "vcpus": 2,
+          "memoryMb": 4096,
+          "diskGb": 150
+        },
+        "runtime": {
+          "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+        },
+        "architecture": "amd64",
+        "createdAt": "2026-10-18T10:41:21.053Z",
+        "startedAt": "2026-10-18T10:41:23.433Z",
+        "expiresAt": "2026-10-18T10:43:21.050Z",
+        "stoppedAt": "2026-10-18T10:41:40.772Z"
+      },
+      "terminal": true
+    },
+    "registryControls": [
+      {
+        "phase": "before-create",
+        "status": 200,
+        "digest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd",
+        "bytes": 1896
+      },
+      {
+        "phase": "after-consumer",
+        "status": 200,
+        "digest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd",
+        "bytes": 1896
+      }
+    ],
+    "credentialsRetained": false,
+    "created": {
+      "sandboxId": "dmdwcf07jzx2rxj",
+      "status": "running",
+      "name": "research-sdk-custom-8a29d77c-0c15-4e47-a8b0-6808aae900e1",
+      "resources": {
+        "vcpus": 2,
+        "memoryMb": 4096,
+        "diskGb": 150
+      },
+      "runtime": {
+        "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+      },
+      "architecture": "amd64",
+      "createdAt": "2026-10-18T10:41:21.053Z",
+      "startedAt": "2026-10-18T10:41:23.433Z",
+      "expiresAt": "2026-10-18T10:43:21.050Z"
+    },
+    "runtimeReferenceComparison": {
+      "requested": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256",
+      "returned": {
+        "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256"
+      },
+      "exactMatch": true
+    },
+    "expiryMetadata": {
+      "lifetimeFromCreationMilliseconds": 119997,
+      "requestedMinutes": 2
+    },
+    "steps": [
+      {
+        "name": "absolute-git-command-first",
+        "startedAt": "2026-10-18T10:41:23.673Z",
+        "finishedAt": "2026-10-18T10:41:31.848Z",
+        "passed": true
+      },
+      {
+        "name": "stat-small-known-image-manifest",
+        "startedAt": "2026-10-18T10:41:31.848Z",
+        "finishedAt": "2026-10-18T10:41:32.353Z",
+        "passed": true
+      },
+      {
+        "name": "write-small-nonce-artifact",
+        "startedAt": "2026-10-18T10:41:31.848Z",
+        "finishedAt": "2026-10-18T10:41:32.652Z",
+        "passed": true
+      },
+      {
+        "name": "read-small-known-image-manifest",
+        "startedAt": "2026-10-18T10:41:32.354Z",
+        "finishedAt": "2026-10-18T10:41:33.173Z",
+        "passed": true
+      },
+      {
+        "name": "read-small-nonce-artifact",
+        "startedAt": "2026-10-18T10:41:32.652Z",
+        "finishedAt": "2026-10-18T10:41:33.003Z",
+        "passed": true
+      },
+      {
+        "name": "unlink-small-nonce-artifact",
+        "startedAt": "2026-10-18T10:41:33.003Z",
+        "finishedAt": "2026-10-18T10:41:33.256Z",
+        "passed": true
+      },
+      {
+        "name": "synthetic-exclusion-controls",
+        "startedAt": "2026-10-18T10:41:33.173Z",
+        "finishedAt": "2026-10-18T10:41:33.560Z",
+        "passed": true
+      },
+      {
+        "name": "missing-nonce-artifact-negative-control",
+        "startedAt": "2026-10-18T10:41:33.256Z",
+        "finishedAt": "2026-10-18T10:41:33.457Z",
+        "passed": true
+      }
+    ],
+    "customExecutableVerified": true,
+    "filesystemOperations": [
+      {
+        "status": "fulfilled"
+      },
+      {
+        "status": "fulfilled"
+      }
+    ],
+    "primaryConsumerVerified": true,
+    "detachedCommandId": "cmd_cqpwc814r7",
+    "detachedLogError": {
+      "name": "ConnectError",
+      "message": "[canceled] The operation was aborted due to timeout",
+      "code": 1
+    },
+    "finishedAt": "2026-10-18T10:41:41.332Z"
   },
   "errorCollectorPositiveControl": {
     "observedAt": "2026-10-18T10:37:55.360Z",
