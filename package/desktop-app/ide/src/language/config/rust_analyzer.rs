@@ -17,15 +17,19 @@
 /// Helix's typed configuration.
 use helix_core::syntax::config::Configuration;
 /// What:
+///  `Value` is any JSON value,
+///  and `Value::from` wraps a string in one;
 ///  `json!` builds a JSON value from literal syntax.
 /// Why:
 ///  The server's settings table is JSON.
+///  A string is wrapped with `Value::from` because `json!` unwraps a `Result` when it expands a string,
+///  and the repository's clippy configuration bans that call.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const settings = {};
 /// ```
-use serde_json::json;
+use serde_json::{Value, json};
 
 /// Name of Helix's rust-analyzer definition.
 const SERVER: &str = "rust-analyzer";
@@ -72,7 +76,7 @@ pub(super) fn watch_through_client(configuration: &mut Configuration) {
     if !settings["files"].is_object() {
         settings["files"] = json!({});
     }
-    settings["files"]["watcher"] = json!("client");
+    settings["files"]["watcher"] = Value::from("client");
 }
 
 /// The setting rust-analyzer is given,

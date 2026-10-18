@@ -183,6 +183,26 @@ fn result(value: Value, effect: Effect, policy: &'static str) -> Decision {
 }
 
 /// What:
+///  The result that refuses a workspace edit:
+///  `applied` is false and `failureReason` carries the refusal sentence.
+///  `Value::from` wraps the string.
+/// Why:
+///  `json!` unwraps a `Result` when it expands an interpolated value,
+///  and the repository's clippy configuration bans that call.
+///  The keys are inserted in the order `json!` would insert them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const refusal = { applied: false, failureReason: EDIT_REFUSAL };
+/// ```
+fn edit_refusal_reply() -> Value {
+    let mut reply = serde_json::Map::new();
+    reply.insert("applied".to_string(), Value::Bool(false));
+    reply.insert("failureReason".to_string(), Value::from(EDIT_REFUSAL));
+    return Value::Object(reply);
+}
+
+/// What:
 ///  Decide the reply for one server-to-client request.
 ///  `&str` borrows the method name;
 ///       `params` is moved in because parsing consumes it.
@@ -231,12 +251,16 @@ pub fn decide(method: &str, params: jsonrpc::Params, client: &ClientView<'_>) ->
         }
         // The one mutation a server can start by itself: always refused, with a normal result,
         // because servers built on vscode-languageserver-node can abort on an error reply.
-        Ok(MethodCall::ApplyWorkspaceEdit(_)) => result(
-            json!({ "applied": false, "failureReason": EDIT_REFUSAL }),
+        Ok(MethodCall::ApplyWorkspaceEdit(_)) => {
+            result(edit_refusal_reply(), Effect::None, "refused")
+        }
+        Ok(MethodCall::WorkspaceFolders) => result(
+            // A folder holds a URI and a name, which always serialise to JSON.
+            serde_json::to_value(client.folders)
+                .expect("workspace folders hold only a URI and a name, which serialise to JSON"),
             Effect::None,
-            "refused",
+            "answered",
         ),
-        Ok(MethodCall::WorkspaceFolders) => result(json!(client.folders), Effect::None, "answered"),
         Ok(MethodCall::WorkspaceConfiguration(request)) => {
             // `Vec::new()` creates an empty growable list; the reply holds one entry per item, in order.
             let mut values: Vec<Value> = Vec::new();

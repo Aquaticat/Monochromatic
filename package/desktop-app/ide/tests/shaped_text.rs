@@ -96,7 +96,9 @@ fn raster_has_ink_and_requested_dimensions() {
         selected: [255, 255, 255, 255],
         dark: true,
     };
-    let image = raster.paint(&view, colors, 0.0).unwrap();
+    let image = raster
+        .paint(&view, colors, 0.0)
+        .expect("the test needs the shaped view to paint into a tile");
     assert_eq!(image.width, 500);
     assert_eq!(image.height, 24);
     assert!(image.bytes.iter().any(|channel| return *channel != 0));

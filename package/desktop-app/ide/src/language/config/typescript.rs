@@ -66,10 +66,10 @@ const MANIFEST: &str = "node_modules/typescript/package.json";
 /// const settings = { typescript: { inlayHints: { variableTypes: { enabled: true }, /* ... */ } } };
 /// ```
 fn settings() -> Value {
-    return json!({
+    let mut settings = json!({
         "typescript": {
             "inlayHints": {
-                "parameterNames": { "enabled": "all", "suppressWhenArgumentMatchesName": false },
+                "parameterNames": { "enabled": null, "suppressWhenArgumentMatchesName": false },
                 "parameterTypes": { "enabled": true },
                 "variableTypes": { "enabled": true },
                 "propertyDeclarationTypes": { "enabled": true },
@@ -78,6 +78,10 @@ fn settings() -> Value {
             },
         },
     });
+    // `Value::from` wraps the string; `json!` would unwrap a `Result` to do it, which the clippy configuration bans.
+    // The `null` placeholder above is replaced here without moving the key.
+    settings["typescript"]["inlayHints"]["parameterNames"]["enabled"] = Value::from("all");
+    return settings;
 }
 
 /// What:
