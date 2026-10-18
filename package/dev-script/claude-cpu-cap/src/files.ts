@@ -83,6 +83,38 @@ export async function readMilliCelsius({
 }
 
 /**
+ Reads a hwmon fan input and formats it as whole revolutions per minute.
+
+ @param dir - hwmon directory, or {@link ABSENT}
+
+ @param name - input file name such as `fan1_input`
+
+ @returns revolutions per minute, or an empty string when the sensor is absent
+
+ @example
+ ```ts
+ await readRpm({ dir: '/sys/class/hwmon/hwmon1', name: 'fan1_input', },); // '1509'
+ ```
+ */
+export async function readRpm({
+  dir,
+  name,
+}: Readonly<{
+  dir: string;
+  name: string
+}>,): Promise<string> {
+  if (dir === ABSENT) return ABSENT;
+  /**
+   Contents of the sensor file, empty when it does not exist.
+   */
+  const text = await readTextOrEmpty(join(
+    dir,
+    name,
+  ),);
+  return text === ABSENT ? ABSENT : String(Number(text,),);
+}
+
+/**
  Reads a hwmon power input and formats it in watts with one decimal.
 
  
