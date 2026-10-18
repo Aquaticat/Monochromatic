@@ -109,20 +109,21 @@ const scopes = new Map([
   // test names share no substring, so this scope runs every test except the five that load Cargo workspaces;
   // those take most of the whole suite's time, which exceeded the 180 second limit (183.94 s) at 04c663cb0.
   ['--executable', {
-    description: 'orchestration, the entry point, Rust rule selection, input expansion and the fix loop against every test except the five Cargo-workspace tests',
+    description: 'orchestration, the entry point, the command grammar, Rust rule selection, input expansion and the fix loop against every test except the five Cargo-workspace tests',
     select: [
-      'src/run_*.rs', 'src/main.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
+      'src/run_*.rs', 'src/main.rs', 'src/cli_options.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
       'src/file_discovery.rs', 'src/path_inputs.rs', 'src/fix_loop.rs',
     ].flatMap(fileArguments),
     run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],
   // Shared layers below every rule: configuration parsing, lookup, matching and merging, rule-option validation,
-  // findings, grouped edits, and the syntax-only Rust rules with their shared parse. None loads a Cargo workspace.
+  // findings, the inline-directive filter, grouped edits, and the syntax-only Rust rules with their shared parse.
+  // None loads a Cargo workspace.
   ['--core', {
-    description: 'configuration, findings, grouped edits and the syntax-only Rust rules against every test except the five Cargo-workspace tests',
+    description: 'configuration, findings, inline directives, grouped edits and the syntax-only Rust rules against every test except the five Cargo-workspace tests',
     select: [
-      'src/config_*.rs', 'src/configuration*.rs', 'src/diagnostic.rs', 'src/edits.rs', 'src/resolved_rules.rs',
-      'src/rust_rules.rs', 'src/rust_source.rs',
+      'src/config_*.rs', 'src/configuration*.rs', 'src/diagnostic.rs', 'src/directive_*.rs', 'src/edits.rs',
+      'src/resolved_rules.rs', 'src/rust_rules.rs', 'src/rust_source.rs',
     ].flatMap(fileArguments),
     run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],
