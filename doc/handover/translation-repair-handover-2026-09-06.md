@@ -344,12 +344,22 @@ before the other queued work.
     `artifact`,
     `page-check` among them);
     read those against the code.
-    The docs move per the plan's "Docs" section is delegated to a Sonnet agent in `w171`
-    (at `cc2facd4d2`):
-    the 133 docs to `package/translation-repair/` or the one package each is about,
-    living references rewritten,
-    historical ones annotated with the new path and the move date,
-    the docs scans' readers moved with a before-and-after file-set control.
+    The docs move landed (`w171`, on the branch as eight commits ending `e6e41417d5`):
+    131 docs in `package/translation-repair/doc/`,
+    `pictures.md` in `slice-reading/doc/`,
+    `semantic-wrap-sync-spawn.md` in `typography/doc/`,
+    the old package directory and its `LICENSES/` gone from git
+    (its ignored `node_modules` evidence stays);
+    the docs scans read 169 files before and after,
+    identical through the move table;
+    22 ledger parts carry one header note instead of per-mention notes.
+    Two comment conflicts with `w169` were resolved to `w169`'s text.
+    It left:
+    the dead link target `...` at `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md:207`;
+    pre-existing `monochromatic-lint` findings in 12 repository docs it did not change in substance
+    (`w171-notes/lintlist-out.txt`);
+    it amended one of its own unpushed commits,
+    against the no-amend rule (a slip for the ledger).
 3.  The controls in a fresh keyless worktree
     (suite names and counts against g100,
     scans,
