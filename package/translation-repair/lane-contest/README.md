@@ -44,7 +44,10 @@ The groups that follow name the main ones.
   `delivery-coherence.ts`,
   and `delivery-invariants.ts`.
 - Contest eligibility:
-  decide which candidates are admissible in a contest and settle the ballots among them.
+  compute the deterministic publication eligibility of front matter candidates,
+  name the candidates the prompt marks unavailable before the panel votes,
+  and settle the ballots with the votes for an ineligible candidate excluded,
+  the raw ballots left unchanged for audit.
   Names:
   `applyLaneContestEligibility`,
   `frontMatterContestEligibility`,
@@ -62,8 +65,8 @@ The groups that follow name the main ones.
   `SEED_MATCH_TOLERANCE`.
   Declared in `seeded-error.ts` and `seed-detection.ts`.
 - Probe scoring and sample manifests:
-  score the probe against human grades,
-  summarize its telemetry,
+  score the introduced-defect probe against human repair grades,
+  apply its majority rule to a region and summarize its telemetry over the regions that shipped,
   and bind a graded sheet to the manifest it was drawn under.
   Names:
   `scoreProbeAgainstGrades`,

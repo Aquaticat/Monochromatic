@@ -8,7 +8,7 @@ insertion admission,
 and the displacement ratios of slices.
 It is its own package because corpus preparation is the entry point the passes,
 the lanes and the reports all share,
-and it needs only text and shape packages below it.
+and none of the family packages it lists in `dependencies` lists it back.
 
 ## What it provides
 
@@ -17,7 +17,8 @@ The groups that follow name the main ones.
 
 - Corpus reader and git access:
   read files of the pinned corpus commit and list its people,
-  through a git context that names the objects of its own clone and inherits no repository state.
+  through a git context that names the objects of its own clone and inherits no repository state,
+  and index the Han names and aliases the entries declare.
   Names:
   `readCorpusFile`,
   `readCorpusBytes`,
@@ -56,7 +57,9 @@ The groups that follow name the main ones.
   `preparation-seal.ts`,
   and `preparation-unclaimed.ts`.
 - Insertion admission:
-  decide which carried insertions a prepared pair admits and how an inserted fragment is joined to its neighbours.
+  choose which insertion slices the page has room to be missing,
+  spending one shortfall budget for the whole page in document order,
+  and say how an inserted fragment is joined to its neighbours.
   Names:
   `admitInsertions`,
   `composedInsertion`,
@@ -64,7 +67,9 @@ The groups that follow name the main ones.
   `documentLineEnding`.
   Declared in `insertion-admission.ts` and `insertion-separator.ts`.
 - Displacement ratios:
-  compare slice sizes with the document's own baseline to find passages moved across a section boundary.
+  the size primitives the displacement classifier reads:
+  each slice's size ratio,
+  and the median of a document's ratios as its own baseline.
   Names:
   `sliceRatios`,
   `sliceSizesOf`,

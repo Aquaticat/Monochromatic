@@ -31,7 +31,8 @@ The groups that follow name the main ones.
 - Counting ballots:
   count the ballots of a repeated wording deterministically,
   from usable ballots only,
-  and name the winner.
+  name the winner,
+  and find where a judge's quoted words stand in a place's English.
   Names:
   `countConsistency`,
   `winnerOf`,
@@ -44,9 +45,13 @@ The groups that follow name the main ones.
   `consistency-majority.ts`,
   and `consistency-occurrences.ts`.
 - Choice among renderings:
-  the second question put to the bench,
-  which rendering the page should follow,
-  and its tally.
+  the reply of a judge who only chooses,
+  as the run-off among tied places and the choice among a receiving place's candidate texts both ask it:
+  its response format,
+  the label it names,
+  the choices that can be counted,
+  the labels tied for first
+  and the tally.
   Names:
   `canonicalChoiceOf`,
   `choiceTallyOf`,
@@ -89,9 +94,11 @@ The groups that follow name the main ones.
   `consistency-word-joints.ts`,
   and `consistency-whole-end.ts`.
 - Page layout and marks:
-  the page as slices,
-  its prose view,
-  and the proofs that apostrophes and quote marks are what the page shows.
+  the page joined from its slices,
+  the prose view of an English,
+  and the proof of which single marks are apostrophes,
+  so that a splice may move them with their word;
+  also the generation of the pass's cached answers and the error for a state its construction rules out.
   Names:
   `pageOfSlices`,
   `pageReadingOf`,

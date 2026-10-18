@@ -17,9 +17,11 @@ and it sits above the text and `adjudication` packages.
 The groups that follow name the main ones.
 
 - Assembly integrity:
-  check that replacements change something,
-  order the change sets,
-  and guard footnote assembly.
+  refuse a replacement that restates what its slice already says,
+  check both change sets and return them in document order,
+  splice replacements into a document and withdraw those that break its footnote graph or page structure,
+  withhold a container half whose partner ships nothing,
+  and cut the blocks of orphan footnote definitions.
   Names:
   `guardFootnoteAssembly`,
   `assertReplacementsChange`,
@@ -33,8 +35,8 @@ The groups that follow name the main ones.
   `assembly-container-halves.ts`,
   and `assembly-orphan-trim.ts`.
 - Repetition checks:
-  find phrases and spans a repair repeated,
-  including across neighbouring slices.
+  find passages the shipped document repeats more often than the archive did,
+  and wording that neighbouring slices both ship but the archive did not repeat.
   Names:
   `findIntroducedRepetitions`,
   `repetitionFindings`,
@@ -45,7 +47,9 @@ The groups that follow name the main ones.
   `assembly-adjacent-repetition.ts`,
   and `assembly-repetition-span.ts`.
 - Content survival and structure:
-  measure how much distinctive content survives an edit and report structural regressions.
+  measure how much of the archive's specific vocabulary the assembled document still has,
+  count the footnote and structural defects it carries beyond its incumbent's,
+  and look for a single withdrawal that leaves no such defect.
   Names:
   `measureContentSurvival`,
   `contentSurvivalFindings`,
@@ -72,8 +76,12 @@ The groups that follow name the main ones.
   `repair-round-record.ts`,
   and `repair-result.ts`.
 - Repair contract:
-  check that checker and producer rosters can judge a repair,
-  and the shapes of its models and seating.
+  refuse an editor roster that could not decide a round,
+  a checker roster that repeats a model or,
+  unless self-certification is permitted,
+  includes an editor,
+  and a checker roster too small for a disagreement to resolve,
+  and name the roster shape of a repair run by role.
   Names:
   `assertCheckerIndependence`,
   `assertCheckerQuorumReachable`,
@@ -83,7 +91,8 @@ The groups that follow name the main ones.
   `RepairModels`.
   Declared in `repair-contract.ts`.
 - Unheard voices:
-  refuse to keep an archive text that no voice spoke about.
+  say whether the repair lane heard no voice at all about a slice,
+  and refuse a slice it heard nobody about that carries anything but the archive's own wording.
   Names:
   `assertUnheardKeptArchive`,
   `heardNobodyAbout`,

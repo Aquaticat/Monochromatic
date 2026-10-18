@@ -20,7 +20,8 @@ The groups that follow name the main ones.
 
 - Parse guards:
   require the shape of each part of an artifact record,
-  and refuse a malformed one.
+  refuse a malformed one,
+  and parse one issue record's repair provenance.
   Names:
   `ArtifactParseError`,
   `requireString`,
@@ -53,9 +54,11 @@ The groups that follow name the main ones.
   `isArtifactFileName`.
   Declared in `corpus-run/artifact-file-name.ts`.
 - Generations and provenance:
-  count artifacts by generation,
-  resolve the commit they ran under,
-  and check an artifact's provenance.
+  partition the settled artifacts by the pipeline that produced them,
+  resolve a named commit to a full commit id,
+  say whether one pipeline commit contains another,
+  read which pipeline one artifact records,
+  and refuse a loaded artifact that is not the one the pool admitted.
   Names:
   `censusByGeneration`,
   `resolveCommit`,
@@ -67,7 +70,10 @@ The groups that follow name the main ones.
   `corpus-run/artifact-provenance.ts`,
   and `corpus-run/artifact-placement.ts`.
 - Lane comparison and row equality:
-  compare the rows of the two lanes and report where they differ.
+  derive the comparison of the two lanes from their delivery ledgers,
+  refuse a run whose frozen and live derivations disagree,
+  name the fields where two comparison rows differ,
+  and say how a rebuilt carve departs from the one an artifact records.
   Names:
   `compareLanes`,
   `assertDerivationsAgree`,

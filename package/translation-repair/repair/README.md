@@ -4,11 +4,12 @@ The repair lane and the refine lane,
 with the editor ensemble they share.
 The repair lane keeps the archive's English and mends it where critics find defects;
 the refine phase then improves accurate but awkward text;
-several editors rewrite each chunk and judges that wrote none of the candidates choose what ships.
-It is its own package because the lane is one unit that `artifact`,
-`consolidate`,
+several editors rewrite each chunk and judges choose what ships,
+an editor's ballot for its own candidate counting at the self-vote weight.
+It is its own package because the lane is one unit that `consolidate`,
 `corpus-pass`,
-`run` and others drive,
+`probe`,
+`translate-lane` and others list in `dependencies`,
 and it sits above `adjudication`,
 `assembly`,
 `archive` and `translate-stage`.
@@ -55,6 +56,7 @@ The groups that follow name the main ones.
   and `repair-checker-reseat.ts`.
 - Editor ensemble:
   several editors rewrite the same chunk,
+  every proposal passes the same deterministic apply gate,
   and judges choose what ships,
   per chunk and per envelope.
   Names:
@@ -104,9 +106,12 @@ The groups that follow name the main ones.
   `restoration-judge.ts`,
   and `restoration-judge-wire.ts`.
 - Fidelity damage and benchmark:
-  damage a text in known ways,
+  damage a text in known ways
+  (delete a sentence,
+  alter a number the original states,
+  insert a borrowed sentence),
   choose how much of the original a judge is shown,
-  and score the repair lane against it.
+  and run the milestone-two repair benchmark and score it.
   Names:
   `deleteOneSentence`,
   `alterSharedNumber`,

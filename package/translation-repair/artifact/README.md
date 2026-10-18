@@ -93,6 +93,27 @@ The groups that follow name the main ones.
   `corpus-run/artifact-two-lane-read-row-relations.ts`,
   `artifact-probe-read.ts`,
   and `artifact-probe-tally.ts`.
+- Change sets and repair lane records:
+  read which slices a settled artifact says its document changed,
+  and the repair lane's two record lists out of one artifact.
+  Names:
+  `readArtifactChangeSets`,
+  `repairLaneRecordsOf`.
+  Declared in `artifact-change-sets.ts` and `artifact-repair-lane-records.ts`.
+- Consolidation helpers:
+  the archive wording a consolidation settlement takes,
+  whether a majority of contest ballots call the archive flawed,
+  the lane texts a consolidation slate offers beside the writers' proposals,
+  and the tense candidates added to a record that ships wording.
+  Names:
+  `archiveStandInFor`,
+  `archiveFlawedByMajority`,
+  `laneTextsForSlate`,
+  `withShippedTenseCandidates`.
+  Declared in `consolidate-archive-stand-in.ts`,
+  `consolidate-archive-flawed.ts`,
+  `consolidate-lane-offer.ts`,
+  and `consolidate-shipped-tense.ts`.
 - Page titles,
   displacement and consolidation keys:
   settle page titles,

@@ -19,8 +19,10 @@ and it sits above `lane-contest` and `translate-stage`.
 The groups that follow name the main ones.
 
 - Archive block review:
-  review whether an archive block should be kept,
-  and collect the evidence for the choice.
+  review one archive block that no source block claims,
+  where reviewers keep it on source or editorial support or revise it,
+  and judges choose between the revisions and the unchanged block;
+  the evidence checks and the selection evidence for that choice.
   Names:
   `runArchiveBlockReviewStage`,
   `buildArchiveBlockReviewMessages`,
@@ -32,7 +34,9 @@ The groups that follow name the main ones.
   `archive-block-evidence.ts`,
   and `archive-block-selection-evidence.ts`.
 - Archive disputes:
-  record and log where an archive wording is disputed.
+  read off the repair lane's chunks the slices whose archive rendering the adjudicators accepted a claim against,
+  say which text stands in for the archive there and which wordings the slice refuses,
+  and write the sheet note and the log line for each.
   Names:
   `archiveDisputesOf`,
   `archiveDisputeNotesOf`,
@@ -54,8 +58,12 @@ The groups that follow name the main ones.
   `archive-footnote-closure.ts`,
   and `archive-footnote-order.ts`.
 - Coverage verdicts:
-  ask whether the translation covers each passage,
-  and read the untranslated tail of a slice.
+  list the passages no pairing covers,
+  ask a roster whether the translation carries each one anywhere,
+  weigh the replies into a verdict,
+  and measure the untranslated tail,
+  the source-only slices after the pairing's last agreed pair,
+  and the English the translated part is missing against what its source predicts.
   Names:
   `runCoverageStage`,
   `judgeCoverage`,
@@ -69,7 +77,9 @@ The groups that follow name the main ones.
   `coverage-candidates.ts`,
   and `coverage-tail.ts`.
 - Non-translation screening:
-  decide whether a slice holds text that is not a translation of its source.
+  test the critics' votes that a slice is not a translation of its source against deterministic evidence,
+  rule whether the standing votes dominate the document,
+  and word the finding that names the block.
   Names:
   `assessNonTranslationDominance`,
   `screenNonTranslationVotes`,

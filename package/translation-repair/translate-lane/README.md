@@ -63,7 +63,7 @@ The groups that follow name the main ones.
   `TargetOnlySplit`.
   Declared in `target-only-run.ts`.
 - Unheard slices and readings:
-  refuse to keep an archive text no voice spoke about,
+  refuse a record that heard no translator yet changed the archive text,
   and read the pictures of a document.
   Names:
   `assertUnheardKeptIncumbent`,

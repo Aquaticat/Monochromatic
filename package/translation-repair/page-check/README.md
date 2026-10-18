@@ -17,9 +17,12 @@ and it sits above the lane packages.
 The groups that follow name the main ones.
 
 - Canadian forms and small corrections:
-  put dates,
-  spellings,
-  quote style and pinyin tones into the house form on slices no lane rewrote.
+  write dates and listed spellings the Canadian way,
+  bring prose quote marks to the page's majority style,
+  unwrap quoted blockquote paragraphs where the archive sets its blockquotes bare,
+  and correct pinyin tones,
+  each on every slice of the page,
+  those no lane replaced included.
   Names:
   `canadianizePage`,
   `canadianizeText`,
@@ -52,8 +55,10 @@ The groups that follow name the main ones.
   `corpus-run/page-footnote-integrity.ts`,
   and `corpus-run/front-matter-completeness.ts`.
 - Destinations:
-  find link destinations a page dropped or rendered twice,
-  and restore the archive's.
+  find the link destinations of the source that a page no longer carries,
+  judge which of them the page may lack under the either-rendering rule,
+  refuse a would-ship page that drops one,
+  and point links the archive gave its own destination back at it.
   Names:
   `assertDestinationsComplete`,
   `DroppedDestinationError`,

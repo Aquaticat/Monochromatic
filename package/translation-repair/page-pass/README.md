@@ -9,8 +9,7 @@ and the splicing of slices back into a page.
 It is its own package because the assembly,
 repair,
 translate and page-check layers all run the same passes,
-and it needs only text,
-shape and `corpus-source` packages below it.
+and it depends on no lane package.
 
 ## What it provides
 
@@ -30,8 +29,9 @@ The groups that follow name the main ones.
   Declared in `apply-patch.ts` and `preservation-check.ts`.
 - Title references and headings:
   unify how a page refers to titles,
-  keep a heading series consistent,
-  and refuse headings that collapse to one.
+  render a numbered heading series in one style,
+  restore the archive's heading where renderings repeat another section's,
+  and refuse a page on which two different source headings read the same.
   Names:
   `unifyTitleReferences`,
   `unifyHeadingSeries`,

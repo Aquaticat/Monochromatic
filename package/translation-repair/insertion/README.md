@@ -1,8 +1,9 @@
 # @monochromatic-dev/translation-repair-insertion
 
 Insertion checks and the corpus-run bookkeeping that sits beside them:
-admitting carried insertions and container halves,
-folding a carried insertion into its rendering,
+admitting insertions for container halves,
+container deficits and referenced definitions,
+folding a carried insertion into the slice that carries it,
 reading entry records,
 closing over the code a runner executed,
 and ordering entries by size band.
@@ -18,9 +19,12 @@ and it sits below `corpus-pass`.
 The groups that follow name the main ones.
 
 - Insertion admission:
-  admit insertions that carry a container half,
-  fill a container deficit,
-  or define something the text references.
+  admit the other half of every container one of whose slices is admitted,
+  admit passages no majority found carried while the archive's container holds fewer blocks than the original's,
+  admit definitions that the shipping page references and does not define,
+  fold a carried passage into the slice that carries it,
+  and classify the latest rows as inserted,
+  carried or unresolved.
   Names:
   `admitContainerDeficit`,
   `admitContainerHalves`,

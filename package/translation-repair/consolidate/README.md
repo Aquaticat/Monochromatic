@@ -9,8 +9,9 @@ judges it against the standing text,
 gates what wins,
 wraps what ships,
 and runs one fixed naturalness polish round.
-It is its own package because the translate lane,
-the artifact builder and the corpus pass all run it,
+It is its own package because the corpus pass runs it
+and the translate lane,
+the artifact reader and the slice cache read its records and rules,
 and it sits above `repair`,
 `archive` and `lane-contest`.
 
@@ -78,7 +79,9 @@ The groups that follow name the main ones.
 - Persistence:
   save a settlement,
   tell whether a saved one is worth resuming,
-  and buy a slice's consolidation.
+  buy a slice's consolidation in a single attempt,
+  and refuse a contested slice the repair ledger never wrote a row for
+  or a withheld slate that the judging left undecided.
   Names:
   `persistConsolidationSettlement`,
   `consolidationWorthResuming`,
