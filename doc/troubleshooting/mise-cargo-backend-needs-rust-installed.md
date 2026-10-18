@@ -259,8 +259,16 @@ Actual binary probes reported Node `26.12.0`,
 pnpm `12.14.0` and Nextest `0.9.148`.
 These are single local setup observations,
 not a matched cloud speed comparison or application-test execution.
-A new immutable cloud attempt remains pending;
-the successful historical Mac/Windows setup is not substituted for this Linux cohort's result.
+The corrected immutable Linux attempts subsequently passed bootstrap and reached the actual graph.
+GitHub Actions run `39140975786` uses harness `234ccc92dabb81e998e0a0bb5e838713924dd83f`;
+the [original repeated job evidence](../audit/depot-expanded-graph-github-repetition-2026-10-18.evidence.json)
+retains all four completed jobs and their application commands.
+Native run `fnvwqfg0bb` uses harness `72af18d5b130dabef7ff5b656ffdc1b58df4fcde`;
+the [native correction evidence](../audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json)
+retains both corrected complete 222-command observations.
+These later runs verify bootstrap recovery;
+their separate application failures do not establish a passing whole CI graph.
+Historical Mac/Windows setup is not substituted for this Linux cohort's result.
 The upstream filing decision remains unchanged:
 this fixture repeated an already documented repository prerequisite,
 so there is no new upstream defect or additive filing.

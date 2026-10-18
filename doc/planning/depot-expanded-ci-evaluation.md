@@ -593,6 +593,10 @@ Allocate reuse by measured owner:
 Gradle remote task outputs for the demonstrated Kotlin linter,
 direct sccache for qualified Rust compiler consumers,
 and source/tool/ABI-bound dependency or target archives with passing readers.
+The Kotlin owner join independently matches all six authored JVM methods to four original passing JUnit reports
+and the exact frozen package subtree;
+it closes a missing evidence projection without another allocation
+([source/task/case join](../audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json)).
 The measured pnpm content-store profiles do not justify universal store caching.
 Native tool snapshots require current checkout and executable/PATH admission.
 Organization-global Disk mounts need a single writer,
@@ -669,8 +673,13 @@ Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
 current-source macOS and Windows owner controls,
 semantic feature/assertion reconciliation,
-execution of newly identified IDE/file-manager/terminal/Kotlin/design owners,
-capability allocation completeness and final combined allocation/cost normalization.
+existing-evidence joins and admitted execution of remaining IDE/file-manager/terminal/design owners,
+the finite native debug consumer,
+prepared-image absence controls and final combined allocation/cost normalization.
+The capability-allocation source review is complete;
+the concrete rollout profiles still need exact owner commands,
+producer prerequisites,
+evidence joins and source-failure dispositions before the interview.
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
 The repeated GitHub and corrected native graph phases,
 case parity and independent failure classifications are sealed;

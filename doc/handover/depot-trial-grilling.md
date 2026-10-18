@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 17:24 UTC
+## Current execution checkpoint on 2026-10-18
 
 Research remains active and the interview has not started.
 All parent graph cloud jobs are terminal,
@@ -36,8 +36,10 @@ Shared builds followed by a Node branch form all six observed longest paths;
 Rust is not on those paths.
 The cost note replaces its stale claim that no aggregate ledger exists.
 The frozen 223-row baseline stays unchanged;
-the current 30-row follow-on separately records a USD 0.6105 known-provider-window proxy,
-including the qualified USD 0.1116 desktop run-envelope fallback.
+the current 30-row follow-on separately records a USD 0.6041 known-provider-window proxy,
+including desktop's exact 263-second attempt at USD 0.1052.
+The previous 279-second run envelope and USD 0.1116 estimate are superseded,
+with their history retained in the allocation ledger.
 The parent's exact nominal Depot graph subtotal is USD 0.487.
 These figures are not invoices or evidence of VM/builder deallocation.
 
@@ -46,7 +48,7 @@ then the admitted matched Depot Mac/Windows controls,
 semantic assertion/generator reconciliation and the metadata-only screenshot-publication receipt.
 Rust owns exact desktop attempt boundaries,
 the final follow-on ledger and deletion/absence checks for the three owned prepared native images.
-Platform owns a narrow report capability-allocation completeness pass;
+Platform completed the narrow report capability-allocation completeness pass;
 the final whole-report independent sufficiency review follows factual closure.
 The parent owns its graph source-archive checks,
 rendered report/handover checks,
@@ -82,18 +84,26 @@ Tests/report identities,
 snapshots/OCI/Disk/SDK format separation,
 BuildKit/registry lifecycle,
 cache/PR/network/Dependabot trust and optional-product dispositions.
-Its scoped commit publisher is session `65826`;
-reap it and verify its actual landed identity before final ancestry checks.
+Its scoped publisher is reaped at zero and the landed commit is `cce76fb02e`.
 
-Coverage's semantic join identifies material authored owners with no retained execution:
+Coverage's semantic join identifies material authored owners needing wider existing-evidence joins
+before any new execution:
 IDE,
 file-manager variants,
-terminal,
-Kotlin and design.
+terminal and design.
 Static test attributes are not executed-case counts.
 Coverage is preparing exact finite profiles for actual owner tests and real prerequisites,
 including the IDE's pinned grammar producer and terminal font/Zig dependencies.
 No allocation is authorized until that concrete proposal is reviewed.
+The parent also owns concrete rollout profiles for static checks,
+Node/Rust tests,
+browsers,
+packaged artifacts,
+OS/ARM and VM/desktop/Android consumers.
+Each profile must name actual owner commands,
+producer prerequisites,
+retained evidence and source-failure disposition.
+Complete this proposal before the final whole-report sufficiency review and interview.
 The parent can admit a separate maximum USD 5 campaign,
 at most two concurrent cloud jobs,
 with default Cargo/Nextest concurrency and existing no emulator/desktop relaunch boundary.
@@ -182,19 +192,28 @@ All six pass in each sample.
 The experiment executes the authored Gradle `test` task via Mise with cache-specific flags,
 not the literal package Mise wrapper.
 The separate `r328mp420m` emitted-JAR consumer is not the six-case basis.
-No new Kotlin run is needed;
-Rust seals the source/task/JUnit projection and Coverage joins it semantically.
+No new Kotlin run is needed.
+Rust sealed the source/task/JUnit projection at `c75fc4790b`:
+`doc/audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json`,
+SHA-256 `a497e3f495e1818af77eb9a2cba8ab45cbab71b5b59476364fe9cb1993b36614`.
+Four original ZIP CRCs and 102 member hashes pass;
+Coverage joins that projection semantically.
 Coverage also checks actual OS Nextest binary/package identities and older receipts for the other proposed owners.
 The new owner campaign remains unallocated until its concrete proposal and existing-evidence scope checks close.
 Platform's Bash diagnosis is complete at `3cddf3617a`:
 `doc/troubleshooting/bash-builtin-kill-signal-option.md`,
 exact patchlevel-nine source and safe signal-zero controls.
 Its pending real-debug proposal remains separate.
-Rust may use one two-CPU three-minute owned cleanup job,
-maximum USD 0.018 within its existing guard,
-only if deciding source establishes injected-token namespace access and exact digest checks.
-No broader token or account enumeration is authorized;
-coordinate at most two active cloud jobs across owners.
+Rust's documented short-lived OCI challenge exchange now authenticates exact prepared-image reads.
+All three owned tags and their immutable digests return `404 MANIFEST_UNKNOWN`.
+No deletion,
+persistent credential or cloud allocation occurred.
+Rust seals creator/host/repository/digest joins,
+selected pull scope and an invalid-Bearer response control before final absence acceptance.
+These reads do not establish expiration as the cause or physical storage reclamation.
+The cloud cleanup fallback is unnecessary.
+No broader token or account enumeration is authorized.
+Coordinate at most two active cloud jobs across owners.
 
 ## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 
