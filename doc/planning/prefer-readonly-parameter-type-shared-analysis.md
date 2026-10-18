@@ -202,6 +202,14 @@ so the cache does not help that package at all; this is not investigated.
   110 fallbacks, all unresolved specifiers
   (`node:*` names in `nano-spawn`'s JavaScript, one `undici-types` path).
 - Outside the family: 166 hits verified, 0 mismatches, 241 unresolved-specifier fallbacks.
+- Positive control for the verification mode (`w177-notes/control/`):
+  `shared-contract` linted on an empty cache,
+  then one summary in its shared entry for `src/chunk-placement.ts` was changed
+  (`mutated` from `[]` to `[0]`, envelope and digests untouched),
+  then `artifact` linted with verification on:
+  38 shared hits, 1 mismatch naming that summary.
+  With the entry restored and the cache emptied, the same two lints gave 38 hits and 0 mismatches.
+  Only a payload change was tried, not omitted callables or omission reasons.
 - Lint output (exit code, summary line, sorted diagnostic headers) was identical to baseline in every package run:
   144 family runs per comparison, all with no diagnostics,
   and 96 outside-family runs, 74 of them with diagnostics and 6 with this rule's (10 diagnostics, cold and warm).

@@ -427,8 +427,9 @@ before the other queued work.
     its results are in the proposal's "Prototype results" (`59f6acf347`):
     cold family lint about 131 s against about 322 s, warm unchanged,
     0 mismatches over 6856 verified shared hits.
-    Next: a positive control for the verification mode (a tampered shared entry must be reported),
-    then the owner's landing decision.
+    The verification mode's positive control passed (a tampered shared entry was reported, the clean rerun was not).
+    Next: the owner's landing decision.
+    The docs batch of item 5 runs meanwhile in `w178` (Sonnet agent, detached head; cherry-pick when it hands back).
     The scratch configs in `w165` and `w175` are deleted and `w165`'s plugin edit is reverted.
 5.  The queue the split went ahead of,
     oldest first:
