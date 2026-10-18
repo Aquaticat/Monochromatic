@@ -529,6 +529,18 @@ before the other queued work.
     Gate g104 on `67c9b1accb` was green (every step exit 0, suite 2528 pass and 0 fail, scans pass),
     and both `w186` rounds landed on 2026-10-18 by cherry-pick, pushed as far as `ce7be13112`;
     the first round had not landed before, which the second round's conflicts showed.
+    The sol findings round in `w187` reproduced five findings (1, 2, 5, 6, 7) and fixed them test first,
+    pinned 3 and 4 as regression cases (they do not reproduce), corrected the span-agreement docs (8),
+    and moved the translate slice, consolidate and lane-contest cache versions for the tense candidates.
+    Its stricter recount would refuse a generation-18 artifact that was right when written,
+    so `w189` (on `e87411447d`) ports the round and gates that recount by a new generation 19.
+    The `w188` test round pinned every reachable survivor (15 commits, tests only, on `95a57f628d`;
+    notes `s245/w188-notes.md`); queued in order after `w189` reports:
+    port `w188` onto `w189`; turn the four unreachable markup-range branches that silently return `[]`
+    (`linkResourcesOf` past end and unplaced, a link with no offset, a node with no start)
+    into named invariant throws, test first;
+    one gate; land; post a corrective comment on the landed copy of `77823411c4`,
+    whose body says six guards for the nine mutations it pins.
     In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
     external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
     and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
