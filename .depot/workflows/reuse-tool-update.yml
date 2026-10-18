@@ -26,6 +26,8 @@ jobs:
         fetch-depth: 64
         clean: false
     - name: Build the frozen CLI's required Git and prepare the audited sccache binary
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:tool-update
     - name: Exclude source and synthetic secret while retaining tool receipts
       env:
@@ -57,3 +59,4 @@ jobs:
           ACTIONS_RUNTIME_TOKEN
           ACTIONS_ID_TOKEN_REQUEST_TOKEN
           GITHUB_TOKEN
+          GH_TOKEN
