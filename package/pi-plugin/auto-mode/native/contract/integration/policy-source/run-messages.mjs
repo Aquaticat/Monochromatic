@@ -30,6 +30,17 @@ export function bindRunMessageSources({governing}){
   const {source}=origin;
   if(!retainedBySource.has(source))retainedBySource.set(source,origin);
  }
+ const issuedBindings=new WeakSet();
+ /** Authenticate the original frozen record before reading its immutable view. */
+ function assertBindingIdentity(value){
+  if(!issuedBindings.has(this)||value!==this.view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
+ }
+ /** Revalidate the shared governing snapshot on every use of an original source. */
+ function assertCurrent(value){
+  assertBindingIdentity.call(this,value);
+  governing.assertCurrent(governing.view);
+  assertBindingIdentity.call(this,value);
+ }
  const bindings=sources.map(function bindOriginalRunMessage(source) {
   const publication=publications.get(source.runOccurrence);
     const expanded=source.kind==='native-run-expanded-prompt-input';
@@ -95,22 +106,15 @@ export function bindRunMessageSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  /** Check immutable binding identity and its local publication link within the owning source set. */
-function assertBindingIdentity(value){
-if(value!==view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
-
-}
-function assertCurrent(value){
-if(value!==view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
-governing.assertCurrent(governing.view);
-assertBindingIdentity(value);
-}
-  assertBindingIdentity(view);return Object.freeze({
+  const binding=Object.freeze({
     view,
     authority:undefined,
     assertBindingIdentity,
-assertCurrent
+    assertCurrent
   });
+  issuedBindings.add(binding);
+  binding.assertBindingIdentity(view);
+  return binding;
  });
  // Local publication checks share their immutable parent; revalidate the complete collection at release.
  governing.assertCurrent(governing.view);
