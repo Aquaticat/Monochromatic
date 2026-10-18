@@ -14428,5 +14428,911 @@
     "actualBoundaryProbe": "depot-cargo-wrapper-boundary.json inside doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
     "classification": "Local Cargo with sccache/WebDAV configuration, not remote compilation execution",
     "automaticJobCacheTokenFallback": "Exercised with synthetic token markers; real backend acceptance is separate"
+  },
+  "livePublicPricing": {
+    "observedAt": "2026-10-18T09:35:35.469Z",
+    "url": "https://depot.dev/pricing",
+    "accountAccess": false,
+    "source": {
+      "path": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "bytes": 8976,
+      "sha256": "c52a7c7cbbbae7719035a881194bdda8a07e1810f3743b83893cef6323095825"
+    },
+    "features": [
+      {
+        "feature": "Users",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "1 user"
+          },
+          {
+            "plan": "Startup",
+            "value": "Unlimited"
+          },
+          {
+            "plan": "Business",
+            "value": "Unlimited"
+          }
+        ]
+      },
+      {
+        "feature": "Build concurrency",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "Unlimited"
+          },
+          {
+            "plan": "Startup",
+            "value": "Unlimited"
+          },
+          {
+            "plan": "Business",
+            "value": "Unlimited"
+          }
+        ]
+      },
+      {
+        "feature": "Docker build minutes included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "500"
+          },
+          {
+            "plan": "Startup",
+            "value": "5,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "GitHub Actions minutes included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "2,000"
+          },
+          {
+            "plan": "Startup",
+            "value": "20,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Depot CI minutes included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "2,000"
+          },
+          {
+            "plan": "Startup",
+            "value": "20,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Cache and registry storage included",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "25 GB"
+          },
+          {
+            "plan": "Startup",
+            "value": "250 GB"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Multi-platform builds",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Build Insights",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "API Access",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Integrations",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Depot Registry",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Windows Runners",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Docker build autoscaling",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Agent Sandboxes",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Usage caps",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "macOS M2 Runners",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "GPU enabled builds",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Depot Cloud",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "US & EU regions",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Custom regions",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Dedicated infrastructure",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Static outbound IPs",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Network firewall rules",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "AWS PrivateLink",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Deploy in your AWS account",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "Available"
+          }
+        ]
+      },
+      {
+        "feature": "GitHub Actions",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Docker",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Bazel",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Go",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Gradle",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Pants",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Turborepo",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Nx",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "sccache",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Test reporting and analytics",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Included passing test results",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "1,000,000"
+          },
+          {
+            "plan": "Startup",
+            "value": "1,000,000"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Additional passing tests",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "$0.000001 each"
+          },
+          {
+            "plan": "Startup",
+            "value": "$0.000001 each"
+          },
+          {
+            "plan": "Business",
+            "value": "Custom"
+          }
+        ]
+      },
+      {
+        "feature": "Failed, errored, and skipped tests",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "Free"
+          },
+          {
+            "plan": "Startup",
+            "value": "Free"
+          },
+          {
+            "plan": "Business",
+            "value": "Free"
+          }
+        ]
+      },
+      {
+        "feature": "OIDC",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Egress Filtering",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "RBAC",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "SSO (SAML & SCIM)",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "Optional ($500/mo)"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Audit Logging",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Discord Community",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "included"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Email support",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "included"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Slack Connect",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "AWS Marketplace",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      },
+      {
+        "feature": "Invoice / ACH payment",
+        "plans": [
+          {
+            "plan": "Developer",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Startup",
+            "value": "unavailable"
+          },
+          {
+            "plan": "Business",
+            "value": "included"
+          }
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "question": "Which plan is right for me?",
+        "answer": "The Developer plan is perfect for solo developers, side-projects, and experiments. It includes 500 Docker build minutes, 2,000 GitHub Actions minutes, 2,000 Depot CI minutes, and 1 user, with additional usage billed monthly.\nThe Startup plan is great for teams building production applications. It includes 5,000 Docker build minutes, 20,000 GitHub Actions minutes, 20,000 Depot CI minutes, and unlimited users, with additional usage billed monthly.\nThe Business plan is for dev teams looking to scale, and includes additional security controls and deployment models."
+      },
+      {
+        "question": "What is Depot Cloud?",
+        "answer": "Depot Cloud is fully managed remote build infrastructure, including both compute and cache. With Depot Cloud, we handle the infrastructure and orchestration, with no need to manage your own build infrastructure. Depot Cloud runs on AWS, and is available in the us-east-1 and eu-central-1 regions."
+      },
+      {
+        "question": "What is the usage granularity?",
+        "answer": "Docker build minutes and GitHub Actions minutes are billed on a per-minute basis, tracked per second. Depot CI usage is billed per second based on vCPU-seconds. We don't enforce a one-minute minimum, so if you run a 30-second Docker or GitHub Actions build, you'll only be billed for 30 seconds. Test results are billed per individual passing test."
+      },
+      {
+        "question": "Can I self-host Depot? What is bring-your-own-compute?",
+        "answer": "You can connect an AWS account to your Depot account and Depot will use that account for build compute and cache storage. This ensures that your build data is entirely under your control and allows you to access any private services in your account during the build. Additionally you can customize the types of machines used for your builds.\n\nBring your own compute is available on the Business plan.\n\nRead more in our Depot Managed documentation"
+      },
+      {
+        "question": "Am I charged for build usage and storage?",
+        "answer": "You are charged monthly for build usage and storage. See usage granularity above for how build time is measured.\n\nStorage is a single combined total that covers your container build cache, Depot Cache, and Depot Registry. All three draw from your plan's included storage, and anything above that amount is billed at $0.20 per GB per month. Storage is billed as the average storage used over the month, sampled hourly.\n\nData transfer into and out of Depot Registry is free on the default Standard CDN speed. If you switch your organization to Fast CDN speed, data served out of the registry is billed at $0.10 per GB, from the first GB. Read more in our registry documentation."
+      },
+      {
+        "question": "When will I be billed?",
+        "answer": "Depot bills monthly on the 1st. If you sign up partway through a month, your first charge is prorated for the remaining days. Usage-based charges accrue through the month and appear on your next invoice on the 1st along with your plan charge for that month."
+      },
+      {
+        "question": "How are test results billed?",
+        "answer": "The Developer and Startup plans each include 1,000,000 passing test results per month at no charge. After that, it's $0.000001 per passing test, or $1 per 1 million tests. Failed, errored, and skipped tests are free.\n\nRead more in our test results documentation"
+      },
+      {
+        "question": "Are there discounts for non-profits or open-source?",
+        "answer": "Yes! Please contact us with more information about your project and for more details."
+      },
+      {
+        "question": "Do you offer credits for startups?",
+        "answer": "Yes, through our startup partner programs. Y Combinator companies can claim Depot credits from the YC deals page.\n\nStartups approved for PostHog for Startups receive a partner code worth $5,000 in Depot credits. See our PostHog for Startups documentation for how to redeem it and what it covers."
+      },
+      {
+        "question": "Can I cap my usage so my bill doesn't run over?",
+        "answer": "Yes, you can set self-imposed usage caps to control monthly usage. If you reach a cap, Depot will stop running builds until the next month or until you raise the cap. You can change these limits at any time."
+      },
+      {
+        "question": "What payment methods are accepted?",
+        "answer": "For the Developer and Startup plans, we support monthly payments via credit card using Stripe. For the Business plan, we additionally support invoice billing, ACH, and AWS Marketplace."
+      },
+      {
+        "question": "Can I pay through the AWS Marketplace?",
+        "answer": "Yes! We support AWS Marketplace billing on the Business plan. Contact us for more details."
+      }
+    ],
+    "compute": [
+      {
+        "name": "Depot CI",
+        "text": "Sandbox label\n\n\t\n\nCPUs\n\n\t\n\nMemory\n\n\t\n\nSize\n\n\t\n\nPrice per second\n\n\n\ndepot-ubuntu-24.04\n\t\n\n2\n\n\t\n\n8 GB\n\n\t\n\n2x8\n\n\t\n\n$0.0001\n\n\n\ndepot-ubuntu-24.04-4\n\t\n\n4\n\n\t\n\n16 GB\n\n\t\n\n4x16\n\n\t\n\n$0.0002\n\n\n\ndepot-ubuntu-24.04-8\n\t\n\n8\n\n\t\n\n32 GB\n\n\t\n\n8x32\n\n\t\n\n$0.0004\n\n\n\ndepot-ubuntu-24.04-16\n\t\n\n16\n\n\t\n\n64 GB\n\n\t\n\n16x64\n\n\t\n\n$0.0008\n\n\n\ndepot-ubuntu-24.04-32\n\t\n\n32\n\n\t\n\n128 GB\n\n\t\n\n32x128\n\n\t\n\n$0.0016\n\n\n\ndepot-ubuntu-24.04-64\n\t\n\n64\n\n\t\n\n256 GB\n\n\t\n\n64x256\n\n\t\n\n$0.0032\n\nDEPOT CI MINUTES INCLUDED WITH THE BASE PLAN CAN BE USED FOR ANY SANDBOX SIZE, CONSUMED AT THE VCPU MULTIPLE RATE.\n\nDepot CI sandboxes can use from 2 vCPUs and 8 GB of memory up to 64 vCPUs and 256 GB, with support for Intel and Arm. Billed per second per vCPU with no one minute minimum.\n\nSEE ALL SANDBOX SIZES"
+      },
+      {
+        "name": "GitHub Actions Runners",
+        "text": "Actions runner label\n\n\t\n\nCPUs\n\n\t\n\nMemory\n\n\t\n\nMinute Multiple\n\n\t\n\nPrice per minute\n\n\n\ndepot-ubuntu-24.04\n\t\n\n2\n\n\t\n\n8 GB\n\n\t\n\n1x\n\n\t\n\n$0.006\n\n\n\ndepot-ubuntu-24.04-4\n\t\n\n4\n\n\t\n\n16 GB\n\n\t\n\n2x\n\n\t\n\n$0.012\n\n\n\ndepot-ubuntu-24.04-8\n\t\n\n8\n\n\t\n\n32 GB\n\n\t\n\n4x\n\n\t\n\n$0.024\n\n\n\ndepot-ubuntu-24.04-16\n\t\n\n16\n\n\t\n\n64 GB\n\n\t\n\n8x\n\n\t\n\n$0.048\n\n\n\ndepot-ubuntu-24.04-32\n\t\n\n32\n\n\t\n\n128 GB\n\n\t\n\n16x\n\n\t\n\n$0.096\n\n\n\ndepot-ubuntu-24.04-64\n\t\n\n64\n\n\t\n\n256 GB\n\n\t\n\n32x\n\n\t\n\n$0.192\n\nGITHUB ACTIONS MINUTES INCLUDED WITH THE BASE PLAN CAN BE USED FOR ANY MACHINE TYPE, CONSUMED AT THE MINUTE MULTIPLE RATE.\n\nGitHub Actions builds can use from 2 vCPUs and 8 GB of memory up to 64 vCPUs and 256 GB. With support for Intel, Arm, and macOS runners. Billed per minute, tracked per second.\n\nSEE ALL RUNNER TYPES"
+      },
+      {
+        "name": "Container Builds",
+        "text": "Container builder size\n\n\t\n\nCPUs\n\n\t\n\nMemory\n\n\t\n\nMinute Multiple\n\n\t\n\nPrice per minute\n\n\n\n\nDefault\n\n\t\n\n16\n\n\t\n\n32 GB\n\n\t\n\n1x\n\n\t\n\n$0.04\n\n\n\n\nLarge\n\n\t\n\n32\n\n\t\n\n64 GB\n\n\t\n\n2x\n\n\t\n\n$0.08\n\n\n\n\nExtra large\n\n\t\n\n64\n\n\t\n\n128 GB\n\n\t\n\n4x\n\n\t\n\n$0.16\n\nDocker builds can use from 16 vCPUs and 32 GB of memory up to 64 vCPUs and 128 GB, allowing for efficient, parallel computation of the Dockerfile graph. Billed per minute, tracked per second.\n\nSEE CONTAINER BUILD DOCS"
+      }
+    ],
+    "interpretation": "Availability decoded from retained DOM SVG check/cross paths, not missing text. Current docs github-actions/overview Pricing independently confirms Developer Linux/Windows versus Startup macOS."
+  },
+  "autoscalingBoundary": {
+    "deployedDoc": "https://depot.dev/docs/container-builds/how-to-guides/autoscaling",
+    "decidingSchema": "source/proto/proto/depot/core/v1/project.proto in the primary source archive",
+    "field": "max_concurrent_builds",
+    "meaning": "Concurrent builds per instance before scale-out, not maximum instances",
+    "totalInstanceLimitExposed": false,
+    "actualScaleOutExercised": false,
+    "settingChanged": false,
+    "reason": "No total-instance ceiling is exposed by the audited Create/UpdateProject schema; keep autoscaling off under the strict max2-builder campaign bound",
+    "bakeCounting": "One Bake command counts as one build per project regardless of target count",
+    "cache": "Additional builders clone the main cache without writing new layers back; cross-builder work is not deduplicated",
+    "cacheSize": "CachePolicy.keep_gb is per architecture; minimum25 each is not the total project allowance"
   }
 }
