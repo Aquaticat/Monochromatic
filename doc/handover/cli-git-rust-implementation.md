@@ -1651,9 +1651,10 @@ that is verification, not a decision for the user.
   `cargo publish --dry-run` failed to connect to `index.crates.io` from inside the tool shell (curl worked) and
   passed from a `systemd-run --user` unit. The nextest worktree, branch and image tags are removed. The
   `monochromatic-lint` container gate, mutation flows, processor snapshot and both fuzz build images now call
-  nextest (commit after `902fa1a743`); the validation unit `lint-nxt-validate` (tag `nxtlint`, logs
-  `~/temp/agent/lint-nxt-{gate,filter,rust-style,executable}.log`) is the last check, after which issue 1757
-  can be answered for `git-policy/cli` and `monochromatic-lint` (`wg-quicker-exempt` and `ide` belong to others).
+  nextest, and were validated: the container gate passed 415 tests, the single-filter run 5, the rust-style
+  mutation scope caught 38 of 41 mutants (3 unviable) and the executable scope over `path_inputs.rs` caught 24 of 25
+  (1 unviable) after the second `--` was restored before nextest's `--skip` filters. Issue 1757 has a progress
+  comment; `wg-quicker-exempt` and `ide` belong to others and keep it open.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
