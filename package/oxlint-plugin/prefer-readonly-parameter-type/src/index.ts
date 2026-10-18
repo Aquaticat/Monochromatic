@@ -98,6 +98,27 @@ export {
 } from './prefer-readonly-parameter-types/readonly-type-origin.ts';
 
 /**
+ Records of omissions inside installed packages and the ledger answering which a summary depends on,
+ exported for their built-artifact branch tests.
+
+ @internal
+ */
+export {
+  EXTERNAL_OMISSIONS_INVALID,
+  type ExternalOmissionRecord,
+  mergeExternalOmissions,
+  parseExternalOmissionRecords,
+} from './prefer-readonly-parameter-types/effect-external-omission.ts';
+
+/**
+ Ledger of loaded sources and the edges expansion followed,
+ exported for its built-artifact branch tests.
+
+ @internal
+ */
+export { createOmissionLedger, } from './prefer-readonly-parameter-types/effect-omission-ledger.ts';
+
+/**
  Guidance text chosen from origin evidence,
  exported for the built-artifact origin classification test.
 
