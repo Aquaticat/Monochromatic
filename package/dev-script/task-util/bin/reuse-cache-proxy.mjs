@@ -94,6 +94,9 @@ server.listen(0, '127.0.0.1', () => {
   if (address === null || typeof address === 'string') throw new Error('Expected a private TCP cache endpoint');
   process.send?.({ port: address.port, backendOrigin: new URL(backend).origin });
 });
+process.on('disconnect', () => {
+  if (server.listening) server.close();
+});
 process.on('message', message => {
   if (message.command === 'mode') {
     if (!['normal', 'missing', 'partial', 'corrupt'].includes(message.mode)) throw new Error('Unknown research fault mode');
