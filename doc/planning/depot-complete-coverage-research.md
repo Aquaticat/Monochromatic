@@ -953,3 +953,29 @@ The original image declares Playwright 1.63.0 while the source lock declares 1.6
 the run preserves that baseline instead of changing the recipe.
 No browser runtime result is claimed until its receipt is collected.
 Other browser and E2E specifications remain separate tracked profiles.
+
+## Fresh compiled-host artifact consumer dispatched
+
+Run `39124269347`,
+immutable harness `28bf38b0281f3bcace40b70d8b989d6e0ef7f875`,
+retains the frozen application source and original failed artifact-membership evidence.
+Its producer has 8 CPUs,
+32 GiB,
+and a 15-minute bound;
+it executes the shared builds and actual auto-mode JavaScript and native host producers.
+The uploader explicitly includes hidden files inside the reviewed receipt path.
+Its dependent fresh consumer has 4 CPUs,
+16 GiB,
+and a separate 15-minute bound.
+It admits one exact source-bound artifact,
+checks its digest and declared output hashes,
+restores only compiled output,
+and executes the actual native domain owner without rebuilding application source.
+The known `none` frontier assertion remains an expected preserved source failure,
+while permission and prohibition remain actual positive controls.
+The consumer verifies the installed SDK snapshot against the producer before host execution.
+Only the artifact download step receives its read-only workflow token;
+no new repository secret was created.
+
+The source diagnosis and outstanding membership/runtime boundaries are recorded in
+[`github-artifact-hidden-sdk-resources.md`](../troubleshooting/github-artifact-hidden-sdk-resources.md).
