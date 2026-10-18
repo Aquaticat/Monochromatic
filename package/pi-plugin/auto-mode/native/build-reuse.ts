@@ -57,7 +57,7 @@ async function previousMetadata(original: string): Promise<Stats | typeof NO_PRE
  @param output - new verified release not yet published
  @param active - previous stable release link or directory
  @returns complete reused-file and byte counts
- @throws original filesystem error when comparison or linking fails
+ @throws original filesystem error when comparison or linking fails for reasons other than an unsupported mount boundary
  */
 export async function reuseNativeBuildFiles({ output, active }: {
   readonly output: string;
@@ -94,7 +94,14 @@ export async function reuseNativeBuildFiles({ output, active }: {
     if (currentHash !== previousHash) return { files: 0, bytes: 0 };
     /** The temporary link belongs exclusively to this fresh build occurrence. */
     const staged = `${target}.${randomUUID()}.shared`;
-    await link(original, staged);
+    try {
+      await link(original, staged);
+    }
+    catch (error) {
+      if (!(error instanceof Error) || !('code' in error) || error.code !== 'EXDEV') throw error;
+      tagged({ tag: reuseFile.name, l }).debug(caughtValueText(error));
+      return { files: 0, bytes: 0 };
+    }
     await rename(staged, target);
     return { files: 1, bytes: metadata.size };
   });
