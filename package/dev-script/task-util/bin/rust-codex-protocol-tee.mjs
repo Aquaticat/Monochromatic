@@ -11,6 +11,7 @@ const directory = process.env.RESEARCH_CODEX_PROTOCOL_DIRECTORY;
 mkdirSync(directory, { recursive: true, mode: 0o700 });
 const input = createWriteStream(join(directory, 'client.jsonl'), { mode: 0o600 });
 const output = createWriteStream(join(directory, 'host.jsonl'), { mode: 0o600 });
+const stderr = createWriteStream(join(directory, 'host.stderr.log'), { mode: 0o600 });
 const configuration = readFileSync(join(process.env.CODEX_HOME, 'config.toml'), 'utf8');
 const original = new URL(/^base_url = '([^']+)'$/mu.exec(configuration)?.[1]);
 assert.equal(original.hostname, '127.0.0.1');
@@ -42,15 +43,18 @@ proxy.listen(0, '127.0.0.1', () => {
 const forwarded = process.argv.slice(2);
 forwarded.unshift('--config', 'model_providers.local-fixture.base_url="http://127.0.0.1:' + proxy.address().port + original.pathname + '"');
 writeFileSync(join(directory, 'loopback-relay.json'), JSON.stringify({ original: original.href, forwarded, requestBodyMaximumBytes: 16777216 }, null, 2) + '\n');
-const child = spawn(process.env.RESEARCH_REAL_CODEX, forwarded, { stdio: ['pipe', 'pipe', 'inherit'] });
+const child = spawn(process.env.RESEARCH_REAL_CODEX, forwarded, { stdio: ['pipe', 'pipe', 'pipe'] });
 process.stdin.on('data', bytes => input.write(bytes));
 process.stdin.pipe(child.stdin);
 child.stdout.on('data', bytes => output.write(bytes));
 child.stdout.pipe(process.stdout);
+child.stderr.on('data', bytes => stderr.write(bytes));
+child.stderr.pipe(process.stderr);
 child.on('error', error => { process.stderr.write(error.stack + '\n'); process.exitCode = 1; });
 child.on('exit', (status, signal) => {
   input.end();
   output.end();
+  stderr.end();
   proxy.closeAllConnections();
   proxy.close();
   if (signal) process.stderr.write('Actual Codex exited on ' + signal + '\n');
