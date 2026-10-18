@@ -103,7 +103,8 @@ Workspace installation,
 the plugin build and both existing artifact-consumer tasks passed.
 This control uses an explicit cache miss,
 not a cache-disabled workflow.
-No warm-cache benefit is established until the remaining phases finish.
+That preliminary cohort did not establish a warm-cache benefit.
+The completed comparative result uses a later single-source cohort.
 
 The owned historical cache deletion completed and its identifier disappeared from the cache listing.
 Repository usage after cleanup was `9,947,540,746` bytes across `16` entries.
@@ -135,10 +136,140 @@ The same actual guard with an intentionally invalid compressor option exits with
 instead of hanging.
 The corrected workflow has a 5-minute job limit and a 2-minute archive-guard limit.
 
-The new coherent cohort repeats cache-disabled and explicit-miss controls before seeding,
+The coherent cohort is complete on source `2a155eec4935e5df225cb7a90af573357c3a94dc`.
+It repeats cache-disabled and explicit-miss controls before seeding,
 then runs fresh warm consumers and the separate branch-isolation probe.
-Seed,
-warm and branch results remain unestablished until that cohort reaches terminal states.
-Each dispatch records the exact SHA,
-run URL,
-terminal job metadata and logs in private scratch before its findings are summarized here.
+The [verified receipt](../audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json)
+retains the exact source hashes,
+terminal job metadata,
+step intervals and original artifact-member hashes.
+All 16 final-cohort jobs passed;
+all 16 downloaded artifact ZIPs matched GitHub's SHA-256 digests.
+The initial tool-install and archive-guard failures remain separate retained outcomes.
+
+## Completed comparative result
+
+The workflow name is `Depot fresh-job pnpm store research`.
+Its comparative jobs are `pnpm store github off sample 1`,
+`pnpm store github off sample 2`,
+`pnpm store github warm sample 1`,
+`pnpm store github warm sample 2`
+and the corresponding jobs with `depot` replacing `github`.
+Both pools use `actions/cache` revision `27d5ce7f107fe9357f9df03efb73ab90386fccae`;
+GitHub-hosted jobs use GitHub Actions cache,
+while Depot runners use Depot's Actions cache integration.
+
+The dependency-preparation boundary is the sum of the restore and install step intervals.
+GitHub reports these timestamps at one-second resolution.
+This boundary excludes the manifest-verification step,
+producer save,
+tool setup,
+checkout and application consumers.
+The independent pnpm-command timer excludes restoration.
+
+- GitHub-hosted `ubuntu-24.04`:
+  cache-disabled preparation is 9 to 10 seconds;
+  warm restore plus install is 11 to 12 seconds,
+  including a 5 to 6 second restore.
+  The pnpm command alone falls from 8.075 to 9.177 seconds disabled
+  to 4.833 to 5.694 seconds warm.
+- Depot `depot-ubuntu-24.04-4`:
+  cache-disabled preparation is 3 seconds in both samples;
+  warm restore plus install is 4 to 5 seconds,
+  including a 2 second restore.
+  The pnpm command alone falls from 2.496 to 2.789 seconds disabled
+  to 1.864 to 1.881 seconds warm.
+
+All warm installs report 582 reused packages and zero downloads.
+The plugin build,
+semantic-bridge host consumer and external-package consumer pass in every install-bearing job.
+The restored producer has the same source,
+lock and tool identities and a different runner name.
+Restoration therefore works;
+its overhead consumes the observed install-command saving in this workload.
+There is no demonstrated net dependency-preparation benefit on either pool.
+Keep this pnpm archive disabled by default pending contrary workload-specific evidence.
+That recommendation does not apply to compiler caches,
+prepared environments or different package-install workloads.
+
+The repeated explicit-miss controls also pass.
+Their restore-plus-install boundaries are 8 to 9 seconds on GitHub and 2 to 4 seconds on Depot.
+These are a separate control from disabling the action entirely.
+
+Complete jobs take 44 to 46 seconds disabled and 47 to 48 seconds warm on GitHub,
+versus 30 to 31 seconds disabled and 19 to 20 seconds warm on Depot.
+Depot checkout also changes from 15 to 16 seconds disabled to 3 to 4 seconds warm,
+before the restore step.
+The complete-job difference therefore does not isolate pnpm-cache benefit.
+No cause is assigned to that checkout change.
+
+Each comparative phase has only two repetitions per pool.
+All jobs report four logical CPUs,
+but GitHub's observations include Intel Xeon Platinum 8573C,
+AMD EPYC 7763 and AMD EPYC 9V74 hosts.
+Depot reports AMD EPYC 9R45 hosts.
+The source is unchanged;
+hardware and image equivalence are not established.
+The observed ranges include that provider variation and do not establish a universal speed multiplier.
+
+## Producer and isolation result
+
+The final runs are:
+
+- Cache disabled:
+  `39101112370`.
+- Explicit miss:
+  `39101194478`.
+- Seed:
+  `39101280802`.
+- Warm:
+  `39101349744`.
+- Branch-isolation probe:
+  `39101439840`.
+
+Each seed save takes 4 seconds in GitHub's step timestamps.
+The experimental compression guard adds 4 seconds on GitHub and 2 seconds on Depot.
+Its checked archives are `310713133` and `310733763` bytes respectively,
+both under the declared `500000000`-byte bound.
+Preparation,
+save and storage remain costs even when later consumers hit.
+
+The second branch uses the same source and restore key.
+GitHub returns a miss;
+Depot returns the first branch's archive and passes its producer-manifest assertions.
+Those jobs deliberately skip installation and application consumers.
+This verifies the tested branch-access difference,
+not untrusted-writer isolation or every repository authorization boundary.
+
+## Cleanup and cost boundary
+
+The final receipt includes every retained parent experiment's Depot job timestamps,
+including failed and cancelled attempts.
+At the published Linux four-CPU label rate,
+the 13 retained Depot jobs yield a USD `0.2242` timestamp-price proxy;
+the successful final cohort's Depot jobs contribute USD `0.0446`.
+These are not invoices,
+actual allowance consumption,
+storage-inclusive totals or proof of allocation billing boundaries.
+
+The GitHub seed created cache `9110766939`,
+keyed only to this experiment,
+with `312091627` recorded bytes.
+It was present in the observed listing at `05:43`,
+then absent before cleanup.
+A second exact key-and-ref query returned zero entries.
+No deletion command was executed for this entry,
+and the cause of its disappearance is not established.
+The older owned native cache deletion remains a distinct completed action.
+No production cache was selected for deletion.
+No Depot cache deletion was attempted;
+the archive remains subject to documented service retention,
+with the actual account policy uninspected.
+
+The isolated worktree was removed after inspecting its ignored generated rules cache
+and confirming no root `HEAD`,
+`config`,
+`hooks`,
+`objects` or `refs` entries existed.
+Both pushed research branches remain at the exact final source.
+All owned parent workflow runs are terminal.

@@ -117,20 +117,22 @@ Do not ask the user to rediscover repository facts or repeat settled preferences
 
 ## Current work
 
-Research is active.
+The factual research phase is complete for the planning interview.
 The cited [platform inventory](depot-developer-pool-capabilities-research.md)
 and [repository routing study](depot-developer-pool-routing-research.md) are complete.
 The [cache study](depot-developer-pool-cache-research.md)
 now includes real fresh-job Cargo compiler-cache hits,
 changed-flag invalidation,
 automatically supplied short-lived credentials and concurrent persistent-disk consumers.
-The parent-owned pnpm experiment is finishing its repeated cache-disabled,
-explicit-miss and warm comparisons.
-An independent research review is checking completeness and the remaining decision frontier.
+The parent-owned pnpm experiment completed its repeated cache-disabled,
+explicit-miss and warm comparisons,
+with verified artifact consumers and a separate branch-access probe.
+The [independent review](depot-developer-interview-frontier-review.md)
+finds no additional universal factual prerequisite to the current operating-policy frontier.
 The user correction broadens every area's applicability to a substantially expanded CI graph;
 today's workflows are a measured incumbent,
 not the limit of the design.
-No interview question is pending.
+Production implementation and its acceptance remain outstanding.
 
 ## Research findings and remaining acceptance work
 
@@ -181,9 +183,43 @@ No interview question is pending.
   Historical KVM guest execution is verified;
   it does not substitute for those distinct consumers.
 
-The final pnpm timing comparison and independent review remain factual research work.
+The pnpm result demonstrates working restoration but no net dependency-preparation benefit for that workload.
+The shorter Depot warm jobs also have faster checkout before restoration,
+so their whole-job difference cannot isolate the cache's benefit.
 Production profiles,
 PR enforcement and failure remediation remain implementation and acceptance work after the interview.
+
+## Current decision frontier
+
+The independent review identifies these operating preferences whose factual prerequisites are settled:
+
+- Standing owner-reserved monthly headroom with expiry and fail-closed admission,
+  or authorization of each paid batch.
+- Qualified new checks block the agreed release or promotion boundary,
+  or remain advisory.
+- Classified infrastructure failures permit bounded automatic retry and eligible-provider fallback,
+  or require an explicit rerun request.
+
+The recommendation is standing headroom,
+qualified enforcement and bounded automatic recovery.
+The [review](depot-developer-interview-frontier-review.md)
+records each option's benefits,
+costs and ranking.
+An observation phase precedes qualification;
+actual source failures remain failures.
+The spending arrangement preserves the USD 200 ceiling and the account-access exclusion.
+Owner-issued headroom is an assertion about unobserved commitments,
+not an independently verified aggregate invoice.
+Unknown allowances receive no credit in conservative reservations.
+
+Coverage,
+cadence engineering,
+intentional provider routing,
+stopping superseded intermediate work and agent-requested checks are settled requirements.
+Do not reopen them as speculative preference questions.
+Code mirrors,
+model-billed Agents and recurring local device services are not enabled by researching those products.
+They need separate concrete operating authorization if an implementation requirement survives simpler existing routes.
 
 ## Runtime research ownership
 
@@ -218,5 +254,6 @@ Differences within that spread are noise.
 ```
 
 The proposal remains unapplied.
-Present it with the interview's independent decisions after factual research,
-respecting the user's instruction not to start grilling yet.
+It is not a Depot operating prerequisite and does not belong in this interview's frontier.
+Keep it outside the adoption decision;
+the requested reporting precision is already implemented in the actual cache documentation.

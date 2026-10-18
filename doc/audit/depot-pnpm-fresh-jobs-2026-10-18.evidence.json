@@ -4198,5 +4198,62 @@
     "Both warm stores reused582 packages with zero downloads according to preserved logs",
     "No Windows or Mac warm result, fork isolation proof, monthly invoice, or full-CI graph measurement",
     "File SHA-256 values refer to original ZIP member bytes; decoded payloads omit ephemeral cache endpoint origins"
-  ]
+  ],
+  "computeTimestampPriceProxy": {
+    "rateUsdPerMinute": 0.012,
+    "runnerClass": "depot-ubuntu-24.04-4",
+    "normalizedMinuteMultiplier": 2,
+    "allRetainedDepotJobs": 13,
+    "allRetainedDepotJobSeconds": 1121,
+    "allRetainedNormalizedMinutes": 37.36666666666667,
+    "allRetainedUsdProxy": 0.2242,
+    "finalCohortDepotJobSeconds": 223,
+    "finalCohortUsdProxy": 0.0446,
+    "boundary": "GitHub job timestamps; includes failed and cancelled experimental jobs; does not prove allocation billing boundaries, allowance consumption, storage charges or invoices",
+    "rateSource": "doc/planning/depot-developer-pool-capabilities-research.md"
+  },
+  "cleanup": {
+    "recordedAt": "2026-10-18T05:48:48.021Z",
+    "githubCache": {
+      "id": 9110766939,
+      "key": "research-20261018-pnpm-cache-v3-github-Linux-X64-1d51cdd270f07fb50df083282f649a04c5a78aea980d2b44f105195abc117015",
+      "ref": "refs/heads/research/depot-pnpm-cache-20261018",
+      "sizeInBytes": 312091627,
+      "outcome": "already absent before cleanup",
+      "deletionExecuted": false,
+      "exactKeyAndRefResponse": {
+        "total_count": 0,
+        "actions_caches": []
+      },
+      "causeOfDisappearance": "not established",
+      "privateReceiptSha256": "5ffb7e0969d9fd325d839c2efd4aea5af812b8e4cb3af071969edc9bf218c5a7"
+    },
+    "depotArchive": {
+      "explicitDeletionPerformed": false,
+      "boundary": "subject to documented service retention; actual account retention not inspected"
+    },
+    "worktree": {
+      "removed": true,
+      "registrationAbsent": true,
+      "ignoredFilesInspected": [
+        ".cache/forbidden-strings.rules.txt"
+      ],
+      "rootGitDirEntriesPresent": [],
+      "ignoredRootGitDirPatternsPresent": [
+        "HEAD",
+        "config",
+        "hooks",
+        "objects",
+        "refs"
+      ],
+      "pushedBranchesRetained": [
+        "research/depot-pnpm-cache-20261018",
+        "research/depot-pnpm-cache-branch-20261018"
+      ],
+      "remoteRefs": [
+        "2a155eec4935e5df225cb7a90af573357c3a94dc\trefs/heads/research/depot-pnpm-cache-20261018",
+        "2a155eec4935e5df225cb7a90af573357c3a94dc\trefs/heads/research/depot-pnpm-cache-branch-20261018"
+      ]
+    }
+  }
 }
