@@ -26,6 +26,10 @@ the seat sent a `max_tokens` of 10,822 and was cut with no answer and 40,377,
 46,009 and 41,654 characters of reasoning,
 and the vote was lost to the label rule on the re-ask and not to the truncation.
 
+A later finding of the same pass, from the lead's replay of the run's decisions on the n171 build,
+is filed here too:
+a first round or a carry choice with a lone leader and no strict majority was kept and not run off (B656).
+
 The rounds landed on 2026-10-18.
 n171 landed with n166,
 n168 and n169 in the tests `555bb74aa0` and the code `29d6064708`,
@@ -443,3 +447,86 @@ Two of the three new cases fail at the red commit.
 Recurrence:
 `mistake-prevention-text-comparison-and-structure.md`,
 "Words inside words".
+
+## B656: a lone leader without a strict majority was kept and not run off
+
+Found on 2026-10-18 by the lead's replay of the `TianqiChen66625` decisions on the n171 build.
+
+Outcome written on 2026-10-18.
+Red `c3d881805b`,
+fixed in `7123ffb2f8`.
+
+What the replay showed:
+in the first round of group 1,
+four usable ballots split 2-1-1.
+No label had a strict majority and one label led alone,
+so `tiedForFirstOf` in `consistency-majority.ts` named no finalists,
+no run-off was asked and the page was kept.
+The build before n171 ran off the first three choices and chose one of them.
+The rule of B641 for a carry choice had the same gap:
+it ran off ties only.
+
+The lead adopted a rule on 2026-10-18,
+open to the owner's veto,
+extending the owner's rule of 2026-10-11 ("Run off the tied finalists"),
+which covered ties only.
+When the quorum is met and no label has a strict majority,
+the finalists are the labels with the top count.
+When exactly one label has the top count,
+the labels with the second-highest count join them.
+A tie for first behaves as before,
+and a second split keeps the page.
+The rule applies to the carry run-off alike.
+The entry is recorded in `design-commitments.md`.
+
+Fixed in `7123ffb2f8`.
+`runOffFinalistsOf` (renamed from `tiedForFirstOf`) and `runOffChoiceFinalistsOf` (renamed from `tiedChoicesOf`)
+in the consistency package add the labels with the second-highest count to a lone leader,
+and name none when fewer than two labels drew a ballot.
+`carryRunOffFinalistsOf` and `countConsistency` take the finalists from them,
+so the first round and the carry choice both ask the run-off of a 2-1-1 split.
+The run-off reason (`runOffReasonOf`) says that the choices reached no strict majority
+and names the finalists with their ballots,
+and the invariant messages of the pass speak of finalists and not of a tie.
+The sheet of the run-off already said that the first round was split between the places shown,
+so its wording is unchanged.
+
+Cache version:
+stays at 5.
+The finalists are counted from the stored ballots and are not stored,
+and the sheet of a run-off shows only its finalists under a key that digests the sheet,
+so a run-off among three labels asks a question under a key of its own
+and a run-off among tied labels keeps its key byte for byte.
+
+Consolidation:
+the run-off of a tied slate (`runoffTiedFinalists` in the translate stage)
+shares no function with this rule,
+since only the corpus-pass and artifact packages depend on the consistency package,
+and it is unchanged.
+
+Still owed:
+the artifact reader recounts a recorded group from its ballots,
+so it now refuses a group recorded with a lone leader's split and no run-off,
+which the previous rule accepted (the 2-1-1 group of the n171 run is one).
+A recorded carry with no run-off is still read as written.
+Whether the reader keeps a rule for groups recorded before this one,
+or the artifact generation moves,
+is for the lead and the owner.
+
+Test:
+cases for the finalists in `consistency-majority.unit.test.ts` (2-1-1 of 4 names three,
+2-2-1 of 5 names the two tied,
+2-1 of 3 names none,
+1-1-1-1 names all four,
+labels sharing the second count all join),
+the carry mirrors in `consistency-carry-run-off.unit.test.ts` and `pass-consistency-carry-run-off.unit.test.ts`,
+the run-off of a 2-1-1 refrain and a second split that keeps the page in `pass-consistency.unit.test.ts`,
+the reason in `pass-consistency-settle.unit.test.ts`,
+and the recount in `artifact-two-lane-read-consistency-span-winner.unit.test.ts`.
+The carry case that pinned "a single leader without a majority is not a tie" now pins the new rule.
+Most of the new cases fail at the red commit for the reason stated:
+a lone leader names no finalists.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Which seats a quorum counts".

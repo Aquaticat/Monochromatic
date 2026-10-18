@@ -354,6 +354,7 @@ which lists every file of this record.
 - [B646, the source scans and the coverage census](audit-ledger-source-scans-and-coverage-census.md)
 - [B647, the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md)
 - [B648 to B655, the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md)
+- [B656, the consistency pass, voices lost and places left unlocated](audit-ledger-consistency-pass-voices-lost-and-places-left-unlocated.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)

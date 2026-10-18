@@ -575,6 +575,19 @@ Part of [the family README](../README.md).
   with the quorum, window and label rules of the bench's run-off,
   and a second split keeps the page as it stands (B641;
   the lead's adoption of the owner's run-off rule of 2026-10-11, open to the owner's veto).
+  Extended on 2026-10-18 to a lone leader (B656):
+  when the choices reach the quorum and no label has a strict majority,
+  the finalists are the labels with the top count;
+  when exactly one label has the top count,
+  the labels with the second-highest count join it.
+  A tie for first behaves as before,
+  and a second split keeps the page as it stands.
+  The rule covers the first round of a group and a carry choice alike.
+  It is the lead's rule,
+  open to the owner's veto,
+  extending the owner's run-off rule of 2026-10-11 ("Run off the tied finalists"),
+  which covered ties only;
+  the consolidation's run-off of a tied slate is that rule itself and is unchanged.
   The words rule:
   the span the pass replaces is the words alone.
   The single marks that touch each edge of the span are read at the chosen place and at the receiving place.
