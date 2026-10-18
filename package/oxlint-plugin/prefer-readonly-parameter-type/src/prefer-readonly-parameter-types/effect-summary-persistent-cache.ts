@@ -18,6 +18,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
 import {
   ENVELOPE_INVALID,
@@ -120,6 +121,7 @@ export type PersistentEffectCacheHit = {
   readonly directDependencies: readonly string[];
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 };
 
 /**
@@ -274,6 +276,7 @@ export function readPersistentEffectSummaries({
       directDependencies: envelope.directDependencies,
       omittedCallableKeys: envelope.omittedCallableKeys,
       omissionReasons: envelope.omissionReasons,
+      externalOmissions: envelope.externalOmissions,
     };
   }
   catch (error) {
@@ -301,6 +304,8 @@ export function readPersistentEffectSummaries({
  
  @param omissionReasons - Bounded reasons encountered while scanning source.
  
+ @param externalOmissions - Omissions met inside installed package implementations during the scan.
+ 
  @example
  ```ts
  writePersistentEffectSummaries({
@@ -310,6 +315,7 @@ export function readPersistentEffectSummaries({
    closure,
    omittedCallableKeys,
    omissionReasons,
+   externalOmissions,
  });
  ```
  */
@@ -320,6 +326,7 @@ export function writePersistentEffectSummaries({
   closure,
   omittedCallableKeys,
   omissionReasons,
+  externalOmissions,
 }: {
   readonly address: PersistentEffectCacheAddress;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
@@ -327,6 +334,7 @@ export function writePersistentEffectSummaries({
   readonly closure: EffectDependencyClosure;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 },): void {
   /**
    Current content-addressed cache path.
@@ -350,6 +358,7 @@ export function writePersistentEffectSummaries({
     dependencyDigests: closure.dependencyDigests,
     omittedCallableKeys: [...omittedCallableKeys,].toSorted(),
     omissionReasons: [...omissionReasons,].toSorted(),
+    externalOmissions,
     payload: serializeEffectSummaries(summaries,),
     ...(address.sharedKeyDigest === undefined) ? {} : { sharedKeyDigest: address.sharedKeyDigest, },
   };

@@ -1173,7 +1173,7 @@ await describe({
       },
     },),
     it({
-      name: 'reports a mismatch when omitted callables or omission reasons differ although the payload agrees',
+      name: 'reports a mismatch when omitted callables, omission reasons or external omissions differ although the payload agrees',
       fn: async () => {
         using root = disposableFixtureRoot();
         /** Directory receiving this process's verification counter file. */
@@ -1187,6 +1187,7 @@ await describe({
           summaries: new Map(),
           omittedCallableKeys: [],
           omissionReasons: [],
+          externalOmissions: [],
         };
         /** Comparisons run, the first of which must not be reported. */
         const cases: readonly VerificationCase[] = [
@@ -1219,6 +1220,17 @@ await describe({
               omissionReasons: [OMISSION_REASON_A,],
             },
           },
+          {
+            fileName: 'external-omissions.ts',
+            fresh: {
+              ...agreeing,
+              externalOmissions: [{
+                sourceFileName: 'node_modules/package/index.js',
+                omittedCount: 1,
+                reasons: [OMISSION_REASON_A,],
+              },],
+            },
+          },
         ];
         cases.forEach(function verifyCase({ fileName, cached, fresh, },): void {
           verifySharedHit({
@@ -1245,6 +1257,7 @@ await describe({
           'omitted-keys.ts: omittedCallableKeys differ',
           'omission-reasons.ts: omissionReasons differ',
           'omission-reason-values.ts: omissionReasons differ',
+          'external-omissions.ts: externalOmissions differ',
         ],);
       },
     },),

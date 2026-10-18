@@ -9,6 +9,7 @@ import type {
   PersistentEffectDependencyState,
 } from './effect-cache-envelope.ts';
 import type { EffectClosureEdges, } from './effect-dependency-closure.ts';
+import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 import type { EffectProjectSurfaces, } from './effect-project-fingerprint.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
@@ -38,6 +39,7 @@ type CachedSourceSummaries = {
   readonly edges: EffectClosureEdges;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 };
 
 /**
@@ -52,6 +54,7 @@ export type LayeredSummaryCacheHit = {
   readonly edges: EffectClosureEdges;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 };
 
 /**
@@ -222,6 +225,8 @@ function cloneSummaries(
  @param omittedCallableKeys - Deliberately omitted direct summaries for this source.
  
  @param omissionReasons - Bounded reason categories for omission state.
+ 
+ @param externalOmissions - Omissions met inside installed package implementations during the scan.
  */
 function storeMemoryLayer({
   identity,
@@ -229,12 +234,14 @@ function storeMemoryLayer({
   edges,
   omittedCallableKeys,
   omissionReasons,
+  externalOmissions,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 },): void {
   /**
    Project-local cache bounded by configured source paths.
@@ -250,6 +257,7 @@ function storeMemoryLayer({
       edges,
       omittedCallableKeys: [...omittedCallableKeys,],
       omissionReasons: [...omissionReasons,],
+      externalOmissions: [...externalOmissions,],
     },
   );
   summariesByProject.set(
@@ -296,6 +304,7 @@ export function readCachedSummariesForSource({
       edges: cached.edges,
       omittedCallableKeys: [...cached.omittedCallableKeys,],
       omissionReasons: [...cached.omissionReasons,],
+      externalOmissions: [...cached.externalOmissions,],
     };
   }
   /**
@@ -341,6 +350,7 @@ export function readCachedSummariesForSource({
     edges,
     omittedCallableKeys: persistent.omittedCallableKeys,
     omissionReasons: persistent.omissionReasons,
+    externalOmissions: persistent.externalOmissions,
   },);
   return {
     shared: persistent.shared,
@@ -349,6 +359,7 @@ export function readCachedSummariesForSource({
     edges,
     omittedCallableKeys: [...persistent.omittedCallableKeys,],
     omissionReasons: [...persistent.omissionReasons,],
+    externalOmissions: [...persistent.externalOmissions,],
   };
 }
 
@@ -367,6 +378,8 @@ export function readCachedSummariesForSource({
  
  @param omissionReasons - Bounded reasons encountered while scanning source.
  
+ @param externalOmissions - Omissions met inside installed package implementations during the scan.
+ 
  @example
  ```ts
  storeCreatedSummariesForSource({
@@ -376,6 +389,7 @@ export function readCachedSummariesForSource({
    closure,
    omittedCallableKeys,
    omissionReasons,
+   externalOmissions,
  });
  ```
  */
@@ -386,6 +400,7 @@ export function storeCreatedSummariesForSource({
   closure,
   omittedCallableKeys,
   omissionReasons,
+  externalOmissions,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
@@ -393,6 +408,7 @@ export function storeCreatedSummariesForSource({
   readonly closure: EffectDependencyClosure;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 },): void {
   counters.directSummaryBuildCount += summaries.size;
   storeMemoryLayer({
@@ -404,6 +420,7 @@ export function storeCreatedSummariesForSource({
     },
     omittedCallableKeys,
     omissionReasons,
+    externalOmissions,
   },);
   writePersistentEffectSummaries({
     /* A shared entry is written only when the dependency closure resolved. The cross-project key
@@ -422,6 +439,7 @@ export function storeCreatedSummariesForSource({
     closure,
     omittedCallableKeys,
     omissionReasons,
+    externalOmissions,
   },);
   counters.persistentCacheWriteCount++;
   if (closure.resolved && (identity.sharedKeyDigest !== undefined))

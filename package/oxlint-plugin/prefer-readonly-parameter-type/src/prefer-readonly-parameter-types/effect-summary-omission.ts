@@ -12,11 +12,23 @@ import {
   type EffectSummaryOmissionReason,
   TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON,
 } from './effect-cache-envelope.ts';
+import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 
 /**
  Omission lifecycle logger.
  */
 const l = tagged({ tag: 'effect-summary-omission', },);
+
+/**
+ Restored external omissions already reported by this process,
+ keyed by source,
+ count and reasons.
+ 
+ A fresh scan reports an installed package's omission once per process because the package's index is
+ built once. Every source depending on that package restores the same record, so without this set a
+ warm run would repeat the line once per dependent source.
+ */
+const reportedExternalOmissions = new Set<string>();
 
 /**
  Stable fragment identifying known TypeScript instantiated-tuple serializer panic.
@@ -167,4 +179,49 @@ export function restoreCachedSummaryOmissions({
   l.warn(
     `restored ${String(restoredKeys.length,)} omitted callable summaries for ${sourceFileName} from effect cache: ${reasons.join(',')}`,
   );
+}
+
+/**
+ Forgets which restored external omissions this process has reported.
+ 
+ @example
+ ```ts
+ clearReportedExternalOmissions();
+ ```
+ */
+export function clearReportedExternalOmissions(): void {
+  reportedExternalOmissions.clear();
+}
+
+/**
+ Reports omissions recorded from installed package implementations that a restored source depends on.
+ 
+ A restored source never opens those implementations, so the report a fresh scan made when it did is
+ made here from the record the source persisted.
+ 
+ @param records - Validated records restored with the source entry.
+ 
+ @example
+ ```ts
+ restoreExternalOmissions(hit.externalOmissions);
+ ```
+ */
+export function restoreExternalOmissions(records: readonly ExternalOmissionRecord[],): void {
+  records.forEach(function restoreRecord(record,): void {
+    /**
+     Deterministic comma-separated reason categories for one-line warning.
+     */
+    const renderedReasons = record.reasons
+      .join(',',);
+    /**
+     Identity of what this record would report.
+     */
+    const reportKey = `${record.sourceFileName}\0${String(record.omittedCount,)}\0${renderedReasons}`;
+    if (reportedExternalOmissions.has(reportKey,))
+      return;
+    reportedExternalOmissions.add(reportKey,);
+    l.warn(
+      `restored ${String(record.omittedCount,)} omitted callable summaries for ${record.sourceFileName} from effect cache: ${renderedReasons}`,
+    );
+  },);
 }

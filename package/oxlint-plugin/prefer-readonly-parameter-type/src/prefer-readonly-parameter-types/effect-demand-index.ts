@@ -30,6 +30,7 @@ import {
 import {
   reportDirectSummaryOmissions,
   restoreCachedSummaryOmissions,
+  restoreExternalOmissions,
 } from './effect-summary-omission.ts';
 import {
   callableKey,
@@ -46,6 +47,8 @@ import {
   provenRootEntry,
   scopeNamesOwnershipMarker,
 } from './foreign-borrowed-demand.ts';
+import { createOmissionLedger, } from './effect-omission-ledger.ts';
+import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 import { createSharedKeyResolver, } from './shared-analysis-key.ts';
 import {
   recordSharedStore,
@@ -133,6 +136,14 @@ export function createDemandDrivenEffectIndex(
    */
   const omittedCallableKeys = new Set<string>();
   /**
+   Which loaded sources lost callables and which sources each one reached.
+   
+   Answers `reachedOmissions`, which a consumer of this index records beside the summaries it
+   builds from it. Kept apart from `omittedCallableKeys` because that set is one fact for the
+   whole index, and this answer is per callable.
+   */
+  const omissionLedger = createOmissionLedger();
+  /**
    Source paths already loaded into current graph.
    */
   const loadedFileNames = new Set<string>();
@@ -205,6 +216,19 @@ export function createDemandDrivenEffectIndex(
         sourceFileName: sourceFile.fileName,
         reasons: hit.omissionReasons,
       },);
+      restoreExternalOmissions(hit.externalOmissions,);
+      /**
+       Owned source dependencies the restored summaries reach.
+       */
+      const restoredDependencies = reachedSourceFileNames({
+        fileSummaries: hit.summaries,
+        indexedFileNames,
+      },);
+      omissionLedger.record({
+        fileName: sourceFile.fileName,
+        source: hit,
+        dependencies: restoredDependencies,
+      },);
       if (hit.shared && sharedVerificationEnabled()) {
         verifySharedSource({
           project,
@@ -217,10 +241,7 @@ export function createDemandDrivenEffectIndex(
       }
       return {
         fileSummaries: hit.summaries,
-        dependencies: reachedSourceFileNames({
-          fileSummaries: hit.summaries,
-          indexedFileNames,
-        },),
+        dependencies: restoredDependencies,
       };
     }
     if (sharedKey.eligible)
@@ -247,18 +268,28 @@ export function createDemandDrivenEffectIndex(
       fileSummaries: scan.fileSummaries,
       indexedFileNames,
     },);
+    /**
+     Fresh summaries and omissions awaiting complete closure before persistence.
+     */
+    const pendingStore: PendingEffectSummaryStore = {
+      sourceFile,
+      summaries: scan.fileSummaries,
+      omittedCallableKeys: [...scan.sourceOmittedCallableKeys,].toSorted(),
+      omissionReasons: [...scan.sourceOmissionReasons,].toSorted(),
+      externalOmissions: scan.sourceExternalOmissions,
+    };
+    omissionLedger.record({
+      fileName: sourceFile.fileName,
+      source: pendingStore,
+      dependencies,
+    },);
     closureResolver.includeDirectDependencies({
       fileName: sourceFile.fileName,
       dependencies,
     },);
     pendingStores.set(
       sourceFile.fileName,
-      {
-        sourceFile,
-        summaries: scan.fileSummaries,
-        omittedCallableKeys: [...scan.sourceOmittedCallableKeys,].toSorted(),
-        omissionReasons: [...scan.sourceOmissionReasons,].toSorted(),
-      },
+      pendingStore,
     );
     return {
       fileSummaries: scan.fileSummaries,
@@ -359,6 +390,7 @@ export function createDemandDrivenEffectIndex(
         closure,
         omittedCallableKeys: pendingStore.omittedCallableKeys,
         omissionReasons: pendingStore.omissionReasons,
+        externalOmissions: pendingStore.externalOmissions,
       },);
     },);
     pendingStores.clear();
@@ -402,6 +434,17 @@ export function createDemandDrivenEffectIndex(
         summary,
         declaration,
       },);
+    },
+    reachedOmissions(declaration,): readonly ExternalOmissionRecord[] {
+      /**
+       Source from exact analyzer snapshot rather than foreign wrapper.
+       */
+      const sourceFile = indexedSourceFiles.get(declaration.getSourceFile()
+        .fileName,);
+      if (sourceFile === undefined)
+        return [];
+      ensureSource(sourceFile,);
+      return omissionLedger.reachedFrom(sourceFile.fileName,);
     },
     proveForeignBorrowed(declaration,): ReadonlySet<ParameterIndex> {
       /**

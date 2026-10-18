@@ -4,6 +4,16 @@
  @module
  */
 
+import {
+  areOmissionReasons,
+  type EffectSummaryOmissionReason,
+  isOmissionReason,
+} from './effect-omission-reason.ts';
+import {
+  EXTERNAL_OMISSIONS_INVALID,
+  type ExternalOmissionRecord,
+  parseExternalOmissionRecords,
+} from './effect-external-omission.ts';
 import type { EffectProjectSurfaces, } from './effect-project-fingerprint.ts';
 import { EFFECT_CACHE_SCHEMA, } from './effect-summary-cache-identity.ts';
 import {
@@ -20,22 +30,11 @@ export const ENVELOPE_INVALID: unique symbol = Symbol(
   'persistent cache envelope failed validation',
 );
 
-/**
- Reason category for an unclassified direct-summary construction failure.
- */
-export const DIRECT_SUMMARY_FAILURE_REASON = 'direct-summary-construction-failed';
-
-/**
- Reason category for known TypeScript instantiated-tuple serialization panic.
- */
-export const TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON = 'typescript-tuple-serialization-failed';
-
-/**
- Bounded persisted reason for source-local summary coverage.
- */
-export type EffectSummaryOmissionReason =
-  | typeof DIRECT_SUMMARY_FAILURE_REASON
-  | typeof TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON;
+export {
+  DIRECT_SUMMARY_FAILURE_REASON,
+  type EffectSummaryOmissionReason,
+  TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON,
+} from './effect-omission-reason.ts';
 
 /**
  Validated incremental JSON cache envelope.
@@ -49,6 +48,10 @@ export type EffectSummaryOmissionReason =
  `dependenciesResolved` marks whether module references resolved completely;
  an unresolved entry snapshots the whole indexed scope instead and must
  never seed another file's closure walk.
+ 
+ `externalOmissions` records the omissions met inside installed package implementations while the entry's
+ source was scanned. The summaries already carry the effects applied from those implementations, so a
+ restored entry never opens them again, and this field is what lets the restore say what a fresh scan said.
  
  A shared entry carries `sharedKeyDigest`, the cross-project key it was
  written under, and is addressed by file and that key rather than by project;
@@ -67,6 +70,7 @@ export type PersistentEffectCacheEnvelope = {
   readonly dependencyDigests: Readonly<Record<string, string>>;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
   readonly payload: SerializedEffectSummaries;
   readonly sharedKeyDigest?: string;
 };
@@ -161,18 +165,6 @@ function isOmittedCallableKeys({
 }
 
 /**
- Tests whether unknown value is one bounded omission reason category.
- 
- @param value - Parsed reason candidate.
- 
- @returns whether candidate names supported category.
- */
-function isOmissionReason(value: unknown,): value is EffectSummaryOmissionReason {
-  return (value === DIRECT_SUMMARY_FAILURE_REASON)
-    || (value === TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON);
-}
-
-/**
  Tests whether omission reason categories agree with omission list presence.
  
  @param keys - Parsed omission identities.
@@ -194,7 +186,7 @@ function omissionReasonsMatch({
     return false;
   if (new Set(reasons,).size !== reasons.length)
     return false;
-  if (!reasons.every(isOmissionReason,))
+  if (!areOmissionReasons(reasons,))
     return false;
   return (keys.length === 0) === (reasons.length === 0);
 }
@@ -315,6 +307,14 @@ export function validatePersistentEnvelope({
   };
   readonly state: PersistentEffectDependencyState;
 }): PersistentEffectCacheEnvelope | typeof ENVELOPE_INVALID {
+  /**
+   Records of omissions met inside installed package implementations,
+   parsed apart because the field is typed only once every record is proved.
+   */
+  const externalOmissions = parseExternalOmissionRecords({
+    value: isRecord(value,) ? value.externalOmissions : undefined,
+    fileName: identity.fileName,
+  },);
   if ((!isRecord(value,))
     || (value.schema !== EFFECT_CACHE_SCHEMA)
     || (value.analyzerDigest !== identity.analyzerDigest)
@@ -342,6 +342,7 @@ export function validatePersistentEnvelope({
     },))
     || (!Array.isArray(value.omittedCallableKeys,))
     || (!Array.isArray(value.omissionReasons,))
+    || (externalOmissions === EXTERNAL_OMISSIONS_INVALID)
     || (!isSerializedEffectSummaries(value.payload,))
     || (!isOmittedCallableKeys({
       value: value.omittedCallableKeys,
@@ -373,6 +374,7 @@ export function validatePersistentEnvelope({
       .filter(function omissionReason(entry,): entry is EffectSummaryOmissionReason {
         return isOmissionReason(entry,);
       },),
+    externalOmissions,
     payload: value.payload,
   };
 }

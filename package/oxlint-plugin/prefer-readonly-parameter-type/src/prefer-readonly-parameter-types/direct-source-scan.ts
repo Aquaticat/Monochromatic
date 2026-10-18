@@ -12,6 +12,10 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
 import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';
+import {
+  type ExternalOmissionRecord,
+  mergeExternalOmissions,
+} from './effect-external-omission.ts';
 import { recordDirectSummaryOmission, } from './effect-summary-omission.ts';
 import {
   callableKey,
@@ -32,6 +36,7 @@ export type DirectSourceScan = {
   readonly fileSummaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly sourceOmittedCallableKeys: ReadonlySet<string>;
   readonly sourceOmissionReasons: ReadonlySet<EffectSummaryOmissionReason>;
+  readonly sourceExternalOmissions: readonly ExternalOmissionRecord[];
 };
 
 /**
@@ -54,7 +59,9 @@ export type DirectSourceScan = {
  
  @param buildIndex - Builder of the recursive external-analysis index.
  
- @returns summaries and source-local omissions.
+ @returns summaries,
+ source-local omissions,
+ and the omissions met inside installed package implementations whose effects the summaries applied.
  
  @mutates allOmittedKeys - Adds every omitted callable identity.
  
@@ -92,6 +99,10 @@ export function scanDirectSummaries({
    */
   const sourceOmissionReasons = new Set<EffectSummaryOmissionReason>();
   /**
+   Omissions each installed package call met inside the package implementation.
+   */
+  const externalOmissionGroups: (readonly ExternalOmissionRecord[])[] = [];
+  /**
    Fresh direct summaries for reached source.
    */
   const fileSummaries = new Map(declarations.flatMap(function gatherCallable(declaration,): readonly [
@@ -115,6 +126,9 @@ export function scanDirectSummaries({
               call,
               declaration: externalDeclaration,
               buildIndex,
+              onOmissions(records,): void {
+                externalOmissionGroups.push(records,);
+              },
             },);
           },
         },),
@@ -135,5 +149,6 @@ export function scanDirectSummaries({
     fileSummaries,
     sourceOmittedCallableKeys,
     sourceOmissionReasons,
+    sourceExternalOmissions: mergeExternalOmissions(externalOmissionGroups,),
   };
 }

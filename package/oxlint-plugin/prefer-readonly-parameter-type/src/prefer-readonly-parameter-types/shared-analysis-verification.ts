@@ -9,6 +9,7 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { scanDirectSummaries, } from './direct-source-scan.ts';
 import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';
+import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 import type { LayeredSummaryCacheHit, } from './effect-summary-cache.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
 import type { ExternalEffectIndexBuilder, } from './external-callable-effect.ts';
@@ -22,6 +23,7 @@ export type SourceAnalysisSnapshot = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
+  readonly externalOmissions: readonly ExternalOmissionRecord[];
 };
 
 /**
@@ -100,6 +102,8 @@ function differingParts({
   if (JSON.stringify([...cached.omissionReasons,].toSorted(),)
     !== JSON.stringify([...fresh.omissionReasons,].toSorted(),))
     parts.push('omissionReasons differ',);
+  if (JSON.stringify(cached.externalOmissions,) !== JSON.stringify(fresh.externalOmissions,))
+    parts.push('externalOmissions differ',);
   return parts;
 }
 
@@ -210,6 +214,7 @@ export function verifySharedSource({
       summaries: scan.fileSummaries,
       omittedCallableKeys: [...scan.sourceOmittedCallableKeys,],
       omissionReasons: [...scan.sourceOmissionReasons,],
+      externalOmissions: scan.sourceExternalOmissions,
     },
   },);
 }
