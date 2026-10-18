@@ -123,6 +123,36 @@ That capability belongs to Depot CI sandboxes.
 It must not be inferred for Depot GitHub runners or generic SDK sandboxes from the product name.
 The SDK default-image probe in this research did not expose a `/dev/kvm` character device.
 
+Existing standalone CI evidence is stronger than device availability.
+Run `vq299blkbw`,
+using a prepared image on `16x64`,
+created an Ubuntu KVM guest and destroyed it successfully on 2026-10-17.
+The retained QEMU daemon log contains `-accel kvm`;
+the preparation log records the actual guest agent ready at `04:39:59.768Z`.
+The command exited zero at `04:39:59.774Z`,
+and destruction exited zero at `04:40:00.167Z`.
+The retained artifact was rehashed on 2026-10-18:
+21,474 bytes,
+SHA-256 `606cb2a627cc1dcf9bc99d4bb310e9e9ae00c05fcd4ef90b4dc951c0559663e1`.
+[The existing VM recovery evidence][vm-recovery] retains the source,
+harness,
+artifact,
+and original task boundaries;
+[the platform evidence][research-evidence] retains this read-only recheck.
+No additional cloud allocation was started.
+
+The same run failed a later Windows guest-agent prerequisite.
+Neither authored `vmsync` lifecycle test body executed.
+Private domain cleanup was verified,
+but the retained daemon termination requests lack subsequent PID-exit observations.
+Those limits do not erase the actual Ubuntu KVM execution,
+and its prepared image and allocation do not prove every CI profile has the same prerequisites.
+The [coherent Android evaluation][coherent-report] consumed a Depot-produced APK on a local emulator.
+It does not prove cloud Android execution.
+That Android consumer,
+the CI KVM guest,
+and the generic SDK device probe are separate execution boundaries.
+
 The compatibility reference still describes fork-triggered pull request support as planned,
 and deployment environments as unsupported.
 It also documents that `secrets.GITHUB_TOKEN` in Depot CI cannot authenticate to GitHub Packages.
@@ -526,8 +556,9 @@ Unresolved acceptance work is concrete:
   retry semantics,
   and explicit provider fallback on disposable workflows.
 - Verify timing-based test identities and reporting on the repository's own test producers.
-- Exercise VM or Android workloads on the selected CI sandbox,
-  rather than inferring them from a KVM advertisement or a generic SDK command.
+- Exercise the required authored VM gates and cloud Android workloads on the selected CI sandbox.
+  Reuse the actual Ubuntu KVM guest as platform evidence,
+  while retaining the unexecuted historical lifecycle bodies and local Android consumer boundaries.
 - Assign retention and cleanup owners for registries,
   snapshots,
   caches,
@@ -581,3 +612,5 @@ remain grilling topics after the actionable research and probes are reconciled.
 [terms]: https://depot.dev/terms-of-service
 [docs-drift]: ../troubleshooting/depot-documentation-source-drift.md
 [research-evidence]: ../audit/depot-developer-platform-research-2026-10-18.evidence.json
+[vm-recovery]: ../audit/depot-vm-recovery-2026-10-17.evidence.json
+[coherent-report]: ../audit/tech-depot-complete-ci-trial-vet-2026-10-17.md
