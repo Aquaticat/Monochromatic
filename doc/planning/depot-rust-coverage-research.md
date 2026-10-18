@@ -15,7 +15,9 @@ At most two owned cloud jobs may run simultaneously.
 Each new bounded profile must retain its declared resources,
 published-rate reservation,
 source/tool hashes and actual provider identifiers before results are compared.
-No new Rust coverage allocation has been launched at this checkpoint.
+The initial current-source linter profile is admitted at USD 0.36,
+bringing the conservative forecast to USD 1.767.
+It has not been dispatched at this checkpoint.
 
 ## Source catalog checkpoint
 
@@ -36,6 +38,62 @@ The installed `cargo read-manifest --help` exposes a frozen,
 offline manifest-reader invocation and marks it deprecated in favor of metadata.
 Any use here is an inventory probe,
 not a proposed production tooling replacement.
+
+Cargo 1.98.1 accepts all four manifests rejected by Python 3.14.8's TOML parser.
+The complete [source catalog](../audit/depot-rust-coverage-2026-10-18.catalog.json.gz)
+retains raw manifests,
+owning Mise tasks,
+lock identities and tracked source hashes.
+Cargo-normalized absolute paths are paired with resolved repository-relative dependencies.
+An empty or self-member `[workspace]` still describes a standalone crate;
+it does not establish membership in a missing root workspace.
+
+The manifest inventory contains five fuzz sidecars,
+two benchmark sidecars and sixteen other packages.
+The declared `fuzz_targets/` binaries total 35:
+five scanner,
+five regex,
+four JSONC,
+fifteen Git-policy and six linter targets.
+Actual `cargo fuzz list` and executed target receipts remain separate runtime gates.
+Committed seed files total 46 for scanner,
+65 for Git-policy,
+10 for linter and three for JSONC.
+No tracked regex seed files exist at this source.
+The first inventory matcher omitted singular `seed/` directories;
+that scope error was corrected before assigning seed counts or execution credit.
+
+## Initial current-source linter profile
+
+The isolated workflow is `.depot/workflows/rust-coverage-linter.yml`,
+with an 8 CPU,
+32 GB allocation,
+15-minute job limit and 12-minute application-step limit.
+The reservation uses USD 0.00005 per CPU-second:
+`8 * 900 * 0.00005 = USD 0.36`.
+This is a timestamp-compute research guard,
+not an account bill.
+
+The prepared native image is `research-reuse-20261018:tools-r2-git256`,
+bound to `sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd`.
+The profile installs no replacement application binary.
+It prepares the source linter's locked dependencies,
+then executes `cargo nextest run --locked --offline --all-targets --no-fail-fast`.
+The owning Mise configuration's compiler fan-out remains two.
+Development debug symbols and incremental compilation are disabled,
+matching the existing tested container preparation settings;
+Nextest retains default test concurrency.
+
+The produced current-source CLI must answer its real help and rule-list commands.
+The profile also builds the library artifact,
+compiles the existing `src/processors_consumer.rs` against it,
+and runs that consumer.
+JUnit includes skipped cases and failure output.
+Application source,
+locks and owner configuration are checked against the frozen tree before and after execution.
+Failures remain failures while receipts upload independently.
+The source linter's Cargo lock contains 294 packages and pins the rust-analyzer family to `0.0.336`.
+That compilation and its own tests are distinct from using the published `0.1.3` prerequisite.
 
 ## Owned work queue
 

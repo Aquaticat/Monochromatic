@@ -1,0 +1,76 @@
+{
+  "recordedAt": "2026-10-18T09:39:32.817Z",
+  "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "sourceCatalog": {
+    "path": "doc/audit/depot-rust-coverage-2026-10-18.catalog.json.gz",
+    "rawBytes": 2689615,
+    "rawSha256": "0ddbf0829badc47e3949cb958b7a234265ce742c40b1c14734739e79c98395a7",
+    "compressedBytes": 538476,
+    "compressedSha256": "6dda590c2b8cfe131ade20f2368cc366f2ef92e294a6b380b4f9ac5c8327d1ff",
+    "manifestCount": 23,
+    "rootCargoWorkspacePresent": false,
+    "fuzzTargets": 35,
+    "seedFiles": [
+      {
+        "path": "package/cli/forbidden-strings.fuzz",
+        "count": 46,
+        "closureSha256": "ef92f8bf4164ba162200f4248d8dabcc665279ce9370757667c9e0aefe826a4a"
+      },
+      {
+        "path": "package/git-policy/cli.fuzz",
+        "count": 65,
+        "closureSha256": "3a6d31617e66aeffa9fafdaf5a6c86853330cc05c6ba9530ae64da547cc8f339"
+      },
+      {
+        "path": "package/linter/monochromatic-lint.fuzz",
+        "count": 10,
+        "closureSha256": "54aee723018f9b05cb95dfea81ac2913dfdbd16e60f8ee6b099dd0b035a978a8"
+      },
+      {
+        "path": "package/rust-module/forbidden-regex.fuzz",
+        "count": 0,
+        "closureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "path": "package/rust-module/jsonc-edit.fuzz",
+        "count": 3,
+        "closureSha256": "5ee0118ddc071211b253a508cd7403c3458f85a583b5d65e7fdbd593e2cfef3e"
+      }
+    ]
+  },
+  "budget": {
+    "ceilingUsd": 5,
+    "completedPriorCampaignProxyUsd": 1.407,
+    "maxSimultaneous": 2,
+    "firstLinterReservationUsd": 0.36,
+    "forecastIncludingLinterUsd": 1.767,
+    "rationale": "Conservative admission at8CPU times0.00005USD per CPUsecond times900seconds =0.36USD. Timestamp proxy, not invoice."
+  },
+  "profiles": [
+    {
+      "name": "linter",
+      "state": "admitted-not-dispatched",
+      "cpus": 8,
+      "memoryGb": 32,
+      "jobTimeoutMinutes": 15,
+      "applicationStepTimeoutMinutes": 12,
+      "workflow": ".depot/workflows/rust-coverage-linter.yml",
+      "commands": [
+        "cargo fetch --locked",
+        "cargo nextest --config-file OWNED_CONFIG run --locked --offline --all-targets --no-fail-fast",
+        "monochromatic-lint --help",
+        "monochromatic-lint --rules",
+        "cargo build --locked --offline --lib",
+        "rustc --edition=2024 --extern monochromatic_lint=OWNED_RLIB -L dependency=OWNED_DEPS src/processors_consumer.rs --out-dir OWNED_DIR",
+        "OWNED_DIR/processors_consumer"
+      ],
+      "compilerJobs": 2,
+      "nextestConcurrency": "default",
+      "devDebug": "0",
+      "incremental": "0",
+      "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256",
+      "imageDigest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd"
+    }
+  ],
+  "runs": []
+}
