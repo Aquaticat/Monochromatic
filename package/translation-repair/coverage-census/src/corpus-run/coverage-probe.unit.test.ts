@@ -22,6 +22,7 @@ import {
   ONE_ENTRY_CORPUS,
   runProbeOver,
 } from '@monochromatic-dev/translation-repair-corpus-pass/ts/corpus-run/probes-b-built-command.test-fixture.ts';
+import { BUILT_DIRECTORY, } from './coverage-census.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -52,6 +53,7 @@ await describe({
         const run = await runProbeOver({
           command: COMMAND,
           files: ONE_ENTRY_CORPUS,
+          builtDirectory: BUILT_DIRECTORY,
           args: ['--only', 'Mittens', '--cap', '2',],
         },);
         expect(run,).toEqual({
@@ -70,6 +72,7 @@ await describe({
         const run = await runProbeOver({
           command: COMMAND,
           files: ONE_ENTRY_CORPUS,
+          builtDirectory: BUILT_DIRECTORY,
           args: ['--bogus',],
         },);
         expect(run,).toEqual({
@@ -89,6 +92,7 @@ await describe({
         const run = await runProbeOver({
           command: COMMAND,
           files: ONE_ENTRY_CORPUS,
+          builtDirectory: BUILT_DIRECTORY,
           args: ['--cap', 'x',],
         },);
         expect(run,).toEqual({
