@@ -14,6 +14,7 @@ try {
   run('kernel', 'uname', ['--all']);
   run('namespace-help', 'unshare', ['--help']);
   run('mount-help', 'mount', ['--help']);
+  run('network-version', 'ip', ['--Version']);
   const networkHelp = run('network-help', 'ip', ['--help'], { allowFailure: true });
   assert([0, 255].includes(networkHelp.status));
   assert(networkHelp.output.includes('Usage: ip [ OPTIONS ] OBJECT'));

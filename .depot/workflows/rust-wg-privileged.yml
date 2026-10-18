@@ -28,7 +28,7 @@ jobs:
     - name: Bind prepared image to its actual captured manifest
       run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
     - name: Execute immutable source wg-privileged owner boundary
-        timeout-minutes: 8
+      timeout-minutes: 8
       run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:rust:wg
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
