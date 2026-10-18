@@ -64,6 +64,77 @@ No tracked regex seed files exist at this source.
 The first inventory matcher omitted singular `seed/` directories;
 that scope error was corrected before assigning seed counts or execution credit.
 
+### Manifest execution boundaries
+
+The catalog records each manifest,
+source closure,
+lockfile,
+path dependency and actual owning Mise configuration.
+Its execution classifications are:
+
+- `package/cli/forbidden-strings`:
+  the same frozen source passed its complete 237-case release Nextest owner
+  in producer `v7njncr47d` and fresh reader `zq7cc1nd4b`.
+  The [reuse evidence](../audit/depot-reuse-strategy-2026-10-18.evidence.json)
+  retains its source/tool admission and independent mutation control.
+- `package/git-policy/cli`:
+  the same frozen source executed 1,951 cases with 1,949 passed and two failed,
+  plus five skipped out of 1,956 enumerated in `n2zlbh5gpb`.
+  Its Git 2.56 and published-linter prerequisites,
+  filesystem controls and later selected 34-case archive replays remain separate boundaries.
+  It does not have a passing full-suite result.
+- `package/linter/monochromatic-lint`,
+  `package/rust-module/jsonc-edit`,
+  `package/rust-module/forbidden-regex`,
+  `package/cli/wg-quicker-exempt` and `package/codex-plugin/bash-limit`:
+  this campaign retains their actual Nextest results.
+  Privileged BPF cases and the installed Codex host are separately gated.
+- `package/cli/forbidden-strings.fuzz`,
+  `package/git-policy/cli.fuzz`,
+  `package/linter/monochromatic-lint.fuzz`,
+  `package/rust-module/forbidden-regex.fuzz` and `package/rust-module/jsonc-edit.fuzz`:
+  their GNU/AddressSanitizer,
+  generator,
+  seed and planted-control boundaries are the active queue.
+  Listing targets does not count as executing them.
+- `package/music-player/truepeak-core`:
+  the [BuildKit campaign](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+  retains exact-source AMD64 release library production and offline registry/target-cache controls.
+  That producer uses Rust/Cargo `1.97.1` with `--no-default-features`,
+  whereas the owning `test` task requires release Nextest with `--all-features`.
+  No unit-test,
+  `service` or `fingerprint` credit transfers from that producer.
+- `package/music-player/android-app/rust`:
+  [Android producer receipts](depot-complete-coverage-android-junit-execution.json.gz)
+  retain JNI/ELF/APK production at the frozen source.
+  Its 1,289 JVM cases and
+  [headful device consumer](../audit/depot-android-consumer-2026-10-18.evidence.json)
+  are consumer boundaries,
+  not standalone Rust unit-test counts.
+- `package/cli/nested-wayland-session`,
+  `package/desktop-app/file-manager`,
+  `package/desktop-app/file-manager-gtk-sticky`,
+  `package/desktop-app/file-manager-qt`,
+  `package/desktop-app/ide`,
+  `package/desktop-app/terminal` and `package/music-player/desktop-app`:
+  the catalog retains their actual desktop owners and dependency graphs.
+  They involve Smithay/Wayland,
+  GTK,
+  Qt,
+  Slint,
+  Ghostty or platform audio dependencies respectively.
+  Source-specific desktop orchestration belongs to the separate native/routing investigation.
+  Historical desktop tests do not enter this campaign's current-source denominator.
+- `package/music-player/truepeak-core.bench` and `package/rust-module/forbidden-regex.bench`:
+  these are benchmark sidecars with independent build/run owners.
+  No benchmark or parent-package test pass transfers merely from their manifest presence.
+
+The [historical feature audit](../audit/depot-test-feature-2026-10-16.md),
+[prepared desktop record](../audit/depot-prepared-desktop-2026-10-16.md)
+and [expanded execution record](../audit/depot-expanded-execution-2026-10-16.md)
+remain historical evidence until their source,
+dependency and tool identities match the requested boundary.
+
 ## Initial current-source linter profile
 
 The isolated workflow is `.depot/workflows/rust-coverage-linter.yml`,
@@ -333,3 +404,33 @@ It does not introduce another remote compiler pool.
 Its [wrapper source audit](../troubleshooting/depot-cargo-cache-wrapper.md)
 also records authentication precedence and removal of inherited `SCCACHE_*` tuning.
 Any use must preserve this campaign's isolated cache namespace and job-scoped credential boundary.
+
+### Retained installed-host diagnostic
+
+Diagnostic `xdv4v475fq` at harness `ecacdf9e31810fa5961f3fe4351141a7dbf9f8c1`
+retains the unchanged failing installed-host Nextest case,
+40 synchronous hook completions and an empty synthetic membership file.
+The transparent protocol tee records no `commandExecution` items.
+The retained Codex SQLite log records 30 filesystem sandbox `policy_denied` events before its final flush.
+Codex also reports its missing external `bubblewrap` and bundled fallback.
+These observations do not yet identify the shell launch failure.
+
+`tests/host_support/server.rs` checks whether each raw provider request contains `host-payload-executed`.
+That check can match the preceding function-call arguments,
+so it does not establish successful tool output.
+The next diagnostic captures the same localhost provider traffic without modifying frozen application or test source.
+The host used an unauthenticated local Responses fixture;
+no paid provider request was admitted.
+Its fresh home also fetched the default public plugin catalog and received an unauthenticated featured-catalog 401.
+The artifact retains that background behavior,
+while durable raw receipts omit downloaded plugin payloads and retain their individual hashes.
+
+Completed conservative compute proxy is USD 1.7458 of the USD 5 ceiling.
+The only active reservations are `jwg2cmvwd1` (small fuzz retry) and `8rh0797pqx` (Git-policy fuzz),
+each bounded to 8 CPUs,
+32 GB and 15 minutes with a USD 0.36 reservation.
+The reservation-inclusive bound is USD 2.4658.
+Truepeak all-features,
+the remaining fuzz/planted owners,
+transparent host capture,
+benchmark repetitions and privileged WG prerequisite probes remain the explicitly tracked queue.
