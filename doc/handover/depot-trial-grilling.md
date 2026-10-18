@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 16:09 UTC
+## Execution checkpoint on 2026-10-18 at 16:23 UTC
 
 Research remains active;
 do not start the interview.
@@ -67,8 +67,21 @@ with two sequential samples and one native job maximum.
 Its finite terminal watcher process session `84977` is reaped:
 native run is terminal failed at `16:04:04 UTC` and produced both graph artifacts.
 Both exact job/attempt/sandbox identities are retained in the private terminal receipt.
-The native collector is process session `52194`;
-recover from `expanded-graph-corrected-native-verified-samples.json` before repeating any interrupted download.
+The native collector process session `52194` is reaped zero;
+both original ZIPs passed CRC/API-size checks and all 222 original command-log byte/hash joins per sample.
+Shared builds passed all 42 commands in 61.660 and 61.439 seconds;
+both Rust owners passed in 283.541 and 296.024 seconds.
+Browser preparation reproduced the exact documented rootless Podman group-identity rejection in both samples.
+Those samples give no browser-case credit.
+The isolated correction `72af18d5b130dabef7ff5b656ffdc1b58df4fcde`
+uses the existing verified `sudo --non-interactive` Podman boundary only for native Depot.
+Independent execution of its exact bootstrap passed 24 bounded provider/command controls;
+receipt `doc/audit/depot-expanded-graph-podman-preflight-2026-10-18.evidence.json`
+is sealed at commit `5edbdadcc2`.
+The native correction admission retains the existing two-sample USD 0.72 reserve within the USD 3 guard;
+its cumulative conservative campaign proxy remains USD 2.9096.
+The real corrected native consumer remains required;
+local fake-executable routing controls give no application case credit.
 The GitHub terminal watcher remains session `63906`.
 Completed GitHub samples already have CRC/API-size/API-digest-verified original ZIPs:
 GitHub one `12142265999`,
@@ -86,7 +99,17 @@ Shared and Rust completed subgraphs can be compared after unchanged-input spread
 Never count a populated outcome `startedAt` or `log` field as proof of a child invocation:
 unstarted budget placeholders also carry them;
 join actual original ZIP member presence and explicit state.
-Inspect all failure families and both remaining GHA samples before publication.
+Depot's second GHA sample is also collected:
+artifact `12141519578`,
+223331 bytes,
+SHA256 `452edf15dabd5cf769e1fb3965db010518ceda8024dd832a28b94494462191a5`.
+It retains all 222 original command logs,
+with 196 passing commands and 26 requiring classification.
+Shared builds passed in 72.591 seconds and Rust owners in 340.119 seconds.
+The private inspector now counts actual ZIP members,
+replacing its erroneous placeholder-based `actuallyStartedCommands` projection.
+All 1082 retained original command logs across these five samples pass exact byte/hash joins.
+Inspect all failure families and the last public GitHub repetition before publication.
 
 Packed consumers are sealed at `898fd6ab03`:
 25 actual runtime imports,
@@ -108,8 +131,13 @@ The first public Mac/Windows contexts exposed a research logger filename contain
 and an omitted hidden-artifact upload option.
 Their raw logs retain actual filesystem/native-debug/emitted-version successes,
 but no artifact consumer or case-level Nextest acceptance follows from that failed handoff.
-The coverage owner preserves the failed cohort and corrects only research logging/upload configuration,
-with actual controls before repeated finite public contexts and matched Depot allocation.
+The coverage owner preserves the failed cohort and corrects only research logging/upload configuration.
+Pinned uploader controls prove zero default-hidden matches versus four explicit-hidden matches;
+logger controls accept hostile task names and reject an existing output before child execution.
+The exact corrected public recovery is run `39144499822`,
+harness `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`,
+with the same five sequential contexts and finite watcher.
+Matched Depot allocation follows this actual public handoff.
 The coverage owner also confirms whether public desktop source archives contain image bytes or only identities,
 closing the existing screenshot publication/privacy boundary without relaunching desktop or emulator work.
 
