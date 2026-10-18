@@ -4,10 +4,10 @@ import {describe,it} from '@monochromatic-dev/module-test/ts';
 
 //region Narrow the shipped protocol without importing source-only implementation helpers.
 /** Consumer-visible operation capabilities exercised through the actual built module. */
-interface ApprovalOperation extends Disposable {
+type ApprovalOperation = {
  /** Read the original presentation view, including its absence or original capture failure. */
  readonly captureHost:()=>unknown;
-}
+} & Disposable;
 
 /**
  Check the callable built protocol before a consumer borrows its lifetime.
@@ -16,9 +16,9 @@ interface ApprovalOperation extends Disposable {
  @returns whether both original capabilities are callable
  */
 function isOperation(value:unknown):value is ApprovalOperation{
- return value!==null&&typeof value==='object'
-  &&'captureHost' in value&&typeof value.captureHost==='function'
-  &&Symbol.dispose in value&&typeof value[Symbol.dispose]==='function';
+ return (value!==null)&&((typeof value)==='object')
+  &&('captureHost' in value)&&((typeof value.captureHost)==='function')
+  &&(Symbol.dispose in value)&&((typeof value[Symbol.dispose])==='function');
 }
 
 /**
@@ -31,9 +31,9 @@ async function operation(capture:()=>unknown):Promise<ApprovalOperation>{
  const namespace:unknown=await import(new URL(
   '../dist/native/contract/integration/action-policy/approval.mjs',import.meta.url,
  ).href);
- assert.ok(namespace!==null&&typeof namespace==='object'&&'createApprovalHostOperation' in namespace);
+ assert.ok((namespace!==null)&&((typeof namespace)==='object')&&('createApprovalHostOperation' in namespace));
  const factory:unknown=namespace.createApprovalHostOperation;
- assert.ok(typeof factory==='function');
+ assert.ok((typeof factory)==='function');
  const result:unknown=Reflect.apply(factory,undefined,[capture]);
  assert.ok(isOperation(result));
  return result;
@@ -46,8 +46,8 @@ async function operation(capture:()=>unknown):Promise<ApprovalOperation>{
  @returns whether the original closed-scope category and complete explanation agree
  */
 function closedOperation(error:unknown):boolean{
- return Error.isError(error)&&error.name==='PolicyApprovalError'
-  &&error.message==='The original approval capability scope has ended';
+ return Error.isError(error)&&(error.name==='PolicyApprovalError')
+  &&(error.message==='The original approval capability scope has ended');
 }
 //endregion Built protocol and exact closed-scope diagnostic
 
@@ -58,7 +58,10 @@ await describe({
   it({name:'shares one borrowed host through repeated reads without freezing it',fn:async function captureOriginalHost(){
    const counts={calls:0};
    const host={current:'original native capabilities'};
-   using scope=await operation(function capture(){counts.calls++;return host;});
+   using scope=await operation(function capture(){
+    counts.calls++;
+    return host;
+   });
    assert.equal(scope.captureHost(),host);
    host.current='borrowed capabilities remain mutable';
    assert.equal(scope.captureHost(),host);
@@ -67,7 +70,10 @@ await describe({
   }}),
   it({name:'retains absent presentation capability without querying its source again',fn:async function captureAbsentHost(){
    const counts={calls:0};
-   using scope=await operation(function captureMissing(){counts.calls++;return undefined;});
+   using scope=await operation(function captureMissing(){
+    counts.calls++;
+    return undefined;
+   });
    assert.equal(scope.captureHost(),undefined);
    assert.equal(scope.captureHost(),undefined);
    assert.equal(counts.calls,1);
@@ -76,21 +82,38 @@ await describe({
    const failures:readonly unknown[]=[undefined,null,false,'original capture failure',Symbol('original failed presentation capture'),new Error('original capture error')];
    await Promise.all(failures.map(async function verifyFailure(failure){
     const counts={calls:0};
-    using scope=await operation(function failCapture(){counts.calls++;throw failure;});
-    assert.throws(function captureFirst(){scope.captureHost();},function originalFirst(error:unknown){return error===failure;});
-    assert.throws(function captureAgain(){scope.captureHost();},function originalAgain(error:unknown){return error===failure;});
+    using scope=await operation(function failCapture(){
+     counts.calls++;
+     throw failure;
+    });
+    assert.throws(function captureFirst(){
+     scope.captureHost();
+    },function originalFirst(error:unknown){
+     return error===failure;
+    });
+    assert.throws(function captureAgain(){
+     scope.captureHost();
+    },function originalAgain(error:unknown){
+     return error===failure;
+    });
     assert.equal(counts.calls,1);
    }));
   }}),
   it({name:'captures fresh capabilities for the next operation and rejects reads after closure',fn:async function closeAndRecapture(){
    const counts={calls:0};
    const hosts=[{name:'original context'},{name:'reloaded context'}];
-   function capture(){const host=hosts[counts.calls];counts.calls++;return host;}
+   function capture(){
+    const host=hosts[counts.calls];
+    counts.calls++;
+    return host;
+   }
    using first=await operation(capture);
    assert.equal(first.captureHost(),hosts[0]);
    first[Symbol.dispose]();
    first[Symbol.dispose]();
-   assert.throws(function readClosed(){first.captureHost();},closedOperation);
+   assert.throws(function readClosed(){
+    first.captureHost();
+   },closedOperation);
    assert.equal(counts.calls,1);
    using next=await operation(capture);
    assert.equal(next.captureHost(),hosts[1]);
@@ -98,9 +121,14 @@ await describe({
   }}),
   it({name:'closing before the first read never queries the bootstrap source',fn:async function closeUnreadCapture(){
    const counts={calls:0};
-   using scope=await operation(function unusedCapture(){counts.calls++;return {};});
+   using scope=await operation(function unusedCapture(){
+    counts.calls++;
+    return {};
+   });
    scope[Symbol.dispose]();
-   assert.throws(function readClosed(){scope.captureHost();},closedOperation);
+   assert.throws(function readClosed(){
+    scope.captureHost();
+   },closedOperation);
    assert.equal(counts.calls,0);
   }}),
  ],
