@@ -2,7 +2,7 @@
 quiet = true
 shell = "node --input-type=module-typescript -e"
 run = '''
-import {createServer} from 'node:http';
+import {createServer} from 'node:http2';
 import {once} from 'node:events';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
@@ -65,6 +65,10 @@ try{
       invalidTargetNegative:true,remotePrintUnsupported:true,noPrintApiRequests:true},cloudAllocation:false};
   writeFileSync(join(state,'print-controls.json'),JSON.stringify(receipt,null,2)+'\n');
   process.stdout.write(JSON.stringify({controls:receipt.controls,cloudAllocation:false})+'\n');
+}catch(error){
+  writeFileSync(join(state,'print-controls-failed.json'),JSON.stringify({failedAt:new Date().toISOString(),
+    diagnostic:String(error),requests,commands,cloudAllocation:false},null,2)+'\n');
+  throw error;
 }finally{
   const closed=once(server,'close');server.close();await closed;
 }
