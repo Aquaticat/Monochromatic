@@ -6,8 +6,10 @@ use crate::language::reply::LanguageReply;
 use crate::language::{
     diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::LanguageStatus,
 };
-/// `Arc` is a thread-safe shared pointer; `mpsc` is a queue and `watch` a single-slot latest-value cell.
+/// `Arc` is a thread-safe shared pointer.
 use std::sync::Arc;
+/// `mpsc` is a queue,
+///  and `watch` a single-slot latest-value cell.
 use tokio::sync::{mpsc, watch};
 
 /// The sending ends of every channel the interface thread polls.

@@ -6,7 +6,7 @@ import {createGuidelineInputs} from './guideline-inputs.mjs';
 
 //region Retain the original render lifetime and system-section publication.
 /** Retain the original render lifetime and system-section publication. */
-export function createRunRendering({state,check,issuedErrors,record,guard,charge}){
+export function createRunRendering({state,check,issuedErrors,record,guard}){
 /** The fixed native preparation path renders synchronously within this original run. */
   function render({
     options,
@@ -55,10 +55,6 @@ export function createRunRendering({state,check,issuedErrors,record,guard,charge
         input,
         freezePromptOptions(options)
       ))||(state.active!==scope))throw new SourceCollectionError('Native prompt inputs changed during construction');
-      charge({
-        scope,
-        value:captured
-      });
       scope.rendered=Object.freeze({
         options,
         input,

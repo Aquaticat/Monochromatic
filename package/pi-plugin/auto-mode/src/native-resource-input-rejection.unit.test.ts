@@ -1,5 +1,5 @@
 /**
- Native resource admission rejects malformed descriptors and over-budget complete sources.
+ Native resource admission rejects malformed descriptors while retaining complete sources.
 
  @module
  */
@@ -89,7 +89,7 @@ await describe({
         for (const value of [sparse, extended, altered, 'text']) {
           expect(function copyUnsupportedArray() {
             nativeResourceInput.snapshotInput({ kind: 'append', value });
-          }).toThrow('Append input requires a bounded ordinary dense array');
+          }).toThrow('Append input requires an ordinary dense array');
         }
       },
     }),
@@ -101,46 +101,29 @@ await describe({
           }).toThrow('Unknown resource input kind');
         expect(function copyNontextSystem() {
             nativeResourceInput.snapshotInput({ kind: 'system', value: 1 });
-          }).toThrow('System input requires bounded text');
+          }).toThrow('System input requires text');
         expect(function copyNontextAppend() {
             nativeResourceInput.snapshotInput({ kind: 'append', value: [1] });
-          }).toThrow('Append text requires bounded text');
+          }).toThrow('Append text requires text');
         expect(function copyMalformedFile() {
             nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles: [{ path: 'AGENTS.md' }] } });
           }).toThrow('Context file has unsupported fields');
       },
     }),
     it({
-      name: 'retains exact text-byte limits and rejects complete-input overflow',
-      fn: async function sourceBudgets() {
-        /** Exact original single-source byte ceiling remains admissible. */
-        const textBytes = 65_536;
-        /** Complete individual text fits before aggregate accounting. */
-        const text = 'a'.repeat(textBytes);
+      name: 'preserves complete text, resource bundles, and lists beyond former ceilings',
+      fn: async function completeSources() {
+        /** Cross both the former text ceiling and its multibyte equivalent. */
+        const text = '🚀'.repeat(65_537);
         expect(nativeResourceInput.snapshotInput({ kind: 'system', value: text })).toBe(text);
-        expect(function oversizedText() {
-            nativeResourceInput.snapshotInput({ kind: 'system', value: `${text}a` });
-          }).toThrow('System input requires bounded text');
-        expect(function multibyteText() {
-            nativeResourceInput.snapshotInput({ kind: 'system', value: '🚀'.repeat(textBytes / 2) });
-          }).toThrow('System input requires bounded text');
-        /** Each file fits separately while their combined complete source exceeds the original budget. */
-        const agentsFiles = Array.from({ length: 9 }, function contextFile() {
+        /** Cross former aggregate byte and context-file count limits together. */
+        const agentsFiles = Array.from({ length: 65 }, function contextFile() {
           return { path: 'AGENTS.md', content: text };
         });
-        expect(function oversizedSnapshot() {
-            nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles } });
-          }).toThrow('Resource input exceeds total byte bound');
-        expect(function tooManyAppendEntries() {
-            nativeResourceInput.snapshotInput({ kind: 'append', value: Array.from({ length: 33 }, function emptyText() {
-              return '';
-            }) });
-          }).toThrow('Append input requires a bounded ordinary dense array');
-        expect(function tooManyContextFiles() {
-            nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles: Array.from({ length: 65 }, function emptyFile() {
-              return { path: '', content: '' };
-            }) } });
-          }).toThrow('Context files requires a bounded ordinary dense array');
+        expect(nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles } })).toEqual({ agentsFiles });
+        /** Preserve every append occurrence, including equal content. */
+        const appended = Array.from({ length: 33 }, function appendText() { return text; });
+        expect(nativeResourceInput.snapshotInput({ kind: 'append', value: appended })).toEqual(appended);
       },
     }),
   ],

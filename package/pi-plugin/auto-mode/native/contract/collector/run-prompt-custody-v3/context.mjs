@@ -3,7 +3,7 @@ import {readOriginalMessagePublication,observeMessageCopies} from './handler-pub
 
 //region Keep native message copies attached to their original run publications.
 /** Keep native message copies attached to their original run publications. */
-export function createRunContext({state,phase,check,charge,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}){
+export function createRunContext({state,phase,check,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}){
 /** Resolve retained native context inputs through existing run scopes, never through text or saved IDs. */
   function retainContextInputs(messages){
     const scope=state.current;
@@ -30,7 +30,6 @@ export function createRunContext({state,phase,check,charge,known,assertLive,asse
         if((!origin)||activeOccurrences.has(origin.runOccurrence)
           ||seen.has(origin.source
             .occurrence))return;
-        if(origins.length>=128)throw new SourceCollectionError('Retained native message sources exceed the original 128-source profile');
         seen.add(origin.source
           .occurrence);origins.push(origin);
       }
@@ -53,15 +52,11 @@ export function createRunContext({state,phase,check,charge,known,assertLive,asse
           origin,
           index
         ) { return (origin===previous[index]); })){check(scope);scope.constructedInputs=constructedInputs;return;}
-      const retainedMessageOrigins=charge({
-        scope,
-        value:Object.freeze(origins)
-      });
+      const retainedMessageOrigins=Object.freeze(origins);
       const view=Object.freeze({
         ...scope.view,
         retainedMessageOrigins
       });
-      if(Buffer.byteLength(JSON.stringify(view))>8_388_608)throw new SourceCollectionError('Complete run ancestry exceeds its declared byte bound');
       check(scope);scope.view=view;scope.constructedInputs=constructedInputs;
     }
     });

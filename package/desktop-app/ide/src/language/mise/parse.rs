@@ -232,7 +232,9 @@ pub fn merge(texts: &[&str]) -> String {
 /// const untrustedConfig = (message: string) => /Config files in (.+) are not trusted/.exec(message)?.[1];
 /// ```
 pub fn untrusted_config(message: &str) -> Option<&str> {
+    /// The words mise prints before the file name.
     const BEFORE: &str = "Config files in ";
+    /// The words mise prints after the file name.
     const AFTER: &str = " are not trusted";
     let start = message.find(BEFORE)? + BEFORE.len();
     let length = message[start..].find(AFTER)?;

@@ -247,6 +247,15 @@ The cause of the 403 (a rate limit,
  or the token) was not established:
  the job logs carry no response headers.
 
+The same diagnostic recurred in Depot runner-sizing run `38821765989` at 23:09 UTC on 2026-10-15.
+All six jobs stopped in the mise action before compilation.
+Trial commit `764194142b` selected published version `2026.10.9` and removed `minimum_release_age`.
+The next run,
+`38822116503`,
+passed setup in every job and reached the compilation task.
+This is an executed check of the pinned-version path;
+it does not identify the server's reason for the original 403 or establish permanent service recovery.
+
 The action treats the response as final.
 In `githubMiseReleases` (`src/index.ts:985` at `c2a87611a18de5b3828c5652fe268e992400cb5c`):
 

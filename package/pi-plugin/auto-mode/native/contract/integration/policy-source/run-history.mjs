@@ -35,7 +35,6 @@ export function collectRetainedRunInputs({
    }));
   }
  }
- if(origins.length>512)throw new SourceCollectionError('Original run source history exceeds the bounded source publication profile');
  return Object.freeze(origins);
 }
 

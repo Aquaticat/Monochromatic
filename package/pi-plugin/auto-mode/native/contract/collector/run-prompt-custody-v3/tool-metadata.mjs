@@ -49,7 +49,7 @@ function requiredText({
 
 /**
  Select declaration fields without getters; selected schema leaves remain borrowed until the caller copies them.
- Multiple native views can therefore share one aggregate copier budget, not one budget per tool or view.
+ Multiple native views share the same descriptor and cycle validation.
  */
 export function selectToolMetadataInput(tools){
  if(types.isProxy(tools)||(!Array.isArray(tools)))throw new SourceCollectionError('Native custom tool descriptions require their original array');
@@ -60,7 +60,6 @@ export function selectToolMetadataInput(tools){
    ?.value;
  if((Object.getPrototypeOf(tools)!==Array.prototype)||(!Number.isSafeInteger(length))
    ||(length<0)
-   ||(length>4_096)
    ||(Reflect.ownKeys(tools)
      .length
      !==(length
@@ -71,20 +70,17 @@ export function selectToolMetadataInput(tools){
    'description'
  ]);
    const unobservedMetadata=[];
- const diagnosticBudget={bytes:0};
  function gap({
    ordinal,
    key,
    reason
  }){
-  // Bound diagnostics during selection, before their containing source record is serialized.
-  if((unobservedMetadata.length>=4_096)||(Buffer.byteLength(key)>65_536))throw new SourceCollectionError('Tool metadata observation gaps exceed the bounded source profile');
+  // Preserve every observation gap in the containing source record.
   const entry={
     ordinal,
     key,
     reason
-  };diagnosticBudget.bytes+=Buffer.byteLength(JSON.stringify(entry));
-  if(diagnosticBudget.bytes>1_048_576)throw new SourceCollectionError('Tool metadata observation gaps exceed the byte bound');
+  };
   unobservedMetadata.push(Object.freeze(entry));
  }
  for(let ordinal=0;ordinal<length;ordinal++){
@@ -117,7 +113,6 @@ export function selectToolMetadataInput(tools){
       description
     ]
   ]; const keys=Reflect.ownKeys(tool);
-  if(keys.length>4_097)throw new SourceCollectionError('Native tool metadata container exceeds the property bound');
   for(const key of keys){
    if((key==='name')||(key==='description')
      ||callableFields.has(key))continue;
@@ -166,7 +161,7 @@ export function selectToolMetadataInput(tools){
  });
 }
 
-/** Capture a declaration list using the same ordinary metadata profile and one aggregate copier budget. */
+/** Capture a declaration list using the same ordinary metadata profile without arbitrary capture ceilings. */
 export function snapshotToolMetadata(tools){
  const {
    selected,

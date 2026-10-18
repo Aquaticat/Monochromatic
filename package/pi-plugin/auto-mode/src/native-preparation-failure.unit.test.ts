@@ -25,7 +25,7 @@ await describe({ name: '', children: [
     assert.equal(f.owner.state.prepared, true);
   } }),
   ...['seal:1', 'publishSources:1', 'prepareDependencies:1', 'active:2', 'finalizeDependencies:1', 'checkpoint:1', 'sources:1', 'sources:2', 'checkpoint:2', 'checkpoint:3', 'active:3', 'checkpoint:4'].map(function failureBoundary(point) {
-    return it({ name: `retains original preparation failure before member publication at ${point}`, fn: async function failsPreparation() {
+    return it({ name: `retains source preparation failure with native membership at ${point}`, fn: async function failsPreparation() {
       /** Every injected failure gets an independent native preparation lifetime. */
       const f = createPreparationFixture();
       /** Failure identity distinguishes original propagation from a replacement diagnostic. */
@@ -39,7 +39,7 @@ await describe({ name: '', children: [
       assert.equal(f.owner.state.preparing, false);
       assert.equal(f.owner.state.prepared, false);
       assert.equal(f.owner.state.handle, undefined);
-      assert.equal(f.byMember.size, 0);
+      assert.equal(f.byMember.size, 2);
       if ((point === 'active:3') || (point === 'checkpoint:4')) assert.equal(f.owner.knownSelection(), f.owner.state.selection);
       else assert.throws(function noOriginalSelection() {
         f.owner.knownSelection();
@@ -52,7 +52,7 @@ await describe({ name: '', children: [
         f.owner.prepare(f.members);
       }, retired);
       assert.equal(f.owner.state.preparationFailure, failure);
-      assert.equal(f.byMember.size, 0);
+      assert.equal(f.byMember.size, 2);
     } });
   }),
   it({ name: 'retains exact validation failure before source sealing or dependencies', fn: async function rejectsIncompleteGroup() {
@@ -81,7 +81,7 @@ await describe({ name: '', children: [
     assert.deepEqual(f.events, ['active:1', 'seal:1']);
     assert.equal(f.owner.state.preparationFailed, true);
     assert.equal(f.owner.state.preparing, false);
-    assert.equal(f.byMember.size, 0);
+    assert.equal(f.byMember.size, 2);
   } }),
 ] });
 //endregion

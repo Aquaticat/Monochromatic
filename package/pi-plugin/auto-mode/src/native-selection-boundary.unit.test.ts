@@ -87,12 +87,12 @@ await describe({
     //endregion
     //region Fixed bounds cover total declarations, per-request membership, batches, and UTF-8 bytes.
     it({
-      name: 'admits exactly 1536 declarations and three 512-claim batches',
+      name: 'retains declarations and batch membership beyond removed count ceilings',
       fn: async function enforcesOriginalCountBounds() {
         /** One judgment retains the entire declared profile. */
         const selection = createSelectionFixture();
         /** Unique immutable identities make every declaration independently count. */
-        const bindings = Array.from({ length: 1_536 }, function originalOccurrence() { 
+        const bindings = Array.from({ length: 1_539 }, function originalOccurrence() { 
           return createSelectionBinding(); 
         });
         /** Claim declarations stay canonical at the total bound. */
@@ -100,16 +100,10 @@ await describe({
           return selection.declare({ definitionId: 'first', bindingHandle }); 
         });
         assert.equal(selection.declare({ definitionId: 'first', bindingHandle: bindings[0] }), claims[0]);
-        assert.throws(function extraClaim() { 
-          selection.declare({ definitionId: 'first', bindingHandle: createSelectionBinding() }); 
-        }, selectionError('Judgment exceeds the declared total claim bound'));
-        assert.throws(function oversizedBatch() { 
-          selection.issue(claims.slice(0, 513)); 
-        }, selectionError('Question batch needs an ordinary dense claim array within the declared bound'));
-        for (const offset of [0, 512, 1_024]) {
+        for (const offset of [0, 513, 1_026]) {
           /** Every maximum-sized batch remains issuable after a failed oversized attempt. */
-          const batch = selection.issue(claims.slice(offset, offset + 512));
-          assert.equal(selection.requestFor(batch).questions.length, 512);
+          const batch = selection.issue(claims.slice(offset, offset + 513));
+          assert.equal(selection.requestFor(batch).questions.length, 513);
         }
         assert.throws(function fourthBatch() { 
           selection.issue([claims[0]]); 
@@ -133,7 +127,7 @@ await describe({
       },
     }),
     it({
-      name: 'admits the exact four MiB request boundary and rejects one extra UTF-8 byte',
+      name: 'retains complete request projections across the removed four MiB boundary',
       fn: async function enforcesRequestByteBound() {
         /** The empty projection measures exact fixed serialized overhead. */
         const baseline = createSelectionFixture();
@@ -162,10 +156,9 @@ await describe({
         const oversized = createSelectionFixture();
         /** Oversized projection has the same character semantics and one extra ASCII byte. */
         const oversizedClaim = oversized.declare({ definitionId: 'first', bindingHandle: createSelectionBinding(`${projection}a`) });
-        assert.throws(function oversizedRequest() { 
-          oversized.issue([oversizedClaim]); 
-        }, selectionError('Question request exceeds the four MiB wire profile'));
-        assert.equal(oversized.inspectClaim(oversizedClaim).issued, false);
+        const larger=oversized.requestFor(oversized.issue([oversizedClaim]));
+        assert.equal(Buffer.byteLength(JSON.stringify(larger)),4_194_305);
+        assert.equal(oversized.inspectClaim(oversizedClaim).issued, true);
       },
     }),
     //endregion

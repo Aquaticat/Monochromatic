@@ -8,14 +8,14 @@ import type { FixturePublicAPI } from './native-api-module-fixture.ts';
 /** Owner membership is recorded independently from the constructor's publication mapping. */
 const ownerKeys = {
   programs: ['bindPreparedProgram', 'preparedProgramFor', 'openProgram', 'programFor', 'reachProgramGroup',
-    'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'invokeProgramNative', 'scriptValueFor',
+    'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'scriptValueFor',
     'markProgramGuard', 'inspectReachedGroup', 'inspectProgram'],
   executions: ['assertExecutionEntry', 'executionEntryFor', 'memberFor', 'beginExecution', 'executionFor',
     'finishExecution', 'inspectExecution'],
   lifecycle: ['captureClaimEvidence', 'assertClaimEvidence', 'captureBatchEvidence', 'assertBatchEvidence',
     'issue', 'assess', 'finalize', 'operation'],
   instructions: ['claim', 'claimInstruction', 'indexedUnitAdoptionPairs', 'claimUnitAdoption', 'requestMaterialFor',
-    'claimRequestMaterial', 'claimHeadingContext', 'issueBoundPolicyBatch', 'indexedRuleCandidates',
+    'claimRequestMaterial', 'claimHeadingContext', 'claimOperationDecision', 'issueBoundPolicyBatch', 'indexedRuleCandidates',
     'indexedInstructionCandidates', 'indexedHeadingContextCandidates', 'inspectRuleSources', 'readPolicySelection',
     'issueRuleAssessmentBatch', 'readRuleCandidate', 'claimRuleCandidate', 'claimProgramRuleCandidate', 'issueProgramRuleBatch'],
   inspection: ['originalFileFor', 'preparedMemberFor', 'inspect'],

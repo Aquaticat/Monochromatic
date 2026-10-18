@@ -5,9 +5,1734 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-15.
+Updated 2026-10-18.
+
+## Reopened MiMo preparation failure on 2026-10-18
+
+The user supplied later MiMo calls that return `Complete group preparation or assessment failed`.
+The readiness claim applies only to the earlier replay corpus and does not establish readiness for these calls.
+The actual session is `2026-10-17T15-47-34-073Z_01a14a8c-0a38-760f-aca3-aa17ebd2a725`.
+Reported calls are `call_cec448f1353443bd88da096e`
+and `call_8cacc98bebf7433a9945f1d3`.
+They belong to one parallel group.
+Earlier Python heredocs in the same session succeed,
+including `call_fe5cc4c2d73542b097c79140`.
+The installed output remains `native-release-qWSxFz`.
+Private evidence and the active reproduction work live in
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
+The original log retains a `RangeError: Invalid string length` in run prompt owner `charge()`
+while capturing retained context inputs.
+Automatic review then presents a manual selector at `2026-10-17T16:14:03.781Z`.
+The selector returns at `2026-10-17T17:18:03.286Z`,
+records the verdict,
+and calls the native Stop path.
+The dispatcher replaces that result with the generic preparation failure after seeing the aborted signal.
+Configured-host replay `pi-mimo-failure-rpc-xWj1Z0` reproduces the generic failure after Stop;
+its assertion rejects the exact reported message.
+Restoring only persisted history does not reproduce the original capture chain:
+it instead loses usable request evidence and falls back to manual approval.
+The active full replay therefore recreates every original MiMo proposal from a fresh session,
+under a two-CPU and 2 GiB container bound,
+with the original repository read only.
+
+Next actions:
+
+- Measure capture growth through the original proposal sequence and repair the prompt capture failure.
+- Add a genuine native Stop regression and preserve its withheld reason through cancellation.
+- Rebuild and replay the reported group and denial controls before renewing the lint handoff.
+
+Source fixes are committed in `2f90217589` and `daf6b8e179`.
+Build `native-release-cXp8co` passes the actual aggregate string-limit regression,
+the Stop/cancel regressions,
+the complete decision fallback catalog,
+run history,
+prompt capacity,
+run-message freshness,
+native phases,
+and single-call catalogs.
+Type checking passes with a disposable writable package cache;
+the first read-only container attempt fails only because its cache cannot be unlinked.
+The full character-fragmented MiMo replay still exhausts the 2 GiB container,
+so readiness remains open.
+The unchanged repeated-JSON capture fixture retains 688,995,568 to 689,029,488 heap bytes across three runs.
+Commit `77620b6c23` shares equal stored text and hashes inside the existing pool,
+while retaining every source occurrence and publication separately.
+Its regression includes a distinct later input and keeps per-occurrence byte accounting.
+Next: measure this change against that baseline,
+complete the original configured-host replay,
+check actual outgoing payloads and prohibitions,
+and finish the durable troubleshooting record.
+
+Shared-text fixture runs retain 3,609,280 to 3,610,472 heap bytes with unchanged receipt accounting.
+The source-sharing build is `native-release-iQw5fd`.
+Its full unit suite passes.
+The first full replay of this build reaches the private recorder's 4 MiB output cap;
+this is not another recorded host heap failure.
+The recorder now discards transient `message_update` events while retaining actual terminal messages,
+tool results,
+selectors,
+provider requests,
+and stderr.
+The actual host still consumes every original streamed delta.
+The revised full replay remains required before readiness is renewed.
+The native-root guard mutation is running in a private module loader;
+production source and output remain untouched.
+
+## Verified MiMo lint handoff on 2026-10-17
+
+The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).
+The prepared group now owns automatic and manual review and execution membership.
+Root and child groups share actual native prepare/run/finalize phases.
+The duplicate manual group,
+original-source approval router,
+child dispatcher,
+and unused whole-call native API are removed.
+The remaining source compiler authenticates questions,
+source attribution,
+model responses,
+and asynchronous freshness rather than owning another execution path.
+
+Full units and type checking pass after migrating API catalogs to actual native slot phases.
+The phase-only API build `native-release-mHAoem` passes all 22 real lifecycle modes,
+all 24 fallback modes,
+and native execution catalogs.
+The final build `native-release-qWSxFz` includes the final type/documentation changes.
+Configured replay `pi-hyper-rpc-allow-nTpk0q` completes all 16 original calls,
+with zero selectors and 17 actual live-Luna requests.
+Positive-controlled inspection of the actual requests excludes raw structured commands,
+thinking,
+and signatures.
+Prohibition control `pi-hyper-rpc-allow-gSMsqH` withholds both process/Bash members,
+with zero selectors and three Luna responses.
+The process-local mutation removes both independent denial barriers;
+the actual native test executes three harmless fixture commands and fails with `3 !== 0`.
+Both production artifact hashes remain unchanged.
+
+The package measures about 22.9 MB after reviewed cleanup,
+including the 8,211,396-byte active output and a verified rollback.
+Shared external dependency symlink targets are excluded.
+The emitted runtime graph contains no missing static targets and records five computed import sites.
+Its 794 conservatively reachable files total 6,099,319 bytes;
+the complete output contains 1,030 regular files and 8,211,396 bytes.
+The source parser counts 813 tracked files,
+65,692 nonblank code lines,
+29,136 runtime statements,
+and 28,596 code lines in filename-classified verification.
+The user did not adopt a 13k line target.
+
+Cleanup dry-run and root stray-Git-entry checks precede removal of 43 inactive generated releases.
+The active output and `native-release-mHAoem` remain;
+no live native process references an old release at cleanup.
+An uncapped package-consumer scan has no hits outside this package.
+The final 622 unchanged logs preserve 265,115,894 original bytes as 10,014,676 compressed bytes.
+Independent combined-archive verification checks all 13,248 files and 7,329,290,087 decompressed bytes,
+and rejects changed same-length content in valid gzip.
+The first combined audit correctly rejects the old single-batch membership count;
+the corrected auditor checks both original inventories and every manifest entry.
+
+The existing logger now accepts an explicit directory or `MONOCHROMATIC_LOG_DIRECTORY`.
+Package tasks use private task diagnostics outside the package.
+The logger build,
+full unit suite,
+and type check pass.
+Directory tests exercise real filesystem records and independent default-logger child processes.
+Ancestor-discovery fixtures explicitly clear the new environment setting;
+concurrency verification now waits for both verifiers to start before releasing either.
+Its original elapsed-time assertion failed twice at about 94 and 97 ms against a 50 ms threshold.
+Root `TCV` remains unchanged;
+the provider-payload lesson stays in package docs.
+
+Full maintained Oxlint reports 83 errors and 13,686 warnings across 813 files and 486 rules,
+using one thread in the disposable 2 GiB,
+two-CPU runner.
+This supersedes the intermediate 30-error,
+13,163-warning snapshot and is an explicit increase in lint debt after phase extraction and real fixtures.
+MiMo's next task is the complete lint queue,
+using the per-file error index and preserving the verified behavior.
+Automatic release eviction and diagnostic retention remain unimplemented;
+current build paths are immutable for running consumers.
+The original second incident's discarded underlying transport cause remains unknown.
+Desktop notification termination is separate.
 
 ## Active work on 2026-10-15
+
+### Reopened MiMo lint handoff on 2026-10-17
+
+The readiness claim covered the saved Bash/read interaction only and was too broad for the MiMo handoff.
+Session `2026-10-17T04-53-14-520Z_01a14834-fc97-70de-9615-03cc0636384b` reports separate failures:
+
+- [x] Resolve and verify the mixed `process`/`bash` group containing `chatcmpl-tool-b60c3965f752386f`.
+  Whole-operation approval scores `0.48`, denial `0.34`, unknown `0.18`.
+  The model answered; the existing cutoff correctly required confirmation.
+  Its captured input includes raw `process.start.command`, outside the prior Bash-only projection.
+- [x] Resolve and verify the Bash-only group containing `chatcmpl-tool-a7a4468548c5838a`.
+  Clause assessment succeeds; the whole-operation request throws `AssessmentTransportError`:
+  `Assessment HTTP request or response failed; no provider answer was admitted`.
+  The discarded underlying exception prevents identifying its cause from this log alone.
+- [x] Replay both groups with preceding turns through the configured installed consumer,
+  audit transmitted inputs, and run prohibited-operation controls before renewing readiness.
+
+The original session and eight runtime logs are copied privately to
+`${HOME}/temp/agent/pi-mimo-lint-approval-20261017`.
+`mise run target-evidence` there isolates both captured groups and their model evidence.
+The `notify-send` SIGTERM warning concerns notification delivery and does not establish either review failure's cause.
+The next action at that point was replaying captured requests to distinguish ambiguity from transport failure.
+
+The unchanged mixed-group request reproduces `approve: 0.48`, `deny: 0.34`, `unknown: 0.18`
+in three live trials.
+Replacing only proposed `process.start.command` copies with the incumbent parser's structure
+returns `approve: 0.69`, `deny: 0.20`, `unknown: 0.11` in three live trials.
+Commit `ac6b8f5cde` applies that projection to proposed and historical process starts.
+The built projection regression was committed red and then passes,
+including original input retention and non-start process actions.
+Three unchanged replays of the Bash-only final request succeed at `approve: 0.88`.
+Its historical discarded transport cause remains unknown.
+
+Commit `065b2683d2` classifies actual fetch TypeError failures without borrowed text or causes
+and connects the existing original judgment retry owner.
+The native regression first fails with two dispatches instead of three;
+the fix completes an approved group without confirmation after the injected failure,
+and executes no member when the retried answer is denial.
+The expanded fallback matrix and type check pass before architecture consolidation.
+They require a final rerun against the consolidated release.
+
+### Package size and architecture work authorized on 2026-10-17
+
+The user also requests a size investigation, implementation of a manageable architecture,
+and package-local justification of every major part.
+The size measurement uses `du --bytes --max-depth=2 package/pi-plugin/auto-mode`:
+7,354,649,993 bytes total, including 7,089,712,671 bytes of package-local diagnostic logs,
+258,159,664 bytes of build output, 2,265,351 bytes in `src`, and 2,025,723 bytes in `native`.
+These are apparent filesystem sizes, separate from tracked-source complexity.
+
+- [ ] Inventory tracked production, test, research, generated, and obsolete code and actual runtime reachability.
+- [ ] Reduce repeated diagnostics and retained build duplication without losing decision reconstruction
+  or invalidating active sessions.
+- [ ] Consolidate maintained modules behind explicit interfaces, removing superseded paths after proving consumers.
+- [ ] Add package-local purpose, invariants, alternatives, callers, and verification for every major retained part.
+- [ ] Verify permission failures, installed interactions, lint, types, tests, and measured before/after size.
+
+The root `TCV` rule stays unchanged as explicitly requested.
+Concurrent unrelated edits remain outside this work.
+
+### Structural redesign required after size clarification
+
+The user rejects both the measured approximately 400 MB directory and a hypothetical 100 MB package.
+The user also expected substantially less implementation than the 13,000 lint-warning count suggests.
+The user explicitly clarifies that 13,000 is not a code-size target.
+Do not turn that comparison into an arbitrary line budget or declare storage archival sufficient.
+The earlier consolidation and component documents are a baseline,
+not completion of this clarified maintainability request.
+
+The validated parser-based inventory now records 68,040 code lines and 30,301 runtime AST statements
+across the captured 830-file scope.
+It removes actual comments and type-only declarations,
+but remaining annotations and string data still count as source lines.
+The static runtime graph contains 20,153 lines across 284 files;
+verification contains 30,073 lines across 300 filename-classified files.
+Generation prevents treating the remaining 17,568 lines as dead code.
+
+All three independent design reviews select the same substantive seam:
+review a complete group between Pi's real `prepareToolCall` and `executePreparedToolCall` phases,
+then reuse `finalizeExecutedToolCall`.
+One private group record replaces separate automatic/manual execution ownership and evidence-handle round trips.
+The [package-local design](../../package/pi-plugin/auto-mode/doc/compact-review-design.md)
+records retained semantics,
+specific deletion targets,
+and the migration's verification order.
+The original source-attribution and serialized-primary-request contribution requirements remain in scope.
+Clause compilation and whole-operation fallback remain distinct.
+
+An intermediate configured-host replay reaches all 16 original calls and issues no confirmation,
+but an intermediate `process.output` returns `Complete group preparation or assessment failed`.
+The two reported final Bash calls succeed.
+Do not claim the full interaction passes until the intermediate failure is diagnosed and resolved.
+Fixture `pi-hyper-rpc-allow-jZsxRg` retains the events and runtime logs.
+
+### Native phase verification and remaining freshness failure
+
+The maintained `test:native:phases` consumer suite passes its 12 lifecycle modes against `native-release-GSPIDj`.
+It exercises actual Pi preparation,
+Bash execution,
+awaited update subscribers,
+extension callbacks,
+group withholding,
+cancellation,
+custom notifications,
+user steering,
+and policy-file changes in disposable sessions.
+The notification-context followup also reaches a later primary request and a fresh reviewed tool group.
+The notification-turn followup augmentation still needs its focused rerun.
+The copied-artifact denial mutant executes three members and fails the maintained test as required;
+`native-phase-mutant.json` retains the production hash and unchanged-artifact check.
+
+The intermediate `process.output` failure is reproduced by queuing native custom data during assessment.
+`run-prompt-custody-v3/lifecycle.mjs` previously replaced the run-composition object
+when the constructed-input pool gained any entry.
+This does not prove instruction text changed.
+Pending custom data now remains captured until actual context admission without replacing that run object.
+Queued user instructions and changed policy files still withhold every member without another approval dialog.
+
+Full configured replay `pi-hyper-rpc-allow-GRsLAm` confirms that `process.output` now succeeds.
+It then stops before assessment of the next Bash pair with `Observed request is no longer current`.
+The retained cause is `SourceCollectionError`:
+`Only original unregistered manager or native event input occurrences may extend this source snapshot`.
+The rejected appended origin is not yet identified.
+This is a separate failure from the replaced-run-object check;
+do not claim the full interaction or lint handoff is ready.
+Next action: identify the rejected original input at `manager-source-growth.mjs:88`
+using the configured disposable replay,
+then reproduce it in the maintained native consumer fixture.
+
+That next action is complete.
+The new `notification-primary` consumer case reproduces the exact rejection against `native-release-GSPIDj`.
+Instrumentation identifies an original `native-custom-construction` with role `custom`,
+permission `false`,
+matching publication and source occurrences,
+and no registration or run replacement.
+Commit `10931aaacf` admits authenticated custom-data origins through the existing source-growth checks
+and shares their classifier with lifecycle reads.
+All 18 maintained lifecycle modes pass against `native-release-J4fNNL`,
+including custom data delivered through context,
+steering,
+and followup during primary requests.
+User steering and policy changes during primary requests or assessments execute no proposed member.
+Types pass.
+The full configured live-Luna replay is running;
+its receipt is required before calling either reported interaction fixed.
+The mocked configured replay `pi-hyper-rpc-allow-tN2zEc` exits `137` without an established cause
+and does not count as passing verification.
+
+The configured live replay now passes against `native-release-J4fNNL`.
+Fixture `pi-hyper-rpc-allow-henGUH` completes all 16 original tool calls,
+including `process.output` and both reported groups,
+without confirmation.
+All 17 actual Luna requests pass the payload audit with no raw structured command fields,
+thinking,
+or signatures;
+the audit's authored positive controls detect excluded fields and preserve literal text.
+Prohibition fixture `pi-hyper-rpc-allow-vDIezK` blocks both process/Bash members without confirmation
+and receives three actual Luna responses.
+The package documents and troubleshooting/frontier render through CommonMark,
+and all local documentation links resolve across the 18 rendered files.
+These proofs complete the reported permission-flow repair at this release;
+the structural redesign,
+final lint handoff,
+and release/storage reduction remain open.
+
+The emitted runtime graph now follows generated imports,
+absolute file URLs,
+loader replacements,
+and type erasure.
+Its `native-release-J4fNNL` baseline has 1,499 regular files totaling 12,743,268 bytes.
+The conservative graph reaches 781 files totaling 5,958,591 bytes.
+It does not prove all remaining files are removable:
+five computed imports and runtime assets require explicit accounting.
+The source and compiled qualified SDK trees are both currently copied into each release.
+Next build change: compile from the verified checkout directly,
+retain emitted runtime/assets and qualification metadata,
+and compare every qualified SDK runtime file against this baseline before consumer verification.
+
+The child dispatcher cannot be replaced with a thin phase adapter alone.
+`program-runner-execution-callbacks.ts` invokes the original child slot around the whole native call;
+its invocation lifetime currently encloses both preparation and execution.
+The private-group consolidation must retain that lifetime through finalization when removing its token protocol.
+
+The direct-checkout compilation change is implemented in commit `df529bd748`.
+Bounded build `native-release-FcmP01` uses two CPUs and 2 GiB with disposable home/log directories.
+Its regular-file total is 8,225,739 bytes across 1,031 files.
+The comparison against `native-release-J4fNNL` finds all 507 qualified SDK runtime files and assets
+byte-identical (5,234,528 bytes).
+The 18 lifecycle cases,
+disposable successive-release/publication rollback test,
+and package type check pass.
+This release-size improvement does not complete the requested source architecture reduction.
+
+Commit `799f43d1d8` shares root and child execution/cleanup instead of maintaining separate bodies.
+Its bounded verification passes the 18 native lifecycle cases,
+actual progress callbacks,
+single-call profiles,
+the 24-case fallback matrix,
+and execution/child-lifetime catalogs.
+The former `execute-child.mjs` is removed;
+its provenance entry retains the original path/hash and records the current maintained path and move date.
+
+Commit `167a6e7dfa` consolidates native membership and execution state across automatic and manual review.
+`prepared-group.mjs` owns disposition and scoped confirmation.
+`prepared-group-context.ts` owns the shared root/child member and execution maps.
+The source compiler borrows those exact records and original prepared serialization.
+The separate `manual-group.mjs` owner and automatic/manual execution lookup branches are removed.
+This internal context is never accepted from provider responses or tool arguments.
+Build `native-release-Q1COLq` and types pass.
+The first native consumer run on `native-release-hvOFxD` fails before all three effects:
+the shared execution check calls a public source operation from inside another public source operation.
+The actual exception is `JudgmentConstructionError: Judgment operations cannot reenter through callbacks`.
+Commit `7b9faaa6e7` binds the existing unwrapped dependency check for native entry;
+it retains the public freshness checks at the outer dispatcher boundary.
+Constructor and source-preparation fixtures now create genuine native group records.
+Source preparation failure retains those prepared records without publishing a source-policy selection.
+On `native-release-WjFpol`,
+the 18 native lifecycle cases,
+progress callbacks,
+single-call program profiles,
+24 fallback cases,
+execution/child-lifetime catalogs,
+constructor/preparation tests,
+and package type check pass in bounded disposable consumers.
+The followup restricts manual entry to the actual scoped Allow response,
+without retaining eligibility from a failed automatic review.
+Next action: replace the child's deferred dispatcher with the same actual native phases,
+preserving its original enclosing invocation lifetime,
+then repeat configured-host and payload/prohibition verification before renewing readiness.
+
+Commit `7a36bd67ef` replaces the child's deferred dispatcher body with the root phase dispatcher.
+Factory-owned native slots reserve their existing return record before actual preparation starts.
+The shared dispatcher captures every completion,
+including withheld members,
+before forwarding completion events.
+Terminal capture does not reread parent eligibility;
+new execution and script-value consumption retain their currentness checks.
+The existing whole-call helper remains temporarily for its old consumers and tests.
+The first build fails because the ordinary qualified SDK index does not export the new generated phase factory.
+The next build shows that relative imports are rebased against the original Session location.
+The factory import now has an explicit generated-loop override in `prepare-session.ts`.
+TypeScript also rejects an unknown logger argument and an optional child signal;
+the fixes use the existing caught-value formatter and original parent-signal fallback.
+The corrected type check passes.
+The corrected build `native-release-5QqLSO` passes the existing bounded native catalogs.
+The direct dispatcher import subsequently builds as `native-release-1DiyGD`.
+The maintained phase suite now also runs genuine Codemode child contrasts:
+normal completion,
+a before-hook block on the second parallel member,
+a hidden argument property added by an actual extension callback,
+and cancellation inside child preparation.
+All 22 modes pass with the original caller,
+actual SDK phases,
+and captured cleanup stderr.
+The hidden-property case proves that the peer is withheld,
+the invalid slot records `threw` without conversion,
+and already prepared peers retain one native error conversion.
+The positive control executes all three children.
+The first new fixture run fails before construction because a suggested workspace wait package is not installed;
+the fixture now uses the same Node timer import as the existing native phase consumer.
+The full bounded unit run reaches the 22 passing modes and publication rollback case,
+but two old runner test files still call the removed whole-call dispatcher callback.
+Those assertions are retired after their replacement passes through the actual SDK;
+the remaining queue,
+host callback,
+member association,
+and failure tests stay in place.
+Full unit verification must rerun after that test migration.
+
+The migrated full bounded unit suite and package type check pass on `native-release-1DiyGD`.
+That includes the 22 real native lifecycle modes and disposable publication rollback.
+The next consolidation removes a remaining second confirmation owner:
+`decision-core.mjs` now returns compiled policy and source currentness,
+and `prepared-group.mjs` handles both uncertain outcomes and assessment failures through one scoped selector.
+Established denials remain terminal;
+stale established results throw `EstablishedPolicyDecisionError` instead of requesting another generic Allow.
+Confirmation checks source dependencies directly when entering from an existing compiler operation,
+and retains the complete compiled currentness check outside that wrapper.
+Unknown headless outcomes stay withheld without opening a selector.
+The old `finishWithApproval` router is removed.
+The new build and confirmation matrix are pending;
+the removed router's original-source TUI adapter still needs a usage audit before retirement.
+
+On `native-release-Elj1GJ`,
+all 24 fallback cases and all 22 native lifecycle cases pass with unified confirmation.
+The original-source TUI adapter has no remaining code consumers and is removed after a full reference scan.
+Its provenance retains the old path and names the prepared group as its current owner.
+The configured MiMo replay `pi-hyper-rpc-allow-ZArrWh` completes all 16 original tool calls,
+including both reported groups and intermediate process output,
+with zero selectors and 17 actual Luna requests.
+Positive-controlled payload inspection finds no raw structured command fields,
+thinking,
+or signatures.
+The explicit prohibition replay `pi-hyper-rpc-allow-Pgbj60` withholds both process/Bash members,
+opens zero selectors,
+and receives three actual Luna responses.
+An earlier attempt `pi-hyper-rpc-allow-sWaoxo` exits before any assessment:
+the private diagnostic preload still searches the removed handler-local `retainAutomaticFailure`.
+Updating that instrumentation to `prepared-group.mjs`'s `retainFailure` produces the passing replay;
+the failed fixture remains untouched.
+
+The new footprint measurement is 777,859,462 regular-file bytes,
+including 506,254,358 bytes across 43 retained releases and 265,115,894 diagnostic bytes.
+The active release is 8,223,549 regular-file bytes.
+The complete emitted import graph now handles rewritten `.ts` provider paths,
+finds no missing static targets,
+and explicitly records all five computed import sites.
+Unreached files are still not declared dead from that graph alone.
+Ignored cleanup dry-run lists only the package cache,
+dist,
+and node_modules trees;
+root stray Git directory entries do not exist although ignore rules cover their names.
+Active Node command inspection finds Dsh,
+Codex launchers,
+the CPU monitor,
+and the search-fetch MCP server;
+the maintained Pi replay runs separately in its disposable fixture.
+
+A provider-payload audit finds a separate missed shell boundary:
+known process result metadata and `ad-process:notification` details retain raw `command` strings.
+The new regression was committed red;
+`review-process-result.ts` now projects the installed finite metadata shapes with the existing shell parser.
+All 19 visible-context cases and the package type check pass after rebuilding.
+Unrelated tool/custom metadata,
+complete output text,
+quoted literal data,
+and original stored metadata remain intact.
+The final installed payload audit remains required.
+
+The process-result fix's configured replay `pi-hyper-rpc-allow-QaT10o`
+transmits 17 assessment requests with no raw structured `command` fields.
+The same audit detects nine fields in the older `jZsxRg` capture,
+so its null result has a positive control.
+Both reported groups execute without confirmation;
+the separate intermediate `process.output` freshness failure still prevents a complete replay pass.
+The error proves a different run-composition view,
+not changed instruction text.
+Current investigation distinguishes genuine run replacement from metadata-only publication changes.
+
+The production main-group dispatcher now uses actual native preparation and execution phases.
+Its three-member traces match immutable baseline `native-release-1voz8z`
+across nine cases including cancellation and validation/hook failures.
+`test:native:phases` covers real disposable SDK sessions and original native Bash definitions;
+all eight initial cases pass,
+including awaited updates,
+serialized and parallel execution,
+complete-group blocking,
+and cancellation.
+The existing 24-case fallback matrix also passes against `native-release-MDBPSM`.
+The superseded executable/member/lifecycle/completion protocols and their exclusive tests are removed:
+22 files and 3,093 physical lines.
+Their four task entries are removed.
+The rebuilt deletion candidate and its type check complete successfully.
+
+Next actions:
+
+- Finish the new notification-during-review cases and identify the exact run-view change.
+- Demonstrate the native denial guard fails under a copied-build mutation.
+- Consolidate the child dispatcher and manual/automatic execution state into the same private group record.
+- Remove internal judgment/evidence publication protocols after their guarantees move to native interface tests.
+- Emit only runtime contents in clean releases;
+  measure implementation and build contents again.
+- Complete package justification updates,
+  troubleshooting evidence,
+  rendered Markdown checks,
+  configured-host replay,
+  final lint/types/tests,
+  and the corrected MiMo handoff.
+
+The existing inventory labels roughly 66,000 lines as production source,
+including comments and types;
+its filename-based categories are not executable-line or runtime-reachability proof.
+The measured `dist/final/node` tree is 376,443 apparent bytes.
+Most of the remaining directory total is retained native releases and diagnostics.
+Measure the clean artifact,
+runtime dependency graph,
+and actual maintained code separately before making another size claim.
+
+- [ ] Measure executable source and statement counts across runtime,
+  build transformations,
+  tests,
+  research,
+  and unreachable code with a validated parser-based inventory.
+- [ ] Apply the module deletion test to the request,
+  evidence,
+  lifetime,
+  and prepared-group machinery;
+  replace avoidable bookkeeping with deep modules whose interfaces express required behavior.
+- [ ] Consolidate implementation and tests through those interfaces,
+  preserving permission scope,
+  original execution and cancellation,
+  freshness,
+  scoped confirmation,
+  bypass,
+  transport accounting,
+  and configured-host behavior.
+- [ ] Reduce clean build and runtime contents rather than relying on moving old artifacts.
+- [ ] Rewrite each package-local justification around the final implementation,
+  include its measured size and deletion rationale,
+  and verify the redesigned installed consumer and complete diagnostic scope.
+
+The retained `buildVisibleContext` cases were incorrectly removed with mixed legacy tests.
+Commit `e611393f02` restores all 13 maintained cases in sibling test modules,
+directly exercising the built projection through Pi's actual session projector.
+Its task and type check pass;
+two logger sink-verification timeout warnings during the first run remain visible in the captured stderr.
+The native fallback matrix and all other targeted final tasks pass.
+The first long replay after process-ID correlation reaches all 16 calls with no confirmation
+and 17 successful Luna requests,
+but its final `cat` fails because the proposed parallel setup races output-directory creation.
+The next replay seeds that directory as a fixture precondition and must still run.
+
+Completed source consolidation removes the obsolete extension pipeline,
+exclusive tests,
+heuristic catalogs,
+unused model and signal types,
+and the pass-through command-analysis wrapper.
+The canonical native interface now supplies generated runtime and declaration bridges,
+and the public entry reuses its native exports.
+Package-local architecture documents justify host integration,
+instruction collection,
+operation preparation,
+decision review and transport,
+confirmation,
+build lifecycle,
+and diagnostics.
+The previous README is retained as an explicitly historical package-local snapshot.
+
+Commit `9f025a0b64` reuses byte-identical files only in a new verified release before publication.
+It does not rewrite existing release paths.
+The disposable publication regression fails on the expected inode equality before the fix,
+then passes with distinct changed CLI files and a usable previous command.
+The latest build reuses 1,476 files totaling 11,714,237 bytes.
+Current installed release is `native-release-NteRIg`.
+Its build reuses 1,479 identical files totaling 11,813,141 bytes.
+
+The private scratch task `archive-historical-logs` completes in a two-CPU,
+2 GiB container.
+It archives 12,626 unchanged log files predating this boot,
+totaling 7,064,174,193 original bytes,
+into 194,896,137 compressed bytes outside the package.
+The independent `archive-audit` rereads every gzip and verifies the source-path manifest's SHA-256 and length.
+Its positive control rejects changed content of the same length in a valid gzip.
+The reference scan checks all 1,670 tracked Markdown files and finds no archived filename references.
+No original is removed before decompressed content verification and manifest append.
+Root stray Git-directory entries are absent;
+the scoped ignored-file dry run lists only `.cache`, `dist`, and `node_modules`.
+No whole-directory cleanup is performed.
+
+Remaining verification and documentation work:
+
+- Measure package and archive sizes separately after the completed independent archive audit.
+- Run types,
+  complete maintained lint,
+  bounded package units,
+  native interfaces,
+  projection,
+  budget,
+  preparation,
+  confirmation,
+  and fallback regressions after consolidation.
+- Complete `replay-bash` through Pi's normal prompt entry.
+  The rejected prefix-resume harness bypasses the required primary prompt observer and fails before assessment.
+  Its failure is not a product regression.
+  The replacement replays every original tool group from the normal prompt through each reported group,
+  preserving preceding turns and configured resources.
+  Its first run passes all 11 calls through the mixed process/Bash group,
+  with 12 live Luna requests and no confirmation (`pi-hyper-rpc-allow-ZCKjZH`).
+  The final replay through the later Bash group runs against `native-release-NteRIg`.
+- Audit complete transmitted payloads and run live prohibited-operation controls.
+- Prove the newly committed failure-category tests reject a copied classifier with its guard removed.
+  Run all package units with disposable state and bounded resources.
+  The first container cannot use the unavailable `cpuset` controller;
+  the runner now uses `taskset` within the unchanged two-CPU and 2 GiB limits.
+  The second launch exposes mise's basename-sensitive shim dispatch;
+  its executable mount is corrected to `/fixture-bin/mise`.
+- Update troubleshooting,
+  package verification lessons,
+  architecture evidence,
+  and the MiMo handoff;
+  render all changed Markdown before the final handoff.
+
+### Completed advisory timing and operation projection on 2026-10-17
+
+Session `2026-10-16T03-32-01-642Z_01a142c4-45e9-75fa-b579-ea10d43323ae`
+reached `Original policy review and evidence closure failed` for tool calls
+`chatcmpl-tool-a23317ad323e080b` and `chatcmpl-tool-9328d924e6057489`.
+Review `01906150-53fc-4313-94ad-0c7ae40d26df` retains a nested `JudgmentDeadlineError`.
+The first assessment request appears `9772` milliseconds after review start;
+its response arrives `1050` milliseconds later.
+The whole-operation request is recorded at timestamp `1792121942107`,
+and its failure at `1792121942542`.
+The preparation-inclusive budget begins before the review-start record.
+The final request has no retained model answer.
+This is a separate deadline incident, not evidence of a low-confidence final answer.
+The exact log is retained privately under `${HOME}/temp/agent/pi-bash-bones-20261016/session.log.jsonl`.
+
+The user additionally requires no model thinking in Luna inputs and parser-derived Bash structure only.
+The reported installed projection retained thinking text and raw Bash strings;
+the confirmation dialog also displays the unprojected parent response and its thinking signature.
+The existing parser-first decision was therefore not fully implemented at the current wire boundary.
+
+- [x] Remove thinking and signatures from review context and human confirmation summaries.
+- [x] Parse Bash locally and send only structural operation data to Luna, preserving permission-relevant details.
+- [x] Remove the hard fifteen-second cutoff, now explicitly a performance guideline.
+- [x] Replay the complete reported interaction through the installed host.
+- [x] Verify the installed consumer, prohibited-operation controls, and complete transmitted payloads.
+
+Commits `77001d41e6`, `79b62c75a5`, `29b3361ffd`, `af5693baa7`, `baecc20430`, and `c718ae955a`
+implement advisory timing, thinking exclusion, and the incumbent Bash parser's structural projection.
+Built shell-projection, startup-relevance, budget, transport, decision-wire, dependency-facade,
+and decision-fallback checks pass on `native-release-3tBgOk`.
+The first full replay fixture `pi-hyper-rpc-allow-56qZR4` completed eleven tool calls
+and fifteen successful Luna requests before the native process exited with status `137`.
+No confirmation appeared before termination.
+This incomplete replay does not establish success for the reported later group.
+The retained stderr has no native fatal diagnostic; the termination cause remains unestablished.
+The retry used a final rebuild and a resource-bounded sequential replay with retained termination evidence.
+The bounded replay `pi-hyper-rpc-allow-oNjLac` exits normally and executes all 21 calls,
+including both reported identifiers, without confirmation, with 25 successful Luna requests.
+Its assertion that every command succeeds is invalid: the original transcript includes a failed search.
+The replay also lacks `rg`, producing exit status `127` instead of the original search's exit status `1`.
+The harness now mounts the actual `rg` executable and checks expected tool-error identities.
+The corrected replay `pi-hyper-rpc-allow-Caf02F` completes all 21 original tool calls across 12 groups,
+including both reported identifiers, without confirmation.
+All 25 Luna requests succeed.
+The original failed search remains an exit-status `1` result, with no missing-executable error.
+The replay runs sequentially in a disposable two-CPU, 2 GiB container and retains configured resources.
+The saved-payload audit checks all requests, including per-question operation copies,
+prepared arguments, and selected historical messages.
+It finds no assistant thinking, provider signatures, or raw Bash command fields in those model-input surfaces.
+The installed prohibition fixture `pi-hyper-rpc-prohibited-nNA56F` blocks both original reads
+without confirmation and completes three successful Luna requests.
+Built context, shell projection, startup relevance, transport, decision-wire, budget,
+constructor, preparation, and live/retained dependency checks pass.
+The 22-case fallback matrix, shared shell-analyzer tests, both package type checks,
+and focused production lint also pass.
+Installed release is `native-release-b8o8BL`.
+Verification artifacts are retained privately under `${HOME}/temp/agent/pi-bash-bones-20261016`.
+This closes the reported failure and input-boundary corrections;
+the first replay's exit-status `137` cause remains unestablished.
+The user chose to keep `TCV` unchanged and document request-capture lessons in
+`package/pi-plugin/auto-mode/native/review-input-verification.md`.
+The MiMo lint handoff is refreshed for the verified release and current input and timing contracts.
+The remaining handoff task is measuring and fixing the complete maintained lint queue while preserving that baseline.
+
+### Completed permission scope, startup relevance, and resource measurement on 2026-10-16
+
+The earlier installed release failed ordinary inspection across a real conversation.
+The earlier passing initial-command replay did not establish that broader claim.
+Session `2026-10-16T02-17-34-349Z_01a14280-1b8c-7186-9ebb-fc9c2e546e0c`
+reached manual approval for the group inspecting task headings with `grep` and reading this document with `sed`.
+Review `51396c5c-31bb-476b-bac9-ded1c23150be` admitted `RGP` and `CM3` as prohibitions at `0.64` and `0.70`.
+Its whole-operation answer was `deny: 0.57`, `approve: 0.41`, `unknown: 0.02`;
+the existing `0.60` cutoff correctly routed that uncertain answer to manual review.
+This establishes a semantic-review failure, not a timeout.
+The user explicitly excluded the concurrent sessionStorage warning from investigation.
+Three identical live replays of the saved whole-operation request return the same `0.57` denial distribution.
+The full request also contains Pi's instruction to use `read` instead of `cat` or `sed`.
+That convention is relevant to the proposed command but is not itself an access restriction.
+The user explicitly selected permission-boundary review:
+tool-use conventions remain agent guidance while actual restrictions and missing consent remain enforced.
+The accepted scope is recorded in `doc/decision/pi-auto-mode-semantic-admission.md`.
+The user then corrected the source boundary:
+include visible conversation, proposed operation, and readable project policy files;
+exclude Pi's hidden instructions, tool metadata, and skill catalog.
+The shared permission-scope question change is committed.
+Collector selection now excludes hidden Pi inputs before clause indexing.
+The user additionally required initialization-time Luna relevance selection and no complete `AGENTS.md` payload.
+The existing `native/contract/lifecycle/rule-relevance-cache` supplies original-source lifetime,
+incremental rule hashing, persistence, and concurrency checks.
+The initial inspection found that its requests included `fullPolicy`, production bootstrap did not configure it,
+and its returned view deliberately admitted no exclusions.
+Commits `d9e9771bd8`, `c35670685a`, and `22532b415e` connect that owner to startup and reload,
+filter original clause handles, and transmit selected source excerpts instead of complete policy documents.
+The cache continues to publish estimates without permission;
+the decision consumer applies the user's selected relevance cutoff.
+The earlier adopted direction refreshes only changed or missing rules after startup cache lookup.
+The user subsequently required uncertain rules to be culled too.
+The current selection retains only tagged rules scoring at least `0.60` for potential permission relevance.
+The action-approval cutoff remains `0.60` independently.
+The first candidate build completed, but type checking found missing declarations and an optional-array type mismatch.
+Those were corrected; type checking and focused lint subsequently passed.
+Built regressions verify the `0.60` relevance boundary, unchanged-cache reuse, changed-rule refresh,
+hidden-input exclusion, and full-policy-copy omission from transcript material.
+The startup-failure matrix verifies ordinary chat, scoped Allow and Stop, and headless withholding.
+The installed live replay in `pi-hyper-rpc-allow-PiFtXg` executed all nine original tool calls across six groups,
+including the reported `grep` and `sed` group, without a confirmation dialog.
+It made thirteen successful Luna calls, including startup classification of 211 tagged rules;
+25 rules remained selected.
+An earlier concurrent-verification run hit an internal review failure after automatic approval of its third group.
+That failed fixture did not retain the terminal exception before shutdown;
+do not attribute its cause to the unrelated sessionStorage warning or to model uncertainty.
+The replay harness now retains stderr and events on failure.
+Commit `747bca5544` also moves excerpt indexing to resource loading so source captures reuse the same original spans.
+Additional readable policy files now use the incumbent file observer for identity and freshness;
+callback-only content does not qualify as a readable file.
+Final startup and readable-context regressions pass on installed `native-release-8uGKtw`.
+The relevance regression fails with culling removed in a disposable build and passes when restored.
+The live prohibition control `pi-hyper-rpc-prohibited-aar6Xn` blocks both reads without confirmation.
+All 22 decision-fallback cases pass after the final source selection changes.
+The approved `VUB` update now requires the reported interaction's preceding turns,
+retaining configured extensions, skills, and tool catalogs.
+Type checking and focused lint pass.
+The package README and Luna troubleshooting entry now describe the implemented input boundary.
+
+- [x] Restrict review sources to visible conversation, operation, and readable policy files.
+- [x] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
+- [x] Feed selected original rules into per-operation questions and shared context, preserving source checks.
+- [x] Reproduce the full reported conversation with live Luna and verify explicit prohibitions and consent controls.
+- [x] Measure local CPU, memory, writes, and model usage in repeated guarded and bypass replays.
+
+The exact decision log and extracted operation assessment are retained under
+`${HOME}/temp/agent/pi-manual-fallback-20261016`.
+The installed correction is complete for the reported interaction and named regression controls.
+All six resource replays execute the original nine calls across six groups without confirmation.
+Guarded fixtures are `pi-hyper-rpc-allow-zqgI2z`, `pi-hyper-rpc-allow-6Eb1t7`,
+and `pi-hyper-rpc-allow-SMu1kz`.
+Resource replays run sequentially inside a two-CPU, 2 GiB Podman container with disposable state.
+Both arms retain cold startup classification; bypass removes operation assessment only.
+Primary-model replies are the original captured tool-call sequence; Luna remains live.
+Three bypass runs establish the observed baseline spread before three guarded runs.
+
+- Bypass: CPU `82.16` to `83.96` seconds, median `82.81`;
+  elapsed `79.68` to `81.95` seconds;
+  peak RSS `1774.59` to `1799.59` MiB, median `1790.12`;
+  writes `7127040` to `7315456` bytes.
+- Guarded: CPU `120.90` to `123.56` seconds, median `122.18`;
+  elapsed `120.30` to `121.49` seconds;
+  peak RSS `1930.80` to `1974.50` MiB, median `1935.27`;
+  writes `55607296` to `55840768` bytes.
+- Cold startup: two Luna calls, 211 questions, `78404` input tokens, and `271786` request bytes in every run.
+- Guarded totals: thirteen calls, 352 questions, `400547` to `400561` input tokens,
+  and `1900253` to `1900289` request bytes.
+  The increased request count is the positive control that bypass actually skips operation assessment.
+
+These are whole-Pi-process measurements, excluding child processes and the host-side provider bridge.
+Elapsed time includes the harness's ten-second startup wait.
+Luna inference runs remotely; primary-model generation was scripted and is excluded.
+The replay still reads the shared repository, whose Git metadata and handover text changed during the run series.
+Consequently these are observed repeated workloads, not a byte-identical causal estimate of approval-only overhead.
+The CPU ranges are separated, but the exact difference must not be presented as isolated production overhead.
+Memory approaches the fixture's imposed limit; the cold replay is not a steady-state desktop-memory measurement.
+No power or battery measurement was made.
+The private `resource-matrix` and `resource-summary` tasks retain per-run receipts and `resource-summary.json`.
+The initial harness failed before Pi started because nested Bubblewrap lacked a resolver-file source
+and could not mount `/proc`.
+Explicitly binding `/etc/resolv.conf`, using Podman's documented `unmask=/proc/*`,
+and mounting the resolved fixture path made the first replay pass.
+The original real-session memory sample and this bounded cold replay measure different workloads.
+The final type check, focused lint, startup selection, readable-context, omission control,
+decision-fallback matrix, live prohibited-read control, and full conversation replays pass.
+CommonMark rendering was inspected for the updated README and troubleshooting entry.
+New Pi processes use the installed release; already-running processes retain their loaded code.
+The earlier readiness claim is retracted beyond its tested commands.
+
+The user also requested local resource drain.
+Read-only `/proc` samples of live Pi PID `2545748` at uptime `193399.71` and `193421.52` seconds
+recorded `5022` and `5473` CPU ticks at `100` ticks per second:
+`4.51` CPU seconds over `21.81` elapsed seconds, or `20.7%` of one core.
+The later `ps` RSS was `639128` KiB, approximately `624` MiB;
+the earlier RSS was `690656` KiB.
+OS write counters increased from `61661184` to `62574592` bytes.
+These measurements cover the whole Pi process, exclude child processes,
+and do not isolate approval overhead or measure power consumption.
+The process exited before further sampling.
+
+The earlier disposable two-command replay `pi-hyper-rpc-allow-JPMcvY`
+reported `771295` input tokens, zero cached tokens, `518` questions,
+and `3958323` request bytes across four Luna calls.
+Individual calls took `3418.46`, `2670.05`, `2032.04`, and `683.05` milliseconds;
+these overlap and must not be summed as elapsed latency.
+Its log directory occupied `28163758` apparent bytes including directory metadata.
+These are one-run observations, not stable averages or isolated approval CPU measurements.
+
+### Completed false prohibition and log corruption correction on 2026-10-16
+
+The MiMo session `2026-10-16T01-17-32-548Z` rejected a group containing repository inspection commands.
+Its decision evidence identifies `DCB` as the blocking clause at prohibition scores `0.62` and `0.63`.
+The compiler admitted the first source at priority `2`;
+the router promoted that estimate to an established prohibition and skipped whole-operation review.
+This is a separate failure from the completed false-prerequisite correction.
+The user confirmed that uncertain clause denials must reach scoped Allow/Stop confirmation
+when both automatic reviews fail,
+and requested fixes for every issue shown.
+The user reiterated that accommodating Luna's interpretation failures is part of the product requirement.
+
+- [x] Reproduce and correct clause-denial routing, retaining whole-operation denials and original ownership checks.
+- [x] Measure the actual DCB clause interpretation against inspection and restricted-operation controls;
+      correct the assessment path rather than treating the false classification as an acceptable vendor quirk.
+- [x] Reproduce and fix concurrent JSONL record corruption;
+      the incident log contains two malformed physical lines with interleaved record content.
+- [x] Verify the installed host with the reported commands and record the final evidence.
+- [x] Publish logger `0.4.1` through the automatic release workflows and verify the registry artifact,
+      as requested by the user.
+
+Incident log: `node_modules/.monochromatic/2026-10-16T01-17-31.942Z.log.jsonl`.
+Private inspection task: `${HOME}/temp/agent/pi-host-isolation-20261015`,
+`mise run inspect-prohibition-incident`.
+It recovered `1046` valid decision/assessment records and counted malformed lines without printing their content.
+The authored false-prohibition regression failed with zero executions instead of two before the routing fix.
+The corrected native matrix passes final approve/deny,
+unknown,
+transport failure,
+Stop,
+and headless cases after a first-pass prohibition.
+The file-sink regression also failed before serialization and passes after the fix.
+Logger's complete unit suite and type check pass;
+package lint reports zero warnings and errors across `58` files.
+The user requested the version bump for automatic publication.
+The unchanged live DCB replay repeated prohibition scores `0.62` and `0.63` across three runs.
+Reducing the batch to the DCB questions left those answers unchanged.
+Local choice rubrics changed the choices to `none` but did not reach admission.
+Full local interpretation instructions distinguishing rule examples from proposed invocations
+produced six `none` answers above `0.60` in the next repeated replay.
+The candidate retains complete shared context and now also supplies local instructions and rubrics.
+Broader semantic controls still exposed uncertain first-pass answers for printed command data,
+reading under a modification restriction,
+and an inapplicable approval requirement.
+Those controls have not passed the predeclared first-pass cutoff;
+do not describe the prompt change as universal semantic qualification.
+The installed recovery matrix now verifies reconsideration after an admitted first-pass denial,
+including uncertainty and failure in the whole-operation decision.
+The live installed replay also passes;
+this establishes recovery and the reported operation boundary,
+not universal first-pass semantic accuracy across the broader controls.
+
+Logger release commit `f6c406c1c2` bumps `0.4.0` to `0.4.1`.
+The initial npm run `38835764830` failed startup because the Actions allowlist excluded Changesets.
+The user added `changesets/*` at the organization;
+the repository API confirms it and SHA pinning remains required.
+Restarted npm run `38836163322` built and packed the package,
+then failed publishing with `ERR_PNPM_FAILED_TO_PUBLISH`, HTTP `404 Not Found`.
+Its npm trusted-publisher configuration still needs inspection.
+Resolved after the release requests:
+`npm-publish.yml` run `38838431661` published logger `0.4.1`,
+with registry provenance and a fresh consumer confirming complete ordered large JSONL records.
+The full result is recorded in [the logger release plan](../planning/module-logger-release.md).
+
+The subsequent readiness check found `bin/pi` still loading `native-release-Jg5gMF`.
+The installed first-pass prohibition regression failed at its exact-clause diagnostic assertion;
+the current source and installed decision router differ.
+The live installed replay did execute both reported commands without a dialog in fixture
+`pi-hyper-rpc-allow-kdJq9p`,
+with four successful Luna requests.
+That passing sample does not exercise recovery from an admitted false prohibition.
+The candidate's corresponding matrix and repeated live command replays passed before publication work.
+The full package build then staged and activated `native-release-ikWviS`.
+All 22 installed `test:native:decision-fallback` cases pass,
+including false-prohibition approval and denial,
+uncertainty,
+transport failure,
+Allow/Stop,
+headless withholding,
+source changes,
+and cancellation.
+The live installed replay `pi-hyper-rpc-allow-JPMcvY` executes both reported Bash commands,
+makes four successful Luna requests,
+and opens no dialog.
+Its persisted log check parses 142509 physical JSONL lines with zero malformed lines,
+including 1043 correlated diagnostic records,
+two complete assessment requests and responses,
+and 518 question-evidence records.
+The live prohibition control `pi-hyper-rpc-prohibited-adEoOO` blocks both reads,
+makes two successful Luna requests,
+and opens no dialog.
+New Pi processes load the corrected runtime;
+already-running processes retain their loaded modules.
+Receipts:
+`functional-installed-20261016.log`,
+`functional-installed-prohibition-regression-20261016.log`,
+`functional-native-build-20261016.log`,
+`functional-installed-matrix-20261016.log`,
+`functional-installed-live-final-20261016.log`,
+`functional-installed-log-integrity-20261016.log`,
+and `functional-installed-prohibit-final-20261016.log`
+under `${HOME}/temp/agent/pi-host-isolation-20261015`.
+
+The private registry's `401 Unauthorized` occurred after repository transfer:
+GitHub reports repository ID `710240121`, owner `Aquaticats`, owner ID `343218767`.
+The user approved updating the corresponding trust identity.
+Commits `39fc0da926` and `15e8a365d1` update the generator and regenerated config;
+only subject, owner ID, and workflow reference changed.
+Private publish run `38836247574` still returned `401`.
+The configured deployment's adoption of the new identity is unverified.
+The existing registry runbook records withheld host SSH and Coolify API access;
+honor that boundary when checking deployment.
+The npm publication and installed-host checks are now complete.
+The private registry deployment remains a separate unresolved boundary;
+ask for its remaining deployment action only if the authorized bridges cannot perform it.
+
+### Decision-model fallback correction on 2026-10-16
+
+The user reported that the installed release blocked repository inspection commands with
+`An independent authorization prerequisite remains unsatisfied or unresolved; session confirmation cannot satisfy it`.
+The affected commands list `doc/handover/` and read the repository's working-directory identity.
+The session beginning `2026-10-16T00-30-17-591Z` retains both rejected calls.
+The earlier readiness claim was withdrawn for this boundary.
+The previous live direct-Bash fixture used a synthetic working-directory policy;
+it did not establish correct decisions under the real repository's complete policy.
+
+The user clarified that fallback means the decision model must reconsider the complete operation.
+Only when automatic decision paths fail should the host open a dialog.
+The agent's intervening interpretation, sending prerequisites directly to manual approval, was rejected.
+Use the already selected Luna decision route; do not introduce another vendor or weaken categorical thresholds.
+
+- [x] Replay the reported commands with actual repository policy and record the original evidence-retention limit.
+- [x] Add decision-model fallback before dialog selection when rule assessment cannot resolve the operation.
+- [x] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
+- [x] Retain correlated clause/source references, model distributions, admission and fallback decisions in local logs;
+      reconstruct a rejected review from those logs in a built-consumer regression.
+- [x] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
+
+The user identified the absent per-clause distributions as insufficient logging on 2026-10-16.
+Logging repair is part of this task, not a reason to leave future incidents unattributable.
+The user accepted tightening the existing `LOG` rule to require reconstructable decision evidence.
+Commit `9d31943c2b` also routes recoverable initial clause-assessment failures through the decision model,
+while retaining the original currentness checks and deadline.
+
+The maintained regression `test:native:decision-fallback` first failed with one assessment instead of two.
+Initial candidate `native-release-duzo2x` passed that regression:
+an authored false prerequisite is reconsidered by a distinct whole-operation model question,
+and its approve result executes both direct Bash calls without an approval host.
+The new question retains original claim identity,
+complete prepared operations,
+selected conversation and policy,
+and the existing judgment's transport budget.
+
+That initial candidate also passed the live replay of the user's exact `ls` and `git rev-parse` commands
+with the actual repository working directory and complete policy.
+It made four successful Luna HTTP calls,
+including the whole-operation fallback,
+executed both commands,
+and opened no dialog.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/repo-decision-candidate.log`.
+It was not installed; the final release incorporates the subsequent failure-path and diagnostic corrections.
+
+The first unchanged installed replay reached a dialog instead of reproducing the original prerequisite block.
+It estimated `PX2` as a prerequisite at `0.39`, below admission,
+even though that rule's destructive/external condition does not fit the proposed inspection.
+The original session logs do not retain its per-clause distributions,
+so this does not establish which clause caused the historical false positive.
+The maintained regression supplies the false-prerequisite estimate explicitly to verify routing deterministically.
+
+The current built matrix passes automatic approve and deny,
+unknown and lower-scoring answers,
+initial and final transport failure,
+malformed replies,
+manual Allow and Stop,
+dismissal,
+headless withholding,
+source changes,
+cancellation,
+and established prohibition.
+Receipt: `decision-matrix-2.log` under the same scratch parent.
+Its final pure-review assertion needed correction because incumbent-channel diagnostics retain
+`requires-approval` while unsupported channels retain `unresolved` after scoped Allow.
+The deadline extension then exposed a separate distinction:
+assessment-budget expiry must allow unchanged operations to reach manual review,
+while source changes must not.
+Commit `d84594b527` makes the source-observer check handle that distinction.
+Final deadline and fresh-confirmation cases pass in `decision-matrix-4.log`.
+
+Local assessment logs now retain complete selected inputs, replies, and malformed responses.
+Decision logs retain source bindings, answer distributions, admission, fallback errors, and final outcomes.
+`operationId` joins model exchanges to the `reviewId` used throughout the original judgment.
+The new regression reconstructs its false prerequisite from these logger records.
+The first focused lint pass found four errors;
+callback shape, parameter documentation, and the fixture's asynchronous abort type were corrected.
+Final candidate checks now pass:
+
+- `decision-matrix-4.log`: every fallback case, original-deadline expiry, explicit fresh confirmation,
+  and the pure review-outcome assertions.
+- `decision-approval-matrix-2.log`: original approval, native contexts, reload, fresh confirmation,
+  uncertainty, bypass, and selected conversation regressions.
+- `decision-manual-matrix-2.log`: unavailable observation and failure of both assessment paths,
+  including Allow, Stop, cancellation, and no UI.
+- `decision-fallback-types-7.log` and `decision-fallback-build-js-final.log`: successful type checking and bundle build.
+- `decision-fallback-lint-2.log`: 77 changed files, 3771 warnings, zero errors.
+  Warnings remain in the separate MiMo cleanup queue; this is not complete-package lint clearance.
+- Built `test:decision-wire`, `test:semantic-operating-policy`, and `test:assessment-bundles` pass.
+
+Final live candidate `native-release-g2QlU8` repeats the exact reported commands under actual repository policy
+with all configured metadata and opens no dialog.
+Fixture `pi-hyper-rpc-allow-5yMBCp` made four successful Luna HTTP calls and executed both commands.
+`repo-decision-candidate-final.log` retains the consumer result.
+`decision-log-file-proof.log` reconstructs its decision from the actual JSONL files:
+1043 correlated records, 518 question answers, 515 clause admissions,
+both complete assessment requests and replies, and the final approval without confirmation.
+Both `PX2` occurrences remain below admission in this new observation;
+this still does not identify the original incident's missing clause evidence.
+
+The installed runtime is now `native-release-Jg5gMF`.
+`build:native` staged and activated the release after validating the CLI.
+Installed `bin/pi` passes the same repository-policy replay in fixture `pi-hyper-rpc-allow-HTVK1s`:
+four successful Luna calls, both original commands executed, and no dialog.
+Its actual JSONL files retain the same complete diagnostic counts and final approval;
+`decision-log-installed-proof.log` verifies the persisted records.
+The installed explicit-prohibition control `pi-hyper-rpc-prohibited-a1TH2T` makes one successful Luna call,
+blocks both proposed reads, and opens no dialog.
+Receipts: `repo-decision-installed-final.log` and `repo-decision-installed-prohibit.log`.
+
+Installed fallback, budget, instruction identity/lifetime/batch, public API, and publication tests pass.
+The broader instruction task exposed stale tests for the 256-clause and 64-heading ceilings removed in
+`6bd25e4227`.
+Their replacement checks complete membership across those former boundaries and retains empty-subject rejection.
+`decision-fallback-installed-ownership-2.log` passes;
+`decision-fallback-types-8.log` passes;
+`decision-instruction-test-lint.log` reports zero errors and warnings.
+The other production files retain the zero-error focused check already recorded.
+
+The approved `LOG` rule and generated `CLAUDE.md` are updated.
+Decisions, README files, troubleshooting, and the MiMo handoff describe model-before-dialog behavior.
+Markdown renderer checks pass.
+New Pi processes load the installed release;
+already running processes retain their loaded modules.
+This correction is complete; the separate lint-cleanup handoff remains the next named work item.
+
+### MiMo first-group correction and direct Bash review
+
+The real MiMo session at 23:29:17 UTC reached manual fallback on its first group of two Bash calls.
+The displayed error was `Original policy review and evidence closure failed`.
+The session records the user's Stop response and two aborted tool results.
+The prior installed controls covered authored codemode responses and did not establish this boundary.
+That handoff-ready conclusion was withdrawn until the configured-catalog failure was reproduced and corrected.
+
+The configured replay now reproduces the exact aggregate with a settled catalog of 40 MCP tools.
+The nested cause is `DependencyDeadlineError: Original dependency assessment deadline expired`.
+Its stack reaches `bindRunMessageSources`, which revalidates the complete parent once per retained input.
+The original incident logged 53,108 resource snapshot attempts during input capture.
+The old configured harness disabled MCP and omitted home-discovered Depot skills.
+The corrected fixture retains those inputs; metadata is replayed locally and commands receive scripted Stop.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-mcp-forty-settled.log`.
+The diagnostic fixture is `pi-hyper-rpc-stop-RhgubS` under the same scratch parent.
+The original session did not retain its nested exception, so its exact cause remains inferred from this reproduction.
+The separate 140-tool cached-catalog probe exhausted its 512 MiB child heap before review;
+the 20-tool immediate-start probe observed a catalog change during confirmation.
+Neither is substituted for the reproduced aggregate.
+
+- [x] Recover a nested failure reproducing the exact two-call shape in a disposable host.
+- [x] Correct the demonstrated cause and verify the real configured consumer boundary.
+- [x] Retain regression evidence and update the MiMo handoff readiness.
+
+The candidate fix `5a8760d15f` passes the unchanged 40-tool replay and reduces binding parent checks
+from 257 to 2 for 256 retained inputs.
+The stale-parent and changed-during-construction controls pass;
+omitting the final parent check makes the adversarial test fail.
+The full cached catalog (66 BrowserOS tools and 74 Linear tools) exposed a separate request-preparation ceiling:
+`Original request tool schemas exceed the 10000-property profile`.
+This happens before the provider request and is not the original review-deadline exception.
+Commit `ac68881314` removes that ceiling while preserving descriptor freshness and structural rejection.
+The maintained test retains 12,000 properties and rejects changed properties, accessors, and unexpected prototypes.
+The intermediate failure receipt is `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-full-candidate.log`.
+
+The user explicitly requires direct Bash calls to receive automatic review as well.
+The complete-operation review boundary now includes direct Bash groups,
+retaining uncertainty fallback and governing prohibitions.
+
+Commit `3827af2da9` replaces the repeated retained-origin search with a source-identity index.
+The full cached catalog generated 83,404 message inputs and 83,399 retained origins in the diagnostic fixture.
+The old search took 113190.85 ms in that run;
+the new linear-read regression and full 140-tool replay pass.
+The full-catalog receipt is `mimo-full-index-after.log`, fixture `pi-hyper-rpc-stop-fsbmtV`.
+
+Commit `427ae71387` adds direct Bash to automatic semantic review;
+`d4467e1fc3` publishes its scope matcher through the native generated adapter.
+Controlled built-consumer cases pass for allowed direct commands,
+prohibited commands,
+unknown model answers without an approval host,
+and direct Bash mixed with a supported codemode read.
+Each case sends an assessment containing both complete operations.
+Receipt: `direct-bash-after-3.log` under `${HOME}/temp/agent/pi-host-isolation-20261015/`.
+
+Live Luna has also received the direct Bash group through the configured host with all 140 cached MCP tools.
+Fixture `pi-hyper-rpc-allow-DWhbjc` received HTTP 200 for 94 questions.
+The permission clause's selected probability was 0.75;
+other clauses remained uncertain, so the original confirmation dialog appeared.
+The scripted Stop executed neither command.
+This proves live model dispatch and uncertainty fallback, not automatic approval of the complete live context.
+The live candidate prohibition fixture `pi-hyper-rpc-prohibited-GaSZbp` received HTTP 200,
+opened no dialog,
+and blocked both commands.
+Candidate fixture `pi-hyper-rpc-allow-kBHlyH` passed scripted scoped confirmation and executed both commands.
+
+The corrected runtime is installed as `native-release-tmMxY3`.
+The installed `bin/pi` consumer repeats the complete configured-host fixture,
+including 17 configured packages,
+27 home-discovered skills,
+and all 140 cached MCP tools.
+Fixture `pi-hyper-rpc-allow-LuIIFZ` sent 94 questions to live Luna,
+received HTTP 200,
+and executed both native Bash commands after one scripted Allow.
+This is automatic review with uncertainty fallback, not a claim that the model automatically approved the group.
+The installed prohibition fixture `pi-hyper-rpc-prohibited-QwVjXt` also received HTTP 200 for 94 questions,
+blocked both commands,
+and opened no confirmation dialog.
+New Pi processes load the new release; existing processes retain their loaded release.
+
+Final built policy and scope units pass,
+as do package type checking and installed direct Bash,
+message freshness,
+schema capacity,
+source-freshness work,
+bypass,
+and existing native program permission/prohibition/unspecified controls.
+Removing the final parent check still makes the adversarial freshness regression fail.
+The focused lint measured 635 warnings and one error across 14 changed files;
+the sole error was a rest-parameter test wrapper.
+After replacing it with the native callback's explicit arguments,
+that file reports 95 warnings and zero errors.
+The unchanged files had no errors in the first pass.
+These are focused checks and do not claim the package is lint-clean.
+Receipts live under `${HOME}/temp/agent/pi-host-isolation-20261015/`:
+`direct-final-semantic.log`, `direct-final-types.log`, `direct-installed-regressions.log`,
+`direct-installed-additional.log`, `mimo-omission-final.log`, `direct-final-lint.log`,
+`direct-test-final-lint.log`, `direct-installed-allow.log`, and `direct-installed-prohibit.log`.
+The warning queue is ready for the [MiMo cleanup prompt](pi-auto-mode-mimo-lint-prompt.md).
+
+The user accepted the VUB clarification requiring configured extensions, skills, and tool catalogs in consumer checks.
+`AGENTS.md` is updated and `CLAUDE.md` regenerated through file-enforcer.
+The revised rule has 197 normalized characters and 26 words.
+Pandoc CommonMark rendering and inspection pass for the rule sources,
+package READMEs,
+troubleshooting record,
+and MiMo handoff documents.
+
+### Host-isolation replacement complete
+
+The host-isolation release was installed as `native-release-Yhc7sX` and verified through the original `pi` command.
+It is superseded by `native-release-tmMxY3` for new processes on 2026-10-16.
+New Pi processes load it; existing processes retain their loaded release.
+All functional work in this section is complete.
+The remaining warning cleanup belongs to the requested [MiMo handoff](pi-auto-mode-mimo-lint-prompt.md).
+
+Final package type checking passes.
+Focused Oxlint on 40 changed files reports zero errors and 2709 warnings;
+its nonzero exit is the warning gate, not a clean-lint result or whole-package measurement.
+The candidate live controls pass scoped Allow, prohibition, and an independent external-office prerequisite.
+Installed-command controls pass with all 17 configured packages, followed by live Luna Allow verification.
+That live installed check uses three successful HTTP requests for 516 questions and executes one native read.
+Primary responses and dialog selection are authored fixtures; no physical human input is claimed.
+Receipts are `live-final.log`, `installed-configured.log`, and `installed-live.log`
+under `${HOME}/temp/agent/pi-host-isolation-20261015/`.
+
+The user corrected the fallback on 2026-10-15:
+unavailable observation or assessment evidence must fall back to manual approval,
+not withhold the operation outright.
+Implementation and failure-isolation tests must exercise Allow, Stop, and cancellation.
+The implemented fallback owns manual approval independently of the unavailable observation,
+while retaining exact prepared-group identity and native cancellation.
+Primary prompt, event, and transport capture now retain failures without rejecting native chat.
+
+The disposable release `native-release-Jx9I6F` verifies manual fallback after missing observation
+and failed assessment: Allow executes one native child; Stop, cancellation, and headless sessions execute none.
+The maintained fixture is `src/native-observation-isolation.test.mjs`.
+The subsequent disposable release `native-release-S8Ip9X` keeps prompt and event capture passive.
+Its navigation, cancellation, reload, fork, and resume controls pass.
+The retry fixture initially set overrides before native resource loading replaced them;
+setting and asserting overrides on the constructed session verifies both agent and provider retries.
+The native prompt callback fixture also passes capture failures before and after callbacks,
+exactly-once invocation, and preservation of original thrown values.
+Package type checking passes.
+An intermediate focused lint check on 36 changed files reports 2247 warnings and zero errors;
+warnings still fail the lint command and remain assigned to the requested MiMo handoff.
+The combined session, passive-prompt, lifecycle, runtime-hook, policy, and manual-fallback matrix passes
+on disposable release `native-release-JWvYLT`.
+The approval regression then caught a second-dialog bug after established authorization became stale.
+Commit `e9864891ee` prevents an established decision or its approval from becoming evidence-free fallback.
+Release `native-release-LNNqh3` passes the corrected original-approval, native-context,
+fresh-confirmation, and uncertain-review controls.
+The out-of-profile bypass fixture requires the new manual fallback after disabling bypass;
+its scripted Stop response is now explicit instead of accidentally approving the fallback.
+Final original-approval, bypass, and selected-context controls pass in `approval-final.log`.
+The configured-host candidate checks subsequently pass with all 17 packages in `configured-final.log`.
+Live verification and commits were interrupted by the shared worker's 256-task limit:
+Mise reports failed thread creation and Git reports failed forks and threaded `lstat`.
+An unrelated portfolio Chromium preview consumes most slots.
+The user instead authorized increasing worker capacity on 2026-10-15.
+The hook requires the exact task limit, so raising systemd alone blocks every shell command.
+The kernel value was restored through the file-edit tool to recover shell access.
+The user then specified 2048 tasks.
+Commit `561ac46f20` updates the maintained hook; its Rust tests and Clippy pass.
+The installed hook, persistent slice definition, runtime parent, and existing `codex` child now agree on 2048 tasks.
+The 4 GiB memory cap, zero swap, and two-CPU quota remain unchanged; the preview stays running.
+Ordinary shell commands through the updated hook succeed.
+The exact manual-group identity/lifetime fixture also passes in `manual-group.log`.
+The original installed manual-group test passes in `installed-manual-group.log`.
+Removing only the parent-identity guard in a process-local disposable probe makes the same test fail
+with `changed-parent must reject its stale Allow response`; production keeps that guard.
+Use the candidate's canonical path and preload its own HTTP dispatcher in the configured fixture.
+Scratch multi-task invocations without separators passed later names as arguments;
+only explicit per-task output counts as execution evidence.
+The combined scratch task now sequences independent `mise run` calls.
+
+After the replacement handoff, the user reported `Root lease has been retired` and `Connection error.`.
+The real session beginning at 22:17:29 UTC records connection failures on `llmgateway-devpass/mimo-v2.6-pro`,
+followed by a lease error on `opencode-go/mimo-v2.6-pro`.
+The user confirms using Esc, editing/retrying, `/tree`, and `/reload` between attempts.
+These are separate incidents until reproduced at their respective consumer boundaries.
+
+Both failures now reproduce independently with no tool calls.
+Provider switching fails the observer's fixed startup-endpoint comparison;
+tree navigation retires the root captured by the next ordinary prompt.
+Retry, reload, and abort-after-completion controls pass.
+The user then identified the repeated failures as an architectural problem.
+The user accepted replacement of the integration rather than targeted endpoint/navigation repairs.
+Implementation follows the
+[host-isolation decision](../decision/pi-auto-mode-host-isolation.md)
+and its [consumer matrix](../planning/pi-auto-mode-host-isolation.md).
+The [incident record](../troubleshooting/pi-auto-mode-session-interference.md)
+contains the exact emitters, reproductions, and limitations.
+
+- [x] Reproduce and fix the connection failure after selecting another provider.
+- [x] Reproduce and fix retired-root failure after native navigation and retry.
+- [x] Resolve the host-isolation design choice and update the accepted integration scope.
+- [x] Move primary observation failures to tool admission and use operation-scoped native currentness.
+- [x] Verify original host operations, install the corrected artifact, and document the evidence.
+
+Scratch reproductions live under `${HOME}/temp/agent/pi-reported-errors-20261015/`.
+The prior successful controls did not cover this complete UI-operation sequence.
+Warning cleanup remains assigned to the MiMo handoff after these functional regressions are resolved.
+
+The implementation now removes judgment creation from `message_end` and starts it at complete-group dispatch.
+Native branch readers supply operation-local currentness; constructor ownership remains separate.
+Primary observation retains failures for tool admission and preserves native transport retries and callbacks.
+The startup endpoint is no longer an admission condition.
+Build and consumer checks first ran in a disposable package before the verified release was activated.
+The expanded native fixture exposed general event capture rejecting a native `AbortSignal`.
+That failure is now retained only for automatic evidence; native callbacks and subsequent chat complete.
+The source owner can remain unavailable after such a failure, so affected tools require manual review.
+The tests do not claim that automatic evidence recovers after every unsupported event.
+The completed verification retains this automatic-evidence limitation explicitly.
+
+### Replacement verification before the new report
+
+The user subsequently requested a whole-system re-review and consideration of rebuilding.
+The review is complete.
+The user accepted decision-core replacement and requested avoiding overengineering.
+The [accepted decision](../decision/pi-auto-mode-decision-core.md) fixes implementation scope.
+
+- [x] Select current context before semantic candidates and exclude retained archives from model input.
+- [x] Replace decision composition and re-resolve scoped confirmation without erasing independent prerequisites.
+- [x] Separate explicit bypass from semantic profile admission while retaining native execution checks.
+- [x] Verify prepared-operation identity, freshness, cancellation, deadlines, and configured-host behavior.
+- [x] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
+- [x] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
+
+Functional replacement and consumer verification are complete.
+Final package type checking passes.
+Focused Oxlint covers all 40 changed TypeScript and JavaScript files and reports zero errors and 2149 warnings.
+The lint command still exits nonzero for warnings;
+this is not a clean-lint or whole-package warning-count claim.
+Per the user's instruction, this agent stops warning cleanup once Pi is functional.
+The remaining queue belongs to the
+[MiMo v2.6 Pro lint prompt](pi-auto-mode-mimo-lint-prompt.md):
+measure the full maintained scope, then fix and verify its remaining warnings.
+The installed command points to the verified replacement release;
+already-running Pi processes retain their previously loaded release until restarted.
+
+Release activation now stages an immutable native directory and its matching policy bundle,
+loads the generated CLI, then publishes the stable command link.
+`test:native:build-activation` passes generation and CLI-loading failures in a disposable installation,
+with successful directory migration and subsequent link replacement as positive controls.
+The configured-host fixture passes Allow, unrelated-prerequisite, and prohibition controls
+with all 17 configured packages and copied workspace instructions.
+Its current assessment contains 516 questions in three requests of 200, 200, and 116.
+The authored-response controls are followed by live Luna receipts in
+`pi-core-live-configured-corrected.log` and `pi-core-live-restrictions.log`
+under `${HOME}/temp/agent/`.
+Live Allow executes one original native read;
+an actual prohibition and an external-office approval prerequisite each withhold execution without a dialog.
+All use the original installed CLI, disposable homes, all configured packages,
+copied workspace instructions, and authored primary responses.
+They do not claim human approval or physical keyboard delivery.
+The direct-import regression found missing public exports for shared context and native bypass;
+both package entries now retain those identities and the direct-import checks pass.
+
+The first selected-context live run falsely admitted `PX2` as an independent prerequisite for a local read.
+Both unchanged replays reproduced it.
+Repeating the complete operation beside each clause removed that admitted prerequisite
+in both diagnostic observations, without changing policy or the `0.60` cutoff.
+Commit `67a2d7cfe3` implements that representation and removes a redundant source read.
+The subsequent live host checks pass;
+the permission case sends 516 questions in three calls and its slowest response took 5760.916 milliseconds.
+The [Luna troubleshooting record](../troubleshooting/llmgateway-luna-admission.md)
+retains the original failure, controls, limitations, and exact receipts.
+
+The broader regression run passes type checking, import boundaries, budget and cancellation,
+dependency freshness, original source identity, input sealing, prepared membership,
+approval routing, uncertainty handling, semantic transport, bypass, wire conversion, and bundle accounting.
+Its sole failure was the redundant source read's changed callback sequence;
+the corrected preparation, failure, and boundary consumers pass in `pi-core-final-checks.log`.
+That final run also passes release activation, selected context, transport, and semantic-policy consumers.
+Removing CLI preflight only in a disposable fixture makes the activation regression fail with
+`The deliberately invalid native release was activated`.
+The production guard stays present.
+
+Remaining feature scope is explicit:
+guarded execution retains the accepted single-call and producer/successor program profiles;
+explicit bypass also runs ordinary native programs outside those semantic profiles.
+Legacy `/guard`, `propose_trust`, and approval reuse remain legacy-only features.
+No full-session memory benchmark or universal semantic accuracy claim follows from this replacement.
+
+The replacement is `native/contract/integration/action-policy/decision-core.mjs`.
+It replaces `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` on 2026-10-15;
+historical references to those files describe the reviewed implementation.
+The original judgment still owns preparation-inclusive accounting, evidence, closure, and execution.
+Scoped confirmation re-resolves the captured program;
+missing, unsupported, or unresolved independent prerequisites do not open the generic confirmation dialog.
+The rebuilt native approval matrix passed those controls and the valid-confirmation, prohibition,
+retired-evidence, and cancellation controls before core consolidation.
+The consolidated core subsequently passed the native permission, prohibition, and no-policy consumers.
+
+`test:native:decision-context` passed with six assessments and eighteen inert child executions.
+It exercised the five-message floor, the complete latest-user span,
+complete long selected content, follow-up selection, and reload.
+Its positive control retained the old prefix in the main-agent request;
+the assessment wire omitted that prefix, hidden messages, and the raw provider request.
+Receipt provenance remains local and separately validated.
+The projection uses the same `buildVisibleContext` implementation as legacy mode,
+with the running host's entry projector supplied at its boundary.
+
+The rebuilt `test:native:bypass` passed for both inspected and ordinary three-statement programs.
+Native execution completed three and two inert child calls respectively, without assessment.
+Turning bypass off restored guarded admission;
+reload, audit entries, status, and the fixed virtual-input guard passed in both cases.
+These fixture results use authored model replies and presentation, not live provider or human approvals.
+The [whole-system review](../planning/pi-auto-mode-whole-system-review.md)
+recommends replacing the decision core and correcting bypass routing,
+while retaining and requalifying useful native ownership controls.
+It records the context-selection defect,
+a built approval-router witness that generic Allow overrides an unrelated unsatisfied prerequisite,
+and a built-host bypass regression against an upstream Codemode positive control.
+The earlier `generic` control sent Deny and did not prove prerequisite preservation after Allow.
+The accepted replacement is implemented; the review itself made no production edits.
+
+The user corrected the assessment scope:
+never send the full transcript at every decision point,
+and inspect the legacy auto-mode implementation before redesigning context selection.
+The incumbent contract is in `src/visible-context.ts` and `src/constants.ts`:
+retain the larger of the latest five visible messages and the complete span from the latest user message.
+With no user message, retain the latest five visible messages.
+Keep each selected message complete;
+omit persisted system messages, hidden custom messages, and provider-only metadata.
+Use Pi's compaction-aware `buildContextEntries()` projection.
+Project-context files, current action/input, and active trust directives are separate judge inputs.
+Commit `4c8fe3a909` records the window decision;
+`cad376be5b` records the compaction-aware projection.
+The rebuilt legacy `context.unit.test.ts` passes those window and omission controls on 2026-10-15.
+The reviewed native path had indexed captured source receipts and emitted every source's complete content
+through `native/contract/integration/action-policy/wire.mjs`,
+then repeats selected text through `wire-clause.mjs`.
+Local retention for provenance does not require sending every retained byte to every assessment.
+The context-sharing experiments remain scratch-only and are not the selected repair.
+The replacement restores the incumbent decision-context selection boundary while retaining local provenance.
+Do not describe byte sharing or a larger context window as resolution of this scope defect.
+The user chose to keep the migration lesson in auto-mode documentation only;
+do not add a general `AGENTS.md` migration rule.
+
+The latest user decision raises the preparation-inclusive assessment deadline to 15 seconds.
+The three sequential bundles of at most three parallel calls remain unchanged.
+Native ownership, conversion, and HTTP lifetime guards now use the accepted duration.
+The five-second results in this evidence ledger describe the superseded deadline.
+Rebuild, type checking, transport, wire, bundle, deadline, preparation, lifecycle,
+and dependency regressions passed after the deadline change in `c607c5f564`.
+The unchanged live replay returned HTTP 400 for its third request after about 5.3 seconds:
+`context_length_exceeded`, with `param: input` and `type: invalid_request_error`.
+The original error text was:
+`Your input exceeds the context window of this model. Please adjust your input and try again.`
+The response did not report a token count or the effective limit used by the serving route.
+OpenAI's current Luna model page documents 1050000 tokens;
+serialized byte counts cannot establish whether that token limit was exceeded.
+
+The user rejected treating normal workspace size as grounds to abandon automatic assessment.
+The process-local assessment probe measured 615 instruction candidates,
+617 total questions,
+and 7420722 bytes in the internal selection request.
+This is not a live provider rejection or a model token measurement.
+The one-question-per-candidate, one-request implementation is the active design defect.
+The unverified manual-capacity fallback in `8fe7e33410` is withdrawn.
+The user now permits three sequential bundles with at most three parallel calls per bundle.
+The user removed only the average USD 0.001 per judgment cost limit.
+At that point the five-second preparation-inclusive hard deadline remained.
+Complete attributed request partitioning and shared bundle accounting are implemented.
+The configured-workspace CLI now assesses 617 questions in requests of 200, 200, 200, and 17,
+using two sequential bundles.
+Allow executes the prepared read;
+Deny, Stop, dismissal, abort, generic unsatisfied prerequisites, prohibition, and bare-policy controls withhold it.
+All checks use authored provider responses in a disposable network-isolated home.
+No live-provider latency claim follows from these controls.
+The built bundle tests verify parallel starts, exact membership through 1800 questions,
+cancellation, malformed responses, stale capabilities, overlap rejection, and shared retry accounting.
+The subsequent live-provider replay failed at the original five-second deadline.
+The first bundle started three requests of 2566713, 2690737, and 4538472 bytes;
+none returned response headers before cancellation and the fourth request was not sent.
+The complete shared state is 2152170 bytes in each request.
+This single observation establishes failure under the retained deadline,
+not a causal latency comparison or a provider capacity rejection.
+Normal live use is therefore not yet qualified.
+The deciding receipt is `${HOME}/temp/agent/pi-live-bundled-assessment.log`;
+the replay verifies exact equality with the configured fixture's provider request bodies.
+An initial investigation considered sharing repeated context bytes while retaining source identities.
+The user subsequently corrected that direction to restore legacy decision-context selection.
+Do not drop instructions or silently relax the deadline.
+Do not present size-triggered manual review as the completed repair.
+
+Gateway controls on 2026-10-15 returned HTTP 200 for every small-input request.
+Repeated identical one-question requests took 1692, 390, and 350 milliseconds;
+repeated identical 200-question requests took 766, 1150, and 735 milliseconds.
+Their encoded bodies were 276 and 38973 bytes respectively.
+The receipt is `${HOME}/temp/agent/pi-gateway-small-controls.log`.
+These establish a working route and measured variation,
+not that gateway overhead is absent for the captured workspace input.
+No direct-provider comparison has been performed.
+The resolved repository environment has the Gateway credential but no direct OpenAI API key.
+Do not recommend topping up direct service from the full-context timeout alone.
+
+The user explicitly accepted removal of arbitrary capture limits on 2026-10-15.
+Commits through `c65c7c9a3e` remove fixture-derived byte and occurrence limits from
+prompt options,
+tool metadata,
+event/session/resource receipts,
+run histories,
+governing source lists,
+and clause indexes.
+The data copier now uses an iterative work stack with explicit ancestor-cycle detection.
+Message aliases remain rejected;
+supported shared tool metadata remains copied by occurrence.
+Ownership,
+freshness,
+descriptor checks,
+and cancellation are retained.
+The generic prompt error now includes retained deciding error messages.
+
+The original regression was red at `49b0dd1b08` and passes after the removal.
+The installed native CLI fixture completes initial and follow-up prompts with bypass off,
+all configured packages,
+the copied repository instructions,
+default tools,
+and user/project skills.
+It uses local provider replies in a network-isolated disposable home,
+with no process-local capacity overrides.
+The fixture is `capture-removal-repro.ts` under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014`.
+Type checking and the updated capture, resource, event, history, governing-index,
+tool-publication, file-observer and native-bypass regressions pass.
+The configured native CLI's existing Allow, Deny, Stop, cancellation, abort,
+generic prerequisite, prohibition and bare-policy controls pass with their original small policy.
+The expanded full-workspace tool check originally found a separate downstream limit:
+`instruction-batches.ts:144` rejects more than 256 instruction candidates before assessment.
+Its exact error is `Clause relation requires one through 256 original instruction candidates`.
+That limit and arbitrary aggregate claim/wire/response ceilings are now removed.
+The provider's per-request question limit is handled by complete attributed partitioning.
+The scratch `bundled-tool-controls` task verifies the repaired configured-workspace consumer.
+Do not claim live-provider or physical-terminal verification from these offline checks.
+
+The deciding pre-repair measurements were:
+83938-byte callback options and a 113905-byte tool-loadout bundle against 65536-byte limits;
+2850095-byte base snapshot against one MiB;
+5282773-byte follow-up run accounting against four MiB;
+and shared receipt bytes exceeding four MiB with only 123 receipts.
+These counted repeated serialized observations, not measured heap or model tokens.
+The smaller original smoke test had missed the configured workspace and follow-up interaction.
+See [the accepted capture repair](../planning/pi-native-capture-capacity-repair.md).
+
+The latest user instruction is to stop this agent's cleanup once Pi is functional,
+then draft a prompt for MiMo v2.6 Pro to continue lint fixes.
+The Shift+Tab regression is repaired through `775efbc86c`,
+with formatting in `5e40bca7c4`.
+The built native bootstrap now registers `shift+tab`.
+The built native bypass consumer passes enabled execution of a producer and parallel children,
+zero policy assessments in bypass,
+disabled-mode prohibition,
+reload restoration,
+visible status,
+audit entries,
+and the fixed virtual-input guard in both modes.
+Native and maintained builds plus package type checking pass.
+The installed command resolves to this rebuilt native host;
+an already-running Pi process needs a restart to acquire the changed runtime.
+Physical keyboard delivery in that running terminal has not been exercised.
+The lint queue remains paused for this agent.
+Use [the MiMo handoff prompt](pi-auto-mode-mimo-lint-prompt.md) for the next cleanup session.
+The warning counts in the historical entries are measurements of their named commits,
+not a recount after the bypass repair.
+
+### Historical regression and cleanup evidence
+
+User-reported regression takes priority over the warning cleanup:
+the native migration lost the Shift+Tab bypass toggle.
+`mise run probe-native-bypass` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
+reproduces missing registration in the built native bootstrap.
+A control extension registers the same key successfully.
+Installed thinking cycling remains on Ctrl+E;
+the legacy auto-mode extension is absent from installed settings.
+The legacy entry point owns the toggle,
+while native resource construction only captures its API and does not register a replacement.
+The prior blanket statement that Pi is functional is retracted for interactive feature parity.
+The provider and approval checks remain valid within their tested surfaces.
+At the initial diagnosis no bypass restoration had been applied;
+the active-work section records its subsequent repair.
+See the Shift+Tab section in `doc/troubleshooting/pi-sdk-staging.md` for reproduction and source evidence.
+The native replacement must preserve explicit bypass behavior,
+the fixed virtual-input guard,
+session restoration,
+visible status,
+and audit entries before this regression can be closed.
+The user also proposed delegating cleanup to a cheaper model;
+Luna with the existing verification gates was recommended,
+but no delegation was launched.
+
+The dispatcher member-lifecycle boundary is complete:
+`prepared-lifecycle.ts` and `prepared-lifecycle-types.ts` now own original member callback sequencing.
+The dispatcher retains shared group state and passes original queue operations through borrowed callbacks.
+Built consumers cover ordering,
+opaque callback failures,
+exact native identities,
+once-only preparation release,
+and synchronous disposal failure ownership.
+These changes are committed through `9d120a7020`.
+Focused formatting reports zero diagnostics in the six new files.
+Native build,
+package type checking,
+all built consumers,
+and original dispatcher replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including a permission-versus-prohibition positive control.
+All 40 process-local omissions or substitutions produce assertion failures;
+the built lifecycle and dispatcher hashes remain unchanged.
+Receipts are `typed-prepared-lifecycle-comparison.json` and `typed-prepared-lifecycle-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The original dispatcher is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-lifecycle-types.mjs`.
+The complete lint recount covers 826 files with zero errors and 10151 warnings.
+All six lifecycle files have zero diagnostics.
+The remaining dispatcher glue has 88 warnings,
+compared with 85 before extraction;
+the additional borrowed callbacks still reside in the untyped original module.
+The next boundary is that remaining dispatcher ownership and queue setup.
+`program-profile-reviewed.mjs` remains the following profile boundary with 74 warnings.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-lifecycle-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`e7a2feb4f3093675fb0b2ea3e4be5570d66720dc260106340903ffbc82a83ce1`.
+
+The next extraction delegates original parallel successor inspection to `profile-successors.ts`.
+Its borrowed call inspector and private pattern ownership remain unchanged.
+Native build, package type checking, all built consumers, and exact original replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including a permission-versus-prohibition positive control.
+Public syntax consumers retain the direct and binding forms and both parallel combinators.
+All 33 process-local omissions or substitutions produce assertion failures;
+the built helper and profile-inspector hashes remain unchanged.
+Consumers isolate overlapping syntax guards and retain borrowed callback identities,
+repeated binding and member reads,
+partial member inspection before later failures,
+and original sparse synthetic mapping.
+The helper leaves declaration envelopes unfrozen for their original outer owner.
+The complete recount covers 820 files with zero errors and 10148 warnings;
+all six successor files have zero diagnostics.
+The remaining profile inspector has 61 warnings;
+the dispatcher has 85 and is the next native boundary.
+Receipts are `typed-profile-successors-comparison.json` and `typed-profile-successors-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-profile-successors-final-lint-20261015.log`.
+The saved original profile inspector has SHA-256
+`dab8f248c9ba906586e967e1e55ca90911170a05faa054aedfc99ff623c907d4`.
+The functional scope correction and live/human checks remain complete.
+Continue the remaining maintained native quality queue.
+
+Original pattern decoding now delegates to `pattern-decoder.ts` and `pattern-decoder-types.ts`.
+The helper borrows the original private pattern owner and diagnostic constructor.
+Original ownership and materialization stay in `result-pattern.mjs`.
+Native build, package type checking, all built consumers, original replay, and six domain comparisons pass.
+Public syntax consumers also pass.
+The final complete recount covers 814 files with zero errors and 10194 warnings;
+all six new decoder files have zero diagnostics.
+Omission controls found an overlapping binding guard in the initial fixtures:
+removing the defined-binding check still rejected named identifiers through the name check.
+Added nameless synthetic identifiers isolate the defined-binding guard.
+Positive collection-bound and child-binding tests now assert successful completion explicitly.
+Final package type checking, all consumers, and original replay pass after these additions.
+All 42 process-local omissions or substitutions produce assertion failures;
+the built decoder and original pattern-owner artifact hashes remain unchanged.
+Consumers preserve child-before-parent ownership publication,
+literal and key getter ordering,
+partial publication before later child rejection,
+and original sparse synthetic array mapping.
+Arrays and objects both exercise inclusive nesting bounds and overflow rejection.
+The helper retains owner return identity and original diagnostic constructor identity.
+Receipts are `typed-pattern-decoder-comparison.json` and `typed-pattern-decoder-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-pattern-decoder-final-lint-20261015.log`.
+The saved original pattern module has SHA-256
+`94e2d51ff0945655754fd36fbc636b7fdc1aaf75bfc6650d4a6a837a192b7cbd`.
+The remaining pattern module has 40 warnings;
+`program-profile-inspect.mjs` has 101 and is the next native boundary.
+
+The dispatcher now delegates original `beforeToolCall` member preparation to
+`prepared-member.ts` and `prepared-member-types.ts`.
+Native build,
+package type checking,
+and all three built consumer suites pass.
+Original replay and six domain comparisons pass.
+All 46 process-local omissions or substitutions produce assertion failures,
+with both built artifact hashes unchanged.
+The readiness-publication and gate-resolution omissions select the first complete-group consumer,
+which independently completes its gate after observing noncompletion;
+other omissions execute their entire selected consumer suite.
+The first complete recount found `no-restricted-syntax(no-variable-function-expression)`
+in the added callable-result fixture.
+That fixture now uses a function declaration;
+final package type checking,
+all built consumers,
+and original replay pass.
+The final complete recount has zero diagnostics in the member helper,
+its types,
+and its four consumer files.
+The remaining dispatcher has 85 warnings;
+`result-pattern.mjs` has 103 and is the next native boundary.
+Receipts are `typed-prepared-member-comparison.json` and `typed-prepared-member-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-member-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`a702ad6088db1055149724cf4a26ac59127d6c1d8183215a5d4bb4fc8e196cc0`.
+Consumers cover original hook entry,
+input sealing,
+declaration-ordered manifests,
+shared assessment admission,
+and retained preparation failures.
+They preserve first-decision ownership when assessment settles after another decision,
+original gate rejection handling,
+opaque preparation reasons,
+callable preparation results,
+and changing assessment getters.
+The native callback directly forwards the helper's asynchronous result.
+Currentness and preparation-release callbacks retain their synchronous return semantics.
+Entry publication remains outside retained-failure handling.
+The call-inspection evidence recorded here is complete.
+
+Original call inspection now delegates to `profile-call.ts` and `profile-call-types.ts`.
+The original pattern decoder and diagnostic constructor remain borrowed from `result-pattern.mjs`.
+Native build,
+package type checking,
+and both built consumers pass.
+Original replay and six domain comparisons also pass.
+Public syntax consumers accept the original direct and binding forms,
+reject 26 unsupported forms,
+and retain both parallel combinators.
+The computed-member omission exposed overlapping rejection guards in the first consumer fixture:
+`tools["tool"]` was still rejected by the property-kind check.
+The added `tools[tool]` fixture isolates computed-member rejection.
+All 26 process-local omissions or substitutions produce assertion failures;
+the built profile inspector and call helper retain their original hashes.
+Final package type checking,
+built consumers,
+and original replay pass after adding the isolated computed-member fixture.
+The complete recount has zero diagnostics in the call helper,
+its types,
+and its three consumer files.
+The remaining profile inspector has 101 warnings;
+`prepared-dispatch.mjs` has 121 and is the next native boundary.
+Receipts are `typed-profile-call-comparison.json` and `typed-profile-call-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-profile-call-final-lint-20261015.log`.
+The saved original profile inspector has SHA-256
+`a637372dd68a7fcf2cac28661021aface213396afe31e5ad0ad556f7a087da12`.
+Replay retains the original call body and original `requireProfile` predicate,
+borrowing the original error constructor and decoder through the extracted helper boundary.
+Consumers preserve decoder argument identity,
+property read ordering,
+escaped-identifier source text,
+and original fractional end-position admission for synthetic nodes.
+That synthetic case does not establish that the parser emits fractional source positions.
 
 The tool-call scope correction,
 live Hyper/Gemma assessment,
@@ -16,8 +1741,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 758 files and 486 rules,
-with zero errors and 10568 warnings.
+The latest complete lint report covers 820 files and 486 rules,
+with zero errors and 10148 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -37,12 +1762,149 @@ original-code replay,
 domain comparisons,
 and deliberate omission controls.
 Reached-program runtime is also qualified.
-Continue reached-program runner contracts.
+Continue the remaining native dispatcher and profile contracts.
 The collector implementation and new consumers have zero diagnostics in the full report.
-The latest report has zero runtime or extracted runner-binding diagnostics,
-and retains 207 warnings in `program-runner.mjs`.
+The latest report has zero runtime,
+extracted runner-binding,
+extracted runner-event,
+extracted runner-execution,
+or extracted runner-facade diagnostics,
+and retains 22 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
+
+Prepared input sealing now delegates to `prepared-input-seal.ts`.
+The original dispatcher still owns the contract error constructor.
+The native build and package type check pass after correcting a fixture's directly exported binding pattern
+(`TS9019`).
+Both built sealing consumer suites and their exact original-code replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including a permission-versus-prohibition positive control.
+The saved original dispatcher has SHA-256
+`be4d2f66a767fc95669eb4369f9b957668b9a93e22a50ead971bdcde51f11f8c`.
+Final consumer verification and the package type check pass,
+including the 10,000-container deep-tree fixture.
+All 18 process-local omissions or substitutions produce assertion failures;
+the built dispatcher and sealing helper retain their original hashes.
+The complete lint recount has zero diagnostics in the sealing helper and its three consumer files.
+The first recount found a destructuring style warning in the added deep-tree test;
+the final recount follows its correction.
+Receipts are `typed-input-seal-comparison.json` and `typed-input-seal-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-input-seal-final-lint-20261015.log`.
+The remaining dispatcher has 178 warnings and is the next native boundary to extract.
+The next extraction now delegates original call admission,
+per-call cloning,
+judgment capability checks,
+and sequential scheduling to `prepared-schedule.ts` and `prepared-schedule-types.ts`.
+The native build,
+package type check,
+built consumers,
+and exact original-code replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+All 21 process-local omissions or substitutions produce assertion failures,
+with the built dispatcher and scheduler hashes unchanged.
+The complete lint recount has zero diagnostics in the scheduler,
+its types,
+and its three consumer files.
+The first recount found a multiline TSDoc warning;
+the final recount follows its correction.
+Final native rebuild,
+package type check,
+built consumers,
+and original replay also pass with the added sparse-array fixture.
+That fixture preserves original scheduling of an array hole when no tool lookup observes it;
+it does not establish complete dispatch for a sparse group.
+The remaining dispatcher has 151 warnings.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-schedule-final-lint-20261015.log`.
+Receipts are `typed-prepared-schedule-comparison.json` and `typed-prepared-schedule-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The saved original dispatcher has SHA-256
+`44cce9180cdcd4b0e17b611ae1cfa5d20d96f2fed2f46f7f3f5cb29ab77b168f`.
+Consumers preserve first-match tool lookup,
+cloning before mode admission,
+context validation before serial-policy reads,
+and explicit sequential mode bypassing those policy reads.
+The pre-extraction dispatcher is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-schedule-types.mjs`.
+The original array check counts own keys;
+it can accept a missing index offset by an extra enumerable property.
+The extraction preserves that behavior and explicitly tests it.
+It also preserves parent freezing before child validation and original proxy failure identity.
+
+The next dispatcher extraction delegates final native outcomes and retained lifecycle failures to
+`prepared-completion.ts` and `prepared-completion-types.ts`.
+Original error constructors remain in the dispatcher.
+The native build,
+package type check,
+both built consumer suites,
+and exact original-code replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+All 18 process-local omissions or substitutions produce assertion failures;
+the built dispatcher and completion helper retain their original hashes.
+The complete lint recount has zero diagnostics in the completion helper,
+its types,
+and its three consumer files.
+The remaining dispatcher has 137 warnings.
+Consumers preserve original failure precedence,
+duplicate and nullish aggregate causes,
+native outcome identity,
+getter ordering,
+first-snapshot identity,
+and frozen completion envelopes.
+Receipts are `typed-prepared-completion-comparison.json` and `typed-prepared-completion-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-completion-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`3810c52f074c0e5e71af7fd90742c797162ade5536e62330ecd1697c96c2c59d`.
+The original dispatcher is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-completion-types.mjs`.
+
+The next extraction delegates original tool snapshots and native execution wrappers to
+`prepared-executable.ts` and `prepared-executable-types.ts`.
+The dispatcher retains its synchronous `turns[ordinal].promise` lookup through a borrowed `waitForTurn` callback.
+Original context ownership and error constructors remain unchanged.
+The native build,
+package type check,
+both built consumers,
+and original wrapper replay pass.
+Six complete domain comparisons preserve outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+All 17 process-local omissions or substitutions produce assertion failures;
+the built wrapper and dispatcher hashes remain unchanged.
+The retained-callback control first failed with a raw getter error;
+the final test explicitly asserts successful completion,
+so reintroducing that read now produces an assertion failure.
+Final consumer execution,
+type checking,
+and original replay pass after that test correction.
+The full maintained recount has zero diagnostics in the wrapper,
+its types,
+and its three consumer files.
+The dispatcher now has 121 warnings;
+`program-profile-inspect.mjs` has 127 and is the next native boundary to extract.
+Wrapper consumers retain original metadata getter order,
+native argument identity,
+turn failure ownership,
+synchronous currentness semantics,
+and shared guard-failure admission.
+Diagnostic callback names are captured before wrapper publication,
+so retained execution never rereads a replaced wrapper method.
+Receipts are `typed-prepared-executable-comparison.json` and `typed-prepared-executable-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The full lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-executable-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`70fd8fc54b6af128c5c29bf7dd4f7f63ff2dc194cbccd7fd0936645aa7b1de69`.
+Wrapper replay adapts only the original turn lookup expression to the borrowed synchronous callback;
+complete domain replay uses the untouched saved dispatcher.
+The pre-extraction dispatcher is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-executable-types.mjs`.
 
 The dispatch extraction is implemented in `group-dispatch.ts` and `group-dispatch-types.ts`.
 Its production scope passes focused lint with zero diagnostics.
@@ -235,7 +2097,105 @@ The original runner is saved as `program-runner-before-events-types.mjs`;
 the original callbacks are saved as `program-runner-events-original-methods.txt`.
 These artifacts are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
-The complete maintained lint recount remains pending.
+The complete maintained lint recount has zero errors and 10511 warnings across 764 files and 486 rules.
+All six event implementation and consumer files have zero diagnostics.
+The strict package-wide warning gate remains failing.
+Final consumer tests and package type checking pass in
+`${HOME}/temp/agent/pi-runner-events-final-consumers-20261015.log`.
+The complete report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-events-final-lint-20261015.log`.
+Continue reached-group execution and native queue ownership.
+
+Reached-group execution is now extracted to `program-runner-execution.ts`,
+with separate callback and contract files.
+The original runner delegates execution while retaining its declared-program facade.
+Queue selection,
+parent currentness after acquisition,
+native cancellation,
+complete dispatch,
+and scope disposal now pass independent built consumer tests and original-code replay.
+The native build,
+package type check,
+and existing program-owner consumers pass.
+Six domain comparisons retain identical public outcomes and native execution counts,
+with the permission-versus-prohibition positive control.
+The first type check exposed a pre-admission signal contract that required already validated `AbortSignal` values.
+The input now retains opaque native signal values until the existing member-preparation owner validates them.
+No earlier runner cancellation guard is introduced for absent native member signals.
+Original judgment,
+slot,
+and ordinal-map capture precedes host callbacks;
+independent consumers replace these fields during context lookup and still reach the original captured owner.
+Malformed call identifiers or removed native slots now produce explicit null-check `Error` diagnostics
+before judgment invocation.
+The original method passed an undefined slot to the judgment.
+The diagnostic fixture intentionally does not validate slots,
+so its successful original callback return does not establish real judgment admission for malformed input.
+This change in malformed-input rejection ownership is recorded separately from valid-call equivalence.
+Comparison receipts are `typed-runner-execution-comparison.json` and `typed-runner-execution-diagnostics.json`.
+All 33 deliberate execution omissions or substitutions cause assertion failures.
+The runner,
+execution owner,
+and callback implementation retain their starting artifact hashes.
+The complete maintained lint report has zero errors and 10433 warnings across 772 files and 486 rules.
+All nine execution implementation,
+shared contract,
+and consumer files have zero diagnostics.
+The strict package-wide warning gate remains failing.
+The omission receipt is `typed-runner-execution-omissions.json`.
+The original runner is saved as `program-runner-before-execution-types.mjs`,
+and its original method is saved as `program-runner-execution-original-method.txt`.
+Final build,
+type checking,
+and consumer results are in
+`${HOME}/temp/agent/pi-runner-execution-final-verification-20261015.log`.
+The complete lint report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-execution-final-lint-20261015.log`.
+Continue the runner's declared-program facade,
+including reached-group settlement,
+retained failures,
+and aggregate draining.
+The facade extraction and independent consumers are now committed.
+The native build,
+package type checking,
+and both independent consumer suites pass.
+The same consumers pass against the exact original facade method.
+Six domain comparisons retain identical public outcomes and execution counts,
+with the permission-versus-prohibition positive control.
+All 31 deliberate facade omissions or substitutions cause assertion failures;
+the runner and facade artifacts retain their starting hashes.
+The complete maintained lint recount covers 778 files and 486 rules,
+with zero errors and 10383 warnings.
+All six facade implementation and consumer files have zero diagnostics.
+The strict package-wide warning gate remains failing.
+The full report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-facade-final-lint-20261015.log`.
+The remaining runner class adapter retains 22 warnings;
+the prepared dispatcher retains 185 warnings and is the next extraction boundary.
+`prepared-input-seal.ts` now contains the first typed dispatcher helper.
+Its delegation,
+independent consumers,
+original replay,
+omission controls,
+and lint verification are pending.
+The unchanged dispatcher is saved as `prepared-dispatch-before-input-seal-types.mjs`.
+The original facade runner is retained as `program-runner-before-facade-types.mjs`,
+and its original method is retained as `program-runner-facade-original-method.txt`.
+The typed facade adds an explicit null check for missing script-value slots.
+The diagnostic probe measures rejection before judgment invocation;
+the original facade forwarded undefined to the independently controlled judgment.
+That fixture does not validate slots and does not establish real judgment admission for malformed input.
+Receipts are `typed-runner-facade-comparison.json`,
+`typed-runner-facade-omissions.json`,
+and `typed-runner-facade-diagnostics.json`.
+Build,
+type check,
+and consumer results are retained in
+`${HOME}/temp/agent/pi-runner-facade-second-verification-20261015.log`.
+Original replay is retained in
+`${HOME}/temp/agent/pi-runner-facade-original-replay-20261015.log`.
+The original method and runner are retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 
 ## Tool-call scope correction
 

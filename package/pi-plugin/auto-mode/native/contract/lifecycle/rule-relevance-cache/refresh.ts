@@ -157,10 +157,9 @@ export async function completeRelevanceRefresh({
   selection.assertCurrent(source);
   signal?.throwIfAborted();
   /**
-   Whole source context accompanies only the changed literal rules.
+   Only changed literal rules and their headings leave the local source owner.
    */
   const request:RelevanceRequest=Object.freeze({
-    fullPolicy:source.content,
     sourceSHA256:source.sha256,
     profileKey,
     definition:RELEVANCE_QUESTION,

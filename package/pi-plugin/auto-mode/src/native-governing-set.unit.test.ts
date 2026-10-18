@@ -112,8 +112,8 @@ await describe({
       });
     }),
     //endregion
-    //region Original list and combined clause bounds remain independent of per-source indexing.
-    ...['mutable', 'empty', 'nonarray', 'repeated', 'oversized'].map(function invalidList(kind) {
+    //region Complete source lists preserve immutable and unique occurrence membership.
+    ...['mutable', 'empty', 'nonarray', 'repeated'].map(function invalidList(kind) {
       return it({
         name: `rejects ${kind} original source lists`,
         fn: async function requiresOriginalSourceList() {
@@ -123,35 +123,32 @@ await describe({
           const sources = kind === 'mutable' ? [source]
             : kind === 'empty' ? Object.freeze([])
             : kind === 'nonarray' ? Object.freeze({ 0: source, length: 1 })
-            : kind === 'repeated' ? Object.freeze([source, Object.freeze({ ...source })])
-            : Object.freeze(Array.from({ length: 129 }, function originalEmptySource() { 
-              return createGoverningSource(''); 
-            }));
+            : Object.freeze([source, Object.freeze({ ...source })]);
           assert.throws(function invalidOriginalList() {
             createGoverningSet({ readSources() { 
               return sources; 
             }, parse: governingParser.parse });
-          }, governingBindingError(kind === 'repeated' ? 'Original governing source occurrence is repeated' : 'Original governing sources require a bounded immutable source list'));
+          }, governingBindingError(kind === 'repeated' ? 'Original governing source occurrence is repeated' : 'Original governing sources require a nonempty immutable source list'));
         },
       });
     }),
     it({
-      name: 'admits exactly 128 original empty sources without inventing candidates',
+      name: 'admits original empty sources beyond the former count ceiling without inventing candidates',
       fn: async function admitsExactSourceBound() {
         /** Empty Markdown produces no clauses but still consumes original source-list membership. */
-        const sources = Object.freeze(Array.from({ length: 128 }, function originalEmptySource() { 
+        const sources = Object.freeze(Array.from({ length: 129 }, function originalEmptySource() { 
           return createGoverningSource(''); 
         }));
-        /** The positive control reaches the exact list bound through real original indexes. */
+        /** Real indexes preserve every source occurrence. */
         const set = createGoverningSet({ readSources() { 
           return sources; 
         }, parse: governingParser.parse });
-        assert.equal(set.inspect().length, 128);
+        assert.equal(set.inspect().length, 129);
         assert.equal(set.indexedInstructionCandidates().length, 0);
       },
     }),
     it({
-      name: 'admits exactly 512 combined clauses and rejects another independently valid source clause',
+      name: 'retains combined clauses beyond the former aggregate ceiling',
       fn: async function boundsCombinedMembership() {
         /** Each source stays independently inside the per-source clause bound. */
         const content = Array.from({ length: 256 }, function originalParagraph(_value, index) { 
@@ -167,11 +164,10 @@ await describe({
         assert.equal(set.indexedCandidates().length, 0);
         /** One extra independent source clause exceeds only the combined bound. */
         const exceeded = Object.freeze([...sources, createGoverningSource('One more original clause.')]);
-        assert.throws(function tooManyCombinedClauses() {
-          createGoverningSet({ readSources() { 
+        const expanded = createGoverningSet({ readSources() {
             return exceeded; 
           }, parse: governingParser.parse });
-        }, governingBindingError('Combined policy clause count exceeds the original batch profile'));
+        assert.equal(expanded.indexedInstructionCandidates().length, 513);
       },
     }),
     //endregion

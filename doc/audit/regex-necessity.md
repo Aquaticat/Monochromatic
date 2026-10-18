@@ -295,6 +295,37 @@ All timings are Node v26.11.1 on this machine,
   so the seven sites plus `anchoredExternal` and `escapePackageNameForRegExp` in
   `package/config/rolldown/src/package-externals.ts` must migrate as one change,
   and each issue in that group says so.
+  **Correction (2026-10-17):**
+  this bullet read the TypeScript declaration surface and stopped there.
+  Tracing rolldown's Rust source at tag `v1.2.13` shows the `RegExp` entries never
+  execute as JavaScript:
+  the napi boundary extracts `source` and `flags` once at config time and compiles them
+  into Rust's `regex` crate engine
+  (a finite automaton,
+  linear time by construction,
+  backtracking impossible),
+  matched natively per specifier inside the parallel module scan,
+  while the predicate form costs one napi `ThreadsafeFunction` round trip to the single
+  JS main thread per specifier check.
+  Measured on the installed rolldown 1.2.13:
+  byte-identical output from both forms,
+  about 8 microseconds per predicate check,
+  and a factor of about 1.4 on total build time at 2000 modules.
+  Plain strings are not an alternative either:
+  the string arm of the matcher is exact equality,
+  so it cannot express the `(/|$)` prefix.
+  The criterion's "similar or better time complexity" compared pattern shapes without
+  modelling where each form executes.
+  The group's issues
+  (#726,
+  #817 through #822,
+  #834 through #837,
+  #846 through #848)
+  were closed as wontfix;
+  evidence,
+  citations,
+  and both harnesses:
+  `doc/troubleshooting/rolldown-external-regex-native-rust-matching.md`.
 - `package-paused/module/es/.../t typeof/.../index.ts:135` and `:138` claim
   "no string API exposes the Unicode upper-letter set".
   Case mapping is a string API carrying the same Unicode data.

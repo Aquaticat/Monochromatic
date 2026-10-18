@@ -21,7 +21,7 @@ export function createBootstrapPolicySelection({
     root,
     relativePath,
     requiredMode,
-    maxBytes:65_536
+    maxBytes:null
   });
     const records=new WeakMap();
   const selection={current:undefined,ordinal:0};

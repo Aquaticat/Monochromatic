@@ -7,7 +7,7 @@ import {createDomainFixtureStream} from './domain-fixture-stream.mjs';
 import {createDomainFixtureAssessment} from './domain-fixture-assessment.mjs';
 
 //region Original native runtime owns the authored assessment and transport callbacks.
-export function createDomainFixtureRuntime({settings,observations,env,session,root,lifecycle,code,programProfile}){
+export function createDomainFixtureRuntime({settings,observations,env,session,root,lifecycle,code,programProfile,approvalHost}){
  const {unconfiguredPolicies,operatingPolicy,sdkStream,nextDecision,providerMetadata,receiptControl}=settings;
 function policy(definitionId) { return {
   model:ruleAssessmentModel,
@@ -18,6 +18,7 @@ function policy(definitionId) { return {
  const controlledSdkStream=createDomainFixtureStream({session,providerMetadata,receiptControl});
  const sendAssessment=createDomainFixtureAssessment({settings,observations});
 const runtime=bindNativePolicyRuntime({
+  approvalHost,
   root,
   lifecycle,
   policyInput:env.policyInput,
@@ -34,7 +35,10 @@ const runtime=bindNativePolicyRuntime({
    semanticAdmissionPolicy:policy('clause_operation_relation'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
-  sendWire:sendAssessment,
+  sendWire(input){
+   if(observations.failAssessment){observations.assessments++;throw new Error('Fixture assessment unavailable');}
+   return sendAssessment(input);
+  },
   ...(unconfiguredPolicies?{send(){observations.assessments++;throw new Error('An unconfigured semantic consumer must not dispatch an assessment');}}:{}),
   originalStream:sdkStream?function stream(
     model,
@@ -49,6 +53,7 @@ const runtime=bindNativePolicyRuntime({
     input,
     init
   ){
+   if(observations.warmingUp)return fixtureResponse({proposal:false});
    observations.requests++;
    if(nextDecision&&(observations.requests===2))observations.firstDecision={
      ...runtime.inspect(),

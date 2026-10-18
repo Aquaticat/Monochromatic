@@ -1,20 +1,6 @@
-import {readPattern,requireProfile} from './result-pattern.mjs';
-function member(
-  {node,object,property}
-){return (node?.type==='MemberExpression')&&(!node.computed)
-  &&(!node.optional)
-  &&(node.object
-    .type
-    ==='Identifier')
-  &&(node.object
-    .name
-    ===object)
-  &&(node.property
-    .type
-    ==='Identifier')
-  &&(node.property
-    .name
-    ===property);}
+import {readPattern,requireProfile,ResultProgramProfileError} from './result-pattern.mjs';
+import {inspectProfileCall} from './profile-call.ts';
+import {inspectProfileSuccessors} from './profile-successors.ts';
 function inspectCall({
   call,
   group,
@@ -24,54 +10,8 @@ function inspectCall({
   source,
   prefix
 }){
-  requireProfile(
-    {condition:(call?.type==='CallExpression')&&(!call.optional)
-      &&(call.arguments
-        .length
-        ===1),
-    message:'direct single-argument call required'}
-  );const {callee} = call;
-  requireProfile(
-    {condition:(callee.type==='MemberExpression')&&(!callee.computed)
-      &&(!callee.optional)
-      &&(callee.object
-        .type
-        ==='Identifier')
-      &&(callee.object
-        .name
-        ==='tools')
-      &&(callee.property
-        .type
-        ==='Identifier')
-      &&allowed.has(callee.property
-        .name),
-    message:'owned tool identifier required'}
-  );
-  const start=callee.start-prefix.length;
-    const end=callee.end-prefix.length;requireProfile(
-    {condition:Number.isSafeInteger(start)&&(start>=0)
-      &&(end>start)
-      &&(end<=source.length),
-    message:'callee source span'}
-  );
-  return Object.freeze({
-    group,
-    ordinal,
-    name:callee.property
-      .name,
-    pattern:readPattern({
-      node:call.arguments[0],
-      bindingName
-    }),
-    callee:Object.freeze({
-      start,
-      end,
-      text:source.slice(
-        start,
-        end
-      )
-    }),
-    alias:`__owned_flow_${group}_${ordinal}`
+  return inspectProfileCall({
+    call,group,ordinal,bindingName,allowed,source,prefix,readPattern,ResultProgramProfileError
   });
 }
 /** Inspect only the adopted single-call or producer-and-successor statement shapes. */
@@ -185,65 +125,5 @@ export function inspectBody({
       ==='AwaitExpression'),
     message:'return the immutable result directly, or return await a native parallel successor group'}
   );
-  const group=returned.argument
-    .argument;
-  requireProfile(
-    {condition:(group.type==='CallExpression')&&(!group.optional)
-      &&[
-      'all',
-      'allSettled'
-    ].some(function isPromiseGroupMethod(name) { return (member(
-      {node:group.callee,
-      object:'Promise',
-      property:name}
-    )); })
-      &&(group.arguments
-        .length
-        ===1),
-    message:'native parallel combinator required'}
-  );
-  const array=group.arguments[0];requireProfile(
-    {condition:(array.type==='ArrayExpression')&&(array.elements
-      .length
-      >0)
-      &&(array.elements
-        .length
-        <=32),
-    message:'complete successor member array required'}
-  );
-  const successors=array.elements
-    .map(function inspectSuccessorCall(call,
-      ordinal) { return (inspectCall({
-      call,
-      group:1,
-      ordinal,
-      bindingName:declaration.id
-        .name,
-      allowed,
-      source,
-      prefix
-    })); });
-  return {
-    bindingName:declaration.id
-      .name,
-    groups:[
-      {
-        ordinal:0,
-        kind:'awaited-producer',
-        members:[producer]
-      },
-      {
-        ordinal:1,
-        kind:group.callee
-          .property
-          .name,
-        members:successors
-      }
-    ],
-    sites:[
-      producer,
-      ...successors
-    ],
-    profile:'awaited-string-result-then-literal-parallel'
-  };
+  return inspectProfileSuccessors({returned,declaration,producer,allowed,source,prefix,inspectCall,ResultProgramProfileError});
 }

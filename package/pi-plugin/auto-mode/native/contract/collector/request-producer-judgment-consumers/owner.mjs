@@ -51,7 +51,8 @@ export function createRequestProducerOwner({
       const {
         response,
         stream,
-        signal
+        signal,
+        group
       }=input;
       const record=responseRecord({
         response,
@@ -73,7 +74,8 @@ export function createRequestProducerOwner({
           startedAt,
           signal,
           response,
-          stream
+          stream,
+          ...(group===undefined?{}:{group})
         }));
         if((!reference(value))||((typeof value)!=='object')
           ||(!Object.isFrozen(value))

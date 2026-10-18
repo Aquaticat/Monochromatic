@@ -260,7 +260,7 @@ export function createApprovedChangeControl(mode='none'):ApprovedChangeControl{
     }
   );
   assert.ok(
-    !detail.includes('DependencyDeadlineError'),
+    !detail.includes('DependencyClockError'),
     'A deadline failure does not prove the changed dependency guard'
   );
   console.log(detail);

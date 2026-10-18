@@ -30,7 +30,7 @@ No claim about its internal validation algorithm or a local LFS defect is establ
 The local commit-preservation behavior is explicit in
 `package/git-policy/cli/src/native/auto_push.rs:265`:
 
-```rust
+```text
 // package/git-policy/cli/src/native/auto_push.rs:265
 ///   The commit has happened by the time this runs and Git ignores a post-commit hook's status,
 ///  so a failed push or a failed coordination is printed and returned as `Failed`, and never fails the commit.
@@ -118,15 +118,21 @@ but that separate incident does not establish this incident's cause.
 There is no new source diagnosis or deterministic reproduction to add.
 No upstream message was sent.
 
-1.  Fault: a remote rejection is observed;
+1.  Fault:
+    a remote rejection is observed;
     the responsible internal condition is unestablished.
-2.  Fixability: the service implementation is unavailable,
+2.  Fixability:
+    the service implementation is unavailable,
     so no specific upstream fix is established.
-3.  Supported use: an ordinary existing-branch push was attempted and subsequently accepted.
-4.  Contribution policy: no client-code contribution or new report is proposed;
+3.  Supported use:
+    an ordinary existing-branch push was attempted and subsequently accepted.
+4.  Contribution policy:
+    no client-code contribution or new report is proposed;
     the maintainer directs this diagnostic to GitHub support.
-5.  Likely correction: the available thread gives no decision about this incident.
-6.  Prototype: none;
+5.  Likely correction:
+    the available thread gives no decision about this incident.
+6.  Prototype:
+    none;
     there is no identified source defect to patch.
 
 The filing artifact is an explicit nothing-to-add record for
@@ -195,3 +201,61 @@ protection change,
 or history rewrite was needed.
 This establishes delivery through concurrent publication,
 not the cause of the preceding rejection.
+
+## Another protected-branch rejection during the Depot evidence closeout
+
+The automatic push of documentation commit `d50e251a09756504fa07ac004cf3cfc66a1ebffe`
+on October 15 local time,
+or October 16 UTC,
+emitted:
+
+```text
+# GitHub remote response relayed by the repository-owned Git wrapper.
+remote: error: GH006: Protected branch update failed for refs/heads/main.
+remote: error:
+ ! [remote rejected]       main -> main (protected branch hook declined)
+error: failed to push some refs to 'https://github.com/Aquaticats/Monochromatic'
+cli-git: commit saved locally, but auto-push to origin failed; run `git push` when ready.
+```
+
+The source commit remained saved.
+Before any retry,
+`git ls-remote --heads origin main` returned
+`c34b44410c5df10f0dd1b5c1a27e76d92d3d0182`.
+Both containment checks returned exit status zero:
+
+```sh
+# Repository root, Git 2.56.0, against the directly queried remote head.
+git merge-base --is-ancestor d50e251a09 c34b44410c5df10f0dd1b5c1a27e76d92d3d0182
+git merge-base --is-ancestor a361d83d11 c34b44410c5df10f0dd1b5c1a27e76d92d3d0182
+```
+
+The rejected commit and its preceding evidence commit were already delivered through concurrent publication.
+No additional push was performed for this incident.
+
+Read-only API inspection found:
+
+- The rejected commit's signature was `verified: true` with reason `valid`.
+- Main's classic protection required signatures and conversation resolution.
+  Strict status checking was enabled,
+  but both required context and check arrays were empty.
+- Required pull-request reviews and restrictions were absent;
+  administrator enforcement and branch locking were disabled.
+- The effective rules endpoint listed an automatic Copilot review rule.
+- The commit had zero check runs and zero status contexts.
+  The combined status endpoint reported `pending` with an empty status array;
+  that alone does not identify a failed required check.
+
+The inspected endpoints were the commit,
+its check-runs and status,
+`branches/main/protection`,
+and `rules/branches/main` under `repos/Aquaticats/Monochromatic`.
+The server did not name a rejected requirement.
+These post-rejection observations establish delivery and current policy,
+not a transient signature,
+required-check,
+or other backend cause.
+Protection settings and history were not changed.
+This remains separate from the LFS rejection despite sharing the troubleshooting file.
+The unexplained protected-branch rejection is tracked in
+[repository issue 1032](https://github.com/Aquaticats/Monochromatic/issues/1032).

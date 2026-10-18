@@ -13,17 +13,18 @@
 import type {
   ImageContent,
   TextContent,
-  ThinkingContent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import {
+import type {
   sessionEntryToContextMessages,
-  type SessionEntry,
+  SessionEntry,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { CONTEXT_MESSAGE_FLOOR, } from './constants.ts';
+import { projectReviewInput, } from './review-operation.ts';
+import { projectProcessResultDetails } from './review-process-result.ts';
 import { serializeUntrustedDataForJudge, } from './tool-helpers.ts';
 import {
   isVerdictEntry,
@@ -81,20 +82,17 @@ function visibleTextOrImageContent(
  @returns isolated visible content data.
  */
 function visibleAssistantContent(
-  block: ForeignBorrowed<TextContent | ThinkingContent | ToolCall>,
+  block: ForeignBorrowed<TextContent | ToolCall>,
 ): VisibleMessage {
   if (block.type === 'text')
     return visibleTextOrImageContent(block,);
-  if (block.type === 'thinking') {
-    return {
-      type: block.type,
-      thinking: block.thinking,
-    };
-  }
   return {
     type: block.type,
     name: block.name,
-    arguments: block.arguments,
+    arguments: projectReviewInput({
+      name: block.name,
+      input: block.arguments,
+    }),
   };
 }
 
@@ -181,8 +179,11 @@ function visibleMessage(
      Complete visible assistant blocks in source order.
      */
     const content: VisibleMessage[] = [];
-    for (const block of message.content)
+    for (const block of message.content) {
+      if (block.type === 'thinking')
+        continue;
       content[content.length] = visibleAssistantContent(block,);
+    }
     /**
      Whether Pi renders stop condition as visible assistant error.
      */
@@ -203,14 +204,17 @@ function visibleMessage(
       role: message.role,
       toolName: message.toolName,
       content: visibleTextOrImageMessageContent(message.content,),
-      ...(message.details === undefined ? {} : { details: message.details, }),
+      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({details:message.details,process:message.toolName==='process'}), }),
       isError: message.isError,
     };
   }
   if (message.role === 'bashExecution') {
     return {
       role: message.role,
-      command: message.command,
+      ...projectReviewInput({
+        name: 'bash',
+        input: { command: message.command, },
+      }),
       output: message.output,
       exitCode: message.exitCode,
       cancelled: message.cancelled,
@@ -225,7 +229,7 @@ function visibleMessage(
       role: message.role,
       customType: message.customType,
       content: visibleTextOrImageMessageContent(message.content,),
-      ...(message.details === undefined ? {} : { details: message.details, }),
+      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({details:message.details,process:message.customType==='ad-process:notification'}), }),
     };
   }
   if (message.role === 'branchSummary') {
@@ -287,9 +291,13 @@ const NO_PENDING_VERDICT: unique symbol = Symbol('guard verdict is not awaiting 
  
  @returns complete visible messages in chronological order.
  */
-function visibleMessages(
-  entries: ForeignBorrowed<readonly SessionEntry[]>,
-): readonly VisibleMessage[] {
+function visibleMessages({
+  entries,
+  project,
+}: {
+  readonly entries: ForeignBorrowed<readonly SessionEntry[]>;
+  readonly project: typeof sessionEntryToContextMessages;
+},): readonly VisibleMessage[] {
   /**
    Complete visible messages in chronological order.
    */
@@ -307,7 +315,7 @@ function visibleMessages(
     }
     // Pi's renderer projection: message, custom-message, summary, and compaction entries
     // become messages; state-only entries become none.
-    for (const message of sessionEntryToContextMessages(entry,)) {
+    for (const message of project(entry,)) {
       /**
        User-visible fields from current projected message.
        */
@@ -404,21 +412,26 @@ function visibleMessageWindow(
  
  @example
  ```ts
- buildVisibleContext(entries);
+ buildVisibleContext({ entries, project: sessionEntryToContextMessages });
  ```
  */
-function buildVisibleContext(
-  entries: ForeignBorrowed<readonly SessionEntry[]>,
-): string {
+export function buildVisibleContext({
+  entries,
+  project,
+}: {
+  readonly entries: ForeignBorrowed<readonly SessionEntry[]>;
+  readonly project: typeof sessionEntryToContextMessages;
+},): string {
   /**
    Complete selected visible message window.
    */
   const selectedMessages = visibleMessageWindow(
-    visibleMessages(entries,),
+    visibleMessages({
+      entries,
+      project,
+    },),
   );
   return selectedMessages.length === 0
     ? ''
     : serializeUntrustedDataForJudge(selectedMessages,);
 }
-
-export { buildVisibleContext, };

@@ -29,7 +29,7 @@ pub fn verify(parent: &Path) -> io::Result<()> {
     for (file, expected) in [
         ("memory.max", "4294967296"),
         ("memory.swap.max", "0"),
-        ("pids.max", "256"),
+        ("pids.max", "2048"),
     ] {
         // What: `?` propagates a read error to the caller rather than supplying a default.
         // Why: Unreadable controls cannot establish the worker budget.

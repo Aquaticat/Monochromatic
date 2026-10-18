@@ -70,7 +70,7 @@ pub fn fixture() -> io::Result<PathBuf> {
     fs::create_dir(parent.join("codex"))?;
     for (file, value) in [
         ("memory.max", "4294967296\n"), ("memory.swap.max", "0\n"),
-        ("pids.max", "256\n"), ("cpu.max", "200000 100000\n"),
+        ("pids.max", "2048\n"), ("cpu.max", "200000 100000\n"),
         ("codex/cgroup.procs", ""),
     ] {
         fs::write(parent.join(file), value)?;

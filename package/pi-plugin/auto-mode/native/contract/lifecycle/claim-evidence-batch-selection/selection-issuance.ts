@@ -1,7 +1,6 @@
 /**
  Issue bounded original membership exactly once before publishing its request. @module
  */
-import { Buffer } from 'node:buffer';
 import { QuestionSelectionError } from './selection-error.ts';
 import type {
   QuestionRequest,
@@ -9,17 +8,9 @@ import type {
 } from './selection-owner-types.ts';
 
 /**
- One issued request retains at most the original declared batch membership.
- */
-const MAX_BATCH_CLAIMS = 512;
-/**
  One judgment cannot repeatedly sample uncertain claims.
  */
 const MAX_BATCHES = 3;
-/**
- The original wire profile bounds serialized request bytes.
- */
-const MAX_REQUEST_BYTES = 4_194_304;
 
 /**
  Inspect dense own data properties without invoking member accessors.
@@ -33,7 +24,6 @@ const MAX_REQUEST_BYTES = 4_194_304;
 function readClaimHandles(input: unknown): readonly unknown[] {
   if ((!Array.isArray(input)) || (Object.getPrototypeOf(input) !== Array.prototype)
     || (input.length === 0)
-    || (input.length > MAX_BATCH_CLAIMS)
     || (Reflect.ownKeys(input)
       .length
       !== (input.length + 1))) throw new QuestionSelectionError('Question batch needs an ordinary dense claim array within the declared bound');
@@ -137,7 +127,6 @@ export function createQuestionIssuance({
         semanticQualification: 'not-established',
         instructionAuthority: 'not-established',
       });
-      if (Buffer.byteLength(JSON.stringify(request)) > MAX_REQUEST_BYTES) throw new QuestionSelectionError('Question request exceeds the four MiB wire profile');
       owner.budget
         .checkpoint();
       /**

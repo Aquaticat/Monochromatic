@@ -6,7 +6,7 @@ import {createExpandedPromptPublication,createHandlerPublication} from './handle
 
 //region Observe the original native emitter and ordered handler completion.
 /** Observe the original native emitter and ordered handler completion. */
-export function createRunEmission({state,reserve,phase,check,base,charge,fail,known,dense,capture,record,issuedErrors}){
+export function createRunEmission({state,reserve,phase,check,base,fail,known,dense,capture,record,issuedErrors}){
 function start({
     runner,
     expandedPrompt
@@ -20,12 +20,9 @@ function start({
         .options);
       if(!runner)throw new SourceCollectionError('Native run requires its actual extension runner');
       if(expandedPrompt!==undefined){
-       scope.expandedPromptInput=charge({
-         scope,
-         value:captureExpandedPromptInput({
+       scope.expandedPromptInput=captureExpandedPromptInput({
            content:expandedPrompt,
            runOccurrence:scope.handle
-         })
        });
        scope.expandedPromptPublication=createExpandedPromptPublication(scope.expandedPromptInput);
       }
@@ -69,7 +66,6 @@ function enterNative({
       )))throw new SourceCollectionError('Native normalized options differ from their original base seed');
       for(const item of dense({
         value:snapshot,
-        maximum:64
       })){
         const path=Object.getOwnPropertyDescriptor(
           item.ext,
@@ -79,15 +75,11 @@ function enterNative({
           path,
           'value'
         ))
-          ||((typeof path.value)!=='string')
-          ||(Buffer.byteLength(path.value)>65_536))throw new SourceCollectionError('Native extension snapshot requires a bounded data path');
+          ||((typeof path.value)!=='string'))throw new SourceCollectionError('Native extension snapshot requires a bounded data path');
         for(const handler of dense({
           value:item.handlers,
-          maximum:256
         })){
-          if(((typeof handler)!=='function')||(scope.slots
-            .length
-            >=256))throw new SourceCollectionError('Native handler membership exceeds its declared profile');
+          if((typeof handler)!=='function')throw new SourceCollectionError('Native handler membership requires callable handlers');
           scope.slots
             .push({
               ordinal:scope.slots
@@ -102,7 +94,6 @@ function enterNative({
       }
       if(dense({
         value:messages,
-        maximum:64
       })
         .length
         > 0)throw new SourceCollectionError('Native run messages must begin with their empty owned accumulator');

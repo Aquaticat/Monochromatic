@@ -11,13 +11,14 @@ import {declareResultProgram} from "../../collector/program-rule-batch-sdk-copy-
  */
 export function registerOwnedExecutionTools({
   session,
-  producerOwner,
   stream,
-  wrapToolDefinition
+  wrapToolDefinition,
+  readBypass,
+  executionOrigins
 }){
  const {agent} = session;
  const previous=agent.prepareRequest;
- const wrappers=createExecutionWrappers({wrapToolDefinition});
+ const wrappers=createExecutionWrappers({wrapToolDefinition,readBypass});
  const installationState={active:true};
  /** Capture the positional native callback without detaching a method or changing its receiver. */
  function createRequestHook(){
@@ -38,8 +39,7 @@ export function registerOwnedExecutionTools({
     const executionMode=agent.toolExecution;
   // Schema data participates in native argument conversion and validation.
   // Retain descriptors, including TypeBox symbols, without freezing borrowed schemas or encoding JSON.
-  // The request-wide property bound limits retained metadata; callables remain identity dependencies.
-  const schemaCapture={properties:0};
+  // Visit each schema node once; complete metadata and callable identities remain dependencies.
   function captureSchema({
     schema,
     label
@@ -54,8 +54,6 @@ export function registerOwnedExecutionTools({
     seen.add(node);
     const prototype=Object.getPrototypeOf(node);
       const keys=Reflect.ownKeys(node);
-    schemaCapture.properties+=keys.length+1;
-    if(schemaCapture.properties>10_000)throw new ExecutionContextOwnershipError('Original request tool schemas exceed the 10000-property profile');
     if((prototype!==null)&&(prototype!==Object.prototype)
       &&(prototype!==Array.prototype))throw new ExecutionContextOwnershipError(`${label} requires ordinary schema records or arrays`);
     const entries=keys.map(function copySchemaProperty(key) {
@@ -167,12 +165,9 @@ export function registerOwnedExecutionTools({
    }
    function readOrigin(carrier){
     if(carrier.stream!==stream)throw new ExecutionContextOwnershipError('Execution context belongs to another stream consumer');
-    const judgment=producerOwner.judgmentFor({
-      response:carrier.response,
-      stream
-    });
-    const origin=judgment.executionEntryFor(carrier.token);
-    current();return origin;
+    const readEntry=executionOrigins.get(carrier.token);
+    if(!readEntry)throw new ExecutionContextOwnershipError('Execution context has no active original group member');
+    current();return readEntry(carrier);
    }
    function capturePreparedProgram({
      judgment,

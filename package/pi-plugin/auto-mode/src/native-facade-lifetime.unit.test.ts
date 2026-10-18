@@ -5,7 +5,7 @@ import { createFacadeFixture, finalizationEvents } from './native-facade-fixture
 
 //region Retained checks never reuse an expired decision clock but still enforce original cancellation.
 await describe({ name: '', children: [
-  it({ name: 'keeps retained dependency checks after live expiry and rejects original cancellation', fn: async function retainedLifetime() {
+  it({ name: 'allows late finalization and retains original cancellation', fn: async function retainedLifetime() {
     /** Original handle is prepared while the fixed deadline remains live. */
     const f = createFacadeFixture();
     /** Issuing ownership remains fixed after deadline failure. */
@@ -13,15 +13,10 @@ await describe({ name: '', children: [
     /** Completed original observations stay available for retained checking. */
     const handle = owner.prepare({ signal: f.controller.signal });
     f.state.now = 200;
-    assert.throws(function expired() { 
-      owner.finalize(handle); 
-    }, { name: 'DependencyDeadlineError' });
-    assert.throws(function expiredFile() { 
-      owner.originalFile({ handle, absolutePath: '/undeclared' }); 
-    }, { name: 'DependencyDeadlineError' });
+    assert.equal(owner.finalize(handle).decisionClockChecked, true);
     f.state.fail = 'clock';
     f.events.length = 0;
-    assert.equal(owner.checkRetained(handle).decisionDeadlineChecked, false);
+    assert.equal(owner.checkRetained(handle).decisionClockChecked, false);
     assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { 
       return point !== 'clock'; 
     }));
@@ -33,21 +28,21 @@ await describe({ name: '', children: [
     assert.deepEqual(f.events, ['finalize.handle-check', 'finalize.handle-owned', 'finalize.entry']);
   } }),
   ...['prepare.root.return', 'prepare.collector.return', 'prepare.success'].map(function preparationBoundary(point) {
-    return describe({ name: point, children: ['cancelled', 'expired'].map(function changedLifetime(mode) {
+    return describe({ name: point, children: ['cancelled', 'invalid-clock'].map(function changedLifetime(mode) {
       return it({ name: `rechecks original ${mode} lifetime before returning preparation`, fn: async function preparationCheckpoint() {
         /** The selected callback changes only the current original lifetime. */
         const f = createFacadeFixture();
         f.state.onStep = function changeLifetime(current): void {
           if (current !== point) return;
           if (mode === 'cancelled') f.controller.abort(f.failure);
-          else f.state.now = 200;
+          else f.state.now = Number.NaN;
         };
         /** Final preparation observation must complete before the caller receives a handle. */
         const owner = f.construct();
         assert.throws(function changed() { 
           owner.prepare({ signal: f.controller.signal }); 
         }, {
-          name: mode === 'cancelled' ? 'DependencyCancellationError' : 'DependencyDeadlineError',
+          name: mode === 'cancelled' ? 'DependencyCancellationError' : 'DependencyClockError',
         });
         assert.equal(f.events.at(-1), mode === 'cancelled' ? point : 'clock');
       } });
@@ -78,12 +73,12 @@ await describe({ name: '', children: [
     /** Empty declared file profile keeps the default-clock check independent of filesystem timing. */
     const f = createFacadeFixture();
     delete f.options.now;
-    f.options.deadlineAt = Number.MAX_VALUE;
+    f.options.targetAt = Number.MAX_VALUE;
     /** No fixture clock callback is available to this original owner. */
     const owner = f.construct();
     /** Original default clock permits preparation and live finalization. */
     const handle = owner.prepare({ signal: f.controller.signal });
-    assert.equal(owner.finalize(handle).decisionDeadlineChecked, true);
+    assert.equal(owner.finalize(handle).decisionClockChecked, true);
     assert.equal(f.events.includes('clock'), false);
   } }),
 ] });

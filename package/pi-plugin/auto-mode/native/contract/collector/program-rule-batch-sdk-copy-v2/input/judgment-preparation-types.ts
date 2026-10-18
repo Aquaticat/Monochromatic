@@ -7,7 +7,10 @@ import type { QuestionSelectionInput } from '../../../lifecycle/claim-evidence-b
 import type { JudgmentDeclaredMember } from './judgment-member-types.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
-import type { InstructionMember } from './instruction-types.ts';
+import type {
+  InstructionMember,
+  InstructionParserOptions
+} from './instruction-types.ts';
 
 /**
  Source sealing retains policy and governing projections without adding authority.
@@ -15,6 +18,13 @@ import type { InstructionMember } from './instruction-types.ts';
 export type JudgmentPreparationSources = Readonly<{
   mandatoryPolicy?: Readonly<{ content?: unknown }>;
   governingSources?: unknown;
+  decisionContext?: Readonly<{
+    sources: unknown;
+    selection?:Readonly<{
+      material?:unknown;
+      failure?:unknown
+    }>
+  }>;
 }>;
 
 /**
@@ -38,6 +48,7 @@ export type JudgmentPreparedBinding = ProgramMemberRecord & Required<Instruction
  Original preparation capabilities remain lazy until the corresponding native boundary.
  */
 export type JudgmentPreparationInput<Source extends JudgmentPreparationSources = JudgmentPreparationSources> = Readonly<{
+  parsePolicy?:InstructionParserOptions['parsePolicy'];
   active: () => void;
   budget: JudgmentBudget;
   declaredNames: readonly JudgmentDeclaredMember[];
@@ -61,6 +72,7 @@ export type JudgmentPreparationInput<Source extends JudgmentPreparationSources =
   catalogText: string;
   catalogSHA256: string;
   resolveBinding: QuestionSelectionInput['resolveBinding'];
+  preparedJSON: (members: readonly ProgramPreparedMember[]) => string;
   bindings: Readonly<{
     set: (
       identity: object,

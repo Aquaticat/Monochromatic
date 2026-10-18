@@ -7,6 +7,7 @@ use super::diagnostics::DiagnosticStore;
 use super::hints::{HintWindow, InlayHint};
 /// Identities that tag every result.
 use super::identity::{DocumentStamp, ServerIdentity};
+/// The failures kept for one server process.
 use super::notice::Trouble;
 /// Requests of the worker's own that a server left unanswered.
 use super::owed::Owed;

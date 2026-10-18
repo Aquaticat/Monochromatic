@@ -46,9 +46,9 @@ export type FileObservationInput={
    */
   readonly requiredMode:number;
   /**
-   Maximum admitted bytes before allocation.
+   Maximum admitted bytes before allocation; null preserves complete selected instruction files.
    */
-  readonly maxBytes?:number;
+  readonly maxBytes?:number|null;
   /**
    Optional fixture-owned synchronous read interception.
    */

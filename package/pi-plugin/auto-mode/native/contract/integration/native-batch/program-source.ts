@@ -76,7 +76,7 @@ export function programSessionSource(source: string): string {
  const contextRunner=replaceOnce({
    source:runnerAccess,
    from:'            runToolCall: (toolCall, parentId, signal, onUpdate) => {',
-   to:'            getContext: () => ({messages:this.agent.state.messages,tools:this.agent.state.tools}),\n            runOwnedToolCall: (call,options) => runToolCall(call,options),\n            prepareOwnedToolCall: (hook,parentId) => this._beforeToolCall(hook,parentId),\n            finishOwnedToolCall: (hook,parentId) => this._afterToolCall(hook,parentId),\n            runToolCall: (toolCall, parentId, signal, onUpdate) => {'
+   to:'            getContext: () => ({messages:this.agent.state.messages,tools:this.agent.state.tools}),\n            runOwnedToolCall: (call,options) => runToolCall(call,options),\n            createOwnedToolPhases,\n            prepareOwnedToolCall: (hook,parentId) => this._beforeToolCall(hook,parentId),\n            finishOwnedToolCall: (hook,parentId) => this._afterToolCall(hook,parentId),\n            runToolCall: (toolCall, parentId, signal, onUpdate) => {'
  });
  /**
   returned runner retains its original source occurrence before the next transformation.
@@ -94,7 +94,7 @@ export function programSessionSource(source: string): string {
    from:'    /** Whether `projection`,',
    to:'    async _executeNestedToolCall(parentToolCallId,name,args,options){return this.#getOwnedProgramRunner().execute(parentToolCallId,name,args,options);}\n    /** Whether `projection`,'
  });
- return `import {isOwnedProgramDefinition} from "./program-definition.mjs";\nconst originalCreateDeclaredProgram=NestedToolCallRunner.prototype.createDeclaredProgram;\nlet openOwnedProgram;\n${nestedEntry}\nexport function createOwnedProgramRun({session,input}){readActiveSessionManager(session);if(!isOwnedProgramDefinition(input.definition))throw new Error("Program definition is not owned by the native factory");return openOwnedProgram(session,input);}\n`;
+ return `import {createOwnedToolPhases} from "./agent-loop.mjs";\nimport {isOwnedProgramDefinition} from "./program-definition.mjs";\nconst originalCreateDeclaredProgram=NestedToolCallRunner.prototype.createDeclaredProgram;\nlet openOwnedProgram;\n${nestedEntry}\nexport function createOwnedProgramRun({session,input}){readActiveSessionManager(session);if(!isOwnedProgramDefinition(input.definition))throw new Error("Program definition is not owned by the native factory");return openOwnedProgram(session,input);}\n`;
 }
 
 
@@ -213,7 +213,7 @@ export function programDefinitionSource({
   +`const definitions=new WeakSet();\n`
    +`const guidance=${JSON.stringify(programGuidance)};\n`
    +`function describeInspectedPrograms(description){const index=description.indexOf('\\n\\nNested tools:');return guidance+(index<0?'':description.slice(index));}\n`
-   +`export function createOwnedCodemodeDefinition(options={}){const fixedOptions=Object.freeze({...options});const original=createCodemodeToolDefinition(fixedOptions);const definition=Object.freeze({...original,description:describeInspectedPrograms(original.description),promptSnippet:'Run an inspected tool call or producer-and-successor program',promptGuidelines:[guidance],prepareLoadout(loadout){const prepared=original.prepareLoadout(loadout);return {...prepared,descriptions:{...prepared.descriptions,codemode:describeInspectedPrograms(prepared.descriptions.codemode)}};},defaultActive:false,execute:async(...args)=>(await import(${JSON.stringify(executorUrl)})).executeCodemode(...args,fixedOptions)});definitions.add(definition);return definition;}\n`
+   +`export function createOwnedCodemodeDefinition(options={}){const fixedOptions=Object.freeze({...options});const original=createCodemodeToolDefinition(fixedOptions);const definition=Object.freeze({...original,description:describeInspectedPrograms(original.description),promptSnippet:'Run an inspected tool call or producer-and-successor program',promptGuidelines:[guidance],prepareLoadout(loadout){const prepared=original.prepareLoadout(loadout);return {...prepared,descriptions:{...prepared.descriptions,codemode:describeInspectedPrograms(prepared.descriptions.codemode)}};},defaultActive:false,execute:async(...args)=>args[4]?.createDeclaredProgram?(await import(${JSON.stringify(executorUrl)})).executeCodemode(...args,fixedOptions):await original.execute(...args)});definitions.add(definition);return definition;}\n`
    +`export function isOwnedProgramDefinition(definition){return definitions.has(definition);}\n`;
 }
 

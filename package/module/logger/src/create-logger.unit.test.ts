@@ -980,21 +980,29 @@ await describe({
           name: 'sinks verify concurrently rather than one after another',
           timeout: DEADLINE_TEST_TIMEOUT_MS,
           fn: async () => {
-            const first = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
-            const second = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
-            const started = performance.now();
+            const firstStarted = Promise.withResolvers<void>();
+            const secondStarted = Promise.withResolvers<void>();
+            const release = Promise.withResolvers<void>();
+            const first = recordingSink({ verify: async function firstVerification() {
+              firstStarted.resolve();
+              await release.promise;
+              return true;
+            }, });
+            const second = recordingSink({ verify: async function secondVerification() {
+              secondStarted.resolve();
+              await release.promise;
+              return true;
+            }, });
             const { initPromise, } = createLogger({
               sinks: [
                 first.sink,
                 second.sink,
               ],
             },);
+            // Both verifications must start before either can complete.
+            await Promise.all([firstStarted.promise, secondStarted.promise]);
+            release.resolve();
             await initPromise;
-            const elapsed = performance.now() - started;
-
-            // Sequential verification would take at least twice the delay.
-            expect(elapsed,)
-              .toBeLessThan(SLOW_WRITE_MS * 2,);
           },
         },),
 
