@@ -31,8 +31,11 @@ The actual CLI and receipt contract consumers pass on `native-release-WXGCDx`.
 The corrected contract builds as `native-release-LytMAt`.
 Its network unit passes in a clean environment;
 a contaminated-parent control exposes another owned negative-fixture isolation defect.
+Commit `a6417c7303` repairs explicit environment absence.
+Independent frozen-source network units pass with clean and contaminated parents,
+and fresh-cache types pass.
 Complete units and the session-input aggregate pass for frozen source `68e7ce538a` against `LytMAt`.
-The contaminated-parent control still exposes the test-isolation defect;
+Those broader catalogs precede the isolated environment repair;
 later lint edits need their own verification.
 Lint cleanup remains an unfinished measured task.
 
