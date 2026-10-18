@@ -1,0 +1,305 @@
+name: Research frozen Android APK and host JVM consumers
+on:
+  workflow_dispatch: null
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on:
+      size: 8x32
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      MISE_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      MISE_DATA_DIR: /opt/depot-reuse-20261018-r1/mise-data
+      MISE_CACHE_DIR: /opt/depot-reuse-20261018-r1/mise-cache
+      RUSTUP_HOME: /opt/depot-reuse-20261018-r1/rustup
+      CARGO_HOME: /opt/depot-reuse-20261018-r1/cargo
+      GRADLE_USER_HOME: /opt/depot-reuse-20261018-r1/gradle
+      CARGO_BUILD_JOBS: "8"
+      GRADLE_OPTS: -Dorg.gradle.workers.max=8
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
+          persist-credentials: false
+          fetch-depth: 1
+          clean: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Match the verified prepared-tool consumer bootstrap.
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Prove native Node custom-shell execution and write disposable owning tasks
+        shell: node {0}
+        run: "const { strict: assert } = require('node:assert'); const { mkdirSync, writeFileSync } =
+          require('node:fs'); const { join } = require('node:path'); const root = process.env.GITHUB_WORKSPACE
+          ?? process.cwd();
+          assert.equal(require('node:child_process').execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'\
+          }).trim(),\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\"); assert.throws(()=>assert.equal(1,2));
+          assert.equal(1,1); const evidence=join(root,'.research-android/receipts');
+          mkdirSync(evidence,{recursive:true,mode:448});
+          writeFileSync(join(evidence,'node-custom-shell-control.json'),JSON.stringify({node:process.version,\
+          source:\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\",positive:true,negative:true})+'\\n'); const
+          dir=join(root,'package/dev-script/coverage-research'); mkdirSync(dir,{recursive:true});
+          writeFileSync(join(dir,'mise.toml'),\"[tasks.\\\"android:campaign\\\"]\\nquiet = true\\nshell =
+          \\\"node --input-type=module-typescript -e\\\"\\nrun = \\\"await (async function
+          androidCampaign(){\\\\n const {spawn,execFileSync}=await import('node:child_process')\\\\n const
+          {once}=await import('node:events')\\\\n const
+          {openSync,closeSync,readFileSync,writeFileSync,readdirSync,mkdirSync,existsSync,copyFileSync,realpa\
+          thSync,statSync,statfsSync}=await import('node:fs')\\\\n const {join,relative}=await
+          import('node:path')\\\\n const {createHash}=await import('node:crypto')\\\\n const
+          {availableParallelism,totalmem,release,homedir}=await import('node:os')\\\\n const
+          {strict:assert}=await import('node:assert')\\\\n const
+          root=process.env.GITHUB_WORKSPACE??process.cwd()\\\\n const
+          evidence=join(root,'.research-android/receipts')\\\\n const
+          prefix='/opt/depot-reuse-20261018-r1'\\\\n const
+          source='e02be6c8b8fe9efb41a7f8f1a0b311c17796588a'\\\\n const
+          expectedImage='sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8'\\\\n const
+          android=join(root,'package/music-player/android-app')\\\\n const
+          sha=bytes=>createHash('sha256').update(bytes).digest('hex')\\\\n
+          mkdirSync(evidence,{recursive:true,mode:448})\\\\n const started=Date.now()\\\\n const
+          deadline=started+27*60*1000\\\\n const
+          manifest={source,workflowCommit:process.env.GITHUB_SHA,run:process.env.DEPOT_CI_RUN_ID??process.env\
+          .GITHUB_RUN_ID??null,startedAt:new
+          Date(started).toISOString(),profile:'android_debug_and_instrumented_apks_plus_host_jvm',resourceCla\
+          ss:'8x32',jobMaximumMinutes:30,campaignMaximumMinutes:27,cpuAvailable:availableParallelism(),memory\
+          Bytes:totalmem(),kernel:release(),node:process.version,expectedImageDigest:expectedImage,outcomes:[\
+          ],artifacts:[],nativeLibraries:[],junit:[],failures:[]}\\\\n const
+          save=()=>writeFileSync(join(evidence,'android-campaign.json'),JSON.stringify(manifest,null,2)+'\\\\\
+          \\\\n')\\\\n const
+          recordFailure=error=>{manifest.failures.push(String(error));console.error(String(error));save()}\\\
+          \\n class ResearchCommandFailure extends
+          Error{constructor({name,code,signal,timedOut}){super('Android research command '+name+' failed:
+          code='+code+', signal='+signal+',
+          budgetExpired='+timedOut);this.name='ResearchCommandFailure'}}\\\\n async function
+          run({name,command='mise',args,budgetMs,acceptable=[0],cwd=root}){\\\\n  const
+          remaining=deadline-Date.now()\\\\n  if(remaining<15000){manifest.outcomes.push({name,command,args,s\
+          tate:'not_started_campaign_budget'});save();throw new
+          ResearchCommandFailure({name,code:null,signal:null,timedOut:true})}\\\\n  const
+          limit=Math.min(budgetMs,remaining-10000)\\\\n  const log=name+'.log'\\\\n  const
+          logPath=join(evidence,log)\\\\n  const fd=openSync(logPath,'w')\\\\n  const
+          began=Date.now()\\\\n  let timedOut=false\\\\n  let
+          hardKill\\\\n  console.log(JSON.stringify({phase:name,state:'started',source,budgetMs:limit}))\\\\n  \
+          const
+          child=spawn(command,args,{cwd,stdio:['ignore',fd,fd],detached:true,env:process.env})\\\\n  const
+          timer=setTimeout(()=>{timedOut=true;try{process.kill(-child.pid,'SIGTERM')}catch(error){if(error.co\
+          de!=='ESRCH')recordFailure(error)}hardKill=setTimeout(()=>{try{process.kill(-child.pid,'SIGKILL')}c\
+          atch(error){if(error.code!=='ESRCH')recordFailure(error)}},3000)},limit)\\\\n  let
+          code,signal\\\\n  try{[code,signal]=await
+          once(child,'close')}finally{clearTimeout(timer);clearTimeout(hardKill);closeSync(fd)}\\\\n  const
+          bytes=readFileSync(logPath)\\\\n  const succeeded=!timedOut&&acceptable.includes(code)\\\\n  const
+          record={name,command,args,source,startedAt:new Date(began).toISOString(),finishedAt:new
+          Date().toISOString(),elapsedMs:Date.now()-began,exitCode:code,signal,budgetExpired:timedOut,state:s\
+          ucceeded?'command_succeeded':'command_failed_requires_classification',log,logBytes:bytes.length,log\
+          Sha256:sha(bytes)}\\\\n  manifest.outcomes.push(record);save()\\\\n  console.log(JSON.stringify({ph\
+          ase:name,state:record.state,elapsedMs:record.elapsedMs}))\\\\n  if(!succeeded){console.error(bytes.\
+          toString().slice(-4500));throw new ResearchCommandFailure({name,code,signal,timedOut})}\\\\n  return
+          bytes.toString()\\\\n }\\\\n function inspectSource(){\\\\n  const
+          actual=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim()\\\\n  assert.equa\
+          l(actual,source)\\\\n  assert.equal(execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'u\
+          tf8'}).trim(),'')\\\\n  const
+          image=JSON.parse(readFileSync(join(prefix,'image-manifest.json'),'utf8'))\\\\n  assert.equal(image.\
+          baseSourceSha,source)\\\\n  manifest.imageManifestSha256=sha(readFileSync(join(prefix,'image-manife\
+          st.json')))\\\\n  manifest.preparedInputIdentities={}\\\\n  for(const [path,expected]of
+          Object.entries(image.identities)){const
+          actual=sha(readFileSync(join(root,path)));assert.equal(actual,expected,'Snapshot/source mismatch:
+          '+path);manifest.preparedInputIdentities[path]=actual}\\\\n  manifest.preparedToolIdentities={}\\\\\
+          n  for(const [tool,expected]of Object.entries(image.tools)){const
+          actualPath=execFileSync('mise',['which',tool],{cwd:root,encoding:'utf8'}).trim();const
+          actual=sha(readFileSync(actualPath));assert.equal(actual,expected.sha256,'Snapshot tool mismatch:
+          '+tool);manifest.preparedToolIdentities[tool]={path:actualPath,realpath:realpathSync(actualPath),sh\
+          a256:actual,bytes:statSync(actualPath).size}}\\\\n  copyFileSync(join(prefix,'image-manifest.json')\
+          ,join(evidence,'restored-tool-image-manifest.json'))\\\\n  const
+          registry=JSON.parse(readFileSync(join(evidence,'snapshot-registry-manifest.json'),'utf8'))\\\\n  as\
+          sert.equal(registry.digest,expectedImage,'Snapshot registry digest is not
+          verified')\\\\n  manifest.observedImageDigest=registry.digest\\\\n  for(const path of
+          ['app/build','rust/target','app/src/main/jniLibs'])assert(!existsSync(join(android,path)),'Unexpect\
+          ed preexisting Android output: '+path)\\\\n  const
+          disk=statfsSync(root)\\\\n  manifest.diskBefore={blockBytes:disk.bsize,freeBytes:disk.bavail*disk.b\
+          size}\\\\n  manifest.sourceInputHashes=Object.fromEntries(['mise.lock','mise.toml','.cargo/config.t\
+          oml','package/music-player/android-app/mise.toml','package/music-player/android-app/rust/Cargo.toml\
+          ','package/music-player/android-app/rust/Cargo.lock','package/music-player/android-app/build.gradle\
+          .kts','package/music-player/android-app/app/build.gradle.kts','package/music-player/android-app/gra\
+          dle/wrapper/gradle-wrapper.properties','package/music-player/android-app/gradle/wrapper/gradle-wrap\
+          per.jar','package/music-player/truepeak-core/Cargo.toml','package/music-player/desktop-app/Cargo.to\
+          ml'].map(path=>[path,sha(readFileSync(join(root,path)))]))\\\\n  save()\\\\n }\\\\n async function
+          captureArtifacts(){\\\\n  const
+          sdk=execFileSync('mise',['exec','android-sdk','node','--','node','--input-type=module','--eval','co\
+          nsole.log(process.env.ANDROID_HOME??\\\\\\\"\\\\\\\")'],{cwd:root,encoding:'utf8'}).trim()\\\\n  as\
+          sert(sdk)\\\\n  manifest.androidHome=sdk\\\\n  const
+          buildTools=join(sdk,'build-tools/37.0.0')\\\\n  const
+          ndk=join(sdk,'ndk/29.0.13846066')\\\\n  manifest.sdkComponents={}\\\\n  for(const path of
+          ['cmdline-tools/23.0/source.properties','platforms/android-37.0/source.properties','build-tools/37.\
+          0.0/source.properties','ndk/29.0.13846066/source.properties','platform-tools/source.properties'])if\
+          (existsSync(join(sdk,path))){const
+          bytes=readFileSync(join(sdk,path));manifest.sdkComponents[path]={sha256:sha(bytes),text:bytes.toStr\
+          ing()}}\\\\n  const
+          artifactDir=join(evidence,'apks');mkdirSync(artifactDir,{recursive:true})\\\\n  const
+          nativeScratch=join(homedir(),'temp/agent/android-elf');mkdirSync(nativeScratch,{recursive:true,mode\
+          :448})\\\\n  for(const [kind,path]of
+          [['debug','app/build/outputs/apk/debug/app-debug.apk'],['androidTest','app/build/outputs/apk/androi\
+          dTest/debug/app-debug-androidTest.apk']]){\\\\n   const
+          file=join(android,path)\\\\n   if(!existsSync(file)){manifest.artifacts.push({kind,path,state:'miss\
+          ing_after_build'});continue}\\\\n   const bytes=readFileSync(file);const
+          name=kind+'.apk';copyFileSync(file,join(artifactDir,name));manifest.artifacts.push({kind,path,artif\
+          actPath:'apks/'+name,bytes:bytes.length,sha256:sha(bytes)})\\\\n   await
+          run({name:kind+'-zipalign-16kb',command:join(buildTools,'zipalign'),args:['-c','-P','16','-v','4',f\
+          ile],budgetMs:30000})\\\\n   await
+          run({name:kind+'-signature',command:join(buildTools,'apksigner'),args:['verify','--verbose','--prin\
+          t-certs',file],budgetMs:30000})\\\\n   await
+          run({name:kind+'-manifest-badging',command:join(buildTools,'aapt2'),args:['dump','badging',file],bu\
+          dgetMs:30000})\\\\n   const
+          listing=execFileSync('unzip',['-Z','-1',file],{encoding:'utf8',maxBuffer:8*1024*1024}).trim().split\
+          ('\\\\\\\\n')\\\\n   const
+          native=listing.filter(entry=>entry.startsWith('lib/')&&entry.endsWith('.so'))\\\\n   for(const entry
+          of
+          native){\\\\n    assert(/^lib\\\\\\\\/[A-Za-z0-9_-]+\\\\\\\\/[^/]+\\\\\\\\.so$/.test(entry),'Unexpe\
+          cted native archive path')\\\\n    const
+          payload=execFileSync('unzip',['-p',file,entry],{maxBuffer:256*1024*1024})\\\\n    const
+          extracted=join(nativeScratch,sha(entry)+'.so');writeFileSync(extracted,payload)\\\\n    const
+          elf=execFileSync('readelf',['--file-header','--program-headers','--dynamic','--dyn-syms','--wide',e\
+          xtracted],{encoding:'utf8',maxBuffer:32*1024*1024})\\\\n    const
+          logName=kind+'-'+entry.replaceAll('/','_')+'.elf.txt';writeFileSync(join(evidence,logName),elf)\\\\\
+          n    const rows=elf.split('\\\\\\\\n').map(line=>line.trim().split(/\\\\\\\\s+/))\\\\n    const
+          loads=rows.filter(row=>row[0]==='LOAD').map(row=>({offset:row[1],virtualAddress:row[2],alignment:ro\
+          w.at(-1),aligned16kb:BigInt(row.at(-1))>=16384n&&(BigInt(row[2])-BigInt(row[1]))%16384n===0n}))\\\\\
+          n    const
+          relro=rows.filter(row=>row[0]==='GNU_RELRO').map(row=>({virtualAddress:row[2],memoryBytes:row[5],en\
+          dAligned16kb:(BigInt(row[2])+BigInt(row[5]))%16384n===0n}))\\\\n    const jni=[...new
+          Set([...elf.matchAll(/\\\\\\\\bJava_[A-Za-z0-9_]+/g)].map(match=>match[0]))].sort()\\\\n    const
+          sourceNative=join(android,'app/src/main/jniLibs',entry.slice(4))\\\\n    const
+          matchesBuildOutput=existsSync(sourceNative)?sha(readFileSync(sourceNative))===sha(payload):null\\\\\
+          n    manifest.nativeLibraries.push({apk:kind,entry,bytes:payload.length,sha256:sha(payload),elfLog:\
+          logName,loads,relro,relroPresent:relro.length>0,jniExports:jni,matchesBuildOutput})\\\\n    assert(\
+          loads.length&&loads.every(row=>row.aligned16kb),'ELF LOAD alignment failure:
+          '+entry)\\\\n    assert(relro.every(row=>row.endAligned16kb),'ELF RELRO end alignment failure:
+          '+entry)\\\\n    if(matchesBuildOutput!==null)assert(matchesBuildOutput,'APK/build native bytes
+          differ: '+entry)\\\\n   }\\\\n   if(kind==='debug')for(const abi of
+          ['arm64-v8a','x86_64'])assert(native.includes('lib/'+abi+'/libmusicplayer_native.so'),'Missing
+          source-required ABI '+abi)\\\\n  }\\\\n  save()\\\\n }\\\\n function captureJUnit(){\\\\n  const
+          directory=join(android,'app/build/test-results/testDebugUnitTest')\\\\n  if(!existsSync(directory))\
+          {manifest.junitState='no_report_directory';save();return}\\\\n  const
+          target=join(evidence,'junit');mkdirSync(target,{recursive:true})\\\\n  for(const name of
+          readdirSync(directory).filter(name=>name.startsWith('TEST-')&&name.endsWith('.xml'))){\\\\n   const
+          bytes=readFileSync(join(directory,name));const xml=bytes.toString();const
+          opening=/<testsuite\\\\\\\\b([^>]*)>/.exec(xml)?.[1];assert(opening,'Missing JUnit suite
+          boundary')\\\\n   const fields={};for(const key of ['tests','skipped','failures','errors']){const
+          value=new
+          RegExp('\\\\\\\\\\\\\\\\b'+key+'=\\\\\\\"([0-9]+)\\\\\\\"').exec(opening)?.[1];assert(value!==undef\
+          ined,'Missing JUnit count '+key);fields[key]=Number(value)}\\\\n   const
+          cases=[...xml.matchAll(/<testcase\\\\\\\\b/g)].length;assert.equal(cases,fields.tests,'JUnit
+          declared/discovered count
+          differs')\\\\n   copyFileSync(join(directory,name),join(target,name));manifest.junit.push({name,...\
+          fields,testcaseElements:cases,bytes:bytes.length,sha256:sha(bytes)})\\\\n  }\\\\n  manifest.junitSt\
+          ate=manifest.junit.length?'reports_captured':'no_xml_reports';save()\\\\n }\\\\n let
+          ready=false\\\\n try{inspectSource();await
+          run({name:'install-locked-android-tools',args:['install','--locked','android-sdk','cargo:cargo-ndk'\
+          ],budgetMs:6*60*1000});await
+          run({name:'prepare-owned-sdk-components',args:['run','prepare:android'],budgetMs:8*60*1000});ready=\
+          true}catch(error){recordFailure(error)}\\\\n if(ready){\\\\n  try{await
+          run({name:'build-debug-and-androidtest-apks',args:['run','//package/music-player/android-app:test:i\
+          nstrumented:build'],budgetMs:15*60*1000})}catch(error){recordFailure(error)}\\\\n  try{await
+          captureArtifacts()}catch(error){recordFailure(error)}\\\\n  try{await
+          run({name:'host-jvm-unit-consumers',args:['run','//package/music-player/android-app:test:unit'],bud\
+          getMs:5*60*1000})}catch(error){recordFailure(error)}\\\\n }else for(const name of
+          ['build-debug-and-androidtest-apks','host-jvm-unit-consumers'])manifest.outcomes.push({name,state:'\
+          not_started_setup_failure'})\\\\n try{captureJUnit()}catch(error){recordFailure(error)}\\\\n
+          if(manifest.outcomes.some(outcome=>outcome.name==='host-jvm-unit-consumers'&&outcome.state==='comma\
+          nd_succeeded')&&!manifest.junit.some(suite=>suite.tests>0))recordFailure(new Error('Host JVM command
+          reported success without a nonempty discovered JUnit report'))\\\\n
+          manifest.changedTrackedFiles=execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'utf8'}).\
+          trim().split('\\\\\\\\n').filter(Boolean)\\\\n
+          manifest.sourceInputHashesAfter=Object.fromEntries(Object.keys(manifest.sourceInputHashes??{}).map(\
+          path=>[path,sha(readFileSync(join(root,path)))]))\\\\n manifest.finishedAt=new
+          Date().toISOString();manifest.elapsedMs=Date.now()-started;save()\\\\n
+          if(manifest.failures.length)throw new Error('Android research profile retained failures:
+          '+manifest.failures.join('; '))\\\\n
+          if(manifest.artifacts.filter(artifact=>artifact.sha256).length!==2)throw new Error('Both
+          source-bound APKs were not captured')\\\\n if(manifest.changedTrackedFiles.length)throw new
+          Error('Tracked source changed during Android
+          profile')\\\\n})()\\\"\\n\\n[tasks.\\\"android:registry\\\"]\\nquiet = true\\nshell = \\\"node
+          --input-type=module-typescript -e\\\"\\nrun = \\\"import { writeFileSync, appendFileSync } from
+          'node:fs';\\\\nimport { join } from 'node:path';\\\\nimport { strict as assert } from
+          'node:assert';\\\\nimport { createHash } from 'node:crypto';\\\\nconst evidence =
+          join(process.env.GITHUB_WORKSPACE ?? process.cwd(), '.research-android/receipts');\\\\nconst sha =
+          bytes => createHash('sha256').update(bytes).digest('hex');\\\\n\\\\n// Inspect only the experiment's
+          manifest/config. Never retain credentials or arbitrary image environment values.\\\\nconst origin =
+          'https://l4zncjjbj5.registry.depot.dev';\\\\nconst repository = 'research-reuse-20261018';\\\\nconst
+          token = process.env.DEPOT_SNAPSHOT_TOKEN;\\\\nconst proof = { recordedAt: new Date().toISOString(),
+          reference: origin.slice(8) + '/' + repository + ':tools-r1', automaticSnapshotCredentialPresent:
+          Boolean(token), requests: [] };\\\\n\\\\n/** Read one named artifact with bounded redirects and no
+          credential forwarding to blob hosts. */\\\\nasync function get({ path, authorization }) {\\\\n  let
+          response = await fetch(origin + path, { headers: { Authorization: authorization, Accept:
+          'application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.v2+json,ap\
+          plication/json' }, redirect: 'manual', signal: AbortSignal.timeout(30_000)
+          });\\\\n  proof.requests.push({ path, status: response.status });\\\\n  if ([301, 302, 303, 307,
+          308].includes(response.status)) {\\\\n    const next = new URL(response.headers.get('location'),
+          origin);\\\\n    assert.equal(next.protocol,
+          'https:');\\\\n    assert(next.hostname.endsWith('.amazonaws.com') ||
+          next.hostname.endsWith('.cloudflarestorage.com') ||
+          next.hostname.endsWith('.depot.dev'));\\\\n    response = await fetch(next, { redirect: 'error',
+          signal: AbortSignal.timeout(30_000) });\\\\n    proof.requests.push({ redirectedBlobOrigin:
+          next.origin, status: response.status });\\\\n  }\\\\n  return response;\\\\n}\\\\n\\\\ntry
+          {\\\\n  if (token) {\\\\n    const basic = 'Basic ' + Buffer.from('x-token:' +
+          token).toString('base64');\\\\n    let authorization = basic;\\\\n    const path = '/v2/' +
+          repository + '/manifests/tools-r1';\\\\n    let response = await get({ path, authorization
+          });\\\\n    if (response.status === 401) {\\\\n      const challenge =
+          response.headers.get('www-authenticate') ?? '';\\\\n      const fields =
+          Object.fromEntries([...challenge.matchAll(/([a-z_]+)=\\\\\\\"([^\\\\\\\"]*)\\\\\\\"/gu)].map(match
+          => [match[1], match[2]]));\\\\n      assert(challenge.startsWith('Bearer ') && fields.realm &&
+          fields.service);\\\\n      const realm = new
+          URL(fields.realm);\\\\n      assert.equal(realm.protocol, 'https:');\\\\n      assert(realm.hostname
+          === 'depot.dev' ||
+          realm.hostname.endsWith('.depot.dev'));\\\\n      realm.searchParams.set('service',
+          fields.service);\\\\n      realm.searchParams.set('scope', 'repository:' + repository +
+          ':pull');\\\\n      realm.searchParams.set('client_id',
+          'monochromatic-reuse-research');\\\\n      const exchange = await fetch(realm, { headers: {
+          Authorization: basic }, redirect: 'error', signal: AbortSignal.timeout(30_000)
+          });\\\\n      proof.requests.push({ tokenExchangeOrigin: realm.origin, requestedScope: 'repository:'
+          + repository + ':pull', status: exchange.status });\\\\n      assert.equal(exchange.status,
+          200);\\\\n      const credentials = await exchange.json();\\\\n      const bearer =
+          credentials.token ?? credentials.access_token;\\\\n      assert(typeof bearer === 'string' &&
+          bearer.length > 0);\\\\n      authorization = 'Bearer ' + bearer;\\\\n      response = await get({
+          path, authorization });\\\\n    }\\\\n    assert.equal(response.status, 200);\\\\n    const bytes =
+          Buffer.from(await response.arrayBuffer());\\\\n    assert(bytes.length <= 1024 *
+          1024);\\\\n    proof.digest = 'sha256:' + sha(bytes);\\\\n    assert.equal(proof.digest,
+          'sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8');\\\\n    const manifest =
+          JSON.parse(bytes.toString());\\\\n    proof.manifest = manifest;\\\\n    const configResponse =
+          await get({ path: '/v2/' + repository + '/blobs/' + manifest.config.digest, authorization
+          });\\\\n    assert.equal(configResponse.status, 200);\\\\n    const configBytes = Buffer.from(await
+          configResponse.arrayBuffer());\\\\n    assert(configBytes.length <= 1024 *
+          1024);\\\\n    assert.equal('sha256:' + sha(configBytes), manifest.config.digest);\\\\n    const
+          config = JSON.parse(configBytes.toString());\\\\n    const variables = config.config?.Env ??
+          [];\\\\n    proof.config = { digest: manifest.config.digest, architecture: config.architecture, os:
+          config.os, rootfsType: config.rootfs?.type, environmentNames: variables.map(value =>
+          value.split('=')[0]), unmaskedSyntheticControlInConfig:
+          variables.includes('RESEARCH_PERSIST_CONTROL=synthetic-public-environment-20261018-r1'),
+          maskedSyntheticControlInConfig: variables.some(value =>
+          value.startsWith('RESEARCH_SECRET_CONTROL=')), credentialNamedVariablesPresent: variables.map(value
+          => value.split('=')[0]).filter(name => /TOKEN|PASSWORD|SECRET|AUTH/iu.test(name)) };\\\\n  }\\\\n}
+          catch (error) {\\\\n  proof.failure = String(error);\\\\n} finally
+          {\\\\n  writeFileSync(join(evidence, 'snapshot-registry-manifest.json'), JSON.stringify(proof, null,
+          2) + '\\\\\\\\n');\\\\n  appendFileSync(join(evidence, 'snapshot-registry-manifest.jsonl'),
+          JSON.stringify(proof) + '\\\\\\\\n');\\\\n  console.log(JSON.stringify({
+          automaticSnapshotCredentialPresent: proof.automaticSnapshotCredentialPresent, digest: proof.digest
+          ?? null, failure: proof.failure ?? null }));\\\\n}\\\\n\\\"\\n\"); console.log('Node custom shell
+          positive/negative control and disposable tasks ready');"
+      - name: Bind restored image to the measured immutable registry digest
+        run: mise run //package/dev-script/coverage-research:android:registry
+      - name: Execute bounded current-source SDK APK and host JVM campaign
+        run: mise run //package/dev-script/coverage-research:android:campaign
+      - name: Recheck the image registry identity after consumption
+        if: always()
+        run: mise run //package/dev-script/coverage-research:android:registry
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: frozen-android-apks-and-jvm-e02
+          path: .research-android/receipts
+          retention-days: 14
+          if-no-files-found: error
