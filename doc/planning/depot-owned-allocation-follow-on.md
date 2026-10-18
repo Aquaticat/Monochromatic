@@ -172,6 +172,19 @@ and Rust `2.2111151175725956`.
 The retained means and spreads are per completed subgraph,
 not a whole-pipeline multiplier or a general provider estimate.
 
+The [separate corrected-native parity receipt](../audit/depot-expanded-graph-native-parity-review-2026-10-18.evidence.json)
+adds both native samples from `fnvwqfg0bb`
+without rewriting the original four-sample GitHub receipt.
+It verifies `448` original ZIP members and `652` emitted status records.
+Each native sample has the same `237` and `89` executed PASS identities as the sealed GitHub reference.
+Both changed-name and changed-status raw-log controls reject equality.
+An initial full-summary comparison stopped at an observed `(1 slow)` annotation difference.
+The corrected comparison preserves original summaries
+and excludes duration and slow-count timing annotations from identity/count equality.
+Passed,
+failed,
+and skipped totals remain part of that comparison.
+
 Coverage's first public host handoff `39141147245` is terminal with five allocated jobs.
 Its skipped unassigned scheduler row `117715669048` must not become a compute allocation.
 Recovery `39144499822` remains owner-watched;
