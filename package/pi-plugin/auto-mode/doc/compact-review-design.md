@@ -127,3 +127,29 @@ AST equality alone does not prove `Function.prototype.toString` compatibility.
 The private native formatter also introduces TypeScript-only syntax into JavaScript,
 documented in the
 [readonly autofix investigation](../../../../doc/troubleshooting/oxlint-prefer-readonly-javascript.md).
+
+## Typed-port semantic checks
+
+The policy-error port initially adds a TypeScript member declaration that emits an own runtime field.
+The inherited-setter consumer detects the changed property behavior;
+the corrected implementation retains the original assignment.
+The deciding source,
+configuration probes and rebuilt mutants are retained in [the error-name contract](error-name-contract.md).
+
+The fallback-catalog port initially validates material entries and fragment text before the original code needs them.
+That extra validation changes a retryable transient into a fixture error.
+The corrected port preserves the original first-entry check,
+keeps uninspected tail values as `unknown` and narrows fragment text inside the original short-circuit predicate.
+Original and port transient counts agree,
+and the complete fallback/startup catalogs pass again on the newly compiled frozen runtime.
+An assertion function's type describes exactly what its executed checks establish.
+
+Review of the proposed policy-input port catches a separate syntax change before the write is applied:
+`#state in input` becomes `'#state' in input`.
+The original expression checks the class's private brand;
+the proposal checks a public string property.
+The supervisor stops that write and requests the original syntax and an independently compiled brand regression.
+The temporary loader declaration is an interop boundary;
+it does not establish that the underlying JavaScript implementation is type-checked.
+The root `TCV` rule remains unchanged;
+these concrete porting lessons remain package-local.
