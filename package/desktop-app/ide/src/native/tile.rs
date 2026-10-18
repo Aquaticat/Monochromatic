@@ -315,6 +315,25 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
             "discarded stale source tile"
         );
         drop(current);
+        if let Some(offset) = scrolled {
+            // What: The offset the map's new heights moved the view to is handed to the window here, with the frame
+            //       that is displayed, before the render that follows.
+            // Why: The map has taken the heights already, so the render finds nothing left to settle and would read
+            //      the old offset from the window: the window and the next tile would then disagree about the view.
+            show(
+                window,
+                state,
+                Frame {
+                    pixels: None,
+                    matches_changed: false,
+                    scale: factor,
+                    scrolled: Some(offset),
+                    anchor_line: window.get_language_anchor_line(),
+                    notice: None,
+                    sign: None,
+                },
+            );
+        }
         if remapped || wanted {
             // The map moved even though the tile was not shown, or a tile is still wanted; the window follows.
             render(window, state);
