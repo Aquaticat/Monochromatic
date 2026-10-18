@@ -422,9 +422,14 @@ before the other queued work.
     The investigation is `doc/planning/prefer-readonly-parameter-type-shared-analysis.md`:
     992 files under up to 34 projects have the same analysis in every one.
     The owner then chose to prototype it in a scratch worktree with a verification mode,
-    results back before anything lands (in progress).
-    Delete `w165`'s and `w175`'s scratch `oxlint.no-*.config.ts` files
-    and revert `w165`'s plugin edit after the probe.
+    results back before anything lands.
+    The prototype is on `w177`'s detached head (`1b0cdd8653`, unmerged);
+    its results are in the proposal's "Prototype results" (`59f6acf347`):
+    cold family lint about 131 s against about 322 s, warm unchanged,
+    0 mismatches over 6856 verified shared hits.
+    Next: a positive control for the verification mode (a tampered shared entry must be reported),
+    then the owner's landing decision.
+    The scratch configs in `w165` and `w175` are deleted and `w165`'s plugin edit is reverted.
 5.  The queue the split went ahead of,
     oldest first:
     the delegated items (finalist extension,
