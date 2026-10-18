@@ -1018,14 +1018,241 @@
         "saveStepOutcome": "success",
         "restoreStepOutcome": "skipped"
       }
+    },
+    {
+      "key": "depot-restore-same",
+      "provider": "depot",
+      "phase": "restore-same",
+      "branch": "research/depot-cache-scope-a-20261018",
+      "dispatchSubmittedAt": "2026-10-18T15:46:53.002486+00:00",
+      "source": "62de6a858d059b20a43c04f103c45dc8116e4f37",
+      "terminal": true,
+      "dispatchReturnedAt": "2026-10-18T15:46:55.025065+00:00",
+      "runId": 39142023227,
+      "conclusion": "success",
+      "collectedAt": "2026-10-18T15:47:07.301422+00:00",
+      "jobs": [
+        {
+          "id": 117718221436,
+          "run_id": 39142023227,
+          "workflow_name": "Cache scope 79189ea4841acfbebdeb depot restore-same",
+          "head_branch": "research/depot-cache-scope-a-20261018",
+          "run_url": "https://api.github.com/repos/Aquaticats/Monochromatic/actions/runs/39142023227",
+          "run_attempt": 1,
+          "node_id": "CR_kwDOKlVnec8AAAAbaI2CfA",
+          "head_sha": "62de6a858d059b20a43c04f103c45dc8116e4f37",
+          "url": "https://api.github.com/repos/Aquaticats/Monochromatic/actions/jobs/117718221436",
+          "html_url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39142023227/job/117718221436",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-18T15:46:56Z",
+          "started_at": "2026-10-18T15:46:57Z",
+          "completed_at": "2026-10-18T15:47:05Z",
+          "name": "marker",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-18T15:47:01Z",
+              "completed_at": "2026-10-18T15:47:02Z"
+            },
+            {
+              "name": "Prepare absent-path control",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-18T15:47:02Z",
+              "completed_at": "2026-10-18T15:47:02Z"
+            },
+            {
+              "name": "Save benign marker",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 3,
+              "started_at": "2026-10-18T15:47:02Z",
+              "completed_at": "2026-10-18T15:47:02Z"
+            },
+            {
+              "name": "Restore exact marker key",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-18T15:47:02Z",
+              "completed_at": "2026-10-18T15:47:02Z"
+            },
+            {
+              "name": "Record actual marker consumer",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-18T15:47:02Z",
+              "completed_at": "2026-10-18T15:47:02Z"
+            },
+            {
+              "name": "Retain log-safe marker proof",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-18T15:47:02Z",
+              "completed_at": "2026-10-18T15:47:04Z"
+            },
+            {
+              "name": "Remove owned temporary paths",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-18T15:47:04Z",
+              "completed_at": "2026-10-18T15:47:04Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-18T15:47:04Z",
+              "completed_at": "2026-10-18T15:47:04Z"
+            }
+          ],
+          "check_run_url": "https://api.github.com/repos/Aquaticats/Monochromatic/check-runs/117718221436",
+          "labels": [
+            "depot-ubuntu-24.04"
+          ],
+          "runner_id": 183,
+          "runner_name": "depot-cq9t3pbfn9",
+          "runner_group_id": 1,
+          "runner_group_name": "default",
+          "observedJobIntervalSeconds": 8.0,
+          "uniformTwoCpuReferenceElapsedProxyUsd": 0.0008,
+          "uniformTwoCpuReferenceRoundedProxyUsd": 0.006,
+          "nominalElapsedListComputeUsd": 0.0008
+        }
+      ],
+      "archives": [
+        {
+          "file": "depot-restore-same-artifact-12142495231.zip",
+          "artifactId": 12142495231,
+          "bytes": 1395,
+          "sha256": "51e1eec8a79d20282fdfbfd8204223f42a48f22c6842249fba2f71045023edb6",
+          "members": [
+            {
+              "name": "after.json",
+              "bytes": 1451,
+              "crc32": 2541459056,
+              "sha256": "ddf8e3349e5ec5aec689e4c492d1476b43fc02112cd9bc25fd898b3c70283f10"
+            },
+            {
+              "name": "before.json",
+              "bytes": 1024,
+              "crc32": 4167720809,
+              "sha256": "453026d410e06dbe37b52080f603b4ff808466d2671805159af9a3ba6d78337b"
+            }
+          ]
+        },
+        {
+          "file": "depot-restore-same-logs.zip",
+          "bytes": 12910,
+          "sha256": "e5c322b2825ec272bc82c33e4f2e01ee38ab513a8ba9317e151caddc06968823",
+          "members": [
+            {
+              "name": "0_marker.txt",
+              "bytes": 17286,
+              "crc32": 3211643239,
+              "sha256": "43caa3999ffd6f70d50e4ba84a2619755778d7593e0823bb62ba418b91b82dd1"
+            },
+            {
+              "name": "marker/system.txt",
+              "bytes": 538,
+              "crc32": 4051950067,
+              "sha256": "0b2b9ba5c9f98652903a9141572a122b158cb44011020a9cec8f4eb5709dde31"
+            },
+            {
+              "name": "marker/1_Set up job.txt",
+              "bytes": 1046,
+              "crc32": 4214024845,
+              "sha256": "aa3d861ab29db9fc5c7454d8e5588ceb57d8c5b2de460831876c7fd98328bd73"
+            },
+            {
+              "name": "marker/2_Prepare absent-path control.txt",
+              "bytes": 5381,
+              "crc32": 234462412,
+              "sha256": "68d40dbc17c6c1c197bd6714edeae8fa4c4d2c21412e2815ee715de21b89fc57"
+            },
+            {
+              "name": "marker/4_Restore exact marker key.txt",
+              "bytes": 1599,
+              "crc32": 2238239713,
+              "sha256": "bfb532c65b1c3fbf49ae07b4cdfa9471c25d452adc0ef2ca0549b109523d9ede"
+            },
+            {
+              "name": "marker/5_Record actual marker consumer.txt",
+              "bytes": 4523,
+              "crc32": 4168200909,
+              "sha256": "4baee2470bdb1bc73cbb125551177ccc92022ba3f0baf53607df5b8e9cf7b2a7"
+            },
+            {
+              "name": "marker/6_Retain log-safe marker proof.txt",
+              "bytes": 2741,
+              "crc32": 1125247367,
+              "sha256": "d69a009c8671eb23855a51aa81ef4eb25eeb14eee8b4f8c566a058d0ac2467bc"
+            },
+            {
+              "name": "marker/7_Remove owned temporary paths.txt",
+              "bytes": 1621,
+              "crc32": 3552069086,
+              "sha256": "5294f13b8d3206ba7c443cf4443f0df8a970dfbf2ac86db1809ab19f230a4d76"
+            },
+            {
+              "name": "marker/8_Complete job.txt",
+              "bytes": 393,
+              "crc32": 2306513999,
+              "sha256": "02ee1d1e95a1019fd539799fb59f4c5ee74161669fac9188cf75045d005359d1"
+            }
+          ]
+        }
+      ],
+      "proof": {
+        "schema": 1,
+        "provider": "depot",
+        "phase": "restore-same",
+        "nonce": "79189ea4841acfbebdeb",
+        "key": "monochromatic-cache-scope-79189ea4841acfbebdeb-depot",
+        "pathInput": "cache-scope-marker-79189ea4841acfbebdeb",
+        "cacheVersion": "d1b6c275328408c4360cae9ac893fcf5f899e752e5f442df4f1389e905cdadb0",
+        "compression": "zstd-without-long",
+        "zstdVersion": "1.5.7",
+        "runId": "39142023227",
+        "attempt": "1",
+        "ref": "refs/heads/research/depot-cache-scope-a-20261018",
+        "sha": "62de6a858d059b20a43c04f103c45dc8116e4f37",
+        "workflowSha": "62de6a858d059b20a43c04f103c45dc8116e4f37",
+        "checkoutPresent": false,
+        "initialCachePathPresent": false,
+        "node": "v22.23.2",
+        "platform": "linux",
+        "cpuCount": 2,
+        "totalMemoryBytes": 8336855040,
+        "cacheServiceV2": false,
+        "runtimeTokenPresent": false,
+        "cacheMode": null,
+        "cacheHostname": "10.10.7.2",
+        "resultsHostname": "10.10.7.2",
+        "expectedMarkerBytes": 53,
+        "expectedMarkerSha256": "23ddb91abfb44c16158dbbf775ad6ce87eb8b583ae13b2979572cdf1bb218fd6",
+        "finishedAt": "2026-10-18T15:47:02.541Z",
+        "cacheHitOutput": "true",
+        "primaryKey": "monochromatic-cache-scope-79189ea4841acfbebdeb-depot",
+        "matchedKey": "monochromatic-cache-scope-79189ea4841acfbebdeb-depot",
+        "markerPresent": true,
+        "actualMarkerBytes": 53,
+        "actualMarkerSha256": "23ddb91abfb44c16158dbbf775ad6ce87eb8b583ae13b2979572cdf1bb218fd6",
+        "saveStepOutcome": "skipped",
+        "restoreStepOutcome": "success"
+      }
     }
   ],
   "unstartedQueue": [
-    {
-      "provider": "depot",
-      "phase": "restore-same",
-      "branch": "research/depot-cache-scope-a-20261018"
-    },
     {
       "provider": "depot",
       "phase": "restore-cross",
@@ -1033,7 +1260,7 @@
     }
   ],
   "cacheEnvironmentObservationScope": "Custom shell steps only; JavaScript actions receive their own runtime environment. Absent shell variables do not establish absent cache authentication.",
-  "observedNominalElapsedListComputeUsd": 0.0008,
-  "completedUniformRoundedProxyUsd": 0.024,
-  "currentConservativeGuardProxyUsd": 0.06
+  "observedNominalElapsedListComputeUsd": 0.0016,
+  "completedUniformRoundedProxyUsd": 0.03,
+  "currentConservativeGuardProxyUsd": 0.05399999999999999
 }
