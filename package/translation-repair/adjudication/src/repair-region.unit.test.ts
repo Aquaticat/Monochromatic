@@ -12,9 +12,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { collectRepairRegions, } from '../dist/final/node/index.mjs';
 
 /**

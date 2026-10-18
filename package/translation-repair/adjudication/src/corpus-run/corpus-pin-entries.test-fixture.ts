@@ -77,7 +77,10 @@ export function pinReadersSuite({ readers, }: { readonly readers: readonly PinRe
     },) {
       return it({
         name: `REFUSES AN UNREADABLE CORPUS COMMIT in ${command} at exit 6 with its line alone and nothing on stdout`,
-        fn: async () => {
+        fn: async function refusesUnreadableCommit(): Promise<void> {
+          /**
+           Scratch directory the case owns.
+           */
           await using scratch = await scratchDir({ prefix: 'corpus-pin-entries-', },);
 
           /**
@@ -96,12 +99,13 @@ export function pinReadersSuite({ readers, }: { readonly readers: readonly PinRe
             },
           },);
 
-          expect(run,).toEqual({
-            code: 6,
-            stdout: '',
-            stderr: `${command}: TRANSLATION_REPAIR_CORPUS_COMMIT must be one full lowercase hexadecimal commit `
-              + `name, and ${UNREADABLE_COMMIT} is not one\n`,
-          },);
+          expect(run,)
+            .toEqual({
+              code: 6,
+              stdout: '',
+              stderr: `${command}: TRANSLATION_REPAIR_CORPUS_COMMIT must be one full lowercase hexadecimal commit `
+                + `name, and ${UNREADABLE_COMMIT} is not one\n`,
+            },);
         },
       },);
     },),

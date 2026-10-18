@@ -38,9 +38,9 @@ import {
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { blockPairingToSteps, } from '@monochromatic-dev/translation-repair-stage';
 import { archiveOriginalReadingOf, } from '@monochromatic-dev/translation-repair-corpus-source';
-import {
-  type AlignmentStep,
-  type DocumentNode,
+import type {
+  AlignmentStep,
+  DocumentNode,
 } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   type AlignedRun,

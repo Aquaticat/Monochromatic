@@ -5,14 +5,14 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import {
-  type ClaimCluster,
-  type RosterModelId,
+import type {
+  ClaimCluster,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildAdjudicationMessages,

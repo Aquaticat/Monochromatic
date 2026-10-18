@@ -12,12 +12,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import {
-  type AggregatedClaim,
-  type ClaimCluster,
-  type IssueSeverity,
-  type PanelBallot,
-  type PanelVoteState,
+import type {
+  AggregatedClaim,
+  ClaimCluster,
+  IssueSeverity,
+  PanelBallot,
+  PanelVoteState,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { tallyVotes, } from '../dist/final/node/index.mjs';
 

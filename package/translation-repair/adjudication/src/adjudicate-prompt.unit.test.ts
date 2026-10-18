@@ -13,7 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { messageText, } from '@monochromatic-dev/translation-repair-provider';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type ClaimCluster, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { ClaimCluster, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { buildAdjudicationMessages, } from '../dist/final/node/index.mjs';
 import { userText, } from '@monochromatic-dev/translation-repair-provider/ts/chat-message-reading.test-fixture.ts';
 

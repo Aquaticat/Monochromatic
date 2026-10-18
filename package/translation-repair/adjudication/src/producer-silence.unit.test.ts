@@ -23,7 +23,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   coverageGapLines,
   type ProducerStanding,

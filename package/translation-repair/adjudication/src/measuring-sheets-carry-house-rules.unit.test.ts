@@ -31,7 +31,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { buildRenderingAuditMessages, } from '@monochromatic-dev/translation-repair-rendering-audit';
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildIntroducedDefectMessages,
   buildResolutionMessages,

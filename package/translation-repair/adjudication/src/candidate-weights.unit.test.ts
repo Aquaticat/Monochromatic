@@ -25,7 +25,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SelectionBallot, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { SelectionBallot, } from '@monochromatic-dev/translation-repair-house-rule';
 import { countCandidateWeights, } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,

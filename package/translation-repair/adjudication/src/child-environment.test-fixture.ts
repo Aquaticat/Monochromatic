@@ -376,18 +376,32 @@ export function variablesSet({ values, }: { readonly values: Readonly<Record<str
    */
   const standing = new Map<string, string>();
   for (const name of Object.keys(values,)) {
+    /**
+     Value standing before this call, if any.
+     */
     const value = process.env[name];
-    if (value !== undefined)
-      standing.set(name, value,);
+    if (value !== undefined) {
+      standing.set(
+        name,
+        value,
+      );
+    }
   }
   for (const [name, value,] of Object.entries(values,))
     process.env[name] = value;
   return {
     [Symbol.dispose]: function restore(): void {
       for (const name of Object.keys(values,)) {
+        /**
+         Value to put back, absent where none stood.
+         */
         const value = standing.get(name,);
-        if (value === undefined)
-          Reflect.deleteProperty(process.env, name,);
+        if (value === undefined) {
+          Reflect.deleteProperty(
+            process.env,
+            name,
+          );
+        }
         else
           process.env[name] = value;
       }

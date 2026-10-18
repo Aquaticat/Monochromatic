@@ -11,9 +11,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type SelectionRound, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type SelectionBallot, } from '@monochromatic-dev/translation-repair-house-rule';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { SelectionRound, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { SelectionBallot, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   preferenceRate,
   type ProducerStanding,

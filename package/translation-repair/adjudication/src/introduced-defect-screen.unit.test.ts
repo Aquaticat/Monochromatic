@@ -14,7 +14,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { flattenSpace, } from '@monochromatic-dev/translation-repair-house-rule';
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type IntroducedDefectCheckWire,
   type RepairRegion,
