@@ -69,6 +69,22 @@ await describe({
       },
     },),
     it({
+      name: 'preserves record order across bounded batches and restarts after completion',
+      fn: async () => {
+        await withFileSink(async function checkBatches({ sink, readRecords, },): Promise<void> {
+          const records = Array.from({ length: 2_000, }, function record(_, timestamp,) {
+            return { level: 'info' as const, timestamp, message: '世界\n'.repeat(30,), };
+          },);
+          await Promise.all(records.map(function write(record,) {
+            return sink.write(record,);
+          },),);
+          const after = { level: 'info' as const, timestamp: records.length, message: 'after drainage', };
+          await sink.write(after,);
+          expect((await readRecords()).slice(1,),).toEqual([...records, after,],);
+        },);
+      },
+    },),
+    it({
       name: 'serializes reentrant multi-write records without interleaving',
       fn: async () => {
         await withFileSink(async function checkReentrant({ sink, readRecords, },): Promise<void> {
