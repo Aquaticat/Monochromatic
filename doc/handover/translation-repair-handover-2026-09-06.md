@@ -415,10 +415,14 @@ before the other queued work.
     the warm family lint takes 70.93 s against 312 s;
     the family needs 8269 entries and 508 MB.
     The owner chose on 2026-10-18:
-    raise the bounds to 1 GiB and 16384 entries (in progress, tests first);
+    raise the bounds to 1 GiB and 16384 entries
+    (landed: test `dcf2c4886a` red first, fix and docs to `96a615549e`, pushed);
     and investigate whether projects can share one module's analysis,
-    which would fix cold lints and gates too,
-    then propose it in `doc/planning/` before any change (queued after the bound change).
+    which would fix cold lints and gates too.
+    The investigation is `doc/planning/prefer-readonly-parameter-type-shared-analysis.md`:
+    992 files under up to 34 projects have the same analysis in every one.
+    The owner then chose to prototype it in a scratch worktree with a verification mode,
+    results back before anything lands (in progress).
     Delete `w165`'s and `w175`'s scratch `oxlint.no-*.config.ts` files
     and revert `w165`'s plugin edit after the probe.
 5.  The queue the split went ahead of,

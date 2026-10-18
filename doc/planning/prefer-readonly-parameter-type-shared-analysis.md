@@ -121,8 +121,10 @@ How much wall time that saves is not measured;
 building each package's program and walking it remains per project.
 A prototype in a scratch worktree would measure it before any merge.
 
-## Open question for the owner
+## Owner's answer
 
-Whether to prototype this design in a scratch worktree,
+On 2026-10-18 the owner chose to prototype this design in a scratch worktree,
 with the verification mode,
-and bring back the measured cold time and mismatch count before any change lands.
+and to see the measured cold time and mismatch count before any change lands.
+The prototype is in progress;
+its results will be added here.
