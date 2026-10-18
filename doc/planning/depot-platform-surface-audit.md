@@ -550,7 +550,11 @@ an online seed,
 offline target reuse,
 offline registry reuse with a fresh target,
 and changed-flag invalidation.
-No remote Cargo case has run yet.
+Remote build `lskskmk4hn` exercised the empty-cache offline negative control.
+Cargo returned its expected exit 101 in 27 milliseconds,
+with no compiler artifacts and absent registry and target markers.
+The outer guarded build passed in 19,670 milliseconds.
+The online seed and offline reuse/invalidation cases remain pending.
 The actual local prerequisite control started pinned Node `24.22.0`,
 Rust `1.97.1`,
 and Cargo `1.97.1`
