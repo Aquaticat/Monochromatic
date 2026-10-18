@@ -783,7 +783,8 @@ the items after it are the record of 2026-10-05 and older.
     2026-10-18: repoint the two stray mise symlinks (`nightly-2026-10-13`, `nightly-2026-10-17` pointed into scratch
     after stage 1 and the coordinator's verification run; repaired), add `rustc-dev` to the shared nightly, exempt
     `tests/ui` in `monochromatic-lint.config.jsonc`. Stage 2a runs as an agent in the same worktree (root toolchain,
-    lock, config, package clean-shell proof). Stage 2b (queued): IDE `check-cfg` through file-enforcer, `expect`
+    lock, config, package clean-shell proof). Stage 2b (done on branch `feat/ide-closure-lint`; see the bullet
+    "Dylint gate over the IDE"): IDE `check-cfg` through file-enforcer, `expect`
     attributes on the 4 non-let reports, the let-bound site, the 78 conversions, an IDE `lint:closures` task, then
     the fate of the syntax-only rule. The user also asked to look at their oxlint setup; findings: shared config
     `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
