@@ -208,6 +208,14 @@ Cold and restored omissions emit concise `warn` records,
 while caught stacks remain available only at debug level.
 `closeSemanticBridge()` clears every process cache.
 
+The persistent cache is bounded per dependency root:
+at most 1 GiB (1024 MiB) and 16384 entries,
+with the oldest entries evicted first and any entry older than 7 days removed.
+The 36 packages under `package/translation-repair/` need 8269 entries and 508,090,059 bytes between them,
+so smaller bounds made each package's lint evict the others' entries and run cold
+(312 s for the family warm, against 71 s with larger bounds).
+The bounds sit at about twice that measured need.
+
 CLI diagnostics are authoritative because Oxlint's language server does not execute JavaScript plugins.
 
 ## Ownership marker
