@@ -504,6 +504,12 @@ before the other queued work.
     the cache-version TSDoc made consistent (a sheet change moves the key, not the version);
     the pairing version's range `d614a0c1d..29d606470`;
     the Synthetic meter reader for the provider's changed `/quotas` body.
+    Done there (`074599761e` to `dcf55b5eae`, ledger B668 to B671): emphasis in the proof and the edge readers takes
+    the page's definitions; the version TSDoc is consistent; pairing need not move (the pipeline digest retires its
+    records); no public source gives Synthetic's new body, so only a note.
+    A second round there records, under artifact generation 19, the definitions that move the words of a place
+    so planner, apply and reader agree; makes the Synthetic warning name the received keys and types (no values);
+    and corrects a local time the agent labelled UTC (20:58 to 21:00 UTC, not 16:58 to 17:00).
     In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
     external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
     and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
