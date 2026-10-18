@@ -989,7 +989,7 @@ Verification runs use it to type into Search while the scan is still running.
 Release builds and non-Windows builds do not contain the code that reads it, and any other value fails nothing.
 The Windows workflow uses it to drive the startup failure report (`src/startup_failure.rs`):
 with no console and no stderr handle (a double-click start) the program shows a message box,
-otherwise it prints the same text on stderr.
+otherwise it prints the same text on stderr (the `panic` step prints the standard panic message).
 
 ## Typeface
 

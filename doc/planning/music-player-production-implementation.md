@@ -252,9 +252,15 @@ before saying it matches, QAB):
   (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
   `--licenses` flag or in-app view only if the design permits, decision `doc/decision/music-player-third-party-licenses.md`;
-  (d) agent `a9c8a6540c85f6042`, branch `fix/music-player-windows-startup-errors`, worktree `music-player-winerr`: a
-  message for a failed Windows GUI start (no message today) and ANSI escapes gated on a VT-enabled console (arm64
-  runner printed literal ESC characters), proven on the Windows runners with a positive control.
+  (d) branch `fix/music-player-windows-startup-errors`, worktree `/var/mnt/encrypted/temp/agent/music-player-winerr`:
+  FINISHED 2026-10-18 by a Sonnet agent (the Opus agents `a9c8a6540c85f6042` and `a507287f6e2fa8092` died on the
+  limit), main merged into the branch, NOT merged to `main`, no version bump, no release. A failed Windows start now
+  shows a message box when stderr reaches nobody (text in `src/startup_failure.rs`), ANSI colors are gated per console,
+  and a Windows exit abort found on the way is fixed (the Search service threads are joined in `main`, not in a
+  thread-local destructor during process exit). Proven on all three Windows jobs with a positive control (control run
+  38776373884 failed, fix runs passed); the run ids, head commit and the host verification counts are in the Evidence
+  sections of `doc/decision/music-player-windows-gui-subsystem.md`. Not seen: the dialog itself. Next: merge procedure
+  as above, then a patch version bump and release (the same drop runs when a person closes the window of 0.1.4; no run did that).
   (e) agent `abe5d14bb8effe0d8`, branch `fix/music-player-cache-batched-commits`, worktree `music-player-cachebatch`:
   the per-row fsync in `DecisionCache::put` (10,073 fsync calls for 10,000 rows, 27 to 99 s cold analysis);
   (f) agent `aca4a721c4f906b9d`, branch `fix/music-player-android-large-library`, worktree `music-player-andlarge`:

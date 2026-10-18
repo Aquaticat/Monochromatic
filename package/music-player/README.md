@@ -607,7 +607,8 @@ so its log lines are not shown anywhere.
 When such a start fails (the program cannot open its connection to the desktop,
 cannot create its window, its window stops working, or it hits an internal error),
 a Windows message box names the step that failed, what Windows reported, and what you can do.
-Started from a terminal, the program prints the same text there instead and shows no box.
+Started from a terminal, the program prints the same text there instead and shows no box
+(after an internal error it prints the standard panic message).
 Log lines are colored only on a console that shows the colors;
 redirected to a file or a pipe, they are plain text.
 The program takes one optional folder or file to open: `music-player.exe C:\Music`.
