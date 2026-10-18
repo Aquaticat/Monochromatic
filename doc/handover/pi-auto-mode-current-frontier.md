@@ -136,6 +136,17 @@ the probe shares their false matcher without changing distinct occurrences or na
 A separate faithful replay removes only private diagnostic module rewrites,
 to check whether the recorder's stack tracing contributes to the heap failure.
 
+The clean replay also exits 134,
+so removing private diagnostic rewrites is insufficient.
+The private input-view probe lowers the existing 600-input fixture's retained heap to 2,753,896 bytes;
+this is not a complete-session repair and is not applied to production.
+An inspector sampling profile at 20,000 original receipts retains its explicit 2,097,168-byte
+positive control and attributes the largest sampled allocation group to queued file-log writes.
+The sampled profile and its paths are private incident artifacts.
+A separate configured-host control changes only the bundled logger's append completion to synchronous I/O,
+preserving all records and native callbacks.
+Production remains unchanged while that causal control runs.
+
 Next actions:
 
 - Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
