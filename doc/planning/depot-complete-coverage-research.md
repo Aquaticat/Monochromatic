@@ -503,6 +503,24 @@ The retained evidence records both hashes;
 the cause is not established,
 and source identity is not being promoted into a bit-reproducibility claim.
 
+The parent consumed the exact second-run pair on a private headful API 37,
+`x86_64` device using emulator `37.2.12` and host GPU rendering.
+Its actual page size was 16,384 bytes.
+APK hashes and installation passed,
+the invented FLAC/Opus/MP3 fixture rows were indexed,
+and `MainActivity` became the actual top-resumed activity.
+The frozen source's 4 instrumentation Kotlin files declare 16 cases;
+the source-derived catalog matched all 16 executed identities.
+Of those,
+14 passed,
+2 failed,
+and zero were skipped.
+The runner completed normally and the parent retained the raw failures and verified cleanup.
+The public device receipt and exact failure identities are pending incorporation.
+These are consumer assertion failures,
+separate from successful APK assembly and host-JVM tests.
+The newer main checkout's 3 additional instrumentation classes are outside the frozen cohort.
+
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
 [android-receipts]: depot-complete-coverage-android-receipts.json.gz
 
@@ -557,7 +575,8 @@ and workflow name `Research remaining Linux Node quality and build graph`.
 
 The active queue remains independently verifiable:
 
-- Reconcile the parent's actual device consumer with the source-bound APK pair.
+- Incorporate the parent's public receipt for the completed source-bound device consumer,
+  preserving its 2 failed assertions and the current-main source drift.
   Investigate the measured engine/Turso byte differences before making any reproducible-build claim.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
