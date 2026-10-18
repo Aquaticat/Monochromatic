@@ -92,15 +92,29 @@ age = "latest"
 # `rustup component add <comp> --toolchain nightly`:
 #   rust-src    -- std sources for IDE code insight (RustRover / IntelliJ Rust).
 #   llvm-tools  -- rustup alias for llvm-tools-preview; provides llvm-cov / llvm-profdata for fuzz coverage.
+#   rustc-dev   -- rustc's own crates (rustc_driver, rustc_middle, ...). A Dylint lint library links them, so
+#                  package/linter/monochromatic-lint-closure cannot compile without it. Rustup lists the component under
+#                  its own name plus the host triple (rustc-dev-x86_64-unknown-linux-gnu) and has no rename for it, so
+#                  Mise's component comparison matches it and starts no reinstall loop.
 # The alias prevents Mise's false missing-component loop; see
 # doc/troubleshooting/mise-rust-preview-component-reinstall.md.
 # ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
 # The Android ABIs of the music player's native library (package/music-player/android-app/rust, built by cargo-ndk).
 # Without these targets a floating newest nightly cannot build it, and mise forces RUSTUP_TOOLCHAIN to that nightly.
 # mise adds missing targets to an installed toolchain on the next `mise install`.
-rust = { version = "nightly", components = "clippy,rust-src,llvm-tools", targets = "aarch64-linux-android,x86_64-linux-android" }
+rust = { version = "nightly", components = "clippy,rust-src,llvm-tools,rustc-dev", targets = "aarch64-linux-android,x86_64-linux-android" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
+
+# Dylint runs rustc-driver lints from dynamic libraries (package/linter/monochromatic-lint-closure,
+# doc/decision/rust-closure-lint-dylint.md). `cargo-dylint` is the `cargo dylint` subcommand that builds and loads a
+# library into a driver for the toolchain that built it; `dylint-link` is the linker the library's .cargo/config.toml
+# names, which writes the toolchain-qualified library copy Dylint looks for. Not pinned: mise.lock records the resolved
+# versions. Both are lockstep with the package's dylint_linting and dylint_testing crates, so a major Dylint release
+# means bumping those crates and rerunning the package tests. Both publish signed prebuilt Linux archives (checked with
+# `cargo binstall --dry-run` for 6.2.0), which the cargo backend fetches through the cargo-binstall above.
+"cargo:cargo-dylint" = "latest"
+"cargo:dylint-link" = "latest"
 
 # Test runner for every Rust package (replaces `cargo test`). nextest gives a
 # per-test process isolation model, faster parallel scheduling, and clearer
