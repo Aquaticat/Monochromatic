@@ -1078,3 +1078,17 @@ and functional consumers;
 they are not a summed unit-test denominator.
 An empty Rust-lane execution list does not classify a separately owned GUI or Android package as unexecuted.
 The derivation records no new test execution or cloud allocation.
+
+## Materialized source archive availability
+
+The benchmark and same-image audit materialized the frozen export inside their ephemeral VM.
+The qualified archive is `602,992,640` bytes with SHA-256
+`47698c6be07012ab111e7586c1fd23d8b1f610ca5d3f570e53147da9a30ad368`.
+Its `13,860` members include `1,464` content-addressed LFS materializations.
+The raw receipts retain member hashes;
+the full archive was not uploaded as a benchmark artifact.
+A hidden and ignored-file-inclusive tar inventory of the retained Rust controller
+found no full host archive to hand to another owner.
+The receipt ZIPs therefore do not supply a reusable materialized source tar.
+The [Git archive input-identity contract](../troubleshooting/git-archive-lfs-input-identity.md)
+remains the reconstruction and admission boundary.

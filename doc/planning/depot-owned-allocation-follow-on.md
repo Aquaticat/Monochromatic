@@ -259,3 +259,8 @@ Replacing the current archive does not remove the original bytes from Git histor
 No history rewrite occurred.
 The exact superseded desktop interval remains retained,
 and allocation arithmetic is unchanged.
+The retained verification control joins `711` selected scalar values,
+`62` pre-seal source pointers,
+and all five private-original hashes.
+Its unauthenticated public run request also matches the actor and triggering-actor identities.
+The current archive includes that compact control as its `35th` source record.

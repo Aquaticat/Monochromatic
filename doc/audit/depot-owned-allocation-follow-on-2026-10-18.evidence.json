@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
-  "recordedAt": "2026-10-18T17:07:41.638Z",
+  "recordedAt": "2026-10-18T17:13:13.074Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
     "record": "inputs/doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json@d265c963dbb0c95c",
@@ -2371,10 +2371,10 @@
   "actualVmBillingIntervalsObserved": false,
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-follow-on-2026-10-18.sources.json.gz",
-    "bytes": 386655,
-    "sha256": "432995e41d635dc4a15b4934259a2da6cbaf06159c400404446e73251e720999",
-    "uncompressedBytes": 3120903,
-    "records": 34
+    "bytes": 387034,
+    "sha256": "a7a144cce9c0798f5e9a578e23d153f0375772b59fd21dde61edce2beacb8ae2",
+    "uncompressedBytes": 3121960,
+    "records": 35
   },
   "nominalKnownProviderWindowListProxyTotal": {
     "usd": "0.6041",
@@ -2660,7 +2660,13 @@
             "/metadata/head_commit/author/email"
           ]
         },
-        "gitHistoryRemoved": false
+        "gitHistoryRemoved": false,
+        "publicActorControl": {
+          "url": "https://api.github.com/repos/Aquaticats/Monochromatic/actions/runs/39140975786",
+          "httpStatus": 200,
+          "authorizationHeaderSent": false,
+          "actorAndTriggeringActorIdsMatchPublicResponse": true
+        }
       },
       {
         "originalRecord": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
@@ -2716,6 +2722,24 @@
     "gitHistoryRemoved": false,
     "allocationArithmeticChanged": false,
     "nonpublicActorEmailObserved": false,
-    "credentialOrSignedUrlMaterialFound": false
+    "credentialOrSignedUrlMaterialFound": false,
+    "verification": {
+      "record": "review/provider-projection-verification@14a7a5af400c2947",
+      "pointer": "",
+      "recordedAt": "2026-10-18T17:10:24.543Z",
+      "passed": true,
+      "selectedValueJoins": 711,
+      "sourcePointerJoins": 62,
+      "privateOriginalHashesVerified": 5,
+      "publicActorControl": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/actions/runs/39140975786",
+        "httpStatus": 200,
+        "authorizationHeaderSent": false,
+        "actorAndTriggeringActorIdsMatchPublicResponse": true
+      },
+      "nonpublicActorEmailObserved": false,
+      "credentialSignedUrlOrConnectionMaterialFound": false,
+      "historyRewritePerformed": false
+    }
   }
 }
