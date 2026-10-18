@@ -7,7 +7,7 @@ on:
       phase:
         type: choice
         required: true
-        options: [off, cold, seed, warm, branch]
+        options: ['off', cold, seed, warm, branch]
       scope:
         type: string
         required: true
