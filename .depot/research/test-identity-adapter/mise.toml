@@ -396,3 +396,99 @@ if (!readFileSync(rawPath).equals(raw)) throw new IdentityAdapterFailure('Raw re
 console.log(JSON.stringify({ passed: true, researchOnly: true, rawSha256: receipt.rawSha256,
   derivedSha256: receipt.derivedSha256, mappedCases: receipt.mappings.length }));
 '''
+
+[tasks.verify-report-mapping]
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { readFileSync, writeFileSync, mkdtempSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { spawnSync, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { strict as assert } from 'node:assert';
+const input = process.env.ADAPTER_CONTROL_INPUT_DIRECTORY;
+if (!input) throw new Error('An explicit owned control-input directory is required');
+const raw = readFileSync(join(input, 'seed.xml'), 'utf8');
+const selected = [...raw.matchAll(/<testcase\b[^<>]*\bname="([A-Za-z_0-9:]+)"/gu)].map(value => value[1]);
+assert.equal(selected.length, 34);
+const firstTag = /<testcase\b[^<>]*\/>/u.exec(raw)[0];
+const first = selected[0];
+const second = selected[1];
+const hash = value => createHash('sha256').update(value).digest('hex');
+const scenarios = [
+  { name: 'original-seed', raw, selected, status: 0 },
+  ...[0, 1].map(index => {
+    const xml = readFileSync(join(input, 'shard-' + index + '.xml'), 'utf8');
+    return { name: 'original-shard-' + index, raw: xml,
+      selected: [...xml.matchAll(/<testcase\b[^<>]*\bname="([A-Za-z_0-9:]+)"/gu)].map(value => value[1]), status: 0 };
+  }),
+  { name: 'attribute-order', raw: raw.replace(firstTag, firstTag.replace(
+    'name="' + first + '" classname="monochromatic-git-policy-cli"',
+    'classname="monochromatic-git-policy-cli" name="' + first + '"')), selected, status: 0 },
+  { name: 'duplicate-selection', raw, selected: [...selected.slice(1), second], status: 1 },
+  { name: 'unknown-selection', raw, selected: ['research_absent_case_20261018', ...selected.slice(1)], status: 1 },
+  { name: 'selection-quote-boundary', raw, selected: ['x" injected="y', ...selected.slice(1)], status: 1 },
+  { name: 'selection-newline-boundary', raw, selected: ['x\ny', ...selected.slice(1)], status: 1 },
+  { name: 'duplicate-case', raw: raw.replace('name="' + first + '"', 'name="' + second + '"'), selected, status: 1 },
+  { name: 'unknown-report-case', raw: raw.replace('name="' + first + '"', 'name="research_absent_case_20261018"'), selected, status: 1 },
+  { name: 'cross-binary-class', raw: raw.replace('classname="monochromatic-git-policy-cli"', 'classname="other-binary"'), selected, status: 1 },
+  { name: 'duplicate-attribute', raw: raw.replace('classname="monochromatic-git-policy-cli"',
+    'classname="monochromatic-git-policy-cli" classname="monochromatic-git-policy-cli"'), selected, status: 1 },
+  { name: 'attribute-injection', raw: raw.replace('classname="monochromatic-git-policy-cli"',
+    'classname="monochromatic-git-policy-cli" injected="value"'), selected, status: 1 },
+  { name: 'negative-duration', raw: raw.replace(/(<testcase\b[^<>]* time=")[^"]+/u,
+    (all, prefix) => prefix + '-1'), selected, status: 1 },
+  { name: 'missing-case', raw: raw.replace(firstTag, ''), selected, status: 1 },
+  { name: 'entity-declaration', raw: raw.replace('<testsuites ', '<!DOCTYPE testsuites [<!ENTITY probe "x">]><testsuites '), selected, status: 1 },
+  { name: 'extra-root-markup', raw: raw + '<unowned/>', selected, status: 1 },
+  { name: 'unexpected-text', raw: raw.replace('</testsuite>', 'unowned-text</testsuite>'), selected, status: 1 },
+  { name: 'non-ascii', raw: raw.replace('nextest-run', 'nextest-rún'), selected, status: 1 },
+  { name: 'oversized', raw: ' '.repeat(1048577), selected, status: 1 },
+];
+const only = process.env.ADAPTER_MUTANT_ONLY;
+const chosen = only ? scenarios.filter(value => value.name === only) : scenarios;
+assert(chosen.length);
+const output = mkdtempSync(join(input, 'mapping-control-'));
+const rows = [];
+for (const scenario of chosen) {
+  const base = join(output, scenario.name);
+  const rawPath = base + '.raw.xml';
+  const selectionPath = base + '.selection.json';
+  const derivedPath = base + '.derived.xml';
+  const mappingPath = base + '.mapping.json';
+  writeFileSync(rawPath, scenario.raw);
+  writeFileSync(selectionPath, JSON.stringify(scenario.selected));
+  const result = spawnSync('mise', ['run', '//.depot/research/test-identity-adapter:map-report'], {
+    cwd: process.cwd(), env: { ...process.env, ADAPTER_RAW_PATH: rawPath, ADAPTER_SELECTION_PATH: selectionPath,
+      ADAPTER_DERIVED_PATH: derivedPath, ADAPTER_MAPPING_PATH: mappingPath },
+    encoding: 'utf8', timeout: 30000, maxBuffer: 1048576,
+  });
+  const row = { name: scenario.name, expectedStatus: scenario.status, status: result.status,
+    rawSha256: hash(scenario.raw), stdoutSha256: hash(result.stdout ?? ''), stderrSha256: hash(result.stderr ?? '') };
+  rows.push(row);
+  writeFileSync(join(output, 'controls.json'), JSON.stringify(rows, null, 2) + '\n');
+  assert.equal(result.status, scenario.status, scenario.name + ': ' + result.stderr);
+  assert.equal(readFileSync(rawPath, 'utf8'), scenario.raw);
+  if (scenario.status === 0) {
+    const expected = scenario.raw.replace(/<testcase\b[^<>]*\/>/gu, tag => {
+      const name = /\bname="([A-Za-z_0-9:]+)"/u.exec(tag)[1];
+      return tag.replace(/classname="[^"]*"/u, 'classname="' + name + '"');
+    });
+    assert.notEqual(expected, scenario.raw);
+    const derived = readFileSync(derivedPath, 'utf8');
+    assert.equal(derived, expected);
+    const mapping = JSON.parse(readFileSync(mappingPath, 'utf8'));
+    assert.equal(mapping.rawSha256, hash(scenario.raw));
+    assert.equal(mapping.derivedSha256, hash(derived));
+    assert.deepEqual(mapping.mappings.map(value => value.derivedClassname).sort(), [...scenario.selected].sort());
+  } else {
+    assert.equal(existsSync(derivedPath), false);
+    assert.equal(existsSync(mappingPath), false);
+  }
+}
+const record = { passed: true, source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  scenarios: rows.length, positiveControls: rows.filter(value => value.status === 0).length,
+  rejectedControls: rows.filter(value => value.status === 1).length, output, rows };
+writeFileSync(join(output, 'result.json'), JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+'''
