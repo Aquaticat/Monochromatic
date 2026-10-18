@@ -36,7 +36,6 @@ RUN --mount=type=secret,id=github_token \
         TOKEN=$(cat /run/secrets/github_token) \
         && git config --global url."https://${TOKEN}@github.com/".insteadOf "https://github.com/" ; \
     fi
-    && make install \
 
 # package/dev-script/file-enforcer/generator/Containerfile:72
 RUN git config --global --unset-all url."https://github.com/".insteadOf 2>/dev/null || true
