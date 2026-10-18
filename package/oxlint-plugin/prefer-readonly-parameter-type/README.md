@@ -149,6 +149,11 @@ repository-relative path,
 and line,
 not a semantic handle tied to a replaceable project object.
 Default-library and external-library declarations never become editable producer origins.
+A declaration is workspace source when its real path lies outside every `node_modules` directory,
+whatever the program's external-library flag says.
+A workspace package reached through a `node_modules` symbolic link is flagged as an external-library module,
+yet its type and callable declarations still name the producer to edit,
+so it gets the same unique-origin guidance as a declaration in the importing project.
 Distinct producers on one source line retain distinct full-offset identities.
 Local arrays,
 object literals,
@@ -196,7 +201,7 @@ When several split rules are enabled in one Oxlint worker,
 the first rule computes callable and parameter evidence,
 and sibling reporters reuse the completed immutable result.
 Failed or partial computations are never cached.
-Schema-9 persistent entries validate exact source,
+Schema-10 persistent entries validate exact source,
 module,
 semantic call,
 compiler-option,
@@ -204,6 +209,13 @@ declaration-surface,
 and lockfile identities across later processes.
 They also persist validated source-local callable omissions and every distinct bounded reason category,
 so a warm process preserves the cold process's narrow fail-closed state and explains why coverage narrowed.
+A source whose scan applied the effect of an installed package's shipped implementation also persists the omissions
+met inside that implementation,
+one record per implementation source with its count and reason categories.
+Its cached summaries already carry the applied effect,
+so a restored source never opens the implementation again,
+and the record is what lets the restore report what the cold scan reported.
+Each such source is reported once per process.
 Cold and restored omissions emit concise `warn` records,
 while caught stacks remain available only at debug level.
 `closeSemanticBridge()` clears every process cache.
@@ -293,7 +305,8 @@ so a source reaching one is never written as a shared entry.
 
 `PRPT_VERIFY_SHARED=1` analyses every shared hit afresh and compares callable summaries,
 omitted callables,
-and omission reasons with the entry that was read.
+omission reasons,
+and omissions inside installed packages with the entry that was read.
 Each difference is logged as an error and counted as a mismatch.
 `PRPT_VERIFY_SHARED_DIR=<directory>` makes each process write a counter file named `<pid>-<thread>.json`
 (eligible keys, shared writes, invalid entries, misses, hits, cross-project hits, verified hits, mismatches,
