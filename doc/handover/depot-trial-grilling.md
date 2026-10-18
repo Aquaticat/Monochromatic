@@ -217,14 +217,20 @@ and dedicated branch `research/depot-gnu-owner-correction-20261018`.
 Its single standard public Windows job has a 30-minute cap and 27-minute inner bound,
 with zero nominal public compute and finite watcher `11329` owning its 40-minute campaign guard.
 Job `117747819418` ran from 18:00:26 to 18:10:52 UTC (626 seconds).
-Coverage is collecting the actual bodies before assigning execution credit.
+Coverage has sealed the actual GNU bodies in
+`doc/audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz`:
+2046665 bytes,
+SHA-256 `19e672e8a099c63b4a070e4619f7c6bea8b844629d80a91cb5f8f88b4c7c2372`.
+Its 17 derived normalized text members retain original hashes;
+original ZIP,
+binary and media payloads remain private.
 The collected GNU outcomes report 1494 distinct binary/case identities:
 1492 pass and two fail,
 with one summary-only skip.
 The unreadable-session-path/logging failure overlaps MSVC;
 `watch::tests::a_burst_of_changes_requests_one_rescan` is an additional GNU assertion failure.
 Its cause and repeat failure rate remain unmeasured.
-Coverage seals the original calls and diagnostics before final report integration.
+The original calls and diagnostics retain their separate source identities.
 The parent also requests a concrete matched Depot-Windows GNU proposal,
 preserving owner source/argv/tool setup and adding actual OS/CPU/memory metadata probes.
 Its proposed scope is one four-CPU job with a 20-minute cap (USD 0.32 nominal),
@@ -265,7 +271,6 @@ The three-minute server job and USD 0.036 two-attempt guard remain unchanged.
 The 210-second local point starts cleanup;
 there is no independent whole-controller hard backstop.
 Runtime outcomes use a successor receipt so the admitted proposal/source seal stays immutable.
-No runtime credit exists before execution.
 Platform durably queues the read-only GitHub check-runs/commit-status consumer comparison in
 `doc/planning/depot-native-ssh-runtime-research.md` at `0567953a15`.
 The positive control is the owned GitHub graph source/run;
@@ -285,7 +290,12 @@ two-GiB,
 No owner task,
 credential,
 installation or upgrade is involved.
-Rust is sealing exact binary/source/arguments and the existing troubleshooting update.
+Rust sealed exact binary/source/arguments and the existing troubleshooting update at `a9541b020c`:
+`doc/audit/depot-mise-locked-affected-2026-10-18.evidence.json`,
+SHA-256 `37bd8779e0046a9eab9c25d22f6c4f293f0c059083a3c5d502bef486fa4b5841`.
+Its 16 source-body,
+seven outcome and four deciding source-line joins pass,
+with targeted Markdown and actual rendered-section checks.
 
 Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.

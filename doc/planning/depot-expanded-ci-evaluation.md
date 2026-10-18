@@ -209,6 +209,18 @@ These measurements do not establish why the requested and observed Mac resources
 or a fair native-platform performance ratio
 ([retained environment observations](../audit/depot-current-host-case-comparator-controls-2026-10-18.evidence.json)).
 
+The corrected public Windows GNU owner runs 1494 distinct binary/case identities:
+1492 pass and two fail,
+with one separate summary-only skip.
+The failures include the unreadable-session-path/logging case and
+`watch::tests::a_burst_of_changes_requests_one_rescan`.
+Repeated final-failure lines are not extra executed cases.
+The original duplicate-argument adapter ran zero bodies and retains no test credit;
+the corrected result preserves unchanged source assertions.
+The extra GNU watch failure's cause and repeat rate remain unmeasured,
+and its matched Depot target is still proposed
+([retained GNU identities and original-member hashes](../audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz)).
+
 ### Execution infrastructure
 
 Native orchestration needs explicit event and check ownership,
@@ -643,6 +655,11 @@ generated-file and producer influences.
 Its static import inventory is not yet a validated production change selector.
 The existing [Mise selector investigation](../troubleshooting/mise-affected-workspace-cycles.md)
 qualifies the workspace-cycle rejection and pnpm's working Node reverse closure.
+The actual locked Mise 2026.10.9 binary also rejects the same frozen workspace cycle,
+after acyclic changed-producer/development-consumer and successful empty-selection controls.
+The offline probe preserves all 419 authored metadata files;
+it does not execute application owners or qualify the full locked CI bootstrap
+([locked-version source and runtime receipt](../audit/depot-mise-locked-affected-2026-10-18.evidence.json)).
 That Node metadata result still lacks Cargo/Gradle,
 global configuration,
 deleted-package membership and artifact-consumer ownership.
