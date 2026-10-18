@@ -734,6 +734,8 @@ class RustEngine(context: Context) : AudioEngine {
         /** Number of this load; a later load makes every answer to this one stale. */
         val generation: Int = ++loadGeneration
         pendingLoad = PendingLoad(generation = generation, uri = uri, play = play)
+        // A failure of an older queued load belongs to a replaced request from here on, queued or not.
+        queuedLoads.requested()
         descriptorOpener.open(uri) { outcome ->
             poller.post { finishLoad(generation = generation, outcome = outcome) }
         }

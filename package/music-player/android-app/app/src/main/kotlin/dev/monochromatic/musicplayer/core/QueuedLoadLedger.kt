@@ -59,17 +59,30 @@ class QueuedLoadLedger {
     /** URI of the most recently queued load, or null before the first. */
     private var latestUri: String? = null
 
+    // What:     `private var latestRequestQueued: Boolean` says whether the newest load request reached the native
+    //           engine.
+    // Why:      A request can end before the native call, so it is never queued; the failure of the load queued
+    //           before it then still equals the queued count, although the user has asked for something newer.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private latestRequestQueued = true;
+    // ```
+    /** Whether the newest requested load was queued; false between [requested] and the [queued] that follows it. */
+    private var latestRequestQueued: Boolean = true
+
     // What:     `fun queued(uri: String)` records one more load handed to the native engine.
     // Why:      The count keeps pace with the worker's own count of the loads it handles.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // queued(uri: string): void { this.queuedCount += 1; this.latestUri = uri; }
+    // queued(uri: string): void { this.queuedCount += 1; this.latestUri = uri; this.latestRequestQueued = true; }
     // ```
     /** Records that the load of [uri] was queued with the native engine. */
     fun queued(uri: String) {
         queuedCount += 1L
         latestUri = uri
+        latestRequestQueued = true
     }
 
     // What:     `fun requested()` records that a newer load was asked for and has not reached the native engine yet.
@@ -78,22 +91,24 @@ class QueuedLoadLedger {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // requested(): void { }
+    // requested(): void { this.latestRequestQueued = false; }
     // ```
     /** Records that a load was requested; the next [queued] call says it reached the native engine. */
     fun requested() {
+        latestRequestQueued = false
     }
 
     // What:     `fun failureToReport(failedLoad: Long): String?` returns the URI to report, or null.
-    // Why:      A failure number of zero means none failed, a number already seen was handled, and a number below
-    //           the count of queued loads names a load that a newer request has replaced.
+    // Why:      A failure number of zero means none failed, a number already seen was handled, a number below
+    //           the count of queued loads names a load that a newer request has replaced, and so does the count
+    //           itself while the newest request has not been queued.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // failureToReport(failedLoad: number): string | null {
     //   if (failedLoad <= this.reportedFailure) return null;
     //   this.reportedFailure = failedLoad;
-    //   return failedLoad === this.queuedCount ? this.latestUri : null;
+    //   return failedLoad === this.queuedCount && this.latestRequestQueued ? this.latestUri : null;
     // }
     // ```
     /**
@@ -106,6 +121,6 @@ class QueuedLoadLedger {
             return null
         }
         reportedFailure = failedLoad
-        return if (failedLoad == queuedCount) latestUri else null
+        return if (failedLoad == queuedCount && latestRequestQueued) latestUri else null
     }
 }
