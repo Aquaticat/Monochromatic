@@ -1339,6 +1339,11 @@ No completion or interview-readiness conclusion is made.
 
 ## Native SSH acceptance proposal
 
+A local reseal was interrupted when its read-only lookup adapter treated a JSON `null` as an array.
+The source archive was written before that validation failed;
+its public metadata requires the pending scoped repair.
+No SSH job was dispatched by this preflight failure.
+
 The [SSH proposal receipt](../audit/depot-native-ssh-acceptance-2026-10-18.evidence.json)
 and [source archive](../audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz)
 separate source review and local controls from provider execution.
