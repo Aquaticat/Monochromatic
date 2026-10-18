@@ -28,14 +28,14 @@ Rounding the protected end to `0x8000` does not touch that later writable region
 Current Bionic source corroborates why a modulus-only assertion is insufficient.
 In the external `aosp-mirror/platform_bionic` checkout at
 `731631f300090436d7f5df80d50b6275c8c60a93`,
-`linker/linker_phdr.cpp:1293` finds the LOAD with the same starting virtual address:
+`linker/linker_phdr.cpp:1294` finds the LOAD with the same starting virtual address:
 
 ```cpp
 // External Bionic: linker/linker_phdr.cpp
 if (phdr->p_type == PT_LOAD && phdr->p_vaddr == relro_phdr->p_vaddr) {
 ```
 
-At `linker/linker_phdr.cpp:1327`,
+At `linker/linker_phdr.cpp:1326`,
 the linker refuses to extend protection when RELRO does not cover the entire LOAD:
 
 ```cpp
@@ -47,7 +47,7 @@ if (relro_phdr->p_memsz < phdr->p_memsz) {
 
 The adjacent comment specifically warns that comparing page-rounded sizes instead
 could incorrectly protect non-relocation writable data.
-At `linker/linker_phdr.cpp:1377`,
+At `linker/linker_phdr.cpp:1376`,
 the normal protection path rounds the touched pages before calling `mprotect`:
 
 ```cpp
@@ -127,13 +127,24 @@ There is no additive upstream bug claim to send.
 
 The required filing criteria were considered separately:
 
-- The observed failure belongs to our research collector.
-- Android's public documentation already describes the exception.
-- Current Bionic source implements the relevant distinction.
-- Correcting our classifier restores artifact collection with negative controls intact.
-- No upstream behavior change is needed for this measured layout.
-- An upstream patch prototype is therefore inapplicable;
-  the actual prototype and successful rerun changed our disposable collector only.
+- Upstream fault:
+  no.
+  The observed failure belongs to our research collector.
+- Upstream fixability:
+  no upstream change is needed;
+  current Bionic already implements the relevant distinction.
+- Supported use case:
+  yes,
+  Android's public documentation explicitly covers 16 KB layouts and the exception.
+- Contribution acceptance:
+  not determined for an issue filing,
+  because no upstream defect or requested contribution was established.
+- Maintainer willingness:
+  no rejection is inferred from the narrow empty mirror search;
+  the requested behavior is already documented and implemented.
+- Minimal fix prototype:
+  an upstream patch is inapplicable.
+  The actual local prototype corrected our classifier and passed the negative controls and rerun.
 
 The retained filing artifact is explicitly unsuitable for submission:
 
@@ -153,7 +164,7 @@ its retained receipt records the false assertion and exact ELF intervals.
 
 Suggested fix: correct the disposable research classifier to admit the
 dedicated-LOAD case while rejecting shared writable data and protection overlap.
-Workflow8256d8bb9d and run1jxc80q7q7 implement and verify that local correction.
+Workflow 8256d8bb9d and run 1jxc80q7q7 implement and verify that local correction.
 ~~~
 
 [page-sizes]: https://developer.android.com/guide/practices/page-sizes
