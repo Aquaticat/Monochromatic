@@ -322,8 +322,20 @@ before the other queued work.
     so a cache version set before the split reports the move commit as its setter
     (add the old `src` path to the pathspec);
     the census README is not updated for the family reading;
-    `runBuiltCommand` and `runProbeOver` gained a `builtDirectory` option that `w168` may also add
-    in another shape;
+    `runBuiltCommand` and `runProbeOver` gained a `builtDirectory` option.
+    `w168` finished (`32171e7931`,
+    `8a55a9295a`,
+    `161d80b27a`; its 53 test files pass) with a required `packageEntry` instead,
+    and its first commit conflicts with `w169`'s.
+    A Sonnet agent in `w173` cherry-picks it onto the branch head toward the required form,
+    converts `w169`'s callers,
+    regenerates the lockfile,
+    and fixes the old task paths in refusals and the audit's pre-split history (tests first).
+    `w168` added test-only workspace cycles
+    (adjudication's tests start runners from bench, coverage-census, probe, run and slice-cache;
+    run's from probe; probe's from bench):
+    after the merge,
+    decide whether those tests move to the packages whose runners they start;
     oxlint errors in `bench`, `probe` and `run` from the scaffolding.
     `source-scan` and `test-fixture` export `./ts` to an `src/index.ts` neither has;
     the `source-scan` README describes its readers as mid-move.
