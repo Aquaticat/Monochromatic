@@ -592,7 +592,7 @@ as a reader sees it: below), so `so`
 
  @param page - the English of the whole page the haystack belongs to and where the haystack starts in it, which the proof of an apostrophe reads; the haystack alone is the page where absent
 
- @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a caller that holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a slot was read with (generation 18); read from `page` where absent
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a caller that holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a place was read with (generation 18 for a slot, 19 for the words); read from `page` where absent, and handed to the proof of the apostrophe beside the words as well as to the word test
 
  @returns That the words stand nowhere, the offsets of the one span they name
  in the English, or that they stand more than once and no mark evidence
@@ -707,6 +707,7 @@ export function locateWords(
         haystack,
         ...bare,
         ...((page === undefined) ? {} : { page, }),
+        ...((given === undefined) ? {} : { definitions: given, }),
       },)
       : bare),
   };

@@ -448,6 +448,12 @@ export function markReadingsInEnglish(
 
  @param page - the English of the whole page and where the haystack starts in it; the haystack alone is the page where absent
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) the proof reads the English with, for a caller that
+ holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a place was read with (generation
+ 19). A reference in the English whose definition stands in another slice is plain text without them, and the delimiters of its emphasis
+ pair as plain text does, so a mark after closing emphasis reads as a leading mark where the page reads it as a joint of its word (n173);
+ an English that is the page itself holds its definitions already and needs none given
+
  @returns The offsets of the span, the words and the proven apostrophes beside them
 
  @throws {@link import('./consistency-invariant-error.ts').ConsistencyInvariantError} when the page is too short to hold the haystack at its offset
@@ -463,11 +469,13 @@ export function withProvenApostrophes(
     start,
     end,
     page,
+    definitions = '',
   }: {
     readonly haystack: string;
     readonly start: number;
     readonly end: number;
     readonly page?: PageEnglish;
+    readonly definitions?: string;
   },
 ): {
   readonly start: number;
@@ -507,7 +515,10 @@ export function withProvenApostrophes(
   const {
     trailing,
     leading,
-  } = provenApostrophesInEnglish({ english: text, },);
+  } = provenApostrophesInEnglish({
+    english: text,
+    definitions,
+  },);
   /**
    Where the character before the words stands on the page, none where a page-assembly pass changed the character there.
    */
