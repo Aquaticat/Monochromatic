@@ -205,6 +205,37 @@ existing planted controls and seed immutability remain in the owned queue.
 
 ## Owned work queue
 
+The tool-preparation run `jf0c9llb1v` finished with the same 415 passing Nextest cases,
+1 skipped and 416 enumerated,
+and retained a real executable transport artifact.
+Its separate consumer recovery stopped at the harness's fixed `debug/deps` directory lookup,
+before compilation.
+The [compiler metadata trace](../troubleshooting/rustc-full-metadata-artifact-consumer.md)
+keeps that failure distinct from the archive-only compiler diagnostic.
+Tool preparation and source/synthetic-secret sealing passed;
+the resulting native snapshot is `tools-r3-fuzz-codex`,
+manifest `sha256:1c2b469a9d7fae8bc364e6392f771c28565647a04c40847f345bc140dfce4e88`.
+Its fresh ordinary consumer remains a separate required check.
+
+The completed run adds a conservative USD 0.1148 timestamp proxy,
+bringing the cumulative proxy to USD 1.6068.
+The next ordinary library consumer reserves USD 0.18 at 4 CPU,
+16 GB and 15 minutes,
+for a forecast of USD 1.7868.
+It will discover the actual archive,
+full metadata and dependency directories from Cargo's compiler-artifact JSON,
+execute the unchanged public processor consumer,
+and verify prepared tool identities plus the image's synthetic exclusion controls.
+This focused profile does not rerun the already measured 415-case linter suite.
+
+The exact core `wg-quicker-exempt` ELF was consumed in routing run `39118628603`:
+routing reports 44 passing owning invocations,
+including the actual default tests.
+The one-object signed URL was retained only in an owned mode-0600 file,
+then removed after consumption.
+Routing verified exact temporary Actions-secret deletion with HTTP 404.
+Its per-case assertion and artifact bindings belong to the separate routing evidence.
+
 - Classify every standalone manifest,
   its actual Mise owners,
   source/dependency/toolchain hashes,
