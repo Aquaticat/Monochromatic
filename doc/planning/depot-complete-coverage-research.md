@@ -452,6 +452,42 @@ and command logs accompany the APKs for the parent's headful device consumer.
 
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
 
+## Remaining Node static and build campaign
+
+The next bounded wave targets the 122 active Node package roots outside `package/module`.
+Its frozen command plan selects 109 owning type-check tasks,
+106 owning Oxlint tasks,
+and 82 reviewed Node build entry points.
+Shared module and Oxlint prerequisites add 42 command invocations to each shard.
+The four shards therefore schedule 465 invocations,
+with at most one shard running at a time.
+Each uses `depot-ubuntu-24.04-8`,
+with a 15-minute job limit,
+90-second per-task bound,
+and a nine-minute campaign limit.
+This leaves room for the concurrent Android worker within this lane's 16-CPU/64-GB ceiling.
+The maximum published compute-rate exposure for the four shards is USD 1.44,
+before plan credits.
+
+The review follows actual `build` and `build:js` fanout templates and every declared build child,
+not just aggregate names.
+`package/config/pnpr:build` also selects its image build,
+so this wave invokes its existing `build:js` owner instead.
+The reviewed custom builds include Electron staging,
+the JetBrains theme JAR,
+and standalone HTML generators.
+Custom native builds,
+the static-site generator,
+font generation,
+and roots lacking a build aggregate remain named entries in the plan for separate prerequisite review.
+Their absence from this wave is not evidence that the packages have no applicable consumer.
+The waveform preserves every command's failure and every not-started budget state.
+It retains generated `dist` artifacts and checks that tracked source did not change.
+Default tests are a separate campaign after process,
+service,
+and agent-recursion review;
+the static wave cannot establish runtime coverage.
+
 The active queue remains independently verifiable:
 
 - Review and execute the frozen Android product's SDK/NDK setup,
