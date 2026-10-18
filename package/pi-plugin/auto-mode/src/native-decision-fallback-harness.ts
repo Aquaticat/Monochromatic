@@ -59,7 +59,7 @@ type MaintainedPolicyModule = Readonly<{
 /**
  Release-bound entries retaining the original requester identity.
  */
-type MaintainedPolicyEntries = Readonly<{
+export type MaintainedPolicyEntries = Readonly<{
   askUser: typeof askUser;
   VERDICT_ENTRY_TYPE: string;
 }>;
@@ -117,6 +117,8 @@ type BashToolModule = Readonly<{
 
  @param value - built environment module namespace
 
+ @returns narrowed environment contract for fixture construction
+
  @throws Error when the environment factory is absent
  */
 function assertEnvironmentModule(value: unknown): asserts value is EnvironmentModule {
@@ -130,6 +132,8 @@ function assertEnvironmentModule(value: unknown): asserts value is EnvironmentMo
  Check the owned session factory export before fixture construction.
 
  @param value - built session-root module namespace
+
+ @returns narrowed owned factory contract for fixture construction
 
  @throws Error when the session factory is absent
  */
@@ -145,6 +149,8 @@ function assertRootSessionModule(value: unknown): asserts value is RootSessionMo
 
  @param value - built policy runtime module namespace
 
+ @returns narrowed runtime binder contract for hook installation
+
  @throws Error when the runtime binder is absent
  */
 function assertPolicyRuntimeModule(value: unknown): asserts value is PolicyRuntimeModule {
@@ -158,6 +164,8 @@ function assertPolicyRuntimeModule(value: unknown): asserts value is PolicyRunti
  Check the maintained bridge export before fixture HOME changes.
 
  @param value - maintained policy bridge namespace
+
+ @returns narrowed maintained bridge contract for policy construction
 
  @throws Error when policy construction or the maintained entry is absent
  */
@@ -175,6 +183,8 @@ function assertMaintainedPolicyModule(value: unknown): asserts value is Maintain
 
  @param value - maintained policy entry module namespace
 
+ @returns narrowed release-bound entry contract for the approval host
+
  @throws Error when the requester identity or verdict discriminator is absent
  */
 function assertMaintainedPolicyEntries(value: unknown): asserts value is MaintainedPolicyEntries {
@@ -191,6 +201,8 @@ function assertMaintainedPolicyEntries(value: unknown): asserts value is Maintai
 
  @param value - built assessment fixture module namespace
 
+ @returns narrowed assessment fixture contract for the wire sender
+
  @throws Error when the assessment fixture factory is absent
  */
 function assertAssessmentFixtureModule(value: unknown): asserts value is AssessmentFixtureModule {
@@ -205,6 +217,8 @@ function assertAssessmentFixtureModule(value: unknown): asserts value is Assessm
 
  @param value - built startup relevance module namespace
 
+ @returns narrowed relevance contract for startup-failure selection
+
  @throws Error when the relevance factory is absent
  */
 function assertRelevanceModule(value: unknown): asserts value is RelevanceModule {
@@ -218,6 +232,8 @@ function assertRelevanceModule(value: unknown): asserts value is RelevanceModule
  Check the installed SDK bash tool export before wrapper construction.
 
  @param value - installed SDK bash tool module namespace
+
+ @returns narrowed bash tool builder contract for wrapper construction
 
  @throws Error when the bash tool builder is absent
  */
@@ -319,10 +335,22 @@ export const relevanceHarness: RelevanceModule = loadedRelevance;
 
  @returns original requester identity and verdict discriminator
 
+ @example
+ ```ts
+ const maintained = await loadMaintainedPolicyEntries();
+ ```
+
  @throws Error when the maintained entry omits its exports
  */
 export async function loadMaintainedPolicyEntries(): Promise<MaintainedPolicyEntries> {
-  const loaded: unknown = await import(maintainedPolicyHarness.maintainedPolicyEntry);
+  /**
+   Release-bound entry URL is read before fixture HOME changes.
+   */
+  const entryUrl = maintainedPolicyHarness.maintainedPolicyEntry;
+  /**
+   Loaded entries stay unknown until their export guard narrows them.
+   */
+  const loaded: unknown = await import(entryUrl);
   assertMaintainedPolicyEntries(loaded);
   return loaded;
 }
@@ -334,15 +362,32 @@ export async function loadMaintainedPolicyEntries(): Promise<MaintainedPolicyEnt
 
  @returns bash tool builder with its original execute identity
 
+ @example
+ ```ts
+ const bashModule = await loadBashToolModule({ packageRoot });
+ ```
+
  @throws Error when the installed artifact omits its export
  */
 export async function loadBashToolModule({ packageRoot }: Readonly<{
   packageRoot: string;
 }>): Promise<BashToolModule> {
-  const loaded: unknown = await import(pathToFileURL(join(
+  /**
+   Artifact path stays inside the installed SDK package root.
+   */
+  const artifactPath = join(
     packageRoot,
     'dist/core/tools/bash.js'
-  )).href);
+  );
+  /**
+   File URL keeps the import on the installed artifact's own identity.
+   */
+  const artifactUrl = pathToFileURL(artifactPath)
+    .href;
+  /**
+   Loaded module stays unknown until its export guard narrows it.
+   */
+  const loaded: unknown = await import(artifactUrl);
   assertBashToolModule(loaded);
   return loaded;
 }

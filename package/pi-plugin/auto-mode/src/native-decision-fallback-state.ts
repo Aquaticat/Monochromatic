@@ -32,6 +32,11 @@ export const PROHIBITED_POLICY_TEXT = 'RUL:\n The proposed operation is prohibit
  Create the observation counters fixture callbacks increment.
 
  @returns fresh zeroed observation counters
+
+ @example
+ ```ts
+ const observations = createDecisionFallbackObservations();
+ ```
  */
 export function createDecisionFallbackObservations(): DecisionFallbackObservations {
   return {
@@ -47,16 +52,20 @@ export function createDecisionFallbackObservations(): DecisionFallbackObservatio
 /**
  Create live fixture state shared across transport, host, and operation callbacks.
 
+ Absent SDK capability and abort retention stay optional so later reads fail
+ loud through nonNullishOrThrow instead of carrying nullish unions.
+
  @param plan - mode plan selecting startup classification behavior
 
  @returns fresh fixture state matching the original initial values
+
+ @example
+ ```ts
+ const state = createDecisionFallbackState({ plan });
+ ```
  */
-export function createDecisionFallbackState({ plan }: Readonly<{
-  plan: DecisionFallbackPlan;
-}>): DecisionFallbackState {
+export function createDecisionFallbackState({ plan }: Readonly<{ plan: DecisionFallbackPlan }>): DecisionFallbackState {
   return {
-    pi: undefined,
-    abortTask: undefined,
     ordinaryChatPending: plan.startupFailure,
     requestCount: 0,
     clockOffset: 0
@@ -69,12 +78,22 @@ export function createDecisionFallbackState({ plan }: Readonly<{
  Stale and allow-stale modes change currentness mid-run through this one write.
 
  @param cwd - fixture workspace holding the policy file
+
+ @example
+ ```ts
+ await replaceFixturePolicyWithProhibition({ cwd: environment.options.cwd });
+ ```
  */
-export async function replaceFixturePolicyWithProhibition({ cwd }: Readonly<{
-  cwd: string;
-}>): Promise<void> {
+export async function replaceFixturePolicyWithProhibition({ cwd }: Readonly<{ cwd: string }>): Promise<void> {
+  /**
+   Policy path stays directly under the fixture workspace root.
+   */
+  const policyPath = join(
+    cwd,
+    'AGENTS.md'
+  );
   await writeFile(
-    join(cwd, 'AGENTS.md'),
+    policyPath,
     PROHIBITED_POLICY_TEXT
   );
 }

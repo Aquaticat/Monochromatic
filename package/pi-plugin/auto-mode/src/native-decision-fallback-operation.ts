@@ -17,14 +17,25 @@ import type {
  @param state - live fixture state counting terminal requests
 
  @returns proposed commands and the fixture terminal fetch
+
+ @example
+ ```ts
+ const operation = createDecisionFallbackOperation({ state });
+ ```
  */
 export function createDecisionFallbackOperation({ state }: Readonly<{
   state: DecisionFallbackState;
 }>): DecisionFallbackOperation {
+  /**
+   Proposed commands appear verbatim in the wire assertions and dialog title.
+   */
   const commands: readonly string[] = [
     'printf FALLBACK_A',
     'printf FALLBACK_B'
   ];
+  /**
+   Tool calls turn each proposed command into one direct bash member.
+   */
   const calls = commands.map(function proposedCommand(
     command: string,
     index: number
@@ -41,15 +52,26 @@ export function createDecisionFallbackOperation({ state }: Readonly<{
   });
   /**
    Only the first non-chat request carries the proposed tool-call group.
+
+   @returns completion chunk stream answering the original terminal fetch
    */
-  async function fixtureTerminalStream(): Promise<Response> {
+  function fixtureTerminalStream(): Promise<Response> {
+    /**
+     Proposal gating reproduces the original chat-then-proposal request order.
+     */
     const proposal = (!state.ordinaryChatPending) && ((state.requestCount++) === 0);
+    /**
+     Chunk envelope matches the original fixture completion identity.
+     */
     const chunk: Readonly<Record<string, unknown>> = {
       id: 'decision-fallback-fixture',
       object: 'chat.completion.chunk',
       created: 0,
       model: 'fixture'
     };
+    /**
+     First delta carries either the tool-call proposal or plain completion.
+     */
     const first: Readonly<Record<string, unknown>> = {
       ...chunk,
       choices: [{
@@ -66,6 +88,9 @@ export function createDecisionFallbackOperation({ state }: Readonly<{
         finish_reason: null
       }]
     };
+    /**
+     Last delta closes the stream with its finish reason and usage.
+     */
     const last: Readonly<Record<string, unknown>> = {
       ...chunk,
       choices: [{
@@ -79,10 +104,14 @@ export function createDecisionFallbackOperation({ state }: Readonly<{
         total_tokens: 110
       }
     };
-    return new Response(
-      `data: ${JSON.stringify(first)}\n\ndata: ${JSON.stringify(last)}\n\ndata: [DONE]\n\n`,
+    /**
+     Stream payload keeps the original event framing and terminator.
+     */
+    const streamText = `data: ${JSON.stringify(first)}\n\ndata: ${JSON.stringify(last)}\n\ndata: [DONE]\n\n`;
+    return Promise.resolve(new Response(
+      streamText,
       { headers: { 'content-type': 'text/event-stream' } }
-    );
+    ));
   }
   return {
     commands,

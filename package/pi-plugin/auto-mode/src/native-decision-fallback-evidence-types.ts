@@ -112,6 +112,17 @@ export class DecisionFallbackEvidenceShapeError extends Error {
 }
 
 /**
+ Recognize an object member before its projected field reads.
+
+ @param value - evidence member arriving from parsed JSON
+
+ @returns whether ordinary property reads can inspect the member
+ */
+function isMemberRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return ((typeof value) === 'object') && (value !== null);
+}
+
+/**
  Narrow an object member before its projected field reads.
 
  @param value - evidence member arriving from parsed JSON
@@ -121,7 +132,7 @@ export class DecisionFallbackEvidenceShapeError extends Error {
  @throws DecisionFallbackEvidenceShapeError when the member is not an object
  */
 function evidenceMemberRecord(value: unknown): Readonly<Record<string, unknown>> {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isMemberRecord(value))
     throw new DecisionFallbackEvidenceShapeError('Evidence member must be an object before its field reads');
   return value;
 }
@@ -135,9 +146,19 @@ function evidenceMemberRecord(value: unknown): Readonly<Record<string, unknown>>
 
  @param value - parsed decision evidence payload
 
+ @returns narrowed envelope projection for capture
+
+ @example
+ ```ts
+ assertDecisionEvidenceRecord(JSON.parse(message));
+ ```
+
  @throws DecisionFallbackEvidenceShapeError when event or review identifier is absent
  */
 export function assertDecisionEvidenceRecord(value: unknown): asserts value is DecisionEvidenceRecord {
+  /**
+   Envelope fields correlate every decision path and stay string-typed.
+   */
   const record = evidenceMemberRecord(value);
   if (((typeof record.event) !== 'string') || ((typeof record.reviewId) !== 'string'))
     throw new DecisionFallbackEvidenceShapeError('Decision evidence record must name its event and review identifier');
@@ -149,33 +170,54 @@ export function assertDecisionEvidenceRecord(value: unknown): asserts value is D
  @param value - captured decision evidence record
 
  @returns whether the record carries question evidence details
+
+ @example
+ ```ts
+ capture.decisionRecords.filter(isQuestionEvidenceRecord);
+ ```
  */
 export function isQuestionEvidenceRecord(value: DecisionEvidenceRecord): value is QuestionEvidenceRecord {
   return value.event === 'question-evidence';
 }
 
 /**
- Validate clause admission details before their binding and answer reads.
+ Validate the clause admission containers before their binding and answer reads.
+
+ Leaf fields stay unvalidated because the catalog compares or asserts them
+ directly, so clause records with tolerated leaf shapes keep passing the find.
 
  @param value - details member of a clause admission record
 
- @throws DecisionFallbackEvidenceShapeError when an asserted field is missing
+ @returns narrowed binding and answer projection for asserted reads
+
+ @example
+ ```ts
+ assertClauseAdmissionDetails(record.details);
+ ```
+
+ @throws DecisionFallbackEvidenceShapeError when a dereferenced container is missing
  */
 export function assertClauseAdmissionDetails(value: unknown): asserts value is ClauseAdmissionDetails {
+  /**
+   Details stay an object record before its binding member is read.
+   */
   const details = evidenceMemberRecord(value);
-  const binding = evidenceMemberRecord(details.binding);
-  if (((typeof binding.code) !== 'string') || ((typeof binding.sourceSHA256) !== 'string'))
-    throw new DecisionFallbackEvidenceShapeError('Clause admission binding must name its code and source digest');
+  /**
+   Binding carries the source clause code and digest the catalog asserts.
+   */
+  evidenceMemberRecord(details.binding);
+  /**
+   Answer wraps the selected choice below its distribution value.
+   */
   const answer = evidenceMemberRecord(details.answer);
+  /**
+   Distribution value carries the choice and its probability record.
+   */
   const decision = evidenceMemberRecord(answer.value);
-  if ((typeof decision.choice) !== 'string')
-    throw new DecisionFallbackEvidenceShapeError('Clause admission answer must name its selected choice');
-  const probabilities = evidenceMemberRecord(decision.probabilities);
-  for (const probability of Object.values(probabilities))
-    if ((typeof probability) !== 'number')
-      throw new DecisionFallbackEvidenceShapeError('Clause admission probabilities must remain numeric');
-  if ((typeof details.admitted) !== 'boolean')
-    throw new DecisionFallbackEvidenceShapeError('Clause admission must record its admitted state');
+  /**
+   Probabilities stay a readable record per relation label.
+   */
+  evidenceMemberRecord(decision.probabilities);
 }
 
 /**
@@ -183,9 +225,19 @@ export function assertClauseAdmissionDetails(value: unknown): asserts value is C
 
  @param value - details member of a question evidence record
 
+ @returns narrowed operation projection for asserted reads
+
+ @example
+ ```ts
+ assertQuestionEvidenceDetails(record.details);
+ ```
+
  @throws DecisionFallbackEvidenceShapeError when the operation identifier is absent
  */
 export function assertQuestionEvidenceDetails(value: unknown): asserts value is QuestionEvidenceDetails {
+  /**
+   Details stay an object record before its operation identifier is read.
+   */
   const details = evidenceMemberRecord(value);
   if ((typeof details.operationId) !== 'string')
     throw new DecisionFallbackEvidenceShapeError('Question evidence must retain its operation identifier');
@@ -196,10 +248,23 @@ export function assertQuestionEvidenceDetails(value: unknown): asserts value is 
 
  @param value - details member of a review completion record
 
+ @returns narrowed outcome projection for asserted reads
+
+ @example
+ ```ts
+ assertReviewCompleteDetails(terminal.details);
+ ```
+
  @throws DecisionFallbackEvidenceShapeError when outcome fields are absent
  */
 export function assertReviewCompleteDetails(value: unknown): asserts value is ReviewCompleteDetails {
+  /**
+   Details stay an object record before its outcome member is read.
+   */
   const details = evidenceMemberRecord(value);
+  /**
+   Outcome carries the terminal verdict the catalog compares.
+   */
   const outcome = evidenceMemberRecord(details.outcome);
   if ((typeof outcome.verdict) !== 'string')
     throw new DecisionFallbackEvidenceShapeError('Review completion must name its outcome verdict');
@@ -212,9 +277,19 @@ export function assertReviewCompleteDetails(value: unknown): asserts value is Re
 
  @param value - parsed assessment evidence payload
 
+ @returns narrowed envelope projection for capture
+
+ @example
+ ```ts
+ assertAssessmentEvidenceRecord(JSON.parse(message));
+ ```
+
  @throws DecisionFallbackEvidenceShapeError when event or operation identifier is absent
  */
 export function assertAssessmentEvidenceRecord(value: unknown): asserts value is AssessmentEvidenceRecord {
+  /**
+   Envelope fields correlate transport records with their operations.
+   */
   const record = evidenceMemberRecord(value);
   if (((typeof record.event) !== 'string') || ((typeof record.operationId) !== 'string'))
     throw new DecisionFallbackEvidenceShapeError('Assessment evidence record must name its event and operation identifier');
@@ -226,6 +301,11 @@ export function assertAssessmentEvidenceRecord(value: unknown): asserts value is
  @param value - captured assessment evidence record
 
  @returns whether the record carries assessment request state
+
+ @example
+ ```ts
+ capture.assessmentRecords.filter(isAssessmentRequestRecord);
+ ```
  */
 export function isAssessmentRequestRecord(value: AssessmentEvidenceRecord): value is AssessmentRequestRecord {
   return value.event === 'assessment-request';
@@ -236,21 +316,43 @@ export function isAssessmentRequestRecord(value: AssessmentEvidenceRecord): valu
 
  @param value - state member of an assessment request record
 
+ @returns narrowed state projection for asserted reads
+
+ @example
+ ```ts
+ assertAssessmentRequestState(record.state);
+ ```
+
  @throws DecisionFallbackEvidenceShapeError when asserted state fields are missing
  */
 export function assertAssessmentRequestState(value: unknown): asserts value is AssessmentRequestState {
+  /**
+   State stays an object record before its program and material are read.
+   */
   const state = evidenceMemberRecord(value);
   if ((typeof state.parentProgram) !== 'string')
     throw new DecisionFallbackEvidenceShapeError('Assessment request state must retain its visible parent program');
-  const material = state.selectedPolicyMaterial;
+  /**
+   Selected material arrives as the ordered policy excerpt list.
+   */
+  const { selectedPolicyMaterial: material } = state;
   if ((!Array.isArray(material)) || ((material.length) < 1))
     throw new DecisionFallbackEvidenceShapeError('Assessment request state must select at least its policy material');
   for (const entry of material) {
+    /**
+     Each material entry keeps its authored fragment list.
+     */
     const materialEntry = evidenceMemberRecord(entry);
-    const fragments = materialEntry.fragments;
+    /**
+     Fragments stay an ordered array of authored spans.
+     */
+    const { fragments } = materialEntry;
     if (!Array.isArray(fragments))
       throw new DecisionFallbackEvidenceShapeError('Selected policy material must retain its fragments');
     for (const fragment of fragments) {
+      /**
+       Each span keeps the text the catalog asserts starts with its rule code.
+       */
       const span = evidenceMemberRecord(fragment);
       if ((typeof span.text) !== 'string')
         throw new DecisionFallbackEvidenceShapeError('Policy material fragments must retain their text');

@@ -29,8 +29,25 @@ import type {
  @param capture - evidence capture restoring the original debug slot
 
  @returns disposal owner bound to the catalog scope
+
+ @example
+ ```ts
+ await using disposal = createDecisionFallbackDisposal({
+   state,
+   session,
+   runtime,
+   environment,
+   capture
+ });
+ ```
  */
-export function createDecisionFallbackDisposal({ state, session, runtime, environment, capture }: Readonly<{
+export function createDecisionFallbackDisposal({
+  state,
+  session,
+  runtime,
+  environment,
+  capture
+}: Readonly<{
   state: DecisionFallbackState;
   session: AgentSession;
   runtime: Readonly<{ detach: () => void }>;
@@ -38,10 +55,16 @@ export function createDecisionFallbackDisposal({ state, session, runtime, enviro
   capture: DecisionFallbackEvidenceCapture;
 }>): DecisionFallbackDisposal {
   return {
+    /**
+     Cleanup runs the original abort, disposal, drain, and restore sequence.
+
+     @returns completion of the original catalog cleanup
+     */
     async [Symbol.asyncDispose](): Promise<void> {
       await state.abortTask;
       session.dispose();
-      await session.agent.waitForIdle();
+      await session.agent
+        .waitForIdle();
       runtime.detach();
       await environment.drain();
       await logger.flush();
