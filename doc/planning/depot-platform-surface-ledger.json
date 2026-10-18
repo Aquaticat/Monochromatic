@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:31:20.562Z",
+  "updatedAt": "2026-10-18T15:34:07.399Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -4598,11 +4598,27 @@
       "family": "registry",
       "applicability": "Own immutable service/job-image artifacts with read-only pull and logical cleanup",
       "retrievalValidated": true,
-      "reviewState": "Conventional OCI image pull/auth/health/architecture consumers and owned tag/digest cleanup exercised; source retention and delayed garbage collection remain separate from physical erasure",
+      "reviewState": "Complete deployed registry page read; current scope, mutable-tag freshness, retention/GC and repository uses reconciled",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:34:07.399Z",
+        "sourceSha256": "53387f18b8a25062b272559ad80e85ca0a0ad9198c5ca90daa1bf3f9963a66a4",
+        "findings": [
+          "Org-hosted OCI Registry and backward-compatible saved-project paths coexist; --save auto-selects project repository",
+          "Standard transfer free; Fast outbound0.10USD/GB from firstGB; speed is owner-only organization setting, not changed",
+          "Storage shares BuildCache/DepotCache allowance,25GBDeveloper and250GBStartup,0.20USD/GB-month above included; no current usage read",
+          "Tagged retention opt-in; tagged keep1to30days or1to1000latest; untagged default3days; age is pushedAt, pulling does not extend",
+          "Project-saved image retention is separate from build cache keepDays: unlimited default, options1/7/14/30days",
+          "Deletion removes manifest immediately, usage may lag a day, unreferenced layers may take31hours to reclaim; shared layers stay",
+          "CLI pull-token is one-hour read-only and covers project or project-prefixed repository paths, not independently named repositories",
+          "General artifact maximum50GB is documented; exact relation to native block snapshots with larger virtual descriptors is unqualified"
+        ],
+        "use": "Reusable immutable CI/service images and source-bound artifacts; actual full BuildKit graphs and native block-snapshot readers remain distinct formats",
+        "limits": "No owner CDN setting, account storage/usage, retention-policy mutation, large-blob limit probe or physical-erasure proof; native automatic credential is a separate active bounded campaign"
+      }
     },
     {
       "title": "Pull-through cache",
@@ -4628,9 +4644,24 @@
       "family": "registry",
       "applicability": "Optional dependency-image mirror for future CI consumers",
       "retrievalValidated": true,
-      "reviewState": "Source-reviewed registry mirror/cache mechanism; no authenticated mirror mapping or dependency routing change exercised; do not conflate with already exercised owned OCI registry images",
+      "reviewState": "Complete deployed registry page read; current scope, mutable-tag freshness, retention/GC and repository uses reconciled",
       "runtimeEvidence": [],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:34:07.399Z",
+        "sourceSha256": "161cf105dece447acda22541ecd093a928ad07eea257932855dc9631c54c6fdc",
+        "findings": [
+          "Upstream registry credential connection is organization-level; per-repository upstream path fixed at repository creation and cannot be changed later",
+          "First missing layer requires upstream; cached pulls cannot guarantee availability after reclaimed data or for uncached content",
+          "Pull-through blobs not referenced by a pushed manifest become eligible after6hours without repository access",
+          "Cached mutable tag does not refresh upstream on pull; new version tag or upstream digest needed for release identity",
+          "Registry access token scopes use Depot repository name; CLI project pull-token does not cover separate pull-through repo",
+          "DockerHub credentials required, other public upstreams may omit; ECR uses IAMrole trust requiring provider support; GAR/GCR use serviceaccount JSON",
+          "Configured upstream credentials are not needed by consumers, which authenticate only to Depot"
+        ],
+        "use": "Potential future acceleration/credential simplification for actual repo base-image pulls after explicit upstream trust authorization",
+        "limits": "No upstream connection, registry credential, ECRrole, owner setting or pull-through repository created; no cache hit/refresh/outage or speed claim"
+      }
     },
     {
       "title": "Quickstart for Depot Registry",
@@ -4665,11 +4696,26 @@
       "family": "registry",
       "applicability": "Authenticate exact owned image consumers and avoid broad registry credentials",
       "retrievalValidated": true,
-      "reviewState": "Existing local auth obtained scoped read-only temporary credentials; positive GET precedes rejected write control; secrets and solely owned project/images cleaned",
+      "reviewState": "Complete deployed registry page read; current scope, mutable-tag freshness, retention/GC and repository uses reconciled",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:34:07.399Z",
+        "sourceSha256": "a29f7c6fbb49f42f26c3b34cd5d116c2eb9430c7611a0fd862da1c2491b23a07",
+        "findings": [
+          "Repositories auto-create on first push; project --save paths and arbitrary org-hosted repository names have different scope/lifecycle",
+          "Owner-created registry access tokens allow pull-only or push-and-pull, selected repository scopes and30/60/90days,1year or noexpiry",
+          "Scope frontend is exact, team/* onelevel, team/** descendants, ** wholeorg; permission applies to all listed scopes",
+          "Changing token scope requires replacement and revocation; no blanket token needed for bounded job injection",
+          "depot pull/push use CLI credential without docker login; arbitrary custom repository pull uses ordinary Docker registry auth",
+          "Registry v2 preserves legacy registry.depot.dev/project:build paths, while new names use org.registry.depot.dev",
+          "depot push copies saved build directly between registries without routing image bytes through local host"
+        ],
+        "use": "Current owned read-only one-hour build-token consumers and upcoming injected-job project-registry consumer, without a permanent secret",
+        "limits": "No owner registry access token, Kubernetes secret, external registry publication, cross-registry transfer or general-scope credential created; project prefix token is not an arbitrary repository credential"
+      }
     },
     {
       "title": "Security",
