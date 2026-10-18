@@ -1705,7 +1705,8 @@ Current host controls remain a separate finite queue item.
 ## Material owner completion queue after the current host controls
 
 The source audit found authored existing owners without an execution receipt in the current semantic join.
-These are execution gaps, not a claim that authored assertions are absent.
+Missing joins do not establish an unexecuted owner or absent authored assertions.
+The retained provider and legacy binary/package/case inventories are checked before new allocations.
 The finite preparation queue is now explicit:
 
 - `package/desktop-app/ide`: full owning test with its real pinned Helix grammar producer,
@@ -1716,7 +1717,7 @@ The finite preparation queue is now explicit:
 - `package/desktop-app/file-manager-qt`: actual release Nextest owner.
 - `package/desktop-app/terminal`: actual Nextest owner with the real Zig/font/native prerequisites
   or its authored Containerfile.
-- `package/linter/kotlin`: actual JVM Gradle test owner, with no Android or publication task.
+- `package/linter/kotlin`: closed by the existing exact-source Gradle/JUnit join; no repeat allocation.
 - `package/music-player/design`: the actual authored Node and browser owners,
   with PNG/HTML/font materialization qualified and screenshot bytes excluded from publication.
 
@@ -1749,3 +1750,25 @@ Windows is Developer-supported.
 No subscription, deployment, provider/model call or source assertion changes are included.
 The [concrete immutable admission](../audit/depot-current-host-matched-admission-2026-10-18.evidence.json)
 retains all finite commands, corrected hashes, actual bootstrap and source/ledger boundaries.
+
+## Corrected Kotlin execution boundary
+
+The initial claim that the Kotlin JVM methods were unexecuted is retracted.
+The [independently sealed owner join](../audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json)
+verifies the exact frozen package subtree and all six `RequireKDocTest` method identities
+in each of four original passing cache samples.
+The authored Gradle `test` task executed with the recorded experiment flags.
+The literal package Mise owner wrapper was not invoked.
+The separate `r328mp420m` emitted-JAR host consumer is not the six-case basis.
+No new Kotlin allocation is needed.
+
+The [independent package-directory review](../audit/depot-package-directory-census-independent-2026-10-18.evidence.json)
+also confirms the exact 223-directory set and the four excluded documentation blobs.
+The original 227-candidate archive remains unchanged.
+
+The material-owner input audit admitted 1,582 exact working asset/HTML files,
+including 1,428 LFS materializations, with 350,992,617 actual bytes and no rejected payload.
+Each LFS payload matches its frozen pointer OID and size;
+each remaining payload matches its frozen Git blob identity.
+This qualifies the local source inputs, not execution of a consumer.
+No asset, screenshot or embedded image bytes are added to this note.
