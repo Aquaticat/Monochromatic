@@ -35,6 +35,7 @@ import {
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
 import { fixtureGit, } from '@monochromatic-dev/translation-repair-adjudication/ts/hermetic-git-run.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
+import { CACHE_ACCOUNT_BUILT_DIRECTORY, } from './cache-account-built.test-fixture.ts';
 import {
   commitFileAt,
   makeCacheAccountRepo,
@@ -400,6 +401,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cache-account-audit',
+              builtDirectory: CACHE_ACCOUNT_BUILT_DIRECTORY,
               args: [
                 '--runs-under',
                 under.path,
@@ -455,6 +457,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cache-account-audit',
+              builtDirectory: CACHE_ACCOUNT_BUILT_DIRECTORY,
               args: [],
               env: {
                 ...HERMETIC_GIT,
@@ -484,6 +487,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cache-account-audit',
+              builtDirectory: CACHE_ACCOUNT_BUILT_DIRECTORY,
               args: ['--runs-under',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
@@ -506,6 +510,7 @@ await describe({
              */
             const run = await runBuiltCommand({
               command: 'cache-account-audit',
+              builtDirectory: CACHE_ACCOUNT_BUILT_DIRECTORY,
               args: ['--tabby',],
               env: { TRANSLATION_REPAIR_RUNS_DIR: runs.path, },
             },);
