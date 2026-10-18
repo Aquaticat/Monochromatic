@@ -4,6 +4,15 @@
 
 The expanded evaluation remains research work;
 the interview has not started.
+The [working expanded report](../planning/depot-expanded-ci-evaluation.md)
+now uses the approved six sections;
+it is not the final sufficiency verdict.
+The [combined pricing model](../audit/depot-combined-product-pricing-2026-10-18.evidence.json)
+has executed separate-product scenarios,
+including the counterexample to an all-product Developer cost-dominance claim.
+Actual whole-graph allocation and critical paths remain parent-owned.
+The coverage researcher published its separate
+[per-job budget ledger](../planning/depot-complete-coverage-budget-ledger.json).
 The corrected standard-GitHub `mvm` lifecycle passed in `39125868595`,
 source `64d6a666e63e4773ee56666148ae9c8ba371877a`.
 It preserves runner UID/GID `1001`,

@@ -90,6 +90,11 @@ using a deterministic local fixture rather than paid provider calls
 Planted-fault,
 compiler-consumer,
 corpus-provenance and privileged-WG evidence remain separate result families in that record.
+The privileged WG replay passed all eleven ignored cases after explicit Node-PID-one and Tini reaping controls;
+the fifteen ordinary cases were filtered from that targeted replay.
+The missing namespace init explains that fixture's six preceding process-identity teardown failures,
+without changing frozen product source
+([Rust execution record](depot-rust-coverage-research.md)).
 
 The exact cloud-produced Android APK pair has a headful local consumer:
 all sixteen source-derived instrumentation cases were reported,
@@ -195,9 +200,13 @@ artifact/storage rules are separate
 ([GitHub billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)).
 
 Cache conclusions name the workload and mechanism.
-The fresh `pnpm store github` profile's two cache-disabled restore-plus-install observations were nine to ten seconds;
+Both fresh pnpm profiles use pinned `actions/cache/restore` and `actions/cache/save`
+at `27d5ce7f107fe9357f9df03efb73ab90386fccae` for the isolated pnpm content store.
+The `pnpm store github` jobs use GitHub Actions cache;
+the `pnpm store depot` jobs use Depot's Actions cache integration.
+The fresh GitHub profile's two cache-disabled restore-plus-install observations were nine to ten seconds;
 the two warm observations were eleven to twelve seconds.
-The corresponding `pnpm store depot` profile was three seconds without caching and four to five seconds warm.
+The corresponding Depot profile was three seconds without caching and four to five seconds warm.
 These are the isolated pnpm-store profiles,
 not a result for every job inheriting a cache step
 ([exact jobs, phases, original ZIP/member receipts](../audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json)).
@@ -205,7 +214,8 @@ Depot's checkout also changed between those phases,
 so its whole-job decrease does not isolate pnpm caching.
 
 Prepared dependencies,
-Gradle remote task outputs,+sccache,
+Gradle remote task outputs,
+sccache,
 compiled artifacts,
 BuildKit layers and Depot Disk have separate admission,
 invalidation and consumer evidence in the
