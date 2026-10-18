@@ -15,8 +15,29 @@ Verified installation and source-inspected status behavior are recorded in
 `doc/troubleshooting/depot-native-ssh-paused-session.md`.
 No new independent whole-report review has run after the agent service limit.
 Concrete Root source/hash/pointer/arithmetic checks do not substitute for that review.
-The next source task is the package assertion/generator and actual-runtime cross-lane join,
-preserving static candidates separately from executed and product-contract coverage.
+The source/runtime join is now sealed in
+`doc/audit/depot-source-contract-runtime-join-2026-10-18.evidence.json`.
+It revalidates all 5878 frozen script paths and 219 README blob identities.
+The corrected task classifier includes generic `test` and additional `test:*` names for 41 owners.
+Of 208 active roots,
+55 have no such named task;
+this includes fixtures and configuration and is not a count of untested products.
+Six roots contain 11 authored unit files without owning test execution in the existing 1818-command projection:
+`desktop-daemon/hall-monitor`,
+`dev-script/page-weight`,
+`figma/kiwi`,
+`figma/to-penpot`,
+`module/hyperscript` and `rolldown-plugin/import-attributes`,
+all under `package/`.
+The next action is the local frozen Figma consumer before other new execution.
+All three personal exports required by the authored converter tests exist at their exact source paths;
+their private byte/hash probe is `personal-figma-fixture-path-probes.json` in Root's controller.
+Use a disposable 2-CPU/2-GiB container with network disabled during fixture consumption.
+Keep personal payloads local and preserve authored assertions unchanged.
+The exact Node 26.12.0 image is cached;
+the old coverage worktree has no `node_modules`.
+Prepare isolated frozen dependencies and a source-bound admission before running the existing files.
+The JavaScript/TypeScript source candidate parser does not establish every product feature contract.
 Publication must use an isolated merge worktree because unrelated concurrent IDE changes block merging
 `origin/main` in the shared checkout.
 
