@@ -16,8 +16,8 @@ async function loadConstructor(): Promise<unknown> {
     '../dist/native/contract/integration/policy-source/system-slot-error.mjs',
     import.meta.url,
   ).href);
-  assert.ok(namespace !== null && typeof namespace === 'object'
-    && 'PolicySlotBindingError' in namespace);
+  assert.ok((namespace !== null) && ((typeof namespace) === 'object')
+    && ('PolicySlotBindingError' in namespace));
   return namespace.PolicySlotBindingError;
 }
 
@@ -34,7 +34,7 @@ await describe({
         const cause = new Error('original policy cause');
         /** Reflect.construct invokes the actual built class with its original argument convention. */
         const withCause: unknown = Reflect.construct(constructor, ['original policy failure', { cause }]);
-        assert.ok(withCause instanceof Error);
+        assert.ok(Error.isError(withCause));
         expect(constructor.length).toBe(2);
         expect(withCause instanceof constructor).toBe(true);
         expect(withCause.message).toBe('original policy failure');
@@ -42,7 +42,7 @@ await describe({
         expect(withCause.name).toBe('PolicySlotBindingError');
         /** An omitted options argument must not manufacture a cause property. */
         const withoutCause: unknown = Reflect.construct(constructor, ['uncorrelated policy failure']);
-        assert.ok(withoutCause instanceof Error);
+        assert.ok(Error.isError(withoutCause));
         expect(withoutCause.message).toBe('uncorrelated policy failure');
         expect(Object.hasOwn(withoutCause, 'cause')).toBe(false);
       },
@@ -55,13 +55,21 @@ await describe({
         assert.ok(typeof constructor === 'function');
         /** Only the owned consumer subclass links to the original built prototype. */
         const prototype: unknown = Reflect.get(constructor, 'prototype');
-        assert.ok(prototype instanceof Error);
+        assert.ok((prototype !== null) && ((typeof prototype) === 'object'));
+        /** A class prototype has no native Error data; inspect its inheritance directly. */
+        const parent: unknown = Object.getPrototypeOf(prototype);
+        expect(parent).toBe(Error.prototype);
         /** Record actual setter execution instead of merely checking the final error string. */
         const received: string[] = [];
-        /** A JavaScript consumer can provide its own inherited name accessor. */
-        class ConsumerError extends Error {}
-        Object.setPrototypeOf(ConsumerError.prototype, prototype);
-        Object.defineProperty(ConsumerError.prototype, 'name', {
+        /** Reflect.construct must execute the built constructor, never its caller-owned new.target body. */
+        function consumerConstructor(): never {
+          assert.fail('The new.target body must not replace the built policy error constructor');
+        }
+        /** Only this fixture-owned prototype receives the consumer's name accessor. */
+        const consumerPrototype: unknown = Reflect.get(consumerConstructor, 'prototype');
+        assert.ok((consumerPrototype !== null) && ((typeof consumerPrototype) === 'object'));
+        Object.setPrototypeOf(consumerPrototype, prototype);
+        Object.defineProperty(consumerPrototype, 'name', {
           configurable: true,
           /** Preserve the consumer's accessor result after construction. */
           get(): string {
@@ -73,10 +81,10 @@ await describe({
           },
         });
         /** The actual built constructor runs with this test-owned subclass as new.target. */
-        const error: unknown = Reflect.construct(constructor, ['consumer policy failure'], ConsumerError);
-        assert.ok(error instanceof Error);
+        const error: unknown = Reflect.construct(constructor, ['consumer policy failure'], consumerConstructor);
+        assert.ok(Error.isError(error));
         expect(error instanceof constructor).toBe(true);
-        expect(received).toEqual([ConsumerError.name]);
+        expect(received).toEqual([consumerConstructor.name]);
         expect(error.name).toBe('consumer-owned name');
         expect(Object.hasOwn(error, 'name')).toBe(false);
       },
@@ -91,8 +99,8 @@ await describe({
           '../dist/native/contract/integration/policy-source/system-slot-error.ts',
           import.meta.url,
         ).href);
-        assert.ok(implementation !== null && typeof implementation === 'object'
-          && 'PolicySlotBindingError' in implementation);
+        assert.ok((implementation !== null) && ((typeof implementation) === 'object')
+          && ('PolicySlotBindingError' in implementation));
         expect(implementation.PolicySlotBindingError).toBe(constructor);
       },
     }),
