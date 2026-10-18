@@ -1,6 +1,7 @@
-# The apps depend on this crate WITHOUT the `service` feature (meter and gain only), so the
-# default build stays dependency-free. The crate's own tasks build and test the WHOLE crate,
-# `--all-features`, so the Turso-backed decision cache is covered here.
+# Both apps enable the `service` and `fingerprint` features. The crate's own tasks build and test
+# the WHOLE crate, `--all-features`, so the Turso-backed decision cache and the fingerprint are
+# covered here; `build:default` builds the feature-less surface (meter, gain, window math, policy
+# identity and resolver) that has no Turso or hashing dependency.
 [tasks.build]
 description = "Build the truepeak-core library in release mode (all features)"
 run = "cargo build --release --all-features"
@@ -10,7 +11,7 @@ description = "Build the truepeak-core library in debug mode (all features)"
 run = "cargo build --all-features"
 
 [tasks."build:default"]
-description = "Build the meter-only default surface, matching what the apps pull"
+description = "Build the default surface without the service and fingerprint features"
 run = "cargo build --release"
 
 [tasks.lint]
