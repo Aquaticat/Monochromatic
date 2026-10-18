@@ -53,12 +53,16 @@ mod typescript;
 
 /// The application's setup of the module.
 mod setup;
+/// The value that carries the application's setup.
 pub use setup::LanguageSetup;
 
 /// Whether a server's program exists,
 ///  and why not.
 mod locate;
+/// Why a configured server's program cannot be used.
 pub(super) use locate::Unavailable;
+/// The check of a server's real program,
+///  never a wrapper placed in front of it.
 use locate::locate;
 
 /// How the registry uses mise.

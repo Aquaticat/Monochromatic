@@ -151,3 +151,15 @@ const plugin: Plugin = eslintCompatPlugin({
 },);
 
 export default plugin;
+
+/**
+ Exposed so built-artifact tests reach the export-surface classifier behind
+ `prefer-describe-function-ref-name`.
+ 
+ @internal
+ */
+export {
+  classifyNameInSourceText,
+  type ExportedNameKind,
+  isAllCapsSnakeName,
+} from './rule/prefer-describe-function-ref-name.export-scan.ts';

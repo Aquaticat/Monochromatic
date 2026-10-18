@@ -200,13 +200,11 @@ await describe({
       },);
       expect(reads,).toHaveLength(0,);
     }, },),
-    it({ name: 'does not reset an expired original deadline for conversion', fn: async () => {
-      const send = createAssessmentSender({ now: () => 5_000, readCredential: () => assessmentFixtureKey,
-        fetchImpl: async function unexpectedHttp() { throw new Error('Unexpected HTTP',); }, },);
-      const error = await assessmentFailure(async function expiredOriginal() {
-        return await send({ ...assessmentInput(), body: JSON.stringify(decisionFixtureRequest(),), },);
-      },);
-      expect(String(error,),).toContain('original assessment lifetime',);
+    it({ name: 'converts and sends after the advisory target', fn: async () => {
+      const send = createAssessmentSender({ now: () => 15_000, readCredential: () => assessmentFixtureKey,
+        fetchImpl: async function completedHttp() { return Response.json(decisionFixtureResponse()); }, },);
+      const result = JSON.parse(await send({ ...assessmentInput(), body: JSON.stringify(decisionFixtureRequest(),), },));
+      expect(result).toHaveProperty('answers.head_0.probabilities.permission', 0.8);
     }, },),
   ],
 },);

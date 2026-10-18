@@ -1,4 +1,4 @@
-import {matchesSemanticProgramProfile} from '../maintained-policy.mjs';
+import {matchesSemanticOperationProfile} from '../maintained-policy.mjs';
 
 //region Original scheduler and inspected program shape gate estimated operation coverage.
 export function inspectOperationCoverage({inputs,clauseEnabled,policy}){
@@ -25,11 +25,9 @@ export function inspectOperationCoverage({inputs,clauseEnabled,policy}){
      >0)
    &&(scheduled||singleLegacy)
    &&inputs.effects
-   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&matchesSemanticProgramProfile({
+   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&matchesSemanticOperationProfile({
      configured:policy.programProfile,
-     inspected:effect.programInspection
-       ?.declaration
-       .profile
+     effect
    })); })
   ?Object.freeze({
     preparedOperations:inputs.effects,

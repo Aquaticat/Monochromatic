@@ -1,7 +1,7 @@
 import {RuleAssessmentWireError,sha,isRuleCode} from './wire-source.mjs';
 
 //region Preserve source-specific candidate identity and complete source-span checks.
-export function appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question}){
+export function appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation}){
   if((!binding)||(Object.keys(binding)
     .toSorted()
     .join(',')
@@ -40,7 +40,6 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   if(seen.has(key))throw new RuleAssessmentWireError('Mixed batch repeats a source-specific logical question');
   seen.add(key);membership.hasOperation||=head.definitionId==='operation_violates_rule';
   if(categorical)clauseRelations.add(candidateKey);
-  if(clauseRelations.size>256)throw new RuleAssessmentWireError('Clause interpretation exceeds the fixed 256-clause profile');
   const slot=`head_${index}`;
   const selectedRule={
     ...(unclassified?{
@@ -55,8 +54,9 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   };
   const instructions=categorical
    ?{
-     predicate:'Estimate the relationship defined by clauseRelationDefinition in the shared state, using its complete instructions and option rubrics.',
-     selectedRule
+     predicate:definition.instructions,
+     selectedRule,
+     proposedOperation
    }
    :operation
     ?{
@@ -71,11 +71,7 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   questions[slot]={
     type:definition.type,
     instructions,
-    criteria:categorical?Object.fromEntries(Object.keys(definition.criteria)
-      .map(function initializeClauseChoice(label) { return ([
-        label,
-        null
-      ]); })):definition.criteria
+    criteria:definition.criteria
   };
   pairs.push({
     slot,

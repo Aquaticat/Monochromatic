@@ -454,6 +454,27 @@ The relaunch from a fresh copy then ran about 1 hour 40 minutes (a 10 003-file p
 simpleperf runs and the controller checks) without a crash and shut down gracefully, and a third launch from another
 fresh copy (three invented tones, transport checks) also ended without a crash.
 
+A sixth and a seventh came on 2026-10-15 during the release-build measurements
+(`doc/audit/music-player-release-build-measurements-2026-10-15.md`), from the same headful host-GPU launch
+(own `systemd-run --user` unit, `MemoryMax=12G`, reflink copy of the owned AVD):
+
+- `coredumpctl` entry 2569769, unit `relmeasure-emulator-1.service`, 13:02:34 local time, 1 hour 3 minutes 54 seconds
+  after the launch, core 1.6 GB.
+  The crash came during the 10 000-track scroll runs (the `dumpsys gfxinfo` windows), right after the first deep
+  window of that size.
+- `coredumpctl` entry 302782, unit `relmeasure-emulator-2.service`, 13:24:05 local time, 19 minutes 49 seconds after
+  the launch, core 1.5 GB, again during the 10 000-track scroll runs.
+
+Both stacks are the same as the fourth and fifth: `__strlen_evex` under
+`gfxstream::host::gl::TextureResize::TextureResize` under `ColorBufferGl::create` under
+`EmulationGl::createColorBuffer`.
+The journal carried `glestranslator ... error null ctx` lines before each crash, as before the fifth.
+The third launch, which ran only 1 000-track scroll windows and idle counts, ran to a graceful shutdown.
+The driver then failed with `no scrollable node found` because the guest was gone, which is how the crash showed up
+in the run.
+Each was recovered by a fresh reflink copy and relaunch, at most twice as the task allowed, and the scroll windows
+that ran in the two crashed sessions are kept in the audit with the crashes noted as a confound.
+
 Two facts about the owned AVD copy found in the same session: the sdcard of the owned AVD already holds
 `/sdcard/Music/RealAppTest` (private names), so delete it before pushing a library and before the volume scan, not
 after; and on this emulator `content query ... --projection` takes columns separated by a colon (`_data:duration`), a

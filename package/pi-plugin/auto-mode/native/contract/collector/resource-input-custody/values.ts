@@ -15,20 +15,8 @@ import {
   requireInputText
 } from './input-shape.ts';
 
-//region Resource input snapshots retain the original schema and byte limits
+//region Resource input snapshots retain the original schema
 
-/**
- Maximum context file entries admitted by the original resource profile.
- */
-const MAX_CONTEXT_FILES = 64;
-/**
- Maximum appended prompt entries admitted by the original resource profile.
- */
-const MAX_APPEND_TEXTS = 32;
-/**
- Complete snapshots retain the original serialized byte ceiling.
- */
-const MAX_SNAPSHOT_BYTES = 524_288;
 /**
  Copy diagnostics identify the native resource boundary.
  */
@@ -123,8 +111,7 @@ function copyResourceInput({
      */
     const files = requireInputList({
       value: record.agentsFiles,
-      label: 'Context files',
-      maximum: MAX_CONTEXT_FILES
+      label: 'Context files'
     });
     return Object.freeze({ agentsFiles: Object.freeze(files.map(copyContextFile)) });
   }
@@ -138,8 +125,7 @@ function copyResourceInput({
      */
     const entries = requireInputList({
       value,
-      label: 'Append input',
-      maximum: MAX_APPEND_TEXTS
+      label: 'Append input'
     });
     return Object.freeze(entries.map(function copyAppendText(entry) {
       return requireInputText({
@@ -158,9 +144,9 @@ function copyResourceInput({
 
  @param value - complete native input to validate and detach
 
- @returns immutable snapshot within the original complete-input byte budget
+ @returns complete immutable snapshot
 
- @throws SourceCollectionError when shape or total bytes exceed the original profile
+ @throws SourceCollectionError when shape differs from the native resource schema
 
  @example
  ```ts
@@ -179,17 +165,16 @@ export function snapshotInput({
    */
   recordResourceInputCopy(kind);
   /**
-   The entire copied source enters the original aggregate budget.
+   Preserve the complete source after validating its native schema.
    */
   const copy = copyResourceInput({
     kind,
     value
   });
-  if (Buffer.byteLength(JSON.stringify({ value: copy })) > MAX_SNAPSHOT_BYTES) throw new SourceCollectionError('Resource input exceeds total byte bound');
   return copy;
 }
 
-//endregion Resource input snapshots retain the original schema and byte limits
+//endregion Resource input snapshots retain the original schema
 
 //region Constructor options preserve opaque dependency identity and detach appended text
 

@@ -1,9 +1,11 @@
 import {RuleAssessmentWireError,sha} from './wire-source.mjs';
 import {appendAdoptionQuestion} from './wire-adoption.mjs';
-import {appendRequestQuestion} from './wire-request.mjs';
 import {appendHeadingQuestion} from './wire-heading.mjs';
 import {appendClauseQuestion} from './wire-clause.mjs';
-import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
+import {appendOperationDecisionQuestion} from './wire-operation.mjs';
+import {operationDecisionDefinition} from './operation-decision-definition.ts';
+import {captureAssessmentDiagnostics} from './assessment-diagnostics.mjs';
+import {projectPolicyMaterial,projectVisibleOperation,projectPreparedOperation} from './wire-material.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
 import {parseBatchAnswer} from '../../research/instruction-prerequisite-relation/protocol.mjs';
@@ -23,7 +25,8 @@ const definitions=Object.freeze({
  clause_operation_relation:clauseOperationRelation,
  request_instruction_content:requestInstructionContent,
  heading_instruction_content:headingInstructionContent,
- unit_adoption:unitAdoptionRelation
+ unit_adoption:unitAdoptionRelation,
+ operation_decision:operationDecisionDefinition
 });
 /** Fixed bootstrap catalog, not model-authored definitions or source authority. */
 export const ruleAssessmentCatalogText=JSON.stringify(definitions);
@@ -43,18 +46,24 @@ if(!definitions.operation_violates_rule
  */
 export function bindRuleAssessmentWire(request){
  const envelope=request?.envelope;
- if((!envelope)||(Object.keys(envelope)
+ if((!envelope)||(![
+   'governingSources,instructionAuthority,mandatoryPolicy,parentJSON,preparedJSON,requestBody',
+   'governingSources,instructionAuthority,mandatoryPolicy,parentJSON,policyMaterial,preparedJSON,requestBody'
+ ].includes(Object.keys(envelope)
    .toSorted()
-   .join(',')
-   !=='governingSources,instructionAuthority,mandatoryPolicy,parentJSON,preparedJSON,requestBody'))throw new RuleAssessmentWireError('Mixed assessment requires the original multi-source envelope');
+   .join(','))))throw new RuleAssessmentWireError('Mixed assessment requires the original multi-source envelope');
  for(const field of [
    'parentJSON',
    'preparedJSON',
    'requestBody'
  ])if((typeof envelope[field])!=='string')throw new RuleAssessmentWireError(`Original complete operation field is missing: ${field}`);
+ // Keep the exact operation beside each clause so its meaning is assessed against the proposed action.
+ const proposedOperation=Object.freeze({
+   parent:projectVisibleOperation(JSON.parse(envelope.parentJSON)),
+   prepared:projectPreparedOperation(JSON.parse(envelope.preparedJSON))
+ });
  const sources=envelope.governingSources;
  if((!Array.isArray(sources))||(sources.length === 0)
-   ||(sources.length>128)
    ||(Reflect.ownKeys(sources)
      .length
      !==(sources.length
@@ -81,16 +90,15 @@ export function bindRuleAssessmentWire(request){
    ?.content)throw new RuleAssessmentWireError('Primary source differs from mandatory policy');
  const input=request.questions;
  if((!Array.isArray(input))||(input.length === 0)
-   ||(input.length>512)
    ||(Reflect.ownKeys(input)
      .length
      !==(input.length
-     +1)))throw new RuleAssessmentWireError('One mixed batch requires one through 512 original claims');
+     +1)))throw new RuleAssessmentWireError('Mixed assessment requires a complete dense original claim list');
  const questions={};
    const pairs=[];
    const seen=new Set();
    const clauseRelations=new Set();
- const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,unitAdoptionCount:0};
+ const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,hasOperationDecision:false,unitAdoptionCount:0};
  for(const [index,head] of input.entries()){
   if((head?.id!==`q${
     index}`)||(!Object.hasOwn(
@@ -102,84 +110,59 @@ export function bindRuleAssessmentWire(request){
     const categorical=definition.type==='choice';
   if(JSON.stringify(head.definition)!==JSON.stringify(definition))throw new RuleAssessmentWireError('Fixed question definition changed');
   const {binding} = head;
+  if(head.definitionId==='operation_decision'){
+   appendOperationDecisionQuestion({head,binding,definition,index,membership,questions,pairs,proposedOperation});
+   continue;
+  }
   if(head.definitionId==='unit_adoption'){
    appendAdoptionQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
    continue;
   }
   if(head.definitionId==='request_instruction_content'){
-   appendRequestQuestion({envelope,head,binding,definition,index,membership,questions,pairs});
-   continue;
+   throw new RuleAssessmentWireError('Complete hidden provider requests are outside human-readable approval inputs');
   }
   if(head.definitionId==='heading_instruction_content'){
    appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
    continue;
   }
-  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question});
+  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation});
  }
  const state={
-   fullPolicy:sources[0]
-     .content,
-   policySourceSHA256:sources[0]
-     .sha256,
-   policyInputLocation:sourceInputLocation(sources[0])
-     .inputLocation,
-   additionalPolicies:sources.slice(1)
-     .map(function describeAdditionalPolicy(
-       source,
-       index
-     ) { return (({
-       sourceOrdinal:index+1,
-       content:source.content,
-       sourceSHA256:source.sha256,
-       ...sourceInputLocation(source)
-     })); }),
-   parentProgram:envelope.parentJSON,
-   preparedProgram:envelope.preparedJSON,
-   originalRequestBody:envelope.requestBody,
+   selectedPolicyMaterial:projectPolicyMaterial({sources,material:envelope.policyMaterial,questions:input}),
+   parentProgram:JSON.stringify(proposedOperation.parent),
+   preparedProgram:JSON.stringify(proposedOperation.prepared),
    catalogSHA256:request.catalogSHA256,
    ...(membership.hasOperation?{assessmentGuidance:guidance}:{}),
    ...(clauseRelations.size > 0?{clauseRelationDefinition:clauseOperationRelation}:{}),
    ...(membership.hasRequestMaterial?{requestInstructionDefinition:requestInstructionContent}:{}),
    ...(membership.hasHeadingContent?{headingInstructionDefinition:headingInstructionContent}:{}),
    ...(membership.unitAdoptionCount?{unitAdoptionDefinition:unitAdoptionRelation}:{}),
+   ...(membership.hasOperationDecision?{reviewPurpose:'Final decision for the complete prepared operation under current instructions and selected user authorization'}:{
    establishedEffectFacts:[],
    effectFactCoverage:'not-established',
    authority:'not-established',
    semanticQualification:'not-established',
-   permission:false
+   permission:false})
  };
  const body=JSON.stringify({
    model,
    state,
    questions
  });
- const bodyBytes=Buffer.byteLength(body);
- if(bodyBytes>1_048_576){
-  const sourceTexts=sources.map(function readSelectedSourceContent(source) { return (source.content); });
-  const selectedTexts=Object.values(questions)
-    .map(function readSelectedRuleText(value) { return (value.instructions
-      .selectedRule
-      ?.text
-      ??''); });
-  const sizes={
-    bodyBytes,
-    sourceCount:sources.length,
-    questionCount:input.length,
-    sourceTextBytes:Buffer.byteLength(JSON.stringify(sourceTexts)),
-    uniqueSourceTextBytes:Buffer.byteLength(JSON.stringify([...new Set(sourceTexts)])),
-    selectedRuleTextBytes:Buffer.byteLength(JSON.stringify(selectedTexts)),
-    originalRequestBytes:Buffer.byteLength(state.originalRequestBody)
-  };
-  throw new RuleAssessmentWireError(`Complete mixed assessment exceeds the one MiB bound; retained-input byte counts: ${JSON.stringify(sizes)}`);
- }
+ const recordResponse=captureAssessmentDiagnostics({request:{...request,model},state,questions});
  function answerText(raw){
-  const parsed=parseBatchAnswer({
+  function parseOriginalResponse(){
+   try{return parseBatchAnswer({
     raw,
     plan:{
       model,
       questions
     }
-  });
+   });}
+   catch(error){recordResponse({error,raw});throw error;}
+  }
+  const parsed=parseOriginalResponse();
+  recordResponse({parsed});
   return JSON.stringify(pairs.map(function projectOriginalAnswer({
     slot,
     id,

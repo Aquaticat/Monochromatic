@@ -6,6 +6,7 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { wrapToolDefinition } from './bootstrap-dependencies.ts';
+import { createStartupRelevance } from './startup-relevance.mjs';
 import { readSessionDisposalState } from './session-disposal.mjs';
 import type {
   NativeHostSessionInput,
@@ -24,6 +25,7 @@ import {
 } from './host.ts';
 import {
   askUser,
+  readNativeBypassEnabled,
   createAssessmentSender,
   createNativeSemanticOperatingPolicies,
   VERDICT_ENTRY_TYPE
@@ -100,7 +102,11 @@ async function designatePolicy({cwd}: {readonly cwd:string}): Promise<NativePoli
     policy: {
       root: cwd,
       relativePath,
-      requiredMode
+      requiredMode,
+      relevance:createStartupRelevance({
+        root:cwd,
+        parse:parser.parse
+      })
     },
     authority: {
       tier: 'user' as const,
@@ -119,7 +125,7 @@ function rejectUnattributedAssessment(): never {
 }
 
 /**
- Read the same monotonic clock used by original judgment deadlines and HTTP requests.
+ Read the same monotonic clock used by original judgment performance targets and HTTP requests.
 
  @returns current monotonic timestamp in milliseconds
  */
@@ -166,29 +172,13 @@ function bindSession({
     l:log
   });
   l.debug('binding original native session to maintained policy runtime');
-  /**
-   The selected model supplies the observed main-request endpoint.
-   */
-  const baseUrl = root.session
-    .model
-    ?.baseUrl
-    ?? 'https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1';
-  /**
-   Preserve the prior single trailing-slash normalization.
-   */
-  const endpointBase = baseUrl.endsWith('/') ? baseUrl.slice(
-    0,
-    -1
-  ) : baseUrl;
-  /**
-   Request observation uses the complete native completion URL.
-   */
-  const endpoint = new URL(`${endpointBase}/chat/completions`).href;
   return bindNativePolicyRuntime({
+    readBypass() { return readNativeBypassEnabled(root.session
+      .extensionRunner
+      .createContext()); },
     root,
     lifecycle,
     policyInput: resource.policyInput,
-    endpoint,
     rootDirectory: options.cwd,
     parsePolicy: parser.parse,
     files: [],

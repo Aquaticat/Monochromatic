@@ -76,10 +76,6 @@ type Assessment={
    */
   readonly request:{
     /**
-     Exact authored policy.
-     */
-    readonly fullPolicy:string;
-    /**
      Changed rule handles.
      */
     readonly rules:readonly {readonly id:string}[];

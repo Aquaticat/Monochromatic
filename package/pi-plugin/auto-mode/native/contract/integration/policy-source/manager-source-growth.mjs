@@ -3,6 +3,7 @@ import {
   types
 } from 'node:util';
 import {SourceCollectionError} from '../../collector/collector.mjs';
+import {isCustomDataInput} from '../../collector/run-prompt-custody-v3/custom-data-input.mjs';
 
 /** Shape-check already-owned records without invoking caller accessors or proxy traps. */
 function frozenRecord(value){
@@ -23,17 +24,16 @@ function frozenRecord(value){
  }
 }
 
-/** Inspect a bounded owned reference list, never a copied message inventory. */
+/** Inspect a owned reference list, never a copied message inventory. */
 function origins(value){
  if(value===undefined)return [];
  if(types.isProxy(value)||(!Array.isArray(value))
    ||(Object.getPrototypeOf(value)!==Array.prototype)
    ||(!Object.isFrozen(value))
-   ||(value.length>128)
    ||(Reflect.ownKeys(value)
      .length
      !==(value.length
-     +1)))throw new SourceCollectionError('Manager source growth requires its bounded frozen origin list');
+     +1)))throw new SourceCollectionError('Manager source growth requires its frozen origin list');
  for(let index=0;index<value.length;index++){
   const field=Object.getOwnPropertyDescriptor(
     value,
@@ -74,10 +74,11 @@ export function assertManagerOriginsAppended({
     publication,
     sessionInputOccurrence
   }=origin;
-  if((source.kind!=='native-session-message-input')||(![
+  const admittedOrigin=isCustomDataInput(origin)||[
     'native-manager-input',
     'native-event-handler'
-  ].includes(source.inputOrigin))
+  ].includes(source.inputOrigin);
+  if((source.kind!=='native-session-message-input')||(!admittedOrigin)
     ||(source.registration!==undefined)
     ||(source.permission!==false)
     ||(origin.runOccurrence!==undefined)
@@ -86,7 +87,7 @@ export function assertManagerOriginsAppended({
     ||(!sessionInputOccurrence)
     ||(source.sessionInputOccurrence!==sessionInputOccurrence)
     ||(publication.sessionInputOccurrence!==sessionInputOccurrence)
-    ||(publication.sourceOccurrence!==source.occurrence))throw new SourceCollectionError('Only original unregistered manager or native event input occurrences may extend this source snapshot');
+    ||(publication.sourceOccurrence!==source.occurrence))throw new SourceCollectionError('Only original unregistered manager, native event or custom data inputs may extend this source snapshot');
  }
 }
 

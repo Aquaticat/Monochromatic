@@ -44,7 +44,7 @@ await describe({
         }, { message: 'Reached group cannot be prepared again' });
       },
     }),
-    ...['calls-array', 'calls-length', 'tools-array', 'tools-length', 'runner', 'call-null', 'call-type', 'call-id', 'call-name', 'tool-name', 'arguments'].map(function nativeAdmission(kind) {
+    ...['calls-array', 'calls-length', 'tools-array', 'tools-length', 'call-null', 'call-type', 'call-id', 'call-name', 'tool-name', 'arguments'].map(function nativeAdmission(kind) {
       return it({
         name: `rejects ${kind} before publishing native slots and retains the failed group`,
         fn: async function failedNativeBinding() {
@@ -59,7 +59,6 @@ await describe({
           if (kind === 'calls-length') input.calls = [];
           if (kind === 'tools-array') input.tools = {};
           if (kind === 'tools-length') input.tools = [];
-          if (kind === 'runner') input.runNative = undefined;
           if (kind === 'call-null') input.calls = [null];
           if (kind === 'call-type') input.calls = [{ ...call, type: 'text' }];
           if (kind === 'call-id') input.calls = [{ ...call, id: '' }];

@@ -6,8 +6,10 @@ import {
   JudgmentAttemptLimitError,
   JudgmentBudgetError
 } from './errors.ts';
+import {createBundleDispatcher} from './bundles.ts';
 import type {
   JudgmentAccounting,
+  JudgmentBundleOperation,
   JudgmentAttemptRecord,
   JudgmentBudget,
   JudgmentBudgetInput,
@@ -31,7 +33,7 @@ const attemptLimit=3;
  
  @param records - original attempt record collection
  
- @param deadlineAt - original absolute expiry
+ @param targetAt - original absolute performance target
  
  @param signal - original cancellation
  
@@ -40,7 +42,7 @@ const attemptLimit=3;
  @example
  ```ts
  const dispatch = createJudgmentDispatcher({
-   checkpoint, isRetryableTransportFailure, accounting, records, deadlineAt, signal,
+   checkpoint, isRetryableTransportFailure, accounting, records, targetAt, signal,
  });
  await dispatch(sendOriginalRequest);
  ```
@@ -50,16 +52,18 @@ export function createJudgmentDispatcher({
   isRetryableTransportFailure,
   accounting,
   records,
-  deadlineAt,
+  targetAt,
   signal
 }: {
   readonly checkpoint: () => number;
   readonly isRetryableTransportFailure: JudgmentBudgetInput['isRetryableTransportFailure'];
   readonly accounting: JudgmentAccounting;
   readonly records: Map<number,JudgmentAttemptRecord>;
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   readonly signal: AbortSignal;
 }): JudgmentBudget['dispatch'] {
+  /** Original judgment counters are shared by every active dispatch capability. */
+  const runBundle=createBundleDispatcher({accounting,checkpoint,signal,targetAt});
   /**
    Check lifetime after a failed attempt without replacing its original error.
    
@@ -163,7 +167,7 @@ export function createJudgmentDispatcher({
       // At most one retry can occur across every dispatch through this boundary.
       for(let invocation=0;invocation<attemptLimit;invocation+=1){
         checkpoint();
-        if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three client attempts');
+        if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three assessment dispatches');
         accounting.attempts+=1;
         /**
          Original judgment-wide invocation ordinal.
@@ -185,11 +189,27 @@ export function createJudgmentDispatcher({
          Only the successful transport path publishes a response field.
          */
         const response: { value?: Result }={};
+        /** Saved capabilities cannot enter a subsequent assessment dispatch. */
+        const admission={active:true};
+        /** Every success, failure, retry, and early return retires this capability. */
+        using bundleScope={ [Symbol.dispose](): void {admission.active=false;} };
+        /**
+         Admit calls only during their originating assessment invocation.
+
+         @param operations - original provider callbacks to run together
+
+         @returns complete ordered bundle responses
+         */
+        async function ownedRunBundle<Value>(operations: readonly JudgmentBundleOperation<Value>[]): Promise<readonly Value[]> {
+          if(!admission.active)throw new JudgmentBudgetError('Call bundle capability belongs to a completed assessment dispatch');
+          return await runBundle(operations);
+        }
         try {
           // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
           response.value=await operation(Object.freeze({
+          runBundle:ownedRunBundle,
           signal,
-          deadlineAt,
+          targetAt,
           attempt
           }));
         }

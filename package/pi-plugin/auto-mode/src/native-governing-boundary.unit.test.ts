@@ -96,7 +96,7 @@ await describe({
       });
     }),
     it({
-      name: 'counts retained prose and orphan headings toward the exact 512-clause bound',
+      name: 'retains prose and orphan headings beyond the former clause ceiling',
       fn: async function boundsEveryRetainedSubject() {
         /** Distinct ordinary paragraphs remain unclassified structural subjects. */
         const content = Array.from({ length: 511 }, function originalParagraph(_value, index) { 
@@ -113,11 +113,11 @@ await describe({
         assert.equal(binding.inspect().unclassified.length, 512);
         /** A second orphan heading exceeds the same original profile. */
         const exceeded = createGoverningSource(`${source.content}\n\n## Another orphan heading`);
-        assert.throws(function tooManyOriginalSubjects() {
-          createGoverningBindings({ readSource() { 
+        const expanded = createGoverningBindings({ readSource() {
             return exceeded; 
           }, parse: governingParser.parse });
-        }, governingBindingError('Policy clause count exceeds the original question binding profile'));
+        assert.equal(expanded.indexedInstructionCandidates().length, 513);
+        assert.equal(expanded.inspect().unclassified.length, 513);
       },
     }),
     it({

@@ -5,7 +5,7 @@ authors = ["Aquaticat"]
 categories = ["parser-implementations", "encoding"]
 documentation = "https://docs.rs/monochromatic-jsonc-edit"
 edition = "2024"
-homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/rust-module/jsonc-edit"
+homepage = "https://github.com/Aquaticats/Monochromatic/tree/main/package/rust-module/jsonc-edit"
 include = [
   "src/**/*.rs",
   "fixtures/*.json",
@@ -17,7 +17,7 @@ include = [
 keywords = ["jsonc", "json", "comments", "lossless", "parser"]
 license = "LGPL-3.0-or-later"
 readme = "README.md"
-repository = "https://github.com/Aquaticat/Monochromatic.git"
+repository = "https://github.com/Aquaticats/Monochromatic.git"
 description = "Comment-preserving JSONC parse, immutable edit, and canonical emit for Rust: every object key and value keeps one queryable attached comment, numbers compare by exact mathematical value while retaining their source spelling, and escaped unpaired UTF-16 surrogates survive as code units."
 
 [lints.clippy]

@@ -4,8 +4,7 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { createQuestionSelection } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
-import { capturePreparedJudgmentJSON } from './judgment-prepared-input.ts';
-import { publishJudgmentMembers } from './judgment-preparation-publication.ts';
+import {captureDecisionMaterial} from '../../../integration/policy-source/decision-material.mjs';
 import type {
   JudgmentPreparationInput,
   JudgmentPreparationState,
@@ -43,7 +42,6 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
   const {
     active,
     budget,
-    declaredNames,
     observer,
     response,
     receipt,
@@ -55,8 +53,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
     catalogText,
     catalogSHA256,
     resolveBinding,
-    bindings,
-    byMember,
+    preparedJSON:readPreparedJSON,
   } = input;
   /**
    Preparation outcome remains distinct from later assessment and evidence closure.
@@ -98,10 +95,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
       /**
        Complete immutable inputs are serialized before any source sealing or dependency preparation.
        */
-      const preparedJSON = capturePreparedJudgmentJSON({
-        members,
-        declaredNames
-      });
+      const preparedJSON = readPreparedJSON(members);
       /**
        Original truthiness selects the source-sealing path without invoking its presence marker.
        */
@@ -132,14 +126,38 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
       /**
        Frozen selection context preserves original serialized inputs and source projections.
        */
+      const sources=readJudgmentSources();
+      if(sources.decisionContext
+        ?.selection
+        ?.failure
+        !==undefined)throw new JudgmentConstructionError(
+        'Project policy relevance could not be classified; this operation needs manual review',
+        {cause:sources.decisionContext
+          .selection
+          .failure}
+      );
+      /**
+       Current assessment sources retain the same original read and snapshot identity.
+       */
       const envelope = Object.freeze({
         parentJSON,
         preparedJSON,
         requestBody: receipt.request
           .body,
         mandatoryPolicy,
-        governingSources: readJudgmentSources()
-          .governingSources,
+        governingSources: sources.decisionContext
+          ?.sources
+          ?? sources.governingSources,
+        policyMaterial:sources.decisionContext
+          ?.selection
+          ?.material
+          ??(input.parsePolicy!==undefined?captureDecisionMaterial({
+            sources:sources.decisionContext
+              ?.sources
+              ??sources.governingSources,
+            input:{parsePolicy:input.parsePolicy}
+          })
+            .material:undefined),
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({
@@ -151,12 +169,6 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
       });
       active();
       budget.checkpoint();
-      publishJudgmentMembers({
-        members,
-        bindings,
-        byMember,
-        signal
-      });
       state.handle = dependencyHandle;
       state.prepared = true;
     } catch (error) {

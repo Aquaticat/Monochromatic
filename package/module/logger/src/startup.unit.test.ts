@@ -8,7 +8,7 @@ import {
   rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 import { text, } from 'node:stream/consumers';
 
@@ -62,7 +62,9 @@ type ProbeResult = {
 async function createTempProject(
   { logLine, }: { readonly logLine: string; },
 ): Promise<TempProject> {
-  const path = await mkdtemp(join(tmpdir(), 'logger-startup-',),);
+  const scratch = join(homedir(), 'temp/agent',);
+  await mkdir(scratch, { recursive: true, mode: 0o700, },);
+  const path = await mkdtemp(join(scratch, 'logger-startup-',),);
   await mkdir(
     join(
       path,
@@ -128,6 +130,8 @@ async function runProbe(
       cwd,
       env: {
         ...process.env,
+        HOME: cwd,
+        MONOCHROMATIC_LOG_DIRECTORY: '',
         ...env,
       },
     },

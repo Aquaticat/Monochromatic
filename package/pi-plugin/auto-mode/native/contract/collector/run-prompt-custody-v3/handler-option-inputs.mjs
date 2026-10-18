@@ -1,5 +1,4 @@
 import {createHash} from 'node:crypto';
-import {SourceCollectionError} from '../collector.mjs';
 
 /**
  Represent already-owned callback option snapshots, not a second native observation or caller coverage claim.
@@ -9,11 +8,9 @@ export function captureHandlerOptionInputs({
   observations,
   runOccurrence
 }){
- if(observations.length>64)throw new SourceCollectionError('Original callback option sources exceed the governing 64-source profile');
  return Object.freeze(observations.map(function captureHandlerOptions(observation) {
   const content=JSON.stringify(observation.before
     .options);
-  if(Buffer.byteLength(content)>65_536)throw new SourceCollectionError('Original callback option input exceeds the source byte bound');
   return Object.freeze({
     kind:'native-run-handler-options-input',
     content,

@@ -3,6 +3,7 @@ import {collectRetainedRunInputs} from './run-history.mjs';
 import {linkRunInputCarriers} from './run-carriers.mjs';
 import {collectNativeMessageInputs} from '../../collector/run-prompt-custody-v3/message-inputs.mjs';
 import {assertCollectedManagerGrowth,assertManagerOriginsAppended} from './manager-source-growth.mjs';
+import {captureDecisionContext} from './decision-context.mjs';
 
 //region Original snapshots and approval retention share one collector-owned map.
 export function retainPolicyInput({base,session,readSessionConstructedInputs,readSessionDomainEvents,readCurrent,assertCurrent,assertInputBudget,resourceInputs,hostPrompt}){
@@ -30,14 +31,6 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      ?.skillDescriptionInputs;
    const nativeConstructedInputs=constructedInputs(original.nativeRunComposition);
    const nativeResourceToolInputs=resourceInputs();
-   if((nativeResourceToolInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({
-     resourceInputObservation:original.resourceInputObservation,
-     nativeResourceToolInputs
-   }))>1_048_576))throw new PolicySlotBindingError('Combined resource inputs exceed the original one-MiB resource bound');
-   if((nativeConstructedInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({
-     ...original,
-     nativeConstructedInputs
-   }))>1_048_576))throw new PolicySlotBindingError('Base-linked source collection exceeds total byte bound');
    const runMessageInputs=collectNativeMessageInputs({
      nativeRunComposition:original.nativeRunComposition,
      nativeConstructedInputs
@@ -72,7 +65,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      ...(nativeResourceToolInputs??[]).map(function readResourceToolSource(origin) { return (origin.source); })
    ]);
    const nativeDomain=domainEvents();
-   const snapshot=Object.freeze({
+   const captured={
      ...original,
      nativeDomainEventKinds:nativeDomain?.kinds,
      nativeDomainEventObservation:nativeDomain?.observation,
@@ -85,6 +78,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      resourceSystemInput:input.resourceSystemInput,
      appendPromptInputs:input.appendInputs,
      contextPromptInputs:input.contextInputs,
+     readablePolicySources:input.readablePolicies.sources,
      governingContextCarriers:input.contextCarriers,
      priorContextPublication:input.priorContext,
      forcedPromptInput,
@@ -97,7 +91,9 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      builtInPromptInputs,
      runInputCarriers,
      governingSources
-   });
+   };
+   const decisionContext=captureDecisionContext({snapshot:captured,session,input});
+   const snapshot=Object.freeze({...captured,decisionContext});
    if(constructedInputs(original.nativeRunComposition)!==nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source capture');
    if(resourceInputs()!==nativeResourceToolInputs)throw new PolicySlotBindingError('Resource tool inputs changed during source capture');
    assertInputBudget(session);
@@ -168,8 +164,8 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
     if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Original extension tool inputs changed during source finalization');
    }catch(error){saved.failure??={cause:error};throw error;}
   }
-  /** Called only at the original resolved approval handoff; never selects new sources or revives failed ones. */
-  function retainApprovedSources(snapshot){
+  /** Called at resolved approval or explicit bypass handoff; retains dependencies without selecting sources or issuing permission. */
+  function retainExecutionSources(snapshot){
    assertObservedFresh(snapshot);
    const saved=snapshots.get(snapshot);
    if(saved.approved)throw new PolicySlotBindingError('Original selected sources were already retained for approved execution');
@@ -240,7 +236,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
   return Object.freeze({
     capture,
     assertObservedFresh,
-    retainApprovedSources,
+    retainExecutionSources,
     captureJudgmentSources
   });
  }

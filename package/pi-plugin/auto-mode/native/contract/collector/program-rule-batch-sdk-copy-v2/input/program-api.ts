@@ -2,8 +2,7 @@
  Public original program operations preserve prepared inspection, live execution, and retained diagnostics. @module
  */
 import type {
-  NativeReturnInput,
-  NativeReturnOutcome
+  NativeCallSlot,
 } from './native-return-types.ts';
 import type { PreparedProgramView } from './program-declaration-types.ts';
 import type {
@@ -56,7 +55,7 @@ export type ProgramReaching = Readonly<{
  Native invocation and guarded value access remain separate operations.
  */
 export type ProgramValueAccess = Readonly<{
-  invokeProgramNative: (input: NativeReturnInput & Readonly<{ group: object }>) => Promise<NativeReturnOutcome>;
+  
   scriptValueFor: (input: Readonly<{
     group: object;
     slot: object;
@@ -80,6 +79,6 @@ export type ProgramInspection = Readonly<{
  Original judgment exposes one frozen surface for program ownership and native group publication.
  */
 export type JudgmentPrograms = ProgramOpening & ProgramReaching & ProgramValueAccess & ProgramInspection & Readonly<{
-  bindProgramCalls: (input: BindProgramCallsInput) => readonly object[];
+  bindProgramCalls: (input: BindProgramCallsInput) => readonly NativeCallSlot[];
   prepareReachedMembers: (input: PrepareReachedMembersInput) => readonly object[];
 }>;

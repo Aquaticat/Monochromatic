@@ -1,7 +1,6 @@
 /**
  Retain terminal original answers or their malformed and discarded diagnostics. @module
  */
-import { Buffer } from 'node:buffer';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { QuestionSelectionError } from './selection-error.ts';
@@ -18,10 +17,6 @@ import type {
  */
 const l = tagged({ tag: 'auto-mode-question-settlement' });
 
-/**
- Retained answer text uses the existing UTF-8 response bound.
- */
-const ANSWER_MAX_BYTES = 65_536;
 
 //region Only the selection owner can authenticate and settle original batches.
 
@@ -92,9 +87,9 @@ export function createQuestionSettlement<const Claim extends SettlementClaim>({
       const batch = knownBatch(handle);
       if (batch.settled) throw new QuestionSelectionError('Question batch already has a terminal response');
       /**
-       Oversized and non-string responses never enter retained raw diagnostics.
+       Non-string responses never enter retained raw diagnostics.
        */
-      const retainedRaw = ((typeof answerText) === 'string') && (Buffer.byteLength(answerText) <= ANSWER_MAX_BYTES)
+      const retainedRaw = ((typeof answerText) === 'string')
         ? answerText : undefined;
       try {
         budget.checkpoint();

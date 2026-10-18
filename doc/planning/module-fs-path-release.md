@@ -283,9 +283,59 @@ After this release,
 
 ## Next action
 
+Historical next action after the 2026-09-07 release:
+
 None for this release.
 The next changeset merged to `main` for this package exercises the CI publish path with provenance for the first time and proves the trusted publisher.
 `module-test` still waits on `module-async-time`,
  `module-caught-value`,
  `module-const`,
  and `module-numeric-format`.
+
+## Trusted publisher validation release, 2026-10-16
+
+The owner requested a version bump and npm publication to validate the newly added trusted publisher
+for `Aquaticats/Monochromatic` and `npm-publish.yml`.
+The registry already held `0.2.0`,
+published on 2026-09-08 with provenance;
+the package directory had no changes since its release tag.
+A disposable registry installation passed root discovery on disk and in memory,
+Node directory and file helpers,
+path joining,
+and rejection of the unpublished `/ts` entry.
+
+Release `0.2.1` updates the repository URL to the transferred GitHub owner and keeps the public API unchanged.
+Commit `499ab653de` holds the version and changelog update on `release/fs-path-npm-20261016`.
+The dedicated manual workflow builds and tests only this package,
+packs it with pnpm,
+and publishes the tarball with npm OIDC and provenance in a separate job.
+It runs from the release branch so the workflow revision matches the source revision.
+Publishing before bringing the bump to `main` prevents the existing `npm-release.yml` workflow
+from publishing the version before the new trusted publisher can validate.
+
+Local checks passed:
+`mise run //package/module/fs-path:buildAndTest`,
+`lint:types`,
+and `lint:oxlint` (zero warnings and errors).
+[Release run 38837297263](https://github.com/Aquaticats/Monochromatic/actions/runs/38837297263)
+builds commit `704f1a1586a5ef37c8dc597d1fcb0434dfb7a71a`.
+The run succeeded and npm made `0.2.1` available at `2026-10-16T01:53:24.576Z`.
+The registry's `latest` tag resolves to `0.2.1`.
+Its publisher is GitHub Actions,
+with trusted publisher configuration `b5559568-84c4-4539-93bd-c623048cd565`.
+The SLSA provenance identifies `Aquaticats/Monochromatic`,
+`.github/workflows/npm-publish.yml`,
+and source commit `704f1a1586a5ef37c8dc597d1fcb0434dfb7a71a`.
+This successful OIDC publication exercised the newly configured publisher.
+
+A disposable consumer with its own `package.json` installed `0.2.1` from npm and passed the same runtime checks,
+plus assertions of the installed version and repository URL.
+Commit `d71ed3b6d4` records the matching version and changelog on `main`.
+Tag `@monochromatic-dev/module-fs-path@0.2.1` preserves the exact published source commit.
+The initial consumer fixture omitted its own manifest and caused npm to select the parent scratch directory;
+the affected temporary Markdown dependencies were restored and compiled successfully.
+Details:
+[npm parent prefix selection](../troubleshooting/npm-scratch-parent-prefix.md).
+
+Next action:
+none for `0.2.1`.

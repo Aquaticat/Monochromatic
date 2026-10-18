@@ -7,7 +7,7 @@
  */
 export type FacadeFixtureProjection = Readonly<{
   mechanicalDependenciesCurrent: true;
-  decisionDeadlineChecked: boolean;
+  decisionClockChecked: boolean;
   unqualifiedCoverage: unknown;
   instructionAuthority: 'not-established';
   humanWitness: 'not-established';

@@ -64,9 +64,14 @@ Read-only commands,
 
 ## Requirements
 
-- Linux.
+- Linux with glibc 2.39 or newer.
   Release archives exist for `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` only.
-  The sources contain Windows-specific branches that no release gate has exercised.
+  They are built on the `ubuntu-latest` runner and link `pidfd_spawnp` and `pidfd_getpid`, which glibc added in 2.39
+  (measured on the 0.1.5 x86_64 archive with `objdump -T`), so they do not start on Debian 12 or Ubuntu 22.04.
+  The crate does not compile for Windows: `cargo check --target x86_64-pc-windows-gnu --lib` fails with 16 errors in
+  eight files (the `tempfile` and `ignore` dependencies are unix-only and several modules use `std::os::unix`),
+  so the Windows-specific branches in the sources have never run; each is marked `UNTESTED ON WINDOWS` in the source.
+  A Windows port is deferred to a later version (owner decision, 2026-10-15).
 - Real Git 2.55.0 or newer on `PATH` after the wrapper.
   The wrapper checks the version before work that depends on Git's behavior,
    such as a commit,
@@ -86,7 +91,7 @@ Install it as a `cargo:` tool of [mise][mise],
 ```toml
 # mise.toml
 [tools]
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.4", os = ["linux"] }
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.5", os = ["linux"] }
 ```
 
 `mise install` downloads the release archive of the crate's GitHub release when one exists for the host.

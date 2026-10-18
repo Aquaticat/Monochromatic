@@ -281,6 +281,95 @@ the items after it are the record of 2026-10-05 and older.
   `monochromatic-lint package/desktop-app/ide` exits 1 with 570 `markdown/semantic-line-breaks` errors
   and 821 `rust/no-anonymous-functions` warnings.
   None of it comes from the IDE work of this handover; the cutover owns it.
+- The native minimap is split,
+  and the missing rustdocs of the minimap,
+  `git_ignore`
+  and `language` files are added,
+  on branch `refactor/ide-split-minimap` (worktree `.claude/worktrees/ide-split-minimap`),
+  with no change of behavior.
+  Fixed:
+  `rust/max-lines` in `src/native/minimap.rs` (439 code lines against a limit of 300),
+  and `rust/require-rustdoc` in `src/native/minimap.rs`,
+  `src/native/minimap_build.rs`,
+  `src/minimap.rs`,
+  `src/minimap/raster.rs`,
+  `src/git_ignore.rs`,
+  `src/git_ignore/stamp.rs`,
+  and the nine files of `src/language/` that the combined lint named.
+  `src/native/minimap.rs` now holds the module documentation and the re-exports,
+  so no caller changed.
+  `native/minimap/state.rs` holds `MinimapState` and the drag.
+  `minimap/pace.rs` holds `plan`,
+  `Plan`,
+  and the two periods.
+  `minimap/request.rs` holds `key_of`,
+  `post`,
+  `flush`,
+  and `note`.
+  `minimap/picture.rs` holds `apply`,
+  the poll of the worker's replies,
+  and the poll timer.
+  `minimap/pointer.rs` holds `scroll_to`,
+  `jump`,
+  and `bind`.
+  Items that moved down a level and were `pub(super)` are `pub(in crate::native)`,
+  and `plan`,
+  `Plan`,
+  `DEBOUNCE`,
+  `THROTTLE` and `apply` are re-exported under `#[cfg(test)]` only,
+  because only `src/native/minimap_tests.rs` uses them outside the module.
+  Eleven `inspect:source-guards` cases changed their `file:` path and nothing else
+  (`minimap-press-centers`,
+  `minimap-press-caret`,
+  `minimap-shift-anchor`,
+  `minimap-drag-scrolls`,
+  `minimap-release-ends-drag` now name `src/native/minimap/pointer.rs`;
+  `minimap-key-has-no-scroll` names `request.rs`;
+  `minimap-follows-measurement`,
+  `minimap-resize-keeps-wait` and `minimap-throttle-period` name `pace.rs`;
+  `minimap-stale-text` and `minimap-older-request` name `picture.rs`).
+  A scratch checker counted every `file:` and `before:` pair of `bin/inspect-*.mjs` (412 pairs) in the moved tree
+  and in `main`:
+  the same five pairs,
+  all in find and search guards that pass an occurrence number,
+  are not found once.
+  Tracing events of the moved functions now carry the targets
+  `monochromatic_ide::native::minimap::request`,
+  `::picture` and `::pointer`,
+  not `monochromatic_ide::native::minimap`;
+  no filter,
+  test or script in the package names the old target.
+  The record of the minimap on branch `feat/ide-minimap` cites `src/native/minimap.rs` for `plan`,
+  which is `src/native/minimap/pace.rs` now.
+  Gate on the branch:
+  lint:rustfmt,
+  lint:clippy,
+  lint:slint,
+  lint:release,
+  test,
+  test:cli,
+  test:native with 197 passed as before the split,
+  test:language,
+  test:minimap,
+  test:wrap,
+  test:annotations,
+  test:annotations-native,
+  test:syntax,
+  bundle,
+  inspect:bundle,
+  inspect:bundle-guards,
+  and the source (108 of 108),
+  language (31 of 31),
+  language lifecycle (28 runs),
+  language navigation (16 of 16)
+  and ignored-entry (28 of 28) guards,
+  inspect:language,
+  inspect:language-mise and inspect:language-confinement,
+  all status 0.
+  The lint of `src/` shows no `rust/max-lines` and no `rust/require-rustdoc` finding in these files,
+  the `rust/no-anonymous-functions` count is unchanged,
+  and no file of the IDE package gained a `markdown/semantic-line-breaks` finding outside the new minimap modules,
+  whose total is below the old file's.
 - Branch `refactor/ide-split-top` (2026-10-15) clears the `rust/max-lines` and `rust/require-rustdoc` findings of
   `src/annotation.rs`,
   `src/shaped_text.rs`,
@@ -603,15 +692,11 @@ the items after it are the record of 2026-10-05 and older.
     fitting" detector reads 68 to 73 of 102 for the minimap build against 33 to 52 for `main`; the detector looks for
     ink in the last columns, which the minimap fills, so those counts do not compare (the border signature detector
     the agent used reads 37 to 70). The installed `~/.local/bin/monochromatic-ide` is that build (sha256 `9c4d6047`).
-    In flight on 2026-10-15 (two agents, worktrees `.claude/worktrees/ide-split-top` and `ide-split-native`, branches
-    `refactor/ide-split-top` and `refactor/ide-split-native`): the eight `rust/max-lines` files and the eleven
-    `rust/require-rustdoc` gaps the combined lint found (`annotation.rs`, `shaped_text.rs`, `text_raster.rs`,
-    `native.rs`, `native/render.rs`, `native/rows.rs`, `native/tile.rs`, `native/tile_build.rs`; rustdocs in
-    `name_order.rs`, `tab_layout.rs`, `text_projection.rs`, `wrap.rs`, `wrap_sign.rs`, `shaped_text.rs`,
-    `native/tile_build.rs`). The native agent reported done (branch `refactor/ide-split-native`, gates green on its
-    tree); a third agent (`refactor/ide-split-minimap`) splits `native/minimap.rs` and adds the rustdocs the combined
-    lint still found in the minimap, `git_ignore` and `language` files. Next after all land: merge them, rerun every
-    guard task on the combined tree.
+    Landed on 2026-10-15: the splits of `annotation.rs`, `shaped_text.rs`, `text_raster.rs`, `native.rs`,
+    `native/render.rs`, `native/rows.rs`, `native/tile.rs`, `native/tile_build.rs` and `native/minimap.rs`, and the
+    rustdocs the combined lint found (branches `refactor/ide-split-top`, `refactor/ide-split-native` and
+    `refactor/ide-split-minimap`; the coordinating session merged them and reran every guard task on the combined
+    trees before each landing).
     The user approved the bulk reformat on 2026-10-15 ("Yes fix both directly in main."): the mise managed linter,
     declared `latest` (never pinned; `mise.lock` only records that it resolved to 0.1.3),
     found by `mise which monochromatic-lint` (the PATH of a stale shell finds 0.1.1, which rejects the config), counts

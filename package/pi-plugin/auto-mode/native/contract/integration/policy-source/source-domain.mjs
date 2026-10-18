@@ -118,7 +118,8 @@ export function inspectNativeSourceDomain({
    coverage.sourceOccurrence,
    coverage
  ]); }));
- if((indexed.size!==original.size)||[...original].some(function lacksIndexedOccurrence(source) { return (!indexed.has(source?.occurrence)); }))missing('Original host source occurrences do not all have their own structural source-unit inspection.');
+ const selected=snapshot.decisionContext?.sources??expected;
+ if((indexed.size!==selected.length)||selected.some(function lacksIndexedOccurrence(source) { return (!indexed.has(source?.occurrence)); }))missing('Selected decision sources do not all have their own structural source-unit inspection.');
  for(const coverage of sourceCoverage){
   if(coverage.stale||coverage.failure
     ||(!Array.isArray(coverage.instructionCandidates))

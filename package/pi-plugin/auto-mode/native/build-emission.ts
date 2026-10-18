@@ -5,7 +5,6 @@
  */
 import {
   cp,
-  rm,
   mkdir,
   realpath,
   symlink,
@@ -158,29 +157,12 @@ export async function emitPackage({
       'pi',
       specification.folder,
     );
-    // Source emission owns this generated package tree, including its dependency link.
-    await rm(
-      target,
-      {
-        recursive: true,
-        force: true
-      }
-    );
+    // A fresh release never overwrites an existing emitted package or its linked files.
     await mkdir(
-      target,
+      dirname(target),
       { recursive: true, },
     );
-    await cp(
-      join(
-        upstream,
-        'src',
-      ),
-      join(
-        target,
-        'src',
-      ),
-      { recursive: true, },
-    );
+    await mkdir(target);
     await cp(
       join(
         upstream,
@@ -213,8 +195,8 @@ export async function emitPackage({
             target: 'ES2024',
             module: 'NodeNext',
             moduleResolution: 'NodeNext',
-            rootDir: 'src',
-            outDir: 'dist',
+            rootDir: join(upstream, 'src'),
+            outDir: join(target, 'dist'),
             noCheck: true,
             noResolve: true,
             declaration: false,
@@ -225,8 +207,8 @@ export async function emitPackage({
             skipLibCheck: true,
             types: [],
           },
-          include: ['src/**/*.ts',],
-          exclude: ['src/experimental',],
+          include: [join(upstream, 'src/**/*.ts')],
+          exclude: [join(upstream, 'src/experimental')],
         },
         null,
         2,
@@ -246,7 +228,7 @@ export async function emitPackage({
     );
     await copyAssets({
       source: join(
-        target,
+        upstream,
         'src',
       ),
       target: join(

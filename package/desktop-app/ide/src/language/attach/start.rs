@@ -13,6 +13,7 @@ use crate::language::identity::ServerIdentity;
 use crate::language::launch::prepare;
 /// `didOpen` follows readiness.
 use crate::language::lifecycle::send_did_open;
+/// A new process has no kept failures yet.
 use crate::language::notice::Trouble;
 /// A new process owes no answers yet.
 use crate::language::owed::Owed;

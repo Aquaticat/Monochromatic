@@ -2590,7 +2590,13 @@ Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/S
 ### Performance bounds
 
 - The picture is built on its own thread (`ide-minimap`, `src/native/minimap_build.rs`), never on the window thread.
-  The window thread takes a finished picture with one comparison and one image setter (`src/native/minimap.rs`).
+  The window thread takes a finished picture with one comparison and one image setter (`apply` in `src/native/minimap/picture.rs`).
+  The window's side is split by what each part answers for in `src/native/minimap/`:
+  `state.rs` holds the state and the drag,
+  `pace.rs` decides when a request is posted,
+  `request.rs` makes the key and posts the request,
+  `picture.rs` takes in the finished pictures,
+  and `pointer.rs` turns a press, a drag, and a page step into scroll offsets.
 - The picture depends on the text, its syntax classes, the vertical mapping, the wrap width, the palette, the display
   scale, and the size of the minimap, and on nothing else; in particular not on the scroll offset
   (`Key` in `src/native/minimap_build.rs`).

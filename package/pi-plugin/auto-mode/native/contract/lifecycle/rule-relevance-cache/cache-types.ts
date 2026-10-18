@@ -90,10 +90,6 @@ export type RelevanceProfile={
  */
 export type RelevanceRequest={
  /**
-  Complete source retained for classifier context.
-  */
- readonly fullPolicy:string;
- /**
   Exact original source digest.
   */
  readonly sourceSHA256:string;

@@ -9,7 +9,7 @@ function textRecord({
  if((!value)||((typeof value)!=='object')
    ||(Object.getPrototypeOf(value)!==Object.prototype))throw new SourceCollectionError('Native prompt construction requires an ordinary text record');
  const keys=Reflect.ownKeys(value);
- if((keys.length>512)||keys.some(function isUnsupportedRenderKey(key) { return (((typeof key)!=='string')||(key==='__proto__')); })
+ if(keys.some(function isUnsupportedRenderKey(key) { return (((typeof key)!=='string')||(key==='__proto__')); })
    ||(fields&&((keys.length!==fields.length)||keys.some(function isUnexpectedRenderField(key) { return (!fields.includes(key)); }))))throw new SourceCollectionError('Native prompt construction has unsupported text fields');
  const copied={};
  for(const key of keys){
@@ -57,7 +57,6 @@ export function captureRenderInputs({
  const sections=textRecord({value:sectionsField.value});
    const generated=generatedField.value;
  if((!Array.isArray(generated))||(Object.getPrototypeOf(generated)!==Array.prototype)
-   ||(generated.length>512)
    ||(Reflect.ownKeys(generated)
      .length
      !==(generated.length
@@ -96,7 +95,6 @@ export function captureRenderInputs({
     'inserted',
     'not-inserted'
   ].includes(nativeRuleInsertion))))throw new SourceCollectionError('Native rule insertion requires an observed original rule addition result');
-  if(Buffer.byteLength(content)>65_536)throw new SourceCollectionError('Native generated fragment exceeds source text bound');
   inputs.push(Object.freeze({
     kind:'native-generated-prompt-input',
     content,

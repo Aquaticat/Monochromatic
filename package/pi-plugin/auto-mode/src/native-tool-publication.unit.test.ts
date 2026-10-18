@@ -175,7 +175,7 @@ await describe({ name: '', children: [
     expect(function conflictingCapture() {
       managerModule.assertNativeSessionInputCapture(conflicting);
     })
-      .toThrow('Original session inputs exceed the supported source capture profile');
+      .toThrow('Native tool declaration already belongs to another original input or position');
     expect(publicationModule.readOriginalToolPublication(first.message.toolsAdded[0])).toBe(first.origin.publication);
     expect(publicationModule.readOriginalToolPublication(second.message.toolsAdded[0])).toBe(second.origin.publication);
   } }),

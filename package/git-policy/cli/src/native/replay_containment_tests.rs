@@ -159,3 +159,47 @@ fn no_landed_change_is_contained() {
     assert!(contains_landed_change(&[], &landed_b(), &base()));
     assert!(!contains_landed_change(&landed_b(), &[], &base()));
 }
+
+/// A suffix match needs the prepared hunk to end where the landed change ends; a prepared hunk ending later does not qualify.
+#[test]
+fn a_suffix_match_needs_the_prepared_hunk_to_end_at_the_landed_end() {
+    let landed: Vec<PatchHunk> = vec![hunk(2, 2, &[(b'-', "b\n"), (b'-', "c\n"), (b'+', "B\n"), (b'+', "C\n")])];
+    let prepared: Vec<PatchHunk> = vec![hunk(
+        1,
+        1,
+        &[
+            (b'-', "a\n"),
+            (b'-', "b\n"),
+            (b'-', "c\n"),
+            (b'-', "d\n"),
+            (b'-', "e\n"),
+            (b'+', "X\n"),
+            (b'+', "Y\n"),
+            (b'+', "B\n"),
+            (b'+', "C\n"),
+        ],
+    )];
+    assert!(!contains_landed_change(&landed, &prepared, &base()));
+}
+
+/// A landed change that is longer than the prepared change sharing its start is not covered by it,
+///  even though the prepared lines are a prefix of the landed lines.
+#[test]
+fn a_prepared_change_shorter_than_the_landed_range_does_not_cover_it() {
+    let landed: Vec<PatchHunk> = vec![hunk(2, 2, &[(b'-', "b\n"), (b'-', "c\n"), (b'-', "d\n"), (b'+', "B\n")])];
+    let prepared: Vec<PatchHunk> = vec![hunk(2, 2, &[(b'-', "b\n"), (b'+', "B\n")])];
+    assert!(!contains_landed_change(&landed, &prepared, &base()));
+}
+
+/// With only the start shared, own lines between the landed lines are not a one-sided extension:
+///  the exact-range allowance needs both ends of the landed range.
+#[test]
+fn own_lines_between_landed_lines_need_both_ends_anchored() {
+    let landed: Vec<PatchHunk> = vec![hunk(2, 2, &[(b'-', "b\n"), (b'+', "B1\n"), (b'+', "B2\n")])];
+    let prepared: Vec<PatchHunk> = vec![hunk(
+        2,
+        2,
+        &[(b'-', "b\n"), (b'-', "c\n"), (b'+', "B1\n"), (b'+', "X\n"), (b'+', "B2\n"), (b'+', "Y\n")],
+    )];
+    assert!(!contains_landed_change(&landed, &prepared, &base()));
+}

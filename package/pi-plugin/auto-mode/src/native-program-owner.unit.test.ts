@@ -22,7 +22,7 @@ await describe({
         } });
         const owner = createFixtureProgramOwner(supplied);
         assert.equal(Object.isFrozen(owner), true);
-        assert.deepEqual(Object.keys(owner), ['bindPreparedProgram', 'preparedProgramFor', 'openProgram', 'programFor', 'reachProgramGroup', 'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'invokeProgramNative', 'scriptValueFor', 'markProgramGuard', 'inspectReachedGroup', 'inspectProgram']);
+        assert.deepEqual(Object.keys(owner), ['bindPreparedProgram', 'preparedProgramFor', 'openProgram', 'programFor', 'reachProgramGroup', 'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'scriptValueFor', 'markProgramGuard', 'inspectReachedGroup', 'inspectProgram']);
         assert.deepEqual(reads, properties);
         assert.deepEqual(events, []);
         assert.throws(function foreignProgram() { 
