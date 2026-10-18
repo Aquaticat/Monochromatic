@@ -224,3 +224,13 @@ The independent follow-on recheck passed `33` source-body joins,
 `30` interval and identity joins,
 and all retained setup ZIP CRC checks after desktop hydration.
 The frozen baseline is unchanged.
+
+The fresh `depot/proto` clone matches revision `01dc47fdd504fe88697aec8b3033ce887588d302`.
+The exact native registry `GetImageDetail` read returned HTTP `401`,
+code `unauthenticated`,
+message `Invalid token`,
+with the existing login.
+This is an authentication prerequisite failure,
+not evidence of image absence or a completed deletion.
+No deletion or new credential ran.
+The documented OCI bridge remains queued for source inspection and an exact owned-image read.
