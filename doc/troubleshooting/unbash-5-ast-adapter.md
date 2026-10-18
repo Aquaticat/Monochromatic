@@ -258,6 +258,42 @@ No command was retried outside the restricted cgroup.
 
 ## Upstream filing decision
 
+## Separate historical projection failure, 2026-10-18
+
+Auto-mode's actual Pi RPC session retains an aborted assistant tool-call fragment.
+Its Bash argument has 80 code units and incomplete quoting.
+The call's identifier never appears in a tool-execution-start event.
+Pi's agent loop checks the assistant `error` and `aborted` stop reasons before tool dispatch.
+Keeping that fragment in conversation history is separate from executing it.
+
+The next automatic review fails with
+`RequestObservationUnavailableError: Tool execution requires usable request evidence`.
+The retained cause is the shared analyzer's
+`ShellReviewSyntaxError: Bash parser reported incomplete syntax; automatic review requires a complete parsed operation`.
+The deciding owned code is `src/visible-context.ts` in `package/pi-plugin/auto-mode`:
+its historical assistant projection calls the same strict `projectReviewInput` used for current proposals.
+The same reuse occurs for direct Bash history and process-result metadata.
+One earlier incomplete record therefore disables source collection for a later operation.
+
+The maintained built projector reproduces this against the actual closed session,
+and a clean-history control passes.
+The retained log is
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018/historical-shell-reproduction-corrected-sdk-scope.log`.
+The first probe resolves Pi from the wrong package scope and fails before exercising this behavior;
+its module-resolution failure is not product-regression evidence.
+
+The private remedy keeps current operations strict while representing unavailable earlier syntax as data.
+It must retain other visible fields,
+omit raw command source,
+avoid establishing historical command effects or permission,
+and propagate unrelated failures.
+Private regression tests and consumer verification are pending.
+No shared source or installed parser is changed yet.
+This is an auto-mode role-boundary defect,
+not an Unbash parsing defect or a cancellation failure.
+
+## Upstream filing decision
+
 1.  Upstream fault:
     no.
     Version 5 produces the documented current tree;

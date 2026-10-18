@@ -11,7 +11,7 @@ An owned Git-wrapper defect or UX issue should be filed in this repository's Git
 
 ### Active workers and ownership
 
-Both real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
+The real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
 thinking high,
 2 GiB memory,
 two CPUs,
@@ -28,12 +28,13 @@ The user explicitly authorizes invoking and monitoring MiMo.
 - Native worker: `pi-mimo-rpc-session-j2yRJI`,
   controller session `41734`,
   pinned native `LytMAt`.
-  It owns only `policy-source/system-slot*`,
+  It is now closed with exit 0 and no native edits after a separate context-projection failure.
+  Its reserved assignment covers only `policy-source/system-slot*`,
   `policy-loader*` and necessary sibling implementation/types for that boundary.
   It must preserve capability identity,
   source currentness,
   reload and collector linkage,
-  then settle after one coherent committed cluster.
+  then settle after one coherent committed cluster when resumed.
 - Supervisor: all other native code,
   private builds,
   consumer verification,
@@ -101,6 +102,42 @@ zero execution and stale-operation rejection.
 No loose positive-count assertion is authorized.
 
 ### Git wrapper and external formatter
+
+A later source-worker commit fails because the replacement PATH also omits `git-lfs`.
+The exact Git diagnostic is `git-lfs filter-process: line 1: git-lfs: command not found`,
+followed by a failed clean filter for an unrelated tracked PNG.
+This does not by itself establish a wrapper-specific defect.
+The live source fixture now has qualified Git LFS `3.8.0` in `/fixture-bin`.
+Future launches preserve the resolved mise PATH and mount the required LFS helper explicitly.
+A wrapper-only version or namespace check is insufficient environment verification.
+
+### Incomplete historical shell source
+
+The native worker's next model request fails source collection with
+`RequestObservationUnavailableError: Tool execution requires usable request evidence`.
+Its retained cause is `ShellReviewSyntaxError: Bash parser reported incomplete syntax`.
+This is separate from instruction-snapshot replacement.
+The actual closed session contains one aborted assistant call with an 80-code-unit incomplete Bash string.
+Its identifier never appears in a tool-execution-start event.
+The maintained built context projector reproduces the syntax error on that retained history;
+a clean-history control passes.
+The corrected-scope reproduction is `historical-shell-reproduction-corrected-sdk-scope.log`.
+The first probe used the wrong package-resolution scope and failed before exercising the projector.
+
+Private candidate `historical-shell-candidate-aWqmVs` starts from committed `6fac7c5648`.
+It separates strict current-operation projection from earlier activity data,
+keeps unavailable historical syntax explicit without transmitting raw Bash,
+preserves non-command options and unknown failures,
+and extracts per-role message projection from context windowing.
+New regression catalogs cover assistant,
+direct Bash and every known process metadata location,
+with strict current-proposal and unrelated-error controls.
+Formatting,
+builds,
+types,
+retained-history replay and guard mutations are pending.
+No shared `src` or published artifact is changed by this candidate.
+Finish this repair before resuming the native typing worker.
 
 [Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) is open with `needs-triage`.
 The supervisor's RPC launcher omitted the wrapper from its replacement PATH.
