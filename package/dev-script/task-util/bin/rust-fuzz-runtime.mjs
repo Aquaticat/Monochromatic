@@ -37,8 +37,8 @@ export function prepareRuntime({ binaries, corpora, dictionary, directory, image
   return { image, rootfs, libraryFiles: [...libraries].map(path => ({ path, bytes: statSync(path).size, sha256: createHash('sha256').update(readFileSync(path)).digest('hex') })) };
 }
 
-export function runRuntime({ name, image, executable, args, directory, run, expectedAsanFailure = false }) {
-  const created = run(name + '-create', 'sudo', ['--non-interactive', 'podman', 'create', '--network=none', '--http-proxy=false', '--memory=2g', '--cpus=2', '--pids-limit=128', '--cap-drop=all', '--user=1000:1000', '--workdir=/work', '--entrypoint=/fuzz/' + executable, image, ...args]);
+export function runRuntime({ name, image, executable, args, directory, run, expectedAsanFailure = false, workingDirectory = '/work', maximumSeconds }) {
+  const created = run(name + '-create', 'sudo', ['--non-interactive', 'podman', 'create', '--network=none', '--http-proxy=false', '--memory=2g', '--cpus=2', '--pids-limit=128', '--cap-drop=all', '--user=1000:1000', '--workdir=' + workingDirectory, ...(maximumSeconds ? ['--timeout=' + maximumSeconds] : []), '--entrypoint=/fuzz/' + executable, image, ...args]);
   const id = created.output.trim();
   assert(/^[a-f0-9]{64}$/u.test(id));
   let outcome;
@@ -59,7 +59,7 @@ export function runRuntime({ name, image, executable, args, directory, run, expe
         else throw new Error('Unexpected runtime corpus entry: ' + path);
       }
     }
-    outcome = { id, image, executable, args, status: started.status, state, files, corpusCopiedTo: destination, noHostMounts: true, network: 'none', cpus: 2, memoryBytes: 2 * 1024 ** 3, pidsLimit: 128 };
+    outcome = { id, image, executable, args, status: started.status, state, files, corpusCopiedTo: destination, noHostMounts: true, network: 'none', cpus: 2, memoryBytes: 2 * 1024 ** 3, pidsLimit: 128, workingDirectory, maximumSeconds };
     if (expectedAsanFailure) {
       assert.notEqual(started.status, 0);
       assert(started.output.includes('AddressSanitizer: stack-buffer-overflow'), started.output.slice(-3000));

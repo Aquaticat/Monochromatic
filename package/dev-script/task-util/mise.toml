@@ -221,7 +221,7 @@ run = "node bin/rust-codex-host.mjs"
 run = "node bin/rust-fuzz-coverage.mjs"
 
 [tasks."research:rust:bounded-check"]
-run = ["node --check bin/rust-bounded-profile.mjs", "node --check bin/rust-codex-host.mjs", "node --check bin/rust-fuzz-runtime.mjs", "node --check bin/rust-fuzz-coverage.mjs", "node --check bin/rust-codex-protocol-tee.mjs", "node --check bin/rust-planted-cargo.mjs", "node --check bin/rust-planted-profile.mjs", "node --check bin/rust-truepeak-all.mjs", "node --check bin/rust-wg-privileged.mjs", "node --check bin/rust-wg-namespace.mjs"]
+run = ["node --check bin/rust-bounded-profile.mjs", "node --check bin/rust-codex-host.mjs", "node --check bin/rust-fuzz-runtime.mjs", "node --check bin/rust-fuzz-coverage.mjs", "node --check bin/rust-codex-protocol-tee.mjs", "node --check bin/rust-planted-cargo.mjs", "node --check bin/rust-planted-profile.mjs", "node --check bin/rust-truepeak-all.mjs", "node --check bin/rust-wg-privileged.mjs", "node --check bin/rust-wg-namespace.mjs", "node --check bin/rust-benchmarks.mjs"]
 
 [tasks."research:rust:planted"]
 run = "node bin/rust-planted-profile.mjs"
@@ -231,3 +231,6 @@ run = "node bin/rust-truepeak-all.mjs"
 
 [tasks."research:rust:wg"]
 run = "node bin/rust-wg-privileged.mjs"
+
+[tasks."research:rust:benchmarks"]
+run = "node bin/rust-benchmarks.mjs"
