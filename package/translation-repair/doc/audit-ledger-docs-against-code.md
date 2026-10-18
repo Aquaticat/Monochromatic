@@ -508,3 +508,74 @@ and the clock guard reads them.
 A citation planted in the corpus-pass runbook failed the first,
 a zone-less time planted in a troubleshooting doc failed the second,
 and both files were restored from the commit.
+
+## D34: seven clauses and names in the history archive that said more or less than the files held
+
+Status:
+fixed 2026-10-15 in `d6f7f9ae12` by the round n167,
+found the same day by the third independent reading of the history archive (n165,
+`s236/review.md`),
+which read the fixes of the second reading (`730c503608`,
+2026-10-13)
+and found all ten of its findings fixed,
+the cuts exact,
+and seven low faults.
+The archive is `doc/handover/translation-repair-history*.md` at the repository root;
+its own wording is moved and never rewritten.
+The owner's rule that no mistake is too small to fix made all seven fixes and not reports.
+
+- Two provenance-note clauses claimed that the notes name sections they do not.
+  The clause in the first editor calibration file now says what the note of 2026-08-25 says:
+  it counts six sections aged out of the working handover and moved unedited,
+  and names the three kept there,
+  and the clause says where the other three went.
+  The clause in the second file now says that the note of 2026-08-26 says this file's sections moved unedited.
+  The evidence is the message of `e17c133648`
+  (it moved the availability record,
+  the imaginary blocker,
+  the record numbers,
+  the naturalness lane,
+  the missing silent-model list and the superseded first reading of the deepseek anomaly,
+  and kept the zero-rounds,
+  slice-count and 14-slice sections),
+  the headings of the files,
+  and `2e67f872a8`,
+  whose message says 25 closed sections moved verbatim.
+- The top index entry for 2026-08-24 to 2026-08-25 left out the subjects of four files,
+  and the entry for 2026-08-15 to 2026-08-19 left out two subjects
+  (the removal of the proportional aligner,
+  and the state record after the displacement screen was rebuilt).
+- The see-also clause of the roster-sweep file pointed at a caveat and not at figures.
+  A search of the 16 files of the group for figures taken from a partial sweep prefix found none,
+  so the clause now says only what the ratio-guard file holds:
+  the sweep and the warning not to read band and tail endpoints off a partial prefix.
+- The see-also clause of the scope-correction file named no file.
+  It now names the three files whose sections gate or time a full pass or its relaunch.
+- The name of the second editor calibration file listed seven sections.
+  It is now `TRH-2026-08-24-to-25-editor-calibration-reseat-evidence-the-14-slice-run-and-the-second-calibration.md`
+  (`TRH-` stands for `translation-repair-history-`),
+  which names the reseat evidence,
+  the run and the second calibration.
+- The name of the window trial file left out its largest section,
+  the pre-flight and plumbing,
+  and now names it.
+- The top index now names the subject of each file of 250 lines or more in every entry,
+  not only the two entries the reading named,
+  and drops its one pointer by position.
+
+The brief's verb for that last check is M225:
+n167 first fixed six more entries,
+read the verb,
+and reverted them to proposals,
+and the lead applied the six proposals after checking that each subject is the title of a file.
+Those clauses had no reading by an agent that wrote none of them.
+
+Guard:
+the checks of the round,
+each shown by its author to report a planted fault:
+the index check over 12 groups,
+the section lists of 11 indexes,
+542 links and 610 mentions,
+no archive body line added and no heading changed against `c3c0c8dda7`,
+the five doc guard tests,
+and the Markdown lint on the ten files.

@@ -188,6 +188,13 @@ shipped in the past in two passes,
 and the read of the first pass said the tense held,
 because it read the narration only (ledger B627,
 M220).
+The review of n162 then found two sentences that the exception sat beside and did not touch:
+the house bullet still listed "what the person did,
+said,
+made,
+felt" among the life told in the past,
+and the judge tail said there is no rule holding the life in the present (ledger B637).
+The advisory tense candidates also read a quotation set in single curly marks (ledger B636).
 
 The rule:
 a sheet rule that moves text into another form names what it does not cover.
@@ -201,6 +208,11 @@ in the house block's words or in the sheet's own (`QUOTED_WORDS_REMINDER`).
 Both are built by named constants in `english-usage-policy.ts`,
 never inline where they are sent.
 A new sheet with a tense instruction carries the reminder in the commit that adds it.
+Each sentence that lists what is told in the past,
+or says no rule holds a life in the present,
+carries the exception in that sentence and not only in the paragraph that holds it (ledger B637).
+A reader of quotation marks in the tense candidates blanks the single curly quotation
+as it blanks the double (ledger B636).
 A sheet that carries no tense rule gets none,
 as the pairing sheets,
 the reference attestation,

@@ -697,3 +697,46 @@ so the reason check throws either way)
 and one choice no case can tell apart without the real clock
 (the gather's grace is the round's window).
 The cases found the defects of B438 to B440.
+
+## B646: three tests that ask whether a text is blank were not listed with their reasons
+
+Found on 2026-10-18 by the landing gate named g99b,
+on the tree at `f9169093e6`,
+which holds the work of n171 and n173.
+
+Outcome written on 2026-10-18.
+Fixed in `94ebefa1e3`.
+
+The gate failed one file,
+`src/blank-text-tests.unit.test.ts`,
+the scan for tests of whether a text is blank (B40,
+B128 in
+[Audit ledger: text that shows nothing](audit-ledger-text-that-shows-nothing.md)).
+It found three tests that the scan's list (`HELD_TESTS`) did not hold,
+all in code that n171 added:
+- two tests of `containsWords` in `src/consistency-span-agreement.ts`,
+  which ask of an empty needle,
+  since an empty text is found at every offset (B642 and B644);
+- one test of `trailingNumberOf` in `src/consistency-label-form.ts`,
+  which returns none when the digits it gathered are empty,
+  which is the package's own sentinel (B639).
+
+The rest of the suite passed,
+2,482 cases,
+lint had 0 warnings and 0 errors,
+and the type check was clean.
+
+Fixed in `94ebefa1e3`:
+the two entries are listed,
+with the reason each stands
+(the empty needle,
+and the sentinel).
+The scan is the guard,
+and it did its job at the gate.
+That the scan was not among the checks that n171 reported before the landing is not shown by the sources:
+no hand-back of n171 is among them,
+and the message of `0199690299` says that its whole suite had not run on that tree.
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".

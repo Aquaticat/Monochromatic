@@ -16,9 +16,15 @@ and inline code beside a text place (B618).
 It also holds the rows of the twin check that the first fixes left (B619).
 The first three are fixed by n161 and landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`.
 B619 is fixed by n166,
-n168 and n169,
-which are green and not landed,
-with the rows left to them taken by n173.
+n168,
+n169 and n173,
+which landed on 2026-10-18:
+n166,
+n168 and n169 with n171 in the tests `555bb74aa0` and the code `29d6064708`,
+and n173 in the tests `ff6be38eef` and the code `43428948cb`,
+with the repair `f9169093e6` of that merge.
+The same review's residue of padded inline code and raw elements is B633 and B634,
+and the defect that n168 found in its own first version is B638.
 
 The principle itself,
 and the rounds that built it,
@@ -47,6 +53,14 @@ and the lead's notes of that day.
 The update of B619 on the same day is written from the review of n162 (`s233/review.md`),
 the hand-backs of n166 (`s237/handback-n166.md`) and n168 (`s239/handback-n168.md`)
 and the lead's notes of the rulings.
+B633,
+B634 and B638 were written on 2026-10-18 from the review of n162 (`s233/review.md`),
+the hand-backs of n166 and n168,
+and the commits that landed the rounds.
+The landing of B619 is written from the commit messages,
+the hand-back of n169 (`s240/handback-n169.md`)
+and the probe outputs of n173 (`s244/`),
+since n173 returned no hand-back file.
 The labels Y1,
 Y2 and Y4 are the review's own and are no ledger ids.
 The labels of probe scenarios,
@@ -344,8 +358,9 @@ with the page unchanged there.
 Found on 2026-10-15 by the rerun of the twin check in n161,
 after the fixes of B616 to B618.
 
-Fixed by n166 and n168 on 2026-10-15;
-both rounds are green and neither is landed.
+Fixed by n166 and n168 on 2026-10-15,
+finished by n169 and n173,
+and landed on 2026-10-18 (see "Landing" at the end of this entry).
 The review of n162 reproduced the rows and measured their reach,
 and the lead ruled on the work of n166 and n168 the same day.
 The entry first recorded the rows as open,
@@ -435,7 +450,6 @@ with lint,
 types and the source scans clean,
 the replays as expected
 and no change on any page of the corpus.
-Neither round is landed.
 Four divergences from the twin that n168 measured and left to other layers were ruled to be fixed in n169:
 the forward reading over empty links,
 the joints of closing marks across links,
@@ -458,6 +472,218 @@ which still read apart from their twin,
 and four callers that fold without the page's definitions;
 the lead ruled both fixed,
 in round n173.
-This entry stays open until the work of n166,
-n168,
-n169 and n173 is landed.
+
+Round n173 (a copy of the tree after n169;
+no hand-back file is among the sources):
+- A link or reference whose label shows letters,
+  digits or marks shows a reader its label,
+  and its opening bracket and its resource show nothing,
+  so `kit[x](u)'kit` reads as `kitx'kit`.
+  The word joints step over those two stretches as they step over a link that shows nothing,
+  and the parse lists them.
+  The rerun of the probe `p6` after the round printed `rows differing from the twin: 0`
+  (`s244/p6-a.out`),
+  where n169 had left 90 rows per group.
+  The tests are `src/consistency-labelled-links.unit.test.ts` (new in `ff6be38eef`)
+  and rows in the tests of the folded links,
+  the markup ranges and the word joints.
+- A reference defined on the page can change the answer of `emphasisDelimitersOf`
+  (the probe rows of `s244/item2-a.out`;
+  the corpus measure's control `[*a][r] kit*-kit` moves from `none` to `many`),
+  so the definitions are passed there too.
+  The other callers are B647.
+- The corpus measure over the 92 pages (1,237 slices,
+  21 pages with definitions,
+  55,605 `locateWords` comparisons,
+  24,017 of them with the page)
+  shows no real change:
+  its output holds only control rows,
+  and every control moved (`s244/measure-n173.out`).
+- The message of `43428948cb` says that n173 demonstrated its guards in its own worktree.
+
+Landing on 2026-10-18.
+- n166,
+  n168,
+  n169 and n171 landed together in the tests `555bb74aa0` and the code `29d6064708`.
+- n173 landed in the tests `ff6be38eef` and the code `43428948cb`,
+  merged onto n171.
+  The merge kept two declarations of the folded links in `apartStartsOf`,
+  so `43428948cb` did not build,
+  and `f9169093e6` keeps one (M238).
+- The gate then failed one scan on a test of n171 (B646),
+  and `94ebefa1e3` fixed it:
+  the suite passed 2,482 cases,
+  lint 0 warnings and 0 errors,
+  and the type check was clean.
+
+The entry is fixed.
+
+## B633: inline code padded by a space still read as two words
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z6,
+the residue of the review's label Y4).
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What a reader of the page would have seen:
+the input is ``The ` kit `tens ate.`` with the place `tens`.
+`locateWords` answered `once` at the offsets 11 to 15.
+CommonMark strips one padding space from each side of a code span,
+so a reader sees `kittens`,
+and the code content was read with its padding as shown text,
+so a space stood between `kit` and `tens`.
+The repeated phrase `tens` would have been carried into a word that reads `kittens`:
+a half word ships.
+The rows with double backticks (`` ``kit``tens `` and `` kit``tens ``) already answered `none`.
+
+Reach:
+none on the corpus.
+The census of the 92 pages holds five single-backtick spans on three pages and none is padded
+(the control is the same run counting those five),
+and the probe for code beside `*` or `_` printed nothing.
+The shape is constructed.
+The header of `src/consistency-unread-units.ts` said
+a word of code beside a word of text reads as the one word it shows,
+which this shape broke.
+
+Fixed by n166.
+`codeContentOf` in `src/consistency-markup-ranges.ts` strips one padding space on each side
+when both ends are a space (U+0020) and the content holds a character that is no space,
+which is the CommonMark rule;
+a line ending is not read as a space.
+The header of `src/consistency-unread-units.ts` now says the typography side keeps the padding as shown.
+
+Test:
+`PADDED_CODE_ROWS` in `src/consistency-shown-edge-markup.unit.test.ts`
+and one `locateWords` row in `src/consistency-fold.unit.test.ts`.
+Four padded rows were red against the build the round started from
+(two with single backticks and two with double),
+and the same rows and the fold row are red again with the strip removed (`s237/mut-b.log`).
+The corpus measure over the 92 pages showed no decision or character change,
+and its control for a padded code word moved from `false` to `true`.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Text that shows nothing".
+
+## B634: raw HTML elements did not end a word
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z7).
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What a reader of the page would have seen:
+`cats<pre>dogs</pre>` and `cats<textarea></textarea>dogs`,
+with the place `cats`,
+answered `none`,
+where the tree before n159 answered `once` at the offsets 0 to 4.
+The tag was read as a wrapper,
+so `cats` and `dogs` read as one word.
+`BOUNDARY_TAG_NAMES` in `src/consistency-shown-kinds.ts` held the parser's block names only,
+and `pre`,
+`textarea`,
+`script` and `style` are the CommonMark openers of a raw block.
+The test of the list read `htmlBlockNames` only,
+so it could not see them.
+A phrase beside such an element is left uncarried,
+the safe direction,
+and never cut.
+
+Not findings:
+the elements that the parser lists in neither place
+(`button`,
+`video`,
+`audio`,
+`svg`,
+`canvas`,
+`object`,
+`select`,
+`hgroup`)
+stay transparent by the lead's ruling "and the like",
+and the review reported them as what n161 decided.
+
+Reach:
+none on the corpus.
+The tag census holds `br`,
+`div`,
+`details`,
+`summary`,
+`blockquote`,
+`span`,
+`p`,
+`h3`,
+`ruby`,
+`rt` and custom components,
+and none is `pre` or `textarea`.
+
+Fixed by n166.
+`pre`,
+`script`,
+`style` and `textarea` are in `BOUNDARY_TAG_NAMES`,
+and the list test reads both parser lists,
+`htmlBlockNames` (62 names) and `htmlRawNames`
+of `micromark-util-html-tag-name` 2.0.1.
+
+Test:
+`RAW_ELEMENT_ROWS` (10 rows) in `src/consistency-shown-edge-markup.unit.test.ts`,
+the list test in `src/consistency-shown-kinds.unit.test.ts`
+and a row in `src/consistency-fold.unit.test.ts`,
+red against the build the round started from
+(`s237/red-z6z7-kinds.log`)
+and red again with four raw names removed from the list (`s237/mut-b.log`).
+The probe of the shapes (32 new rows,
+the four names times eight tag shapes) answered as expected.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Structure read off the parse".
+
+## B638: the first reading of a link's label took its nodes in reverse
+
+Found on 2026-10-15 by the author of n168 at its own review,
+before the round landed,
+in the code the round was writing for B619.
+
+Outcome written on 2026-10-18.
+Never in a commit:
+the landed code (`29d6064708`) has the fix.
+
+What a reader of a run would have seen,
+had it shipped:
+a link whose label holds several nodes was judged by its first shown character and not its last,
+so a label of marks that ends in a closing bracket,
+written with a code span or emphasis among its nodes,
+answered `once` where its plain-text twin answers `none`.
+The probe rows showed it against the build that had it
+(`s239/probes/p4-label-order.before.out`:
+all six rows differed there).
+
+The cause:
+the first version of `linkLabelKindOf` filled its work stack in child order and popped it,
+which reads the children last to first.
+
+Fixed by n168.
+The pushes in `labelTextOf` in `src/consistency-link-label.ts` are reversed,
+and every check was rerun on the fixed source.
+The round's own account lists this as no rule breach (M233).
+
+Test:
+"READS THE NODES OF A LABEL IN THE ORDER A READER SEES THEM" in `src/consistency-link-label.unit.test.ts`,
+the marks rows of `src/consistency-markup-ranges.unit.test.ts`
+and the controls of `src/consistency-fold.unit.test.ts`.
+They were red against the build with the defect (7 FAIL lines in 3 files,
+`s239/red-order.log`),
+and red again with the two reversed pushes put back (`s239/mut-j.log`).
+The probe after the fix answered `SAME` on all six rows.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Structure read off the parse".

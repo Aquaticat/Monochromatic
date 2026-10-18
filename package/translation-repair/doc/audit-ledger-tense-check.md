@@ -16,6 +16,8 @@ filed in
 The entry B627 was written on 2026-10-15 (UTC) from the hand-back of n161 (`s232/handback-n161.md`),
 the lead's notes of that day and the text of `src/english-usage-policy.ts` at `277145a862`,
 where the two constants it quotes are declared.
+Two later findings of the review of n162 about the same rule are B636 and B637,
+written on 2026-10-18 from `s233/review.md` and the hand-back of n166 (`s237/handback-n166.md`).
 
 Split on 2026-10-14 (UTC) out of `audit-ledger-tense-check-and-consistency-pass.md`,
 which had reached 994 lines and held the tense check and the consistency pass in one file.
@@ -261,3 +263,131 @@ Recurrence:
 "A rule a sheet states about tense and what it does not cover",
 and `mistake-prevention-tests-clocks-and-arrival-order.md`,
 "Orders and seats that a prompt hash decides".
+
+## B636: the tense candidates read a quotation set in single curly marks
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z10).
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What a reader of the log would have seen:
+the quote blanking of `src/present-tense-text.ts` blanked the double marks
+(`“ ” « » „` and the straight double mark),
+and left the single curly marks `‘ ’` alone.
+A quotation set in single curly marks was therefore read by the candidate rules,
+and a present-tense quotation could be listed in the advisory block of tense candidates.
+The block calls its content "a question for you and not a finding",
+so no verdict changed.
+The corner marks of CJK text are not blanked either,
+and the English never holds them.
+
+Reach:
+the mark `‘` is on six pages of the corpus (counts 1,
+1,
+6,
+1,
+2 and 2),
+and the probe of a candidate list was not run in the review.
+A quotation of the kind of `TianqiChen666`,
+a blockquote,
+is skipped by block.
+
+Fixed by n166.
+`maskQuotedSpeech` blanks the double quotations and then the new `maskSingleCurlyQuotations`,
+which reads the text with its curly singles written straight,
+through the package's `nestedSinglePairs` (`src/nested-single-quotes.ts`),
+and blanks the outermost paired `‘...’`.
+Unpaired marks and apostrophes are untouched,
+and the blanking runs on UTF-16 units so the length is kept.
+
+Test:
+`src/present-tense-text.unit.test.ts` and `src/present-tense-candidates.unit.test.ts`
+have 2 tests each that were red against the build the round started from
+(`s237/red-z10-text.log` and `s237/red-z10-candidates.log`),
+and an apostrophe control that was green.
+The same four are red with the single step removed (`s237/mut-a.log`).
+The corpus measure read the candidate list of all 92 pages as a page that records a death,
+and its control for a single curly quotation moved from one candidate to none;
+no real page changed.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"A rule a sheet states about tense and what it does not cover".
+
+## B637: two sentences of the house tense rule could be read against the quoted-words rule
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z11,
+on the rule of B627).
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What the review found:
+the house tense bullet in `src/house-policy.ts` still listed "what the person did,
+said,
+made,
+felt" among the life told in the past,
+and `JUDGE_POLICY_TAIL` (in 24 rendered sheets) said that there is no rule holding the life in the present.
+Both stood beside the rule or the reminder in the same paragraph,
+so a reader who finished the paragraph was told the exception.
+The review read it so and asked no model,
+so the effect on a judge was not verified.
+The sheet lines "one tense through each sentence" and "never let one sentence start in one tense and finish in another"
+(the consistency choice sheet,
+the translate wire and the consolidate wire)
+are each followed in their sheet by the rule or the reminder;
+a sentence such as `She wrote: "I feel..."` begins in the past and ends in the present,
+and the reminder is what says that is no defect.
+
+Fixed by n166,
+in `src/house-policy.ts` only.
+The sentence of the house bullet that tells the life in the past now says
+"except for the person's words quoted as they wrote or said them,
+which keep the speaker's own tense because they are the speaker's own voice",
+and ends with the quoted-words rule.
+The sentence of the judge tail now says
+that the person's words quoted as they wrote or said them are no part of that narration,
+since they keep the speaker's own tense,
+and it ends with the quoted-words reminder.
+The carry writer's line "ONE TENSE" and the translate and consolidate wire lines were not changed:
+they stand outside the two sentences of the brief.
+
+Test:
+two tests in `src/sheet-quoted-tense.unit.test.ts`
+(the exception in the sentence that puts the life in the past,
+and in the judge tail sentence).
+The first,
+broader version of the marker was red against the start build
+(43 sheets lacked the first sentence and 24 the second);
+the version kept is narrower,
+because three carry-writer sheets repeat the rule in their own words,
+and it was not run against the start build,
+which no longer existed,
+so it is red only by removing both exception phrases (`s237/mut-c.log`).
+
+What followed from the change:
+the text of the sheets is part of the key of the caches that hash it,
+and six versions moved
+(consolidate,
+refine,
+slice,
+translate slice,
+lane contest
+and page title;
+B632).
+The seven tests that pinned those keys,
+those versions or the order of seats were red in the first whole run,
+and the round updated them (B631).
+No corpus effect can be measured,
+since no run has read the new text.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"A rule a sheet states about tense and what it does not cover".

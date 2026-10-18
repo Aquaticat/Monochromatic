@@ -883,6 +883,11 @@ titles,
 addresses,
 expressions,
 code and math until its mask was built from the parse (ledger B606).
+Then three judges quoted three nested spans of the chosen place,
+no one text was a strict majority of the quotes,
+and the group was lost as unlocated (ledger B642);
+the rule that located it hung on a blank quote and read no combining mark (ledger B644,
+B645).
 
 The rule:
 a span covers only what the quote matched,
@@ -958,6 +963,14 @@ what a later step writes comes from the text itself,
 and a change a span cannot express goes through writers,
 the bench and the floors,
 never through a splice.
+Quotes of one place that nest are evidence for every quote that contains them:
+the place is located by the longest quote that stands once in its English
+and that a strict majority of the usable ballots' quotes contain at the edges of words,
+and the span so located can be shorter than the words a judge meant (ledger B642).
+A search that can be given an empty text is guarded before its loop,
+since an empty text is found at every offset and is contained only in another empty text (ledger B644),
+and a word edge reads a combining mark as part of the word,
+as the locator does (ledger B645).
 
 What enforces it:
 the consistency pass's own tests,

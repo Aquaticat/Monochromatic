@@ -813,3 +813,90 @@ which is the guard run.
 Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Log lines that report nothing done".
+
+## B629: a consistency group line named the edge refusal where the bench had kept the text
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z1),
+in the line that B628 added.
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What a reader of the log would have seen:
+a group with a receiving place that the splice cannot reach (`plan.kind === 'unavailable'`) and an edge verdict on it,
+and a carry whose writers were still asked and whose bench chose the current text,
+ended with `because=kept:edge-second-mark`.
+The line said the splice was refused at an edge,
+and never said the bench had kept the text.
+A reader concluded that nothing else was tried.
+The probe row (`s233/probes/q2-groupline.ts`,
+row C) printed `kept-current=1 untouched=0 because=kept:edge-second-mark`
+for a record whose carry decision was `chosen` of a `current` candidate.
+
+The cause:
+`src/corpus-run/pass-consistency-settle.ts` records the edge reason for every receiving place that has an edge verdict,
+whatever the carry did (lines 295 to 303 at `277145a862`),
+`src/corpus-run/pass-consistency-apply-record.ts` writes it as the reason of any place that ended `kept-current`
+(lines 567 to 585),
+and `keptReasonOf` in `src/corpus-run/pass-consistency-group-line.ts` printed it ahead of the carry (lines 171 to 186).
+The header of that file said a `kept:` reason is for a place left after the splice was chosen.
+A block with no spliceable place is left to the writers or to the current block,
+so no splice had been offered there.
+
+Reach:
+the log only.
+The corpus reach could not be measured without a run,
+since the replays check page text and not log lines,
+and the group line of the settled `TianqiChen66624` run was not derived again under the new code.
+
+The lead ruled on 2026-10-15,
+on the work of n166,
+that where the carry offered a splice and the bench chose the current text,
+the line prints the recorded kept reason,
+which is the rule as it was written;
+the carry's own decision is then not shown for that place.
+
+Fixed by n166.
+`keptReasonOf` prints `kept:<reason>` only when the carry for the place has a candidate of kind `splice`,
+and otherwise prints what the carry decided (`carry:...`),
+or `carry:unrecorded` when the record holds no carry for the place.
+`groupLine` takes a required one-based `groupNumber`
+(`src/corpus-run/pass-consistency.ts` passes `position + 1`),
+so that the refusals of B630 can name the group,
+and the header of the file now says what each prefix means.
+
+Test:
+`src/corpus-run/pass-consistency-group-line.unit.test.ts` has 14 new tests
+that were red against the build the round started from
+(11 for the reasons of this entry,
+3 for B630),
+for example `expected 'kept:edge-second-mark' to equal 'carry:chose-current'`,
+and one control that was green.
+The same 14 are red again with the `kept` condition no longer needing a splice
+(`s237/mut-a.log`).
+
+What the round ended with:
+the whole unit suite at 2,445 passes and 0 failures on its second whole run
+(the first was red on seven tests that pinned cache keys or the order of seats,
+which the sheet text of B637 moved),
+lint,
+types and the source scans clean,
+both read-only replays as expected,
+and no decision or character change on any of the 92 pages of the corpus,
+with every positive control moving.
+The rule breaches of the round are M231.
+The round landed on 2026-10-18 with the rounds n168,
+n169 and n171,
+in `555bb74aa0` and `29d6064708`;
+the combined tree passed 2,474 cases.
+
+Open for the reviewer:
+an unknown verdict kind still throws a bare `TypeError` in the probe's row I,
+unchanged from the start of the round.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Log lines that report nothing done".

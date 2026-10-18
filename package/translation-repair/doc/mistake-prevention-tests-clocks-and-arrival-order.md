@@ -793,6 +793,11 @@ or expected particular editor seats to be seated
 (`hf:moonshotai/Kimi-K3` was seated where `glm-5.3` had been).
 n161 made each independent of the rotation,
 and wrote the reason in a comment.
+The review of n162 then found that six of them had lost a guard that had nothing to do with the order (ledger B631):
+two parsed both sides of an on-disk format and wrote them out again,
+one took the expected order from the function under test,
+two accepted any six of the seven seats that can edit,
+and one looked up two named voices and no longer failed on an extra entry.
 
 The rule:
 a test never pins an order or a seat set that a prompt hash decides,
@@ -801,8 +806,10 @@ It compares by seat:
 ballots,
 claims,
 claimants and renderings sorted by model id in code-point order,
-a seat found by its name,
-and a seated set checked for membership in the roster's list of seats that can do the job.
+and a seat found by its name.
+A set of seats that a case needs is pinned by an injected start of the rotation,
+and was first checked for membership in a list of seats,
+which let a worse set pass.
 The content checks stay whole:
 what a ballot says,
 which credit lines match the seats seated
@@ -813,13 +820,24 @@ input order) is asserted exactly and never after a sort of the case's own,
 and what a command prints does not depend on which operation ended first.
 This rule covers only the order in which a rotated bench is asked and the seats its window holds,
 which no stage promises.
+A test made free of the order keeps everything else it pinned:
+the text of a file format stays compared as text,
+the order a report promises is derived by the documented rule and asserted,
+the whole slate is compared and not two entries found in it,
+and a case that must seat particular voices pins them by an injected start of the rotation
+(`StageSettings.editorBenchStart`,
+which no production launch gives)
+and not by a membership check (ledger B631).
+Before a test is rewritten to ignore an order,
+its diff is read for each assertion it drops,
+and a guard is removed to show the new test still fails for it.
 
 What enforces it:
 habit and review.
 `model-order.test-fixture.ts` (`sortedByModelId`)
-and `SEATS_THAT_CAN_EDIT` in `roster-seats.test-fixture.ts` hold the comparison,
-and the ten test files of ledger B627 use them.
-The two editor calibration cases are weaker on which seats sit,
-by necessity,
-and the review of n161 was asked to show that each still fails when the behaviour it names breaks.
+holds the comparison,
+and the ten test files of ledger B627 use it.
+`PINNED_EDITOR_BENCH_START` in `editor-bench-start.test-fixture.ts`
+seats the six editor voices of the calibration cases,
+and the guards of the seam were shown to fail by removal (ledger B631).
 No scan finds a test that pins a rotated order.

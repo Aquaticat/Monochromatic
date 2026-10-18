@@ -13,6 +13,16 @@ a fragment landing outside its slice (B621)
 and a text that could read another text's mask (B622).
 B620 is open.
 B621 and B622 are fixed by n161 and landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`.
+It also holds two later findings,
+written on 2026-10-18:
+the landing guard that took offsets which are not whole numbers (B635,
+from the review of n162,
+fixed by n166),
+and the callers of the fold that read without the page's definitions (B647,
+started by n169 and finished by n173).
+Both landed on 2026-10-18,
+n166 and n169 in the tests `555bb74aa0` and the code `29d6064708`,
+and n173 in the tests `ff6be38eef` and the code `43428948cb`.
 
 The findings that built those readers,
 and the cache versions that n159 and n161 moved (B623),
@@ -32,6 +42,11 @@ and
 Written on 2026-10-15 (UTC) from the review of n159 (`s231/review.md`),
 the hand-backs of n159 (`s230/handback-n159.md`) and n161 (`s232/handback-n161.md`)
 and the lead's notes of that day.
+B635 is written from the review of n162 (`s233/review.md`) and the hand-back of n166 (`s237/handback-n166.md`),
+and B647 from the hand-back of n169 (`s240/handback-n169.md`),
+the briefs and commit messages of n173,
+and the probe outputs in `s244/`,
+since n173 returned no hand-back file.
 The labels Y5,
 Y7 and Y9 are the review's own and are no ledger ids.
 The labels of probe scenarios,
@@ -218,3 +233,139 @@ and 2 rows fail with the guard that reads the memory by text alone.
 The probe line `NUL collision` went from `lengths 26 vs 26; same object=true` to `lengths 26 vs 19; same object=false`.
 The scan ledger of `src/blank-text-tests.unit.test.ts` lost its entry for `typography-prose-mask.ts#proseMaskReading`,
 because the empty-string test that entry listed lived in the NUL-joined key that this fix removed.
+
+## B635: a landing of NaN or a fraction was accepted, and the throw was documented on a private function
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z8),
+in the guard that B621 added.
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What the review found:
+the guard of `assertLandingInside` in `src/fragment-landing-error.ts`
+was `(start < 0) || (end > slice) || (end < start)`,
+which is false for `NaN`.
+A landing starting at `NaN` returned a mask of length 0,
+a landing ending at `NaN` or running from 1.5 to 3.5 returned a mask of length 1,
+and none threw,
+where the header of the file and the message of the error say a landing starts at 0 or later,
+ends at or after its start and ends within the slice.
+`restoreTypography`,
+the exported function whose `landing` makes it throw,
+had no `@throws`;
+only the private `readingForRestoration` had.
+The one caller that passes a landing is `applyPatchOperations` in `src/apply-patch.ts`,
+whose TSDoc named only `EnvelopeOverlapError`.
+With a `reading` given,
+the landing is never read,
+so the throw is conditional.
+
+Reach:
+none.
+The offsets come from an envelope whose text matched,
+and no caller passes both a landing and a reading.
+The review also traced one constructed case:
+an envelope with an empty base text and an end before its start.
+The first reading was that it would now throw where it had been a refusal.
+The author of n166 showed that it already threw at the start build,
+after the drift check (`s237/probes/z8-envelope-start.out`),
+so its refusal comes first and the test of it was already green.
+
+The lead's ruling of B621 stood:
+a throw states an invariant.
+
+Fixed by n166.
+`assertLandingInside` also requires `Number.isInteger` of both ends,
+and its message says the landing "starts and ends at whole numbers".
+`@throws` is on `restoreTypography` and on the readings that call the guard (`src/restore-typography.ts`),
+and on `applyPatchOperations`,
+which says that an empty-base backward envelope is refused by `FragmentLandingError` after the drift check
+and that no earlier refusal exists.
+
+Test:
+`BAD_LANDINGS` (`NaN` and fractions) in `src/typography-fragment-landing.unit.test.ts`
+and the whole-number test in `src/fragment-landing-error.unit.test.ts`:
+8 tests red against the build the round started from
+(`s237/red-z8-error.log` and `s237/red-z8-landing.log`),
+and red again with `wholeNumbers = true` (`s237/mut-a.log`).
+The test of the empty-base envelope in `src/apply-patch.unit.test.ts` was green at the start,
+and is red only when the whole check is removed (`s237/mut-a2.log`).
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Offsets and positions".
+
+## B647: callers of the fold read a page-defined reference without the page's definitions
+
+Found on 2026-10-15 by the author of n169 (item 5 of its brief and its list of what it did not build),
+and finished by n173 after the lead ruled it fixed.
+
+Outcome written on 2026-10-18.
+Red `ff6be38eef`,
+fixed in `43428948cb`;
+the fix is the round n173,
+after the first part in n169 (`29d6064708`).
+
+What a reader of the page would have seen:
+a reference defined on the page,
+whether with an empty label or with a label,
+is a link to a reader,
+and its label and brackets show a different text than the fold read.
+Before n169 the shown layer already caught a page-defined `[][r]` for a single stand,
+but the fold layer decided wrongly when more than one stand remained:
+`a [][r]'kit` with the definition on the page answered wrongly,
+and `once` is the answer now (a test of n169 pins it).
+The callers that fold without the page's definitions were:
+- `emphasisDelimitersOf`,
+  which n169 left unchanged without tracing whether a page-defined reference changes its answer;
+- `slotInSpan` (in `src/consistency-count.ts`,
+  and in `src/consistency-slot-in-span.ts` after n171 moved it);
+- `changesWords` in `src/corpus-run/pass-consistency-apply-located.ts`;
+- `keptWordsLost` in `src/corpus-run/pass-consistency-carry-candidates.ts`;
+- the artifact reader in `src/corpus-run/artifact-two-lane-read-consistency-span-located.ts`,
+  which re-locates a recorded slot inside a recorded quote with the current fold.
+
+Reach:
+none on the corpus.
+The measure of n173 over the 92 pages found no real change,
+and every positive control moved:
+`emphasisDelimitersOf` on `[*a][r] kit*-kit` from `none` to `many`,
+`changesWords` from 0 changes to 1,
+`keptWordsLost` from a kept-words list of `consistency-candidate-unreadable` to `consistency-candidate-refused`,
+and `slotInSpan` from no slot to `kit`
+(`s244/measure-n173.out`).
+The rows of `s244/item2-a.out` show `emphasisDelimitersOf` answering differently with and without the page.
+
+Fixed by n169 for the callers that hold a page
+(`locateWords` computes the page's definitions once and hands them to `apartStartsOf` and `cutsShownWord`),
+and by n173 for the rest.
+- `emphasisDelimitersOf` takes the definitions.
+- The located span,
+  the slot and the carry hand the page's definitions to the fold,
+  and `slotInSpan` takes the page.
+- The artifact reader cannot:
+  the artifact holds no English and no definitions,
+  so it refuses a slot that stands once only where the page defines the reference inside the quote,
+  which is the one reading it can make.
+  A test pins that answer.
+
+Test:
+`src/corpus-run/pass-consistency-page-definitions.unit.test.ts` (new in `ff6be38eef`),
+with cases named "READS THE PAGE'S DEFINITIONS IN THE REPLACEMENT" (`editsChangingLocatedWords`),
+"READS THE PAGE'S DEFINITIONS IN THE PARAGRAPH" (`writtenParagraphsOf`)
+and "READS A RECORDED SLOT WITHOUT THE PAGE" (`asLocatedBySpan`),
+each with a page that defines the reference and a page that defines nothing of the kind
+(`s244/green4.log`).
+They were red against `0199690299`.
+The commit message of `43428948cb` says that n173 demonstrated its guards in its own worktree;
+no list of them is among the sources.
+
+The merge of n173 onto n171 kept two declarations in `apartStartsOf` (M238).
+
+Recurrence:
+`mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
+"Defaults that stand in for an input".

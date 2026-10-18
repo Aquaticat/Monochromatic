@@ -1,5 +1,9 @@
 # Audit ledger: branches no input reaches, kept as quiet answers
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Branches no input reaches that answered quietly where a loud refusal belongs,
 most met when a coverage census asked for them to be removed.
 
@@ -380,6 +384,67 @@ the writer sets the kind as a literal and `assertFinalNaturalnessComplete` alrea
 The case is "REFUSES an artifact whose consolidation has not run,
 since settledEntryArtifact records every consolidation it hands persistence
 and no polish can stand on a stage that never ran".
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards a census wants gone".
+
+## B630: a group line named a writer's text for any chosen label the record did not explain
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z2),
+in the line that B628 added.
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What a reader of the log would have seen:
+two records the code cannot write printed `because=carry:chose-writer-text`.
+In the probe (`s233/probes/q2-groupline.ts`)
+row A was a carry decision `chosen` whose label matched no candidate of the record,
+and row B was a writer candidate chosen on a place that ended `kept-current`.
+A third record,
+row G,
+was a verdict that named no winner beside a place that ended `replaced`,
+and printed `because=no-winner:no-quorum` beside `replaced=1`.
+Each is a damaged record,
+and the line reported a decision the record did not hold.
+
+The cause:
+`keptReasonOf` took the first candidate whose label matched,
+and with none fell through to `chosen?.kind === 'splice' ? ... : 'carry:chose-writer-text'`.
+By the code a writer's text that is chosen replaces every receiving place of its block
+(`src/corpus-run/pass-consistency-carry-choose.ts`,
+lines 141 to 155 at `277145a862`),
+so on a `kept-current` place the state is unreachable,
+and the fall-through was a guess where the repository's rule is to throw on an unreachable branch.
+
+Fixed by n166.
+`groupLine` declares `@throws ConsistencyInvariantError` and throws,
+naming the group and the place,
+in three cases:
+the carry chose a candidate that the carry did not record,
+a writer's text was chosen on a place that ended `kept-current`,
+and a group whose bench named no winner has a place that ended `replaced`.
+The reason `chose-writer-text` is gone from the line.
+Rows E,
+F and H of the probe
+(unlocated only,
+kept-floor only,
+untouched under a winner)
+print no `because=` clause,
+as the header says,
+and the counts are then the only account.
+
+Test:
+the 3 tests for the throws in `src/corpus-run/pass-consistency-group-line.unit.test.ts`
+were red against the build the round started from
+("Expected ... to throw,
+but it returned"),
+and red again with the three throws replaced by returns (`s237/mut-a.log`).
+The rule breaches of the round are M231.
 
 Recurrence:
 `mistake-prevention.md`,

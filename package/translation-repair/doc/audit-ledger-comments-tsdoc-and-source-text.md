@@ -358,3 +358,72 @@ Test:
 `src/consistency-header-claims.unit.test.ts` (new),
 2 red on the build made before any source edit,
 and the guard that restores the old sentence fails 2 rows.
+
+## B632: the account paragraphs of five cache versions stated a fact that no read supported
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z5).
+
+Outcome written on 2026-10-18.
+Fixed by n166 in `29d6064708`;
+no test pins the sentence.
+
+What the review found:
+each account paragraph that n161 wrote for a cache version said "no record has been written at" its number
+(23 in `src/consolidate-key.ts`,
+8 in `src/lane-contest-key.ts`,
+36 in `src/repair-slice-key.ts`,
+7 in `src/refine-slice-key.ts`
+and 17 in `src/translate-document-contract.ts`),
+while the paragraph of n159 beside it said that the check that would show it
+(no slice-cache record written after the change,
+beside a control that finds records)
+"was not made,
+since no runs directory is read in this round".
+The claim holds only if no run launched at those versions after n159 set them,
+and nothing in the round showed that.
+If it were false,
+a record written at a number n159 set and before the sheets of n161 would be served under the new sheet text.
+The review did not read the runs directories and measured nothing.
+It checked that the audit of n161 (`s228/cache-audit-n161.txt`)
+put both commits of n161 inside the consistency and pairing versions,
+which agrees with the key reads
+(the consistency key hashes the sheet text,
+and the pairing sheets carry no tense rule),
+and that is no finding.
+
+Fixed by n166.
+The account sentence in each moved version's file now states its evidence and no guess:
+no record had been written at that number when the paragraph was written;
+the numbers n159 set were first committed in `277145a862` together with the quoted-tense rule,
+and the audit of that commit found 0 slice-cache records under the keyless worktree's runs directory
+(`s228/cache-audit-n161.txt`,
+line 992).
+The same round moved six versions for the sheet text of B637:
+consolidate 23 to 24,
+refine 7 to 8,
+slice 36 to 37,
+translate slice 17 to 18,
+lane contest 8 to 9
+and page title 2 to 3.
+The consistency version (4) and the pairing version (3) rode,
+since the consistency key hashes the sheet text and the pairing sheet carries no tense rule.
+Each new paragraph says that a record at the old number may exist,
+because the launch of `TianqiChen66625` started at `5f6c8593d7` and ran at the old numbers,
+and that this was not measured;
+no record can exist at a new number,
+since the number is first set there.
+The consistency version moved from 4 to 5 in `29d6064708` for the work of B639 to B642.
+
+Still open:
+the `cache-account-audit` task refuses a version that is not in any commit,
+so it could not run in the round
+(exit 6,
+"CONSOLIDATE_CACHE_VERSION = 24 ... is not in any commit;
+commit it,
+then run the audit again").
+The sources of this entry hold no result of that audit after the landing.
+
+Recurrence:
+`mistake-prevention-stored-files-and-cached-decisions.md`,
+"Cached decisions".

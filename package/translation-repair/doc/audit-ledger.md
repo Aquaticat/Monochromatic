@@ -235,7 +235,9 @@ named for that subject and listed here.
   The record of building the tense candidates:
   what the review of the tense records and sheets found loose,
   what was fixed,
-  and the rule that quoted words keep their speaker's tense.
+  the rule that quoted words keep their speaker's tense,
+  and the two findings of the review of n162 about that rule:
+  quotations in single curly marks and two sentences that could be read against it.
 - [Audit ledger: building the consistency pass, repeat groups and the carry](audit-ledger-consistency-pass-repeat-groups-and-the-carry.md):
   The record of building the page-level consistency pass up to the independent review of its rebuild:
   how the repeated wording is located,
@@ -330,7 +332,12 @@ named for that subject and listed here.
   hidden stretches read unit by unit,
   markup that separates or annotates read as invisible,
   and inline code beside a text place,
-  with the rows of the twin check that n166 and n168 fixed and that are not landed.
+  with the rows of the twin check that n166,
+  n168,
+  n169 and n173 fixed and that landed on 2026-10-18,
+  and the padded inline code,
+  the raw elements and the label order that the review of n162 and n168 added (B633,
+  B634 and B638).
 - [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md):
   The pairing of single marks on a curly page:
   elisions inside a quotation,
@@ -349,7 +356,18 @@ named for that subject and listed here.
   the definitions inside containers that the shared reader still misses (open),
   a fragment landing outside its slice,
   and a text that could read another text's mask,
-  the last two fixed by n161.
+  the last two fixed by n161,
+  with the landing that took offsets which are not whole numbers (B635)
+  and the callers of the fold that read without the page's definitions (B647).
+- [Audit ledger: the consistency pass, voices lost and places left unlocated](audit-ledger-consistency-pass-voices-lost-and-places-left-unlocated.md):
+  What the run `TianqiChen66625` lost and n170 found,
+  and n171 fixed:
+  replies refused for the way they named a label,
+  a run-off whose result the log never stated,
+  a carry choice that split and was not run off,
+  a chosen place that no quote located,
+  an abandonment line that counted the wire,
+  and the two defects that n171 found in its own span agreement.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write.
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
@@ -382,7 +400,8 @@ named for that subject and listed here.
   What the source scans and the coverage census counted wrongly,
   could not see,
   or printed too little of when they failed,
-  and modules tested only through their callers.
+  modules tested only through their callers,
+  and tests of blank text that the scan for them did not list.
 - [Audit ledger: ambient state touched by library code](audit-ledger-ambient-state-touched-by-library-code.md):
   Library code that read or wrote the process environment,
   the exit code or a module-load default,
@@ -713,6 +732,7 @@ Filed in:
 - [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md)
 - [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md)
 - [Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md)
+- [Audit ledger: the consistency pass, voices lost and places left unlocated](audit-ledger-consistency-pass-voices-lost-and-places-left-unlocated.md)
 
 ## Process mistakes in this audit
 

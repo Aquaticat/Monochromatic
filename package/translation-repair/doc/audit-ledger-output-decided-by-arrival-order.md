@@ -1,5 +1,9 @@
 # Audit ledger: output decided by arrival order
 
+Paths written `src/...` in this record name the layout before 2026-10-18,
+when the package `package/module/translation-repair` was split into the packages under `package/translation-repair`.
+`doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+
 Findings,
 refusals and log lines whose content or order depended on which concurrent work ended first,
 and the scan that looks for it.
@@ -453,3 +457,96 @@ and gives up the input order of a stopped call's lines.
 Recurrence:
 `mistake-prevention.md`,
 "Output decided by arrival order".
+
+## B631: tests made independent of the rotation lost a guard each had
+
+Found on 2026-10-15 by the review of n162 (`s233/review.md`,
+finding Z3),
+by reading the diffs of the tests that n161 made independent of the rotation (B627).
+
+Outcome written on 2026-10-18.
+Red `555bb74aa0`,
+fixed in `29d6064708`;
+the fix is the round n166.
+
+What the review found:
+the new sheet text moved the bench rotation,
+and n161 made ten tests independent of the order of seats.
+Six of them lost more than the order:
+- `src/corpus-run/judge-fidelity-probe-run.unit.test.ts` pinned the exact text of the row files,
+  the kept file and the written file,
+  including the indent of two and a trailing newline;
+  its new helper parsed both sides and wrote them out again,
+  so a writer that dropped the indent or the newline would pass.
+- `src/corpus-run/probe-verify-run.unit.test.ts` did the same to `probe-verify-manifest.json`
+  and the output of `formatVerifyManifest`.
+- `src/corpus-run/audit-sensitivity-print.unit.test.ts` took the expected order of voices from the function under test,
+  so the report could list them in a wrong order and the test pass.
+- `src/corpus-run/editor-calibrate-lane.unit.test.ts` and `src/corpus-run/editor-calibrate-run.unit.test.ts`
+  accepted any six distinct seats of the seven that can edit,
+  so a lane that seated a worse subset would pass.
+- `src/deep-reply-floors.unit.test.ts` looked up two named voices with `find`,
+  so an extra or duplicate entry in the slate no longer failed.
+
+The other rotation tests sort both sides by model id and stay attached to the voice,
+so they still fail when a ballot's content,
+weight or self-vote breaks.
+That was read in the diffs and not mutated.
+
+Fixed by n166.
+- The two format tests pin the on-disk text again,
+  through a helper `formatterOutputOf`:
+  every row file and the kept run are the formatter's own text with an indent of two and no newline,
+  and the rows document written to the output stream ends in one newline.
+  The manifest and the formatter output re-serialize to themselves.
+- The audit test derives the asked order by the documented rule,
+  `rotatedBench` over the roster's checker models and the rendered messages,
+  and a new test says the rows of the report equal it.
+  The doc of `rows` in `src/rendering-audit.ts` now says the order is the rotated bench order.
+- The deep reply test compares the whole slate,
+  sorted by model id,
+  and requires exactly two entries.
+- The editor lane and run tests pin the six old seats again by injection,
+  and not by the prompt:
+  `StageSettings.editorBenchStart` (an optional number,
+  read in `src/repair-editor-stage.ts`)
+  goes through `gatherStageVoices` and `rotatedBench` as their `start`,
+  and `runEditorCalibrate` forwards it.
+  No production launch gives it,
+  so production still rotates by prompt.
+  The new fixture `src/corpus-run/editor-bench-start.test-fixture.ts` exports `PINNED_EDITOR_BENCH_START` (5),
+  which seats the roster indices 0,
+  1,
+  5,
+  6,
+  7 and 8.
+  The fixture constant `SEATS_THAT_CAN_EDIT` became unread and the dead-declarations scan found it,
+  so it is removed.
+
+Test:
+the guards were shown to fail by removal (`s237/mut-d.log`,
+`s237/mut-e.log` and `s237/mut-f.log`).
+- Ignoring `editorBenchStart` in `src/repair-editor-stage.ts` turns the lane and run tests red.
+- Ignoring `benchStart` in `src/stage-quorum.ts` turns the lane,
+  the run and the quorum tests red.
+- Ignoring `start` in `rotatedBench` turns the window and quorum tests red.
+- Reversing the model ids of the audit,
+  a manifest or row file written with an indent of four,
+  and a duplicate entry in the deep-reply validity turn the matching tests red.
+
+Which reds are real regression tests:
+the seat pins of the lane and run tests and the tests of the seam (window and quorum)
+were red against the build the round started from.
+The audit order,
+the two formats and the deep reply floors were green there and are red only by removal of the guard,
+as is the empty-base envelope control of B635.
+Seven further tests were red in the first whole run for a reason unrelated to any guard:
+they pin cache keys,
+a version number or the order of seats,
+which the sheet text of B637 and its six cache versions moved.
+The literals and versions were updated,
+and the two tests that named three translator seats in a fixed order now compare the seat lines in text order.
+
+Recurrence:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Orders and seats that a prompt hash decides".

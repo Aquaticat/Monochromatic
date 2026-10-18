@@ -371,6 +371,13 @@ and no reason was printed,
 so no reader could tell a group with no alternative to choose from
 from one whose choice was refused
 or one whose places a gain rule kept (ledger B628).
+The review of n162 then found that the reason itself could name the wrong decision:
+a place kept by the bench's own choice of the current text read as refused at an edge,
+and a record the code cannot write read as a writer's text chosen (ledger B629,
+B630).
+A run-off logged that it was asked and every call of it,
+and never what it came to,
+so a reader of the log took the first window's "no quorum" for its result (ledger B640).
 
 The rule:
 a log line that reports nothing done names why.
@@ -380,9 +387,16 @@ and when nothing was done it ends with `because=` and each distinct reason.
 Each reason is the code's own decision,
 read from the record and never decided again by the line,
 and a place whose record holds no reason says so (`carry:unrecorded`) and does not stay silent.
+A reason names the decision that ended the place:
+a kept reason is printed only where a splice was offered,
+and a record that no writer could have written throws and is not given a reason (ledger B629,
+B630).
+A stage that asks and counts a second time logs one line with its final count,
+the quorum it was held to and the winner or the reason for none (ledger B640).
 
 What enforces it:
 `corpus-run/pass-consistency-group-line.unit.test.ts` drives every path with a hand-built record and reads each line,
 and 28 rows fail with the `because=` clause removed.
+The throws for an unwritable record have 3 tests that fail with the throws replaced by returns.
 A reason that the record never held is outside what it can see,
 and no scan finds another log line that reports nothing done without a reason.
