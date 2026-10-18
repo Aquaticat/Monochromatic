@@ -246,12 +246,18 @@ The independent calculation uses decimal arithmetic and separately derives these
 All line items and all 12 plan/scenario totals match.
 The six scenarios produce Developer/Startup totals respectively:
 
-- No overage: USD 20 / USD 200.
-- Native allowance boundary: USD 128 / USD 200.
-- Both separate Linux compute boundaries: USD 236 / USD 200.
-- Build boundary: USD 200 / USD 200.
-- Combined product boundary: USD 461 / USD 200.
-- Explicit mixed illustration: USD 142 / USD 201.
+- No overage:
+  USD 20 / USD 200.
+- Native allowance boundary:
+  USD 128 / USD 200.
+- Both separate Linux compute boundaries:
+  USD 236 / USD 200.
+- Build boundary:
+  USD 200 / USD 200.
+- Combined product boundary:
+  USD 461 / USD 200.
+- Explicit mixed illustration:
+  USD 142 / USD 201.
 
 These inputs are hypothetical monthly scenarios,
 not a repository workload forecast,
