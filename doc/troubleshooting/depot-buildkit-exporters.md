@@ -11,7 +11,7 @@ multiple outputs currently unsupported
 The selected targets already had `type=oci` or `type=local` outputs.
 The CLI launched both architecture builders,
 then rejected the combination before executing the Dockerfile.
-Observed build: `7wjrw9szj0` in isolated research project `27m5m3vjlv`.
+The observed build was `7wjrw9szj0` in isolated research project `27m5m3vjlv`.
 
 ## Root cause
 
