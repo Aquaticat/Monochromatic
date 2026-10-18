@@ -1,6 +1,37 @@
 # Depot runtime and orchestration research
 
-## Current execution boundary on 2026-10-18 at 11:38 UTC
+## Current execution boundary on 2026-10-18 at 12:20 UTC
+
+The corrected GitHub-hosted lifecycle `39125868595` passed its actual frozen `mvm` owner,
+guest command/file consumers and private-domain/daemon cleanup.
+Its source is `64d6a666e63e4773ee56666148ae9c8ba371877a`.
+The child preserves UID/GID `1001` and adds the actual KVM device group `993`;
+no account/group database is changed.
+The original ZIP is retained and API-digest/CRC/member-hash verified.
+The preceding seventh attempt failed before guest initialization because its diagnostic workflow omitted pnpm setup.
+The corrected replay restores the original source-owned frozen install recipe.
+The successful guest does not identify the process that removed named device ACLs in the raw controls.
+Publication of the complete provider/diagnostic sequence and final KVM-note update remains parent-owned.
+
+The [process comparison receipt](../audit/depot-process-timeouts-2026-10-18.evidence.json)
+now retains all original ZIPs and actual step boundaries.
+Every seventy-second writer overran the configured sixty-second deadline.
+Only native `cpjv1rfqzw` establishes child completion after the executor advanced to its next step;
+both GitHub-orchestrated observers began after their writers completed.
+The [deciding-source note](../troubleshooting/depot-step-timeout-process-boundary.md)
+does not infer native backend signal routing,
+VM release or billing from these process observations.
+
+The [source-bound identity adapter](../audit/depot-tests-identity-adapter-2026-10-18.evidence.json)
+passed physical timed splitting in `st40hvmw90`.
+It extends,
+without rewriting,
+the original binary-class report and untimed per-case execution evidence.
+The raw original and derived JUnit relation,
+adversarial mapper cases,
+stored result identities and committed guard-removal failure are retained.
+
+## Completed orchestration cohorts at 11:38 UTC
 
 Native single-job retry now has actual transport evidence:
 attempt two of `xgq2429hqv` downloaded the producer archives,
