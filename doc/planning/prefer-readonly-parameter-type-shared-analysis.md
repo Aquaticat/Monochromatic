@@ -127,6 +127,18 @@ On 2026-10-18 the owner chose to prototype this design in a scratch worktree,
 with the verification mode,
 and to see the measured cold time and mismatch count before any change lands.
 
+Shown the results recorded in "Prototype results",
+the owner chose on 2026-10-18 to harden the prototype and then land it.
+The hardening owed before landing:
+bump `EFFECT_CACHE_SCHEMA`;
+correct the `projectSourceText` TSDoc;
+show each fallback's test failing with its guard removed;
+add fixtures for `export ... from`, `import =` and an added `/// <reference types>` global;
+and compare lint output over every repository package against the baseline bundle.
+The owner also chose to profile the remaining cold time
+(about 131 s against 11.5 s without the plugin)
+after landing, not before.
+
 ## Prototype results
 
 The prototype is on the detached head of the keyless scratch worktree `w177`

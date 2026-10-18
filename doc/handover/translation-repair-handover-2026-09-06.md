@@ -428,8 +428,10 @@ before the other queued work.
     cold family lint about 131 s against about 322 s, warm unchanged,
     0 mismatches over 6856 verified shared hits.
     The verification mode's positive control passed (a tampered shared entry was reported, the clean rerun was not).
-    Next: the owner's landing decision.
-    Landing path if accepted:
+    The owner chose on 2026-10-18 to harden, then land,
+    and to profile the remaining cold time after landing.
+    The hardening runs in a keyless worktree from `w177`'s head.
+    Landing path:
     first the hardening (schema bump, `projectSourceText` TSDoc, remove-the-guard checks on each fallback,
     fixtures for `export ... from` and `/// <reference types>`,
     and lint equality over every repository package against `w177-notes/baseline-oxlint-dist`;
@@ -437,13 +439,16 @@ before the other queued work.
     then cherry-pick `0f2f380e59` to `1b0cdd8653` in order onto the branch.
     Running `mise` in `w177` moved the `tools.rust` nightly in `mise.lock` (`nightly-2026-10-13` to `2026-10-17`);
     the agent reverted it each time, and no landing commit may carry it.
-    The docs batch of item 5 runs meanwhile in `w178` (Sonnet agent, detached head; cherry-pick when it hands back).
+    The docs batch of item 5 landed (`065353a34f` to `8194356f4d`: B629 to B655, D34, M234 to M255).
     The scratch configs in `w165` and `w175` are deleted and `w165`'s plugin edit is reverted.
 5.  The queue the split went ahead of,
     oldest first:
     the delegated items (finalist extension,
     guard demos);
-    the docs batch (ledger entries for n166 to n173 and the n173 merge mistake);
+    the docs batch's leftovers (the batch itself landed in `065353a34f` to `8194356f4d`):
+    `design-commitments.md` still calls the carry run-off of B641 "not landed",
+    n171 and n173 left no hand-back to source their breaches,
+    and Z4 has no recorded fix;
     a `pi` sol review;
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
