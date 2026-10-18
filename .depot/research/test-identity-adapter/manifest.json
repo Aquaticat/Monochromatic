@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "sourceHarness": "714a3cad36",
+  "researchOnly": true,
+  "maximumConcurrentJobs": 1,
+  "jobs": [
+    {
+      "name": "seed",
+      "cpus": 2,
+      "memoryGiB": 8,
+      "timeoutMinutes": 8
+    },
+    {
+      "name": "physical",
+      "matrix": [
+        0,
+        1
+      ],
+      "maxParallel": 1,
+      "cpus": 2,
+      "memoryGiB": 8,
+      "timeoutMinutes": 8
+    },
+    {
+      "name": "consumer",
+      "cpus": 2,
+      "memoryGiB": 8,
+      "timeoutMinutes": 5
+    }
+  ],
+  "fullProfileReservationUsd": 0.174,
+  "priorPhysicalReservationUsd": 0.348,
+  "readOnlyHistoryReservationUsd": 0.012,
+  "cumulativeReservationUsd": 0.534,
+  "ceilingUsd": 1,
+  "invoiceCapProven": false,
+  "producerArtifactId": "01a14e1d-1935-7a2b-9b89-c63429fec7c7",
+  "producerZipBytes": 98192385,
+  "producerZipSha256": "019694511127b9d0a3af6b79f62d1560e34d6c76d9e00ee1c8e4d60f04a723cb",
+  "expectedNextestVersion": "0.9.148",
+  "expectedNextestCommit": "cd1d6d5467322dbc0d39a80cb671d000ac302798",
+  "expectedNextestSha256": "53470cfc9b5cbcd96780db2d348700d76af962467503791f1f8a8824d8967e5c",
+  "adapterTemplateSha256": "c160a2999eb31fbee3841a1cc6d7fc2c2645ee3e204dab642023fa9058def487",
+  "rawXmlPreserved": true,
+  "productionReportOrRoutingChange": false
+}

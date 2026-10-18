@@ -1,0 +1,118 @@
+name: research derived Nextest identities and physical shards
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_LOCKED: '1'
+jobs:
+  seed:
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 8
+    outputs:
+      cohort_nonce: ${{ steps.prepared.outputs.cohort_nonce }}
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Keep the previously exercised bootstrap independent of application source.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node github:depot/cli
+      working-directory: .depot/research/test-identity-adapter
+    - id: prepared
+      run: mise run //.depot/research/test-identity-adapter:prepare
+      working-directory: .depot/research/test-identity-adapter
+      env:
+        MONO_RESEARCH_IDENTITY_ADAPTER_URL_20261018: ${{ secrets.MONO_RESEARCH_IDENTITY_ADAPTER_URL_20261018 }}
+    - run: mise run //.depot/research/test-identity-adapter:run-cohort
+      working-directory: .depot/research/test-identity-adapter
+      env:
+        PROBE_PHASE: seed
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: research-test-identity-adapter-input
+        path: .depot/research/test-identity-adapter/transfer/diagnostic.zip
+        retention-days: 1
+        if-no-files-found: error
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-test-identity-adapter-evidence-seed
+        path: .depot/research/test-identity-adapter/evidence/
+        retention-days: 7
+        if-no-files-found: error
+  physical:
+    needs: seed
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 8
+    strategy:
+      max-parallel: 1
+      matrix:
+        index: [0, 1]
+    env:
+      PROBE_COHORT_NONCE: ${{ needs.seed.outputs.cohort_nonce }}
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the seed bootstrap so only selection and physical allocation change.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node github:depot/cli
+      working-directory: .depot/research/test-identity-adapter
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: research-test-identity-adapter-input
+        path: .depot/research/test-identity-adapter/transfer/
+    - run: mise run //.depot/research/test-identity-adapter:prepare
+      working-directory: .depot/research/test-identity-adapter
+    - run: mise run //.depot/research/test-identity-adapter:run-cohort
+      working-directory: .depot/research/test-identity-adapter
+      env:
+        PROBE_PHASE: shard
+        PROBE_SHARD_INDEX: ${{ matrix.index }}
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-test-identity-adapter-evidence-shard-${{ matrix.index }}
+        path: .depot/research/test-identity-adapter/evidence/
+        retention-days: 7
+        if-no-files-found: error
+  consumer:
+    needs: [seed, physical]
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match producer bootstrap while verifying artifacts in another job.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: research-test-identity-adapter-evidence-*
+        path: .depot/research/test-identity-adapter/received/
+    - run: mise run //.depot/research/test-identity-adapter:consume
+      working-directory: .depot/research/test-identity-adapter
+      env:
+        PROBE_COHORT_NONCE: ${{ needs.seed.outputs.cohort_nonce }}
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-test-identity-adapter-consumer
+        path: .depot/research/test-identity-adapter/evidence/
+        retention-days: 7
+        if-no-files-found: error
