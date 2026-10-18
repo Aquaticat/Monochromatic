@@ -113,7 +113,7 @@ session.agent
     fixtureState.executions,
     0
   );
-  if(['deny','stop'].includes(mode)){
+  if(['deny','stop','cancelled'].includes(mode)){
    const reason='The user stopped execution. Wait for their next instructions.';
    assert.equal(fixtureState.handlerFailure,undefined);
    assert.deepEqual(review.outcome,{state:'resolved',verdict:'deny',reason});
