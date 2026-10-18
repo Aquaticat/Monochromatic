@@ -618,14 +618,18 @@ with no compiler artifacts and absent registry and target markers.
 The outer guarded build passed in 19,670 milliseconds.
 The coherent continuation used the same harness and frozen crate for every case:
 
-- Seed `12139n3wbg`: 12 Cargo compiler-artifact records,
+- Seed `12139n3wbg`:
+  12 Cargo compiler-artifact records,
   none fresh;
   Cargo 3,120 milliseconds and outer build 17,147 milliseconds.
-- Offline warm `x33zr9szff`: all 12 records fresh;
+- Offline warm `x33zr9szff`:
+  all 12 records fresh;
   Cargo 376 milliseconds and outer build 13,781 milliseconds.
-- Offline target reset `x98z3btb21`: all 12 records recompiled using the retained registry cache;
+- Offline target reset `x98z3btb21`:
+  all 12 records recompiled using the retained registry cache;
   Cargo 3,005 milliseconds and outer build 16,755 milliseconds.
-- Offline changed flags `71x7kn2wqr`: all 12 records recompiled using the original target mount;
+- Offline changed flags `71x7kn2wqr`:
+  all 12 records recompiled using the original target mount;
   Cargo 3,096 milliseconds and outer build 18,193 milliseconds.
 
 Each case consumed a new run nonce,
@@ -690,8 +694,10 @@ authenticated Git-over-SSH is outside this result.
 
 Separate terminal controls rejected the missing required mounts:
 
-- Build `c92mvpvs0t`: `secret fixture: not found`.
-- Build `mqpxcrcbgn`: `unset ssh forward key fixture`.
+- Build `c92mvpvs0t`:
+  `secret fixture: not found`.
+- Build `mqpxcrcbgn`:
+  `unset ssh forward key fixture`.
   The initial assertion expected different wording;
   the retained terminal log was reconciled without another allocation.
 
