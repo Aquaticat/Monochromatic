@@ -158,13 +158,12 @@ Full future CI completeness is not an interview-entry condition.
 - Finish and reconcile the parent's coherent pnpm comparison before making a provider-specific cache recommendation.
   Preserve initial tool/bootstrap and archive-guard failures as harness outcomes.
   Successful cold controls alone do not establish a warm benefit.
-- Reconcile the master note's working-status text with the completed routing,
+- The master note now reconciles the completed routing,
   disk,
   compiler-cache,
   SDK,
   and retained KVM results.
-  That is evidence integration,
-  not another experiment.
+  Its source update `130f397902` closes the initial evidence-integration finding.
 - State the financial-control incompatibility plainly before presenting spend authority options.
   No extra account probe is needed to establish the missing information.
 
