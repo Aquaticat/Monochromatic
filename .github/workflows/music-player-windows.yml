@@ -1,4 +1,4 @@
-name: depot-complete-native-hosts
+name: depot-native-runner-followup-hosts
 
 on:
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: ${{ fromJSON(inputs.hosts == 'macos' && '["macos-15-intel"]' || '["windows-2025", "macos-15-intel"]') }}
+        runner: ${{ fromJSON(inputs.hosts == 'macos' && '["depot-macos-15"]' || '["depot-windows-2025-4", "depot-macos-15"]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     defaults:
@@ -62,6 +62,8 @@ jobs:
       CARGO_PROFILE_DEV_DEBUG: '0'
       SOURCE_HEAD: ${{ inputs.source_head }}
     steps:
+    - name: Record actual runner hardware and provider identity
+      run: node --input-type=module -e 'const os = await import("node:os"); console.log(JSON.stringify({event:"depot-runner-hardware",platform:process.platform,architecture:process.arch,cpus:os.cpus().length,memoryBytes:os.totalmem(),runnerName:process.env.RUNNER_NAME,runnerOs:process.env.RUNNER_OS,runnerArchitecture:process.env.RUNNER_ARCH,githubSha:process.env.GITHUB_SHA}));'
     - name: Checkout trial harness
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
@@ -123,7 +125,7 @@ jobs:
           ~/.cargo/registry
           ~/.cargo/git
           source/package/music-player/desktop-app/target
-        key: depot-complete-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.source_head }}
+        key: depot-native-runner-followup-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.source_head }}
     - name: Build release artifact through the package task
       id: build
       if: ${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}
