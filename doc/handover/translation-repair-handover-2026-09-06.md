@@ -307,7 +307,8 @@ before the other queued work.
     run
     and slice-cache follow after `w168` lands.
     The move's dry run built and tested but never linted:
-    a ledger entry is owed with the split's docs batch.
+    a ledger entry is owed with the split's docs batch,
+    with the other split mistakes collected in `s245/split/ledger-notes.md`.
     The per-package lint times in that census (2.5 to 37 s) were taken under four agents' load
     and are not the measurement the plan owes;
     `w169` landed (`a77972ac5c` and the twelve before it):
