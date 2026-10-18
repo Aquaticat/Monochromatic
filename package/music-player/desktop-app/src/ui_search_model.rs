@@ -4,7 +4,7 @@
 //! Why: row order, emphasis spans and the status claim are decided here, so the window only places text.
 
 use music_player::search_page_model::{
-    is_current_track_result, search_emphasis_spans, search_row_second_line, search_status_line,
+    is_current_track_result, search_emphasis_spans, search_row_kind_label, search_row_second_line, search_status_line,
 };
 use music_player::search_results::{SearchResult, SearchResultKind, SearchState};
 #[cfg(test)]
@@ -48,6 +48,8 @@ pub struct SearchRowView {
     pub current: bool,
     /// Whether the current track is playing.
     pub playing: bool,
+    /// What a screen reader announces for the row: the name, the kind and, for a track, the parent folder.
+    pub spoken: String,
     /// Position of the result in the result list, which `open` reports back.
     pub index: i32,
 }
@@ -95,6 +97,21 @@ pub fn segments(text: &str, highlights: &[music_player::search_matcher::SearchHi
     return pieces;
 }
 
+/// What: `spoken_label` joins the name, the kind word and the parent folder of a result into one announcement.
+/// Why: a result is one named action (D77): its own name once, the kind, and the parent context that tells equal names
+/// apart. The highlight pieces and the kind icon add nothing, so the row's label is the only place the words are joined.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const spokenLabel = (name: string, kind: string, parent?: string) => [name, kind, parent].filter(Boolean).join(", ");
+/// ```
+fn spoken_label(name: &str, kind: &str, parent: Option<&str>) -> String {
+    return match parent {
+        Some(parent_text) => format!("{name}, {kind}, {parent_text}"),
+        None => format!("{name}, {kind}"),
+    };
+}
+
 /// What: `row_view` converts one result into a row at `position` in the result list.
 /// Why: folder and track results share one row shape, with the track-only fields left empty for folders.
 fn row_view(result: &SearchResult, position: usize, current_index: Option<usize>, playing: bool) -> SearchRowView {
@@ -114,6 +131,7 @@ fn row_view(result: &SearchResult, position: usize, current_index: Option<usize>
         has_parent: parent_text.is_some(),
         current,
         playing: current && playing,
+        spoken: spoken_label(&result.name, search_row_kind_label(result), parent_text.as_deref()),
         index: i32::try_from(position).unwrap_or(-1),
     };
 }
