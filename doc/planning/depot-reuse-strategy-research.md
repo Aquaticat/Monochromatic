@@ -224,12 +224,14 @@ Before the expanded launches,
 the five completed request-to-terminal windows are 94,
 13,
 54,
-171 and 208 seconds,
-totaling 540 seconds.
+172 and 208 seconds,
+totaling 541 seconds.
 Charging every second of those windows at all eight requested vCPUs and USD 0.00005 per vCPU-second
-gives a USD 0.216 timestamp-price proxy.
+gives a USD 0.2164 timestamp-price proxy.
 The remaining eleven full 15-minute job ceilings add USD 3.96,
-for a combined USD 4.176 scheduling bound under the USD 5 compute guardrail.
+for a combined USD 4.1764 scheduling bound under the USD 5 compute guardrail.
+The Gradle request-to-terminal window includes one second before its recorded start;
+its start-to-terminal window is 171 seconds.
 The failed digest dispatch is conservatively included despite allocating no sandbox.
 These request windows can include unbilled orchestration;
 the calculation is not account billing evidence.
