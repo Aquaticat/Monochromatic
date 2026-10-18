@@ -106,7 +106,7 @@ try {
     copyFileSync(linterPath, join(tools, 'monochromatic-lint'));
     const toolsArchive = join(evidence, 'diagnostic-host-tools.tar.zst');
     run({ name: 'diagnostic-archive-host-tools', command: 'tar', args: ['--create', '--zstd', '--file', toolsArchive, '--directory', tools, 'cargo-nextest', 'monochromatic-lint'], limit: 60_000 });
-    const replay = run({ name: 'diagnostic-archive-local-lock-cohort', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'run', '--archive-file', archive, '--extract-to', join(privateRoot, 'diagnostic-extract'), '--workspace-remap', project, '--no-fail-fast', '--filterset', 'test(real_index_lock::tests::)'], cwd: project, childEnv: buildEnv, expected: 'observe', limit: 120_000 });
+    const replay = run({ name: 'diagnostic-archive-local-lock-cohort', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'run', '--archive-file', archive, '--extract-to', join(privateRoot, 'diagnostic-extract'), '--workspace-remap', project, '--no-fail-fast', '--filterset', 'test(real_index_lock::tests::) | test(index_lock_evidence::tests::)'], cwd: project, childEnv: buildEnv, expected: 'observe', limit: 120_000 });
     const bundles = [archive, gitArchive, toolsArchive].map(path => ({ name: path.slice(evidence.length + 1), bytes: statSync(path).size, sha256: sha(readFileSync(path)) }));
     assert(bundles.every(item => item.bytes <= 512 * 1024 * 1024));
     const filesystem = [tmpdir(), root].map(path => { const fs = statfsSync(path, { bigint: true }); return { path, type: fs.type.toString(), blockSize: fs.bsize.toString() }; });

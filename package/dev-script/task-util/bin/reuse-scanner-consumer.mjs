@@ -106,14 +106,14 @@ try {
     assert(original.includes('return "missing";'));
     try {
       writeFileSync(source, original.replace('return "missing";', 'return "research-missing";'));
-      const rejected = tests({ label: 'scanner-source-stale-output-control', extra: ['--filterset', 'test(runtime_cache::warning_tests::load_failure_reasons_render_exact_json)'], expected: 'failure' });
+      const rejected = tests({ label: 'scanner-source-stale-output-control', extra: ['--filterset', 'test(runtime_cache::warning::tests::load_failure_reasons_render_exact_json)'], expected: 'failure' });
       assert(rejected.log.includes('FAIL') && rejected.log.includes('research-missing'));
     } finally { writeFileSync(source, original); }
     tests({ label: 'scanner-dependency-feature-control', extra: ['--features', 'gix-index/serde'] });
     const before = stats('scanner-before-compiler-change');
     buildEnv.RUSTFLAGS = '-C debuginfo=1';
     try {
-      tests({ label: 'scanner-compiler-flag-control', extra: ['--filterset', 'test(runtime_cache::warning_tests::load_failure_reasons_render_exact_json)'] });
+      tests({ label: 'scanner-compiler-flag-control', extra: ['--filterset', 'test(runtime_cache::warning::tests::load_failure_reasons_render_exact_json)'] });
       const after = stats('scanner-after-compiler-change');
       assert((after.stats.cache_misses.counts.Rust ?? 0) > (before.stats.cache_misses.counts.Rust ?? 0));
     } finally { delete buildEnv.RUSTFLAGS; }
