@@ -1,0 +1,71 @@
+[tasks."probe:print-controls"]
+quiet = true
+shell = "node --input-type=module-typescript -e"
+run = '''
+import {createServer} from 'node:http';
+import {once} from 'node:events';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {readFileSync,writeFileSync,mkdirSync,chmodSync} from 'node:fs';
+import {homedir} from 'node:os';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {strict as assert} from 'node:assert';
+const invoke=promisify(execFile);
+const state=join(homedir(),'temp','agent','depot-platform-buildkit-evidence-20261018');
+mkdirSync(state,{recursive:true});chmodSync(state,0o700);
+const requests=[];
+const server=createServer((request,response)=>{
+  requests.push({path:request.url,method:request.method,authorizationPresent:Boolean(request.headers.authorization)});
+  response.writeHead(401,{'content-type':'application/json'});
+  response.end(JSON.stringify({code:'unauthenticated',message:'local-fixture-auth-negative-control'}));
+});
+server.listen(0,'127.0.0.1');await once(server,'listening');
+const address=server.address();assert(address&&typeof address==='object');
+const environment={...process.env,DEPOT_API_URL:'http://127.0.0.1:'+address.port,
+  DEPOT_TOKEN:'fixture-not-a-real-token',PROJECT:'unallocated',OUTPUT_DIRECTORY:'.'};
+const commands=[];
+async function run(args){
+  let result;
+  try{
+    const response=await invoke('depot',args,{env:environment,maxBuffer:1024*1024,signal:AbortSignal.timeout(15000)});
+    result={args,status:0,stdout:response.stdout,stderr:response.stderr};
+  }catch(error){
+    result={args,status:error.code,stdout:error.stdout??'',stderr:error.stderr??''};
+  }
+  commands.push({...result,stdoutSha256:createHash('sha256').update(result.stdout).digest('hex')});
+  return result;
+}
+try{
+  const observer=await run(['projects','get','local-print-control','--output','json']);
+  assert.notEqual(observer.status,0);assert(observer.stderr.includes('local-fixture-auth-negative-control'));
+  assert.equal(requests.length,1);
+  const baseline=await run(['bake','--file','docker-bake.hcl','--print']);
+  assert.equal(baseline.status,0,baseline.stderr);
+  const parsed=JSON.parse(baseline.stdout);
+  assert.deepEqual(parsed.group.default.targets,['service','evidence']);
+  assert.deepEqual(parsed.target.service.platforms,['linux/amd64','linux/arm64']);
+  assert.equal(parsed.target.service.project_id,'unallocated');
+  assert.equal(parsed.target.service.args.BUILD_HARNESS_SHA,'print-control');
+  assert.equal(parsed.target.evidence.contexts.fixtureInput,'fixture-input');
+  const override=await run(['bake','--file','docker-bake.hcl','--set',
+    'service.args.BUILD_HARNESS_SHA=override-positive-control','--print']);
+  assert.equal(override.status,0,override.stderr);
+  assert.equal(JSON.parse(override.stdout).target.service.args.BUILD_HARNESS_SHA,'override-positive-control');
+  assert.equal(JSON.parse(override.stdout).target.evidence.args.BUILD_HARNESS_SHA,'print-control');
+  const negative=await run(['bake','--file','docker-bake.hcl','--print','does-not-exist']);
+  assert.notEqual(negative.status,0);assert(negative.stderr.includes('does-not-exist'));
+  const remote=await run(['bake','--print','https://fixture.invalid/source.git']);
+  assert.notEqual(remote.status,0);assert(remote.stderr.includes('cannot use remote target with --print'));
+  assert.equal(requests.length,1,'Print controls contacted the local API observer');
+  const version=await run(['--version']);assert.equal(version.status,0);
+  const receipt={verifiedAt:new Date().toISOString(),repositoryBase:
+    'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a',requests,commands,
+    controls:{apiObserverPositive:true,sharedTargetInheritance:true,overridePositive:true,
+      invalidTargetNegative:true,remotePrintUnsupported:true,noPrintApiRequests:true},cloudAllocation:false};
+  writeFileSync(join(state,'print-controls.json'),JSON.stringify(receipt,null,2)+'\n');
+  process.stdout.write(JSON.stringify({controls:receipt.controls,cloudAllocation:false})+'\n');
+}finally{
+  const closed=once(server,'close');server.close();await closed;
+}
+'''

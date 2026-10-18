@@ -11,7 +11,7 @@ target "shared" {
   dockerfile = "Dockerfile"
   platforms = ["linux/amd64", "linux/arm64"]
   args = { BUILD_HARNESS_SHA = HARNESS_SHA }
-  depot-project = PROJECT
+  project_id = PROJECT
 }
 target "service" {
   inherits = ["shared"]
