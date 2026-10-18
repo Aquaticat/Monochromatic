@@ -492,3 +492,12 @@ Read-only publication verification found remote `main` at
 containing the completed review and handoff;
 the owned paths were clean.
 The two additional archive bundles and prerequisite source bundle still reproduce their reviewed SHA-256 values.
+
+## Actual guest-transformation review
+
+The new three-ZIP cohort is published at `c65e3b8eeb0f1bc0e06bf555048b85635ec59202`
+in `depot-mvm-guest-files-2026-10-18.evidence.json` and its linked original bundle.
+Its independent original-byte,
+CRC/member/source and actual guest-command joins are now active.
+This supersedes the pending-publication queue status without changing the original eight-ZIP qualification.
+No new allocation is admitted by this review.
