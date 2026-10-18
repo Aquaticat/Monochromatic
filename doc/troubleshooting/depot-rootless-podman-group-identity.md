@@ -164,6 +164,33 @@ The actionable repository integration gap is preserved in [issue #1047][local-is
 [image-issue]: https://github.com/Aquaticats/Monochromatic/issues/1045
 [local-issue]: https://github.com/Aquaticats/Monochromatic/issues/1047
 
+## Expanded graph recurrence on 2026-10-18
+
+Native run `gb01kjx2qk`,
+using harness `234ccc92dabb81e998e0a0bb5e838713924dd83f`,
+reproduced the same identity diagnostic in both repetitions.
+The retained original browser preparation log reports
+`uid:1001 pw_uid:1001 st_uid:1001, gid:1001 pw_gid:117 st_gid:1001`
+and Podman exit 125.
+The graph does not record the installed uidmap package version.
+Each repetition completed its shared build and Rust branches,
+but image preparation and its dependent browser invocations failed before browser assertions.
+Those failures give no browser-case credit and cannot support a complete-graph speed comparison.
+
+Isolated correction `72af18d5b1` applies the verified rootful boundary through the existing Podman wrapper.
+Only `GRAPH_PROVIDER=native-depot` selects `sudo --non-interactive`;
+the original absolute Podman executable and arguments are retained.
+Image probes,
+builds and container runs therefore use the same storage owner.
+The wrapper still adds 2 GiB memory,
+2 CPUs and 256 PIDs to container runs.
+Application inputs,
+the command plan and the graph driver remain unchanged.
+The corrected bootstrap SHA-256 is
+`d6adb8579ea9888147d0b3f5eba90f730630a243b03db07d4753feb1b8f0f85a`.
+Independent wrapper controls and actual corrected native consumers remain required;
+the committed correction alone supplies no new passing browser evidence.
+
 ## Mutation work tmpfs ownership on 2026-10-17
 
 This is a separate boundary from the `newuidmap` rejection.
