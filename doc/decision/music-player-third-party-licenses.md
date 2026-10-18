@@ -6,11 +6,17 @@ Accepted 2026-10-15,
 for the parts the agent was asked to decide (the tooling,
 the allow-lists and where the
 notices go).
-Two choices were made by default and stay open to the owner's veto:
+Two choices were made by default and stayed open to the owner's veto:
 the Slint license this project uses (GPL-3.0-only,
 see [Slint](#slint)),
 and the source offer for the desktop programs (see [Open decisions](#open-decisions)).
-The in-app surface waits for a design decision (see [In-app surface](#in-app-surface)).
+The in-app surface waited for a design decision (see [In-app surface](#in-app-surface)).
+
+Amended 2026-10-18 by the owner:
+the desktop programs use Slint under its Royalty-free license instead of GPL-3.0-only,
+and the desktop Settings gets a Licenses row.
+The sections below keep the 2026-10-15 text as history, each marked where it is superseded;
+the current arrangement is in [Amendment of 2026-10-18](#amendment-of-2026-10-18).
 
 ## Context
 
@@ -55,6 +61,10 @@ and the GPL and the LGPL ask for their own text.
 ## Decision
 
 ### Slint
+
+Superseded on 2026-10-18 (see [Amendment of 2026-10-18](#amendment-of-2026-10-18)):
+the desktop programs now use the Royalty-free license.
+The text below is the 2026-10-15 decision.
 
 The desktop programs are built with Slint 1.18.1,
 whose crates declare
@@ -208,6 +218,8 @@ because the script checks every target.
 ### Allow-lists
 
 Desktop (`package/music-player/desktop-app/about.toml`),
+as it stood on 2026-10-15 (since 2026-10-18 `LicenseRef-Slint-Royalty-free-2.0` replaces `GPL-3.0-only`
+and every entry must be compatible with the LGPL version 3),
 in the order cargo-about prefers for a crate offered under
 several licenses:
 MIT,
@@ -326,6 +338,12 @@ which Maven metadata does not carry).
 
 ### In-app surface
 
+Superseded on 2026-10-18 for the desktop app:
+the owner decided to add a Licenses row to Settings on both platforms without mockups,
+and the desktop row exists (see [Amendment of 2026-10-18](#amendment-of-2026-10-18)).
+The Android row is a separate change.
+The text below is the 2026-10-15 state.
+
 The accepted design (`package/music-player/design/decisions.md`) names every Settings row
 (D87 left the page empty;
 D97,
@@ -340,6 +358,145 @@ the archives and the APK asset.
 An in-app surface (a Licenses or About row in Settings that shows the embedded text) needs a design decision;
 it is
 also what Slint's royalty-free option (a) would need.
+
+## Amendment of 2026-10-18
+
+### The owner's decision
+
+On 2026-10-18 the owner decided, through the agent's question tool:
+
+1. The desktop releases use Slint under its **Royalty-free Desktop, Mobile, and Web Applications License, version 2.0**
+   instead of GPL-3.0-only.
+2. Settings gets a **Licenses row** on both platforms.
+   It needs no mockups: the owner called it simple and low in design impact.
+   The desktop row is built; the Android row is a separate change.
+
+This replaces the default of 2026-10-15 ([Slint](#slint)) and answers two of the [Open decisions](#open-decisions).
+
+### What the license requires
+
+The text is `LicenseRef-Slint-Royalty-free-2.0`, read on 2026-10-18 from the file
+`LICENSES/LicenseRef-Slint-Royalty-free-2.0.md` of the Slint repository (branch `master`),
+from slint.dev (the Royalty-free License on its terms page), and from the same file in every Slint crate 1.18.1 in the
+build.
+All of them are byte for byte the same (SHA-256 `5167f5056e850419106ab6265efbdca7cba4d99c849d1445ca0bbf6a1e2315fe`).
+It is vendored as `package/music-player/desktop-app/notices/slint-royalty-free-2.0.md`.
+
+Section 1 grants a world-wide, royalty-free, non-exclusive license to "use, reproduce, make available, modify, display,
+perform, distribute the Software as part of a Desktop, Mobile, or Web Application".
+A Desktop Application is "a computer program that is designed to run on a general-purpose computer (PC or notebook),
+typically installed and executed locally on the computer's operating system".
+
+Section 2, the condition for distributing the Software in an Application, in the license's words:
+
+> You may distribute the Software as part of an Application, modified or unmodified, provided that You do either of the
+> following:
+>
+> (a) Display the `AboutSlint` widget in an "About" screen or dialog that is accessible from the top level menu of the
+> Application.
+> In the absence of such a screen or dialog, display the widget in the "Splash Screen" of the Application.
+>
+> (b) Display the Slint attribution badge on a public webpage, preferably where the binaries of your Application can be
+> downloaded from, in such a way that it can be easily found by any visitor to that page.
+
+Section 3 limits the license:
+it does not permit distributing Slint alone, using it within Embedded Systems, distributing an Application that exposes
+Slint's APIs, or removing license notices from Slint's source.
+The desktop programs are Applications for general-purpose computers, expose no Slint API, and change no Slint source.
+slint.dev's licensing summary says the same: the royalty-free license "is free, as long as you disclose that you use
+Slint" (for example with the `AboutSlint` widget or the badge), and embedded systems need the commercial license.
+
+### How the desktop programs meet it
+
+Option (a) is used.
+The Licenses row of Settings opens the Licenses page (`desktop-app/ui/licenses.slint`),
+which shows the `AboutSlint` widget imported from `std-widgets.slint` under its header,
+and the notice text under that.
+The widget draws Slint's "Made with Slint" logo for the light and the dark scheme and links to slint.dev.
+A window test (`ui_licenses_window_tests.rs`) fails when the page does not hold exactly one `AboutSlint` inside the
+window and below the header.
+
+One word of the license does not map exactly.
+Section 2(a) says the screen is "accessible from the top level menu of the Application".
+The desktop app has no menu bar.
+Its top level is the player page with a Settings button (Ctrl+Alt+S, Ctrl+Comma on macOS),
+and the Licenses page is one row under Settings, below an "About" heading.
+That is the nearest thing the app has to an About screen reachable from its top level;
+whether it counts as the license's "About screen or dialog" is the owner's call
+(see [Decisions left to the owner](#decisions-left-to-the-owner)).
+Option (b), the badge on the release page, is not used.
+
+### The SPDX expression of the desktop programs
+
+- The project's own code, in the repository and in each program: `LGPL-3.0-or-later`.
+- Slint (10 crates, 1.18.1): `LicenseRef-Slint-Royalty-free-2.0`, chosen from the crates' own
+  `GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0`.
+- Every other Rust crate: the license cargo-about chose from the allow-list, one of MIT, Apache-2.0, ISC, BSD-2-Clause,
+  BSD-3-Clause, Zlib, Unicode-3.0, BSL-1.0, MPL-2.0, CC0-1.0 and Unlicense.
+- The Inter typeface `OFL-1.1`, the Material Symbols icons `Apache-2.0`, the Rust standard library with the licenses its
+  notice lists, and for the Windows GNU program the MinGW-w64 runtime.
+
+A distributed program therefore carries `LGPL-3.0-or-later AND LicenseRef-Slint-Royalty-free-2.0` together with the
+third-party licenses above.
+A `LicenseRef-` identifier is local to the document that defines it;
+here the definition is the vendored file and the Slint section of the notice file.
+No GPL work remains in the program, so the GPL text appears only as the text the LGPL supplements.
+
+### What stays unchanged, and why
+
+- The repository `LICENSE` (the LGPL-3.0 text) and the `license = "LGPL-3.0-or-later"` field of
+  `desktop-app/Cargo.toml` and `truepeak-core/Cargo.toml`.
+  The field names the license of the crate's own source,
+  which the Slint license does not change; the Slint license covers Slint, not this code.
+  `file-enforcer.config.ts` manages these manifests, and running `node package/dev-script/file-enforcer/src/cli.ts`
+  after this change produced no difference in them.
+- Android: the APK contains no Slint, so nothing changes there.
+
+### Compatibility of the remaining licenses
+
+The program is LGPL-3.0-or-later, so every other license in a desktop program must be compatible with the LGPL
+version 3.
+That is the bar the Android native crates already meet (`android-app/rust/about.toml`),
+and the desktop allow-list is now the same list plus the Slint identifier, in the same order.
+
+- MIT, ISC, BSD-2-Clause, BSD-3-Clause, Zlib, Unicode-3.0, BSL-1.0, CC0-1.0 and Unlicense are permissive licenses that
+  the Free Software Foundation lists as GPL-compatible,
+  and a license that can be combined with the GPL version 3 can be combined with the LGPL version 3,
+  which is that license with added permissions.
+- Apache-2.0 is compatible with the GPL version 3, and so with the LGPL version 3.
+- MPL-2.0 is file-level copyleft and lets the larger work carry other terms,
+  so it combines with an LGPL-3.0 program as it did before.
+- The cargo-about gate confirms the whole graph: with `GPL-3.0-only` out of the list and the Slint identifier in,
+  it accepted all 570 crates, so no crate needs the GPL.
+
+### Tooling changes
+
+- `about.toml` accepts `LicenseRef-Slint-Royalty-free-2.0` in place of `GPL-3.0-only`.
+- cargo-about 0.9.2 accepts the Slint crates but writes no text for a `LicenseRef-*` license, so the Slint crates are
+  missing from its text list.
+  `bin/third-party-notices.mjs` finds them (the crates cargo-about lists whose manifest offers the identifier and that
+  have no text), requires each crate's own license file to match the vendored one by SHA-256,
+  and writes a Slint section with the text.
+  Any other crate without a text stops the script.
+  The cause is in `doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md`.
+- The notice intro, the release notes of `music-player-release.yml`, the README and the runbook no longer say the
+  programs are GPL works.
+
+### The Licenses page and startup
+
+The notice file is about 2 MB and 40,000 lines.
+The window does not hold it as a Slint string and the page builds nothing at startup:
+opening the page gives it a model (`ui_licenses.rs`, `NoticeLines`) that slices the embedded text one line at a time,
+and the ListView builds only the lines in view.
+Closing the page releases the model.
+The startup measurement is in the handover (`doc/planning/music-player-production-implementation.md`).
+
+### Decisions left to the owner
+
+- Whether the Licenses page counts as the "About screen or dialog accessible from the top level menu" of section 2(a),
+  or whether to also satisfy section 2(b) with the Slint badge in the release notes.
+  Both together would remove the doubt; the badge is one image line in the notes of `music-player-release.yml`.
+- Whether the Licenses row should carry the name About, or the page a title that includes it.
 
 ## Measurements
 
@@ -425,6 +582,9 @@ Re-run on 2026-10-18 at the branch head after merging `main` (each number from a
   which runs before the build jobs.
 
 ## Open decisions
+
+As of 2026-10-15; the first and the third were decided on 2026-10-18, and the second no longer applies to the
+desktop programs (see [Amendment of 2026-10-18](#amendment-of-2026-10-18)).
 
 - Slint license:
   keep GPL-3.0-only (the desktop programs are GPL-3.0 combined works) or switch to the royalty-free

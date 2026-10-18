@@ -157,6 +157,9 @@ Check the license notices of a dry run:
   for every desktop target,
   how many third-party crates it links and that all are covered,
   then the size of the file.
+- The `notices` job log prints cargo-about's ten warnings `LicenseRef-Slint-Royalty-free-2.0 has no license file`.
+  They are expected: the script adds the Slint license text itself.
+  The desktop file has a heading starting `Slint (10 crates): Slint Royalty-free Desktop`.
 - Every desktop job's step "Smoke test the binary (--version)" compares `--licenses` with that file byte for byte.
 - The Linux and Alpine archives must hold `THIRD-PARTY-LICENSES.txt` next to `LICENSE`
   (`tar --list --file <archive>`),
@@ -182,10 +185,17 @@ Read the message:
 - cargo-about's `failed to satisfy license requirements` names a crate whose license is not on the allow-list of
   `package/music-player/desktop-app/about.toml` or `package/music-player/android-app/rust/about.toml`.
   Read the crate's license.
-  Add it to the `accepted` list only when it can be combined with the GPL version 3 (desktop) or the LGPL version 3
-  (Android),
+  Add it to the `accepted` list only when it can be combined with the LGPL version 3 (both apps;
+  the desktop programs use Slint under its Royalty-free license, so they are not GPL works),
   and write the reason in the comment above the list and in the decision document;
   otherwise replace or drop the dependency.
+- `does not match the checksum recorded in this script` or `does not ship ... with the vendored license text`
+  means a Slint release changed its Royalty-free license file.
+  Read the new text, and in particular its section 2 (attribution):
+  the Licenses page of the desktop Settings must keep showing the `AboutSlint` widget.
+  Then replace `desktop-app/notices/slint-royalty-free-2.0.md` and the SHA-256 in `bin/third-party-notices.mjs`.
+  A new license identifier (a version other than `LicenseRef-Slint-Royalty-free-2.0`) fails the gate first;
+  see `doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md` for why the script supplies the text.
 - cargo-about naming `cfg_block` (or another crate with a `clarify` entry) means the crate's license file changed:
   read the new file and update the license and the SHA-256 in that entry.
 - `links crates the notice does not cover` means `cargo tree` found a linked crate that cargo-about did not list;

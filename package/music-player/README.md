@@ -933,7 +933,8 @@ every Rust crate,
 and for Android every Android library with its NOTICE files.
 
 - Desktop:
-   `music-player --licenses` prints them;
+   the Licenses row of Settings shows them,
+   and `music-player --licenses` prints them;
    the Linux and Alpine archives hold them as `THIRD-PARTY-LICENSES.txt`,
    the disk image beside the app and in `Contents/Resources`,
    and the release file `music-player-<version>-desktop-third-party-licenses.txt` serves the single-file Windows
@@ -950,10 +951,12 @@ and for Android every Android library with its NOTICE files.
    that needs a design decision.
 
 The desktop programs are built with Slint,
-which this project uses under the GNU General Public License,
-version 3,
-so each desktop program as a whole is distributed under the GPL version 3;
-the code of this repository stays LGPL-3.0-or-later.
+which this project uses under the Slint Royalty-free Desktop,
+Mobile,
+and Web Applications License 2.0,
+so the code of this repository stays LGPL-3.0-or-later.
+That license asks for the "Made with Slint" widget in an About screen,
+which the Licenses page in the desktop Settings shows.
 Dependencies are checked against allow-lists:
 cargo-about with `desktop-app/about.toml` and `android-app/rust/about.toml` for the Rust crates,
 and licensee in `android-app/app/build.gradle.kts` for the Android libraries.
