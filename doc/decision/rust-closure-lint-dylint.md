@@ -27,9 +27,33 @@ If the owner meant the comment form for the Dylint lint too, that reading was no
 - Using the Dylint crates (`dylint_linting`, `dylint_testing`, `cargo-dylint`, `dylint-link`).
 - The `rustc-dev` toolchain component for the package that builds the lint.
 
-Not approved: any change to the root toolchain declaration (`mise.no-env.toml`, `mise.lock`), which every
-session's builds share; the implementation must keep the toolchain package-local, with a comment saying why
-it is pinned, or ask first.
+## Root toolchain change approved on 2026-10-18
+
+Stage 1 kept the lint's toolchain package-local (a dated nightly in the package) because the root toolchain was not
+approved to change.
+On 2026-10-18 the owner answered three questions through the question tool, and stage 2a carries them out:
+
+- Add `rustc-dev` to the shared floating nightly.
+  `mise.no-env.toml` lists the component and the tools `cargo-dylint` and `dylint-link`,
+  `mise.toml` is regenerated from it with file-enforcer,
+  and `mise.lock` records the tools and the new component list.
+  Changing the component list changes the locked options of the `rust` entry,
+  so refreshing the lock also moved the floating nightly from `nightly-2026-10-17` to `nightly-2026-10-18`.
+- Exempt `**/tests/ui/**` from `rust/no-anonymous-functions` in `monochromatic-lint.config.jsonc`,
+  because the lint's fixtures contain closures on purpose.
+- The two stray mise symlinks under `~/.local/share/mise/installs` were repaired by the coordinator.
+
+The package therefore has no `rust-toolchain.toml` and no `RUSTUP_TOOLCHAIN` override;
+it uses the root toolchain and its aggregate tasks are named `build` and `lint` again,
+so the root fan-out reaches them.
+Still not approved: any other change to the root toolchain declaration,
+a pin of the nightly,
+an edit to the IDE package,
+a push,
+or a publish.
+A floating-nightly upgrade can break the lint source,
+because rustc's internal API moves;
+the package README says so.
 
 ## Staging
 

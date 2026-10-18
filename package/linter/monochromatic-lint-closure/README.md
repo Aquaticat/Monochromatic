@@ -148,44 +148,42 @@ not in a hand edit.
 
 ## Usage
 
-### Prerequisites
+### Toolchain
 
-- The dated nightly of `rust-toolchain.toml` with the `rustc-dev` and `llvm-tools-preview` components:
-  `rustup component add rustc-dev llvm-tools-preview --toolchain nightly-2026-10-17`.
-- The tools `cargo-dylint` and `dylint-link` at version 6.2 (`cargo binstall cargo-dylint dylint-link`,
-  not run in stage 1:
-  the tools came from an existing copy);
-  `dylint-link` is the linker named in `.cargo/config.toml`.
-- Optional:
-  `DYLINT_DRIVER_PATH` to keep the cached Dylint driver somewhere other than `~/.dylint_drivers`.
+The package uses the repository's shared floating nightly,
+declared in the root `mise.no-env.toml` with the `rustc-dev` component
+(a Dylint library links rustc's own crates)
+and the tools `cargo-dylint` and `dylint-link` (the owner approved this on 2026-10-18).
+`mise install` provisions all three;
+nothing else is needed,
+and the package has no `rust-toolchain.toml` and no toolchain override of its own.
+The exact nightly is whatever `mise.lock` resolves for the `rust` entry.
+Dylint builds a library and every package it lints with that nightly,
+and `cargo dylint` caches its driver in `~/.dylint_drivers` (the optional `DYLINT_DRIVER_PATH` moves it).
 
-None of these is installed by the package or by the repository root toolchain.
-The root `mise.toml` pins a floating nightly without `rustc-dev`,
-and that variable outranks `rust-toolchain.toml`,
-so this package's `mise.toml` restates its own `RUSTUP_TOOLCHAIN`.
+A floating-nightly upgrade can break the lint source:
+rustc's internal API moves between nightlies,
+so after `mise.lock` moves the nightly,
+build the library and run the tests before relying on the lint,
+and fix the source if the compiler's API changed.
+The `dylint_linting` and `dylint_testing` crates and the two tools must stay on the same Dylint release.
 
 ### Tasks
 
-- `mise run //package/linter/monochromatic-lint-closure:build:library` builds the library.
+- `mise run //package/linter/monochromatic-lint-closure:build` builds the library.
 - `mise run //package/linter/monochromatic-lint-closure:test` runs the unit tests and the UI fixtures through nextest.
-- `mise run //package/linter/monochromatic-lint-closure:lint:all` runs `cargo check`,
+- `mise run //package/linter/monochromatic-lint-closure:lint` runs `cargo check`,
   Clippy with `--deny warnings`,
   and `cargo fmt --check`;
   `lint:clippy` and `lint:rustfmt` run the last two alone.
 - `mise run //package/linter/monochromatic-lint-closure:run <package directory>` lints another package with `cargo dylint --all-targets`.
 - `mise run //package/linter/monochromatic-lint-closure:bless` rewrites `tests/ui/*.stderr` from the lint's current output.
 
-The aggregate tasks are not named `build` and `lint`,
-as in the sibling packages.
-The root `build` and `lint` tasks fan out to every package task with exactly those names,
-in every session,
-and this package needs `rustc-dev`,
-`cargo-dylint` and `dylint-link`,
-which the shared toolchain does not have.
-Renaming keeps the root fan-out from reaching it;
-whether to restore the names once the toolchain is provisioned is the owner's decision.
-Entering the package also makes mise's Rust backend read `rust-toolchain.toml` and try to install that nightly with its components,
-and it records the install under `~/.local/share/mise/installs/rust`.
+The aggregate tasks carry the names `build` and `lint`,
+as in the sibling packages,
+so the root `build` and `lint` tasks fan out to them in every session.
+A session whose tools are not installed yet runs `mise install` first
+(`auto_install` does it on the first `mise run`).
 
 ### Building the target with the library's toolchain
 
@@ -224,9 +222,8 @@ the `run` task therefore stages a copy under the name Dylint expects.
   `cfg` and the selected targets decide coverage.
 - The library is coupled to one nightly.
   The compiler's internal API moves between nightlies;
-  bumping the pin means changing `rust-toolchain.toml` and `mise.toml` together,
-  rebuilding,
-  and rerunning the tests.
+  a new nightly in `mise.lock` means rebuilding and rerunning the tests,
+  and fixing the source when the API moved.
 - Linux x86_64 only was exercised.
 - The Slint-generated window type was unverified before stage 1;
   the IDE run below shows its `on_*` setters resolve under rustc.
