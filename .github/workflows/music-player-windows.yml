@@ -12,11 +12,11 @@
   },
   "jobs": {
     "guestFiles": {
-      "runs-on": "$ + value + ",
+      "runs-on": "${{ matrix.runner }}",
       "timeout-minutes": 20,
       "env": {
-        "PROBE_PLATFORM_PROVIDER": "$ + value + ",
-        "MVM_RESEARCH_KVM_GROUP": "$ + value + "
+        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
+        "MVM_RESEARCH_KVM_GROUP": "${{ matrix.group }}"
       },
       "steps": [
         {
@@ -49,7 +49,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-mvm-guest-files-$ + value + -$ + value + -$ + value + ",
+            "name": "research-mvm-guest-files-${{ matrix.key }}-${{ github.run_id }}-${{ github.run_attempt }}",
             "path": ".depot/research/mvm/evidence/",
             "if-no-files-found": "error",
             "retention-days": 7

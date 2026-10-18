@@ -538,3 +538,28 @@ fs.writeFileSync(join(evidence, 'permission-controls.json'), JSON.stringify({ sc
 if (checks.some(value => value.diagnostic || !value.before.access.available)) throw new CapabilityDiagnosticFailure('Descriptor control did not reach its actual device-open input');
 console.log(JSON.stringify({ cases: checks.map(value => ({ mode: value.mode, before: value.before.access.available, after: value.after.access.available })), applicationGuest: false }));
 '''
+
+[tasks."validate:workflow"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+async function validateWorkflow() {
+  const fs = await import('node:fs');
+  const { execFileSync } = await import('node:child_process');
+  const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+  const value = JSON.parse(fs.readFileSync(root + '/.github/workflows/music-player-windows.yml', 'utf8'));
+  const job = value.jobs.guestFiles;
+  const expression = name => String.fromCharCode(36, 123, 123) + ' ' + name + ' ' + String.fromCharCode(125, 125);
+  const expected = [
+    [job['runs-on'], expression('matrix.runner')],
+    [job.env.PROBE_PLATFORM_PROVIDER, expression('matrix.provider')],
+    [job.env.MVM_RESEARCH_KVM_GROUP, expression('matrix.group')],
+    [job.steps.at(-1).with.name, 'research-mvm-guest-files-' + expression('matrix.key') + '-' + expression('github.run_id') + '-' + expression('github.run_attempt')],
+  ];
+  for (const [actual, required] of expected) {
+    if (actual !== required) throw new Error('Generated GitHub destination expression differs');
+  }
+  if (job.strategy['max-parallel'] !== 1 || job.strategy.matrix.include.length !== 2) throw new Error('Finite matrix admission differs');
+  console.log(JSON.stringify({ destinationExpressionsVerified: 6, plannedJobs: 2, maximumConcurrentOwnJobs: 1 }));
+}
+await validateWorkflow();
+'''
