@@ -598,6 +598,11 @@ The final selector must retain every admitted task from the
 including configuration,
 generated-file and producer influences.
 Its static import inventory is not yet a validated production change selector.
+The existing [Mise selector investigation](../troubleshooting/mise-affected-workspace-cycles.md)
+qualifies the workspace-cycle rejection and pnpm's working Node reverse closure.
+That Node metadata result still lacks Cargo/Gradle,
+global configuration,
+deleted-package membership and artifact-consumer ownership.
 
 #### Static checks and shared producers
 
@@ -640,7 +645,14 @@ ASan fuzzing,
 benchmarks and installed-host controls as separate profiles with their actual prerequisites.
 The Kotlin profile invokes `//package/linter/kotlin:test`
 and retains its six-case JVM report plus the separate emitted-JAR consumer.
-Remaining IDE/file-manager/terminal owners enter only after their source/producers and execution joins close.
+The [finite material-owner campaign](depot-material-owner-completion-proposal.md)
+now has a [parent admission](../audit/depot-material-owner-parent-admission-2026-10-18.evidence.json)
+for IDE,
+terminal,
+file-manager variants and the actual design Node/ImageMagick owners.
+Its seven primary profiles and two conditional corrections share a USD 5 nominal guard.
+Admission is not execution evidence;
+results enter this allocation only after their source/producers and runtime joins close.
 Static test attributes,
 successful compilation and an import-only fixture do not substitute for those runtime boundaries.
 
@@ -788,10 +800,8 @@ semantic feature/assertion reconciliation,
 existing-evidence joins and admitted execution of remaining IDE/file-manager/terminal/design owners,
 the finite native debug consumer,
 prepared-image absence controls and final combined allocation/cost normalization.
-The capability-allocation source review is complete;
-the concrete rollout profiles still need exact owner commands,
-producer prerequisites,
-evidence joins and source-failure dispositions before the interview.
+The capability-allocation source review and concrete rollout profiles are written;
+the newly admitted material-owner execution and final source-failure dispositions remain open.
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
 The repeated GitHub and corrected native graph phases,
 case parity and independent failure classifications are sealed;

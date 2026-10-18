@@ -94,8 +94,15 @@ terminal and design.
 Static test attributes are not executed-case counts.
 Coverage is preparing exact finite profiles for actual owner tests and real prerequisites,
 including the IDE's pinned grammar producer and terminal font/Zig dependencies.
-No allocation is authorized until that concrete proposal is reviewed.
-The parent also owns concrete rollout profiles for static checks,
+The concrete proposal is now reviewed and admitted through
+`doc/audit/depot-material-owner-parent-admission-2026-10-18.evidence.json`.
+Its bound proposal SHA-256 is `8ebd2766f5e64f13d180ea6027853a97efa969748ba4ec04e9f0d6795becb82e`.
+The parent independently joins 24 frozen blob/hash/byte/object inputs across 18 distinct paths.
+Seven primary jobs reserve USD 1.08 nominal compute;
+two named conditional corrections reserve USD 2.88 and unpriced contingency is USD 1.04.
+This totals a USD 5 nominal guard,
+not an invoice guarantee.
+The parent completed concrete rollout profiles for static checks,
 Node/Rust tests,
 browsers,
 packaged artifacts,
@@ -103,12 +110,25 @@ OS/ARM and VM/desktop/Android consumers.
 Each profile must name actual owner commands,
 producer prerequisites,
 retained evidence and source-failure disposition.
-Complete this proposal before the final whole-report sufficiency review and interview.
-The parent can admit a separate maximum USD 5 campaign,
+Their scoped publisher is reaped at zero at `884f42a9af`;
+the new profiles were read as rendered HTML and targeted Markdown passes.
+The admitted material-owner campaign retains
 at most two concurrent cloud jobs,
 with default Cargo/Nextest concurrency and existing no emulator/desktop relaunch boundary.
 The raw-Git graph does not prove materialized font/media payload equivalence.
 Coverage must name materialized LFS source hashes wherever those consumers need them.
+Commit and preflight each executable harness before allocation,
+including native argv/task checks and all cloud payload readers.
+Coordinate the two slots across GNU,
+material and Platform SSH jobs rather than treating a per-workflow matrix cap as a global reservation.
+The widened legacy search covers 169 inventoried files,
+168 searched files,
+94 CRC-qualified ZIPs and 3558 members,
+with 72 exact-alias controls and real music-player/Truepeak positives.
+It finds no qualifying selected IDE/terminal/file-manager outcome in that retained corpus.
+Design's authored owners are Node/ImageMagick fixtures,
+not an authored Playwright suite;
+only the real owners are admitted.
 This research is not deferred to production acceptance.
 
 Platform additionally source-checks a finite native debug-access consumer,
@@ -178,11 +198,19 @@ These are per-binary runtime outcomes,
 not unique authored-assertion totals.
 The GNU adapter duplicates the owner's `--no-fail-fast` and reaches zero test bodies;
 Coverage retains that harness error and owns one GNU-only correction after the matched OS run.
-Matched Depot OS `39148580870` runs on `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`
+Matched Depot OS `39148580870` is terminal on `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`
 under `doc/audit/depot-current-host-matched-admission-2026-10-18.evidence.json`,
 two sequential 20-minute caps with 17-minute inner bounds,
 USD 1.92 reserved under USD 2.
-Coverage owns its finite watcher and cleanup.
+Mac job `117737397487` runs from `17:13:37` to `17:19:36 UTC`,
+359 seconds;
+Windows job `117737397295` runs from `17:19:37` to `17:30:51 UTC`,
+674 seconds.
+The combined nominal job-window proxy is USD 0.6584,
+separate from its USD 1.92 reservation and invoice cost.
+Its observed case counts match the public count boundaries;
+Coverage seals exact original artifact/case/host evidence and actual OS/machine differences before final integration.
+No coverage allocation remains active.
 
 Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.
@@ -199,7 +227,8 @@ SHA-256 `a497e3f495e1818af77eb9a2cba8ab45cbab71b5b59476364fe9cb1993b36614`.
 Four original ZIP CRCs and 102 member hashes pass;
 Coverage joins that projection semantically.
 Coverage also checks actual OS Nextest binary/package identities and older receipts for the other proposed owners.
-The new owner campaign remains unallocated until its concrete proposal and existing-evidence scope checks close.
+The new owner campaign is admitted but not yet allocated;
+its exact executable harness and payload preflight remain required before dispatch.
 Platform's Bash diagnosis is complete at `3cddf3617a`:
 `doc/troubleshooting/bash-builtin-kill-signal-option.md`,
 exact patchlevel-nine source and safe signal-zero controls.
@@ -212,6 +241,20 @@ Rust seals creator/host/repository/digest joins,
 selected pull scope and an invalid-Bearer response control before final absence acceptance.
 These reads do not establish expiration as the cause or physical storage reclamation.
 The cloud cleanup fallback is unnecessary.
+Rust sealed current absence in `49e5c84d1b`:
+`doc/audit/depot-native-snapshot-absence-2026-10-18.evidence.json`,
+SHA-256 `967abe64d26450f9754b00c387c742b1ea744f6ac8e58d7be605b240c1499956`.
+The same-host/path invalid-Bearer control returns 401 while the valid selected pull token returns 404.
+Its 20-body source archive retains exact creator/host/repository/tag/digest joins.
+The follow-on now has 35 rows and 39 retained bodies after the public recovery's five zero-compute rows;
+USD 0.6041 and the parent USD 0.487 subtotal remain unchanged.
+The independent frozen 30-row review remains a distinct immutable snapshot;
+the final larger ledger still needs the parent's new independent review.
+The refreshed Cargo bootstrap troubleshooting section renders and passes its targeted check.
+Its nine embedded-upstream-Rust warnings exactly match the pre-edit baseline;
+an injected Rust-closure control raises the count to twelve.
+The first stdout-only collector missed stderr diagnostics and is rejected,
+as is the nonmoving heading control.
 No broader token or account enumeration is authorized.
 Coordinate at most two active cloud jobs across owners.
 
