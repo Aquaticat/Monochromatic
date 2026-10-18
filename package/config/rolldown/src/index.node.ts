@@ -225,6 +225,9 @@ export function nodeConfig(
  
  @param outputOverrides - shallow output-option overrides, as {@link nodeConfig} takes them
 
+ @param extraPlugins - plugins appended after the shared ones, such as {@link copiedAssetsPlugin} for a data file the
+   member's built module reads beside itself
+
  @returns Node flavor rolldown config for the library build
 
  @example
@@ -238,11 +241,13 @@ export async function familyLibraryNodeConfig({
   packageDir = process.cwd(),
   input = ['./src/index.ts',],
   outputOverrides = {},
+  extraPlugins = [],
 }: {
   readonly familyPrefix: string;
   readonly packageDir?: string;
   readonly input?: readonly string[] | Readonly<Record<string, string>>;
   readonly outputOverrides?: OutputOptions;
+  readonly extraPlugins?: readonly Plugin[];
 },): Promise<RolldownOptions> {
   /**
    Family members the building package depends on.
@@ -268,6 +273,7 @@ export async function familyLibraryNodeConfig({
       },
       ...outputOverrides,
     },
+    extraPlugins,
   },);
 }
 
