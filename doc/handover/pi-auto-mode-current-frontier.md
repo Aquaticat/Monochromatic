@@ -475,6 +475,23 @@ proxy rejection and control opacity.
 
 ### Complete configured replay baseline
 
+The additional configured complete-group confirmation/progress check now passes on `EWv4wy`.
+`pi-configured-progress-allow-nD53g6` executes both original Bash members after one RPC Allow,
+and an asynchronous original extension observer records updates from both.
+`pi-configured-progress-allow-stale-uFVZGR` changes the private governing policy before Allow;
+`pi-configured-progress-abort-jxQLBl` aborts at the selector.
+Both controls withhold both members and record no member progress.
+Each case closes with exit zero and four live Luna responses with HTTP 200.
+All three actual request audits pass required/excluded checks,
+including positive controls for missing membership,
+substituted original IDs and excluded structured fields.
+The case uses two Bash members;
+keep the separate original process/Bash replay requirement.
+Private helper tasks are `prepare-configured-progress`,
+`configured-progress` and `audit-configured-progress`.
+Raw stderr is retained;
+the result assertions do not establish empty stderr.
+
 On `native-release-mmaT8k`,
 faithful fixture `pi-mimo-failure-rpc-7vxnGu` and fragmented fixture `pi-mimo-failure-rpc-LD83ST`
 each complete 52 original calls,
@@ -505,8 +522,9 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
   exact-content and streaming-capacity regressions in the maintained session-input task catalog;
   add an aggregate task after the worker's current config-dependent checks settle.
 - Preserve the repaired parallel-progress consumer and counterfactual evidence.
-  Add the remaining configured-host complete parallel-group Allow/progress positive control,
-  with genuine source-change and cancellation rejection.
+  The configured-host complete parallel-group Allow/progress positive control now passes,
+  including genuine source-change and cancellation rejection;
+  preserve its receipts and repeat only if affected semantics change.
 - Obtain a fresh complete lint result with zero warnings and errors,
   passing appropriate tests,
   and comparison of exported/implementation branches against exercised consumers.

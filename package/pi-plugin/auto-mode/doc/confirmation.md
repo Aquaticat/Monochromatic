@@ -74,4 +74,34 @@ before returning Allow;
 neither may execute a member.
 This distinguishes ordinary execution receipts from lost approval eligibility.
 
+## Configured-host progress verification
+
+The 2026-10-18 `native-release-EWv4wy` consumer loads the configured extensions,
+skills and MCP catalogs,
+plus a disposable asynchronous progress observer.
+A private project-policy overlay requires fresh confirmation for the complete group.
+The primary stream supplies a controlled pair of original Bash calls;
+the real Luna service evaluates the actual review requests.
+One RPC Allow executes both commands,
+and their original updates both reach the observer.
+
+The paired controls change the governing policy before returning Allow,
+or abort at the confirmation dialog.
+Both controls withhold both members and produce no execution updates for them.
+Each case reaches one selector,
+receives four successful provider responses,
+and closes with exit zero.
+Every captured request passes complete-group and original-ID checks,
+selected-source checks,
+and excluded structured thinking/signature/raw-command checks.
+The payload audit detects omitted members and substituted IDs,
+and its exclusion detector has positive controls.
+
+Fixtures remain under `${HOME}/temp/agent/pi-configured-progress-*`;
+helper scripts and audit receipts remain under
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
+The fixture uses Bash for both members;
+it does not replace the full original process/Bash replay or final post-lint verification.
+Raw stderr remains retained separately from the tool-result assertions.
+
 Task names use `mise run //package/pi-plugin/auto-mode:<task>`.
