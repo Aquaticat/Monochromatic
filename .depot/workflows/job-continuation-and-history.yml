@@ -1,0 +1,147 @@
+{
+  "name": "research ordinary job continuation and history identity",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read",
+    "id-token": "write"
+  },
+  "env": {
+    "MISE_AUTO_INSTALL": "false",
+    "MISE_LOCKED": "1"
+  },
+  "jobs": {
+    "allowed_failure": {
+      "runs-on": "depot-ubuntu-24.04",
+      "timeout-minutes": 2,
+      "continue-on-error": true,
+      "env": {
+        "PROBE_PLATFORM": "native-depot"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise run //.depot/research/native-semantics:policy-fail",
+          "working-directory": ".depot/research/native-semantics"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-job-policy-failure-native-depot",
+            "path": ".depot/research/native-semantics/policy-evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "consumer": {
+      "runs-on": "depot-ubuntu-24.04",
+      "timeout-minutes": 2,
+      "needs": [
+        "allowed_failure"
+      ],
+      "if": "always()",
+      "env": {
+        "PROBE_PLATFORM": "native-depot",
+        "PROBE_NEEDS_JSON": "${{ toJSON(needs) }}"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise run //.depot/research/native-semantics:policy-consumer",
+          "working-directory": ".depot/research/native-semantics"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-job-policy-consumer-native-depot",
+            "path": ".depot/research/native-semantics/policy-evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "history": {
+      "runs-on": "depot-ubuntu-24.04",
+      "timeout-minutes": 5,
+      "needs": [
+        "consumer"
+      ],
+      "if": "always()",
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "run": "mise install github:depot/cli",
+          "working-directory": ".depot/research/test-shards"
+        },
+        {
+          "run": "mise run //.depot/research/test-shards:history-lookup",
+          "working-directory": ".depot/research/test-shards"
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-physical-history-identity",
+            "path": ".depot/research/test-shards/history-evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    }
+  }
+}

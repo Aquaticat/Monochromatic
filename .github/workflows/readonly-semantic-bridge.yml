@@ -1,5 +1,5 @@
 {
-  "name": "research GitHub service and job containers",
+  "name": "research ordinary job continuation",
   "on": {
     "workflow_dispatch": {}
   },
@@ -11,57 +11,12 @@
     "MISE_LOCKED": "1"
   },
   "jobs": {
-    "host": {
-      "name": "research-service-host-${{ matrix.provider }}",
-      "runs-on": "${{ matrix.label }}",
-      "timeout-minutes": 5,
-      "strategy": {
-        "fail-fast": false,
-        "max-parallel": 1,
-        "matrix": {
-          "include": [
-            {
-              "label": "ubuntu-24.04",
-              "architecture": "x64",
-              "provider": "github-hosted-x64"
-            },
-            {
-              "label": "depot-ubuntu-24.04",
-              "architecture": "x64",
-              "provider": "github-depot-x64"
-            },
-            {
-              "label": "depot-ubuntu-24.04-arm",
-              "architecture": "arm64",
-              "provider": "github-depot-arm64"
-            }
-          ]
-        }
-      },
-      "permissions": {
-        "contents": "read"
-      },
-      "services": {
-        "fixture": {
-          "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
-          "credentials": {
-            "username": "x-token",
-            "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
-          },
-          "env": {
-            "MONO_RESEARCH_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-host"
-          },
-          "options": "--memory=256m --cpus=1 --pids-limit=64",
-          "ports": [
-            "8080/tcp"
-          ]
-        }
-      },
+    "allowed_failure": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 2,
+      "continue-on-error": true,
       "env": {
-        "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-host",
-        "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
-        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
-        "PROBE_JOB_CONTAINER": "false"
+        "PROBE_PLATFORM": "github-hosted"
       },
       "steps": [
         {
@@ -82,73 +37,31 @@
           "run": "mise install node"
         },
         {
-          "run": "mise run //.depot/research/service:consume",
-          "working-directory": ".depot/research/service",
-          "env": {
-            "PROBE_SERVICE_URL": "http://127.0.0.1:${{ job.services.fixture.ports[8080] }}"
-          }
+          "run": "mise run //.depot/research/native-semantics:policy-fail",
+          "working-directory": ".depot/research/native-semantics"
         },
         {
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-service-host-${{ matrix.provider }}",
-            "path": ".depot/research/service/evidence/",
+            "name": "research-job-policy-failure-github-hosted",
+            "path": ".depot/research/native-semantics/policy-evidence/",
             "if-no-files-found": "error",
             "retention-days": 7
           }
         }
       ]
     },
-    "container": {
-      "name": "research-service-container-${{ matrix.provider }}",
-      "runs-on": "${{ matrix.label }}",
-      "timeout-minutes": 5,
-      "strategy": {
-        "fail-fast": false,
-        "max-parallel": 1,
-        "matrix": {
-          "include": [
-            {
-              "label": "ubuntu-24.04",
-              "architecture": "x64",
-              "provider": "github-hosted-x64"
-            },
-            {
-              "label": "depot-ubuntu-24.04",
-              "architecture": "x64",
-              "provider": "github-depot-x64"
-            },
-            {
-              "label": "depot-ubuntu-24.04-arm",
-              "architecture": "arm64",
-              "provider": "github-depot-arm64"
-            }
-          ]
-        }
-      },
-      "permissions": {
-        "contents": "read"
-      },
-      "services": {
-        "fixture": {
-          "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
-          "credentials": {
-            "username": "x-token",
-            "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
-          },
-          "env": {
-            "MONO_RESEARCH_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container"
-          },
-          "options": "--memory=256m --cpus=1 --pids-limit=64"
-        }
-      },
+    "consumer": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 2,
+      "needs": [
+        "allowed_failure"
+      ],
+      "if": "always()",
       "env": {
-        "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container",
-        "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
-        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
-        "PROBE_JOB_CONTAINER": "true",
-        "PROBE_JOB_IMAGE_REFERENCE": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31"
+        "PROBE_PLATFORM": "github-hosted",
+        "PROBE_NEEDS_JSON": "${{ toJSON(needs) }}"
       },
       "steps": [
         {
@@ -169,35 +82,20 @@
           "run": "mise install node"
         },
         {
-          "run": "mise run //.depot/research/service:consume",
-          "working-directory": ".depot/research/service",
-          "env": {
-            "PROBE_SERVICE_URL": "http://fixture:8080"
-          }
+          "run": "mise run //.depot/research/native-semantics:policy-consumer",
+          "working-directory": ".depot/research/native-semantics"
         },
         {
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-service-container-${{ matrix.provider }}",
-            "path": ".depot/research/service/evidence/",
+            "name": "research-job-policy-consumer-github-hosted",
+            "path": ".depot/research/native-semantics/policy-evidence/",
             "if-no-files-found": "error",
             "retention-days": 7
           }
         }
-      ],
-      "needs": [
-        "host"
-      ],
-      "if": "always()",
-      "container": {
-        "image": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
-        "credentials": {
-          "username": "x-token",
-          "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
-        },
-        "options": "--memory=1g --cpus=1 --pids-limit=128"
-      }
+      ]
     }
   }
 }

@@ -185,3 +185,37 @@ fs.mkdirSync(join(base, 'evidence'), { recursive: true });
 fs.writeFileSync(join(base, 'evidence/consumer.json'), JSON.stringify(result, null, 2) + '\n');
 console.log(JSON.stringify({ passed: true, candidateCount: candidates.length, shardCaseCounts: result.shardCaseCounts, exactDisjointUnion: true, physicalSandboxIdentityRequiresApiJoin: true }));
 '''
+
+[tasks.history-lookup]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { spawnSync, execFileSync } = await import('node:child_process');
+const names = fs.readFileSync('candidates.txt', 'utf8').trim().split('\n');
+if (names.length !== 34 || new Set(names).size !== 34) throw new Error('Frozen history candidate scope differs');
+const key = 'research-physical-locks-e02be6c8-20261018';
+const cases = [
+  { label: 'original-per-test-index0', names, timing: 'testname', key, index: 0 },
+  { label: 'original-per-test-index1', names, timing: 'testname', key, index: 1 },
+  { label: 'per-test-class-timing', names, timing: 'classname', key, index: 0 },
+  { label: 'actual-class-test-timing', names: ['monochromatic-git-policy-cli'], timing: 'testname', key: key + ':actual-class', index: 0 },
+  { label: 'actual-class-class-timing', names: ['monochromatic-git-policy-cli'], timing: 'classname', key: key + ':actual-class', index: 0 },
+  { label: 'per-test-report-key', names, timing: 'testname', key: key + ':seed-1', index: 0 },
+  { label: 'actual-class-report-key', names: ['monochromatic-git-policy-cli'], timing: 'testname', key: key + ':seed-2', index: 0 },
+  { label: 'absent-class-negative', names: ['mono_research_definitely_absent_class_20261018'], timing: 'testname', key: key + ':absent-control', index: 0 },
+];
+fs.mkdirSync('history-evidence', { recursive: true });
+const records = [];
+for (const value of cases) {
+  const args = ['tests', 'split', '--candidate-type', 'classname', '--timings-type', value.timing, '--index', String(value.index), '--total', '2', '--key', value.key, '--output', 'json'];
+  const result = spawnSync('depot', args, { input: value.names.join('\n') + '\n', encoding: 'utf8', timeout: 20000, maxBuffer: 1048576 });
+  const output = result.status === 0 ? JSON.parse(result.stdout) : null;
+  if (output && (output.candidates_requested !== value.names.length || output.candidates.some(name => !value.names.includes(name)))) throw new Error('History response has an unexpected candidate scope');
+  const record = { ...value, args, status: result.status, signal: result.signal, error: result.error ? { code: result.error.code, syscall: result.error.syscall } : null, stdout: result.stdout, stderr: result.stderr, output };
+  records.push(record);
+  console.log(JSON.stringify({ label: value.label, status: result.status, candidatesWithTimings: output?.candidates_with_timings ?? null, selected: output?.candidates_selected ?? null }));
+}
+const record = { probe: 'physical-history-identity', source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), cli: execFileSync('depot', ['version'], { encoding: 'utf8' }).trim(), repository: process.env.GITHUB_REPOSITORY, ref: process.env.GITHUB_REF, sha: process.env.GITHUB_SHA, records, uploadsPerformed: false, applicationTestsExecuted: false, at: new Date().toISOString() };
+fs.writeFileSync('history-evidence/identity.json', JSON.stringify(record, null, 2) + '\n');
+if (records.some(value => value.status !== 0)) throw new Error('At least one bounded history lookup failed; retain separate request diagnostics');
+'''

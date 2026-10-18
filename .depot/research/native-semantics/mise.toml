@@ -223,3 +223,29 @@ fs.mkdirSync('evidence', { recursive: true });
 fs.writeFileSync('evidence/consumer.json', JSON.stringify({ passed: true, harness, receipts, needs }, null, 2) + '\n');
 console.log(JSON.stringify({ passed: true, harness, receipts }));
 '''
+
+[tasks.policy-fail]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { execFileSync } = await import('node:child_process');
+class IntentionalJobPolicyFailure extends Error {}
+fs.mkdirSync('policy-evidence', { recursive: true });
+const record = { probe: 'ordinary-job-continue-on-error', intentionalFailure: true, timeoutUsed: false, platform: process.env.PROBE_PLATFORM, source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), uid: process.getuid(), at: new Date().toISOString() };
+fs.writeFileSync('policy-evidence/failure.json', JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+throw new IntentionalJobPolicyFailure('Intentional ordinary failure in a job with job-level continue-on-error true');
+'''
+
+[tasks.policy-consumer]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { execFileSync } = await import('node:child_process');
+const needs = JSON.parse(process.env.PROBE_NEEDS_JSON ?? 'null');
+if (!needs || Object.keys(needs).length !== 1 || !['success', 'failure'].includes(needs.allowed_failure?.result)) throw new Error('Ordinary continuation observer has an unexpected dependency result');
+fs.mkdirSync('policy-evidence', { recursive: true });
+const record = { probe: 'ordinary-job-continue-on-error-consumer', passed: true, needs, timeoutJobPresent: false, platform: process.env.PROBE_PLATFORM, source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), at: new Date().toISOString() };
+fs.writeFileSync('policy-evidence/consumer.json', JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+'''
