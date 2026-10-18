@@ -14,6 +14,12 @@ const guard=fileURLToPath(new URL('../dist/native/contract/integration/native-ho
 const PRIVATE_DIRECTORY_MODE=0o700;
 /** Derive scratch from the actual current home instead of a named account. */
 const scratch=join(homedir(),'temp','agent');
+/**
+ Exercise receipt admission through the actual built child guard.
+
+ @returns after every child exits and complete output has been checked
+ */
+export async function runProcessNetworkReceiptCatalog():Promise<void>{
 await mkdir(scratch,{recursive:true,mode:PRIVATE_DIRECTORY_MODE});
 await chmod(scratch,PRIVATE_DIRECTORY_MODE);
 /** Each invocation owns its receipt namespace. */
@@ -52,4 +58,5 @@ await describe({name:'built process network receipts',concurrency:1,children:[
 ]});
 console.log(JSON.stringify({complete:true,acceptedRoutes:3,originalNames:true,standardJSONLBeforeResponse:true,
  rejectionsLeaveReceiptUnchanged:true,receiptFailurePreventsResponse:true,completeChildStderrEmpty:true}));
+}
 //endregion
