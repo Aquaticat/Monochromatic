@@ -51,6 +51,24 @@ await describe({
   concurrency: 1,
   children: [
     it({
+      name: 'reports rejected serializations without inserting non-JSON lines or disabling later writes',
+      fn: async ({ sinon, },) => {
+        const warnings = sinon.stub(console, 'warn',);
+        await withFileSink(async function checkSerialization({ sink, readRecords, },): Promise<void> {
+          const cyclic: { self?: unknown; } = {};
+          cyclic.self = cyclic;
+          await sink.write(cyclic,);
+          await sink.write({ toJSON(): undefined {
+            return undefined;
+          }, },);
+          const after = { level: 'info' as const, timestamp: 1, message: 'after rejected serialization', };
+          await sink.write(after,);
+          expect((await readRecords()).slice(1,),).toEqual([after,],);
+          expect(warnings.callCount,).toBe(2,);
+        },);
+      },
+    },),
+    it({
       name: 'isolates same-millisecond sinks so multi-write records cannot interleave',
       fn: async ({ sinon, },) => {
         sinon.useFakeTimers({ now: 1_800_000_000_000, toFake: ['Date',], },);
