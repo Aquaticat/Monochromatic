@@ -290,7 +290,13 @@ The prior default-image command and small-file consumers remain separate positiv
 The next diagnostic must execute Git first,
 retain operation boundaries and the SDK error fields,
 and test a small file independently of executable transfer.
-No additional sandbox is allocated at this checkpoint.
+A third and final currently admitted sandbox will execute the absolute Git command first
+and retain separate small-file operation results with ten-second filesystem RPC deadlines.
+The local error-collector positive control proves that the SDK preserves operation and path fields;
+the previous collector lost them.
+No full executable download or fourth allocation is admitted.
+Reserving the third full lifetime raises the scoped compute proxy to USD 0.574584.
+That sandbox has not yet been allocated in this checkpoint.
 
 ## Live plan eligibility and autoscaling boundary
 
