@@ -9,6 +9,7 @@ import {
   sliceFootnoteLabels,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type FootnoteRewriteError,
   normalizeFootnoteIdentifier,
   relabelsFootnote,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -273,7 +274,7 @@ export function mapLabels(
 
  @returns The map, that nothing changes, or why the archive must stand
 
- @throws {@link import('@monochromatic-dev/translation-repair-document-structure/ts').FootnoteRewriteError} when document syntax or slice scope cannot establish current evidence
+ @throws {@link FootnoteRewriteError} when document syntax or slice scope cannot establish current evidence
 
  @example
  ```ts

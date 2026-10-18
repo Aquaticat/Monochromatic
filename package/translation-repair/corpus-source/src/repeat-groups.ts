@@ -1,8 +1,10 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { lineStartsOf, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type ContentChunk,
+  parseDocument,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   REFRAIN_SLOT_MAXIMUM,
   REFRAIN_SLOT_MINIMUM,
