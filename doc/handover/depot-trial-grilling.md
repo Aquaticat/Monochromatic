@@ -1,5 +1,25 @@
 # Depot trial interview
 
+## Terminal allocation closure on 2026-10-18
+
+Every newly admitted job is terminal.
+The final follow-on has 49 rows and 53 retained source bodies,
+with 49 timestamp-pointer joins and exact BigInt arithmetic passing
+(`doc/audit/depot-owned-allocation-final-source-verification-2026-10-18.evidence.json`).
+Its nominal provider-window proxy is USD 1.685366666667 before allowances;
+the separate BuildKit request-window proxy is USD 0.015897333333.
+The frozen 223-row baseline and historical reservations remain separate.
+Both SSH attempts are consumed;
+paused-session attachment and final workflow readback remain unqualified.
+Verified installation and source-inspected status behavior are recorded in
+`doc/troubleshooting/depot-native-ssh-paused-session.md`.
+No new independent whole-report review has run after the agent service limit.
+Concrete Root source/hash/pointer/arithmetic checks do not substitute for that review.
+The next source task is the package assertion/generator and actual-runtime cross-lane join,
+preserving static candidates separately from executed and product-contract coverage.
+Publication must use an isolated merge worktree because unrelated concurrent IDE changes block merging
+`origin/main` in the shared checkout.
+
 ## Current execution checkpoint on 2026-10-18
 
 Research remains active and the interview has not started.
