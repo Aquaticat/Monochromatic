@@ -269,6 +269,7 @@ export function createProgramGroupFixture({
      */
     const call = calls[index];
     assert.ok(call);
+    /** The original slot owns completion and failure recording for this invocation. */
     const entry = slot.open(call);
     assert.ok(state.runNative);
     try { return entry.complete(await state.runNative(

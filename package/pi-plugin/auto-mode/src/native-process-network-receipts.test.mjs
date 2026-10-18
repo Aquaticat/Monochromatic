@@ -89,12 +89,12 @@ async function run({
  child.stdout
    .on(
      'data',
-     chunk=>output.push(chunk)
+     function captureReceiptOutput(chunk){return output.push(chunk);}
    );
  child.stderr
    .on(
      'data',
-     chunk=>diagnostics.push(chunk)
+     function captureReceiptDiagnostics(chunk){return diagnostics.push(chunk);}
    );
  const[code,signal]=await once(
    child,
