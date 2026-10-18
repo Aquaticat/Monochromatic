@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-10-18T13:59:28.997Z",
+  "measuredAt": "2026-10-18T14:18:13.461Z",
   "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "guardUsd": 5,
   "pricingSource": {
@@ -20,6 +20,37 @@
     "rateUsdPerMinute": 0
   },
   "rows": [
+    {
+      "id": 117694897143,
+      "name": "Restored frozen packed consumers (a)",
+      "status": "completed",
+      "conclusion": "failure",
+      "labels": [
+        "depot-ubuntu-24.04-4"
+      ],
+      "runner": "depot-4z22l51qpn",
+      "startedAt": "2026-10-18T14:00:46Z",
+      "completedAt": "2026-10-18T14:01:20Z",
+      "seconds": 34,
+      "rateUsdPerMinute": 0.012,
+      "nominalElapsedUsd": 0.0068,
+      "conservativeRoundedMinuteUsd": 0.012,
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39134064943:attempt:1:job:117694897143",
+      "provider": "depot-github-runner",
+      "run": 39134064943,
+      "attempt": 1,
+      "workflowSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabel": [
+          "depot-ubuntu-24.04-4"
+        ],
+        "vcpu": 4,
+        "memoryGiB": 16
+      },
+      "reservationUsd": 0,
+      "invoice": false
+    },
     {
       "id": 117684884874,
       "name": "Actual frozen packing and consumers (a)",
@@ -1216,9 +1247,9 @@
     }
   ],
   "activeReservation": {
-    "profile": "packed-install-restored",
+    "profile": "packed-cli-dry-run",
     "provider": "depot-github-runner",
-    "workflowSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+    "workflowSha": "cf498cc94be2dbaaf4634ab862d76c46aea49520",
     "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "resourceShape": {
       "vcpu": 4,
@@ -1235,10 +1266,10 @@
     },
     "reservationUsd": 0.12
   },
-  "nominalMeasuredGithubElapsedUsd": 1.1556000000000002,
-  "conservativeCompletedGithubRoundedMinuteUsd": 1.4400000000000008,
+  "nominalMeasuredGithubElapsedUsd": 1.1624,
+  "conservativeCompletedGithubRoundedMinuteUsd": 1.4520000000000008,
   "conservativeCompletedNativeReservedUpperBoundUsd": 2.88,
-  "guardCommittedAndReservedUsd": 4.44,
+  "guardCommittedAndReservedUsd": 4.452000000000001,
   "limits": [
     "Source-bound campaign compute only",
     "No account usage or invoice inspected",

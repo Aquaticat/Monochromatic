@@ -1354,3 +1354,18 @@ Remaining independently verifiable work is explicit:
 - Semantic inventory: reconcile feature and assertion ownership, generator reach,
   actual versus compile-only consumers, and every material unexercised surface.
   Static declaration counts are not runtime coverage.
+
+## packed-cli-dry-run finite admission
+
+The immutable research harness is `cf498cc94be2dbaaf4634ab862d76c46aea49520`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `packed-cli-dry-run-plan.json`.
+The deduplicated ledger contains 40 completed owned job rows,
+USD1.4520 completed GitHub rounded-minute compute,
+USD2.88 completed native conservative maxima,
+and USD0.12 reserved for this finite profile.
+The committed and reserved guard is USD4.4520 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
