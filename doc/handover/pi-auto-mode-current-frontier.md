@@ -84,6 +84,34 @@ owns only `system-slot.ts` and must make existing operations nonenumerable befor
 Do not suppress or weaken either maintained regression.
 The failing frozen candidate is retained unchanged for comparison;
 the correction must qualify in a separate newly frozen candidate.
+The opacity correction is committed as `bd441d18d5`.
+Genuine member coverage is extended before mutation as `5f956950f5`:
+getter results must match the independent native resource-frame owner,
+and actual reload/read/assert operations must refresh publication identity and reject the stale binding.
+Frozen `policy-input-factory-qualified-candidate-m9mSKX` at `f08ff9ca28cf` passes:
+the original class's eighteen-case positive control,
+fresh JS and native builds,
+package types,
+four-file lint with zero warnings/errors,
+the corrected eighteen-case consumer,
+real-host isolation,
+source-binding capacity and the complete original phase catalog.
+The candidate does not include the source worker's uncommitted phase port.
+Dedicated `policy-input-factory-mutants-candidate-32BNf3` tests rebuilt prototype borrowing,
+entry-guard removal,
+enumerability,
+freezing,
+each borrowed member and genuine forwarding failures.
+It is still running;
+accept its final receipt only when every expected named failure and the restored build/consumer pass.
+The parent collector reads only exact named logs below a four-MiB bound.
+The native worker is read-only on
+`native-investigate-unused-system-profile-20261018-architecture-07`.
+It must trace actual consumers,
+reflective and metadata use,
+required capabilities and decisions before proposing removal of the apparently unused system-placement profile.
+No retirement is implemented in the main worktree;
+the next architectural step requires a separate built deletion probe.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
