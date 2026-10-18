@@ -1,5 +1,5 @@
 warning: this closure captures `n`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:89:25
+  --> $DIR/kept_by_callee.rs:91:25
    |
 LL |     w.on_ping_unbounded(move |x| { let _ = x + n; });
    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -8,7 +8,7 @@ LL |     w.on_ping_unbounded(move |x| { let _ = x + n; });
    = note: `#[warn(avoidable_closure)]` on by default
 
 warning: this closure captures `n`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:101:30
+  --> $DIR/kept_by_callee.rs:103:30
    |
 LL |     t.start_unbounded(0, 10, move || { let _ = n + 1; });
    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,7 +16,7 @@ LL |     t.start_unbounded(0, 10, move || { let _ = n + 1; });
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:111:25
+  --> $DIR/kept_by_callee.rs:113:25
    |
 LL |     run_param_unbounded(move || drop(s));
    |                         ^^^^^^^^^^^^^^^
@@ -24,7 +24,7 @@ LL |     run_param_unbounded(move || drop(s));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:121:25
+  --> $DIR/kept_by_callee.rs:123:25
    |
 LL |     run_where_unbounded(move || drop(s));
    |                         ^^^^^^^^^^^^^^^
@@ -32,7 +32,7 @@ LL |     run_where_unbounded(move || drop(s));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:131:24
+  --> $DIR/kept_by_callee.rs:133:24
    |
 LL |     run_impl_unbounded(move || { let _ = &s; });
    |                        ^^^^^^^^^^^^^^^^^^^^^^^
@@ -40,7 +40,7 @@ LL |     run_impl_unbounded(move || { let _ = &s; });
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:146:30
+  --> $DIR/kept_by_callee.rs:148:30
    |
 LL |     run_boxed_short(Box::new(|| { let _ = &s; }));
    |                              ^^^^^^^^^^^^^^^^^^
@@ -48,7 +48,7 @@ LL |     run_boxed_short(Box::new(|| { let _ = &s; }));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:156:40
+  --> $DIR/kept_by_callee.rs:158:40
    |
 LL |     run_generic_box_unbounded(Box::new(move || { let _ = &s; }));
    |                                        ^^^^^^^^^^^^^^^^^^^^^^^
@@ -56,7 +56,7 @@ LL |     run_generic_box_unbounded(Box::new(move || { let _ = &s; }));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:166:23
+  --> $DIR/kept_by_callee.rs:168:23
    |
 LL |     Pool.go_unbounded(move || drop(s));
    |                       ^^^^^^^^^^^^^^^
@@ -64,7 +64,7 @@ LL |     Pool.go_unbounded(move || drop(s));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:176:20
+  --> $DIR/kept_by_callee.rs:178:20
    |
 LL |     t.go_unbounded(move || drop(s));
    |                    ^^^^^^^^^^^^^^^
@@ -72,7 +72,7 @@ LL |     t.go_unbounded(move || drop(s));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:186:34
+  --> $DIR/kept_by_callee.rs:188:34
    |
 LL |     Spawner::go_unbounded(&Pool, move || drop(s));
    |                                  ^^^^^^^^^^^^^^^
@@ -80,7 +80,7 @@ LL |     Spawner::go_unbounded(&Pool, move || drop(s));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:196:31
+  --> $DIR/kept_by_callee.rs:198:31
    |
 LL |     t.go_boxed_short(Box::new(move || drop(s)));
    |                               ^^^^^^^^^^^^^^^
@@ -88,7 +88,7 @@ LL |     t.go_boxed_short(Box::new(move || drop(s)));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:208:11
+  --> $DIR/kept_by_callee.rs:210:11
    |
 LL |     h.set(move || { let _ = &s; });
    |           ^^^^^^^^^^^^^^^^^^^^^^^
@@ -96,7 +96,23 @@ LL |     h.set(move || { let _ = &s; });
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:224:22
+  --> $DIR/kept_by_callee.rs:221:39
+   |
+LL |     let h = StoredShort::new(Box::new(|| { let _ = &s; }));
+   |                                       ^^^^^^^^^^^^^^^^^^
+   |
+   = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
+
+warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
+  --> $DIR/kept_by_callee.rs:227:25
+   |
+LL |     run_param_unbounded((move || drop(s)));
+   |                         ^^^^^^^^^^^^^^^^^
+   |
+   = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
+
+warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
+  --> $DIR/kept_by_callee.rs:237:22
    |
 LL |     submit_unbounded(move || drop(s));
    |                      ^^^^^^^^^^^^^^^
@@ -104,11 +120,11 @@ LL |     submit_unbounded(move || drop(s));
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
 warning: this closure captures `s`, but the callee parameter it is passed to is not required to be `'static`, so the callee does not keep it after the call
-  --> $DIR/kept_by_callee.rs:234:26
+  --> $DIR/kept_by_callee.rs:247:26
    |
 LL |     keep_async_unbounded(async move || { let _ = &s; });
    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
-warning: 14 warnings emitted
+warning: 16 warnings emitted

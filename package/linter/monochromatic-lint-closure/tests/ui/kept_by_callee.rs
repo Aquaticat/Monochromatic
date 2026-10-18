@@ -50,6 +50,8 @@ impl<F: FnMut()> HolderUnbounded<F> { fn set(&mut self, f: F) { self.f = Some(f)
 
 struct Stored { f: Box<dyn Fn() + 'static> }
 impl Stored { fn new(f: Box<dyn Fn() + 'static>) -> Stored { Stored { f } } }
+struct StoredShort<'a> { f: Box<dyn Fn() + 'a> }
+impl<'a> StoredShort<'a> { fn new(f: Box<dyn Fn() + 'a>) -> StoredShort<'a> { StoredShort { f } } }
 
 trait Task: 'static { fn run(self); }
 impl<F: FnOnce() + 'static> Task for F { fn run(self) { self() } }
@@ -212,6 +214,17 @@ fn allowed_constructor_taking_boxed_closure() {
     // verdict: allowed
     let h = Stored::new(Box::new(move || { let _ = &s; }));
     (h.f)();
+}
+fn reported_constructor_taking_boxed_closure_without_static() {
+    let s = String::new();
+    // verdict: reported
+    let h = StoredShort::new(Box::new(|| { let _ = &s; }));
+    (h.f)();
+}
+fn reported_parenthesised_argument_without_static() {
+    let s = String::new();
+    // verdict: reported
+    run_param_unbounded((move || drop(s)));
 }
 fn allowed_supertrait_bound() {
     let s = String::new();

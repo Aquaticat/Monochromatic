@@ -83,6 +83,25 @@ fn reported_inner_closure_while_outer_spawn_closure_is_allowed() {
         v.iter().map(|x| x + offset).sum::<i32>()
     });
 }
+macro_rules! call_unbounded {
+    ($e:expr) => {
+        run_unbounded($e)
+    };
+}
+
+fn reported_closure_through_local_macro_wrapper_without_static() {
+    let state = String::new();
+    // verdict: reported
+    call_unbounded!(move || drop(state));
+}
+fn allowed_async_block_is_not_a_closure_expression() {
+    let s = String::new();
+    // Neither the let-bound async block nor the async fn body below is a closure the author wrote.
+    let _future = async move { let _ = &s; };
+}
+async fn async_fn_body_is_not_a_closure_expression(name: String) -> usize {
+    return name.len();
+}
 fn allowed_closure_through_local_macro_wrapper() {
     let state = String::new();
     // verdict: allowed

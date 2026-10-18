@@ -65,6 +65,15 @@ fn nested_capture_free_inner_in_kept_outer() {
     });
 }
 
+struct Pair { a: String, b: String }
+
+fn reported_two_fields_of_one_variable_are_listed_once() {
+    let p = Pair { a: String::new(), b: String::new() };
+    // Edition 2021 precise capture records `p.a` and `p.b` separately; the message names the variable `p` once.
+    // verdict: reported
+    let _ = (0..1).map(|_| p.a.len() + p.b.len()).count();
+}
+
 fn reported_move_closure_capturing_nothing() {
     // verdict: reported
     let _ = thread::spawn(move || 7);

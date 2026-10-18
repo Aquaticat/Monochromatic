@@ -27,6 +27,25 @@ fn gap_arc_new() {
     keep_arc(Arc::new(move || { let _ = &s; }));
 }
 
+fn keep_generic_arc<T: Send + Sync + 'static>(value: T) { drop(value) }
+struct TupleWrapper<F: FnOnce() + 'static>(F);
+
+fn gap_arc_new_into_generic_parameter() {
+    let s = String::new();
+    // GAP: Arc::new(closure) into a generic F: 'static; only Box::new is looked through,
+    // and treating Arc::new like Box::new would turn this into an allowed case.
+    // verdict: reported
+    keep_generic_arc(Arc::new(move || { let _ = &s; }));
+}
+
+fn gap_tuple_struct_constructor() {
+    let s = String::new();
+    // GAP: a tuple struct constructor is not a declared function (DefKind::Ctor), so its F: 'static is not read.
+    // verdict: reported
+    let w = TupleWrapper(move || drop(s));
+    (w.0)();
+}
+
 fn gap_some_wrapper() {
     let s = String::new();
     // GAP: Some(closure) into Option<F> with F: 'static; the callee of the closure is the constructor Some.
