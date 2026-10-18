@@ -86,7 +86,8 @@ assert.equal(
 );
 assert.equal(
   observations.assessments,
-  1
+  // Rejected clause judgments require complete-operation adjudication before denial.
+  settings.relation==='permission'?1:2
 );
 assert.equal(
   observations.executions,
