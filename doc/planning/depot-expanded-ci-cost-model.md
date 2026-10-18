@@ -1,5 +1,10 @@
 # Expanded Depot CI cost and critical-path model
 
+The permanent allocation must retain heavy use of GitHub-hosted runners themselves.
+GitHub orchestration of Depot-managed workers does not count as GitHub-hosted execution.
+The model must compare workload assignments within that accepted hybrid,
+rather than optimize toward replacing GitHub's own compute with Depot.
+
 ## Purpose and current boundary
 
 Produce the combined provider allocation and cost evidence for the expanded evaluation,

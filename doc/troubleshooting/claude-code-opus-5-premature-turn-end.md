@@ -828,6 +828,127 @@ and the trigger to revisit is empirical evidence that a report produced a timely
 not the severity of any individual defect.
 This document is the local record that policy prescribes instead.
 
+## Luna situation check, 2026-10-18
+
+The 5.5 series reduced early stopping and did not eliminate it.
+The user asked for the stop hook to be re-enabled with Luna (`openai/gpt-6-luna-decisions`) making the decision.
+The forced-continuation reason had become a distraction when it fired on every stop,
+so the model reads the final message and the hook acts only when the message calls for it.
+
+### What the transcripts show for the 5.5 series
+
+Source: the 828 turns in this repository's session transcripts that end in `end_turn`,
+read by `${HOME}/temp/agent/extract-stops.ts` (scratch, not committed).
+
+- Restart nudges on 5.5 are rare:
+   `claude-opus-5-5` 4 of 164,
+   `claude-sonnet-5-5` 4 of 274,
+   against `claude-opus-5` 35 of 283.
+   Most of the eight are the user returning from a CPU swap, so nudges cannot calibrate a threshold for 5.5.
+- The failure that remains is ending a turn while background agents or commands are still running.
+   Follow-ups on such stops include `It's been 10 minutes`,
+   `1.25h passed`,
+   and `Are you waiting for something?`.
+- On an unbiased sample (every seventh 5.5 stop, 63 stops) Luna labelled 25 as waiting on background work,
+   19 as waiting on the user,
+   16 as work closed,
+   and 3 as announcing the agent's own next step.
+   Five of the 25 background waits were followed by an idle complaint;
+   the other 20 were followed by new instructions.
+- Luna answered 128 of 128 probe requests with HTTP 200 and a median of 413 ms.
+   One probe labelled a stop followed by `Are you waiting for something?` as `work_closed` at 0.94,
+   so misses will happen.
+
+### Design
+
+One question with five situations replaces a shared question, because a three-way split could not separate waiting
+on background work from announcing a next step.
+The action for each label follows rules this repository already states:
+
+- `announces_own_next_step`: block, with the existing "resume the next item now" reason.
+- `waits_on_user`: block, with a reason routing the question through `AskUserQuestion`,
+   including requests that contain no question mark.
+- `waits_on_background_work`: block only when the Stop event's `background_tasks` has no running task,
+   since then nothing can resume the turn.
+   With a task running the stop is released and the verdict is logged.
+- `pauses_for_handoff` and `work_closed`: release.
+
+A label is acted on at a probability of 0.60 or higher.
+That value is interim:
+there is no labelled ground truth for 5.5,
+so it is revisited from the verdict log.
+The response's separate `confidence` field is recorded by the gateway but is not used,
+matching `doc/troubleshooting/llmgateway-luna-admission.md`.
+
+State still decides without a model call when the depth limit is reached,
+when the last forced continuation issued no tool call,
+and when a trailing question already owns the stop.
+Every block reason starts with the sentence the depth guard counts,
+so the depth limit keeps bounding the chain.
+
+The earlier release "a background task is running, so another turn cannot help" was retracted as a blanket rule.
+`background_tasks` also lists subagents, monitors, and workflows,
+and the user's own rule is that waiting subagents rarely wake the main agent.
+It is kept only for the narrower case above and for the fallback described next.
+
+### Failure behavior
+
+A missing key, a transport error, a status other than 200, a timeout (5 seconds, no retry),
+or a response that breaks the contract all fall back to the state-based behavior the hook had before Luna,
+including its background-task release,
+and add a `systemMessage`.
+Claude Code shows a Stop hook's `systemMessage` as a notice reading `Stop says: ...`,
+verified with `claude --print` against a throwaway settings file.
+
+### Credential and switches
+
+The key is `STOP_REMINDER_LLMGATEWAY_API_KEY`,
+stored sops-encrypted in `.env.local.json` and decrypted by mise.
+The hook reads its own environment first and runs `mise env --json` once, in the session directory, only when the key is absent.
+That fallback is a stopgap until a credential mechanism that does not depend on mise exists;
+it costs 0.10 to 0.14 seconds when it runs.
+
+- `MONOCHROMATIC_STOP_AUTO_CONTINUE=on` enables forced continuation.
+   It is set in `.claude/settings.local.json`.
+- `MONOCHROMATIC_STOP_LUNA=off` (also `0`, `false`, `no`) skips the model and keeps the state-based behavior.
+- `MONOCHROMATIC_STOP_VERDICT_LOG` overrides the verdict log path,
+   `~/.local/state/monochromatic/stop-reminder/verdicts.jsonl` by default.
+
+The log holds one JSON record per consulted stop:
+label probabilities,
+the action,
+the type and status of each background task,
+the continuation depth,
+and the last 600 characters of the message.
+The message tail stays on this machine.
+
+### Hazard found while building it
+
+`console.info` from `@monochromatic-dev/module-logger` writes to stdout,
+which a hook reserves for its JSON output.
+An `info` line in the handler made the built bundle print `[info] ...` ahead of the JSON,
+and the bundle suite failed on it.
+Handler code logs at `debug` (stderr) or `warn`.
+
+### Verification
+
+- Unit tests with a fake gateway cover each label, the cutoff boundary, each skip, each fallback cause, and the log.
+- The bundle suite drives the built `ccsr` with Luna unreachable and checks the block and the notice.
+- Four live requests through the built bundle, with the key supplied only by the `mise env` fallback,
+   returned `announces_own_next_step`, `waits_on_background_work`, `waits_on_user`, and `work_closed`
+   for four matching messages,
+   and the hook blocked the first three.
+
+### Not yet known
+
+- Agreement between Luna's label and a human label.
+   The verdict log exists so it can be measured.
+- Whether `background_tasks` is populated at the moments the idle waits happened.
+   Hook input is not stored in transcripts.
+- The `pauses_for_handoff` label did not appear in the unbiased sample, so it is untested on real stops.
+- Whether blocking a background wait with a running task would help.
+   That is the case the verdict log is meant to decide.
+
 ## Open questions
 
 Whether the behavior is specific to queue-shaped work,

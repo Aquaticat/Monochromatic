@@ -1677,6 +1677,11 @@ that is verification, not a decision for the user.
   and the release, `mise upgrade cargo:monochromatic-git-policy-cli`, `git checkout -- mise.lock`); (3) comment on
   and close issue 1769 with the release; (4) remove image tag `rec1`. Open design follow-up: advance the local branch
   after a reconcile when the worktree allows it (not done because it takes the index lock and touches files).
+  Issue 1713 (handover paths and `mise run //` targets that moved) is queued after the release: a scan of the
+  `doc/handover/cli-git*.md` files found 25 backticked paths that no longer resolve in 11 files (the TypeScript
+  sources replaced by `package/git-policy/cli/src/native`, `dist` and `node_modules` build outputs, retired
+  `package/module/*` examples); each gets an in-place WR6 note with the current value and move date, and the
+  non-cli-git handovers the issue names (forbidden-strings, no-regex, music-player) are left to their owners.
   1770 is answered as an environment defect and stays open until the consumer confirms: a
   read-only `.git/lfs` without `tmp` reproduces the consumer's message with raw Git and the wrapper alike, and a
   present writable `tmp` fixes it (`doc/troubleshooting/git-policy-wrapper-launcher-path.md`); whether the
