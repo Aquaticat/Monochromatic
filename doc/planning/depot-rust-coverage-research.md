@@ -1014,3 +1014,18 @@ The explicit `NEXTEST_PROFILE` parser binding at `cargo-nextest/src/dispatch/com
 requires an appropriately configured profile;
 this source check does not qualify an unexecuted workaround.
 No test build or allocation was performed for this handoff.
+
+## Cache trust-scope follow-on queue
+
+After sealing the local graph preflight,
+the reviewer owns a separate bounded GitHub versus Depot GitHub cache scope experiment.
+The queue is current action/source and scope-document review,
+explicit admission under a separate `USD 0.10` conservative proxy guard,
+branch-A seed and same-branch positive restore,
+then branch-B restore using the same provider-specific exact key and cache version.
+Jobs remain sequential with at most one active reviewer job;
+the coordinator is notified at cloud start and end.
+No application checkout, account inspection, broad credential injection,
+cache purge, subscription/settings mutation or paid provider call is authorized.
+Owned branches and temporary files require cleanup; cache retention/deletion limits must be explicit.
+No cache cloud allocation has occurred at this queue boundary.

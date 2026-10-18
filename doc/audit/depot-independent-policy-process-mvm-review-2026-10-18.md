@@ -576,3 +576,10 @@ a fresh selected-tool installation probe if practical,
 and actual driver execution against explicitly fake owning commands in a disposable 2 CPU, 2 GiB container.
 No application test credit or new cloud allocation belongs to this preflight.
 The coordinator owns workflow corrections and dispatch; its graph worktree will not be edited.
+
+The expanded graph local queue is complete.
+The [source-guard/cancellation troubleshooting record](../troubleshooting/depot-expanded-graph-source-guard-cancellation.md)
+and [independent receipt](depot-expanded-graph-preflight-2026-10-18.evidence.json)
+retain original defects and corrected `234ccc92` controls.
+The browser-image omission claim was retracted after complete plan enumeration.
+Fresh anonymous selected-tool installation passed; fake graph execution earns no application test credit.
