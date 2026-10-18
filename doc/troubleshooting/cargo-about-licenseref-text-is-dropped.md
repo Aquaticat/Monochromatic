@@ -46,8 +46,8 @@ without that entry (and without `GPL-3.0-only`) the same command exits 1 with
 `failed to satisfy license requirements` for each Slint crate.
 `bin/third-party-notices.mjs` then finds the crates that `crates[]` lists with a manifest license offering the
 `LicenseRef` and that `licenses[]` lacks, requires each crate's own
-`LICENSES/LicenseRef-Slint-Royalty-free-2.0.md` to match the SHA-256 of the vendored `notices/slint-royalty-free-2.0.md`, counts them as covered, and writes the text in a Slint
-section of the notice file.
+`LICENSES/LicenseRef-Slint-Royalty-free-2.0.md` to match the SHA-256 of the vendored
+`notices/slint-royalty-free-2.0.md`, counts them as covered, and writes the text in a Slint section of the notice file.
 Any other crate without a text stops the script.
 
 The 10 warnings still print on every run; they are expected.
