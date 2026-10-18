@@ -790,11 +790,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     exemption (entry `ui-fixture-exemptions`) cleared the 86 fixture warnings; the package, on the shared nightly
     with `build` and `lint` task names again, passed 13 tests, clippy, rustfmt and `monochromatic-lint` from a clean
     shell, and the IDE copy still gave 62 of 67 allowed. The coordinator reran the package tests and the IDE
-    `test:cli` (13) on the new nightly after the final merge. Known host problem, not diagnosed: cargo from the
-    1.101 nightlies (`nightly-2026-10-17` and `nightly-2026-10-18`) cannot connect to crates.io on this host
-    (`Could not connect to server` in 17 ms; reproduced outside the sandbox in a user unit; curl over IPv4 and IPv6,
-    stable cargo and the 1.100 nightly `nightly-2026-09-22` work; no upstream issue found). Fetch with
-    `cargo +stable fetch --locked` and run nightly offline until it is understood.
+    `test:cli` (13) on the new nightly after the final merge. Known host problem, diagnosed afterwards: cargo
+    of `nightly-2026-10-13`, `-10-17` and `-10-18` fails to reach crates.io (`Could not connect to server` in
+    17 ms) because an OpenSnitch `reject-always` rule exists for each of those exact `cargo` paths
+    (`/etc/opensnitchd/rules/`); it destroys the socket (`ECONNABORTED`). It is not a 1.101 bug: the same
+    binary at an allowed path connects, and `nightly-2026-10-11` and `-10-12` (1.101) connect. An unanswered
+    OpenSnitch pop-up (30 s timeout, default action reject, duration forever) mints such a rule for every new
+    toolchain path. Fix needs the user: delete the three rules and add one regexp allow rule (draft in
+    `doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md`). Until then fetch with
+    `cargo +nightly fetch --locked` or `cargo +stable fetch --locked` and run the pinned nightly offline.
     Stage 2b landed after review (branch `feat/ide-closure-lint`; see the bullet "Dylint gate over the IDE").
     The user also asked to look at their oxlint setup; findings: shared config
     `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
