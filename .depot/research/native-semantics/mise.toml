@@ -131,7 +131,10 @@ if (renewal.length !== 2 || !fs.existsSync('evidence/timeout-renew-completed-2.j
 if (absorbed.length !== 2) throw new Error('continue-on-error did not exhaust both retry executions');
 if (process.env.PROBE_EXHAUSTED_OUTCOME !== 'failure' || process.env.PROBE_EXHAUSTED_CONCLUSION !== 'success') throw new Error('Exhausted continue-on-error outcome/conclusion did not retain the failure boundary');
 const result = { schemaVersion: 1, probe: 'state', passed: true, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), renewal, firstTimedOutDescendantCompleted: fs.existsSync('evidence/timeout-renew-completed-1.json'), descendantCleanupGuaranteeAsserted: false, absorbed, retry: JSON.parse(fs.readFileSync('evidence/retry-assertion.json', 'utf8')), parallel: JSON.parse(fs.readFileSync('evidence/parallel-assertion.json', 'utf8')), exhaustedStep: { outcome: process.env.PROBE_EXHAUSTED_OUTCOME, conclusion: process.env.PROBE_EXHAUSTED_CONCLUSION } };
-fs.writeFileSync('evidence/state.json', JSON.stringify(result, null, 2) + '\n');
+const { createHash } = await import('node:crypto');
+const bytes = JSON.stringify(result, null, 2) + '\n';
+fs.writeFileSync('evidence/state.json', bytes);
+fs.appendFileSync(process.env.GITHUB_OUTPUT, 'receipt_sha256=' + createHash('sha256').update(bytes).digest('hex') + '\n');
 console.log(JSON.stringify({ probe: result.probe, passed: result.passed, harness: result.harness }));
 '''
 
@@ -169,12 +172,17 @@ const { execFileSync } = await import('node:child_process');
 const { setTimeout } = await import('node:timers/promises');
 const block = process.env.PROBE_BLOCK;
 if (!['default', 'allrun'].includes(block)) throw new Error('Unexpected parallel failure control');
-// Wait beyond the sibling's intended eight-second completion before asserting its absence.
+const returnedAt = new Date().toISOString();
+const siblingFinishedAtReturn = fs.existsSync('evidence/sibling-finished');
+// Record late descendants separately from whether the parallel block returned before its sibling finished.
 await setTimeout(9000);
 const actual = { failureStarted: fs.existsSync('evidence/failure-started'), siblingStarted: fs.existsSync('evidence/sibling-started'), siblingFinished: fs.existsSync('evidence/sibling-finished') };
-const passed = actual.failureStarted && actual.siblingStarted && actual.siblingFinished === (block === 'allrun');
-const result = { schemaVersion: 1, probe: 'parallel-' + block, passed, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), actual, at: new Date().toISOString() };
-fs.writeFileSync('evidence/parallel-' + block + '.json', JSON.stringify(result, null, 2) + '\n');
+const passed = actual.failureStarted && actual.siblingStarted && siblingFinishedAtReturn === (block === 'allrun');
+const result = { schemaVersion: 1, probe: 'parallel-' + block, passed, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), returnedAt, siblingFinishedAtReturn, actual, descendantCleanupGuaranteeAsserted: false, at: new Date().toISOString() };
+const { createHash } = await import('node:crypto');
+const bytes = JSON.stringify(result, null, 2) + '\n';
+fs.writeFileSync('evidence/parallel-' + block + '.json', bytes);
+fs.appendFileSync(process.env.GITHUB_OUTPUT, 'receipt_sha256=' + createHash('sha256').update(bytes).digest('hex') + '\n');
 console.log(JSON.stringify(result));
 if (!passed) throw new Error('Parallel failure behavior did not match the declared control');
 '''
@@ -186,22 +194,32 @@ const fs = await import('node:fs');
 const { createHash } = await import('node:crypto');
 const { execFileSync } = await import('node:child_process');
 const harness = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+const needs = JSON.parse(process.env.PROBE_NEEDS);
+const producerKeys = { state: 'state', 'parallel-default': 'parallel_default', 'parallel-allrun': 'parallel_allrun' };
 class ArtifactAdmissionFailure extends Error {}
-const admit = (value, probe) => {
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const admit = ({ bytes, probe, expectedHash }) => {
+  if (!/^[a-f0-9]{64}$/u.test(expectedHash ?? '') || hash(bytes) !== expectedHash) throw new ArtifactAdmissionFailure('Research artifact differs from its current producer output hash');
+  const value = JSON.parse(bytes.toString('utf8'));
   if (value.schemaVersion !== 1 || value.probe !== probe || value.passed !== true || value.harness !== harness || value.applicationBase !== 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a') throw new ArtifactAdmissionFailure('Research artifact identity or assertion mismatch');
+  return value;
 };
 const receipts = ['state', 'parallel-default', 'parallel-allrun'].map(probe => {
   const path = 'received/' + probe + '.json';
   const bytes = fs.readFileSync(path);
-  const value = JSON.parse(bytes.toString('utf8'));
-  admit(value, probe);
-  let rejected = false;
-  try { admit({ ...value, harness: '0'.repeat(40) }, probe); }
-  catch (error) { if (!(error instanceof ArtifactAdmissionFailure)) throw error; rejected = true; }
-  if (!rejected) throw new Error('Artifact source-mismatch rejection control failed');
-  return { probe, path, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), sourceMismatchRejected: rejected };
+  const expectedHash = needs[producerKeys[probe]]?.outputs?.receipt_sha256;
+  const value = admit({ bytes, probe, expectedHash });
+  const changedSource = Buffer.from(JSON.stringify({ ...value, harness: '0'.repeat(40) }));
+  const controls = [{ name: 'source', bytes: changedSource, expectedHash: hash(changedSource) }, { name: 'producer-hash', bytes, expectedHash: '0'.repeat(64) }].map(control => {
+    let rejected = false;
+    try { admit({ bytes: control.bytes, probe, expectedHash: control.expectedHash }); }
+    catch (error) { if (!(error instanceof ArtifactAdmissionFailure)) throw error; rejected = true; }
+    if (!rejected) throw new Error('Artifact ' + control.name + ' rejection control failed');
+    return { name: control.name, rejected };
+  });
+  return { probe, path, bytes: bytes.length, sha256: hash(bytes), expectedProducerSha256: expectedHash, controls };
 });
 fs.mkdirSync('evidence', { recursive: true });
-fs.writeFileSync('evidence/consumer.json', JSON.stringify({ passed: true, harness, receipts, needs: JSON.parse(process.env.PROBE_NEEDS) }, null, 2) + '\n');
+fs.writeFileSync('evidence/consumer.json', JSON.stringify({ passed: true, harness, receipts, needs }, null, 2) + '\n');
 console.log(JSON.stringify({ passed: true, harness, receipts }));
 '''

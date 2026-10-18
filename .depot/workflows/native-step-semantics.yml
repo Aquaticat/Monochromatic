@@ -13,6 +13,8 @@ jobs:
   state:
     runs-on: depot-ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      receipt_sha256: ${{ steps.receipt.outputs.receipt_sha256 }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -70,7 +72,8 @@ jobs:
           retries: 1
           delay-seconds: 0
           max-delay-seconds: 0
-      - run: mise run //.depot/research/native-semantics:finish-state
+      - id: receipt
+        run: mise run //.depot/research/native-semantics:finish-state
         env:
           PROBE_EXHAUSTED_OUTCOME: ${{ steps.exhausted.outcome }}
           PROBE_EXHAUSTED_CONCLUSION: ${{ steps.exhausted.conclusion }}
@@ -108,6 +111,8 @@ jobs:
     if: always()
     runs-on: depot-ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      receipt_sha256: ${{ steps.receipt.outputs.receipt_sha256 }}
     continue-on-error: true
     env:
       PROBE_BLOCK: default
@@ -125,7 +130,8 @@ jobs:
       - parallel:
           - run: mise run //.depot/research/native-semantics:parallel-delayed-fail
           - run: mise run //.depot/research/native-semantics:parallel-sibling
-      - run: mise run //.depot/research/native-semantics:record-parallel-failure
+      - id: receipt
+        run: mise run //.depot/research/native-semantics:record-parallel-failure
         if: always()
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
@@ -139,6 +145,8 @@ jobs:
     if: always()
     runs-on: depot-ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      receipt_sha256: ${{ steps.receipt.outputs.receipt_sha256 }}
     continue-on-error: true
     env:
       PROBE_BLOCK: allrun
@@ -157,7 +165,8 @@ jobs:
         parallel:
           - run: mise run //.depot/research/native-semantics:parallel-delayed-fail
           - run: mise run //.depot/research/native-semantics:parallel-sibling
-      - run: mise run //.depot/research/native-semantics:record-parallel-failure
+      - id: receipt
+        run: mise run //.depot/research/native-semantics:record-parallel-failure
         if: always()
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
