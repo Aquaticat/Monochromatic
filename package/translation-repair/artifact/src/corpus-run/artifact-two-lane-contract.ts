@@ -248,6 +248,15 @@ export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
  the span alone, which is a limit it documents (ledger B661): a span that holds a reference defined in another slice is read as plain
  text there.
 
+ THE RECOUNT READS THREE THINGS MORE STRICTLY, with no field moved (review of 2026-10-18), and they rode inside eighteen: no file of it
+ was stored under the corpus-pass runs when they were made, and the two stored artifacts of those runs (TianqiChen66624 and
+ TianqiChen66625, generation seventeen) still read. A quote is contained in another only where no joint of a longer word stands at an
+ edge of the match, the locator's own test of an apostrophe, a hyphen or a joint of digits (`containsWords`,
+ `consistency-contains-words.ts`), so the candidate spans and the slot words differ for quotes such as `cat` and `cat's bowl`. A line
+ ending pads inline code as a space does (`codeContentOf`, `consistency-markup-ranges.ts`), so the locator refuses a word beside code
+ padded by line endings. A carry the bench was not asked (a decision of no alternative) is refused when it records a run-off, which no
+ pass writes; this one applies to every generation.
+
  Everything else the generation seventeen record holds is this generation's too. The shape of the section is that of seventeen
  with the one key `definitions` added, so the key vocabulary is generation seventeen's and that key. No cache key of the passes
  reads the generation or the field: the consistency cache digests the sheet and its own version
