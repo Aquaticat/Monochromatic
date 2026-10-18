@@ -13,7 +13,7 @@ The native streaming regression reproduces 331,029,264 retained heap bytes for 1
 Resetting chunk alignment at each string token lets both copies of a growing message share storage,
 even when another preceding string changes its length.
 Escaped quotes remain inside their original token.
-Detached UTF-16 chunks preserve unpaired surrogates and cannot retain a larger temporary parent string.
+Explicit UTF-16 copies preserve unpaired surrogates and avoid relying on substring storage behavior.
 An encoded sequence of chunk identities establishes exact content equality;
 the existing UTF-8 digest does not replace that comparison.
 Identical digests can occur for distinct unpaired surrogate inputs after UTF-8 replacement.
@@ -41,7 +41,11 @@ The strengthened streaming consumer retains 10,508,712 heap bytes,
 against 328,037,592 bytes on the prior artifact,
 while preserving the checked original snapshots and identities.
 The exact-content and accessor-rejection consumer passes.
-Guard removal and complete configured-host verification remain separate completion checks.
+Rebuilt removal tests fail for JSON string-token alignment,
+exact source/accessor recognition and UTF-16 code-unit preservation.
+The private variant omitting explicit chunk copies passes this capacity case on the measured Node runtime;
+that case does not prove copying is necessary for its corpus.
+Complete configured-host verification remains a separate completion check.
 
 ## Purpose and callers
 

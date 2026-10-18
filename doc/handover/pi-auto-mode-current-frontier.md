@@ -76,7 +76,9 @@ No completed semantic repair commit exists yet.
 The two changed CLI files contain the earlier formatter's edits.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
 This controller closes with exit zero before its measured RSS reaches the configured limit again.
-Restart MiMo on `native-release-EWv4wy` after the new content-storage safety checks.
+The current restarted fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,
+pins `native-release-EWv4wy` and runs under controller command session `91455`.
+It resumes the closed `eZNsLl` session and receives `mimo-focused-editing.json`.
 
 ### Original worker and completed progress repair
 
@@ -191,7 +193,16 @@ the maintained SDK persistence regression fails with the original message.
 The qualified `pi` subtrees in `rKKphY` and `hGuAfo` have 513 byte-identical regular files;
 `qualified-sdk-differences.json` records the comparison.
 Actual resumed-session compaction and subsequent tool execution now pass on `q83LlN` in `eZNsLl`.
-Required/excluded provider-payload audit remains pending.
+The complete closed `eZNsLl` capture passes the required/excluded payload audit:
+35 requests,
+33 operation reviews and 660 questions,
+two required-data positive controls and four excluded-field controls,
+with zero excluded structured fields.
+`postcompaction-payload-audit2.log` and `postcompaction-payload-audit.json` retain the result.
+It checks original proposal IDs,
+parsed Bash structures,
+current task text and exact proposed operations beside each clause.
+Policy excerpts and full visible-conversation content are distinct valid material representations.
 
 The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
 session `44944`,
@@ -313,11 +324,21 @@ the new artifact passes with 10,508,712 bytes and 327,177,600 serialized receipt
 `native-input-content-green.log` passes exact-code-unit,
 escaped-boundary,
 surrogate digest and original-accessor checks with zero foreign-getter reads.
-`native-content-retention-safety.log` and `native-content-progress-safety.log` contain running safety suites;
-check their terminal results before recording completion.
-Private rebuilt storage guard mutations are running in `input-content-mutants-controller.log`.
+The complete progress/fallback suite passes in `native-content-progress-safety.log`.
+The broader `verify-retention-final` task reaches full units after passing its native safety consumers;
+full units fail on the already-known stale `native-process-network.unit.test.ts` fixture:
+`Native CLI fixture requires its disposable request receipt path`.
+Its correction remains part of MiMo's assigned three-file checkpoint.
+Do not call that full-unit result a pass or attribute this known failure to content storage.
+Three private rebuilt storage variants fail the maintained tests:
+JSON token alignment,
+source/accessor identity and exact code units.
+`input-content-mutants-receipt.json` confirms unchanged production hashes/publication.
+The explicit-copy omission variant passes the capacity test on this runtime,
+so it is retained as an observational limit rather than claimed as a detecting guard proof.
+Its log is `input-content-mutant-detached-chunks.log`.
 The prior `eZNsLl` worker closes with exit zero after its RSS reaches 1,543,204 KiB;
-the new artifact has not yet been exercised by an actual resumed MiMo worker.
+the restarted actual MiMo worker now pins the new artifact in `7O5MPn`.
 These results still do not prove the earlier worker's heap-failure cause.
 At this checkpoint,
 Git shows no MiMo source edits yet;
