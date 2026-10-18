@@ -135,16 +135,17 @@ Status:
   followed by `fatal runtime error: thread local panicked on drop, aborting`. In a double-click start (run 39094394847)
   the process was still alive 35 seconds after the box was closed; the abort itself was seen only with stderr in a file.
   Cause: `src/ui_search.rs` keeps the last handle to the Search service in a `thread_local!` of the window thread,
-  and `SearchService::drop` (`src/search_service.rs`) joins three threads. On Windows the thread-local of the main thread
-  is dropped while the process is already ending, after the other threads were ended; the std `JoinInner::join`
+  and `SearchService::drop` (`src/search_service.rs`) joins three threads. On Windows the thread-local of the main
+  thread is dropped while the process is already ending, after the other threads were ended; the std `JoinInner::join`
   (`library/std/src/thread/lifecycle.rs` at the pinned nightly) then finds its result packet still shared and panics.
   The same drop runs when a person closes the window, so a normal exit on Windows was exposed to it too.
   Fix: `SearchService::shutdown` (idempotent) does the stopping and joining, `Drop` calls it, and a guard in `main`
   (`ui_search::ServiceShutdown`) calls it while every thread is alive, on every return path of `main`.
   The same change applies on Linux and macOS (an earlier, harmless join); the new unit tests
-  (`shutdown_ends_all_three_threads_and_a_second_call_does_nothing`, `a_query_after_shutdown_is_ignored_without_a_panic`)
-  run on every host. Windows evidence: the forced event-loop case ended with exit status 1 on all three jobs after the
-  fix and with 0xC0000409 or no exit before it (table in "Evidence for the two follow-ups").
+  `shutdown_ends_all_three_threads_and_a_second_call_does_nothing` and
+  `a_query_after_shutdown_is_ignored_without_a_panic` run on every host.
+  Windows evidence: the forced event-loop case ended with exit status 1 on all three jobs after the fix, and with
+  0xC0000409 or no exit before it ("Evidence for the two follow-ups").
 
 ## Follow-up: console colors
 
@@ -188,16 +189,18 @@ finds the dialog (class `#32770`) by process id, reads its title and text throug
 the exit status.
 
 - Positive control, run 38776373884 at `d1f3475f84` (the checks, none of the program change): all three jobs failed.
-  Color cases: the console screen buffer held the left-arrow glyph of a literal ESC in front of every colored span of the
-  log line and of clap's error text, and the stderr file held `\x1b[` bytes. On `msvc-arm64` a fresh console started with
-  mode 0x3 and the buffer held the escapes without the harness clearing anything; the x64 jobs failed the same cases
-  because the harness clears VT processing on their console (mode 0x7) to reproduce the arm64 state. Startup failure
-  cases: no dialog existed (`dialog None`) and the program stayed running. The launch step failed with
+  Color cases: the console screen buffer held the left-arrow glyph of a literal ESC in front of every colored span of
+  the log line and of clap's error text, and the stderr file held `\x1b[` bytes.
+  On `msvc-arm64` a fresh console started with mode 0x3, so the harness had nothing to clear there.
+  The x64 jobs failed the same cases because the harness clears VT processing on their console (mode 0x7) to
+  reproduce the arm64 state.
+  Startup failure cases: no dialog existed (`dialog None`) and the program stayed running. The launch step failed with
   `the log written to a file holds ANSI escape sequences`.
 - Run 38778131811 at `29175e0d76` (the program change): the colors passed; the box was found on all three jobs with the
   right title and text, but the check failed because the posted `WM_COMMAND` with `IDOK` did not end the process.
-- Run 39094394847 at `611a40ff94` (OK pressed with `BM_CLICK` on the Button child): the process ended with the right exit
-  status for `window-system`, `window` and `panic` on all three jobs, and did not end for `event-loop` (the abort above).
+- Run 39094394847 at `611a40ff94` (OK pressed with `BM_CLICK` on the Button child): the process ended with the right
+  exit status for `window-system`, `window` and `panic` on all three jobs, and did not end for `event-loop`
+  (the abort above).
 - Run 39094984560 at `21eaf53422` (all four steps also with stderr in a file): `window-system` and `window` passed;
   `event-loop` ended with exit code 3221226505 and the panic text above; `panic` failed only on the harness expectation
   (a panic with stderr in a file prints the standard panic message, not the box text).
@@ -207,7 +210,13 @@ the exit status.
   failure: with a console or a file, no dialog, the text printed, exit status 1 (101 after the panic); in a double-click
   start the dialog appeared for each of the four steps, was closed by `BM_CLICK` on its OK button, and the process ended
   with 1, 1, 1 and 101. The Windows nextest step ran 1470 tests with 1470 passed and 1 skipped on each job.
-- Final head: see the last section, "Final run".
+- Final run 39096290321 at `4f8719b489` (the branch with `main` merged in, program code identical to `a478502ccf`
+  apart from a test helper): all three jobs passed, the same checks as the previous run passed, and the Windows nextest
+  step ran 1470 tests with 1470 passed and 1 skipped on each job.
+- Host (Linux), the verification units `winerr-verify-2` and `winerr-verify-3`: `lint:slint` status 0, nextest 1498 run,
+  1498 passed, 1 skipped (1496 before the two shutdown tests), `lint:clippy` with `-D warnings` status 0 on the final
+  head (the first run of it failed on `unwrap` in the two new tests, which the helper `running_threads` replaced).
+- `actionlint` 1.7.12 on the workflow: no findings.
 
 ## Evidence
 
