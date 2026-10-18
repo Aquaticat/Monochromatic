@@ -1,3 +1,30 @@
+[tasks.pr-gate]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { execFileSync } = await import('node:child_process');
+const { setTimeout } = await import('node:timers/promises');
+class ResearchGateFailure extends Error {}
+const control = JSON.parse(fs.readFileSync('pr-control.json', 'utf8'));
+if (!['pass', 'fail'].includes(control.result) || ![0, 90000].includes(control.holdMilliseconds)) throw new ResearchGateFailure('Unexpected research gate control');
+if (process.env.GITHUB_EVENT_NAME !== 'pull_request') throw new ResearchGateFailure('This fixture requires an actual pull_request event');
+const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+const pull = event.pull_request;
+if (!pull || pull.base.ref !== 'research/depot-runtime-base-20261018' || pull.head.repo.full_name !== 'Aquaticats/Monochromatic') throw new ResearchGateFailure('Unexpected pull request source or disposable base');
+const checkout = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+if (!/^[a-f0-9]{40}$/u.test(checkout)) throw new ResearchGateFailure('Invalid checkout identity');
+const result = { observedAt: new Date().toISOString(), repositoryBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', checkout, githubSha: process.env.GITHUB_SHA, headSha: pull.head.sha, baseSha: pull.base.sha, number: pull.number, runId: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT, job: process.env.GITHUB_JOB, event: process.env.GITHUB_EVENT_NAME, control, phase: 'started' };
+fs.mkdirSync('evidence', { recursive: true });
+const path = 'evidence/pr-gate-' + process.env.GITHUB_JOB + '.json';
+fs.writeFileSync(path, JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
+await setTimeout(control.holdMilliseconds);
+const completed = { ...result, completedAt: new Date().toISOString(), phase: 'completed' };
+fs.writeFileSync(path, JSON.stringify(completed, null, 2) + '\n');
+console.log(JSON.stringify(completed));
+if (control.result === 'fail') throw new ResearchGateFailure('Intentional research gate failure: pr-control.json requested fail');
+'''
+
 [tasks.platform]
 shell = "node --input-type=module-typescript -e"
 run = '''

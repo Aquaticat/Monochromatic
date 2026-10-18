@@ -1,0 +1,41 @@
+name: research native PR gate
+on:
+  pull_request:
+    branches: [research/depot-runtime-base-20261018]
+    paths:
+      - .depot/research/runtime/**
+      - .github/workflows/research-runtime-pr.yml
+      - .depot/workflows/research-runtime-pr.yml
+permissions:
+  contents: read
+concurrency:
+  group: research-native-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_LOCKED: '1'
+jobs:
+  gate:
+    name: research-native-gate
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Keep the previously exercised research bootstrap fixed.
+          version: 2026.10.9
+          install: false
+          cache: false
+      - run: mise install node
+      - run: mise run //.depot/research/runtime:pr-gate
+        working-directory: .depot/research/runtime
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: research-native-pr-gate
+          path: .depot/research/runtime/evidence/
+          if-no-files-found: error
+          retention-days: 7
