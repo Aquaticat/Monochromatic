@@ -1646,5 +1646,157 @@
     "Cancellation proves terminal provider job status and later-head check association, not guest/process termination or billing cessation.",
     "GitHub ZIP digests were matched against the artifact API; native ZIPs have local SHA256 and API size checks, without a server-reported digest.",
     "The cancelled native run uploaded no artifact; its source-bound task-start observation is retained from logs."
-  ]
+  ],
+  "cleanup": {
+    "observedAt": "2026-10-18T07:24:54.158Z",
+    "temporaryProtectionRemoved": true,
+    "branchFlagAfterClassicProtectionRemoval": true,
+    "classicProtectionProbe": {
+      "status": 1,
+      "stdout": "{\"message\":\"Branch not protected\",\"documentation_url\":\"https://docs.github.com/rest/branches/branch-protection#get-branch-protection\",\"status\":\"404\"}",
+      "stderr": "gh: Branch not protected (HTTP 404)\n"
+    },
+    "temporaryBaseDeleted": true,
+    "baseRemoval": {
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "researchHeadRetainedForReproduction": true,
+    "mainProtectionMatchesBaseline": true,
+    "mainBefore": {
+      "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection",
+      "required_status_checks": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_status_checks",
+        "strict": true,
+        "contexts": [],
+        "contexts_url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_status_checks/contexts",
+        "checks": []
+      },
+      "required_signatures": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_signatures",
+        "enabled": true
+      },
+      "enforce_admins": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/enforce_admins",
+        "enabled": false
+      },
+      "required_linear_history": {
+        "enabled": false
+      },
+      "allow_force_pushes": {
+        "enabled": false
+      },
+      "allow_deletions": {
+        "enabled": false
+      },
+      "block_creations": {
+        "enabled": false
+      },
+      "required_conversation_resolution": {
+        "enabled": true
+      },
+      "lock_branch": {
+        "enabled": false
+      },
+      "allow_fork_syncing": {
+        "enabled": false
+      }
+    },
+    "mainAfter": {
+      "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection",
+      "required_status_checks": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_status_checks",
+        "strict": true,
+        "contexts": [],
+        "contexts_url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_status_checks/contexts",
+        "checks": []
+      },
+      "required_signatures": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_signatures",
+        "enabled": true
+      },
+      "enforce_admins": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/enforce_admins",
+        "enabled": false
+      },
+      "required_linear_history": {
+        "enabled": false
+      },
+      "allow_force_pushes": {
+        "enabled": false
+      },
+      "allow_deletions": {
+        "enabled": false
+      },
+      "block_creations": {
+        "enabled": false
+      },
+      "required_conversation_resolution": {
+        "enabled": true
+      },
+      "lock_branch": {
+        "enabled": false
+      },
+      "allow_fork_syncing": {
+        "enabled": false
+      }
+    },
+    "reverifiedAt": "2026-10-18T11:53:46.975Z",
+    "temporaryBaseFreshGet": {
+      "exitCode": 1,
+      "stdout": "{\"message\":\"Branch not found\",\"documentation_url\":\"https://docs.github.com/rest/branches/branches#get-a-branch\",\"status\":\"404\"}",
+      "stderr": "gh: Branch not found (HTTP 404)\n"
+    },
+    "mainProtectionFreshlyMatchesBaseline": true,
+    "mainProtectionFresh": {
+      "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection",
+      "required_status_checks": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_status_checks",
+        "strict": true,
+        "contexts": [],
+        "contexts_url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_status_checks/contexts",
+        "checks": []
+      },
+      "required_signatures": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/required_signatures",
+        "enabled": true
+      },
+      "enforce_admins": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/branches/main/protection/enforce_admins",
+        "enabled": false
+      },
+      "required_linear_history": {
+        "enabled": false
+      },
+      "allow_force_pushes": {
+        "enabled": false
+      },
+      "allow_deletions": {
+        "enabled": false
+      },
+      "block_creations": {
+        "enabled": false
+      },
+      "required_conversation_resolution": {
+        "enabled": true
+      },
+      "lock_branch": {
+        "enabled": false
+      },
+      "allow_fork_syncing": {
+        "enabled": false
+      }
+    },
+    "prFresh": {
+      "number": 1766,
+      "url": "https://github.com/Aquaticats/Monochromatic/pull/1766",
+      "state": "closed",
+      "merged": true,
+      "mergeCommitSha": "5c5fcad4acad9751c4e0cd06f51f847a75537461",
+      "base": "research/depot-runtime-base-20261018",
+      "head": "research/depot-runtime-orchestration-20261018"
+    },
+    "historicalProtectedFlagCauseEstablished": false
+  }
 }
