@@ -38,6 +38,21 @@ pub(crate) fn service() -> Option<Arc<SearchService>> {
     return SERVICE.with(|slot| return slot.borrow().clone());
 }
 
+/// What: `ServiceShutdown` stops the Search service's threads when `main` ends, whichever way it ends.
+/// Why: the thread-local handle above is dropped after the process started ending, when joining the service's threads
+/// panics on Windows (`SearchService::shutdown` has the details). A guard in `main` joins them first.
+pub(crate) struct ServiceShutdown;
+
+impl Drop for ServiceShutdown {
+    /// What: `drop` shuts down the installed Search service, if any.
+    /// Why: every thread is still alive at this point, so the joins return.
+    fn drop(&mut self) {
+        if let Some(running) = service() {
+            running.shutdown();
+        }
+    }
+}
+
 /// What: `start_service` starts the Search service for the window, delivering answers through the event loop.
 /// Why: `main` starts it before the engine, because the engine thread feeds scan batches to the same service.
 pub(crate) fn start_service(app: &AppWindow) -> Arc<SearchService> {

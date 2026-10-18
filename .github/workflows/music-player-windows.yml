@@ -985,13 +985,13 @@ jobs:
         text = console_text()
         check("startup failure, console of the parent", dialog is None and code == 1 and "Music Player could not start" in text, f"dialog {dialog}, exit code {code}, console shows {text[-600:]!r}")
         # The same four steps with stderr in a file (a script or the CI): no box, the text and the debug log in the file,
-        # and the process must end on its own with the exit status of the step.
+        # and the process must end on its own with the exit status of the step. A panic prints the standard panic message.
         os.environ["RUST_LOG"] = "debug"
         for step, phrase, wanted_code in (
             ("window-system", "connection to the Windows desktop", 1),
             ("window", "could not create its window", 1),
             ("event-loop", "window stopped working", 1),
-            ("panic", "internal error", 101),
+            ("panic", "panicked at", 101),
         ):
             os.environ[FORCE] = step
             out_file = open_inheritable_file(os.path.join(temp_dir, "failure-out.txt"))

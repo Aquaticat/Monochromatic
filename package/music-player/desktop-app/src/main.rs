@@ -1273,6 +1273,8 @@ fn main() -> Result<()> {
     let unplayable_engine_notifier = unplayable_notifier.clone();
     // The Search service answers on its own thread and takes scan batches from the engine thread (D111, D112).
     let search_service = ui_search::start_service(&app);
+    // Joins the service's threads when `main` ends, before the thread-local handle is dropped during process exit.
+    let _search_shutdown = ui_search::ServiceShutdown;
     let scan_service = search_service.clone();
     let engine = Rc::new(Engine::spawn(move |update| {
         // What:     post the sweep's progress to the system indicator before the window sees the update.
