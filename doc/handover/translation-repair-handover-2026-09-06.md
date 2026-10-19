@@ -368,20 +368,19 @@ its "Next" list is still the queue the merge went ahead of.
 1.  The readiness rotation in the State list,
     one entry at a time,
     each page read by the seven steps and the three checks before the next launch.
-    `zheermao14` settled with no class
-    ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md)).
-    `CuspariaKLSY17` launched at 17:09 UTC
-    (unit `corpus-pass-corpus-pass-CuspariaKLSY17`,
-    runs directory `~/temp/agent/corpus-pass-CuspariaKLSY17`,
+    `zheermao14` and `CuspariaKLSY17` settled with no class
+    ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md));
+    `CuspariaKLSY16` before the second ran the main checkout's bundler on another build and was stopped (M278).
+    `XingZ6015` launched at 18:14 UTC
+    (unit `corpus-pass-corpus-pass-XingZ6015`,
+    runs directory `~/temp/agent/corpus-pass-XingZ6015`,
     log beside it,
     pipeline `sha256-tree-v1:a92725968adf…`,
-    `rolldown v1.2.13`);
-    `CuspariaKLSY16` before it ran the main checkout's bundler on another build and was stopped (M278).
+    `rolldown v1.2.13`).
     Each later entry launches with the main-checkout entries removed from the unit's `PATH`
     and is stopped unless its `START` line reads `a92725968adf…`
     (`~/temp/agent/tr-fan/s245/split/launch-rotation.ts <run> <entry>` does both).
-    Then `XingZ60`,
-    `yingying`,
+    Then `yingying`,
     `hulicaijia`,
     `mikaela_khara`,
     `shi_Yumiaoya`
