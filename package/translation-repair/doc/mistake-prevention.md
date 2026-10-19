@@ -233,3 +233,9 @@ not a memory of having done it.
     Right after the launch,
     `systemctl --user show --property=StandardError <unit>` prints `StandardError=inherit`
     (the runbook's launch step).
+9.  The build runs the worktree's own tools (M278):
+    a unit gets no `--setenv=PATH=`,
+    or one with every main-checkout entry removed and the worktree's `node_modules/.bin` first,
+    and a launch meant to run on a known build is stopped
+    unless the log's `rolldown v…` line is the worktree's version
+    and its `START` line carries that build's `pipeline=` digest.

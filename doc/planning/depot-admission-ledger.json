@@ -91,6 +91,118 @@
       },
       "reservedUsd": 10,
       "actualUsd": 0.36
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r5",
+      "id": "qzdndcpnl4",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 15,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.35
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r6",
+      "id": "lv1pxlx50c",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 16,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.38
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r7",
+      "id": "r1h68z8tzv",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 19,
+        "buildMinutes": 16,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.46
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r8",
+      "id": "391g4q5t98",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 18,
+        "buildMinutes": 16,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.43
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r9",
+      "id": "k1d5q6x48p",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 18,
+        "buildMinutes": 16,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.42
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r10",
+      "id": "xgd08stcz2",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "failed",
+      "meters": {
+        "nativeMinutes": 4,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.1
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r10",
+      "id": "fkwfbqh5wn",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "failed",
+      "meters": {
+        "nativeMinutes": 4,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.1
     }
   ]
 }

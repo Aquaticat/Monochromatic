@@ -1,11 +1,6 @@
 /**
  Per-role transcript visibility keeps earlier activity separate from executable proposals. @module
  */
-import type {
-  ImageContent,
-  TextContent,
-  ToolCall
-} from '@earendil-works/pi-ai';
 import type {sessionEntryToContextMessages} from '@earendil-works/pi-coding-agent';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import type {ForeignBorrowed} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -19,6 +14,31 @@ const l=tagged({tag:'auto-mode-visible-message'});
  Message union produced by Pi's session-entry projection.
  */
 type SessionAgentMessage = ReturnType<typeof sessionEntryToContextMessages>[number];
+
+/**
+ Assistant blocks derive from Pi's public session projection.
+ */
+type AssistantContent = Extract<SessionAgentMessage, {role: 'assistant'}>['content'][number];
+
+/**
+ Visible assistant text retains the host's declared content contract.
+ */
+type TextContent = Extract<AssistantContent, {type: 'text'}>;
+
+/**
+ Tool calls retain the host's declared argument contract.
+ */
+type ToolCall = Extract<AssistantContent, {type: 'toolCall'}>;
+
+/**
+ User blocks derive from Pi's public session projection.
+ */
+type UserContent = Extract<SessionAgentMessage, {role: 'user'}>['content'];
+
+/**
+ Images retain the host's declared media contract.
+ */
+type ImageContent = Extract<Exclude<UserContent, string>[number], {type: 'image'}>;
 
 /**
  JSON-compatible visible message projection.

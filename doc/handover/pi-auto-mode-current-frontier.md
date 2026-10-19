@@ -4,6 +4,99 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Span 02 live shadow, 2026-10-19
+
+The user explicitly requested a production shadow,
+including the supervised Pi MiMo sessions.
+The read-only sidecar is launched as container
+`b2d1ac083423a10224500e3e9d66dc9dc0432d99ffb034a63b7af70387616922`.
+Its persistent receipt is `span02-shadow-live.json` in the preparation-failure scratch directory;
+deployment output is `span02-shadow-live-FJysy5/output`.
+The [package deployment record](../../package/pi-plugin/auto-mode/doc/span-02-shadow.md)
+explains purpose,
+authority,
+correlation and bounds.
+The first four new live requests completed HTTP `200`
+with `respan/span-02-20261015` and correlated with actual Luna diagnostics:
+native captures `130`/`131` and source captures `166`/`167`.
+Both one-head operation decisions agree;
+seven meaning/admission heads differ across the two 27-head clause assessments.
+This is model disagreement, not established correctness.
+No shadow request failed in this initial sample.
+Its measured call intervals span `640.827` to `4259.027` milliseconds.
+The live runner is the immutable launch copy recorded by its manifest digests.
+Later private source edits adding boolean questions and input-error isolation remain undeployed.
+Next: inspect the differing clause heads,
+qualify observer recovery and bounded retention,
+then ship a maintained runner without coupling it to primary decisions.
+The differing heads have now been inspected in the bounded sidecar container;
+`output/disagreements-inspected.json` retains the exact comparisons and selected source spans.
+The initial differences include PX1, PX2, PX3, RXI, SPG and conversation-span interpretation.
+Later source capture `168`, head `25`, is especially relevant:
+Luna chooses prohibition at `0.35` with unknown `0.17`;
+Span chooses none at `0.9038082` with unknown `0.05124579`.
+The shared new categorical rule would admit both meanings.
+The current live artifact still uses its older admission policy.
+An asynchronous scope question is pending:
+apply the user's uncertainty rule only to whole-operation approve/deny actions (recommended),
+or to every categorical meaning classifier.
+Do not decide this silently or deploy the broader shared-helper change while that answer is pending.
+Continue independent shadow qualification,
+SDK removal and lint work.
+The idle native worker received an actual RPC `prompt` to resume its queued fixture work.
+RPC `follow_up` alone had queued the instruction without starting that idle worker.
+The source worker acknowledged the no-SDK constraint and continues its scoped checkpoint.
+Its scoped formatting and public-host-type inspection dialog
+`81d326af-3427-48ad-aab0-513034cf4afe` was authorized through RPC;
+tool completions advanced from 114 to 116.
+Active boundary monitors are source session `87836` and native session `96803`.
+The first-shadow monitor is `54529` and can now be collected.
+Rendered documentation verification passed for 51 documents with zero broken local links
+in `render-span02-shadow-docs.log` before the live-result text was added;
+render the updated evidence again.
+
+The provider boundary cleanup is committed as `94b79e7db1`:
+message and producer types derive from public Pi host declarations,
+and unused model-review/model-selection dependencies are removed from auto-mode's manifest.
+Fresh package type verification and generated lockfile refresh remain required.
+Native SDK staging and serializer extraction remain to be replaced.
+
+### Provider calls use platform fetch, 2026-10-19
+
+The user prohibits `pi-ai` and `openai` package usage and requires plain `fetch` for API calls.
+Do not recover the native build by reinstalling or reconnecting either package.
+The existing Decisions transport and the completed Span 02 trial already use direct HTTP.
+The unwanted coupling remains in native source emission, provider serializer extraction,
+producer fixtures/contracts, and visible-message type imports.
+Remove that coupling while preserving the actual Pi host integration and permission behavior.
+The assistant's suggestion to replace API calls through Pi was corrected by the user:
+API calls use platform `fetch`.
+
+The interrupted dependency-inspection command partially changed the private inspector to resolve
+the installed `pi-ai` sibling by filesystem path.
+Do not run that inspector as a recovery path.
+Shared installed Pi is now `1.3.0`, while the maintained native source qualification remains `1.2.0`.
+A fresh cancellation-regression build stopped with Node's `Cannot find module 'openai'` before the test ran.
+This is a build failure, not a cancellation-test result.
+The installed active native release remains unchanged.
+
+The uncertainty-rule controls completed 13 recorded steps in
+`uncertainty-built-guard-results.json` under the persistent preparation-failure scratch directory.
+Both rebuilt counterfactuals failed the intended unit and native cases;
+restoring the actual rule made both native boundary cases and the unit suite pass.
+The refined candidate also passed all nine real producer-lifetime case receipts.
+Commit `20c90b6b18` introduced a fixture verifier that swallowed assertion failures;
+`b86bc331cd` repaired it.
+The original `3a21255dde` verifier rethrew failures, so its older guard evidence remains valid.
+
+The native MiMo worker finished its separate main-agent and auxiliary type controls.
+Its restored full check is blocked by concurrent shell-analyzer type drift;
+it did not call that check green.
+Its queued next scope remains the 81-warning HTTP assessment fixture,
+followed by the 127-warning frontier assertion file.
+The source worker owns its uncommitted producer-lifetime fixture/value edits;
+coordinate the new dependency constraint before touching those files.
+
 ### Verified retry and current proof gaps, 2026-10-19
 
 The user replaces the unconditional action-score floor with an exact uncertainty-dependent rule:

@@ -104,8 +104,8 @@ const MAX_MESSAGE_CHARS = 16_000;
 /**
  Largest accepted gap between the probabilities' sum and one.
 
- Responses round each probability to two decimals, so five labels can drift by
- up to 0.025 from a true sum of one.
+ Responses round each probability to two decimals, so each label can drift by
+ up to 0.005 from a true sum of one; the tolerance covers every label drifting the same way.
  */
 const DISTRIBUTION_TOLERANCE = 0.05;
 
@@ -114,6 +114,7 @@ const DISTRIBUTION_TOLERANCE = 0.05;
  */
 const SITUATIONS = [
   'announces_own_next_step',
+  'leaves_open_work',
   'waits_on_background_work',
   'waits_on_user',
   'pauses_for_handoff',
@@ -132,10 +133,15 @@ type Situation = (typeof SITUATIONS)[number];
  gates, then land it" while a subagent ran was labelled an announced next step at 0.95. Naming the dependence on a
  running agent or its report lowered that label to 0.57 (below the 0.60 cutoff) and left a genuine early stop at 0.97;
  see `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
+
+ `leaves_open_work` was added on 2026-10-19 after a report that listed an issue still to file and a flaky test, with
+ the agent able to act on both, was labelled `work_closed` at 0.66; the same text reads `leaves_open_work` at 0.94.
  */
 const SITUATION_CRITERIA: Readonly<Record<Situation, string>> = {
   announces_own_next_step:
     'States an action the agent itself will do next that does not depend on any running agent, command, build, or report, and nothing external blocks it.',
+  leaves_open_work:
+    'Reports work, then lists open items, failures, or follow-ups that the agent itself could act on now without anyone else (file an issue, fix a flaky test, audit an area), and stops without doing them.',
   waits_on_background_work:
     'Waits for running agents, commands, builds, or tests to report, including when it lists steps it will take only after they report.',
   waits_on_user: 'Needs a decision, authorization, resource, or answer only the user can give.',
@@ -472,6 +478,7 @@ function parseSituationResponse(raw: string,): SituationVerdict {
     probability: scoreOf(answer.choice,),
     probabilities: {
       announces_own_next_step: scoreOf('announces_own_next_step',),
+      leaves_open_work: scoreOf('leaves_open_work',),
       waits_on_background_work: scoreOf('waits_on_background_work',),
       waits_on_user: scoreOf('waits_on_user',),
       pauses_for_handoff: scoreOf('pauses_for_handoff',),
