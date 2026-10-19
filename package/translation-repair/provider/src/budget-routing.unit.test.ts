@@ -1,10 +1,12 @@
 /**
  Tests for the provider decision.
 
- THESE CASES ARE THE OWNER'S POLICY, stated as a table. Synthetic first until
- its per-model concurrency limit is taken, then overflow to Hyper, which has
- no such limit; either of Synthetic's two limits emptying is a reason to fail
- over; Hyper dry too sends the call to OpenRouter (2026-09-03); every
+ THESE CASES ARE THE OWNER'S POLICY, stated as a table. Synthetic first,
+ overflowing to the next provider with budget when a provider's per-model
+ concurrency limit is taken (no live provider states one today, so those cases
+ inject a saturated record); Synthetic's weekly budget emptying is a reason to
+ fail over, and so is an empty five-hour window on a reply that still carries
+ one; Hyper dry too sends the call to OpenRouter (2026-09-03); every
  provider empty at once ends the run.
 
  THE ASYMMETRY IS DELIBERATE and worth reading twice: a model that some
@@ -118,7 +120,7 @@ await describe({
 
         it({
           name: 'READS an empty five-hour window as dry, since the owner corrected that this provider '
-            + 'has two limits and either one stops a call',
+            + 'could have two limits and either one stops a call',
           fn: async () => {
             expect(syntheticIsDry({
               quota: {
