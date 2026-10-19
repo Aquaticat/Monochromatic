@@ -118,6 +118,9 @@ catalogs:
     '@types/hyphen':
       specifier: '>=1.14.0'
       version: 1.14.0
+    '@types/mdast':
+      specifier: '>=4.0.4'
+      version: 4.0.4
     '@types/mdx':
       specifier: '>=2.0.14'
       version: 2.0.14
@@ -259,6 +262,9 @@ catalogs:
     pify:
       specifier: '>=6.1.0'
       version: 6.1.0
+    pinyin-pro:
+      specifier: '>=3.29.3'
+      version: 3.29.5
     quick-lru:
       specifier: '>=7.3.0'
       version: 7.3.0
@@ -274,6 +280,15 @@ catalogs:
     remark-gfm:
       specifier: '>=4.0.1'
       version: 4.0.1
+    remark-math:
+      specifier: ^6.0.0
+      version: 6.0.0
+    remark-mdx:
+      specifier: '>=3.1.1'
+      version: 3.1.1
+    remark-parse:
+      specifier: '>=11.0.0'
+      version: 11.0.0
     remark-sectionize:
       specifier: '>=2.1.0'
       version: 2.1.0
@@ -2289,6 +2304,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.5
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -4013,6 +4031,9 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
+      string-dedent:
+        specifier: 'catalog:'
+        version: 3.0.2
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -4057,9 +4078,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.5
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
       type-fest:
         specifier: 'catalog:'
         version: 5.10.0
@@ -4963,6 +4981,2725 @@ importers:
   package/test-fixture/oxlint-tsdoc: {}
 
   package/test-fixture/toml-edit: {}
+
+  package/translation-repair/adjudication:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/git-executable':
+        specifier: workspace:*
+        version: link:../../git/executable
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/archive:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/artifact:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-consistency':
+        specifier: workspace:*
+        version: link:../consistency
+      '@monochromatic-dev/translation-repair-consolidate':
+        specifier: workspace:*
+        version: link:../consolidate
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-insertion':
+        specifier: workspace:*
+        version: link:../insertion
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-lane':
+        specifier: workspace:*
+        version: link:../translate-lane
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/git-executable':
+        specifier: workspace:*
+        version: link:../../git/executable
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/artifact-pool:
+    dependencies:
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/assembly:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/bench:
+    dependencies:
+      '@monochromatic-dev/git-executable':
+        specifier: workspace:*
+        version: link:../../git/executable
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-artifact':
+        specifier: workspace:*
+        version: link:../artifact
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-insertion':
+        specifier: workspace:*
+        version: link:../insertion
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-probe':
+        specifier: workspace:*
+        version: link:../probe
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-run':
+        specifier: workspace:*
+        version: link:../run
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-cache':
+        specifier: workspace:*
+        version: link:../slice-cache
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      p-limit:
+        specifier: 'catalog:'
+        version: 7.3.3
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-corpus-pass':
+        specifier: workspace:*
+        version: link:../corpus-pass
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/consistency:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/consolidate:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/corpus-pass:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-artifact':
+        specifier: workspace:*
+        version: link:../artifact
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-consistency':
+        specifier: workspace:*
+        version: link:../consistency
+      '@monochromatic-dev/translation-repair-consolidate':
+        specifier: workspace:*
+        version: link:../consolidate
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-insertion':
+        specifier: workspace:*
+        version: link:../insertion
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-check':
+        specifier: workspace:*
+        version: link:../page-check
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-run':
+        specifier: workspace:*
+        version: link:../run
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-cache':
+        specifier: workspace:*
+        version: link:../slice-cache
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-lane':
+        specifier: workspace:*
+        version: link:../translate-lane
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/git-executable':
+        specifier: workspace:*
+        version: link:../../git/executable
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/corpus-source:
+    dependencies:
+      '@monochromatic-dev/git-executable':
+        specifier: workspace:*
+        version: link:../../git/executable
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/coverage-census:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-bench':
+        specifier: workspace:*
+        version: link:../bench
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-insertion':
+        specifier: workspace:*
+        version: link:../insertion
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-probe':
+        specifier: workspace:*
+        version: link:../probe
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-run':
+        specifier: workspace:*
+        version: link:../run
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-cache':
+        specifier: workspace:*
+        version: link:../slice-cache
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/git-executable':
+        specifier: workspace:*
+        version: link:../../git/executable
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-corpus-pass':
+        specifier: workspace:*
+        version: link:../corpus-pass
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/document-structure:
+    dependencies:
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      remark-gfm:
+        specifier: 'catalog:'
+        version: 4.0.1
+      remark-math:
+        specifier: 'catalog:'
+        version: 6.0.0
+      remark-mdx:
+        specifier: 'catalog:'
+        version: 3.1.1
+      remark-parse:
+        specifier: 'catalog:'
+        version: 11.0.0
+      unified:
+        specifier: 'catalog:'
+        version: 11.0.5
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-2
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/glossary:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      pinyin-pro:
+        specifier: 'catalog:'
+        version: 3.29.5
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/house-rule:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/insertion:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-2
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/lane-contest:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/markup:
+    dependencies:
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/page-check:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-artifact':
+        specifier: workspace:*
+        version: link:../artifact
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-lane':
+        specifier: workspace:*
+        version: link:../translate-lane
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      pinyin-pro:
+        specifier: 'catalog:'
+        version: 3.29.5
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-consolidate':
+        specifier: workspace:*
+        version: link:../consolidate
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/page-pass:
+    dependencies:
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      pinyin-pro:
+        specifier: 'catalog:'
+        version: 3.29.5
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/probe:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-artifact':
+        specifier: workspace:*
+        version: link:../artifact
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-pass':
+        specifier: workspace:*
+        version: link:../corpus-pass
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-insertion':
+        specifier: workspace:*
+        version: link:../insertion
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-check':
+        specifier: workspace:*
+        version: link:../page-check
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-run':
+        specifier: workspace:*
+        version: link:../run
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-lane':
+        specifier: workspace:*
+        version: link:../translate-lane
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/provider:
+    dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/provider-stream:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/reference:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/rendering-audit:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/repair:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/run:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-artifact':
+        specifier: workspace:*
+        version: link:../artifact
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-check':
+        specifier: workspace:*
+        version: link:../page-check
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-lane':
+        specifier: workspace:*
+        version: link:../translate-lane
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/shared-contract:
+    dependencies:
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      p-limit:
+        specifier: 'catalog:'
+        version: 7.3.3
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/slice-cache:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-artifact':
+        specifier: workspace:*
+        version: link:../artifact
+      '@monochromatic-dev/translation-repair-artifact-pool':
+        specifier: workspace:*
+        version: link:../artifact-pool
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-consolidate':
+        specifier: workspace:*
+        version: link:../consolidate
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-insertion':
+        specifier: workspace:*
+        version: link:../insertion
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-check':
+        specifier: workspace:*
+        version: link:../page-check
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-run':
+        specifier: workspace:*
+        version: link:../run
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-lane':
+        specifier: workspace:*
+        version: link:../translate-lane
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/slice-reading:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-2
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/source-scan:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-run':
+        specifier: workspace:*
+        version: link:../run
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/stage:
+    dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/test-fixture:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      unified:
+        specifier: 'catalog:'
+        version: 11.0.5
+
+  package/translation-repair/translate-floor:
+    dependencies:
+      '@monochromatic-dev/module-llm-type':
+        specifier: workspace:*
+        version: link:../../module/llm-type
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-rendering-audit':
+        specifier: workspace:*
+        version: link:../rendering-audit
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/translate-lane:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-archive':
+        specifier: workspace:*
+        version: link:../archive
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-consolidate':
+        specifier: workspace:*
+        version: link:../consolidate
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-lane-contest':
+        specifier: workspace:*
+        version: link:../lane-contest
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-page-pass':
+        specifier: workspace:*
+        version: link:../page-pass
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-provider-stream':
+        specifier: workspace:*
+        version: link:../provider-stream
+      '@monochromatic-dev/translation-repair-reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@monochromatic-dev/translation-repair-repair':
+        specifier: workspace:*
+        version: link:../repair
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-translate-stage':
+        specifier: workspace:*
+        version: link:../translate-stage
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/translate-stage:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
+      '@monochromatic-dev/translation-repair-assembly':
+        specifier: workspace:*
+        version: link:../assembly
+      '@monochromatic-dev/translation-repair-corpus-source':
+        specifier: workspace:*
+        version: link:../corpus-source
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-house-rule':
+        specifier: workspace:*
+        version: link:../house-rule
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-provider':
+        specifier: workspace:*
+        version: link:../provider
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-reading':
+        specifier: workspace:*
+        version: link:../slice-reading
+      '@monochromatic-dev/translation-repair-stage':
+        specifier: workspace:*
+        version: link:../stage
+      '@monochromatic-dev/translation-repair-translate-floor':
+        specifier: workspace:*
+        version: link:../translate-floor
+      '@monochromatic-dev/translation-repair-typography':
+        specifier: workspace:*
+        version: link:../typography
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-glossary':
+        specifier: workspace:*
+        version: link:../glossary
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/translation-repair/typography:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      '@monochromatic-dev/translation-repair-document-structure':
+        specifier: workspace:*
+        version: link:../document-structure
+      '@monochromatic-dev/translation-repair-markup':
+        specifier: workspace:*
+        version: link:../markup
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@monochromatic-dev/translation-repair-test-fixture':
+        specifier: workspace:*
+        version: link:../test-fixture
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.2.13
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
 
   package/typeface/aquaticat:
     devDependencies:
@@ -6216,6 +8953,9 @@ packages:
   '@types/hyphen@1.14.0':
     resolution: {integrity: sha512-Fc/WIwPD0evpA4cFqdek0nqJpJCMeSqKJwwqYGyVI6snpGmf6eISdD2RnQ7+KhEeo5D05CQtAVfV16/FZ+TzLg==, tarball: https://registry.npmjs.org/@types/hyphen/-/hyphen-1.14.0.tgz}
 
+  '@types/katex@0.16.8':
+    resolution: {integrity: sha512-trgaNyfU+Xh2Tc+ABIb44a5AYUpicB3uwirOioeOkNPPbmgRNtcWyDeeFRzjPZENO9Vq8gvVqfhaaXWLlevVwg==, tarball: https://registry.npmjs.org/@types/katex/-/katex-0.16.8.tgz}
+
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==, tarball: https://registry.npmjs.org/@types/mdast/-/mdast-4.0.4.tgz}
 
@@ -6587,6 +9327,10 @@ packages:
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==, tarball: https://registry.npmjs.org/comma-separated-tokens/-/comma-separated-tokens-2.0.3.tgz}
+
+  commander@8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==, tarball: https://registry.npmjs.org/commander/-/commander-8.3.0.tgz}
+    engines: {node: '>= 12'}
 
   commander@9.5.0:
     resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==, tarball: https://registry.npmjs.org/commander/-/commander-9.5.0.tgz}
@@ -7049,6 +9793,10 @@ packages:
     resolution: {integrity: sha512-Qush0uP+G8ZScpGMZvHUiRfI0YBWuB3gVBYlI0v0vvOJt5FLicco+IkP0a50LqTTQhmts/m6tP5SWE+USyIvcQ==, tarball: https://registry.npmjs.org/junk/-/junk-4.0.1.tgz}
     engines: {node: '>=12.20'}
 
+  katex@0.16.47:
+    resolution: {integrity: sha512-Eeo8Ys1doU1z+x8AZsPpQu+p/QcZBI5PeOo7QGQdy2x2m0MU/hYagBbGOmXwr5KVbEfVuWv9LpnQWeehogurjg==, tarball: https://registry.npmjs.org/katex/-/katex-0.16.47.tgz}
+    hasBin: true
+
   ktx-parse@0.7.1:
     resolution: {integrity: sha512-FeA3g56ksdFNwjXJJsc1CCc7co+AJYDp6ipIp878zZ2bU8kWROatLYf39TQEd4/XRSUvBXovQ8gaVKWPXsCLEQ==, tarball: https://registry.npmjs.org/ktx-parse/-/ktx-parse-0.7.1.tgz}
 
@@ -7115,6 +9863,9 @@ packages:
   mdast-util-gfm@3.1.0:
     resolution: {integrity: sha512-0ulfdQOM3ysHhCJ1p06l0b0VKlhU0wuQs3thxZQagjcjPrlFRqY215uZGHHJan9GEAXd9MbfPjFJz+qMkVR6zQ==, tarball: https://registry.npmjs.org/mdast-util-gfm/-/mdast-util-gfm-3.1.0.tgz}
 
+  mdast-util-math@3.0.0:
+    resolution: {integrity: sha512-Tl9GBNeG/AhJnQM221bJR2HPvLOSnLE/T9cJI9tlc6zwQk2nPk/4f0cHkOdEixQPC/j8UtKDdITswvLAy1OZ1w==, tarball: https://registry.npmjs.org/mdast-util-math/-/mdast-util-math-3.0.0.tgz}
+
   mdast-util-mdx-expression@2.0.1:
     resolution: {integrity: sha512-J6f+9hUp+ldTZqKRSg7Vw5V6MqjATc+3E4gf3CFNcuZNWD8XdyI6zQ8GqH7f8169MM6P7hMBRDVGnn7oHB9kXQ==, tarball: https://registry.npmjs.org/mdast-util-mdx-expression/-/mdast-util-mdx-expression-2.0.1.tgz}
 
@@ -7168,6 +9919,9 @@ packages:
 
   micromark-extension-gfm@3.0.0:
     resolution: {integrity: sha512-vsKArQsicm7t0z2GugkCKtZehqUm31oeGBV/KVSorWSy8ZlNAv7ytjFhvaryUiCUJYqs+NoE6AFhpQvBTM6Q4w==, tarball: https://registry.npmjs.org/micromark-extension-gfm/-/micromark-extension-gfm-3.0.0.tgz}
+
+  micromark-extension-math@3.1.0:
+    resolution: {integrity: sha512-lvEqd+fHjATVs+2v/8kg9i5Q0AP2k85H0WUOwpIVvUML8BapsMvh1XAogmQjOCsLpoKRCVQqEkQBB3NhVBcsOg==, tarball: https://registry.npmjs.org/micromark-extension-math/-/micromark-extension-math-3.1.0.tgz}
 
   micromark-extension-mdx-expression@3.0.1:
     resolution: {integrity: sha512-dD/ADLJ1AeMvSAKBwO22zG22N4ybhe7kFIZ3LsDI0GlsNr2A3KYxb0LdC1u5rj4Nw+CHKY0RVdnHX8vj8ejm4Q==, tarball: https://registry.npmjs.org/micromark-extension-mdx-expression/-/micromark-extension-mdx-expression-3.0.1.tgz}
@@ -7412,6 +10166,9 @@ packages:
     resolution: {integrity: sha512-KocF8ve28eFjjuBKKGvzOBGzG8ew2OqOOSxTTZhirkzH7h3BI1vyzqlR0qbfcDBve1Yzo3FVlWUAtCRrbVN8Fw==, tarball: https://registry.npmjs.org/pify/-/pify-6.1.0.tgz}
     engines: {node: '>=14.16'}
 
+  pinyin-pro@3.29.5:
+    resolution: {integrity: sha512-Fk5YoRmtdHqJWqAuzYVG/NzvzeCbaG+ZEwbY6Nbps3QAIrvQQEtcm49frcyCM8i2b5najnzPDtYqrHRYTTiuwQ==, tarball: https://registry.npmjs.org/pinyin-pro/-/pinyin-pro-3.29.5.tgz}
+
   playwright-core@1.64.0:
     resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==, tarball: https://registry.npmjs.org/playwright-core/-/playwright-core-1.64.0.tgz}
     engines: {node: '>=20'}
@@ -7507,6 +10264,9 @@ packages:
 
   remark-gfm@4.0.1:
     resolution: {integrity: sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg==, tarball: https://registry.npmjs.org/remark-gfm/-/remark-gfm-4.0.1.tgz}
+
+  remark-math@6.0.0:
+    resolution: {integrity: sha512-MMqgnP74Igy+S3WwnhQ7kqGlEerTETXMvJhrUzDikVZ2/uogJCb+WHUg97hK9/jcfc0dkD73s3LN8zU49cTEtA==, tarball: https://registry.npmjs.org/remark-math/-/remark-math-6.0.0.tgz}
 
   remark-mdx@3.1.1:
     resolution: {integrity: sha512-Pjj2IYlUY3+D8x00UJsIOg5BEvfMyeI+2uLPn9VO9Wg4MEtN/VTIq2NEJQfde9PnX15KgtHyl9S0BcTnWrIuWg==, tarball: https://registry.npmjs.org/remark-mdx/-/remark-mdx-3.1.1.tgz}
@@ -7788,6 +10548,9 @@ packages:
 
   unist-util-position@5.0.0:
     resolution: {integrity: sha512-fucsC7HjXvkB5R3kTCO7kUjRdrS0BJt3M/FPxmHMBOm8JQi2BsHAHFsy27E0EolP8rp0NzXsJ+jNPyDWvOJZPA==, tarball: https://registry.npmjs.org/unist-util-position/-/unist-util-position-5.0.0.tgz}
+
+  unist-util-remove-position@5.0.0:
+    resolution: {integrity: sha512-Hp5Kh3wLxv0PHj9m2yZhhLt58KzPtEYKQQ4yxfYFEO7EvHwzyDYnduhHnY1mDxoqr7VUwVuHXk9RXKIiYS1N8Q==, tarball: https://registry.npmjs.org/unist-util-remove-position/-/unist-util-remove-position-5.0.0.tgz}
 
   unist-util-stringify-position@4.0.0:
     resolution: {integrity: sha512-0ASV06AAoKCDkS2+xw5RXJywruurpbC4JZSm7nr7MOt1ojAzvyyaO+UxZf18j8FCF6kmzCZKcAgN/yu2gm2XgQ==, tarball: https://registry.npmjs.org/unist-util-stringify-position/-/unist-util-stringify-position-4.0.0.tgz}
@@ -9020,6 +11783,8 @@ snapshots:
 
   '@types/hyphen@1.14.0': {}
 
+  '@types/katex@0.16.8': {}
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -9266,6 +12031,8 @@ snapshots:
   collapse-white-space@2.1.0: {}
 
   comma-separated-tokens@2.0.3: {}
+
+  commander@8.3.0: {}
 
   commander@9.5.0: {}
 
@@ -9756,6 +12523,10 @@ snapshots:
 
   junk@4.0.1: {}
 
+  katex@0.16.47:
+    dependencies:
+      commander: 8.3.0
+
   ktx-parse@0.7.1: {}
 
   launch-editor@2.14.2:
@@ -9863,6 +12634,18 @@ snapshots:
       mdast-util-gfm-table: 2.0.0
       mdast-util-gfm-task-list-item: 2.0.0
       mdast-util-to-markdown: 2.2.0
+    transitivePeerDependencies:
+      - supports-color
+
+  mdast-util-math@3.0.0:
+    dependencies:
+      '@types/hast': 3.0.5
+      '@types/mdast': 4.0.4
+      devlop: 1.1.0
+      longest-streak: 3.1.0
+      mdast-util-from-markdown: 2.1.0
+      mdast-util-to-markdown: 2.2.0
+      unist-util-remove-position: 5.0.0
     transitivePeerDependencies:
       - supports-color
 
@@ -10030,6 +12813,16 @@ snapshots:
       micromark-extension-gfm-tagfilter: 2.0.0
       micromark-extension-gfm-task-list-item: 2.1.0
       micromark-util-combine-extensions: 2.0.1
+      micromark-util-types: 2.0.3
+
+  micromark-extension-math@3.1.0:
+    dependencies:
+      '@types/katex': 0.16.8
+      devlop: 1.1.0
+      katex: 0.16.47
+      micromark-factory-space: 2.1.0
+      micromark-util-character: 2.1.1
+      micromark-util-symbol: 2.0.1
       micromark-util-types: 2.0.3
 
   micromark-extension-mdx-expression@3.0.1:
@@ -10349,6 +13142,8 @@ snapshots:
 
   pify@6.1.0: {}
 
+  pinyin-pro@3.29.5: {}
+
   playwright-core@1.64.0: {}
 
   playwright@1.64.0:
@@ -10470,6 +13265,15 @@ snapshots:
       micromark-extension-gfm: 3.0.0
       remark-parse: 11.0.0
       remark-stringify: 11.0.0
+      unified: 11.0.5
+    transitivePeerDependencies:
+      - supports-color
+
+  remark-math@6.0.0:
+    dependencies:
+      '@types/mdast': 4.0.4
+      mdast-util-math: 3.0.0
+      micromark-extension-math: 3.1.0
       unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
@@ -10813,6 +13617,11 @@ snapshots:
   unist-util-position@5.0.0:
     dependencies:
       '@types/unist': 3.0.3
+
+  unist-util-remove-position@5.0.0:
+    dependencies:
+      '@types/unist': 3.0.3
+      unist-util-visit: 5.1.0
 
   unist-util-stringify-position@4.0.0:
     dependencies:

@@ -1,17 +1,29 @@
 import {
   defineConfig,
   type OutputOptions,
+  type Plugin,
   type RolldownOptions,
 } from 'rolldown';
 import { dts, } from 'rolldown-plugin-dts';
 
 import { binShebangPlugin, } from './bin-shebang.ts';
 import { browserslistTargets, } from './browserslist-targets.ts';
+import { copiedAssetsPlugin, } from './copied-assets.ts';
 import {
   anchoredExternal,
   packageExternals,
 } from './package-externals.ts';
+import {
+  familyDependencies,
+  familyEntrySpecifier,
+} from './package-family.ts';
 import { shebangExecutablePlugin, } from './shebang-executable.ts';
+
+export {
+  type CopiedAsset,
+  CopiedAssetReadError,
+  copiedAssetsPlugin,
+} from './copied-assets.ts';
 
 /**
  Resolved Browserslist targets shared by Node builds, via
@@ -151,6 +163,9 @@ function isInputList(
  @param external - Replacement external list from {@link nodeExternal} for
    consumers with custom bundle-inclusion patterns.
  
+ @param extraPlugins - Plugins appended after the shared ones, such as
+   {@link copiedAssetsPlugin} for data files the built output must carry.
+ 
  @returns Node flavor rolldown config for one self-contained build.
  
  @example
@@ -166,11 +181,13 @@ export function nodeConfig(
     outputDir = 'dist/final/node',
     outputOverrides = {},
     external,
+    extraPlugins = [],
   }: {
     readonly input?: readonly string[] | Readonly<Record<string, string>>;
     readonly outputDir?: string;
     readonly outputOverrides?: OutputOptions;
     readonly external?: readonly RegExp[];
+    readonly extraPlugins?: readonly Plugin[];
   } = {},
 ): RolldownOptions {
   return defineConfig({
@@ -180,6 +197,7 @@ export function nodeConfig(
     plugins: [
       ...basePlugins,
       binShebangPlugin({ outputDir, },),
+      ...extraPlugins,
     ],
     output: {
       ...baseOutput,
@@ -187,6 +205,75 @@ export function nodeConfig(
       cleanDir: true,
       ...outputOverrides,
     },
+  },);
+}
+
+/**
+ Build a library member of a package family: its family siblings stay
+ imports, emitted against each sibling's built entry, while everything else
+ follows {@link nodeConfig}.
+
+ Family members check classes by identity across package boundaries, so a
+ process must load each member from one file; see
+ `src/package-family.ts` for why inlining siblings breaks that.
+
+ @param familyPrefix - package-name prefix every member of the family shares
+ 
+ @param packageDir - directory holding the building package's package.json; defaults to the build cwd
+ 
+ @param input - source input paths; defaults to the package index
+ 
+ @param outputOverrides - shallow output-option overrides, as {@link nodeConfig} takes them
+
+ @param extraPlugins - plugins appended after the shared ones, such as {@link copiedAssetsPlugin} for a data file the
+   member's built module reads beside itself
+
+ @returns Node flavor rolldown config for the library build
+
+ @example
+ ```ts
+ // rolldown.node.config.ts
+ export default await familyLibraryNodeConfig({ familyPrefix: '\@monochromatic-dev/translation-repair-', },);
+ ```
+ */
+export async function familyLibraryNodeConfig({
+  familyPrefix,
+  packageDir = process.cwd(),
+  input = ['./src/index.ts',],
+  outputOverrides = {},
+  extraPlugins = [],
+}: {
+  readonly familyPrefix: string;
+  readonly packageDir?: string;
+  readonly input?: readonly string[] | Readonly<Record<string, string>>;
+  readonly outputOverrides?: OutputOptions;
+  readonly extraPlugins?: readonly Plugin[];
+},): Promise<RolldownOptions> {
+  /**
+   Family members the building package depends on.
+   */
+  const family = new Set(await familyDependencies({
+    packageDir,
+    familyPrefix,
+  },),);
+  return nodeConfig({
+    input,
+    external: [
+      ...await nodeExternal({ alwaysBundle: NODE_ALWAYS_BUNDLE, },),
+      ...[...family,].map(function toMatcher(name: string,): RegExp {
+        return anchoredExternal(name,);
+      },),
+    ],
+    outputOverrides: {
+      paths: function emittedSpecifier(id: string,): string {
+        return familyEntrySpecifier({
+          id,
+          family,
+        },);
+      },
+      ...outputOverrides,
+    },
+    extraPlugins,
   },);
 }
 
