@@ -226,7 +226,14 @@ runs unit after a successful build,
 and fails once at the end if any profile failed.
 The first run is therefore an observed changed-file lint failure,
 not a product assertion or a workflow success.
-The next run records the full three-part profile.
+Manual qualification run `39202293518` completed successfully:
+the gate admitted the dispatch,
+the changed-path static step reported no changed static files,
+the build and unit fast subsets passed,
+and the final enforce step passed.
+That verifies the all-profile execution and the manual qualification path.
+Push admission remains limited to the 2/4/8 window;
+the first admitted push is the lint finding.
 
 ## Build profile
 
