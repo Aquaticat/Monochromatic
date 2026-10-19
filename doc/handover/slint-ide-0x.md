@@ -933,6 +933,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 44, language lifecycle 28, ignored 75, theme 13, search 49, language navigation 45, source 300). The other
     six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
+  - Queued after the minimap landing (2026-10-19, agents running in worktrees off `origin/main`):
+    `fix/ide-wrap-clip-flake` (worktree `.claude/worktrees/ide-flake`) fixes the wrap-clip test race;
+    `fix/ide-tall-wrapped-settle` (worktree `.claude/worktrees/ide-settle`) investigates issue #1785, the
+    measurement pass of a 10,000 px or taller window over wrapped text that never settles. Next, after both land:
+    the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test` task
+    still runs `cargo test`). The owner has not yet decided to delete the merged IDE branches on origin (the
+    classifier refused the deletion; the list of merged branches is in `~/temp/agent/merged-ide-branches.txt`).
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
