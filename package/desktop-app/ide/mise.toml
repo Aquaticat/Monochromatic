@@ -1,26 +1,34 @@
 # Extend the established Fedora native build environment with Helix's C++ driver.
-# Cargo jobs are contained at 2 GiB, 2 CPUs, 512 processes, and 4096 descriptors.
+# Cargo jobs are contained in a podman container whose bound bin/container-bounds.ts computes: by default 75 percent of the
+# host's CPUs and memory (owner decision of 2026-10-18, doc/handover/slint-ide-0x.md), 256 processes per CPU with a floor
+# of 512, and 4096 descriptors. The caller may lower or raise it with IDE_CONTAINER_CPUS, IDE_CONTAINER_MEMORY,
+# IDE_CONTAINER_PIDS, IDE_CONTAINER_NOFILE, IDE_CONTAINER_JOBS, and IDE_CONTAINER_TEST_THREADS; a malformed value stops the
+# task with a message naming the variable. No number of the bound is written in this file.
 # No home directory or credentials are mounted into the build container.
 # Containers run with --network=none, so podman starts no pasta network helper (which takes inotify watches
 # and warns when the limit is reached); only the tasks that download (fetch, runtime) pass network: true.
 [vars]
 cargo = """
 const { execFileSync } = await import('node:child_process')
+// Node strips the types of the shared bound module; the import names an absolute path because the task runs from -e.
+const { containerBounds } = await import((await import('node:path')).resolve('bin/container-bounds.ts'))
+const containerLimits = containerBounds()
+console.error(containerLimits.summary)
 const image = 'localhost/monochromatic/ide'
 const imageCheck = (await import('node:child_process')).spawnSync('podman', ['image', 'exists', image])
 if (imageCheck.status !== 0) {
-  execFileSync('podman', ['build', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', image, '--file', 'Containerfile', '.'], { stdio: 'inherit' })
+  execFileSync('podman', ['build', ...containerLimits.imageBuildArguments, '--tag', image, '--file', 'Containerfile', '.'], { stdio: 'inherit' })
 }
 // The repository-root clippy.toml holds the fleet-wide disallowed-methods ban that [lints.clippy] only activates.
 // It is mounted read-only outside /work and named by CLIPPY_CONF_DIR: a mount over /work/clippy.toml would leave an
 // empty clippy.toml in the package directory on the host. Host clippy finds the file in an ancestor directory.
 const rootClippyConfig = (await import('node:path')).resolve(process.cwd(), '../../../clippy.toml')
 const runBounded = (args, { network = false, ...options } = {}) => execFileSync('podman', [
-  'run', '--rm', ...(network ? [] : ['--network=none']), '--memory=2g', '--cpus=2', '--pids-limit=512',
-  '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
+  'run', '--rm', ...(network ? [] : ['--network=none']), ...containerLimits.limitArguments,
+  '--security-opt', 'label=disable',
   '--volume', process.cwd() + ':/work', '--volume', 'ide-cargo:/cargo',
   '--volume', rootClippyConfig + ':/clippy-conf/clippy.toml:ro', '--env', 'CLIPPY_CONF_DIR=/clippy-conf',
-  '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2',
+  '--workdir', '/work', ...containerLimits.environmentArguments,
   '--env', 'SLINT_EMIT_DEBUG_INFO=1',
   '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
   image, ...args
@@ -30,7 +38,14 @@ const runCargo = (args, options = {}) => runBounded(['cargo', ...args], options)
 
 [tasks.image]
 description = "Rebuild the bounded native IDE toolchain image"
-run = "podman build --memory=2g --cpu-period=100000 --cpu-quota=200000 --tag localhost/monochromatic/ide --file Containerfile ."
+shell = "node --input-type=module-typescript -e"
+run = """
+const { containerBounds } = await import((await import('node:path')).resolve('bin/container-bounds.ts'))
+const containerLimits = containerBounds()
+console.error(containerLimits.summary)
+const { execFileSync } = await import('node:child_process')
+execFileSync('podman', ['build', ...containerLimits.imageBuildArguments, '--tag', 'localhost/monochromatic/ide', '--file', 'Containerfile', '.'], { stdio: 'inherit' })
+"""
 
 [tasks.fetch]
 description = "Fetch the selected Rust dependencies in the bounded build container"
@@ -170,7 +185,7 @@ run = """
 {{vars.cargo}}
 // Only the application binary: the runtime, inspection, and scripted-server helpers are build and test tools.
 // SLINT_EMIT_DEBUG_INFO keeps element ids for the debug inspection builds; sibling release builds do not set it.
-// The shared 2 GiB and 2 CPU bound is enough: measured on 2026-10-05, a build from an empty release directory
+// The earlier fixed 2 GiB and 2 CPU bound was enough: measured on 2026-10-05, a build from an empty release directory
 // peaked at 1,116 MiB of anonymous memory with no out-of-memory kill and took 15 to 19 minutes on a loaded host.
 runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release', '--bin', 'monochromatic-ide'])
 """
@@ -229,10 +244,13 @@ run = "./dist/monochromatic-ide"
 [tasks.test]
 depends = ["runtime"]
 description = "Run library and integration tests in the bounded container"
+usage = 'arg "[filter]" help="Optional nextest filter expression that selects or excludes tests, for example not test(/every_row_of_real_source/); default is every library and integration test"'
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--lib', '--tests'])
+// A filtered run keeps going after a failure so that every selected test reports, as the native task does.
+const filter = process.env.usage_filter ? ['--no-fail-fast', '--filter-expr', process.env.usage_filter] : []
+runCargo(['nextest', 'run', '--no-default-features', '--lib', '--tests', ...filter])
 """
 
 [tasks."test:wrap"]
@@ -308,9 +326,13 @@ run = """
 runCargo(['nextest', 'run', '--test', 'cli_args', '--test', 'cli_process'])
 """
 
+[tasks."test:nextest-config"]
+description = "Check in the build container that cargo-nextest reads .config/nextest.toml of this package and that its timeout kills a hung test"
+run = "node bin/check-nextest-config.mjs"
+
 [tasks."test:bin"]
-description = "Check the compositor version reader of the bin scripts with node:test"
-run = "node --test bin/nested-compositor.test.mjs"
+description = "Check the compositor version reader and the container bound of the bin scripts with node:test"
+run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts"
 
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
@@ -439,7 +461,9 @@ if (start < 0 || end < start) throw new Error('Slint virtualization function bou
 const directory = mkdtempSync(join(tmpdir(), 'ide-listview-algorithm-'))
 writeFileSync(join(directory, 'algorithm.rs'), source.slice(start, end))
 copyFileSync(resolve('../../../doc/troubleshooting/slint-listview-random-seek-probe.rs'), join(directory, 'harness.rs'))
-const args = ['run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', '--security-opt', 'label=disable', '--volume', directory + ':/work', '--workdir', '/work', 'localhost/monochromatic/ide']
+const { containerBounds } = await import(resolve('bin/container-bounds.ts'))
+const containerLimits = containerBounds()
+const args = ['run', '--rm', '--network=none', '--memory=' + containerLimits.memory, '--cpus=' + containerLimits.cpus, '--pids-limit=128', '--security-opt', 'label=disable', '--volume', directory + ':/work', '--workdir', '/work', 'localhost/monochromatic/ide']
 console.log('Standalone algorithm controls: ' + directory)
 execFileSync('podman', [...args, 'rustc', '--edition=2024', '--test', 'harness.rs', '--out-dir', '/work'], { stdio: 'inherit' })
 execFileSync('podman', [...args, '/work/harness', '--nocapture'], { stdio: 'inherit' })

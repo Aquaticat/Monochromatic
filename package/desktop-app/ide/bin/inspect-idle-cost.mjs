@@ -11,6 +11,10 @@ import { homedir } from 'node:os';
 import { join, relative, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 import { compositor, demandCurrentCompositor } from './nested-compositor.mjs';
+import { containerBounds } from './container-bounds.ts';
+
+// The bound of every container this script starts: the shared computed share of the host, or the caller's IDE_CONTAINER_* values.
+const containerLimits = containerBounds();
 
 const privateRoot = join(homedir(), 'temp', 'agent');
 if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
@@ -57,10 +61,10 @@ if (!shipped) throw new Error('Cannot find the SAFETY_SWEEP constant in ' + poli
 if (seconds < 3 * Math.max(Number(shipped[1]), compare)) throw new Error('seconds must cover at least three safety sweeps of the slower build');
 const build = label => {
   const result = spawnSync('podman', [
-    'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
-    '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
+    'run', '--rm', '--network=none', ...containerLimits.limitArguments,
+    '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
-    '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2', '--env', 'SLINT_EMIT_DEBUG_INFO=1',
+    '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
     'localhost/monochromatic/ide', 'cargo', 'build', '--offline', '--features', 'slint/mcp', ...(profile === 'release' ? ['--release'] : []),
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   writeFileSync(join(artifact, 'build-' + label + '.log'), (result.stdout ?? '') + (result.stderr ?? ''));
