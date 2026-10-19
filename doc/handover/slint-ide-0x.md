@@ -971,10 +971,22 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
   - Minimap drag jank (owner report of 2026-10-19, a screenshot of `client.unit.test.ts` in the search-fetch package:
-    dragging and holding the viewport box is janky). An agent reproduces it in a release build over that file, finds
-    the cause and fixes it on branch `fix/ide-minimap-drag-jank` (worktree `.claude/worktrees/ide-drag`, control
-    checkout `.claude/worktrees/ide-drag-control` at the minimap before the redesign). The frame pacing of a drag was
-    listed as not measured for the sliding minimap.
+    dragging and holding the viewport box is janky; the owner says it reproduces in a debug build too). Standing
+    owner instructions: when the nested compositor cannot do something, improve it, release it and install it; the
+    owner authorized releasing everything relevant this session without asking again. The sentence in the sidebar
+    bullet that the compositor has no held pointer drag is wrong: `drag X1 Y1 X2 Y2 left steps=N step-ms=MS`,
+    `move`, `button down|up` and `record DIR FPS bmp` with `record stop` exist in
+    `package/cli/nested-wayland-session` (README, sections "Pointer input" and "60fps recording"); the agent corrects
+    that sentence. Reproduction by the coordinator with the scratch driver `~/temp/agent/drag-frames.mjs` (records 60
+    fps BMP frames during a held `drag` on the box and prints which frames changed; the project copy is in
+    `/tmp/drag-project`, because the task needs a project below `/tmp`): a debug build over a 489-line copy of the file
+    at 1147x2000, scale 1, shows 41 changed frames, 10 identical frames (about 170 ms), 41 changed, 11 identical
+    (about 180 ms), 18 changed, with no frame dropped by the recorder. The minimap before the redesign (detached
+    checkout `.claude/worktrees/ide-drag-control` at `1cd982bfd6`) shows exactly the same pattern, so it is not a
+    regression of the redesign: either the text view stalls the window thread or the probe stalls; the probe has no
+    positive control yet (a drag in the text area changes frames only every fourth step, so it is not one). An agent
+    (`fix/ide-minimap-drag-jank`, worktree `.claude/worktrees/ide-drag`) builds the controls, finds the cause by
+    window-thread timing, fixes it, and records the before and after patterns here.
   - Closure check everywhere (owner requirement of 2026-10-19, recorded in `doc/decision/rust-closure-lint-dylint.md`,
     proposal in `doc/planning/closure-lint-everywhere.md`): done. `monochromatic-lint` runs `cargo dylint` per Rust
     package as the rule `rust/avoidable-closure` (mechanism A), warnings first, tests, fuzz and bench exempt, a package
