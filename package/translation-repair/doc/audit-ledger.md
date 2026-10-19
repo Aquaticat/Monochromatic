@@ -493,7 +493,8 @@ named for that subject and listed here.
   oxlint output that was not JSON and reached the plugin tests as a bare `SyntaxError` (B690),
   every provider's HTTP refusal named as Synthetic's,
   with no provider (B692),
-  and Synthetic's request-size cap claimed for every provider's reply (B693).
+  Synthetic's request-size cap claimed for every provider's reply (B693),
+  and the client type every driver takes named for Synthetic (B694).
 - [Audit ledger: process mistakes, shell commands and tasks](audit-ledger-process-shell-commands-and-tasks.md):
   Slips against the repository's shell and task rules:
   chained commands,

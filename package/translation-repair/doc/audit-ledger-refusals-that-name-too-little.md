@@ -794,3 +794,32 @@ is gated on that provider where the decision is made,
 not only in its name.
 When a helper becomes shared across providers,
 every provider-named class it builds is read for that gate.
+
+## B694: the client type every driver takes was named for Synthetic
+
+Status:
+fixed on 2026-10-19 (UTC),
+`9081481c0d`,
+a rename with no change in behaviour.
+It closes the second item B692 left open.
+
+The type `SyntheticClient` in `provider/src/chat-contract.ts`
+was the client surface every driver consumes,
+and the routed client that spans every provider was typed with it
+(`run/src/corpus-run/run-config.ts`),
+so a reader of a driver's signature took the routed client for Synthetic's.
+It is now `ModelClient`,
+in 275 TypeScript files of 21 family packages,
+with its TSDoc saying it fits a provider's own client and the routed one alike.
+`createSyntheticClient` and `synthetic-client.ts` keep their names:
+they build Synthetic's own client.
+Historical mentions of the old name keep their text with an in-place rename note.
+Build,
+`lint:types`,
+`lint` and `test:unit` pass in all 21 packages,
+and the source scans pass.
+
+Prevention:
+the rule "Provider names in failures" in `mistake-prevention-messages-labels-and-counts.md` covers names
+as well as failures:
+a name that says one provider is kept for what only that provider serves.
