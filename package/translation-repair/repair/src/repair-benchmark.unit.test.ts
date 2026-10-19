@@ -10,7 +10,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
@@ -948,7 +948,8 @@ await describe({
               signal: new AbortController().signal,
               perCallTimeoutMs: HANG_STOP_MS,
               repair: async () => {
-                throw new SyntheticHttpError({
+                throw new ProviderHttpError({
+                  provider: 'synthetic',
                   status: 429,
                   bodyText: `the cat key ${WHISKER_KEY} is over its weekly credit`,
                 },);
@@ -957,7 +958,7 @@ await describe({
               stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
             expect(headerRefusal.records[0]?.detail,).toBe('refused by TypeError',);
-            expect(statusRefusal.records[0]?.detail,).toBe('refused by SyntheticHttpError with HTTP 429',);
+            expect(statusRefusal.records[0]?.detail,).toBe('refused by ProviderHttpError from synthetic with HTTP 429',);
           },
         },),
 
@@ -982,7 +983,7 @@ await describe({
                   signal: new AbortController().signal,
                   perCallTimeoutMs: HANG_STOP_MS,
                   repair: async () => {
-                    throw new SyntheticHttpError({ status: 429, bodyText: 'the cat is over its weekly credit', },);
+                    throw new ProviderHttpError({ provider: 'synthetic', status: 429, bodyText: 'the cat is over its weekly credit', },);
                   },
                   judge: restoringJudge,
                   stageSettings: SCRIPTED_STAGE_SETTINGS,
@@ -991,10 +992,11 @@ await describe({
             expect(warned.filter(function thrown(line,): boolean {
               return line.includes('repair threw',);
             },),).toEqual([
-              '[translation-repair-repair-benchmark] [runRepairBenchmark] whiskers: repair threw refused by SyntheticHttpError with '
-              + 'HTTP 429 (the provider said: "the cat is over its weekly credit")',
+              '[translation-repair-repair-benchmark] [runRepairBenchmark] whiskers: repair threw refused by '
+              + 'ProviderHttpError from synthetic with HTTP 429 (the provider said: "the cat is over its weekly '
+              + 'credit")',
             ],);
-            expect(result.records[0]?.detail,).toBe('refused by SyntheticHttpError with HTTP 429',);
+            expect(result.records[0]?.detail,).toBe('refused by ProviderHttpError from synthetic with HTTP 429',);
           },
         },),
 

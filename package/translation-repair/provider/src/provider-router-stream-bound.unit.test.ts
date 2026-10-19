@@ -19,7 +19,7 @@ import {
 
 import {
   StreamCutShortError,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import type {
   ProviderName,
@@ -193,7 +193,8 @@ function stubProviders(
       chatText: async function chatText({ modelId, }: { readonly modelId: string; },): Promise<{ readonly text: string; }> {
         asked.push(`${provider}:${modelId}`,);
         if (refusers.includes(provider,))
-          throw new SyntheticHttpError({
+          throw new ProviderHttpError({
+            provider,
             status: HTTP_TOO_MANY_REQUESTS,
             bodyText: `${provider} napping`,
           },);

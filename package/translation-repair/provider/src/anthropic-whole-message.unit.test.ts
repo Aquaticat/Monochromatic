@@ -20,7 +20,7 @@ import {
 
 import {
   MalformedCompletionError,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   requireWholeAnthropicMessage,
@@ -88,7 +88,7 @@ const TERMINATOR_FRAME = frameOf({ body: { type: 'message_stop', }, },);
  */
 function refusalOf({ bodyText, }: { readonly bodyText: string; },): string {
   try {
-    requireWholeAnthropicMessage({ bodyText, },);
+    requireWholeAnthropicMessage({ provider: 'hyper', bodyText, },);
     return '';
   } catch (refusal) {
     expect(refusal instanceof MalformedCompletionError,).toBe(true,);
@@ -203,6 +203,7 @@ await describe({
         const refusals = documented.map(function refusalFor([errorType,],): unknown {
           return caught(function act(): unknown {
             return requireWholeAnthropicMessage({
+              provider: 'hyper',
               bodyText: OPENING
                 + frameOf({
                   body: {
@@ -220,8 +221,8 @@ await describe({
         expect(refusals.map(function classOf(refusal,): unknown {
           return [
             refusal instanceof StreamErrorEventError,
-            refusal instanceof SyntheticHttpError,
-            (refusal instanceof SyntheticHttpError) ? refusal.status : 0,
+            refusal instanceof ProviderHttpError,
+            (refusal instanceof ProviderHttpError) ? refusal.status : 0,
           ];
         },),).toEqual(documented.map(function expectedFor([, status,],): unknown {
           return [
@@ -229,6 +230,11 @@ await describe({
             true,
             status,
           ];
+        },),);
+        expect(refusals.map(function providerOf(refusal,): unknown {
+          return (refusal instanceof StreamErrorEventError) ? refusal.provider : refusal;
+        },),).toEqual(documented.map(function expectedProvider(): unknown {
+          return 'hyper';
         },),);
         expect(String(refusals[0],),).toBe(
           'StreamErrorEventError: Anthropic Messages stream carried an error event of type invalid_request_error, '

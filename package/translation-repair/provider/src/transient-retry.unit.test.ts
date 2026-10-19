@@ -36,7 +36,7 @@ import {
   StreamCutShortError,
   StreamDegenerateError,
   StreamOverrunError,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
@@ -225,6 +225,7 @@ async function ladderOutcome(
 ): Promise<unknown> {
   try {
     await exchangeWithRetry({
+      provider: 'synthetic',
       transport: scriptedTransport({
         script: [errorEventReply({ errorType, },),],
         calls,
@@ -232,7 +233,7 @@ async function ladderOutcome(
       exchange: exchangeWith({ signal: new AbortController().signal, },),
       policy: FAST_POLICY,
       verify: function verify(reply,): void {
-        requireWholeAnthropicMessage({ bodyText: reply.bodyText, },);
+        requireWholeAnthropicMessage({ provider: 'hyper', bodyText: reply.bodyText, },);
       },
     },);
     return 'returned';
@@ -271,6 +272,7 @@ async function abandonedAttempts(
   const reported: number[] = [];
   try {
     await exchangeWithRetry({
+      provider: 'synthetic',
       transport: scriptedTransport({
         script,
         calls: { count: 0, },
@@ -316,6 +318,7 @@ await describe({
 
             expect(
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [OK_REPLY,],
                   calls,
@@ -356,6 +359,7 @@ await describe({
 
               expect(
                 await exchangeWithRetry({
+                  provider: 'synthetic',
                   transport: scriptedTransport({
                     script: [reply,],
                     calls,
@@ -390,6 +394,7 @@ await describe({
 
               expect(
                 await exchangeWithRetry({
+                  provider: 'synthetic',
                   transport: scriptedTransport({
                     script: [
                       {
@@ -434,6 +439,7 @@ await describe({
             const startedAt = performance.now();
             expect(
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [
                     dailyRefusal,
@@ -474,6 +480,7 @@ await describe({
             const startedAt = performance.now();
             expect(
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [
                     {
@@ -516,6 +523,7 @@ await describe({
 
             expect(
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [busy,],
                   calls,
@@ -541,6 +549,7 @@ await describe({
 
             expect(
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [
                     new Error('connection reset',),
@@ -575,6 +584,7 @@ await describe({
 
             await expect(
               exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [transportFailure,],
                   calls,
@@ -617,6 +627,7 @@ await describe({
 
             await expect(
               exchangeWithRetry({
+                provider: 'synthetic',
                 transport,
                 exchange: exchangeWith({ signal: controller.signal, },),
                 policy: {
@@ -624,9 +635,56 @@ await describe({
                   baseMs: 1,
                 },
               },),
-            ).rejects.toThrow(SyntheticHttpError,);
+            ).rejects.toThrow(ProviderHttpError,);
             // One attempt, then the abort stops the loop instead of five more.
             expect(calls.count,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'CARRIES THE PROVIDER THE CALLER NAMED on the failure it raises when an abort lands during the '
+            + 'backoff, since the ladder cannot tell on its own whose reply it was retrying',
+          fn: async () => {
+            /**
+             Caller abort tripped as soon as the first attempt fails.
+             */
+            const controller = new AbortController();
+
+            /**
+             Transport that aborts the caller while failing transiently.
+             */
+            const transport: ModelTransport = async () => {
+              controller.abort();
+              return {
+                status: 503,
+                bodyText: 'busy',
+              };
+            };
+
+            /**
+             What the stopped ladder raised for a call Bedrock was serving.
+             */
+            let raised: unknown;
+            try {
+              await exchangeWithRetry({
+                provider: 'bedrock',
+                transport,
+                exchange: exchangeWith({ signal: controller.signal, },),
+                policy: {
+                  limit: 5,
+                  baseMs: 1,
+                },
+              },);
+            } catch (error) {
+              raised = error;
+            }
+
+            expect(raised instanceof ProviderHttpError,).toBe(true,);
+            expect(
+              raised instanceof ProviderHttpError
+                ? raised.provider
+                : undefined,
+            ).toBe('bedrock',);
           },
         },),
 
@@ -665,11 +723,12 @@ await describe({
             const startedMs = performance.now();
             await expect(
               exchangeWithRetry({
+                provider: 'synthetic',
                 transport,
                 exchange: exchangeWith({ signal: controller.signal, },),
                 policy: SLOW_POLICY,
               },),
-            ).rejects.toThrow(SyntheticHttpError,);
+            ).rejects.toThrow(ProviderHttpError,);
             expect({
               calls: calls.count,
               outlivedTheAbort: (performance.now() - startedMs) >= SHORTEST_FIRST_BACKOFF_MS,
@@ -703,11 +762,12 @@ await describe({
 
             await expect(
               exchangeWithRetry({
+                provider: 'synthetic',
                 transport,
                 exchange: exchangeWith({ signal: controller.signal, },),
                 policy: FAST_POLICY,
               },),
-            ).rejects.toThrow(SyntheticHttpError,);
+            ).rejects.toThrow(ProviderHttpError,);
           },
         },),
 
@@ -738,6 +798,7 @@ await describe({
 
             await expect(
               exchangeWithRetry({
+                provider: 'synthetic',
                 transport,
                 exchange: exchangeWith({ signal: controller.signal, },),
                 policy: FAST_POLICY,
@@ -757,6 +818,7 @@ await describe({
 
             expect(
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [
                     new Error('connection reset',),
@@ -798,7 +860,7 @@ await describe({
               [
                 permanentCalls.count,
                 transientCalls.count,
-                (refused instanceof SyntheticHttpError) ? refused.status : refused,
+                (refused instanceof ProviderHttpError) ? refused.status : refused,
               ],
             ).toEqual([
               1,
@@ -841,6 +903,7 @@ await describe({
             const raised = await (async function attempt(): Promise<unknown> {
               try {
                 await exchangeWithRetry({
+                  provider: 'synthetic',
                   transport: scriptedTransport({
                     script: [runaway,],
                     calls,
@@ -894,6 +957,7 @@ await describe({
             const raised = await (async function attempt(): Promise<unknown> {
               try {
                 await exchangeWithRetry({
+                  provider: 'synthetic',
                   transport: scriptedTransport({
                     script: [overrun,],
                     calls,
@@ -1034,6 +1098,7 @@ await describe({
                 },
               };
               await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: scriptedTransport({
                   script: [new Error('connection reset',), OK_REPLY,],
                   calls: { count: 0, },
@@ -1059,6 +1124,7 @@ await describe({
             const { warned, } = await warnLinesDuring({
               run: async () =>
                 exchangeWithRetry({
+                  provider: 'synthetic',
                   transport: scriptedTransport({
                     script: [quotingFailure(), OK_REPLY,],
                     calls: { count: 0, },
@@ -1079,8 +1145,9 @@ await describe({
             const { warned, } = await warnLinesDuring({
               run: async () =>
                 exchangeWithRetry({
+                  provider: 'synthetic',
                   transport: scriptedTransport({
-                    script: [new SyntheticHttpError({ status: 503, bodyText: 'the cat is napping', },), OK_REPLY,],
+                    script: [new ProviderHttpError({ provider: 'synthetic', status: 503, bodyText: 'the cat is napping', },), OK_REPLY,],
                     calls: { count: 0, },
                   },),
                   exchange: exchangeWith({ signal: new AbortController().signal, },),
@@ -1091,7 +1158,7 @@ await describe({
               return line.split('; retrying in',)[0] ?? '';
             },),).toEqual([
               '[translation-repair] [exchangeWithRetry] hf:whiskers: transport failure: refused by '
-              + 'SyntheticHttpError with HTTP 503 (the provider said: "the cat is napping")',
+              + 'ProviderHttpError from synthetic with HTTP 503 (the provider said: "the cat is napping")',
             ],);
           },
         },),
@@ -1111,6 +1178,7 @@ await describe({
              */
             const refusal = await rejectionOf(async function exhausted(): Promise<unknown> {
               return await exchangeWithRetry({
+                provider: 'synthetic',
                 transport: async function transport(): Promise<TransportReply> {
                   // A thrown value that is no Error, as a hostile transport might.
                   // Typed `unknown` so the throw carries no literal the lint reads

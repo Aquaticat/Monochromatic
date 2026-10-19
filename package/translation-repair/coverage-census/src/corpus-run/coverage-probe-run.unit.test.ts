@@ -479,7 +479,7 @@ await describe({
 
         expect(ran.logged,).toEqual([
           'info Tabby: 1 unpaired passage',
-          `info Tabby pair 0 block 2: FAILED ${statusFailureLogText({ status: 401, },)}`,
+          `info Tabby pair 0 block 2: FAILED ${statusFailureLogText({ provider: 'synthetic', status: 401, },)}`,
           'info kept 1 row at <kept file>',
         ],);
         expect(ran.printed,).toEqual([JSON.stringify(
@@ -499,7 +499,7 @@ await describe({
                 asked: 2,
                 evidence: [],
                 unanchoredQuotes: [],
-                findings: ['refused by SyntheticHttpError with HTTP 401',],
+                findings: ['refused by ProviderHttpError from synthetic with HTTP 401',],
               },
             ],
           },

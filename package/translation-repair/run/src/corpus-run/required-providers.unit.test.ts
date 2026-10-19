@@ -404,7 +404,7 @@ await describe({
 
             expect(result,).toBeInstanceOf(RequiredProviderError,);
             expect(warned,).toEqual([
-              `[gateProvider] hyper meter could not be read: ${statusFailureLogText({ status: 401, },)}`,
+              `[gateProvider] hyper meter could not be read: ${statusFailureLogText({ provider: 'hyper', status: 401, },)}`,
             ],);
           },
         },),
@@ -457,7 +457,7 @@ await describe({
             },);
 
             expect(warned,).toEqual([
-              '[gateProvider] hyper meter could not be read: refused by SyntheticHttpError with HTTP 401 (the '
+              '[gateProvider] hyper meter could not be read: refused by ProviderHttpError from hyper with HTTP 401 (the '
               + 'provider said: "this cat has no collar tag")',
             ],);
             expect(result,).toBe(reason,);

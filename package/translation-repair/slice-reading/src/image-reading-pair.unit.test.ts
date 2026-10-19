@@ -38,7 +38,7 @@ import type {
   ChatTextRequest,
   SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   isResumableReading,
   type PairedReading,
@@ -735,7 +735,7 @@ await describe({
               return line.includes('failed outright',);
             },),).toEqual(READERS.map(function lineOf(modelId,): string {
               return `warn [readImagePair] noticeboard.webp: ${modelId} failed outright, so it contributes no reading `
-                + `(${statusFailureLogText({ status: 401, },)})`;
+                + `(${statusFailureLogText({ provider: 'synthetic', status: 401, },)})`;
             },),);
           },
         },),
@@ -932,14 +932,16 @@ await describe({
             /**
              What the first-listed reader ends in, once the later-listed reader has ended.
              */
-            const firstRefusal = new SyntheticHttpError({
+            const firstRefusal = new ProviderHttpError({
+              provider: 'synthetic',
               status: 429,
               bodyText: 'the first cat is out of treats',
             },);
             /**
              What the later-listed reader ends in, first.
              */
-            const laterRefusal = new SyntheticHttpError({
+            const laterRefusal = new ProviderHttpError({
+              provider: 'synthetic',
               status: 503,
               bodyText: 'the later cat is napping in the sun',
             },);
@@ -1013,10 +1015,10 @@ await describe({
             expect(begun,).toEqual(readers,);
             expect(lines,).toEqual([
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_WITHHELD} failed outright (refused by `
-              + 'SyntheticHttpError with HTTP 429 (the provider said: "the first cat is out of treats")), and the '
+              + 'ProviderHttpError from synthetic with HTTP 429 (the provider said: "the first cat is out of treats")), and the '
               + 'caller stopped the reading',
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} failed outright (refused `
-              + 'by SyntheticHttpError with HTTP 503 (the provider said: "the later cat is napping in the sun")), and '
+              + 'by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the later cat is napping in the sun")), and '
               + 'the caller stopped the reading',
             ],);
           },
@@ -1051,7 +1053,8 @@ await describe({
                      */
                     const { modelId, signal: readerSignal, } = request as ChatTextRequest;
                     if (modelId === SEAT_SYNTHETIC_VISION_WITHHELD) {
-                      throw new SyntheticHttpError({
+                      throw new ProviderHttpError({
+                        provider: 'synthetic',
                         status: 401,
                         bodyText: 'this cat has no collar tag',
                       },);
@@ -1088,7 +1091,7 @@ await describe({
             expect(refusal,).toBe(reason,);
             expect(lines,).toEqual([
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_WITHHELD} failed outright (refused by `
-              + 'SyntheticHttpError with HTTP 401 (the provider said: "this cat has no collar tag")), and the caller '
+              + 'ProviderHttpError from synthetic with HTTP 401 (the provider said: "this cat has no collar tag")), and the caller '
               + 'stopped the reading',
             ],);
           },

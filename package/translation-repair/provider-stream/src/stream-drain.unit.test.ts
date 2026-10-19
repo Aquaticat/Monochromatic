@@ -29,7 +29,7 @@ import {
   StreamDegenerateError,
   StreamOverrunError,
   StreamStalledError,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '../dist/final/node/index.mjs';
 import {
   anthropicBlockDelta,
@@ -951,7 +951,8 @@ await describe({
           label: 'hf:whiskers',
           partialText: 'It is a cat.',
           progress,
-          cause: new SyntheticHttpError({
+          cause: new ProviderHttpError({
+            provider: 'synthetic',
             status: 503,
             bodyText: 'the cat shelf is full of naps',
           },),
@@ -961,7 +962,7 @@ await describe({
           'hf:whiskers: stream cut after 12 characters (refused by TypeError)',
         );
         expect(refusalText({ error: refused, },),).toBe(
-          'hf:whiskers: stream cut after 12 characters (refused by SyntheticHttpError with HTTP 503)',
+          'hf:whiskers: stream cut after 12 characters (refused by ProviderHttpError from synthetic with HTTP 503)',
         );
         expect(refusalText({ error: stalled, },),).toBe(
           'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted nothing for 60000ms (body))',

@@ -61,6 +61,7 @@ await describe({
 
         await expect(
           exchangeWithRetry({
+            provider: 'synthetic',
             transport,
             exchange: {
               url: 'https://example.invalid/chat',

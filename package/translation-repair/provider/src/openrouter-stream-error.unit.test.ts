@@ -21,6 +21,7 @@ import {
 
 import {
   InStreamProviderError,
+  InStreamRefusalError,
   openRouterStreamErrorOf,
   requireNoStreamError,
   STREAM_ERROR_ABSENT,
@@ -65,8 +66,23 @@ const FAILED_STREAM = `: OPENROUTER PROCESSING\n\n${
 }`;
 
 /**
- An ordinary stream: content and the terminator, no error.
+ A stream refused for what the request held: one chunk carrying a 4xx error.
  */
+const REFUSED_STREAM = framed({
+  chunk: {
+    id: 'gen-cat',
+    provider: 'Sill',
+    choices: [],
+    error: {
+      code: 400,
+      message: 'the sill refused',
+      metadata: { error_type: 'invalid_request', },
+    },
+  },
+},);
+
+/**
+ An ordinary stream: content and the terminator, no error.
 const WHOLE_STREAM = `${
   framed({
     chunk: {
@@ -227,7 +243,7 @@ await describe({
              */
             let thrown: unknown;
             try {
-              requireNoStreamError({ bodyText: FAILED_STREAM, },);
+              requireNoStreamError({ provider: 'openrouter', bodyText: FAILED_STREAM, },);
             } catch (error) {
               thrown = error;
             }
@@ -242,12 +258,33 @@ await describe({
         },),
 
         it({
+          name: 'CARRIES THE PROVIDER THE CALLER NAMED on the refusal a 4xx error chunk raises, since the chunk '
+            + 'itself cannot say whether OpenRouter or another route spoke it',
+          fn: async () => {
+            /**
+             What the refused stream produces on each of the two routes that speak this chunk shape.
+             */
+            const thrown = (['openrouter', 'bedrock',] as const).map(function refuseAs(provider,): unknown {
+              try {
+                requireNoStreamError({ provider, bodyText: REFUSED_STREAM, },);
+              } catch (error) {
+                return error;
+              }
+              return undefined;
+            },);
+            expect(thrown.map(function providerOf(error,): unknown {
+              return (error instanceof InStreamRefusalError) ? error.provider : error;
+            },),).toStrictEqual(['openrouter', 'bedrock',],);
+          },
+        },),
+
+        it({
           name: 'LETS A WHOLE STREAM THROUGH, since the terminator check that follows is the one that '
             + 'judges framing',
           fn: async () => {
             // A throw here fails the test on its own; the assertion records the
             // reading the check was made from.
-            requireNoStreamError({ bodyText: WHOLE_STREAM, },);
+            requireNoStreamError({ provider: 'openrouter', bodyText: WHOLE_STREAM, },);
             expect(openRouterStreamErrorOf({ bodyText: WHOLE_STREAM, },).found,).toBe(false,);
           },
         },),
@@ -261,7 +298,7 @@ await describe({
              */
             let thrown: unknown;
             try {
-              requireNoStreamError({ bodyText: ERROR_FINISH_STREAM, },);
+              requireNoStreamError({ provider: 'openrouter', bodyText: ERROR_FINISH_STREAM, },);
             } catch (error) {
               thrown = error;
             }

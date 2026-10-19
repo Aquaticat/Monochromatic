@@ -18,7 +18,7 @@ import {
   MalformedCompletionError,
   stripCodeFence,
   stripThinkBlock,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportExchange,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
@@ -388,7 +388,7 @@ await describe({
         },),
 
         it({
-          name: 'throws SyntheticHttpError once transient retries exhaust',
+          name: 'throws ProviderHttpError once transient retries exhaust',
           fn: async () => {
             /** Transport replaying an endless throttle; retries then throws. */
             const { transport, exchanges, } = recordedTransport({
@@ -412,12 +412,17 @@ await describe({
             catch (error) {
               caught = error;
             }
-            expect(caught instanceof SyntheticHttpError,).toBe(true,);
+            expect(caught instanceof ProviderHttpError,).toBe(true,);
             expect(
-              caught instanceof SyntheticHttpError
+              caught instanceof ProviderHttpError
                 ? caught.status
                 : 0,
             ).toBe(429,);
+            expect(
+              caught instanceof ProviderHttpError
+                ? caught.provider
+                : undefined,
+            ).toBe('synthetic',);
             // First attempt plus two transient retries.
             expect(exchanges,).toHaveLength(3,);
           },
@@ -468,6 +473,7 @@ await describe({
             if (!(caught instanceof SyntheticRequestTooLargeError))
               throw new Error('size failure by construction',);
             expect(caught.bodyBytes > caught.passingBodyBytes,).toBe(true,);
+            expect(caught.provider,).toBe('synthetic',);
             // The character count is what a `.length` reading would have seen, and it
             // is under the cap: this is the gap the case exists to hold open.
             expect(wide.length < caught.passingBodyBytes,).toBe(true,);
@@ -504,7 +510,7 @@ await describe({
               caught = error;
             }
 
-            expect(caught instanceof SyntheticHttpError,).toBe(true,);
+            expect(caught instanceof ProviderHttpError,).toBe(true,);
             expect(caught instanceof SyntheticRequestTooLargeError,).toBe(false,);
           },
         },),
@@ -558,7 +564,7 @@ await describe({
               caught = error;
             }
             expect(
-              caught instanceof SyntheticHttpError
+              caught instanceof ProviderHttpError
                 ? caught.status
                 : 0,
             ).toBe(400,);
@@ -1264,6 +1270,36 @@ await describe({
             expect(snapshot.weekly.percentRemaining,).toBe(quotas.weeklyTokenLimit.percentRemaining,);
             expect(exchanges[0]?.url,).toBe('https://api.synthetic.new/v2/quotas',);
             expect(exchanges[0]?.method,).toBe('GET',);
+          },
+        },),
+
+        it({
+          name: 'NAMES SYNTHETIC AS THE PROVIDER of the HTTP error a refused quotas read raises',
+          fn: async () => {
+            /** Transport replaying an unauthorized quotas read. */
+            const { transport, } = recordedTransport({
+              replies: [{ status: 401, bodyText: 'missing authorization', },],
+            },);
+            /** Client under test, with no retry wait. */
+            const client = createSyntheticClient({
+              apiKey: 'test-key',
+              transport,
+              retryPolicy: { limit: 0, baseMs: 1, },
+            },);
+            /** Value caught from the refused read. */
+            let caught: unknown;
+            try {
+              await client.quotas({ signal: new AbortController().signal, },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(caught instanceof ProviderHttpError,).toBe(true,);
+            expect(
+              caught instanceof ProviderHttpError
+                ? [caught.provider, caught.status,]
+                : undefined,
+            ).toStrictEqual(['synthetic', 401,],);
           },
         },),
 

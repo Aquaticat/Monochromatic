@@ -1,4 +1,5 @@
 import type { DisposableSandbox, } from '@monochromatic-dev/module-test/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 import {
   CREDENTIAL_MARKER,
@@ -88,8 +89,11 @@ const MASKED_BODY = `{"error":"${PROVIDER_WORDS}; refused key ${CREDENTIAL_MARKE
 export const ECHOED_KEY: string = WHISKER_KEY;
 
 /**
- What a log line says of the failure this fixture builds: its class, its status,
- and the provider's words quoted onto one line, the key masked.
+ What a log line says of the failure this fixture builds: its class, the provider
+ that served the call, its status, and the provider's words quoted onto one line,
+ the key masked.
+
+ @param provider - provider the invented client was bound to
 
  @param status - HTTP status the invented provider answered
 
@@ -97,11 +101,20 @@ export const ECHOED_KEY: string = WHISKER_KEY;
 
  @example
  ```ts
- const text = statusFailureLogText({ status: 401, },);
+ const text = statusFailureLogText({ provider: 'synthetic', status: 401, },);
  ```
  */
-export function statusFailureLogText({ status, }: { readonly status: number; },): string {
-  return `refused by SyntheticHttpError with HTTP ${String(status,)} (the provider said: ${JSON.stringify(MASKED_BODY,)})`;
+export function statusFailureLogText(
+  {
+    provider,
+    status,
+  }: {
+    readonly provider: ProviderName;
+    readonly status: number;
+  },
+): string {
+  return `refused by ProviderHttpError from ${provider} with HTTP ${String(status,)} `
+    + `(the provider said: ${JSON.stringify(MASKED_BODY,)})`;
 }
 
 /**
@@ -181,7 +194,7 @@ export function refusedClient(
 
  @param status - HTTP status the invented provider answers
 
- @returns The `SyntheticHttpError` the exchange raised
+ @returns The `ProviderHttpError` the exchange raised
 
  @throws Error when the exchange did not fail
 

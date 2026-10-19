@@ -15,7 +15,7 @@ import type {
   ProviderName,
   ProviderRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
@@ -187,7 +187,8 @@ function stubProviders(
         called.push(provider,);
         if (refusalsLeft[provider] > 0) {
           refusalsLeft[provider] -= 1;
-          throw new SyntheticHttpError({
+          throw new ProviderHttpError({
+            provider,
             status: status[provider] ?? 0,
             bodyText: bodyText[provider] ?? 'refused',
           },);
@@ -749,8 +750,8 @@ await describe({
         // budget would hide the fault and pay for it twice.
         if (!('thrown' in outcome))
           throw new Error('the failure must be thrown to the caller',);
-        expect(outcome.thrown,).toBeInstanceOf(SyntheticHttpError,);
-        expect(String(outcome.thrown,),).toBe('SyntheticHttpError: provider API returned HTTP 500: synthetic napping',);
+        expect(outcome.thrown,).toBeInstanceOf(ProviderHttpError,);
+        expect(String(outcome.thrown,),).toBe('ProviderHttpError: provider API returned HTTP 500: synthetic napping',);
         expect(called,).toEqual(['synthetic',],);
         expect(refused,).toEqual([],);
       },
@@ -1242,8 +1243,8 @@ await describe({
         expect(refused,).toEqual(['synthetic', 'hyper',],);
         if (!('thrown' in outcome))
           throw new Error('both providers refused, so the call must throw the last refusal',);
-        expect(outcome.thrown,).toBeInstanceOf(SyntheticHttpError,);
-        expect(String(outcome.thrown,),).toBe('SyntheticHttpError: provider API returned HTTP 429: hyper napping',);
+        expect(outcome.thrown,).toBeInstanceOf(ProviderHttpError,);
+        expect(String(outcome.thrown,),).toBe('ProviderHttpError: provider API returned HTTP 429: hyper napping',);
       },
     },),
 
@@ -1268,8 +1269,8 @@ await describe({
         expect(refused,).toEqual([],);
         if (!('thrown' in outcome))
           throw new Error('the failure must be thrown to the caller',);
-        expect(outcome.thrown,).toBeInstanceOf(SyntheticHttpError,);
-        expect(String(outcome.thrown,),).toBe('SyntheticHttpError: provider API returned HTTP 503: synthetic napping',);
+        expect(outcome.thrown,).toBeInstanceOf(ProviderHttpError,);
+        expect(String(outcome.thrown,),).toBe('ProviderHttpError: provider API returned HTTP 503: synthetic napping',);
       },
     },),
   ],

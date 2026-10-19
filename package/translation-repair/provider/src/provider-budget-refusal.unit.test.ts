@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   isBudgetRefusal,
   isPaymentRefusal,
@@ -70,7 +70,8 @@ await describe({
         it({
           name: 'READS the upstream pool limit as the model\'s refusal, not the provider\'s budget',
           fn: async () => {
-            const error = new SyntheticHttpError({
+            const error = new ProviderHttpError({
+              provider: 'synthetic',
               status: HTTP_TOO_MANY_REQUESTS,
               bodyText: UPSTREAM_POOL_BODY,
             },);
@@ -81,7 +82,8 @@ await describe({
         it({
           name: 'KEEPS an account rate limit a budget refusal',
           fn: async () => {
-            const error = new SyntheticHttpError({
+            const error = new ProviderHttpError({
+              provider: 'synthetic',
               status: HTTP_TOO_MANY_REQUESTS,
               bodyText: ACCOUNT_LIMIT_BODY,
             },);
@@ -92,7 +94,8 @@ await describe({
         it({
           name: 'KEEPS a payment refusal a budget refusal whatever its body says',
           fn: async () => {
-            const error = new SyntheticHttpError({
+            const error = new ProviderHttpError({
+              provider: 'synthetic',
               status: HTTP_PAYMENT_REQUIRED,
               bodyText: PAYMENT_BODY,
             },);
@@ -117,13 +120,15 @@ await describe({
             + 'empty balance holds the provider out until its meter moves',
           fn: async () => {
             expect(isPaymentRefusal({
-              error: new SyntheticHttpError({
+              error: new ProviderHttpError({
+                provider: 'synthetic',
                 status: HTTP_PAYMENT_REQUIRED,
                 bodyText: PAYMENT_BODY,
               },),
             },),).toBe(true,);
             expect(isPaymentRefusal({
-              error: new SyntheticHttpError({
+              error: new ProviderHttpError({
+                provider: 'synthetic',
                 status: HTTP_TOO_MANY_REQUESTS,
                 bodyText: ACCOUNT_LIMIT_BODY,
               },),
@@ -147,13 +152,15 @@ await describe({
           name: 'READS the wait a refusal names as milliseconds, and none where the refusal names none',
           fn: async () => {
             expect(statedWaitMsOf({
-              error: new SyntheticHttpError({
+              error: new ProviderHttpError({
+                provider: 'synthetic',
                 status: HTTP_TOO_MANY_REQUESTS,
                 bodyText: DAILY_LIMIT_BODY,
               },),
             },),).toBe(8_718_000,);
             expect(statedWaitMsOf({
-              error: new SyntheticHttpError({
+              error: new ProviderHttpError({
+                provider: 'synthetic',
                 status: HTTP_TOO_MANY_REQUESTS,
                 bodyText: ACCOUNT_LIMIT_BODY,
               },),

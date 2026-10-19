@@ -447,7 +447,7 @@ const WITHHELD: Record<string, string> = {
     + 'artifact reader refuses a stored identity by shape in its own words instead (ledger B34)',
   RenderingAuditInvariantError: 'forwards each site\'s own sentence, which names indexes and vocabulary '
     + 'words and never text; unreachable by construction, so the boundary never has to print it',
-  SyntheticHttpError: 'the message carries an excerpt of the provider response body, on purpose',
+  ProviderHttpError: 'the message carries an excerpt of the provider response body, on purpose',
   TimingLineError: 'quotes the whole timing line it could not read, so an operator can find it; the line was '
     + 'chosen by the round or completion marker the run\'s own logger writes, but nothing proves a line '
     + 'carrying that marker holds only labels, counts and durations (T8, nineteenth batch)',

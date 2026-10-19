@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
@@ -163,7 +163,7 @@ async function expectMarkedAndThrown(
     refusal,
     paymentRequired,
   }: {
-    readonly refusal: InstanceType<typeof SyntheticHttpError>;
+    readonly refusal: InstanceType<typeof ProviderHttpError>;
     readonly paymentRequired: boolean;
   },
 ): Promise<void> {
@@ -232,14 +232,16 @@ await describe({
         + 'and throws it on',
       fn: async () => {
         await expectMarkedAndThrown({
-          refusal: new SyntheticHttpError({
+          refusal: new ProviderHttpError({
+            provider: 'openrouter',
             status: HTTP_PAYMENT_REQUIRED,
             bodyText: 'This request requires more credits',
           },),
           paymentRequired: true,
         },);
         await expectMarkedAndThrown({
-          refusal: new SyntheticHttpError({
+          refusal: new ProviderHttpError({
+            provider: 'openrouter',
             status: HTTP_TOO_MANY_REQUESTS,
             bodyText: 'Please try again in 1m30s',
           },),

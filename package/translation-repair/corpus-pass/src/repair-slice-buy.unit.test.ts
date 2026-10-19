@@ -154,7 +154,7 @@ await describe({
         expect(refusal,).toBe(stop.signal.reason,);
         expect(lines,).toEqual([
           `warn [repair-slice-buy-test] critic ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: ${
-            statusFailureLogText({ status: 401, },)
+            statusFailureLogText({ provider: 'synthetic', status: 401, },)
           }, as the caller stopped the round`,
           'warn [repair-slice-buy-test] chunk 0: abandoned by the caller\'s abort (refused by AbortError)',
         ],);

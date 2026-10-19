@@ -19,9 +19,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  ProviderName,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 
 import type {
@@ -160,20 +163,30 @@ const EXPIRED_TOKEN_BODY = '{"error":{"code":"invalid_api_key","message":"The se
 /**
  Builds an inner client whose every call throws the provider status failure given.
 
+ @param provider - provider that served, and refused, every call
+
  @param status - HTTP status the provider answered with
 
  @returns Client with the full surface, failing every call
 
  @example
  ```ts
- const inner = refusingClient({ status: 401, },);
+ const inner = refusingClient({ provider: 'bedrock', status: 401, },);
  ```
  */
-function refusingClient({ status, }: { readonly status: number; },): SyntheticClient {
+function refusingClient(
+  {
+    provider,
+    status,
+  }: {
+    readonly provider: ProviderName;
+    readonly status: number;
+  },
+): SyntheticClient {
   /**
    Failure every call raises.
    */
-  const failure = new SyntheticHttpError({ status, bodyText: EXPIRED_TOKEN_BODY, },);
+  const failure = new ProviderHttpError({ provider, status, bodyText: EXPIRED_TOKEN_BODY, },);
   return {
     async chatText(): Promise<ChatTextReply> {
       throw failure;
@@ -799,7 +812,8 @@ await describe({
 
         it({
           name: 'SAYS ONCE PER SEAT, plainly, that the provider refused the seat\'s credential with HTTP 401, naming the '
-            + 'seat, the provider\'s words, how many answers the seat had given and what to do before the next run, '
+            + 'seat, the provider that refused it, the provider\'s words, how many answers the seat had given and what '
+            + 'to do before the next run, '
             + 'and says it again for no later 401 of that seat',
           fn: async () => {
             /** Lines the wrapper writes. */
@@ -808,7 +822,7 @@ await describe({
             const tally = createSeatTally();
             /** Client under test, whose provider refuses the credential on every call. */
             const client = seatTallyClient({
-              inner: refusingClient({ status: 401, },),
+              inner: refusingClient({ provider: 'bedrock', status: 401, },),
               tally,
               minAsks: 4,
               l: levelCapturingLogger({ lines, },),
@@ -819,14 +833,14 @@ await describe({
 
             expect(lines,).toStrictEqual([
               [
-                'warn [seatTallyClient] SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it: refused by SyntheticHttpError ',
-                'with HTTP 401 (the provider said: ',
+                'warn [seatTallyClient] SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it on bedrock: refused by ',
+                'ProviderHttpError from bedrock with HTTP 401 (the provider said: ',
                 String.raw`"{\"error\":{\"code\":\"invalid_api_key\",\"message\":\"The security token included in `,
                 String.raw`the request has expired.\",\"param\":null,\"type\":\"permission_denied_error\"}}"), `,
-                'after 0 usable answers this run. The provider does not accept the credential this seat is asked ',
-                'with, and a credential does not renew during a run, so asks to it are expected to keep failing; the ',
-                'run withholds the seat after 4 failed asks. Renew the credential for this seat\'s provider before ',
-                'the next run.',
+                'after 0 usable answers this run. bedrock does not accept the credential this seat is asked ',
+                'with, and a credential does not renew during a run, so asks to it are expected to keep failing. ',
+                'Either renew bedrock\'s credential before the next run, or leave it: the run withholds the seat ',
+                'after 4 failed asks and goes on with the other seats.',
               ].join('',),
             ],);
           },
@@ -844,7 +858,7 @@ await describe({
             tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
             /** Client under test, whose provider refuses the credential on every call. */
             const client = seatTallyClient({
-              inner: refusingClient({ status: 401, },),
+              inner: refusingClient({ provider: 'bedrock', status: 401, },),
               tally,
               minAsks: 4,
               l: levelCapturingLogger({ lines, },),
@@ -854,10 +868,48 @@ await describe({
             await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
 
             expect(lines.length,).toBe(2,);
-            expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3: ',);
+            expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3 on bedrock: ',);
             expect(lines[0],).toContain('after 2 usable answers this run.',);
-            expect(lines[1],).toContain('SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it: ',);
+            expect(lines[1],).toContain('SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it on bedrock: ',);
             expect(lines[1],).toContain('after 0 usable answers this run.',);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE PROVIDER THAT SERVED THE REFUSED CALL, never another one, and offers both ways forward: '
+            + 'renew that provider\'s credential, or leave the seat to be withheld',
+          fn: async () => {
+            /** Lines the wrapper writes, one wrapper per provider. */
+            const lines: string[] = [];
+            /** Wrapper over a Hyper credential that every call finds refused. */
+            const hyper = seatTallyClient({
+              inner: refusingClient({ provider: 'hyper', status: 401, },),
+              tally: createSeatTally(),
+              minAsks: 3,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            /** Wrapper over an OpenRouter credential that every call finds refused. */
+            const openrouter = seatTallyClient({
+              inner: refusingClient({ provider: 'openrouter', status: 401, },),
+              tally: createSeatTally(),
+              minAsks: 3,
+              l: levelCapturingLogger({ lines, },),
+            },);
+
+            await thrownByText({ client: hyper, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
+            await thrownByText({ client: openrouter, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
+
+            expect(lines.length,).toBe(2,);
+            expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3 on hyper: refused by ProviderHttpError from hyper ',);
+            expect(lines[0],).toContain(
+              'Either renew hyper\'s credential before the next run, or leave it: the run withholds the seat after '
+              + '3 failed asks and goes on with the other seats.',
+            );
+            expect(lines[0],).not.toContain('bedrock',);
+            expect(lines[1],).toContain(
+              'SEAT CREDENTIAL REFUSED minimax-m3 on openrouter: refused by ProviderHttpError from openrouter ',
+            );
+            expect(lines[1],).toContain('Either renew openrouter\'s credential before the next run, or leave it:',);
           },
         },),
 
@@ -872,7 +924,7 @@ await describe({
             aborted.abort();
             /** Wrapper over a provider answering 500. */
             const serverError = seatTallyClient({
-              inner: refusingClient({ status: 500, },),
+              inner: refusingClient({ provider: 'bedrock', status: 500, },),
               tally: createSeatTally(),
               minAsks: 4,
               l: levelCapturingLogger({ lines, },),
@@ -886,7 +938,7 @@ await describe({
             },);
             /** Wrapper over a provider answering 401 to a call nobody waits for. */
             const abandoned = seatTallyClient({
-              inner: refusingClient({ status: 401, },),
+              inner: refusingClient({ provider: 'bedrock', status: 401, },),
               tally: createSeatTally(),
               minAsks: 4,
               l: levelCapturingLogger({ lines, },),
