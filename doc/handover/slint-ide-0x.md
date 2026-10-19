@@ -993,6 +993,17 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     fills, not only text: the minimap picture (a CPU downscale of a CPU rendering), the overscan tile, any buffer
     uploaded as an image, and the software renderer. CPU work stays allowed for layout, shaping, highlighting and
     building scene data. The migration deletes every CPU pixel path; the agent was told to list them.
+  - GPU text study landed (2026-10-19, `doc/planning/ide-vello-text.md`, merged `3b90f79132`). Designs: A builtin
+    `Text` on FemtoVG; B builtin `Text` on Slint's Vello renderer; C Parley drawn by Vello 0.11 into wgpu textures
+    shown as Slint images, Slint on `renderer-femtovg-wgpu`. I reran the agent's cadence matrix (verify files
+    `~/temp/agent/verify-G.jsonl`, `verify-S.jsonl`): C holds 119/119 (scroll) and 120/121, 121/121 (drag at 489 and
+    50,000 lines) in release and 72 to 73 of about 120 in debug; A and B hold 119/119 on scroll and only 61/121 and
+    60/121 on the 50,000-line minimap drag (a rebinding slice, so an upper bound on C's lead), 31 to 42 in debug.
+    I confirmed in `femtovg-0.27.0/src/text.rs` and `i-slint-renderer-femtovg-1.18.1/Cargo.toml` that Slint builds
+    FemtoVG with `swash`, so every FemtoVG glyph (chrome text too) is rasterized on the CPU into an atlas. Under the
+    strict reading only B has no CPU glyph raster in the window; but Slint text cannot do tab stops, ligature
+    control, custom wrap or hanging indent, and the real IDE froze about 1 s under Vello (cause unfound). Owner
+    questions are asked via the question tool; the answers are recorded in this bullet's next sibling.
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
