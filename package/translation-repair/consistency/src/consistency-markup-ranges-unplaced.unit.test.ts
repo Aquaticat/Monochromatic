@@ -122,7 +122,7 @@ await describe({
   concurrency: DEFAULT_CONCURRENCY,
   children: [
     it({
-      name: 'READS THE RESOURCE OF A LINK WHOSE LABEL ENDS AT THE LABEL, as the control the refusals below differ from',
+      name: 'READS THE RESOURCE OF A LINK WHOSE LABEL ENDS AT THE LABEL, as the control the refusing tests differ from',
       fn: async () => {
         expect(markupRangesOf({
           english: '[kit](u)',

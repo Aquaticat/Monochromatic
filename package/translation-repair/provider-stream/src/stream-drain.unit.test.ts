@@ -531,6 +531,44 @@ function cutLine(
     + `opening ${JSON.stringify(opening,)}`;
 }
 
+/**
+ A response whose body delivers one piece and is then torn down, which is what an abort does to a fetch in production.
+
+ @param delivered - the one piece, as the wire carries it
+
+ @param steering - the caller's own steering, aborted when the body is torn down
+
+ @returns The response
+
+ @example
+ ```ts
+ const response = tornDownResponseOf({ delivered: 'purr', steering: new AbortController(), },);
+ ```
+ */
+function tornDownResponseOf(
+  { delivered, steering, }: { readonly delivered: string; readonly steering: AbortController; },
+): Response {
+  /**
+   How many pieces have gone out.
+   */
+  const sent = { count: 0, };
+  /**
+   Encoder, since a body carries bytes.
+   */
+  const encoder = new TextEncoder();
+  return new Response(new ReadableStream<Uint8Array>({
+    pull(controller,): void {
+      if (sent.count === 0) {
+        sent.count += 1;
+        controller.enqueue(encoder.encode(delivered,),);
+        return;
+      }
+      steering.abort();
+      controller.error(new Error('exchange torn down by abort',),);
+    },
+  },),);
+}
+
 await describe({
   name: drainBody.name,
   // ONE AT A TIME: a case diverts the process-wide `console.warn` across an await.
@@ -791,32 +829,6 @@ await describe({
          */
         const steering = new AbortController();
 
-        /**
-         How many pieces have gone out.
-         */
-        const sent = { count: 0, };
-
-        /**
-         Encoder, since a body carries bytes.
-         */
-        const encoder = new TextEncoder();
-
-        /**
-         A body that delivers once and is then torn down, which is what an
-         abort does to a fetch in production.
-         */
-        const body = new ReadableStream<Uint8Array>({
-          pull(controller,): void {
-            if (sent.count === 0) {
-              sent.count += 1;
-              controller.enqueue(encoder.encode(delivered,),);
-              return;
-            }
-            steering.abort();
-            controller.error(new Error('exchange torn down by abort',),);
-          },
-        },);
-
         using guard = armIdleGuard({
           label: 'hf:whiskers',
           firstByteMs: HANG_STOP_MS,
@@ -827,7 +839,7 @@ await describe({
          What the drain did.
          */
         const outcome = await drainOutcome({
-          response: new Response(body,),
+          response: tornDownResponseOf({ delivered, steering, },),
           guard,
           callerSignal: steering.signal,
         },);
@@ -871,31 +883,6 @@ await describe({
          */
         const steering = new AbortController();
 
-        /**
-         How many pieces have gone out.
-         */
-        const sent = { count: 0, };
-
-        /**
-         Encoder, since a body carries bytes.
-         */
-        const encoder = new TextEncoder();
-
-        /**
-         A body that delivers once and is then torn down.
-         */
-        const body = new ReadableStream<Uint8Array>({
-          pull(controller,): void {
-            if (sent.count === 0) {
-              sent.count += 1;
-              controller.enqueue(encoder.encode(delivered,),);
-              return;
-            }
-            steering.abort();
-            controller.error(new Error('exchange torn down by abort',),);
-          },
-        },);
-
         using guard = armIdleGuard({
           label: 'hf:whiskers',
           firstByteMs: HANG_STOP_MS,
@@ -906,7 +893,7 @@ await describe({
          What the drain did.
          */
         const outcome = await drainOutcome({
-          response: new Response(body,),
+          response: tornDownResponseOf({ delivered, steering, },),
           guard,
           callerSignal: steering.signal,
         },);

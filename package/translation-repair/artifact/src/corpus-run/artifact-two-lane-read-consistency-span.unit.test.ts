@@ -200,6 +200,32 @@ function verdictWith(
 }
 
 /**
+ The three ballots of a group that quote its first place as `The cat naps.` and its second as the text given for the seat.
+
+ @param quotes - what each seat quotes of the second place, in seat order
+
+ @returns The ballots
+
+ @example
+ ```ts
+ const ballots = ballotsQuotingSecond({ quotes: ['the kitten naps', 'kitten naps', 'the kitten naps',], },);
+ ```
+ */
+function ballotsQuotingSecond({ quotes, }: { readonly quotes: readonly string[]; },): readonly ArtifactConsistencyBallot[] {
+  return ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotFor(seat, at,): ArtifactConsistencyBallot {
+    return ballotOf({
+      seat,
+      over: {
+        quotes: [
+          { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
+          { label: 'OCCURRENCE 2', quote: quotes[at] ?? '', },
+        ],
+      },
+    },);
+  },);
+}
+
+/**
  The coherent group, with the fields a case replaces.
 
  @param over - fields of the group this case replaces
@@ -907,17 +933,7 @@ await describe({
               return groupOf({
                 over: {
                   verdict: verdictWith({
-                    ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotFor(seat, at,): ArtifactConsistencyBallot {
-                      return ballotOf({
-                        seat,
-                        over: {
-                          quotes: [
-                            { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
-                            { label: 'OCCURRENCE 2', quote: quotes[at] ?? '', },
-                          ],
-                        },
-                      },);
-                    },),
+                    ballots: ballotsQuotingSecond({ quotes, }),
                   },),
                   occurrences: [
                     placeOf({ position: 0, },),
@@ -967,17 +983,7 @@ await describe({
               return groupOf({
                 over: {
                   verdict: verdictWith({
-                    ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotFor(seat, at,): ArtifactConsistencyBallot {
-                      return ballotOf({
-                        seat,
-                        over: {
-                          quotes: [
-                            { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
-                            { label: 'OCCURRENCE 2', quote: quotes[at] ?? '', },
-                          ],
-                        },
-                      },);
-                    },),
+                    ballots: ballotsQuotingSecond({ quotes, }),
                   },),
                   occurrences: [placeOf({ position: 0, },), placeOf({ position: 1, over: { rendering, outcome, }, },),],
                   carries,
