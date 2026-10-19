@@ -1,0 +1,218 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import {
+  type ImageReading,
+  IMAGE_READING_PERSPECTIVES,
+  readImageAsset,
+} from './image-reading-stage.ts';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+
+//region Reading past a refusal
+// ASKING THE SAME MODEL AGAIN WHEN IT DECLINES TO READ A PICTURE, because a
+// refusal is a property of the ROLL and not of the picture.
+//
+// MEASURED, on `wangzihao980/Word1.webp`, a picture that plainly carries text:
+// the deterministic reader gets 205 characters out of it and the other reader
+// gets 389 and 393 on consecutive asks. Asked six times with identical input,
+// `hf:moonshotai/Kimi-K3` refused four times and read it twice, at 377 and 403
+// characters. Nothing about the picture changed between those asks.
+//
+// WHY IT MATTERED MORE THAN IT LOOKED. Corroboration needed both readers, and
+// the vision sub-roster was exactly two when this was measured. One reader
+// refusing two asks in three therefore cost two thirds of the readings, and the
+// picture ended `one-reader-only` with a perfectly good transcription thrown
+// away. That is what happened to `Word1.webp` on the run that found this.
+//
+// AND THEN MEASURED AGAIN, OVER THE WHOLE CORPUS, WHICH CORRECTED THAT.
+// `Word1.webp` is an outlier, not a sample. Across all 191 assets, 119 reader
+// and picture pairs reached a model, 109 read on the FIRST ask, and 1 more read
+// only after a re-ask. Seven pairs ever returned `reads-as-refusal` and six of
+// them refused through all four asks, so the first-ask refusal rate is 7 in 119,
+// not 2 in 3. Most refusals are about the PICTURE and only some are about the
+// roll, which is the reverse of what one picture suggested.
+//
+// COUNT THE CLAUSE, NOT THE SENTENCE. Three more pairs produced no reading
+// without ever being re-asked: two exited on `too-short` and one on an empty
+// reply. An earlier tally keyed on the log sentence, which reads "the reading
+// was refused: <clause>" for every screen, and so reported those three as
+// stubborn refusals and this loop as more exhausted than it is.
+//
+// WHAT THE LIMIT ACTUALLY BUYS, therefore, is small and worth having: 20 extra
+// calls over a whole corpus pass, against 119 first asks, to recover the roll
+// case whenever it occurs. An earlier version of this comment projected "four
+// asks retain four readings in five" from six asks on one picture. That
+// projection is refuted here and must not be quoted.
+//
+// THE LIMIT STAYS AT FOUR rather than dropping to three, even though the single
+// recovery arrived on the third ask. Fitting the bound to one observation is the
+// error that produced the wrong projection in the first place, and the cost of
+// the fourth ask is a handful of calls per corpus.
+//
+// AN ABSENCE REPORT IS NOT A REFUSAL, since 2026-09-04. The Uekawakuyuurei
+// run of that day asked three readers four times each about a painting of
+// ships, and every answer said the painting carries no text: twelve calls to
+// be told the same true thing, then an entry stopped for want of a reading. A
+// reply that reports absence (`reports-no-text`) is about the picture and is
+// returned at once; only a reply that declines to read (`reads-as-refusal`)
+// is asked again.
+//
+// SCOPED TO REFUSAL ALONE, deliberately. A model that does not read images, a
+// picture too large to send, an empty reply, and a reading that fails the screen
+// for some other clause are all properties of the input or the roster: asking
+// again spends a call to be told the same thing. Only `reads-as-refusal` has
+// been measured to vary between identical asks, so only it is re-asked.
+
+/**
+ Clause the screen reports for a reading that declined to transcribe.
+
+ NAMED HERE RATHER THAN IMPORTED because it is the one clause this file acts
+ on, and a rename that silently stopped the re-asking would otherwise leave no
+ trace. A mismatch shows up as readings that stop being retried.
+ */
+const REFUSAL_CLAUSE = 'reads-as-refusal';
+
+/**
+ How many times one model may be asked about one picture.
+
+ FOUR, kept on the corpus-wide measurement recorded in the module
+ note: over one pass the limit bought 20 extra calls against 119 first asks
+ and recovered the one roll case, on the third ask. The bound is not fitted
+ to that single observation, which is why it is not three; and the projection
+ an earlier version quoted here ("four readings in five") is the refuted one
+ the module note names, never to be reinstated as a justification.
+ */
+export const REFUSAL_ASK_LIMIT = 4;
+
+/**
+ Whether a reading is a refusal that asking again might get past.
+
+ @param reading - outcome of one ask
+
+ @returns True when the model declined to transcribe rather than failing for a
+ reason another ask cannot change
+
+ @example
+ ```ts
+ if (isRefusal({ reading, },)) { ask again }
+ ```
+ */
+function isRefusal({ reading, }: { readonly reading: ImageReading; },): boolean {
+  if (reading.kind !== 'unavailable')
+    return false;
+  return reading.reason === REFUSAL_CLAUSE;
+}
+
+/**
+ Asks one model to read one picture, past a refusal, up to a bounded limit.
+
+ @param client - provider client
+
+ @param modelId - reader asked, the same one every time, since the refusal is
+ this model's roll rather than a fact about the picture
+
+ @param bytes - picture as it sits in the corpus
+
+ @param assetName - file name, for the log line and the content part
+
+ @param signal - abort honoured between asks as well as inside them, so a
+ stopped run does not keep re-asking
+
+ @param perCallTimeoutMs - ceiling on one exchange, applied per ask rather than
+ across all of them
+
+ @param l - logger
+
+ @returns Reading, or the last refusal when every ask was declined
+
+ @throws {@link DOMException} when `signal` aborts between asks
+
+ @example
+ ```ts
+ const reading = await readPastRefusal({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);
+ ```
+ */
+export async function readPastRefusal(
+  {
+    client,
+    modelId,
+    bytes,
+    assetName,
+    signal,
+    perCallTimeoutMs,
+    l,
+  }: {
+    readonly client: SyntheticClient;
+    readonly modelId: RosterModelId;
+    readonly bytes: Uint8Array;
+    readonly assetName: string;
+    readonly signal: AbortSignal;
+    readonly perCallTimeoutMs: number;
+    readonly l: Logger;
+  },
+): Promise<ImageReading> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: readPastRefusal.name,
+    l,
+  },);
+
+  /**
+   Outcome of the latest ask, replaced by each re-ask.
+   */
+  let reading = await readImageAsset({
+    client,
+    modelId,
+    bytes,
+    assetName,
+    perspective: IMAGE_READING_PERSPECTIVES[0],
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+
+  for (
+    let ask = 2;
+    (ask <= REFUSAL_ASK_LIMIT) && isRefusal({ reading, },);
+    ask += 1
+  ) {
+    // Between asks as well as inside them. A stopped run that only checked
+    // inside the exchange would spend the whole limit on every remaining
+    // picture during teardown.
+    signal.throwIfAborted();
+    rl.info(
+      `${modelId} declined ${assetName}, asking again (${String(ask,)} of ${String(REFUSAL_ASK_LIMIT,)})`,
+    );
+
+    // SEQUENTIAL ON PURPOSE. Each later perspective exists only when prior
+    // response was refusal-shaped. Concurrent asks would ignore dependency
+    // and spend every perspective even after one succeeds.
+    /**
+     Distinct visual responsibility for this retry.
+     */
+    const perspective = nonNullishOrThrow(
+      IMAGE_READING_PERSPECTIVES[ask - 1],
+    );
+    /* oxlint-disable-next-line no-await-in-loop -- re-asks are sequential by design: each later perspective exists only when the prior answer was refusal-shaped */
+    reading = await readImageAsset({
+      client,
+      modelId,
+      bytes,
+      assetName,
+      perspective,
+      signal,
+      perCallTimeoutMs,
+      l,
+    },);
+  }
+
+  return reading;
+}
+
+//endregion Reading past a refusal

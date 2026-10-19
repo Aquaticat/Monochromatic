@@ -25,6 +25,11 @@ import {
   updateHashString,
 } from './effect-hash-value.ts';
 import { contentDigest, } from './effect-summary-cache-identity.ts';
+import { isAmbientProgramFile, } from './shared-analysis-ambient.ts';
+import {
+  type CheckingOptionsKey,
+  checkingOptionsKey,
+} from './shared-analysis-options.ts';
 
 /**
  Project fingerprint logger.
@@ -49,6 +54,19 @@ export type EffectProjectSurfaces = {
 };
 
 /**
+ Whole-program inputs of the cross-project analysis key.
+ 
+ The ambient surface binds the program files that apply without an import,
+ and the checking options bind what the checker concludes;
+ neither names the project's file list, its resolution-only options, or its declaration
+ files that no source reaches.
+ */
+export type EffectSharedSurfaces = {
+  readonly ambientSurfaceDigest: string;
+  readonly checkingOptions: CheckingOptionsKey;
+};
+
+/**
  Fingerprint and per-source identities for one project snapshot.
  */
 export type EffectProjectFingerprint = {
@@ -56,6 +74,7 @@ export type EffectProjectFingerprint = {
   readonly fileListDigest: string;
   readonly sourceDigests: ReadonlyMap<string, string>;
   readonly surfaces: EffectProjectSurfaces;
+  readonly shared: EffectSharedSurfaces;
 };
 
 /**
@@ -125,8 +144,10 @@ function nearestLockfile(
  
  Two hundredths of a second apart, in favour of asking the snapshot. Asking it for all 574
  sources of one project does cost 136.9ms the first time against 13.0ms for a disk pass, because
- nothing else decodes declarations, but entries are keyed by path and shared across projects, so
- that per-project figure never multiplied by projects the way the single-run comparison implied.
+ nothing else decodes declarations. Every project snapshot pays that figure once, because this
+ fingerprint is computed per snapshot before any entry is read. Entries addressed by project and
+ path, and entries shared across projects by file and key digest, do not change that: sharing
+ saves the analysis of a source, not the fingerprint of each project that reaches it.
  
  @param project - TypeScript project providing analysed source.
  
@@ -234,6 +255,10 @@ export function effectProjectFingerprint({
    Augmentation surface digest covering non-declaration ambient authorship.
    */
   const augmentationSurface = createHash('sha256',);
+  /**
+   Ambient surface digest covering program files that apply without an import.
+   */
+  const ambientSurface = createHash('sha256',);
   updateHashString({
     digest,
     value: project.configFileName,
@@ -275,6 +300,26 @@ export function effectProjectFingerprint({
       digest,
       value: sourceDigest,
     },);
+    /**
+     Decoded program file whose module status decides ambient membership.
+     */
+    const programFile = fileName === activeSourceFile.fileName
+      ? activeSourceFile
+      : project.program
+        .getSourceFile(fileName,);
+    if ((programFile !== undefined) && isAmbientProgramFile({
+      fileName,
+      sourceFile: programFile,
+    },)) {
+      updateHashString({
+        digest: ambientSurface,
+        value: fileName,
+      },);
+      updateHashString({
+        digest: ambientSurface,
+        value: sourceDigest,
+      },);
+    }
     if (isDeclarationFileName(fileName,)) {
       updateHashString({
         digest: declarationSurface,
@@ -335,6 +380,10 @@ export function effectProjectFingerprint({
       augmentationSurfaceDigest: augmentationSurface.digest('hex',),
       compilerOptionsDigest: optionsDigest.digest('hex',),
       lockfileDigest: lockfileState.digest,
+    },
+    shared: {
+      ambientSurfaceDigest: ambientSurface.digest('hex',),
+      checkingOptions: checkingOptionsKey(project.compilerOptions,),
     },
   };
 }

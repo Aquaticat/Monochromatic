@@ -169,6 +169,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # JetBrains, VS Code, and Zed local state
+# .name is the IDE's display name for the checkout, rewritten per worktree
+# and per open (last seen as a newline-only diff), so it is local state too.
+/.idea/.name
 /.idea/modules.xml
 .idea/**/workspace.xml
 .idea/**/tasks.xml

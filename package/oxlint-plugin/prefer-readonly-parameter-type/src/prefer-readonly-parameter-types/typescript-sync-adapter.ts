@@ -28,6 +28,10 @@ import {
   semanticProjectRootKey,
 } from './semantic-file-name.ts';
 import { overlayFileSystem, } from './semantic-overlay-filesystem.ts';
+import {
+  memoizeApiSnapshotRequests,
+  type SnapshotRequestMemo,
+} from './semantic-request-memo.ts';
 import { snapshotHoldsSource, } from './semantic-snapshot-presence.ts';
 import { sourceWithBOM, } from './semantic-source-text.ts';
 import {
@@ -62,10 +66,16 @@ const NO_ACTIVE_FILE: unique symbol = Symbol('TypeScript semantic bridge has no 
 const INFERRED_PROJECT_CONFIG = '/dev/null/inferred';
 
 /**
+ Sentinel before the request memo is installed on the native API client.
+ */
+const NO_REQUEST_MEMO: unique symbol = Symbol('TypeScript request memo not installed',);
+
+/**
  Mutable process-local bridge state hidden behind exported lifecycle functions.
  */
 const bridgeState: {
   api: API | typeof NO_API;
+  requestMemo: SnapshotRequestMemo | typeof NO_REQUEST_MEMO;
   snapshot: Snapshot | typeof NO_SNAPSHOT;
   readonly overlays: Map<string, string>;
   readonly projectByRoot: Map<string, string>;
@@ -74,6 +84,7 @@ const bridgeState: {
   beforeExitHookRegistered: boolean;
 } = {
   api: NO_API,
+  requestMemo: NO_REQUEST_MEMO,
   snapshot: NO_SNAPSHOT,
   overlays: new Map(),
   projectByRoot: new Map(),
@@ -114,6 +125,7 @@ function getApi(): API {
      */
     const child = nativeApiChild(api,);
     configureNativeApiChildShutdown(child,);
+    bridgeState.requestMemo = memoizeApiSnapshotRequests({ api, },);
     bridgeState.api = api;
     rl.debug(`started TypeScript ${typescriptVersion} synchronous API`,);
   }
@@ -496,6 +508,11 @@ export function closeSemanticBridge(): void {
       .snapshot
       .dispose();
     bridgeState.snapshot = NO_SNAPSHOT;
+  }
+  if (bridgeState.requestMemo !== NO_REQUEST_MEMO) {
+    rl.debug(`request memo totals ${JSON.stringify(bridgeState.requestMemo
+      .stats(),)}`,);
+    bridgeState.requestMemo = NO_REQUEST_MEMO;
   }
   if (bridgeState.api !== NO_API) {
     bridgeState

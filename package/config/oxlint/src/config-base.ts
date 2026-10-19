@@ -81,7 +81,9 @@ export const base: OxlintConfig = {
     '**/fixture/**',
     '**/fixtures/**',
     '**/invalid/**',
-    '**/test-fixture/**',
+    // The repository's fixture packages under `package/test-fixture/`, named with their parent segment
+    // so a package that is itself called `test-fixture` (`package/translation-repair/test-fixture`) is linted.
+    '**/package/test-fixture/**',
     '**/perf-test-data/**',
     '**/teto-generated/**',
     '**/sudoku-puzzles*',
