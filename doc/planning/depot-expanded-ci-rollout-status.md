@@ -247,11 +247,11 @@ All planned work items are implemented and recorded.
 The remaining residuals are explicit:
 
 - the complete build and unit baseline is not known-good;
-- BuildKit needs a rootful Podman path in the native sandbox;
-- the vmsync end-to-end test has a doubled module-path defect;
+- the VM matrix category is not yet verified end to end because the last two runs failed in
+  `prepare:pnpm` setup;
 - release-run attachment still relies on check runs on the commit;
 - the subscription transition remains a user action.
 
-Fix the vmsync path on its owning package,
-then retry the BuildKit category with a rootful Podman command.
+Retry the weekly matrix once the setup flake clears,
+or run a focused vmsync check with the same prerequisites.
 Keep the complete build and unit baseline marked not known-good until it actually passes.

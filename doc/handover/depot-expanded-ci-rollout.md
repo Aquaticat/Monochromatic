@@ -164,9 +164,10 @@ All nine planned work items have implementation records.
 The remaining work is the residual list above.
 The next practical steps are:
 
-- add a rootful Podman path for the BuildKit matrix category;
-- provide a libvirt-capable sandbox for the VM matrix category;
-- continue triaging the complete-build failures until the unit baseline can run.
+- BuildKit is qualified;
+  no further work is needed there.
+- Verify the VM matrix category once the `prepare:pnpm` setup flake clears.
+- Continue triaging the complete-build failures until the unit baseline can run.
 
 Use bounded CI for any build or unit measurement.
 Do not run local full builds.
