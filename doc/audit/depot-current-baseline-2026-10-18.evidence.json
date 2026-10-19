@@ -64,6 +64,33 @@
     },
     "result": "The build profile is not known-good in this capture. The failures include SIGABRT and a thread-creation assertion under parallel fanout, which may be host-resource or concurrency induced rather than a product defect; a bounded rebuild with reduced fanout is required before attributing failures."
   },
+  "ciBaseline": {
+    "runs": [
+      {
+        "runId": 39196063655,
+        "result": "failed in tool installation on the missing pipx:slopo dependency sidecar before build or unit"
+      },
+      {
+        "runId": 39196377166,
+        "result": "build failed after 13 minutes 18 seconds; unit skipped; continue-on-error made the run conclusion success"
+      },
+      {
+        "runId": 39197594870,
+        "result": "prepared glib, Qt6, Podman and workflow token; build failed after 14 minutes 26 seconds; unit skipped"
+      }
+    ],
+    "rawLog": "doc/audit/depot-current-baseline-ci-39197594870-2026-10-18.log.gz",
+    "failureClasses": [
+      "pipx:slopo and vfox:cmake tool installation",
+      "glib-sys, gdk-pixbuf-sys and cairo-sys-rs system build scripts",
+      "Podman image build",
+      "cargo vendor downloads for anstyle-wincon and serde_json",
+      "unresolved workspace imports of module-logger and module-async-time",
+      "Android and design builds",
+      "unresolved canvg import in jspdf"
+    ],
+    "result": "A generic Depot GitHub runner is insufficient for this build profile. The observed failures are environment, toolchain, build-order and dependency failures, not product attribution. The build needs the prepared environment described by the evaluation or a documented prerequisite image; the unit baseline remains invalid until that build succeeds."
+  },
   "limits": [
     "Counts are linter findings or named test files, not distinct product defects.",
     "The unit run lacked built prerequisites; it is not a product baseline and must be rerun after a successful build.",

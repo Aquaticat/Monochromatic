@@ -135,11 +135,18 @@ At revision `4f3d5a65`:
   Rerun after a successful build;
 - build:
   the local attempt was stopped as host stress;
-  the bounded CI run `39196377166` failed after 13 minutes 18 seconds with missing
-  `glib-sys`, Podman, `cxx-qt`, `gh` and `canvg` prerequisites,
+  the bounded CI run `39197594870` provisioned glib,
+  Qt6,
+  Podman and the workflow token and still failed after 14 minutes 26 seconds,
   so the unit step was skipped.
-  These are environment and prerequisite failures,
-  not product attribution.
+  Failure classes include `glib-sys`/`gdk-pixbuf-sys`/`cairo-sys-rs` system builds,
+  a Podman image build,
+  `cargo vendor` downloads,
+  unresolved workspace imports,
+  Android and design builds,
+  and `canvg`.
+  A generic Depot GitHub runner is insufficient;
+  the baseline needs the prepared environment or a documented prerequisite image.
 
 The [baseline evidence](../audit/depot-current-baseline-2026-10-18.evidence.json) retains the
 compressed logs.
