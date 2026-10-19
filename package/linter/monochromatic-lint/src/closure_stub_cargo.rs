@@ -86,13 +86,20 @@ fn main() {
     };
     let package: String = package_name(arguments.as_slice());
     let mut environment: String = String::new();
-    for name in [
-        "DYLINT_RUSTFLAGS",
-        "CARGO_NET_OFFLINE",
-        "CARGO_BUILD_BUILD_DIR",
-        "QMAKE",
-        "STUB_MARKER",
-    ] {
+    // Only the real run is asked about its environment: a probe inherits the test runner's variables (the gate
+    // container exports CARGO_NET_OFFLINE for every process), which says nothing about the code under test.
+    let observed: &[&str] = if subcommand == "dylint" {
+        &[
+            "DYLINT_RUSTFLAGS",
+            "CARGO_NET_OFFLINE",
+            "CARGO_BUILD_BUILD_DIR",
+            "QMAKE",
+            "STUB_MARKER",
+        ]
+    } else {
+        &[]
+    };
+    for name in observed {
         if let Ok(value) = std::env::var(name) {
             environment.push_str(format!(" {name}={value}").as_str());
         }
