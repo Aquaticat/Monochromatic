@@ -119,13 +119,17 @@ The aborted attempt produced no failure classification.
 
 The first bounded CI baseline run is GitHub run `39196063655` on the Depot-managed
 `depot-ubuntu-24.04-8` runner.
-It failed in the dependency-preparation step after 3 minutes, before any build or unit work.
+It failed in the dependency-preparation step after 3 minutes,
+before any build or unit work.
 `mise install` installed 58 of 59 tools and failed on `pipx:slopo@latest` because the dependency
 sidecar `.mise/locks/pipx-slopo/0.9.0` is absent on a fresh checkout.
-That is an environment and tool-install failure, not a product failure.
+That is an environment and tool-install failure,
+not a product failure.
 
 The corrected run is GitHub run `39196377166`.
-It installs the repository tools with `continue-on-error`, then prepares dependencies, builds and
+It installs the repository tools with `continue-on-error`,
+then prepares dependencies,
+builds and
 runs unit with automatic tool installation off.
 The slopo sidecar failure is retained as tooling noise.
 It completed in 13 minutes 18 seconds.
@@ -141,8 +145,58 @@ tooling and prerequisite failures,
 not product attribution.
 The build step is marked `continue-on-error`,
 so the run conclusion is success while its annotations report exit code 1;
-the workflow will be corrected to fail honestly.
-The unit baseline remains invalid until a build succeeds in a prepared environment.
+the workflow was corrected to fail honestly in the next run.
+
+Run `39197594870` provisioned `pkg-config`,
+`libglib2.0-dev`,
+`qt6-base-dev`,
+`qt6-declarative-dev`,
+Podman and the workflow token,
+and removed `continue-on-error`.
+It failed at Build after 14 minutes 26 seconds;
+the unit step was skipped.
+The install step still failed on `pipx:slopo` and `vfox:cmake`,
+and installed 57 of 59 tools.
+The build failure classes were:
+
+- system-library build scripts for `glib-sys`,
+  `gdk-pixbuf-sys` and `cairo-sys-rs`;
+- a Podman image build failure;
+- `cargo vendor` download failures for `anstyle-wincon` and `serde_json`;
+- unresolved workspace imports of `@monochromatic-dev/module-logger` and
+  `@monochromatic-dev/module-async-time`;
+- Android and design build failures;
+- an unresolved `canvg` import in `jspdf`.
+
+The full log is in
+[the CI baseline log](../audit/depot-current-baseline-ci-39197594870-2026-10-18.log.gz).
+These are environment,
+toolchain,
+build-order and dependency failures,
+not product attribution.
+A generic Depot GitHub runner is insufficient for this build profile.
+The baseline needs the prepared environment described by the evaluation or a documented
+prerequisite image.
+The unit baseline remains invalid until that build succeeds.
+
+## Fast subset
+
+The first fast subset is five owning build tasks and their tests:
+
+- `//package/module/logger:build` and `:test:unit`;
+- `//package/module/p-map-fork:build` and `:test:unit`;
+- `//package/module/toml-edit:build` and `:test:unit`;
+- `//package/cli/forbidden-strings:build` and `:test`;
+- `//package/linter/monochromatic-lint:build` and `:test`.
+
+This subset avoids the desktop,
+Android,
+Qt and Podman packages that make the complete `mise run build` profile fail on a generic
+runner.
+The complete profile stays a weekly,
+prepared-environment workload.
+GitHub run `39199930641` is the fast-subset baseline;
+its outcome is recorded when it finishes.
 
 ## Build profile
 

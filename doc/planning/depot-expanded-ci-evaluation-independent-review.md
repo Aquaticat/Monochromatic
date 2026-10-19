@@ -413,14 +413,21 @@ Closure workstreams:
   not product failures.
   Build:
   the local attempt was stopped as host stress;
-  the bounded CI run `39196377166` failed after 13 minutes 18 seconds with missing
-  `glib-sys`, Podman, `cxx-qt`, `gh` and `canvg` prerequisites,
+  the bounded CI run `39197594870` provisioned glib,
+  Qt6,
+  Podman and the workflow token and still failed after 14 minutes 26 seconds,
   and the unit step was skipped.
-  These are environment and prerequisite failures,
-  not product attribution.
+  Failure classes include `glib-sys`/`gdk-pixbuf-sys`/`cairo-sys-rs` system builds,
+  a Podman image build,
+  `cargo vendor` downloads,
+  unresolved workspace imports,
+  Android and design builds,
+  and `canvg`.
+  A generic Depot GitHub runner is insufficient;
+  the baseline needs a prepared environment or a documented prerequisite image.
   The static baseline is advisory;
   the unit baseline is invalid until rerun after a successful build;
-  the build profile requires a prepared CI environment,
+  the build profile requires that prepared environment,
   not the shared development host.
   The evidence is in
   [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).
@@ -430,8 +437,7 @@ Closure workstreams:
 The following are not satisfied by this review record and remain work:
 
 - paused-session remains unqualified;
-- unit and build failure triage,
-  including a bounded build rerun with reduced fanout;
+- build environment provisioning and unit rerun after a successful build;
 - no-overage sliding-window admission and the operator cap verification;
 - subscription transition from the Startup trial to Developer;
 - implementation work items from the accepted plan.

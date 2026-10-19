@@ -34,6 +34,11 @@ type ShellCommandContext = {
    Lexically enclosing `for` bindings from outermost to innermost loop.
    */
   readonly loopBindings: readonly ShellLoopBinding[];
+  /**
+   Count of lexically enclosing `while` and `until` loops, including their condition lists.
+   Zero outside any such loop.
+   */
+  readonly conditionLoopDepth: number;
 } & (
   | {
     /**

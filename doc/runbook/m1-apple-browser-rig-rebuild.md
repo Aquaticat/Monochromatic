@@ -544,9 +544,11 @@ The site under test is served on the Linux workstation; these units connect it t
 `systemd-run` units vanish at the Linux machine's reboot, so re-run them after one.
 
 ```bash
-# Linux workstation: a no-store static server (Simulator Safari caches aggressively), on 4174
+# Linux workstation: a no-store static server (Simulator Safari caches aggressively), on 4174.
+# The multiplexing variant also serves /home/user/temp/agent/wt-<name> at /@wt-<name>/, which the style-diff tools
+# and their iframe harness (/@wt-harness/blank.html) need; restarted this way after the 2026-10-19 reboot.
 systemd-run --user --unit=xinyanchen-no-store --collect --property=MemoryMax=256M \
-  node /var/home/user/temp/agent/xinyanchen-build/no-store-server.mjs
+  "$(command -v node)" /var/home/user/temp/agent/xinyanchen-build/no-store-server-mux.mjs
 # m1's localhost:4173 becomes the Linux 4174 server, for the Simulator and (through the vm-tunnel agent) the VM
 systemd-run --user --unit=xinyanchen-m1-tunnel --collect --property=MemoryMax=64M \
   ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -R 127.0.0.1:4173:127.0.0.1:4174 m1
@@ -556,6 +558,7 @@ systemd-run --user --unit=xinyanchen-vm-webdriver --collect --property=MemoryMax
   ssh -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -N -L 4446:127.0.0.1:4447 m1
 # Safari Technology Preview's WebDriver (guest 4448, m1 4449) as local 4450, a second concurrent endpoint
 systemd-run --user --unit=xinyanchen-vm-webdriver-stp --collect --property=MemoryMax=64M \
+  --property=Restart=always --property=RestartSec=10 \
   /usr/bin/ssh -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -N -L 4450:127.0.0.1:4449 m1
 ```
 
