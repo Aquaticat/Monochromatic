@@ -163,6 +163,7 @@ and the investment is local state tracking or a local detector.
 - Wake classification uses the first later user-type event; a notification may belong to a different task than the wait.
 - Hook inputs (`background_tasks`, `session_crons`) are not stored in transcripts,
    so task-level proxies are approximate.
-- The installed `pi` command (the auto-mode native host) failed on 2026-10-19 with `Cannot find package 'cross-spawn'`
-   from its active release directory under `package/pi-plugin/auto-mode/dist`; a stock `pi` from a sibling package's
-   `node_modules/.bin` was used for the second-model pass. Not investigated: that package has concurrent changes.
+- The installed `pi` command (the auto-mode native host) failed on 2026-10-19 with
+   `Cannot find package 'cross-spawn'` from its active release directory under `package/pi-plugin/auto-mode/dist`;
+   a stock `pi` from a sibling package's `node_modules/.bin` was used for the second-model pass.
+   Not investigated: that package has concurrent changes.
