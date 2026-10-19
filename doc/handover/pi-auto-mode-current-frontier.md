@@ -30,11 +30,30 @@ Do not alter this causal artifact while its configured replay runs.
 The fixed-page configured run A completes 36 tools, zero tool errors and normal exit zero/signal null,
 ending at 208,384,280 to 208,404,824 heap bytes.
 It still grows about 20 MB between the final warmed stages.
-Fixed-page run B is repeating the same original history and will capture a private final heap.
-Content-aligned run A is independently active as `anchored-pages-memory a` on `e7qSh0`;
+Fixed-page run B also completes 36 tools and closes with exit zero/signal null.
+Its final samples are 208,250,920, 208,230,376 and 208,231,712 bytes.
+The run captures a 178,328,379-byte private heap snapshot under fixture `EYxK3o`.
+Content-aligned run A on `e7qSh0` stops at tool 18 with a confirmation request;
 after 12 tools its three samples are 152,517,120, 151,125,464 and 151,118,736 bytes.
+Its actual captured assessment responses include 35 HTTP 200 responses and one HTTP 503.
+The local sender assigns every HTTP status failure the permanent category,
+so the existing judgment retry is not available for this temporary failure.
+Root adds and commits the HTTP 503 eligibility regression in `69a5d6f49c`;
+it fails at its intended `expected false to equal true` assertion on the actual rebuilt sender.
+The initial types invocation lacks a preceding private native build and therefore fails on missing declarations;
+the prerequisite native build and subsequent full type check pass at `69a5d6f49c`.
+`cff20750f2` adds HTTP 503 classification and native approval/denial regressions within the original retry allowance.
+Their fresh green qualification remains required.
+Other status failures, credentials, cancellation and malformed responses remain ineligible.
+The failed replay's process exits zero/signal null, but cancellation emits
+`SourceCollectionError: Collection cancelled` from `auto-mode-request-observation`.
+Investigate that lifecycle error separately; a normal exit does not prove clean stderr.
+Content-aligned run B is active in fixture `Bi7rJj`, with separate receipts and unchanged inputs.
+Its 24-tool stage measures 158,820,928, 157,338,872 and 157,338,872 heap bytes.
 These partial observations do not establish bounded long-term retention.
 Keep all `content-pages-memory-*` and `anchored-pages-memory-*` receipts separate.
+Still queued: broaden prefix probes beyond sequential unique ordinals and repeat independent heap controls.
+Content-selected cuts can resynchronize common boundaries, but maximum-length forced cuts are not a universal sharing proof.
 
 Native MiMo commits `27e9ea0277`, including an actual constructor-binding type consumer,
 and is continuing its remaining owned lint corrections.
@@ -72,7 +91,7 @@ removing the whole-state clear retains 49,776,760 bytes and fails the actual cap
 The three other rebuilt variants fail their named semantic cases.
 Receipt: `resumed-owner-controls-results.json`, complete true.
 
-Configured full-history replay `content-pages-memory a` is running on `NTWxaG`,
+Completed configured full-history replay `content-pages-memory a` uses `NTWxaG`,
 using the same closed original `kARc6q` session and finite primary as baseline A/B.
 Its recorded input hashes are `content-pages-memory-inputs.json`;
 new receipts use separate `content-pages-memory-*` and `worker-source-pages-*` names.
