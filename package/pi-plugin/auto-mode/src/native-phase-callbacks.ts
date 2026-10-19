@@ -233,7 +233,8 @@ export function wrapPhaseBashTool({
         }],
         details: { phaseProbe: true }
       };
-      state.authoredUpdates.add(authoredUpdate);
+      state.authoredUpdates
+        .add(authoredUpdate);
       sendUpdate(authoredUpdate);
       /**
        Return accounting runs on every scope exit exactly like the original.
@@ -299,7 +300,8 @@ export function createPhaseEventSubscriber({
       events.push(`start:${event.toolCallId}`);
     if (event.type === 'tool_execution_end')
       events.push(`finish:${event.toolCallId}:${event.isError}`);
-    if ((event.type === 'message_end') && (event.message
+    if ((event.type === 'message_end')
+      && (event.message
       .role === 'toolResult'))
       events.push(`message:${event.message
         .toolCallId}`);
@@ -308,7 +310,8 @@ export function createPhaseEventSubscriber({
        Opaque SDK results are matched against the fixture's original emitted objects.
        */
       const partialResult: unknown = event.partialResult;
-      if (state.authoredUpdates.has(partialResult)) {
+      if (state.authoredUpdates
+        .has(partialResult)) {
         events.push(`update:${event.toolCallId}`);
         await nonNullishOrThrow(state.updates
           .get(event.toolCallId))

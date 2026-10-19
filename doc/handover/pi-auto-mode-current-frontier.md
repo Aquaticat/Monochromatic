@@ -6,6 +6,36 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- `059a66fd91` removes phase-fixture unsafe event-detail access by retaining the original finite authored updates
+  and matching their opaque identities. Installed native `emitToolExecutionUpdate` forwards the original result;
+  the full native phase catalog confirms the actual native dispatch does too.
+  The execute callback now derives directly from SDK `ToolDefinition`, avoiding a manual nullish union.
+  Candidate `UlR1fr` passes both builds, full types, full phases, both inflight consumers and schema controls.
+  Its three-file lint scope has zero errors and three formatting warnings;
+  the formatting-only follow-up splits those chains and still needs its actual zero-lint receipt.
+  Add a private cloned-authored-update negative control and show the existing update assertions fail.
+- Character/role audit at frozen `fa164036c6` passes Unicode code-point, Unicode-before-comment,
+  wrapping, ambient-declaration and role-reachability controls.
+  Raw source: 885 files, 4,081,015 characters. Runtime-reached roles: 371 files,
+  1,621,116 raw characters and 824,074 non-whitespace characters after Node type erasure and comment removal.
+  There remain 113 nonliteral imports and 65 unresolved local references, not a minimal-runtime proof.
+  Receipt `character-role-audit-final.json`; latest fixture `bounded-native-test-eVyMbo`.
+- Whole footprint traversal/collection ran in two-GiB/two-CPU/512-MiB-heap isolation.
+  Owned directory: 106,478,753 regular-path bytes, 24,213,276 unique regular bytes,
+  29,691,904 allocated owned inode bytes, excluding shared symlink targets.
+  `dist` has 99,115,872 path bytes and 16,850,395 unique bytes through hardlinked releases.
+  Installed `host-required`: 120,136,973 unique bytes across 81 directories;
+  `all-installed`: 255,684,429 across 96. These are live repair snapshots, not deployment closures.
+  Package architecture/footprint docs record exact scopes in `c77f6e4c30`; rendered verification remains required.
+- Controlled configured replay A finishes 36 real reviewed `pwd` groups, zero tool errors, no manual approvals,
+  normal exit zero/signal null, using the original full saved history and a finite synthetic primary stream
+  while Luna decisions and configured extensions are real, with the repository read-only.
+  Post-GC heaps: idle about 96.3 MB, after 12 about 184.9 MB, after 24 about 227.9 MB,
+  after 36 about 272.6 MB. Continued warmed growth is unresolved and separate from the producer-retirement unit fix.
+  Run B repeats unchanged setup and will capture a private final heap after the recorded measurements,
+  with exact PID/executable identity and the retained sampling control checked before inspector use.
+  First hypotheses: retained request snapshots, diagnostic/event retention, then late initialization.
+  Neither the profiler nor the replay result proves the REISUB's cause.
 - `bb0496f82f` ports admission selection to TypeScript using the actual maintained producer collections.
   Candidate `1jnKM6` passes both builds, full types, full phases, source freshness,
   both inflight-input consumers and schema controls. The gate's root-let diagnostic is gone.
