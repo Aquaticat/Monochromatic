@@ -1721,10 +1721,15 @@ that is verification, not a decision for the user.
     the tracking ref (`published_bases`). Three mutants of that fix were killed by the new tests. The real record at
     the time of the incident was overwritten by another session's push, so the exact trigger there is not recovered;
     the mechanism is the one the control reproduces. SPEC section "Auto-push" is updated.
-  Queued, in this order: the container gate on the final head, then release 0.2.1 (one bump for both fixes, then the
-  usual verification and `mise upgrade cargo:monochromatic-git-policy-cli`), then a non-blocking mutation run over
-  `auto_push_reconcile.rs`, `auto_push_record.rs` and `auto_push_single_flight.rs`. The `signs_commits` branch for a
-  `git config` failure other than exit 1 has no test and is left to that run.
+  Done 2026-10-19: the container gate passed 1981 tests (5 skipped) on head `125bec60af`; release 0.2.1 (commit
+  `57f67dd366`; the publish workflow succeeded; crates.io lists 0.2.1 unyanked; both archives exist; the glibc floor
+  measured on the x86_64 archive is 2.39; `mise upgrade cargo:monochromatic-git-policy-cli` reported `0.1.4 -> 0.2.1`,
+  `.cache/cli-git-bin/git` resolves to the 0.2.1 install and `mise.lock` was restored). The signature check against
+  the real signer is still open: it happens on the first reconcile this repository performs with 0.2.1 (look for
+  `%G?` of `G` on the merge commit).
+  Queued: a non-blocking mutation run over `auto_push_reconcile.rs`, `auto_push_record.rs` and
+  `auto_push_single_flight.rs`. The `signs_commits` branch for a `git config` failure other than exit 1 has no test
+  and is left to that run.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
