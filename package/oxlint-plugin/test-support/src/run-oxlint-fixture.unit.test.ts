@@ -21,6 +21,7 @@ import {
   type OxlintRuleDiagnostic,
   runOxlintFixture,
 } from '../dist/final/node/index.mjs';
+import { PROBE_CREATE_ONCE_FAILURE_TEXT, } from './harness-probe-create-once-plugin.test-fixture.ts';
 import {
   PROBE_FAILURE_TEXT,
   PROBE_FIX_MARKER,
@@ -33,6 +34,12 @@ import {
 const PROBE_PLUGIN = resolve(
   import.meta.dirname,
   'harness-probe-plugin.test-fixture.ts',
+);
+
+/** Plugin whose only rule throws while oxlint sets it up, which makes oxlint print text instead of JSON. */
+const CREATE_ONCE_PROBE_PLUGIN = resolve(
+  import.meta.dirname,
+  'harness-probe-create-once-plugin.test-fixture.ts',
 );
 
 /** Text of the source every probe project holds, which no rule has any reason to report. */
@@ -48,15 +55,28 @@ type ProbeProject = {
   readonly [Symbol.dispose]: () => void;
 };
 
+/** Plugin file and enabled rules of a probe project. */
+type ProbeProjectParams = {
+  /** Absolute path of the plugin file the config loads. */
+  readonly plugin: string;
+  /** Rule ids to enable, each in `plugin-name/rule-name` form. */
+  readonly ruleIds: readonly string[];
+};
+
 /**
- Writes a project whose config enables the named rules of the probe plugin.
+ Writes a project whose config loads one plugin file and enables the given rules.
 
  @example
  ```ts
- using project = probeProject(['always-throws',],);
+ using project = writeProbeProject({ plugin: PROBE_PLUGIN, ruleIds: ['harness-probe/always-throws',], },);
  ```
  */
-function probeProject(rules: readonly string[],): ProbeProject {
+function writeProbeProject(params: ProbeProjectParams,): ProbeProject {
+  /** Plugin file and rule ids to write into the config. */
+  const {
+    plugin,
+    ruleIds,
+  } = params;
   /** Unique temp directory. */
   const directory = mkdtempSync(join(
     tmpdir(),
@@ -75,9 +95,9 @@ function probeProject(rules: readonly string[],): ProbeProject {
   writeFileSync(
     configPath,
     JSON.stringify({
-      jsPlugins: [PROBE_PLUGIN,],
-      rules: Object.fromEntries(rules.map(function enable(rule,): [string, string,] {
-        return [`harness-probe/${rule}`, 'error',];
+      jsPlugins: [plugin,],
+      rules: Object.fromEntries(ruleIds.map(function enable(ruleId,): [string, string,] {
+        return [ruleId, 'error',];
       },),),
     },),
   );
@@ -98,6 +118,23 @@ function probeProject(rules: readonly string[],): ProbeProject {
       );
     },
   };
+}
+
+/**
+ Writes a project whose config enables the named rules of the probe plugin.
+
+ @example
+ ```ts
+ using project = probeProject(['always-throws',],);
+ ```
+ */
+function probeProject(rules: readonly string[],): ProbeProject {
+  return writeProbeProject({
+    plugin: PROBE_PLUGIN,
+    ruleIds: rules.map(function qualify(rule,): string {
+      return `harness-probe/${rule}`;
+    },),
+  },);
 }
 
 /**
@@ -281,6 +318,23 @@ await describe({
 
             expect(outcome.failure,).toBeInstanceOf(Error,);
             expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);
+          },
+        },),
+        it({
+          name: 'fails with the oxlint output and the command when oxlint prints text instead of JSON',
+          fn: async () => {
+            using project = writeProbeProject({
+              plugin: CREATE_ONCE_PROBE_PLUGIN,
+              ruleIds: ['harness-probe-create-once/create-once-throws',],
+            },);
+            const outcome = await attempt(project,);
+
+            expect(outcome.failure,).toBeInstanceOf(Error,);
+            expect((outcome.failure as Error).name,).toBe('OxlintOutputParseError',);
+            expect((outcome.failure as Error).cause,).toBeInstanceOf(SyntaxError,);
+            expect(String(outcome.failure,),).toContain(PROBE_CREATE_ONCE_FAILURE_TEXT,);
+            expect(String(outcome.failure,),).toContain(project.sourcePath,);
+            expect(String(outcome.failure,),).toContain(project.configPath,);
           },
         },),
       ],
