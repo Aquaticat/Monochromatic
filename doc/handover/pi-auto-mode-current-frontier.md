@@ -19,9 +19,37 @@ Unchanged request `assessment-request-72.json` is replayed three times through t
 and maintained response decoder, without executing any proposed operation.
 All three replies are HTTP 200 and return `approve: 0.84`, `deny: 0.05`, `unknown: 0.11`.
 The observed cache headers are absent, which does not prove caching is absent.
-Do not compare this request to the earlier `0.56` until its exact operation and diagnostic record are correlated.
+The subsequent correlation matches request 72 to a different original operation that also returned `0.84`.
 Receipt: `unchanged-decision-repeat-K6yOaJ/home/results.json`.
 The replay is sequential inside two-GiB/two-CPU bounds, with a ninety-second signal per call.
+
+Correlation `native-review-correlated-da1cYH/summary.json` identifies request 70 as the actual escalation:
+operation `60b75ac8dcf40ec043f41af2f37f28996ad0ebcd021e4b7db18c20e1d26694d7`,
+state `9f7fc7d610e6b2b3a7511b1ff5f1914d5e3f68308c36542d9229096a9dcbf44c`.
+Three unchanged replays of that exact request all reproduce HTTP 200 and
+`approve: 0.56`, `deny: 0.38`, `unknown: 0.06`.
+Receipt: `unchanged-decision-repeat-OVeEzC/home/results.json`.
+There is no observed variation in these repetitions; absent cache headers do not establish fresh inference.
+Request 74 belongs to another operation with an original `0.89` approval score.
+Do not describe differences between requests 70, 72 and 74 as unchanged-input variability.
+
+Frozen combined `sdk-fixture-combined-candidate-TBuHtp` at `ed094e76f2` passes fresh JS/native builds,
+full types, assessment transport units, the complete decision-fallback catalog and producer lifetime/retirement.
+Its twenty-file scope reports 111 warnings and fifteen errors.
+The HTTP fixture owns 81 warnings; the producer values, fixture and mutation own all other findings.
+Root and Native owner files have zero findings in this scope, which is not a full-package lint result.
+Receipt: `sdk-fixture-combined-results.json`.
+
+Fixed-prefix log audit `native-log-volume-GMtZqz/summary.json` parses 6,695,322 records
+from 1,044,769,605 bytes.
+Receipt-budget tags contribute 2,545,700 records/419,404,075 bytes;
+operation-currentness contributes 955,570 records/161,012,833 bytes.
+Native-host and readable-policy binding contribute another 263,320,014 bytes.
+Assessment-evidence tags contribute 14,009,349 bytes across 188 records.
+Most measured volume therefore comes from repeated short records.
+Trace actual call amplification before changing logger behavior or claiming a queue leak.
+The receipt-budget implementation validates internal counters, not incoming SDK message categories.
+Its policy-loader caller also serializes retained receipts repeatedly; measure its invocation boundary.
 
 Source checkpoints `7f482cf7af` and `ed094e76f2` port the authored fixture values to real SDK types
 and correct contextual widening of the mutable model input array.
