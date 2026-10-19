@@ -1374,3 +1374,35 @@ Repository records read:
 - `doc/planning/depot-ci-adoption-proposal.md:97-100`
 - `doc/planning/depot-platform-surface-ledger.json:2063`
 - `doc/planning/depot-developer-pool-capabilities-research.md:468-472`
+
+## Follow-up control result, 2026-10-19
+
+Both landing arms passed after this report was written.
+
+- Arm 1,
+  pull-request merge landing:
+  PR #1775 merged as `d642e9f0`;
+  the later marker push `5361ae16fe` produced native run `ps_4dzmpnfm09`,
+  workflow `registration-control`,
+  a finished `probe` job,
+  the log line `push 5361ae16fe`,
+  and the Depot check `registration-control / probe` from app `depot-code-access`.
+- Arm 2,
+  direct-push landing:
+  workflow commit `9136cd78`;
+  the later marker push `86499d3d9f` produced native run `ps_9hmw58cpsd`,
+  workflow `registration-control-direct`,
+  a finished `probe` job,
+  the log line `push 86499d3d9f`,
+  and the Depot check `registration-control-direct / probe` from app `depot-code-access`.
+- Cleanup commit `e85603fc65` removed both workflows and markers;
+  the cleanup push produced a zero-workflow sync run and no workflow execution.
+
+Conclusion:
+push registration on `main` works for both landing paths.
+The earlier direct-to-main probe was invalid for the timing,
+oracle,
+and cleanup reasons above,
+not because push registration was absent.
+The corrected control is recorded in
+`doc/audit/depot-registration-control-2026-10-18.evidence.json`.

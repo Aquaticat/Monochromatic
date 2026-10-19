@@ -234,9 +234,9 @@ explicitly accepted by the user.
   native promotion prerequisites are missing:
   P,
   the parallel-step correction is complete,
-  native `pull_request` registration is proven on a non-default base,
-  push-on-main registration is the remaining trigger test,
-  and check-name mapping and paused-session qualification remain open.
+  native `pull_request` registration and push-on-main registration are proven,
+  and duplicate-publication behavior,
+  check-name mapping and paused-session qualification remain open.
 - EF-B3,
   frozen owner map is stale:
   M,
@@ -376,8 +376,14 @@ Closure workstreams:
   six native runs,
   Depot checks from app `219785`,
   and a required-check 405 control.
-  The open path is push on `main`.
-  The primary-source research is recorded in
+  Push registration on `main` is now proven on both landing paths:
+  the PR-merge landing and the direct-push landing each produced a native marker run
+  (`ps_4dzmpnfm09` and `ps_9hmw58cpsd`),
+  a finished probe job,
+  and a Depot check from app `219785`.
+  The corrected control is recorded in
+  [the registration evidence](../audit/depot-registration-control-2026-10-18.evidence.json);
+  the primary-source research remains in
   [the registration research](depot-native-registration-research.md).
 
 ## Open closure items
@@ -385,7 +391,7 @@ Closure workstreams:
 The following are not satisfied by this review record and remain work:
 
 - native evidence experiments still open:
-  push-on-main registration and duplicate publication,
+  duplicate-publication behavior,
   check-name mapping,
   and paused-session qualification;
 - no-overage sliding-window admission and the operator cap verification;
