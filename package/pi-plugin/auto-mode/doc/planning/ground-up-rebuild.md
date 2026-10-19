@@ -898,6 +898,17 @@ and [focused recovery questions](ground-up-rebuild-review/reversibility-adaptive
 The older `staged-q3`, `staged-q5`, and exact-package test screenshots are superseded historical evidence.
 These checks verify the review artifact; no replacement plugin has been implemented or qualified.
 
+The distinct built-in catalogue was subsequently verified in both color schemes and at 390-pixel width.
+All seven named criteria render, and the first-pass diagram explicitly includes the complete catalogue.
+The seven navigation links, four scenarios, 12 answer options, manual decisions, form branches,
+text handling, and keyboard behavior passed again after adding the catalogue navigation.
+All 22 controls meet the 48-pixel minimum; page error and console records are empty.
+Current catalogue evidence:
+[dark](ground-up-rebuild-review/builtin-catalogue-dark.png),
+[light](ground-up-rebuild-review/builtin-catalogue-light.png),
+and [complete first pass](ground-up-rebuild-review/builtin-first-pass-dark.png).
+The catalogue was opened in Helium; the older recovery-only built-in screenshot is historical.
+
 ## Inspected sources
 
 These are source-reading facts, not new runtime qualification results.

@@ -20,7 +20,18 @@ Unknown relevance alone does not veto routine reversible exploration.
 The exact catalogue wording remains proposed; no new implementation authorization is inferred.
 The HTML moves the full catalogue near the main flow and shows all built-ins feeding the reducer.
 The proposed `QPM` tightening now says a correction to one criterion must preserve other requirements.
-Next: independent consistency check, targeted rendered verification, screenshots, and Helium handoff.
+Catalogue committed in `72b75585f1`; exploration clarifications in `5a11ebb5ea`;
+independent review corrections in `06a4017136`.
+Independent review confirmed plural criteria and no package-match gate,
+then corrected a publishing restriction example to name a group that actually publishes,
+and required deterministic shortcuts to satisfy other applicable built-ins.
+Verified seven navigation links, four scenarios, 12 answer options, all manual/form branches,
+keyboard behavior, and all 22 controls at least 48 pixels in both dimensions.
+All seven builtin cards render in light/dark and at 390-pixel width without overflow; page logs are empty.
+Three inspected `builtin-` screenshots are retained. Markdown rendering passed at `auto-mode-rebuild-plan-render-77WFdO`
+before these evidence notes.
+The updated catalogue was opened in Helium at `#q5`; verification browser closed and compositor quit.
+Next action is to continue plan review from user answers; this correction does not need reconfirmation.
 Open user choices remain Q1, Q2, Q4, and Q6.
 
 ### Reversibility replaces package matching, 2026-10-19
