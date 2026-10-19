@@ -9,15 +9,12 @@
 //!  its index and its untracked files are never touched while merging, and both histories stay reachable from the
 //!  published tip.
 //!  Only after the push succeeds is the branch fast-forwarded, and only in a worktree with nothing to lose.
-//!  A branch whose published history was rewritten (an amend or a rebase) is never merged:
-//!  the merge would bring the replaced commits back, so its rejection stays visible as it always was.
+//!  An amended or rebased branch is merged like any other: nothing already published is lost, and the replaced
+//!  commits stay in the remote history beside the new ones.
 
-/// The per-branch record of the last push this wrapper made.
-use super::auto_push_record::{LastPushedRead, read_last_pushed_record};
 /// The coordinator's Git, its command builder, queries and error type.
 use super::auto_push_single_flight::{
-    PushAttempt, PushGit, SingleFlightError, git_command, git_output,
-    resolve_push_coordination_paths, run_query,
+    PushAttempt, PushGit, SingleFlightError, git_command, git_output, run_query,
 };
 /// The deadline-bound runner of network commands and the limits it applies.
 use super::bounded_push::{STOP_GRACE, apply_low_speed_defaults, push_deadline, run_bounded_push};
@@ -119,10 +116,31 @@ fn is_ancestor(
 }
 
 /// What:
-///  The upstream remote and ref, when the plain push goes to the same place the branch tracks.
+///  The trimmed value of a Git setting, empty when it is not set.
 /// Why:
-///   With `push.default=current`, a push remote or a triangular setup, the rejection came from a destination this
-///  module does not fetch, so merging with the tracked tip would publish the wrong thing.
+///   An unset key exits `1` and prints nothing; the callers treat "not set" and "set to nothing" alike.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function configValue({ key }): Promise<string>;
+/// ```
+fn config_value(git: &PushGit, key: &str) -> Result<String, SingleFlightError> {
+    let value = run_query(git, &argv(&["config", "--get", key]))?;
+    return Ok(String::from_utf8_lossy(&value.stdout).trim().to_owned());
+}
+
+/// What:
+///  The remote and the branch ref that the plain `git push` of this branch updates, when they can be named.
+/// Why:
+///   The merge must be made with the tip of the branch the rejected push targeted: with a push remote, a triangular
+///  setup or `push.default=current` that is not the tracked branch.
+///   The push remote follows Git's order (`branch.<name>.pushRemote`, then `remote.pushDefault`, then
+///  `branch.<name>.remote`), and `push.default` picks the ref: `current` and a triangular `simple` push to the
+///  branch's own name, `upstream` and a non-triangular `simple` push to the tracked ref.
+///   `@{push}` is not used because Git refuses to resolve it for a push remote that differs from the tracked one,
+///  although the push itself works.
+///   The remote `.`, a `remote.<name>.push` refspec, `matching`, `nothing` and a target outside `refs/heads` are not
+///  reconciled, because the rejection then came from a destination this module cannot name.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,64 +153,39 @@ fn read_destination(
     let Some(name) = branch_ref.strip_prefix("refs/heads/") else {
         return Ok(None);
     };
-    let upstream = run_query(
-        git,
-        &argv(&["rev-parse", "--symbolic-full-name", "@{upstream}"]),
-    )?;
-    let pushed = run_query(
-        git,
-        &argv(&["rev-parse", "--symbolic-full-name", "@{push}"]),
-    )?;
-    // A failed query prints nothing, so a failed `@{push}` differs from a resolved `@{upstream}` here as well.
-    if upstream.code != Some(0) || upstream.stdout != pushed.stdout {
+    let tracked_remote = config_value(git, &format!("branch.{name}.remote"))?;
+    let mut push_remote = config_value(git, &format!("branch.{name}.pushRemote"))?;
+    if push_remote.is_empty() {
+        push_remote = config_value(git, "remote.pushDefault")?;
+    }
+    if push_remote.is_empty() {
+        push_remote.clone_from(&tracked_remote);
+    }
+    if push_remote.is_empty() || push_remote == "." {
         return Ok(None);
     }
-    let remote = run_query(
+    let refspecs = run_query(
         git,
-        &argv(&["config", "--get", &format!("branch.{name}.remote")]),
+        &argv(&["config", "--get-all", &format!("remote.{push_remote}.push")]),
     )?;
-    let merge = run_query(
-        git,
-        &argv(&["config", "--get", &format!("branch.{name}.merge")]),
-    )?;
-    // A key that is not set prints nothing, and the checks below reject the empty remote and the empty ref.
-    let remote_name = String::from_utf8_lossy(&remote.stdout).trim().to_owned();
-    let merge_ref = String::from_utf8_lossy(&merge.stdout).trim().to_owned();
-    if remote_name.is_empty() || remote_name == "." || !merge_ref.starts_with("refs/heads/") {
+    if !refspecs.stdout.is_empty() {
+        return Ok(None);
+    }
+    let triangular = push_remote != tracked_remote;
+    let mode = config_value(git, "push.default")?;
+    let merge_ref = config_value(git, &format!("branch.{name}.merge"))?;
+    let target = match (mode.as_str(), triangular) {
+        ("current", _) | ("" | "simple", true) => format!("refs/heads/{name}"),
+        ("" | "simple" | "upstream" | "tracking", false) => merge_ref,
+        _ => return Ok(None),
+    };
+    if !target.starts_with("refs/heads/") || target == "refs/heads/" {
         return Ok(None);
     }
     return Ok(Some(Destination {
-        remote: remote_name,
-        merge_ref,
+        remote: push_remote,
+        merge_ref: target,
     }));
-}
-
-/// What:
-///  The commits the branch is known to have published, any one of which the branch may descend from.
-/// Why:
-///   A branch that contains none of what this wrapper last published or what the tracking ref last showed was
-///  amended or rebased; merging the remote tip into it would bring the replaced commits back.
-///   The record names the last published tip even after a failed attempt, and the tracking ref covers a branch
-///  published by hand; the tracking ref alone is not enough, because a reconcile leaves it on a merge that the
-///  branch does not contain, and a branch that moved on after a push by hand or a force push shows only the ref.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function publishedBases({ branchRef }): Promise<string[]>;
-/// ```
-fn published_bases(git: &PushGit, branch_ref: &str) -> Result<Vec<String>, SingleFlightError> {
-    let paths = resolve_push_coordination_paths(git, branch_ref)?;
-    let mut bases: Vec<String> = Vec::new();
-    if let Ok(LastPushedRead::Record(record)) = read_last_pushed_record(&paths.record_path)
-        && let Some(tip) = record.published()
-    {
-        bases.push(tip.to_owned());
-    }
-    bases.push(git_output(
-        git,
-        &argv(&["rev-parse", "--verify", "@{upstream}^{commit}"]),
-    )?);
-    return Ok(bases);
 }
 
 /// What:
@@ -259,6 +252,7 @@ fn commit_merge(
             "--write-tree",
             "--no-messages",
             "--name-only",
+            "--allow-unrelated-histories",
             local,
             remote,
         ]),
@@ -393,8 +387,8 @@ fn advance_local_branch(
 ///  reachable and nothing is forced.
 ///   Once the merge is published, the branch and its worktree are fast-forwarded to it when that cannot lose or
 ///  overwrite anything; otherwise they are left as they are and the report says why.
-///   A rewritten branch, a different push destination, a conflict, an exhausted retry budget and every failure of a
-///  command are reported, and only the first two leave the original rejection unchanged.
+///   A push destination Git cannot name, a conflict, an exhausted retry budget and every failure of a command are
+///  reported, and only the first leaves the original rejection unchanged.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -411,7 +405,7 @@ pub fn reconcile_divergent_push(
     let Some(destination) = read_destination(git, branch_ref)? else {
         debug(
             TAG,
-            "the push destination is not the upstream; no reconcile",
+            "the push destination cannot be resolved to a remote branch; no reconcile",
         );
         return Ok(rejected);
     };
@@ -419,24 +413,6 @@ pub fn reconcile_divergent_push(
         git,
         &argv(&["rev-parse", "--verify", &format!("{branch_ref}^{{commit}}")]),
     )?;
-    let bases = published_bases(git, branch_ref)?;
-    let mut contains_a_base = false;
-    for base in &bases {
-        if is_ancestor(git, base, &local)? == Some(true) {
-            contains_a_base = true;
-            break;
-        }
-    }
-    if !contains_a_base {
-        debug(
-            TAG,
-            &format!(
-                "{local} does not contain any published tip of {}; history was rewritten, no reconcile",
-                bases.join(", ")
-            ),
-        );
-        return Ok(rejected);
-    }
     let short = destination
         .merge_ref
         .strip_prefix("refs/heads/")

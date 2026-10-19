@@ -15,7 +15,6 @@ fn failed_record() -> LastPushedRecord {
         owner_pid: 4242,
         exit_code: 1,
         output: "error: failed to push some refs\n".to_owned(),
-        published_tip: None,
     };
 }
 
@@ -60,7 +59,6 @@ fn encoding_matches_the_incumbent_bytes() {
         owner_pid: 4242,
         exit_code: 1,
         output: "error: ü \u{2028} \u{1}\n".to_owned(),
-        published_tip: None,
     };
     assert_eq!(encode_last_pushed_record(&record), INCUMBENT_LINE);
     assert_eq!(parse_last_pushed_record(INCUMBENT_LINE), Some(record));
@@ -156,61 +154,12 @@ fn a_failed_publication_removes_its_candidate_and_reports() {
     remove(&root);
 }
 
-/// The published tip is written after the incumbent's fields, only when present, and read back.
+/// A record that an earlier release wrote with a `publishedTip` field still parses, and the field is dropped on the next
+/// write, so a downgrade or an upgrade never turns a record into "no attempt".
 #[test]
-fn a_published_tip_is_written_last_and_read_back() {
-    let record = LastPushedRecord {
-        published_tip: Some("b".repeat(40)),
-        ..failed_record()
-    };
-    let text = encode_last_pushed_record(&record);
-    assert!(
-        text.ends_with(&format!(
-            "\"output\":\"error: failed to push some refs\\n\",\"publishedTip\":\"{}\"}}\n",
-            "b".repeat(40)
-        )),
-        "{text}"
-    );
-    assert_eq!(parse_last_pushed_record(&text), Some(record));
-    assert!(!encode_last_pushed_record(&failed_record()).contains("publishedTip"));
-}
-
-/// A record without the field is valid; one whose field is empty or not a string is not.
-#[test]
-fn a_published_tip_that_is_present_must_be_a_non_empty_string() {
-    let prefix = r#"{"schemaVersion":1,"tip":"a","outcome":"failed","ownerToken":"t","ownerPid":1,"exitCode":1,"output":"""#;
-    assert!(parse_last_pushed_record(&format!("{prefix}}}")).is_some());
-    for value in ["\"\"", "null", "7", "[]"] {
-        assert_eq!(
-            parse_last_pushed_record(&format!("{prefix},\"publishedTip\":{value}}}")),
-            None,
-            "{value}"
-        );
-    }
-}
-
-/// A pushed record published its own tip; a failed one repeats what the record before it showed, or nothing.
-#[test]
-fn the_published_tip_is_the_pushed_tip_or_the_one_a_failure_kept() {
-    let pushed = LastPushedRecord {
-        outcome: LastPushedOutcome::Pushed,
-        exit_code: 0,
-        output: String::new(),
-        ..failed_record()
-    };
-    assert_eq!(pushed.published(), Some("a".repeat(40).as_str()));
-    let kept = LastPushedRecord {
-        published_tip: Some("c".repeat(40)),
-        ..failed_record()
-    };
-    assert_eq!(kept.published(), Some("c".repeat(40).as_str()));
-    assert_eq!(failed_record().published(), None);
-    let pushed_with_a_stray_field = LastPushedRecord {
-        published_tip: Some("c".repeat(40)),
-        ..pushed
-    };
-    assert_eq!(
-        pushed_with_a_stray_field.published(),
-        Some("a".repeat(40).as_str())
-    );
+fn a_record_with_a_field_this_release_does_not_know_still_parses() {
+    let text = r#"{"schemaVersion":1,"tip":"a","outcome":"failed","ownerToken":"t","ownerPid":1,"exitCode":1,"output":"x","publishedTip":"b"}"#;
+    let record = parse_last_pushed_record(text).expect("a record with an unknown field parses");
+    assert_eq!(record.tip, "a");
+    assert!(!encode_last_pushed_record(&record).contains("publishedTip"));
 }

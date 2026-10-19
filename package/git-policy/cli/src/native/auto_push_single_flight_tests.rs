@@ -117,7 +117,6 @@ fn record(
             1
         },
         output: output.to_owned(),
-        published_tip: None,
     };
 }
 
