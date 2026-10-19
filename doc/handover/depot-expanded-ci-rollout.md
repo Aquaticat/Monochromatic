@@ -180,12 +180,20 @@ moving to Developer is a user action.
 
 ## Next action
 
-Start work item 3:
-admission,
-caps and fallback.
-Read the status,
-plan,
-adoption decision and baseline register first.
+Work item 3 policy,
+ledger and admission gate are recorded in
+[the admission ledger](../planning/depot-admission-ledger.md),
+[its JSON state](../planning/depot-admission-ledger.json) and
+[the gate workflow](../../.github/workflows/admission-gate.yml).
+Gate scenarios exercised admit,
+fallback,
+incomplete,
+ceiling and invalid decisions in
+[the gate evidence](../audit/depot-admission-gate-2026-10-19.evidence.json).
+Next:
+use [the weekly matrix design](../planning/depot-weekly-native-matrix.md),
+build the native workflow and single-use reservation,
+then exercise the first admitted reservation and record the attempt.
 Use bounded CI for any build or unit measurement.
 Do not run local full builds.
 Do not enable overage or raise a cap automatically.

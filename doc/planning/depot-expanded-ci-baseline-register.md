@@ -179,6 +179,29 @@ The baseline needs the prepared environment described by the evaluation or a doc
 prerequisite image.
 The unit baseline remains invalid until that build succeeds.
 
+The prepared native complete baseline is run `2ls35xfpds`.
+It installed glib,
+gdk-pixbuf,
+cairo,
+pango,
+GTK,
+Qt6 and Podman before the build.
+The build still failed on 13 owning tasks,
+including rootless Podman user namespaces,
+cargo vendor downloads,
+the music player design capture precondition,
+the Android build in the complete fanout,
+the desktop application,
+the native plugin,
+the static site,
+the terminal release library order,
+the `canvg` dependency and the Wayland session build.
+The unit step was skipped because the build failed.
+The failure classes and dispositions are in
+[the prepared native baseline evidence](../audit/depot-native-baseline-2ls35xfpds-2026-10-19.evidence.json).
+The complete build is still not known-good.
+The unit baseline remains invalid.
+
 ## Fast subset
 
 The first fast subset is five owning build tasks and their tests:

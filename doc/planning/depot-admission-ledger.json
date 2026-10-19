@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-19",
+  "activePlan": "startup-trial",
+  "plans": {
+    "startup-trial": {
+      "buildMinutes": 5000,
+      "nativeMinutes": 20000,
+      "githubRunnerMinutes": 20000,
+      "passingTestResults": 1000000,
+      "storageGb": 250
+    },
+    "developer": {
+      "buildMinutes": 500,
+      "nativeMinutes": 2000,
+      "githubRunnerMinutes": 2000,
+      "passingTestResults": 1000000,
+      "storageGb": 25
+    }
+  },
+  "ceilingUsd": 200,
+  "capsConfigured": true,
+  "documentedCapGaps": [
+    "Native Depot CI minutes have no documented configurable hard cap.",
+    "Depot Tests passing results have no documented configurable hard cap.",
+    "Combined storage has no documented configurable hard cap; the 25 GB Developer figure is an hourly-sampled monthly average.",
+    "The configured cap values are operator-reported and are not recorded here."
+  ],
+  "storageAverageGb": null,
+  "attempts": [
+    {
+      "allocationId": "weekly-native-2026-10-19",
+      "id": "dmjf38bcz0",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 15,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.35
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r2",
+      "id": "r2mxbc40rh",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 15,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.35
+    }
+  ]
+}

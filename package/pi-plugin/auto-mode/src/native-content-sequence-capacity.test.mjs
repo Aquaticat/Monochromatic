@@ -5,6 +5,7 @@
  */
 import {strict as assert} from 'node:assert';
 import {createHash} from 'node:crypto';
+import {nonNullishOrThrow} from '@monochromatic-dev/module-or-throw/ts';
 import {
  createInputContentStore
 } from '../dist/native/contract/collector/run-prompt-custody-v3/input-content.ts';
@@ -14,7 +15,7 @@ import {
 /**
  Repeated short catalog text separates reference storage from unique text storage.
  */
-const CATALOG_VARIANTS=3;
+const CATALOG_VARIANTS=16_000;
 /**
  Distinct snapshots reproduce complete-reference duplication across retained versions.
  */
@@ -25,13 +26,13 @@ const SNAPSHOT_VERSIONS=24;
 const ADDITIONAL_STORAGE_BUDGET=8_388_608;
 
 /**
- Retain changing tails over the same generated JSON catalog.
+ Retain changing prefix or tail versions over the same unique JSON catalog.
 
- @param {boolean} growing - changing tail forces distinct immutable snapshots
+ @param {{readonly growing:boolean;readonly prefix:boolean}} input - selected changing region
 
- @returns {{contents:ReturnType<ReturnType<typeof createInputContentStore>>[],expected:string[]}} readers and digests
+ @returns {{contents:ReturnType<ReturnType<typeof createInputContentStore>>[],expected:string[],retain:ReturnType<typeof createInputContentStore>}} live store, readers and digests
  */
-function workload(growing) {
+function workload({growing,prefix}) {
  /**
   Actual manager-local interner owns retained content.
   */
@@ -61,12 +62,14 @@ function workload(growing) {
  const expected=[];
  for(let version=0;version<SNAPSHOT_VERSIONS;version++){
   /**
-   Only the version tail changes between complete snapshots.
+   Only the selected prefix or tail changes; the complete catalog stays unchanged.
    */
-  const text=JSON.stringify({
-    catalog,
-    tail:growing?version:0
-  });
+  const text=JSON.stringify(prefix?{
+   prefix:Array.from({length:growing?version:0},function prefixEntry(_,index){
+    return `message-${index}`;
+   }),
+   catalog
+  }:{catalog,tail:growing?version:0});
   expected.push(createHash('sha256')
     .update(text)
     .digest('hex'));
@@ -77,18 +80,19 @@ function workload(growing) {
  }
  return {
    contents,
-   expected
+   expected,
+   retain
  };
 }
 
 /**
  Measure retained storage after temporary workload-construction frames have returned.
 
- @param {boolean} growing - distinct versions exercise shared-page storage
+ @param {{readonly growing:boolean;readonly prefix:boolean}} input - selected changing region
 
  @returns {{growing:boolean,retainedHeapBytes:number}} measured retained heap and workload identity
  */
-function measure(growing) {
+function measure({growing,prefix}) {
  globalThis.gc();
  /**
   Collection precedes both baseline and final observations.
@@ -100,8 +104,9 @@ function measure(growing) {
   */
  const {
    contents,
-   expected
- }=workload(growing);
+   expected,
+   retain
+ }=workload({growing,prefix});
  globalThis.gc();
  /**
   Reading exact content happens after the retained-allocation measurement.
@@ -109,6 +114,11 @@ function measure(growing) {
  const retainedHeapBytes=process.memoryUsage()
    .heapUsed
    -before;
+ /**
+  Calling the live store after collection proves its maps survived the retained-heap observation.
+  */
+ const first=nonNullishOrThrow(contents[0]);
+ assert.equal(retain({text:first.read(),json:true}),first);
  for(const [index,content]of contents.entries()){
   assert.equal(
     createHash('sha256')
@@ -133,13 +143,13 @@ function measure(growing) {
  @type {readonly [ReturnType<typeof measure>,ReturnType<typeof measure>]}
  */
 const unchanged=[
-  measure(false),
-  measure(false)
+  measure({growing:false,prefix:false}),
+  measure({growing:false,prefix:false})
 ];
 /**
  Distinct tails expose storage duplicated across otherwise unchanged versions.
  */
-const growing=measure(true);
+const growing=measure({growing:true,prefix:false});
 /**
  Additional storage is compared with the larger unchanged-input measurement.
  */
@@ -157,6 +167,39 @@ console.log(JSON.stringify({
 assert.ok(
   additional<ADDITIONAL_STORAGE_BUDGET,
   `Changing input snapshots retain ${additional} additional bytes`
+);
+
+/**
+ Prefix controls keep the same live interner and unique catalog before changing the message prefix.
+
+ @type {readonly [ReturnType<typeof measure>,ReturnType<typeof measure>]}
+ */
+const prefixUnchanged=[
+ measure({growing:false,prefix:true}),
+ measure({growing:false,prefix:true})
+];
+/**
+ Earlier messages shift page alignment while the catalog text stays unchanged.
+ */
+const prefixGrowing=measure({growing:true,prefix:true});
+/**
+ Additional retained storage excludes the larger unchanged-prefix control.
+ */
+const prefixAdditional=prefixGrowing.retainedHeapBytes-Math.max(...prefixUnchanged.map(function retained(item){
+ return item.retainedHeapBytes;
+}));
+console.log(JSON.stringify({
+ prefixUnchanged,
+ prefixGrowing,
+ additional:prefixAdditional,
+ versions:SNAPSHOT_VERSIONS,
+ catalogEntries:CATALOG_VARIANTS,
+ exactOriginalDigests:true,
+ liveStore:true
+}));
+assert.ok(
+ prefixAdditional<ADDITIONAL_STORAGE_BUDGET,
+ `Changing input prefixes retain ${prefixAdditional} additional bytes`
 );
 
 //endregion Unchanged controls separate snapshot growth from initialization and measurement spread

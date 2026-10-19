@@ -8,6 +8,7 @@ import {
 import {
   createFixture,
   createResultStream,
+  messageIncludes,
   observe,
   verify
 } from './native-producer-lifetime-fixture.mjs';
@@ -63,8 +64,7 @@ export async function runProducerMutationControls() {
         return fixture.owner
           .judgmentFor(failed);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed tokens with one wildcard gap, no nested quantifiers.
-      /completed.*superseded/u
+      messageIncludes({ substring: 'completed and was superseded' })
     );
     fixture.owner
       .completeJudgment(next);
@@ -80,8 +80,7 @@ export async function runProducerMutationControls() {
           fixture.owner
             .completeJudgment(input);
         },
-        // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-        /reenter/u
+        messageIncludes({ substring: 'reenter' })
       );
       return Object.freeze({ name: input.response
         .name });
@@ -125,16 +124,14 @@ export async function runProducerMutationControls() {
         fixture,
         response: first.response
       }),
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /identity was reused/u
+      messageIncludes({ substring: 'identity was reused' })
     );
     assert.throws(
       function describeReusedResponse() {
         return fixture.owner
           .describeResponse(first);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /identity was reused/u
+      messageIncludes({ substring: 'identity was reused' })
     );
     fixture.owner
       .completeJudgment(next);
@@ -156,8 +153,7 @@ export async function runProducerMutationControls() {
         fixture,
         response: input.response
       }),
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /identity was reused/u
+      messageIncludes({ substring: 'identity was reused' })
     );
     const failure = new Error('original operation failure after response reuse');
     assert.throws(
@@ -177,8 +173,7 @@ export async function runProducerMutationControls() {
         return fixture.owner
           .describeResponse(input);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /identity was reused/u
+      messageIncludes({ substring: 'identity was reused' })
     );
   }
   });
@@ -214,16 +209,14 @@ export async function runProducerMutationControls() {
         fixture,
         response
       }),
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /identity was reused/u
+      messageIncludes({ substring: 'identity was reused' })
     );
     assert.throws(
       function describeReusedStream() {
         return fixture.owner
           .describeResponse(first);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /identity was reused/u
+      messageIncludes({ substring: 'identity was reused' })
     );
   }
   });

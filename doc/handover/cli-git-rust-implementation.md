@@ -1730,7 +1730,8 @@ that is verification, not a decision for the user.
   Interrupted 2026-10-19 (PC shutdown requested by the user): unit `cli-git-rec3` was stopped by hand and its
   container removed. The rerun of the container gate on head `98c83b72bf` had passed (1981 tests, 5 skipped). The
   mutation run had only reached its baseline and planted controls, so no mutant verdict was lost.
-  Queued next action: restart it with `systemd-run --user --unit=cli-git-rec3 --collect --property=MemoryMax=24G
+  Restarted after the reboot (same day, unit `cli-git-rec3`, started by hand with the command below); if the unit is
+  gone and the logs lack a final "mutants tested" line, restart it with `systemd-run --user --unit=cli-git-rec3 --collect --property=MemoryMax=24G
   node /home/user/temp/agent/rec3-run.ts` (the script runs the container gate, then mutation over
   `auto_push_reconcile.rs`, `auto_push_record.rs` and `auto_push_single_flight.rs` limited by `--examine` to the
   functions this change touched, with image tag `rec3`; logs `~/temp/agent/rec3-container.log` and

@@ -1,0 +1,153 @@
+name: weekly-native
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_JOBS: '4'
+jobs:
+  matrix:
+    runs-on: depot-ubuntu-24.04-8
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Admission
+        shell: bash
+        run: |
+          node --input-type=module - <<'NODE'
+          import { readFileSync, appendFileSync } from 'node:fs';
+
+          const meters = ['buildMinutes', 'nativeMinutes', 'githubRunnerMinutes', 'passingTestResults', 'storageGb'];
+          const ledger = JSON.parse(readFileSync('doc/planning/depot-admission-ledger.json', 'utf8'));
+          const reservation = JSON.parse(readFileSync('doc/planning/depot-weekly-native-reservation.json', 'utf8'));
+          if (reservation.used === true) {
+            console.error('reservation is already used; dispatch a new single-use reservation');
+            process.exit(1);
+          }
+          const plan = ledger.plans[ledger.activePlan];
+          if (plan === undefined) {
+            console.error(`unknown active plan: ${ledger.activePlan}`);
+            process.exit(1);
+          }
+          const byAllocation = new Map();
+          for (const attempt of ledger.attempts) {
+            if (attempt.status === 'cancelled') continue;
+            const current = byAllocation.get(attempt.allocationId) ?? { meters: {}, usd: 0 };
+            for (const meter of meters) {
+              current.meters[meter] = Math.max(current.meters[meter] ?? 0, attempt.meters[meter] ?? 0);
+            }
+            current.usd = Math.max(current.usd, attempt.reservedUsd);
+            byAllocation.set(attempt.allocationId, current);
+          }
+          const used = Object.fromEntries(meters.map((meter) => [meter, 0]));
+          let usedUsd = 0;
+          for (const entry of byAllocation.values()) {
+            for (const meter of meters) used[meter] += entry.meters[meter] ?? 0;
+            usedUsd += entry.usd;
+          }
+          used.storageGb += ledger.storageAverageGb ?? 0;
+          const requested = reservation.meters ?? {};
+          const overMeter = meters.find((meter) => used[meter] + (requested[meter] ?? 0) > plan[meter]);
+          const overCeiling = usedUsd + (reservation.reservedUsd ?? 0) > ledger.ceilingUsd;
+          if (overMeter !== undefined || overCeiling) {
+            const reason = overMeter !== undefined
+              ? `${overMeter} would exceed the ${ledger.activePlan} allowance`
+              : `reservation would exceed the USD ${ledger.ceilingUsd} ceiling`;
+            console.error(`not admitted: ${reason}`);
+            process.exit(1);
+          }
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Admitted ${reservation.id} for ${reservation.meters.nativeMinutes} native minutes and USD ${reservation.reservedUsd}.\n`);
+          console.log(`admitted ${reservation.id}`);
+          NODE
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Install repository tools
+        continue-on-error: true
+        run: mise install
+      - name: Prepare dependencies
+        run: mise run prepare:pnpm
+      - name: Static checks
+        id: static
+        continue-on-error: true
+        timeout-minutes: 15
+        run: mise run lint:monochromatic-lint
+      - name: Node and Rust fast subset build
+        id: fast_build
+        continue-on-error: true
+        timeout-minutes: 25
+        run: |
+          mise run //package/module/logger:build
+          mise run //package/module/p-map-fork:build
+          mise run //package/module/toml-edit:build
+          mise run //package/cli/forbidden-strings:build
+          mise run //package/linter/monochromatic-lint:build
+      - name: Node and Rust fast subset unit
+        id: fast_unit
+        continue-on-error: true
+        timeout-minutes: 25
+        run: |
+          mise run //package/module/logger:test:unit
+          mise run //package/module/p-map-fork:test:unit
+          mise run //package/module/toml-edit:test:unit
+          mise run //package/cli/forbidden-strings:test
+          mise run //package/linter/monochromatic-lint:test
+      - name: BuildKit and Bake container producer
+        id: buildkit
+        continue-on-error: true
+        timeout-minutes: 25
+        env:
+          PODMAN_USERNS: host
+        run: mise run //package/desktop-app/ide:runtime
+      - name: Android consumer
+        id: android
+        continue-on-error: true
+        timeout-minutes: 35
+        run: |
+          mise run prepare:android
+          mise run //package/music-player/android-app:build
+      - name: VM and desktop consumer
+        id: vm
+        continue-on-error: true
+        timeout-minutes: 25
+        run: mise run //package/cli/vmsync:test:e2e
+      - name: Write evidence
+        if: always()
+        shell: bash
+        run: |
+          node --input-type=module - <<'NODE'
+          import { writeFileSync, appendFileSync } from 'node:fs';
+
+          const categories = [
+            { name: 'static checks', command: 'mise run lint:monochromatic-lint', outcome: '${{ steps.static.outcome }}' },
+            { name: 'Node and Rust test consumers', command: 'fast subset build and unit', outcome: '${{ steps.fast_build.outcome }} / ${{ steps.fast_unit.outcome }}' },
+            { name: 'browser and E2E consumers', command: 'none selected', outcome: 'incomplete' },
+            { name: 'packaged artifacts and host consumers', command: 'none selected', outcome: 'incomplete' },
+            { name: 'OS, architecture and application consumers', command: 'mise run //package/cli/vmsync:test:e2e', outcome: '${{ steps.vm.outcome }}' },
+            { name: 'VM, desktop and Android consumers', command: 'Android build and vmsync e2e', outcome: '${{ steps.android.outcome }} / ${{ steps.vm.outcome }}' },
+            { name: 'BuildKit and Bake container producers', command: 'mise run //package/desktop-app/ide:runtime', outcome: '${{ steps.buildkit.outcome }}' },
+            { name: 'Depot Tests', command: 'none selected', outcome: 'incomplete' },
+            { name: 'cache and Disk', command: 'none selected', outcome: 'incomplete' },
+            { name: 'SDK VM profiles', command: 'none selected', outcome: 'incomplete' },
+          ];
+          const evidence = {
+            schemaVersion: 1,
+            profile: 'weekly-native-matrix',
+            runId: '${{ github.run_id }}',
+            sha: '${{ github.sha }}',
+            reservation: 'weekly-native-2026-10-19',
+            categories,
+          };
+          writeFileSync('weekly-native-evidence.json', `${JSON.stringify(evidence, null, 2)}\n`);
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, '```json\n' + `${JSON.stringify(evidence, null, 2)}\n` + '```\n');
+          NODE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: weekly-native-evidence
+          path: weekly-native-evidence.json

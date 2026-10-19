@@ -199,3 +199,32 @@ not a demonstrated fault in native Git or the Pi process harness.
 `.out-of-scope/` was inspected;
 no external filing is relevant to this local resolution.
 There is no external issue draft or additive comment to publish.
+
+## Separate owner-probe refusal on 2026-10-19
+
+The protected `.cache/cli-git-bin/git log --max-count=3 --oneline` failed with exit 2
+while a supervised rootless-container worker checkpointed package changes.
+The native wrapper emitted `engine-failure`, code `content-unavailable`:
+
+```text
+# Native recovery diagnostic, distinct from superseded-index recovery.
+probing transaction owner 293 failed: Operation not permitted (os error 1)
+```
+
+An explicitly read-only `/usr/bin/git log --max-count=3 --oneline` succeeded
+and showed the intended five-path commit `3a21255dde` had landed.
+The protected wrapper subsequently succeeded during frozen-source preparation.
+No journal was deleted and no commit was repeated.
+
+`package/git-policy/cli/src/native/recovery_inspect.rs`, `liveness`, propagates the refused signal probe.
+`transaction_owner.rs` records the current process PID;
+`classify_transaction_owner` probes existence before comparing birth identity.
+Shared repository access across PID namespaces is a hypothesis requiring a disposable reproduction,
+not an established cause of this refusal.
+Denied permission does not establish that an owner is dead.
+
+[Repository issue #1784](https://github.com/Aquaticats/Monochromatic/issues/1784)
+tracks read availability and namespace-aware ownership controls.
+This is separate from the unrelated LFS incident in #1770
+and the missing post-commit completion-marker directory in #1781.
+No shared cause is established.

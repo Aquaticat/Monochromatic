@@ -78,6 +78,7 @@ jobs:
       dry_run: ${{ steps.detect.outputs.dry_run }}
       use_release_key: ${{ steps.detect.outputs.use_release_key }}
       save_cache: ${{ steps.detect.outputs.save_cache }}
+      save_gradle_cache: ${{ steps.detect.outputs.save_gradle_cache }}
       version: ${{ steps.detect.outputs.version }}
       version_code: ${{ steps.detect.outputs.version_code }}
       tag: ${{ steps.detect.outputs.tag }}
@@ -180,6 +181,10 @@ jobs:
           save_cache=true
         fi
 
+        # The Gradle cache stays restore-only until cache-off, invalidation and stale-output
+        # controls pass; doc/planning/depot-cache-admission.md records the admission state.
+        save_gradle_cache=false
+
         # A push builds only when the version changed; a dispatch always builds, and a real
         # dispatch builds only if the tag is free. An existing tag skips, it never fails.
         should_build=false
@@ -197,6 +202,7 @@ jobs:
           echo "dry_run=$dry_run"
           echo "use_release_key=$use_release_key"
           echo "save_cache=$save_cache"
+          echo "save_gradle_cache=$save_gradle_cache"
           echo "version=$after"
           echo "version_code=$code"
           echo "tag=$tag"
@@ -1217,7 +1223,7 @@ jobs:
         key: ${{ steps.cache-native.outputs.cache-primary-key }}
 
     - name: Save the Gradle caches
-      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-gradle.outputs.cache-hit != 'true' }}
+      if: ${{ needs.detect.outputs.save_gradle_cache == 'true' && steps.cache-gradle.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: |

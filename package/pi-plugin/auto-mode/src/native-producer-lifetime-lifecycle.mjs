@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import {
   createFixture,
+  messageIncludes,
   observe,
   verify
 } from './native-producer-lifetime-fixture.mjs';
@@ -44,8 +45,7 @@ export async function runProducerLifetimeCases() {
         return fixture.owner
           .judgmentFor(first);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed tokens with one wildcard gap, no nested quantifiers.
-      /completed.*superseded/u
+      messageIncludes({ substring: 'completed and was superseded' })
     );
     assert.equal(
       fixture.owner
@@ -63,8 +63,7 @@ export async function runProducerLifetimeCases() {
         return fixture.owner
           .beginJudgment(first);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /already reserved/u
+      messageIncludes({ substring: 'already reserved' })
     );
     fixture.owner
       .completeJudgment(second);
@@ -73,8 +72,7 @@ export async function runProducerLifetimeCases() {
         fixture.owner
           .completeJudgment(second);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /already completed/u
+      messageIncludes({ substring: 'already completed' })
     );
   }
   });
@@ -114,8 +112,7 @@ export async function runProducerLifetimeCases() {
         return fixture.owner
           .judgmentFor(first);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed tokens with one wildcard gap, no nested quantifiers.
-      /completed.*superseded/u
+      messageIncludes({ substring: 'completed and was superseded' })
     );
     assert.equal(
       fixture.owner
@@ -164,8 +161,7 @@ export async function runProducerLifetimeCases() {
             stream: left.stream
           });
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /exact consumer/u
+      messageIncludes({ substring: 'exact consumer' })
     );
   }
   });
@@ -190,16 +186,14 @@ export async function runProducerLifetimeCases() {
         return fixture.owner
           .beginJudgment(auxiliary);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /Auxiliary/u
+      messageIncludes({ substring: 'Auxiliary' })
     );
     assert.throws(
       function completeAuxiliaryJudgment() {
         fixture.owner
           .completeJudgment(auxiliary);
       },
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- error-message shape check in this preserved assertion; input is one captured Error message; fixed literal tokens, no quantifiers.
-      /Auxiliary/u
+      messageIncludes({ substring: 'Auxiliary' })
     );
     const unjudged = await observe({
       fixture,
