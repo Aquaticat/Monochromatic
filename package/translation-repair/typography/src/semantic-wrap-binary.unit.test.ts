@@ -265,32 +265,52 @@ await describe({
         },),
 
         it({
-          name: 'HOLDS THE PINNED VERSION TO THE ONE mise.toml PINS for the cargo tool, since the constant '
-            + 'and the pin are two writings of one fact',
+          name: 'HOLDS THE PINNED VERSION TO THE ONE mise.lock RECORDS for the cargo tool, since the constant '
+            + 'and the lock are two writings of one fact; mise.toml asks for the latest release of a tool '
+            + 'this repository publishes, so the lock, not mise.toml, names the version installed',
           fn: async () => {
             /**
-             The repository's task and tool file, four directory levels above this one.
+             The repository's tool lock, four directory levels above this one.
              */
-            const pinFile = await readFile(
+            const lockFile = await readFile(
               join(
                 import.meta.dirname,
                 '..',
                 '..',
                 '..',
                 '..',
-                'mise.toml',
+                'mise.lock',
               ),
               'utf8',
             );
             /**
-             The line pinning the tool.
+             The lock's lines, read in order.
              */
-            const pinLine = pinFile.split('\n',)
-              .find(function pinsTool(line,): boolean {
-                return line.startsWith(`"cargo:${LINT_BINARY_NAME}" = `,);
+            const lockLines = lockFile.split('\n',);
+            /**
+             Line opening the tool's entry.
+             */
+            const entryStart = lockLines.indexOf(`[[tools."cargo:${LINT_BINARY_NAME}"]]`,);
+            /**
+             Lines of the tool's entry: from its opening line up to the next table header.
+             */
+            const entryLines = lockLines.slice(entryStart + 1,);
+            /**
+             Index of the next table header, or the end of the lock when the tool's entry is the last.
+             */
+            const entryEnd = entryLines.findIndex(function opensTable(line,): boolean {
+              return line.startsWith('[',);
+            },);
+            /**
+             The entry's version line.
+             */
+            const versionLine = entryLines.slice(0, entryEnd === -1 ? entryLines.length : entryEnd,)
+              .find(function namesVersion(line,): boolean {
+                return line.startsWith('version = ',);
               },);
 
-            expect(pinLine,).toBe(`"cargo:${LINT_BINARY_NAME}" = "${PINNED_LINT_BINARY_VERSION}"`,);
+            expect(entryStart,).not.toBe(-1,);
+            expect(versionLine,).toBe(`version = "${PINNED_LINT_BINARY_VERSION}"`,);
           },
         },),
       ],

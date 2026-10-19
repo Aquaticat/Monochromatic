@@ -63,7 +63,7 @@ type StandIn = {
 
  @example
  ```ts
- const { program, log, } = await standIn({ dir, version: '0.1.2', behaviour: 'echo', },);
+ const { program, log, } = await standIn({ dir, version: '0.2.0', behaviour: 'echo', },);
  ```
  */
 export async function standIn(
