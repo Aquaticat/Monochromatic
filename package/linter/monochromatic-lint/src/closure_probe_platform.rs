@@ -181,6 +181,24 @@ fn is_variable_character(character: char) -> bool {
 }
 
 /// What:
+///  The NDK installation directory that a cargo-ndk sysroot path lies in.
+/// Why:
+///  CMake-based build scripts (the Opus binding) read `ANDROID_NDK_HOME`,
+///  while `cargo ndk-env` prints only paths below `<ndk>/toolchains/llvm/prebuilt/<host>/sysroot`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function ndkHomeOf(sysroot: string): string | undefined { return sysroot.split('/toolchains/')[0]; }
+/// ```
+pub fn ndk_home_of(sysroot: &str) -> Option<String> {
+    let (home, _below) = sysroot.split_once("/toolchains/")?;
+    if home.is_empty() {
+        return None;
+    }
+    return Some(String::from(home));
+}
+
+/// What:
 ///  Prepare the Android cross-compilation:
 ///  the NDK variables from `cargo ndk-env` and the target argument.
 /// Why:
@@ -211,8 +229,20 @@ pub fn android_setup(cargo: &Path) -> Result<PackageSetup, String> {
             String::from_utf8_lossy(&output.stderr).trim()
         ));
     }
-    let variables: Vec<(String, String)> =
+    let mut variables: Vec<(String, String)> =
         parse_exports(String::from_utf8_lossy(&output.stdout).as_ref());
+    // A value the machine owner exported is kept; otherwise it is derived from the sysroot that cargo-ndk found.
+    if std::env::var_os("ANDROID_NDK_HOME").is_none() {
+        let mut derived: Option<String> = None;
+        for (name, value) in &variables {
+            if name == "CARGO_NDK_SYSROOT_PATH" {
+                derived = ndk_home_of(value);
+            }
+        }
+        if let Some(home) = derived {
+            variables.push((String::from("ANDROID_NDK_HOME"), home));
+        }
+    }
     if variables.is_empty() {
         return Err(String::from(
             "`cargo ndk-env --target arm64-v8a` printed no variable; install the Android NDK",

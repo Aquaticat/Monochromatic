@@ -12,7 +12,7 @@
 //! test('parses exports', () => expect(parseExports('export A="1"')).toEqual([['A', '1']]));
 //! ```
 
-use super::{android_setup, ide_setup, parse_exports};
+use super::{android_setup, ide_setup, ndk_home_of, parse_exports};
 use crate::{closure_stub_support::scenario, test_fs::Fixture};
 use std::path::{Path, PathBuf};
 
@@ -132,15 +132,15 @@ fn a_stale_file_in_place_of_a_link_is_replaced() {
     );
 }
 
-/// The NDK variables and the target argument come from the `cargo ndk-env` answer.
+/// The NDK variables and the target argument come from the `cargo ndk-env` answer,
+///  and the NDK home is derived from its sysroot unless the machine owner exported one.
 #[test]
 fn android_setup_takes_the_variables_and_adds_the_target() {
     let stub = scenario(&[(
         "ndk-env.stdout",
-        "export CC_aarch64_linux_android=\"/ndk dir/clang\"\nexport CARGO_NDK_SYSROOT_TARGET=\"aarch64-linux-android\"\n",
+        "export CC_aarch64_linux_android=\"/ndk dir/clang\"\nexport CARGO_NDK_SYSROOT_PATH=\"/sdk dir/ndk/29.0/toolchains/llvm/prebuilt/linux-x86_64/sysroot\"\n",
     )]);
     let setup = android_setup(&stub.cargo).expect("prepared");
-    assert_eq!(setup.environment.len(), 2);
     assert_eq!(
         setup.environment[0],
         (
@@ -148,6 +148,26 @@ fn android_setup_takes_the_variables_and_adds_the_target() {
             String::from("/ndk dir/clang")
         )
     );
+    let mut derived: Option<(String, String)> = None;
+    for pair in &setup.environment {
+        if pair.0 == "ANDROID_NDK_HOME" {
+            derived = Some(pair.clone());
+        }
+    }
+    if std::env::var_os("ANDROID_NDK_HOME").is_none() {
+        assert_eq!(
+            derived,
+            Some((
+                String::from("ANDROID_NDK_HOME"),
+                String::from("/sdk dir/ndk/29.0")
+            ))
+        );
+    } else {
+        assert_eq!(
+            derived, None,
+            "an exported ANDROID_NDK_HOME is kept, not replaced"
+        );
+    }
     assert_eq!(
         setup.arguments,
         vec![
@@ -177,4 +197,16 @@ fn android_setup_failures_are_skips() {
     let missing = android_setup(Path::new("/nonexistent/monochromatic-lint/cargo"))
         .expect_err("cargo missing");
     assert!(missing.contains("install cargo-ndk"), "{missing}");
+}
+
+/// The NDK directory is the part of the sysroot path before `/toolchains/`.
+#[test]
+fn the_ndk_home_is_the_part_before_the_toolchains_directory() {
+    assert_eq!(
+        ndk_home_of("/sdk dir/ndk/29.0/toolchains/llvm/prebuilt/linux-x86_64/sysroot"),
+        Some(String::from("/sdk dir/ndk/29.0"))
+    );
+    assert_eq!(ndk_home_of("/sdk/ndk/29.0/sysroot"), None);
+    assert_eq!(ndk_home_of("/toolchains/llvm"), None);
+    assert_eq!(ndk_home_of(""), None);
 }
