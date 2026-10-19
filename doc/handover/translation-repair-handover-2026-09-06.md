@@ -570,6 +570,8 @@ before the other queued work.
     the round landed as far as `5c1d1aef1b` with the tree identical to the gated one,
     the corpus check found no page that reaches the new throws (184 texts), and the correction is
     commit comment 205562500 on `5a0fe85281`.
+    Queued for the docs round after `w191` and `w190` land: file `s245/w187-notes.md` and `s245/w188-notes.md`
+    into the package ledger from B675 and M265, with the `w191` and `w190` notes.
     In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
     external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
     and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
