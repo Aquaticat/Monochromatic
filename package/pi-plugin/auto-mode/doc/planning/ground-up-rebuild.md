@@ -66,100 +66,20 @@ Acceptance examples for this baseline:
 - Uploading a report can disclose its content even if the upload can later be deleted.
   Evaluate the disclosure; deleting the uploaded copy does not reverse every effect.
 
-## Built-in rule catalogue
+## Built-in rules: content deferred
 
-Built-in rules are plural and distinct. Reversibility is one criterion, not a replacement for general-agent review.
-The previous recovery-centric list is superseded by this concrete proposed catalogue.
-Exact wording remains a design proposal; the requirement for multiple built-ins is settled.
+The user explicitly defers deciding which built-in rules to include and their exact wording.
+The previously proposed catalogue is withdrawn from the active design, not accepted or rejected rule by rule.
+Do not select a count, names, identities, or membership now.
 
-Every registered built-in accompanies every first-pass review alongside the effective authored rules.
-The startup authored-rule relevance classifier does not select a subset of these built-ins.
-Each criterion gets its own answer key and the same choices:
+The settled architecture requires multiple general-agent built-in rules in addition to effective authored rules.
+Every built-in will receive its own first-pass question with the same four choices:
 `approve`, `deny`, `ask`, and `not-applicable`.
-Interpret each question as the disposition under that criterion and the complete instruction context.
-No single built-in stands in for the other answers.
+Every first pass includes all built-ins alongside all effective authored rules; code does not select a useful subset.
+The identities and rule text are unspecified inputs to this architecture until that design work is resumed.
+Reversibility remains an accepted assessment principle; it does not finalize a particular built-in rule.
 
-### Useful progress or evidence
-
-Proposed question identity: `builtin.progress`.
-
-Does this group plausibly advance the work or produce useful evidence, including indirect verification and exploration?
-
-Cross-package tests, investigation, and repeated tests for reproducibility can approve. Exact package or verb
-matching is not required.
-Example: Test package B while changing package A to check a consumer.
-
-### Suitable tools and arguments
-
-Proposed question identity: `builtin.tool-fit`.
-
-Are the selected tools and concrete arguments appropriate for their intended operation or experiment?
-
-A deliberate probe or expected failure can be appropriate. Distinguish intentional experiments from a mistaken
-target or invocation.
-Example: An intentionally invalid request can test error handling.
-
-### Necessary prerequisites
-
-Proposed question identity: `builtin.prerequisites`.
-
-Are the prerequisites needed for this operation established, or is proceeding a reasonable way to discover them?
-
-Do not demand the answer an exploratory call is meant to discover. Harmless diagnostic failure can be useful;
-identify consequential missing prerequisites.
-Example: A local test can discover a missing dependency; it need not ask first.
-
-### Reversibility and recovery
-
-Proposed question identity: `builtin.reversibility`.
-
-Do the available prior state, restoration method, and recovery effort support executing this group under the
-current authorization?
-
-Protect uncommitted human work. Assess actual recovery rather than the presence of Git. An authorized irreversible
-operation is not automatically denied.
-Example: A disposable-checkout experiment is recoverable; overwriting uncaptured data is not.
-
-### Effects on other people and systems
-
-Proposed question identity: `builtin.external-effects`.
-
-Are effects on shared systems, other people, and external recipients within established authorization?
-
-Assess recipients, shared state, disclosure, and commitments. Local rollback does not undo external consequences.
-Existing authorization remains valid.
-An ordinary network read does not require asking merely because it is external; assess data sent and actual effects.
-Example: Deleting an uploaded report does not undo disclosure to its recipient.
-
-### Resource use and bounded execution
-
-Proposed question identity: `builtin.resources`.
-
-Are the group’s resource use, spending, and execution bounds appropriate for the work and established limits?
-
-Use concrete CPU, memory, process, storage, time, or spending evidence. Another package alone says nothing about
-excessive resource use.
-Do not invent a universal resource budget when no applicable limit requires one.
-Example: A bounded local test differs from an unbounded process fan-out.
-
-### Explicit human constraints and decisions
-
-Proposed question identity: `builtin.human-constraints`.
-
-Does the group respect applicable explicit human restrictions and decisions, including approvals already given?
-
-Honor actual restrictions without treating an unmentioned intermediate step as forbidden or asking again for an
-already authorized action.
-Example: An edit-and-publish group violates an explicit do-not-publish instruction even when the local edit is recoverable.
-
-
-Useful progress and prerequisite checks must preserve ordinary autonomous exploration.
-Uncertain relevance alone does not justify blocking routine reversible investigation.
-The complete catalogue must pass cross-package tests, exploratory probes, intentional failure tests,
-reproducibility reruns, and recoverable experiments in their stated conditions.
-It must also distinguish mistaken targets, consequential missing prerequisites, unrecorded data loss,
-unapproved external effects, resource exhaustion, and violations of explicit instructions.
-Follow-ups can focus on any uncertain built-in without dropping the other first-pass questions.
+Continue reviewing the stages, snapshot, aggregation, and human feedback without deciding the built-in catalogue.
 
 ## Settled stages
 
@@ -384,7 +304,8 @@ The patch mechanism remains an engineering qualification, not this user decision
 ## Dependency tree after this round
 
 Q1 and Q2 unlock numeric boundaries and final reduction acceptance examples.
-The accepted autonomy baseline and distinct built-in catalogue guide the deterministic and semantic fixtures.
+The accepted autonomy baseline guides behavioral examples.
+Catalogue-specific fixtures wait until built-in rule design is resumed; the catalogue is not part of this round.
 Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
 Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
 and retention using concrete designs and their measured constraints.
@@ -474,7 +395,7 @@ Purpose: immediate parsed checks, answer admission, and group reduction in ordin
 Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
 Q1 and Q2 determine score admission.
 Deterministic approval must establish actual effects and recovery properties while satisfying other applicable checks;
-it cannot bypass the broader built-in catalogue.
+it cannot bypass applicable rules once they are defined. No specific built-in catalogue is selected here.
 No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
 Validate answer attribution, expected labels, finite probabilities, normalization, and leading-choice consistency.
 Accept irrelevant response metadata; do not require optional confidence or usage fields that reduction does not consume.
@@ -903,11 +824,12 @@ All seven named criteria render, and the first-pass diagram explicitly includes 
 The seven navigation links, four scenarios, 12 answer options, manual decisions, form branches,
 text handling, and keyboard behavior passed again after adding the catalogue navigation.
 All 22 controls meet the 48-pixel minimum; page error and console records are empty.
-Current catalogue evidence:
+Historical catalogue evidence, withdrawn from the active review when the user deferred its contents:
 [dark](ground-up-rebuild-review/builtin-catalogue-dark.png),
 [light](ground-up-rebuild-review/builtin-catalogue-light.png),
 and [complete first pass](ground-up-rebuild-review/builtin-first-pass-dark.png).
-The catalogue was opened in Helium; the older recovery-only built-in screenshot is historical.
+These screenshots record an unaccepted proposal, not the active design.
+The current HTML shows only the plural-rule interface with contents deferred.
 
 ## Inspected sources
 

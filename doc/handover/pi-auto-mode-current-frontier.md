@@ -6,7 +6,23 @@ Plan review is active and implementation remains stopped.
 The reversibility-corrected visual form is open in Helium; Q1, Q2, Q4, and Q6 await the user’s answers.
 After answers, update the decision tree and continue the next unlocked review work.
 
-### Distinct built-in rules, 2026-10-19
+### Built-in contents deferred, 2026-10-19
+
+The user says not to decide exactly what the built-in rules are now.
+Withdraw the proposed catalogue from the active plan and HTML without accepting or rejecting its members.
+Retain only multiple built-ins, each included in the first pass with its own four-choice answer,
+alongside every effective authored rule. Exact count, names, identities, and wording remain unspecified.
+Reversibility is an accepted assessment principle, not a finalized built-in rule.
+Do not resume catalogue design or ask catalogue choices in this round.
+Continue architecture review; outstanding Q1, Q2, Q4, and Q6 are unchanged.
+Implementation remains stopped.
+The historical catalogue section and screenshots record an unaccepted proposal only.
+Next: check the simplified review rendering and reopen it in Helium.
+
+### Historical built-in proposal, contents deferred on 2026-10-19
+
+The catalogue in this historical entry is not active or accepted.
+
 
 The user reiterates that built-in rules are plural.
 The prior correction overemphasized reversibility and replaced general-agent checks with its subquestions.
