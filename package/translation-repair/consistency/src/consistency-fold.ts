@@ -593,7 +593,7 @@ as a reader sees it: below), so `so`
 
  @param page - the English of the whole page the haystack belongs to and where the haystack starts in it, which the proof of an apostrophe reads; the haystack alone is the page where absent
 
- @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a caller that holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a place was read with (generation 18 for a slot, 19 for the words); read from `page` where absent, and handed to the proof of the apostrophe beside the words as well as to the word test
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a caller that holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a place was read with (from generation 18, for a slot); read from `page` where absent, and handed to the proof of the apostrophe beside the words as well as to the word test
 
  @param codePadding - what pads the content of inline code when the word test reads the text a reader sees: a space and a line ending
  as CommonMark reads it, or a literal space alone as a reader of an artifact written before line endings padded code reads it; a
