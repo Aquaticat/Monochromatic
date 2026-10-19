@@ -20,6 +20,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
+
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -148,6 +151,42 @@ function innerClient(
 }
 
 /**
+ Body of the refusal Bedrock gave the TianqiChen66626 pass on every ask.
+ */
+const EXPIRED_TOKEN_BODY = '{"error":{"code":"invalid_api_key","message":"The security token included in the request '
+  + 'has expired.","param":null,"type":"permission_denied_error"}}';
+
+/**
+ Builds an inner client whose every call throws the provider status failure given.
+
+ @param status - HTTP status the provider answered with
+
+ @returns Client with the full surface, failing every call
+
+ @example
+ ```ts
+ const inner = refusingClient({ status: 401, },);
+ ```
+ */
+function refusingClient({ status, }: { readonly status: number; },): SyntheticClient {
+  /**
+   Failure every call raises.
+   */
+  const failure = new SyntheticHttpError({ status, bodyText: EXPIRED_TOKEN_BODY, },);
+  return {
+    async chatText(): Promise<ChatTextReply> {
+      throw failure;
+    },
+    async chatJson<ValueT,>(): Promise<ChatJsonOutcome<ValueT>> {
+      throw failure;
+    },
+    async quotas(): Promise<never> {
+      throw new Error('quotas is never asked here',);
+    },
+  };
+}
+
+/**
  Runs one call and hands back what it threw, or `undefined` when it resolved.
 
  @param call - call to run
@@ -251,6 +290,7 @@ await describe({
                 usable: 1,
                 unusable: 1,
                 threw: 1,
+                abandoned: 0,
               },
               {
                 modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -258,6 +298,7 @@ await describe({
                 usable: 1,
                 unusable: 0,
                 threw: 0,
+                abandoned: 0,
               },
             ],);
           },
@@ -325,6 +366,52 @@ await describe({
         },),
 
         it({
+          name: 'COUNTS an abandoned call beside the settled ones without adding it to asked, so the withhold test '
+            + 'that compares threw with asked never reads a cut-off call as a throw or as an answer',
+          fn: async () => {
+            /** Tally under test. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              asked: 2,
+              usable: 2,
+              unusable: 0,
+              threw: 0,
+              abandoned: 3,
+            },],);
+          },
+        },),
+
+        it({
+          name: 'DOES NOT NAME as dark a seat whose every call was abandoned, since a seat nobody waited for has '
+            + 'not shown that it cannot answer, and does not withhold a seat that threw on every settled call '
+            + 'while abandoned calls sit beside them',
+          fn: async () => {
+            /** Tally with one seat only abandoned and one that threw on each settled ask. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'abandoned', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+
+            expect(tally.dark().map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SEAT_HYPER_VISION,],);
+            expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SEAT_HYPER_VISION,],);
+          },
+        },),
+
+        it({
           name: 'SHARES one run-wide tally, which every client the factory builds counts into',
           fn: async () => {
             RUN_SEATS.reset();
@@ -354,6 +441,7 @@ await describe({
               inner: innerClient({ text: '喵。', },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** Reply as the caller sees it. */
@@ -370,6 +458,7 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 0,
+              abandoned: 0,
             },],);
           },
         },),
@@ -384,6 +473,7 @@ await describe({
               inner: innerClient({ text: '{"verdict":"purr"}', },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** Outcome as the caller sees it. */
@@ -402,6 +492,7 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 0,
+              abandoned: 0,
             },],);
           },
         },),
@@ -417,6 +508,7 @@ await describe({
               inner: innerClient({ text: '{"nap":"spot"}', },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** Outcome as the caller sees it. */
@@ -434,6 +526,7 @@ await describe({
               usable: 0,
               unusable: 1,
               threw: 0,
+              abandoned: 0,
             },],);
           },
         },),
@@ -448,6 +541,7 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** What the text surface threw. */
@@ -485,6 +579,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 2,
+              abandoned: 0,
             },],);
             expect(tally.dark().length,).toBe(1,);
           },
@@ -505,6 +600,7 @@ await describe({
               inner: innerClient({ text: '{"verdict":"purr"}', },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** What the text surface threw. */
@@ -545,13 +641,14 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 4,
+              abandoned: 0,
             },],);
           },
         },),
 
         it({
-          name: 'RECORDS NOTHING for four calls a caller aborted and that then threw, so a seat cut off after quorum '
-            + 'is not counted as asked and is not withheld',
+          name: 'COUNTS four calls a caller aborted and that then threw as abandoned and nothing else, so a seat cut off '
+            + 'after quorum shows in the census but is neither counted as asked nor withheld',
           fn: async () => {
             /** Tally the wrapper counts into. */
             const tally = createSeatTally();
@@ -560,6 +657,7 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
             /** Signal the caller aborted before any call was made. */
             const aborted = new AbortController();
@@ -572,8 +670,64 @@ await describe({
             },);
 
             expect(thrown,).toStrictEqual([FAILURE, FAILURE, FAILURE, FAILURE,],);
-            expect(tally.counts(),).toStrictEqual([],);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_VISION,
+              asked: 0,
+              usable: 0,
+              unusable: 0,
+              threw: 0,
+              abandoned: 4,
+            },],);
             expect(tally.withheld({ minAsks: 4, },),).toStrictEqual([],);
+            expect(tally.dark(),).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS a call the caller aborted as abandoned whichever surface it went to, and a call that '
+            + 'settled with an answer after the abort as usable, since the answer arrived',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Signal the caller aborted before any call was made. */
+            const aborted = new AbortController();
+            aborted.abort();
+            /** Client whose every call throws. */
+            const failing = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally,
+              minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
+            },);
+            /** Client whose every call answers although the caller left. */
+            const answering = seatTallyClient({
+              inner: innerClient({ text: '喵。', },),
+              tally,
+              minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
+            },);
+
+            await thrownBy(function askText(): Promise<unknown> {
+              return failing.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: aborted.signal, },);
+            },);
+            await thrownBy(function askJson(): Promise<unknown> {
+              return failing.chatJson({
+                modelId: SEAT_HYPER_VISION,
+                messages: MESSAGES,
+                signal: aborted.signal,
+                validate: isCatVerdict,
+              },);
+            },);
+            await answering.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: aborted.signal, },);
+
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_VISION,
+              asked: 1,
+              usable: 1,
+              unusable: 0,
+              threw: 0,
+              abandoned: 2,
+            },],);
           },
         },),
 
@@ -587,6 +741,7 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** What each of the four calls threw, in order. */
@@ -602,10 +757,124 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 4,
+              abandoned: 0,
             },],);
             expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
               return count.modelId;
             },),).toStrictEqual([SEAT_HYPER_VISION,],);
+          },
+        },),
+
+        it({
+          name: 'SAYS ONCE PER SEAT, plainly, that the provider refused the seat\'s credential with HTTP 401, naming the '
+            + 'seat, the provider\'s words, how many answers the seat had given and what to do before the next run, '
+            + 'and says it again for no later 401 of that seat',
+          fn: async () => {
+            /** Lines the wrapper writes. */
+            const lines: string[] = [];
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test, whose provider refuses the credential on every call. */
+            const client = seatTallyClient({
+              inner: refusingClient({ status: 401, },),
+              tally,
+              minAsks: 4,
+              l: levelCapturingLogger({ lines, },),
+            },);
+
+            await thrownBy(function askText(): Promise<unknown> {
+              return client.chatText({ modelId: SEAT_HYPER_TEXT_BEDROCK, messages: MESSAGES, signal: SIGNAL, },);
+            },);
+            await thrownBy(function askAgain(): Promise<unknown> {
+              return client.chatText({ modelId: SEAT_HYPER_TEXT_BEDROCK, messages: MESSAGES, signal: SIGNAL, },);
+            },);
+
+            expect(lines,).toStrictEqual([
+              'warn SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it: refused by SyntheticHttpError with HTTP 401 '
+              + '(the provider said: "{\\"error\\":{\\"code\\":\\"invalid_api_key\\",\\"message\\":\\"The security '
+              + 'token included in the request has expired.\\",\\"param\\":null,\\"type\\":\\"permission_denied_error\\"}}"), '
+              + 'after 0 usable answers this run. The provider does not accept the credential this seat is asked '
+              + 'with, and a credential does not renew during a run, so every ask to it will fail; the run withholds '
+              + 'the seat after 4 failed asks. Renew the credential for this seat\'s provider before the next run.',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'SAYS IT FOR EACH SEAT whose provider refused the credential, and counts the answers a seat gave '
+            + 'before its credential expired',
+          fn: async () => {
+            /** Lines the wrapper writes. */
+            const lines: string[] = [];
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
+            /** Client under test, whose provider refuses the credential on every call. */
+            const client = seatTallyClient({
+              inner: refusingClient({ status: 401, },),
+              tally,
+              minAsks: 4,
+              l: levelCapturingLogger({ lines, },),
+            },);
+
+            await thrownBy(function askVision(): Promise<unknown> {
+              return client.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: SIGNAL, },);
+            },);
+            await thrownBy(function askBedrock(): Promise<unknown> {
+              return client.chatText({ modelId: SEAT_HYPER_TEXT_BEDROCK, messages: MESSAGES, signal: SIGNAL, },);
+            },);
+
+            expect(lines.length,).toBe(2,);
+            expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3: ',);
+            expect(lines[0],).toContain('after 2 usable answers this run.',);
+            expect(lines[1],).toContain('SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it: ',);
+            expect(lines[1],).toContain('after 0 usable answers this run.',);
+          },
+        },),
+
+        it({
+          name: 'SAYS NOTHING for a refusal that is not a rejected credential: another HTTP status, a failure that '
+            + 'is no HTTP answer, or a call the caller had already abandoned',
+          fn: async () => {
+            /** Lines the wrapper writes. */
+            const lines: string[] = [];
+            /** Signal the caller aborted before the call was made. */
+            const aborted = new AbortController();
+            aborted.abort();
+            /** Wrapper over a provider answering 500. */
+            const serverError = seatTallyClient({
+              inner: refusingClient({ status: 500, },),
+              tally: createSeatTally(),
+              minAsks: 4,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            /** Wrapper over a client throwing a plain error. */
+            const plainError = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally: createSeatTally(),
+              minAsks: 4,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            /** Wrapper over a provider answering 401 to a call nobody waits for. */
+            const abandoned = seatTallyClient({
+              inner: refusingClient({ status: 401, },),
+              tally: createSeatTally(),
+              minAsks: 4,
+              l: levelCapturingLogger({ lines, },),
+            },);
+
+            await thrownBy(function askServerError(): Promise<unknown> {
+              return serverError.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: SIGNAL, },);
+            },);
+            await thrownBy(function askPlainError(): Promise<unknown> {
+              return plainError.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: SIGNAL, },);
+            },);
+            await thrownBy(function askAbandoned(): Promise<unknown> {
+              return abandoned.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: aborted.signal, },);
+            },);
+
+            expect(lines,).toStrictEqual([],);
           },
         },),
 
@@ -619,6 +888,7 @@ await describe({
               inner,
               tally: createSeatTally(),
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             expect(client.quotas,).toBe(inner.quotas,);
@@ -648,6 +918,7 @@ await describe({
               },
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
             /** Client under test, whose decision seat throws. */
             const failing = seatTallyClient({
@@ -659,6 +930,7 @@ await describe({
               },
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },);
 
             expect(await answering.decide?.(request,),).toBe(reply,);
@@ -669,11 +941,13 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 1,
+              abandoned: 0,
             },],);
             expect(seatTallyClient({
               inner: innerClient({ text: '喵。', },),
               tally,
               minAsks: 4,
+              l: levelCapturingLogger({ lines: [], },),
             },).decide,).toBeUndefined();
           },
         },),
@@ -701,8 +975,26 @@ await describe({
             tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
             expect(seatReportLines({ tally, },),).toStrictEqual([
-              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0',
-              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0',
+              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0',
+              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0 abandoned=0',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'PRINTS THE ABANDONED COUNT on the SEAT line, so a seat whose replies were cut at the straggler '
+            + 'deadline does not read as one that answered every ask',
+          fn: async () => {
+            /** Tally of a seat that answered twice and was cut off three times. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
+
+            expect(seatReportLines({ tally, },),).toStrictEqual([
+              'SEAT hf:openai/gpt-oss-120b asked=2 usable=2 unusable=0 threw=0 abandoned=3',
             ],);
           },
         },),
