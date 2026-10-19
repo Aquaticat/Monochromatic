@@ -109,6 +109,23 @@ footer { color: var(--color-muted); font-size: 0.88rem; line-height: 1.6; border
 li { line-height: 1.5; margin-block: 0.4rem; }
 select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline: 0.6rem; }
 .decision .ranking { font-size: 0.94rem; }
+.diagram { margin-inline: 0; margin-block: 1.5rem 2rem; }
+.diagram-scroll { overflow: auto; border-color: var(--color-line); border-style: solid; border-width: 0.0625rem; border-radius: 0.6rem; background-color: var(--color-page); }
+.diagram-scroll:focus-visible { outline-color: var(--color-accent); outline-style: solid; outline-width: 0.2rem; outline-offset: 0.2rem; }
+.chart { display: block; inline-size: 100%; min-inline-size: 58rem; block-size: auto; }
+.chart text { fill: var(--color-text); font-size: 1.125rem; text-anchor: middle; }
+.chart .label { font-weight: 750; }
+.chart .detail { font-size: 1rem; fill: var(--color-muted); }
+.chart .edge-label { font-size: 1rem; font-weight: 750; paint-order: stroke; stroke: var(--color-page); stroke-width: 0.5rem; stroke-linejoin: round; }
+.chart .shape { fill: var(--color-surface); stroke: var(--color-line); stroke-width: 2; }
+.chart .decision-shape { fill: var(--color-tint); stroke: var(--color-accent); stroke-width: 2; }
+.chart .edge { fill: none; stroke: var(--color-accent); stroke-width: 2; marker-end: url(#flow-arrow); }
+.chart .arrow-head { fill: var(--color-accent); }
+.chart .terminal[data-outcome="approve"] .shape { fill: var(--color-good-surface); stroke: var(--color-good); }
+.chart .terminal[data-outcome="deny"] .shape { fill: var(--color-stop-surface); stroke: var(--color-stop); }
+.chart .terminal[data-outcome="ask"] .shape { fill: var(--color-ask-surface); stroke: var(--color-ask); }
+.diagram figcaption { margin-block-start: 0.7rem; color: var(--color-muted); line-height: 1.5; }
+.diagram-legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; }
 </style>
 </head>
 <body><main>
@@ -118,13 +135,70 @@ select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline
 <div class="chips"><span class="chip">Every Pi start: Luna relevance</span><span class="chip">First pass: every effective rule</span><span class="chip">Autonomy: assess reversibility</span><span class="chip">Four answer choices</span><span class="chip">At most 3 review batches</span></div>
 <nav aria-label="Review sections"><a href="#overview">Stages</a><a href="#q5">Built-in rules</a><a href="#adaptive">Snapshot and follow-ups</a><a href="#meaning">Worked outcomes</a><a href="#manual">Human feedback</a><a href="#q1">Open decisions</a><a href="#response">Prepare response</a></nav>
 </header>
-<section id="overview" class="panel"><div class="eyebrow">Settled by your instructions</div><h2>Startup selects potential relevance. Every rule then gets assessed.</h2>
-<div class="flow" aria-label="Startup flow"><div class="node"><span class="step">Stage 0 / Every Pi start</span><strong>Parsed AGENTS.md → Luna</strong><p>Which rules could be relevant to agent operations? A parsing cache never skips this call.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Effective authored rules + built-ins</strong><p>About 100 authored rules expected. No fixed-count truncation or padding.</p></div></div>
-<div class="flow" aria-label="Deterministic review"><div class="node"><span class="step">1 / Capture</span><strong>Prepare + parse the whole group</strong><p>All pending calls, all final arguments, full execution structure.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><span class="step">2 / Deterministic checks</span><strong>Can code establish a verdict?</strong><p>A named condition establishes approve, deny, or ask.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Yes → exit automatic review</strong><p>Approve: release the fresh group. Deny: block it. Ask: explain and prompt the human. Zero per-group Luna calls.</p></div></div>
-<div class="flow" aria-label="Model review only without a deterministic verdict"><div class="node" data-kind="code"><strong>No deterministic verdict</strong><p>Only this branch enters per-group Luna review.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><span class="step">3 / Luna</span><strong>Every rule = one question</strong><p>Complete snapshot. Approve / deny / ask / not-applicable.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><span class="step">4 / Code</span><strong>Aggregate answers</strong><p>An established group verdict exits review. Only an unresolved group outcome can use follow-ups.</p></div></div>
-<div class="grid"><div class="node" data-kind="approve"><strong>✓ Approve</strong><p>Verify freshness, then release the reviewed group.</p></div><div class="node" data-kind="deny"><strong>× Deny</strong><p>Withhold execution and explain the decisive evidence.</p></div><div class="node" data-kind="ask"><strong>? Ask</strong><p>Present the exact group and capture the human’s decision.</p></div></div>
-<p class="return">↶ Group outcome unresolved → focused new questions → code aggregates again. Still unresolved after batch 3 → ask. An established Ask goes directly to the human.</p>
-<p class="caption">No useful-question subset selection in the first pass. Up to three parallel Luna calls per batch; retries consume those slots. Span 02 remains an observer with no decision authority.</p></section>
+<section id="overview" class="panel"><div class="eyebrow">Settled control flow</div><h2>Follow the branches from the pending group to its outcome.</h2>
+<p>Startup prepares the rules once per Pi start. Each pending group then enters the review flow. Follow the labeled arrows; only the unresolved path loops back.</p>
+<div class="diagram-legend"><span>◇ Diamond: decision</span><span>▭ Rectangle: operation</span><span>▱ Rounded end: exit this review</span><span>→ Arrow: execution order</span></div>
+<figure class="diagram"><h3>Stage 0: startup</h3>
+<div class="diagram-scroll" tabindex="0" role="region" aria-label="Startup flowchart, scroll horizontally on narrow screens">
+<svg class="chart" viewBox="0 0 1040 180" role="img" aria-labelledby="startup-title startup-description">
+<title id="startup-title">Prepare the effective rules on every Pi start</title>
+<desc id="startup-description">Pi starts. Luna classifies parsed AGENTS.md rules for potential relevance. Combine effective authored rules with built-ins. Rules are ready for group review.</desc>
+<defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="arrow-head" d="M 0 0 L 10 5 L 0 10 Z"/></marker></defs>
+<path class="edge" d="M180 90 H230"/><path class="edge" d="M500 90 H550"/><path class="edge" d="M820 90 H870"/>
+<rect class="shape" x="20" y="60" width="160" height="60" rx="30"/><text class="label" x="100" y="97">Pi starts</text>
+<rect class="shape" x="230" y="40" width="270" height="100"/><text class="label" x="365" y="72">Luna: rule relevance</text><text class="detail" x="365" y="101">Parsed AGENTS.md</text><text class="detail" x="365" y="123">Every start, including cache hits</text>
+<rect class="shape" x="550" y="40" width="270" height="100"/><text class="label" x="685" y="78">Effective authored rules</text><text class="label" x="685" y="104">+ built-in rules</text><text class="detail" x="685" y="126">No fixed-count truncation</text>
+<rect class="shape" x="870" y="60" width="150" height="60" rx="30"/><text class="label" x="945" y="97">Rules ready</text>
+</svg></div><figcaption>Successful startup path. Classification failure handling remains open engineering work. The built-in catalogue remains deferred.</figcaption></figure>
+<figure class="diagram"><h3>Stages 1 to 4: review one complete pending group</h3>
+<div class="diagram-scroll" tabindex="0" role="region" aria-label="Group review flowchart, scroll horizontally on narrow screens">
+<svg class="chart" viewBox="0 0 1040 1320" role="img" aria-labelledby="group-title group-description">
+<title id="group-title">Deterministic verdicts exit; only unresolved review reaches or returns to Luna</title>
+<desc id="group-description">Capture and parse the pending group. Deterministic approve releases it, deny blocks it, and ask prompts the human. Only no verdict creates an every-rule first batch. Luna answers the current batch, then code aggregates. Approve, deny, and ask each exit. If unresolved and fewer than three batches ran, form focused questions and return to Luna. If three batches ran, explain and ask.</desc>
+<!-- Connected paths precede nodes so endpoints meet the shape boundaries. -->
+<g aria-hidden="true">
+<path class="edge" data-from="pending" data-to="capture" d="M430 70 V110"/>
+<path class="edge" data-from="capture" data-to="deterministic" d="M430 190 V240"/>
+<path class="edge" data-from="deterministic" data-to="det-approve" d="M520 285 H700 V276 H760"/>
+<path class="edge" data-from="deterministic" data-to="det-deny" d="M610 330 H720 V376 H760"/>
+<path class="edge" data-from="deterministic" data-to="det-ask" d="M520 375 H680 V476 H760"/>
+<path class="edge" data-from="deterministic" data-to="first-batch" d="M430 420 V490"/>
+<path class="edge" data-from="first-batch" data-to="luna" d="M430 560 V610"/>
+<path class="edge" data-from="luna" data-to="aggregate" d="M430 680 V730"/>
+<path class="edge" data-from="aggregate" data-to="group-result" d="M430 800 V850"/>
+<path class="edge" data-from="group-result" data-to="model-approve" d="M520 895 H700 V876 H760"/>
+<path class="edge" data-from="group-result" data-to="model-deny" d="M610 940 H720 V976 H760"/>
+<path class="edge" data-from="group-result" data-to="model-ask" d="M520 985 H680 V1076 H760"/>
+<path class="edge" data-from="group-result" data-to="budget" d="M430 1030 V1100"/>
+<path class="edge" data-from="budget" data-to="exhausted-ask" d="M590 1180 H760"/>
+<path class="edge" data-from="budget" data-to="follow-up" d="M270 1180 H140 V880"/>
+<path class="edge" data-from="follow-up" data-to="luna" d="M140 780 V645 H280"/>
+</g>
+<g data-node="pending"><rect class="shape" x="280" y="20" width="300" height="50" rx="25"/><text class="label" x="430" y="52">Pending tool-call group</text></g>
+<g data-node="capture"><rect class="shape" x="280" y="110" width="300" height="80"/><text class="label" x="430" y="142">Prepare + deeply parse</text><text class="detail" x="430" y="168">Entire group; final arguments</text></g>
+<g data-node="deterministic"><polygon class="decision-shape" points="430,240 610,330 430,420 250,330"/><text class="label" x="430" y="323">Deterministic</text><text class="label" x="430" y="349">verdict?</text></g>
+<text class="edge-label" x="626" y="270">Approve</text><text class="edge-label" x="658" y="318">Deny</text><text class="edge-label" x="620" y="400">Ask</text><text class="edge-label" x="430" y="459">No verdict</text>
+<g class="terminal" data-outcome="approve" data-node="det-approve"><rect class="shape" x="760" y="240" width="250" height="72" rx="36"/><text class="label" x="885" y="270">✓ Approve</text><text class="detail" x="885" y="295">Freshness check → release</text></g>
+<g class="terminal" data-outcome="deny" data-node="det-deny"><rect class="shape" x="760" y="340" width="250" height="72" rx="36"/><text class="label" x="885" y="370">× Deny</text><text class="detail" x="885" y="395">Explain + block execution</text></g>
+<g class="terminal" data-outcome="ask" data-node="det-ask"><rect class="shape" x="760" y="440" width="250" height="72" rx="36"/><text class="label" x="885" y="470">? Ask</text><text class="detail" x="885" y="495">Explain + human decision</text></g>
+<text class="detail" x="885" y="548">These exits make no</text><text class="detail" x="885" y="570">per-group Luna calls.</text>
+<g data-node="first-batch"><rect class="shape" x="280" y="490" width="300" height="70"/><text class="label" x="430" y="518">Form the first batch</text><text class="detail" x="430" y="544">Every effective rule + every built-in</text></g>
+<g data-node="luna"><rect class="shape" x="280" y="610" width="300" height="70"/><text class="label" x="430" y="638">Luna answers current batch</text><text class="detail" x="430" y="664">Complete snapshot; four choices</text></g>
+<g data-node="aggregate"><rect class="shape" x="280" y="730" width="300" height="70"/><text class="label" x="430" y="758">Code aggregates answers</text><text class="detail" x="430" y="784">Admission + group reduction</text></g>
+<g data-node="group-result"><polygon class="decision-shape" points="430,850 610,940 430,1030 250,940"/><text class="label" x="430" y="933">Group</text><text class="label" x="430" y="959">outcome?</text></g>
+<text class="edge-label" x="626" y="874">Approve</text><text class="edge-label" x="658" y="928">Deny</text><text class="edge-label" x="620" y="1010">Ask</text><text class="edge-label" x="430" y="1070">Unresolved</text>
+<g class="terminal" data-outcome="approve" data-node="model-approve"><rect class="shape" x="760" y="840" width="250" height="72" rx="36"/><text class="label" x="885" y="870">✓ Approve</text><text class="detail" x="885" y="895">Freshness check → release</text></g>
+<g class="terminal" data-outcome="deny" data-node="model-deny"><rect class="shape" x="760" y="940" width="250" height="72" rx="36"/><text class="label" x="885" y="970">× Deny</text><text class="detail" x="885" y="995">Explain + block execution</text></g>
+<g class="terminal" data-outcome="ask" data-node="model-ask"><rect class="shape" x="760" y="1040" width="250" height="72" rx="36"/><text class="label" x="885" y="1070">? Ask</text><text class="detail" x="885" y="1095">Explain + human decision</text></g>
+<g data-node="budget"><polygon class="decision-shape" points="430,1100 590,1180 430,1260 270,1180"/><text class="label" x="430" y="1173">Fewer than</text><text class="label" x="430" y="1199">3 batches used?</text></g>
+<text class="edge-label" x="209" y="1164">Yes</text><text class="edge-label" x="675" y="1165">No: limit reached</text>
+<g class="terminal" data-outcome="ask" data-node="exhausted-ask"><rect class="shape" x="760" y="1144" width="250" height="72" rx="36"/><text class="label" x="885" y="1174">? Ask</text><text class="detail" x="885" y="1199">Explain remaining uncertainty</text></g>
+<g data-node="follow-up"><rect class="shape" x="30" y="780" width="220" height="100"/><text class="label" x="140" y="810">Form new questions</text><text class="detail" x="140" y="838">Target the recorded</text><text class="detail" x="140" y="861">uncertainty</text></g>
+<text class="edge-label" x="140" y="704">Next batch</text>
+<text class="detail" x="430" y="1300">An established Ask never enters the follow-up loop.</text>
+</svg></div>
+<figcaption>Scroll horizontally on narrow screens; labels stay readable. Rounded exits end automatic review, not necessarily the agent run. Every Ask continues to the human-decision flow. Each batch allows up to three parallel calls; retries consume those slots. Span 02 observes without changing the verdict.</figcaption></figure>
+</section>
 <section id="q5" class="panel"><div class="eyebrow">Architecture settled / Rule contents deferred</div><h2>Multiple built-in rules. The catalogue comes later.</h2><p>We are not choosing the rules, their count, names, or wording in this round.</p><div class="flow"><div class="node"><strong>Built-in rules</strong><p>Multiple general-agent rules. Contents remain unspecified.</p></div><span class="arrow" aria-hidden="true">+</span><div class="node"><strong>Effective authored rules</strong><p>The rules selected at startup.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><strong>Every rule gets an answer</strong><p>Approve / deny / ask / not-applicable. Code aggregates the attributed answers.</p></div></div><p class="caption">Reversibility remains an assessment principle; this does not finalize a particular built-in. The previous proposed catalogue is withdrawn from the active review. No catalogue decision is requested now.</p></section>
 <section id="adaptive" class="panel"><div class="eyebrow">Settled structure / Context-anchor detail open in Q4</div><h2>The snapshot stays whole while questions become more specific.</h2>
 <div class="grid"><div class="node"><h3>Prepared group</h3><p>Tool identities, parsed arguments, resources, control flow, and all pending members. Separate from the history cap.</p></div><div class="node"><h3>Visible context</h3><p><code>clamp(5, units since latest human message, 10)</code>. Units are assistant thinking/output blocks or tool-call sets. Count private-thinking boundaries without sending private content.</p></div><div class="node"><h3>Effective ruleset</h3><p>Original text, source, hierarchy, and explicit exceptions. Every rule appears in first-pass coverage, including unrelated ones.</p></div></div>
@@ -138,7 +212,25 @@ select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline
 <article class="scenario" data-case="missing" hidden><p class="quote">An applicable rule requires the human to select the account to charge. No selection exists.</p><div class="flow"><div class="node"><strong>Operation scope</strong><span class="outcome" data-result="approve">✓ Approve</span><p>The general action is requested.</p></div><div class="node"><strong>Required human choice</strong><span class="outcome" data-result="ask">? Ask</span><p>A model cannot invent the human’s account preference.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="ask"><strong>? Human review now</strong><p>An established group Ask ends automatic review. If code established it deterministically, Luna never runs for this group.</p></div></div></article>
 <p class="caption">These examples assume admitted answers. Q1 determines whether a probability distribution is strong enough to admit a label. An all-not-applicable result cannot authorize the group; applicable effects and recovery checks need positive support. Exact package matching is not a permission condition.</p></section>
 <section id="manual" class="panel"><div class="eyebrow">Settled manual feedback / Local illustration</div><h2>Every Ask explains the decision.</h2><p>The human can already see the transcript and AGENTS.md. Explain the triggering rule and facts, required human confirmation or judgment, any actual uncertainty, and what each choice will do. A rule can require asking even with all facts known.</p>
-<div class="flow"><div class="node"><strong>Explain the exact group</strong><p>Pending action + concrete evidence + required human decision + consequences. Do not invent uncertainty.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Choose + optional reason</strong><p>Skipping the reason preserves the choice.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><strong>Record in session</strong><p>Persist the choice and reason, and expose them to the agent on continuation or resume.</p></div></div>
+<figure class="diagram"><h3>Stage 5: human decision</h3><div class="diagram-scroll" tabindex="0" role="region" aria-label="Human decision flowchart, scroll horizontally on narrow screens">
+<svg class="chart" viewBox="0 0 1040 710" role="img" aria-labelledby="human-title human-description">
+<title id="human-title">Explain, capture the human choice and optional reason, then record and act</title>
+<desc id="human-description">Ask enters an explanation of the pending group, triggering evidence, and consequences. The human chooses Approve or Stop and may give a reason for either. Approve records approval and releases the group after a freshness check. Stop records decline and aborts the run. Both records persist in model-visible session context.</desc>
+<path class="edge" d="M520 70 V110"/><path class="edge" d="M520 200 V240"/>
+<path class="edge" d="M360 320 H200 V420"/><path class="edge" d="M680 320 H840 V420"/>
+<path class="edge" d="M200 490 V530"/><path class="edge" d="M840 490 V530"/>
+<path class="edge" d="M200 610 V650"/><path class="edge" d="M840 610 V650"/>
+<rect class="shape" x="420" y="20" width="200" height="50" rx="25"/><text class="label" x="520" y="52">Ask</text>
+<rect class="shape" x="340" y="110" width="360" height="90"/><text class="label" x="520" y="140">Explain the exact group</text><text class="detail" x="520" y="166">Rule + facts + needed human decision</text><text class="detail" x="520" y="188">What Approve and Stop will do</text>
+<polygon class="decision-shape" points="520,240 680,320 520,400 360,320"/><text class="label" x="520" y="313">Human</text><text class="label" x="520" y="339">choice?</text>
+<text class="edge-label" x="270" y="303">Approve</text><text class="edge-label" x="770" y="303">Stop</text>
+<rect class="shape" x="50" y="420" width="300" height="70"/><text class="label" x="200" y="449">Optional reason</text><text class="detail" x="200" y="476">Skip keeps Approve selected</text>
+<rect class="shape" x="690" y="420" width="300" height="70"/><text class="label" x="840" y="449">Optional reason</text><text class="detail" x="840" y="476">Skip keeps Stop selected</text>
+<rect class="shape" x="50" y="530" width="300" height="80"/><text class="label" x="200" y="560">Record user approval + reason</text><text class="detail" x="200" y="588">Durable + model-visible</text>
+<rect class="shape" x="690" y="530" width="300" height="80"/><text class="label" x="840" y="560">Record user decline + reason</text><text class="detail" x="840" y="588">Durable + available on resume</text>
+<g class="terminal" data-outcome="approve"><rect class="shape" x="50" y="650" width="300" height="50" rx="25"/><text class="label" x="200" y="682">✓ Check freshness + release</text></g>
+<g class="terminal" data-outcome="deny"><rect class="shape" x="690" y="650" width="300" height="50" rx="25"/><text class="label" x="840" y="682">× Abort run</text></g>
+</svg></div><figcaption>Approve/Stop paths shown. Dismissal or unavailable UI withholds execution. A changed group invalidates approval. Skipping a reason never changes the chosen action.</figcaption></figure>
 <div class="rail" id="ask-explanation"><h3>Illustrative Ask: report upload to workspace B</h3><p>The upload targets workspace B. Your request specifies the approved team workspace; the reviewed evidence does not establish that B is that workspace.</p><p><strong>Approve</strong> permits this report upload to B. <strong>Stop</strong> aborts the run without uploading. Confirm whether B is the intended destination; you may include a reason.</p><p class="caption">Every escalation path needs this decision-specific explanation. Scores alone, a transcript recap, or a rule dump do not supply it. State a review failure honestly when evidence is unavailable.</p></div><label for="demo-reason">Optional reason for this illustration</label><textarea id="demo-reason" placeholder="For example: workspace B is the approved team destination."></textarea>
 <div class="choice-tabs"><button type="button" data-action="approved">Illustrate Approve</button><button type="button" data-action="declined">Illustrate Stop</button></div>
 <p id="demo-output" class="quote" role="status">Choose an illustration to see the session record. Nothing executes.</p>

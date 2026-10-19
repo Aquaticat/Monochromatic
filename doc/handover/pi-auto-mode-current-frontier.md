@@ -6,6 +6,20 @@ Plan review is active and implementation remains stopped.
 The active visual form has open choices Q1, Q4, and Q6; Q2 is withdrawn as already settled.
 After answers, update the decision tree and continue the next unlocked review work.
 
+### Flowchart correction, 2026-10-19
+
+The user rejects the card-row drawings as improper flowcharts.
+Replace startup, group review, and manual decision drawings with connected SVG flowcharts:
+process rectangles, decision diamonds, labeled edges, terminal outcomes, and an actual follow-up loop.
+Deterministic approve/deny/ask each exit before per-group Luna;
+only unresolved group outcomes reach the batch-limit decision and the focused-question return path.
+Approve and Stop each show optional reason, durable model-visible record, and execution consequence.
+Keep text readable through keyboard-accessible horizontal scrolling on narrow screens.
+Tighten the existing proposed `VHI` guidance in the plan to require connected control-flow notation;
+the actual `AGENTS.md` is unchanged. No architecture decision or built-in catalogue choice is reopened.
+Next action: inspect rendered geometry, drive diagrams and existing form in light/dark and narrow layouts,
+record evidence, and reopen the active review in Helium.
+
 ### Terminal verdict correction, 2026-10-19
 
 The user corrects the invented ambiguous-ask alternative:
