@@ -4,6 +4,32 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Span 02 live shadow, 2026-10-19
+
+The user explicitly requested a production shadow,
+including the supervised Pi MiMo sessions.
+The read-only sidecar is launched as container
+`b2d1ac083423a10224500e3e9d66dc9dc0432d99ffb034a63b7af70387616922`.
+Its persistent receipt is `span02-shadow-live.json` in the preparation-failure scratch directory;
+deployment output is `span02-shadow-live-FJysy5/output`.
+The [package deployment record](../../package/pi-plugin/auto-mode/doc/span-02-shadow.md)
+explains purpose,
+authority,
+correlation and bounds.
+Watchers are ready on both live sessions;
+no actual new shadow call has been verified yet.
+Next: verify a newly captured live request,
+its Span 02 response and its Luna comparison.
+The idle native worker received an actual RPC `prompt` to resume its queued fixture work.
+RPC `follow_up` alone had queued the instruction without starting that idle worker.
+The source worker acknowledged the no-SDK constraint and continues its scoped checkpoint.
+
+The provider boundary cleanup is committed as `94b79e7db1`:
+message and producer types derive from public Pi host declarations,
+and unused model-review/model-selection dependencies are removed from auto-mode's manifest.
+Fresh package type verification and generated lockfile refresh remain required.
+Native SDK staging and serializer extraction remain to be replaced.
+
 ### Provider calls use platform fetch, 2026-10-19
 
 The user prohibits `pi-ai` and `openai` package usage and requires plain `fetch` for API calls.
