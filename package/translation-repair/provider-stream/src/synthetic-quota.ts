@@ -560,8 +560,8 @@ export function parseQuotaSnapshot(
     },);
 
   /**
-   The five-hour window as a property to spread: empty when the body had no such key, since a key that is present and no object
-   was refused above.
+   The five-hour window as a property to spread: empty when the body had no such key, since the `carriesFiveHour` check refuses a
+   key that is present and no object.
    */
   const fiveHourEntry = isJsonRecord(fiveHourBlock,)
     ? {
