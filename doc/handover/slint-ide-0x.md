@@ -752,6 +752,37 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bound): `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:closures`, `test` (792), `test:wrap` (15 and 67) and
     `test:native` (203) passed, and the ten `inspect:source-guards` cases above (seven new, three re-anchored) each
     passed at baseline, failed with the guard removed, and passed restored.
+    Follow-up (branch `fix/ide-tall-wrapped-settle`,
+    issue 1785,
+    2026-10-19):
+    a window 10,000 px or taller over wrapped text never finished the measurement pass
+    (8,000 px and smaller settled in 1.7 s).
+    Cause:
+    `holds` in `src/native/viewport.rs` asked for a margin of a quarter view height on each side of the view,
+    and a tile cut to the 64 MiB cap (12,384 px at text width 1326)
+    cannot give 1.25 view heights once the view passes about 9,900 px
+    (8,200 px in the middle of the text).
+    `accepts` in `src/native/tile.rs` then discarded every tile the worker built
+    (probe:
+    only `holds` was false),
+    the render asked for the same tile,
+    and the `ide-source-tile` thread rebuilt a 12,384 px raster for ever.
+    Fix:
+    `recenter_edge` takes the smaller of the quarter and what the cap leaves around the view,
+    less two code rows for the clip rounding
+    (negative for a view taller than the cap).
+    Settle times at heights of 8,000 to 14,000 px (five sizes):
+    1.8 s each after the fix;
+    10,000 and above did not settle in 25 s before.
+    Tests:
+    `a_tall_window_over_wrapped_text_finishes_the_measurement_pass`
+    and the new `accepted` check in `no_window_size_or_scale_makes_a_raster_past_the_limit`
+    (both fail without the fix);
+    guard `tall-window-edge`.
+    A window taller than the cap leaves part of the view unpainted at each edge
+    (up to the overshoot plus two code rows),
+    and every scroll step builds a new tile there,
+    as `band_clip` already documents.
     The IDE was reinstalled from `main` at `482a3cf220` on 2026-10-19 (`dist/monochromatic-ide` and the installed binary
     both sha256 `7e6b2f6a8aab…`; the previous binary is `~/.local/bin/monochromatic-ide.previous`, sha256 `f068d238b760…`).
   - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;
@@ -929,6 +960,17 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 44, language lifecycle 28, ignored 75, theme 13, search 49, language navigation 45, source 300). The other
     six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
+  - Queued after the minimap landing (2026-10-19, agents running in worktrees off `origin/main`):
+    `fix/ide-wrap-clip-flake` (worktree `.claude/worktrees/ide-flake`) fixes the wrap-clip test race;
+    issue #1785 (a 10,000 px or taller window over wrapped text never settled) is fixed: landed on `main` as
+    `8c597c3c58` on 2026-10-19 after the coordinator reran the gates and the `tall-window-edge` guard, and installed
+    (the installed binary was not launched). Next, after the flake fix lands:
+    the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test` task
+    still runs `cargo test`). On 2026-10-19 the owner authorized deleting the merged IDE branches on origin
+    and 34 were deleted
+    (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the unmerged IDE
+    branches (language, live theme, navigation, runtime languages, sidebar resize, source keys, prototypes, research)
+    were left.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the

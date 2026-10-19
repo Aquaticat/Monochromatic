@@ -4,6 +4,181 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Implementation stopped for plan review, 2026-10-19
+
+The user explicitly stops implementation and requests a Markdown plan for review.
+Do not build anything, write replacement source, install dependencies, change package configuration,
+or continue the legacy removal queue while this review is pending.
+The requested artifact is
+[the package ground-up rebuild plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md).
+It inventories proposed dependency functions and necessity,
+high-level modules, estimated character budgets, deployment budgets, and unresolved integration decisions.
+These budgets are proposals, not measured implementation footprints.
+The current task ends with the rendered, committed plan and a review handoff.
+Discussion of the plan alone is not authorization to resume implementation.
+The draft is committed as `13c7a2767b`.
+Documentation-only verification, `mise run verify-rebuild-plan` in the preparation-failure scratch directory,
+renders the plan and handover through Pandoc and checks their local links.
+The first receipt is `auto-mode-rebuild-plan-render-bKxA2N/receipt.json` under the durable agent scratch root:
+both documents render and all 17 local links resolve within two GiB and two CPUs, without network access.
+No package build, dependency installation, or replacement source execution ran for the plan.
+The user's subsequent assessment question does not lift the implementation stop.
+The plan now explicitly records why it is not ready for implementation approval:
+an unqualified private host hook, unresolved behavioral reduction and shadow accounting,
+unbounded persistent log retention, unproven size fit, and an incomplete transitive development inventory.
+Do not describe the dependency inventory or the architecture as fully validated.
+
+### Fresh implementation in main, 2026-10-19
+
+The user authorizes starting auto-mode over completely.
+Preserve current HEAD in a separate worktree for reference, then rebuild in `main`.
+Do not spend time identifying individual parts to retire.
+The requested reference worktree is
+`/var/home/user/temp/agent/pi-auto-mode-before-rebuild-20261019`,
+created from `e74f84bb9f60c3e1ea90f1325cf2e64947715ba0`.
+Creation completed and `git rev-parse HEAD` confirms the preserved commit;
+the reference worktree has no tracked or untracked changes.
+Checkpoint the existing MiMo-owned edits before replacing package source.
+Preserve unrelated concurrent work.
+
+The assistant's proposal to ask a single whole-operation question was wrong.
+The existing meaning-classification pipeline is also wrong.
+The user specifies rule-versus-current-request evaluation:
+Each call is expected to assess 100 or more rule-versus-request questions together.
+The user's correction explicitly rejects interpreting this as a handful of questions.
+Verify the actual outgoing payloads at that scale.
+Questions concern approval and denial, with unknown probability;
+do not reconstruct permission/prohibition/heading/adoption taxonomies.
+Our code determines approve, deny, or ask.
+Allow at most three sequential batches and at most three parallel calls per batch.
+Subsequent batches adapt their questions to the remaining uncertainty.
+Stop when resolved; ask if uncertainty remains after the final batch.
+With `unknown >= 0.2`, an executed action must score `>= 0.6`; otherwise ask.
+With `unknown < 0.2`, select the highest-scored action.
+Ties remain unresolved.
+Use platform `fetch` for provider calls and no direct `pi-ai` or `openai` package usage.
+Keep Span 02 as a shadow without decision authority.
+
+The categorical-admission scope question is superseded by this corrected model contract.
+Existing live shadow observations concern the legacy pipeline and do not verify the replacement.
+The installed production artifact remains unchanged until replacement consumer verification.
+
+Independently verifiable work:
+
+- Preserve the HEAD worktree and commit MiMo-owned checkpoints.
+- Implement adaptive rule review and deterministic resolution with captured-request tests.
+- Implement actual Pi complete-group integration and cancellation cleanup.
+- Implement plain-fetch Luna transport and matching Span 02 shadow requests.
+- Verify through configured Pi sessions, finish package lint and tests, and measure source characters and disk use.
+- Document the purpose of every substantial module inside the package.
+
+Do not revive the legacy lint-repair queue for source being replaced.
+The user corrected another delay: the assistant described a fresh rebuild while leaving `src` in place.
+The three uncommitted source edits are now preserved in `3ef7f32d19`.
+`git rm -r -- package/pi-plugin/auto-mode/src` removed the legacy source from `main`;
+`test ! -e package/pi-plugin/auto-mode/src` confirms the directory is absent.
+The package is intentionally between implementations, with no replacement build or test claim.
+The two untracked legacy TypeScript probe configs remain untouched:
+their owner is host UID `524288` and mode is `700`, so the attempted five-file checkpoint failed
+with `git-policy-cli` diagnostic `content-unavailable`, reporting Git's `Permission denied`.
+The subsequent three-source-file checkpoint succeeded.
+Recover the probe configs' ownership and checkpoint their contents before removing them.
+The legacy worker containers are absent from the running-container inspection;
+the remaining shadow, IDE and unrelated container mounts do not include either worker fixture as writable state.
+RPC abort commands were submitted to both legacy workers;
+their controller state files remain at 13:15 while submitted commands remain unconsumed at 13:25.
+Establish whether their processes are still alive before checkpointing their files.
+
+### Span 02 live shadow, 2026-10-19
+
+The user explicitly requested a production shadow,
+including the supervised Pi MiMo sessions.
+The read-only sidecar is launched as container
+`b2d1ac083423a10224500e3e9d66dc9dc0432d99ffb034a63b7af70387616922`.
+Its persistent receipt is `span02-shadow-live.json` in the preparation-failure scratch directory;
+deployment output is `span02-shadow-live-FJysy5/output`.
+The [package deployment record](../../package/pi-plugin/auto-mode/doc/span-02-shadow.md)
+explains purpose,
+authority,
+correlation and bounds.
+The first four new live requests completed HTTP `200`
+with `respan/span-02-20261015` and correlated with actual Luna diagnostics:
+native captures `130`/`131` and source captures `166`/`167`.
+Both one-head operation decisions agree;
+seven meaning/admission heads differ across the two 27-head clause assessments.
+This is model disagreement, not established correctness.
+No shadow request failed in this initial sample.
+Its measured call intervals span `640.827` to `4259.027` milliseconds.
+The live runner is the immutable launch copy recorded by its manifest digests.
+Later private source edits adding boolean questions and input-error isolation remain undeployed.
+Next: inspect the differing clause heads,
+qualify observer recovery and bounded retention,
+then ship a maintained runner without coupling it to primary decisions.
+The differing heads have now been inspected in the bounded sidecar container;
+`output/disagreements-inspected.json` retains the exact comparisons and selected source spans.
+The initial differences include PX1, PX2, PX3, RXI, SPG and conversation-span interpretation.
+Later source capture `168`, head `25`, is especially relevant:
+Luna chooses prohibition at `0.35` with unknown `0.17`;
+Span chooses none at `0.9038082` with unknown `0.05124579`.
+The shared new categorical rule would admit both meanings.
+The current live artifact still uses its older admission policy.
+The asynchronous categorical-scope question was rejected by the user on 2026-10-19.
+Rule-versus-request approval/denial questions replace the meaning-classification pipeline.
+Keep these captures as historical evidence, not verification of the replacement.
+The idle native worker received an actual RPC `prompt` to resume its queued fixture work.
+RPC `follow_up` alone had queued the instruction without starting that idle worker.
+The source worker acknowledged the no-SDK constraint and continues its scoped checkpoint.
+Its scoped formatting and public-host-type inspection dialog
+`81d326af-3427-48ad-aab0-513034cf4afe` was authorized through RPC;
+tool completions advanced from 114 to 116.
+Active boundary monitors are source session `87836` and native session `96803`.
+The first-shadow monitor is `54529` and can now be collected.
+Rendered documentation verification passed for 51 documents with zero broken local links
+in `render-span02-shadow-docs.log` before the live-result text was added;
+render the updated evidence again.
+
+The provider boundary cleanup is committed as `94b79e7db1`:
+message and producer types derive from public Pi host declarations,
+and unused model-review/model-selection dependencies are removed from auto-mode's manifest.
+Fresh package type verification and generated lockfile refresh remain required.
+Native SDK staging and serializer extraction remain to be replaced.
+
+### Provider calls use platform fetch, 2026-10-19
+
+The user prohibits `pi-ai` and `openai` package usage and requires plain `fetch` for API calls.
+Do not recover the native build by reinstalling or reconnecting either package.
+The existing Decisions transport and the completed Span 02 trial already use direct HTTP.
+The unwanted coupling remains in native source emission, provider serializer extraction,
+producer fixtures/contracts, and visible-message type imports.
+Remove that coupling while preserving the actual Pi host integration and permission behavior.
+The assistant's suggestion to replace API calls through Pi was corrected by the user:
+API calls use platform `fetch`.
+
+The interrupted dependency-inspection command partially changed the private inspector to resolve
+the installed `pi-ai` sibling by filesystem path.
+Do not run that inspector as a recovery path.
+Shared installed Pi is now `1.3.0`, while the maintained native source qualification remains `1.2.0`.
+A fresh cancellation-regression build stopped with Node's `Cannot find module 'openai'` before the test ran.
+This is a build failure, not a cancellation-test result.
+The installed active native release remains unchanged.
+
+The uncertainty-rule controls completed 13 recorded steps in
+`uncertainty-built-guard-results.json` under the persistent preparation-failure scratch directory.
+Both rebuilt counterfactuals failed the intended unit and native cases;
+restoring the actual rule made both native boundary cases and the unit suite pass.
+The refined candidate also passed all nine real producer-lifetime case receipts.
+Commit `20c90b6b18` introduced a fixture verifier that swallowed assertion failures;
+`b86bc331cd` repaired it.
+The original `3a21255dde` verifier rethrew failures, so its older guard evidence remains valid.
+
+The native MiMo worker finished its separate main-agent and auxiliary type controls.
+Its restored full check is blocked by concurrent shell-analyzer type drift;
+it did not call that check green.
+Its queued next scope remains the 81-warning HTTP assessment fixture,
+followed by the 127-warning frontier assertion file.
+The source worker owns its uncommitted producer-lifetime fixture/value edits;
+coordinate the new dependency constraint before touching those files.
+
 ### Verified retry and current proof gaps, 2026-10-19
 
 The user replaces the unconditional action-score floor with an exact uncertainty-dependent rule:

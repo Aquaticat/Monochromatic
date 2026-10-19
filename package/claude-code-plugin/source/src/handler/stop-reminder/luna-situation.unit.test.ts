@@ -23,10 +23,11 @@ import {
  Probabilities that sum to one with `work_closed` leading.
  */
 const CLOSED = {
-  announces_own_next_step: 0.05,
-  waits_on_background_work: 0.05,
-  waits_on_user: 0.05,
-  pauses_for_handoff: 0.05,
+  announces_own_next_step: 0.04,
+  leaves_open_work: 0.04,
+  waits_on_background_work: 0.04,
+  waits_on_user: 0.04,
+  pauses_for_handoff: 0.04,
   work_closed: 0.8,
 } as const;
 
@@ -216,6 +217,7 @@ await describe({
             const criterionOf = (value: string,) => choices.find((choice,) => choice.value === value)?.description ?? '';
 
             expect(criterionOf('announces_own_next_step',),).toContain('does not depend on any running agent',);
+            expect(criterionOf('leaves_open_work',),).toContain('could act on now without anyone else',);
             expect(criterionOf('waits_on_background_work',),).toContain('only after they report',);
           },
         },),
@@ -262,6 +264,7 @@ await describe({
             const verdict = parseSituationResponse(answerBody({
               probabilities: [
                 { value: 'announces_own_next_step', probability: 0.15, },
+                { value: 'leaves_open_work', probability: 0, },
                 { value: 'waits_on_background_work', probability: 0.8, },
                 { value: 'waits_on_user', probability: 0.02, },
                 { value: 'pauses_for_handoff', probability: 0.01, },
@@ -292,7 +295,8 @@ await describe({
                 { value: 'work_closed', probability: 0.2, },
                 { value: 'waits_on_user', probability: 0.2, },
                 { value: 'pauses_for_handoff', probability: 0.2, },
-                { value: 'announces_own_next_step', probability: 0.2, },
+                { value: 'leaves_open_work', probability: 0.1, },
+                { value: 'announces_own_next_step', probability: 0.1, },
               ],
             },),
           ],
@@ -301,7 +305,8 @@ await describe({
             answerBody({
               probabilities: [
                 { value: 'invented', probability: 0.2, },
-                { value: 'waits_on_background_work', probability: 0.2, },
+                { value: 'leaves_open_work', probability: 0.1, },
+                { value: 'waits_on_background_work', probability: 0.1, },
                 { value: 'waits_on_user', probability: 0.2, },
                 { value: 'pauses_for_handoff', probability: 0.2, },
                 { value: 'work_closed', probability: 0.2, },
@@ -313,6 +318,7 @@ await describe({
             answerBody({
               probabilities: [
                 { value: 'announces_own_next_step', probability: 1.2, },
+                { value: 'leaves_open_work', probability: -0.05, },
                 { value: 'waits_on_background_work', probability: -0.05, },
                 { value: 'waits_on_user', probability: -0.05, },
                 { value: 'pauses_for_handoff', probability: -0.05, },
@@ -326,7 +332,7 @@ await describe({
               probabilities: SITUATIONS.map((value,) => ({ value, probability: 0.5, }),),
             },),
           ],
-          ['an entry that is not an object', answerBody({ probabilities: [1, 2, 3, 4, 5,], },),],
+          ['an entry that is not an object', answerBody({ probabilities: [1, 2, 3, 4, 5, 6,], },),],
         ] as const).map(function rejects([name, body,],) {
           return it({
             name: `rejects ${name}`,

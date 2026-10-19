@@ -1735,7 +1735,7 @@ that is verification, not a decision for the user.
   that branch returns `Ok(false)` instead of the error, then restored. The `rec3` images and container are removed.
   Requirement from the user (2026-10-19, task 50): auto-push must never fail when there are no conflicts; offline and
   authentication failures are exempt. The user chose, by question, to merge an amended or rebased branch when
-  conflict-free and to handle the rare cases too. Done on main, unreleased (0.2.2 pending):
+  conflict-free and to handle the rare cases too. Done on main and released as 0.2.2 (below):
   `2bb616bf57` the worktree fast-forwards to a published reconcile merge when `HEAD` is the pushed branch at the
   pushed tip and no tracked file differs (refusals are reported with the reason); `e302913b94` up to 10 reconcile
   attempts instead of 3; `de1ce26e2f` the "published base" guard is gone (so an amended or rebased branch is merged;
@@ -1752,11 +1752,14 @@ that is verification, not a decision for the user.
   Running (started 2026-10-19, non-blocking): unit `cli-git-rec4`, script `~/temp/agent/rec4-run.ts`, image tag
   `rec4`, head `496875c8cf`: the container gate, then mutation over the three auto-push files limited to the functions
   this work touched; logs `~/temp/agent/rec4-container.log` and `rec4-mutation.log`. Read the final "mutants tested"
-  line, kill every missed mutant with a test, remove the `rec4` image and container, then release 0.2.2 by the usual
-  flow (bump `Cargo.toml`, README line 101, `Cargo.lock`, `mise run //package/git-policy/cli.fuzz:lock:members`;
-  push; verify crates.io and the GitHub release; `mise upgrade cargo:monochromatic-git-policy-cli`, restore
-  `mise.lock`). If the unit is gone without a result, restart it with `systemd-run --user --unit=cli-git-rec4
-  --collect --property=MemoryMax=24G node ~/temp/agent/rec4-run.ts`.
+  line, kill every missed mutant with a test (a miss ships in a follow-up release), and remove the `rec4` image and
+  container. If the unit is gone without a result, restart it with `systemd-run --user --unit=cli-git-rec4 --collect
+  --property=MemoryMax=24G node ~/temp/agent/rec4-run.ts`.
+  Released 2026-10-19 as 0.2.2 (commit `63a67d1b5f`) after the container gate passed (1995 tests, 5 skipped): the
+  publish workflow succeeded, crates.io lists 0.2.2, both archives exist, the glibc floor on the x86_64 archive is
+  still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it
+  (mise caches the remote version list for an hour, so the upgrade needed `MISE_FETCH_REMOTE_VERSIONS_CACHE=0s`;
+  `mise.lock` was restored).
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open

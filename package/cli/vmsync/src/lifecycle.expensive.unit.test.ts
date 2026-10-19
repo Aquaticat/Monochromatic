@@ -129,7 +129,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
 
 //region Linux lifecycle tests
 
-{
+if (process.env.VMSYNC_E2E_GUEST !== 'windows') {
   /** VM name for the Linux lifecycle test. */
   const VM = 'vmsync-e2e-linux';
 
@@ -158,6 +158,14 @@ async function safeDestroy(vmName: string,): Promise<void> {
    root for qemu-nbd, and non-root commands must read data from the same location.
    */
   const VMSYNC = `${MISE} && sudo -E "$(which node)" ${BUNDLE}`;
+
+  // Install the runtime library the mise-managed Node needs before Node starts.
+  await execInVm({
+    vmName: VM,
+    command:
+      'sudo apt-get update -qq && sudo apt-get install -y -qq libatomic1 > /dev/null 2>&1',
+    timeout: EXEC_TIMEOUT_MS,
+  },);
 
   // Install mise, then use mise to install Node (handles arch detection).
   // guest-exec runs without login shell so HOME is unset; export it explicitly.
@@ -293,7 +301,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
 
 //region Windows lifecycle tests
 
-{
+if (process.env.VMSYNC_E2E_GUEST !== 'linux') {
   /** VM name for the Windows lifecycle test. */
   const VM = 'vmsync-e2e-win';
 

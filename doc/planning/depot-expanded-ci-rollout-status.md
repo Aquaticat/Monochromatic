@@ -136,26 +136,32 @@ Done.
   reservation.
 - The fast subset and Android consumer passed.
   Static checks reproduced the known baseline.
-- BuildKit failed on rootless Podman user namespaces.
-- The vmsync end-to-end test failed on a doubled module path,
+- The vmsync end-to-end test initially failed on a doubled module path,
   a test-path defect.
-- Categories with no qualified command are recorded incomplete.
-- Clean re-dispatch `r2mxbc40rh` completed in 14 minutes 39 seconds and reproduced the same
-  category outcomes.
-  No duplicate execution occurred;
-  all four runs are in the ledger.
-- Two follow-up runs tested environment fixes.
-  `xv1dwhq3h4` resolved the vmsync path and then missed `qemu-img`.
-  `130wfntbg4` installed `qemu-img` and then missed `virsh` and libvirt.
-  BuildKit still failed on the rootless Podman namespace with `PODMAN_USERNS=host`.
+  The path was fixed,
+  then the missing guest prerequisites were added in order:
+  `qemu-img`,
+  `qemu-system-x86`,
+  libvirt,
+  and `libatomic1`.
+- Rootful Podman builds the terminal and IDE images successfully in the sandbox.
+  BuildKit is qualified by runs `r1h68z8tzv`,
+  `391g4q5t98` and `k1d5q6x48p`.
+- The VM category reaches guest Node setup.
+  A final verification run is blocked by intermittent `prepare:pnpm` setup failures in
+  `xgd08stcz2` and `fkwfbqh5wn`;
+  both failed before the matrix categories and are recorded.
+- The clean re-dispatch `r2mxbc40rh` reproduced the first category outcomes.
+  No duplicate execution occurred.
+  Every paid attempt is in the ledger;
+  overlapping retries share the r10 allocation.
 - Evidence:
   [the weekly matrix evidence](../audit/depot-weekly-native-2026-10-19.evidence.json).
-- Residual capability gaps:
-  BuildKit needs a rootful Podman path,
-  and the VM category needs a libvirt-capable sandbox.
-  Both are recorded incomplete rather than product failures.
-  The fast subset,
-  Android and static categories carry the matrix result.
+- Residual capability gap:
+  the VM category is not yet verified end to end because the last two runs failed in setup.
+  BuildKit,
+  the fast subset,
+  Android and static carry the matrix result.
 
 ### 5. Cache admission
 
@@ -241,11 +247,11 @@ All planned work items are implemented and recorded.
 The remaining residuals are explicit:
 
 - the complete build and unit baseline is not known-good;
-- BuildKit needs a rootful Podman path in the native sandbox;
-- the vmsync end-to-end test has a doubled module-path defect;
+- the VM matrix category is not yet verified end to end because the last two runs failed in
+  `prepare:pnpm` setup;
 - release-run attachment still relies on check runs on the commit;
 - the subscription transition remains a user action.
 
-Fix the vmsync path on its owning package,
-then retry the BuildKit category with a rootful Podman command.
+Retry the weekly matrix once the setup flake clears,
+or run a focused vmsync check with the same prerequisites.
 Keep the complete build and unit baseline marked not known-good until it actually passes.

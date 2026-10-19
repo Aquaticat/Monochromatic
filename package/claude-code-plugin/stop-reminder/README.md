@@ -84,11 +84,15 @@ in the same reason would be contradictory.
 
 ## Luna situation check
 
-Since 2026-10-18, with forced continuation on, a model reads the final message and picks one of five situations.
+Since 2026-10-18, with forced continuation on, a model reads the final message and picks one of six situations.
 The model is `openai/gpt-6-luna-decisions`, reached through the Gateway Decisions route.
 
 - **announces_own_next_step**:
    blocks with the resume-now reason.
+- **leaves_open_work**:
+   blocks with a reason to do the listed items now,
+   when the message names open items, failures, or follow-ups that the agent could act on itself and stops.
+   Added 2026-10-19 for the case the announce label missed.
 - **waits_on_user**:
    blocks and routes the question through `AskUserQuestion`.
 - **waits_on_background_work**:

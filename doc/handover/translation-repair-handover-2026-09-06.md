@@ -237,46 +237,68 @@ its "Next" list is still the queue the merge went ahead of.
   with the account in `doc/troubleshooting/forbidden-strings-builtin-rule-fixture-tokens.md` (`ad2db18088`).
   The merge is `32e0e8d1d0`;
   its message records how each of its six conflicts was resolved.
-  It changed behaviour in two places, each fixed on top of it, tests first:
+  It changed behaviour in two places,
+  each fixed on top of it,
+  tests first:
   `main` stopped pinning `monochromatic-lint`,
   so `mise.lock` installs 0.2.0 and the shipped-text wrap is now written against 0.2.0
-  (`400582c281`, `ea791a3840`, lint follow-ups `5ce4c4dd7c` and `2e191861cc`);
+  (`400582c281`,
+  `ea791a3840`,
+  lint follow-ups `5ce4c4dd7c` and `2e191861cc`);
   every release of the linter moves the lock,
   and the agreement case in `semantic-wrap-binary.unit.test.ts` stays red until the constant follows.
   `main`'s logger falls back to the user's state directory with a notice on stderr
   when no `node_modules` stands above the working directory,
   so test children in temporary scratch directories failed on the notice and wrote log files into
   `~/.local/state/monochromatic/log`;
-  every test child is now given a log directory inside the workspace (`392710bce1`, `58adc55ee9`).
+  every test child is now given a log directory inside the workspace
+  (`392710bce1` and `58adc55ee9`).
   The 37 files the merge gates wrote there on 2026-10-19 (04:42 to 05:43 UTC)
   were matched to the gate run times and deleted on the owner's choice;
   the one other file of that window belongs to the CPU-cap watcher and stays.
-  Gate g114 on `58adc55ee9` passed every family suite (2532 pass, 0 fail);
+  Gate g114 on `58adc55ee9` passed every family suite
+  (2532 pass and 0 fail);
   the `tsdoc` and `stylistic` `lint:oxlint` findings (issues 1777 and 1778)
   and the `module/logger` and `module/test` steps fail on `main` itself in the same way.
 - Gate g115 on `16c415675d` (the fixes plus this checkpoint) passed every family suite
-  (2532 pass, 0 fail) with typography lint clean; only the `tsdoc` and `stylistic` steps failed, as on `main`.
-- `main` moved twice during the work (auto-mode, CI advisory runs, the `git-policy/cli` 0.2.1 release),
+  (2532 pass and 0 fail) with typography lint clean;
+  only the `tsdoc` and `stylistic` steps failed,
+  as on `main`.
+- `main` moved twice during the work
+  (auto-mode,
+  CI advisory runs,
+  the `git-policy/cli` 0.2.1 release),
   so `main` was merged in again as `3cca3e309e`:
-  no conflict, and it changes exactly the 34 paths `main` changed, each identical to `main`'s version,
+  no conflict,
+  and it changes exactly the 34 paths `main` changed,
+  each identical to `main`'s version,
   so g115 carries over.
   `3cca3e309e` was pushed to `main` and `translation-repair-rebased` was fast-forwarded to it.
 - The message of `5ce4c4dd7c` claims a lint fix that did not hold;
   a corrective commit comment names `2e191861cc` as the fix.
 - The scratch worktrees `w198` to `w200` were removed;
-  `w198` held a superseded merge attempt (`19f6aa50ec`, never pushed) whose parents are both in `main`.
+  `w198` held a superseded merge attempt,
+  `19f6aa50ec`,
+  never pushed,
+  whose parents are both in `main`.
 - After a shutdown the branch's handover commit `e75f4f48d5` met a `main` that had moved again,
   so `main` pinned at `b1df6cfa0e` was merged in as `ddcd9992eb`
-  (changes exactly the 7 paths `main` changed, each identical to `main`'s version)
+  (changes exactly the 7 paths `main` changed,
+  each identical to `main`'s version)
   and pushed to `main` and `translation-repair-rebased`.
   A busy `main` can move between two reads of `origin/main`:
-  pin the commit once and use it for the merge-tree check, the path list and the merge.
-- Issues 527, 541 and 542, which their status comments kept open until the branch reached `main`,
+  pin the commit once and use it for the merge-tree check,
+  the path list and the merge.
+- Issues 527,
+  541 and 542,
+  which their status comments kept open until the branch reached `main`,
   were closed on 2026-10-19 with comments naming the merges and the commits on `main`.
-- The raised process limit is in effect: after the restart `ulimit -u` reads 32768
+- The raised process limit is in effect:
+  after the restart `ulimit -u` reads 32768
   (`/etc/security/limits.d/99-user-nproc.conf`).
 - The main checkout's local `main` was left at `7bbdd00225` (behind `origin/main`),
-  because another session has uncommitted auto-mode work there; it needs a pull before that session pushes.
+  because another session has uncommitted auto-mode work there;
+  it needs a pull before that session pushes.
 - The owner reported on 2026-10-19 that Synthetic removed its five-hour limit and its parallelism limits (issue 1779).
   A keyed `run:budget-sample` at 14:35 UTC,
   approved by the owner for this,
@@ -289,7 +311,8 @@ its "Next" list is still the queue the merge went ahead of.
   a refusal inside a block names that block's keys,
   dryness reads the weekly budget,
   and Synthetic has no per-model ceiling.
-  Gate g116 on `23381065e0` passed every family step (2532 suite lines pass, 0 fail),
+  Gate g116 on `23381065e0` passed every family step
+  (2532 suite lines pass and 0 fail),
   and the source scans passed on the docs commits.
   Ledger B691 and M277.
   Landed on `main` and the branch as `bcf2545b8e`.
@@ -345,11 +368,32 @@ its "Next" list is still the queue the merge went ahead of.
 1.  The readiness rotation in the State list,
     one entry at a time,
     each page read by the seven steps and the three checks before the next launch.
-    `zheermao14` launched at 15:42 UTC on 2026-10-19
-    (unit `corpus-pass-corpus-pass-zheermao14`,
-    runs directory `~/temp/agent/corpus-pass-zheermao14`,
+    `zheermao14` settled with no class
+    ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md)).
+    `CuspariaKLSY17` launched at 17:09 UTC
+    (unit `corpus-pass-corpus-pass-CuspariaKLSY17`,
+    runs directory `~/temp/agent/corpus-pass-CuspariaKLSY17`,
     log beside it,
-    pipeline `sha256-tree-v1:a92725968adf…`).
+    pipeline `sha256-tree-v1:a92725968adf…`,
+    `rolldown v1.2.13`);
+    `CuspariaKLSY16` before it ran the main checkout's bundler on another build and was stopped (M278).
+    Each later entry launches with the main-checkout entries removed from the unit's `PATH`
+    and is stopped unless its `START` line reads `a92725968adf…`
+    (`~/temp/agent/tr-fan/s245/split/launch-rotation.ts <run> <entry>` does both).
+    Then `XingZ60`,
+    `yingying`,
+    `hulicaijia`,
+    `mikaela_khara`,
+    `shi_Yumiaoya`
+    and `TianqiChen666`.
+    The bundler guard landed on `main`
+    (red `2640c1c4e1`,
+    fix `0fa3120174`,
+    M278):
+    a family build now refuses a `rolldown` other than the version its checkout installs.
+    The branch worktree stays at `2eeef91fac` until the rotation ends,
+    so the rotation's build does not carry it;
+    update the branch worktree only after the last entry is read.
     Held for after the rotation or the next rebuild a class forces,
     so every entry runs on one build:
     `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` for a Bedrock seat's HTTP 401,

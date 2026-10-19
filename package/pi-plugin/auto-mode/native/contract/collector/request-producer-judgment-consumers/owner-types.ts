@@ -1,10 +1,7 @@
 /**
  Request producer contracts derive from the installed SDK stream and the real judgment factories. @module
  */
-import type {
-  AssistantMessageEventStream,
-  StreamFunction
-} from '@earendil-works/pi-ai';
+import type { AgentSession } from '@earendil-works/pi-coding-agent';
 import type { JudgmentConstructionInput } from '../program-rule-batch-sdk-copy-v2/input/judgment-constructor-types.ts';
 
 //region Native request and response shapes follow the installed SDK stream contract.
@@ -12,12 +9,12 @@ import type { JudgmentConstructionInput } from '../program-rule-batch-sdk-copy-v
 /**
  Original producer request keeps the SDK model, transcript context and stream options.
  */
-export type ProducerRequest = Parameters<StreamFunction>;
+export type ProducerRequest = Parameters<AgentSession['agent']['streamFunction']>;
 
 /**
  Original producer stream retains its result-bearing asynchronous iteration.
  */
-export type ProducerStream = AssistantMessageEventStream;
+export type ProducerStream = Awaited<ReturnType<AgentSession['agent']['streamFunction']>>;
 
 /**
  Original producer response is the exact result object of one stream occurrence.

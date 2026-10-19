@@ -132,9 +132,11 @@ These residuals are explicit and are not claimed as green:
 
 - The complete build and whole-repository unit baseline are not known-good.
   Run `2ls35xfpds` recorded the prepared-environment failure classes and skipped unit.
-- Weekly matrix BuildKit remains unqualified because rootless Podman cannot create its user
-  namespace in the native sandbox.
-- Weekly matrix VM remains unqualified because the sandbox lacks `virsh` and libvirt.
+- Weekly matrix BuildKit is qualified by rootful Podman runs `r1h68z8tzv`,
+  `391g4q5t98` and `k1d5q6x48p`.
+- Weekly matrix VM is not yet verified end to end.
+  The vmsync path and guest prerequisites are fixed,
+  but the last two verification runs failed in `prepare:pnpm` before the categories.
 - Release-run attachment relies on check runs on the commit,
   not an explicit release workflow
   step.
@@ -162,9 +164,10 @@ All nine planned work items have implementation records.
 The remaining work is the residual list above.
 The next practical steps are:
 
-- add a rootful Podman path for the BuildKit matrix category;
-- provide a libvirt-capable sandbox for the VM matrix category;
-- continue triaging the complete-build failures until the unit baseline can run.
+- BuildKit is qualified;
+  no further work is needed there.
+- Verify the VM matrix category once the `prepare:pnpm` setup flake clears.
+- Continue triaging the complete-build failures until the unit baseline can run.
 
 Use bounded CI for any build or unit measurement.
 Do not run local full builds.

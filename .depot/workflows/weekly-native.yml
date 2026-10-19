@@ -125,6 +125,7 @@ jobs:
         timeout-minutes: 25
         env:
           LIBVIRT_DEFAULT_URI: qemu:///session
+          VMSYNC_E2E_GUEST: linux
         run: mise run //package/cli/vmsync:test:e2e
       - name: Write evidence
         if: always()

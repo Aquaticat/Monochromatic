@@ -505,7 +505,9 @@ named for that subject and listed here.
   the lint,
   the cache versions,
   the handover,
-  and the log's two streams.
+  the log's two streams,
+  a launch whose build ran the main checkout's bundler (M278),
+  and a scratch worktree tested on the install of another commit (M280).
 - [Audit ledger: process mistakes, guards and red cases](audit-ledger-process-guards-and-red-cases.md):
   Guards and failing-first cases that could not fail,
   never reached what they guarded,
@@ -524,7 +526,8 @@ named for that subject and listed here.
   a log line quoted with a space the source lacks (M271),
   a correct commit message reported as wrong (M274),
   a commit body that counted failing cases without naming them (M275),
-  and a lint comparison taken from a summary line (M276).
+  a lint comparison taken from a summary line (M276),
+  and a work's English title called invented after one store page (M279).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,
