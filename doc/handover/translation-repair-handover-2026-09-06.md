@@ -386,9 +386,14 @@ its "Next" list is still the queue the merge went ahead of.
     `mikaela_khara`,
     `shi_Yumiaoya`
     and `TianqiChen666`.
-    Held for after the rotation,
-    with a guard that the build's bundler is the worktree's:
-    the corpus-pass task builds with whatever `rolldown` the caller's `PATH` reaches first.
+    The bundler guard landed on `main`
+    (red `2640c1c4e1`,
+    fix `0fa3120174`,
+    M278):
+    a family build now refuses a `rolldown` other than the version its checkout installs.
+    The branch worktree stays at `2eeef91fac` until the rotation ends,
+    so the rotation's build does not carry it;
+    update the branch worktree only after the last entry is read.
     Held for after the rotation or the next rebuild a class forces,
     so every entry runs on one build:
     `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` for a Bedrock seat's HTTP 401,
