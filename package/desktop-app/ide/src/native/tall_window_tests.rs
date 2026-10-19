@@ -13,11 +13,16 @@ use super::rows::{absorb, settle};
 /// Exact window sizes for the text width.
 use super::sidebar_tests::{TEXT_LEFT, minimap_beside};
 /// The open reader and the pixels of the shown image.
-use super::wrap_tests::{open, shown};
+use super::wrap_tests::{long_text, measured, open, shown};
 /// The worker's pass gate,
 /// the tile that is wanted,
 /// and the placement of the view.
-use super::{State, tile::requested, tile_build::PASS_GATE, viewport::place};
+use super::{
+    State,
+    tile::{TileBounds, requested},
+    tile_build::PASS_GATE,
+    viewport::{holds as window_holds, place},
+};
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// The code row the raster edges are rounded to,
@@ -147,6 +152,22 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
     }
 }
 
+/// What `tile_for` found.
+struct Built {
+    /// The raster in bytes.
+    bytes: u64,
+    /// The shaper had to cut the clip the window asked for.
+    cut: bool,
+    /// The raster holds the view, or no raster can.
+    holds: bool,
+    /// One raster can hold the view.
+    holdable: bool,
+    /// The window accepts the tile as holding the view, which ends its request for another.
+    accepted: bool,
+    /// The numbers behind the answers, for a failure message.
+    detail: String,
+}
+
 /// The tile the window asks for at `offset` in a view `text_width` by `height` at display `scale`,
 /// shaped on the shaper the window uses,
 /// with the map as the window holds it before its measurement of the whole text (`measured` false)
@@ -161,7 +182,7 @@ fn tile_for(
     height: f32,
     offset: f32,
     measured: bool,
-) -> (u64, bool, bool, bool, String) {
+) -> Built {
     let mut current = State::new(text, None);
     current.scale = scale;
     place(&mut current, offset, text_width, height);
@@ -210,7 +231,19 @@ fn tile_for(
         view.viewport.clip,
         asked.clip
     );
-    return (bytes, cut, holds || !holdable, holdable, detail);
+    let built = TileBounds {
+        clip: view.viewport.clip,
+        ..asked
+    };
+    let accepted = window_holds(&current, built, view_top, height);
+    return Built {
+        bytes,
+        cut,
+        holds: holds || !holdable,
+        holdable,
+        accepted,
+        detail,
+    };
 }
 
 /// Window sizes and display scales,
@@ -230,26 +263,32 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
                 for offset in [0.0_f32, 14_000.0] {
                     let label =
                         format!("scale {scale} width {text_width} height {height} offset {offset}");
-                    let (stale_bytes, cut, _, _, _) =
-                        tile_for(&text, scale, text_width, height, offset, false);
+                    let stale = tile_for(&text, scale, text_width, height, offset, false);
                     assert!(
-                        stale_bytes <= MAX_RASTER_BYTES,
-                        "{label}: a raster of {stale_bytes} bytes before the measurement"
+                        stale.bytes <= MAX_RASTER_BYTES,
+                        "{label}: a raster of {} bytes before the measurement",
+                        stale.bytes
                     );
-                    if cut {
+                    if stale.cut {
                         cuts_before_measurement += 1;
                     }
-                    let (measured_bytes, _, holds, holdable, detail) =
-                        tile_for(&text, scale, text_width, height, offset, true);
+                    let found = tile_for(&text, scale, text_width, height, offset, true);
                     assert!(
-                        measured_bytes <= MAX_RASTER_BYTES,
-                        "{label}: a raster of {measured_bytes} bytes after the measurement"
+                        found.bytes <= MAX_RASTER_BYTES,
+                        "{label}: a raster of {} bytes after the measurement",
+                        found.bytes
                     );
                     assert!(
-                        holds,
-                        "{label}: the raster does not hold the view: {detail}"
+                        found.holds,
+                        "{label}: the raster does not hold the view: {}",
+                        found.detail
                     );
-                    if holdable {
+                    assert!(
+                        found.accepted,
+                        "{label}: the window would not accept the tile it asked for: {}",
+                        found.detail
+                    );
+                    if found.holdable {
                         holdable_cases += 1;
                     }
                 }
@@ -261,4 +300,45 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
         "no case made the shaper cut a clip: the test does not reach the guard"
     );
     assert!(holdable_cases > 0, "no case had a view one raster can hold");
+}
+
+/// Longest wait for the measurement pass of a tall window to finish:
+/// a window under 8,000 px settles in under two seconds on an idle host,
+/// and the host can be under heavy load.
+const SETTLE_PATIENCE: std::time::Duration = std::time::Duration::from_secs(30);
+
+/// A window 10,000 px and taller over wrapped text:
+/// the tile the worker builds is cut to the raster limit,
+/// the window accepts it as holding the view,
+/// and the measurement pass finishes.
+/// The view's margin of a quarter view height on each side passed the cap, so the window discarded every tile the
+/// worker built and asked for the same tile again, and the pass never finished (issue 1785).
+#[test]
+fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
+    for height in [10_000.0_f32, 12_000.0, 14_000.0] {
+        let (_project, opened) = open(&long_text(400));
+        resize_without_frame(&opened, 1328.0, height);
+        let scale = opened.window.window().scale_factor();
+        let mut waiting = Waiting::within(SETTLE_PATIENCE);
+        while !measured(&opened.source, scale) {
+            waiting.step(format_args!(
+                "height {height}: the measurement pass did not finish"
+            ));
+        }
+        update_timers_and_animations();
+        assert_eq!(
+            opened.window.get_error_message().to_string(),
+            "",
+            "height {height}: the window shows a failure"
+        );
+        {
+            let current = opened.source.borrow();
+            let view = current.shaped.as_ref().expect("a shown frame");
+            assert!(
+                u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
+                "height {height}: the raster passes the limit"
+            );
+        }
+        opened.window.hide().expect("close wrap window");
+    }
 }
