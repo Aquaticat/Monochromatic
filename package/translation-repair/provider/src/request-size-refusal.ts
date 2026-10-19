@@ -36,8 +36,13 @@ const PARSE_FAILURE_MARK = 'Could not parse request as valid JSON';
 const HTTP_BAD_REQUEST = 400;
 
 /**
- Signals a request the gateway refused for its size while naming something
- else.
+ Signals a request Synthetic's gateway refused for its size while naming
+ something else.
+
+ SYNTHETIC'S ALONE, as its name says. The cap and the parse-failure words were
+ measured on that gateway only; whether Charm Hyper, OpenRouter or Bedrock
+ refuse at any size, and in what words, is unmeasured, so no other provider's
+ reply is read as this.
 
  A SUBCLASS RATHER THAN A SIBLING, so every caller branching on
  {@link ProviderHttpError} or reading its `status` keeps working. This is one
@@ -48,7 +53,6 @@ const HTTP_BAD_REQUEST = 400;
  @example
  ```ts
  throw new SyntheticRequestTooLargeError({
-   provider: 'synthetic',
    status: 400,
    bodyText: 'Could not parse request as valid JSON. Unterminated string ...',
    bodyBytes: 11_185_335,
@@ -76,9 +80,6 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
   /**
    Builds failure naming size, replacing the message its parent composed.
 
-   @param provider - provider that served the call and refused its body, named in the message and carried on the
-   error
-
    @param status - status returned, carried through so `instanceof` callers
    branching on it see what they always saw
 
@@ -89,7 +90,6 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
    @example
    ```ts
    new SyntheticRequestTooLargeError({
-     provider: 'synthetic',
      status: 400,
      bodyText: 'Could not parse request as valid JSON.',
      bodyBytes: 11_185_335,
@@ -98,19 +98,17 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
    */
   public constructor(
     {
-      provider,
       status,
       bodyText,
       bodyBytes,
     }: {
-      readonly provider: ProviderName;
       readonly status: number;
       readonly bodyText: string;
       readonly bodyBytes: number;
     },
   ) {
     super({
-      provider,
+      provider: 'synthetic',
       status,
       bodyText,
       // THE GATEWAY'S OWN WORDS ARE KEPT OFF THIS MESSAGE. This class declares
@@ -119,7 +117,7 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
       // stay on `bodyExcerpt`, which `exchangeFailureLogText` prints on the
       // lost-voice log lines, where the searchable byte position still is.
       excerpt: 'withheld',
-      summary: `The ${provider} API refused a request body of ${String(bodyBytes,)} ${
+      summary: `The Synthetic API refused a request body of ${String(bodyBytes,)} ${
         wordForCount({
           count: bodyBytes,
           one: 'byte',
@@ -143,12 +141,14 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
 /**
  Names why a non-success reply failed, re-reading the gateway's size refusal.
 
- THREE SIGNALS TOGETHER, and the conjunction is the point. Status alone would
+ FOUR SIGNALS TOGETHER, and the conjunction is the point. Status alone would
  catch every malformed request we ever send; the message alone would catch a
  body we genuinely broke; the size alone would catch an oversize request the
- gateway happened to accept and then fail for its own reasons. Only all three
- describe a body refused for being too big, and any one of them missing leaves
- a plain {@link ProviderHttpError} saying exactly what it always said.
+ gateway happened to accept and then fail for its own reasons; and only
+ Synthetic's gateway was measured giving the other three for a body over its
+ cap. Only all four describe a body refused for being too big, and any one of
+ them missing leaves a plain {@link ProviderHttpError} saying exactly what it
+ always said.
 
  AFTER THE FACT, NEVER BEFORE IT. Nothing here refuses a request. Only the
  passing size is exact, so a client-side guard at that number would reject
@@ -156,8 +156,8 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
  Reading an answer that already arrived cannot cost a call that would have
  worked.
 
- @param provider - provider that served the call, carried onto whichever failure is built; the reading is the same
- for every provider but the failure has to say whose reply it was
+ @param provider - provider that served the call, carried onto the plain failure; only Synthetic's reply is read
+ for its size, since no other gateway's cap was measured
 
  @param status - status returned
 
@@ -168,7 +168,7 @@ export class SyntheticRequestTooLargeError extends ProviderHttpError {
  in bytes: this corpus is Chinese, and character counts run about a third of
  the bytes their UTF-8 costs
 
- @returns Failure to throw, size-naming only where all three signals agree
+ @returns Failure to throw, size-naming only where all four signals agree
 
  @example
  ```ts
@@ -209,13 +209,18 @@ export function failureForReply(
    */
   const overPassingSize = requestBodyBytes > PASSING_BODY_BYTES;
 
+  /**
+   Whether the reply came from the one gateway the cap was measured on.
+   */
+  const servedBySynthetic = provider === 'synthetic';
+
   if (
     refusedAsBadRequest
     && blamedOurJson
       && overPassingSize
+      && servedBySynthetic
   ) {
     return new SyntheticRequestTooLargeError({
-      provider,
       status,
       bodyText,
       bodyBytes: requestBodyBytes,

@@ -134,7 +134,6 @@ await describe({
          Refusal whose message withholds the gateway's words and whose excerpt keeps them.
          */
         const failure = new SyntheticRequestTooLargeError({
-          provider: 'synthetic',
           status: 400,
           bodyText: 'cat gateway: could not parse the body',
           bodyBytes: 5_000_000,
