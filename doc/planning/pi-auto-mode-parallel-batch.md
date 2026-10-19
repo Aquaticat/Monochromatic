@@ -9,10 +9,11 @@ session handling, and existing tool behavior owned by Pi.
 If a desired review behavior cannot be implemented through those APIs, gracefully fall back.
 A missing capability never authorizes another dispatcher, host copy, source transformation, or private hook.
 
-Use supported manual review where it can enforce the affected operation's decision.
-Explain the exact unavailable guarantee and the behavior that remains available.
-If the public API cannot enforce that manual gate, report that automatic coverage is unavailable;
-do not imply a verified group approval or hide the limitation.
+Degrade as little as possible, aiming for no degradation of the end-user experience where possible.
+First seek an equivalent supported public-API path; otherwise retain the greatest supported review coverage.
+For example, supported per-call review may replace unavailable batch review, with reduced coverage disclosed.
+A missing integration capability does not itself require manual approval, blocked execution, or disabled auto-mode.
+Keep ordinary Pi usable and explain material limitations without claiming guarantees the fallback lacks.
 Do not deadlock Pi while waiting for an event its scheduler cannot yet deliver.
 
 The [active rebuild plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md)

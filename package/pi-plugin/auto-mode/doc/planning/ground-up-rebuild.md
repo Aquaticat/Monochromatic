@@ -390,11 +390,15 @@ Leaving installed package files unchanged does not make a transformed runtime ac
 The former `registerHooks` candidate is withdrawn, not awaiting qualification or approval.
 Qualify public event ordering, complete parallel-batch visibility, final arguments, and cancellation.
 If those public surfaces cannot provide a requirement, use graceful fallback rather than reconstructing Pi.
-Use public manual confirmation where the public API can enforce it, explaining the exact missing guarantee.
-If that gate is unavailable too, visibly report unavailable coverage and preserve ordinary Pi operation;
-never describe unreviewed execution as automatically approved or claim an unenforceable group guarantee.
+Degrade as little as possible, aiming for no degradation of the end-user experience where possible.
+First seek an equivalent supported public-API path; otherwise preserve the greatest supported functionality.
+Supported per-call review may replace unavailable batch review, with the reduced coverage disclosed.
+Missing integration capability alone does not require manual approval, blocked execution, or disabled auto-mode.
+Keep ordinary Pi usable; disclose material limitations without claiming guarantees the fallback lacks.
+An actual rule requiring human approval still requires human approval; a capability gap is not such a rule.
 Do not recreate Pi tools, scheduling, argument preparation, sessions, or UI to recover a missing capability.
-The settled group boundary preserves separate reviews for nonparallel calls and whole-batch review for parallel calls.
+The preferred group boundary preserves individual nonparallel reviews and whole-batch parallel review.
+The accepted graceful-fallback rule permits reduced grouping coverage when public APIs cannot provide that boundary.
 
 Installed Pi 1.3.0 awaits the completed assistant `message_end` event before tool execution
 (`pi-agent-core/dist/agent-loop.js:319` and `:156`).

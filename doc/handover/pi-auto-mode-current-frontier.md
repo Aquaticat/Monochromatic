@@ -12,8 +12,13 @@ The user links the historical parallel-batch plan and explicitly rejects maintai
 duplicating existing Pi functionality, and private Pi APIs, ever.
 This is not an option awaiting reconsideration or permission.
 Use supported public plugin APIs; gracefully fall back where they cannot provide the intended behavior.
-Use public manual review where enforceable, explaining the missing guarantee.
-Otherwise visibly report unavailable coverage without claiming approval or rebuilding Pi functionality.
+The user accepts graceful fallback as preserving supported review, potentially per-call instead of batch review,
+while keeping Pi usable and disclosing reduced coverage.
+The user's golden rule is to degrade as little as possible, aiming for no end-user experience degradation.
+Try equivalent public-API paths first; preserve the greatest supported functionality if equivalence is impossible.
+Missing integration support alone does not require manual approval, blocked execution, or disabled auto-mode.
+The agent's previous manual-first wording was too restrictive and is superseded.
+Actual rule-required human approval remains distinct from a missing integration capability.
 The historical parallel-batch plan now marks its private prototypes and remaining integration work as withdrawn.
 Pi retains execution, scheduling, preparation, sessions, UI, and existing tool behavior.
 The active plan and visual review must reflect the same boundary.
@@ -22,6 +27,10 @@ Public-only disposable probes continue; they do not authorize a replacement impl
 Native cleanup is complete. Commit `213a4ebce4` regenerates the lockfile after retired dependencies were removed.
 No unrelated lockfile drift was found; the worktree was clean before this documentation correction.
 Next action: finish the public-plugin evidence and fallback record, then resume the remaining design frontier.
+
+Proposed `EC4` tightening: unsupported capabilities use the least-degrading supported fallback,
+aiming to preserve user experience; explain remaining limits without presenting reduced coverage as full support.
+This proposal addresses the fallback misunderstanding; `AGENTS.md` is unchanged.
 
 ### Unapproved Pi modification removed, 2026-10-19
 
