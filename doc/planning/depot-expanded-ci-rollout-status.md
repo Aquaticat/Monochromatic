@@ -109,12 +109,15 @@ The first paid reservation remains part of work item 4.
 
 ### 4. Weekly native matrix
 
-Not implemented.
+Partial.
 
-- The matrix categories and explicit-dispatch rule are recorded in the plan.
-- No weekly workflow,
-  dispatch schedule,
-  per-category bounds or admission record exists yet.
+- [The weekly matrix design](depot-weekly-native-matrix.md) records the category list,
+  explicit-dispatch rule,
+  provisional bounds,
+  evidence format and acceptance.
+- The design excludes paused-session and keeps publication on GitHub.
+- No native workflow,
+  reservation file or first dispatch exists yet.
 - All native capabilities remain qualified only by research and evidence controls.
 
 ### 5. Cache admission
