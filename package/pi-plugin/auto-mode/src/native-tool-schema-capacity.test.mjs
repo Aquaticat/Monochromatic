@@ -23,8 +23,7 @@ async function prepare(parameters){
  const unregister=registerOwnedExecutionTools({
    session,
    stream,
-   producerOwner:{},
-   manualOrigins:new Map([[
+   executionOrigins:new Map([[
      token,
      function readManual(){return origin;}
    ]]),
@@ -83,7 +82,8 @@ properties.field11999
 assert.throws(
   function changedSchema(){fixture.wrapped
     .createExecutionContext({carrier:fixture.carrier});},
-  ExecutionContextOwnershipError
+  function changedOriginalSchema(error){return (error instanceof ExecutionContextOwnershipError)
+    &&(error.message==='Native tool "fixture" input schema changed after request preparation');}
 );
 fixture.unregister();
 assert.equal(

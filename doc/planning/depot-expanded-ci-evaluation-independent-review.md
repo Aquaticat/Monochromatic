@@ -362,8 +362,14 @@ Closure workstreams:
   custom runner images and registry pull-through are out for the pilot and conditional for
   phase 2.
   The adoption proposal carries the list and its activation conditions.
-- Paused-session qualification is a separate bounded experiment and is excluded from the weekly
-  matrix.
+- Paused-session qualification was attempted from a linked worktree and a depth-1 clone.
+  Both local runs reported a default-branch detection failure,
+  skipped the patch,
+  created zero-workflow runs,
+  and were cancelled.
+  Paused-session remains unqualified and is excluded from the weekly matrix.
+  The attempt is recorded in
+  [the paused-session evidence](../audit/depot-paused-session-qualification-2026-10-18.evidence.json).
 - Automatic event registration was investigated with a side-effect-free direct-push probe.
   The probe is not a valid negative for three reasons:
   the marker push arrived at `00:49:35`,
@@ -392,14 +398,30 @@ Closure workstreams:
   The evidence is in
   [the duplicate control](../audit/depot-duplicate-control-2026-10-18.evidence.json).
   The adoption proposal uses explicit dispatch for the weekly matrix to avoid duplicate execution.
-- The current static baseline was measured at revision `4f3d5a65`:
+- The current static,
+  unit and build baseline was measured at revision `4f3d5a65`.
+  Static:
   `mise run lint:monochromatic-lint` exits 1 with 85,719 findings across 1,046 files,
   dominated by 81,700 semantic line-break findings,
   2,077 rustdoc findings and
   1,894 bare-URL findings.
-  The whole-tree static profile is not known-good;
-  a changed-path profile or an explicit
-  advisory baseline is required.
+  Unit:
+  `mise run test:unit` exits 1,
+  dominated by 1,979 `ERR_MODULE_NOT_FOUND` and 987 `Cannot find` errors;
+  the run lacked built prerequisites,
+  so the 751 named files are a missing-prerequisite cascade,
+  not product failures.
+  Build:
+  the local attempt was stopped as host stress;
+  the bounded CI run `39196377166` failed after 13 minutes 18 seconds with missing
+  `glib-sys`, Podman, `cxx-qt`, `gh` and `canvg` prerequisites,
+  and the unit step was skipped.
+  These are environment and prerequisite failures,
+  not product attribution.
+  The static baseline is advisory;
+  the unit baseline is invalid until rerun after a successful build;
+  the build profile requires a prepared CI environment,
+  not the shared development host.
   The evidence is in
   [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).
 
@@ -407,14 +429,12 @@ Closure workstreams:
 
 The following are not satisfied by this review record and remain work:
 
-- paused-session qualification;
-- unit and build baseline in a prepared environment,
-  because the clean static worktree had no
-  dependencies;
+- paused-session remains unqualified;
+- unit and build failure triage,
+  including a bounded build rerun with reduced fanout;
 - no-overage sliding-window admission and the operator cap verification;
-- adoption record and decision-record acceptance;
 - subscription transition from the Startup trial to Developer;
-- revised rollout plan and Q7 confirmation.
+- implementation work items from the accepted plan.
 
 ## Limits
 

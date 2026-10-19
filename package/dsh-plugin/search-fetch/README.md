@@ -21,7 +21,9 @@ It does not add a second implementation of search behavior.
 "every other MCP host with the identical behavior" as the pi extension,
 and both surfaces delegate to
 `@monochromatic-dev/agent-harness-shared-search-fetch`,
-so Exa-first search with Linkup fallback,
+so DeepSeek-first search (maximum results with page content) with Exa and
+Linkup fallback,
+DeepSeek fetch before Linkup and Exa,
 `gh` CLI routing for mapped GitHub URLs,
 the global host blocklist,
 and base64 data-URL image stripping all keep one implementation.
@@ -36,10 +38,15 @@ which would create a third surface.
 Two model-facing tools,
 namespaced by the `search-fetch` server name:
 
-- `mcp__search-fetch__web_search` searches with Exa fast search first and
-  Linkup standard fallback.
+- `mcp__search-fetch__web_search` searches with DeepSeek first (up to 50
+  results with page content),
+  then Exa fast search and Linkup standard
+  fallback.
 - `mcp__search-fetch__web_fetch` fetches one page,
-  routing mapped GitHub URLs through the local `gh` CLI.
+  routing mapped GitHub URLs through the local `gh` CLI,
+  then using DeepSeek fetch,
+  Linkup renderJs,
+  and Exa contents.
 
 Truncated output carries the model-visible head plus a
 `search-fetch://response/<id>` resource URI,
@@ -69,6 +76,9 @@ No credential is copied into this bundle.
 The credential source is the repo's sops/age-encrypted `.env.local.json`,
 read through `@monochromatic-dev/module-env-local-json` inside the shared
 search-fetch core.
+That store supplies `DEEPSEEK_API_KEY`,
+which is why the MCP search works
+without a harness-level DeepSeek credential.
 The pi config file at `$HOME/.pi/agent/extensions/pi-search-fetch.json` now
 holds only the blocklist;
 a config still carrying `exaApiKey` or `linkupApiKey` raises
@@ -134,10 +144,13 @@ so a freshly installed bundle is visible only to sessions created afterwards.
 
 The `cordis` agent preset mounts `@deepseek-ai/dsh-tool-web`,
 whose config carries independent `search` and `fetch` booleans.
-With no DeepSeek account,
-`search: false` drops the native `web_search` rather than leaving a tool that
-can only fail,
+The native search provider authenticates from DSH's own credentials file,
+which has no DeepSeek key in this profile,
+so `search: false` drops the native `web_search` rather than leaving a tool
+that can only fail,
 and `fetch: true` keeps the native anonymous `web_fetch`.
+This bundle's MCP server reads `DEEPSEEK_API_KEY` from the repo store instead,
+so its search and fetch work without re-enabling the native provider.
 
 That leaves two fetch tools with different policies:
 the native one accepts any public HTTP(S) destination,

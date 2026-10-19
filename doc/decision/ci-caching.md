@@ -10,6 +10,28 @@ today the `cli-git-native` cache
 belongs to the version job of `npm-release.yml` alone,
 and the push to `main` that runs it is the only run that saves.
 
+## Amended on 2026-10-18
+
+[The Depot CI adoption decision](depot-ci-adoption.md) extends the cache write policy to every
+cache system this repository uses.
+The replaced scope is the statement at "pnpm store (not cached)" that "The tested cache system is
+GitHub Actions `actions/cache` ... not Depot Cache or Cargo artifact caching"
+(lines 422 to 423):
+that remains true of the measurements below,
+and is no longer the whole policy.
+Under the current decision,
+GitHub Actions cache,
+Depot Actions cache,
+Depot project BuildKit cache and
+organization-global Disk all admit writes only from `main` and explicit dispatches,
+restore only for pull requests and merge groups,
+and cache no shipped,
+attested or published bytes.
+The measurements,
+key shapes,
+save authority and size rules below remain the 2026-10-15 record for the GitHub Actions cache they
+describe.
+
 ## Starting point
 
 The repository was not caching nothing,

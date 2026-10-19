@@ -102,7 +102,10 @@ export function createNativeBatchHandler({
     });
     using producerLifetime={
       [Symbol.dispose](){
-        producerOwner.completeJudgment({response:assistantMessage,stream});
+        producerOwner.completeJudgment({
+          response:assistantMessage,
+          stream
+        });
       }
     };
     using operationReview=reviewer.createOperationReview();

@@ -1,4 +1,5 @@
 import {tagged} from '@monochromatic-dev/module-logger/ts';
+
 const l=tagged({tag:'auto-mode-request-producer'});
 
 export class RequestProducerError extends Error {constructor(
@@ -44,7 +45,10 @@ export function createRequestProducerOwner({
   const constructionState={beginning:false};
   /** Release completed evidence without discarding response ownership or reuse tombstones. */
   function retireJudgment(slot){
-    const rl=tagged({tag:retireJudgment.name,l});
+    const rl=tagged({
+      tag:retireJudgment.name,
+      l
+    });
     if(!slot.completed)throw new RequestProducerError('An active producer judgment cannot be retired');
     rl.debug(`retiring completed producer evidence in state ${slot.state}`);
     slot.value=undefined;
@@ -86,9 +90,13 @@ export function createRequestProducerOwner({
         value:undefined,
         error:undefined
       };record.judgment=slot;
-      const previous=record.consumer.judgments.current;
+      const previous=record.consumer
+        .judgments
+        .current;
       if(previous?.completed)retireJudgment(previous);
-      record.consumer.judgments.current=slot;
+      record.consumer
+        .judgments
+        .current=slot;
       try{
         const value=construct(Object.freeze({
           startedAt,
@@ -141,17 +149,25 @@ export function createRequestProducerOwner({
   }
   /** The native operation lifetime completes every outcome after group and selector cleanup. */
   function completeJudgment(input){
-    const cl=tagged({tag:completeJudgment.name,l});
+    const cl=tagged({
+      tag:completeJudgment.name,
+      l
+    });
     if(constructionState.beginning)throw new RequestProducerError('Producer judgment completion cannot reenter judgment construction');
     // Completion releases an already owned operation even if later reuse invalidates its authority.
     const record=ownedResponseRecord(input);
-    if(record.description.kind!=='main-agent')throw new RequestProducerError('Auxiliary request output cannot complete a tool judgment');
+    if(record.description
+      .kind
+      !=='main-agent')throw new RequestProducerError('Auxiliary request output cannot complete a tool judgment');
     const slot=record.judgment;
     if(slot===undefined){cl.debug('completing native operation without a judgment reservation');return;}
     if(slot.completed)throw new RequestProducerError('Producer judgment operation already completed');
     if((slot.state!=='active')&&(slot.state!=='failed'))throw new RequestProducerError('Producer judgment construction must settle before operation completion');
     slot.completed=true;
-    if(record.consumer.judgments.current!==slot){retireJudgment(slot);return;}
+    if(record.consumer
+      .judgments
+      .current
+      !==slot){retireJudgment(slot);return;}
     cl.debug(`preserving latest completed producer diagnostic in state ${slot.state}`);
   }
   function makeConsumer({
@@ -159,7 +175,10 @@ export function createRequestProducerOwner({
     construct
   }){
     if((typeof handle)!=='function')throw new RequestProducerError('Producer consumer must be an owned function');
-    const identity=Object.freeze({construct,judgments:{current:undefined}});
+    const identity=Object.freeze({
+      construct,
+      judgments:{current:undefined}
+    });
     function createStreamCallback() {
       return async function stream(
       model,

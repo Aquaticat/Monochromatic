@@ -882,7 +882,8 @@ matching `doc/troubleshooting/llmgateway-luna-admission.md`.
 
 State still decides without a model call when the depth limit is reached,
 when the last forced continuation issued no tool call,
-and when a trailing question already owns the stop.
+when a trailing question already owns the stop,
+and, since 2026-10-19, when a subagent is running or the session is in plan mode.
 Every block reason starts with the sentence the depth guard counts,
 so the depth limit keeps bounding the chain.
 
@@ -939,6 +940,91 @@ Handler code logs at `debug` (stderr) or `warn`.
    returned `announces_own_next_step`, `waits_on_background_work`, `waits_on_user`, and `work_closed`
    for four matching messages,
    and the hook blocked the first three.
+
+### False block, 2026-10-19
+
+A stop ending "I'll verify its report and rerun the gates, then land it before verifying the tall-window fix" was blocked
+with the resume-now reason while a subagent was running.
+The verdict log (`~/.local/state/monochromatic/stop-reminder/verdicts.jsonl`, record at 02:06:12 UTC) shows Luna labelled it
+`announces_own_next_step` at 0.95 with `waits_on_background_work` at 0.02.
+The next stop, 74 seconds later, restated the blocker and was released at 0.99, so the cost was one wasted continuation.
+The cause is that Luna reads only the last reply and the criterion said "with nothing external blocking it", which the
+message did not contradict on its face.
+
+Of the three blocks in the log at that point, one was a genuine early stop (0.99, "Next I'm continuing the queue with
+the template cleanup"), one was this false block, and one (0.64 `waits_on_user`, a message that only offered a veto)
+was borderline.
+
+Fix: the criteria now say an announced step "does not depend on any running agent, command, build, or report" and that
+a background wait includes "steps it will take only after they report".
+Measured on the 44 logged stops plus the 63-stop unbiased sample (108 messages), run to run identical across six repeats:
+
+- This stop: 0.95 to 0.57 for `announces_own_next_step`, below the 0.60 cutoff, so it is released.
+- The genuine early stop: 0.99 to 0.97, still blocked.
+- Announce labels overall: 8 to 2; blocks at 0.60 or higher: 3 to 1.
+- Rejected: prepending the running task types to the input.
+   It also released this stop (0.90 for `waits_on_background_work`) but dropped the genuine early stop to 0.48,
+   and it widened what is sent beyond the final reply.
+
+The margin on this stop is 0.03 under the cutoff, so a differently worded variant of the same message could still block.
+Precision of the blocking labels is still unmeasured; see #1772.
+
+### Skipping the call while a subagent runs, 2026-10-19
+
+The user proposed skipping Luna whenever a subagent is running.
+The verdict log supported it:
+37 of 46 consulted stops had a running subagent,
+35 of those were already released,
+and both blocks among them were wrong
+(the false block above, and a 0.64 `waits_on_user` block on a message that only offered a veto).
+The one correct block in the log, a 0.99 announced next step, had only a shell task running.
+So the skip lost no correct block in that data and removed most of the requests.
+
+The skip covers type `subagent` with status `running` only.
+A running shell command, monitor, or workflow still goes to Luna.
+The skip is logged as outcome `skipped`, so the log still shows which stops it covered.
+
+The cost is a stop that announces independent work while a subagent runs
+(the original failure shape, such as "I'll start n66 when a new defect appears") is no longer blocked.
+No such stop appears in the log; the 63-stop unbiased sample was drawn before `background_tasks` was recorded
+and cannot say.
+Revisit with #1772 if the log shows one.
+
+### Other skip candidates, 2026-10-19
+
+The user asked for more cases where the call can be skipped.
+All 459 stops of the 5.5 models in this repository's transcripts were replayed through the production request.
+Luna acted (probability 0.60 or higher) on 298: 182 background waits, 44 waits on the user, 61 closed,
+6 pauses, and 5 announced next steps.
+The blocking labels (announced or waits on the user) fired on 49.
+Reading all 49 against the user's next message, most were genuine requests for a decision,
+and no state the hook can see separated the false ones from the true ones.
+
+Applied:
+
+- Plan mode (`permission_mode` of `plan`).
+   The agent cannot perform what it announces there, so a block could only be wrong.
+   The corpus has no plan-mode stop (458 of 459 were `auto`), so this rests on the mode's definition, not on a count.
+
+Measured and rejected:
+
+- Any running shell task.
+   The only correct block in the verdict log had a shell command running.
+- Short messages.
+   Of 37 messages under 200 characters, 29 were background waits, and "Still waiting." with nothing running is the
+   failure the check exists to catch.
+- Turns with no tool call (25 stops, 2 blocks), turns that used `AskUserQuestion` (87 stops, 5 blocks, 6%
+   against 11% overall), and a last tool of `AskUserQuestion` (3 stops, 1 block).
+   The rates do not separate and the counts are too small to justify a skip.
+
+Not decided for lack of data:
+
+- Other task types that report back (`monitor`, `workflow`, `teammate`).
+   The log has none of these types, and the user's own rule says monitors rarely wake the main agent.
+- Sessions with a scheduled wakeup (`session_crons`).
+
+The verdict log now also records `permissionMode` and the count of `sessionCrons` per consulted stop,
+so those two can be judged from data later (#1772).
 
 ### Not yet known
 

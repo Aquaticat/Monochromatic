@@ -47,12 +47,12 @@ export const FETCH_SUPPORTED_KEYS: readonly string[] = [
 /**
  Search ignored-key fixed behavior text.
  */
-export const SEARCH_FIXED_BEHAVIOR: string = 'This extension uses Exa fast search first, Linkup standard search as fallback, the configured global blocklist, and no per-search result-count controls.';
+export const SEARCH_FIXED_BEHAVIOR: string = 'This extension uses DeepSeek search first with maximum results and page content, Exa fast search next, Linkup standard search as fallback, the configured global blocklist, and no per-search result-count controls.';
 
 /**
  Fetch ignored-key fixed behavior text.
  */
-export const FETCH_FIXED_BEHAVIOR: string = 'This extension fetches mapped GitHub URLs with the gh CLI first, then uses Linkup renderJs fetch, and may fall back to Exa contents.';
+export const FETCH_FIXED_BEHAVIOR: string = 'This extension fetches mapped GitHub URLs with the gh CLI first, then uses DeepSeek fetch, Linkup renderJs fetch, and Exa contents fallback.';
 
 //endregion Constants
 
@@ -94,19 +94,19 @@ export const LinkupWebSearchParametersSchema: v.ObjectSchema<{
 }, undefined> = v.object({
   query: v.pipe(
     v.string(),
-    v.description('Search query sent to Exa first and Linkup fallback. Be specific and include names, dates, versions, or locations when relevant.'),
+    v.description('Search query sent to DeepSeek first, then Exa and Linkup fallback. DeepSeek receives up to 50 results with page content. Be specific and include names, dates, versions, or locations when relevant.'),
   ),
   fromDate: v.optional(v.pipe(
     v.string(),
-    v.description('Optional ISO date forwarded to providers as a start date.'),
+    v.description('Optional ISO date forwarded to providers as a start date; DeepSeek receives an after: operator when it fits the query limit and results are filtered locally.'),
   )),
   includeDomains: v.optional(v.pipe(
     v.array(v.string()),
-    v.description('Optional domain allow-list forwarded to providers as includeDomains.'),
+    v.description('Optional domain allow-list forwarded to Exa and Linkup as includeDomains, and enforced on DeepSeek results with site: operators or a local filter.'),
   )),
   toDate: v.optional(v.pipe(
     v.string(),
-    v.description('Optional ISO date forwarded to providers as an end date.'),
+    v.description('Optional ISO date forwarded to providers as an end date; DeepSeek receives a before: operator when it fits the query limit and results are filtered locally.'),
   )),
 });
 
@@ -118,7 +118,7 @@ export const LinkupWebFetchParametersSchema: v.ObjectSchema<{
 }, undefined> = v.object({
   url: v.pipe(
     v.string(),
-    v.description('Absolute URL to fetch. Mapped GitHub URLs are fetched with the gh CLI; every other URL uses Linkup first and Exa fallback.'),
+    v.description('Absolute URL to fetch. Mapped GitHub URLs are fetched with the gh CLI; every other URL uses DeepSeek first, then Linkup and Exa fallback.'),
   ),
 });
 
@@ -188,11 +188,12 @@ export type SearchFetchToolSpec<Parameters> = {
 export const webSearchToolSpec: SearchFetchToolSpec<typeof LinkupWebSearchParametersSchema> = {
   name: LINKUP_WEB_SEARCH_TOOL_NAME,
   label: 'Web Search',
-  description: `Search the web with Exa fast search first and Linkup standard search fallback. Uses the configured global blocklist. Exact {"results":[...]} responses, plus exact metadata envelopes with requestId, resolvedSearchType, results, searchTime, and costDollars, return object results as JSONL; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
-  promptSnippet: 'Search the web with Exa fast search first, Linkup fallback, and the global blocklist.',
+  description: `Search the web with DeepSeek search first (up to 50 results with page content), Exa fast search next, and Linkup standard search fallback. Uses the configured global blocklist. Filters are sent to DeepSeek as query operators when they fit and applied locally otherwise. Exact {"results":[...]} responses, plus exact metadata envelopes with requestId, resolvedSearchType, results, searchTime, and costDollars, return object results as JSONL; other output is JSON and may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+  promptSnippet: 'Search the web with DeepSeek first (maximum results with page content), Exa fast next, Linkup fallback, and the global blocklist.',
   promptGuidelines: [
     'Use web_search to discover sources across the web before fetching a specific page.',
-    'web_search uses Exa type="fast" first and Linkup depth="standard" fallback; do not rely on deep, web-answer, limit, or maxResults controls.',
+    'web_search requests up to 50 DeepSeek results with page content first, then uses Exa type="fast" and Linkup depth="standard" fallback; do not rely on deep, web-answer, limit, or maxResults controls.',
+    'web_search forwards fromDate, toDate, and includeDomains to providers and enforces them locally on DeepSeek results.',
     'web_search applies the configured global blocklist locally after providers respond.',
     'web_search returns object results as JSONL for exact {"results":[...]} responses and exact metadata envelopes with requestId, resolvedSearchType, results, searchTime, and costDollars.',
   ],
@@ -208,12 +209,12 @@ export const webSearchToolSpec: SearchFetchToolSpec<typeof LinkupWebSearchParame
 export const webFetchToolSpec: SearchFetchToolSpec<typeof LinkupWebFetchParametersSchema> = {
   name: LINKUP_WEB_FETCH_TOOL_NAME,
   label: 'Web Fetch',
-  description: `Fetch one page, using the gh CLI for mapped GitHub URLs and Linkup renderJs first for everything else, with Exa contents fallback. Blocked hosts throw before providers are called. Inline Markdown images backed by base64 data URLs are removed after fetch. Output is raw markdown when the provider returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
-  promptSnippet: 'Fetch a known URL with the gh CLI for mapped GitHub URLs, Linkup renderJs next, Exa fallback, and the global blocklist preflight.',
+  description: `Fetch one page, using the gh CLI for mapped GitHub URLs and DeepSeek fetch first for everything else, with Linkup renderJs and Exa contents fallback. Blocked hosts throw before providers are called. Inline Markdown images backed by base64 data URLs are removed after fetch. Output is raw markdown when the provider returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+  promptSnippet: 'Fetch a known URL with the gh CLI for mapped GitHub URLs, DeepSeek fetch next, Linkup renderJs then Exa fallback, and the global blocklist preflight.',
   promptGuidelines: [
     'Use web_fetch when the URL is already known and the goal is to read page content.',
     'web_fetch routes github.com, gist.github.com, api.github.com, and raw.githubusercontent.com URLs for repositories, files, directories, issues, pull requests, pull request diffs, commits, comparisons, releases, gists, and REST endpoints through the local gh CLI.',
-    'web_fetch falls back to Linkup renderJs=true and then Exa contents for every other URL, for GitHub pages with no gh mapping, and when gh is missing, unauthenticated, or fails; unsupported fetch knobs are ignored with a warning.',
+    'web_fetch falls back to DeepSeek fetch, then Linkup renderJs=true, then Exa contents for every other URL, for GitHub pages with no gh mapping, and when gh is missing, unauthenticated, or fails; unsupported fetch knobs are ignored with a warning.',
     'web_fetch returns raw markdown when the provider responds with only a markdown field; otherwise it returns JSON.',
     'web_fetch refuses configured blocked hosts before any provider network request is made.',
   ],

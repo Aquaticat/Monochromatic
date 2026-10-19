@@ -128,13 +128,13 @@ export function retainPolicyInput({
      }
    );return snapshot;
   }
-  /** Preserve selected dependencies while later authenticated receipts remain available to the next decision. */
-  function assertApprovedSourcesCurrent({
+  /** Preserve governing dependencies while later original inputs remain available to the next decision. */
+  function assertSourcesCurrent({
     snapshot,
     saved
   }){
    assertCurrent(saved.input);assertInputBudget(session);
-   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation lost its original extension tool inputs');
+   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Tool decision lost its original extension tool inputs');
    const current=base.capture();
    const currentConstructed=constructedInputs(current.nativeRunComposition);
    const nativeDomain=domainEvents();
@@ -149,7 +149,7 @@ export function retainPolicyInput({
        ?.revision
        ??0)<(snapshot.nativeDomainEventObservation
          ?.revision
-         ??0)))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
+       ??0)))throw new PolicySlotBindingError('Tool decision lost its original native event runner or complete receipt accounting');
    assertCollectedManagerGrowth({
      before:saved.original,
      after:current
@@ -159,9 +159,9 @@ export function retainPolicyInput({
      after:currentConstructed
    });
    base.assertObservedFresh(current);
-   if(constructedInputs(current.nativeRunComposition)!==currentConstructed)throw new PolicySlotBindingError('Approved operation inputs changed during dependency validation');
+   if(constructedInputs(current.nativeRunComposition)!==currentConstructed)throw new PolicySlotBindingError('Tool decision inputs changed during dependency validation');
    assertCurrent(saved.input);assertInputBudget(session);
-   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation extension tool inputs changed during dependency validation');
+   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Tool decision extension tool inputs changed during dependency validation');
   }
   function assertObservedFresh(snapshot){
    const saved=snapshots.get(snapshot);
@@ -172,25 +172,10 @@ export function retainPolicyInput({
        .cause}
    );
    try{
-    if(saved.approved){assertApprovedSourcesCurrent({
+    assertSourcesCurrent({
       snapshot,
       saved
-    });return;}
-    assertCurrent(saved.input);assertInputBudget(session);
-    if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Original extension tool inputs changed after source capture');
-    if(constructedInputs(saved.original
-      .nativeRunComposition)!==saved.nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed after source capture');
-    const nativeDomain=domainEvents();
-    if(JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds))throw new PolicySlotBindingError("Native extension event membership changed after source capture");
-    if(nativeDomain?.observation!==snapshot.nativeDomainEventObservation)throw new PolicySlotBindingError(`Native extension event callbacks changed after source capture: ${JSON.stringify({
-      before:snapshot.nativeDomainEventObservation,
-      after:nativeDomain?.observation
-    })}`);
-    base.assertObservedFresh(saved.original);
-    if(constructedInputs(saved.original
-      .nativeRunComposition)!==saved.nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source finalization');
-    assertCurrent(saved.input);assertInputBudget(session);
-    if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Original extension tool inputs changed during source finalization');
+    });
    }catch(error){saved.failure??={cause:error};throw error;}
   }
   /** Called at resolved approval or explicit bypass handoff; retains dependencies without selecting sources or issuing permission. */

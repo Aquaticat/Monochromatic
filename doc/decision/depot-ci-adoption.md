@@ -1,15 +1,15 @@
-# Depot CI adoption proposal
+# Depot CI adoption
 
 Status:
-proposed on 2026-10-18 for review.
-This proposal is not in force.
-It moves to `doc/decision/depot-ci-adoption.md` only after the closure evidence lands and the user
-accepts it,
-under `AGENTS.md` `DRR`.
+accepted on 2026-10-18 under `AGENTS.md` `DRR`.
+This decision is in force.
+The user confirmed the revised rollout plan at `d94e50bec4` in Q7 and accepted this record,
+so
+implementation is permitted.
 
-This proposal consolidates the operating model settled in the 2026-10-18 interview.
-It is supported by [the evaluation](depot-expanded-ci-evaluation.md),
-[the independent review record](depot-expanded-ci-evaluation-independent-review.md),
+This decision consolidates the operating model settled in the 2026-10-18 interview.
+It is supported by [the evaluation](../planning/depot-expanded-ci-evaluation.md),
+[the independent review record](../planning/depot-expanded-ci-evaluation-independent-review.md),
 and the closure workstream record.
 
 ## Scope
@@ -25,7 +25,7 @@ and the closure workstream record.
   workflow bindings or release producers.
 - Does not enable any optional product.
   See "Optional products".
-- The rollout plan remains a proposal until Q7 is answered.
+- The rollout plan is accepted at `d94e50bec4` and implementation proceeds through its work items.
 
 ## Developer no-overage baseline
 
@@ -84,6 +84,11 @@ and the closure workstream record.
   The fast static subset is changed-path scoped,
   and pre-existing whole-tree findings are a recorded baseline,
   not a gate.
+- The unit and build profiles are also not known-good at `4f3d5a65`:
+  unit exits 1 with about 751 named failing test files and 354 JSON-parse errors;
+  build exits 1 with `SIGABRT` and thread-creation failures under fanout.
+  The pilot triages failures per case and bounds build concurrency;
+  none of these profiles is a passing baseline.
 - The repeated complete profile is paid only through one bounded weekly native matrix.
 - The weekly matrix covers these capability categories,
   and no others without a new decision:
@@ -150,7 +155,7 @@ and the closure workstream record.
 - Each cache format needs an admission record with relative benefit and invalidation evidence
   before enablement;
   a measured regression keeps the format disabled.
-- The existing [CI caching policy](../decision/ci-caching.md) remains the measurement record for
+- The existing [CI caching policy](ci-caching.md) remains the measurement record for
   GitHub Actions cache;
   its write and size rules extend to the other systems through this record.
 
@@ -161,7 +166,7 @@ and the closure workstream record.
   precedes any
   paid profile.
 - The review is recorded in
-  [the review record](depot-expanded-ci-evaluation-independent-review.md).
+  [the review record](../planning/depot-expanded-ci-evaluation-independent-review.md).
 - Material changes to the evaluation or the weekly matrix require re-review or a recorded waiver.
 - The review does not authorize implementation;
   user acceptance of this record does.
@@ -237,15 +242,10 @@ and the closure workstream record.
   coverage,
   reliability and allocation exposure.
   Concrete baselines and thresholds are recorded with the weekly matrix admission record.
-- This proposal becomes effective only on explicit user acceptance after:
-  the owner-map refresh,
-  the native evidence experiments,
-  the paused-session qualification,
-  the cache and window admission record,
-  and the per-product disposition list are recorded.
-- On acceptance:
-  move this content to `doc/decision/depot-ci-adoption.md`;
-  insert the dated supersession note in `doc/decision/ci-provider.md`;
-  insert the dated amendment note in `doc/decision/ci-caching.md`;
-  record the acceptance in the handover;
-  and put the revised rollout plan to Q7.
+- Effective 2026-10-18 on user acceptance.
+  Q7 confirmed the revised rollout plan at `d94e50bec4`,
+  this record is in force,
+  and the provider and cache notes are inserted.
+- The subscription transition from the Startup trial to Developer remains a separate user action;
+  no Developer-based admission assumes it before it happens.
+- Implementation proceeds through the revised plan's work items.

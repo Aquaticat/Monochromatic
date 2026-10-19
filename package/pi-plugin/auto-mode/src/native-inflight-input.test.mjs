@@ -6,7 +6,15 @@ import { createDomainFixtureRuntime } from '../dist/native/contract/integration/
 
 //region The genuine SDK captures incoming call, event and queue receipts before its original response returns.
 const method = process.argv[2];
-assert.ok(['steer', 'followUp'].includes(method));
+assert.ok([
+  'steer',
+  'followUp'
+].includes(method));
+const phase = process.argv[3] ?? 'primary';
+assert.ok([
+  'primary',
+  'assessment'
+].includes(phase));
 const marker = 'Original inflight supervisor fixture data, not new permission.';
 const settings = {
   text: 'The complete proposed local inspection is permitted.',
@@ -17,24 +25,48 @@ const settings = {
   httpTransport: true,
   sdkStream: true,
   configuredExtensions: [],
-  changeControl: { async beforeChildReturn() {}, async drain() {} },
+  changeControl: {
+    async beforeChildReturn() {},
+    async drain() {}
+  },
 };
 const observations = {
-  contextCalls: 0, lateContextMutations: 0, progressCalls: 0,
-  assessments: 0, executions: 0, requests: 0, httpCalls: 0, nextInputQuestions: 0,
+  contextCalls: 0,
+  lateContextMutations: 0,
+  progressCalls: 0,
+  assessments: 0,
+  executions: 0,
+  requests: 0,
+  httpCalls: 0,
+  nextInputQuestions: 0,
 };
 let runtime;
-const { env, session, root, lifecycle } = await createDomainFixtureEnvironment({
-  settings, observations, readRuntime() { return runtime; },
+const {
+  env,
+  session,
+  root,
+  lifecycle
+} = await createDomainFixtureEnvironment({
+  settings,
+  observations,
+  readRuntime() { return runtime; },
 });
 let delivered = false;
 let observedLaterDelivery = false;
 let executionsAtLaterDelivery;
 runtime = createDomainFixtureRuntime({
-  settings, observations, env, session, root, lifecycle,
+  settings,
+  observations,
+  env,
+  session,
+  root,
+  lifecycle,
   code: 'return await tools.fixture_value({path:"seed"});',
   programProfile: 'awaited-literal-single-call',
-  async beforePrimaryResponse({ proposal, requestBody }) {
+  async beforePrimaryResponse({
+    proposal,
+    requestBody
+  }) {
     if (!proposal) {
       if (requestBody.includes(marker)) {
         executionsAtLaterDelivery ??= observations.executions;
@@ -42,36 +74,91 @@ runtime = createDomainFixtureRuntime({
       }
       return;
     }
-    assert.equal(delivered, false);
-    delivered = true;
-    await session[method](marker);
+    if (phase === 'primary') {
+      assert.equal(
+        delivered,
+        false
+      );
+      delivered = true;
+      await session[method](marker);
+    }
+  },
+  async beforeAssessmentResponse() {
+    if ((phase === 'assessment') && (!delivered)) {
+      delivered = true;
+      await session[method](marker);
+    }
   },
 });
 await using cleanup = {
   async [Symbol.asyncDispose]() {
     session.dispose();
-    await session.agent.waitForIdle();
+    await session.agent
+      .waitForIdle();
     runtime.detach();
     await env.drain();
     await logger.flush();
   },
 };
 await session.prompt('Perform the proposed local inspection.');
-assert.equal(delivered, true);
-const finalMessage = session.messages.at(-1);
-assert.equal(finalMessage.stopReason, 'stop', finalMessage.errorMessage);
-assert.equal(observations.originalBody.includes(marker), false,
-  'Later input must not be rewritten into the original provider request');
-assert.equal(observations.executions, 1,
-  `Original inflight ${method} must retain one automatic approved execution without source-growth fallback`);
-assert.equal(observedLaterDelivery, true,
-  `Original inflight ${method} must reach a subsequent actual serialized provider request`);
-assert.equal(executionsAtLaterDelivery, 1,
-  'Queued input must reach a subsequent provider request after the current tool executes');
+assert.equal(
+  delivered,
+  true
+);
+const finalMessage = session.messages
+  .at(-1);
+assert.equal(
+  finalMessage.stopReason,
+  'stop',
+  finalMessage.errorMessage
+);
+assert.equal(
+  observations.originalBody
+    .includes(marker),
+  false,
+  'Later input must not be rewritten into the original provider request'
+);
+assert.equal(
+  observations.executions,
+  1,
+  `Original inflight ${method} must retain one automatic approved execution without source-growth fallback`
+);
+assert.equal(
+  observedLaterDelivery,
+  true,
+  `Original inflight ${method} must reach a subsequent actual serialized provider request`
+);
+assert.equal(
+  executionsAtLaterDelivery,
+  1,
+  'Queued input must reach a subsequent provider request after the current tool executes'
+);
 assert.ok(observations.assessments > 0);
 const latest = runtime.inspect();
-assert.equal(latest.lastReview.outcome.state, 'resolved');
-assert.equal(latest.lastReview.outcome.verdict, 'approve');
-assert.equal(latest.lastReview.inputs.requestObservation.request.body, observations.originalBody);
-console.log(JSON.stringify({ inflightInput: method, executions: observations.executions, assessments: observations.assessments }));
+assert.equal(
+  latest.lastReview
+    .outcome
+    .state,
+  'resolved'
+);
+assert.equal(
+  latest.lastReview
+    .outcome
+    .verdict,
+  'approve'
+);
+assert.equal(
+  latest.lastReview
+    .inputs
+    .requestObservation
+    .request
+    .body,
+  observations.originalBody
+);
+console.log(JSON.stringify({
+  inflightInput: method,
+  phase,
+  executions: observations.executions,
+  assessments: observations.assessments
+}));
 //endregion The genuine SDK captures incoming call, event and queue receipts before its original response returns.

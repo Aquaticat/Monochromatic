@@ -22,6 +22,14 @@ export {
   exaForwardableBlocklist,
 } from './exa-client.ts';
 export {
+  DEFAULT_DEEPSEEK_BASE_URL,
+  DEEPSEEK_FETCH_ENDPOINT,
+  DEEPSEEK_SEARCH_COUNT,
+  DEEPSEEK_SEARCH_ENDPOINT,
+  DEEPSEEK_SEARCH_NEED_CONTENT,
+  createDeepseekClient,
+} from './deepseek-client.ts';
+export {
   createSearchFetchClient,
 } from './search-fetch-client.ts';
 
@@ -124,6 +132,12 @@ export type {
   ExaContentsRequestBody,
   ExaSearchRequestBody,
 } from './exa-client.ts';
+export type {
+  DeepseekClient,
+  DeepseekClientOptions,
+  DeepseekFetchRequestBody,
+  DeepseekSearchRequestBody,
+} from './deepseek-client.ts';
 export type {
   GhClient,
   GhClientFetchOptions,

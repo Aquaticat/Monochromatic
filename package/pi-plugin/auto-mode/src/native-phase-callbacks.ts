@@ -10,7 +10,7 @@ import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import type {
   AgentSession,
   AgentToolResult,
-  createBashToolDefinition,
+  defineTool,
   ExtensionAPI,
   ExtensionHandler,
   ToolCallEvent,
@@ -18,6 +18,12 @@ import type {
   ToolResultEvent
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import {
+  normalizePreparedArguments,
+  readCommandMember,
+  readPhaseProbeMember,
+  readTrimmedCommandMember
+} from './native-phase-value.mjs';
 import type {
   FixtureBashDetails,
   FixtureBashTool,
@@ -25,7 +31,6 @@ import type {
   NativePhasePlan,
   NativePhaseState,
   NativePhaseUpdateDeferred,
-  PhaseCommandInput,
   PhaseExecutionReturnGuard,
   SessionEventHandler
 } from './native-phase-types.ts';
@@ -44,50 +49,6 @@ export type PhaseExtensionFactory = (api: ExtensionAPI) => void;
  Tool call hook result mirrors the installed SDK handler declaration.
  */
 type PhaseToolCallHookResult = ReturnType<ExtensionHandler<ToolCallEvent, ToolCallEventResult>>;
-
-/**
- Recognize command-bearing tool input at the normalization read boundary.
-
- @param value - tool input reached by argument preparation
-
- @returns whether ordinary property reads can inspect the command member
- */
-function isPhaseCommandInput(value: unknown): value is PhaseCommandInput {
-  return ((typeof value) === 'object') && (value !== null);
-}
-
-/**
- Recognize command text at the normalization read boundary.
-
- @param value - command member read from tool input
-
- @returns whether the command member carries text
- */
-function isPhaseCommandText(value: unknown): value is string {
-  return (typeof value) === 'string';
-}
-
-/**
- Recognize an object details member before its marker read.
-
- @param value - details member of a tool execution update payload
-
- @returns whether ordinary property reads can inspect the member
- */
-function isDetailRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object') && (value !== null);
-}
-
-/**
- Recognize the fixture phase probe marker at its original update read.
-
- @param value - details member of a tool execution update payload
-
- @returns whether the payload carries the fixture phase probe marker
- */
-function hasPhaseProbeMarker(value: unknown): boolean {
-  return isDetailRecord(value) && Boolean(value.phaseProbe);
-}
 
 //region Native hooks observe each proposed member around its real execution.
 
@@ -120,16 +81,9 @@ export function createPhaseExtensionFactory({
         /**
          Command text reaches the hook already normalized by preparation.
          */
-        const { input } = event;
-        assert.ok(isPhaseCommandInput(input));
-        /**
-         Command member stays unknown until its text comparison reads it.
-         */
-        const command: unknown = input.command;
-        assert.ok(isPhaseCommandText(command));
         assert.equal(
-          command,
-          command.trim()
+          readCommandMember(event.input),
+          readTrimmedCommandMember(event.input)
         );
         if ((plan.mode === 'before-block') && (event.toolCallId === 'phase-1'))
           return {
@@ -227,7 +181,7 @@ export function wrapPhaseBashTool({
   observations: NativePhaseObservations;
   state: NativePhaseState;
   events: NativePhaseEvents;
-  original: ReturnType<typeof createBashToolDefinition>;
+  original: ReturnType<typeof defineTool>;
   readSession: () => AgentSession;
 }>): FixtureBashTool {
   return {
@@ -236,15 +190,10 @@ export function wrapPhaseBashTool({
     prepareArguments(input: unknown): unknown {
       events.push('prepare');
       /**
-       Normalization trims authored command padding before schema validation.
+       JavaScript performs the original normalization expression verbatim, so
+       invalid inputs pass through unchanged for the SDK's later validation.
        */
-      const normalized = (isPhaseCommandInput(input) && isPhaseCommandText(input.command))
-        ? {
-          ...input,
-          command: input.command
-            .trim()
-        }
-        : input;
+      const normalized: unknown = normalizePreparedArguments(input);
       return original.prepareArguments?.(normalized)
         ?? normalized;
     },
@@ -348,7 +297,7 @@ export function createPhaseEventSubscriber({
        Partial result details stay unknown until the marker check reads them.
        */
       const details: unknown = event.partialResult.details;
-      if (hasPhaseProbeMarker(details)) {
+      if (Boolean(readPhaseProbeMember(details))) {
         events.push(`update:${event.toolCallId}`);
         await nonNullishOrThrow(state.updates.get(event.toolCallId))
           .promise;

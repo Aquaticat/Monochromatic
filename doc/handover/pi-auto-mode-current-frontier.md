@@ -4,7 +4,42 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
-- Incoming-message rejection: the reproduced category-gate defect is closed on `4913ea2cd0`.
+### Latest checkpoint
+
+- Day accounting through `2026-10-19T03:34:17Z`, October 18 in America/New_York:
+  243 relevant commits, comprising 42 fixes, 21 refactors, four performance changes,
+  65 test checkpoints, ten style changes, 100 documentation checkpoints and one chore.
+  These are commit classifications, not completed feature counts.
+  Receipt: `today-work-20261018.json`; reproduction task: `summarize-today-work` in the current private scratch.
+- The eight AST/comment-qualified formatter patches are retained in `b0c703f79c`.
+  Wrapping is formatting, not regression. Character counts audit implementation growth;
+  existing max-lines still requires meaningful module splits. Root QF1 and lint policy stay unchanged.
+- Source checkpoint `f66ab1e340` commits exactly the three phase SDK-erasure corrections.
+  The fixture initializes `sawSteering`, erases the genuine SDK tool before wrapping it,
+  and registers that erased wrapper directly. Worker `kARc6q` holds its phase scope unchanged.
+  Fresh candidate `I5x3ww` freezes committed `79ba2916b3` with those changes;
+  JavaScript and native builds pass. Types, full phase catalog and input/schema consumers are running.
+- Native worker `Pcok7j` has three scoped warnings and zero errors at its last measured checkpoint.
+  Its remaining ambient declaration must preserve the original writable dynamic error name
+  and message-only constructor. The proposed corrected name is sound, but its suppression enable
+  comes after the constructor rather than immediately after the documented declaration.
+  Stop that complete write and correct the declaration scope before committing and qualifying it.
+- The registered-host reload probe reports zero executions after a genuine disposable policy change,
+  followed by one automatic execution after the original SDK reload.
+  The initial unregistered probe was not a configured-host reproduction.
+  The registered no-reload negative control and complete log audit remain in progress.
+- Next implementation work: split the decision core by review orchestration and admission-scope responsibility;
+  preserve constructor identity and original decision/lifetime behavior.
+  Source MiMo's next held assignment splits the producer-lifetime test by responsibility,
+  retaining all nine lifecycle cases and the five rebuilt fault controls.
+- Completion still requires zero package lint, architecture and character/dependency inventories,
+  resumed configured MiMo histories, actual long-history memory qualification,
+  final provider payload and compaction/tool/shutdown verification, package docs and publication.
+  The last full frozen lint baseline remains 11,325 warnings and 157 errors across 882 files.
+
+### Investigation checkpoints
+
+- Incoming-message rejection: the primary-request category-gate defect is closed on `4913ea2cd0`.
   The gate and its newly introduced classifier are removed; normal input does not need membership in an origin list.
   Fresh builds and six native consumer suites pass on immutable `native-release-LqreQy` in `3eMYni`.
   Configured full-history replays `rVn75u` and `zdzKWP` each perform one actual reviewed `pwd`,
@@ -17,6 +52,42 @@ Work is incomplete. Continue the queue without another readiness handoff.
   and actual abort prevents execution. The queued-text immediate-stop assumption is retracted.
   Next: finish delivery controls, align phase tests with that contract, and repeat final coherent host verification
   after the remaining package changes. Live MiMo runtime artifacts remain immutable.
+  Primary-delivery guard controls now detect all three rebuilt faults: restored old category gate,
+  dropped native steering delivery and dropped native follow-up delivery; restored build and both delivery cases pass.
+  Receipt: `inflight-input-delivery-final-controls-results.json`, complete=true, candidate `zn5ROv` at `984834983e`.
+  A separate timing window remains under investigation: input arriving during Luna review,
+  which the old `steer-user` phase expectation treats as withholding.
+  The new `test:native:inflight-assessment-input` uses real SDK delivery during the assessment response;
+  qualify it against the unchanged freshness guards before changing that implementation.
+  Baseline `yKnXp3` at `a93c37afe93e` passes builds and primary-time delivery,
+  but the new review-time case executes zero tools and fails its exact automatic-execution assertion.
+  Deciding cause: `resource-bindings.mjs` reports `Native run prompt was replaced after this source snapshot`.
+  `policy-input-collector` has separate pre-approval identity and post-approval dependency checks.
+  The authored consolidation uses the incumbent dependency comparison in both phases and removes the stricter duplicate path.
+  It still authenticates snapshots and checks current policy, tool inputs, event runner, immutable governing material,
+  original input append-only ownership and the newly captured base snapshot.
+  Fresh review-time, original primary-time, genuine-policy/tool-change and configured-host checks remain required.
+  Corrected `bLWXAD` at `324a7ed707` passes both primary-time cases and both review-time cases,
+  source-freshness work, run-message freshness, session inputs, event receipts, host isolation,
+  constructor, execution and source-binding capacity.
+  A separate schema-mutation fixture fails before checking its schema because it passes retired `manualOrigins`
+  instead of the current `executionOrigins` map; this is not evidence of a changed production schema guard.
+  The fixture correction uses the actual argument and requires the exact schema-change diagnostic,
+  preventing unrelated ownership errors from satisfying its assertion.
+  The source MiMo's held edit is read completely and stopped: an unmatched parenthesis and another normalization drift
+  make that patch unaccepted. It resumes at a settled boundary with a truthful, small JavaScript fixture-helper option
+  and genuine SDK erasure guidance; no invented predicates or new input validation are accepted.
+  Review-time corrected host `native-release-iw9xzU` passes baseline `PQ0UjR`, steering `clGcSZ`
+  and follow-up `Mxx37Y` with full saved history and 3,061,618-byte original requests.
+  Each executes its sole reviewed `pwd`, opens zero approval dialogs, captures four HTTP-200 Luna responses,
+  and passes required/excluded payload controls over 239 questions.
+  Actual serialized requests show steering first delivered in request two and follow-up first in request three;
+  neither is rewritten into the original request. Complete stderr and normal shutdown audits pass.
+  Previous-build control `RSjiZv` reproduces the exact review-time snapshot rejection and approval dialog;
+  its complete sole-`pwd` group is audited and stopped, then normal shutdown is requested.
+  Rebuilt controls in `ijhWT8` catch removal of the actual schema guard and restoration of strict review identity;
+  restored build, schema, primary-delivery and review-delivery cases all pass.
+  Receipts: `review-current-*-audit.log`, `review-old-control-audit.log`, `currentness-controls-results.json`.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
@@ -32,15 +103,30 @@ Work is incomplete. Continue the queue without another readiness handoff.
   MiMo receives concrete feedback to use the genuine SDK erasure boundary without claiming validation,
   and to align steering assertions with the independently measured native queue timing.
   Its scope now includes the phase catalog registration call if needed.
+  It commits the JavaScript value helper, truthful unknown preparation and actual queued delivery assertions
+  as `46fd9cb0c4`, with exactly eight captured paths.
+  Its report incorrectly attributes an already-verified unknown-through-final-defineTool chain to the supervisor;
+  no such clean-chain qualification exists. The wrapper's declared type still loses the SDK's renderer erasure.
+  Independent `sdk-tool-erasure-proof` establishes the real solution with a negative registry-name compiler control,
+  zero diagnostics on the honest unknown-return fixture, and actual SDK/renderer identity assertions.
+  The remaining package diagnostic is the old phase catalog registration at line 185, not the independent proof.
+  Deliver that concrete prototype at the settled checkpoint; do not add validation to satisfy the declared schema.
 - Native MiMo: `Pcok7j` resumes the complete `9Tl0ts` history on the corrected immutable runtime.
   Its queued concrete implementation is the real policy-loader TypeScript port, not a facade around untyped code.
   Neither worker may mutate root dist or another owner's files.
+  It delivers the actual loader implementation, publication split and boundary declarations with 19 scoped warnings/23 errors.
+  Its twelve-path commit fails in the RPC container at the known unrelated staged-LFS shadow boundary.
+  The documented qualified host-wrapper route succeeds as `a751fe27fe`; committed paths exactly match the captured twelve.
+  A post-commit receipt command initially guesses unsupported `git diff-tree --recursive` and fails after committing;
+  the recovery uses the installed command's documented `-r`, verifies exact scope and does not repeat the commit.
+  Qualify the combined build/types/catalogs, then finish scoped lint and inspect every suppression under the package rules.
 - Declaration build: the incumbent Rolldown/Oxc generator emits closed `native-artifact-types` declarations.
   Release-relative facades eliminate copied source paths and raw-built-TypeScript project traversal.
   The environment forwards the actual identity-preserving SDK `defineTool` function.
   Eight owned files have zero scoped lint warnings/errors; all five formatter-generated declaration outputs match byte for byte.
   Fresh complete types remain open on the phase preparation contract; do not reuse older clean-type claims.
-- Full package lint: latest complete frozen scan reports 11,418 warnings/126 errors at `9e14b79e86`.
+- Full package lint: latest complete frozen scan reports 11,325 warnings/157 errors across 882 files at `d58b695428`.
+  The preceding `9e14b79e86` scan reports 11,418 warnings/126 errors across 869 files.
   A fresh complete scan and zero-diagnostic repair remain required after the current ports.
 - Source inventory: frozen `9e14b79e86` now has a bounded, positive-controlled role graph over 869 owned source files,
   actual generated native imports, explicit shared roles and Node type erasure.
@@ -60,9 +146,58 @@ Work is incomplete. Continue the queue without another readiness handoff.
   preserving root branch and concurrent dirty work. No root merge or cleanup is authorized by that receipt.
 - Completion queue: finish coherent types/full lint/catalogs/payload audit/shutdown stderr,
   final inode/dependency/source inventories, package responsibility documentation and safe publication.
-  Root `TCV`, `CPN`, `RXI` stay unchanged; concrete lessons remain package-local.
+  Root `TCV`, `CPN`, `RXI`, `MWK`, `QF1` stay unchanged by the user's explicit decisions;
+  concrete lessons remain package-local.
   Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
   project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
+  The next independent lint reduction is a private full-owned-source safe formatter pass,
+  followed by complete TypeScript/JavaScript AST and comment comparison before any adoption.
+  Exclude both active MiMo scopes; never overwrite concurrently changed files.
+  Continue the architecture audit at the authenticated manager-growth comparison,
+  where repeated shape checks may duplicate the collector's actual ownership seam.
+  Combined committed `4f3eb91a8c` builds JavaScript and native output and passes the full phase catalog,
+  both primary/review input cases, source freshness and schema mutation.
+  Its fresh types report only phase-catalog TS2741 (missing initial `sawSteering`)
+  and TS2379 (the still-unerased fixture registration).
+  Source MiMo receives the proven SDK erasure prototype; native MiMo resumes its scoped lint repair.
+  Deliver the additional exact TS2741 evidence at the source worker's next settled boundary.
+  Previous-build negative controller `RSjiZv` exits normally after its audited Stop response.
+  The combined checkpoint finishes constructor/execution consumers successfully; its only type errors remain the two phase fixtures.
+  The full formatter experiment changes 34 of 882 files: eight preserve complete AST/comments,
+  seventeen change the AST and nine overlap active worker scopes.
+  Rejected changes are restored only in the private candidate.
+  The initial eight-file candidate builds and passes phases but introduces one extra producer-lifetime lint error.
+  That file is restored privately; seven candidates remain under critical consumer verification before adoption.
+  Its first inflight task does not execute because the private driver lacks that task registration;
+  the resumed driver adds the exact maintained tasks without rerunning completed builds or the formatter.
+  The source monitor incorrectly hides an approval dialog when its tool count is below the minimum;
+  pending approvals now bypass that threshold. Old loaded watchers remain unchanged until they exit.
+  The supervisor gives a proof path whose host-temp symlink target is not mounted in the worker,
+  then stops the complete read-only directory-listing detour and supplies the actual proof and fresh diagnostics
+  in `/fixture-home` at the next idle boundary.
+  Source `kARc6q` resumes as `source-local-proof-and-exact-diagnostics-20261019-18`;
+  native `Pcok7j` continues scoped lint and an explicit suppression-source record.
+  The seven-file formatter scope preserves error codes but increases the reported line counts in two already-overlong files.
+  Its exact diagnostic comparison rejects that adoption; no formatter changes have reached root.
+  User corrects that rejection: wrapping is formatting, not regression;
+  character counts assess implementation growth while existing max-lines still requires module splits.
+  The producer owner adds 129 whitespace characters and the decision core adds 17;
+  their non-whitespace counts stay 9,432 and 10,273 respectively.
+  Retain the eight previously AST/comment-qualified formatter patches,
+  including the lifecycle fixture's formatting, then split over-limit responsibilities.
+  Keep lint policy and root QF1 unchanged; the concrete sizing lesson stays in package docs.
+  The first reload probe lacks the host's resource-owner registration and fails after SDK reload.
+  It is a harness result, not evidence that the configured host cannot recover.
+  Repeat through the actual registered route before drawing a package conclusion.
+  Native scoped lint drops to three chain warnings/zero errors across twelve files;
+  a malformed escaped-path display command is stopped and the complete actual log is read by the supervisor.
+  Native receives exact diagnostics and a named-local correction; source receives the exact proven type correction.
+  Both old-runtime workers encounter a separate governing-policy invalidation after concurrent root `AGENTS.md` changes.
+  Source logs retain `ObservedFileUnstableReadError` followed by permanent policy-link ineligibility;
+  native logs retain `Original selected policy capture changed`.
+  Do not equate those incidents or treat manual continuation as automatic-approval qualification.
+  Next: prove policy change, reload and subsequent actual tool execution in a disposable session,
+  then resume the completed worker histories on a newly qualified immutable runtime.
 
 ## Detailed qualification evidence
 

@@ -19,6 +19,7 @@ import {
 } from './continuation-depth.ts';
 import {
   hasRunningBackgroundTask,
+  hasRunningSubagent,
   workedSinceLastForcedContinuation,
 } from './continuation-progress.ts';
 import { taskListState, } from './continuation-tasks.ts';
@@ -390,11 +391,43 @@ function createStopRemindersHandler(
       },),
       depth,
       message,
+      permissionMode: event.permission_mode,
+      sessionCrons: (event.session_crons ?? []).length,
     };
     /**
      Where this stop's record is appended.
      */
     const path = verdictLogPath(env,);
+
+    /**
+     Why this stop is released without a request: the situation cannot be a premature stop.
+     
+     A running subagent reports back on its own. In plan mode the agent cannot perform the
+     work it announces, so announcing it and stopping is the mode working as designed.
+     The empty string means neither applies.
+     */
+    const releaseWithoutAsking = (event.permission_mode === 'plan')
+      ? 'plan mode: the agent cannot act yet'
+      : (hasRunningSubagent(event.background_tasks,)
+        ? 'a subagent is running'
+        : '');
+    if (releaseWithoutAsking !== '') {
+      // Recorded so the verdict log still shows what each skip covered.
+      l.debug(`Luna skipped: ${releaseWithoutAsking}`,);
+      await appendVerdict({
+        path,
+        record: {
+          ...base,
+          outcome: 'skipped',
+          detail: releaseWithoutAsking,
+          action: 'release',
+        },
+      },);
+      return stopRemindersDecision({
+        event,
+        forcedContinuationAllowed: false,
+      },);
+    }
 
     try {
       /**

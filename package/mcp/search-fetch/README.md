@@ -7,8 +7,10 @@ with truncated responses delivered as resources.
 
 The pi extension `@monochromatic-dev/pi-plugin-search-fetch` serves pi hosts.
 This server serves every other MCP host with the identical behavior:
-Exa-first search with Linkup fallback,
-gh CLI routing for mapped GitHub URLs,
+DeepSeek-first search (maximum results with page content) with Exa and Linkup
+fallback,
+`gh` CLI routing for mapped GitHub URLs,
+DeepSeek fetch before Linkup and Exa,
 the global host blocklist,
 base64 data-URL image stripping,
 and the same tool names and descriptions.
@@ -20,9 +22,14 @@ a host that loads this server should not also load the pi extension.
 
 ## Tools
 
-- `web_search` searches with Exa fast search first and Linkup standard fallback.
+- `web_search` searches with DeepSeek first (up to 50 results with page content),
+  then Exa fast search,
+  then Linkup standard fallback.
 - `web_fetch` fetches one page,
-  routing mapped GitHub URLs through the local `gh` CLI.
+  routing mapped GitHub URLs through the local `gh` CLI,
+  then using DeepSeek fetch,
+  Linkup renderJs,
+  and Exa contents.
 
 Both keep the shared open parameter schema,
 so unsupported keys produce a warning instead of a rejection.

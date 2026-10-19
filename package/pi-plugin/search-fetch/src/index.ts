@@ -95,6 +95,7 @@ export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
    Provider-routing client shared by registered tools.
    */
   const client = createSearchFetchClient({
+    ...(config.deepseekApiKey === undefined ? {} : { deepseekApiKey: config.deepseekApiKey, }),
     ...(config.exaApiKey === undefined ? {} : { exaApiKey: config.exaApiKey, }),
     ...(config.linkupApiKey === undefined ? {} : { linkupApiKey: config.linkupApiKey, }),
     ...(storeError === undefined ? {} : { credentialHint: storeError, }),

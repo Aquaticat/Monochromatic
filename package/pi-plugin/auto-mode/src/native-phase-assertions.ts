@@ -185,6 +185,12 @@ export function assertNativePhaseOutcome({
       true,
       'Captured custom data must reach the next real primary request'
     );
+  if (plan.steering)
+    assert.equal(
+      state.sawSteering,
+      true,
+      'Queued steering text must reach the subsequent request'
+    );
 }
 
 //endregion

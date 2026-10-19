@@ -38,7 +38,9 @@ and to provider-supported request filters where compatible.
 ### Credentials
 
 `search-fetch` resolves each provider key independently.
-A non-blank `EXA_API_KEY` or `LINKUP_API_KEY` in the process environment wins.
+A non-blank `DEEPSEEK_API_KEY`,
+`EXA_API_KEY`,
+or `LINKUP_API_KEY` in the process environment wins.
 Otherwise the key comes from the repo's sops/age-encrypted `.env.local.json`
 through `@monochromatic-dev/module-env-local-json`,
 the same reader the MCP
@@ -83,8 +85,20 @@ then removes the old fields and the legacy file.
 
 ## Tool behavior
 
-`web_search` searches with Exa first when Exa credentials are configured.
-It falls back to Linkup when Exa credentials are missing or Exa fails.
+`web_search` searches with DeepSeek first when DeepSeek credentials are configured.
+It uses Exa next and Linkup last when earlier credentials are missing or the
+earlier provider fails.
+DeepSeek search uses fixed behavior:
+
+- maximum result count (`count: 50`)
+- page content requested (`need_content: true`)
+- `includeDomains`,
+  `fromDate`,
+  and `toDate` mapped to `site:`,
+  `after:`,
+  and `before:` operators while they fit the 128 character query limit
+- dropped filters enforced again on the returned results
+- results deduplicated by URL host plus path
 
 Exa search uses fixed behavior:
 
@@ -118,8 +132,15 @@ one result object per line.
 Other search response shapes are returned as JSON.
 
 `web_fetch` routes GitHub URLs through the local `gh` CLI before any paid provider.
-Every other URL fetches through Linkup first to preserve rendered-page behavior.
-Linkup failures fall back to Exa contents when Exa credentials are configured.
+Every other URL fetches through DeepSeek first,
+then Linkup renderJs,
+then Exa
+contents when earlier credentials are missing or the earlier provider fails.
+DeepSeek fetch failures,
+empty page content,
+timeouts,
+and HTTP errors all fall
+through to the next provider.
 
 GitHub hosts carrying a `gh` mapping:
 
@@ -182,7 +203,9 @@ and `NO_COLOR` to `1`,
 so ambient values cannot redirect a fetch or switch gh to colored terminal-shaped output.
 Pull request diffs also pass `--color never`.
 
-These outcomes all fall back to Linkup and then Exa:
+These outcomes all fall back to DeepSeek,
+then Linkup,
+then Exa:
 
 - missing `gh` executable
 - unauthenticated `gh`
@@ -212,6 +235,12 @@ Two consequences follow from routing through an authenticated `gh`:
 - Every mapped read spends the authenticated account's GitHub API budget instead of paid search credits.
    A session that fetches many GitHub files can reach a rate limit,
    which surfaces as a non-zero `gh` exit and then falls back to the paid providers.
+
+DeepSeek fetch uses fixed behavior:
+
+- `POST https://api.deepseek.com/v1/tools/fetch` with the requested URL
+- raw Markdown page content normalized to the same single-field `{ "markdown": ... }` shape Linkup uses
+- 30 second client timeout
 
 Linkup fetch uses fixed behavior:
 

@@ -12,6 +12,8 @@ The rig has three capture paths, each usable while `m1`'s screen is locked:
 - Real macOS Safari inside a UTM macOS VM, driven through WebDriver.
 - `webkit-capture`, an off-screen `WKWebView` on the host, as a fallback when the VM is down.
 
+The VM also serves a second, concurrent WebDriver endpoint for Safari Technology Preview (Linux port 4450).
+
 Never commit passwords here (this repository is public).
 The VM guest's login password is the one the user chose when creating the guest.
 
@@ -284,6 +286,151 @@ port 4447 and `m1`'s preview port 4173 into the guest:
 Load each new agent once with `launchctl bootstrap gui/$(id -u) <plist>`; afterwards login loads them.
 The UTM VM must be registered in UTM (open `macOS.utm` once) for `utmctl start macOS` to find it.
 
+### Second WebDriver endpoint: Safari Technology Preview in the guest
+
+Safari allows one WebDriver session at a time, so two automation runs on port 4446 queue.
+Apple documents the limit in [About WebDriver for Safari][wd-about]: "Only one Safari browser instance can be active
+at any given time, and only one WebDriver session at a time can be attached to the browser instance."
+Apple documents the way around it in [Testing with WebDriver in Safari][wd-testing]:
+"Safari and Safari Technology Preview each provide their own `safaridriver` executable",
+"Each `safaridriver` is capable of launching only the Safari version it's associated with, and the two can run
+simultaneously."
+So Safari Technology Preview (STP) in the guest gets its own driver, port chain and Linux unit.
+It is a different WebKit than Safari 27.0 (the guest's STP was Release 254, driver `22627.1.2.1`),
+so its pixels can differ from the Safari endpoint's.
+Port chain: guest 4448, `m1` 4449, Linux 4450.
+Nothing here edits the Safari chain (4445, 4447, 4446).
+
+#### Install STP into the guest
+
+Download the macOS 27 build from the [Safari download page][safari-download]
+(the link labelled "Safari Technology Preview for macOS 27"; this run used `SafariTechPreview254.dmg`)
+to `m1`'s external disk, then unpack the signed installer package and copy only the app.
+The guest's `user` is in the `admin` group and `/Applications` is group-writable, so no `sudo` is needed
+(`installer` would need the guest password):
+
+```bash
+# on m1
+mkdir -p /Volumes/MacData/stp && cd /Volumes/MacData/stp
+curl --fail --location --output SafariTechPreview254.dmg \
+  https://secure-appldnld.apple.com/STP/142-36179-20261008-3c90402e-c681-4700-bb14-4265744f1038/SafariTechPreview254.dmg
+hdiutil attach -nobrowse -readonly SafariTechPreview254.dmg
+pkgutil --check-signature "/Volumes/Safari Technology Preview/SafariTechPreview254.pkg"
+pkgutil --expand-full "/Volumes/Safari Technology Preview/SafariTechPreview254.pkg" expanded
+cd expanded/SafariTechPreview254.pkg/Payload/Applications
+COPYFILE_DISABLE=1 tar -cf - "Safari Technology Preview.app" \
+  | ssh -o BatchMode=yes -i ~/.ssh/id_ed25519_vm user@192.168.64.2 'tar -C /Applications -xf -'
+ssh -o BatchMode=yes -i ~/.ssh/id_ed25519_vm user@192.168.64.2 \
+  'codesign --verify --deep --strict "/Applications/Safari Technology Preview.app" && echo codesign-ok'
+```
+
+The download link changes with each STP release; take the current one from the download page.
+`hdiutil attach -mountpoint` onto `/Volumes/MacData` failed with `Permission denied`, so use the default mount point.
+The package also installs three LaunchAgents under `/Library` (push, sync, authentication services);
+the copy skips them, and whether session creation needs them is unverified until `--enable` is done.
+
+#### Enable STP's driver (needs the guest administrator password, once)
+
+Apple: "Run `safaridriver --enable` once" ([Testing with WebDriver in Safari][wd-testing]),
+which for STP means its own executable.
+Run it in the guest, from Terminal in the UTM window or over SSH with `-t` (so `sudo` can prompt),
+and type the guest password when `sudo` asks:
+
+```bash
+# Linux workstation, then m1: allocate a terminal at each hop
+ssh -t m1
+ssh -t -i ~/.ssh/id_ed25519_vm user@192.168.64.2
+# in the guest
+sudo "/Applications/Safari Technology Preview.app/Contents/MacOS/safaridriver" --enable
+```
+
+If `POST /session` still fails afterwards, restart the guest driver so it rereads the setting:
+`launchctl kickstart -k gui/$(id -u)/dev.monochromatic.safaridriver-stp`.
+
+Without it, `POST /session` on the STP driver fails with
+`You must enable 'Allow remote automation' in the Developer section of Safari Settings to control Safari via WebDriver.`
+The same switch is in the app: open STP in the guest, Settings, Developer (older macOS: Develop menu, Allow Remote
+Automation), and tick "Allow remote automation".
+Without a password the non-`sudo` run of `--enable` prints `Password is not valid, please try again.` and exits 1.
+
+#### Guest LaunchAgent: STP's WebDriver at login
+
+`~/Library/LaunchAgents/dev.monochromatic.safaridriver-stp.plist` in the guest:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.monochromatic.safaridriver-stp</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Applications/Safari Technology Preview.app/Contents/MacOS/safaridriver</string>
+    <string>--port</string>
+    <string>4448</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardErrorPath</key>
+  <string>/tmp/safari-driver-stp.log</string>
+</dict>
+</plist>
+```
+
+#### Host LaunchAgent: forward STP's port to m1
+
+A separate agent, so the one serving 4447 stays untouched.
+`~/Library/LaunchAgents/dev.monochromatic.vm-tunnel-stp.plist` on `m1`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.monochromatic.vm-tunnel-stp</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/ssh</string>
+    <string>-N</string>
+    <string>-o</string><string>BatchMode=yes</string>
+    <string>-o</string><string>ExitOnForwardFailure=yes</string>
+    <string>-o</string><string>ServerAliveInterval=15</string>
+    <string>-o</string><string>ServerAliveCountMax=3</string>
+    <string>-i</string><string>/Users/user/.ssh/id_ed25519_vm</string>
+    <string>-L</string><string>4449:127.0.0.1:4448</string>
+    <string>user@192.168.64.2</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+  <key>StandardErrorPath</key>
+  <string>/tmp/vm-tunnel-stp.log</string>
+</dict>
+</plist>
+```
+
+Load each once: `launchctl bootstrap gui/$(id -u) <plist>` in the guest (for the driver) and on `m1` (for the forward).
+This agent carries no `-R 4173` forward; the guest's `localhost:4173` already comes from the Safari chain's agent,
+so STP in the guest reaches the same preview origin only while that agent is up.
+
+#### Using the endpoint
+
+The STP capability is `{"alwaysMatch": {"browserName": "Safari Technology Preview"}}`
+([Selenium's Safari page][selenium-safari] shows the same name as `browser_name` for STP;
+`safari` selects the plain Safari driver).
+Both browsers share the guest's one window server and one display, and the display mode set by `displayplacer`
+applies to both.
+Apple's documentation says the two drivers can run simultaneously; the first concurrent run with the Safari endpoint
+(2026-10-18) had not happened when this was written, because the `--enable` step still needed the guest password,
+so treat window-rect and focus-sensitive steps run in both at once as unverified.
+
 ## 4. Host fallback: webkit-capture
 
 Compile on `m1` into `/Volumes/MacData/xinyanchen-capture/webkit-capture`
@@ -407,6 +554,9 @@ systemd-run --user --unit=xinyanchen-m1-tunnel --collect --property=MemoryMax=64
 systemd-run --user --unit=xinyanchen-vm-webdriver --collect --property=MemoryMax=64M \
   --property=Restart=always --property=RestartSec=10 \
   ssh -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -N -L 4446:127.0.0.1:4447 m1
+# Safari Technology Preview's WebDriver (guest 4448, m1 4449) as local 4450, a second concurrent endpoint
+systemd-run --user --unit=xinyanchen-vm-webdriver-stp --collect --property=MemoryMax=64M \
+  /usr/bin/ssh -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -N -L 4450:127.0.0.1:4449 m1
 ```
 
 `no-store-server.mjs` serves one directory with `Cache-Control: no-store`:
@@ -539,8 +689,15 @@ A script that evaluates JavaScript instead of capturing (`vm-safari-eval.mjs`) i
 replaced by one `POST /session/{id}/url` and one `POST /session/{id}/execute/sync` whose result it prints.
 Keyboard input uses `POST /session/{id}/actions` with key code points (`` Space, `` Tab).
 
-If `POST /session` answers "already paired with another WebDriver session", `DELETE /session/<id>` the stale one;
-if it times out "connecting to a Safari instance", quit any normal Safari window in the guest
+If `POST /session` answers "already paired with another WebDriver session", `DELETE /session/<id>` the stale one.
+`GET /status` still answers `ready: true` while paired, so it proves nothing about a free session.
+When no live client knows the id (the script died before its `finally` ran), restart that driver's launch agent in
+the guest (`launchctl kickstart -k gui/$(id -u)/dev.monochromatic.safaridriver-stp`, or
+`dev.monochromatic.safaridriver` for regular Safari) and quit the leftover automation window; this ends whatever
+that driver was running, so check that no other job holds its lock first.
+A common way to kill a script before cleanup is piping it into `head`: `head` exits after its lines and the script
+dies on SIGPIPE at its next write, so redirect WebDriver scripts to a file instead.
+If it times out "connecting to a Safari instance", quit any normal Safari window in the guest
 (`osascript -e 'quit app "Safari"'`) and never start Safari's binary directly.
 
 ## Verify the rebuilt rig
@@ -552,3 +709,14 @@ if it times out "connecting to a Safari instance", quit any normal Safari window
 5.  `node vm-safari-shot.mjs out 1920x1080@1 index.html@0` reports `[1920,1028,1,"visible",...]`,
     and `@2` reports device pixel ratio 2.
 6.  Lock `m1` (`pmset displaysleepnow`) and repeat 2 and 5: both must still produce real pages.
+7.  `curl --silent http://127.0.0.1:4450/status` on Linux prints `"ready":true` (the STP chain).
+    A `POST /session` to port 4450 with
+    `{"capabilities": {"alwaysMatch": {"browserName": "Safari Technology Preview"}}}`
+    must return a session whose `navigator.userAgent` and `document.title` read from `http://localhost:4173/index.html`;
+    delete it afterwards.
+    It needs the one-time `--enable` above, and it works with no session open on 4446.
+
+[wd-about]: https://developer.apple.com/documentation/webkit/about-webdriver-for-safari
+[wd-testing]: https://developer.apple.com/documentation/webkit/testing-with-webdriver-in-safari
+[safari-download]: https://developer.apple.com/safari/download/
+[selenium-safari]: https://www.selenium.dev/documentation/webdriver/browsers/safari/

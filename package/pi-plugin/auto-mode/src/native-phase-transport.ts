@@ -202,6 +202,8 @@ export function createNativePhaseTransport({
         .text();
       if (body.includes(NOTIFICATION_CONTENT))
         state.sawNotification = true;
+      if (body.includes(STEERING_TEXT))
+        state.sawSteering = true;
       /**
        Terminal round selects proposal, intervention, and followup behavior.
        */

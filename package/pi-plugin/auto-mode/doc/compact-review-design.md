@@ -80,6 +80,15 @@ its installed implementation returns its argument unchanged.
 This preserves the original Bash tool and renderer identities without weakening the consumer's compiler settings.
 The complete native phase catalog and fresh emitted declaration type check remain the verification boundary.
 
+An independent SDK consumer keeps the wrapper's preparation return as `unknown`
+and retains the SDK erasure in its declared definition type before placing it in `customTools`.
+A deliberately invalid registry name proves the compiler checks that fixture.
+The valid fixture has no own type diagnostics and confirms the original SDK definition and renderer identities at runtime.
+The separate catalog still needs that actual boundary in its declared types;
+calling `defineTool` before discarding its erasure does not fix the registration contract.
+No predicate can claim schema-valid input merely to satisfy that contract.
+The SDK's later argument validation remains responsible for malformed model arguments.
+
 The source compiler retains clause, heading, incorporation, authorization, admission,
 and complete-operation fallback semantics.
 Model replies supply estimates; selected readable instructions and observed authorization supply authority.
@@ -153,6 +162,12 @@ Inventories and receipts remain private under
 ## Checkpoint maintenance lessons
 
 An RPC tool-completion event does not establish an idle agent.
+The supervisor monitor reports an approval dialog independently of its completed-tool threshold.
+That threshold may distinguish an old idle checkpoint from new work,
+but must not hide a newly blocked operation.
+Private proof files are checked through the worker's actual mounted home;
+a host path through an unmounted symlink is not an accessible handoff.
+The user keeps root `MWK` unchanged and records these concrete monitor lessons here.
 Pi accepts steering during a model request and delivers it after the current turn's tools;
 follow-ups wait until the agent would otherwise stop.
 The package's input records are owned instrumentation, not additional SDK contracts.
@@ -250,6 +265,22 @@ The root `TCV` rule remains unchanged;
 these concrete porting lessons remain package-local.
 
 ## Type interfaces belong with their owners
+
+The user keeps root `QF1` and the existing lint policy unchanged.
+The package-size audit measures Unicode code points,
+non-whitespace characters and executable structure.
+Formatter wrapping is formatting,
+not a regression or evidence of added implementation complexity.
+Modules exceeding `max-lines` still require meaningful responsibility splits.
+
+The formatter's producer owner changes from 11,829 to 11,958 characters,
+with 9,432 non-whitespace characters in both versions.
+The decision core changes from 12,290 to 12,307 characters,
+with 10,273 non-whitespace characters in both versions.
+Those changes add 146 whitespace characters in total.
+The initial rejection based on changed line-count diagnostics is withdrawn.
+The retained formatting has identical parser-normalized syntax trees and ordered comments;
+lint completion still requires splitting over-limit modules and fixing the remaining diagnostics.
 
 The proposed phase-catalog port exposes another design failure before acceptance.
 The original consumer has 432 code lines,

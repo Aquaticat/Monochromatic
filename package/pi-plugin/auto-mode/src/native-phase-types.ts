@@ -10,6 +10,7 @@ import type {
   AgentToolResult,
   AgentToolUpdateCallback,
   createBashToolDefinition,
+  defineTool,
   ExtensionToolContext
 } from '@earendil-works/pi-coding-agent';
 
@@ -54,6 +55,7 @@ export type NativePhasePlan = Readonly<{
   mode: NativePhaseMode;
   notification: boolean;
   notificationPrimary: boolean;
+  steering: boolean;
   withheld: boolean;
   cancel: boolean;
   sequentialExecution: boolean;
@@ -96,6 +98,7 @@ export type NativePhaseState = {
   abortTask?: Promise<void>;
   updates: Map<string, NativePhaseUpdateDeferred>;
   sawNotification: boolean;
+  sawSteering: boolean;
   followupProposed: boolean;
 };
 
@@ -160,17 +163,21 @@ export type FixtureBashExecute = (
 ) => Promise<AgentToolResult<FixtureBashDetails>>;
 
 /**
- Installed SDK bash tool definition with only its replaced members declared.
+ Wrapped bash tool declared at the SDK `defineTool` erasure boundary.
+
+ The base is the genuine `defineTool` return intersection, so `parameters` and
+ the renderer members keep the SDK's erasure while `execute` and
+ `prepareArguments` carry the fixture's own signatures. `prepareArguments` keeps
+ the original normalizer's actual `unknown` result: the original returns the
+ unvalidated input when its command member is not text, and the SDK's later
+ schema validation rejects it exactly as before (`invalid` mode relies on
+ that). The erased value is registered directly in `customTools`; renderers and
+ the forwarded execute identity stay the originals.
  */
-export type FixtureBashTool = Omit<ReturnType<typeof createBashToolDefinition>, 'execute' | 'prepareArguments'> & Readonly<{
+export type FixtureBashTool = Omit<ReturnType<typeof defineTool>, 'execute' | 'prepareArguments'> & Readonly<{
   execute: FixtureBashExecute;
   prepareArguments: (input: unknown) => unknown;
 }>;
-
-/**
- Command-bearing input projection read by the normalization boundary.
- */
-export type PhaseCommandInput = Readonly<{ command?: unknown }>;
 
 /**
  Dispose guard reproducing the original execute return accounting.

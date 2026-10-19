@@ -130,6 +130,7 @@ export async function runNativePhaseCatalog({
   const state: NativePhaseState = {
     updates: new Map(),
     sawNotification: false,
+    sawSteering: false,
     followupProposed: false
   };
   const environment = await createEnvironment({
@@ -149,10 +150,12 @@ export async function runNativePhaseCatalog({
   )).href);
   assertBashToolBuilder(bashToolModule);
   /**
-   Original bash tool keeps its own execute identity for the wrapper.
+   The SDK `defineTool` erasure runs on the valid original definition before the
+   wrapper replaces the preparer, preserving its renderer intersection and
+   original execute identity.
    */
-  const original = bashToolModule.createBashToolDefinition(environment.options
-    .cwd);
+  const original = environment.defineTool(bashToolModule.createBashToolDefinition(environment.options
+    .cwd));
   /**
    Lazy session reader resolves the original session created below the wrapper.
    */
@@ -182,7 +185,7 @@ export async function runNativePhaseCatalog({
       options: {
         ...environment.options,
         tools: ['bash'],
-        customTools: [environment.defineTool(bash)]
+        customTools: [bash]
       }
     });
   session.agent
