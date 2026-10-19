@@ -32,7 +32,7 @@ import {
   formatUsageNote,
   type MalformedCompletionError,
   type ModelTransport,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
@@ -61,13 +61,14 @@ import {
 // different protocol, a different reader for the stream, a different spelling
 // of the model name, and a balance instead of a quota.
 //
-// IT THROWS THE SAME FAILURE CLASS AS THE FIRST PROVIDER, deliberately, even
-// though `SyntheticHttpError` is named after the other one. `benchmark.ts`
-// branches on `error instanceof SyntheticHttpError` to read a status off a
-// failed call, and a fresh class here would make that site silently blind to
-// exactly the provider added to survive the other one's exhaustion. The name is
-// wrong and the behaviour is right; renaming it is a package-wide change held
-// with the `SyntheticClient` rename.
+// IT THROWS THE SAME FAILURE CLASS AS THE OTHER PROVIDERS, deliberately.
+// `benchmark.ts` branches on `error instanceof ProviderHttpError` to read a
+// status off a failed call, and a fresh class here would make that site
+// silently blind to exactly the provider added to survive the other one's
+// exhaustion. The class was named `SyntheticHttpError` until 2026-10-19, after
+// the first provider, and was renamed once a Bedrock refusal was logged under
+// that name; each throw site passes `provider: 'hyper'` so the failure says
+// whose it was.
 //
 // STREAMS ARE READ BY THE ANTHROPIC SCANNER, named on the exchange. A body
 // drained with the wrong reader yields an empty answer channel, which every
@@ -175,12 +176,15 @@ export type HyperClient = ModelCaller & {
 
  @example
  ```ts
- const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ const reply = await exchangeWithRetry({ provider: 'hyper', transport, exchange, policy, verify: wholeMessage, },);
  ```
  */
 function wholeMessage(attemptReply: TransportReply,): void {
   if (isSuccessStatus({ status: attemptReply.status, },))
-    requireWholeAnthropicMessage({ bodyText: attemptReply.bodyText, },);
+    requireWholeAnthropicMessage({
+      provider: 'hyper',
+      bodyText: attemptReply.bodyText,
+    },);
 }
 
 /**
@@ -312,7 +316,7 @@ export function createHyperClient(
 
    @throws {@link ModelNotServedError} when this provider serves no such model
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link MalformedCompletionError} on a stream that never terminated or reported an error
 
@@ -409,6 +413,7 @@ export function createHyperClient(
        Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
+        provider: 'hyper',
         transport: pacedTransport,
         exchange: {
           url: messagesUrl,
@@ -435,6 +440,7 @@ export function createHyperClient(
         // BYTES RATHER THAN CHARACTERS: this corpus is Chinese, and one
         // character costs three bytes in UTF-8.
         throw failureForReply({
+          provider: 'hyper',
           status: reply.status,
           bodyText: reply.bodyText,
           requestBodyBytes: Buffer.byteLength(bodyJson,),
@@ -445,7 +451,10 @@ export function createHyperClient(
        Answer and usage reassembled from the drained event stream, whose
        answer is usually the tool's arguments rather than any text.
        */
-      const extracted = extractAnthropicCompletion({ bodyText: reply.bodyText, },);
+      const extracted = extractAnthropicCompletion({
+        provider: 'hyper',
+        bodyText: reply.bodyText,
+      },);
 
       /**
        Answer length for the completion log line.
@@ -484,7 +493,7 @@ export function createHyperClient(
 
    @returns Typed balance
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link CreditsShapeError} on contract-violating bodies
 
@@ -508,6 +517,7 @@ export function createHyperClient(
      Raw reply from the balance endpoint, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
+      provider: 'hyper',
       transport: pacedTransport,
       exchange: {
         url: creditsUrl,
@@ -520,7 +530,8 @@ export function createHyperClient(
     },);
 
     if (!isSuccessStatus({ status: reply.status, },))
-      throw new SyntheticHttpError({
+      throw new ProviderHttpError({
+        provider: 'hyper',
         status: reply.status,
         bodyText: reply.bodyText,
         summary: `Charm Hyper /credits returned HTTP ${String(reply.status,)}:`,

@@ -1,4 +1,5 @@
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Request size refusal
@@ -39,7 +40,7 @@ const HTTP_BAD_REQUEST = 400;
  else.
 
  A SUBCLASS RATHER THAN A SIBLING, so every caller branching on
- {@link SyntheticHttpError} or reading its `status` keeps working. This is one
+ {@link ProviderHttpError} or reading its `status` keeps working. This is one
  kind of HTTP failure, not a separate failure mode, and a caller that does not
  care why a `400` arrived should not have to learn about this to keep catching
  it.
@@ -47,13 +48,14 @@ const HTTP_BAD_REQUEST = 400;
  @example
  ```ts
  throw new SyntheticRequestTooLargeError({
+   provider: 'synthetic',
    status: 400,
    bodyText: 'Could not parse request as valid JSON. Unterminated string ...',
    bodyBytes: 11_185_335,
  },);
  ```
  */
-export class SyntheticRequestTooLargeError extends SyntheticHttpError {
+export class SyntheticRequestTooLargeError extends ProviderHttpError {
   /**
    Declares this message safe to forward: it counts bytes.
    */
@@ -74,6 +76,9 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
   /**
    Builds failure naming size, replacing the message its parent composed.
 
+   @param provider - provider that served the call and refused its body, named in the message and carried on the
+   error
+
    @param status - status returned, carried through so `instanceof` callers
    branching on it see what they always saw
 
@@ -84,6 +89,7 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
    @example
    ```ts
    new SyntheticRequestTooLargeError({
+     provider: 'synthetic',
      status: 400,
      bodyText: 'Could not parse request as valid JSON.',
      bodyBytes: 11_185_335,
@@ -92,16 +98,19 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
    */
   public constructor(
     {
+      provider,
       status,
       bodyText,
       bodyBytes,
     }: {
+      readonly provider: ProviderName;
       readonly status: number;
       readonly bodyText: string;
       readonly bodyBytes: number;
     },
   ) {
     super({
+      provider,
       status,
       bodyText,
       // THE GATEWAY'S OWN WORDS ARE KEPT OFF THIS MESSAGE. This class declares
@@ -110,7 +119,7 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
       // stay on `bodyExcerpt`, which `exchangeFailureLogText` prints on the
       // lost-voice log lines, where the searchable byte position still is.
       excerpt: 'withheld',
-      summary: `Synthetic API refused a request body of ${String(bodyBytes,)} ${
+      summary: `The ${provider} API refused a request body of ${String(bodyBytes,)} ${
         wordForCount({
           count: bodyBytes,
           one: 'byte',
@@ -139,13 +148,16 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
  body we genuinely broke; the size alone would catch an oversize request the
  gateway happened to accept and then fail for its own reasons. Only all three
  describe a body refused for being too big, and any one of them missing leaves
- a plain {@link SyntheticHttpError} saying exactly what it always said.
+ a plain {@link ProviderHttpError} saying exactly what it always said.
 
  AFTER THE FACT, NEVER BEFORE IT. Nothing here refuses a request. Only the
  passing size is exact, so a client-side guard at that number would reject
  bodies between it and the true boundary that the gateway may well carry.
  Reading an answer that already arrived cannot cost a call that would have
  worked.
+
+ @param provider - provider that served the call, carried onto whichever failure is built; the reading is the same
+ for every provider but the failure has to say whose reply it was
 
  @param status - status returned
 
@@ -161,6 +173,7 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
  @example
  ```ts
  throw failureForReply({
+   provider: 'synthetic',
    status: reply.status,
    bodyText: reply.bodyText,
    requestBodyBytes: Buffer.byteLength(bodyJson,),
@@ -169,15 +182,17 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
  */
 export function failureForReply(
   {
+    provider,
     status,
     bodyText,
     requestBodyBytes,
   }: {
+    readonly provider: ProviderName;
     readonly status: number;
     readonly bodyText: string;
     readonly requestBodyBytes: number;
   },
-): SyntheticHttpError {
+): ProviderHttpError {
   /**
    Whether the status is the one an oversize body draws.
    */
@@ -200,13 +215,15 @@ export function failureForReply(
       && overPassingSize
   ) {
     return new SyntheticRequestTooLargeError({
+      provider,
       status,
       bodyText,
       bodyBytes: requestBodyBytes,
     },);
   }
 
-  return new SyntheticHttpError({
+  return new ProviderHttpError({
+    provider,
     status,
     bodyText,
   },);

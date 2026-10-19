@@ -252,7 +252,7 @@ export function createBedrockClient(
 
    @throws {@link BedrockModelNotServedError} when this provider serves no such model
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link MalformedCompletionError} on a stream that never ended the way its route ends
 
@@ -435,6 +435,7 @@ export function createBedrockClient(
        ledgered at its bound as it fails (ledger P1).
        */
       const reply = await exchangeWithRetry({
+        provider: 'bedrock',
         onAbandonedAttempt: async function ledgerAbandoned(): Promise<void> {
           await ledgerAtBound({
             servedId,
@@ -472,6 +473,7 @@ export function createBedrockClient(
         // BYTES RATHER THAN CHARACTERS: this corpus is Chinese, and one
         // character costs three bytes in UTF-8.
         throw failureForReply({
+          provider: 'bedrock',
           status: reply.status,
           bodyText: reply.bodyText,
           requestBodyBytes: Buffer.byteLength(bodyJson,),

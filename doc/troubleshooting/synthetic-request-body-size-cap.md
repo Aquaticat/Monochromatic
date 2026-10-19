@@ -123,7 +123,8 @@ once the source freeze recorded in `doc/handover/translation-repair-run-continui
 - The gateway's parse failure re-raised as a size refusal,
   in `package/translation-repair/provider/src/request-size-refusal.ts`.
   `failureForReply` builds `SyntheticRequestTooLargeError`,
-  a subclass of `SyntheticHttpError` carrying the measured body size beside the passing size,
+  a subclass of `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+  carrying the measured body size beside the passing size,
   and `synthetic-client.ts` routes its streaming-completions failure through it.
 
 Nothing is owed on this document now.
@@ -134,7 +135,7 @@ THREE SIGNALS, ANDed.
 Status 400,
 a body message beginning `Could not parse request as valid JSON`,
 and a request body measured over 10485760 bytes.
-Any one of them missing leaves the plain `SyntheticHttpError` untouched.
+Any one of them missing leaves the plain `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19) untouched.
 
 The conjunction protects both directions.
 A small body drawing that message is a body we genuinely malformed,

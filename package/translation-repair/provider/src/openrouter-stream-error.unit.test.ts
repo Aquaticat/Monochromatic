@@ -83,6 +83,7 @@ const REFUSED_STREAM = framed({
 
 /**
  An ordinary stream: content and the terminator, no error.
+ */
 const WHOLE_STREAM = `${
   framed({
     chunk: {

@@ -1,4 +1,4 @@
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 
 //region Decision context refusal
 // LEDGER P13 (the whole-package audit, 2026-09-28): OpenRouter's decisions
@@ -40,7 +40,7 @@ const OVER_CONTEXT_ERROR_TYPE = 'max_tokens_exceeded';
 export function isDecisionStateOverContext(
   { error, }: { readonly error: unknown; },
 ): boolean {
-  if (!(error instanceof SyntheticHttpError))
+  if (!(error instanceof ProviderHttpError))
     return false;
   if (error.status !== HTTP_BAD_REQUEST)
     return false;

@@ -20,7 +20,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type ModelTransport,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   type DecisionsCardMissingError,
@@ -108,7 +108,7 @@ export function createDecisionsClient(
 
    @throws {@link DecisionsCardMissingError} when the seat is not a decision seat
 
-   @throws {@link SyntheticHttpError} on a non-success status
+   @throws {@link ProviderHttpError} on a non-success status
 
    @throws {@link DecisionReplyShapeError} on a body that is not the documented shape
 
@@ -177,6 +177,7 @@ export function createDecisionsClient(
      Raw reply, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
+      provider: 'openrouter',
       transport,
       exchange: {
         url,
@@ -189,7 +190,8 @@ export function createDecisionsClient(
       policy: retryPolicy,
     },);
     if ((reply.status < HTTP_SUCCESS_FLOOR) || (reply.status >= HTTP_SUCCESS_CEILING)) {
-      throw new SyntheticHttpError({
+      throw new ProviderHttpError({
+        provider: 'openrouter',
         status: reply.status,
         bodyText: reply.bodyText,
       },);

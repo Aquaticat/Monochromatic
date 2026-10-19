@@ -371,7 +371,8 @@ The only evidence of why a provider refused one request and not another,
 a moderation refusal,
 a context limit or a data-policy mismatch,
 was in no log line.
-The red cases throw a `SyntheticHttpError` with a body through each reachable log site and expect the words:
+The red cases throw a `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+with a body through each reachable log site and expect the words:
 the lost-voice lines of the two stage calls,
 the retry line,
 the re-ask warning,

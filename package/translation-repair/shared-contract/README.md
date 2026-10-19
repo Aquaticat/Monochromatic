@@ -139,6 +139,7 @@ Packages that list it in `dependencies`:
 - `page-pass`
 - `probe`
 - `provider`
+- `provider-stream`
 - `reference`
 - `rendering-audit`
 - `repair`

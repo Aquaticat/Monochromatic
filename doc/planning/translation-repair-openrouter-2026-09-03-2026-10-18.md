@@ -72,7 +72,8 @@ Roughly 434 of the 687 `warn` lines (63%) come from these two seats.
 The meters never showed it.
 `bedrock=wet` stands in all 126 `METERS` readings with the spend frozen at 5.02 USD,
 and the first `JUDGE SEATS` line reads `bedrock=wet ... roster=9 withheld=none` (log line 206).
-The refusal lines name the error class `SyntheticHttpError` for a Bedrock model.
+The refusal lines name the error class `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+for a Bedrock model.
 The class is shared:
 the Synthetic and OpenRouter clients throw it,
 and `package/translation-repair/provider/src/bedrock-client.ts` documents it as thrown at line 255.

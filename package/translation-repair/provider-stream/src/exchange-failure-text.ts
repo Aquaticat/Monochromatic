@@ -1,4 +1,4 @@
-import { SyntheticHttpError, } from './completion-shape.ts';
+import { ProviderHttpError, } from './completion-shape.ts';
 import {
   namesWithoutQuoting,
   refusalText,
@@ -10,20 +10,24 @@ import { jsonLine, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 // Renders what a model exchange threw for a stored record, a finding or a thrown message,
 // quoting nothing the provider or the runtime wrote.
 //
-// WHY NOT `refusalText` ALONE. `SyntheticHttpError` carries an excerpt of the
+// WHY NOT `refusalText` ALONE. `ProviderHttpError` carries an excerpt of the
 // provider's response body in its message on purpose, so it is unmarked and
 // `refusalText` names its class and drops the HTTP status with the body. The
 // status is the one diagnostic an operator reads a lost voice by (a 429 and a
 // 400 call for different action), and it is a number the transport computed,
-// so it is added here beside the class name.
+// so it is added here beside the class name. The provider is added beside the
+// status for the same reason: the class is shared by every provider, so the class
+// name alone said nothing of whose refusal it was, and a Bedrock refusal once read
+// as a Synthetic one. It is a closed set of names the client chose (`ProviderName`),
+// never text from a reply.
 
 /**
  Renders a failure a model exchange raised, quoting no message of its own.
 
  @param error - caught value, of unknown type by construction
 
- @returns A marked class's own sentence, `refused by <class> with HTTP <status>` for an unmarked
- provider status failure, and the class name alone for anything else
+ @returns A marked class's own sentence, `refused by <class> from <provider> with HTTP <status>` for an
+ unmarked provider status failure, and the class name alone for anything else
 
  @example
  ```ts
@@ -33,10 +37,10 @@ import { jsonLine, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 export function exchangeFailureText(
   { error, }: { readonly error: unknown; },
 ): string {
-  if (namesWithoutQuoting(error,) || (!(error instanceof SyntheticHttpError)))
+  if (namesWithoutQuoting(error,) || (!(error instanceof ProviderHttpError)))
     return refusalText({ error, },);
 
-  return `${refusalText({ error, },)} with HTTP ${String(error.status,)}`;
+  return `${refusalText({ error, },)} from ${error.provider} with HTTP ${String(error.status,)}`;
 }
 
 //region Exchange failure log text
@@ -60,7 +64,7 @@ export function exchangeFailureText(
  @param error - caught value, of unknown type by construction
 
  @returns What `exchangeFailureText` returns, followed by
- `(the provider said: "<words>")` for any `SyntheticHttpError`, marked or
+ `(the provider said: "<words>")` for any `ProviderHttpError`, marked or
  not, whose excerpt is not blank
 
  @example
@@ -75,7 +79,7 @@ export function exchangeFailureLogText(
    What a stored record would say.
    */
   const plain = exchangeFailureText({ error, },);
-  if (!(error instanceof SyntheticHttpError))
+  if (!(error instanceof ProviderHttpError))
     return plain;
 
   /**

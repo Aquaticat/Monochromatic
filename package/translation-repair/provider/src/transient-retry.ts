@@ -4,13 +4,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   deliveredCharsOf,
   exchangeFailureLogText,
   isSelfEndedStream,
   type ModelTransport,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
@@ -407,11 +408,11 @@ async function attemptExchange(
       throw error;
 
     // NOR IS A REFUSAL THE PROVIDER STATED IN THE STREAM. A thrown
-    // `SyntheticHttpError` whose status no reply is retried on is the refusal
+    // `ProviderHttpError` whose status no reply is retried on is the refusal
     // a reply of that status would be (a request it declined for what it
     // holds), which the ladder already returns unretried; retrying it here
     // spends every remaining attempt on the same answer.
-    if ((error instanceof SyntheticHttpError) && (!RETRYABLE_STATUSES.has(error.status,)))
+    if ((error instanceof ProviderHttpError) && (!RETRYABLE_STATUSES.has(error.status,)))
       throw error;
 
     return {
@@ -433,6 +434,9 @@ async function attemptExchange(
  Success and non-retryable statuses return immediately;
  a caller abort stops retrying at the next boundary.
 
+ @param provider - provider this exchange goes to, carried onto the failure raised when a caller abort stops the
+ ladder over a retryable reply; the ladder cannot tell whose reply it is retrying
+
  @param transport - HTTP seam performing each attempt
 
  @param exchange - request repeated verbatim on every attempt
@@ -453,21 +457,23 @@ async function attemptExchange(
 
  @returns First success or first non-retryable reply
 
- @throws {@link SyntheticHttpError} when retries exhaust on a retryable status
+ @throws {@link ProviderHttpError} when a caller abort stops the ladder after a retryable status
 
  @example
  ```ts
- const reply = await exchangeWithRetry({ transport, exchange, },);
+ const reply = await exchangeWithRetry({ provider: 'synthetic', transport, exchange, },);
  ```
  */
 export async function exchangeWithRetry(
   {
+    provider,
     transport,
     exchange,
     policy = DEFAULT_RETRY_POLICY,
     verify,
     onAbandonedAttempt,
   }: {
+    readonly provider: ProviderName;
     readonly transport: ModelTransport;
     readonly exchange: ForeignBorrowed<Parameters<ModelTransport>[0]>;
     readonly policy?: RetryPolicy;
@@ -595,7 +601,8 @@ export async function exchangeWithRetry(
     if (exchange.signal
       .aborted) {
       if (reply !== undefined) {
-        throw new SyntheticHttpError({
+        throw new ProviderHttpError({
+          provider,
           status: reply.status,
           bodyText: reply.bodyText,
         },);

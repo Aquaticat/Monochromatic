@@ -391,7 +391,8 @@ its "Next" list is still the queue the merge went ahead of.
     the corpus-pass task builds with whatever `rolldown` the caller's `PATH` reaches first.
     Held for after the rotation or the next rebuild a class forces,
     so every entry runs on one build:
-    `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` for a Bedrock seat's HTTP 401,
+    `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+    for a Bedrock seat's HTTP 401,
     which reads as a Synthetic refusal;
     the class is the HTTP error every provider shares
     (`provider-stream/src/completion-shape.ts`),

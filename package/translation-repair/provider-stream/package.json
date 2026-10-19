@@ -23,6 +23,7 @@
     "@monochromatic-dev/translation-repair-glossary": "workspace:*",
     "@monochromatic-dev/translation-repair-house-rule": "workspace:*",
     "@monochromatic-dev/translation-repair-markup": "workspace:*",
+    "@monochromatic-dev/translation-repair-shared-contract": "workspace:*",
     "@monochromatic-dev/translation-repair-typography": "workspace:*"
   },
   "devDependencies": {

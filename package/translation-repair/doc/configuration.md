@@ -222,9 +222,12 @@ the run log names which.
 Do not read a run with a dark seat as a comparison of the roster.
 
 The first time a provider rejects a seat's credential with HTTP 401,
-the run writes one `SEAT CREDENTIAL REFUSED <model>:` warn line naming the seat,
-the provider's own words and how many usable answers the seat had given,
-and says to renew the credential before the next run.
+the run writes one `SEAT CREDENTIAL REFUSED <model> on <provider>:` warn line naming the seat,
+the provider that refused it,
+the provider's own words and how many usable answers the seat had given.
+The line offers both ways forward:
+renew that provider's credential before the next run,
+or leave it, and the run withholds the seat after its failed asks and goes on with the other seats.
 A credential does not renew during a run,
 so asks to that seat are expected to keep failing until the run withholds it.
 

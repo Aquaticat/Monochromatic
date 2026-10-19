@@ -73,7 +73,8 @@ By the agent's probe on the build of `4cca8c301`,
 whose production source is that of `ce2654b2c`,
 the refine,
 slice-buy,
-translate and pick paths each wrote `refused by SyntheticHttpError` and nothing of the reply.
+translate and pick paths each wrote `refused by SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+and nothing of the reply.
 The cause went beyond the lead's reading:
 the round logged only the rejection that ended first,
 so a refusal ending after an ask that ended in the caller's own reason reached no line,
@@ -416,7 +417,7 @@ Only the exported API reaches it:
 the pass's own call passes a signal that never aborts.
 `meterRecordOf` (`provider-meters.ts`) wrote the failure's class alone,
 "budget unreadable,
-treating as spendable (SyntheticHttpError)",
+treating as spendable (SyntheticHttpError)" (renamed `ProviderHttpError` on 2026-10-19),
 dropping the status and the provider's words,
 on every meter read a run makes,
 and wrote a stopped read the same way.

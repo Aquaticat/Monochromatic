@@ -82,6 +82,8 @@ SyntheticHttpError: provider API returned HTTP 400:
 {"error":"Your model name should start with an hf: prefix; for example: ...
 ```
 
+`SyntheticHttpError` in that output is the class renamed `ProviderHttpError` on 2026-10-19.
+
 Synthetic was handed five models that only Charm Hyper serves,
 and said so,
 125 times.

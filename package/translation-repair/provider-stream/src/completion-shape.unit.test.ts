@@ -94,7 +94,7 @@ await describe({
             },);
             expect(error.provider,).toBe('bedrock',);
             expect(error.name,).toBe('ProviderHttpError',);
-            expect(error instanceof Error,).toBe(true,);
+            expect(Error.isError(error,),).toBe(true,);
           },
         },),
         it({

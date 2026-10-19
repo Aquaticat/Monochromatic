@@ -198,7 +198,8 @@ joining the five that had it.
 Recorded rather than left silent,
 because an absent marker looks identical to an oversight:
 
--   `SyntheticHttpError` interpolates an excerpt of the provider response body,
+-   `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+    interpolates an excerpt of the provider response body,
     on purpose.
 -   `MislabelledArtifactError` takes `caughtValueText(error)`,
     which renders a caught error's

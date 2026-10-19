@@ -7,7 +7,7 @@ extends = "build:js"
 [tasks."build:js:node"]
 extends = "build:js:node"
 # Tests load each sibling from its own build, so siblings build first.
-depends = ["//package/translation-repair/document-structure:build:js:node", "//package/translation-repair/glossary:build:js:node", "//package/translation-repair/house-rule:build:js:node", "//package/translation-repair/markup:build:js:node", "//package/translation-repair/typography:build:js:node"]
+depends = ["//package/translation-repair/document-structure:build:js:node", "//package/translation-repair/glossary:build:js:node", "//package/translation-repair/house-rule:build:js:node", "//package/translation-repair/markup:build:js:node", "//package/translation-repair/shared-contract:build:js:node", "//package/translation-repair/typography:build:js:node"]
 
 [tasks."watch:build"]
 extends = "watch:build"

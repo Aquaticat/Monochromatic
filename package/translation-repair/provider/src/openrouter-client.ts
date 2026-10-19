@@ -22,7 +22,7 @@ import {
   formatUsageNote,
   type MalformedCompletionError,
   type ModelTransport,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
@@ -178,13 +178,16 @@ export type OpenRouterClient = ModelCaller & {
 
  @example
  ```ts
- const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ const reply = await exchangeWithRetry({ provider: 'openrouter', transport, exchange, policy, verify: wholeMessage, },);
  ```
  */
 function wholeMessage(attemptReply: TransportReply,): void {
   if (!isSuccessStatus({ status: attemptReply.status, },))
     return;
-  requireNoStreamError({ bodyText: attemptReply.bodyText, },);
+  requireNoStreamError({
+    provider: 'openrouter',
+    bodyText: attemptReply.bodyText,
+  },);
   requireStreamTerminator({ bodyText: attemptReply.bodyText, },);
 }
 
@@ -322,7 +325,7 @@ export function createOpenRouterClient(
 
    @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link MalformedCompletionError} on a stream that never terminated
 
@@ -441,6 +444,7 @@ export function createOpenRouterClient(
        the last attempt, ledger P1 for the rest).
        */
       const reply = await exchangeWithRetry({
+        provider: 'openrouter',
         transport,
         exchange: {
           url: chatUrl,
@@ -477,6 +481,7 @@ export function createOpenRouterClient(
         // BYTES RATHER THAN CHARACTERS: this corpus is Chinese, and one
         // character costs three bytes in UTF-8.
         throw failureForReply({
+          provider: 'openrouter',
           status: reply.status,
           bodyText: reply.bodyText,
           requestBodyBytes: Buffer.byteLength(bodyJson,),
@@ -546,7 +551,7 @@ export function createOpenRouterClient(
 
    @returns Typed credits
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link import('./openrouter-credits.ts').OpenRouterCreditsShapeError} on contract-violating bodies
 
@@ -570,6 +575,7 @@ export function createOpenRouterClient(
      Raw reply from the credits endpoint, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
+      provider: 'openrouter',
       transport,
       exchange: {
         url: creditsUrl,
@@ -582,7 +588,8 @@ export function createOpenRouterClient(
     },);
 
     if (!isSuccessStatus({ status: reply.status, },))
-      throw new SyntheticHttpError({
+      throw new ProviderHttpError({
+        provider: 'openrouter',
         status: reply.status,
         bodyText: reply.bodyText,
         summary: `OpenRouter /credits returned HTTP ${String(reply.status,)}:`,

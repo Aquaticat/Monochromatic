@@ -1,4 +1,5 @@
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
@@ -190,7 +191,7 @@ export class InStreamProviderError extends Error {
  4xx status the retry ladder does not retry over plain HTTP: the gateway
  refused the request itself, and repeating it meets the same refusal.
 
- THE HTTP REFUSAL IT STANDS FOR: a subclass of {@link SyntheticHttpError}
+ THE HTTP REFUSAL IT STANDS FOR: a subclass of {@link ProviderHttpError}
  carrying the code as its status, so the ladder returns it unretried as it
  returns the plain HTTP reply, and a caller branching on the status (a 402
  holds the provider out) reads it as it reads the plain one. A 408 or 429
@@ -199,10 +200,10 @@ export class InStreamProviderError extends Error {
 
  @example
  ```ts
- throw new InStreamRefusalError({ code: 400, errorType: 'invalid_request', endpoint: 'ModelRun', },);
+ throw new InStreamRefusalError({ provider: 'openrouter', code: 400, errorType: 'invalid_request', endpoint: 'ModelRun', },);
  ```
  */
-export class InStreamRefusalError extends SyntheticHttpError {
+export class InStreamRefusalError extends ProviderHttpError {
   /**
    Declares this message safe to forward: it carries a code, a failure kind
    and an endpoint's display name, never the upstream's text.
@@ -217,6 +218,9 @@ export class InStreamRefusalError extends SyntheticHttpError {
   /**
    Names the refusal the stream carried.
 
+   @param provider - provider whose stream carried the error chunk; the chunk names an upstream endpoint, not the
+   provider that relayed it
+
    @param code - 4xx status the gateway reported, which is also this error's status
 
    @param errorType - gateway's failure kind, or that none was named
@@ -225,21 +229,24 @@ export class InStreamRefusalError extends SyntheticHttpError {
 
    @example
    ```ts
-   throw new InStreamRefusalError({ code: 402, errorType: 'payment_required', endpoint: 'ModelRun', },);
+   throw new InStreamRefusalError({ provider: 'openrouter', code: 402, errorType: 'payment_required', endpoint: 'ModelRun', },);
    ```
    */
   constructor(
     {
+      provider,
       code,
       errorType,
       endpoint,
     }: {
+      readonly provider: ProviderName;
       readonly code: number;
       readonly errorType: string;
       readonly endpoint: string;
     },
   ) {
     super({
+      provider,
       status: code,
       bodyText: '',
       excerpt: 'withheld',
@@ -343,6 +350,9 @@ export function openRouterStreamErrorOf(
  terminator and the terminator check would otherwise name the framing
  rather than the failure.
 
+ @param provider - provider whose stream this is: OpenRouter, or a route that speaks the same chunk shape, carried
+ onto the refusal an error chunk becomes
+
  @param bodyText - whole drained `text/event-stream` body
 
  @throws {@link InStreamRefusalError} when the error object's code is a 4xx
@@ -353,11 +363,17 @@ export function openRouterStreamErrorOf(
 
  @example
  ```ts
- requireNoStreamError({ bodyText, },);
+ requireNoStreamError({ provider: 'openrouter', bodyText, },);
  ```
  */
 export function requireNoStreamError(
-  { bodyText, }: { readonly bodyText: string; },
+  {
+    provider,
+    bodyText,
+  }: {
+    readonly provider: ProviderName;
+    readonly bodyText: string;
+  },
 ): void {
   /**
    What the stream said about failing.
@@ -370,6 +386,7 @@ export function requireNoStreamError(
       && (reading.code !== REQUEST_TIMEOUT_CODE)
       && (reading.code !== TOO_MANY_REQUESTS_CODE))
       throw new InStreamRefusalError({
+        provider,
         code: reading.code,
         errorType: reading.errorType,
         endpoint: reading.endpoint,

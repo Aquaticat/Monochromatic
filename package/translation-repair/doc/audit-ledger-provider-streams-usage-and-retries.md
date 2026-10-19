@@ -370,9 +370,11 @@ A scripted 200 stream carrying an `invalid_request_error` event drew 3 transport
 
 The fix:
 `requireWholeAnthropicMessage` (`anthropic-whole-message.ts`) throws `StreamErrorEventError`,
-a marked `SyntheticHttpError` that carries the status the refusal has over plain HTTP and names the type alone,
+a marked `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+that carries the status the refusal has over plain HTTP and names the type alone,
 with nothing of the provider's body;
-`attemptExchange` (`transient-retry.ts`) rethrows a thrown `SyntheticHttpError` whose status is not retryable.
+`attemptExchange` (`transient-retry.ts`) rethrows a thrown `SyntheticHttpError`
+(renamed `ProviderHttpError` on 2026-10-19) whose status is not retryable.
 The types read as refused,
 by the provider's errors page as the fixing agent read it:
 `invalid_request_error` (400),

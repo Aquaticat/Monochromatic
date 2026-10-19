@@ -12,7 +12,8 @@ Red in `54b3d2535`,
 fixed in `a29a9dc42`.
 
 Found on 2026-10-06 (UTC) by the follow-up to the census of B232,
-which showed that a provider's reply body reaches `SyntheticHttpError`'s message and `bodyExcerpt`,
+which showed that a provider's reply body reaches `SyntheticHttpError`'s (renamed `ProviderHttpError` on 2026-10-19)
+message and `bodyExcerpt`,
 the raw reply preview `model-health.ts` prints,
 a malformed-completion message and a cached reply.
 A provider that echoes the sent `Authorization` value in an authentication failure,

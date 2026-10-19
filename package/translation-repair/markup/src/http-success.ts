@@ -31,7 +31,7 @@ const HTTP_SUCCESS_MAX_EXCLUSIVE = 300;
 
  @example
  ```ts
- if (!isSuccessStatus({ status: reply.status, },)) throw new SyntheticHttpError({ status, bodyText, },);
+ if (!isSuccessStatus({ status: reply.status, },)) throw new ProviderHttpError({ provider: 'hyper', status, bodyText, },);
  ```
  */
 export function isSuccessStatus(

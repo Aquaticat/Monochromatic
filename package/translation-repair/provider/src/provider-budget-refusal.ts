@@ -1,4 +1,4 @@
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
 
 /**
@@ -52,7 +52,7 @@ const UPSTREAM_ERROR_OPENING = '"message":"Provider returned error"';
 export function isUpstreamModelRefusal(
   { error, }: { readonly error: unknown; },
 ): boolean {
-  if (!(error instanceof SyntheticHttpError))
+  if (!(error instanceof ProviderHttpError))
     return false;
   if (error.status !== HTTP_TOO_MANY_REQUESTS)
     return false;
@@ -85,7 +85,7 @@ export function isUpstreamModelRefusal(
 export function isBudgetRefusal(
   { error, }: { readonly error: unknown; },
 ): boolean {
-  if (!(error instanceof SyntheticHttpError))
+  if (!(error instanceof ProviderHttpError))
     return false;
   if (isUpstreamModelRefusal({ error, },))
     return false;
@@ -114,7 +114,7 @@ export function isBudgetRefusal(
 export function isPaymentRefusal(
   { error, }: { readonly error: unknown; },
 ): boolean {
-  if (!(error instanceof SyntheticHttpError))
+  if (!(error instanceof ProviderHttpError))
     return false;
   return error.status === HTTP_PAYMENT_REQUIRED;
 }
@@ -138,7 +138,7 @@ export function isPaymentRefusal(
  ```
  */
 export function statedWaitMsOf({ error, }: { readonly error: unknown; },): number {
-  if (!(error instanceof SyntheticHttpError))
+  if (!(error instanceof ProviderHttpError))
     return 0;
   return retryAfterMsOf({ bodyText: error.bodyExcerpt, },);
 }

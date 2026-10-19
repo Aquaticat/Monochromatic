@@ -7,7 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   exchangeFailureLogText,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type {
   ChatJsonOutcome,
@@ -430,7 +430,7 @@ export function seatTallyClient(
     readonly modelId: RosterModelId;
     readonly error: unknown;
   },): void {
-    if (!(error instanceof SyntheticHttpError))
+    if (!(error instanceof ProviderHttpError))
       return;
     if (error.status !== HTTP_UNAUTHORIZED)
       return;
@@ -451,22 +451,29 @@ export function seatTallyClient(
      Answers the seat gave before its credential was rejected.
      */
     const answers = seatCount?.usable ?? 0;
+    /**
+     Provider that refused the credential, named so the operator renews the right one.
+     */
+    const { provider, } = error;
     rl.warn(
-      `SEAT CREDENTIAL REFUSED ${modelId}: ${exchangeFailureLogText({ error, },)}, after ${String(answers,)} usable ${
+      `SEAT CREDENTIAL REFUSED ${modelId} on ${provider}: ${exchangeFailureLogText({ error, },)}, after ${
+        String(answers,)
+      } usable ${
         wordForCount({
           count: answers,
           one: 'answer',
           many: 'answers',
         },)
-      } this run. The provider does not accept the credential this seat is asked with, and a credential does not `
-        + 'renew during a run, so asks to it are expected to keep failing; the run withholds the seat after '
+      } this run. ${provider} does not accept the credential this seat is asked with, and a credential does not `
+        + 'renew during a run, so asks to it are expected to keep failing. '
+        + `Either renew ${provider}'s credential before the next run, or leave it: the run withholds the seat after `
         + `${String(minAsks,)} failed ${
           wordForCount({
             count: minAsks,
             one: 'ask',
             many: 'asks',
           },)
-        }. Renew the credential for this seat's provider before the next run.`,
+        } and goes on with the other seats.`,
     );
   }
 
