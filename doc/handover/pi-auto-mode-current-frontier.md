@@ -20,7 +20,9 @@ The final Q7 captures include Deny combined with Ask, Approve, and unresolved ev
 Commit `ab027b3214` retains 44 inspected captures with image-only PNG chunks:
 `individual-chart-*` and `complete-review-*` beside the HTML.
 The Markdown renderer passed all 14 documents at `auto-mode-rebuild-plan-render-sisOvc`.
-Present all eight current questions together in the question tool after opening Helium at `#frontier`.
+All eight current questions have been presented together in the question tool;
+Helium is open at `#frontier`, and their answers remain pending.
+The final Markdown render after recording verification passed at `auto-mode-rebuild-plan-render-o1obBs`.
 After answers arrive, record them and develop only the dependent questions they unlock.
 Implementation remains stopped; no question has been answered by these corrections.
 
