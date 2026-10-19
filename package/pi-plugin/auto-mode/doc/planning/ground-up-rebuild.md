@@ -85,7 +85,8 @@ Proposed question identity: `builtin.progress`.
 
 Does this group plausibly advance the work or produce useful evidence, including indirect verification and exploration?
 
-Cross-package tests, investigation, and repeated tests for reproducibility can approve. Exact package or verb matching is not required.
+Cross-package tests, investigation, and repeated tests for reproducibility can approve. Exact package or verb
+matching is not required.
 Example: Test package B while changing package A to check a consumer.
 
 ### Suitable tools and arguments
@@ -94,7 +95,8 @@ Proposed question identity: `builtin.tool-fit`.
 
 Are the selected tools and concrete arguments appropriate for their intended operation or experiment?
 
-A deliberate probe or expected failure can be appropriate. Distinguish intentional experiments from a mistaken target or invocation.
+A deliberate probe or expected failure can be appropriate. Distinguish intentional experiments from a mistaken
+target or invocation.
 Example: An intentionally invalid request can test error handling.
 
 ### Necessary prerequisites
@@ -103,16 +105,19 @@ Proposed question identity: `builtin.prerequisites`.
 
 Are the prerequisites needed for this operation established, or is proceeding a reasonable way to discover them?
 
-Do not demand the answer an exploratory call is meant to discover. Harmless diagnostic failure can be useful; identify consequential missing prerequisites.
+Do not demand the answer an exploratory call is meant to discover. Harmless diagnostic failure can be useful;
+identify consequential missing prerequisites.
 Example: A local test can discover a missing dependency; it need not ask first.
 
 ### Reversibility and recovery
 
 Proposed question identity: `builtin.reversibility`.
 
-Do the available prior state, restoration method, and recovery effort support executing this group under the current authorization?
+Do the available prior state, restoration method, and recovery effort support executing this group under the
+current authorization?
 
-Protect uncommitted human work. Assess actual recovery rather than the presence of Git. An authorized irreversible operation is not automatically denied.
+Protect uncommitted human work. Assess actual recovery rather than the presence of Git. An authorized irreversible
+operation is not automatically denied.
 Example: A disposable-checkout experiment is recoverable; overwriting uncaptured data is not.
 
 ### Effects on other people and systems
@@ -121,7 +126,9 @@ Proposed question identity: `builtin.external-effects`.
 
 Are effects on shared systems, other people, and external recipients within established authorization?
 
-Assess recipients, shared state, disclosure, and commitments. Local rollback does not undo external consequences. Existing authorization remains valid.
+Assess recipients, shared state, disclosure, and commitments. Local rollback does not undo external consequences.
+Existing authorization remains valid.
+An ordinary network read does not require asking merely because it is external; assess data sent and actual effects.
 Example: Deleting an uploaded report does not undo disclosure to its recipient.
 
 ### Resource use and bounded execution
@@ -130,7 +137,9 @@ Proposed question identity: `builtin.resources`.
 
 Are the group’s resource use, spending, and execution bounds appropriate for the work and established limits?
 
-Use concrete CPU, memory, process, storage, time, or spending evidence. Another package alone says nothing about excessive resource use.
+Use concrete CPU, memory, process, storage, time, or spending evidence. Another package alone says nothing about
+excessive resource use.
+Do not invent a universal resource budget when no applicable limit requires one.
 Example: A bounded local test differs from an unbounded process fan-out.
 
 ### Explicit human constraints and decisions
@@ -139,7 +148,8 @@ Proposed question identity: `builtin.human-constraints`.
 
 Does the group respect applicable explicit human restrictions and decisions, including approvals already given?
 
-Honor actual restrictions without treating an unmentioned intermediate step as forbidden or asking again for an already authorized action.
+Honor actual restrictions without treating an unmentioned intermediate step as forbidden or asking again for an
+already authorized action.
 Example: A specific instruction not to publish still applies to an otherwise recoverable edit.
 
 
