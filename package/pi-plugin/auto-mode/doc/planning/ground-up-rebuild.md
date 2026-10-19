@@ -13,8 +13,10 @@ Discussion of this plan alone does not resume implementation.
 
 The grilling review started on 2026-10-19.
 The decision tree and source corrections in this document are review work, not accepted architecture.
-The first question round concerns per-rule approval meaning and useful adaptive batches.
-No answers to that round have been recorded yet.
+The user requires HTML diagrams before further design questions.
+The initial prose questions are withdrawn.
+The user clarified that the around-100 minimum reflects an ample supply of potentially useful questions per call.
+Unresolved-rule count is not a limit on that supply.
 
 ### Assessment before implementation approval
 
@@ -88,22 +90,29 @@ For example, a CSS formatting rule neither authorizes nor objects to an explicit
 Whether its answer is `approve` depends on whether approval means independent authorization or clearance from that rule.
 An unsolicited code edit after a review-only request must also have an explicit expected outcome.
 
-Round-one question Q1 proposes clearance under the complete instructions and request,
-including an explicit request-scope check.
-That proposal is awaiting the user's answer.
+The initial prose question proposed clearance under the complete instructions and request,
+including an explicit request-scope check, but did not make the alternatives visible enough to assess.
+That question is withdrawn pending the HTML scenario review; its proposal is not accepted.
 Its dependent decisions are precedence examples, reduction, and conflicting reassessments.
 Examples must include an explicit exception to a general confirmation requirement,
 an unrelated rule, missing information, and an operation outside the user's request.
 
 ### Adaptive evidence before scheduling
 
-The minimum of 100 meaningful questions per call is settled.
-Counting tagged rules does not resolve a follow-up with only one uncertain result.
-Round-one question Q2 asks whether to reassess a meaningful set of at least 100 rules
-or request manual review when such a follow-up cannot be formed.
-Neither path permits filler questions or treats repetition as independent evidence.
+The user clarified the minimum's purpose:
+there is an ample supply of potentially useful questions, including in later batches.
+The withdrawn Q2 incorrectly inferred a shortage of useful questions from a shortage of unresolved rule verdicts.
+No smaller-batch fallback or early manual-review branch follows from that inference.
 
-After that answer, define when a newer result supersedes an older one,
+Questions bind authored rules to concrete operation parts, resources, conditions, evidence, and interactions.
+The same rule may support distinct useful questions while the complete operation stays visible.
+Use prewritten forms with code-bound references;
+returned distributions select the next focus, not model-authored question wording or conclusions.
+The original adaptive requirements in `doc/planning/pi-auto-mode-batched-assessment.md:667` to `:746`
+support these selection mechanics; their superseded semantic categories do not return.
+Select around 100 or more meaningful questions per call from that pool without constructing filler Cartesian products.
+
+Define when a newer result supersedes an older one,
 how conflicting results remain unresolved, and what prevents repeated sampling until approval.
 Account for retries, stale snapshots, and nested work within the chosen operation budget.
 
@@ -244,9 +253,10 @@ Already resolved checks may be reassessed when their interpretation depends on a
 Question IDs retain source and evaluation-form identity.
 Parallel questions are not majority votes and repeated questions are not independent evidence.
 
-If a supported workload cannot supply 100 meaningful questions, or an adaptive follow-up cannot meet that requirement,
-bring that concrete conflict back for review.
-Do not invent filler or silently ship a one-question fallback.
+The useful pool spans rule, operation, resource, condition, evidence, and interaction bindings.
+An uncertain result can redirect many useful questions; it does not limit the next batch to one question.
+The user rejected the proposed question-scarcity branch on 2026-10-19.
+Qualify the selected question sets against actual scenarios, without filler, votes, or a one-question fallback.
 Input capacity exhaustion also remains unresolved; it never permits dropping required rules.
 
 ### Deterministic decision resolution: 2,000 to 4,000 characters
@@ -607,7 +617,7 @@ No cleanup or deletion is performed as part of writing this plan.
 - Whether the proposed narrow private Pi hook is an acceptable integration cost.
 - Whether the proposed per-rule reduction expresses the desired approval/denial semantics,
   including explicit exceptions and instruction precedence.
-- How to handle a workload with fewer than 100 meaningful questions without inventing filler or a hidden exception.
+- How the selected prewritten question forms and their concrete bindings resolve the recorded scenario set.
 - Whether the model-call ceiling includes shadow calls, or the separately counted mirror proposal is acceptable.
 - Whether the proposed source and deployment budgets are appropriate.
 - How to bound persistent decision-log retention through the shared logger, with a version bump if changed.
