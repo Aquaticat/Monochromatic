@@ -66,6 +66,12 @@ import { preferErrorIsError, } from './rule/prefer-error-is-error.ts';
 import { preferSpread, } from './rule/prefer-spread/index.ts';
 import { requireDestructuredParams, } from './rule/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rule/require-queryselector-generic.ts';
+import { startSpreadEvidenceBridge, } from './rule/spread-evidence/bridge-start.ts';
+
+/* The spread rules need the TypeScript bridge, whose native child cannot be spawned once Oxlint has reserved
+ * address space for its workers on a host with many cores. Plugins load before the workers start, so the child
+ * starts here and a failure is kept for the first spread rule that needs a type to report. */
+startSpreadEvidenceBridge();
 
 /**
  Oxlint JS plugin implementing `no-restricted-syntax` rules
