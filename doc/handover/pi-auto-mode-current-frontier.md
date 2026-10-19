@@ -6,6 +6,33 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- `9163ffd584` shares immutable pages of at most 256 chunk references across retained input versions.
+  The isolated red probe retains 24,589,536 bytes for 24 changing versions versus unchanged controls
+  of 1,091,016 and 1,029,504 bytes. The new source probe retains 131,160 bytes versus controls
+  of 75,152 and 18,232 bytes; its additional 56,008 bytes are within the 56,920-byte unchanged spread.
+  Every original digest and version identity passes. This is isolated source evidence, not a configured-host fix claim.
+  Maintained capacity regression is committed and moved to the existing MJS native-consumer harness.
+  Fresh combined build, actual consumers, lint and full-history replay remain required.
+- Fresh `build:js` after `520a947723` fails Rolldown `UNRESOLVED_IMPORT` on generated
+  `native-return-consumer.mjs` and `maintained-policy.mjs`, reached through the new judgment-factory closure.
+  Native MiMo has the exact log and owns this clean-archive build repair alongside the owner split/type fixes.
+- The phase formatter succeeds with zero warnings/errors after private source mounts are writable.
+  Its actual fix changes only indentation of the member/comparison continuation;
+  root retains it in `28c3057995`. The cloned-update negative control is still required.
+- Protected Git reports successful commit `3e3fdd7baa`, then exits 2 with
+  `engine-failure`/`transaction-failed`: missing transaction `index-installed` completion-marker directory.
+  Root verifies its exact two committed paths and does not retry. GitHub issue #1781 records this distinct incident.
+  Source MiMo's later unrelated-image LFS commit failure remains the existing #1770 incident.
+- The private separated-project probe preserves the original TS-only configuration byte-for-byte.
+  Its type-check command catches a deliberately wrong string assignment with `TS2322`;
+  removing that fixture passes the restored full check on the qualified phase artifact.
+  MJS Node assertions resolve while the intentional unsafe member/return findings remain.
+  An initial attempted isolated-declaration control produced no isolated diagnostic and also used a stale artifact;
+  it does not prove declaration-emission behavior. Keep existing compiler options in the types project.
+- Source MiMo's regex-free checkpoint remains staged after #1770, not committed.
+  Root requests a single literal-message predicate and a stable literal for the three supersession diagnostics,
+  replacing the unnecessary ordered-pattern/gap scanner. Its general regex-equivalence claim needs a counterexample check.
+  Preserve all nine actual consumer cases and thrown-value identity checks; root will deliver exact corrected paths if needed.
 - Controlled replay B completes 36 groups, zero tool errors, no approval dialog, normal exit zero/signal null.
   Three post-GC samples are 271,912,280 to 271,933,368 bytes, reproducing run A's continued warmed growth.
   Its private heap snapshot is 254,001,162 bytes; bounded analysis succeeds with the positive retained-array control.
