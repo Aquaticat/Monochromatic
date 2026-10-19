@@ -139,8 +139,8 @@ Ranking: keep and audit > evidence packet > ledger > detector > watchdog.
 - Add a bounded local state packet (about 2 KB) to what Luna sees, only if the audit's ablation shows it helps.
    It ranks below the first only because its benefit is unmeasured and it widens what leaves the machine,
    which was declined once ("last reply only").
-- Obligation ledger. Exact when it exists, but ranks below the packet because it needs a task-setup protocol that does not
-   exist; pending-task state today is stale or overfull at 81% of stops.
+- Obligation ledger. Exact when it exists, but ranks below the packet because it needs a task-setup protocol
+   that does not exist; pending-task state today is stale or overfull at 81% of stops.
 - Local detector. Ranks below the ledger because it needs adjudicated labels that do not exist,
    and the preprint's detector result comes from other domains.
 - Watchdog for stalls: when a wait is released and `session_crons` is empty, block once with a reason to arm a
