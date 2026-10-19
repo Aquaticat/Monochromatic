@@ -10,6 +10,12 @@ Managed `CLAUDE.md` is regenerated in `4bb5e492ee`.
 Independent source and semantic review confirms the record; all 12 diagrams pass geometry and keyboard checks
 in both themes, and all 22 response options pass.
 The Markdown renderer checked all 13 affected documents at `auto-mode-rebuild-plan-render-Rik6O5`.
+Final source/semantic review found no remaining discrepancy after the case-caption corrections.
+The final Markdown render is `auto-mode-rebuild-plan-render-ZEuBpU`.
+All 24 light/dark chart captures and 16 review-panel captures were inspected and retained with image-only PNG chunks.
+The final browser pass covers 22 options, nine navigation links, four examples, four manual branches,
+keyboard operation, 48-pixel controls, and 390-pixel layout with no page or console errors.
+Helium has reopened the corrected Q7; Q7 to Q13 remain unanswered.
 Two additional stale example captions were corrected: all-not-applicable approval remains open,
 and one resolved Ask does not end sibling review.
 The latest correction separates whole-batch assessment from per-call execution outcomes.
