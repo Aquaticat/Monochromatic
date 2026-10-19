@@ -15,8 +15,10 @@ The earlier shortage-of-useful-questions question was also withdrawn;
 unresolved-rule count does not measure the supply of useful follow-ups.
 
 This document records settled requirements separately from proposed semantics.
-Remaining choices concern score admission, the meaning of an admitted `ask`, built-in rule coverage,
-deterministic approval, context anchoring, and preparation timing.
+Remaining choices concern score admission, the meaning of an admitted `ask`,
+context anchoring, and preparation timing.
+The user corrected the approval baseline: assess reversibility, not exact requested-package matching.
+The former Q3 and Q5 alternatives are withdrawn; their remaining engineering details follow that baseline.
 Dependency qualification, shadow scheduling, retention, and size fit remain open engineering work.
 No replacement code, dependency installation, package build, or configuration change accompanies this review.
 
@@ -26,6 +28,41 @@ at `e74f84bb9f60c3e1ea90f1325cf2e64947715ba0`.
 Worker edits were checkpointed in `3ef7f32d19`; `7ac15b19b4` deletes the old `src` from `main`.
 Old native code and generated output remain reference material, not verified replacement artifacts.
 Existing abstractions, dependencies, and historical test assertions get no automatic place in this rebuild.
+
+## Coding-agent autonomy and reversibility
+
+The user explicitly rejects preventing tests merely because they run in another package.
+A coding agent can inspect dependencies, test consumers, compare alternatives, and perform useful supporting work
+without the human enumerating every package and command.
+The former mandatory positive request-scope gate and package-match follow-ups were too restrictive and are withdrawn.
+
+Assess the prepared group's actual effects and reversibility:
+what changes, what can be restored, how restoration works, and what consequences remain after restoration.
+Consider recovery effort, existing uncommitted work, shared state, external effects, and resource consumption.
+A command called `test` is not an effect description;
+a cross-package test against disposable local fixtures differs from a test that deletes shared data.
+Likewise, a local edit is not irreversible merely because the user did not spell out that intermediate step.
+An edit recoverable from a retained prior state differs from overwriting unrecorded user work.
+
+Routine work with established reversible effects can proceed automatically without exact-call human approval.
+Code may establish this deterministically when the relevant effects are known;
+otherwise the every-rule model review assesses it.
+Unknown effects require investigation or an explained ask about those effects,
+not an ask caused only by a different package name.
+Irreversible or costly-to-recover consequences receive the corresponding authorization review.
+Reversibility does not cancel an explicit human prohibition or supply a missing human-only decision.
+Task context helps explain the work; exact package or verb matching is not a generic permission condition.
+
+Acceptance examples for this baseline:
+
+- A change in package A is verified by running package B's consumer tests with disposable local fixtures.
+  Approve when the effects are established as routine and reversible; B's name is not an objection.
+- An agent tests a hypothesis by editing a disposable checkout with the prior contents retained.
+  Treat the recoverable experiment as ordinary autonomous work unless an explicit instruction forbids it.
+- A command named `test` resets a shared database without an established recovery path.
+  Review that data loss and affected users; the command name grants no shortcut.
+- Uploading a report can disclose its content even if the upload can later be deleted.
+  Evaluate the disclosure; deleting the uploaded copy does not reverse every effect.
 
 ## Settled stages
 
@@ -103,8 +140,9 @@ An answer needs both a valid label and sufficient numeric evidence under the adm
 Low-confidence or missing evidence is internal unresolved state, not a fifth answer choice.
 
 When unresolved, construct a new set of questions addressing the particular uncertainty.
-For example, decompose whether the operation advances the requested work into
-whether the command targets the requested package and whether its action matches the requested verb.
+For example, decompose uncertainty about a test command’s reversibility into
+which environment it targets, whether its writes are confined to disposable fixtures,
+and whether any existing state would be lost or externally exposed.
 Keep the whole prepared group and relevant rule context visible in every follow-up.
 Do not treat uncertainty in one rule as proof that only one useful follow-up exists.
 Question wording and bindings must expose the distinction being tested.
@@ -198,21 +236,20 @@ This choice does not add another answer label.
 Proposed group reduction, pending Q1 and Q2:
 any admitted deny blocks; otherwise an admitted substantive ask routes to the human;
 otherwise unresolved evidence refines; otherwise approve if all required checks approve or are not applicable.
-The request-scope built-in must positively approve; all-not-applicable cannot grant permission.
+Approval needs positive evidence for the applicable effects and reversibility checks;
+all-not-applicable cannot manufacture that evidence. Exact request or package matching is not required.
 A deny based on a superseded instruction is invalid evidence, not a lower-priority veto.
 Precedence must be reflected in contextual questions and tested with explicit exceptions.
 
-### Q3: deterministic approval scope
+### Q3 withdrawn: exact-call approval is not the default autonomy boundary
 
-Option A initially approves deterministically only an exact fresh group with recorded human authorization;
-other groups proceed to every-rule review unless a deterministic deny or ask condition applies.
-Option B additionally permits published machine-checkable allow conditions for recurring operations.
-Example: an explicitly requested test command has no recorded approval of that exact prepared group.
-A sends every effective rule to Luna; B can approve if a complete audited condition covers that group.
-A minimizes duplicated semantic policy but makes more model calls.
-B avoids those calls but requires proving scope, tool behavior, and every condition the shortcut bypasses.
-Ranking: A > B for the first implementation because each approval shortcut needs evidence of complete coverage.
-Both preserve deterministic approve, deny, and ask; neither selects first-pass model questions.
+The earlier recommended shortcut policy privileged a recorded approval of the exact call.
+It did not provide the intended autonomy for ordinary reversible coding work.
+The user’s reversibility correction supersedes that framing.
+Deterministic approval conditions must express actual effects and recovery properties,
+including cross-package verification, rather than exact package matching or a test-command allowlist.
+The concrete effect evidence and recovery checks remain engineering work;
+they are not a request to confirm the rejected boundary again.
 
 ### Q4: keep the latest human request when the window moves past it
 
@@ -227,24 +264,22 @@ B is a literal cap on historical input but can lose the instruction needed to as
 Ranking: A > B because recency alone does not make the original request obsolete.
 Neither API user-role feedback nor compaction entries count as a new human request.
 
-### Q5: initial built-in rule coverage
+### Q5 revised: built-ins assess effects and recovery
 
-Option A adds the following precise general-agent questions to every first pass:
+The earlier scope-versus-coverage options are withdrawn.
+The proposed built-in questions now operationalize the accepted reversibility baseline:
 
-- Does the prepared group advance the latest human-requested task within its requested action scope?
-- Are the chosen tools and their concrete arguments suitable for the requested operation?
-- Does the visible evidence establish prerequisites on which executing this group depends?
-- Is each operation justified by new work or evidence, rather than an unchanged retry of a known failure?
-- Does this group preserve task-relevant state except for changes the current request authorizes?
+- What state does this group affect, and do its concrete effects permit routine automatic execution?
+- Can changed state be restored from an available prior state without losing existing human work?
+- Does the group have external or shared consequences that restoration would not undo?
+- Is the recovery effort and resource exposure established well enough to proceed automatically?
+- Does the group comply with explicit human restrictions and decisions that remain applicable?
 
-Each question uses the same four outcomes and full contextual precedence.
-Option B starts with request scope and tool/argument suitability only, relying on effective authored rules for the rest.
-Example: an identical failing request is repeated without changed inputs or evidence.
-A explicitly evaluates the retry; B depends on an authored rule covering it.
-A gives explicit general coverage but needs careful scenarios to avoid objecting to valid retries or intentional mutation.
-B has fewer overlapping checks but leaves more behavior dependent on project instructions.
-Ranking: A > B because the questions cover distinct reasons an otherwise valid operation can fail the user's purpose.
-Exact wording remains editable; neither version uses the vague phrase “make sense”.
+Each is evaluated using the same four answer choices, with question wording that asks for the disposition
+under the stated condition, rather than a free-form effects report.
+Usefulness and task context can guide investigation without turning every unmentioned intermediate step into a veto.
+The precise prompts and effect evidence need scenario qualification;
+they must approve the cross-package and recoverable-experiment examples when their stated conditions hold.
 
 ### Q6: preparation timing for sequential groups
 
@@ -268,7 +303,7 @@ The patch mechanism remains an engineering qualification, not this user decision
 ## Dependency tree after this round
 
 Q1 and Q2 unlock numeric boundaries and final reduction acceptance examples.
-Q3 and Q5 unlock deterministic catalogues and built-in semantic fixtures.
+The accepted reversibility baseline guides deterministic catalogues and built-in semantic fixtures.
 Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
 Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
 and retention using concrete designs and their measured constraints.
@@ -288,6 +323,11 @@ These are proposed edits, not modifications to `AGENTS.md`:
 - Tighten `QPM` to:
   “Before asking which mechanism, test the constraint against settled requirements and plausible designs.
   Measure facts. Do not reopen a settled choice through an invented mechanism.”
+
+The scope correction also motivates a proposed tightening of the existing `AUT` guidance:
+“Execute the requested action with ordinary reversible supporting work, including cross-package tests.
+Do not equate a different package with unauthorized work. Honor explicit restrictions.”
+This is a proposal, not an edit to `AGENTS.md`.
 
 The missing ask explanation also exposes a diagnostic-guidance gap.
 Proposed replacement for the existing `DGT` body:
@@ -348,7 +388,7 @@ Keep feedback provenance separate from genuine incoming human requests.
 
 Purpose: immediate parsed checks, answer admission, and group reduction in ordinary code.
 Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
-Q1 through Q3 determine the score and shortcut contracts.
+Q1 and Q2 determine score admission; actual effects and reversibility determine shortcut conditions.
 No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
 Validate answer attribution, expected labels, finite probabilities, normalization, and leading-choice consistency.
 Accept irrelevant response metadata; do not require optional confidence or usage fields that reduction does not consume.
@@ -717,7 +757,8 @@ No cleanup or deletion is performed as part of writing this plan.
 
 ## Decisions still requiring review or qualification
 
-The current semantic frontier is Q1 through Q6 in this document and the HTML form.
+The current semantic frontier is Q1, Q2, Q4, and Q6 in this document and the HTML form.
+The package-match gate is rejected; the former Q3 and Q5 options are withdrawn.
 Further dependent work covers follow-up conflicts, startup failures, shadow call accounting and preemption,
 persistent log retention, exact dependency closure, and source/deployment budgets.
 Actual host semantics, endpoint capacity, parser compatibility, RPC output, and lifecycle behavior remain unqualified.

@@ -6,6 +6,22 @@ Plan review is active and implementation remains stopped.
 The revised visual form is open in Helium; the current round awaits the user’s answers.
 After answers, update the decision tree and continue the next unlocked review work.
 
+### Reversibility replaces package matching, 2026-10-19
+
+The user rejects preventing coding agents from running tests in another package.
+The better assessment is reversibility, not exact requested-package conformity.
+Retracted the mandatory positive scope gate, package-match follow-ups,
+and the former Q3/Q5 choice sets based on that framing.
+Routine reversible supporting work may proceed without exact-call human approval.
+Assess actual effects, available restoration, recovery cost, shared/external consequences,
+and preservation of pre-existing human work; do not trust the word `test` as a harmlessness proof.
+Explicit restrictions remain applicable. Implementation remains stopped.
+The revised HTML contrasts disposable cross-package tests with shared-data-reset tests,
+and recoverable experiments with disclosures that deletion cannot reverse.
+Open user choices are now Q1, Q2, Q4, and Q6.
+A tightening of existing `AUT` is proposed in the plan, not applied to `AGENTS.md`.
+Next: independent correction review, targeted visual/form checks, screenshot evidence, rendered docs, Helium handoff.
+
 ### Every ask explains the decision, 2026-10-19
 
 The user requires decision-relevant information in every ask;
