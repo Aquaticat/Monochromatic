@@ -500,9 +500,13 @@ fn token_width_around(text: &str, byte: usize, scale: f32) -> f32 {
 ///
 /// A token with no opportunity breaks where the width is exceeded,
 /// so a boundary inside one is expected.
-fn unexcused_breaks(row: &ShapedRow, width: f32, scale: f32) -> Vec<(char, char)> {
+///
+/// `space` is the advance of one space at `scale`,
+/// measured once by the caller:
+/// measuring it here built a new shaper for every line of the crate.
+fn unexcused_breaks(row: &ShapedRow, width: f32, scale: f32, space: f32) -> Vec<(char, char)> {
     let text = row.projection.text.as_str();
-    let indent = continuation_indent(text, space_advance(scale));
+    let indent = continuation_indent(text, space);
     let mut unexcused = Vec::new();
     for index in 1..row.visual_rows() {
         let byte = row.visual_row_bytes(index).expect("row exists").start;
@@ -544,6 +548,7 @@ fn shape_source(scale: f32, width: f32) -> SourceRun {
         failures: Vec::new(),
     };
     let mut shaper = TextShaper::new();
+    let space = space_advance(scale);
     for (index, text) in lines.iter().enumerate() {
         let document = Document::new(text);
         let row = shaper.wrapped_row(&document, 0, scale, width);
@@ -554,7 +559,7 @@ fn shape_source(scale: f32, width: f32) -> SourceRun {
         if !boundaries_are_break_opportunities(&row) {
             run.inside_tokens += 1;
         }
-        let unexcused = unexcused_breaks(&row, width, scale);
+        let unexcused = unexcused_breaks(&row, width, scale, space);
         if !(rows_tile_the_text(&row)
             && rows_fit_width(&row, width, scale)
             && unexcused.is_empty()
