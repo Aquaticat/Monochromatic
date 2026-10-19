@@ -168,7 +168,7 @@ fn a_frame_taller_than_its_map_held_is_cut_to_the_limit_and_painted() {
         .paint(&view, colors(), 0.0)
         .expect("a frame within the limit paints");
     assert!(
-        pixels.bytes.chunks(4).any(|pixel| pixel[3] > 0),
+        pixels.bytes.chunks(4).any(|pixel| return pixel[3] > 0),
         "the cut frame has no ink"
     );
 }

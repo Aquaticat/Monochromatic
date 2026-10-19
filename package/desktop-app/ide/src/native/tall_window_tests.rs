@@ -230,20 +230,20 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
                 for offset in [0.0_f32, 14_000.0] {
                     let label =
                         format!("scale {scale} width {text_width} height {height} offset {offset}");
-                    let (bytes, cut, _, _, _) =
+                    let (stale_bytes, cut, _, _, _) =
                         tile_for(&text, scale, text_width, height, offset, false);
                     assert!(
-                        bytes <= MAX_RASTER_BYTES,
-                        "{label}: a raster of {bytes} bytes before the measurement"
+                        stale_bytes <= MAX_RASTER_BYTES,
+                        "{label}: a raster of {stale_bytes} bytes before the measurement"
                     );
                     if cut {
                         cuts_before_measurement += 1;
                     }
-                    let (bytes, _, holds, holdable, detail) =
+                    let (measured_bytes, _, holds, holdable, detail) =
                         tile_for(&text, scale, text_width, height, offset, true);
                     assert!(
-                        bytes <= MAX_RASTER_BYTES,
-                        "{label}: a raster of {bytes} bytes after the measurement"
+                        measured_bytes <= MAX_RASTER_BYTES,
+                        "{label}: a raster of {measured_bytes} bytes after the measurement"
                     );
                     assert!(
                         holds,

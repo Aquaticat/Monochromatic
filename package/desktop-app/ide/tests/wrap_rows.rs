@@ -702,6 +702,13 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
         selected: [255, 255, 255, 255],
         dark: false,
     };
+    // The shaper cuts the frame it prepares to the limit, so the raster is handed an oversized one directly.
+    assert!(
+        view.viewport.clip.is_some(),
+        "the shaper did not cut the oversized frame"
+    );
+    let mut view = view;
+    view.height = (MAX_RASTER_BYTES / 4 / u64::from(view.width)) as u32 + 1;
     let refused = TextRaster::new().paint(&view, colors, 0.0);
     let mut message = None;
     if let Some(error) = refused.err() {
