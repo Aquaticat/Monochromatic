@@ -12,7 +12,7 @@ import type {
  */
 export function createResourceReceiptInputs(input: {
   readonly frame: PolicyResourceFrame;
-  readonly priorContext: ResourceContextSnapshot | undefined;
+  readonly priorContext?: ResourceContextSnapshot;
 }): readonly ResourceReceiptInput[];
 
 /**

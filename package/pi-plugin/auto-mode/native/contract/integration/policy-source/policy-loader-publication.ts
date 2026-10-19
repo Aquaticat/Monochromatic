@@ -24,7 +24,6 @@ import type {
   ResourceAppendStage,
   ResourceContextStage,
   ResourceReceiptInput,
-  ResourceSystemPromptInput,
   ResourceSystemStage
 } from './policy-loader-types.ts';
 
@@ -49,13 +48,25 @@ export type RelevanceCapture = {
 /**
  Assemble every published input and proof field from the exact bound frame.
 
- @param input - original frame, source, host text, relevance and publication links
+ @param frame - original bound resource frame for this publication
+
+ @param source - original selected policy capture
+
+ @param hostPrompt - explicit host text retained beside the resource inputs
+
+ @param policy - original designated policy with its optional relevance contract
+
+ @param relevanceCapture - original relevance refresh result and failure
+
+ @param contextPublication - original governing context publication link
+
+ @param retainedResourceReceipts - previous retained resource receipts
 
  @returns complete revalidated binding and retained receipt sequence
 
  @example
  ```ts
- const publication = buildPolicyBinding({ frame, source, hostPrompt, policy, relevanceCapture, contextPublication, retainedResourceReceipts });
+ const publication = buildPolicyBinding({ frame, source, policy, relevanceCapture, contextPublication, retainedResourceReceipts });
  ```
  */
 export function buildPolicyBinding({
@@ -75,9 +86,18 @@ export function buildPolicyBinding({
   readonly contextPublication?: ContextPolicyPublication;
   readonly retainedResourceReceipts: readonly ResourceReceiptInput[];
 }): PolicyReloadPublication {
+  /**
+   Original system stage supplies the unregistered resource-stage text.
+   */
   const system = frame.stages
     .find(function isResourceSystemStage(value: PolicyResourceStage): value is ResourceSystemStage { return (value.kind === 'system'); });
+  /**
+   Explicit host text replaces the resource-stage publication without changing its absence.
+   */
   const systemStage = hostPrompt ? undefined : nonNullishOrThrow(system);
+  /**
+   Resource-stage text publishes only when no host text owns the system slot.
+   */
   const resourceSystemInput = (systemStage === undefined)
     || (systemStage.after === undefined) ? undefined : Object.freeze({
       kind: 'native-resource-system-input',
@@ -89,18 +109,39 @@ export function buildPolicyBinding({
       registration: undefined,
       pathToRawFileIdentity: 'not-established'
     });
+  /**
+   Governing carriers link each emitted policy entry to its original ordinal.
+   */
   const contextCarriers = contextPublication
     ?.carriers
     ?? Object.freeze([]);
-  const carrierByOrdinal = new Map(contextCarriers.map(function indexContextCarrier(carrier): [number, typeof carrier] { return ([
-    carrier.ordinal,
-    carrier
-  ]); }));
+  /**
+   Carrier lookup indexes governing links by their original context ordinal.
+   */
+  const carrierByOrdinal = new Map(contextCarriers.map(function indexContextCarrier(carrier): [
+    number,
+    typeof carrier
+  ] {
+    return ([
+      carrier.ordinal,
+      carrier
+    ]);
+  }));
+  /**
+   Original context phase supplies the complete detached context snapshot.
+   */
   const context = frame.stages
     .find(function isResourceContextStage(value: PolicyResourceStage): value is ResourceContextStage { return (value.kind === 'context'); });
+  /**
+   Original append phase supplies the complete ordered appendix texts.
+   */
   const append = frame.stages
     .find(function isResourceAppendStage(value: PolicyResourceStage): value is ResourceAppendStage { return (value.kind === 'append'); });
-  const appendInputs: readonly AppendPromptInput[] = Object.freeze(nonNullishOrThrow(append).after
+  /**
+   Append inputs keep their original ordinal and complete text digest.
+   */
+  const appendInputs: readonly AppendPromptInput[] = Object.freeze(nonNullishOrThrow(append)
+    .after
     .map(function captureResourceAppendInput(
       content,
       ordinal
@@ -115,12 +156,19 @@ export function buildPolicyBinding({
       registration: undefined,
       pathToRawFileIdentity: 'not-established'
     })); }));
-  const contextInputs: readonly ContextPromptInput[] = Object.freeze(nonNullishOrThrow(context).after
+  /**
+   Context inputs keep their original entry and governing carrier link.
+   */
+  const contextInputs: readonly ContextPromptInput[] = Object.freeze(nonNullishOrThrow(context)
+    .after
     .agentsFiles
     .map(function captureResourceContextInput(
       entry,
       ordinal
     ) {
+      /**
+       Original ordinal lookup links the governing carrier without minting one.
+       */
       const carrier = carrierByOrdinal.get(ordinal);
       return (Object.freeze({
         kind: 'native-resource-context-input',
@@ -137,15 +185,23 @@ export function buildPolicyBinding({
         pathToRawFileIdentity: 'not-established'
       }));
     }));
+  /**
+   Receipt retention accumulates this occurrence's receipts beside earlier ones.
+   */
   const receipts = retainResourceReceiptInputs({
     previous: retainedResourceReceipts,
     current: createResourceReceiptInputs({
       frame,
-      priorContext: contextPublication
-        ?.prior
+      ...(contextPublication === undefined ? {} : { priorContext: contextPublication.prior })
     })
   });
+  /**
+   Readable custody keeps only entries matching their original readable file.
+   */
   const readablePolicies = bindReadablePolicyFiles(contextInputs);
+  /**
+   Decision selection retains the original excerpt material beside its failure.
+   */
   const decisionSelection = policy.relevance ? captureDecisionMaterial({
     sources: Object.freeze([
       source,
@@ -158,6 +214,9 @@ export function buildPolicyBinding({
       relevanceFailure: relevanceCapture.relevanceFailure
     }
   }) : undefined;
+  /**
+   Published binding keeps every original proof field and layout constant.
+   */
   const binding: PolicyInputBinding = Object.freeze({
     readablePolicies,
     decisionSelection,

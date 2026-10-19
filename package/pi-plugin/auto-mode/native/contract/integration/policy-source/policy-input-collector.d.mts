@@ -2,7 +2,6 @@
 import type {
   HostPromptInput,
   PolicyInputBinding,
-  PolicyLoaderHandle,
   ResourceToolInputOrigin,
   SessionConstructedInputsReader,
   SessionDomainEventsReader
@@ -40,4 +39,6 @@ export function retainPolicyInput(input: {
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /** Policy input binding re-export keeps the collector link contract complete. */
-export type { PolicyInputBinding, PolicyLoaderHandle };
+export type { PolicyInputBinding } from './policy-loader-types.ts';
+/** Loader handle re-export keeps the collector link contract complete. */
+export type { PolicyLoaderHandle } from './policy-loader-types.ts';

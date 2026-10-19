@@ -2,24 +2,27 @@
  The policy loader owns mutable input publication and its exact native resource binding. @module
  */
 import { createHash } from 'node:crypto';
-import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { caughtValueText } from '@monochromatic-dev/module-caught-value/ts';
+import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { copyOptions } from '../../collector/resource-input-custody/values.ts';
 import { readBoundResourceFrame } from '../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs';
 import { assertOriginalInputBudget } from './input-budget.mjs';
-import { createGoverningContextEmitter } from './context-emission.mjs';
+import {
+  createGoverningContextEmitter,
+  type ContextPolicyPublication
+} from './context-emission.mjs';
 import { copyAuthorityRegistration } from './registration.mjs';
 import { retainPolicyInput } from './policy-input-collector.mjs';
 import { PolicySlotBindingError } from './system-slot-error.ts';
 import { buildPolicyBinding } from './policy-loader-publication.ts';
-import type { ContextPolicyPublication } from './context-emission.mjs';
 import type {
   HostPromptInput,
   PolicyInputBinding,
   PolicyLoaderConfiguration,
   PolicyLoaderHandle,
   PolicyLoaderState,
+  PolicyResourceStage,
   ResourceReceiptInput,
   ResourceSystemStage,
   ResourceToolInputOrigin
@@ -47,6 +50,13 @@ type PolicyLoaderPublication = {
   retainedResourceReceipts: readonly ResourceReceiptInput[];
 };
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- Mirrors the untyped policy-input-collector.mjs boundary whose `?? []` consumer observes the unconfigured-reader absence unchanged. */
+/**
+ Resource tool input view may be absent when this loader configures no fixed readers.
+ */
+type ResourceToolInputsView = readonly ResourceToolInputOrigin[] | undefined;
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
+
 /**
  Prove the fixed reader returned its original frozen owned view.
 
@@ -63,7 +73,27 @@ function isFrozenOriginArray(value: readonly ResourceToolInputOrigin[]): value i
  The governing context emitter links its original policy capture to the native context.
  Other resource inputs are preserved, not removed to manufacture coverage.
 
- @param input - original owner, options, designation and fixed native readers
+ @param owner - original constructor owner of the created loader
+
+ @param options - original native loader options before detached copying
+
+ @param policy - original designated policy file and optional relevance contract
+
+ @param authority - original startup authority declaration for this policy
+
+ @param customPromptAuthority - original authority declaration for explicit host text
+
+ @param readSessionConstructedInputs - fixed native session receipt reader
+
+ @param readResourceToolInputs - fixed native frozen resource tool view reader
+
+ @param readResourceToolOrigin - fixed native tool input origin authenticator
+
+ @param readResourceToolUsage - fixed native resource usage counter reader
+
+ @param readSessionInputUsage - fixed native session usage counter reader
+
+ @param readSessionDomainEvents - fixed native session domain observation reader
 
  @returns complete loader-owned publication state for this policy binding
 
@@ -108,7 +138,7 @@ export function createPolicyLoaderState({
   /**
    Explicit host text keeps its own digest when no replacement callback is configured.
    */
-  const hostPrompt: HostPromptInput | undefined = ((typeof options.systemPrompt) === 'string')
+  const hostPrompt = ((typeof options.systemPrompt) === 'string')
     && (options.systemPromptOverride === undefined)
     ? Object.freeze({
       kind: 'bootstrap-host-custom-prompt',
@@ -163,18 +193,35 @@ export function createPolicyLoaderState({
     if ((value !== inputState.binding) || (!inputState.binding)) throw new PolicySlotBindingError('Policy input link is not this loader original binding');
     if (inputState.failure) throw new PolicySlotBindingError(
       'Original policy input link lost eligibility',
-      { cause: inputState.failure.cause }
+      {
+        cause: inputState.failure
+          .cause
+      }
     );
     try {
-      if (readBoundResourceFrame({
+      /**
+       Original bound frame is read before its retained binding copy.
+       */
+      const boundFrame = readBoundResourceFrame({
         binding: nativeBinding,
         loader
-      })
-        !== inputState.binding
-          .frame) throw new PolicySlotBindingError('Original resource input frame changed');
-      if (owner.captureGoverningPolicy(loader)
-        !== inputState.binding
-          .source) throw new PolicySlotBindingError('Original selected policy capture changed');
+      });
+      /**
+       Retained binding frame is read after the fresh bound frame, as before.
+       */
+      const bindingFrame = inputState.binding
+        .frame;
+      if (boundFrame !== bindingFrame) throw new PolicySlotBindingError('Original resource input frame changed');
+      /**
+       Original selected capture is read through the exact constructor owner.
+       */
+      const currentSource = owner.captureGoverningPolicy(loader);
+      /**
+       Retained binding source is read after the fresh capture, as before.
+       */
+      const bindingSource = inputState.binding
+        .source;
+      if (currentSource !== bindingSource) throw new PolicySlotBindingError('Original selected policy capture changed');
       inputState.contextPublication
         ?.assertCurrent();
       inputState.binding
@@ -187,7 +234,7 @@ export function createPolicyLoaderState({
         const system = inputState.binding
           .frame
           .stages
-          .find(function isCapturedSystemStage(stage): stage is ResourceSystemStage { return (stage.kind === 'system'); });
+          .find(function isCapturedSystemStage(stage: PolicyResourceStage): stage is ResourceSystemStage { return (stage.kind === 'system'); });
         if ((system?.before !== hostPrompt.content) || (system?.after !== hostPrompt.content)) throw new PolicySlotBindingError('Native custom prompt does not retain the explicitly registered host text');
       }
     }
@@ -200,19 +247,19 @@ export function createPolicyLoaderState({
   /**
    Rebuild the complete publication from one native reload occurrence.
 
-   @param options - original native reload options forwarded unchanged
+   @param reloadOptions - original native reload options forwarded unchanged
 
    @returns complete revalidated policy binding for this publication
 
    @throws PolicySlotBindingError when the reloaded publication loses its selected source
    */
-  async function reload(options?: unknown): Promise<PolicyInputBinding> {
+  async function reload(reloadOptions?: unknown): Promise<PolicyInputBinding> {
     delete inputState.binding;
     delete inputState.failure;
     delete inputState.contextPublication;
     contextEmitter.reset();
     await loader
-      .reload(options);
+      .reload(reloadOptions);
     /**
      Original bound frame authenticates this loader's complete phase sequence.
      */
@@ -300,6 +347,9 @@ export function createPolicyLoaderState({
         loader,
         context,
         readPolicy() {
+          /**
+           Original policy reader exposes only identity and complete text.
+           */
           const { source } = readCurrent();
           return {
             identity: source.identity,
@@ -340,15 +390,25 @@ export function createPolicyLoaderState({
    */
   function assertInputBudget(session: unknown): void {
     if (readResourceToolInputs === undefined) return;
-    if (session && ((typeof readSessionInputUsage) !== 'function')) throw new PolicySlotBindingError('Combined resource and session input budgets require their native session usage reader');
+    /**
+     Session presence decides whether session counters join this aggregate.
+     */
+    const hasSession = Boolean(session);
+    if (hasSession && ((typeof readSessionInputUsage) !== 'function')) throw new PolicySlotBindingError('Combined resource and session input budgets require their native session usage reader');
     /**
      Original usage counters join receipt bytes in one exact aggregate check.
      */
     const resource = nonNullishOrThrow(readResourceToolUsage)(loader);
-    const currentSession = session ? nonNullishOrThrow(readSessionInputUsage)(session) : {
+    /**
+     Session counters stay zero only when no native session joined this collection.
+     */
+    const currentSession = hasSession ? nonNullishOrThrow(readSessionInputUsage)(session) : {
       count: 0,
       bytes: 0
     };
+    /**
+     Receipt bytes accumulate complete serialized receipt occurrences.
+     */
     const receiptBytes = inputState.retainedResourceReceipts
       .reduce(
         function sumReceiptInputBytes(
@@ -357,11 +417,18 @@ export function createPolicyLoaderState({
         ) { return (bytes + Buffer.byteLength(JSON.stringify(source))); },
         0
       );
+    /**
+     Original resource count is read before the retained receipt count.
+     */
+    const resourceCount = resource.count;
+    /**
+     Retained receipt count joins the resource usage counters unchanged.
+     */
+    const retainedReceiptCount = inputState.retainedResourceReceipts
+      .length;
     assertOriginalInputBudget({
       resource: {
-        count: resource.count
-          + inputState.retainedResourceReceipts
-            .length,
+        count: resourceCount + retainedReceiptCount,
         bytes: resource.bytes + receiptBytes
       },
       session: currentSession
@@ -375,8 +442,7 @@ export function createPolicyLoaderState({
 
    @throws PolicySlotBindingError when an input is not an original unregistered receipt
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Mirrors the untyped policy-input-collector.mjs boundary whose `?? []` consumer observes the unconfigured-reader absence unchanged.
-  function resourceInputs(): readonly ResourceToolInputOrigin[] | undefined {
+  function resourceInputs(): ResourceToolInputsView {
     if (readResourceToolInputs === undefined) return undefined;
     /**
      Original owned view is re-read after each exact identity check.
@@ -384,6 +450,9 @@ export function createPolicyLoaderState({
     const origins = readResourceToolInputs(loader);
     if (!isFrozenOriginArray(origins)) throw new PolicySlotBindingError('Resource tool inputs require their original native view');
     for (const origin of origins) {
+      /**
+       Original origin fields are validated exactly as their checks read them.
+       */
       const {
         source,
         publication,
@@ -399,7 +468,9 @@ export function createPolicyLoaderState({
         || (source.registration !== undefined)
         || (source.permission !== false)) throw new PolicySlotBindingError('Resource tool input is not an original unregistered receipt of this loader');
     }
-    if (readResourceToolInputs(loader) !== origins) throw new PolicySlotBindingError('Resource tool inputs changed during source binding');
+    if (
+      readResourceToolInputs(loader) !== origins
+    ) throw new PolicySlotBindingError('Resource tool inputs changed during source binding');
     return origins;
   }
   return Object.freeze({

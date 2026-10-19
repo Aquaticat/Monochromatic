@@ -199,7 +199,10 @@ export type ReadablePolicyFiles = {
  Created loader retains the reload operation used for publication.
  */
 export type PolicyLoaderHandle = {
-  reload(options?: unknown): Promise<unknown>;
+  /**
+   Original reload operation forwards its native options unchanged.
+   */
+  reload: (options?: unknown) => Promise<unknown>;
 };
 
 /**
