@@ -689,6 +689,30 @@ persistent log retention, exact dependency closure, and source/deployment budget
 Actual host semantics, endpoint capacity, parser compatibility, RPC output, and lifecycle behavior remain unqualified.
 No implementation proceeds while the user is reviewing this plan.
 
+## Review artifact verification
+
+The revised HTML passed the disposable nested-browser interaction check on 2026-10-19.
+Every scenario, navigation control, all 18 answer options, and manual Approve/Stop examples with and without reasons ran.
+Reply generation passed for empty input, notes only, choices only, literal markup, text selection, and keyboard activation.
+All 23 interactive controls measured at least 48 pixels in both dimensions.
+Light and dark appearances and a 390-pixel viewport passed without horizontal overflow.
+Expanded built-in wording and preparation timelines were recaptured after their final edit.
+Browser error and console records were empty.
+This verifies the planning artifact, not plugin behavior or model quality.
+
+Retained images:
+[active stages](ground-up-rebuild-review/staged-overview-dark.png),
+[score admission](ground-up-rebuild-review/staged-q1-dark.png),
+[ask meaning](ground-up-rebuild-review/staged-q2-dark.png),
+[deterministic approval](ground-up-rebuild-review/staged-q3-dark.png),
+[human anchor](ground-up-rebuild-review/staged-q4-dark.png),
+[built-in wording](ground-up-rebuild-review/staged-q5-dark.png),
+[preparation timing](ground-up-rebuild-review/staged-q6-dark.png),
+[manual feedback](ground-up-rebuild-review/staged-manual-dark.png),
+[light appearance](ground-up-rebuild-review/staged-scenario-tests-light.png),
+and [narrow response form](ground-up-rebuild-review/staged-response-narrow.png).
+Earlier screenshots without the `staged-` prefix document the superseded review.
+
 ## Inspected sources
 
 These are source-reading facts, not new runtime qualification results.

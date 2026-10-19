@@ -7,7 +7,7 @@ Work is incomplete. Continue the queue without another readiness handoff.
 ### User-defined staged review, 2026-10-19
 
 The latest user message replaces the proposed first-pass question selector and three-choice interpretation.
-The plan and HTML now follow this settled sequence. Browser and Markdown verification, then Helium handoff, remain:
+The plan and HTML now follow this settled sequence. Browser and Markdown checks have passed; Helium handoff remains:
 
 - Stage 0: on every Pi start, send parsed `AGENTS.md` rules to Luna for potential relevance.
   Materialize the effective ruleset, expected to contain about 100 rules, and add general-agent built-in rules.
@@ -45,8 +45,17 @@ Its current questions cover four-choice score admission, admitted ask meaning, d
 latest-human anchoring, built-in coverage, and sequential preparation timing.
 A separate factual review confirms alignment with the latest instruction.
 Dependency inventory, parser/logger findings, and implementation stop are preserved.
-Next: verify every new HTML interaction and both appearances, render Markdown, retain screenshot evidence,
-commit verification, and open the review in Helium before asking for this round’s answers.
+Verified the new HTML: six navigation targets, four scenarios, all 18 answer options,
+manual Approve/Stop with and without reasons, form validation, literal notes, selection, and keyboard use.
+All 23 controls meet 48 pixels in both dimensions. Both color schemes and 390-pixel width passed.
+No console messages or browser errors. Expanded Q5/Q6 panels were checked again after their final content edits.
+Screenshots with the `staged-` prefix are retained beside the HTML.
+The Markdown renderer passed at `auto-mode-rebuild-plan-render-m8SREJ` under durable scratch.
+Commit `73c90ccb77` contains the new HTML; `3d034972e5` adds full built-in wording and the host timeline.
+Commit `1a8758044e` is empty after replay: its intended newline fix was already applied in the parent.
+A corrective GitHub commit comment records that distinction; no history was amended.
+Next: commit verification evidence, re-render the updated verification notes, open Helium,
+and ask for the current round’s answers. Implementation remains stopped.
 No plugin implementation is authorized by this planning clarification.
 
 ### Historical visual review, superseded by the staged contract on 2026-10-19
