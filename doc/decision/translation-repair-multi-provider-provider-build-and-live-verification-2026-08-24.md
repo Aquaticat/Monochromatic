@@ -102,7 +102,8 @@ to read a status off a failed call,
 and a fresh class here would make that site blind
 to exactly the provider added to survive the other one's exhaustion.
 The name is wrong and the behaviour is right;
-renaming it is held with the `SyntheticClient` rename.
+renaming it is held with the `SyntheticClient` rename
+(`SyntheticClient` was renamed `ModelClient` on 2026-10-19).
 
 The JSON ladder moved to `chat-json-outcome.ts` rather than being copied.
 None of it is provider-specific:

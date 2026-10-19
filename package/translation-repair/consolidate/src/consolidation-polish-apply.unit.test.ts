@@ -14,7 +14,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NaturalnessRepairInterruptedError, } from '@monochromatic-dev/translation-repair-adjudication';
 import { applyFinalPolish, } from '../dist/final/node/index.mjs';
@@ -63,7 +63,7 @@ function recordingClient(
     readonly sheetsBySchema?: Map<string, readonly string[]>;
     readonly rewrite?: string;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by structured polish stages',);
@@ -111,7 +111,7 @@ await describe({
     it({
       name: 'PAUSES INVALID BASE before no-polish fallback can retain contributor respelling',
       fn: async () => {
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('model calls must not run before baseline floor',);
           },

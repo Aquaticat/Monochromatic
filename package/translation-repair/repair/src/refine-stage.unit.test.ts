@@ -22,7 +22,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ProducerRosterError, } from '@monochromatic-dev/translation-repair-assembly';
 import {
@@ -193,7 +193,7 @@ function scriptedRefiner(
     readonly selectionSheets?: string[];
     readonly asked?: AskedSheet[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by refinement',);
@@ -278,7 +278,7 @@ function scriptedRefiner(
  ```
  */
 async function runFixture(
-  client: SyntheticClient,
+  client: ModelClient,
   {
     identityContext,
     referenceContext,

@@ -8,7 +8,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
@@ -150,7 +150,7 @@ export function archiveSelectionFixture(
     readonly selection?: ArchiveSelectionFixtureMode;
   },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly selections: readonly string[];
   readonly reviews: () => number
 } {
@@ -325,7 +325,7 @@ export function archiveSelectionFixture(
   /**
    No external provider is reachable through this fixture.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     /**
      Text-only calls are outside this scripted protocol.
      */

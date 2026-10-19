@@ -5,7 +5,7 @@ import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shar
 import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 import type {
   BudgetView,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type Reseated,
@@ -121,7 +121,7 @@ function refuseUnaskedExchange(): Promise<never> {
  Client for a driver whose slices all end in their hook before asking
  anybody.
  */
-export const UNASKED_CLIENT: SyntheticClient = {
+export const UNASKED_CLIENT: ModelClient = {
   chatText: refuseUnaskedExchange,
   chatJson: refuseUnaskedExchange,
   quotas: refuseUnaskedExchange,

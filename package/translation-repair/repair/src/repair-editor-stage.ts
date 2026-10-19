@@ -20,7 +20,7 @@ import {
   NOBODY_WROTE_IT,
   type ShippedProducer,
 } from './editor-selection-result.ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { buildEditorMessages, } from './edit-prompt.ts';
 import {
   EDITOR_RESPONSE_FORMAT,
@@ -181,7 +181,7 @@ export async function runEditorStage(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly editorModelIds: readonly RosterModelId[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly editorRuleAddendum?: string;

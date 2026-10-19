@@ -12,7 +12,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -276,7 +276,7 @@ function scriptedChatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<C
  const rounds = await runEditorLane({ slice, client: shippingLaneClient(), },);
  ```
  */
-export function shippingLaneClient(): SyntheticClient {
+export function shippingLaneClient(): ModelClient {
   return {
     chatText: unscriptedText,
     chatJson: scriptedChatJson,

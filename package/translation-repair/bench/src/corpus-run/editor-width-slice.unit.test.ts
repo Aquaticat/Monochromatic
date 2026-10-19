@@ -40,7 +40,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   AdjudicatedIssue,
@@ -314,7 +314,7 @@ function scriptedClient(
     readonly editorReply: (args: { readonly asked: number; },) => unknown;
     readonly log: CallLog;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

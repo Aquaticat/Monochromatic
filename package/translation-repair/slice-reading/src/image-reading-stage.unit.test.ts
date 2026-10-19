@@ -31,7 +31,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type {
   ChatTextRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { readImageAsset, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -117,7 +117,7 @@ function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
  ```
  */
 function replyingClient({ text, }: { readonly text: string; },): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly requests: ChatTextRequest[];
 } {
   /**

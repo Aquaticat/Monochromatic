@@ -5,7 +5,7 @@ import type {
   AdjudicatedIssue,
   EditableEnvelope,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   collectRepairRegions,
   PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
@@ -135,7 +135,7 @@ export async function proveRepairedChunk(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly models: RepairModels;
     readonly reseat: () => Promise<RepairSliceSeating>;
     readonly sourceText: string;

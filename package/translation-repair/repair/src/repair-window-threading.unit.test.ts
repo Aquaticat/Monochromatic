@@ -26,7 +26,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { repairPreparedDocument, } from '../dist/final/node/index.mjs';
@@ -177,7 +177,7 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
    Recording stub. Real catalog ids, because the roster type is a closed union
    and an invented id would not compile.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the repair lane',);
     },

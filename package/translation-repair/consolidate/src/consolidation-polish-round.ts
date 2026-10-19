@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
 import {
   wordForCount,
@@ -222,7 +222,7 @@ export async function runConsolidationPolishRound(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly sourceText: string;
     readonly archiveText: string;
     readonly baseText: string;

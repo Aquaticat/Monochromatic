@@ -6,7 +6,7 @@ import {
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -155,7 +155,7 @@ export async function gatherThroughCache<WireT, RecordT extends StoredGather,>(
     recordOf,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;

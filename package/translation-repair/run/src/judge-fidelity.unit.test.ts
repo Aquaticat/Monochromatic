@@ -22,7 +22,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { CANDIDATE_NONE, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
@@ -95,7 +95,7 @@ type ScriptedVote = ScriptedPick | 'decline';
  */
 function judgesVoting(
   { script, }: { readonly script: Readonly<Record<string, ScriptedVote>>; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by selection',);

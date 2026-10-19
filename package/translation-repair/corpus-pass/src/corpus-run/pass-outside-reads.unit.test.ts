@@ -40,7 +40,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   outsideReadsFrom,
@@ -93,7 +93,7 @@ const WORK_TITLE_LINE = 'WORK TITLE EVIDENCE: 猫之歌 is published as "Song of
  const client = pairingClient();
  ```
  */
-function pairingClient(): SyntheticClient {
+function pairingClient(): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

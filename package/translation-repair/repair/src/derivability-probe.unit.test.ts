@@ -16,7 +16,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   isDerivabilityVerdict,
@@ -66,7 +66,7 @@ function probingClient(
     readonly verdictsByModel: Readonly<Record<string, readonly string[]>>;
     readonly silent?: ReadonlySet<string>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

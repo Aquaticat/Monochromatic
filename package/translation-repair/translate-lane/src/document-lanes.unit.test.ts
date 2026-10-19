@@ -33,7 +33,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   runDocumentLanes,
@@ -198,7 +198,7 @@ function lanesClient(
     readonly activity?: LaneConcurrency;
     readonly askedBy?: AskedLog;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by either lane',);

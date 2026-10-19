@@ -25,7 +25,7 @@ import type { PatchOutcome, } from '@monochromatic-dev/translation-repair-page-p
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { selectBestCandidate, } from '@monochromatic-dev/translation-repair-translate-stage';
 import {
@@ -106,7 +106,7 @@ function scriptedJudges(
     readonly ballots: BallotScript;
     readonly counter: { calls: number; };
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by candidate selection',);
@@ -226,7 +226,7 @@ function dryBenchJudges(
     readonly ballots: BallotScript;
     readonly unreachable: readonly RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Scripted client answering the reachable seats.
    */

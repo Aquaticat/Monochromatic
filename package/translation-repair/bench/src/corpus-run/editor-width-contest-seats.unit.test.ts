@@ -36,7 +36,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type ArmOutcome,
@@ -138,7 +138,7 @@ async function ballotSheets(): Promise<readonly string[]> {
   /**
    Client answering every ballot with the first candidate.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the width head-to-head',);
     },

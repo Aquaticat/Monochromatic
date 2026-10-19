@@ -5,7 +5,7 @@ import {
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { contestResponseFormat, } from './contest-ballot-wire.ts';
 import {
@@ -370,7 +370,7 @@ export async function contestLaneSlice(
     fanOut,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: LaneContestSubject;
     readonly signal: AbortSignal;

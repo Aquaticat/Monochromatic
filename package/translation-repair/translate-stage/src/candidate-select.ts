@@ -28,7 +28,7 @@ import {
   type SelectionTally,
   SELF_VOTE_WEIGHT,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { ProducerRosterError, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import {
   type FanOutMode,
@@ -135,7 +135,7 @@ export async function decideBestCandidate<ValueT,>(
     runoff = false,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly candidates: readonly Candidate<ValueT>[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly task: string;

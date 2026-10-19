@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   buildCarryChoiceMessages,
   buildCarryWriterMessages,
@@ -173,7 +173,7 @@ export async function askCarryWriters(
     l,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: CarryWriterSubject;
     readonly cache: SliceCache<ConsistencyCacheValue>;
@@ -290,7 +290,7 @@ export async function askCarryChoice(
     stageSettings,
     runOff = false,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: CarryChoiceSubject;
     readonly cache: SliceCache<ConsistencyCacheValue>;

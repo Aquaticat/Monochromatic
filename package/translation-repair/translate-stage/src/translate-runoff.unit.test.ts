@@ -24,7 +24,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   judgeSlateWithRetry,
@@ -125,7 +125,7 @@ function candidatesOffered({ content, }: { readonly content: string; },): number
 function scriptedRig(
   { secondRound, }: { readonly secondRound: 'converge' | 'split'; },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly sheetsByRound: readonly string[][];
 } {
   /**

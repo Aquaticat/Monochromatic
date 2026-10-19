@@ -31,7 +31,7 @@ import {
   createSyntheticClient,
   OPENROUTER_DROPPED_SEATS,
   reachOf,
-  type SyntheticClient,
+  type ModelClient,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
@@ -176,7 +176,7 @@ async function settled(call: Promise<unknown>,): Promise<void> {
  */
 function providerRows(
   { bodies, }: { readonly bodies: string[]; },
-): readonly { readonly provider: string; readonly modelId: string; readonly client: Pick<SyntheticClient, 'chatJson' | 'chatText'>; }[] {
+): readonly { readonly provider: string; readonly modelId: string; readonly client: Pick<ModelClient, 'chatJson' | 'chatText'>; }[] {
   /**
    Transport shared by every row.
    */

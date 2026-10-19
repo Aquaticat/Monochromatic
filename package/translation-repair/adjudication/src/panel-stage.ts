@@ -19,7 +19,7 @@ import {
   usablePanelBallotFor,
   resolvePanelBallot,
 } from './adjudicate-wire.ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   gatherStageVoices,
   mapOverlapped,
@@ -284,7 +284,7 @@ export async function runPanelStage(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly panelModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;

@@ -21,7 +21,7 @@ import {
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
 import { namingFixtureGit, } from '../archive-naming.test-fixture.ts';
 import {
@@ -294,7 +294,7 @@ function noIssues(): unknown {
  const client = keptInertClient({ clients, },);
  ```
  */
-export function keptInertClient({ clients, }: { readonly clients: SyntheticClient[]; },): SyntheticClient {
+export function keptInertClient({ clients, }: { readonly clients: ModelClient[]; },): ModelClient {
   /**
    Client answering every critic with nothing.
    */

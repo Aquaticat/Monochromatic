@@ -23,7 +23,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type ConsolidationSettlement,
@@ -147,7 +147,7 @@ function objectingClient(
     readonly refinerSheets: string[];
     readonly objection?: string;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by structured consolidation stages',);

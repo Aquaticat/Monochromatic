@@ -3,7 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -49,7 +49,7 @@ export async function reportModelHealth(
     timeoutMs,
     l: parent,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly roster: readonly RosterModelId[];
     readonly timeoutMs: number;
     readonly l: Logger;

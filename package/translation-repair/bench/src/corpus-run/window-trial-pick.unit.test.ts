@@ -26,7 +26,7 @@ import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-rea
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   runPick,
@@ -87,7 +87,7 @@ const LONE: readonly ChunkPair[] = [
  */
 function throwingClient(
   { error, }: { readonly error: Error; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

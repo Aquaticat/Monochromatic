@@ -14,7 +14,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { confirmAbsoluteNaturalness, } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
@@ -29,7 +29,7 @@ await describe({
       fn: async () => {
         /** Exact serialized prompts observed at model-facing boundary. */
         const prompts: string[] = [];
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused by confirmation fixture',);
           },

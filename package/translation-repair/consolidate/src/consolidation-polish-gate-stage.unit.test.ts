@@ -22,7 +22,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   reachableQuorum,
@@ -101,7 +101,7 @@ function gateClient(
     readonly unusable?: readonly RosterModelId[];
     readonly refused?: readonly RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the polish gate',);
@@ -159,7 +159,7 @@ async function gateWith(
     client,
     modelIds = ROSTER,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds?: readonly RosterModelId[];
   },
 ) {

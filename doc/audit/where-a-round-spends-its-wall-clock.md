@@ -137,7 +137,9 @@ and documents throwing `MalformedCompletionError`.
 Both providers throw both classes, and both messages named one of them.
 
 `hyper-client.ts` already records why it reuses the class and that the rename is held
-with the `SyntheticClient` rename, so nothing was renamed.
+with the `SyntheticClient` rename
+(`SyntheticClient` was renamed `ModelClient` on 2026-10-19),
+so nothing was renamed.
 That note covers the NAME, read by whoever edits the file.
 The MESSAGE is read by whoever is holding a broken run, and is now provider-neutral,
 with the two meter endpoints naming their own provider through the `summary` seam

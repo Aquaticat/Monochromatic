@@ -23,7 +23,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   type CalibrationGrace,
@@ -164,7 +164,7 @@ async function calibrateWith(
     readonly overlap: number;
     readonly grace: CalibrationGrace;
     readonly writers: WriterGrace;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly reaches: Reaches;
     readonly editorBenchStart?: number;
   },
@@ -197,7 +197,7 @@ async function calibrateWith(
       reaches.events.push('writer-grace',);
       return writers;
     },
-    newClient: function built(): SyntheticClient {
+    newClient: function built(): ModelClient {
       reaches.events.push('client',);
       return newClient();
     },
@@ -250,7 +250,7 @@ await describe({
               overlap: 4,
               grace: DEFAULT_GRACE,
               writers: ROUND_WINDOW_WRITERS,
-              newClient: function quiet(): SyntheticClient {
+              newClient: function quiet(): ModelClient {
                 return scriptedClient({ script: { critic_report: { issues: [], }, }, },);
               },
               reaches,
@@ -302,7 +302,7 @@ await describe({
                 roundMs: HANG_STOP_MS,
                 source: 'writer-dial',
               },
-              newClient: function quiet(): SyntheticClient {
+              newClient: function quiet(): ModelClient {
                 return scriptedClient({ script: { critic_report: { issues: [], }, }, },);
               },
               reaches,
@@ -437,7 +437,7 @@ await describe({
                   reaches.events.push('writer-grace',);
                   return ROUND_WINDOW_WRITERS;
                 },
-                newClient: function neverBuilt(): SyntheticClient {
+                newClient: function neverBuilt(): ModelClient {
                   reaches.events.push('client',);
                   return shippingLaneClient();
                 },
@@ -486,7 +486,7 @@ await describe({
                   reaches.events.push('writer-grace',);
                   return ROUND_WINDOW_WRITERS;
                 },
-                newClient: function neverBuilt(): SyntheticClient {
+                newClient: function neverBuilt(): ModelClient {
                   reaches.events.push('client',);
                   return shippingLaneClient();
                 },
@@ -520,7 +520,7 @@ await describe({
                 overlap: 4,
                 grace: DEFAULT_GRACE,
                 writers: ROUND_WINDOW_WRITERS,
-                newClient: function withoutKey(): SyntheticClient {
+                newClient: function withoutKey(): ModelClient {
                   throw new StatedRefusalError({ says: 'no provider key is set', },);
                 },
                 reaches,

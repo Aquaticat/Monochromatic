@@ -26,7 +26,7 @@ import { hashContent, } from '@monochromatic-dev/translation-repair-document-str
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { aggregateClaims, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { runCheckerStage, } from '../dist/final/node/index.mjs';
@@ -68,7 +68,7 @@ const [IRREGULAR,] = VOICES;
 /**
  Client answering both stages, the irregular voice repeating its first entry.
  */
-const CLIENT: SyntheticClient = {
+const CLIENT: ModelClient = {
   chatText: async () => {
     throw new Error('chatText unused by these stages',);
   },

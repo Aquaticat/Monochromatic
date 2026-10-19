@@ -22,7 +22,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runRenderingAudit, } from '../dist/final/node/index.mjs';
 import {
@@ -132,7 +132,7 @@ const QUIET_VOICE: ScriptedVoice = {
  */
 function catClient(
   { script, }: { readonly script: Readonly<Record<string, ScriptedVoice>>; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the audit',);

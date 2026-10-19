@@ -6,7 +6,7 @@ import type {
   ChatTextRequest,
   DecisionReply,
   DecisionRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
 
@@ -70,10 +70,10 @@ export function refusingCulledSeats(
     inner,
     culled,
   }: {
-    readonly inner: SyntheticClient;
+    readonly inner: ModelClient;
     readonly culled: ReadonlySet<string>;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Typed exchange the wrapped client offers, bound once so the closure keeps
    the narrowing.

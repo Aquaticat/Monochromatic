@@ -5,7 +5,7 @@ import {
   type ChunkSlice,
   governedSliceIndices,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   isInsertionChunk,
   parseDocument,
@@ -92,7 +92,7 @@ export async function probeTranslate(
   }: {
     readonly entryId: string;
     readonly pin: CorpusPin;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly editorModelIds: readonly RosterModelId[];
     readonly perCallTimeoutMs: number;
     readonly log: Logger;

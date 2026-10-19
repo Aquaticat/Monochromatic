@@ -1,5 +1,5 @@
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type {
   gatherRelabelCases,
@@ -148,7 +148,7 @@ export async function runProbeVerify(
   }: {
     readonly dir: string;
     readonly pin: CorpusPin;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly gather: {
       readonly damaged: typeof gatherRelabelCases;
       readonly controls: typeof gatherControlCases;

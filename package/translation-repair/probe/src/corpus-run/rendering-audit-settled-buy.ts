@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { allInInputOrder, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   citedReferenceUrlsOf,
   EXA_API_KEY_VAR,
@@ -80,7 +80,7 @@ export async function auditOne(
   }: {
     readonly subject: SettledAuditSubject;
     readonly references: SettledReferences;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<SettledAuditRow> {

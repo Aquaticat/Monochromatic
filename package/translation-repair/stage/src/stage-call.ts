@@ -5,7 +5,7 @@ import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-do
 import type {
   ChatJsonOutcome,
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -290,7 +290,7 @@ export async function attemptStageCall<ValueT,>(
     l,
     decision,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelId: RosterModelId;
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;

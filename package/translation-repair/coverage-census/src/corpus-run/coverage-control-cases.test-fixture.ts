@@ -1,7 +1,7 @@
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type { CoverageControlCase, } from '../../dist/final/node/index.mjs';
@@ -123,7 +123,7 @@ function unexpectedCoverageQuotas(): never {
  */
 export function coverageControlClient(
   { quote, }: { readonly quote: string; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: unexpectedCoverageText,
     chatJson: function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {

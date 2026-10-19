@@ -16,7 +16,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import { reviewAbsoluteNaturalness, } from '../dist/final/node/index.mjs';
@@ -116,7 +116,7 @@ function reviewClient(
     };
     readonly refused?: readonly RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by absolute review',);
@@ -206,7 +206,7 @@ async function runReview(
     graceMs = 0,
     quorumOver,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly messages?: string[];
     readonly modelIds?: readonly RosterModelId[];
     readonly graceMs?: number;

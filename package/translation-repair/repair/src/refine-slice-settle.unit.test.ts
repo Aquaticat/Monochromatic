@@ -47,7 +47,7 @@ import type {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { settleRefinedSlice, } from '../dist/final/node/index.mjs';
 import {
@@ -277,7 +277,7 @@ const NEIGHBOUR_INCUMBENT = 'The neighbouring cat naps there too.';
  would let a case pass while quietly buying something; throwing makes the
  first call end the settlement, which is what the assertion is about.
  */
-const REFUSING_CLIENT: SyntheticClient = {
+const REFUSING_CLIENT: ModelClient = {
   chatText(): never {
     throw new Error(CLIENT_WAS_REACHED,);
   },
@@ -328,7 +328,7 @@ function scriptedSettleClient(
     readonly checkerVerdicts?: ReadonlyMap<RosterModelId, ResolutionVerdict>;
     readonly proberAnswers?: ReadonlyMap<RosterModelId, ProberAnswer>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText(): never {
       throw new Error(CLIENT_WAS_REACHED,);
@@ -439,7 +439,7 @@ async function settleWith(
     issues,
   }: {
     readonly nonTranslationStanding: boolean;
-    readonly client?: SyntheticClient;
+    readonly client?: ModelClient;
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly identityContext?: string;

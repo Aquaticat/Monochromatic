@@ -24,7 +24,7 @@ import type {
   ChatTextRequest,
   DecisionReply,
   DecisionRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { refusingCulledSeats, } from '../dist/final/node/index.mjs';
 
@@ -57,7 +57,7 @@ const DECISION_REPLY = { answers: ['windowsill',], } as unknown as DecisionReply
  @returns The client and the calls it received, as `exchange model`
  */
 function recordingClient({ withDecide, }: { readonly withDecide: boolean; },): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: readonly string[];
 } {
   /**
@@ -67,7 +67,7 @@ function recordingClient({ withDecide, }: { readonly withDecide: boolean; },): {
   /**
    The exchanges every client carries.
    */
-  const chat: SyntheticClient = {
+  const chat: ModelClient = {
     chatText: async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
       asked.push(`chatText ${request.modelId}`,);
       return TEXT_REPLY;

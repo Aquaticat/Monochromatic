@@ -23,7 +23,7 @@ import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runCoverageStage, } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -92,7 +92,7 @@ const SCRIPT: Record<string, { readonly coverage: string; readonly quote: string
  const client = scriptedClient();
  ```
  */
-function scriptedClient(): SyntheticClient {
+function scriptedClient(): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the coverage stage',);

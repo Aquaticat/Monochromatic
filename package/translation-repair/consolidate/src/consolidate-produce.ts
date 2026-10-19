@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProposalValidity, } from './consolidate-validity-floor.ts';
 import {
   buildConsolidateMessages,
@@ -116,7 +116,7 @@ export async function produceConsolidations(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly roster: readonly RosterModelId[];
     readonly subject: ConsolidateSubject;
     readonly standingText: string;

@@ -1,7 +1,7 @@
 import type {
   BudgetView,
   MeterState,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
@@ -22,7 +22,7 @@ import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shar
  const client: RunClient = createRunClient();
  ```
  */
-export type RunClient = SyntheticClient & {
+export type RunClient = ModelClient & {
   /**
    Which providers are out of budget right now, holds folded in, as the
    router itself sees them.

@@ -491,8 +491,10 @@ named for that subject and listed here.
   or named the wrong cause,
   a bridge that could not start and left degraded findings with exit code zero (B689),
   oxlint output that was not JSON and reached the plugin tests as a bare `SyntaxError` (B690),
-  and every provider's HTTP refusal named as Synthetic's,
-  with no provider (B692).
+  every provider's HTTP refusal named as Synthetic's,
+  with no provider (B692),
+  Synthetic's request-size cap claimed for every provider's reply (B693),
+  and the client type every driver takes named for Synthetic (B694).
 - [Audit ledger: process mistakes, shell commands and tasks](audit-ledger-process-shell-commands-and-tasks.md):
   Slips against the repository's shell and task rules:
   chained commands,

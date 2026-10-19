@@ -21,7 +21,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import {
   RUN_MODELS,
@@ -157,7 +157,7 @@ async function probeWith(
       typed,
     },),
     runsDir: '/cattery/runs',
-    newClient: function built(): SyntheticClient {
+    newClient: function built(): ModelClient {
       reaches.events.push('client',);
       if (keyless)
         throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_CATNIP_API_KEY', },);

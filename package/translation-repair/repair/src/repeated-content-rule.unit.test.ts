@@ -35,7 +35,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildEditorMessages,
@@ -91,7 +91,7 @@ async function chunkJudgeSheets(): Promise<readonly string[]> {
   /**
    Judges answering with a decline, which ends the round without a winner.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the selection',);
     },

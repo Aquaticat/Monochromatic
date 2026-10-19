@@ -12,7 +12,7 @@ import {
   syntheticIsDry,
   syntheticMeterLevel,
 } from './budget-routing.ts';
-import type { SyntheticClient, } from './chat-contract.ts';
+import type { ModelClient, } from './chat-contract.ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
@@ -240,7 +240,7 @@ export async function readEveryMeter(
     openrouter,
     signal,
   }: {
-    readonly synthetic?: Pick<SyntheticClient, 'quotas'>;
+    readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;

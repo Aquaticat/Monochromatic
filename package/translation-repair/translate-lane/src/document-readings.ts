@@ -3,7 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   type ChunkPair,
@@ -92,7 +92,7 @@ export async function readDocumentPictures(
     l,
     beforePicture,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly readOcr: OcrReader;
     readonly slices: readonly ChunkPair[];
     readonly assets: ReadonlyMap<string, Uint8Array>;

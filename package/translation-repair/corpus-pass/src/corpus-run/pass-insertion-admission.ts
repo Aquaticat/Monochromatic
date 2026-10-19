@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   isInsertionChunk,
   parseDocument,
@@ -108,7 +108,7 @@ export async function decidePassInsertionAdmission(
     beforeCandidate,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly prepared: PreparedDocumentPair;
     readonly modelIds: readonly RosterModelId[];
     readonly overlap: number;

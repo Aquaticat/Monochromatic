@@ -1,7 +1,7 @@
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '../dist/final/node/index.mjs';
 import { replyWith, } from './scripted-reply-outcome.test-fixture.ts';
 
@@ -181,7 +181,7 @@ export function auditScriptedClient(
     readonly silent?: readonly string[];
     readonly asked: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: unexpectedText,
     /**

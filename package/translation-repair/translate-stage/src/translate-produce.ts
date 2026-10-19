@@ -8,7 +8,7 @@ import type {
   Candidate,
   DeclaredNamePair,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   buildTranslateCandidates,
@@ -158,7 +158,7 @@ export async function produceTranslateSlate(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly translatorModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;

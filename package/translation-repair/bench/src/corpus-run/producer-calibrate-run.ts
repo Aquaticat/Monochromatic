@@ -1,4 +1,4 @@
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
@@ -150,7 +150,7 @@ export async function runProducerCalibrate(
     stageSettings,
   }: {
     readonly line: CommandLineOf<'producer-calibrate'>;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly drawSlices: (input: { readonly count: number; },) => Promise<readonly BenchSlice[]>;
     readonly readHead: () => Promise<string>;
     readonly stageSettings: StageSettings;

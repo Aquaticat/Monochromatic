@@ -54,7 +54,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type ConsolidationPolishConfig,
@@ -174,7 +174,7 @@ const REFUSING_CLIENT = createSyntheticClient({
  ```
  */
 function countingRefusingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly calls: { count: number; };
 } {
   /**
@@ -215,7 +215,7 @@ function countingRefusingClient(): {
  ```
  */
 function recordingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly bodies: readonly string[];
 } {
   /**
@@ -273,7 +273,7 @@ const GATE_MARKER = 'unsupported and dropped each a list';
  ```
  */
 function answeringClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly judgeSheets: readonly string[];
 } {
   /**
@@ -423,7 +423,7 @@ function scriptedClient(
     readonly endorsedText?: string;
   } = {},
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly producerSheets: readonly string[];
   readonly producerPayloads: readonly string[];
   readonly requests: readonly string[];
@@ -748,7 +748,7 @@ async function driveWith(
     readonly sheetFacts?: PreparedSheetFacts;
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
     readonly projected?: ProjectedLanes;
-    readonly client?: SyntheticClient;
+    readonly client?: ModelClient;
     readonly lineStructuredSlices?: ReadonlySet<number>;
     readonly frontMatterSlices?: ReadonlySet<number>;
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;
@@ -782,7 +782,7 @@ async function driveWith(
   /**
    Client-level activity instrument outside provider slot limiting.
    */
-  const measuredClient: SyntheticClient = (activity === undefined)
+  const measuredClient: ModelClient = (activity === undefined)
     ? client
     : {
       chatText: client.chatText,
@@ -971,7 +971,7 @@ function settlementFor(
  */
 function seatRecordingClient(
   { asked, }: { readonly asked: RosterModelId[]; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);
@@ -1052,7 +1052,7 @@ function roleAnsweringClient(
     readonly asked: RosterModelId[];
     readonly sheets?: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

@@ -40,7 +40,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runGatherRound, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -141,7 +141,7 @@ function scheduledClient(
     readonly hangingModelId?: RosterModelId;
     readonly answeredAt?: number[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -188,7 +188,7 @@ function scheduledClient(
  const client = clientFailingOne({ failingModelId: SEAT_SYNTHETIC_VISION_WITHHELD, },);
  ```
  */
-function clientFailingOne({ failingModelId, }: { readonly failingModelId: RosterModelId; },): SyntheticClient {
+function clientFailingOne({ failingModelId, }: { readonly failingModelId: RosterModelId; },): ModelClient {
   /**
    Client answering every seat at once.
    */
@@ -231,7 +231,7 @@ function clientFailingAfterTheStop(
     readonly failFirst: (signal: AbortSignal,) => Promise<never>;
     readonly failSecond: (signal: AbortSignal,) => Promise<never>;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Client answering every seat at once.
    */

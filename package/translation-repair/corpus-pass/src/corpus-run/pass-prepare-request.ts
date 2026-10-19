@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
@@ -22,7 +22,7 @@ import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glos
  ```
  */
 export type PassPrepareRequest = {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly entryId: string;
   readonly entryCacheDir: string;
   readonly pipelineDigest: PipelineDigest;

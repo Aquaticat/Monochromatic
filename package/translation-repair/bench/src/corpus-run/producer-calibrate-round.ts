@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { producerModelIds, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { SelectionRound, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
@@ -73,7 +73,7 @@ export async function runCalibrationRound(
   }: {
     readonly slice: BenchSlice;
     readonly roster: readonly RosterModelId[];
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<ProducerCalibrateRound> {

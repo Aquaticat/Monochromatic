@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type {
   CarryBlock,
   CarryEdgeWords,
@@ -281,7 +281,7 @@ export type CarryContext = {
   /**
    Provider client.
    */
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
 
   /**
    Whether the translate stage's writer bench is asked, and which seats.
