@@ -90,5 +90,21 @@
     "The BuildKit category did not produce an image because the sandbox could not create the rootless namespace.",
     "The vmsync failure is a test-path defect; it is not evidence against the VM capability.",
     "The incomplete categories have no qualified command yet and are not coverage."
-  ]
+  ],
+  "reDispatch": {
+    "runId": "r2mxbc40rh",
+    "attemptId": "j5np4jmwfg",
+    "workflowId": "b7jvttxws0",
+    "startedAt": "2026-10-19T14:41:56Z",
+    "finishedAt": "2026-10-19T14:56:35Z",
+    "durationSeconds": 879,
+    "artifact": {
+      "id": "01a154aa-13ed-7579-ab89-95e992cd655f",
+      "name": "weekly-native-evidence",
+      "bytes": 651
+    },
+    "categoriesMatchFirst": true,
+    "duplicateExecution": "absent",
+    "result": "The clean re-dispatch reproduced the same category outcomes and produced one run."
+  }
 }

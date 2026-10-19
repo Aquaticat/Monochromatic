@@ -113,15 +113,16 @@ but they were not dispatched as separate scenarios.
 They remain part of the first weekly matrix acceptance.
 The gate evidence is in
 [the admission gate evidence](../audit/depot-admission-gate-2026-10-19.evidence.json).
-The ledger attempts array remains empty because these are gate scenarios,
-not paid allocations.
+The gate scenarios did not create paid allocations.
 
-The first weekly native matrix dispatch exercises the first admitted reservation.
-The gate records the decision and the ledger attempt before the paid profile starts.
+The first weekly native matrix did.
+Its two attempts are recorded in the ledger.
 
 ## Current state
 
 The trial allowances are active.
-No paid profile has been admitted yet.
-The ledger attempts array is empty.
-The first weekly native matrix dispatch must append its reservation and result.
+Two paid native attempts were admitted:
+`dmjf38bcz0` and `r2mxbc40rh`.
+Each is recorded as 15 native minutes,
+10 USD reserved and about 0.35 USD actual.
+The remaining Startup allowance is far above the observed use.

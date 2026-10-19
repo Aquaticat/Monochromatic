@@ -41,6 +41,20 @@ GitHub-hosted advisory run `39202293518`:
 - build plus unit:
   13 minutes 37 seconds.
 
+Native weekly matrix repeat samples:
+
+- run `dmjf38bcz0`:
+  14 minutes 22 seconds;
+- run `r2mxbc40rh`:
+  14 minutes 39 seconds;
+- spread:
+  17 seconds,
+  about 2 percent.
+
+The native repeats are a different workload from the fast subset.
+They measure provider repeatability,
+not the fast-subset target.
+
 ## Relative targets
 
 These are provisional targets for the same five-owner fast subset:
