@@ -62,10 +62,13 @@ const l=tagged({tag:'auto-mode-native-input-pages'});
 
  @param pieces - original chunk identities remain stable when an earlier message is inserted
 
- @returns exclusive page ends covering every original chunk exactly once
+ @returns bounded page pieces covering every original chunk exactly once
  */
-function* contentPageEnds(pieces:readonly ContentChunk[]): Generator<number> {
- const pl=tagged({tag:contentPageEnds.name,l});
+function* inputContentPagePieces(pieces:readonly ContentChunk[]): Generator<readonly ContentChunk[]> {
+ /**
+  Boundary diagnostics retain the pure partitioning function's identity without chunk contents.
+  */
+ const pl=tagged({tag:inputContentPagePieces.name,l});
  pl.debug('selecting bounded content-aligned input pages');
  /**
   The rolling window uses constant space and never becomes an equality or authority witness.
@@ -94,11 +97,11 @@ function* contentPageEnds(pieces:readonly ContentChunk[]): Generator<number> {
    */
   const size=cursor.index-cursor.start;
   if((size>=PAGE_CHUNKS)||((size>=MIN_PAGE_CHUNKS)&&(cursor.hash%PAGE_CHUNKS===0))){
-   yield cursor.index;
+   yield pieces.slice(cursor.start,cursor.index);
    cursor.start=cursor.index;
   }
  }
- if(cursor.start<pieces.length)yield pieces.length;
+ if(cursor.start<pieces.length)yield pieces.slice(cursor.start);
  pl.debug('completed content-aligned input page selection');
 }
 
@@ -120,6 +123,9 @@ export function createInputContentPieces(): (input:{
   readonly key:string;
   readonly pages:readonly ContentPage[]
 } {
+ /**
+  The manager-local interner retains its separate diagnostic function boundary.
+  */
  const il=tagged({tag:createInputContentPieces.name,l});
  il.debug('created manager-owned content page interner');
  /**
@@ -227,15 +233,8 @@ export function createInputContentPieces(): (input:{
    Complete snapshots retain page references instead of every chunk reference.
    */
   const sequence:ContentPage[]=[];
-  let offset=0;
-  for(const end of contentPageEnds(pieces)){
-   sequence.push(
-     internPage(pieces.slice(
-       offset,
-       end
-     )),
-   );
-   offset=end;
+  for(const pagePieces of inputContentPagePieces(pieces)){
+   sequence.push(internPage(pagePieces));
   }
   return {
    key:JSON.stringify(sequence.map(function pageOrdinal(page){return page.ordinal;})),

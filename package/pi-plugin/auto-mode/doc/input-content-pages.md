@@ -27,7 +27,35 @@ The reader reconstructs the original code units from pages without retaining its
 Source publications and occurrences remain independent of representation sharing.
 Storage sharing grants no permission or instruction authority.
 
-Fresh types,
-exact-content and streaming consumers,
-the sequence-capacity regression,
-and a configured replay remain required after this checkpoint.
+## Earlier insertions and page alignment
+
+Fixed pages beginning at the first chunk duplicate reference arrays when new messages precede an unchanged catalog.
+A private comparison retains the same live store and unique 16,000-entry catalog through collection.
+Changing only a tail adds 83,688 measured bytes beyond unchanged controls;
+growing a preceding message list adds 32,853,608 bytes and fails the eight-MiB guard.
+Every original digest still matches,
+so this is a storage failure rather than changed content.
+The maintained regression also keeps the interner alive by calling it after measurement
+and checking reuse of the original reader.
+
+The partitioner now selects page ends from a rolling window of eight preceding chunk ordinals.
+Pages contain at least 64 and at most 256 references,
+except a final shorter page.
+The fingerprint continues across page cuts so unchanged content can recover common boundaries after an insertion.
+An absent anchor forces a bounded page;
+a common anchor cannot produce arbitrarily short pages.
+
+The polynomial fingerprint uses radix 31 and prime modulus 65,521.
+The fixed window and bounded integer arithmetic give a linear pass with constant auxiliary space.
+The fingerprint chooses boundaries only.
+Exact complete ordinal sequences still establish page and content equality;
+fingerprint or UTF-8 digest collisions cannot merge different code-unit sequences.
+This does not promise constant storage for arbitrary unrelated input versions.
+
+The maintained shifting-prefix guard fails at 32,937,656 additional measured bytes on the fixed-page source.
+The content-aligned experiment passes that guard,
+fresh builds,
+full types and exact-content controls.
+Its negative retained-heap delta is measurement noise,
+not a literal negative storage size.
+The whole configured-host replay remains required to attribute its remaining growth to this change.
