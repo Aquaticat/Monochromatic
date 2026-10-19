@@ -4,6 +4,67 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Fresh implementation in main, 2026-10-19
+
+The user authorizes starting auto-mode over completely.
+Preserve current HEAD in a separate worktree for reference, then rebuild in `main`.
+Do not spend time identifying individual parts to retire.
+The requested reference worktree is
+`/var/home/user/temp/agent/pi-auto-mode-before-rebuild-20261019`,
+created from `e74f84bb9f60c3e1ea90f1325cf2e64947715ba0`.
+Creation completed and `git rev-parse HEAD` confirms the preserved commit;
+the reference worktree has no tracked or untracked changes.
+Checkpoint the existing MiMo-owned edits before replacing package source.
+Preserve unrelated concurrent work.
+
+The assistant's proposal to ask a single whole-operation question was wrong.
+The existing meaning-classification pipeline is also wrong.
+The user specifies rule-versus-current-request evaluation:
+Each call is expected to assess 100 or more rule-versus-request questions together.
+The user's correction explicitly rejects interpreting this as a handful of questions.
+Verify the actual outgoing payloads at that scale.
+Questions concern approval and denial, with unknown probability;
+do not reconstruct permission/prohibition/heading/adoption taxonomies.
+Our code determines approve, deny, or ask.
+Allow at most three sequential batches and at most three parallel calls per batch.
+Subsequent batches adapt their questions to the remaining uncertainty.
+Stop when resolved; ask if uncertainty remains after the final batch.
+With `unknown >= 0.2`, an executed action must score `>= 0.6`; otherwise ask.
+With `unknown < 0.2`, select the highest-scored action.
+Ties remain unresolved.
+Use platform `fetch` for provider calls and no direct `pi-ai` or `openai` package usage.
+Keep Span 02 as a shadow without decision authority.
+
+The categorical-admission scope question is superseded by this corrected model contract.
+Existing live shadow observations concern the legacy pipeline and do not verify the replacement.
+The installed production artifact remains unchanged until replacement consumer verification.
+
+Independently verifiable work:
+
+- Preserve the HEAD worktree and commit MiMo-owned checkpoints.
+- Implement adaptive rule review and deterministic resolution with captured-request tests.
+- Implement actual Pi complete-group integration and cancellation cleanup.
+- Implement plain-fetch Luna transport and matching Span 02 shadow requests.
+- Verify through configured Pi sessions, finish package lint and tests, and measure source characters and disk use.
+- Document the purpose of every substantial module inside the package.
+
+Do not revive the legacy lint-repair queue for source being replaced.
+The user corrected another delay: the assistant described a fresh rebuild while leaving `src` in place.
+The three uncommitted source edits are now preserved in `3ef7f32d19`.
+`git rm -r -- package/pi-plugin/auto-mode/src` removed the legacy source from `main`;
+`test ! -e package/pi-plugin/auto-mode/src` confirms the directory is absent.
+The package is intentionally between implementations, with no replacement build or test claim.
+The two untracked legacy TypeScript probe configs remain untouched:
+their owner is host UID `524288` and mode is `700`, so the attempted five-file checkpoint failed
+with `git-policy-cli` diagnostic `content-unavailable`, reporting Git's `Permission denied`.
+The subsequent three-source-file checkpoint succeeded.
+Recover the probe configs' ownership and checkpoint their contents before removing them.
+The legacy worker containers are absent from the running-container inspection;
+the remaining shadow, IDE and unrelated container mounts do not include either worker fixture as writable state.
+RPC abort commands were submitted to both legacy workers;
+their controller state files remain at 13:15 while submitted commands remain unconsumed at 13:25.
+Establish whether their processes are still alive before checkpointing their files.
+
 ### Span 02 live shadow, 2026-10-19
 
 The user explicitly requested a production shadow,
@@ -37,12 +98,9 @@ Luna chooses prohibition at `0.35` with unknown `0.17`;
 Span chooses none at `0.9038082` with unknown `0.05124579`.
 The shared new categorical rule would admit both meanings.
 The current live artifact still uses its older admission policy.
-An asynchronous scope question is pending:
-apply the user's uncertainty rule only to whole-operation approve/deny actions (recommended),
-or to every categorical meaning classifier.
-Do not decide this silently or deploy the broader shared-helper change while that answer is pending.
-Continue independent shadow qualification,
-SDK removal and lint work.
+The asynchronous categorical-scope question was rejected by the user on 2026-10-19.
+Rule-versus-request approval/denial questions replace the meaning-classification pipeline.
+Keep these captures as historical evidence, not verification of the replacement.
 The idle native worker received an actual RPC `prompt` to resume its queued fixture work.
 RPC `follow_up` alone had queued the instruction without starting that idle worker.
 The source worker acknowledged the no-SDK constraint and continues its scoped checkpoint.
