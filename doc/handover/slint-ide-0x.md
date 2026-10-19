@@ -1015,6 +1015,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     1 dev-profile groundwork plus the cadence driver kept in the repo; 2 renderer switch; 3 row scene on the GPU;
     4 selection, find, underlines, hint rows and wrap sign as scene content; 5 minimap as a GPU slice texture;
     6 delete the CPU pipeline (`text_raster.rs`, `glyph_cache.rs`, tile image path, `swash`, `renderer-software`).
+    Running now (started 2026-10-19, Sonnet agents in worktrees, nothing pushed by them): stage 0 agent
+    `a90c692a544c2aecc` (feasibility doc `doc/planning/ide-gpu-snapshot-harness.md`, harness, one test file migrated;
+    a CPU Vulkan driver such as lavapipe is an open owner question, not adopted) and stage 1 agent
+    `a54a3dbd127b14fbf` (dev-profile optimization with build-time numbers, `inspect:cadence` task with a positive
+    control). I verify each report myself before landing.
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
