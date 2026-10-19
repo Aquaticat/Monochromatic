@@ -73,6 +73,26 @@ These independent contributors require independent remedies.
 
 ## Major modules and their required justification
 
+The frozen `9e14b79e86` source inventory replaces filename guesses with actual literal import roles.
+It includes 869 tracked owned source files and the maintained helper imports emitted into the native SDK.
+After Node TypeScript erasure and parser-comment removal,
+runtime-reached source contributes 32,953 physical code lines and 12,949 AST statements.
+Build-only source contributes 4,879 lines and 1,184 statements;
+verification-only source contributes 36,953 lines and 16,681 statements.
+Modules reached by runtime and verification count in the runtime figure and remain explicitly shared.
+The complete owned inventory has 75,477 runtime source lines and 31,073 statements across all roles.
+
+These are a source snapshot and responsibility inventory,
+not an accepted size target or proof that the decomposition is minimal.
+The graph records 113 nonliteral imports and 65 unresolved local references;
+generated imports and dynamically selected SDK paths still require executed-consumer evidence.
+Declaration-only files have no runtime lines.
+An `assertion`, `case` or `fixture` substring cannot remove production code from the count.
+The private `source-role-inventory-final.json` receipt contains every file,
+explicit entry root,
+generated-module seed,
+role intersection and unresolved reference.
+
 - [Host integration](host-integration.md) connects the qualified Pi session,
   complete-group dispatch,
   extension tools,

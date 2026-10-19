@@ -1,6 +1,55 @@
 # Auto-mode current frontier
 
-## Current verified state
+## Current work and next actions
+
+Work is incomplete. Continue the queue without another readiness handoff.
+
+- Actual configured host: source replay `kARc6q` uses corrected immutable `native-release-YGJ1JD`
+  with the complete saved history. Its first group still fails source growth with
+  `Only original unregistered manager, native event or custom data inputs may extend this source snapshot`.
+  The supervisor stops the group's four-`&&` initialization chain and submits the scoped continuation after cancellation.
+  Do not conflate this source-growth incident with retained heap or claim either is closed by the other.
+  A separate private `manager-growth-diagnostic-candidate-AZGRBS` passes fresh builds;
+  its diagnostics contain only original enum metadata, counts and identity-equality booleans.
+  The controlled configured replay compares ordinary output with a steer during the original request,
+  using an authored primary response, full saved history, read-only repository and private state.
+  Diagnose the rejected origin before changing eligibility rules.
+- Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
+  and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
+  Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
+  Five rebuilt mutations are caught in independent `8nNXOe`; restored build, lifetime cases and memory guard pass.
+  Actual long-history growth and final configured replay remain open.
+- Source MiMo: `kARc6q` owns only the phase callback/mode/transport/assertion/type reduction.
+  Original 432 code lines/126 statements/25 functions became 780/226/45 in the unaccepted consolidation.
+  The complete phase catalog passes. The remaining preparation declaration must preserve invalid-input behavior
+  while expressing the actual SDK registration boundary honestly.
+- Native MiMo: `Pcok7j` resumes the complete `9Tl0ts` history on the corrected immutable runtime.
+  Its queued concrete implementation is the real policy-loader TypeScript port, not a facade around untyped code.
+  Neither worker may mutate root dist or another owner's files.
+- Declaration build: the incumbent Rolldown/Oxc generator emits closed `native-artifact-types` declarations.
+  Release-relative facades eliminate copied source paths and raw-built-TypeScript project traversal.
+  The environment forwards the actual identity-preserving SDK `defineTool` function.
+  Eight owned files have zero scoped lint warnings/errors; all five formatter-generated declaration outputs match byte for byte.
+  Fresh complete types remain open on the phase preparation contract; do not reuse older clean-type claims.
+- Full package lint: last complete committed snapshot remains 11,393 warnings/96 errors at `cabff94ee49a`.
+  A fresh complete scan and zero-diagnostic repair remain required after the current ports.
+- Source inventory: frozen `9e14b79e86` now has a bounded, positive-controlled role graph over 869 owned source files,
+  actual generated native imports, explicit shared roles and Node type erasure.
+  It reports 75,477 runtime source lines and 31,073 runtime statements across all roles;
+  runtime-reached files contribute 32,953 lines/12,949 statements,
+  build-only files 4,879/1,184, and verification-only files 36,953/16,681.
+  There are 113 nonliteral imports and 65 unresolved local references, so this is not a complete deployment graph.
+  No production exclusion uses `assertion`, `case` or `fixture` substrings.
+  The first inventory rejects the executable symlink as an unrecorded root;
+  the correction records its owned `native/command.ts` target without following directory links.
+  A repeated scratch preparation also initially duplicates its own task block; preparation is now idempotent.
+- Completion queue: finish actual-host source growth, coherent types/full lint/catalogs/payload audit/shutdown stderr,
+  final inode/dependency/source inventories, package responsibility documentation and safe publication.
+  Root `TCV`, `CPN`, `RXI` stay unchanged; concrete lessons remain package-local.
+  Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
+  project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
+
+## Detailed qualification evidence
 
 Work is incomplete. Continue the independently verifiable queue without a readiness handoff.
 
