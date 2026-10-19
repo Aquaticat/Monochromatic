@@ -417,7 +417,8 @@ Closure workstreams:
   which may be host-resource or concurrency induced rather than product defects.
   The static baseline is advisory;
   the unit baseline is invalid until rerun after a successful build;
-  the build failure requires a bounded rerun.
+  the build failure requires a rerun in the bounded CI environment,
+  not on the shared development host.
   The evidence is in
   [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).
 

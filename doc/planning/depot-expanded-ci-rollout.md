@@ -317,6 +317,8 @@ the subscription transition.
     Pin the implementation candidate.
     Re-run the owner census and the static,
     unit and build baselines.
+    Run the baselines in the bounded CI environment or a resource-capped container,
+    never on the shared development host.
     Split product failures from harness,
     environment and resource failures.
     Produce a failure disposition register with exact case identities.

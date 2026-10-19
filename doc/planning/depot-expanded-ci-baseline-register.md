@@ -106,6 +106,15 @@ then partition the remaining failures by cause.
 No product failure is attributed from this run.
 This is work item 1 and its acceptance artifact.
 
+## Host boundary
+
+The first bounded build rerun was started on the shared development host and then stopped.
+That was outside the plan's execution routing and stressed the host.
+Full build and unit baselines run only in the bounded CI environment or a resource-capped
+container,
+never on the shared development host.
+The aborted attempt produced no failure classification.
+
 ## Build profile
 
 Command:
@@ -128,15 +137,16 @@ Disposition:
 the SIGABRT and thread-creation results are consistent with host-resource or
 concurrency pressure under the parallel fanout.
 They are not attributed to product source.
-The bounded rerun with reduced fanout is required before any build failure is classified.
+A rerun in the bounded CI environment is required before any build failure is classified.
 
 ## Triage queue
 
-1.  Re-run the build with reduced concurrency and capture per-task logs.
+1.  Re-run the build in the bounded CI environment and capture per-task logs.
     Classify each failed task as product,
     harness,
     environment or resource.
-2.  Partition the 751 unit failures by cause.
+2.  Rerun the unit profile after a successful build,
+    then partition the remaining failures by cause.
     Separate the 354 JSON-parse errors and 94 AggregateErrors from product assertions.
 3.  Select the changed-path static selector and its exact lint rules.
     Confirm the whole-tree baseline remains advisory.
