@@ -7,7 +7,7 @@ Work is incomplete. Continue the queue without another readiness handoff.
 ### User-defined staged review, 2026-10-19
 
 The latest user message replaces the proposed first-pass question selector and three-choice interpretation.
-Rewrite the plan and HTML around this settled sequence, then verify and open the HTML in Helium:
+The plan and HTML now follow this settled sequence. Browser and Markdown verification, then Helium handoff, remain:
 
 - Stage 0: on every Pi start, send parsed `AGENTS.md` rules to Luna for potential relevance.
   Materialize the effective ruleset, expected to contain about 100 rules, and add general-agent built-in rules.
@@ -40,11 +40,19 @@ The four-choice contract therefore needs an explicit numeric admission decision;
 do not substitute `ask` or `1 - confidence` into the old threshold silently.
 Remaining visual questions should concern real unresolved semantics, such as this score mapping and the
 last human instruction when it lies outside the ten-turn history cap, rather than reopen settled stages.
-Main work next: replace stale plan sections and the old HTML choices, preserve the dependency inventory,
-add precise acceptance scenarios, verify the new diagrams and forms, commit, and open them in Helium.
+The rewritten plan is committed in `030091cf07`. The replacement HTML shows only the active staged architecture.
+Its current questions cover four-choice score admission, admitted ask meaning, deterministic approval scope,
+latest-human anchoring, built-in coverage, and sequential preparation timing.
+A separate factual review confirms alignment with the latest instruction.
+Dependency inventory, parser/logger findings, and implementation stop are preserved.
+Next: verify every new HTML interaction and both appearances, render Markdown, retain screenshot evidence,
+commit verification, and open the review in Helium before asking for this round’s answers.
 No plugin implementation is authorized by this planning clarification.
 
-### Visual plan review and corrected question pool, 2026-10-19
+### Historical visual review, superseded by the staged contract on 2026-10-19
+
+This section records the earlier artifact and verification only.
+Its clearance question and question-selection design are superseded by the user-defined stages.
 
 The current user request is to review the ground-up plan and grill toward a better plan.
 Implementation remains stopped.
@@ -61,8 +69,8 @@ Remove the scarcity branch rather than ask for an exception to the batch-size re
 The [updated plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md)
 and [visual review](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild-review.html)
 show the corrected adaptive pool and proposed decision examples.
-The next user judgment concerns the meaning of each rule's approval under complete context,
-using the actual displayed scenarios.
+That artifact asked about the meaning of each rule’s approval under complete context.
+The user subsequently settled the four-choice contract; that old question is withdrawn.
 The HTML response is about plan semantics and does not authorize implementation.
 
 Read-only source review corrected the nested host entry to `runToolCall`,
