@@ -173,10 +173,14 @@ fn the_texture_count_tells_a_block_from_glyphs() {
 /// and the full one follows with the statistics of its build.
 #[test]
 fn a_tall_window_over_a_long_file_shows_a_coarse_picture_before_the_full_one() {
+    // Lines of about two hundred and thirty characters:
+    // one sampled line for each pixel row of the tall window already costs more than the quick budget,
+    // so a coarse picture that left units out for the budget would show it.
     let mut text = String::new();
     for number in 0..6_000 {
         text.push_str(&format!(
-            "fn item_{number}(value: u32) -> u32 {{ value + {number} }} // trailing words words words\n"
+            "fn item_{number}(value: u32) -> u32 {{ value + {number} }} // trailing {}\n",
+            "words ".repeat(30)
         ));
     }
     let (_project, opened) = open(&text);
