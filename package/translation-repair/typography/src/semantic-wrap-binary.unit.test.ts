@@ -292,7 +292,7 @@ await describe({
              */
             const entryStart = lockLines.indexOf(`[[tools."cargo:${LINT_BINARY_NAME}"]]`,);
             /**
-             Lines of the tool's entry: from its opening line up to the next table header.
+             Lines after the one opening the tool's entry, to the end of the lock.
              */
             const entryLines = lockLines.slice(entryStart + 1,);
             /**
@@ -302,9 +302,13 @@ await describe({
               return line.startsWith('[',);
             },);
             /**
+             Number of lines the tool's entry holds.
+             */
+            const entryLength = (entryEnd === -1) ? entryLines.length : entryEnd;
+            /**
              The entry's version line.
              */
-            const versionLine = entryLines.slice(0, entryEnd === -1 ? entryLines.length : entryEnd,)
+            const versionLine = entryLines.slice(0, entryLength,)
               .find(function namesVersion(line,): boolean {
                 return line.startsWith('version = ',);
               },);
