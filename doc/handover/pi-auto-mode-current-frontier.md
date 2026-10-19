@@ -15,6 +15,23 @@ The command's actual effects and its authorization remain separate questions.
 Do not broaden policy material or change the admission cutoff on the basis of that unsupported inference.
 Continue investigating the actual supplied permission evidence and unchanged-request variation.
 
+Unchanged request `assessment-request-72.json` is replayed three times through the built HTTP sender
+and maintained response decoder, without executing any proposed operation.
+All three replies are HTTP 200 and return `approve: 0.84`, `deny: 0.05`, `unknown: 0.11`.
+The observed cache headers are absent, which does not prove caching is absent.
+Do not compare this request to the earlier `0.56` until its exact operation and diagnostic record are correlated.
+Receipt: `unchanged-decision-repeat-K6yOaJ/home/results.json`.
+The replay is sequential inside two-GiB/two-CPU bounds, with a ninety-second signal per call.
+
+Source checkpoints `7f482cf7af` and `ed094e76f2` port the authored fixture values to real SDK types
+and correct contextual widening of the mutable model input array.
+Source MiMo is verifying full types and the nine semantic cases, then completing its owned scope.
+Native MiMo is still proving private wrapper controls and owned lint.
+Its report of 99 other fixture compiler errors is not a green whole-package compiler result;
+require an explicitly isolated, zero-error compiler baseline before claiming those controls pass.
+Next assigned native repair after those controls: the HTTP fixture's 81 scoped warnings,
+using actual maintained protocol types and preserving real outbound-request assertions.
+
 Root checkpoints `73c798fd8b`, `8b77ad7bf4` and `23088d1d4a` preserve formatting,
 correct the wrapper type-check direction and keep aggregate members unknown during classification.
 Frozen combined `post-style-combined-candidate-ZwhD7d` at `8b77ad7bf4` passes both builds,
