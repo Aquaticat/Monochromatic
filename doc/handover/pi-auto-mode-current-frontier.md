@@ -36,6 +36,13 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   No reservation, failed construction, auxiliary/reused identities and reentrant completion retain explicit handling.
   Response/stream ownership maps and reservation tombstones remain.
   No production qualification is claimed yet; native MiMo's independent consumer trace is still active.
+  The independent frozen production candidate is `producer-retirement-qualified-candidate-VS53fb`
+  at committed `98381bfa32`.
+  Fresh JavaScript/native builds, package types, the actual-session memory guard
+  and separate group-only review-retirement test now pass.
+  The sequential remaining lifecycle/consumer catalogs run under two GiB/two CPUs;
+  receipt `producer-retirement-qualified-results.json` stays incomplete until every named task terminates.
+  Currentness/identity/reuse/completion branch tests, built removal controls and actual long-history MiMo replay remain required.
   The parent collector initially mistakes a build receipt for a test receipt,
   and its restart output path collides with the second child's log.
   Both collector failures are retained; that collided log is excluded and a distinct fourth-run log is collected.
@@ -48,6 +55,13 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   Authorized new owner declarations are `native-batch/environment.d.mts`
   and `domain-fixture-assessment.d.mts`, with one shared fixture-type sibling only if needed.
   The immutable live artifact must not change; the supervisor builds and verifies the new emitted contract separately.
+  MiMo delivers the consolidated checkpoint at 38 tools and is settled.
+  It removes its three untracked generic reader/session files,
+  preserves the original await/flat result and uses the actual session/runtime/SDK declarations.
+  The remaining interop contracts are with the environment and assessment owners.
+  This checkpoint is committed for independent freezing and verification, not accepted as complete.
+  Its new no-op `send` callback only satisfies an overly strict runtime input declaration;
+  remove that invented callback by accurately expressing the configured semantic transport branch in the owner contract.
 - Factory identity, opacity and forwarding qualify in a separate frozen candidate.
   Every thirteen rebuilt mutations fail their named regressions, followed by a restored passing build/consumer.
   Receipt: `policy-input-factory-fixed-built-mutants.json`.
