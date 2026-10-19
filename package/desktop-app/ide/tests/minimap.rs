@@ -9,7 +9,11 @@
 /// The visual row counts and the map built from them.
 use ide_app::line_rows::LineRows;
 /// The geometry and its constants.
-use ide_app::minimap::{Geometry, MIN_BOX, NARROWEST, Target, WIDTH, width_for};
+use ide_app::minimap::{
+    Geometry, MIN_BOX, NARROWEST, Target, WIDTH, text_span, text_x, width_for,
+};
+/// The width of an unwrapped raster.
+use ide_app::shaped_text::UNWRAPPED_RASTER_WIDTH;
 /// The vertical mapping the minimap squeezes.
 use ide_app::row_map::{CODE_ROW, RowMap};
 
@@ -197,4 +201,23 @@ fn in_a_squeezed_minimap_a_position_names_a_row_that_lies_on_it() {
         );
     }
     assert!((24_999..=25_000).contains(&geometry.target(&map, 300.0).line));
+}
+
+/// The picture is the text's whole width shrunk to the minimap's,
+/// so a position across it is the same share of the text's width,
+/// held to both edges,
+/// and a wrapped text spans its wrap width.
+#[test]
+fn a_position_across_the_minimap_is_the_same_share_of_the_texts_width() {
+    assert_eq!(text_x(0.0, 110.0, 880.0), 0.0);
+    assert_eq!(text_x(55.0, 110.0, 880.0), 440.0);
+    assert_eq!(text_x(110.0, 110.0, 880.0), 880.0);
+    assert_eq!(text_x(27.5, 110.0, 880.0), 220.0);
+    assert_eq!(text_x(-30.0, 110.0, 880.0), 0.0);
+    assert_eq!(text_x(500.0, 110.0, 880.0), 880.0);
+    // A minimap or a text without width maps everything to the left edge.
+    assert_eq!(text_x(10.0, 0.0, 880.0), 0.0);
+    assert_eq!(text_x(10.0, 110.0, 0.0), 0.0);
+    assert_eq!(text_span(Some(673.0)), 673.0);
+    assert_eq!(text_span(None), UNWRAPPED_RASTER_WIDTH);
 }

@@ -26,7 +26,7 @@ use ide_app::minimap::{
 /// The vertical mapping.
 use ide_app::row_map::{CODE_ROW, RowMap};
 /// Shaping and the frame it prepares.
-use ide_app::shaped_text::{TextShaper, Viewport, raster_fits, raster_width};
+use ide_app::shaped_text::{TextShaper, Viewport, line_work, raster_fits, raster_width};
 /// Syntax classes.
 use ide_app::source_style::StyleSpan;
 /// The painter and its palette.
@@ -623,6 +623,44 @@ fn a_long_text_is_sampled_within_the_track_and_never_passes_the_raster_limit() {
         coarse_sum >= low && coarse_sum <= high,
         "the coarse picture holds {coarse_sum} of alpha against {full_sum}"
     );
+}
+
+/// Lines that cost a great deal each make the full picture sample fewer code rows for each output row,
+/// down to one,
+/// so the picture stays whole within its budget instead of leaving rows out.
+#[test]
+fn costly_lines_thin_the_samples_instead_of_leaving_rows_out() {
+    for (length, samples) in [(300, SAMPLES), (4_000, SAMPLES / 2), (20_000, 1)] {
+        let mut text = String::new();
+        for number in 0..2_000 {
+            text.push_str(&format!("{number:04} {}\n", "x".repeat(length)));
+        }
+        let document = Document::new(&text);
+        let map = RowMap::plain(document.text().len_lines());
+        let fixture = Fixture {
+            document,
+            styles: Vec::new(),
+            map,
+            marks: Vec::new(),
+            ranges: Vec::new(),
+            wrap: None,
+            scale: 1.0,
+        };
+        let scene = fixture.scene(FILLS);
+        let input = fixture.input(scene, 240.0, 110.0);
+        let prepared = prepare(&input, Pass::Full);
+        let pending = prepared.pending_work(&scene, &Cache::new());
+        let line = line_work(&fixture.document, 0);
+        assert!(
+            pending <= FULL_WORK,
+            "{length} characters a line: the plan costs {pending}, more than {FULL_WORK}"
+        );
+        assert_eq!(
+            (pending as f64 / (240 * line) as f64).round() as usize,
+            samples,
+            "{length} characters a line: the plan costs {pending} for 240 rows of lines that cost {line}"
+        );
+    }
 }
 
 /// A build that is cancelled answers nothing.

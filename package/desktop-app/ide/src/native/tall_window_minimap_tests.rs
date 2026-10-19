@@ -167,3 +167,74 @@ fn the_texture_count_tells_a_block_from_glyphs() {
     }
     assert_eq!(textured_rows(&striped, 40), (1, 1));
 }
+
+/// A tall window over a long file asks for more than the quick budget:
+/// the first picture after the resize is the coarse one,
+/// and the full one follows with the statistics of its build.
+#[test]
+fn a_tall_window_over_a_long_file_shows_a_coarse_picture_before_the_full_one() {
+    let mut text = String::new();
+    for number in 0..6_000 {
+        text.push_str(&format!(
+            "fn item_{number}(value: u32) -> u32 {{ value + {number} }} // trailing words words words\n"
+        ));
+    }
+    let (_project, opened) = open(&text);
+    let window = &opened.window;
+    {
+        let mut waiting = Waiting::slow();
+        while opened.source.borrow().minimap.last_stats.is_none() {
+            waiting.step("the first picture of the long file did not arrive");
+        }
+    }
+    let (images, before) = {
+        let current = opened.source.borrow();
+        (current.minimap.images_set, current.minimap.last_stats)
+    };
+    window.window().dispatch_event(WindowEvent::Resized {
+        size: LogicalSize::new(TEXT_LEFT + 1330.0 + minimap_beside(1330.0), 1500.0),
+    });
+    update_timers_and_animations();
+    {
+        let mut waiting = Waiting::slow();
+        while opened.source.borrow().minimap.images_set <= images {
+            waiting.step("the picture of the tall window did not arrive");
+        }
+    }
+    {
+        let current = opened.source.borrow();
+        let stats = current.minimap.last_stats.expect("build statistics");
+        assert_ne!(
+            Some(stats),
+            before,
+            "the picture of the tall window carries the old statistics"
+        );
+        // The coarse picture is rendered whole,
+        // whatever it costs,
+        // unless the full one has already followed it.
+        if current.minimap.images_set == images + 1 {
+            assert_eq!(
+                stats.skipped + stats.failed,
+                0,
+                "the coarse picture left rows out: {stats:?}"
+            );
+            assert_eq!(stats.rendered, stats.units);
+        }
+    }
+    // The full picture follows the coarse one as a second picture of the same request.
+    {
+        let mut waiting = Waiting::slow();
+        while opened.source.borrow().minimap.images_set < images + 2 {
+            waiting.step("the full picture did not follow the coarse one");
+        }
+    }
+    let stats = opened
+        .source
+        .borrow()
+        .minimap
+        .last_stats
+        .expect("build statistics");
+    assert!(stats.rendered > 0 && stats.failed + stats.skipped == 0);
+    assert!(stats.largest as u64 <= MAX_RASTER_BYTES);
+    window.hide().expect("close minimap window");
+}

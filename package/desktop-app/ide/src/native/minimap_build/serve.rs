@@ -217,7 +217,7 @@ impl Builder {
                 &input,
                 &quick,
                 None,
-                QUICK_WORK,
+                FULL_WORK,
                 &cancelled,
             ) else {
                 tracing::debug!(id = job.id, "a newer minimap request stopped the build");

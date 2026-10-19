@@ -27,10 +27,11 @@ use anyhow::{Result, bail};
 /// What:
 ///  Work,
 ///  in the units of `line_work`,
-///  the first, coarse picture of a text may spend rendering lines.
+///  a full picture may still have to render before a coarse picture is worth showing first.
 /// Why:
 ///  The first picture stands on screen quickly:
 ///  a text that would cost more than this to render in full gets one code row for each output row first,
+///  rendered whole whatever it costs,
 ///  and the full picture follows.
 ///
 /// In TS you'd write (pseudocode):
@@ -46,7 +47,9 @@ pub const QUICK_WORK: usize = 250_000;
 /// Why:
 ///  A picture samples a bounded number of code rows for each output row,
 ///  so ordinary text costs a small part of this;
-///  the bound is for lines that cost a great deal each.
+///  lines that cost a great deal each make the plan sample fewer rows,
+///  down to one for each output row,
+///  and only a line no budget can pay is left to the rows the last picture holds.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -198,6 +201,22 @@ fn cost_of(scene: &Scene, piece: &Piece) -> usize {
     return total;
 }
 
+/// The work of rendering every unit of `planned`,
+/// without the lines no budget can pay,
+/// which a build leaves out whatever its budget.
+fn planned_work(scene: &Scene, planned: &[Unit]) -> usize {
+    let mut total: usize = 0;
+    for unit in planned {
+        for piece in &unit.pieces {
+            let cost = cost_of(scene, piece);
+            if cost != usize::MAX {
+                total = total.saturating_add(cost);
+            }
+        }
+    }
+    return total;
+}
+
 /// What:
 ///  Plan the picture of `input` for `pass`.
 /// Why:
@@ -237,7 +256,18 @@ pub fn prepare(input: &Input, pass: Pass) -> Prepared {
         ratio: ratio.to_bits(),
         width,
     };
-    let planned = units(scene.map, density, (ratio, scale, columns), height);
+    let mut density = density;
+    let mut planned = units(scene.map, density, (ratio, scale, columns), height);
+    // A full picture samples fewer code rows for each output row when the lines it samples cost more than it may spend,
+    // down to one: the whole picture is rendered thinner, never with rows left out.
+    while pass == Pass::Full
+        && let Density::Sampled(rows) = density
+        && rows > 1
+        && planned_work(scene, &planned) > FULL_WORK
+    {
+        density = Density::Sampled(rows / 2);
+        planned = units(scene.map, density, (ratio, scale, columns), height);
+    }
     let mut keys = Vec::new();
     for unit in &planned {
         keys.push(key_of(unit, scene, shared));

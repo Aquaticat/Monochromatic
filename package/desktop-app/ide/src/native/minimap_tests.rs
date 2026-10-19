@@ -289,6 +289,42 @@ fn a_press_outside_the_box_jumps_to_the_row_and_the_keyboard_still_works() {
     window.hide().expect("close minimap window");
 }
 
+/// A press across the minimap puts the caret in the same share of the line's width:
+/// the picture is the text's whole width shrunk to the minimap's.
+#[test]
+fn a_press_across_the_minimap_puts_the_caret_in_the_same_share_of_the_text() {
+    let (_project, opened) = open(&long_text(400));
+    settled(&opened);
+    let window = &opened.window;
+    let y = geometry(&opened).track() * 0.6;
+    let width = window.get_minimap_width();
+    let mut columns = Vec::new();
+    let far = geometry(&opened).track() * 0.97;
+    for share in [0.05_f32, 0.3, 0.6, 0.95] {
+        // A press on the box starts a drag,
+        // so the box is first moved away from the pressed place.
+        press(&opened, over(window, 10.0, far));
+        lift(&opened, over(window, 10.0, far));
+        calm(&opened);
+        assert!(
+            y < window.get_minimap_box_top() || y > window.get_minimap_box_top() + window.get_minimap_box_height(),
+            "the pressed place is outside the box"
+        );
+        press(&opened, over(window, width * share, y));
+        lift(&opened, over(window, width * share, y));
+        calm(&opened);
+        let current = opened.source.borrow();
+        let head = current.document.position().head;
+        let line = current.document.text().char_to_line(head);
+        columns.push(head - current.document.text().line_to_char(line));
+    }
+    assert!(
+        columns.windows(2).all(|pair| pair[0] < pair[1]),
+        "the caret columns {columns:?} do not grow across the minimap"
+    );
+    window.hide().expect("close minimap window");
+}
+
 /// A press on the box starts a drag without a jump;
 /// the box follows the pointer one to one,
 /// the view scrolls at every
