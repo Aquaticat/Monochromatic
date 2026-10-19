@@ -115,6 +115,21 @@ container,
 never on the shared development host.
 The aborted attempt produced no failure classification.
 
+## CI baseline runs
+
+The first bounded CI baseline run is GitHub run `39196063655` on the Depot-managed
+`depot-ubuntu-24.04-8` runner.
+It failed in the dependency-preparation step after 3 minutes, before any build or unit work.
+`mise install` installed 58 of 59 tools and failed on `pipx:slopo@latest` because the dependency
+sidecar `.mise/locks/pipx-slopo/0.9.0` is absent on a fresh checkout.
+That is an environment and tool-install failure, not a product failure.
+
+The corrected run is GitHub run `39196377166`.
+It installs the repository tools with `continue-on-error`, then prepares dependencies, builds and
+runs unit with automatic tool installation off.
+The slopo sidecar failure is retained as tooling noise.
+Outcomes are pending.
+
 ## Build profile
 
 Command:
