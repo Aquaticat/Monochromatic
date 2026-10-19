@@ -243,6 +243,28 @@ fn a_fractional_ratio_weighs_the_pixel_on_the_edge_by_its_share() {
     assert_eq!(pixel(&picture, 2, 1, 0)[0], second.round() as u8);
 }
 
+/// Rows split the same way:
+/// five rows into two output rows take two and a half source rows each,
+/// weighed by their share of the output row.
+#[test]
+fn a_fractional_ratio_of_rows_weighs_the_row_on_the_edge_by_its_share() {
+    let image = Image::made(1, 5, |_, y| [(y as u8 + 1) * 10, 0, 0, 255]);
+    let picture = whole(
+        &image,
+        Reduction {
+            source_width: 1.0,
+            width: 1,
+            ratio: 0.4,
+        },
+        2,
+    );
+    // Rows 0, 1 and half of 2 (10, 20, 30) over 2.5; then half of 2, 3 and 4 (40, 50) over 2.5.
+    let first: f64 = (10.0 + 20.0 + 15.0) / 2.5;
+    let second: f64 = (15.0 + 40.0 + 50.0) / 2.5;
+    assert_eq!(pixel(&picture, 1, 0, 0)[0], first.round() as u8);
+    assert_eq!(pixel(&picture, 1, 0, 1)[0], second.round() as u8);
+}
+
 /// A ratio below one repeats pixels:
 /// every output pixel is the pixel it lies in.
 #[test]
