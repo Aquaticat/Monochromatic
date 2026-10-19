@@ -244,10 +244,13 @@ run = "./dist/monochromatic-ide"
 [tasks.test]
 depends = ["runtime"]
 description = "Run library and integration tests in the bounded container"
+usage = 'arg "[filter]" help="Optional nextest filter expression that selects or excludes tests, for example not test(/every_row_of_real_source/); default is every library and integration test"'
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--lib', '--tests'])
+// A filtered run keeps going after a failure so that every selected test reports, as the native task does.
+const filter = process.env.usage_filter ? ['--no-fail-fast', '--filter-expr', process.env.usage_filter] : []
+runCargo(['nextest', 'run', '--no-default-features', '--lib', '--tests', ...filter])
 """
 
 [tasks."test:wrap"]
