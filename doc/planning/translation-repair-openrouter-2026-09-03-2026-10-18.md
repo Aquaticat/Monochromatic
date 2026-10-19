@@ -46,9 +46,12 @@ because the verdict does not show them:
   and the meters did not say so.
 - The Synthetic meter was unreadable in every one of its 126 readings.
 
-A fix round for three pipeline defects of this reading runs in `w191`.
-Nothing of its result is recorded here,
-and which defects it takes is not recorded here either.
+The fix round `w191` for three pipeline defects of this reading landed at `e9d720b816` after gate g106.
+A seat whose credential gets HTTP 401 now says so once, as `SEAT CREDENTIAL REFUSED`.
+The JUDGE SEATS line prints `unreadable-treated-as-spendable` for a meter that said nothing, not `wet`.
+The SEAT line counts replies cut at the straggler deadline in an `abandoned` column;
+before, the census counted them in no column, not as usable.
+Quorum over the full bench of 8 follows the recorded reachable-quorum rule and is unchanged.
 
 ### Seats
 

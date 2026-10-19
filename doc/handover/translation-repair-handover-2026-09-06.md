@@ -529,8 +529,13 @@ before the other queued work.
     the Synthetic meter was unreadable in 126 of 126 readings,
     so 651 subscription calls ran with no allowance reading;
     and 58 Qwen3.8-27B replies were cut at the straggler deadline without showing in the seat census;
-    a fix round for three pipeline defects of the read runs in `w191`,
-    and its result is not recorded here.
+    the fix round `w191` landed after gate g106 (145 steps exit 0, suite 2532 pass lines and 0 fail),
+    ending at `e9d720b816`:
+    a seat whose credential gets HTTP 401 now says so once as `SEAT CREDENTIAL REFUSED`,
+    the JUDGE SEATS line prints `unreadable-treated-as-spendable` for a meter that said nothing,
+    and the SEAT line carries an `abandoned` column for replies cut at the straggler deadline.
+    Quorum over the full bench of 8 follows the recorded reachable-quorum rule and is unchanged.
+    The Bedrock token itself is the owner's to renew; nothing in the code can.
 7.  Under way in `w186` at `7c21a56fc2`:
     emphasis read with the page's definitions in the three calls that pass none
     (`consistency-loose-marks.ts:340`, and the fallbacks in `consistency-marks-past-markup.ts:73`
