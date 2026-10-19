@@ -22,6 +22,10 @@ The private prototypes recorded here are withdrawn historical experiments, not i
 Their passing fixtures do not authorize maintaining them or migrating their functionality into the plugin.
 The agent pursued those mechanisms without user approval.
 
+The user also accepts later extensions changing arguments after review as an unsupported case on 2026-10-19.
+Design as though those later mutations do not occur; this does not require ordering guards or fallback prompts.
+Historical post-guard mutation qualifications in this document are not remaining work.
+
 ## Historical requirement and budgets
 
 On 2026-10-01,

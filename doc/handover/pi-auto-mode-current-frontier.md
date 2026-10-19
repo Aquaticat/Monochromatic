@@ -6,6 +6,14 @@ Plan review is active and implementation remains stopped.
 Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
 Continue the next unlocked review round; implementation remains stopped.
 
+### Later extension mutations accepted as a limitation, 2026-10-19
+
+The user says to pretend later extensions changing arguments after review do not exist.
+Record that behavior as an accepted limitation, not a blocker or an open decision.
+Do not add ordering guards, fallback prompts, private hooks, or further qualification for that case.
+Pre-review preparation and transformations remain part of the intended review input.
+The next review round is being assembled; do not stop after acknowledging this correction.
+
 ### Permanent public-API boundary and graceful fallback, 2026-10-19
 
 The user links the historical parallel-batch plan and explicitly rejects maintaining or copying Pi internals,

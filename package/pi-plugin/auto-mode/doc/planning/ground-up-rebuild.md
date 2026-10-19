@@ -407,7 +407,10 @@ The public plugin can observe the model-issued call list there and enforce a cac
 This is source evidence for a plugin candidate, not a qualified implementation.
 Argument preparation and schema validation occur after `message_end`;
 other extensions may also change messages or inputs.
-Qualify those mutations, handler ordering, global/per-tool sequential mode, and nested calls with disposable tools.
+Qualify preparation and mutations visible before review, global/per-tool sequential mode, and nested calls.
+The user accepts later extensions changing arguments after review as an unsupported case on 2026-10-19.
+Design as though those later mutations do not occur; do not add ordering guards, prompts, fallback triggers,
+or private hooks to defend against them. This limitation is accepted, not an unresolved qualification blocker.
 `message_end` handler errors are reported and swallowed at `extensions/runner.js:889`;
 throwing there alone is not an execution gate. A pending or failed review must still block at `tool_call`.
 Do not wait for sibling `tool_call` events inside the first sibling handler:
