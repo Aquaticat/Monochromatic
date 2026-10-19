@@ -56,7 +56,15 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
         current.minimap.last_stats = Some(reply.stats);
     }
     drop(current);
-    window.set_minimap_image(Image::from_rgba8_premultiplied(reply.pixels));
+    let (width, height) = (reply.pixels.width(), reply.pixels.height());
+    if width == 0 || height == 0 {
+        window.set_minimap_image(Image::default());
+    } else {
+        window.set_minimap_image(Image::from_rgba8_premultiplied(reply.pixels));
+    }
+    // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled.
+    window.set_minimap_picture_width(width as f32);
+    window.set_minimap_picture_height(height as f32);
     tracing::debug!(
         id = reply.id,
         last = reply.last,

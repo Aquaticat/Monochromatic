@@ -2,18 +2,25 @@
 //! it builds the picture of the whole text off the window thread,
 //!  newest request first,
 //! and hands the finished pixels back.
+//!  Its serving loop and the cache of rendered units are in `minimap_build/serve.rs`.
 
 /// The row key of the vertical mapping a picture is built from.
 use super::rows::RowKey;
 /// A worker that cannot start or has stopped is a visible diagnostic.
 use anyhow::{Context, Result, bail};
+/// Hints and diagnostics that decorate the lines.
+use ide_app::annotation::Mark;
+/// The annotation inks.
+use ide_app::annotation_layout::AnnotationColors;
 /// Canonical source,
 /// cloned as a rope snapshot.
 use ide_app::document::Document;
+/// The matches of the in-file find.
+use ide_app::find::{FindRange, FindRanges};
 /// Which text a picture is for.
 use ide_app::language::identity::DocumentStamp;
-/// The picture build and its two work budgets.
-use ide_app::minimap::{Cancel, FULL_WORK, Input, QUICK_WORK, Stats, build};
+/// The fill inks.
+use ide_app::minimap::Fills;
 /// The vertical mapping the picture is built from,
 /// copied into each job.
 use ide_app::row_map::RowMap;
@@ -26,6 +33,8 @@ use ide_app::source_style::SourceStyles;
 use ide_app::source_typography::SourceTypography;
 /// The palette whose inks the picture uses.
 use ide_app::text_raster::CodeColors;
+/// Blocks of virtual rows.
+use ide_app::virtual_row::Block;
 /// Pixel buffers that cross to the window thread.
 use slint::{Rgba8Pixel, SharedPixelBuffer};
 /// Owned snapshots and the newest-request flag are shared between the window thread and the worker.
@@ -37,8 +46,14 @@ use std::{
         mpsc::{Receiver, Sender, TryRecvError, channel},
     },
     thread::{self, JoinHandle},
-    time::{Duration, Instant},
+    time::Duration,
 };
+
+/// The serving loop and the cache of rendered units.
+mod serve;
+/// The test gate that holds the worker.
+#[cfg(test)]
+pub(super) use serve::MINIMAP_GATE;
 
 /// What:
 ///  The name of the worker thread.
@@ -73,17 +88,19 @@ pub(super) static OFF_WORKER_BUILDS: AtomicU64 = AtomicU64::new(0);
 /// the wrap width,
 /// the palette,
 ///  the display scale,
-/// and the minimap's size.
+/// the minimap's size,
+/// and what the window draws over the text (the selection, the matches, and the annotations).
 /// Why:
 ///  A request is posted only when this changes,
 /// and a finished picture is shown only while it still describes
 ///  the displayed text;
 /// the accept rule compares its stamp with the window's.
+///  The scroll offset is none of it, because the viewport box moves in the markup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Key = { stamp: Stamp; styles: number; rows: RowKey | undefined; wrap: number; colors: Colors; scale: number;
-///   size: [number, number] };
+///   size: [number, number]; selection?: [number, number]; find: [number, number]; annotations: number };
 /// ```
 #[derive(Clone, Copy, PartialEq)]
 pub(super) struct Key {
@@ -102,6 +119,17 @@ pub(super) struct Key {
     pub(super) scale: u32,
     /// Exact bits of the minimap's width and height.
     pub(super) size: (u32, u32),
+    /// The selected characters,
+    /// nothing while the caret is alone.
+    pub(super) selection: Option<(usize, usize)>,
+    /// The address and length of the list of matches.
+    pub(super) find: (usize, usize),
+    /// The match the selection covers.
+    pub(super) active: Option<(usize, usize)>,
+    /// The change counter of the annotations.
+    pub(super) annotations: u64,
+    /// The inks of the fills and the annotations.
+    pub(super) inks: (Fills, AnnotationColors),
 }
 
 /// What:
@@ -122,7 +150,8 @@ pub(super) struct Job {
     /// What the picture is valid for,
     /// echoed back.
     pub(super) key: Key,
-    /// Rope snapshot at the revision the job was taken from.
+    /// Rope snapshot at the revision the job was taken from,
+    /// with the reading position that is the selection.
     pub(super) document: Document,
     /// Syntax classes,
     /// shared by identity.
@@ -133,6 +162,18 @@ pub(super) struct Job {
     pub(super) map: RowMap,
     /// The palette of the source glyphs.
     pub(super) colors: CodeColors,
+    /// The inks of hints and diagnostics.
+    pub(super) inks: AnnotationColors,
+    /// The inks of the selection and match fills.
+    pub(super) fills: Fills,
+    /// Every block of virtual rows.
+    pub(super) blocks: Vec<Arc<Block>>,
+    /// Every diagnostic mark.
+    pub(super) marks: Vec<Mark>,
+    /// The matches of the in-file find.
+    pub(super) ranges: FindRanges,
+    /// The match the selection covers.
+    pub(super) active: Option<FindRange>,
     /// Wrap width in logical pixels,
     /// or nothing while the view has none.
     pub(super) wrap: Option<f32>,
@@ -146,7 +187,7 @@ pub(super) struct Job {
 ///  A finished picture of a request,
 /// with what it cost.
 /// Why:
-///  A text whose lines cannot all be shaped within the quick budget gets two replies:
+///  A text whose picture would cost more than the quick budget gets two replies:
 /// the quick one,
 /// then the full.
 ///
@@ -163,194 +204,10 @@ pub(super) struct Reply {
     pub(super) last: bool,
     /// Premultiplied pixels of the picture.
     pub(super) pixels: SharedPixelBuffer<Rgba8Pixel>,
-    /// What the build cost and left rough.
-    pub(super) stats: Stats,
+    /// What the build cost and left out.
+    pub(super) stats: ide_app::minimap::Stats,
     /// Time from the start of the request to the end of this build.
     pub(super) elapsed: Duration,
-}
-
-/// Test-only gate:
-/// the next request waits for one message before it starts,
-/// so a test can hold the worker.
-#[cfg(test)]
-pub(super) static MINIMAP_GATE: std::sync::Mutex<Option<Receiver<()>>> =
-    std::sync::Mutex::new(None);
-
-/// Wait on the test gate once,
-/// if a test installed one;
-/// the sender stays with the test.
-#[cfg(test)]
-fn hold_at_test_gate() {
-    let gate = match MINIMAP_GATE.lock() {
-        Ok(mut slot) => slot.take(),
-        Err(_poisoned) => None,
-    };
-    if let Some(pending) = gate
-        && let Err(error) = pending.recv()
-    {
-        tracing::debug!(%error, "test minimap gate closed");
-    }
-}
-
-/// A build is cancelled once a newer request than its own was posted.
-struct Superseded<'a> {
-    /// The number of the newest request.
-    newest: &'a AtomicU64,
-    /// The number of the request being built.
-    id: u64,
-}
-
-/// A build asks whether a newer request replaced it.
-impl Cancel for Superseded<'_> {
-    /// Whether a newer request was posted since this build began.
-    fn is_cancelled(&self) -> bool {
-        return self.newest.load(Ordering::Relaxed) != self.id;
-    }
-}
-
-/// Where a build hands each finished picture.
-trait ReplySink {
-    /// Take one finished picture;
-    ///  false once nobody receives pictures any more.
-    fn deliver(&mut self, reply: Reply) -> bool;
-}
-
-/// Pictures go to the window thread through the reply channel.
-struct ChannelSink<'a> {
-    /// The reply channel of the worker.
-    replies: &'a Sender<Reply>,
-}
-
-/// The reply channel is where the window thread reads pictures.
-impl ReplySink for ChannelSink<'_> {
-    /// Send the picture;
-    ///  false when the receiving side is gone.
-    fn deliver(&mut self, reply: Reply) -> bool {
-        return self.replies.send(reply).is_ok();
-    }
-}
-
-/// What:
-///  The shaper of the worker and what it was made for.
-/// Why:
-///  A change of typography replaces the shaper;
-/// the build itself shapes no styled rows,
-/// so no cache needs clearing.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// class Builder { shaper: TextShaper; typography: Typography }
-/// ```
-struct Builder {
-    /// Font and layout resources owned by the worker thread.
-    shaper: TextShaper,
-    /// Typography the shaper was built with.
-    typography: SourceTypography,
-}
-
-/// Build the replies of one job.
-impl Builder {
-    /// Make the shaper match the job's typography.
-    fn adopt(&mut self, typography: &SourceTypography) -> Result<()> {
-        if !super::tile_build::same_typography(&self.typography, typography) {
-            self.shaper = TextShaper::with_typography(typography.clone())?;
-            self.typography = typography.clone();
-        }
-        return Ok(());
-    }
-
-    /// Build `job`'s picture with the quick budget,
-    /// and with the full one when the quick one left lines rough;
-    ///  `send` takes each finished picture.
-    /// A newer request stops the build between pixel rows.
-    fn run(&mut self, job: &Job, newest: &AtomicU64, send: &mut dyn ReplySink) {
-        let started = Instant::now();
-        #[cfg(debug_assertions)]
-        if thread::current().name() != Some(THREAD_NAME) {
-            OFF_WORKER_BUILDS.fetch_add(1, Ordering::SeqCst);
-        }
-        if let Err(error) = self.adopt(&job.typography) {
-            tracing::error!(%error, "minimap worker could not adopt its typography");
-            return;
-        }
-        let cancelled = Superseded { newest, id: job.id };
-        for work in [QUICK_WORK, FULL_WORK] {
-            let input = Input {
-                document: &job.document,
-                styles: &job.styles,
-                map: &job.map,
-                colors: job.colors,
-                wrap: job.wrap,
-                scale: job.scale,
-                view: job.size.1,
-                width: job.size.0,
-            };
-            let Some(built) = build(&mut self.shaper, &input, work, &cancelled) else {
-                tracing::debug!(id = job.id, "a newer minimap request stopped the build");
-                return;
-            };
-            let last = built.stats.rough_lines == 0 || work == FULL_WORK;
-            let pixels = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
-                &built.bytes,
-                built.width,
-                built.height,
-            );
-            let reply = Reply {
-                id: job.id,
-                key: job.key,
-                last,
-                pixels,
-                stats: built.stats,
-                elapsed: started.elapsed(),
-            };
-            tracing::debug!(
-                id = job.id,
-                elapsed_us = reply.elapsed.as_micros() as u64,
-                last,
-                pixel_rows = reply.stats.pixel_rows,
-                lines = reply.stats.lines,
-                shaped = reply.stats.shaped_lines,
-                rough = reply.stats.rough_lines,
-                "minimap worker built a picture"
-            );
-            if !send.deliver(reply) || last {
-                return;
-            }
-        }
-    }
-}
-
-/// Own the blocking receive loop entirely outside native state.
-fn serve(
-    shaper: TextShaper,
-    jobs: &Receiver<Job>,
-    replies: &Sender<Reply>,
-    newest: &Arc<AtomicU64>,
-) {
-    tracing::debug!("minimap worker started");
-    let typography = shaper.typography().clone();
-    let mut builder = Builder { shaper, typography };
-    while let Ok(mut job) = jobs.recv() {
-        // Only the newest waiting request is built; an older one is dropped unbuilt.
-        loop {
-            match jobs.try_recv() {
-                Ok(next) => job = next,
-                Err(TryRecvError::Empty | TryRecvError::Disconnected) => break,
-            }
-        }
-        #[cfg(test)]
-        hold_at_test_gate();
-        if newest.load(Ordering::Relaxed) != job.id {
-            tracing::debug!(
-                id = job.id,
-                "a minimap request was superseded before it started"
-            );
-            continue;
-        }
-        let mut send = ChannelSink { replies };
-        builder.run(&job, newest, &mut send);
-    }
-    tracing::debug!("minimap request channel closed");
 }
 
 /// What:
@@ -405,7 +262,7 @@ impl MinimapWorker {
                         )
                     )]
                     || {
-                        serve(shaper, &job_receiver, &reply_sender, &worker_newest);
+                        serve::serve(shaper, &job_receiver, &reply_sender, &worker_newest);
                     },
                 ));
                 if outcome.is_err() {

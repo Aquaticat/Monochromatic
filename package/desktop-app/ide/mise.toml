@@ -270,6 +270,14 @@ run = """
 runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap'])
 """
 
+[tasks."probe:release"]
+description = "Temporary: time the minimap bands in the release profile"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['nextest', 'run', '--release', '--no-default-features', '--test', 'probe_minimap', '--no-capture'])
+"""
+
 [tasks."test:native"]
 depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"

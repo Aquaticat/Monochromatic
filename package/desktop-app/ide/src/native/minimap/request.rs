@@ -15,8 +15,19 @@ use crate::native::minimap_build::{Job, Key, MinimapWorker};
 /// The window,
 ///  its state,
 ///  the displayed text's stamp,
-///  and the palette.
-use crate::native::{AppWindow, State, annotate::displayed, render::code_colors};
+///  the palette,
+///  and what the window draws over the text.
+use crate::native::{
+    AppWindow, State,
+    annotate::{colors as annotation_colors, displayed},
+    find::present::present,
+    render::code_colors,
+};
+/// The matches the window paints.
+use ide_app::find::FindRange;
+use ide_app::find_navigation::paint_ranges;
+/// The inks of the selection and match fills.
+use ide_app::minimap::Fills;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// Toolkit images,
@@ -27,6 +38,23 @@ use slint::{ComponentHandle, Image, TimerMode};
 ///  the syntax snapshot a job shares,
 ///  and the clock of the newest request.
 use std::{cell::RefCell, rc::Rc, sync::Arc, time::Instant};
+
+/// What the window draws over the text that the picture shows with it:
+/// the inks of the selection and match fills.
+fn fills_of(window: &AppWindow, active: bool) -> Fills {
+    let selection = window.get_selection_fill().color();
+    let foreground = code_colors(window).foreground;
+    return Fills {
+        selection: [
+            selection.red(),
+            selection.green(),
+            selection.blue(),
+            selection.alpha(),
+        ],
+        foreground,
+        boundary: active,
+    };
+}
 
 /// What:
 ///  What a picture made now would be valid for,
@@ -46,6 +74,26 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
     if width < 1.0 || height < 1.0 {
         return None;
     }
+    let position = current.document.position();
+    let selection = if position.anchor == position.head {
+        None
+    } else {
+        Some((
+            position.anchor.min(position.head),
+            position.anchor.max(position.head),
+        ))
+    };
+    let ranges = paint_ranges(
+        &current.find,
+        current.file_generation,
+        current.document.revision(),
+    );
+    let find = if ranges.is_empty() {
+        (0, 0)
+    } else {
+        (Arc::as_ptr(&ranges).cast::<()>() as usize, ranges.len())
+    };
+    let active = present(current).active;
     return Some(Key {
         stamp: displayed(current),
         styles: Arc::as_ptr(&current.styles).cast::<()>() as usize,
@@ -58,7 +106,17 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         colors: code_colors(window),
         scale: window.window().scale_factor().to_bits(),
         size: (width.to_bits(), height.to_bits()),
+        selection,
+        find,
+        active: active.map(range_pair),
+        annotations: current.annotations.version(),
+        inks: (fills_of(window, active.is_some()), annotation_colors(window)),
     });
+}
+
+/// A match as the two characters it lies between.
+fn range_pair(range: FindRange) -> (usize, usize) {
+    return (range.start, range.end);
 }
 
 /// Post a request for the picture `key` describes,
@@ -75,6 +133,7 @@ pub(super) fn post(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut
     }
     current.minimap.next_id += 1;
     let id = current.minimap.next_id;
+    let text = current.document.text();
     let job = Job {
         id,
         key,
@@ -83,6 +142,18 @@ pub(super) fn post(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut
         typography: current.shaper.typography().clone(),
         map: current.row_map.clone(),
         colors: key.colors,
+        inks: key.inks.1,
+        fills: key.inks.0,
+        blocks: current.blocks.clone(),
+        marks: current
+            .annotations
+            .marks(displayed(current), text, 0, text.len_lines()),
+        ranges: paint_ranges(
+            &current.find,
+            current.file_generation,
+            current.document.revision(),
+        ),
+        active: present(current).active,
         wrap: has_wrap_width(current.width).then_some(current.width),
         scale: window.window().scale_factor(),
         size: current.minimap.size,
