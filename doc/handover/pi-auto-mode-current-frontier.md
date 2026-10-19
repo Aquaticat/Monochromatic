@@ -111,7 +111,8 @@ Work is incomplete. Continue the queue without another readiness handoff.
   preserving root branch and concurrent dirty work. No root merge or cleanup is authorized by that receipt.
 - Completion queue: finish coherent types/full lint/catalogs/payload audit/shutdown stderr,
   final inode/dependency/source inventories, package responsibility documentation and safe publication.
-  Root `TCV`, `CPN`, `RXI` stay unchanged; concrete lessons remain package-local.
+  Root `TCV`, `CPN`, `RXI`, `MWK` stay unchanged by the user's explicit decisions;
+  concrete lessons remain package-local.
   Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
   project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
   The next independent lint reduction is a private full-owned-source safe formatter pass,
@@ -141,6 +142,17 @@ Work is incomplete. Continue the queue without another readiness handoff.
   in `/fixture-home` at the next idle boundary.
   Source `kARc6q` resumes as `source-local-proof-and-exact-diagnostics-20261019-18`;
   native `Pcok7j` continues scoped lint and an explicit suppression-source record.
+  The seven-file formatter scope preserves error codes but increases the reported line counts in two already-overlong files.
+  Its exact diagnostic comparison rejects that adoption; no formatter changes have reached root.
+  Native scoped lint drops to three chain warnings/zero errors across twelve files;
+  a malformed escaped-path display command is stopped and the complete actual log is read by the supervisor.
+  Native receives exact diagnostics and a named-local correction; source receives the exact proven type correction.
+  Both old-runtime workers encounter a separate governing-policy invalidation after concurrent root `AGENTS.md` changes.
+  Source logs retain `ObservedFileUnstableReadError` followed by permanent policy-link ineligibility;
+  native logs retain `Original selected policy capture changed`.
+  Do not equate those incidents or treat manual continuation as automatic-approval qualification.
+  Next: prove policy change, reload and subsequent actual tool execution in a disposable session,
+  then resume the completed worker histories on a newly qualified immutable runtime.
 
 ## Detailed qualification evidence
 

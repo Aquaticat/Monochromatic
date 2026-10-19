@@ -162,6 +162,12 @@ Inventories and receipts remain private under
 ## Checkpoint maintenance lessons
 
 An RPC tool-completion event does not establish an idle agent.
+The supervisor monitor reports an approval dialog independently of its completed-tool threshold.
+That threshold may distinguish an old idle checkpoint from new work,
+but must not hide a newly blocked operation.
+Private proof files are checked through the worker's actual mounted home;
+a host path through an unmounted symlink is not an accessible handoff.
+The user keeps root `MWK` unchanged and records these concrete monitor lessons here.
 Pi accepts steering during a model request and delivers it after the current turn's tools;
 follow-ups wait until the agent would otherwise stop.
 The package's input records are owned instrumentation, not additional SDK contracts.
