@@ -273,6 +273,28 @@ await describe({
           },
         },),
         it({
+          name: 'blocks open work the agent could do itself and says to do it now',
+          fn: async () => {
+            const h = await harness({ lines: OPEN, reply: verdictReply('leaves_open_work',), },);
+
+            const output = await h.run({ last_assistant_message: 'Still open: file the issue for the flaky test.', },);
+
+            expect(output.decision,).toBe('block',);
+            expect(output.reason,).toContain('Do them now',);
+            expect(output.reason,).toContain('AskUserQuestion',);
+          },
+        },),
+        it({
+          name: 'blocks open work while a shell command runs, since no task will do it',
+          fn: async () => {
+            const h = await harness({ lines: OPEN, reply: verdictReply('leaves_open_work',), },);
+
+            const output = await h.run({ background_tasks: [{ id: '1', type: 'shell', status: 'running', },], },);
+
+            expect(output.decision,).toBe('block',);
+          },
+        },),
+        it({
           name: 'blocks a wait on the user and routes it through AskUserQuestion',
           fn: async () => {
             const h = await harness({ lines: OPEN, reply: verdictReply('waits_on_user',), },);
@@ -348,7 +370,7 @@ await describe({
           name: 'leads every block reason with the marker the depth guard counts',
           fn: async () => {
             const reasons = await Promise.all((
-              ['announces_own_next_step', 'waits_on_user', 'waits_on_background_work',] as const
+              ['announces_own_next_step', 'leaves_open_work', 'waits_on_user', 'waits_on_background_work',] as const
             ).map(async function reasonFor(situation,) {
               const h = await harness({ lines: OPEN, reply: verdictReply(situation,), },);
 

@@ -861,11 +861,12 @@ read by `${HOME}/temp/agent/extract-stops.ts` (scratch, not committed).
 
 ### Design
 
-One question with five situations replaces a shared question, because a three-way split could not separate waiting
+One question with six situations (five until 2026-10-19) replaces a shared question, because a three-way split could not separate waiting
 on background work from announcing a next step.
 The action for each label follows rules this repository already states:
 
 - `announces_own_next_step`: block, with the existing "resume the next item now" reason.
+- `leaves_open_work`: block, with a reason to do the listed items now (added 2026-10-19, see "Missed block").
 - `waits_on_user`: block, with a reason routing the question through `AskUserQuestion`,
    including requests that contain no question mark.
 - `waits_on_background_work`: block only when the Stop event's `background_tasks` has no running task,
@@ -1025,6 +1026,43 @@ Not decided for lack of data:
 
 The verdict log now also records `permissionMode` and the count of `sessionCrons` per consulted stop,
 so those two can be judged from data later (#1772).
+
+### Missed block, 2026-10-19
+
+A stop that reported a finished minimap and then listed "Still open" items was released.
+Among the items: a 12,000 px measurement pass that "needs its own issue", an intermittent test failure,
+and unaudited remote branches, all things the agent could act on itself.
+The verdict log (record at 16:48:30 UTC, session `55e550ef`) shows `work_closed` at 0.66 and `pauses_for_handoff` at 0.29.
+Rerunning the exact message from the session transcript reproduced those numbers, so the miss is not a transcription
+artifact.
+The cause is that `announces_own_next_step` asks for a stated next action, and this message announced none;
+it named work and stopped.
+The repository's own rule on this is that the agent should do named work rather than list it.
+
+Three fixes were measured on the 457 to 459 5.5 stops in the corpus (a stop is blocked when a blocking label reaches 0.60):
+
+- Widening the announce criterion to cover listed open work: the missed stop reads 0.94, but blocks go from 49 to 64
+   (26 added, 11 removed).
+   Rejected: it removed the most existing blocks, mostly waits on the user, because one label then absorbed both.
+- A separate label `leaves_open_work`, announce wording unchanged: the missed stop reads 0.94 to 0.99 depending on the
+   other criteria wording, blocks go from 49 to 79 (34 added, 4 removed).
+   Chosen.
+- The new label plus a rewritten `work_closed` ("names nothing further the agent could do itself"): the missed stop
+   reads 0.99 and the corpus gives 11 `leaves_open_work` blocks, against 10 without the rewrite.
+   Rejected: the rewrite buys one more block and changes a criterion that was not at fault.
+
+Of the 10 corpus stops the new label blocks, 7 were followed by a user message that pushed the agent to keep going or asked why it was idle
+("And? Keep working?", "You've named work to do, so just do them", "Please eager commit", "Are your bg tasks and
+agents stuck?"), and the other 3 do not say either way.
+The 4 blocks it removed sit near the cutoff (0.60 to 0.70 before, 0.37 to 0.56 after).
+The three handoff stops in the log ("you can shut down", open items recorded) stay `pauses_for_handoff`
+at 0.82 to 0.93, so the new label does not take them.
+
+Side effect, measured and not designed: adding a label moved probability mass inside the distribution, and 24 stops
+that read `waits_on_user` at 0.43 to 0.58 now clear the cutoff.
+Reading them, most are real waits on the user (a sudo authorization, batch approvals, form pastes), which the block
+policy already covers, but the 0.60 cutoff was set under five labels and is now applied to six; see #1772.
+The new label's precision against a human label is unmeasured.
 
 ### Not yet known
 
