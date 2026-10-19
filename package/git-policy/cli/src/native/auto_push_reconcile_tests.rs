@@ -513,9 +513,9 @@ fn an_upstream_outside_the_heads_has_no_destination() {
     remove(&s.root);
 }
 
-/// The base a branch must descend from is the last recorded push, not the tracking ref, when a push was recorded.
+/// The bases are the last recorded push and then the tracking ref, which may differ.
 #[test]
-fn the_recorded_push_is_the_base_even_when_the_tracking_ref_differs() {
+fn the_recorded_push_and_the_tracking_ref_are_both_bases() {
     let s = scenario("ar-base-record");
     let seed = text_of(&s.local, &["rev-parse", "HEAD"]);
     let first = commit_local(&s, "b.txt", "first\n");
@@ -526,21 +526,21 @@ fn the_recorded_push_is_the_base_even_when_the_tracking_ref_differs() {
         &["update-ref", "refs/remotes/origin/main", seed.as_str()],
     );
     assert_eq!(
-        published_base(&push_git(&s.local), "refs/heads/main").expect("base"),
-        first
+        published_bases(&push_git(&s.local), "refs/heads/main").expect("bases"),
+        vec![first, seed]
     );
     remove(&s.root);
 }
 
-/// Without a recorded push, the base is the tracking ref.
+/// Without a recorded push, the only base is the tracking ref.
 #[test]
 fn the_tracking_ref_is_the_base_when_no_push_was_recorded() {
     let s = scenario("ar-base-upstream");
     let seed = text_of(&s.local, &["rev-parse", "HEAD"]);
     commit_local(&s, "b.txt", "unpublished\n");
     assert_eq!(
-        published_base(&push_git(&s.local), "refs/heads/main").expect("base"),
-        seed
+        published_bases(&push_git(&s.local), "refs/heads/main").expect("bases"),
+        vec![seed]
     );
     remove(&s.root);
 }

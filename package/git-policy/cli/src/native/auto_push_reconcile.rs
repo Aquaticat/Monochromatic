@@ -11,7 +11,7 @@
 //!  the merge would bring the replaced commits back, so its rejection stays visible as it always was.
 
 /// The per-branch record of the last push this wrapper made.
-use super::auto_push_record::{LastPushedOutcome, LastPushedRead, read_last_pushed_record};
+use super::auto_push_record::{LastPushedRead, read_last_pushed_record};
 /// The coordinator's Git, its command builder, queries and error type.
 use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, git_command, git_output,
@@ -166,26 +166,31 @@ fn read_destination(
 }
 
 /// What:
-///  The commit the branch is known to have published, from which the branch must descend.
+///  The commits the branch is known to have published, any one of which the branch may descend from.
 /// Why:
-///   A branch that no longer contains what this wrapper last published, or what the tracking ref last showed, was
+///   A branch that contains none of what this wrapper last published or what the tracking ref last showed was
 ///  amended or rebased; merging the remote tip into it would bring the replaced commits back.
+///   The record names the last published tip even after a failed attempt, and the tracking ref covers a branch
+///  published by hand; the tracking ref alone is not enough, because a reconcile leaves it on a merge that the
+///  branch does not contain, and a branch that moved on after a push by hand or a force push shows only the ref.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function publishedBase({ branchRef }): Promise<string>;
+/// async function publishedBases({ branchRef }): Promise<string[]>;
 /// ```
-fn published_base(git: &PushGit, branch_ref: &str) -> Result<String, SingleFlightError> {
+fn published_bases(git: &PushGit, branch_ref: &str) -> Result<Vec<String>, SingleFlightError> {
     let paths = resolve_push_coordination_paths(git, branch_ref)?;
+    let mut bases: Vec<String> = Vec::new();
     if let Ok(LastPushedRead::Record(record)) = read_last_pushed_record(&paths.record_path)
-        && record.outcome == LastPushedOutcome::Pushed
+        && let Some(tip) = record.published()
     {
-        return Ok(record.tip);
+        bases.push(tip.to_owned());
     }
-    return git_output(
+    bases.push(git_output(
         git,
         &argv(&["rev-parse", "--verify", "@{upstream}^{commit}"]),
-    );
+    )?);
+    return Ok(bases);
 }
 
 /// What:
@@ -347,12 +352,20 @@ pub fn reconcile_divergent_push(
         git,
         &argv(&["rev-parse", "--verify", &format!("{branch_ref}^{{commit}}")]),
     )?;
-    let base = published_base(git, branch_ref)?;
-    if is_ancestor(git, &base, &local)? != Some(true) {
+    let bases = published_bases(git, branch_ref)?;
+    let mut contains_a_base = false;
+    for base in &bases {
+        if is_ancestor(git, base, &local)? == Some(true) {
+            contains_a_base = true;
+            break;
+        }
+    }
+    if !contains_a_base {
         debug(
             TAG,
             &format!(
-                "{local} does not contain the published {base}; history was rewritten, no reconcile"
+                "{local} does not contain any published tip of {}; history was rewritten, no reconcile",
+                bases.join(", ")
             ),
         );
         return Ok(rejected);
