@@ -272,6 +272,15 @@ and its result is not recorded here.
 [The pass log for 2026-10-18](../../../doc/planning/translation-repair-openrouter-2026-09-03-2026-10-18.md)
 carries the reading.
 
+Written on 2026-10-19 (UTC):
+the round `w191` fixed the pipeline defects of that pass (B685 to B687).
+Its second defect is the one named here:
+the `JUDGE SEATS` lines printed `synthetic=wet` for a meter that said nothing,
+and now print `unreadable-treated-as-spendable` (B686).
+The refusal of the quotas body by the reader,
+and the open point of this entry,
+are unchanged.
+
 ## B672: local file times written as UTC in the account of the pairing cache version
 
 Found on 2026-10-18 by the lead,
@@ -391,3 +400,55 @@ Written on 2026-10-19 (UTC):
 the generation 19 that this entry raised was withdrawn and never landed.
 The number 19 now belongs to the gate of B682,
 which is a different change and records no definitions.
+
+## B686: the judge seats line printed `wet` for a Synthetic meter that said nothing
+
+Found in the read of the pass `TianqiChen66626`,
+which launched at 20:58 UTC on 2026-10-18,
+where the `JUDGE SEATS` lines printed `synthetic=wet` beside `METERS synthetic=unreadable` (B671).
+It is the second of the three defects of that pass that the round `w191` fixed (B685 and B687 are the others).
+
+Outcome written on 2026-10-19 (UTC).
+Red `0c33424dd0` (provider) and `c3ac0080fd` (run),
+fixed in `5235acfdee`,
+with the shared fixture of the meter states in `0013c6f3d3` and `e9d720b816`.
+
+The cause:
+the line took `dry[provider] ? 'dry' : 'wet'` over the `BudgetView`,
+a boolean record in which `routesAsDry` has already folded `unreadable` into not dry
+(`run/src/corpus-run/run-seats-read.ts`).
+The policy is unchanged:
+an unreadable meter reads as wet and not dry
+(`provider/src/provider-budget.ts`,
+`MeterState` and `routesAsDry` in `provider/src/provider-meters.ts`),
+and the warning `budget unreadable, treating as spendable` says so.
+What was wrong is only that the line said the meter had answered.
+
+Fixed:
+`createProviderBudgets` returns `readStates` beside the view
+(the type `ProviderBudgetsWithStates`,
+while `ProviderBudgets`,
+which the router takes,
+is unchanged),
+and `RunClient` gains `providerMeterStates`.
+The line prints `dry` for a provider the router holds out,
+`wet` for a meter that answered,
+and `unreadable-treated-as-spendable` for a meter that said nothing.
+It is one token,
+so each `name=state` pair still reads on its own.
+`doc/configuration.md` describes the three words.
+
+What it does not change:
+the meter reader still refuses the body of the quotas endpoint that B671 describes,
+and the open point of B671 stands.
+
+Cache keys and artifacts:
+none.
+The tally,
+the meter states and the lines are never stored,
+and a search of `stage/src`,
+`provider/src` and `run/src` for `CACHE_VERSION` or `ARTIFACT_SCHEMA_VERSION` finds nothing.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Log lines that report nothing done".

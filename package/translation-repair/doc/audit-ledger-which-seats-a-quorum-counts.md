@@ -496,3 +496,145 @@ a throw after the request's signal has aborted records nothing,
 the treatment the tally already gave a call cut off when the process ends.
 One case records nothing for four calls a caller aborted and that then threw,
 and another withholds a seat whose four calls threw with the caller still waiting on each.
+
+Revised on 2026-10-19 (UTC):
+"records nothing" in the fix of this entry is replaced by "records abandoned and nothing else".
+The call is counted in a column of its own,
+`abandoned`,
+which is part of neither `asked` nor `threw`,
+so the protection stands:
+a seat that its callers cut off is not withheld for it.
+The `SEAT` line gains `abandoned=N`,
+because the census of the pass `TianqiChen66626` read `asked=299 usable=299` and hid 58 cut replies (B687).
+
+## B685: a rejected credential was named on no line, and `wet` did not mean a seat could be asked
+
+Found in the read of the pass `TianqiChen66626`,
+which launched at 20:58 UTC on 2026-10-18 (B671),
+where the meter line read `bedrockUsd=5.02` while an expired Bedrock token failed five asks of each Gemma seat.
+It is the first of three pipeline defects of that pass that the round `w191` fixed (B686 and B687 are the others).
+
+Outcome written on 2026-10-19 (UTC).
+Red `4e180b0761` (stage) and `f56acdc9b8` (run),
+fixed in `05403f5176`.
+
+What `wet` means:
+`wet` is a `MeterState` (`provider/src/provider-meters.ts`),
+and it says the meter answered and is not dry.
+The Bedrock meter reads a local ledger (`credits` in `provider/src/bedrock-client.ts`),
+so `bedrockUsd=5.02` is the money left,
+and an expired token cannot move it.
+The meter line is honest about money and says nothing about whether the seat can be reached.
+
+Is a 401 a dead seat:
+there is no rule for a 401.
+The generic tally withholds a seat that threw on every one of `SEAT_WITHHOLD_ASKS` asks (4,
+`stage/src/stage-quorum.ts`,
+`stage/src/seat-tally.ts`,
+B420,
+open to the owner's veto).
+Five asks each were counted,
+because the four `repair slice 0..3` critic rounds (lines 284 to 298 of the pass log) asked concurrently
+after two or three sequential block-pairing asks per seat,
+before the tally reached four.
+After that the router refuses the seat before any provider is asked,
+which every stage reads as an unreachable seat.
+
+The quorum over 8 follows the recorded rule,
+and no change was made.
+`runWindowedRounds` (`stage/src/stage-windowed-rounds.ts`) calls `reachableQuorum`,
+which keeps the quorum of the bench while the reachable seats can meet it.
+The notes measured the built `stage`:
+a bench of 8 needs 4 for 0 to 4 unreachable seats,
+and needs 2 (short) at 5.
+The log has 2 and 3 unreachable,
+so 6 and 5 reachable,
+both at least 4.
+The rule is recorded in `doc/decision/translation-repair-short-bench-share.md` (the second addendum of 2026-09-27),
+in `audit-ledger-defect-class-history.md` (E3) and in B27.
+The asymmetry that the gather drops withheld seats from its bench,
+and the windowed stages keep them and count them unreachable,
+is the last paragraph of B420,
+and stays open to the owner's veto.
+
+Fixed:
+`seatTallyClient` (`stage/src/seat-tally.ts`) writes one line the first time a provider answers a seat with HTTP 401:
+`SEAT CREDENTIAL REFUSED <model>: <the failure and the provider's words>, after N usable answers this run.`,
+then that the provider does not accept the credential the seat is asked with,
+that a credential does not renew during a run,
+that the run withholds the seat after four failed asks,
+and "Renew the credential for this seat's provider before the next run."
+The set of seats already named lives in the closure of `seatTallyClient`,
+while the counts are process-wide (`RUN_SEATS`),
+so the line is said once per seat and per client.
+`createRunClient` builds one client.
+`doc/configuration.md` describes the line.
+
+First-contact check:
+before this change no line named a rejected credential or said what to do.
+What existed was the warn of each call (line 212 of the pass log,
+one of 283 lines naming the failure)
+and,
+after the withholding,
+`threw-withheld=` on the `JUDGE SEATS` line (line 9220),
+which names the seat and its counts and not the error.
+Only 401 is matched,
+since 403 carries too many other meanings to name a credential.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Which seats a quorum counts".
+
+## B687: a reply the caller abandoned was counted in no column of the seat census
+
+Found in the same read of `TianqiChen66626`,
+and the third defect of the round `w191`.
+It revises B421.
+
+Outcome written on 2026-10-19 (UTC).
+Red `4e180b0761` (stage) and `f56acdc9b8` (run),
+fixed in `05403f5176`.
+
+What the census did:
+the report that began the round said abandoned Qwen replies were counted as usable.
+They were not counted at all.
+`seatTallyClient` returned early when the signal of the call had aborted (B421,
+to stop a slow seat being withheld),
+and `runGatherRound` cuts a straggler by aborting its signal (`stage/src/stage-round.ts`).
+The log check found 298 Qwen `SPEND` lines,
+298 `stream ... completed` lines,
+58 abandoned replies,
+and a census of `asked=299 usable=299`,
+which said nothing of the 58.
+
+Fixed:
+`abandoned` is counted beside the other outcomes and in none of them,
+so it adds to neither `asked` nor `threw`,
+and the protection of B421 holds.
+The `SEAT` line gains `abandoned=N`.
+
+Did the cut replies spend their budget on reasoning:
+the report said they had no answer text and 30,000 to 63,000 characters of reasoning.
+They were cut by the straggler window of 120 seconds,
+and not by `finish_reason=length`.
+Over the 58 lines:
+55 have no answer characters and 3 have some,
+and the reasoning runs from 18,470 to 62,639 characters (median 37,121).
+The 298 completed Qwen replies reach 16,788 completion tokens at most,
+against the cap of 20,894 on the card (`shared-contract/src/model-cards.ts`),
+and 45 of them carry 30,000 characters of reasoning or more,
+so a reasoning length of that size completes normally.
+The cut replies are slow reasoning runs caught mid-thought,
+and no reply that reached the cap.
+The shape the seat is known for is the reasoning runaway recorded in `shared-contract/src/completion-cap.ts`
+(Qwen3.8-27B on Synthetic:
+185 of 197 calls cut at the cap had no content)
+and in `stage/src/recovery-nudge.ts`.
+No seat setting changed,
+since the owner's instruction of 2026-08-25 keeps thinking parameters off the wire.
+
+The two corrections of the report's premise are M270.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Log lines that report nothing done".

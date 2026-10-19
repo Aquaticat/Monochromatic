@@ -733,3 +733,39 @@ from the directory the rule names,
 and a flag is added only after a call without it has failed for a reason the flag removes.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Shell commands".
+
+## M272: the agents of the sol round, the test round and the seat round each broke the shell rules and said so
+
+Status:
+happened on 2026-10-18 (UTC),
+and each agent listed its own breaks in its notes.
+
+- The sol round (`w187`):
+  two commands used `head` or `tail`
+  (a `| head -0` after an `rg`,
+  and a `tail --lines 5` on a summary),
+  and a read of `git log` from a subdirectory was refused by the `require-root` guard and run again from the root.
+  The outputs were unaffected.
+- The test round (`w188`):
+  two commands used `;`
+  (an `rg ... ; cd ...`,
+  and a final dash check `rg ... ; cd ... && git status`),
+  and several were piped to `head --lines`.
+  The outputs were unaffected,
+  and the final state checks were run again cleanly.
+- The seat round (`w191`):
+  one-off edits through a Python heredoc and a shell `for` loop,
+  and build and test output piped through `tail` or `head`.
+
+Prevention:
+the rules already stand in `mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands" (M116,
+M244 and the entries they cite),
+and the notes name nothing further.
+Written in this filing and not given by the notes:
+a brief repeats the rules about `;`,
+loops,
+pipes into `head` and `tail`,
+and scripts in a heredoc,
+and asks the hand-back to list each break,
+as these three did.

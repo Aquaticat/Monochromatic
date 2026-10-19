@@ -395,7 +395,9 @@ named for that subject and listed here.
   the Synthetic quota body the meter reader refused on 2026-10-18 (B671,
   seen again for a whole pass),
   a clock-zone slip in that account (B672),
-  and the request to read the words of a place with recorded definitions, which reads the page the other way and was not built (B673).
+  the request to read the words of a place with recorded definitions,
+  which reads the page the other way and was not built (B673),
+  and the judge seats line that printed `wet` for a meter that said nothing (B686).
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
   What the split of the package into 36 found in the moved code and its tooling:
   a build config that lacked a plugin,
@@ -452,7 +454,9 @@ named for that subject and listed here.
 - [Audit ledger: which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md):
   Quorums that counted seats which never answered,
   could not answer,
-  or were withheld.
+  or were withheld,
+  a rejected credential that no line named (B685),
+  and replies the caller abandoned that no column counted (B687).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
@@ -490,7 +494,8 @@ named for that subject and listed here.
   commands batched with the write they read,
   tasks run from the wrong place,
   scratch output without bound,
-  and a prescribed command changed and run from the wrong folder.
+  a prescribed command changed and run from the wrong folder,
+  and the breaks that three rounds' agents listed in their own notes (M272).
 - [Audit ledger: process mistakes, launch checks and cache versions](audit-ledger-process-launch-checks-and-cache-versions.md):
   What went unchecked before a run launched:
   the full suite,
@@ -512,7 +517,8 @@ named for that subject and listed here.
   in commit messages,
   the ledger and notes,
   a generation called unstored while a live pass wrote it (M265),
-  and a commit body that miscounted the guards it pins (M267).
+  a commit body that miscounted the guards it pins (M267),
+  and a log line quoted with a space the source lacks (M271).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,
@@ -551,7 +557,8 @@ named for that subject and listed here.
 - [Audit ledger: process mistakes, agents and briefs in the rounds after the split](audit-ledger-process-agents-and-briefs-rounds-after-the-split.md):
   Two briefs of the lead whose search text was never run against what it searches,
   a proof pattern and a pathspec,
-  and a report that the tool refused to write.
+  a report that the tool refused to write,
+  and a report whose premises about a census the log did not bear out (M270).
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
   The lead's own slips as they were collected at the close of each batch of work,
   and in merging the work of two rounds.

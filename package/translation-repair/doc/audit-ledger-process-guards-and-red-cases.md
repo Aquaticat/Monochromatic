@@ -927,7 +927,7 @@ as the round proved the replacement.
 `mistake-prevention-guards-searches-and-claims.md`,
 "Guards that cannot fail".
 
-## M269: mutation specs of an earlier round named text that had moved or changed
+## M269: mutation specs of the demonstration named text that had moved or changed
 
 Status:
 happened on 2026-10-18 (UTC) in the test round `w188`.

@@ -614,6 +614,16 @@ A change that makes a reader stricter is gated by a generation,
 and does not rely on a directory standing still (ledger B682).
 This rule was written by the filer of M265 on 2026-10-19 (UTC),
 and the notes did not give it.
+A premise in a brief about a count or about the size of a text is recounted
+from the log it cites before the brief is sent,
+or the brief marks it as unchecked and the agent measures it first:
+the report behind the seat round said the cut replies were counted as usable and had no answer text,
+and the log showed neither (ledger M270).
+A log line quoted in a report is copied from the source or from the test that pins it,
+and a test that pins a line pins its exact text:
+a report quoted the credential line with a space before a comma that the source lacks (ledger M271).
+These two rules were written by the filer of M270 and M271 on 2026-10-19 (UTC),
+and the notes did not give them.
 
 What enforces it:
 habit;

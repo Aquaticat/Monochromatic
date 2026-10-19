@@ -190,6 +190,15 @@ count the `&&` and look for `;` before sending,
 and rerun the M1 census before an entry claims a count.
 The split lead's session chained with `;` five times (ledger M244),
 and its notes conclude that the rule needs a mechanical check and not memory.
+The agents of the sol round,
+the test round and the seat round broke it again,
+with pipes into `head` and `tail`,
+`;`,
+a script in a heredoc and a shell loop,
+and each listed its own breaks (ledger M272).
+A brief repeats the rules and asks for that list.
+This rule was written by the filer of M272 on 2026-10-19 (UTC),
+and the notes did not give it.
 
 ## Tasks, builds and bulk output
 

@@ -9,6 +9,7 @@ The third is the tool's behaviour and no agent's breach,
 and is filed because it came again.
 
 Written on 2026-10-19 (UTC) from the lead's notes after the split (`s245/ledger-notes-after-split.md`).
+M270 was added on the same day from the notes of the seat round (`s245/w191-notes.md`).
 The entries before these are filed in
 [Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md).
 Paths here are written in the layout after the split.
@@ -77,3 +78,27 @@ and a report file as optional,
 so that a refused Write loses nothing.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Briefs and hand-backs".
+
+## M270: the report that began the seat round counted the cut Qwen replies as usable and gave them no answer text
+
+Status:
+happened in the round `w191` for the pipeline defects of the pass `TianqiChen66626`.
+The report that the brief was written from held two premises about the Qwen3.8-27B replies that the rounds cut:
+that the census counted them as usable,
+and that they had no answer characters and 30,000 to 63,000 characters of reasoning.
+The agent checked both against the log and corrected them:
+the census counted the cut replies in no column at all (B687),
+and 3 of the 58 cut replies had answer text,
+with reasoning that starts at 18,470 characters.
+The agent also checked that the log path named in the brief is the real file.
+The notes do not say who wrote the report.
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+a premise in a brief about a count or about the size of a text is recounted
+from the log it cites before the brief is sent,
+or the brief marks it as unchecked and the agent measures it first,
+as this agent did.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence".

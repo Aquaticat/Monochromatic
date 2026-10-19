@@ -771,7 +771,7 @@ the counting against the finalists only,
 and the finalists count and labels checks,
 each with a fixture that only that check refuses)
 and four in the reader of an unlocated reason
-(the earlier reading of the ballots,
+(the old reading of the ballots,
 candidates only,
 any span,
 and readable).
@@ -789,3 +789,20 @@ a count in a commit body is read off the proof log it summarises,
 or the body leaves the count out.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Commit messages".
+
+## M271: the report of the seat fix round quoted a log line with a space the source does not have
+
+Status:
+happened in the report of the agent of `w191`.
+It quoted the line `SEAT CREDENTIAL REFUSED <model>: ...` with a space before a comma that the source lacks.
+In `stage/src/seat-tally.ts` the failure text is followed directly by the comma,
+and the line goes on "after N usable answers this run".
+The notes say no more than that the quotation was inexact.
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+a log line quoted in a report is copied from the source or from the test that pins it,
+and a test that pins a line pins its exact text.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence".

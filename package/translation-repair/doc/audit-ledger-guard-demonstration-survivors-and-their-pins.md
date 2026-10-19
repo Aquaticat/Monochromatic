@@ -221,7 +221,7 @@ with the reason the probes of the demonstration gave and no input found to tell 
   so the step over empty links in `apostropheJoinsAt` is shadowed (dead by shadowing,
   kept).
 - `n171-B639-lf-shown-duplicates`:
-  the final `Set` in `shownLabelOf` removes the duplicates the earlier one would,
+  the final `Set` in `shownLabelOf` removes only duplicates that the first `Set` of that function already removes,
   so with it standing nothing differs.
   The pair is pinned through `n171-B639-lf-dedupe-both`.
   This describes the code as it stood before B679.
