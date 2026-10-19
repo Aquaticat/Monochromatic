@@ -276,20 +276,42 @@ fn commit_merge(
             stderr: String::from_utf8_lossy(&merged.stderr).into_owned(),
         });
     }
-    let oid = git_output(
-        git,
-        &argv(&[
-            "commit-tree",
-            &tree,
-            "-p",
-            local,
-            "-p",
-            remote,
-            "-m",
-            message,
-        ]),
-    )?;
+    let mut commit_tree = vec!["commit-tree"];
+    if signs_commits(git)? {
+        commit_tree.push("-S");
+    }
+    commit_tree.extend(["-p", local, "-p", remote, "-m", message, &tree]);
+    let oid = git_output(git, &argv(&commit_tree))?;
     return Ok(Ok(oid));
+}
+
+/// What:
+///  Whether `commit.gpgsign` asks for signed commits.
+/// Why:
+///   `git commit-tree` signs only when given `-S` and never reads `commit.gpgsign`, so the merge would be the one
+///  unsigned commit of a signed branch, which a remote that requires verified signatures rejects.
+///   An unset key is `git config` exit `1`; any other failure is reported like every failed command.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function signsCommits(git): Promise<boolean>;
+/// ```
+fn signs_commits(git: &PushGit) -> Result<bool, SingleFlightError> {
+    let asked = run_query(
+        git,
+        &argv(&["config", "--type=bool", "--get", "commit.gpgsign"]),
+    )?;
+    if asked.code == Some(1) {
+        return Ok(false);
+    }
+    if asked.code != Some(0) {
+        return Err(SingleFlightError::Git {
+            arguments: String::from("config --type=bool --get commit.gpgsign"),
+            code: asked.code,
+            stderr: String::from_utf8_lossy(&asked.stderr).into_owned(),
+        });
+    }
+    return Ok(asked.stdout.trim_ascii() == b"true");
 }
 
 /// What:
