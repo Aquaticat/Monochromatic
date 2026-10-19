@@ -104,13 +104,13 @@ function semanticWrapConfigPath(): string {
 /**
  Reads the version token off the program's answer to `--version`.
 
- @param answer - standard output of the question, `monochromatic-lint 0.1.2` and a newline
+ @param answer - standard output of the question, `monochromatic-lint 0.2.0` and a newline
 
  @returns The version token, or the stand-in for an answer that is not the program's name and one version token
 
  @example
  ```ts
- versionTokenOf({ answer: 'monochromatic-lint 0.1.2\n', },); // '0.1.2'
+ versionTokenOf({ answer: 'monochromatic-lint 0.2.0\n', },); // '0.2.0'
  ```
  */
 function versionTokenOf({ answer, }: { readonly answer: string; },): string | typeof UNREADABLE_ANSWER {

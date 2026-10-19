@@ -10,11 +10,12 @@
 export const LINT_BINARY_NAME = 'monochromatic-lint';
 
 /**
- Version of the program this package is written against; the line
- `"cargo:monochromatic-lint"` of the repository's `mise.toml` pins the same
- one, and `semantic-wrap-binary.unit.test.ts` holds the two together.
+ Version of the program this package is written against; the repository's
+ `mise.lock` records the same one for `"cargo:monochromatic-lint"` (its
+ `mise.toml` asks for the latest release of a tool the repository publishes),
+ and `semantic-wrap-binary.unit.test.ts` holds the two together.
  */
-export const PINNED_LINT_BINARY_VERSION = '0.1.2';
+export const PINNED_LINT_BINARY_VERSION = '0.2.0';
 
 /**
  File name of the configuration the program reads, selecting the one rule.
