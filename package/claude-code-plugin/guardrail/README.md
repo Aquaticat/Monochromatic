@@ -1,7 +1,7 @@
 # guardrail
 
-PreToolUse hook that guards Agent and Bash tool calls with two checks:
-resume polling prevention and `bun test` blocking.
+PreToolUse hook that guards Agent and Bash tool calls with three checks:
+resume polling prevention, `bun test` blocking, and process-name wait loop blocking.
 
 ## Problem
 
@@ -25,7 +25,7 @@ see `doc/decision/general-purpose-subagent-ban.md`.
 
 ## Solution
 
-The handler implements denial responses for two cases:
+The handler implements denial responses for three cases:
 
 1. **Resume blocking**:
     when an Agent call includes a `resume` parameter,
@@ -37,6 +37,24 @@ The handler implements denial responses for two cases:
     it is denied
    with a message directing the caller to `mise run //package/<path>:test:unit`
    (or `node <file>` for ad-hoc single-file runs).
+
+3. **Process-name wait loop blocking**:
+   when a Bash call runs `pgrep` or `pidof` inside a `while` or `until` loop,
+   including inside a `bash -c` script string,
+   it is denied
+   with a message explaining the self-match and pointing at PID-based waits
+   (`timeout 600 tail --pid=<pid> --follow /dev/null`, or `systemd-run --user --wait`).
+   Straight-line `pgrep` calls and `kill -0 "$pid"` loops stay allowed.
+   `ps | grep` loops are not detected.
+
+## Process-name wait loops
+
+The Bash tool runs each command inside a wrapper shell whose command line contains the command text.
+`pgrep --full <pattern>` therefore matches that wrapper,
+and a loop waiting for the pattern to disappear never exits.
+Measured on 2026-10-19:
+`bash -c 'pgrep --list-full --full <unique-string>'` listed both the wrapper shell and the inner `bash -c`.
+The check was verified through the live Claude Code host, which denied a bounded probe loop.
 
 ## Resume blocking status
 

@@ -477,6 +477,12 @@ NXR:
  never repeat the same synchronous call;
  rerun in background or with a bound.
 
+PWT:
+ Never wait on a process by name:
+ `pgrep --full` in a loop matches the agent's own shell wrapper and never exits.
+ Wait on a PID,
+ bounded: `timeout 600 tail --pid=<pid> --follow /dev/null`.
+
 INH:
  A user-interrupted tool call (`Request interrupted`,
  `doesn't want to proceed`) may be half-applied,
