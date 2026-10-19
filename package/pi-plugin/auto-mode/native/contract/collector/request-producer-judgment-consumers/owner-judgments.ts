@@ -161,7 +161,7 @@ export function createJudgmentLifecycle<Judgment>({
           signal,
           response,
           stream,
-          ...(group === undefined ? {} : { group })
+          group
         }));
         if ((!reference(value)) || ((typeof value) !== 'object')
           || (!Object.isFrozen(value))

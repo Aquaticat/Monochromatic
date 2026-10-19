@@ -14,6 +14,7 @@ import type {
   ProducerDescription,
   ProducerIdentity,
   ProducerInvocation,
+  ProducerIssuance,
   ProducerJudgmentEntry,
   ProducerRecord,
   ProducerRequest,
@@ -148,11 +149,14 @@ export function createRequestProducerOwner<Judgment>({
     response,
     stream
   }: ProducerIdentity): ProducerDescription {
-    return responseRecord({
+    /**
+     Original response description is read through its exact producer record.
+     */
+    const { description } = responseRecord({
       response,
       stream
-    })
-      .description;
+    });
+    return description;
   }
 
   /**
@@ -381,7 +385,7 @@ export function createRequestProducerOwner<Judgment>({
     model,
     context,
     options
-  }: ProducerInvocation): Promise<ProducerStream> {
+  }: ProducerIssuance): Promise<ProducerStream> {
     /**
      Original consumer lookup authenticates this stream callback without traps.
      */
@@ -424,6 +428,9 @@ export function createRequestProducerOwner<Judgment>({
       stamped,
       claim
     );
+    /**
+     Invocation scope closes this claim on every exit path.
+     */
     using invocationScope = {
       [Symbol.dispose](): void {
         claim.open = false;
