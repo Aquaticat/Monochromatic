@@ -752,17 +752,33 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bound): `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:closures`, `test` (792), `test:wrap` (15 and 67) and
     `test:native` (203) passed, and the ten `inspect:source-guards` cases above (seven new, three re-anchored) each
     passed at baseline, failed with the guard removed, and passed restored.
-    Follow-up (branch `fix/ide-tall-wrapped-settle`, issue 1785, 2026-10-19): a window 10,000 px or taller over
-    wrapped text never finished the measurement pass (8,000 px and smaller settled in 1.7 s). Cause: `holds` in
-    `src/native/viewport.rs` asked for a margin of a quarter view height on each side of the view, and a tile cut to
-    the 64 MiB cap (12,384 px at text width 1326) cannot give 1.25 view heights once the view passes about 9,900 px
-    (8,200 px in the middle of the text). `accepts` in `src/native/tile.rs` then discarded every tile the worker
-    built (probe: only `holds` false), the render asked for the same tile, and the `ide-source-tile` thread rebuilt a
-    12,384 px raster for ever. Fix: `recenter_edge` takes the smaller of the quarter and what the cap leaves around
-    the view, less two code rows for the clip rounding (negative for a view taller than the cap). Settle times at
-    heights 8,000 / 9,000 / 10,000 / 12,000 / 14,000: 1.8 s each after the fix; 10,000 and above did not settle in
-    25 s before. Tests: `a_tall_window_over_wrapped_text_finishes_the_measurement_pass` and the new `accepted` check
-    in `no_window_size_or_scale_makes_a_raster_past_the_limit` (both fail without the fix); guard `tall-window-edge`.
+    Follow-up (branch `fix/ide-tall-wrapped-settle`,
+    issue 1785,
+    2026-10-19):
+    a window 10,000 px or taller over wrapped text never finished the measurement pass
+    (8,000 px and smaller settled in 1.7 s).
+    Cause:
+    `holds` in `src/native/viewport.rs` asked for a margin of a quarter view height on each side of the view,
+    and a tile cut to the 64 MiB cap (12,384 px at text width 1326)
+    cannot give 1.25 view heights once the view passes about 9,900 px
+    (8,200 px in the middle of the text).
+    `accepts` in `src/native/tile.rs` then discarded every tile the worker built
+    (probe:
+    only `holds` was false),
+    the render asked for the same tile,
+    and the `ide-source-tile` thread rebuilt a 12,384 px raster for ever.
+    Fix:
+    `recenter_edge` takes the smaller of the quarter and what the cap leaves around the view,
+    less two code rows for the clip rounding
+    (negative for a view taller than the cap).
+    Settle times at heights of 8,000 to 14,000 px (five sizes):
+    1.8 s each after the fix;
+    10,000 and above did not settle in 25 s before.
+    Tests:
+    `a_tall_window_over_wrapped_text_finishes_the_measurement_pass`
+    and the new `accepted` check in `no_window_size_or_scale_makes_a_raster_past_the_limit`
+    (both fail without the fix);
+    guard `tall-window-edge`.
     The IDE was reinstalled from `main` at `482a3cf220` on 2026-10-19 (`dist/monochromatic-ide` and the installed binary
     both sha256 `7e6b2f6a8aab…`; the previous binary is `~/.local/bin/monochromatic-ide.previous`, sha256 `f068d238b760…`).
   - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;

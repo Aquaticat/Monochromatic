@@ -158,13 +158,16 @@ struct Built {
     bytes: u64,
     /// The shaper had to cut the clip the window asked for.
     cut: bool,
-    /// The raster holds the view, or no raster can.
+    /// The raster holds the view,
+    /// or no raster can.
     holds: bool,
     /// One raster can hold the view.
     holdable: bool,
-    /// The window accepts the tile as holding the view, which ends its request for another.
+    /// The window accepts the tile as holding the view,
+    /// which ends its request for another.
     accepted: bool,
-    /// The numbers behind the answers, for a failure message.
+    /// The numbers behind the answers,
+    /// for a failure message.
     detail: String,
 }
 
@@ -311,8 +314,10 @@ const SETTLE_PATIENCE: std::time::Duration = std::time::Duration::from_secs(30);
 /// the tile the worker builds is cut to the raster limit,
 /// the window accepts it as holding the view,
 /// and the measurement pass finishes.
-/// The view's margin of a quarter view height on each side passed the cap, so the window discarded every tile the
-/// worker built and asked for the same tile again, and the pass never finished (issue 1785).
+/// The view's margin of a quarter view height on each side passed the cap,
+/// so the window discarded every tile the worker built
+/// and asked for the same tile again,
+/// and the pass never finished (issue 1785).
 #[test]
 fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
     for height in [10_000.0_f32, 12_000.0, 14_000.0] {

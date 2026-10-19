@@ -114,9 +114,11 @@ pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32)
 ///  and the answer is negative for a view taller than the raster can be.
 /// Why:
 ///  A tile is never taller than its raster limit.
-///  Demanding more room than the limit leaves around the view made every tile the worker built for a window of
-///  about 10,000 px or more fail the hold test, so the window discarded it and asked for the same one again, for
-///  as long as the window stayed that size, and the measurement pass never finished.
+///  Demanding more room than the limit leaves around the view
+///  made every tile the worker built for a window of about 10,000 px or more fail the hold test,
+///  so the window discarded it and asked for the same one again,
+///  for as long as the window stayed that size,
+///  and the measurement pass never finished.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
