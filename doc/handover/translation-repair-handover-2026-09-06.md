@@ -248,12 +248,25 @@ its "Next" list is still the queue the merge went ahead of.
   so test children in temporary scratch directories failed on the notice and wrote log files into
   `~/.local/state/monochromatic/log`;
   every test child is now given a log directory inside the workspace (`392710bce1`, `58adc55ee9`).
-  The files the gates g112 and g113 wrote there on 2026-10-19 (04:44 to 05:15 UTC) were left in place.
+  The 37 files the merge gates wrote there on 2026-10-19 (04:42 to 05:43 UTC)
+  were matched to the gate run times and deleted on the owner's choice;
+  the one other file of that window belongs to the CPU-cap watcher and stays.
   Gate g114 on `58adc55ee9` passed every family suite (2532 pass, 0 fail);
   the `tsdoc` and `stylistic` `lint:oxlint` findings (issues 1777 and 1778)
   and the `module/logger` and `module/test` steps fail on `main` itself in the same way.
-- The merge and its fixes landed on `main` and the branch was fast-forwarded to the same commit;
-  read it with `git log --max-count 1 main`.
+- Gate g115 on `16c415675d` (the fixes plus this checkpoint) passed every family suite
+  (2532 pass, 0 fail) with typography lint clean; only the `tsdoc` and `stylistic` steps failed, as on `main`.
+- `main` moved twice during the work (auto-mode, CI advisory runs, the `git-policy/cli` 0.2.1 release),
+  so `main` was merged in again as `3cca3e309e`:
+  no conflict, and it changes exactly the 34 paths `main` changed, each identical to `main`'s version,
+  so g115 carries over.
+  `3cca3e309e` was pushed to `main` and `translation-repair-rebased` was fast-forwarded to it.
+- The message of `5ce4c4dd7c` claims a lint fix that did not hold;
+  a corrective commit comment names `2e191861cc` as the fix.
+- The scratch worktrees `w198` to `w200` were removed;
+  `w198` held a superseded merge attempt (`19f6aa50ec`, never pushed) whose parents are both in `main`.
+- The main checkout's local `main` was left at `7bbdd00225` (behind `origin/main`),
+  because another session has uncommitted auto-mode work there; it needs a pull before that session pushes.
 
 #### Next
 
@@ -261,6 +274,7 @@ its "Next" list is still the queue the merge went ahead of.
 2.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,
     after its unit suite passes with the real program.
+3.  The owner's raised user task limit (32768) applies after a logout and login.
 
 ## Repository state
 
