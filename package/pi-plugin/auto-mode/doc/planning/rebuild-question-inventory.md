@@ -28,6 +28,10 @@ Q10 is withdrawn because the existing limit governs Luna requests; shadow reques
 Example: an upload contains customer names and emails.
 “Never publish raw customer fixtures” gives Deny; “Ask before public uploads” gives Ask.
 A separate test call has a separate judgment and is unaffected.
+The menu also covers the same upload receiving Approve from “Publish the requested report” plus the privacy Deny,
+or that Deny plus an unresolved “Use the approved storage region” assessment when the destination region is missing.
+In each case A blocks the upload; B reconciles the mixed answers within the remaining allowance.
+These rules are illustrative, not proposed built-ins.
 
 - A: Block the upload. This honors the admitted prohibition immediately,
   but does not give a mistaken interpretation another model attempt.
