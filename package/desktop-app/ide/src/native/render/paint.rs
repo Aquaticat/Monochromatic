@@ -18,10 +18,11 @@ use ide_app::annotation_layout::AnnotationColors;
 use ide_app::find::{FindRange, FindRanges};
 /// Match ranges of the displayed find results.
 use ide_app::find_navigation::paint_ranges;
-/// Physical viewport description for shared shaping.
-use ide_app::shaped_text::Viewport;
 /// The rule that gives the tallest tile for a raster width.
 use ide_app::shaped_text::tile_cap as raster_cap;
+/// Physical viewport description for shared shaping,
+///  and the width of its raster.
+use ide_app::shaped_text::{Viewport, raster_width};
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
 /// Native palette values retain syntax and selection contrast.
@@ -32,24 +33,6 @@ use ide_app::wrap::has_wrap_width;
 use slint::ComponentHandle;
 /// Shared find ranges and syntax styles travel with each stamp and job.
 use std::sync::Arc;
-
-/// What:
-///  Logical pixels the raster extends past the wrap width.
-/// Why:
-///  The raster holds glyphs,
-/// the terminator mark,
-/// and underlines of the row ends;
-///  everything else the window draws over it is drawn by the markup.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const RASTER_MARGIN = 24;
-/// ```
-const RASTER_MARGIN: f32 = 24.0;
-
-/// Raster width of a window that has not reported a width yet,
-/// in logical pixels.
-const UNWRAPPED_RASTER_WIDTH: f32 = 1300.0;
 
 /// What:
 ///  Paint inputs that come from the window and the find state,
@@ -108,11 +91,8 @@ impl Paint {
 /// function tileCap(width: number, scale: number): number;
 /// ```
 pub(in crate::native) fn tile_cap(width: f32, scale: f32) -> f32 {
-    let raster = if has_wrap_width(width) {
-        (width + RASTER_MARGIN).ceil()
-    } else {
-        UNWRAPPED_RASTER_WIDTH
-    };
+    let wrap = has_wrap_width(width).then_some(width);
+    let raster = raster_width(wrap);
     let columns = ((raster * scale).ceil() as u64).max(1);
     return raster_cap(columns, scale);
 }
@@ -125,10 +105,7 @@ pub(in crate::native) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport
     return Viewport {
         first: bounds.first,
         count: bounds.count,
-        width: match wrap {
-            Some(width) => (width + RASTER_MARGIN).ceil(),
-            None => UNWRAPPED_RASTER_WIDTH,
-        },
+        width: raster_width(wrap),
         scale,
         wrap,
         clip: bounds.clip,

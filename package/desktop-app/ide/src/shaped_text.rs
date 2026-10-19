@@ -81,9 +81,12 @@ mod limit;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export { bandClip, fitClip, fitViewport, rasterFits, tileCap } from './limit';
+/// export { RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, bandClip, fitClip, fitViewport, rasterFits, rasterWidth, tileCap } from './limit';
 /// ```
-pub use limit::{band_clip, fit_clip, fit_viewport, raster_fits, tile_cap};
+pub use limit::{
+    RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, band_clip, fit_clip, fit_viewport, raster_fits,
+    raster_width, tile_cap,
+};
 
 /// Shaping of single lines and virtual rows with the shared font setup.
 mod layout;
