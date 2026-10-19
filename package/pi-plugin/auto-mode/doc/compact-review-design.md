@@ -47,6 +47,9 @@ The handler completes its producer after group and selector disposal, including 
 The frozen production qualification passes its fifteen build/type/consumer tasks;
 its actual-session guard retains 16,688,184 additional heap bytes with every historical response still live.
 New lifetime cases and built mutation controls extend this evidence separately.
+The completed mutation set rebuilds removal of completion, removal of payload release,
+premature active retirement, cross-consumer shared state and ambiguity checks during cleanup.
+Every mutation fails its named regression; the restored native build, lifetime cases and memory guard pass.
 The earlier group-only review-retirement test covers a different owner and cannot establish producer retirement.
 The first maintained producer guard fails on an incorrect whole-outcome comparison:
 the actual native outcome also includes its diagnostic reason.

@@ -36,7 +36,9 @@ export type NativeApprovalHost = {
  */
 export type NativePolicyRuntimeInput = NativePolicyRuntimeDependencies & NativePolicyAssessmentTransport;
 
-/** Fixed bootstrap capabilities are independent of the selected assessment transport. */
+/**
+ Fixed bootstrap capabilities are independent of the selected assessment transport.
+ */
 type NativePolicyRuntimeDependencies = {
   /**
    Current native session branch supplies explicit user bypass, never model output.
@@ -60,7 +62,9 @@ type NativePolicyRuntimeDependencies = {
   readonly terminalFetch?: typeof fetch;
 };
 
-/** Configured semantic policy uses raw wire; the legacy branch requires its normalized sender. */
+/**
+ Configured semantic policy uses raw wire; the legacy branch requires its normalized sender.
+ */
 type NativePolicyAssessmentTransport = {
   readonly send: NativeForwardedFunction;
   readonly sendWire?: ReturnType<typeof createAssessmentSender>;

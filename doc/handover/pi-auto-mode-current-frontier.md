@@ -51,6 +51,13 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   latest diagnostics, auxiliary/unjudged responses, failed/reentrant construction and response/stream reuse.
   The independence case binds both consumers to the same issuer so it can detect an incorrectly global current slot.
   These new cases still require their fresh built run and positive-controlled mutations.
+  Built mutation qualification now completes in independent `producer-retirement-built-guards-candidate-8nNXOe`
+  at `1cbae79d1c`, with every five named mutations caught after native rebuild:
+  missing handler completion, retained payload value, premature active retirement,
+  cross-consumer shared current state and cleanup ambiguity revalidation.
+  Restored native build, every lifetime case and actual-session memory guard then pass.
+  Receipt `producer-retirement-built-guards-results.json` is complete;
+  root dist and the live replay runtime remain untouched.
   A further regression now tests a late response alias while its original operation is active:
   completion cleanup must retain the original operation error rather than throw a fresh ownership error over it.
   This boundary is not yet qualified; run the committed black-box case before correcting the producer.
@@ -122,10 +129,15 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   its old name incorrectly classifies an artifact-generating entry as a test-only fixture.
   The renamed build owner still imports original source types; actual tests keep importing built facades.
   Generator documentation/formatting and public declaration exports are being corrected without suppression.
+  The eight-file emitted-declaration owner scope now reports zero lint warnings/errors in the private style candidate.
+  Adoption checks non-generator runtime syntax with positive difference controls,
+  and actually invokes original/formatted generators to compare all five emitted declaration files byte for byte.
+  That generator proof passes; six explicit owned formatting paths are adopted.
   Source MiMo resumes complete saved history in `kARc6q`, immutable corrected runtime `native-release-YGJ1JD`,
   under two GiB/two CPUs/1,536-MiB heap with allocation and payload capture.
   Its bounded write scope reduces the phase callback/mode/transport/assertion/type files;
   build/declaration and catalog registration changes remain supervisor-owned.
+  Native worker `9Tl0ts` also closes normally with exit zero and no signal before its corrected-runtime resume.
   The current consolidated AST comparison measures 780 code lines/226 statements/45 functions,
   against the original 432/126/25; its two owner declarations have zero runtime code/statements/functions.
   Exported/ambient type-only removal has a new positive control so declaration syntax is not counted as executable code.
