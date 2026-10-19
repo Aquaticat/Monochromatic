@@ -78,6 +78,28 @@ const WET_SYNTHETIC_BODY = JSON.stringify({
 },);
 
 /**
+ Synthetic meter response fixture with no five-hour block, as the reply of 2026-10-19 came, weekly budget left.
+ */
+const WET_SYNTHETIC_WEEKLY_ONLY_BODY = JSON.stringify({
+  subscription: { limit: 640, requests: 3, },
+  weeklyTokenLimit: {
+    nextRegenAt: '2026-10-19T17:57:00.000Z',
+    percentRemaining: 64.5,
+  },
+},);
+
+/**
+ The same reply with the weekly budget spent.
+ */
+const DRY_SYNTHETIC_WEEKLY_ONLY_BODY = JSON.stringify({
+  subscription: { limit: 640, requests: 3, },
+  weeklyTokenLimit: {
+    nextRegenAt: '2026-10-19T17:57:00.000Z',
+    percentRemaining: 0,
+  },
+},);
+
+/**
  Transport a case must never reach, since the gate refuses first or reads no
  meter over HTTP.
 
@@ -251,6 +273,31 @@ await describe({
             expect(urls.some(function modelEndpoint(url,): boolean {
               return url.includes('/chat/',);
             },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'ACCEPTS A SYNTHETIC METER WITH NO FIVE-HOUR BLOCK by its weekly budget, and REFUSES it dry when that is spent',
+          fn: async () => {
+            /**
+             What the gate raised over each reply, `passed` where it raised nothing.
+             */
+            const outcomes = await Promise.all([WET_SYNTHETIC_WEEKLY_ONLY_BODY, DRY_SYNTHETIC_WEEKLY_ONLY_BODY,].map(
+              async function gateReply(bodyText,): Promise<unknown> {
+                return await gateOutcome(async function gateWeeklyOnly() {
+                  await assertRequiredProvidersReady({
+                    required: ['synthetic',],
+                    env: { [KEY_NAMES.synthetic]: 'test-synthetic', },
+                    transport: async function transport() {
+                      return { status: 200, bodyText, };
+                    },
+                    signal: AbortSignal.timeout(HANG_STOP_MS,),
+                  },);
+                },);
+              },
+            ),);
+            expect(outcomes[0],).toBe('passed',);
+            expect(outcomes[1],).toBeInstanceOf(RequiredProviderError,);
+            expect((outcomes[1] as Error).message,).toContain('synthetic is not ready: budget dry',);
           },
         },),
         it({

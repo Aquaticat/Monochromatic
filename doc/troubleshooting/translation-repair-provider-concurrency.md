@@ -31,16 +31,40 @@ Hyper request rate remains a separate limit from in-flight concurrency.
 The owner-supplied account limit is 1,000 requests per hour;
 the probe did not drive the account to that boundary.
 
-Production now uses 5 Synthetic slots per model
+Production used 5 Synthetic slots per model from 2026-08-30 to 2026-10-19
 and leaves Hyper per-model concurrency unbounded locally.
 The results do not authorize running dependency-bound pipeline nodes together.
+
+## Synthetic removed its five-hour and concurrency limits (2026-10-19)
+
+The owner reported on 2026-10-19 that Synthetic removed its five-hour limit and its parallelism limits.
+Synthetic's [rate-limit description][synthetic-rate-limits],
+read the same day,
+describes a weekly credit limit alone,
+of which 2% comes back every 202 minutes,
+and no five-hour request limit or concurrency limit.
+A meter reading at 14:35 UTC (`run:budget-sample`) found the `/quotas` body holding
+`subscription`,
+`search`,
+`freeToolCalls`
+and `weeklyTokenLimit`,
+and no `rollingFiveHourLimit`.
+
+So the measurements of 2026-08-30 in this document describe limits that no longer exist,
+and they stay here as that record.
+Since `859954aa47` Synthetic has no per-model ceiling in the client or the router,
+as Hyper has none,
+and its meter reads the weekly budget alone when the reply carries no five-hour window.
+An HTTP 429 from Synthetic is still read as a refusal and holds the provider out;
+no width beyond 5 has been measured since the change.
 
 ## Affected surface
 
 The applied production limits live at these source boundaries:
 
 - `SYNTHETIC_PER_MODEL_CONCURRENCY` in
-  `package/translation-repair/provider/src/synthetic-client.ts` is 5.
+  `package/translation-repair/provider/src/synthetic-client.ts` is positive infinity
+  (5 until 2026-10-19).
 - `createRoutingClient` in `package/translation-repair/provider/src/provider-router.ts`
   imports that same value rather than duplicating it.
 - `createRunClient` in `package/translation-repair/run/src/corpus-run/run-config.ts`
@@ -192,7 +216,9 @@ explains per-model concurrency as subscribed packs and says different models do 
 The current account exposed a 2,750-request five-hour maximum,
 consistent with the previously recorded 5.5 pack-equivalents.
 The observed width-5 result matches the whole concurrent slots implied by that account state.
-The five-hour and weekly quota readers remain independent admission inputs.
+The five-hour and weekly quota readers were independent admission inputs until 2026-10-19;
+since then the weekly budget is the one Synthetic publishes,
+and a reply that still carries a five-hour window is honoured.
 
 Hyper's public [overview][hyper-overview]
 describes API access but does not publish a concurrency ceiling in the page reviewed on 2026-08-30.
@@ -275,8 +301,10 @@ and the translate lane re-reads its seats when it is about to start.
 
 For the replacement finite dependency graph:
 
-- dispatch every ready Synthetic node through a 5-slot semaphore keyed by model identity
-- allow aggregate width 20 when graph has that much independent work
+- dispatch every ready Synthetic node with no per-model semaphore,
+  since Synthetic published no concurrency limit on 2026-10-19
+  (until then a 5-slot semaphore keyed by model identity,
+  aggregate width 20)
 - do not configure gpt-oss or Qwen at 10 based on model size
 - treat HTTP 429 as rate or admission evidence,
   not successful concurrency

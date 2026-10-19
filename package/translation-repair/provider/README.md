@@ -37,7 +37,8 @@ The groups that follow name the main ones.
   and `request-pace.ts`.
 - Provider clients:
   one client for each provider,
-  each with its per-model concurrency.
+  each with its per-model concurrency,
+  which defaults to no ceiling (Synthetic's since 2026-10-19).
   Names:
   `createSyntheticClient`,
   `createHyperClient`,

@@ -277,6 +277,21 @@ its "Next" list is still the queue the merge went ahead of.
   (`/etc/security/limits.d/99-user-nproc.conf`).
 - The main checkout's local `main` was left at `7bbdd00225` (behind `origin/main`),
   because another session has uncommitted auto-mode work there; it needs a pull before that session pushes.
+- The owner reported on 2026-10-19 that Synthetic removed its five-hour limit and its parallelism limits (issue 1779).
+  A keyed `run:budget-sample` at 14:35 UTC,
+  approved by the owner for this,
+  showed the `/quotas` body without `rollingFiveHourLimit`.
+  Red `a76e76e62a`,
+  fix `859954aa47` and `c642190ca4`,
+  docs `5cd3ec2a6e`,
+  `23381065e0` and `c65ebe964d`:
+  the five-hour window is optional,
+  a refusal inside a block names that block's keys,
+  dryness reads the weekly budget,
+  and Synthetic has no per-model ceiling.
+  Gate g116 on `23381065e0` passed every family step (2532 suite lines pass, 0 fail),
+  and the source scans passed on the docs commits.
+  Ledger B691 and M277.
 
 #### Next
 
@@ -284,6 +299,11 @@ its "Next" list is still the queue the merge went ahead of.
 2.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,
     after its unit suite passes with the real program.
+3.  Issue 1779:
+    after the fix lands,
+    take one more `run:budget-sample` reading with the keys (the owner approved the first for this issue);
+    close the issue when the Synthetic meter reads,
+    or fix the weekly block's fields from the keys the refusal names.
 
 ## Repository state
 

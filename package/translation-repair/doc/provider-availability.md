@@ -87,8 +87,15 @@ and reached `10000` on 2026-08-25 only because credits were bought.
 A reader who hits `hyperBalance=0` and waits is waiting for something that has not been observed to happen.
 
 Synthetic is a **subscription allowance**,
-weekly and five-hourly,
-which the `METERS` line prints as `syntheticWeekly` and `syntheticFiveHour`.
+a weekly credit limit since 2026-10-19
+(its rate-limit page of that day gives back 2% of the weekly limit every 202 minutes
+and names no five-hour request limit and no concurrency limit),
+which the `METERS` line prints as `syntheticWeekly`.
+Before that day it was weekly and five-hourly,
+and a reply that still carries the five-hour window is honoured:
+the line prints it as `syntheticFiveHour` (remaining over maximum) and `syntheticThrottled` (`yes` or `no`),
+and prints `syntheticFiveHour=none syntheticThrottled=none` for a reply with no window.
+Records of both forms read back the same way.
 That one does refill on its own schedule,
 and the account owner can sometimes reset it,
 but not reliably and not on demand.
@@ -160,9 +167,10 @@ so they can never describe different instants.
 
 They also separate causes that route identically.
 Synthetic goes dry when its weekly budget empties,
-when its rolling window empties,
+or, where a reply still carries the five-hour window,
+when that window empties
 or when the account is actively throttled;
-those are one bit at the router and three different problems to a reader.
+those are one bit at the router and up to three different problems to a reader.
 
 A field the reader has never been taught the name of is carried through,
 because a level is defined as any field whose value is not a meter state.

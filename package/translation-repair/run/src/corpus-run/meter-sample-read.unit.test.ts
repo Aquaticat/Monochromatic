@@ -134,6 +134,33 @@ await describe({
         },),
 
         it({
+          name: 'READS A RECORD WITH NO FIVE-HOUR WINDOW, whose fields say `none` where the older form said a count, as levels '
+            + 'beside the states and not as a state',
+          fn: async () => {
+            /**
+             A record as `takeReading` writes one for a Synthetic reply with no rolling window.
+             */
+            const line = '[info] [2026-10-19T15:00:00.000Z] [t] [takeReading] METERS '
+              + 'synthetic=wet hyper=dry syntheticWeekly=64.5% syntheticFiveHour=none '
+              + 'syntheticThrottled=none hyperBalance=0';
+
+            expect(readMeterLine({ line, },),).toEqual({
+              at: Date.parse('2026-10-19T15:00:00.000Z',),
+              synthetic: 'wet',
+              hyper: 'dry',
+              bedrock: 'absent',
+              openrouter: 'absent',
+              levels: [
+                'syntheticWeekly=64.5%',
+                'syntheticFiveHour=none',
+                'syntheticThrottled=none',
+                'hyperBalance=0',
+              ],
+            },);
+          },
+        },),
+
+        it({
           name: 'ACCEPTS a level field it has never been taught the name of',
           fn: async () => {
             /**
