@@ -5,7 +5,10 @@
  */
 import {createHash} from 'node:crypto';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {createInputContentPieces,type ContentPage} from './input-content-pieces.ts';
+import {
+  createInputContentPieces,
+  type ContentPage
+} from './input-content-pieces.ts';
 
 //region One manager's input ledger shares storage while retaining every original source occurrence
 
@@ -49,7 +52,11 @@ function retainContentReader({
   @returns original code-unit sequence reconstructed from retained pieces
   */
  function read(): string {
-  return pages.map(function readPage(page){return page.texts.join('');}).join('');
+  return pages.map(function readPage(page){
+   return page.texts
+     .join('');
+  })
+    .join('');
  }
  return Object.freeze({
    sha256,
@@ -107,7 +114,10 @@ export function createInputContentStore(): (input:{
   /**
    Token alignment shares growing JSON strings without changing original bytes.
    */
-  const {key,pages}=retainPieces({
+  const {
+    key,
+    pages
+  }=retainPieces({
     text,
     json
   });

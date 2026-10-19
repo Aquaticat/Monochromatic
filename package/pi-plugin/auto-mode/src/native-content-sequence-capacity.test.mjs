@@ -12,6 +12,19 @@ import {
 //region Unchanged controls separate snapshot growth from initialization and measurement spread
 
 /**
+ Repeated short catalog text separates reference storage from unique text storage.
+ */
+const CATALOG_VARIANTS=3;
+/**
+ Distinct snapshots reproduce complete-reference duplication across retained versions.
+ */
+const SNAPSHOT_VERSIONS=24;
+/**
+ Budget separates the measured 23.5-MB regression from unchanged-input spread.
+ */
+const ADDITIONAL_STORAGE_BUDGET=8_388_608;
+
+/**
  Retain changing tails over the same generated JSON catalog.
 
  @param {boolean} growing - changing tail forces distinct immutable snapshots
@@ -26,9 +39,18 @@ function workload(growing) {
  /**
   Many short JSON tokens expose reference duplication independently of text duplication.
   */
- const catalog=Array.from({length:16_000},function entry(_,index){
-  return {kind:'text',text:`Unchanged small input ${index%3}`};
- });
+ const catalog=Array.from(
+   {length:16_000},
+   function entry(
+     _,
+     index
+   ){
+  return {
+    kind:'text',
+    text:`Unchanged small input ${index%CATALOG_VARIANTS}`
+  };
+ }
+ );
  /**
   All versions remain live through the measurement and independent verification.
   */
@@ -37,15 +59,26 @@ function workload(growing) {
   Digests are computed before the original input is passed to storage.
   */
  const expected=[];
- for(let version=0;version<24;version++){
+ for(let version=0;version<SNAPSHOT_VERSIONS;version++){
   /**
    Only the version tail changes between complete snapshots.
    */
-  const text=JSON.stringify({catalog,tail:growing?version:0});
-  expected.push(createHash('sha256').update(text).digest('hex'));
-  contents.push(retain({text,json:true}));
+  const text=JSON.stringify({
+    catalog,
+    tail:growing?version:0
+  });
+  expected.push(createHash('sha256')
+    .update(text)
+    .digest('hex'));
+  contents.push(retain({
+    text,
+    json:true
+  }));
  }
- return {contents,expected};
+ return {
+   contents,
+   expected
+ };
 }
 
 /**
@@ -60,21 +93,38 @@ function measure(growing) {
  /**
   Collection precedes both baseline and final observations.
   */
- const before=process.memoryUsage().heapUsed;
+ const before=process.memoryUsage()
+   .heapUsed;
  /**
   Live readers preserve the entire tested history during collection.
   */
- const {contents,expected}=workload(growing);
+ const {
+   contents,
+   expected
+ }=workload(growing);
  globalThis.gc();
  /**
   Reading exact content happens after the retained-allocation measurement.
   */
- const retainedHeapBytes=process.memoryUsage().heapUsed-before;
+ const retainedHeapBytes=process.memoryUsage()
+   .heapUsed
+   -before;
  for(const [index,content]of contents.entries()){
-  assert.equal(createHash('sha256').update(content.read()).digest('hex'),expected[index]);
-  assert.equal(content===contents[0],!growing||index===0);
+  assert.equal(
+    createHash('sha256')
+      .update(content.read())
+      .digest('hex'),
+    expected[index]
+  );
+  assert.equal(
+    content===contents[0],
+    (!growing)||(index===0)
+  );
  }
- return {growing,retainedHeapBytes};
+ return {
+   growing,
+   retainedHeapBytes
+ };
 }
 
 /**
@@ -82,7 +132,10 @@ function measure(growing) {
 
  @type {readonly [ReturnType<typeof measure>,ReturnType<typeof measure>]}
  */
-const unchanged=[measure(false),measure(false)];
+const unchanged=[
+  measure(false),
+  measure(false)
+];
 /**
  Distinct tails expose storage duplicated across otherwise unchanged versions.
  */
@@ -93,7 +146,17 @@ const growing=measure(true);
 const additional=growing.retainedHeapBytes-Math.max(...unchanged.map(function retained(item){
  return item.retainedHeapBytes;
 }));
-console.log(JSON.stringify({unchanged,growing,additional,versions:24,catalogEntries:16_000,exactOriginalDigests:true}));
-assert.ok(additional<8*1024*1024,`Changing input snapshots retain ${additional} additional bytes`);
+console.log(JSON.stringify({
+  unchanged,
+  growing,
+  additional,
+  versions:24,
+  catalogEntries:16_000,
+  exactOriginalDigests:true
+}));
+assert.ok(
+  additional<ADDITIONAL_STORAGE_BUDGET,
+  `Changing input snapshots retain ${additional} additional bytes`
+);
 
 //endregion Unchanged controls separate snapshot growth from initialization and measurement spread
