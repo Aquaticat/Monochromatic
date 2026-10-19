@@ -412,13 +412,16 @@ Closure workstreams:
   so the 751 named files are a missing-prerequisite cascade,
   not product failures.
   Build:
-  `mise run build` exits 1 with `SIGABRT` failures and a thread-creation assertion under
-  parallel fanout,
-  which may be host-resource or concurrency induced rather than product defects.
+  the local attempt was stopped as host stress;
+  the bounded CI run `39196377166` failed after 13 minutes 18 seconds with missing
+  `glib-sys`, Podman, `cxx-qt`, `gh` and `canvg` prerequisites,
+  and the unit step was skipped.
+  These are environment and prerequisite failures,
+  not product attribution.
   The static baseline is advisory;
   the unit baseline is invalid until rerun after a successful build;
-  the build failure requires a rerun in the bounded CI environment,
-  not on the shared development host.
+  the build profile requires a prepared CI environment,
+  not the shared development host.
   The evidence is in
   [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).
 

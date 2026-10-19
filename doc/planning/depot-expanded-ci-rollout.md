@@ -134,15 +134,18 @@ At revision `4f3d5a65`:
   not product failures.
   Rerun after a successful build;
 - build:
-  `mise run build` exits 1 with `SIGABRT` and thread-creation failures under parallel
-  fanout,
-  which may be host-resource or concurrency induced.
+  the local attempt was stopped as host stress;
+  the bounded CI run `39196377166` failed after 13 minutes 18 seconds with missing
+  `glib-sys`, Podman, `cxx-qt`, `gh` and `canvg` prerequisites,
+  so the unit step was skipped.
+  These are environment and prerequisite failures,
+  not product attribution.
 
 The [baseline evidence](../audit/depot-current-baseline-2026-10-18.evidence.json) retains the
 compressed logs.
 The static baseline is advisory;
 the unit baseline is invalid until rerun after a successful build;
-the build failure requires a bounded rerun.
+the build profile requires a prepared CI environment.
 The pilot must separate product failures from harness,
 environment and resource failures.
 

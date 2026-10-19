@@ -128,7 +128,21 @@ The corrected run is GitHub run `39196377166`.
 It installs the repository tools with `continue-on-error`, then prepares dependencies, builds and
 runs unit with automatic tool installation off.
 The slopo sidecar failure is retained as tooling noise.
-Outcomes are pending.
+It completed in 13 minutes 18 seconds.
+The build failed and the unit step was skipped.
+Observed build failure classes include a `glib-sys` custom build-command failure,
+a Podman image build failure,
+a `cxx-qt` panic,
+`cargo vendor` download failures,
+`gh repo clone` and `gh api` exit 4,
+and an unresolved `canvg` import in `jspdf`.
+Those are environment,
+tooling and prerequisite failures,
+not product attribution.
+The build step is marked `continue-on-error`,
+so the run conclusion is success while its annotations report exit code 1;
+the workflow will be corrected to fail honestly.
+The unit baseline remains invalid until a build succeeds in a prepared environment.
 
 ## Build profile
 
