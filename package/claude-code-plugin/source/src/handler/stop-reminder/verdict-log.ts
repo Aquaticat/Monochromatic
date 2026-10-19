@@ -54,6 +54,8 @@ type VerdictRecord = {
   }[];
   readonly depth: number;
   readonly message: string;
+  readonly permissionMode: string;
+  readonly sessionCrons: number;
 };
 
 /**

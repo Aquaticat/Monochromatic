@@ -883,7 +883,7 @@ matching `doc/troubleshooting/llmgateway-luna-admission.md`.
 State still decides without a model call when the depth limit is reached,
 when the last forced continuation issued no tool call,
 when a trailing question already owns the stop,
-and, since 2026-10-19, when a subagent is running.
+and, since 2026-10-19, when a subagent is running or the session is in plan mode.
 Every block reason starts with the sentence the depth guard counts,
 so the depth limit keeps bounding the chain.
 
@@ -989,6 +989,42 @@ The cost is a stop that announces independent work while a subagent runs
 No such stop appears in the log; the 63-stop unbiased sample was drawn before `background_tasks` was recorded
 and cannot say.
 Revisit with #1772 if the log shows one.
+
+### Other skip candidates, 2026-10-19
+
+The user asked for more cases where the call can be skipped.
+All 459 stops of the 5.5 models in this repository's transcripts were replayed through the production request.
+Luna acted (probability 0.60 or higher) on 298: 182 background waits, 44 waits on the user, 61 closed,
+6 pauses, and 5 announced next steps.
+The blocking labels (announced or waits on the user) fired on 49.
+Reading all 49 against the user's next message, most were genuine requests for a decision,
+and no state the hook can see separated the false ones from the true ones.
+
+Applied:
+
+- Plan mode (`permission_mode` of `plan`).
+   The agent cannot perform what it announces there, so a block could only be wrong.
+   The corpus has no plan-mode stop (458 of 459 were `auto`), so this rests on the mode's definition, not on a count.
+
+Measured and rejected:
+
+- Any running shell task.
+   The only correct block in the verdict log had a shell command running.
+- Short messages.
+   Of 37 messages under 200 characters, 29 were background waits, and "Still waiting." with nothing running is the
+   failure the check exists to catch.
+- Turns with no tool call (25 stops, 2 blocks), turns that used `AskUserQuestion` (87 stops, 5 blocks, 6%
+   against 11% overall), and a last tool of `AskUserQuestion` (3 stops, 1 block).
+   The rates do not separate and the counts are too small to justify a skip.
+
+Not decided for lack of data:
+
+- Other task types that report back (`monitor`, `workflow`, `teammate`).
+   The log has none of these types, and the user's own rule says monitors rarely wake the main agent.
+- Sessions with a scheduled wakeup (`session_crons`).
+
+The verdict log now also records `permissionMode` and the count of `sessionCrons` per consulted stop,
+so those two can be judged from data later (#1772).
 
 ### Not yet known
 

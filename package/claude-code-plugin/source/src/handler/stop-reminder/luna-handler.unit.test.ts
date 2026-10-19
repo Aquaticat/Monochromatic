@@ -108,6 +108,8 @@ function gatewayBody(
  */
 type StopOverrides = {
   readonly stop_hook_active?: boolean;
+  readonly permission_mode?: StopInput['permission_mode'];
+  readonly session_crons?: NonNullable<StopInput['session_crons']>;
   readonly last_assistant_message?: string;
   readonly background_tasks?: NonNullable<StopInput['background_tasks']>;
 };
@@ -405,6 +407,21 @@ await describe({
           },
         },),
         it({
+          name: 'in plan mode, where the agent cannot perform what it announces, and logs the skip',
+          fn: async () => {
+            const h = await harness({ lines: OPEN, reply: verdictReply('announces_own_next_step',), },);
+
+            const output = await h.run({ permission_mode: 'plan', },);
+
+            expect(output.decision,).toBeUndefined();
+            expect(h.requests,).toHaveLength(0,);
+            const [record,] = await records(h.logPath,);
+            expect(record?.outcome,).toBe('skipped',);
+            expect(record?.detail,).toContain('plan mode',);
+            expect(record?.permissionMode,).toBe('plan',);
+          },
+        },),
+        it({
           name: 'when a subagent is running, still giving a trailing question its own reason',
           fn: async () => {
             const h = await harness({ lines: OPEN, reply: verdictReply('work_closed',), },);
@@ -582,6 +599,7 @@ await describe({
 
             await h.run({
               last_assistant_message: 'Needs your approval.',
+              session_crons: [{ id: 'cron-1', },],
               background_tasks: [{ id: '1', type: 'shell', status: 'running', command: 'secret-command', },],
             },);
 
@@ -592,6 +610,8 @@ await describe({
             expect(record?.depth,).toBe(0,);
             expect(record?.message,).toBe('Needs your approval.',);
             expect(record?.sessionId,).toBe('test-session',);
+            expect(record?.permissionMode,).toBe('default',);
+            expect(record?.sessionCrons,).toBe(1,);
             expect(record?.backgroundTasks,).toEqual([{ type: 'shell', status: 'running', },],);
             expect(JSON.stringify(record,),).not.toContain('secret-command',);
             expect(record?.probabilities,).toMatchObject({ waits_on_user: 0.8, },);
