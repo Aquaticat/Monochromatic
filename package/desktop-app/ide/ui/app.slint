@@ -1,4 +1,5 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
+import { Surface } from "surface.slint";
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
 import { SidebarDivider, SidebarDividerGrip } from "divider.slint";
@@ -26,7 +27,7 @@ export component AppWindow inherits Window {
     preferred-height: 660px;
     min-width: 480px;
     min-height: 320px;
-    background: Palette.background;
+    background: Surface.background;
     default-font-family: "Inter Variable";
     forward-focus: code-focus;
 
