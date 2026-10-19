@@ -101,6 +101,8 @@ jobs:
         id: buildkit
         continue-on-error: true
         timeout-minutes: 25
+        env:
+          PODMAN_USERNS: host
         run: mise run //package/desktop-app/ide:runtime
       - name: Android consumer
         id: android

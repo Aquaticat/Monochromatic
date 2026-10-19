@@ -32,9 +32,6 @@ import nanoSpawn from 'nano-spawn';
 /** Path to the mvm CLI runtime. */
 const MVM = 'node';
 
-/** Args prefix for running mvm. */
-const MVM_ARGS = ['package/cli/mvm/src/cli.ts',];
-
 /** Timeout for VM creation (includes cloud-init / guest agent wait). */
 const CREATE_TIMEOUT_MS = 180_000;
 
@@ -46,6 +43,9 @@ const PKG_ROOT = await findRootCached({
   cwd: import.meta.dirname,
   marker: packageNamed('@monochromatic-dev/cli-vmsync',),
 },);
+
+/** Args prefix for running mvm from any working directory. */
+const MVM_ARGS = [join(PKG_ROOT, '..', 'mvm', 'src', 'cli.ts'),];
 
 /** Absolute path to the tsdown bundle. */
 const BUNDLE_PATH = join(PKG_ROOT, 'dist', 'final', 'node', 'index.mjs',);
