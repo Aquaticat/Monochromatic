@@ -1692,13 +1692,14 @@ that is verification, not a decision for the user.
   and replaces `rec1`, which missed nine of the nine mutants it tested before it was stopped (`unpublished`, the
   `||` chains of `read_destination`, `published_base`, `commit_merge` and the `(Some(true), _)` arm); those
   were killed with eleven new tests and three redundant checks removed; (2) remove the image tags `rec1` and
-  `rec2` once the results are read; (3) the issue 1713 handover path notes below.
-  Open design follow-up: advance the local branch after a reconcile when the worktree allows it (not done because it takes the index lock and touches files).
-  Issue 1713 (handover paths and `mise run //` targets that moved) is queued after the release: a scan of the
-  `doc/handover/cli-git*.md` files found 25 backticked paths that no longer resolve in 11 files (the TypeScript
-  sources replaced by `package/git-policy/cli/src/native`, `dist` and `node_modules` build outputs, retired
-  `package/module/*` examples); each gets an in-place WR6 note with the current value and move date, and the
-  non-cli-git handovers the issue names (forbidden-strings, no-regex, music-player) are left to their owners.
+  `rec2` once the results are read.
+  Open design follow-up: advance the local branch after a reconcile when the worktree allows it (not done because
+  it takes the index lock and touches files).
+  Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
+  (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
+  carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
+  for the forbidden-strings, no-regex and music-player handovers and the retired `mise run //` task names, which
+  belong to their owners.
   1770 is answered as an environment defect and stays open until the consumer confirms: a
   read-only `.git/lfs` without `tmp` reproduces the consumer's message with raw Git and the wrapper alike, and a
   present writable `tmp` fixes it (`doc/troubleshooting/git-policy-wrapper-launcher-path.md`); whether the
