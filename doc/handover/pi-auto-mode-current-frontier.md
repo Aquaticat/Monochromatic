@@ -80,6 +80,28 @@ The private inspector smoke captures a 5,378,583-byte retained heap,
 finds the planted 2,097,168-byte array backing store through actual heap edges,
 and closes normally with complete stderr retained.
 No live worker has been signaled or snapshotted.
+That statement describes the earlier smoke checkpoint.
+Recovered `7HN2ZH` subsequently supplies a connected-state retained-heap baseline:
+post-GC heap usage is 89,823,320 bytes,
+the private snapshot is 66,102,074 bytes,
+and the bounded graph analysis finds the actual 2,097,168-byte positive-control backing store.
+The TCP inspector closes and records a null URL before the worker resumes its phase port.
+Analysis runs entirely under two GiB/two CPUs with a 768-MiB heap and no network;
+the raw snapshot remains private and read-only.
+It is a baseline for a later settled comparison,
+not a root-cause determination.
+Recovery also copies the prior private lint evidence into the new private HOME without overwriting new files.
+The supervisor's isolated system-profile retirement experiment is
+`system-profile-retirement-probe-candidate-Lyoq9R` at committed `2362c1124ce9`.
+The corrected identity guard first passes against its copied original class artifact.
+Only the experiment removes the unused system-placement exports,
+loader selector/override/validation branch and corresponding carrier selection.
+Host custom prompt authority,
+resource system inputs,
+governing context policy and original binding layout constants remain.
+It adds an explicit retired-export assertion;
+that assertion must fail the old artifact before the rebuilt removal qualifies.
+Main-worktree retirement still awaits this experiment and the native worker's read-only investigation.
 Opacity comparison is complete in `policy-input-factory-opacity-results.json`:
 the original class passes all sixteen named cases;
 fresh JS and native builds of the committed factory pass fourteen and fail the two new cases.
