@@ -90,6 +90,32 @@ await describe({
     },),
 
     it({
+      name: 'WRITES BOTH FORMS OF SYNTHETIC\'S FIVE-HOUR FIELDS, a run that began on the window and ended on a reply with none, verbatim',
+      fn: async () => {
+        expect(levelLines({
+          samples: [
+            sampleOf({
+              overrides: {
+                at: BASE_AT,
+                levels: ['syntheticWeekly=97%', 'syntheticFiveHour=48/50', 'syntheticThrottled=no',],
+              },
+            },),
+            sampleOf({
+              overrides: {
+                at: BASE_AT + 60_000,
+                levels: ['syntheticWeekly=64.5%', 'syntheticFiveHour=none', 'syntheticThrottled=none',],
+              },
+            },),
+          ],
+          provider: 'synthetic',
+        },),).toEqual([
+          '  level first 2026-08-25T10:00:00.000Z: syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no',
+          '  level last 2026-08-25T10:01:00.000Z: syntheticWeekly=64.5% syntheticFiveHour=none syntheticThrottled=none',
+        ],);
+      },
+    },),
+
+    it({
       name: 'WRITES the first and the last reading that named a number, leaving out what lies between',
       fn: async () => {
         expect(levelLines({

@@ -50,6 +50,16 @@ const roomyQuota = {
 } as const;
 
 /**
+ Budget reading with no five-hour window, the shape of Synthetic's reply since its rolling limit went away (2026-10-19).
+ */
+const weeklyOnlyQuota = {
+  weekly: {
+    percentRemaining: 99.8,
+    nextRegenAt: '2026-10-20T00:12:58.000Z',
+  },
+} as const;
+
+/**
  Every provider reachable, which is true of the shared seats since OpenRouter
  serves the whole roster.
  */
@@ -119,6 +129,24 @@ await describe({
                 },
               },
             },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'READS A REPLY WITH NO FIVE-HOUR WINDOW BY ITS WEEKLY BUDGET ALONE, not dry with credit left and dry with none, '
+            + 'since Synthetic dropped its rolling limit and the weekly budget always decides',
+          fn: async () => {
+            expect([
+              syntheticIsDry({ quota: weeklyOnlyQuota, },),
+              syntheticIsDry({
+                quota: {
+                  weekly: {
+                    ...weeklyOnlyQuota.weekly,
+                    percentRemaining: 0,
+                  },
+                },
+              },),
+            ],).toEqual([false, true,],);
           },
         },),
 
@@ -511,6 +539,18 @@ await describe({
         },),
 
         it({
+          name: 'NAMES A MISSING FIVE-HOUR WINDOW as `none`, in both fields that read it, rather than dropping the fields or '
+            + 'claiming the account is not throttled',
+          fn: async () => {
+            expect(syntheticMeterLevel({ quota: weeklyOnlyQuota, },),).toEqual([
+              'syntheticWeekly=99.8%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+            ],);
+          },
+        },),
+
+        it({
           name: 'separates active throttling from an emptied budget, which route the same way',
           fn: async () => {
             /**
@@ -563,6 +603,16 @@ await describe({
       name: 'the all-dry refusal names every provider (ledger P12)',
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'STATES SYNTHETIC\'S LIMIT AS THE WEEKLY CREDIT, with the five-hour window named only where a reply still carries one',
+          fn: async () => {
+            expect(new EveryProviderDryError().message,).toContain(
+              'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries that window), '
+                + 'Charm Hyper has no balance left',
+            );
+          },
+        },),
+
         it({
           name: 'LISTS BEDROCK AMONG THE PROVIDERS OUT OF BUDGET AND SAYS ITS CREDIT NEVER REFILLS, and cites the reading '
             + 'the router decided on, since '

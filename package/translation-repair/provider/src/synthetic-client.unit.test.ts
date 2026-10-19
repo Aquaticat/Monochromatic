@@ -49,9 +49,9 @@ import { recordedTransport, } from '@monochromatic-dev/translation-repair-provid
 const SETTLE_MS = 10;
 
 /**
- Production slots measured for every active Synthetic model.
+ How many same-model calls the default-width case holds in flight at once: more than any width Synthetic once granted.
  */
-const EXPECTED_DEFAULT_WIDTH = 5;
+const CONCURRENT_CALLS = 12;
 
 /**
  How long the first of two same-model calls holds the one slot, so the second
@@ -887,7 +887,8 @@ await describe({
         },),
 
         it({
-          name: 'grants five default same-model slots and parallelizes cross-model calls',
+          name: 'GRANTS NO DEFAULT SAME-MODEL CEILING, so every concurrent call to one model reaches the transport at once, beside the '
+            + 'cross-model call',
           fn: async () => {
             /** Gate holding every transport call open until released. */
             const gate = Promise.withResolvers<void>();
@@ -921,7 +922,7 @@ await describe({
               await gate.promise;
               return { status: 200, bodyText: COMPLETION_BODY, };
             }
-            expect(SYNTHETIC_PER_MODEL_CONCURRENCY,).toBe(EXPECTED_DEFAULT_WIDTH,);
+            expect(SYNTHETIC_PER_MODEL_CONCURRENCY,).toBe(Number.POSITIVE_INFINITY,);
 
             /** Client under test. */
             const client = createSyntheticClient({
@@ -929,9 +930,9 @@ await describe({
               transport: gatedTransport,
             },);
 
-            /** One more same-model call than measured slots permit. */
+            /** Many same-model calls, where Synthetic once admitted five. */
             const sameModelCalls = Array.from(
-              { length: EXPECTED_DEFAULT_WIDTH + 1, },
+              { length: CONCURRENT_CALLS, },
               function callModel() {
                 return client.chatText({
                   modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -950,14 +951,14 @@ await describe({
 
             expect(entered.filter(function gpt(id,) {
               return id === SEAT_SYNTHETIC_TEXT_EVERYWHERE;
-            },),).toHaveLength(EXPECTED_DEFAULT_WIDTH,);
+            },),).toHaveLength(CONCURRENT_CALLS,);
             expect(entered.filter(function glm(id,) {
               return id === SEAT_HYPER_OPENROUTER_VISION_EDITOR;
             },),).toHaveLength(1,);
 
             gate.resolve();
             await Promise.all([...sameModelCalls, crossModelCall,],);
-            expect(entered,).toHaveLength(EXPECTED_DEFAULT_WIDTH + 2,);
+            expect(entered,).toHaveLength(CONCURRENT_CALLS + 1,);
           },
         },),
 
@@ -1259,10 +1260,45 @@ await describe({
             const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
             /** Snapshot of the recorded quota state. */
             const snapshot = await client.quotas({ signal: new AbortController().signal, },);
-            expect(snapshot.fiveHour.remaining,).toBe(quotas.rollingFiveHourLimit.remaining,);
+            expect(snapshot.fiveHour?.remaining,).toBe(quotas.rollingFiveHourLimit.remaining,);
             expect(snapshot.weekly.percentRemaining,).toBe(quotas.weeklyTokenLimit.percentRemaining,);
             expect(exchanges[0]?.url,).toBe('https://api.synthetic.new/v2/quotas',);
             expect(exchanges[0]?.method,).toBe('GET',);
+          },
+        },),
+
+        it({
+          name: 'READS A QUOTAS BODY WITH NO FIVE-HOUR BLOCK into a snapshot with no five-hour window, as the live reply of '
+            + '2026-10-19 came',
+          fn: async () => {
+            /** Recorded quotas without the rolling block, with invented numbers. */
+            const quotasBody = JSON.stringify({
+              subscription: { limit: 640, requests: 3, },
+              search: { hourly: { limit: 200, requests: 0, }, },
+              freeToolCalls: { limit: 0, requests: 0, },
+              weeklyTokenLimit: {
+                nextRegenAt: '2026-10-19T17:57:00.000Z',
+                percentRemaining: 64.5,
+              },
+            },);
+            /** Transport replaying the quotas body. */
+            const { transport, } = recordedTransport({
+              replies: [{ status: 200, bodyText: quotasBody, },],
+            },);
+            /** Client under test. */
+            const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+            /** Snapshot of the recorded quota state. */
+            const snapshot = await client.quotas({ signal: new AbortController().signal, },);
+            expect(snapshot,).toEqual({
+              weekly: {
+                percentRemaining: 64.5,
+                nextRegenAt: '2026-10-19T17:57:00.000Z',
+              },
+            },);
+            expect(Object.hasOwn(
+              snapshot,
+              'fiveHour',
+            ),).toBe(false,);
           },
         },),
       ],

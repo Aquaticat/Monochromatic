@@ -92,9 +92,9 @@ function slotHoldingSynthetic(
 }
 
 /**
- Production Synthetic slots measured per active model.
+ How many same-model calls the default-routing case holds in flight at once: more than any width Synthetic once granted.
  */
-const EXPECTED_SYNTHETIC_SLOTS = 5;
+const CONCURRENT_SYNTHETIC_CALLS = 12;
 
 /**
  One Synthetic slot per model, no ceiling elsewhere.
@@ -718,12 +718,13 @@ await describe({
           throw new Error('every provider reading dry must end the call with a refusal',);
         expect(outcome.thrown,).toBeInstanceOf(EveryProviderDryError,);
         expect(String(outcome.thrown,),).toBe(
-          'EveryProviderDryError: Every provider is out of budget at once: Synthetic has no five-hour or weekly '
-            + 'credit left, Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
-            + 'card, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. Synthetic '
-            + 'regenerates on its own schedule; Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never '
-            + 'topped up. Measured at the decision: meters read synthetic dry, bedrock dry, hyper dry, openrouter '
-            + 'dry; holds synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
+          'EveryProviderDryError: Every provider is out of budget at once: Synthetic has no weekly credit left (or no '
+            + 'five-hour request left, on a reply that still carries that window), Charm Hyper has no balance left, '
+            + 'Amazon Bedrock has no credit left short of the owner\'s card, and OpenRouter has no credit left. '
+            + 'Nothing further can be bought, so this run ends. Synthetic regenerates '
+            + 'on its own schedule; Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
+            + 'Measured at the decision: meters read synthetic dry, bedrock dry, hyper dry, openrouter dry; '
+            + 'holds synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
         );
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);
@@ -866,7 +867,8 @@ await describe({
     },),
 
     it({
-      name: 'uses five Synthetic slots before default routing overflows to Hyper',
+      name: 'KEEPS EVERY CONCURRENT CALL ON SYNTHETIC under the default slot limits, since Synthetic states no per-model ceiling '
+        + 'and so never reads saturated',
       fn: async () => {
         /** Providers asked, in call order. */
         const called: ProviderName[] = [];
@@ -904,9 +906,9 @@ await describe({
           },
           budgets,
         },);
-        /** One more concurrent call than Synthetic has measured slots. */
+        /** Many concurrent calls on one model, which Synthetic once capped at five. */
         const calls = Array.from(
-          { length: EXPECTED_SYNTHETIC_SLOTS + 1, },
+          { length: CONCURRENT_SYNTHETIC_CALLS, },
           function callModel() {
             return ask({ client, },);
           },
@@ -916,10 +918,10 @@ await describe({
 
         expect(called.filter(function syntheticCall(provider,) {
           return provider === 'synthetic';
-        },),).toHaveLength(EXPECTED_SYNTHETIC_SLOTS,);
+        },),).toHaveLength(CONCURRENT_SYNTHETIC_CALLS,);
         expect(called.filter(function hyperCall(provider,) {
           return provider === 'hyper';
-        },),).toHaveLength(1,);
+        },),).toHaveLength(0,);
       },
     },),
 

@@ -48,6 +48,11 @@ const DRY_QUOTA = {
 };
 
 /**
+ Quota snapshot of a reply with no five-hour window, the shape Synthetic's reply has had since 2026-10-19, weekly credit left.
+ */
+const WEEKLY_ONLY_QUOTA = { weekly: WET_QUOTA.weekly, };
+
+/**
  OpenRouter credits with money left, the live reading of 2026-09-03.
  */
 const WET_CREDITS = {
@@ -81,7 +86,10 @@ function stubProviders(
     remainingUsd = WET_CREDITS.remainingUsd,
     quotaThrows = false,
   }: {
-    readonly quota?: typeof WET_QUOTA;
+    readonly quota?: {
+      readonly fiveHour?: typeof WET_QUOTA.fiveHour;
+      readonly weekly: typeof WET_QUOTA.weekly;
+    };
     readonly balance?: number;
     readonly remainingUsd?: number;
     readonly quotaThrows?: boolean;
@@ -204,6 +212,37 @@ await describe({
         },);
 
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
+          ...ALL_WET,
+          synthetic: true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS A REPLY WITH NO FIVE-HOUR WINDOW BY ITS WEEKLY CREDIT: wet with credit left, dry once the week is spent',
+      fn: async () => {
+        /** Stub providers whose first one answers with a weekly block alone, credit left. */
+        const wet = stubProviders({ quota: WEEKLY_ONLY_QUOTA, },);
+        /** Stub providers whose first one answers with a weekly block alone, credit spent. */
+        const dry = stubProviders({
+          quota: {
+            weekly: {
+              ...WET_QUOTA.weekly,
+              percentRemaining: 0,
+            },
+          },
+        },);
+
+        expect(await createProviderBudgets({
+          synthetic: wet.synthetic,
+          hyper: wet.hyper,
+          openrouter: wet.openrouter,
+        },).read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
+        expect(await createProviderBudgets({
+          synthetic: dry.synthetic,
+          hyper: dry.hyper,
+          openrouter: dry.openrouter,
+        },).read({ signal: SIGNAL, },),).toEqual({
           ...ALL_WET,
           synthetic: true,
         },);
