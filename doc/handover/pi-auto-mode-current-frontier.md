@@ -3,8 +3,250 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
-The reversibility-corrected visual form is open in Helium; Q1, Q2, Q4, and Q6 await the user’s answers.
-After answers, update the decision tree and continue the next unlocked review work.
+Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
+The next review round is Q7 to Q13 in
+`package/pi-plugin/auto-mode/doc/planning/rebuild-review-round-2.md`
+and the visual review's `#frontier` section.
+It covers reduction, all-not-applicable approval, follow-up reconciliation, shadow budget and durability,
+retention mode, and storage-pressure behavior.
+Question generation and shadow scheduling depend on this round's answers; built-in contents remain deferred.
+The user explicitly challenged stopping after corrections. Finish verification, open Helium, and request this round.
+Do not stop at another status-only response. Implementation remains stopped.
+
+The round is implemented in `f9a7745779`, with dependency and accepted-limit corrections in `938c40034b`.
+All 22 option paths, nine navigation links, four scenarios, four manual branches, reply paths, and keyboard pass.
+Both themes and 390-pixel layout pass without overflow or browser errors; controls meet 48 pixels.
+The independent review distinguishes individually unresolved rules (Q9) from admitted-answer conflicts (Q7 B).
+Choosing Q7 B opens conflict reconciliation in the next round; it does not change Q9's individual-rule scope.
+Startup relevance failure now falls back to all freshly captured rules without asking solely about failed filtering.
+Retained captures are the `round2-*` PNGs beside the HTML, with no non-image PNG metadata.
+Next action: hand off the opened, verified Q7 to Q13 review through the question tool, then wait for answers.
+
+### Q7 concrete-example correction, 2026-10-19
+
+The user rejects “Rule A returns Approve; rule B returns Deny” as an example.
+Replace that abstract restatement before continuing the round.
+The new example has a pending parallel test run plus publication of an unredacted customer fixture,
+explicit illustrative project rules, each admitted answer's concrete basis, and each option's execution result.
+Q7 A denies the whole group; tests alone may be proposed as a new group.
+Q7 B keeps both calls pending for interpretation review; exhausted unresolved review reaches the human.
+Neither option has been accepted. Q7 to Q13 remain open; do not infer an answer from this correction.
+Proposed `ODM` tightening: option examples name pending actions, relevant rules, admitted answers,
+and each option's visible result; abstract labels alone are not examples. `AGENTS.md` is unchanged.
+Commit `4dd7fd96e7` supplies the concrete example.
+The independent reviewer confirms that HTML and Markdown agree and both complete Q7 captures are readable.
+All three Q7 response options pass; light/dark rendering and 390-pixel layout pass without browser errors.
+Markdown renders at `auto-mode-rebuild-plan-render-7LJZYv`; the Q7 captures replace the abstract-example images.
+Reopen Helium at Q7 and let the user inspect the corrected example before continuing the round.
+
+### Later extension mutations accepted as a limitation, 2026-10-19
+
+The user says to pretend later extensions changing arguments after review do not exist.
+Record that behavior as an accepted limitation, not a blocker or an open decision.
+Do not add ordering guards, fallback prompts, private hooks, or further qualification for that case.
+Pre-review preparation and transformations remain part of the intended review input.
+The next review round is being assembled; do not stop after acknowledging this correction.
+
+### Permanent public-API boundary and graceful fallback, 2026-10-19
+
+The user links the historical parallel-batch plan and explicitly rejects maintaining or copying Pi internals,
+duplicating existing Pi functionality, and private Pi APIs, ever.
+This is not an option awaiting reconsideration or permission.
+Use supported public plugin APIs; gracefully fall back where they cannot provide the intended behavior.
+The user accepts graceful fallback as preserving supported review, potentially per-call instead of batch review,
+while keeping Pi usable and disclosing reduced coverage.
+The user's golden rule is to degrade as little as possible, aiming for no end-user experience degradation.
+Try equivalent public-API paths first; preserve the greatest supported functionality if equivalence is impossible.
+Missing integration support alone does not require manual approval, blocked execution, or disabled auto-mode.
+The agent's previous manual-first wording was too restrictive and is superseded.
+Actual rule-required human approval remains distinct from a missing integration capability.
+The historical parallel-batch plan now marks its private prototypes and remaining integration work as withdrawn.
+Pi retains execution, scheduling, preparation, sessions, UI, and existing tool behavior.
+The active plan and visual review must reflect the same boundary.
+Public-only disposable probes continue; they do not authorize a replacement implementation.
+
+Native cleanup is complete. Commit `213a4ebce4` regenerates the lockfile after retired dependencies were removed.
+No unrelated lockfile drift was found; the worktree was clean before this documentation correction.
+Next action: finish the public-plugin evidence and fallback record, then resume the remaining design frontier.
+
+Proposed `EC4` tightening: unsupported capabilities use the least-degrading supported fallback,
+aiming to preserve user experience; explain remaining limits without presenting reduced coverage as full support.
+This proposal addresses the fallback misunderstanding; `AGENTS.md` is unchanged.
+
+Commit `bf8d6731ca` records the minimum-degradation rule and supersedes manual-first fallback wording.
+The updated boundary panel passes light/dark rendering and a 390-pixel viewport without overflow or browser errors.
+The seven affected/referenced Markdown documents render with valid local links at
+`~/temp/agent/auto-mode-rebuild-plan-render-A05tSs`.
+
+Public-plugin qualification finished in `~/temp/agent/pi-public-plugin-probe-20261019/`.
+`mise run lint:types` and `mise run probe` pass all 18 assertions, including deliberate limitation cases.
+Public `prepareLoadout` metadata, persisted message observation, and final sibling `tool_call` review demonstrate
+prepared parallel approval, denial, review failure, per-tool sequential reviews, and skipped-callback accounting.
+These use scripted provider responses and inert tools; no Pi source was copied or modified.
+The candidate denial aborts the active run; this observed behavior is not an adopted product decision.
+Later extensions can still mutate arguments after the guard, as reproduced by the probe.
+Global execution overrides in custom hosts, dynamic loadouts, arbitrary nested grouping,
+real CLI/TUI cancellation, reload/session transitions, and retained-reference mutation remain unqualified.
+Use these facts to find equivalent public paths or the least-degrading supported fallback.
+Do not inherit the probe report's suggestion to withhold execution whenever qualification is incomplete;
+the user's accepted fallback rule supersedes that suggestion.
+
+### Unapproved Pi modification removed, 2026-10-19
+
+The user identifies issue #1786 and prohibits modifying Pi itself; use its public plugin API.
+The agent introduced the copied/transformed Pi architecture without the user's approval.
+The agent also proposed a private loading hook in the rebuild plan and has withdrawn it.
+Do not describe these as a shared choice or an accepted user decision.
+
+Before the user's removal, a direct import of the copied Pi child-process module reproduced
+`ERR_MODULE_NOT_FOUND` for `cross-spawn`; importing the installed Pi module passed.
+Source inspection confirms generated replacements for the agent loop, session, and other Pi modules.
+The active release's dependency link targeted an absent Pi 1.2.0 dependency directory.
+The user removed `dist`, then explicitly removed `bin` and `native`.
+Normal plugin build output may recreate `dist`; the prohibition concerns rebuilding or transforming Pi.
+
+The package had two tracked TypeScript projects plus two empty untracked probe files.
+The tracked split supported the removed mixed TypeScript/JavaScript implementation.
+The package now has one standard TypeScript config; native tasks and empty probe files are removed.
+The user also challenges the copied `types: ["node"]` override.
+The shared `tsconfig.options.json` already supplies it; the package now only declares `extends`.
+Do not copy sibling overrides without checking inherited configuration.
+The agent copied the sibling plugin's override without tracing `extends`; that is why the redundancy was missed.
+Proposed guidance tightening: before copying configuration, inspect its inheritance and keep only necessary overrides.
+This is a proposal, not a change to `AGENTS.md`.
+The generated PATH source also removes the deleted auto-mode launcher directory.
+Preserve the user's deletions and the pre-rebuild reference worktree.
+Finish generated configuration, stale launcher, documentation, and rendered verification before the next review round.
+Commit `ff55ced353` records the native removal, standard package tasks, accepted Q1/Q4 choices, and plugin constraint.
+Both the package type check and file-enforcer configuration type check pass.
+Package lint checks its remaining TypeScript configuration file with zero warnings or errors.
+The dangling `~/.local/bin/pi` shim targeting the deleted native command is removed.
+Ordinary installed Pi reports version 1.3.0 with empty stderr in a credential-free disposable home.
+The revised HTML has no obsolete Q1/Q4 selectors; its correction form, examples, and navigation pass.
+All 19 controls meet the 48-pixel minimum; both themes and a 390-pixel viewport pass without browser errors.
+The actual replacement plugin remains unimplemented and unverified.
+
+Public Pi 1.3.0 source supports observing complete model-issued calls through `message_end`
+and blocking calls through `tool_call`, without modifying Pi.
+This is a candidate public-plugin design, not runtime qualification.
+Final argument mutation, handler ordering, sequential-mode identification, and nested boundaries need disposable probes.
+Do not infer that a missing public capability authorizes private source transformation.
+
+The remaining review queue covers rule reduction, approval sufficiency, focused-evidence reconciliation,
+Stage 0 full-rule fallback, shadow delivery/accounting, and local evidence retention.
+Built-in rule contents remain deferred; Q1 B and Q4 A remain accepted.
+
+Proposed guidance correction: tighten `HON` to require attributing design choices to their actual decision-maker
+and never calling an agent choice shared without recorded user acceptance. `AGENTS.md` is unchanged.
+
+### Unique-leader admission and separate human anchor accepted, 2026-10-19
+
+The user answers “Q1 B, Q4 A.”
+Admit any unique highest-probability choice in a valid response, without a minimum, margin, or confidence threshold.
+Exact ties, malformed or missing responses remain unresolved; rule-answer admission does not bypass group reduction.
+Keep the latest genuine human request in a separate snapshot field in addition to the bounded visible history.
+Synthetic API user-role feedback and compaction entries do not reset that anchor.
+Remove the rejected threshold and capped-history-only menus from the active review.
+
+The next design frontier requires fresh facts rather than inferred constraints.
+Read-only agents are checking aggregation/follow-up semantics, Stage 0 failure fallback and endpoint capacity,
+and existing shadow/logger lifecycle ownership and retention preferences.
+Do not reopen the group boundary, terminal Ask contract, or deferred built-in catalogue.
+Next action: commit the accepted choices, assemble the whole unlocked frontier with concrete examples,
+verify its HTML flowcharts/form, open it in Helium, and request the next round of answers.
+
+### Parallel-batch versus individual-call grouping, 2026-10-19
+
+The user explicitly defines one group as the complete parallel tool-call batch.
+When the model does not call tools in parallel, each call is its own group.
+Do not combine nonparallel A and B into a synthetic group or prepare B before A executes.
+Each separate group receives its own snapshot, verdict, and review budget.
+The three-parallel-request limit concerns Luna review requests, not tool-call membership.
+
+Withdraw Q6's sequential-group timing menu and response selector; only Q1 and Q4 remain open.
+The active SVG now branches by parallel versus nonparallel calls,
+with whole-batch review before parallel dispatch and separate prepare/review/execute stages for nonparallel calls.
+Update Stage 1, host responsibilities, nested-boundary qualification, and acceptance fixtures accordingly.
+The old `flowchart-timing` and `staged-q6` captures are superseded proposals, not the active group contract.
+Built-in contents remain deferred and implementation remains stopped.
+
+Fresh installed Pi agent core 1.3.0 source confirms separate paths in `dist/agent-loop.js`:
+sequential dispatch at line 374 prepares and executes per call;
+parallel dispatch at line 411 prepares members before the execution barrier at line 453.
+Dispatch configuration and per-tool overrides at lines 368 to 372 remain host qualification details.
+Independent review confirms that Q6's old premise conflicted with the settled grouping boundary.
+The proposed `QPM` tightening now requires defining groups before posing timing choices; `AGENTS.md` is unchanged.
+Committed the grouping contract in `716e87302d`.
+The grouping diagram passed light/dark rendering, node-text bounds, and full 390-pixel keyboard scrolling.
+The response form contains only Q1 and Q4; Q6 has neither a field nor a serialized answer.
+All eight navigation targets, four examples, six answer options, manual branches, and reply branches passed.
+All 21 controls meet the 48-pixel minimum; page errors and console records are empty.
+The inspected grouping captures contain only PNG image chunks and are retained beside the review.
+Markdown rendered at `auto-mode-rebuild-plan-render-p66Mem` before these verification notes.
+Next action: continue architecture review from Q1 and Q4 answers; built-in contents remain deferred.
+
+### Complete drawing inventory correction, 2026-10-19
+
+The user points out that the flowchart correction did not cover every drawing.
+The prior pass changed startup, group review, and human decision but left nine card-based drawings.
+Replace rule composition, follow-up detail, all four worked-example tabs, Ask routing,
+reversibility, and preparation timing with connected SVG diagrams too.
+The active artifact now has 12 SVG charts and no `class="flow"` or `class="arrow"` drawing remnants.
+The proposed `VHI` tightening now covers every flow and explicitly includes hidden examples in verification.
+No existing architecture choice, pending question, or deferred built-in catalogue decision changes.
+Committed the complete conversion in `a5ab8755eb`.
+The full inventory passed 24 chart/theme checks: all node text fits, charts fit their captures,
+and every chart scrolls by keyboard to the full horizontal extent at 390-pixel width without page overflow.
+The navigation, all four example tabs, nine answer options, manual examples, and reply branches also pass.
+Browser errors and console records are empty.
+Independent review inspected all 24 screenshots and source edges with no concrete defect found.
+The 18 new inspected light/dark captures contain only PNG image chunks and are retained beside the review;
+the existing startup/group/manual captures remain valid.
+Markdown rendered at `auto-mode-rebuild-plan-render-vtacLQ` before these verification notes.
+Next action: continue architecture review from Q1, Q4, and Q6 answers without reopening deferred built-in contents.
+
+### Flowchart correction, 2026-10-19
+
+The user rejects the card-row drawings as improper flowcharts.
+Replace startup, group review, and manual decision drawings with connected SVG flowcharts:
+process rectangles, decision diamonds, labeled edges, terminal outcomes, and an actual follow-up loop.
+Deterministic approve/deny/ask each exit before per-group Luna;
+only unresolved group outcomes reach the batch-limit decision and the focused-question return path.
+Approve and Stop each show optional reason, durable model-visible record, and execution consequence.
+Keep text readable through keyboard-accessible horizontal scrolling on narrow screens.
+Tighten the existing proposed `VHI` guidance in the plan to require connected control-flow notation;
+the actual `AGENTS.md` is unchanged. No architecture decision or built-in catalogue choice is reopened.
+Committed the connected flowcharts in `68fe46015b`.
+Independent SVG and screenshot review found no connection or semantic defect.
+All charts passed light/dark rendering and 390-pixel keyboard scrolling to their full 621-pixel horizontal extent.
+No group-node text exceeds its shape bounds, no page overflow, and page error/console records are empty.
+Existing navigation, scenarios, nine options, manual branches, reply handling, and keyboard activation still pass.
+The six inspected desktop captures contain only PNG image chunks and are retained beside the review.
+Markdown rendered at `auto-mode-rebuild-plan-render-VBQElO` before these verification notes.
+Next action: continue architecture review from Q1, Q4, and Q6 answers; built-in contents remain deferred.
+
+### Terminal verdict correction, 2026-10-19
+
+The user corrects the invented ambiguous-ask alternative:
+applicable `AGENTS.md` rules can require asking, and Luna only runs after deterministic checks establish no verdict.
+Deterministic approve, deny, and ask each exit automatic review with zero per-group Luna calls.
+Startup relevance remains separate. After Luna, an established group ask prompts the human without another batch.
+Only an unresolved group outcome enters focused follow-up review.
+An ask explanation names the triggering rule, facts, required human decision, and consequences;
+it need not invent uncertainty when the rule requires confirmation with all facts known.
+The plan and HTML remove Q2's alternatives and response field and show the terminal deterministic branches.
+Independent read-only review confirmed the flow and the explanation-contract correction.
+The former Q2 screenshots and historical open-question lists record withdrawn proposals, not current requirements.
+Built-in contents remain deferred. Implementation remains stopped.
+Committed the correction in `5da6f40e9b`.
+The revised artifact passed seven navigation targets, four scenarios, all nine remaining answer options,
+manual decisions with and without reasons, all reply branches, literal text handling, and keyboard activation.
+All 21 controls meet the 48-pixel minimum. Light/dark and 390-pixel checks report no horizontal overflow.
+Page errors and console records are empty; the Q2 field and serialized answer are absent.
+The complete terminal-flow and settled-ask panels fit in both color schemes and were visually inspected.
+Markdown rendered at `auto-mode-rebuild-plan-render-zba1NV` before these verification notes.
+Independent review found no remaining contradiction in the corrected plan or HTML.
+Next action: reopen the verified page in Helium, then continue from user answers to Q1, Q4, and Q6.
 
 ### Built-in contents deferred, 2026-10-19
 

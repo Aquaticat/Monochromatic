@@ -9318,3 +9318,68 @@ Its `pi-gpt55-long-context.md` concerns model-window changes,
 not this MiMo collector-storage case.
 There is no upstream filing artifact or duplicate-tracker claim:
 no external issue is proposed for this owned defect.
+
+## Pi native release retirement after missing cross-spawn, 2026-10-19
+
+### Symptom and scope
+
+[Issue #1786](https://github.com/Aquaticats/Monochromatic/issues/1786) reports Node's
+`ERR_MODULE_NOT_FOUND: Cannot find package 'cross-spawn'` from the copied Pi distribution.
+The active release was `native-release-kFkBoY`, with Pi 1.2.0 recorded in its source manifest.
+The ordinary installed Pi package inspected for comparison was 1.3.0.
+The user subsequently removed auto-mode's `dist`, `bin`, and `native` directories.
+This section records the evidence captured before removal, not the state of a working replacement.
+
+### Owned modification and dependency failure
+
+The old launcher imported `../dist/native/cli.mjs` at `native/command.ts:13`.
+That generated CLI loaded `./loader.mjs`, then `./pi/coding-agent/dist/cli.js`.
+The source is preserved in the pre-rebuild worktree at
+`~/temp/agent/pi-auto-mode-before-rebuild-20261019/package/pi-plugin/auto-mode/`.
+
+`native/contract/integration/native-batch/prepare-agent.ts:113` replaced Pi's tool-dispatch implementation;
+`native/loader.ts:51` mapped original Pi modules to generated replacements and line 161 installed the resolver hook:
+
+```ts
+// Historical native/loader.ts:161, in the preserved reference worktree.
+export const nativeLoaderHooks: ModuleHooks = registerHooks(hooks);
+```
+
+The generated agent loop invoked the added `config.executeToolBatch` at line 390.
+Thus `installedSourcesModified: false` described absence of in-place package writes only.
+It did not mean Pi's implementation was unchanged.
+The agents introduced this architecture without the user's approval.
+
+The active release's `pi/coding-agent/node_modules` symlink targeted the absent directory
+`node_modules/.pnpm/@earendil-works+pi-coding-agent@1.2.0/node_modules`.
+Its child-process module imported the dependency unconditionally:
+
+```js
+// Historical dist/native/pi/coding-agent/dist/utils/child-process.js:2.
+import crossSpawn from "cross-spawn";
+```
+
+The dangling link is observed evidence. The issue's theory about a particular install changing hoisting remains unproven.
+
+### Verification and retirement
+
+Before deletion, `mise run probe-pi-1786` in the private visual-review scratch directory
+imported that child-process module directly without launching Pi or contacting a model.
+It reproduced `ERR_MODULE_NOT_FOUND` naming `cross-spawn` and the active copied-release path.
+The positive control imported the installed Pi child-process module and checked its `spawnProcess` export successfully.
+These are import checks, not a complete configured CLI session test.
+The probe requires the now-removed release and must not be rerun by rebuilding that release.
+
+The remedy selected by the user is retirement of the copied/transformed Pi architecture.
+An ordinary TypeScript plugin must use public Pi APIs.
+Normal plugin output may use `dist`; private loading hooks and rebuilding Pi remain prohibited.
+Adding another dependency link would not satisfy that requirement.
+There is no claimed replacement-plugin runtime verification yet.
+
+### Upstream filing decision
+
+No upstream filing is appropriate: this is an owned relocated build with a broken dependency link.
+The first filing condition, an upstream defect, is not met.
+Upstream fixability, supported use case, contribution policy, willingness, and patch prototyping
+do not change that conclusion and were not investigated for a proposed upstream report.
+The existing repository issue is the incident record; no duplicate or external comment was sent.

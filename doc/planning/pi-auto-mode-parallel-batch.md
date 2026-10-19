@@ -1,6 +1,32 @@
 # Assess parallel tool calls as one judgment
 
-## Accepted requirement
+## Current constraint and graceful fallback
+
+On 2026-10-19, the user explicitly prohibits maintaining or copying Pi internals,
+duplicating existing Pi functionality, and using private Pi APIs, without exception.
+Use supported public plugin APIs and leave execution, scheduling, argument preparation,
+session handling, and existing tool behavior owned by Pi.
+If a desired review behavior cannot be implemented through those APIs, gracefully fall back.
+A missing capability never authorizes another dispatcher, host copy, source transformation, or private hook.
+
+Degrade as little as possible, aiming for no degradation of the end-user experience where possible.
+First seek an equivalent supported public-API path; otherwise retain the greatest supported review coverage.
+For example, supported per-call review may replace unavailable batch review, with reduced coverage disclosed.
+A missing integration capability does not itself require manual approval, blocked execution, or disabled auto-mode.
+Keep ordinary Pi usable and explain material limitations without claiming guarantees the fallback lacks.
+Do not deadlock Pi while waiting for an event its scheduler cannot yet deliver.
+
+The [active rebuild plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md)
+owns current grouping, review budgets, and implementation work.
+The private prototypes recorded here are withdrawn historical experiments, not integration candidates.
+Their passing fixtures do not authorize maintaining them or migrating their functionality into the plugin.
+The agent pursued those mechanisms without user approval.
+
+The user also accepts later extensions changing arguments after review as an unsupported case on 2026-10-19.
+Design as though those later mutations do not occur; this does not require ordering guards or fallback prompts.
+Historical post-guard mutation qualifications in this document are not remaining work.
+
+## Historical requirement and budgets
 
 On 2026-10-01,
 the user requested fixing the latent per-tool judgment behavior:
@@ -227,7 +253,7 @@ Extension `tool_call` handlers can then mutate input;
 `extensions/types.d.ts:939` explicitly says later handlers see earlier mutations.
 A raw assistant-message snapshot alone is not proof of the final arguments executed.
 
-## Required fix shape
+## Historical target for admission
 
 The admission seam needs a complete,
 immutable pending-batch manifest and a shared result before member execution.
@@ -259,7 +285,10 @@ A shared `parentToolCallId` can include sequential dependent calls too.
 Do not group all descendants together or guess group membership from a short timer.
 The orchestration seam must supply the actual complete parallel set.
 
-## Remaining verification
+## Withdrawn private-integration work
+
+The following former work list is withdrawn as of 2026-10-19.
+Retain it only to explain the historical experiments; do not execute it.
 
 - Integrate the qualified batch-admission seam into the real extension rather than only the private prototype.
 - Extend the verified native preparation and result-hook ordering beyond the finite inert-tool fixtures.
@@ -286,4 +315,4 @@ permission,
 grant,
 or represented action.
 That result does not integrate the batch prototype into production.
-The new grouping contract must be incorporated into the eventual real-consumer integration.
+Current work must instead qualify supported public plugin behavior and its graceful fallback.

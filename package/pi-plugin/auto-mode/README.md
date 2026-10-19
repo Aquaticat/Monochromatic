@@ -1,5 +1,21 @@
 # @monochromatic-dev/pi-plugin-auto-mode
 
+## Rebuild status
+
+Implementation is stopped while the [ground-up plan](doc/planning/ground-up-rebuild.md) is reviewed.
+The replacement will be a TypeScript plugin using Pi's public API.
+Maintaining or copying Pi internals, duplicating existing Pi functionality, and private APIs are prohibited.
+Unsupported review behavior must use the least-degrading public fallback,
+aiming to preserve the end-user experience entirely and explaining any material remaining limitation.
+The user did not approve the old copied/transformed Pi architecture and has removed `bin`, `native`, and `dist`.
+Native build tasks and the mixed-language TypeScript configuration are retired.
+Normal plugin output may recreate `dist`; it must not contain a rebuilt or transformed Pi distribution.
+The remaining native descriptions and source links in this README are historical.
+Their source is preserved at `~/temp/agent/pi-auto-mode-before-rebuild-20261019/package/pi-plugin/auto-mode/`.
+No replacement plugin is currently available.
+
+## Historical implementation
+
 > Scratch-path note:
 > `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
@@ -18,9 +34,10 @@ excluding shared dependency symlink targets.
 Later verification builds add retained artifacts;
 this historical checkpoint is not a current deployment-closure measurement.
 
-## Current native behavior
+## Historical native behavior
 
-The installed `pi` command uses the maintained native host described in [the native README](native/README.md).
+The old installed `pi` command used the host described in `native/README.md`
+(removed 2026-10-19; retained in the pre-rebuild worktree named in Rebuild status).
 It uses `openai/gpt-6-luna-decisions` through the Gateway Decisions endpoint,
 with the adopted `0.60` selected-option probability cutoff and a unique leading meaning.
 This threshold is an operating rule,
@@ -45,7 +62,8 @@ The same projection covers process start commands.
 Complete shell source stays local for execution and human confirmation.
 Literal arguments and quoted here-document bodies remain data, including text resembling shell syntax.
 Incomplete or unsupported parsed structure routes the original operation to human confirmation.
-The [review input verification record](native/review-input-verification.md)
+The historical `native/review-input-verification.md`
+(removed 2026-10-19; retained in the same pre-rebuild worktree)
 documents request-capture coverage and complete-session replay requirements.
 Complete copies of the root policy in visible messages are replaced by a reference to selected excerpts.
 Older conversation receipts stay local for provenance.
