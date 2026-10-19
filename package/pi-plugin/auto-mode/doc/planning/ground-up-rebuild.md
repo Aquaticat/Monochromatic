@@ -783,6 +783,36 @@ No implementation proceeds while the user is reviewing this plan.
 
 ## Review artifact verification
 
+The complete drawing inventory now contains 12 connected SVG charts, including the four worked-example tabs.
+The initial flowchart pass covered only startup, group review, and human decision; its partial coverage was corrected.
+All remaining composition, follow-up, example, routing, autonomy, and timing drawings now use connected paths.
+No legacy `.flow` or `.arrow` card drawing remains in the HTML.
+All 24 chart/theme combinations passed rendered text-bound checks and keyboard scrolling at 390-pixel width.
+Independent review inspected every capture and found no broken connection or changed decision semantics.
+Navigation, every example tab, response options, manual examples, and reply handling also passed.
+The page produced no browser errors or console records.
+
+Additional current flowchart captures:
+
+- Rule composition: [light](ground-up-rebuild-review/flowchart-rules-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-rules-dark.png).
+- Follow-ups: [light](ground-up-rebuild-review/flowchart-adaptive-flow-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-adaptive-flow-dark.png).
+- Cross-package tests: [light](ground-up-rebuild-review/flowchart-case-tests-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-case-tests-dark.png).
+- Shared-state test effects: [light](ground-up-rebuild-review/flowchart-case-scope-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-case-scope-dark.png).
+- Matching approval: [light](ground-up-rebuild-review/flowchart-case-exception-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-case-exception-dark.png).
+- Required human choice: [light](ground-up-rebuild-review/flowchart-case-missing-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-case-missing-dark.png).
+- Ask routing: [light](ground-up-rebuild-review/flowchart-ask-routes-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-ask-routes-dark.png).
+- Autonomy baseline: [light](ground-up-rebuild-review/flowchart-autonomy-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-autonomy-dark.png).
+- Preparation timing: [light](ground-up-rebuild-review/flowchart-timing-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-timing-dark.png).
+
 The flowchart correction replaces the startup, group-review, and manual-decision card rows with connected SVG.
 Decision diamonds have labeled outgoing branches; operation rectangles and rounded exits have attached arrows.
 The follow-up return edge reaches the current-batch Luna call only through the unresolved outcome and budget check.

@@ -15,8 +15,16 @@ reversibility, and preparation timing with connected SVG diagrams too.
 The active artifact now has 12 SVG charts and no `class="flow"` or `class="arrow"` drawing remnants.
 The proposed `VHI` tightening now covers every flow and explicitly includes hidden examples in verification.
 No existing architecture choice, pending question, or deferred built-in catalogue decision changes.
-Next action: inspect every diagram in both themes, drive all example tabs and narrow-screen scrolling,
-retain evidence, and reopen the complete review in Helium.
+Committed the complete conversion in `a5ab8755eb`.
+The full inventory passed 24 chart/theme checks: all node text fits, charts fit their captures,
+and every chart scrolls by keyboard to the full horizontal extent at 390-pixel width without page overflow.
+The navigation, all four example tabs, nine answer options, manual examples, and reply branches also pass.
+Browser errors and console records are empty.
+Independent review inspected all 24 screenshots and source edges with no concrete defect found.
+The 18 new inspected light/dark captures contain only PNG image chunks and are retained beside the review;
+the existing startup/group/manual captures remain valid.
+Markdown rendered at `auto-mode-rebuild-plan-render-vtacLQ` before these verification notes.
+Next action: continue architecture review from Q1, Q4, and Q6 answers without reopening deferred built-in contents.
 
 ### Flowchart correction, 2026-10-19
 
