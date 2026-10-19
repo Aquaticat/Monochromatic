@@ -731,8 +731,8 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
     ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
   - Tall window blanked the text (branch `fix/ide-tall-window-tile`, worktree `.claude/worktrees/ide-tall-tile`,
-    2026-10-18; landed on main 2026-10-19). Cause: the window chooses a tile clip from its row map, where a wrapped line the
-    background pass has not reached counts as one row, while the shaper sizes the raster from the rows it just shaped,
+    2026-10-18; landed on main 2026-10-19). Cause: the window chooses a tile clip from its row map, where a wrapped
+    line the background pass has not reached counts as one row, while the shaper sizes the raster from the rows it just shaped,
     several times taller. At a text width of 1354 the cap is 11,994 px at scale 1, so the three-view tile of a window
     over 4,000 px tall passed 64 MiB (journal: `Source viewport 1360x12768 exceeds the 64 MiB raster limit`), the
     painter refused it, and the window thread then replaced the picture with an empty image. Fix: `fit_clip` and
