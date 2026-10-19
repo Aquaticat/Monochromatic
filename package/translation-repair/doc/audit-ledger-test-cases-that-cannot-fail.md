@@ -900,6 +900,20 @@ and that they are not yet on the branch;
 its notes land with that code and are not read here,
 so this entry does not say whether each new case fails under its mutation.
 
+Updated on 2026-10-19 (UTC):
+the test round landed as 15 commits,
+`4df68c685e` to `58b9d98583`,
+and its notes are read in B684.
+Each survivor it pinned has a case that its notes record as failing under the mutation,
+and the three that change behaviour are pinned to what the TSDoc and headers of the code state.
+The other survivors are equivalent mutants,
+four unreachable branches that are now invariant errors (B683),
+and two that the round could not pin.
+The entry is closed for the pinned survivors,
+the equivalent ones and the four branches,
+and open for the two left unpinned.
+B684 lists each.
+
 Recurrence:
 `mistake-prevention-guards-searches-and-claims.md`,
 "Guards that cannot fail".

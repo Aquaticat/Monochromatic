@@ -501,6 +501,12 @@ B119).
 A change that stops calling a test helper deletes it,
 and a fixture exports only what another file imports or re-exports,
 since an export its own file alone reads offers nothing (ledger B118).
+A round that adds or changes tests runs the `source-scan` task of the package family
+beside `lint:types` and `lint` before it reports:
+the test round of the survivors reported done without it,
+and the scan found duplicate bodies in two of its test files (ledger M266).
+This rule was written by the filer of M266 on 2026-10-19 (UTC),
+and the notes did not give it.
 
 What enforces it:
 `mise run source-scans`,
@@ -618,6 +624,12 @@ No commit is amended even when it is unpushed:
 a docs agent and a merge agent of the split each amended one of their own (ledger M246),
 and the briefs now say "never amend,
 even unpushed".
+A count in a commit body is read off the proof log it summarises,
+or the body leaves the count out:
+one body said six guards for the nine mutations it pins,
+and a commit comment corrected it (ledger M267).
+This rule was written by the filer of M267 on 2026-10-19 (UTC),
+and the notes did not give it.
 
 What enforces it:
 habit,

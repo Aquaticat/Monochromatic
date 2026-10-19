@@ -757,3 +757,35 @@ the claim names the date and time of the search,
 and a change that makes a reader stricter is gated by a generation and does not rely on a directory being static.
 `mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".
+
+## M267: the body of a test commit said six guards for the nine mutations it pins
+
+Status:
+happened in `5a0fe85281` (`77823411c4` in `w188`),
+whose body says "A mutation run left six guards of the artifact reader unpinned."
+The commit pins nine mutations across two files:
+five in the run-off recount
+(the refusal beside a majority,
+the run-off quorum,
+the counting against the finalists only,
+and the finalists count and labels checks,
+each with a fixture that only that check refuses)
+and four in the reader of an unlocated reason
+(the earlier reading of the ballots,
+candidates only,
+any span,
+and readable).
+The commit was not amended.
+The correction is commit comment 205562500 on `5a0fe85281`,
+posted at 00:44 UTC on 2026-10-19:
+the test changes are as the body describes,
+and only the count is wrong.
+The notes of `w188` record the same correction.
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+a count in a commit body is read off the proof log it summarises,
+or the body leaves the count out.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Commit messages".

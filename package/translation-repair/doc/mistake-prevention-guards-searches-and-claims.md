@@ -242,6 +242,14 @@ and three of those changed what the code does (ledger B674).
 Each survivor is classed as a missing test,
 an equivalent mutant or an unreachable branch;
 a missing test is written and shown to fail under its mutation.
+A fixture for an ordering is shown to give opposite answers under the two orders before the test is committed:
+a pin of the code point order used a character of the basic plane at a lower code point than the surrogates,
+which sorts the same in UTF-16 order,
+and a second commit replaced it (ledger M268).
+A mutation spec is applied to the base and shown to match exactly once before a proof relies on it,
+and a spec whose find string or file has moved is rewritten and kept with the proofs (ledger M269).
+These two rules were written by the filer of M268 and M269 on 2026-10-19 (UTC),
+and the notes did not give them.
 
 What enforces it:
 the mutation harness in each fix's record,

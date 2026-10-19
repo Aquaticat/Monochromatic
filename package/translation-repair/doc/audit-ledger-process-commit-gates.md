@@ -451,3 +451,34 @@ its base is checked to be an ancestor of the branch,
 and every earlier round from the same worktree is found in the branch's `git log`.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Work merged from parallel briefs".
+
+## M266: a test-only round was reported done before the scans of the package family had read its tests
+
+Status:
+happened on 2026-10-18 (UTC) in the test round `w188`.
+The round ran `build`,
+`lint:types`,
+`lint` and `test:unit` for the seven packages it touched,
+and did not run `source-scan`.
+Its `lint:types` and `lint` findings (types in two test files and an `await` in a loop) came after the pins,
+and were fixed in `ce66f2cb07` and `58b9d98583`.
+When the round was ported onto the branch of generation 19,
+`source-scan` found two problems in its tests:
+two copies of the ballot builder in the run-off recount tests of `artifact`,
+now `ballotsQuotingSecond`,
+and two copies of the torn-down body in the drain tests of `provider-stream`,
+now `tornDownResponseOf`.
+They were fixed in `5c1d1aef1b` with the same ballots and the same body.
+The same run found a third problem of the sol round's own:
+a word of position in the name of a test in `consistency-markup-ranges-unplaced.unit.test.ts`,
+which that commit also fixed.
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+a round that adds or changes tests runs the `source-scan` task of the package family
+beside `lint:types` and `lint` before it reports,
+because the scans read tests for duplicate bodies,
+words of position and times without a zone.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Lint and edits".

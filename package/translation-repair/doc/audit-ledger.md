@@ -209,6 +209,11 @@ named for that subject and listed here.
   Cases and guards that would pass with the behaviour they name removed,
   a pass-through that no case depended on,
   and the mutations of four rounds' guards that no test fails.
+- [Audit ledger: survivors of the guard demonstrations and the tests that pin them](audit-ledger-guard-demonstration-survivors-and-their-pins.md):
+  The mutations of four rounds' guards that every test passed,
+  the test round that pinned the reachable ones,
+  the equivalent mutants,
+  and the two survivors that stay unpinned (B684).
 - [Audit ledger: files a later run reads back](audit-ledger-files-a-later-run-reads-back.md):
   Caches,
   ledgers,
@@ -496,7 +501,9 @@ named for that subject and listed here.
 - [Audit ledger: process mistakes, guards and red cases](audit-ledger-process-guards-and-red-cases.md):
   Guards and failing-first cases that could not fail,
   never reached what they guarded,
-  or were removed to please a census.
+  or were removed to please a census,
+  with a fixture that did not differ between two orders
+  and mutation specs whose text had moved (M268 and M269).
 - [Audit ledger: process mistakes, searches and censuses](audit-ledger-process-searches-and-censuses.md):
   Searches and censuses that missed what they looked for,
   or were read as complete when they were not.
@@ -504,7 +511,8 @@ named for that subject and listed here.
   Claims written without their evidence,
   in commit messages,
   the ledger and notes,
-  and a generation called unstored while a live pass wrote it (M265).
+  a generation called unstored while a live pass wrote it (M265),
+  and a commit body that miscounted the guards it pins (M267).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,
@@ -559,7 +567,8 @@ named for that subject and listed here.
   Commits made without the suite,
   the lint,
   the scans or the type check that would have refused them,
-  and a round landed without the round before it.
+  a round landed without the round before it,
+  and a test round reported before the scans had read its tests (M266).
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md):
   Turns that ended with work still listed,
   and waits spent polling.
@@ -734,6 +743,7 @@ Filed in:
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md)
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)
 - [Audit ledger: test cases that cannot fail](audit-ledger-test-cases-that-cannot-fail.md)
+- [Audit ledger: survivors of the guard demonstrations and the tests that pin them](audit-ledger-guard-demonstration-survivors-and-their-pins.md)
 - [Audit ledger: caught text carried into messages](audit-ledger-caught-text-carried-into-messages.md)
 - [Audit ledger: values read back from text](audit-ledger-values-read-back-from-text.md)
 - [Audit ledger: labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md)

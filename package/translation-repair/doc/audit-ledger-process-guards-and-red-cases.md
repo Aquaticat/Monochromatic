@@ -900,3 +900,52 @@ when a rule changes what a property means,
 the oracle is rewritten and shown to detect a planted violation before any grid is run with it.
 `mistake-prevention.md`,
 "Guards that cannot fail".
+
+## M268: a test of an ordering used a fixture that does not differ between the two orders
+
+Status:
+happened on 2026-10-18 (UTC) in the test round `w188`.
+The commit `bcf0394584` (`f6b787eac0` on the branch) pinned the order of equal-length candidates by code points
+and not by UTF-16 units,
+with a fixture of U+A730.
+U+A730 lies in the basic plane at a lower code point than the surrogates,
+so it sorts the same in UTF-16 order and in code point order,
+and the test could not tell the two apart.
+The notes do not say how it was noticed.
+The method of the round requires each pin to fail under its mutation,
+and this fixture could not.
+`9aadabd6f1` (`3b18ef4de5` on the branch) replaced it with `a` plus U+E000 against `a` plus an astral character,
+which the two orders sort differently,
+and the new fixture was proved.
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+a fixture for an ordering is shown to give opposite answers under the two orders before the test is committed,
+and the pin is then proved by its mutation,
+as the round proved the replacement.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".
+
+## M269: mutation specs of an earlier round named text that had moved or changed
+
+Status:
+happened on 2026-10-18 (UTC) in the test round `w188`.
+Two specs for the mutations named for n173,
+and the spec for the combining mark before a match (`n171-B645-mark-before`),
+had find strings that no longer matched,
+or named a file that had moved (`consistency-contains-words.ts`).
+The round used the specs of the demonstration (`w181`) and,
+where a file had moved,
+an equivalent by content;
+the current specs are in `spec-w188.ts`,
+outside the repository.
+The notes record the specs as stale and name no further effect.
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+a mutation spec is applied to the base and shown to match exactly once before a proof relies on it,
+and a spec that does not apply is rewritten and kept with the proofs.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".
