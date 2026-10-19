@@ -45,6 +45,10 @@ completed executions and latest diagnostic assertions prevent a missing-work or 
 The constructor and caller lifetime still need the production correction,
 followed by rebuilt positive controls and all terminal/consumer paths.
 The earlier group-only review-retirement test covers a different owner and cannot establish producer retirement.
+The first maintained producer guard fails on an incorrect whole-outcome comparison:
+the actual native outcome also includes its diagnostic reason.
+That failure is not memory-retirement evidence.
+The corrected fixture checks the required state and verdict independently and preserves the existing diagnostic.
 
 The source compiler retains clause, heading, incorporation, authorization, admission,
 and complete-operation fallback semantics.

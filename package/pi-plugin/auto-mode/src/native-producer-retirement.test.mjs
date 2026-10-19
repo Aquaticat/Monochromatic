@@ -64,7 +64,8 @@ async function verifyProducerRetirement() {
     assert.equal(latestMessage.stopReason, 'stop', latestMessage.errorMessage);
     assert.equal(observations.executions, index + 1);
     const latest = runtime.inspect();
-    assert.deepEqual(latest.lastReview.outcome, { state: 'resolved', verdict: 'approve' });
+    assert.equal(latest.lastReview.outcome.state, 'resolved');
+    assert.equal(latest.lastReview.outcome.verdict, 'approve');
     assert.ok(latest.lastJudgment.inspect().finalRecord);
     globalThis.gc();
   }

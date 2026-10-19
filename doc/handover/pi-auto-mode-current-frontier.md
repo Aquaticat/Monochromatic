@@ -22,6 +22,10 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   The experimental policy can invalidate active concurrent operations and is explicitly unaccepted.
   A maintained actual-session guard and package task are added before the production correction;
   its 32-MiB limit must fail the original artifact before qualification.
+  Fresh original builds pass, but the first maintained guard fails before that limit:
+  whole-outcome equality omits the actual diagnostic `reason` member.
+  This is explicitly not memory-retention evidence; the correction checks state/verdict independently.
+  Preserve that failed candidate and qualify the corrected committed guard separately.
   The parent collector initially mistakes a build receipt for a test receipt,
   and its restart output path collides with the second child's log.
   Both collector failures are retained; that collided log is excluded and a distinct fourth-run log is collected.
