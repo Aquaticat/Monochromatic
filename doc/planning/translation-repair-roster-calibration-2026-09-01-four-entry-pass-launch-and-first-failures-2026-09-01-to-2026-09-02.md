@@ -246,7 +246,8 @@ read off the log and the source:
     ladder together (`exchangeWithRetry`,
     five attempts,
     about 15 s in total).
--   A 429 that outlives the ladder reaches the router as a `SyntheticHttpError`,
+-   A 429 that outlives the ladder reaches the router as a `SyntheticHttpError`
+    (renamed `ProviderHttpError` on 2026-10-19),
     and `isBudgetRefusal`
     (`provider-budget-refusal.ts`) counts 429 and 402 alike as "out of budget":
     `markRefused` then holds that

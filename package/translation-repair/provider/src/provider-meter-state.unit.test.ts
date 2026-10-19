@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   parseQuotaSnapshot,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   meterRecordOf,
@@ -152,7 +152,8 @@ await describe({
                   name: 'hyper',
                   signal: AbortSignal.timeout(HANG_STOP_MS,),
                   readLevel: async () => {
-                    throw new SyntheticHttpError({
+                    throw new ProviderHttpError({
+                      provider: 'hyper',
                       status: 401,
                       bodyText: 'this cat has no collar tag',
                     },);
@@ -163,7 +164,7 @@ await describe({
 
             expect(warned,).toEqual([
               '[translation-repair] [meterRecordOf] hyper: budget unreadable, treating as spendable (refused by '
-              + 'SyntheticHttpError with HTTP 401 (the provider said: "this cat has no collar tag"))',
+              + 'ProviderHttpError from hyper with HTTP 401 (the provider said: "this cat has no collar tag"))',
             ],);
             expect(meter,).toEqual({
               state: 'unreadable',

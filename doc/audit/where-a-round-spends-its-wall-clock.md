@@ -132,7 +132,7 @@ and every one of that model's 51 billed calls in this run went to Charm Hyper.
 
 The log could not settle it alone, since a failed call bills no `SPEND` line,
 so the deciding source was read instead:
-`hyper-client.ts` imports `SyntheticHttpError` from `completion-shape.ts`
+`hyper-client.ts` imports `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19) from `completion-shape.ts`
 and documents throwing `MalformedCompletionError`.
 Both providers throw both classes, and both messages named one of them.
 

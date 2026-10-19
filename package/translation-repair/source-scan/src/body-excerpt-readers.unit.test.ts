@@ -1,5 +1,5 @@
 /**
- Guards that the provider's own words, kept on `SyntheticHttpError.bodyExcerpt`,
+ Guards that the provider's own words, kept on `ProviderHttpError.bodyExcerpt`,
  are read only by the files that have a reason to.
 
  WHY IT MATTERS. The field holds the opening of a provider's reply body. It is

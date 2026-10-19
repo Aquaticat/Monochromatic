@@ -33,6 +33,8 @@ SyntheticHttpError: provider API returned HTTP 400:
 {"error":"Your model name should start with an hf: prefix; for example: ...
 ```
 
+`SyntheticHttpError` in that output is the class renamed `ProviderHttpError` on 2026-10-19.
+
 Synthetic serves models named with an `hf:` prefix.
 Five of the ten seats in the roster are Charm Hyper endpoint labels,
 which carry no such prefix, and Charm Hyper is the only provider that serves them:

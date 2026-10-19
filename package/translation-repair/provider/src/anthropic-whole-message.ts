@@ -2,12 +2,13 @@ import {
   errorName,
   isAsciiLowerLetter,
 } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   MalformedCompletionError,
   ssePayloadOf,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 
 /**
@@ -285,7 +286,7 @@ const REFUSED_REQUEST_STATUS: ReadonlyMap<string, number> = new Map([
  Raised when a success-status Messages stream carried an error event naming a
  request the provider refuses, which no retry changes.
 
- THE HTTP REFUSAL IT STANDS FOR: a subclass of {@link SyntheticHttpError}
+ THE HTTP REFUSAL IT STANDS FOR: a subclass of {@link ProviderHttpError}
  carrying the status the same refusal has outside a stream, so a caller
  branching on the status (a 402 holds the provider out) reads it as it reads
  the plain HTTP one, and the retry ladder, which returns a non-retryable
@@ -293,10 +294,10 @@ const REFUSED_REQUEST_STATUS: ReadonlyMap<string, number> = new Map([
 
  @example
  ```ts
- throw new StreamErrorEventError({ errorType: 'invalid_request_error', status: 400, },);
+ throw new StreamErrorEventError({ provider: 'hyper', errorType: 'invalid_request_error', status: 400, },);
  ```
  */
-export class StreamErrorEventError extends SyntheticHttpError {
+export class StreamErrorEventError extends ProviderHttpError {
   /**
    Declares this message safe to forward: it names a documented error type and
    a status, never the provider's text.
@@ -311,25 +312,30 @@ export class StreamErrorEventError extends SyntheticHttpError {
   /**
    Names the refusal the stream carried.
 
+   @param provider - provider whose stream carried the error event, which the event itself does not name
+
    @param errorType - documented refusal type the error event named
 
    @param status - status the same refusal carries outside a stream
 
    @example
    ```ts
-   new StreamErrorEventError({ errorType: 'billing_error', status: 402, },);
+   new StreamErrorEventError({ provider: 'hyper', errorType: 'billing_error', status: 402, },);
    ```
    */
   public constructor(
     {
+      provider,
       errorType,
       status,
     }: {
+      readonly provider: ProviderName;
       readonly errorType: string;
       readonly status: number;
     },
   ) {
     super({
+      provider,
       status,
       bodyText: '',
       excerpt: 'withheld',
@@ -378,6 +384,8 @@ export class StreamErrorEventError extends SyntheticHttpError {
  inference, not measured). `requireStreamTerminator`, the OpenAI-shaped
  sibling, reads the same scope.
 
+ @param provider - provider whose body this is, carried onto the refusal an error event becomes
+
  @param bodyText - whole drained body, as the transport returned it
 
  @throws {@link StreamErrorEventError} when an error event names a request the provider refuses
@@ -386,11 +394,17 @@ export class StreamErrorEventError extends SyntheticHttpError {
 
  @example
  ```ts
- requireWholeAnthropicMessage({ bodyText, },);
+ requireWholeAnthropicMessage({ provider: 'hyper', bodyText, },);
  ```
  */
 export function requireWholeAnthropicMessage(
-  { bodyText, }: { readonly bodyText: string; },
+  {
+    provider,
+    bodyText,
+  }: {
+    readonly provider: ProviderName;
+    readonly bodyText: string;
+  },
 ): void {
   /**
    Frames the body carried, in arrival order; payloads that are not frames
@@ -446,6 +460,7 @@ export function requireWholeAnthropicMessage(
     const refusedStatus = REFUSED_REQUEST_STATUS.get(errorType,);
     if (refusedStatus !== undefined)
       throw new StreamErrorEventError({
+        provider,
         errorType,
         status: refusedStatus,
       },);

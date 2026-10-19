@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type ModelTransport,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   type DecisionReply,
@@ -245,6 +245,44 @@ await describe({
     },),
 
     it({
+      name: 'NAMES OPENROUTER AS THE PROVIDER of the HTTP error a refused status raises, since the decisions '
+        + 'endpoint is OpenRouter\'s',
+      fn: async () => {
+        /**
+         Client whose endpoint answers a payment refusal.
+         */
+        const refused = createDecisionsClient({
+          apiKey: 'test-key',
+          transport: recordedTransport({
+            status: 402,
+            bodyText: '{"error":{"code":402,"message":"the bookshop is closed"}}',
+          },).transport,
+          retryPolicy: NO_RETRY,
+        },);
+        /**
+         What the refused decision raised.
+         */
+        let caught: unknown;
+        try {
+          await refused.decide({
+            modelId: SEAT_OPENROUTER_DECISIONS,
+            state: 'a cat',
+            questions: { asleep: { type: 'noul', instructions: 'Asleep?', }, },
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+          },);
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof ProviderHttpError,).toBe(true,);
+        expect(
+          caught instanceof ProviderHttpError
+            ? caught.provider
+            : undefined,
+        ).toBe('openrouter',);
+      },
+    },),
+
+    it({
       name: 'REFUSES a non-success status as an HTTP error and a body off the documented shape as a '
         + 'shape error, never as an answer',
       fn: async () => {
@@ -261,7 +299,7 @@ await describe({
           state: 'a cat',
           questions: { asleep: { type: 'noul', instructions: 'Asleep?', }, },
           signal: AbortSignal.timeout(HANG_STOP_MS,),
-        },),).rejects.toBeInstanceOf(SyntheticHttpError,);
+        },),).rejects.toBeInstanceOf(ProviderHttpError,);
 
         const malformed = createDecisionsClient({
           apiKey: 'test-key',

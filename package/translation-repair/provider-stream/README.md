@@ -66,7 +66,7 @@ The groups that follow name the main ones.
   `ModelTransport`,
   `TransportReply`,
   `TransportRequestFailedError`,
-  `SyntheticHttpError`,
+  `ProviderHttpError`,
   `exchangeFailureText`.
   Declared in `synthetic-transport.ts`,
   `transport-request-error.ts`,
@@ -108,6 +108,7 @@ Production dependencies (`dependencies` in `package.json`):
 - `glossary`
 - `house-rule`
 - `markup`
+- `shared-contract`
 - `typography`
 
 ### Used by

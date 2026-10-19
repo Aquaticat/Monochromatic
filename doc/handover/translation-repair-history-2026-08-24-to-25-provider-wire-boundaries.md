@@ -260,6 +260,8 @@ four cells each:
   HTTP 400 error page   attempts=1  SyntheticHttpError
 ```
 
+`SyntheticHttpError` in that output is the class renamed `ProviderHttpError` on 2026-10-19.
+
 Row two is the voice that used to be lost.
 Rows three and four are the controls,
 and row four is the one worth naming:

@@ -81,7 +81,8 @@ The pointer at the `SEAT` lines stays on every wording.
 `Error.isError(error) ? error.message.slice(0, ERROR_MESSAGE_CAP) : String(error)` lands in
 `TALLY <id> status=ERROR ... error=<message>` and `CLEANUP <id> ... error=<message>`.
 That bypasses the `#227` rule that only `messageNamesOnly` classes may repeat their message:
-`SyntheticHttpError` (`src/completion-shape.ts`) embeds an excerpt of the provider's raw body,
+`SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+(`src/completion-shape.ts`) embeds an excerpt of the provider's raw body,
 and any unmarked parser class may quote a passage.
 The `TALLY` line is the one operators grep and paste.
 Fix:

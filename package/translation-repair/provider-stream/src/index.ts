@@ -9,7 +9,7 @@ export {
   MalformedCompletionError,
   readFinishReason,
   readUsage,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from './completion-shape.ts';
 export { decodedFormsOf, } from './credential-decoded-forms.ts';
 export {

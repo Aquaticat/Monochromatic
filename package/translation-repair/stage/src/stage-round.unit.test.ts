@@ -769,7 +769,7 @@ await describe({
             expect(said,).toEqual([
               stoppedSeatLine({
                 seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                failure: statusFailureLogText({ status: 401, },),
+                failure: statusFailureLogText({ provider: 'synthetic', status: 401, },),
               },),
             ],);
           },
@@ -810,7 +810,7 @@ await describe({
             expect(said,).toEqual([
               stoppedSeatLine({
                 seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                failure: statusFailureLogText({ status: 401, },),
+                failure: statusFailureLogText({ provider: 'synthetic', status: 401, },),
               },),
             ],);
           },
@@ -850,7 +850,7 @@ await describe({
             expect(said,).toEqual([
               stoppedSeatLine({
                 seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                failure: statusFailureLogText({ status: 401, },),
+                failure: statusFailureLogText({ provider: 'synthetic', status: 401, },),
               },),
             ],);
           },

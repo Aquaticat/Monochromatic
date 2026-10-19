@@ -23,7 +23,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -401,7 +401,8 @@ await describe({
         const logger = warningRecordingLogger({ base: l, warnings, },);
         await callWith({
           client: scriptedClient({
-            thrown: new SyntheticHttpError({
+            thrown: new ProviderHttpError({
+              provider: 'synthetic',
               status: 400,
               bodyText: 'the cat\nrefused "this" passage',
             },),
@@ -415,7 +416,7 @@ await describe({
          */
         const quoted = String.raw`"the cat\nrefused \"this\" passage"`;
         expect(warnings,).toEqual([
-          `purr-check ${MODEL_ID}: refused by SyntheticHttpError with HTTP 400 (the provider said: ${quoted}), voice lost`,
+          `purr-check ${MODEL_ID}: refused by ProviderHttpError from synthetic with HTTP 400 (the provider said: ${quoted}), voice lost`,
         ],);
       },
     },),

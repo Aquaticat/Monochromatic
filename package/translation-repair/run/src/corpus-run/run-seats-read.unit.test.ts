@@ -23,7 +23,7 @@ import type {
   BudgetView,
   MeterState,
 } from '@monochromatic-dev/translation-repair-provider';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   mapOverlapped,
   rosterQuorumSize,
@@ -352,7 +352,7 @@ await describe({
             await readJudgeSeats({
               client: viewClient({
                 providerDryness: async () => {
-                  throw new SyntheticHttpError({ status: 502, bodyText: 'the cat meter is asleep', },);
+                  throw new ProviderHttpError({ provider: 'synthetic', status: 502, bodyText: 'the cat meter is asleep', },);
                 },
               },),
               phase: 'consolidation',
@@ -360,7 +360,7 @@ await describe({
               l: warningRecordingLogger({ base: l, warnings, },),
             },);
             expect(warnings,).toEqual([
-              'judge seats: the budget view could not be read (refused by SyntheticHttpError with HTTP 502 '
+              'judge seats: the budget view could not be read (refused by ProviderHttpError from synthetic with HTTP 502 '
               + '(the provider said: "the cat meter is asleep")); seating the full bench',
             ],);
           },

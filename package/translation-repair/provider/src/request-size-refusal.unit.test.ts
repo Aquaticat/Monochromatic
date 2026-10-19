@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   failureForReply,
   SyntheticRequestTooLargeError,
@@ -50,6 +50,7 @@ await describe({
          Failure built for a body over the passing size.
          */
         const failure = failureForReply({
+          provider: 'synthetic',
           status: 400,
           bodyText: PARSE_FAILURE,
           requestBodyBytes: PASSING_BODY_BYTES + 1,
@@ -73,13 +74,14 @@ await describe({
          Failure built for a small body the gateway could not parse.
          */
         const failure = failureForReply({
+          provider: 'synthetic',
           status: 400,
           bodyText: PARSE_FAILURE,
           requestBodyBytes: 4_096,
         },);
 
         expect(failure instanceof SyntheticRequestTooLargeError,).toBe(false,);
-        expect(failure instanceof SyntheticHttpError,).toBe(true,);
+        expect(failure instanceof ProviderHttpError,).toBe(true,);
       },
     },),
 
@@ -92,13 +94,14 @@ await describe({
          Failure built for a large body rejected on its content.
          */
         const failure = failureForReply({
+          provider: 'synthetic',
           status: 400,
           bodyText: '{"error":{"message":"Unknown model"}}',
           requestBodyBytes: PASSING_BODY_BYTES * 2,
         },);
 
         expect(failure instanceof SyntheticRequestTooLargeError,).toBe(false,);
-        expect(failure instanceof SyntheticHttpError,).toBe(true,);
+        expect(failure instanceof ProviderHttpError,).toBe(true,);
       },
     },),
 
@@ -111,6 +114,7 @@ await describe({
          Failure built for a throttle on a large body.
          */
         const failure = failureForReply({
+          provider: 'synthetic',
           status: 429,
           bodyText: PARSE_FAILURE,
           requestBodyBytes: PASSING_BODY_BYTES * 2,
@@ -132,6 +136,7 @@ await describe({
          Message composed for a body 699575 bytes past the passing size.
          */
         const { message, } = failureForReply({
+          provider: 'synthetic',
           status: 400,
           bodyText: PARSE_FAILURE,
           requestBodyBytes: 11_185_335,
@@ -148,6 +153,37 @@ await describe({
       },
     },),
     it({
+      name: 'CARRIES THE PROVIDER THAT SERVED THE CALL on the plain failure and on the size failure alike, and the '
+        + 'size message names that provider rather than the one it was first measured against',
+      fn: async () => {
+        /**
+         Plain failure for a throttle on Bedrock.
+         */
+        const plain = failureForReply({
+          provider: 'bedrock',
+          status: 429,
+          bodyText: 'too many requests',
+          requestBodyBytes: 4_096,
+        },);
+        /**
+         Size failure for an oversize body on Charm Hyper.
+         */
+        const size = failureForReply({
+          provider: 'hyper',
+          status: 400,
+          bodyText: PARSE_FAILURE,
+          requestBodyBytes: PASSING_BODY_BYTES + 1,
+        },);
+
+        expect(plain.provider,).toBe('bedrock',);
+        expect(size.provider,).toBe('hyper',);
+        expect(size instanceof SyntheticRequestTooLargeError,).toBe(true,);
+        expect(size.message.startsWith('The hyper API refused a request body of',),).toBe(true,);
+        expect(size.message.includes('Synthetic',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'KEEPS whatever the gateway echoed on the excerpt for the log and out of the message, so a '
         + 'gateway that repeats request bytes cannot put corpus text on a CLI line',
       fn: async () => {
@@ -155,13 +191,14 @@ await describe({
          Refusal built from a gateway body that echoes something of ours.
          */
         const failure = failureForReply({
+          provider: 'synthetic',
           status: 400,
           bodyText: `${PARSE_FAILURE} whiskers-gateway-echo`,
           requestBodyBytes: 11_185_335,
         },);
         expect(failure.message.includes('whiskers-gateway-echo',),).toBe(false,);
         expect(
-          (failure instanceof SyntheticHttpError) ? failure.bodyExcerpt.includes('whiskers-gateway-echo',) : false,
+          (failure instanceof ProviderHttpError) ? failure.bodyExcerpt.includes('whiskers-gateway-echo',) : false,
         ).toBe(true,);
       },
     },),

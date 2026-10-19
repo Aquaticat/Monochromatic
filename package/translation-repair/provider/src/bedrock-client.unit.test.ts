@@ -22,7 +22,7 @@ import {
 
 import {
   StreamOverrunError,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportExchange,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import { COMPLETION_CAP, } from '@monochromatic-dev/translation-repair-shared-contract';
@@ -516,8 +516,9 @@ await describe({
             } catch (error) {
               thrown = error;
             }
-            expect(thrown instanceof SyntheticHttpError,).toBe(true,);
-            expect((thrown as SyntheticHttpError).status,).toBe(429,);
+            expect(thrown instanceof ProviderHttpError,).toBe(true,);
+            expect((thrown as ProviderHttpError).status,).toBe(429,);
+            expect((thrown as ProviderHttpError).provider,).toBe('bedrock',);
             expect(noted,).toHaveLength(0,);
           },
         },),

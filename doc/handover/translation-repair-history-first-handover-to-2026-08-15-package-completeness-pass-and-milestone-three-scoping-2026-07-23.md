@@ -51,7 +51,7 @@ remapCategoryLeaf,
 isPanelVoteState,
 parseModelJson,
 formatUsageNote,
-extractCompletion + readUsage + SyntheticHttpError
+extractCompletion + readUsage + SyntheticHttpError (renamed `ProviderHttpError` on 2026-10-19)
 (every contract-violation detail),
 armCallDeadline (expiry,
 forwarded abort,

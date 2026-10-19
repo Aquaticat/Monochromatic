@@ -156,6 +156,7 @@ function deltaOf(
  */
 function refuseUnreadableFrame(): void {
   extractAnthropicCompletion({
+    provider: 'hyper',
     bodyText: `${startOf({ inputTokens: 8, },)}data: {not json at all\n\n${endOf({
       stopReason: 'end_turn',
       outputTokens: 1,
@@ -175,6 +176,7 @@ await describe({
          Tool arguments arriving in fragments, as the wire splits them.
          */
         const extracted = extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: startOf({ inputTokens: 41, },)
             + deltaOf({
               deltaType: 'input_json_delta',
@@ -205,6 +207,7 @@ await describe({
         + 'are used by this pipeline',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: startOf({ inputTokens: 8, },)
             + deltaOf({
               deltaType: 'text_delta',
@@ -247,7 +250,7 @@ await describe({
             stopReason: 'tool_use',
             outputTokens: 9,
           },);
-        expect(extractAnthropicCompletion({ bodyText, },).text,).toBe('{"verdict":"pass"}',);
+        expect(extractAnthropicCompletion({ provider: 'hyper', bodyText, },).text,).toBe('{"verdict":"pass"}',);
       },
     },),
     it({
@@ -277,7 +280,7 @@ await describe({
             stopReason: 'tool_use',
             outputTokens: 9,
           },);
-        expect(extractAnthropicCompletion({ bodyText, },),).toEqual({
+        expect(extractAnthropicCompletion({ provider: 'hyper', bodyText, },),).toEqual({
           text: '{"verdict":"pass"}',
           finishReason: 'tool_use',
           usage: {
@@ -293,6 +296,7 @@ await describe({
         + 'corrupt the answer a validator reads if it were concatenated in',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: startOf({ inputTokens: 8, },)
             + deltaOf({
               deltaType: 'thinking_delta',
@@ -319,6 +323,7 @@ await describe({
       fn: async () => {
         expect(function truncated() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + deltaOf({
                 deltaType: 'input_json_delta',
@@ -337,6 +342,7 @@ await describe({
       fn: async () => {
         expect(function namedOnly() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + frameOf({
                 body: {
@@ -384,10 +390,10 @@ await describe({
             },
           },);
         expect(function errored() {
-          extractAnthropicCompletion({ bodyText, },);
+          extractAnthropicCompletion({ provider: 'hyper', bodyText, },);
         },).toThrow(MalformedCompletionError,);
         expect(function errored() {
-          extractAnthropicCompletion({ bodyText, },);
+          extractAnthropicCompletion({ provider: 'hyper', bodyText, },);
         },).toThrow('overloaded_error',);
       },
     },),
@@ -399,6 +405,7 @@ await describe({
       fn: async () => {
         expect(function erroredThenStopped() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + deltaOf({
                 deltaType: 'text_delta',
@@ -430,6 +437,7 @@ await describe({
       fn: async () => {
         expect(function deltaless() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + deltaOf({
                 deltaType: 'text_delta',
@@ -463,6 +471,7 @@ await describe({
       fn: async () => {
         expect(function arrayDelta() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + deltaOf({
                 deltaType: 'text_delta',
@@ -491,6 +500,7 @@ await describe({
       fn: async () => {
         expect(function textless() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + frameOf({
                 body: {
@@ -517,6 +527,7 @@ await describe({
       fn: async () => {
         expect(function argumentless() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: startOf({ inputTokens: 8, },)
               + deltaOf({
                 deltaType: 'input_json_delta',
@@ -544,6 +555,7 @@ await describe({
         + 'may be one the provider added later and neither carries the answer',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: startOf({ inputTokens: 8, },)
             + deltaOf({
               deltaType: 'text_delta',
@@ -591,6 +603,7 @@ await describe({
         + 'can tell a call that cost nothing from one whose cost went unreported',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: deltaOf({
             deltaType: 'text_delta',
             field: 'text',
@@ -607,6 +620,7 @@ await describe({
         + '(ledger B88)',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: frameOf({
             body: {
               type: 'message_start',
@@ -645,6 +659,7 @@ await describe({
         + 'early is indistinguishable from a malformed one without it',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: deltaOf({
             deltaType: 'text_delta',
             field: 'text',
@@ -660,6 +675,7 @@ await describe({
         + 'the stop reason is reported by its absence',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: frameOf({ body: { type: 'message_start', }, },)
             + frameOf({
               body: {
@@ -733,6 +749,7 @@ await describe({
         ];
         for (const counts of halfReported) {
           expect(extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: counts
               + deltaOf({
                 deltaType: 'text_delta',
@@ -750,6 +767,7 @@ await describe({
       fn: async () => {
         expect(function numbered() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: `${startOf({ inputTokens: 8, },)}data: 7\n\n${endOf({
               stopReason: 'end_turn',
               outputTokens: 1,
@@ -766,6 +784,7 @@ await describe({
       fn: async () => {
         expect(function arrayed() {
           extractAnthropicCompletion({
+            provider: 'hyper',
             bodyText: `${startOf({ inputTokens: 8, },)}data: [1]\n\n${endOf({
               stopReason: 'end_turn',
               outputTokens: 1,
@@ -780,6 +799,7 @@ await describe({
         + 'which is the only case here taken off the wire rather than written by hand',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: [
             'data: {"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant",'
               + '"content":[],"model":"gemma-4-26b-a4b-it","stop_reason":null,"stop_sequence":null,'
@@ -824,6 +844,7 @@ await describe({
         + 'stop reason is end_turn rather than tool_use, none of which may cost the answer',
       fn: async () => {
         expect(extractAnthropicCompletion({
+          provider: 'hyper',
           bodyText: [
             'event: message_start',
             'data: {"type":"message_start","message":{"id":"gen-1788450198-boHX6M5376fQSYqjwNP4",'

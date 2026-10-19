@@ -226,8 +226,12 @@ this section is the readiness reading of it.
   shipped SETTLED with no class
   ([the pass log of 2026-10-19](translation-repair-openrouter-2026-09-03-2026-10-19.md)),
   with three Gemma seats dark on HTTP 401 and every meter wet.
-  `CuspariaKLSY17` is the second;
+  The second,
+  `CuspariaKLSY17`,
+  shipped SETTLED with no class,
+  with two Gemma seats dark on HTTP 401 and every meter wet;
   `CuspariaKLSY16` ran on another build and is not evidence.
+  `XingZ6015` is the third.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

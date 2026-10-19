@@ -13,10 +13,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
+import { PROVIDER_ORDER, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   exchangeFailureLogText,
   exchangeFailureText,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import { SyntheticRequestTooLargeError, } from '../dist/final/node/index.mjs';
 import {
@@ -47,13 +48,54 @@ await describe({
         /**
          Failure whose message carries the provider's body excerpt.
          */
-        const failure = new SyntheticHttpError({
+        const failure = new ProviderHttpError({
+          provider: 'synthetic',
           status: 429,
           bodyText: `the cat key ${WHISKER_KEY} is over its weekly credit`,
         },);
 
         expect(failure.message.includes(WHISKER_KEY,),).toBe(true,);
-        expect(exchangeFailureText({ error: failure, },),).toBe('refused by SyntheticHttpError with HTTP 429',);
+        expect(exchangeFailureText({ error: failure, },),).toBe(
+          'refused by ProviderHttpError from synthetic with HTTP 429',
+        );
+      },
+    },),
+
+    it({
+      name: 'NAMES THE PROVIDER THAT SERVED THE CALL beside the class and the status, for each provider, so a Bedrock '
+        + 'refusal never reads as a Synthetic one',
+      fn: async () => {
+        /**
+         What each provider's refusal says, in the order the owner spends on them.
+         */
+        const said = PROVIDER_ORDER.map(function sayRefusal(provider,): string {
+          return exchangeFailureText({
+            error: new ProviderHttpError({ provider, status: 401, bodyText: 'the cat token expired', },),
+          },);
+        },);
+
+        expect(said,).toStrictEqual([
+          'refused by ProviderHttpError from synthetic with HTTP 401',
+          'refused by ProviderHttpError from bedrock with HTTP 401',
+          'refused by ProviderHttpError from hyper with HTTP 401',
+          'refused by ProviderHttpError from openrouter with HTTP 401',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'LOG TEXT NAMES THE PROVIDER BEFORE ITS WORDS, so the line says whose words follow',
+      fn: async () => {
+        expect(exchangeFailureLogText({
+          error: new ProviderHttpError({
+            provider: 'bedrock',
+            status: 401,
+            bodyText: 'The security token included in the request has expired.',
+          },),
+        },),).toBe(
+          'refused by ProviderHttpError from bedrock with HTTP 401 '
+            + '(the provider said: "The security token included in the request has expired.")',
+        );
       },
     },),
 
@@ -74,12 +116,13 @@ await describe({
          */
         const quoted = String.raw`"the cat\nsaid \"no\"\u2028and\u2029left\u0085\u001b[0m"`;
         expect(exchangeFailureLogText({
-          error: new SyntheticHttpError({
+          error: new ProviderHttpError({
+            provider: 'synthetic',
             status: 400,
             bodyText: 'the cat\nsaid "no"\u2028and\u2029left\u0085\u001B[0m',
           },),
         },),).toBe(
-          `refused by SyntheticHttpError with HTTP 400 (the provider said: ${quoted})`,
+          `refused by ProviderHttpError from synthetic with HTTP 400 (the provider said: ${quoted})`,
         );
       },
     },),
@@ -91,6 +134,7 @@ await describe({
          Refusal whose message withholds the gateway's words and whose excerpt keeps them.
          */
         const failure = new SyntheticRequestTooLargeError({
+          provider: 'synthetic',
           status: 400,
           bodyText: 'cat gateway: could not parse the body',
           bodyBytes: 5_000_000,
@@ -107,11 +151,11 @@ await describe({
         /**
          Failure whose body held only whitespace.
          */
-        const blank = new SyntheticHttpError({ status: 502, bodyText: ' \n ', },);
+        const blank = new ProviderHttpError({ provider: 'synthetic', status: 502, bodyText: ' \n ', },);
         /**
          Failure whose body held only a zero-width space, which shows a reader nothing.
          */
-        const invisible = new SyntheticHttpError({ status: 502, bodyText: '\u200B', },);
+        const invisible = new ProviderHttpError({ provider: 'synthetic', status: 502, bodyText: '\u200B', },);
         expect(exchangeFailureLogText({ error: blank, },),).toBe(exchangeFailureText({ error: blank, },),);
         expect(exchangeFailureLogText({ error: invisible, },),).toBe(exchangeFailureText({ error: invisible, },),);
         expect(exchangeFailureLogText({ error: quotingFailure(), },),).toBe('refused by TypeError',);

@@ -450,7 +450,8 @@ and reading all three settles them.
     and quoting it is the point:
     an operator who set a ceiling believes the run is bounded the way they asked.
 
--   `SyntheticHttpError` carries 600 characters of a provider's HTTP error body.
+-   `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+    carries 600 characters of a provider's HTTP error body.
 
 ### The third is a judgment, and it is being recorded rather than changed
 

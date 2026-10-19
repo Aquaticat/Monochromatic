@@ -23,7 +23,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   mapOverlapped,
   OverlapRefusedError,
@@ -191,9 +191,9 @@ const QUIET = capturingLoggerPair().logger;
  The twin memo's line for the second cat's buy refused with the provider's
  words, the one line such a failure gets with the caller stopped or not.
  */
-const NAPPING_BUY_LINE = 'warn twin memo: the buy for a shared key was abandoned (refused by SyntheticHttpError '
-  + 'with HTTP 503 (the provider said: "the second cat is napping in the sun")), so any twin waiting on it asks for '
-  + 'itself';
+const NAPPING_BUY_LINE = 'warn twin memo: the buy for a shared key was abandoned (refused by ProviderHttpError '
+  + 'from synthetic with HTTP 503 (the provider said: "the second cat is napping in the sun")), so any twin waiting '
+  + 'on it asks for itself';
 
 /**
  Names an item in the line its unthrown failure is written on.
@@ -528,14 +528,16 @@ await describe({
         },);
         await settle();
         steering.abort(reason,);
-        nonNullishOrThrow(run.gates[3],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[3],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the fourth cat is napping in the sun',
         },),);
         await settle();
         nonNullishOrThrow(run.gates[2],).reject(reason,);
         await settle();
-        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[1],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 429,
           bodyText: 'the second cat is out of treats',
         },),);
@@ -543,9 +545,9 @@ await describe({
         nonNullishOrThrow(run.gates[0],).reject(reason,);
         expect(await failure,).toBe(reason,);
         expect(lines,).toEqual([
-          'warn [mapOverlapped] cat b failed (refused by SyntheticHttpError with HTTP 429 (the provider said: "the '
+          'warn [mapOverlapped] cat b failed (refused by ProviderHttpError from synthetic with HTTP 429 (the provider said: "the '
           + 'second cat is out of treats")), and the caller stopped the work',
-          'warn [mapOverlapped] cat d failed (refused by SyntheticHttpError with HTTP 503 (the provider said: "the '
+          'warn [mapOverlapped] cat d failed (refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the '
           + 'fourth cat is napping in the sun")), and the caller stopped the work',
         ],);
       },
@@ -571,7 +573,8 @@ await describe({
         /**
          What the first item throws, after the stop.
          */
-        const firstRefusal = new SyntheticHttpError({
+        const firstRefusal = new ProviderHttpError({
+          provider: 'synthetic',
           status: 500,
           bodyText: 'the first cat knocked the bowl over',
         },);
@@ -589,7 +592,8 @@ await describe({
           },),
         },);
         await settle();
-        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[1],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 429,
           bodyText: 'the second cat is out of treats',
         },),);
@@ -600,7 +604,7 @@ await describe({
         nonNullishOrThrow(run.gates[0],).reject(firstRefusal,);
         expect(await failure,).toBe(firstRefusal,);
         expect(lines,).toEqual([
-          'warn [mapOverlapped] cat b failed (refused by SyntheticHttpError with HTTP 429 (the provider said: "the '
+          'warn [mapOverlapped] cat b failed (refused by ProviderHttpError from synthetic with HTTP 429 (the provider said: "the '
           + 'second cat is out of treats")), and the caller stopped the work',
         ],);
       },
@@ -634,12 +638,14 @@ await describe({
           },),
         },);
         await settle();
-        nonNullishOrThrow(run.gates[2],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[2],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the third cat is napping in the sun',
         },),);
         await settle();
-        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[1],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 429,
           bodyText: 'the second cat is out of treats',
         },),);
@@ -647,9 +653,9 @@ await describe({
         nonNullishOrThrow(run.gates[0],).reject(earlier,);
         expect(await failure,).toBe(earlier,);
         expect(lines,).toEqual([
-          'warn [mapOverlapped] cat b failed (refused by SyntheticHttpError with HTTP 429 (the provider said: "the '
+          'warn [mapOverlapped] cat b failed (refused by ProviderHttpError from synthetic with HTTP 429 (the provider said: "the '
           + 'second cat is out of treats")), and the failure thrown is cat a\'s, which comes before it',
-          'warn [mapOverlapped] cat c failed (refused by SyntheticHttpError with HTTP 503 (the provider said: "the '
+          'warn [mapOverlapped] cat c failed (refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the '
           + 'third cat is napping in the sun")), and the failure thrown is cat a\'s, which comes before it',
         ],);
       },
@@ -757,7 +763,8 @@ await describe({
         },);
         await settle();
         steering.abort(reason,);
-        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[1],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the second cat is napping in the sun',
         },),);
@@ -827,7 +834,8 @@ await describe({
           },),
         },);
         await settle();
-        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+        nonNullishOrThrow(run.gates[1],).reject(new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the second cat is napping in the sun',
         },),);

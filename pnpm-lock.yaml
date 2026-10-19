@@ -6692,6 +6692,9 @@ importers:
       '@monochromatic-dev/translation-repair-markup':
         specifier: workspace:*
         version: link:../markup
+      '@monochromatic-dev/translation-repair-shared-contract':
+        specifier: workspace:*
+        version: link:../shared-contract
       '@monochromatic-dev/translation-repair-typography':
         specifier: workspace:*
         version: link:../typography

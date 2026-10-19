@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { reportModelHealth, } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import {
@@ -199,7 +199,8 @@ await describe({
           replies: {
             [TABBY]: {
               kind: 'throws',
-              error: new SyntheticHttpError({
+              error: new ProviderHttpError({
+                provider: 'synthetic',
                 status: 402,
                 bodyText: 'no treats left',
               },),
@@ -209,7 +210,7 @@ await describe({
 
         expect(exitCode,).toBe(1,);
         expect(lines,).toEqual([
-          'warn [reportModelHealth] hf:openai/gpt-oss-120b: UNREACHABLE: refused by SyntheticHttpError with HTTP 402 '
+          'warn [reportModelHealth] hf:openai/gpt-oss-120b: UNREACHABLE: refused by ProviderHttpError from synthetic with HTTP 402 '
           + '(the provider said: "no treats left")',
           'info [reportModelHealth] ROSTER 0 of 1 model answered; unreachable: hf:openai/gpt-oss-120b',
         ],);
@@ -238,7 +239,7 @@ await describe({
 
         expect(exitCode,).toBe(1,);
         expect(lines,).toEqual([
-          `warn [reportModelHealth] ${TABBY}: UNREACHABLE: ${statusFailureLogText({ status: 401, },)}`,
+          `warn [reportModelHealth] ${TABBY}: UNREACHABLE: ${statusFailureLogText({ provider: 'synthetic', status: 401, },)}`,
           `info [reportModelHealth] ROSTER 0 of 1 model answered; unreachable: ${TABBY}`,
         ],);
       },

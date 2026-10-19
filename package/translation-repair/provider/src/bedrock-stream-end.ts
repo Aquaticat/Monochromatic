@@ -101,7 +101,13 @@ export function requireBedrockStreamEnd(
   // The chunk's shape is the OpenAI-compatible one, which this route speaks;
   // AWS's documentation for the route does not state an error frame (read
   // 2026-10-06), so this reads the convention and not a captured Bedrock frame.
-  requireNoStreamError({ bodyText, },);
+  // THE PROVIDER IS FIXED HERE, not passed in: this function reads the Bedrock
+  // route's streams and is called by the Bedrock client alone, so a refusal it
+  // raises is Bedrock's.
+  requireNoStreamError({
+    provider: 'bedrock',
+    bodyText,
+  },);
   if (streamEnd === 'done-sentinel') {
     requireStreamTerminator({ bodyText, },);
     return;

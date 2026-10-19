@@ -252,7 +252,7 @@ await describe({
         expect(outcome.kind,).toBe('refused',);
         expect(warnings,).toEqual([
           `[produceTranslateSlate] translate hf:cat/Cat-A: ${
-            statusFailureLogText({ status: 401, },)
+            statusFailureLogText({ provider: 'synthetic', status: 401, },)
           }, as the caller stopped the round`,
           'Mittens/0 (relocation): refused, refused by AbortError',
         ],);

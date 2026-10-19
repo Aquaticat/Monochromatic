@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import type {
   ProviderName,
   ProviderRecord,
@@ -110,7 +110,8 @@ function stubProviders(): {
         const limited = (provider === 'synthetic') && (modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER) && (!refused.once);
         if (limited) {
           refused.once = true;
-          throw new SyntheticHttpError({
+          throw new ProviderHttpError({
+            provider,
             status: HTTP_TOO_MANY_REQUESTS,
             bodyText: UPSTREAM_POOL_BODY,
           },);
@@ -237,7 +238,7 @@ await describe({
         },);
         // The passed-on limit is the seat's loss for the round, not a
         // re-route and not the provider's budget (class sixty-two).
-        expect(('thrown' in first) && (first.thrown instanceof SyntheticHttpError),).toBe(true,);
+        expect(('thrown' in first) && (first.thrown instanceof ProviderHttpError),).toBe(true,);
         expect(refused,).toEqual([],);
 
         const held = await ask({

@@ -490,7 +490,9 @@ named for that subject and listed here.
   Refusals and failure lines that named too little to act on,
   or named the wrong cause,
   a bridge that could not start and left degraded findings with exit code zero (B689),
-  and oxlint output that was not JSON and reached the plugin tests as a bare `SyntaxError` (B690).
+  oxlint output that was not JSON and reached the plugin tests as a bare `SyntaxError` (B690),
+  and every provider's HTTP refusal named as Synthetic's,
+  with no provider (B692).
 - [Audit ledger: process mistakes, shell commands and tasks](audit-ledger-process-shell-commands-and-tasks.md):
   Slips against the repository's shell and task rules:
   chained commands,
@@ -527,7 +529,8 @@ named for that subject and listed here.
   a correct commit message reported as wrong (M274),
   a commit body that counted failing cases without naming them (M275),
   a lint comparison taken from a summary line (M276),
-  and a work's English title called invented after one store page (M279).
+  a work's English title called invented after one store page (M279),
+  and a commit body describing a change another commit had made (M281).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,

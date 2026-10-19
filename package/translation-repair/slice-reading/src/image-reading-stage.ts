@@ -14,7 +14,7 @@ import {
   readsImages,
   type SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
-import type { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Image reading stage
@@ -246,7 +246,7 @@ export function isTransientReadingReason(
 
  @returns Reading that passed the screen, or why none is available
 
- @throws {@link SyntheticHttpError} on a
+ @throws {@link ProviderHttpError} on a
  non-success status, which is a transport failure rather than an unreadable
  picture and is not this function's to interpret
 

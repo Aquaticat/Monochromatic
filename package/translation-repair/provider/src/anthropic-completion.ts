@@ -14,6 +14,7 @@ import {
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type ExtractedCompletion,
   MalformedCompletionError,
@@ -511,6 +512,8 @@ function usageOf(
 /**
  Reassembles one drained Anthropic Messages body into a completion.
 
+ @param provider - provider whose body this is, carried onto a refusal the body states
+
  @param bodyText - whole drained `text/event-stream` body
 
  @returns Answer text, stop reason, and usage
@@ -519,11 +522,17 @@ function usageOf(
 
  @example
  ```ts
- const extracted = extractAnthropicCompletion({ bodyText: reply.bodyText, },);
+ const extracted = extractAnthropicCompletion({ provider: 'hyper', bodyText: reply.bodyText, },);
  ```
  */
 export function extractAnthropicCompletion(
-  { bodyText, }: { readonly bodyText: string; },
+  {
+    provider,
+    bodyText,
+  }: {
+    readonly provider: ProviderName;
+    readonly bodyText: string;
+  },
 ): ExtractedCompletion {
   /**
    Logger pre-tagged with this function's name.
@@ -546,7 +555,10 @@ export function extractAnthropicCompletion(
     completionTokens: [],
   };
 
-  requireWholeAnthropicMessage({ bodyText, },);
+  requireWholeAnthropicMessage({
+    provider,
+    bodyText,
+  },);
 
   /**
    Body lines, folded into the answer.

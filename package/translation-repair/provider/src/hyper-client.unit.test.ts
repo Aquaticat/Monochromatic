@@ -14,7 +14,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   MalformedCompletionError,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportExchange,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
@@ -488,12 +488,17 @@ await describe({
           caught = error;
         }
 
-        expect(caught instanceof SyntheticHttpError,).toBe(true,);
+        expect(caught instanceof ProviderHttpError,).toBe(true,);
         expect(
-          caught instanceof SyntheticHttpError
+          caught instanceof ProviderHttpError
             ? caught.status
             : 0,
         ).toBe(429,);
+        expect(
+          caught instanceof ProviderHttpError
+            ? caught.provider
+            : undefined,
+        ).toBe('hyper',);
       },
     },),
 
@@ -835,7 +840,12 @@ await describe({
           caught = error;
         }
 
-        expect(caught instanceof SyntheticHttpError,).toBe(true,);
+        expect(caught instanceof ProviderHttpError,).toBe(true,);
+        expect(
+          caught instanceof ProviderHttpError
+            ? caught.provider
+            : undefined,
+        ).toBe('hyper',);
       },
     },),
 

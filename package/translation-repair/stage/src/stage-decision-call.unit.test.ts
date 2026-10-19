@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
@@ -201,7 +201,8 @@ await describe({
           ...SHARED,
           client: clientWith({
             decide: async () => {
-              throw new SyntheticHttpError({
+              throw new ProviderHttpError({
+                provider: 'openrouter',
                 status: 400,
                 bodyText: String.raw`{"error":{"message":"HTTP 400: {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}}","code":400}}`,
               },);
@@ -219,7 +220,8 @@ await describe({
           ...SHARED,
           client: clientWith({
             decide: async () => {
-              throw new SyntheticHttpError({
+              throw new ProviderHttpError({
+                provider: 'openrouter',
                 status: 400,
                 bodyText: String.raw`{"error":{"message":"HTTP 400: {\"detail\":{\"error_type\":\"invalid_question\"}}","code":400}}`,
               },);
@@ -244,7 +246,8 @@ await describe({
           l: warningRecordingLogger({ base: l, warnings, },),
           client: clientWith({
             decide: async () => {
-              throw new SyntheticHttpError({
+              throw new ProviderHttpError({
+                provider: 'openrouter',
                 status: 400,
                 bodyText: `the cat named an invalid_question`,
               },);
@@ -253,7 +256,7 @@ await describe({
           decision: DECISION,
         },);
         expect(warnings,).toEqual([
-          `select ${SEAT_OPENROUTER_DECISIONS}: refused by SyntheticHttpError with HTTP 400 (the provider said: "the cat named an invalid_question"), voice lost`,
+          `select ${SEAT_OPENROUTER_DECISIONS}: refused by ProviderHttpError from openrouter with HTTP 400 (the provider said: "the cat named an invalid_question"), voice lost`,
         ],);
       },
     },),
@@ -266,7 +269,8 @@ await describe({
           ...SHARED,
           client: clientWith({
             decide: async () => {
-              throw new SyntheticHttpError({
+              throw new ProviderHttpError({
+                provider: 'openrouter',
                 status: 503,
                 bodyText: 'upstream reported max_tokens_exceeded for its own model',
               },);

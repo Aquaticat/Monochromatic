@@ -174,15 +174,16 @@ which is the key
 (measured as a `TypeError` in the model-provider probe of 2026-10-05,
 by the agent's report);
 V8's JSON parse failure quotes the opening of the text it refused;
-and `SyntheticHttpError` excerpts the provider's reply body on purpose.
+and `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19) excerpts the provider's reply body on purpose.
 The red cases throw a `TypeError` quoting a stand-in key (`quoting-failure.test-fixture.ts`,
 invented)
-and a `SyntheticHttpError` with a body,
+and a `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19) with a body,
 and the logged lines held both.
 
 The fix:
 `exchangeFailureText` (`exchange-failure-text.ts`) prints a marked class's own sentence,
-`refused by SyntheticHttpError with HTTP <status>` for a provider's status failure,
+`refused by SyntheticHttpError with HTTP <status>` (renamed `ProviderHttpError` on 2026-10-19)
+for a provider's status failure,
 and the class name for anything else.
 Every site named here uses it.
 The lead's edit on the agent's change:

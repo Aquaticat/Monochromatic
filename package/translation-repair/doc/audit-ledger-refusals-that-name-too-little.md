@@ -371,7 +371,8 @@ The only evidence of why a provider refused one request and not another,
 a moderation refusal,
 a context limit or a data-policy mismatch,
 was in no log line.
-The red cases throw a `SyntheticHttpError` with a body through each reachable log site and expect the words:
+The red cases throw a `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+with a body through each reachable log site and expect the words:
 the lost-voice lines of the two stage calls,
 the retry line,
 the re-ask warning,
@@ -696,3 +697,60 @@ The agent did not render the README (M273).
 Recurrence:
 `mistake-prevention-guards-searches-and-claims.md`,
 "What a failing check prints".
+
+## B692: every provider's HTTP refusal carried Synthetic's class name and no provider
+
+Status:
+fixed on 2026-10-19 (UTC),
+red `180a72421d`,
+fix `a81da6863e`,
+gate g117.
+
+`SyntheticHttpError` (`provider-stream/src/completion-shape.ts`),
+documented as a non-success status "from the Synthetic API",
+was the error every client threw for a refused call:
+Synthetic,
+Hyper,
+OpenRouter,
+Bedrock,
+and the OpenRouter decision transport.
+It carried no provider.
+`zheermao14` logged three Bedrock seats as
+`SEAT CREDENTIAL REFUSED google.gemma-4-31b: refused by SyntheticHttpError with HTTP 401 (the provider said: "...The security token included in the request has expired...")`,
+which reads as a Synthetic refusal,
+and the line's remedy was only
+"Renew the credential for this seat's provider before the next run",
+naming neither the provider nor the other valid course,
+which the owner had already chosen for Bedrock:
+not renewing,
+and letting the run go on without the seat.
+The request-size refusal said "Synthetic API refused a request body" for every provider in the same way.
+
+The class is now `ProviderHttpError` with a required `provider` (`ProviderName`),
+passed by every construct site from the client that served the call;
+the shared helpers that build it
+(the retry ladder,
+`failureForReply`,
+`requireNoStreamError`,
+`requireWholeAnthropicMessage`,
+`extractAnthropicCompletion`)
+take the provider as a parameter with no default.
+`exchangeFailureText` renders `refused by ProviderHttpError from <provider> with HTTP <status>`,
+and the seat line reads
+`SEAT CREDENTIAL REFUSED <model> on <provider>: ...`,
+ending with both courses:
+renew that provider's credential before the next run,
+or leave it,
+since the run withholds the seat after its failed asks and goes on with the other seats.
+Nothing parses the rendered text back,
+and no cache key folds it in;
+stored records written before the change keep the old wording.
+Historical mentions of the old name keep their text with an in-place rename note.
+
+Left open:
+`SyntheticRequestTooLargeError` keeps its name and its byte threshold,
+which were measured against Synthetic only,
+though `failureForReply` raises it for every provider;
+whether Hyper,
+OpenRouter or Bedrock refuse at that size is unmeasured.
+`SyntheticClient` and `createSyntheticClient` keep the Synthetic name for the routed client.

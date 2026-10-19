@@ -368,20 +368,19 @@ its "Next" list is still the queue the merge went ahead of.
 1.  The readiness rotation in the State list,
     one entry at a time,
     each page read by the seven steps and the three checks before the next launch.
-    `zheermao14` settled with no class
-    ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md)).
-    `CuspariaKLSY17` launched at 17:09 UTC
-    (unit `corpus-pass-corpus-pass-CuspariaKLSY17`,
-    runs directory `~/temp/agent/corpus-pass-CuspariaKLSY17`,
+    `zheermao14` and `CuspariaKLSY17` settled with no class
+    ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md));
+    `CuspariaKLSY16` before the second ran the main checkout's bundler on another build and was stopped (M278).
+    `XingZ6015` launched at 18:14 UTC
+    (unit `corpus-pass-corpus-pass-XingZ6015`,
+    runs directory `~/temp/agent/corpus-pass-XingZ6015`,
     log beside it,
     pipeline `sha256-tree-v1:a92725968adf…`,
-    `rolldown v1.2.13`);
-    `CuspariaKLSY16` before it ran the main checkout's bundler on another build and was stopped (M278).
+    `rolldown v1.2.13`).
     Each later entry launches with the main-checkout entries removed from the unit's `PATH`
     and is stopped unless its `START` line reads `a92725968adf…`
     (`~/temp/agent/tr-fan/s245/split/launch-rotation.ts <run> <entry>` does both).
-    Then `XingZ60`,
-    `yingying`,
+    Then `yingying`,
     `hulicaijia`,
     `mikaela_khara`,
     `shi_Yumiaoya`
@@ -394,13 +393,14 @@ its "Next" list is still the queue the merge went ahead of.
     The branch worktree stays at `2eeef91fac` until the rotation ends,
     so the rotation's build does not carry it;
     update the branch worktree only after the last entry is read.
-    Held for after the rotation or the next rebuild a class forces,
-    so every entry runs on one build:
-    `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` for a Bedrock seat's HTTP 401,
-    which reads as a Synthetic refusal;
-    the class is the HTTP error every provider shares
-    (`provider-stream/src/completion-shape.ts`),
-    so the line should name the seat's provider.
+    The seat line now names its provider
+    (red `180a72421d`,
+    fix `a81da6863e`,
+    B692):
+    `SEAT CREDENTIAL REFUSED <model> on <provider>`,
+    with both courses,
+    renew or leave the seat withheld;
+    the rotation's build still prints the old line until the branch worktree is updated.
 2.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
 3.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,

@@ -15,7 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   readUsage,
-  SyntheticHttpError,
+  ProviderHttpError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -66,18 +66,35 @@ await describe({
       ],
     },),
     describe({
-      name: SyntheticHttpError.name,
+      name: ProviderHttpError.name,
       children: [
         it({
           name: 'carries status and excerpts the body',
           fn: async () => {
-            const error = new SyntheticHttpError({
+            const error = new ProviderHttpError({
+              provider: 'synthetic',
               status: 429,
               bodyText: '猫'.repeat(BODY_EXCERPT_LIMIT * 2,),
             },);
             expect(error.status,).toBe(429,);
             expect(error.bodyExcerpt,).toHaveLength(BODY_EXCERPT_LIMIT,);
             expect(error.message,).toContain('HTTP 429',);
+          },
+        },),
+        it({
+          name: 'CARRIES THE PROVIDER THAT SERVED THE CALL, and names itself for the provider-neutral class it is',
+          fn: async () => {
+            /**
+             Failure for a call Bedrock served.
+             */
+            const error = new ProviderHttpError({
+              provider: 'bedrock',
+              status: 401,
+              bodyText: 'The security token included in the request has expired.',
+            },);
+            expect(error.provider,).toBe('bedrock',);
+            expect(error.name,).toBe('ProviderHttpError',);
+            expect(Error.isError(error,),).toBe(true,);
           },
         },),
         it({
@@ -88,7 +105,8 @@ await describe({
              Body whose emoji straddles the excerpt's limit.
              */
             const bodyText = `${'猫'.repeat(BODY_EXCERPT_LIMIT - 1,)}\u{1F431} purrs`;
-            const error = new SyntheticHttpError({
+            const error = new ProviderHttpError({
+              provider: 'synthetic',
               status: 503,
               bodyText,
             },);
@@ -100,7 +118,8 @@ await describe({
           name: 'WITHHOLDS the excerpt from a message that gives no summary, leaving the plain status line, and keeps '
             + 'the excerpt on the error for the log alone',
           fn: async () => {
-            const error = new SyntheticHttpError({
+            const error = new ProviderHttpError({
+              provider: 'synthetic',
               status: 502,
               bodyText: 'the cat knocked the bowl over',
               excerpt: 'withheld',

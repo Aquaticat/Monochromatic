@@ -24,7 +24,7 @@ import {
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -355,14 +355,16 @@ await describe({
         /**
          What the first-listed seat's re-ask ends in, once the later-listed seat's has ended.
          */
-        const firstRefusal = new SyntheticHttpError({
+        const firstRefusal = new ProviderHttpError({
+          provider: 'synthetic',
           status: 429,
           bodyText: 'the first cat is out of treats',
         },);
         /**
          What the later-listed seat's re-ask ends in, first.
          */
-        const laterRefusal = new SyntheticHttpError({
+        const laterRefusal = new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the later cat is napping in the sun',
         },);
@@ -442,9 +444,9 @@ await describe({
               + `it: ${verdict.findings.join(' ',)}`;
           },),
           `[repairOneCandidate] translate-repair ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}: refused by `
-          + 'SyntheticHttpError with HTTP 503 (the provider said: "the later cat is napping in the sun"), as the '
+          + 'ProviderHttpError from synthetic with HTTP 503 (the provider said: "the later cat is napping in the sun"), as the '
           + 'caller stopped the repair',
-          `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by SyntheticHttpError with HTTP 429 (the `
+          `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by ProviderHttpError from synthetic with HTTP 429 (the `
           + 'provider said: "the first cat is out of treats"), as the caller stopped the repair',
         ],);
       },
@@ -473,7 +475,8 @@ await describe({
         /**
          What the seat's re-ask ends in, of its own, once the stop has landed.
          */
-        const refusal = new SyntheticHttpError({
+        const refusal = new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the cat is napping in the sun',
         },);
@@ -569,7 +572,7 @@ await describe({
         expect(said,).toEqual([
           `[repairOneCandidate] ${TRANSLATOR}: candidate fails the publication rule, so its author is asked about `
           + `it: ${verdict.findings.join(' ',)}`,
-          `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by SyntheticHttpError with HTTP 503 (the `
+          `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by ProviderHttpError from synthetic with HTTP 503 (the `
           + 'provider said: "the cat is napping in the sun"), as the caller stopped the repair',
         ],);
       },

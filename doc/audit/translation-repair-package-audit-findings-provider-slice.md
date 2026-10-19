@@ -161,7 +161,7 @@ a gateway that echoes request bytes would print corpus text at the boundary.
 Tracked as `#244`.
 
 FIXED 2026-08-26 in `0fb6a8ad8`:
-`SyntheticHttpError` takes an excerpt policy,
+`SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19) takes an excerpt policy,
 the marked subclass withholds the
 gateway's words from its message and keeps them on `bodyExcerpt` for the log.
 Guard:
@@ -195,7 +195,8 @@ passes.
 
 ## provider-8, note: the run log carries provider body excerpts and 80-character openings
 
-`src/stage-call.ts:247` logs `String(error)` of a `SyntheticHttpError` (up to 600 body characters);
+`src/stage-call.ts:247` logs `String(error)` of a `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+(up to 600 body characters);
 `src/stream-cut.ts:40` sets `OPENING_CHARS = 80`.
 Both are recorded decisions (`#75`),
 and the log is treated as corpus-bearing;

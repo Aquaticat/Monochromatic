@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -243,13 +243,13 @@ await describe({
               request: REQUEST,
               first: { reply: FIRST_REPLY, outcome: FIRST_UNUSABLE, },
               ask: async () => {
-                throw new SyntheticHttpError({ status: 400, bodyText: 'the cat refused this passage', },);
+                throw new ProviderHttpError({ provider: 'synthetic', status: 400, bodyText: 'the cat refused this passage', },);
               },
             },),
         },);
         expect(warned,).toEqual([
           `[translation-repair] [reaskElsewhereNudged] ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: no re-ask elsewhere `
-          + '(refused by SyntheticHttpError with HTTP 400 (the provider said: "the cat refused this passage")); '
+          + '(refused by ProviderHttpError from synthetic with HTTP 400 (the provider said: "the cat refused this passage")); '
           + 'keeping the first answer',
         ],);
       },

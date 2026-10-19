@@ -27,7 +27,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   reuseTwinOrBuy,
   type TwinMemo,
@@ -480,11 +480,11 @@ await describe({
         },);
         await settle();
 
-        nonNullishOrThrow(shop.gates[0],).reject(new SyntheticHttpError({ status: 429, bodyText: 'the cat is out of credit', },),);
+        nonNullishOrThrow(shop.gates[0],).reject(new ProviderHttpError({ provider: 'synthetic', status: 429, bodyText: 'the cat is out of credit', },),);
         await first;
         await settle();
         expect(shop.warned,).toEqual([
-          'twin memo: the buy for a shared key was abandoned (refused by SyntheticHttpError with HTTP 429 '
+          'twin memo: the buy for a shared key was abandoned (refused by ProviderHttpError from synthetic with HTTP 429 '
           + '(the provider said: "the cat is out of credit")), so any twin waiting on it asks for itself',
         ],);
         nonNullishOrThrow(shop.gates[1],).resolve({
@@ -564,7 +564,8 @@ await describe({
         /**
          What the buy ends in, of its own.
          */
-        const refusal = new SyntheticHttpError({
+        const refusal = new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the cat is napping in the sun',
         },);
@@ -572,7 +573,7 @@ await describe({
         expect(await first,).toBe(refusal,);
         await settle();
         expect(shop.warned,).toEqual([
-          'twin memo: the buy for a shared key was abandoned (refused by SyntheticHttpError with HTTP 503 '
+          'twin memo: the buy for a shared key was abandoned (refused by ProviderHttpError from synthetic with HTTP 503 '
           + '(the provider said: "the cat is napping in the sun")), so any twin waiting on it asks for itself',
         ],);
       },

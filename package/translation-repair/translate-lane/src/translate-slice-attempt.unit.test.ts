@@ -26,7 +26,7 @@ import type {
 } from '@monochromatic-dev/translation-repair-provider';
 import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   isInsertionChunk,
@@ -347,7 +347,7 @@ await describe({
           SEAT_SYNTHETIC_VISION_WITHHELD,
         ].map(function seatLine(seat,): string {
           return `warn [produceTranslateSlate] translate ${seat}: ${
-            statusFailureLogText({ status: 401, },)
+            statusFailureLogText({ provider: 'synthetic', status: 401, },)
           }, as the caller stopped the round`;
         },).toSorted(),);
         expect(lines.slice(-1,),).toEqual([
@@ -371,7 +371,8 @@ await describe({
         /**
          What the first seat's re-ask ends in, of its own.
          */
-        const refusal = new SyntheticHttpError({
+        const refusal = new ProviderHttpError({
+          provider: 'synthetic',
           status: 503,
           bodyText: 'the cat is napping in the sun',
         },);
@@ -481,7 +482,7 @@ await describe({
         expect(warnings.slice(0, seats.length,).toSorted(),).toEqual(askedLines.toSorted(),);
         expect(warnings.slice(seats.length,),).toEqual([
           `[produceTranslateSlate] [repairOneCandidate] translate-repair ${firstSeat}: `
-          + 'refused by SyntheticHttpError with HTTP 503 (the provider said: "the cat is napping in the sun"), as the '
+          + 'refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the cat is napping in the sun"), as the '
           + 'caller stopped the repair',
           `slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort`,
         ],);

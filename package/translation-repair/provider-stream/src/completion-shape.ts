@@ -1,4 +1,5 @@
 import type { CompletionUsage, } from '@monochromatic-dev/module-llm-type/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 import { wholeOpening, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -11,12 +12,13 @@ import type { StreamWireFormat, } from './stream-wire-format.ts';
 // body parser that once lived here went with the last non-streaming call
 // (ledger B30).
 //
-// BOTH PROVIDERS THROW THESE CLASSES, so neither message names one. `hyper-client.ts`
-// records why it reuses `SyntheticHttpError` rather than adding a class of its own,
-// and states that the name is wrong and the rename is held with the `SyntheticClient`
-// rename. That note covers the NAME. The MESSAGES were a separate problem, because a
-// name is read by whoever edits this file and a message is read by whoever is holding
-// a broken run at two in the morning.
+// EVERY PROVIDER THROWS THESE CLASSES, so no message here names one. `ProviderHttpError`
+// is the one class for a non-success HTTP status from any of them, and it carries the
+// provider that served the call as a field (renamed from `SyntheticHttpError` on
+// 2026-10-19, when a Bedrock refusal was logged under the Synthetic class name with no
+// provider). The NAME and the MESSAGES were separate problems, because a name is read by
+// whoever edits this file and a message is read by whoever is holding a broken run at
+// two in the morning.
 //
 // FOUND IN A LIVE LOG, not by reading: `panel gemma-4-26b-a4b-it: MalformedCompletionError:
 // Synthetic completion body violated the OpenAI-compatible contract`. Every one of that
@@ -24,8 +26,10 @@ import type { StreamWireFormat, } from './stream-wire-format.ts';
 // the wrong provider's status page.
 //
 // SO A MESSAGE HERE STATES ONLY WHAT THIS FILE KNOWS: a status, a detail, an excerpt.
-// A caller that does know which provider answered says so through `summary`, which the
-// two meter endpoints now do because each is bound to one provider by construction.
+// The provider rides on the `provider` field and is rendered by `exchangeFailureText`
+// (`exchange-failure-text.ts`), not interpolated into this message. A caller that wants
+// the provider in the message itself says so through `summary`, which the meter endpoints
+// do because each is bound to one provider by construction.
 //
 // THE CONTRACT A BODY BROKE IS THE READER'S TO NAME (ledger B90). The fix for that live
 // log took the provider's name out and kept "the OpenAI-compatible contract", which the
@@ -40,14 +44,25 @@ import type { StreamWireFormat, } from './stream-wire-format.ts';
 const BODY_EXCERPT_LIMIT = 600;
 
 /**
- Signals a non-success HTTP status from the Synthetic API.
+ Signals a non-success HTTP status from whichever provider served the call:
+ Synthetic, Amazon Bedrock, Charm Hyper or OpenRouter.
+
+ THE PROVIDER IS A REQUIRED FIELD, set by the client that made the call and never
+ inferred from the status or the body, because no status or body names its sender.
+ A log line that reports this error without the provider reads as the wrong
+ provider's failure.
 
  @example
  ```ts
- throw new SyntheticHttpError({ status: 429, bodyText: reply.bodyText, },);
+ throw new ProviderHttpError({ provider: 'bedrock', status: 429, bodyText: reply.bodyText, },);
  ```
  */
-export class SyntheticHttpError extends Error {
+export class ProviderHttpError extends Error {
+  /**
+   Provider that served the call and answered with the failing status.
+   */
+  public readonly provider: ProviderName;
+
   /**
    HTTP status the API returned; drivers branch on 429 for backoff.
    */
@@ -59,7 +74,9 @@ export class SyntheticHttpError extends Error {
   public readonly bodyExcerpt: string;
 
   /**
-   Builds failure carrying status and body opening.
+   Builds failure carrying provider, status and body opening.
+
+   @param provider - provider that served the call, so a failure read without its call site still says whose it was
 
    @param status - non-success HTTP status
 
@@ -72,16 +89,18 @@ export class SyntheticHttpError extends Error {
 
    @example
    ```ts
-   new SyntheticHttpError({ status: 500, bodyText: 'upstream exploded', },);
+   new ProviderHttpError({ provider: 'hyper', status: 500, bodyText: 'upstream exploded', },);
    ```
    */
   public constructor(
     {
+      provider,
       status,
       bodyText,
       summary,
       excerpt = 'quoted',
     }: {
+      readonly provider: ProviderName;
       readonly status: number;
       readonly bodyText: string;
       readonly summary?: string;
@@ -104,7 +123,8 @@ export class SyntheticHttpError extends Error {
           },)
         }`,
     );
-    this.name = 'SyntheticHttpError';
+    this.name = 'ProviderHttpError';
+    this.provider = provider;
     this.status = status;
     this.bodyExcerpt = wholeOpening({
       text: bodyText,

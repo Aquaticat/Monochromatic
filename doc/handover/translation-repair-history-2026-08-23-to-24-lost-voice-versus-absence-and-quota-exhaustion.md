@@ -177,6 +177,8 @@ The cause was established by reading the response bodies.
 SyntheticHttpError HTTP 429: {"error":"You've exceeded your subscription rate limits. Upgrade, or try again later..."}
 ```
 
+`SyntheticHttpError` in that output is the class renamed `ProviderHttpError` on 2026-10-19.
+
 Three were content-based and three were nginx 503.
 It was not provider degradation and not the network.
 It was this account's own Synthetic budget running out,

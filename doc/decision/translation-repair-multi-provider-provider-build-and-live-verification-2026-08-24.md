@@ -94,10 +94,11 @@ which is how the second session came to need re-measuring:
 `wireFormat: 'anthropic'` on the exchange so the guards read the stream,
 and the endpoint facts confirmed live.
 
-It raises `SyntheticHttpError`,
+It raises `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19),
 named after the other provider,
 DELIBERATELY.
-`benchmark.ts` branches on `error instanceof SyntheticHttpError` to read a status off a failed call,
+`benchmark.ts` branches on `error instanceof SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
+to read a status off a failed call,
 and a fresh class here would make that site blind
 to exactly the provider added to survive the other one's exhaustion.
 The name is wrong and the behaviour is right;

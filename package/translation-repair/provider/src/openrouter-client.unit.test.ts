@@ -18,7 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportExchange,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
@@ -362,9 +362,10 @@ await describe({
             } catch (error) {
               thrown = error;
             }
-            expect(thrown,).toBeInstanceOf(SyntheticHttpError,);
-            expect(String(thrown,),).toBe('SyntheticHttpError: OpenRouter /credits returned HTTP 500: oops',);
-            expect((thrown as SyntheticHttpError).status,).toBe(500,);
+            expect(thrown,).toBeInstanceOf(ProviderHttpError,);
+            expect(String(thrown,),).toBe('ProviderHttpError: OpenRouter /credits returned HTTP 500: oops',);
+            expect((thrown as ProviderHttpError).status,).toBe(500,);
+            expect((thrown as ProviderHttpError).provider,).toBe('openrouter',);
           },
         },),
 
@@ -548,8 +549,9 @@ await describe({
             } catch (error) {
               thrown = error;
             }
-            expect(thrown instanceof SyntheticHttpError,).toBe(true,);
-            expect((thrown as SyntheticHttpError).status,).toBe(402,);
+            expect(thrown instanceof ProviderHttpError,).toBe(true,);
+            expect((thrown as ProviderHttpError).status,).toBe(402,);
+            expect((thrown as ProviderHttpError).provider,).toBe('openrouter',);
           },
         },),
 

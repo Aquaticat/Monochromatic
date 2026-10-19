@@ -107,6 +107,29 @@ await describe({
         },),
 
         it({
+          name: 'NAMES BEDROCK AS THE PROVIDER of the refusal an error chunk raises, whichever way the stream ends',
+          fn: async () => {
+            /**
+             What a 4xx error chunk raised on each route.
+             */
+            const raised = (['done-sentinel', 'usage-chunk',] as const).map(function refuseOn(streamEnd,): unknown {
+              try {
+                requireBedrockStreamEnd({
+                  bodyText: `${CONTENT_CHUNK}${errorChunk({ code: 400, },)}`,
+                  streamEnd,
+                },);
+              } catch (error) {
+                return error;
+              }
+              return undefined;
+            },);
+            expect(raised.map(function providerOf(error,): unknown {
+              return (error instanceof InStreamRefusalError) ? error.provider : error;
+            },),).toStrictEqual(['bedrock', 'bedrock',],);
+          },
+        },),
+
+        it({
           name: 'NAMES AN ERROR CHUNK on either route by its cause, a refusal for a 4xx code and a provider '
             + 'failure for any other, where both read as a stream cut off before its end',
           fn: async () => {

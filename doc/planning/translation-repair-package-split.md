@@ -538,7 +538,7 @@ Each package gets its own `src/index.ts` exporting what its siblings and its tes
 
 Production code checks identity on family classes:
 46 `instanceof` sites,
-9 of them on `SyntheticHttpError` and others on the stream errors,
+9 of them on `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19) and others on the stream errors,
 `StatedRefusalError`,
 `ArtifactParseError` and their kin.
 63 test fixtures that use production code are imported by tests in more than one package

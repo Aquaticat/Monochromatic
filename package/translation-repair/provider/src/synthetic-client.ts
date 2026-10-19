@@ -23,7 +23,7 @@ import {
   parseQuotaSnapshot,
   type QuotaShapeError,
   type QuotaSnapshot,
-  SyntheticHttpError,
+  ProviderHttpError,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
@@ -144,7 +144,7 @@ export class SyntheticModelNotServedError extends Error {
 
  @example
  ```ts
- const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ const reply = await exchangeWithRetry({ provider: 'synthetic', transport, exchange, policy, verify: wholeMessage, },);
  ```
  */
 function wholeMessage(attemptReply: TransportReply,): void {
@@ -220,7 +220,7 @@ export function createSyntheticClient(
 
    @returns Content text and usage when reported
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link MalformedCompletionError} on contract-violating bodies
 
@@ -343,6 +343,7 @@ export function createSyntheticClient(
        Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
+        provider: 'synthetic',
         transport,
         exchange: {
           url: `${chatBaseUrl}/chat/completions`,
@@ -370,6 +371,7 @@ export function createSyntheticClient(
         // `.length` here would read a third of the wire size and never once fire
         // on the case this exists for.
         throw failureForReply({
+          provider: 'synthetic',
           status: reply.status,
           bodyText: reply.bodyText,
           requestBodyBytes: Buffer.byteLength(bodyJson,),
@@ -417,7 +419,7 @@ export function createSyntheticClient(
 
    @returns Typed budget-relevant quota state
 
-   @throws {@link SyntheticHttpError} on non-success status
+   @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link QuotaShapeError} on contract-violating bodies
 
@@ -441,6 +443,7 @@ export function createSyntheticClient(
      Raw reply from the quota endpoint, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
+      provider: 'synthetic',
       transport,
       exchange: {
         url: quotasUrl,
@@ -453,7 +456,8 @@ export function createSyntheticClient(
     },);
 
     if (!isSuccessStatus({ status: reply.status, },)) {
-      throw new SyntheticHttpError({
+      throw new ProviderHttpError({
+        provider: 'synthetic',
         status: reply.status,
         bodyText: reply.bodyText,
         summary: `Synthetic /quotas returned HTTP ${String(reply.status,)}:`,
