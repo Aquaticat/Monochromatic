@@ -39,7 +39,8 @@ export type ProducerStreamHandle = (request: {
 }) => Promise<ProducerStream>;
 
 /**
- Original producer invocation stamps one request occurrence for its bound stream.
+ Original producer invocation is one SDK request through its bound consumer stream.
+ The internal issuance tags the request kind selected by the owning wrapper.
  */
 export type ProducerInvocation = {
   readonly stream: ProducerStreamCall;
@@ -47,6 +48,13 @@ export type ProducerInvocation = {
   readonly context: ProducerRequest[1];
   readonly options: ProducerRequest[2];
 };
+
+/**
+ Original tagged issuance carries the request kind its wrapper selects.
+ */
+export type ProducerIssuance = ProducerInvocation & Readonly<{
+  readonly kind: 'main-agent' | 'auxiliary-summary';
+}>;
 
 /**
  Original response identity pair authenticates one producer observation.
@@ -57,16 +65,14 @@ export type ProducerIdentity = {
 };
 
 /**
- Original judgment construction entry carries the optional prepared-group context
- that simple test judgments may omit.
+ Original judgment construction entry is the genuine production contract;
+ the prepared-group context and cancellation signal are both required.
  */
-export type JudgmentConstructionEntry = Omit<JudgmentConstructionInput, 'group'> & Readonly<{
-  group?: JudgmentConstructionInput['group'];
-}>;
+export type JudgmentConstructionEntry = JudgmentConstructionInput;
 
 /**
  Original judgment constructor builds one owned judgment record for a construction entry.
- The genuine `createJudgmentConstructor` result fits this contract for its public judgment type.
+ The genuine `createJudgmentConstructor` result satisfies this contract exactly.
  */
 export type JudgmentConstructor<Judgment> = (input: JudgmentConstructionEntry) => Judgment;
 
@@ -75,9 +81,9 @@ export type JudgmentConstructor<Judgment> = (input: JudgmentConstructionEntry) =
  */
 export type ProducerJudgmentEntry = {
   readonly response: JudgmentConstructionInput['response'];
-  readonly stream: unknown;
+  readonly stream: object;
   readonly signal: AbortSignal;
-  readonly group?: JudgmentConstructionInput['group'];
+  readonly group: JudgmentConstructionInput['group'];
 };
 
 //endregion Native request and response shapes follow the installed SDK stream contract.

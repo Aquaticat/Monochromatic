@@ -135,3 +135,25 @@ export async function verify({
 }
 
 //endregion Controlled streams isolate producer ownership without substituting claims.
+
+//region Caught-error predicates keep node assertion matchers off the regex path.
+
+/**
+ Build one caught-error predicate matching one literal message substring.
+
+ The predicate matches the stable expected diagnostic text literally, so
+ assertions name the actual message instead of emulating regex language.
+
+ @param {{ readonly substring: string }} input - literal message substring
+
+ @returns {(error: unknown) => boolean} predicate matching one caught error
+ */
+export function messageIncludes({ substring }) {
+  return function matchesMessage(error) {
+    return Error.isError(error)
+      && error.message
+      .includes(substring);
+  };
+}
+
+//endregion Caught-error predicates keep node assertion matchers off the regex path.

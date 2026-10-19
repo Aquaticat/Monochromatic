@@ -130,6 +130,9 @@ role intersection and unresolved reference.
   complete-group dispatch,
   extension tools,
   and session disposal.
+- [Request and judgment ownership](request-producer-owner.md) preserves original stream and response identity,
+  independent active operations,
+  historical reuse detection and completed-evidence retirement.
 - [Instruction collection](instruction-collection.md) preserves readable source identity,
   selected excerpts,
   relevance refresh,

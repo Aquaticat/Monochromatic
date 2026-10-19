@@ -27,5 +27,38 @@
     "The configured cap values are operator-reported and are not recorded here."
   ],
   "storageAverageGb": null,
-  "attempts": []
+  "attempts": [
+    {
+      "allocationId": "weekly-native-2026-10-19",
+      "id": "dmjf38bcz0",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 15,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.35
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r2",
+      "id": "r2mxbc40rh",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 15,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.35
+    }
+  ]
 }
