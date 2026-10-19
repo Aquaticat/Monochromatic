@@ -33,7 +33,8 @@ Truncated tool output still carries the model-visible head plus a full-response 
 identical to the pi surface.
 Additionally this server records the full response and adds:
 
-- a text line naming the `search-fetch://response/<id>` resource URI, and
+- a text line naming the `search-fetch://response/<id>` resource URI,
+  and
 - a `resource_link` content block pointing at the same URI.
 
 Hosts read the full text with `resources/read`,
@@ -78,9 +79,38 @@ See <https://open-codereview.ai/docs/mcp> for every configuration field.
 
 ## Configuration
 
-Loads the same global config file and environment keys as the pi extension
-(`EXA_API_KEY`, `LINKUP_API_KEY`, and the blocklist),
-so one config serves both surfaces.
+Loads the same global config file as the pi extension
+(`~/.pi/agent/extensions/pi-search-fetch.json`),
+which now holds only the blocklist.
+Provider keys come from `EXA_API_KEY` and `LINKUP_API_KEY` in the process
+environment,
+or from the repo's sops/age-encrypted `.env.local.json` through
+`@monochromatic-dev/module-env-local-json`.
+
+The reader locates the store in this order:
+
+1. an explicit path,
+   from `ENV_LOCAL_JSON_PATH` or a caller-supplied path,
+2. `.env.local.json` at the nearest repository root,
+3. a bounded walk from the working directory,
+   stopping at the home directory,
+   the containing repository,
+   or the filesystem root.
+
+Decryption needs `sops` on `PATH` and the age identity from the shared mise
+chain,
+which defaults to `~/.config/mise/age.txt`.
+The reader returns only keys the environment did not supply,
+and it never mutates `process.env`.
+
+When the store is unavailable,
+the server still starts with the blocklist and
+GitHub-routed `web_fetch` through `gh`.
+Calls that need a missing provider key fail with a value-free store diagnostic.
+
+The old `exaApiKey` and `linkupApiKey` fields are rejected.
+A config still carrying them raises `SearchFetchMigrationRequiredError` naming
+`mise run secrets:migrate`.
 
 ## Tests
 

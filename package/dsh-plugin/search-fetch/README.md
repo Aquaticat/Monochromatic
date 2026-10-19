@@ -66,38 +66,45 @@ workspace location or a username.
 ## Credentials
 
 No credential is copied into this bundle.
-The server resolves its own config from
-`$HOME/.pi/agent/extensions/pi-search-fetch.json`,
-which holds the Exa API key and the host blocklist.
-Home resolution is `options.home ?? process.env.HOME ?? homedir()` in
-`package/agent-harness-shared/search-fetch/src/config.ts`.
+The credential source is the repo's sops/age-encrypted `.env.local.json`,
+read through `@monochromatic-dev/module-env-local-json` inside the shared
+search-fetch core.
+The pi config file at `$HOME/.pi/agent/extensions/pi-search-fetch.json` now
+holds only the blocklist;
+a config still carrying `exaApiKey` or `linkupApiKey` raises
+`SearchFetchMigrationRequiredError` naming `mise run secrets:migrate`.
 
-`HOME` reaches the child because the harness subprocess scrub in
-`@deepseek-ai/dsh-subprocess` drops only names matching
-`KEY|PASSWORD|SECRET|TOKEN` and names beginning with `DSH_`,
-and its own documentation states that `PATH`,
+The store is found by an explicit path first.
+The host exports `ENV_LOCAL_JSON_PATH=/var/home/user/Monochromatic/.env.local.json`
+in `~/.bashrc`,
+so a harness started from that shell passes the path down and the child does
+not depend on its working directory.
+When the variable is absent,
+the reader falls back to `.env.local.json` at the nearest repository root,
+then to a bounded walk from the child's working directory.
+No env value is pinned in this bundle.
+
+The harness subprocess scrub in `@deepseek-ai/dsh-subprocess` drops names
+matching `KEY|PASSWORD|SECRET|TOKEN` and names beginning with `DSH_`.
+That drops `SOPS_AGE_KEY_FILE` and the other environment identity names even
+when the host has them,
+so only the final fallback in the identity chain is reachable:
+the mise default `~/.config/mise/age.txt`.
 `HOME`,
-locale,
-and proxy variables survive.
-`PATH` surviving is also what makes the `gh` CLI route work.
+`PATH`,
+and `ENV_LOCAL_JSON_PATH` survive the scrub,
+and `PATH` surviving is what makes both the `sops` call and the `gh` CLI route
+work.
 
-The same scrub is why the Linkup key cannot travel through the environment.
-`agent-harness-shared/search-fetch` reads `LINKUP_API_KEY` from `process.env`
-(`config-constants.ts:17`),
-but that name matches the `KEY` pattern,
-so it is dropped from the child environment even when the host has it.
-An `export` in `~/.bashrc` is doubly unavailable,
-because the harness process is not started from an interactive shell and so
-never sources it.
-Both keys therefore live in the config file instead,
-under `exaApiKey` and `linkupApiKey`,
-which are two of the three keys `CONFIG_KEYS` accepts.
-The file is mode `0600` and is shared with the pi extension,
-so one credential serves both harnesses.
+When the store is unavailable,
+the server still starts with the blocklist and
+GitHub-routed `web_fetch` through `gh`.
+Only calls that need a missing provider key fail,
+with a value-free store diagnostic in the error text.
 
 `loadLinkupConfig()` runs once at startup,
 before `serve()`,
-so a key added while the server is already running is not picked up.
+so a store change while the server is already running is not picked up.
 Respawn it by toggling the `include:search-fetch-mcp` row through
 `plugin_manager`,
 or restart the harness.

@@ -16,8 +16,6 @@ The extension reads one optional global config file:
 
 ```json
 {
-  "exaApiKey": "optional Exa fallback",
-  "linkupApiKey": "optional Linkup fallback",
   "blocklist": ["badwikipedia.invalid"]
 }
 ```
@@ -28,14 +26,60 @@ Config path:
 ~/.pi/agent/extensions/pi-search-fetch.json
 ```
 
-`EXA_API_KEY` wins over `exaApiKey` in the config file.
-`LINKUP_API_KEY` wins over `linkupApiKey` in the config file.
-The blocklist is always global and is applied locally after search results,
+The file holds only the blocklist.
+Provider credentials live in the process environment or in the repo's
+encrypted store,
+never in this file.
+
+The blocklist is global and is applied locally after search results,
 before fetch attempts,
 and to provider-supported request filters where compatible.
 
-A one-time migration can convert the old `pi-linkup.json` shape into this file.
-Do not keep runtime fallback to the old config path after migration.
+### Credentials
+
+`search-fetch` resolves each provider key independently.
+A non-blank `EXA_API_KEY` or `LINKUP_API_KEY` in the process environment wins.
+Otherwise the key comes from the repo's sops/age-encrypted `.env.local.json`
+through `@monochromatic-dev/module-env-local-json`,
+the same reader the MCP
+server and the dsh bundle use.
+
+The reader locates the store in this order:
+
+1. an explicit path,
+   from `ENV_LOCAL_JSON_PATH` or a caller-supplied path,
+2. `.env.local.json` at the nearest repository root,
+3. a bounded walk from the working directory,
+   stopping at the home directory,
+   the containing repository,
+   or the filesystem root.
+
+Decryption needs the `sops` executable on `PATH`.
+The identity chain mirrors mise:
+`MISE_SOPS_AGE_KEY`,
+`MISE_SOPS_AGE_KEY_FILE`,
+`SOPS_AGE_KEY_FILE`,
+`SOPS_AGE_KEY`,
+then `age.txt` in the mise configuration directory
+(`${MISE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/mise}/age.txt`).
+
+The reader returns only requested keys that the environment did not supply,
+and it never mutates `process.env`.
+When the store is unavailable,
+the extension still loads the blocklist and
+GitHub-routed `web_fetch` through `gh`;
+only calls that need a missing provider key fail,
+with the existing credential message plus a value-free store diagnostic.
+
+The old `exaApiKey` and `linkupApiKey` fields are no longer read.
+A config still carrying them,
+or a legacy `pi-linkup.json`,
+raises
+`SearchFetchMigrationRequiredError` naming `mise run secrets:migrate`.
+That migration moves both values into `.env.local.json`,
+verifies the store by
+decrypting it,
+then removes the old fields and the legacy file.
 
 ## Tool behavior
 

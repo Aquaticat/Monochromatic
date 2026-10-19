@@ -491,21 +491,43 @@ Current owner:
  Mise loads optional encrypted `.env.local.json` through its rops integration,
 marks values for output redaction,
 and injects them into commands.
+`@monochromatic-dev/module-env-local-json` reads the same store directly for
+consumers launched outside mise and owns decryption,
+discovery,
+and the identity chain.
 SOPS and age own editing and cryptographic primitives.
 
 Evidence:
- `mise.toml:1241-1248` and the `secrets:edit` task.
+ `mise.no-env.toml:1212-1233` for the `secrets:edit` and `secrets:migrate`
+tasks,
+`file-enforcer.config.ts:652-668` for the generated `[env]` `_.file` loader,
+and `package/module/env-local-json/src/` for the direct reader,
+identity resolver,
+atomic writer,
+and edit CLI.
 
 Proposed owner:
  retain SOPS and age as primitives;
-select or build a narrow child-environment launcher for decryption and injection.
-Output redaction,
-command echoing,
-and interactive terminal passthrough are separate responsibilities.
+`@monochromatic-dev/module-env-local-json` owns file reading,
+decryption,
+identity resolution,
+and the write and edit subcommands.
+A narrow child-environment launcher for mise-run command injection,
+output redaction,
+and command echoing is still unselected.
+Interactive terminal passthrough is owned by the edit CLI.
 
 Selection status:
- launcher unselected and behavior unverified.
-Identity provisioning currently references `~/.config/mise/age.txt` and needs a Mise-independent location decision.
+ reading,
+decryption,
+identity resolution,
+and interactive editing are selected and implemented in the module
+(2026-10-18).
+Child-only injection and output redaction for task commands remain in Mise and
+are unselected.
+The identity location is decided:
+it stays at `~/.config/mise/age.txt`,
+and the shared chain also honors `MISE_CONFIG_DIR` and `XDG_CONFIG_HOME`.
 
 Parity gate:
  disposable canary secrets prove optional-file absence,
@@ -517,6 +539,15 @@ error redaction,
 interactive editor access,
 signal handling,
 and absence of plaintext files.
+For the direct reader specifically:
+requested keys only,
+no `process.env` mutation,
+explicit-path hard failure,
+repository-root and bounded-walk discovery,
+plaintext rejection before identity lookup,
+and no value in any log or error.
+The reader tests generate fixtures with real `sops` and `age` and run in an
+Ubuntu container as root and as a non-root user.
 Never use real credentials for this gate.
 
 Intentionally retired behavior:
