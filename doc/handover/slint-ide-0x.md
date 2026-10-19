@@ -933,16 +933,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 44, language lifecycle 28, ignored 75, theme 13, search 49, language navigation 45, source 300). The other
     six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
-  - Queued work from the owner's requests of 2026-10-18 (answers through the question tool):
-    the IDE bug "Source viewport 1354x12548 exceeds the 64 MiB raster limit" on a very tall window (screenshot: blank
-    text area, line numbers and minimap drawn) is being fixed by an agent on branch `fix/ide-tall-window-tile`
-    (worktree `.claude/worktrees/ide-tall-tile`); the owner wants the failure to degrade, not blank the text, and the
-    minimap to stay crisp, never replaced by rectangles. After that lands, the minimap is redesigned: the owner chose
-    "downscale the real rendering", so the minimap becomes merely a zoomed-out reflection of the main window (the
-    window's own painted tiles with selection, find matches, diagnostics and virtual rows, shrunk to the minimap width),
-    replacing the separate pixel-per-column builder of `src/minimap/` and `src/native/minimap_build.rs`; it must be
-    tiled and cached so that a long file stays fast and under the raster limit. The comment-directive engine of
-    `monochromatic-lint` (decision D2) is being built by an agent on branch `feat/lint-directives`.
+  - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
+    `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landing:
+    pending). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
+    Dylint gate are landed (their bullets). The owner wants the minimap to stay crisp, never replaced by rectangles,
+    and to be merely a zoomed-out reflection of the main window; the owner chose "downscale the real rendering": the
+    window's own glyph rendering with selection, find matches, diagnostics and virtual rows, shrunk to the minimap
+    width, replacing the separate pixel-per-column builder of `src/minimap/` (`raster.rs`, `paint.rs`) and the
+    picture side of `src/native/minimap_build.rs`. It must be tiled and cached so that a long file stays fast and
+    under the raster limit.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
     worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
