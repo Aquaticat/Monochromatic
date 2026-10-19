@@ -1688,7 +1688,9 @@ that is verification, not a decision for the user.
   commit with a release comment plus a correction of its control count (19, not 20).
   Queued, in order: (1) read the scoped mutation run when it ends and kill or justify every survivor, with a patch
   release if a source change is needed. The run is unit `cli-git-rec2` (tag `rec2`, logs
-  `~/temp/agent/rec2-container.log` and `rec2-mutation.log`, started 20:30 on 2026-10-18, about two hours in total)
+  `~/temp/agent/rec2-container.log` and `rec2-mutation.log`, started 20:30 on 2026-10-18; the gate ended 20:37,
+  the 78 planted controls ended about 22:25, and at 22:51 the 50 mutants stood at 30 caught, 5 unviable and 0 missed;
+  the container report is `mutants.out` under `/home/tester/mutation-report`)
   and replaces `rec1`, which missed nine of the nine mutants it tested before it was stopped (`unpublished`, the
   `||` chains of `read_destination`, `published_base`, `commit_merge` and the `(Some(true), _)` arm); those
   were killed with eleven new tests and three redundant checks removed; (2) remove the image tags `rec1` and
