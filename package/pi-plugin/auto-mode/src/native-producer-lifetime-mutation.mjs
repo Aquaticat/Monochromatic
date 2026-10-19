@@ -7,11 +7,17 @@ import {
 } from '../dist/native/contract/collector/request-producer-judgment-consumers/owner.mjs';
 import {
   createFixture,
-  createResultStream,
   messageIncludes,
   observe,
   verify
 } from './native-producer-lifetime-fixture.mjs';
+import {
+  authoredNameOf,
+  contextResponseOf,
+  createAuthoredResponse,
+  createResultStream,
+  resultStreamFor
+} from './native-producer-lifetime-values.mjs';
 
 //region Fault controls retain their original assertions and exact names.
 
@@ -26,8 +32,8 @@ export async function runProducerMutationControls() {
     async run() {
     const failure = new Error('original fixture construction failure');
     const fixture = createFixture({ construct({ response }) {
-      if (response.name === 'failed') throw failure;
-      return Object.freeze({ name: response.name });
+      if (authoredNameOf({ value: response }) === 'failed') throw failure;
+      return Object.freeze({ name: authoredNameOf({ value: response }) });
     } });
     const failed = await observe({
       fixture,
@@ -82,8 +88,7 @@ export async function runProducerMutationControls() {
         },
         messageIncludes({ substring: 'reenter' })
       );
-      return Object.freeze({ name: input.response
-        .name });
+      return Object.freeze({ name: authoredNameOf({ value: input.response }) });
     } });
     const input = await observe({
       fixture,
@@ -181,11 +186,10 @@ export async function runProducerMutationControls() {
   await verify({
     name: 'retirement preserves historical stream reuse detection',
     async run() {
-    const response = { name: 'original' };
-    const reused = createResultStream({ context: { response } });
-    const fixture = createFixture({ handle(input) {
-      return input.context
-        .response
+    const response = createAuthoredResponse({ name: 'original' });
+    const reused = resultStreamFor({ response });
+    const fixture = createFixture({ async handle(input) {
+      return contextResponseOf({ context: input.context })
         === response ? reused : createResultStream(input);
     } });
     const first = await observe({

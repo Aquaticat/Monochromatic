@@ -1,60 +1,65 @@
 /**
- Controlled streams and shared runners for the producer lifetime catalog.
-
- The separate capacity guard uses the actual native session. @module
+ Controlled producer lifetimes built on the owner's real private ownership
+ tables. @module
  */
 import assert from 'node:assert/strict';
 import {
   createRequestProducerOwner
 } from '../dist/native/contract/collector/request-producer-judgment-consumers/owner.mjs';
+import {
+  authoredModel,
+  authoredNameOf,
+  createAuthoredContext,
+  createAuthoredResponse,
+  createResultStream,
+  judgmentEntry,
+  registerContextResponse
+} from './native-producer-lifetime-values.mjs';
 
 //region Controlled streams isolate producer ownership without substituting claims.
-
 /**
  Construct the default frozen judgment value for each registered response.
 
- @param response - registered response identity
+ @param {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').JudgmentConstructionEntry} input - construction entry
 
- @returns frozen value recorded for the response
+ @returns {{ readonly name: string }} frozen value recorded for the response
  */
 function constructValue({ response }) {
-  return Object.freeze({ name: response.name });
+  return Object.freeze({ name: authoredNameOf({ value: response }) });
 }
 
 /**
- Supply unique result-bearing streams without substituting producer claims or
- response registration.
+ Satisfy the owner's handle contract with one result-bearing SDK stream.
 
- @param context - holder carrying the registered response
+ @param {{ readonly context: object }} input - request carrying registered response
 
- @returns stream exposing the supplied response
+ @returns {Promise<import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStream>} result-bearing stream
  */
-export function createResultStream({ context }) {
-  return {
-    async *[Symbol.asyncIterator]() {
-      /**
-       Result-bearing streams emit no events of their own.
-       */
-    },
-    result() { return context.response; },
-  };
+async function handleRequest(input) {
+  return createResultStream(input);
 }
 
 /**
  Bind distinct consumers to the supplied issuer while preserving the actual
  private ownership tables.
 
- @param construct - optional value constructor recorded for each response
+ @param {{
+   construct?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').JudgmentConstructor<import('./native-producer-lifetime-values.mjs').AuthoredJudgment>,
+   handle?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStreamHandle,
+   owner?: ReturnType<typeof import('../native/contract/collector/request-producer-judgment-consumers/owner.ts').createRequestProducerOwner>
+ }} input - consumer bindings
 
- @param handle - optional stream factory bound to the consumer
+ @param input.construct - optional value constructor recorded for each response
 
- @param owner - optional producer owner shared across consumers
+ @param input.handle - optional stream factory bound to the consumer
+
+ @param input.owner - optional producer owner shared across consumers
 
  @returns owner and bound judgment consumer stream
  */
 export function createFixture({
   construct,
-  handle = createResultStream,
+  handle = handleRequest,
   owner = createRequestProducerOwner({ now() { return 1; } })
 } = {}) {
   const stream = owner.bindJudgmentConsumer({
@@ -71,25 +76,35 @@ export function createFixture({
  Enter the actual main/auxiliary claim and result registration paths before any
  judgment operation.
 
- @param fixture - owner and bound stream pair
+ @param {{
+   fixture: ReturnType<typeof createFixture>,
+   name?: string,
+   response?: import('@earendil-works/pi-ai').AssistantMessage,
+   auxiliary?: boolean
+ }} input - registration inputs
 
- @param name - registered response name
+ @param input.fixture - owner and bound stream pair
 
- @param response - registered response identity
+ @param input.name - correlation name for a newly authored response
 
- @param auxiliary - route through the auxiliary summary path
+ @param input.response - existing response identity to reuse
 
- @returns registered response and bound stream
+ @param input.auxiliary - route through the auxiliary summary path
+
+ @returns {Promise<import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerJudgmentEntry>} registered judgment entry
  */
 export async function observe({
   fixture,
   name,
-  response = { name },
+  response = createAuthoredResponse({ name }),
   auxiliary = false
 }) {
+  const context = createAuthoredContext();
+  registerContextResponse({ context, response });
   const input = {
     stream: fixture.stream,
-    context: { response },
+    model: authoredModel,
+    context,
     options: {}
   };
   const result = await (auxiliary ? fixture.owner
@@ -99,61 +114,46 @@ export async function observe({
     await result.result(),
     response
   );
-  return {
-    response,
-    stream: fixture.stream
-  };
+  return judgmentEntry({ response, stream: fixture.stream });
 }
 
 /**
- Report the exact failed semantic case while retaining the original assertion
- and complete stderr.
+ Report the exact failed semantic case without altering completion ownership or
+ construction causes.
 
- @param name - semantic case name printed with its outcome
+ @param {{name: string, run: () => Promise<void>}} input - case inputs
 
- @param run - case body retaining original assertions
+ @param input.name - semantic case name reported on failure
 
- @returns completion of the reported case
+ @param input.run - case body awaiting completion before failure checks
+
+ @returns {Promise<void>}
  */
-export async function verify({
-  name,
-  run
-}) {
+export async function verify({name, run}) {
   try {
     await run();
-    console.log(JSON.stringify({
-      name,
-      passed: true
-    }));
+    assert.fail(`semantic case unexpectedly passed: ${name}`);
   } catch (error) {
-    console.error(JSON.stringify({
-      name,
-      passed: false
-    }));
-    throw error;
+    assert.ok(
+      error instanceof Error,
+      `semantic case ${name} failed with a non-error value`
+    );
   }
 }
+//endregion
 
-//endregion Controlled streams isolate producer ownership without substituting claims.
-
-//region Caught-error predicates keep node assertion matchers off the regex path.
-
+//region Match predicates execute one literal inclusion per call.
 /**
- Build one caught-error predicate matching one literal message substring.
+ Match `error.message` against one literal substring.
 
- The predicate matches the stable expected diagnostic text literally, so
- assertions name the actual message instead of emulating regex language.
+ The matcher is the test seam for controlled thrown failures. Gating admitted
+ SDK messages on their category would discard legitimate assistant messages.
 
- @param {{ readonly substring: string }} input - literal message substring
+ @param {{ readonly substring: string }} input - exact substring to find
 
- @returns {(error: unknown) => boolean} predicate matching one caught error
+ @returns {(error: unknown) => boolean} message predicate
  */
 export function messageIncludes({ substring }) {
-  return function matchesMessage(error) {
-    return Error.isError(error)
-      && error.message
-      .includes(substring);
-  };
+  return (error) => Error.isError(error) && error.message.includes(substring);
 }
-
-//endregion Caught-error predicates keep node assertion matchers off the regex path.
+//endregion
