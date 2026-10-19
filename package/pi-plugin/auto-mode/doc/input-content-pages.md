@@ -56,6 +56,6 @@ The maintained shifting-prefix guard fails at 32,937,656 additional measured byt
 The content-aligned experiment passes that guard,
 fresh builds,
 full types and exact-content controls.
-Its negative retained-heap delta is measurement noise,
-not a literal negative storage size.
+Its negative retained-heap delta is a measurement difference,
+not a literal storage size or a quantified improvement.
 The whole configured-host replay remains required to attribute its remaining growth to this change.
