@@ -6,6 +6,22 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Owned content storage scope now passes zero warnings/errors after private formatting and named probe constants:
+  `input-content.ts`, `input-content-pieces.ts`, `native-content-sequence-capacity.test.mjs`.
+  Receipt `owned-pages-format-final.log` at frozen-source candidate `Nrz2Ma` with the owned edits.
+  Root adoption verifies each original file against `97197764fa` before copying the three owned results.
+  The semantic storage consumers precede these formatting/constants-only edits; fresh combined types remain required.
+- The rebuilt native component candidate also passes all nine producer-lifetime cases and the separate
+  producer-retirement capacity guard. These do not clear the clean JS/declaration build frontier or five source mutants.
+- Forty-seven current documents render with no broken local links in bounded fixture `render-current-docs-4lSyrt`.
+  Source MiMo confirms the corrected JS context clears the Node-receiver findings;
+  its latest scope still has 36 warnings/zero errors before its last owned style fix and fresh typed-owner artifact.
+  Native MiMo is still active on owner splitting, genuine declarations, types and clean-archive build.
+- Next actions: finish native worker's source checkpoint, review exact owner/factory boundaries,
+  fresh-build the combined artifact and run types, scope lint, all nine producer cases and capacity guard;
+  retarget/rebuild the five separate source controls; run the controlled full-history replay on that artifact
+  and compare post-GC warmed growth with runs A/B. Continue the complete lint backlog and footprint/deployment reduction.
+  Do not repeat the known clean-JS failure until its owning source changes; do not qualify stale JS over new native sources.
 - Correct the catalog terminology: `test:native:producer-lifetime` runs nine semantic cases,
   four lifetime cases and five mutation-path cases. Those five cases are not rebuilt source-removal controls.
   Separate scratch `verify-producer-built-guards.ts` rebuilds five source variants and requires their
