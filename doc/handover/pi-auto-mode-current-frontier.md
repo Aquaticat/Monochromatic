@@ -26,9 +26,20 @@ The package now has one standard TypeScript config; native tasks and empty probe
 The user also challenges the copied `types: ["node"]` override.
 The shared `tsconfig.options.json` already supplies it; the package now only declares `extends`.
 Do not copy sibling overrides without checking inherited configuration.
+The agent copied the sibling plugin's override without tracing `extends`; that is why the redundancy was missed.
+Proposed guidance tightening: before copying configuration, inspect its inheritance and keep only necessary overrides.
+This is a proposal, not a change to `AGENTS.md`.
 The generated PATH source also removes the deleted auto-mode launcher directory.
 Preserve the user's deletions and the pre-rebuild reference worktree.
 Finish generated configuration, stale launcher, documentation, and rendered verification before the next review round.
+Commit `ff55ced353` records the native removal, standard package tasks, accepted Q1/Q4 choices, and plugin constraint.
+Both the package type check and file-enforcer configuration type check pass.
+Package lint checks its remaining TypeScript configuration file with zero warnings or errors.
+The dangling `~/.local/bin/pi` shim targeting the deleted native command is removed.
+Ordinary installed Pi reports version 1.3.0 with empty stderr in a credential-free disposable home.
+The revised HTML has no obsolete Q1/Q4 selectors; its correction form, examples, and navigation pass.
+All 19 controls meet the 48-pixel minimum; both themes and a 390-pixel viewport pass without browser errors.
+The actual replacement plugin remains unimplemented and unverified.
 
 Public Pi 1.3.0 source supports observing complete model-issued calls through `message_end`
 and blocking calls through `tool_call`, without modifying Pi.

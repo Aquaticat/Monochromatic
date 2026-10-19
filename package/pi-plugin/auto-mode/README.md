@@ -33,7 +33,8 @@ this historical checkpoint is not a current deployment-closure measurement.
 
 ## Current native behavior
 
-The installed `pi` command uses the maintained native host described in [the native README](native/README.md).
+The old installed `pi` command used the host described in `native/README.md`
+(removed 2026-10-19; retained in the pre-rebuild worktree named in Rebuild status).
 It uses `openai/gpt-6-luna-decisions` through the Gateway Decisions endpoint,
 with the adopted `0.60` selected-option probability cutoff and a unique leading meaning.
 This threshold is an operating rule,
@@ -58,7 +59,8 @@ The same projection covers process start commands.
 Complete shell source stays local for execution and human confirmation.
 Literal arguments and quoted here-document bodies remain data, including text resembling shell syntax.
 Incomplete or unsupported parsed structure routes the original operation to human confirmation.
-The [review input verification record](native/review-input-verification.md)
+The historical `native/review-input-verification.md`
+(removed 2026-10-19; retained in the same pre-rebuild worktree)
 documents request-capture coverage and complete-session replay requirements.
 Complete copies of the root policy in visible messages are replaced by a reference to selected excerpts.
 Older conversation receipts stay local for provenance.

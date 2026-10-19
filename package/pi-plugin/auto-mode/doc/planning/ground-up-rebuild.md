@@ -389,6 +389,19 @@ Qualify public event ordering, complete parallel-batch visibility, final argumen
 If those public surfaces leave a requirement unresolved, document the exact gap without modifying Pi.
 The settled group boundary preserves separate reviews for nonparallel calls and whole-batch review for parallel calls.
 
+Installed Pi 1.3.0 awaits the completed assistant `message_end` event before tool execution
+(`pi-agent-core/dist/agent-loop.js:319` and `:156`).
+The public plugin can observe the model-issued call list there and enforce a cached verdict through
+`tool_call` blocking results (`pi-coding-agent/dist/core/extensions/runner.js:958`).
+This is source evidence for a plugin candidate, not a qualified implementation.
+Argument preparation and schema validation occur after `message_end`;
+other extensions may also change messages or inputs.
+Qualify those mutations, handler ordering, global/per-tool sequential mode, and nested calls with disposable tools.
+`message_end` handler errors are reported and swallowed at `extensions/runner.js:889`;
+throwing there alone is not an execution gate. A pending or failed review must still block at `tool_call`.
+Do not wait for sibling `tool_call` events inside the first sibling handler:
+the parallel dispatcher prepares siblings sequentially before execution, so that would deadlock.
+
 ### Rules and review input capture: 8,000 to 14,000 characters
 
 Purpose: startup relevance, built-in rule registration, visible history, and structured prepared operations.
