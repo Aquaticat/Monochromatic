@@ -938,8 +938,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `fix/ide-tall-wrapped-settle` (worktree `.claude/worktrees/ide-settle`) investigates issue #1785, the
     measurement pass of a 10,000 px or taller window over wrapped text that never settles. Next, after both land:
     the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test` task
-    still runs `cargo test`). The owner has not yet decided to delete the merged IDE branches on origin (the
-    classifier refused the deletion; the list of merged branches is in `~/temp/agent/merged-ide-branches.txt`).
+    still runs `cargo test`). On 2026-10-19 the owner authorized deleting the merged IDE branches on origin and 34 were deleted
+    (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the unmerged IDE
+    branches (language, live theme, navigation, runtime languages, sidebar resize, source keys, prototypes, research)
+    were left.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
