@@ -20,6 +20,16 @@ The stopped controllers' terminal states were checked before copying their saved
   Native owns the typed producer-owner split and declaration-closure repair.
   Both received explicit resume prompts requiring exact-path checkpoint commits,
   preservation of concurrent staging and inspection after ambiguous Git failures.
+- Root delivers the latest literal matcher correction in `d5906aa231`, exactly four paths including the new doc.
+  Source resumes focused lint with 35 remaining unsafe-type warnings and zero errors on the older artifact.
+  Its scratch task-registration group needs manual intervention after automatic review remains unresolved;
+  root inspects and allows only private directory creation and the focused task file.
+  This run is not evidence of fully automatic consumer behavior.
+  The previous physical scratch persists under the stopped fixture's `home`, despite a new virtual `/fixture-home`.
+- Scratch `verify-producer-built-guards.ts` now accepts an explicit frozen-candidate label,
+  targets the typed owner and separate lifecycle implementation, and refuses real-package mutation.
+  The read-only `plan-producer-built-guards` invocation finds exactly five expected mutation anchors.
+  This validates the mutation plan only; rebuilt negative controls still remain required.
 - Producer repair: finish checkpoints, freeze combined sources, fresh-build JS/native, run types,
   scope lint, nine semantic lifetime cases and the retirement capacity guard;
   retarget and rebuild the five separate source-removal controls.
