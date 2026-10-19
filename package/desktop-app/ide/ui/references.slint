@@ -1,5 +1,6 @@
 // Transient list of definition or reference locations beside the caret line.
 // Native code owns the locations and opens the chosen one; this markup only lists and selects.
+import { Surface } from "surface.slint";
 import { ScrollView, Palette } from "std-widgets.slint";
 
 export struct ReferenceEntry {
@@ -42,7 +43,7 @@ export component ReferenceList inherits Rectangle {
     height: max(root.title-height + root.row-height, min(root.natural-height, root.below ? root.space-below : root.space-above));
     x: max(root.margin, min(root.anchor-x, root.area-width - self.width - root.margin));
     y: root.below ? root.anchor-bottom : root.anchor-top - self.height;
-    background: Palette.background;
+    background: Surface.background;
     border-width: 1px;
     border-color: Palette.foreground;
     border-radius: 4px;

@@ -345,6 +345,18 @@ its "Next" list is still the queue the merge went ahead of.
 1.  The readiness rotation in the State list,
     one entry at a time,
     each page read by the seven steps and the three checks before the next launch.
+    `zheermao14` launched at 15:42 UTC on 2026-10-19
+    (unit `corpus-pass-corpus-pass-zheermao14`,
+    runs directory `~/temp/agent/corpus-pass-zheermao14`,
+    log beside it,
+    pipeline `sha256-tree-v1:a92725968adf…`).
+    Held for after the rotation or the next rebuild a class forces,
+    so every entry runs on one build:
+    `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` for a Bedrock seat's HTTP 401,
+    which reads as a Synthetic refusal;
+    the class is the HTTP error every provider shares
+    (`provider-stream/src/completion-shape.ts`),
+    so the line should name the seat's provider.
 2.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
 3.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,

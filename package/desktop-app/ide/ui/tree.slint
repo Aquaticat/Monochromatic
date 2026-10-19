@@ -1,4 +1,5 @@
 // Lazy project navigation. Native code keeps filesystem paths outside display strings.
+import { Surface } from "surface.slint";
 import { ScrollView, Palette } from "std-widgets.slint";
 
 export struct TreeEntry {
@@ -34,7 +35,7 @@ export component ProjectTree inherits Rectangle {
     // The name of a row that git ignores is drawn at this share of its ink, over whatever fill the row has.
     private property <float> ignored-opacity: 0.8;
     private property <int> first-visible: max(0, floor(-view.content-y / root.row-height) - 1);
-    background: Palette.background;
+    background: Surface.background;
     forward-focus: tree-focus;
     accessible-role: navigation;
     accessible-label: "Project files";

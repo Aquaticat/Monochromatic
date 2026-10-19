@@ -367,6 +367,10 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let changed = place_scrolled(&mut current, offset, viewport_width, height);
         drop(current);
         if !changed {
+            // The tile stays, but the minimap's picture slides with the scroll and may need other bands.
+            if let Some(window) = weak.upgrade() {
+                super::minimap::note(&window, &state);
+            }
             return;
         }
         // What: `upgrade` returns `Some(window)` only while the window still exists.

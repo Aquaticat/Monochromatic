@@ -158,6 +158,14 @@ mod language;
 mod minimap;
 /// The minimap's worker thread.
 mod minimap_build;
+/// The minimap's picture is the average of the window's own pixels,
+/// for plain text,
+/// selections,
+/// matches,
+/// wrapped lines,
+/// and diagnostics.
+#[cfg(test)]
+mod minimap_reflection_tests;
 /// The minimap's geometry,
 /// picture,
 /// and pointer paths.
