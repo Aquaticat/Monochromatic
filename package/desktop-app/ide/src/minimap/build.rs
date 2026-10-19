@@ -13,7 +13,7 @@ use super::geometry::Geometry;
 /// The width of the text the picture covers.
 use super::horizontal::text_span;
 /// What the units of a picture are valid for.
-use super::key::{Identity, Shared, UnitKey, key_of};
+use super::key::{Shared, UnitKey, key_of};
 /// The bands.
 use super::plan::{Band, MIN_SCALE, columns_of, plan};
 /// Rendering one band as the window renders a tile.
@@ -60,7 +60,6 @@ pub trait Cancel {
 /// What:
 ///  What a build reads:
 ///  the scene,
-///  the identity of its text,
 ///  the sizes,
 ///  and the bands to build.
 /// Why:
@@ -69,14 +68,12 @@ pub trait Cancel {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Input = { scene: Scene; identity: Identity; view: number; width: number; window: [number, number] };
+/// type Input = { scene: Scene; view: number; width: number; window: [number, number] };
 /// ```
 #[derive(Clone)]
 pub struct Input<'a> {
     /// What the bands are rendered from.
     pub scene: Scene<'a>,
-    /// Which text and which classes.
-    pub identity: Identity,
     /// Height of the view,
     /// in logical pixels,
     /// which is the most the picture can be.
@@ -250,7 +247,6 @@ pub fn prepare(input: &Input) -> Prepared {
         ratio,
     };
     let shared = Shared {
-        identity: input.identity,
         colors: scene.colors,
         inks: scene.inks,
         fills: scene.fills,

@@ -14,7 +14,7 @@ use crate::native::tile_build::same_typography;
 /// its budgets,
 /// its cache,
 /// and its inputs.
-use ide_app::minimap::{BUILD_WORK, Built, Cache, Cancel, Identity, Input, Scene, build, prepare};
+use ide_app::minimap::{BUILD_WORK, Built, Cache, Cancel, Input, Scene, build, prepare};
 /// Shaping finds where wrapped lines break.
 use ide_app::shaped_text::TextShaper;
 /// The painter whose glyph cache the worker keeps.
@@ -195,10 +195,6 @@ impl Builder {
         };
         let input = Input {
             scene,
-            identity: Identity {
-                stamp: job.key.stamp,
-                styles: job.key.styles,
-            },
             view: job.size.1,
             width: job.size.0,
             window: job.key.window.0..job.key.window.1,

@@ -69,7 +69,7 @@ pub use geometry::{
 /// A position across the minimap and the text's width.
 pub use horizontal::{text_span, text_x};
 /// What a kept unit is valid for.
-pub use key::{Identity, Shared, UnitKey, key_of};
+pub use key::{Shared, UnitKey, key_of};
 /// The bands.
 pub use plan::{BAND_BYTES, Band, MIN_SCALE, band_count, band_height, band_step, columns_of, plan};
 /// What a band is rendered from,

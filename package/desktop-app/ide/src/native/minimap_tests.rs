@@ -11,7 +11,7 @@
 /// The source reader fixture,
 /// its disposable project,
 /// and the bounded waits.
-use super::find_tests::{Reader, key, memory_project, reader};
+use super::find_tests::{Reader, key, memory_project, reader, replace_file};
 /// Window metrics shared with the layout tests.
 use super::sidebar_tests::{HEADER, TEXT_LEFT};
 /// The long wrapped text,
@@ -1062,6 +1062,79 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
     );
     assert_eq!(stats.failed + stats.skipped, 0, "no band was left out");
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
+    window.hide().expect("close minimap window");
+}
+
+/// A change of one line of a file of fifty thousand lines that reaches the window through its watch
+/// renders the one band that holds the line and takes the others from the cache:
+/// the cost of an edit follows the lines it touches, not the length of the file.
+#[test]
+fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
+    let mut text = String::new();
+    for number in 0..50_000 {
+        text.push_str(&format!(
+            "fn item_{number}(value: u32) -> u32 {{ value + {number} }} // trailing words words words words words words\n"
+        ));
+    }
+    let (project, opened) = open(&text);
+    let window = &opened.window;
+    settled(&opened);
+    picture_shown(&opened);
+    {
+        let mut waiting = Waiting::eventually();
+        while !(opened.source.borrow().refresh.is_watched()) {
+            waiting.step("the file was not watched");
+        }
+    }
+    let revision = opened.source.borrow().document.revision();
+    let units = opened
+        .source
+        .borrow()
+        .minimap
+        .last_stats
+        .expect("statistics")
+        .units;
+    assert!(units > 3, "the window holds {units} bands");
+    // One word of line 20 changes to another of the same length: the line count and every row stay.
+    let edited = text.replacen("item_20(", "itom_20(", 1);
+    assert_ne!(edited, text);
+    replace_file(&project.path().join("a.txt"), &edited);
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().document.revision() > revision) {
+            waiting.step("the edit did not reach the window");
+        }
+    }
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                let shown = current.minimap.shown;
+                if shown.is_some_and(|key| key.stamp.revision == current.document.revision())
+                    && current.minimap.posted == shown
+                {
+                    break;
+                }
+            }
+            waiting.step("the picture did not follow the edit");
+        }
+    }
+    let stats = opened
+        .source
+        .borrow()
+        .minimap
+        .last_stats
+        .expect("statistics");
+    assert_eq!(stats.units, units);
+    assert!(
+        (1..=2).contains(&stats.rendered),
+        "the edit rendered {} of {} bands",
+        stats.rendered,
+        stats.units
+    );
+    assert_eq!(stats.rendered + stats.reused, stats.units);
+    assert_eq!(stats.failed + stats.skipped, 0);
     window.hide().expect("close minimap window");
 }
 

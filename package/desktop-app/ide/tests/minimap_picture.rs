@@ -20,14 +20,13 @@ use ide_app::find::FindRange;
 use ide_app::find_paint::rectangles;
 /// Severity of a diagnostic.
 use ide_app::language::diagnostics::Severity;
-use ide_app::language::identity::DocumentStamp;
 /// The lines' visual rows.
 use ide_app::line_rows::LineRows;
 /// The picture,
 /// its plan,
 /// and its parts.
 use ide_app::minimap::{
-    BAND_BYTES, BUILD_WORK, Built, Cache, Cancel, Fills, Geometry, Identity, Input, Picture,
+    BAND_BYTES, BUILD_WORK, Built, Cache, Cancel, Fills, Geometry, Input, Picture,
     Reducer, Reduction, Scene, Strip, band_count, band_height, band_step, build, paint_fills, plan,
     prepare, render, text_span,
 };
@@ -145,8 +144,13 @@ fn styles_of(text: &str) -> Vec<StyleSpan> {
 /// A fixture of `lines` lines at `scale`,
 /// wrapped at `wrap` with the rows the shaper finds.
 fn fixture(lines: usize, wrap: f32, scale: f32) -> Fixture {
-    let text = code(lines);
-    let document = Document::new(&text);
+    return fixture_of(&code(lines), wrap, scale);
+}
+
+/// A fixture of `text` at `scale`,
+/// wrapped at `wrap` with the rows the shaper finds.
+fn fixture_of(text: &str, wrap: f32, scale: f32) -> Fixture {
+    let document = Document::new(text);
     let mut shaper = TextShaper::new();
     let mut rows = LineRows::plain(document.text().len_lines());
     let mut measured = Vec::new();
@@ -159,7 +163,7 @@ fn fixture(lines: usize, wrap: f32, scale: f32) -> Fixture {
     rows.apply(measured);
     let map = RowMap::plain(document.text().len_lines()).with_rows(&rows);
     return Fixture {
-        styles: styles_of(&text),
+        styles: styles_of(text),
         document,
         map,
         marks: Vec::new(),
@@ -194,13 +198,6 @@ impl Fixture {
     fn input<'a>(&self, scene: Scene<'a>, view: f32, width: f32) -> Input<'a> {
         return Input {
             scene,
-            identity: Identity {
-                stamp: DocumentStamp {
-                    file: 1,
-                    revision: self.document.revision(),
-                },
-                styles: 0,
-            },
             view,
             width,
             window: self.all(),
@@ -805,6 +802,148 @@ fn a_window_that_slides_renders_only_the_band_that_came_in() {
     let far = windowed(&fixture, 30..36, &mut cache);
     assert_eq!((far.stats.rendered, far.stats.reused), (6, 0));
     assert_eq!(cache.len(), 6);
+}
+
+/// Where the character `at` stands after the characters from `from` on moved by `by`.
+fn moved(at: usize, from: usize, by: i64) -> usize {
+    if at >= from {
+        return (at as i64 + by) as usize;
+    }
+    return at;
+}
+
+/// `fixture` after the characters `from` to `to` are replaced by `insert`:
+/// the lines measured again, the matches and the diagnostics moved with the text after them.
+fn edited(fixture: &Fixture, from: usize, to: usize, insert: &str) -> Fixture {
+    let mut rope = fixture.document.text().clone();
+    rope.remove(from..to);
+    rope.insert(from, insert);
+    let wrap = fixture.wrap.expect("a wrapped fixture");
+    let mut after = fixture_of(&rope.to_string(), wrap, fixture.scale);
+    let by = insert.chars().count() as i64 - (to - from) as i64;
+    for range in &fixture.ranges {
+        after.ranges.push(FindRange {
+            start: moved(range.start, to, by),
+            end: moved(range.end, to, by),
+        });
+    }
+    for mark in &fixture.marks {
+        after.marks.push(Mark {
+            start: moved(mark.start, to, by),
+            end: moved(mark.end, to, by),
+            severity: mark.severity,
+        });
+    }
+    return after;
+}
+
+/// An edit renders again the bands it touches and no others:
+/// a character changed in one line renders one band,
+/// a character added in a line far above renders none even though every character after it moved,
+/// and an added line, which moves the rows of everything below it,
+/// renders the bands of the window again;
+/// the picture is the one a build without a cache gives in every case.
+#[test]
+fn an_edit_renders_only_the_bands_it_touches() {
+    let mut base = fixture(2_000, 700.0, 1.0);
+    let text = base.document.text().to_string();
+    let at = text.find("value_380 ").expect("a word to match and mark");
+    let at = text[..at].chars().count();
+    base.ranges = vec![FindRange {
+        start: at,
+        end: at + 9,
+    }];
+    base.marks = vec![Mark {
+        start: at,
+        end: at + 9,
+        severity: Severity::Error,
+    }];
+    let step = band_step(base.wrap, 1.0);
+    let line = base.document.text().char_to_line(at);
+    let middle = (base.map.block_top(line) / step) as usize;
+    let window = middle - 3..middle + 3;
+    let mut cache = Cache::new();
+    let first = windowed(&base, window.clone(), &mut cache);
+    assert_eq!((first.stats.rendered, first.stats.reused), (6, 0));
+    assert!(
+        first.bytes.chunks(4).any(|pixel| pixel[3] > 0),
+        "the window holds ink"
+    );
+    // A character changed in the middle of the window's third band: that band alone is rendered again.
+    let inside = base.map.line_at(step * (window.start + 2) as f32 + step / 2.0);
+    let letter = base
+        .document
+        .text()
+        .line(inside)
+        .to_string()
+        .find('l')
+        .expect("a letter to change");
+    let from = base.document.text().line_to_char(inside) + letter;
+    let changed = edited(&base, from, from + 1, "L");
+    let after = windowed(&changed, window.clone(), &mut cache);
+    assert_eq!(
+        (after.stats.rendered, after.stats.reused),
+        (1, 5),
+        "one line changed: {:?}",
+        after.stats
+    );
+    let fresh = windowed(&changed, window.clone(), &mut Cache::new());
+    assert_eq!(after.bytes, fresh.bytes, "the reused bands are still right");
+    assert_ne!(after.bytes, first.bytes, "the edit shows");
+    // A character added in the first line moves every character after it, the match and the diagnostic with them,
+    // and no line: nothing in the window is rendered again.
+    let moved_text = edited(&changed, 1, 1, "x");
+    let shifted = windowed(&moved_text, window.clone(), &mut cache);
+    assert_eq!(
+        (shifted.stats.rendered, shifted.stats.reused),
+        (0, 6),
+        "characters moved, no line: {:?}",
+        shifted.stats
+    );
+    let fresh = windowed(&moved_text, window.clone(), &mut Cache::new());
+    assert_eq!(shifted.bytes, fresh.bytes);
+    // A line added above moves every row below it: the bands of the window are rendered again, and no others are.
+    let longer = edited(&moved_text, 0, 0, "// a new first line\n");
+    let below = windowed(&longer, window.clone(), &mut cache);
+    assert_eq!(below.stats.rendered + below.stats.reused, 6);
+    assert!(
+        below.stats.rendered >= 1,
+        "an added line renders the bands it moves"
+    );
+    let fresh = windowed(&longer, window.clone(), &mut Cache::new());
+    assert_eq!(below.bytes, fresh.bytes);
+    assert_eq!(cache.len(), 6, "only the window is kept");
+}
+
+/// New syntax classes for the lines of one band render that band again and no other,
+/// whatever the text.
+#[test]
+fn new_syntax_classes_render_only_the_bands_they_reach() {
+    let mut base = fixture(2_000, 700.0, 1.0);
+    let step = band_step(base.wrap, 1.0);
+    let window = 12..18;
+    let mut cache = Cache::new();
+    let first = windowed(&base, window.clone(), &mut cache);
+    assert_eq!((first.stats.rendered, first.stats.reused), (6, 0));
+    let inside = base.map.line_at(step * 14.0 + step / 2.0);
+    let from = base.document.text().line_to_char(inside);
+    let mut changed = 0;
+    for span in &mut base.styles {
+        if span.start >= from && changed < 3 {
+            span.style += 1;
+            changed += 1;
+        }
+    }
+    let after = windowed(&base, window.clone(), &mut cache);
+    assert_eq!(
+        (after.stats.rendered, after.stats.reused),
+        (1, 5),
+        "the classes of one line changed: {:?}",
+        after.stats
+    );
+    assert_ne!(after.bytes, first.bytes, "the classes show");
+    let fresh = windowed(&base, window, &mut Cache::new());
+    assert_eq!(after.bytes, fresh.bytes);
 }
 
 /// A build that is cancelled answers nothing.
