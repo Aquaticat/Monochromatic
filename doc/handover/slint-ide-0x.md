@@ -731,7 +731,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
     ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
   - Tall window blanked the text (branch `fix/ide-tall-window-tile`, worktree `.claude/worktrees/ide-tall-tile`,
-    2026-10-18; landing: pending). Cause: the window chooses a tile clip from its row map, where a wrapped line the
+    2026-10-18; landed on main 2026-10-19). Cause: the window chooses a tile clip from its row map, where a wrapped line the
     background pass has not reached counts as one row, while the shaper sizes the raster from the rows it just shaped,
     several times taller. At a text width of 1354 the cap is 11,994 px at scale 1, so the three-view tile of a window
     over 4,000 px tall passed 64 MiB (journal: `Source viewport 1360x12768 exceeds the 64 MiB raster limit`), the
@@ -748,6 +748,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `clip-keeps-last-row`, `minimap-glyph-pixels`) and the three `clip-*` cases were re-anchored. Not reliably
     guarded: the discarded-tile offset (the tall-window test failed once without it, and passed once without it). The
     real binary at 1790x3300 shows text and logs one cut; no persistent blank frame was captured before the fix.
+    The coordinating session reran the gates on 2026-10-19 after merging `origin/main` (with the computed container
+    bound): `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:closures`, `test` (792), `test:wrap` (15 and 67) and
+    `test:native` (203) passed, and the ten `inspect:source-guards` cases above (seven new, three re-anchored) each
+    passed at baseline, failed with the guard removed, and passed restored.
   - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;
     the user approved removing every `rust/no-anonymous-functions` finding without suppressing any). The count in
     `package/desktop-app/ide` fell from 1135 to 67; `rust/max-lines`, `rust/require-rustdoc` and
