@@ -29,6 +29,20 @@ Later private source edits adding boolean questions and input-error isolation re
 Next: inspect the differing clause heads,
 qualify observer recovery and bounded retention,
 then ship a maintained runner without coupling it to primary decisions.
+The differing heads have now been inspected in the bounded sidecar container;
+`output/disagreements-inspected.json` retains the exact comparisons and selected source spans.
+The initial differences include PX1, PX2, PX3, RXI, SPG and conversation-span interpretation.
+Later source capture `168`, head `25`, is especially relevant:
+Luna chooses prohibition at `0.35` with unknown `0.17`;
+Span chooses none at `0.9038082` with unknown `0.05124579`.
+The shared new categorical rule would admit both meanings.
+The current live artifact still uses its older admission policy.
+An asynchronous scope question is pending:
+apply the user's uncertainty rule only to whole-operation approve/deny actions (recommended),
+or to every categorical meaning classifier.
+Do not decide this silently or deploy the broader shared-helper change while that answer is pending.
+Continue independent shadow qualification,
+SDK removal and lint work.
 The idle native worker received an actual RPC `prompt` to resume its queued fixture work.
 RPC `follow_up` alone had queued the instruction without starting that idle worker.
 The source worker acknowledged the no-SDK constraint and continues its scoped checkpoint.
