@@ -32,7 +32,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::minimap::{FULL_WORK, Geometry};
+use ide_app::minimap::{FULL_WORK, Geometry, SAMPLES};
 /// Toolkit events,
 /// models,
 /// and images.
@@ -497,16 +497,19 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
         .last_stats
         .expect("build statistics");
     assert_eq!(image.width() as f32, window.get_minimap_width());
-    assert_eq!(image.height() as usize, stats.pixel_rows);
+    assert_eq!(image.width() as f32, window.get_minimap_picture_width());
+    assert_eq!(image.height() as f32, window.get_minimap_picture_height());
     assert!(
         (image.height() as f32 - window.get_minimap_track()).abs() <= 1.0,
         "the picture is as tall as the track"
     );
     assert!(stats.work <= FULL_WORK);
-    assert!(
-        stats.lines <= stats.pixel_rows,
-        "no more lines are drawn than the picture has rows"
+    assert_eq!(
+        stats.rendered + stats.reused,
+        stats.units,
+        "every unit of the picture was rendered or taken from the cache"
     );
+    assert_eq!(stats.failed + stats.skipped, 0, "no unit was left out");
     let mut inked = false;
     for pixel in image.as_slice().iter() {
         if pixel.a > 0 {
@@ -881,9 +884,20 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
         .minimap
         .last_stats
         .expect("statistics");
-    assert!(stats.pixel_rows as f32 <= window.get_viewport_height() + 1.0);
-    assert!(stats.lines <= stats.pixel_rows);
+    let rows = window.get_minimap_picture_height();
+    assert!(rows <= window.get_viewport_height() + 1.0);
+    assert!(
+        stats.lines as f32 <= rows * SAMPLES as f32,
+        "{} lines were rendered for {rows} rows",
+        stats.lines
+    );
     assert!(stats.work <= FULL_WORK);
+    assert!(
+        stats.largest as u64 <= ide_app::text_raster::MAX_RASTER_BYTES,
+        "a band of {} bytes passed the raster limit",
+        stats.largest
+    );
+    assert_eq!(stats.failed + stats.skipped, 0, "no band was left out");
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
     window.hide().expect("close minimap window");
 }
