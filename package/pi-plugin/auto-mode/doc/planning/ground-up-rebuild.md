@@ -328,8 +328,9 @@ These are proposed edits, not modifications to `AGENTS.md`:
   Measure facts. Do not reopen a settled choice through an invented mechanism.”
 
 The scope correction also motivates a proposed tightening of the existing `AUT` guidance:
-“Execute the requested action with ordinary reversible supporting work, including cross-package tests.
-Do not equate a different package with unauthorized work. Honor explicit restrictions.”
+“Autonomy includes reversible supporting work, including cross-package tests.
+A different package is not scope expansion.
+Honor explicit limits and leave undecided product choices to the user.”
 This is a proposal, not an edit to `AGENTS.md`.
 
 The missing ask explanation also exposes a diagnostic-guidance gap.
