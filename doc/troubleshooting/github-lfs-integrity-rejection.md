@@ -259,3 +259,30 @@ Protection settings and history were not changed.
 This remains separate from the LFS rejection despite sharing the troubleshooting file.
 The unexplained protected-branch rejection is tracked in
 [repository issue 1032](https://github.com/Aquaticats/Monochromatic/issues/1032).
+
+## Protected-branch rejection on a feature branch on 2026-10-18
+
+The rejection is not limited to `main`.
+The automatic push of documentation commit `a2903488bf` to `translation-repair-rebased`
+on 2026-10-18 (UTC) emitted:
+
+```text
+# GitHub remote response relayed by the repository-owned Git wrapper.
+remote: error: GH006: Protected branch update failed for refs/heads/translation-repair-rebased.
+remote: error:
+ ! [remote rejected]       translation-repair-rebased -> translation-repair-rebased (protected branch hook declined)
+error: failed to push some refs to 'https://github.com/Aquaticats/Monochromatic'
+cli-git: commit saved locally, but auto-push to origin failed; run `git push` when ready.
+```
+
+The pushes before it to the same branch that day went through.
+`gh api repos/Aquaticats/Monochromatic/rules/branches/translation-repair-rebased`
+listed only the repository ruleset's automatic Copilot review rule.
+Before retrying,
+`git ls-remote origin refs/heads/translation-repair-rebased` returned the commit's parent
+`dcfb4fefd4cc436edda0136f7e06be666ec6c29f`,
+so nothing concurrent had published it.
+A plain `git push` then delivered `dcfb4fefd4..a2903488bf`.
+As with the incidents on `main`,
+the retry establishes recovery only,
+and the server named no rejected requirement.
