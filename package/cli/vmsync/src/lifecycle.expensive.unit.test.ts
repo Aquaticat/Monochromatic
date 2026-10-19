@@ -177,7 +177,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
   await execInVm({
     vmName: VM,
     command:
-      'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client > /dev/null 2>&1',
+      'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client libatomic1 > /dev/null 2>&1',
     timeout: EXEC_TIMEOUT_MS,
   },);
   // Pre-load nbd kernel module (needed for vmsync import UEFI validation)
