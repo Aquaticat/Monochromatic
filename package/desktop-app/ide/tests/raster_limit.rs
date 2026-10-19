@@ -38,6 +38,11 @@ fn colors() -> CodeColors {
     };
 }
 
+/// Whether a pixel of four bytes has any opacity.
+fn has_ink(pixel: &[u8]) -> bool {
+    return pixel[3] > 0;
+}
+
 /// The cap is never under one code row,
 /// and a clip made for it fits the raster limit,
 /// for every width and scale,
@@ -168,7 +173,7 @@ fn a_frame_taller_than_its_map_held_is_cut_to_the_limit_and_painted() {
         .paint(&view, colors(), 0.0)
         .expect("a frame within the limit paints");
     assert!(
-        pixels.bytes.chunks(4).any(|pixel| return pixel[3] > 0),
+        pixels.bytes.chunks(4).any(has_ink),
         "the cut frame has no ink"
     );
 }
