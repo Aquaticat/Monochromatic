@@ -1,4 +1,15 @@
-# Assess parallel tool calls as one judgment
+# Historical parallel-batch judgment proposal
+
+## Superseded by individual judgments
+
+On 2026-10-19, the user changed the requirement:
+parallel tool calls must always be judged individually, and `codemode` counts as one tool call.
+Each outer invocation owns its prepared input, rule answers, verdict, review allowance, and manual approval.
+Parse a complete `codemode` body without creating inner approval units.
+The shared-batch design and prototypes in this document are historical, not current implementation requirements.
+The [active rebuild plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md)
+and [question inventory](../../package/pi-plugin/auto-mode/doc/planning/rebuild-question-inventory.md)
+own the replacement design.
 
 ## Current constraint and graceful fallback
 
@@ -11,7 +22,7 @@ A missing capability never authorizes another dispatcher, host copy, source tran
 
 Degrade as little as possible, aiming for no degradation of the end-user experience where possible.
 First seek an equivalent supported public-API path; otherwise retain the greatest supported review coverage.
-For example, supported per-call review may replace unavailable batch review, with reduced coverage disclosed.
+Per-call review is now the intended behavior, not a degraded replacement for batch review.
 A missing integration capability does not itself require manual approval, blocked execution, or disabled auto-mode.
 Keep ordinary Pi usable and explain material limitations without claiming guarantees the fallback lacks.
 Do not deadlock Pi while waiting for an event its scheduler cannot yet deliver.
@@ -26,9 +37,8 @@ The user also accepts later extensions changing arguments after review as an uns
 Design as though those later mutations do not occur; this does not require ordering guards or fallback prompts.
 Historical post-guard mutation qualifications in this document are not remaining work.
 
-The user also clarifies that individual calls in a parallel batch can be blocked or canceled independently.
-Shared assessment of the complete batch does not require all-or-nothing execution.
-Preserve combined-effect review while enforcing decisions for the affected calls.
+Before replacing the shared-review requirement, the user clarified that individual calls could be blocked independently.
+That correction remains useful evidence about Pi, but no longer implies a shared batch assessment.
 The historical shared-decision and whole-group-denial prototypes do not establish a current execution requirement.
 
 ## Historical requirement and budgets

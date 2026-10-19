@@ -2,6 +2,21 @@
 
 ## Current work and next actions
 
+The latest user requirement supersedes whole-parallel-batch assessment:
+every tool invocation is judged individually, and `codemode` counts as one invocation.
+Its internal operations are parsed as a whole, not split into approvals or review allowances.
+The user also requires the complete question set, not another isolated Q7 handoff.
+`package/pi-plugin/auto-mode/doc/planning/rebuild-question-inventory.md` is the complete current inventory.
+Current choices are Q7, Q8, Q9, Q11, Q12, Q13, Q14, and Q15.
+Q10 is withdrawn: the allowance governs Luna requests, and shadow traffic is separately accounted.
+Q14 concerns the comparison study's scope; Q15 concerns older genuine human messages outside the short window.
+Batch-member attribution, joint survivor selection, shared budgets, and shared manual approvals are withdrawn.
+The plan, understanding, review questions, historical batch plan, and HTML now use the individual-call boundary.
+Finish rendered and visual verification, open Helium at the complete frontier, and present all current choices together.
+Implementation remains stopped; no question has been answered by these corrections.
+
+### Prior checkpoint before the individual-call revision
+
 Plan review is active and implementation remains stopped.
 The user requires thorough research and durable records of all relied-on understandings, including familiar terms.
 `package/pi-plugin/auto-mode/doc/planning/rebuild-understanding.md` is the current semantic/evidence record.

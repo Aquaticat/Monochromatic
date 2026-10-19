@@ -2,6 +2,9 @@
 
 ## Status and review request
 
+The [complete question inventory](rebuild-question-inventory.md) supersedes the incomplete Q7-only handoff.
+It presents every current independent choice and names later dependencies and research work.
+
 Revised to the user's staged design on 2026-10-19.
 Implementation is stopped.
 Plan discussion does not authorize implementation.

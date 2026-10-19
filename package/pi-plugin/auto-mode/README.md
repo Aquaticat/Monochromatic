@@ -5,6 +5,9 @@
 Implementation is stopped while the [ground-up plan](doc/planning/ground-up-rebuild.md) is reviewed.
 The [working understanding](doc/planning/rebuild-understanding.md) records accepted meanings,
 verified behavior, rejected assumptions, and unresolved design boundaries.
+The [complete question inventory](doc/planning/rebuild-question-inventory.md) lists current choices and dependencies.
+Every tool invocation is judged individually, including calls emitted in parallel.
+`codemode` is one invocation: its body is assessed as a whole without separate inner approvals or review budgets.
 The replacement will be a TypeScript plugin using Pi's public API.
 Maintaining or copying Pi internals, duplicating existing Pi functionality, and private APIs are prohibited.
 Unsupported review behavior must use the least-degrading public fallback,
