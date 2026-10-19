@@ -234,17 +234,21 @@ Replacement scheduler must dispatch dependency-independent nodes concurrently
 up to dated live-measured per-provider and per-model limits.
 Dependency edges still serialize work whose prompt consumes prior output.
 Concurrency and request-rate limits are separate constraints and must be measured separately.
-Production uses 5 Synthetic slots per active model (`SYNTHETIC_PER_MODEL_CONCURRENCY` in
-`package/translation-repair/provider/src/synthetic-client.ts`,
-measured on 2026-08-30 with four active models).
-A run now routes two roster models to Synthetic,
-`hf:Qwen/Qwen3.8-27B` and `hf:moonshotai/Kimi-K3`,
-so Synthetic exposes 10 aggregate slots:
+Synthetic has no local concurrency ceiling since 2026-10-19
+(`SYNTHETIC_PER_MODEL_CONCURRENCY` in `package/translation-repair/provider/src/synthetic-client.ts` is unbounded,
+like Hyper's):
+its rate-limit page of that day (`https://synthetic.new/rate-limits`) describes a weekly credit limit alone
+and names no concurrency limit and no five-hour request limit.
+Until then production used 5 slots per active model,
+measured on 2026-08-30 with four active models,
+and a width-10 gpt-oss arm returned 3 HTTP 429 responses.
+No arm has measured Synthetic's width since the page changed,
+so a refusal at the wire is the signal.
+A run routes two roster models to Synthetic,
+`hf:Qwen/Qwen3.8-27B` and `hf:moonshotai/Kimi-K3`:
 `hf:zai-org/GLM-5.3-Flash` is withheld from Synthetic (`synthetic-withheld` on its card)
 and `hf:openai/gpt-oss-120b` left every role (`owner-culled`),
 both on 2026-09-24.
-A width-10 gpt-oss arm returned 3 HTTP 429 responses,
-so model size does not justify a larger setting.
 Hyper has no local concurrency ceiling;
 a live width-64 arm completed 64 of 64 structured calls.
 Its 1,000 requests-per-hour account limit remains a separate rate budget.

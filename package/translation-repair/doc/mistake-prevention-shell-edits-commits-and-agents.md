@@ -700,6 +700,9 @@ or removes it,
 before the page is rebuilt,
 then drives the page again.
 The owner ruled on 2026-10-10 (UTC) that a choice left unmarked on the page of veto choices counts as kept.
+A mise task named in a question to the owner is quoted with its `description` line,
+read from its `mise.toml` in the same turn,
+so the approval names the command that runs (ledger M277).
 
 What enforces it:
 habit,

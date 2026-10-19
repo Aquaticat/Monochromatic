@@ -13,11 +13,14 @@ import type { RosterModelId, } from './roster-id.ts';
 // that owns those slots does not expose their occupancy. The router is the
 // layer that dispatches, so it is the one that knows.
 //
-// ONLY A PROVIDER WITH A PER-MODEL LIMIT IS EVER SATURATED. Synthetic grants
-// five concurrent calls per model (`SYNTHETIC_PER_MODEL_CONCURRENCY`); Charm
-// Hyper has no such ceiling by owner confirmation, and OpenRouter routes each
-// call to one of many upstreams and states none. A provider without a limit
-// takes no slot and always reads as having room.
+// ONLY A PROVIDER WITH A PER-MODEL LIMIT IS EVER SATURATED. No live provider
+// carries one today: Synthetic granted five concurrent calls per model until
+// 2026-10-19, when its rate-limit page stopped naming a concurrency limit
+// (`SYNTHETIC_PER_MODEL_CONCURRENCY` is now unbounded); Charm Hyper has no
+// such ceiling by owner confirmation, and OpenRouter routes each call to one of
+// many upstreams and states none. A provider without a limit takes no slot and
+// always reads as having room; the ceiling arithmetic stays for a provider that
+// states one again, and the tests run it on a fixture limit.
 //
 // SPLIT FROM `provider-router.ts` at its line budget, along the seam the
 // saturation race of 2026-08-24 made visible: the count must move in the same
@@ -119,7 +122,7 @@ export type SlotLedger = {
 
  @example
  ```ts
- const ledger = createSlotLedger({ limits: { synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY, }, },);
+ const ledger = createSlotLedger({ limits: { synthetic: 5, }, },);
  ```
  */
 export function createSlotLedger(

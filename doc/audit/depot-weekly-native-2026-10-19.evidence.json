@@ -106,5 +106,31 @@
     "categoriesMatchFirst": true,
     "duplicateExecution": "absent",
     "result": "The clean re-dispatch reproduced the same category outcomes and produced one run."
+  },
+  "retryAfterFixes": {
+    "runId": "xv1dwhq3h4",
+    "attemptId": "w09xgdn5s3",
+    "startedAt": "2026-10-19T15:00:17Z",
+    "finishedAt": "2026-10-19T15:15:53Z",
+    "durationSeconds": 936,
+    "artifact": {
+      "id": "01a154bb-be08-71c9-8c83-af8e80ba36e0",
+      "name": "weekly-native-evidence",
+      "bytes": 652
+    },
+    "changed": "vmsync path resolved to the mvm CLI, but the VM step then failed because qemu-img was absent; BuildKit still failed on the rootless Podman namespace with PODMAN_USERNS=host"
+  },
+  "retryAfterQemu": {
+    "runId": "130wfntbg4",
+    "attemptId": "d6dtj65kcj",
+    "startedAt": "2026-10-19T15:17:23Z",
+    "finishedAt": "2026-10-19T15:32:06Z",
+    "durationSeconds": 883,
+    "artifact": {
+      "id": "01a154ca-961a-7b1f-b278-d3874a4fd08c",
+      "name": "weekly-native-evidence",
+      "bytes": 652
+    },
+    "changed": "qemu-img was installed; mvm then required virsh/libvirt, which the sandbox does not provide. BuildKit still failed on the rootless Podman namespace."
   }
 }

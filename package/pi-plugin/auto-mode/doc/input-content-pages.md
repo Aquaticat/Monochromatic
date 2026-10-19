@@ -51,6 +51,9 @@ The fingerprint chooses boundaries only.
 Exact complete ordinal sequences still establish page and content equality;
 fingerprint or UTF-8 digest collisions cannot merge different code-unit sequences.
 This does not promise constant storage for arbitrary unrelated input versions.
+Maximum-length forced cuts also do not guarantee boundary reuse for every possible inserted-prefix sequence.
+The unique-catalog regression establishes its tested workload;
+adversarial anchor patterns and the configured host still require independent verification.
 
 The maintained shifting-prefix guard fails at 32,937,656 additional measured bytes on the fixed-page source.
 The content-aligned experiment passes that guard,

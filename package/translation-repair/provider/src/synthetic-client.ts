@@ -27,6 +27,7 @@ import {
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { syntheticMeterLevel, } from './budget-routing.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -50,24 +51,29 @@ import {
 // Imperative-shell client over the Synthetic API. Provider protocol failures throw;
 // model-content defects (refusal-shaped replies, schema mismatches) flow as data
 // because unreliable model output is an ordinary input to this pipeline. Every call
-// requires an AbortSignal so user steering can always abort in-flight fan-outs, and
-// requests to one model are bounded locally (provider grants 1 concurrent request
-// per model per subscribed pack and queues the excess server-side; a local bound
-// matching the pack count keeps queues short and aborts responsive).
+// requires an AbortSignal so user steering can always abort in-flight fan-outs.
+//
+// NO LOCAL PER-MODEL CAP SINCE 2026-10-19. Synthetic's rate-limit page of that day (`https://synthetic.new/rate-limits`)
+// describes only a weekly credit limit and names no concurrency limit, where the account had granted five concurrent requests
+// per model (measured live on 2026-08-30, when raising one model to ten drew HTTP 429 responses). A call is therefore not queued
+// locally. A refusal at the wire is handled as any 429 is, by the routing layer (`provider-router.ts`), and a caller can still hand
+// a finite `perModelConcurrency`.
 
 /**
- Concurrent requests available to each Synthetic model on current account.
+ Concurrent requests available to each Synthetic model: no ceiling.
 
- Measured live on 2026-08-30 with two zero-retry aggregate arms:
- 5 calls on each of 4 active models completed together,
- while raising gpt-oss alone to 10 produced HTTP 429 responses.
+ POSITIVE INFINITY MEANS NO LIMIT, as for `HYPER_PER_MODEL_CONCURRENCY` and `OPENROUTER_PER_MODEL_CONCURRENCY`:
+ `p-limit` accepts it as unbounded concurrency, and the router's slot ledger reads it as a provider that is never saturated.
+ Until 2026-10-19 this was 5, measured live on 2026-08-30 with two zero-retry aggregate arms (5 calls on each of 4 active models
+ completed together, while raising gpt-oss alone to 10 produced HTTP 429 responses); Synthetic's rate-limit page of 2026-10-19
+ names no concurrency limit.
 
  @example
  ```ts
- const slots = SYNTHETIC_PER_MODEL_CONCURRENCY;
+ const slots = SYNTHETIC_PER_MODEL_CONCURRENCY; // Infinity
  ```
  */
-export const SYNTHETIC_PER_MODEL_CONCURRENCY = 5;
+export const SYNTHETIC_PER_MODEL_CONCURRENCY: number = Number.POSITIVE_INFINITY;
 
 /**
  Logger root for this package's model-facing shell.
@@ -148,9 +154,9 @@ function wholeMessage(attemptReply: TransportReply,): void {
 
 /**
  Builds one client over injected transport.
- Requests to the same model flow through a local limiter whose slot count
- matches the account's subscribed pack count;
- different models run fully parallel, matching provider concurrency rules.
+ Requests to the same model flow through a local limiter that grants every call
+ at once by default, since Synthetic names no concurrency limit;
+ a caller can hand a finite `perModelConcurrency`.
 
  @param apiKey - bearer token; never logged
 
@@ -163,8 +169,8 @@ function wholeMessage(attemptReply: TransportReply,): void {
  @param quotasUrl - quota endpoint, overridable for tests
 
  @param perModelConcurrency - concurrent requests granted to each model;
- the provider serves one request per model per subscribed pack at full
- speed and queues the excess server-side, so match this to the pack count
+ unbounded by default, since the provider names no concurrency limit, and finite
+ only where a test or caller bounds it
 
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
 
@@ -460,17 +466,11 @@ export function createSyntheticClient(
     const snapshot = parseQuotaSnapshot({ bodyText: reply.bodyText, },);
 
     /**
-     Snapshot blocks pulled out for the log line.
+     The same fields the METERS record prints, so a reply with no five-hour window logs `syntheticFiveHour=none`.
      */
-    const {
-      fiveHour,
-      weekly,
-    } = snapshot;
-    rl.debug(
-      `five-hour ${String(fiveHour.remaining,)}/${String(fiveHour.max,)}, weekly ${
-        String(weekly.percentRemaining,)
-      }% remaining`,
-    );
+    const levels = syntheticMeterLevel({ quota: snapshot, },)
+      .join(' ',);
+    rl.debug(`quota ${levels}`,);
     return snapshot;
   }
 

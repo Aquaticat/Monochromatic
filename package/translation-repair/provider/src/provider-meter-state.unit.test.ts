@@ -174,7 +174,8 @@ await describe({
 
         it({
           name: 'WARNS A QUOTAS BODY THAT VIOLATES EXPECTATIONS WITH THE KEYS IT HELD AND THE JSON TYPE OF EACH, never a value: an '
-            + 'empty body, and a body that lacks the five-hour block, whose values a reader of the log must not see',
+            + 'empty body, a body that lacks the weekly block, and a body whose weekly block holds other fields, whose values a reader '
+            + 'of the log must not see',
           fn: async () => {
             /**
              The warning a body comes to when the meter reads it.
@@ -206,18 +207,34 @@ await describe({
               },
               freeToolCalls: { limit: 0, },
             },);
+            /**
+             A body with no five-hour block whose weekly block holds other fields, with values an account would not want in a log.
+             */
+            const reshaped = JSON.stringify({
+              subscription: { limit: 135, },
+              weeklyTokenLimit: {
+                percentLeft: 64.5,
+                plan: 'whiskers-private-plan',
+              },
+            },);
             const lines = [
               await warnedFor({ bodyText: '{}', },),
               await warnedFor({ bodyText: older, },),
+              await warnedFor({ bodyText: reshaped, },),
             ];
             expect(lines,).toEqual([
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                + 'violated expectations: rollingFiveHourLimit is not an object; received {})',
+                + 'violated expectations: weeklyTokenLimit is not an object; received {})',
               ],
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                + 'violated expectations: rollingFiveHourLimit is not an object; received subscription:object, freeToolCalls:object)',
+                + 'violated expectations: weeklyTokenLimit is not an object; received subscription:object, freeToolCalls:object)',
+              ],
+              [
+                '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
+                + 'violated expectations: weeklyTokenLimit.percentRemaining is not a number; received subscription:object, '
+                + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentLeft:number, plan:string)',
               ],
             ],);
             /**
@@ -225,7 +242,7 @@ await describe({
              */
             const joined = lines.flat()
               .join('\n',);
-            expect(['135', '41', 'whiskers-private-plan', '2026-09-21',].filter(function appears(value,): boolean {
+            expect(['135', '41', '64.5', 'whiskers-private-plan', '2026-09-21',].filter(function appears(value,): boolean {
               return joined.includes(value,);
             },),).toEqual([],);
           },

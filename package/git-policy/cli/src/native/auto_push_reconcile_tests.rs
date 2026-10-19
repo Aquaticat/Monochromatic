@@ -654,6 +654,23 @@ fn a_failing_signer_publishes_nothing() {
     remove(&s.root);
 }
 
+/// A `commit.gpgsign` value that `git config --type=bool` rejects cannot be read as a yes or a no, so nothing is
+/// published rather than guessing between a signed and an unsigned merge.
+#[test]
+fn an_unreadable_signing_setting_publishes_nothing() {
+    let s = scenario("ar-gpgsign-unreadable");
+    advance_remote(&s, "a.txt", "remote\n");
+    let landed = commit_local(&s, "b.txt", "local\n");
+    git(&s.local, &["config", "commit.gpgsign", "sometimes"]);
+    let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
+    let (result, err) = run(&s, &landed);
+    assert_ne!(result.outcome, AutoPushOutcome::Pushed, "{err}");
+    assert_ne!(result.exit_code, 0, "{err}");
+    assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
+    assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "");
+    remove(&s.root);
+}
+
 /// The local branch stays behind after a reconcile, so the next commit does not contain the published merge; that
 /// is a branch that moved on, not one that was rewritten, and its auto-push is reconciled again.
 #[test]

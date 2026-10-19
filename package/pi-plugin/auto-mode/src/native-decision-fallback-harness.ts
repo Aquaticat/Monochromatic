@@ -73,7 +73,7 @@ export type AssessmentFixtureSettings = Readonly<{
   operationDecision: DecisionFallbackOperationDecision;
   operatingPolicy: boolean;
   httpTransport: boolean;
-  transientHttpFailure: boolean;
+  transientHttpFailure: 'none' | 'request' | 'unavailable';
 }>;
 
 /**

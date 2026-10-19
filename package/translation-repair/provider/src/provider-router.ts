@@ -109,8 +109,10 @@ const l = contextRoot({ tag: 'translation-repair', },);
 // import cycle; it is re-exported here, where every importer found it.
 
 /**
- Per-model slots the providers grant by default: Synthetic's measured five,
- no ceiling on the providers that state none.
+ Per-model slots the providers grant by default: no ceiling on any of them.
+ Synthetic had a measured five until 2026-10-19, when its rate-limit page stopped
+ naming a concurrency limit; the entry still reads the client's own default, so
+ the router's count and the client's limiter cannot drift apart.
  */
 const DEFAULT_SLOT_LIMITS: SlotLimits = {
   synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,

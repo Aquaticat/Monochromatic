@@ -453,7 +453,8 @@ export type ChatJsonOutcome<ValueT,> =
 
  THE PART THAT IS NOT ABOUT BUDGET. Both providers take a conversation and
  return an answer; what they do NOT share is how the money is counted, which
- is a five-hour and weekly quota on one and a credit balance on the other.
+ is a weekly quota (with a five-hour window where a reply still carries
+ one) on one and a credit balance on the other.
  Splitting the surface here lets a router hold two clients as one type and
  lets a stage take either without knowing which it has.
 

@@ -267,6 +267,10 @@ and the `JUDGE SEATS` lines printed `synthetic=wet` beside `METERS synthetic=unr
 The lead's notes after the split say the reader is fixed in `w186`;
 the outcome of this entry records that `w186` changed the warning and added no second shape,
 so the open point stands.
+
+Closed on 2026-10-19 (UTC) by B691:
+the first reading that named the keys showed no five-hour block,
+and Synthetic's rate-limit page no longer describes one.
 A fix round for the pipeline defects of that pass runs in `w191`,
 and its result is not recorded here.
 [The pass log for 2026-10-18](../../../doc/planning/translation-repair-openrouter-2026-09-03-2026-10-18.md)
@@ -452,3 +456,94 @@ and a search of `stage/src`,
 Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Log lines that report nothing done".
+
+## B691: Synthetic removed its five-hour window and its concurrency limit, and the meter read nothing for a day
+
+Reported by the owner on 2026-10-19:
+Synthetic removed its five-hour limit and its parallelism limits.
+It is issue 1779 and closes the open point of B671.
+
+What was read first,
+on 2026-10-19 (UTC):
+
+- Synthetic's rate-limit page (`synthetic.new/rate-limits`) describes a weekly credit limit alone,
+  of which 2% comes back every 202 minutes,
+  and names no five-hour request limit and no concurrency limit.
+- One meter reading with the keys,
+  approved by the owner for this issue
+  (`run:budget-sample` at `9a8e1aa0cd`,
+  14:35 UTC),
+  printed the refusal B671 asked for,
+  `rollingFiveHourLimit is not an object`,
+  followed by `received subscription:object, search:object, freeToolCalls:object, weeklyTokenLimit:object`.
+  The body has no five-hour block at all.
+  The reading spent no generation;
+  the other three meters read `wet`.
+
+Outcome written on 2026-10-19 (UTC).
+Red `a76e76e62a`,
+fixed in `859954aa47` and `c642190ca4`,
+docs `5cd3ec2a6e` and `23381065e0`.
+
+- `parseQuotaSnapshot` reads a body with no `rollingFiveHourLimit` key as a snapshot with no five-hour window
+  (`QuotaSnapshot.fiveHour` is optional,
+  and absent rather than undefined).
+  A key that is present and not an object,
+  `null` included,
+  is still refused,
+  so a change of shape is still seen rather than read as no window.
+  `weeklyTokenLimit` stays required.
+- A refusal inside a block now also lists that block's keys and JSON types
+  (`; weeklyTokenLimit holds percentRemaining:number, nextRegenAt:string`),
+  under the bounds the top-level list keeps,
+  and never a value.
+  The fields inside `weeklyTokenLimit` were not seen on 2026-10-19,
+  since the reader stopped at the five-hour block;
+  if they changed,
+  the next reading names them.
+- `syntheticIsDry` decides on the weekly budget and reads the five-hour window only when the reply carries one.
+  `EveryProviderDryError` says Synthetic has no weekly credit left.
+  The meter line prints `syntheticFiveHour=none syntheticThrottled=none` when there is no window;
+  `none` and not `no`,
+  since nothing was read that says the account is not throttled.
+  The readers of those fields,
+  `meter-sample-read.ts` and `meter-report-level.ts`,
+  carry the value as written,
+  and their tests now hold both forms.
+- `SYNTHETIC_PER_MODEL_CONCURRENCY` is positive infinity,
+  as `HYPER_PER_MODEL_CONCURRENCY` is,
+  and both the client's default and the router's slot limits read it.
+  The ceiling of the slot ledger is still proven,
+  through fixture limits.
+  `doc/troubleshooting/translation-repair-provider-concurrency.md` keeps the measurements of 2026-08-30 as a record
+  and states the change;
+  the width 5 that D24 of `audit-ledger-docs-against-code.md` states was true when written.
+
+What was lost:
+from the first refusal on 2026-10-18 to this fix,
+every reading of the Synthetic meter was `unreadable`,
+and the router treated Synthetic as spendable,
+which the weekly budget allowed;
+TianqiChen66626 ran 651 Synthetic calls that way (B671).
+
+Cache keys and artifacts:
+none moves.
+No cache version is declared in the provider,
+provider-stream or shared-contract code this changes,
+and the stored records are keyed by what a seat was asked.
+Routing changes whose voices a round hears,
+which the accounts of the versions record as riding inside them (ledger P1);
+on 2026-10-19 the cache-account audit counts 827 of 865 source commits since `d614a0c1d` named by no account,
+so these five go to the next pre-launch account with the rest.
+
+Confirmed on 2026-10-19 (UTC).
+After the change landed on `main` at `bcf2545b8e`,
+a second keyed `run:budget-sample` reading,
+approved by the owner,
+at 15:23 UTC read the Synthetic meter:
+`synthetic=wet`,
+`syntheticWeekly=86.76063906122448%`,
+`syntheticFiveHour=none`
+and `syntheticThrottled=none`.
+So `weeklyTokenLimit` still holds `percentRemaining` and `nextRegenAt` as a number and a string,
+and issue 1779 was closed with that reading.

@@ -521,6 +521,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-2
 
   package/agent-harness-shared/current-time-context:
     devDependencies:

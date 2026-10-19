@@ -22,14 +22,16 @@ Canonical documents:
 ## Current state
 
 The plan and decision records are accepted.
-The default-branch,
-pull-request and manual-dispatch advisory profile is implemented and qualified.
-The fast subset is known-good on bounded CI.
-The complete build and whole-repository unit baseline are not known-good.
-The remaining implementation items are admission and fallback,
-the weekly native matrix,
-cache admission,
-trust controls and relative-target measurement.
+All nine planned work items now have implementation records.
+The advisory profile is implemented and qualified.
+Admission,
+fallback and the allocation ledger are implemented and exercised.
+The weekly native matrix ran four bounded dispatches and recorded its category evidence.
+Cache admission,
+trust controls and native qualification are recorded.
+Fast-subset measurement and provisional relative targets are recorded.
+The complete build and whole-repository unit baseline are still not known-good.
+BuildKit and the VM matrix category remain unqualified for environment-specific reasons.
 The subscription is still the Startup trial;
 moving to Developer is a user action.
 
@@ -123,48 +125,24 @@ moving to Developer is a user action.
 - Paused-session qualification did not reach a job and remains unqualified.
 - Evidence files are under `doc/audit/`.
 
-## Remaining queue
+## Residuals
 
-1.  Baseline refresh and triage:
-    finish per-case static and unit triage,
-    and run the complete build
-    and unit baseline in a prepared environment or prerequisite image.
-    Do not use the local host.
-2.  Advisory profile:
-    complete,
-    apart from deciding whether release workflows need an explicit
-    attached summary rather than relying on check runs on the commit.
-3.  Admission,
-    caps and fallback:
-    implement the admission record,
-    configured-cap record,
-    reservation ledger,
-    public-GitHub fallback and graceful degradation.
-    This is the next item.
-4.  Weekly native matrix:
-    create the explicit-dispatch workflow,
-    per-category bounds and admission
-    record.
-5.  Cache admission:
-    implement main-only writes,
-    the Gradle command-boundary admission and the
-    later-format controls.
-6.  Trust and identity:
-    implement and verify fork approval,
-    Dependabot exclusion,
-    publishing-host
-    binding,
-    secret boundaries and cache isolation.
-7.  Native evidence closure:
-    decide whether to rerun paused-session qualification from a checkout
-    with working default-branch detection;
-    record the result either way.
-8.  Measurement and relative targets:
-    measure configured profiles against the public GitHub
-    baseline and finalize the relative targets.
-9.  Governance follow-through:
-    keep the decision records current and record the subscription
-    transition when the user moves from Startup to Developer.
+All nine planned work items have implementation records.
+These residuals are explicit and are not claimed as green:
+
+- The complete build and whole-repository unit baseline are not known-good.
+  Run `2ls35xfpds` recorded the prepared-environment failure classes and skipped unit.
+- Weekly matrix BuildKit remains unqualified because rootless Podman cannot create its user
+  namespace in the native sandbox.
+- Weekly matrix VM remains unqualified because the sandbox lacks `virsh` and libvirt.
+- Release-run attachment relies on check runs on the commit,
+  not an explicit release workflow
+  step.
+- Gradle cache writes are disabled and restore-only until cache-off,
+  invalidation and stale-output controls pass.
+- The per-finding static triage and the full unit failure set are class-level,
+  not individual product defects.
+- The subscription transition to Developer is a user action.
 
 ## Open questions and blockers
 
@@ -180,20 +158,14 @@ moving to Developer is a user action.
 
 ## Next action
 
-Work item 3 policy,
-ledger and admission gate are recorded in
-[the admission ledger](../planning/depot-admission-ledger.md),
-[its JSON state](../planning/depot-admission-ledger.json) and
-[the gate workflow](../../.github/workflows/admission-gate.yml).
-Gate scenarios exercised admit,
-fallback,
-incomplete,
-ceiling and invalid decisions in
-[the gate evidence](../audit/depot-admission-gate-2026-10-19.evidence.json).
-Next:
-use [the weekly matrix design](../planning/depot-weekly-native-matrix.md),
-build the native workflow and single-use reservation,
-then exercise the first admitted reservation and record the attempt.
+All nine planned work items have implementation records.
+The remaining work is the residual list above.
+The next practical steps are:
+
+- add a rootful Podman path for the BuildKit matrix category;
+- provide a libvirt-capable sandbox for the VM matrix category;
+- continue triaging the complete-build failures until the unit baseline can run.
+
 Use bounded CI for any build or unit measurement.
 Do not run local full builds.
 Do not enable overage or raise a cap automatically.

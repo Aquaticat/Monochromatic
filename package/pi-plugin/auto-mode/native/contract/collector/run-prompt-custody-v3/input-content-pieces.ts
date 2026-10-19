@@ -50,7 +50,7 @@ const WINDOW_RADIX=31;
 /**
  Removing the oldest window member keeps each update constant-time.
  */
-const WINDOW_POWER=WINDOW_RADIX**WINDOW_CHUNKS%WINDOW_MODULUS;
+const WINDOW_POWER=(WINDOW_RADIX**WINDOW_CHUNKS)%WINDOW_MODULUS;
 /**
  Boundary diagnostics retain counts without exposing retained input text.
  */
@@ -68,7 +68,10 @@ function* inputContentPagePieces(pieces:readonly ContentChunk[]): Generator<read
  /**
   Boundary diagnostics retain the pure partitioning function's identity without chunk contents.
   */
- const pl=tagged({tag:inputContentPagePieces.name,l});
+ const pl=tagged({
+   tag:inputContentPagePieces.name,
+   l
+ });
  pl.debug('selecting bounded content-aligned input pages');
  /**
   The rolling window uses constant space and never becomes an equality or authority witness.
@@ -77,7 +80,12 @@ function* inputContentPagePieces(pieces:readonly ContentChunk[]): Generator<read
  /**
   One cursor updates the bounded fingerprint independently of the most recent page cut.
   */
- const cursor={index:0,offset:0,hash:0,start:0};
+ const cursor={
+   index:0,
+   offset:0,
+   hash:0,
+   start:0
+ };
  for(const piece of pieces){
   /**
    Modulo keeps outgoing products below the exact-integer limit even for later manager ordinals.
@@ -87,8 +95,8 @@ function* inputContentPagePieces(pieces:readonly ContentChunk[]): Generator<read
    A valid ring position always contains its initialized previous ordinal residue.
    */
   const outgoing=nonNullishOrThrow(window[cursor.offset]);
-  cursor.hash=(cursor.hash*WINDOW_RADIX+value
-   -(outgoing*WINDOW_POWER%WINDOW_MODULUS)+WINDOW_MODULUS)%WINDOW_MODULUS;
+  cursor.hash=((((cursor.hash*WINDOW_RADIX)+value)
+   -((outgoing*WINDOW_POWER)%WINDOW_MODULUS))+WINDOW_MODULUS)%WINDOW_MODULUS;
   window[cursor.offset]=value;
   cursor.offset=(cursor.offset+1)%WINDOW_CHUNKS;
   cursor.index++;
@@ -96,8 +104,11 @@ function* inputContentPagePieces(pieces:readonly ContentChunk[]): Generator<read
    Common anchors cannot create tiny pages, and absent anchors cannot create oversized pages.
    */
   const size=cursor.index-cursor.start;
-  if((size>=PAGE_CHUNKS)||((size>=MIN_PAGE_CHUNKS)&&(cursor.hash%PAGE_CHUNKS===0))){
-   yield pieces.slice(cursor.start,cursor.index);
+  if((size>=PAGE_CHUNKS)||((size>=MIN_PAGE_CHUNKS)&&((cursor.hash%PAGE_CHUNKS)===0))){
+   yield pieces.slice(
+     cursor.start,
+     cursor.index
+   );
    cursor.start=cursor.index;
   }
  }
@@ -126,7 +137,10 @@ export function createInputContentPieces(): (input:{
  /**
   The manager-local interner retains its separate diagnostic function boundary.
   */
- const il=tagged({tag:createInputContentPieces.name,l});
+ const il=tagged({
+   tag:createInputContentPieces.name,
+   l
+ });
  il.debug('created manager-owned content page interner');
  /**
   Detached text has one identity within this owning manager.

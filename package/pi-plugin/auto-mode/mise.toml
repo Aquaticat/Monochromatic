@@ -163,6 +163,7 @@ run = [
 [tasks."test:semantic-operating-policy"]
 description = "Verify adopted native categorical admission through the built package"
 run = [
+  "node src/semantic-operating-choice.unit.test.ts",
   "node src/semantic-operating-policy.unit.test.ts",
   "node src/semantic-admission-scope.unit.test.ts",
 ]
@@ -969,11 +970,15 @@ description = "Reconsider unresolved clause prerequisites through the whole-oper
 run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transient",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transient-deny",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs unavailable",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs unavailable-deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs misclassified-prerequisite",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs approve",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs unknown",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low-unknown-approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low-unknown-deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transport",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs malformed",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs initial-failure",

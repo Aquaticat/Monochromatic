@@ -8,9 +8,13 @@ import { readPolicyRecord, } from './policy-data.ts';
 import { SemanticAdmissionPolicyError, } from './semantic-admission-error.ts';
 
 /**
- Adopted operating cutoff is not an empirical accuracy estimate.
+ Uncertainty activates the user's minimum action score.
  */
-const minimumSelectedScore = 0.6;
+const uncertaintyBoundary = 0.2;
+/**
+ Require stronger action support when uncertainty reaches its boundary.
+ */
+const uncertainMinimumSelectedScore = 0.6;
 /**
  Preserve the incumbent decoder's tolerance for normalized distributions.
  */
@@ -80,7 +84,7 @@ function readScores({
 }
 
 /**
- Admit only a supported, uniquely leading estimate meeting the adopted operating cutoff.
+ Admit a supported unique leader under the user's uncertainty-dependent action rule.
  Native callers separately authenticate model, definition, scope, and original evidence ownership.
  Neither admission nor the score establishes empirical accuracy or an action verdict.
 
@@ -146,13 +150,18 @@ export function admitsOperatingChoice({
     rl.debug('retaining unresolved categorical meaning',);
     return false;
   }
-  if (selectedScore < minimumSelectedScore) {
-    rl.debug('retaining a lower-scoring categorical meaning',);
+  if (labels.some(function reachesSelectedScore(label,) {
+    return (label !== choice) && ((scores[label] ?? 0) >= selectedScore);
+  },)) {
+    rl.debug('retaining a tied or nonleading categorical meaning',);
     return false;
   }
-  // In a normalized nonnegative distribution, a score of 0.6 leaves at most 0.400001 for every other label.
-  // The cutoff therefore establishes a unique leading choice, including the decoder's normalization tolerance.
-  rl.debug('admitting a supported categorical estimate under the operating cutoff',);
+  if (((scores.unknown ?? 0) >= uncertaintyBoundary)
+    && (selectedScore < uncertainMinimumSelectedScore)) {
+    rl.debug('uncertainty requires a higher-scoring categorical meaning',);
+    return false;
+  }
+  rl.debug('admitting the uniquely leading supported categorical estimate',);
   return true;
 }
 
