@@ -575,6 +575,28 @@ fn push_default_decides_which_ref_is_the_destination() {
     remove(&s.root);
 }
 
+/// With the default `simple`, a push remote other than the tracked one gets the branch's own name, and the tracked
+/// remote gets the tracked ref; a branch whose name differs from what it tracks tells the two apart.
+#[test]
+fn simple_pushes_by_name_to_a_push_remote_and_to_the_tracked_ref_otherwise() {
+    let s = scenario("ar-dest-simple");
+    git(&s.local, &["branch", "--quiet", "--track", "feature", "origin/main"]);
+    assert_eq!(
+        destination_of(&s, "refs/heads/feature").as_deref(),
+        Some("origin refs/heads/main")
+    );
+    git(
+        &s.local,
+        &["remote", "add", "mirror", s.remote.to_str().expect("utf-8")],
+    );
+    git(&s.local, &["config", "branch.feature.pushRemote", "mirror"]);
+    assert_eq!(
+        destination_of(&s, "refs/heads/feature").as_deref(),
+        Some("mirror refs/heads/feature")
+    );
+    remove(&s.root);
+}
+
 /// An explicit `remote.<name>.push` refspec overrides every default, so the destination is not the one derived.
 #[test]
 fn a_configured_push_refspec_has_no_destination() {
