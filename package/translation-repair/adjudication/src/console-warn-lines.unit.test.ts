@@ -4,10 +4,11 @@
 
  IN A CHILD PROCESS, because the logger is built once a process, on its first
  line: only a process whose first line is logged inside the divert shows what
- a case in the suite meets when its file is the first to log. The child's
- working directory holds a regular file where the logger's file sink wants its
- log directory, so that sink's verify fails at once and the logger reports it
- on `console.warn` itself, untagged. A file sink slow to verify under load
+ a case in the suite meets when its file is the first to log. The child is
+ told to log into a directory where a regular file stands
+ (`MONOCHROMATIC_LOG_DIRECTORY`, which the logger keeps to and never trades
+ for a fallback), so that sink's verify fails at once and the logger reports
+ it on `console.warn` itself, untagged. A file sink slow to verify under load
  reports the same way five seconds later (ledger B140); the regular file
  stands in for the load without waiting on it.
 
@@ -20,10 +21,7 @@
  @module
  */
 
-import {
-  mkdir,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -86,18 +84,17 @@ await describe({
         + '(ledger B140)',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'console-warn-lines-', },);
-        await mkdir(join(
+        /**
+         The log directory the child's loggers are told to use.
+         */
+        const logDirectory = join(
           scratch.path,
-          'node_modules',
-        ),);
+          'logs',
+        );
         // A FILE WHERE THE LOG DIRECTORY GOES: the file sink's verify makes the
         // directory and fails on the file standing there.
         await writeFile(
-          join(
-            scratch.path,
-            'node_modules',
-            '.monochromatic',
-          ),
+          logDirectory,
           'a cat sleeps here, not a log\n',
         );
         /**
@@ -111,18 +108,14 @@ await describe({
             childSource(),
           ],
           cwd: scratch.path,
+          extra: { MONOCHROMATIC_LOG_DIRECTORY: logDirectory, },
         },);
         /**
          What a logger reports for the file standing where its log directory
          goes.
          */
-        const report = `${LOGGER_REPORT_PREFIX}file sink verification failed: EEXIST: file already exists, mkdir '${
-          join(
-            scratch.path,
-            'node_modules',
-            '.monochromatic',
-          )
-        }'`;
+        const report =
+          `${LOGGER_REPORT_PREFIX}file sink verification failed: EEXIST: file already exists, mkdir '${logDirectory}'`;
         // TWO REPORTS, ONE FROM EACH LOGGER: the fixture starts the built package's
         // logger and the test framework's before it diverts, and each has its
         // own file sink to verify.

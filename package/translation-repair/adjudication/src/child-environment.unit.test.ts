@@ -1,7 +1,7 @@
 /**
  Tests for the environment every test's child process gets: no variable whose
  name ends in `_API_KEY`, none whose name starts with `TRANSLATION_REPAIR_`,
- and the case's own variables.
+ a log directory inside the workspace, and the case's own variables.
 
  THE PROOF IS A REAL CHILD. Each case sets fake variables in this process
  (`TRANSLATION_REPAIR_NEVER_REAL_API_KEY` and its kin, never a real key),
@@ -12,7 +12,14 @@
  @module
  */
 
-import { realpath, } from 'node:fs/promises';
+import { randomUUID, } from 'node:crypto';
+import {
+  readdir,
+  readFile,
+  realpath,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 
 import {
   describe,
@@ -57,6 +64,43 @@ const REPORT_PROGRAM = [
   '  cwd: process.cwd(),',
   '}));',
 ].join('\n',);
+
+/**
+ Where a child's logger writes unless the case names another directory: this
+ package's gitignored `node_modules/.monochromatic`, inside the workspace.
+ */
+const CHILD_LOG_DIRECTORY = fileURLToPath(new URL(
+  '../node_modules/.monochromatic',
+  import.meta.url,
+),);
+
+/**
+ Program a child runs to log one marker line through the logger a built
+ package bundles, at a level its console sink keeps quiet, so the line reaches
+ the file sink alone, and to wait for the file to hold it.
+
+ @param marker - text no other record holds
+
+ @returns Module source for `node --input-type=module --eval`
+
+ @example
+ ```ts
+ const source = loggingProgram({ marker: randomUUID(), },);
+ ```
+ */
+function loggingProgram({ marker, }: { readonly marker: string; },): string {
+  /**
+   The built package whose logger the child writes through, by absolute URL so
+   the child's working directory can be anywhere.
+   */
+  const built = import.meta.resolve('@monochromatic-dev/translation-repair-typography',);
+  return [
+    `const { contextRoot } = await import(${JSON.stringify(built,)});`,
+    'const l = contextRoot({ tag: "whiskers" });',
+    `l.debug(${JSON.stringify(marker,)});`,
+    'await l.flush();',
+  ].join('\n',);
+}
 
 /**
  What the report program printed, read back.
@@ -171,6 +215,58 @@ await describe({
           hasPath: true,
           cwd: await realpath(process.cwd(),),
         },);
+      },
+    },),
+    it({
+      name: 'NAMES THE WORKSPACE LOG DIRECTORY for a child\'s logger, so no child falls back to the user\'s state '
+        + 'directory, and HANDS ON the directory a case names instead',
+      fn: async () => {
+        expect(environmentWithoutKeys().MONOCHROMATIC_LOG_DIRECTORY,).toBe(CHILD_LOG_DIRECTORY,);
+        expect(
+          environmentWithoutKeys({ extra: { MONOCHROMATIC_LOG_DIRECTORY: '/a/basket', }, },)
+            .MONOCHROMATIC_LOG_DIRECTORY,
+        ).toBe('/a/basket',);
+      },
+    },),
+    it({
+      name: 'LOGS A CHILD STARTED OUTSIDE ANY PROJECT into the workspace log directory, writing nothing to stderr '
+        + 'and nothing under the state directory the logger would otherwise fall back to',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'child-environment-', },);
+        /**
+         State directory the child is pointed at, which must stay absent.
+         */
+        const state = join(
+          scratch.path,
+          'state',
+        );
+        /**
+         Text only this case's child logs.
+         */
+        const marker = `whiskers ${randomUUID()}`;
+        const done = await runKeyless({
+          file: process.execPath,
+          args: ['--input-type=module', '--eval', loggingProgram({ marker, },),],
+          cwd: scratch.path,
+          extra: { XDG_STATE_HOME: state, },
+        },);
+        expect({
+          code: done.code,
+          stderr: done.stderr,
+        },).toEqual({
+          code: 0,
+          stderr: '',
+        },);
+        expect(await readdir(scratch.path,),).toEqual([],);
+        /**
+         Contents of every log file in the workspace log directory.
+         */
+        const logs = await Promise.all(
+          (await readdir(CHILD_LOG_DIRECTORY,))
+            .filter((name,) => name.endsWith('.log.jsonl',))
+            .map(async (name,) => await readFile(join(CHILD_LOG_DIRECTORY, name,), 'utf8',)),
+        );
+        expect(logs.filter((text,) => text.includes(marker,)).length,).toBe(1,);
       },
     },),
   ],
