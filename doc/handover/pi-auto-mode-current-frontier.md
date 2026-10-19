@@ -6,6 +6,14 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Verified retry and current proof gaps, 2026-10-19
 
+The user replaces the unconditional action-score floor with an exact uncertainty-dependent rule:
+`unknown < 0.2` selects the uniquely highest-scored supported action;
+`unknown >= 0.2` requires that action to score `>= 0.6`, otherwise ask.
+Ties and unresolved winning labels still ask.
+The shared categorical admission function implements this rule, with independent exact-boundary tests.
+Fresh frozen build, full types, scoped lint and original native-consumer verification are next.
+The recorded `0.56/0.38/0.06` case must execute automatically under this rule.
+
 The user corrected root's claim that omitting `APG` establishes a concrete authorization gap.
 That claim is retracted.
 `APG` states that auto-push is enabled; it does not authorize or prohibit the operation.

@@ -97,8 +97,9 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
 
 /**
  Construct the adopted native policies without reading credentials or requesting assessments.
- Scores at least 0.60 admit only supported uniquely leading meanings.
- This is an operating cutoff, not empirical model qualification.
+ Supported unique leaders are admitted when unknown is below 0.2.
+ At unknown scores of 0.2 or greater, the supported leader must score at least 0.6.
+ These are operating rules, not empirical model qualification.
  Native consumers preserve original identity, currentness, authority, coverage, and authorization checks.
 
  @returns fixed policies for each implemented categorical consumer
