@@ -504,6 +504,14 @@ pub fn run_single_flight_push(
         } else {
             attempt.output.clone()
         },
+        published_tip: if pushed {
+            None
+        } else {
+            match &after {
+                LastPushedRead::Record(previous) => previous.published().map(str::to_owned),
+                LastPushedRead::Absent => None,
+            }
+        },
     };
     write_last_pushed_record(&paths.record_path, &record).map_err(SingleFlightError::Io)?;
     let covered = tip_contains(git, landed_oid, &tip)?;
