@@ -1727,12 +1727,17 @@ that is verification, not a decision for the user.
   `.cache/cli-git-bin/git` resolves to the 0.2.1 install and `mise.lock` was restored). The signature check against
   the real signer is still open: it happens on the first reconcile this repository performs with 0.2.1 (look for
   `%G?` of `G` on the merge commit).
-  Running (started 2026-10-19, non-blocking): unit `cli-git-rec3`, script `~/temp/agent/rec3-run.ts`, image tag `rec3`,
-  head `98c83b72bf` (same source as 0.2.1): the container gate, then mutation over `auto_push_reconcile.rs`,
-  `auto_push_record.rs` and `auto_push_single_flight.rs` limited by `--examine` to the functions this change touched;
-  logs `~/temp/agent/rec3-container.log` and `rec3-mutation.log`. Read the result from the log's final "mutants
-  tested" line and the container's `mutants.out`; kill every missed mutant with a test, then remove the `rec3` image
-  and container. The `signs_commits` branch for a `git config` failure other than exit 1 has no test and is
+  Interrupted 2026-10-19 (PC shutdown requested by the user): unit `cli-git-rec3` was stopped by hand and its
+  container removed. The rerun of the container gate on head `98c83b72bf` had passed (1981 tests, 5 skipped). The
+  mutation run had only reached its baseline and planted controls, so no mutant verdict was lost.
+  Restarted after the reboot (same day, unit `cli-git-rec3`, started by hand with the command below); if the unit is
+  gone and the logs lack a final "mutants tested" line, restart it with `systemd-run --user --unit=cli-git-rec3 --collect --property=MemoryMax=24G
+  node /home/user/temp/agent/rec3-run.ts` (the script runs the container gate, then mutation over
+  `auto_push_reconcile.rs`, `auto_push_record.rs` and `auto_push_single_flight.rs` limited by `--examine` to the
+  functions this change touched, with image tag `rec3`; logs `~/temp/agent/rec3-container.log` and
+  `rec3-mutation.log`; check the script still exists after the reboot, since `~/temp/agent` is not cleared by it).
+  Read the result from the log's final "mutants tested" line, kill every missed mutant with a test, then remove the
+  `rec3` image. The `signs_commits` branch for a `git config` failure other than exit 1 has no test and is
   expected to show up there.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and

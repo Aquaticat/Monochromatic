@@ -43,7 +43,10 @@ const PAGE_CHUNKS=256;
 export function createInputContentPieces(): (input:{
  readonly text:string;
  readonly json:boolean;
-})=>{readonly key:string;readonly pages:readonly ContentPage[]} {
+})=>{
+  readonly key:string;
+  readonly pages:readonly ContentPage[]
+} {
  /**
   Detached text has one identity within this owning manager.
   */
@@ -68,12 +71,22 @@ export function createInputContentPieces(): (input:{
   /**
    Explicit UTF-16 copying preserves code units independently of substring storage.
    */
-  const owned=Buffer.from(text,'utf16le').toString('utf16le');
+  const owned=Buffer.from(
+    text,
+    'utf16le'
+  )
+    .toString('utf16le');
   /**
    Immutable ordinal belongs only to this content store.
    */
-  const chunk=Object.freeze({ordinal:chunks.size,text:owned});
-  chunks.set(owned,chunk);
+  const chunk=Object.freeze({
+    ordinal:chunks.size,
+    text:owned
+  });
+  chunks.set(
+    owned,
+    chunk
+  );
   return chunk;
  }
  /**
@@ -87,7 +100,9 @@ export function createInputContentPieces(): (input:{
   /**
    JSON preserves the complete ordered identity sequence without delimiter ambiguity.
    */
-  const key=JSON.stringify(pieces.map(function chunkOrdinal(chunk){return chunk.ordinal;}));
+  const key=JSON.stringify(pieces.map(function chunkOrdinal(chunk){
+   return chunk.ordinal;
+  }));
   /**
    Equal pages share both text and their reference array.
    */
@@ -100,7 +115,10 @@ export function createInputContentPieces(): (input:{
    ordinal:pages.size,
    texts:Object.freeze(pieces.map(function chunkText(chunk){return chunk.text;}))
   });
-  pages.set(key,page);
+  pages.set(
+    key,
+    page
+  );
   return page;
  }
  /**
@@ -112,20 +130,35 @@ export function createInputContentPieces(): (input:{
 
   @returns canonical page sequence and exact content identity key
   */
- function retain({text,json}:{readonly text:string;readonly json:boolean}): {
+ function retain({
+   text,
+   json
+ }:{
+   readonly text:string;
+   readonly json:boolean
+ }): {
   readonly key:string;
   readonly pages:readonly ContentPage[];
  } {
   /**
    Full temporary chunk sequence is released after page construction.
    */
-  const pieces=inputContentChunks({text,json}).map(internChunk);
+  const pieces=inputContentChunks({
+    text,
+    json
+  })
+    .map(internChunk);
   /**
    Complete snapshots retain page references instead of every chunk reference.
    */
   const sequence:ContentPage[]=[];
   for(let offset=0;offset<pieces.length;offset+=PAGE_CHUNKS){
-   sequence.push(internPage(pieces.slice(offset,offset+PAGE_CHUNKS)));
+   sequence.push(
+     internPage(pieces.slice(
+       offset,
+       offset+PAGE_CHUNKS
+     )),
+   );
   }
   return {
    key:JSON.stringify(sequence.map(function pageOrdinal(page){return page.ordinal;})),

@@ -4,8 +4,60 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Shutdown checkpoint, 2026-10-19
+
+The user explicitly pauses work to power off the PC and investigate their room.
+Do not interpret this checkpoint as completion or readiness for another lint handoff.
+Resume from the saved sessions and pending edits when the user returns.
+
+- Both supervised MiMo controllers received `controller_shutdown` and reached `closed`,
+  exit code zero, signal null.
+  Source ends at 65 tool results and ten tool errors;
+  native ends at 63 tool results and ten tool errors, including interrupted work.
+  These are shutdown receipts, not passing verification results.
+- Persistent scratch is `~/temp/agent/pi-mimo-preparation-failure-20261018`.
+  `shutdown-preserved-current.json` records both terminal controller states and backup location.
+  The backup is `shutdown-preserved-TtsSZD`, with separate staged, unstaged and combined tracked patches,
+  the package status, untracked owner implementation files and `receipt.json`.
+  Backup runs with two-GiB/two-CPU bounds and a read-only repository mount.
+  Two permission-restricted, untracked probe configs remain preserved in the repository;
+  their backup read failures are explicitly recorded. Do not delete or change their permissions.
+- Source fixture: `~/temp/agent/pi-mimo-rpc-session-wmudZ2`;
+  saved history: `home/resumed-source-session.jsonl`.
+  Native fixture: `~/temp/agent/pi-mimo-rpc-session-z78qJS`;
+  saved history: `home/resumed-native-session.jsonl`.
+  Both last used the qualified private artifact
+  `decision-responsibility-split-candidate-o30Fdb/dist/native-release-fO486Z`.
+  Reuse persistent histories; do not assume stopped containers or old process IDs survive reboot.
+- Repository HEAD before this documentation checkpoint is `aec7d2c714`.
+  Native owner/type/factory edits and new `owner-errors.ts`/`owner-judgments.ts` remain uncommitted.
+  Source matcher documentation and three lifetime helpers retain both staged and unstaged corrections.
+  Preserve the index and working tree independently; no reset, stash or bulk staging.
+  Preserve unrelated concurrent changes, including `.serena/project.yml` if still present.
+- First resume action: inspect current HEAD, pending paths, saved controller states and histories.
+  Finish and review the exact native/source checkpoints before freezing new verification inputs.
+  Then fresh-build JS and native together, run types, scoped lint, nine lifetime cases and capacity guard;
+  retarget and rebuild the five separate source-removal controls, then run the configured full-history replay.
+  The complete lint backlog and footprint/deployment reduction remain open.
+
 ### Latest checkpoint
 
+- Owned content storage scope now passes zero warnings/errors after private formatting and named probe constants:
+  `input-content.ts`, `input-content-pieces.ts`, `native-content-sequence-capacity.test.mjs`.
+  Receipt `owned-pages-format-final.log` at frozen-source candidate `Nrz2Ma` with the owned edits.
+  Root adoption verifies each original file against `97197764fa` before copying the three owned results.
+  The semantic storage consumers precede these formatting/constants-only edits; fresh combined types remain required.
+- The rebuilt native component candidate also passes all nine producer-lifetime cases and the separate
+  producer-retirement capacity guard. These do not clear the clean JS/declaration build frontier or five source mutants.
+- Forty-seven current documents render with no broken local links in bounded fixture `render-current-docs-4lSyrt`.
+  Source MiMo confirms the corrected JS context clears the Node-receiver findings;
+  its latest scope still has 36 warnings/zero errors before its last owned style fix and fresh typed-owner artifact.
+  Native MiMo is still active on owner splitting, genuine declarations, types and clean-archive build.
+- Next actions: finish native worker's source checkpoint, review exact owner/factory boundaries,
+  fresh-build the combined artifact and run types, scope lint, all nine producer cases and capacity guard;
+  retarget/rebuild the five separate source controls; run the controlled full-history replay on that artifact
+  and compare post-GC warmed growth with runs A/B. Continue the complete lint backlog and footprint/deployment reduction.
+  Do not repeat the known clean-JS failure until its owning source changes; do not qualify stale JS over new native sources.
 - Correct the catalog terminology: `test:native:producer-lifetime` runs nine semantic cases,
   four lifetime cases and five mutation-path cases. Those five cases are not rebuilt source-removal controls.
   Separate scratch `verify-producer-built-guards.ts` rebuilds five source variants and requires their
