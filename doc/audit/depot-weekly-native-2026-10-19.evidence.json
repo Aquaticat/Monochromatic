@@ -217,5 +217,25 @@
         "failure": "prepare:pnpm failed after tool install"
       }
     ]
+  },
+  "finalSuccess": {
+    "runId": "s6ljx0bvw8",
+    "attemptId": "zwclc245hx",
+    "startedAt": "2026-10-19T17:38:41Z",
+    "finishedAt": "2026-10-19T17:58:01Z",
+    "durationSeconds": 1160,
+    "artifact": {
+      "id": "01a15550-2ec3-7ad6-843f-898544040cf2",
+      "name": "weekly-native-evidence",
+      "bytes": 649
+    },
+    "categories": {
+      "static": "failure baseline reproduced",
+      "fastSubset": "success",
+      "android": "success",
+      "buildkit": "success",
+      "vm": "success"
+    },
+    "result": "All named real matrix categories pass: fast subset, Android, BuildKit and the Linux VM lifecycle. Static reproduces the known baseline; categories without a qualified command are incomplete."
   }
 }

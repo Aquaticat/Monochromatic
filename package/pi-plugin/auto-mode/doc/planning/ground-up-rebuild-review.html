@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto-mode rebuild: visual review</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f4f5f8;
+  --color-surface: #ffffff;
+  --color-text: #17213b;
+  --color-muted: #526078;
+  --color-line: #c8cfdb;
+  --color-accent: #314fc6;
+  --color-tint: #eaf0ff;
+  --color-good: #146043;
+  --color-good-surface: #e9f6ee;
+  --color-stop: #a13042;
+  --color-stop-surface: #fff0f1;
+  --color-ask: #805500;
+  --color-ask-surface: #fff5d8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #111521;
+    --color-surface: #1b2232;
+    --color-text: #edf1ff;
+    --color-muted: #b5c0d6;
+    --color-line: #46536b;
+    --color-accent: #a8b9ff;
+    --color-tint: #293454;
+    --color-good: #99dfb7;
+    --color-good-surface: #193a30;
+    --color-stop: #ffb1bc;
+    --color-stop-surface: #442731;
+    --color-ask: #f4d27e;
+    --color-ask-surface: #40361d;
+  }
+}
+* { box-sizing: border-box; }
+html { font-family: system-ui, sans-serif; scroll-padding-block-start: 1rem; }
+body { margin-block: 0; margin-inline: 0; background-color: var(--color-page); color: var(--color-text); }
+main { max-inline-size: 78rem; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); padding-block: 2.5rem 5rem; }
+h1 { font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.12; letter-spacing: -0.07rem; margin-block: 0.6rem 1rem; }
+h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.2; margin-block: 0.5rem 1rem; }
+h3 { font-size: 1.12rem; margin-block: 0 0.65rem; }
+p { line-height: 1.6; margin-block: 0.5rem 1rem; }
+small, .muted { color: var(--color-muted); }
+code { font-size: 0.92em; overflow-wrap: anywhere; }
+a { color: var(--color-accent); text-underline-offset: 0.2rem; }
+nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block: 1.5rem 2rem; }
+nav a { display: inline-flex; align-items: center; min-block-size: 3rem; min-inline-size: 3rem; padding-inline: 1rem; border-radius: 0.5rem; background-color: var(--color-surface); }
+.eyebrow { color: var(--color-accent); font-size: 0.85rem; font-weight: 750; letter-spacing: 0.07rem; }
+.lead { max-inline-size: 58rem; font-size: 1.15rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip { border-radius: 0.35rem; padding-inline: 0.6rem; padding-block: 0.3rem; font-size: 0.8rem; font-weight: 700; background-color: var(--color-tint); }
+section { margin-block: 3rem; }
+.panel { background-color: var(--color-surface); border-color: var(--color-line); border-style: solid; border-width: 0.0625rem; border-radius: 1rem; padding-inline: clamp(1rem, 3vw, 2rem); padding-block: 1.5rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0.6rem; margin-block: 1.3rem; }
+.node { flex: 1 1 10rem; min-inline-size: 0; border-color: var(--color-line); border-style: solid; border-width: 0.0625rem; border-radius: 0.65rem; padding-inline: 1rem; padding-block: 1rem; background-color: var(--color-surface); }
+.node strong { display: block; margin-block-end: 0.4rem; }
+.node p { font-size: 0.9rem; margin-block: 0; }
+.arrow { display: grid; place-items: center; font-size: 1.65rem; color: var(--color-accent); padding-inline: 0.1rem; }
+.node[data-kind="code"] { border-color: var(--color-accent); border-width: 0.125rem; background-color: var(--color-tint); }
+.node[data-kind="approve"], .outcome[data-result="approve"] { background-color: var(--color-good-surface); color: var(--color-good); }
+.node[data-kind="deny"], .outcome[data-result="deny"] { background-color: var(--color-stop-surface); color: var(--color-stop); }
+.node[data-kind="ask"], .outcome[data-result="ask"] { background-color: var(--color-ask-surface); color: var(--color-ask); }
+.rail { border-inline-start-color: var(--color-accent); border-inline-start-style: solid; border-inline-start-width: 0.2rem; padding-inline-start: 1rem; margin-block: 1rem; }
+.return { border-color: var(--color-accent); border-style: dashed; border-width: 0.1rem; border-radius: 0.5rem; padding-inline: 1rem; padding-block: 0.8rem; color: var(--color-accent); font-weight: 650; }
+.caption { font-size: 0.87rem; color: var(--color-muted); }
+.step { font-size: 0.8rem; font-weight: 750; color: var(--color-accent); display: block; margin-block-end: 0.4rem; }
+.question { border-block-start-color: var(--color-line); border-block-start-style: solid; border-block-start-width: 0.0625rem; padding-block: 0.8rem; margin-block: 0; font-size: 0.92rem; }
+.pool { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 0.8rem; margin-block: 1rem; }
+.pool .node { background-color: var(--color-tint); }
+.choice-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block: 1.2rem; }
+button, select, textarea { font: inherit; color: var(--color-text); background-color: var(--color-surface); border-color: var(--color-line); border-style: solid; border-width: 0.0625rem; border-radius: 0.5rem; min-inline-size: 3rem; min-block-size: 3rem; }
+button { cursor: pointer; padding-inline: 1rem; padding-block: 0.65rem; }
+button[aria-pressed="true"] { background-color: var(--color-tint); border-color: var(--color-accent); box-shadow: inset 0 -0.2rem var(--color-accent); font-weight: 750; }
+button:hover, nav a:hover { background-color: var(--color-tint); }
+:is(button, a, input, select, textarea):focus-visible { outline-color: var(--color-accent); outline-style: solid; outline-width: 0.2rem; outline-offset: 0.2rem; }
+.scenario[hidden] { display: none; }
+.scenario { margin-block: 1rem; }
+.quote { font-size: 1.15rem; font-weight: 650; }
+.outcome { border-radius: 0.4rem; display: inline-block; padding-inline: 0.8rem; padding-block: 0.5rem; font-weight: 750; }
+.comparison { margin-block: 1rem; }
+.comparison .node { flex-basis: 13rem; }
+.comparison .arrow { font-size: 1.2rem; }
+.ranking { background-color: var(--color-tint); border-radius: 0.5rem; padding-inline: 1rem; padding-block: 0.8rem; }
+fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-inline: 0; margin-block: 1.5rem; }
+legend { font-size: 1.2rem; font-weight: 750; margin-block-end: 0.5rem; }
+.answer { display: flex; align-items: center; gap: 0.8rem; min-block-size: 3rem; border-color: var(--color-line); border-style: solid; border-width: 0.0625rem; border-radius: 0.5rem; padding-inline: 0.8rem; padding-block: 0.7rem; margin-block: 0.5rem; cursor: pointer; }
+.answer:has(input:checked) { border-color: var(--color-accent); background-color: var(--color-tint); font-weight: 650; }
+input[type="radio"] { appearance: none; min-inline-size: 3rem; min-block-size: 3rem; flex: 0 0 3rem; margin-inline: 0; margin-block: 0; border-color: var(--color-line); border-style: solid; border-width: 0.1rem; border-radius: 0.5rem; display: grid; place-items: center; }
+input[type="radio"]:checked::after { content: "✓"; color: var(--color-accent); font-size: 1.7rem; font-weight: 800; }
+textarea { display: block; inline-size: 100%; min-block-size: 7rem; resize: vertical; padding-inline: 0.8rem; padding-block: 0.8rem; margin-block: 0.5rem 1rem; }
+label[for] { font-weight: 650; }
+.primary { background-color: var(--color-accent); color: var(--color-page); font-weight: 750; }
+.primary:hover { color: var(--color-text); }
+.status { min-block-size: 1.5rem; color: var(--color-muted); }
+footer { color: var(--color-muted); font-size: 0.88rem; line-height: 1.6; border-block-start-color: var(--color-line); border-block-start-style: solid; border-block-start-width: 0.0625rem; padding-block-start: 1rem; }
+@media (max-width: 44rem) {
+  .flow { flex-direction: column; }
+  .node { flex-basis: auto; }
+  .arrow { transform: rotate(90deg); }
+  .comparison .node { flex-basis: auto; }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">Auto-mode / Ground-up rebuild / Review in progress</div>
+  <h1>Review the decision flow</h1>
+  <p class="lead">A prepared operation stays visible while Luna answers many focused questions.
+  Code uses the answers to approve, deny, or ask. These diagrams separate settled requirements
+  from the meaning that still needs your judgment.</p>
+  <div class="chips"><span class="chip">Settled: around 100+ useful questions / call</span>
+  <span class="chip">Settled: up to 3 batches × 3 parallel calls</span>
+  <span class="chip">Draft: how per-rule answers combine</span></div>
+  <nav aria-label="Review sections"><a href="#overview">1. Overall flow</a>
+  <a href="#adaptive">2. Adaptive questions</a><a href="#meaning">3. Worked decisions</a>
+  <a href="#host">4. Host constraint</a><a href="#response">Your response</a></nav>
+</header>
+
+<section id="overview" class="panel" aria-labelledby="overview-title">
+  <div class="eyebrow">Settled structure</div>
+  <h2 id="overview-title">The model supplies evidence. Code owns the outcome.</h2>
+  <div class="flow" role="group" aria-label="Review data flow">
+    <div class="node"><span class="step">Capture</span><strong>One current snapshot</strong>
+    <p>Authored instructions + visible context + complete prepared group.</p></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node" data-kind="code"><span class="step">Select in code</span><strong>Useful question set</strong>
+    <p>Prewritten forms bound to rules, operation details, conditions, and interactions.</p></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="step">Evaluate with Luna</span><strong>100+ focused questions</strong>
+    <p>Each returns approve / deny / unknown probabilities. The complete group stays in context.</p></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node" data-kind="code"><span class="step">Resolve in code</span><strong>Apply score rule</strong>
+    <p>Admit each result, reconcile the evidence, and determine the group outcome.</p></div>
+  </div>
+  <div class="grid">
+    <div class="node" data-kind="approve"><strong>✓ Approve</strong><p>Check snapshot freshness, then release the reviewed group.</p></div>
+    <div class="node" data-kind="deny"><strong>× Deny</strong><p>Withhold the group and name the decisive rule evidence.</p></div>
+    <div class="node" data-kind="ask"><strong>? Unresolved</strong><p>Adapt the next batch. If the permitted batches are exhausted, ask.</p></div>
+  </div>
+  <p class="return">↶ Unresolved evidence selects different useful forms and bindings for the same operation.</p>
+  <p class="caption">An early resolved outcome ends review. Retries consume call slots.
+  A changed snapshot cannot inherit approval. Span 02 observes matching requests without decision authority.</p>
+  <div class="rail"><strong>The settled numeric rule</strong>
+  <p>Unknown &lt; 0.2: take the uniquely highest approve/deny score.
+  Unknown ≥ 0.2: that score must also be ≥ 0.6. A tie remains unresolved.
+  These are per-question rules; the reduction from many answers is the draft contract explored in the scenarios.</p></div>
+</section>
+
+<section id="adaptive" class="panel" aria-labelledby="adaptive-title">
+  <div class="eyebrow">Corrected interpretation</div>
+  <h2 id="adaptive-title">One uncertain issue can open many useful questions.</h2>
+  <p>Example request: <strong>“Review the rebuild plan and deliver a better plan.”</strong>
+  Proposed group: read evidence, write the planning document and HTML diagrams, then commit those documents.</p>
+  <div class="node" data-kind="ask"><strong>? Shared issue: does the whole group stay within review work?</strong>
+  <p>The issue is shared. The evidence to examine is different for each question.</p></div>
+  <div class="pool" role="group" aria-label="Distinct useful question bindings">
+    <div class="node"><strong>Document contents</strong><p><code>VRB · AUT · DRR</code><br>Does a proposed architecture become an unaccepted implementation decision?</p></div>
+    <div class="node"><strong>Written files</strong><p><code>IWT · ANN · EC1</code><br>Are writes confined to the requested review artifacts and their proper locations?</p></div>
+    <div class="node"><strong>Evidence and scope</strong><p><code>QPM · FCH · QGR</code><br>Does a choice reopen a settled requirement or rely on an untested constraint?</p></div>
+    <div class="node"><strong>Visible review</strong><p><code>ODM · CXD · HDM</code><br>Do the diagrams expose the differences and make their states readable?</p></div>
+    <div class="node"><strong>Combined commit</strong><p><code>CLG · CPN · PX3</code><br>Does the exact commit preserve concurrent work and stay within the authorized scope?</p></div>
+  </div>
+  <p class="caption">Illustrative bindings from actual repository rules, not a complete production batch or a measured model result.
+  Every question still evaluates a rule against the complete request and operation; the focus identifies evidence to inspect.</p>
+  <div class="flow" role="group" aria-label="Adaptive batch selection">
+    <div class="node"><span class="step">Batch 1</span><strong>Cover the operation</strong>
+    <p>Choose a broad useful set from authored rules and concrete operation details.</p></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="step">Batch 2, if unresolved</span><strong>Follow the uncertainty</strong>
+    <p>If scope remains unclear, examine contents, destinations, review-only restrictions, and their interactions.</p></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="step">Batch 3, if unresolved</span><strong>Resolve remaining dependencies</strong>
+    <p>Choose further useful checks based on the actual evidence. Then resolve or ask.</p></div>
+  </div>
+  <p class="return">Each call selects around 100 or more useful questions. One uncertain result does not imply one useful question.</p>
+  <p>Question identity includes the rule occurrence, evaluation form, focused evidence, and snapshot.
+  Responses guide selection; they do not become facts or instructions telling the next call what to conclude.
+  Repeated paraphrases and votes do not add independent evidence.</p>
+  <p class="caption">Source: <code>doc/planning/pi-auto-mode-batched-assessment.md:667–746</code>
+  (adaptive mechanics only; the old meaning categories remain superseded), plus your clarified batch-size intent.</p>
+</section>
+
+<section id="meaning" class="panel" aria-labelledby="meaning-title">
+  <div class="eyebrow">Design judgment / Illustrative expected outcomes</div>
+  <h2 id="meaning-title">What should each rule’s approval contribute?</h2>
+  <p>The draft below means <strong>“this rule permits this group under the complete instructions and request.”</strong>
+  A rule can clear an operation without independently authorizing it. Request scope is evaluated too.</p>
+  <div class="choice-tabs" role="group" aria-label="Choose a worked scenario">
+    <button type="button" data-scene="tests" aria-pressed="true">Requested tests</button>
+    <button type="button" data-scene="scope" aria-pressed="false">Unrequested edit</button>
+    <button type="button" data-scene="exception" aria-pressed="false">Explicit approval</button>
+    <button type="button" data-scene="missing" aria-pressed="false">Missing fact</button>
+  </div>
+  <article class="scenario" data-case="tests">
+    <p class="quote">“Run the package tests.” → The group runs that package’s test task.</p>
+    <div class="flow comparison">
+      <div class="node"><strong>Request scope</strong><p>The requested test run is within scope.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <div class="node"><strong>Package task rule</strong><p>The command uses the prescribed package task.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <div class="node"><strong>CSS formatting rule</strong><p>No CSS is being written. This rule does not object.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node" data-kind="approve"><strong>✓ Group: approve</strong><p>Assuming the remaining required evidence also clears the group.</p></div>
+    </div>
+    <p class="caption">Alternative meaning: if each rule must independently authorize the test run, the unrelated CSS rule
+    cannot approve it. Treating that as unknown would leave this otherwise authorized operation unresolved.</p>
+  </article>
+  <article class="scenario" data-case="scope" hidden>
+    <p class="quote">“Review this module.” → The group changes its production implementation.</p>
+    <div class="flow comparison">
+      <div class="node"><strong>Formatting and task rules</strong><p>The edit could follow all formatting and task conventions.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <div class="node"><strong>Review-only instruction</strong><p>Implementation changes exceed the requested review.</p><span class="outcome" data-result="deny">× Deny</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node" data-kind="deny"><strong>× Group: deny</strong><p>Passing unrelated rules does not establish authorization.</p></div>
+    </div>
+    <p class="caption">The reducer needs the scope check. “Nothing else objected” cannot substitute for it.</p>
+  </article>
+  <article class="scenario" data-case="exception" hidden>
+    <p class="quote">Rule: “Ask before publishing.” You then say: “Publish this exact artifact to this destination.”</p>
+    <div class="flow comparison">
+      <div class="node"><strong>Publication rule in context</strong><p>The exact requested publication supplies the required approval.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <div class="node"><strong>Operation match</strong><p>Artifact, destination, and current request match the prepared operation.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node" data-kind="approve"><strong>✓ Group: approve</strong><p>Assuming no independent prohibition or missing evidence.</p></div>
+    </div>
+    <p class="caption">The rule’s answer must already account for the actual approval and instruction precedence.
+    An isolated “ask before publishing” answer must not veto the explicit matching request.</p>
+  </article>
+  <article class="scenario" data-case="missing" hidden>
+    <p class="quote">“Upload this report to our approved destination.” → The supplied URL’s approval is unknown.</p>
+    <div class="flow comparison">
+      <div class="node"><strong>Upload request</strong><p>The general upload is requested.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
+      <div class="node"><strong>Destination condition</strong><p>The evidence does not establish that this URL is the approved destination.</p><span class="outcome" data-result="ask">? Unresolved</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node" data-kind="ask"><strong>? Group: unresolved</strong><p>Use further useful questions if evidence can resolve it; ask at exhaustion.</p></div>
+    </div>
+    <p class="caption">Additional model questions cannot manufacture a missing external fact.
+    Unknown is uncertainty, not the category for an unrelated rule.</p>
+  </article>
+  <div class="grid">
+    <div class="node"><strong>A. Approval means clearance from the rule</strong>
+    <p>Benefit: irrelevant rules can clear ordinary authorized work; precedence stays in each contextual assessment.</p>
+    <p>Cost: authorization and request scope must be covered explicitly. A missing scope check would be a real gap.</p></div>
+    <div class="node"><strong>B. Approval means this rule independently grants permission</strong>
+    <p>Benefit: positive authorization is explicit in each approving answer.</p>
+    <p>Cost: unrelated rules cannot approve. The all-approve reducer would need a different contract to distinguish neutral rules.</p></div>
+  </div>
+  <p class="ranking"><strong>Recommendation and ranking: A &gt; B.</strong>
+  A fits rule-by-rule review without restoring a separate meaning taxonomy.
+  B does not compose with the draft’s all-approve reducer for ordinary unrelated rules.
+  This is a proposed interpretation, not an accepted decision.</p>
+</section>
+
+<section id="host" class="panel" aria-labelledby="host-title">
+  <div class="eyebrow">Verified source finding / Integration not qualified</div>
+  <h2 id="host-title">Preparing the whole group changes sequential timing.</h2>
+  <p>Call A writes a file. Call B’s extension hook reads that file to prepare B’s arguments.</p>
+  <h3>Installed Pi sequential path</h3>
+  <div class="flow" role="group" aria-label="Current sequential timing">
+    <div class="node"><strong>Prepare A</strong></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="node" data-kind="approve"><strong>Execute A</strong><p>File changes here.</p></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><strong>Prepare B</strong><p>Hook sees A’s result.</p></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><strong>Execute B</strong></div>
+  </div>
+  <h3>Draft’s complete-preparation proposal</h3>
+  <div class="flow" role="group" aria-label="Proposed preparation timing">
+    <div class="node"><strong>Prepare A + B</strong><p>B’s hook runs before A changes the file.</p></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="node" data-kind="code"><strong>Review entire group</strong><p>All prepared arguments visible.</p></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><strong>Execute A, then B</strong><p>B has the earlier prepared arguments.</p></div>
+  </div>
+  <div class="rail"><strong>Required plan correction</strong><p>The proposal cannot claim unchanged sequential extension behavior.
+  The supported group semantics must be designed before choosing the hook. Result-dependent nested calls have a related
+  issue: the next child’s final arguments may not exist until the previous child finishes.</p></div>
+  <p class="caption">Source: installed Pi 1.3.0 <code>pi-agent-core/dist/agent-loop.js:374,384,394,453,559</code>.
+  Nested calls use <code>runToolCall</code>, reached from the coding agent’s <code>_executeNestedToolCall</code>.
+  These are source observations, not replacement runtime tests. This section does not ask you to choose a patch mechanism.</p>
+</section>
+
+<section id="response" class="panel" aria-labelledby="response-title">
+  <div class="eyebrow">Current question / No implementation approval</div>
+  <h2 id="response-title">Judge the worked outcomes first.</h2>
+  <p>Use the scenario buttons to inspect all four cases. The question is whether the proposed clearance meaning and
+  those outcomes express your intent. Later decisions about reduction and conflicting reassessments depend on this answer.</p>
+  <form id="review-form">
+    <fieldset><legend>Q1. Does interpretation A match your intended rule evaluation?</legend>
+      <label class="answer"><input type="radio" name="meaning" value="A matches the intended meaning and worked outcomes."><span>A matches the intended meaning and worked outcomes. Recommended; scope remains an explicit check.</span></label>
+      <label class="answer"><input type="radio" name="meaning" value="Change the meaning or one or more worked outcomes; see my notes."><span>Change the meaning or an outcome. Describe the rule and case in the notes.</span></label>
+      <label class="answer"><input type="radio" name="meaning" value="The diagram still misses the intended model; see my notes."><span>The diagram still misses the intended model. Describe what should connect differently.</span></label>
+    </fieldset>
+    <label for="notes">Corrections, expected outcomes, or missing cases</label>
+    <textarea id="notes" name="notes" placeholder="For example: in the explicit-approval case, the rule’s answer should be…"></textarea>
+    <button type="submit" class="primary">Prepare reply</button>
+    <p id="status" class="status" role="status">Your choices stay on this page. Prepare a reply, then copy it into the conversation.</p>
+    <label for="reply">Reply to copy</label>
+    <textarea id="reply" readonly aria-describedby="status" placeholder="Your selected answer and notes will appear here."></textarea>
+    <button id="select-reply" type="button">Select reply text</button>
+  </form>
+</section>
+<footer>Local review artifact, 2026-10-19. No model is called and no operation is executed by this page.
+The batch-size scarcity question has been withdrawn. Architecture and implementation remain unapproved.
+The maintained proposal is <code>package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md</code>.</footer>
+</main>
+<script>
+// Scenario switching changes the displayed example, never the user's answer.
+function showScenario(event) {
+  const selected = event.currentTarget.dataset.scene;
+  for (const button of document.querySelectorAll('[data-scene]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.scene === selected));
+  }
+  for (const article of document.querySelectorAll('[data-case]')) {
+    article.hidden = article.dataset.case !== selected;
+  }
+}
+
+// Construct plain text from native form values without interpreting notes as markup.
+function prepareReply(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const values = new FormData(form);
+  const meaning = values.get('meaning');
+  const notes = String(values.get('notes') ?? '').trim();
+  const reply = document.getElementById('reply');
+  const status = document.getElementById('status');
+  if (!meaning && !notes) {
+    status.textContent = 'Select an answer or write a correction before preparing a reply.';
+    reply.value = '';
+    return;
+  }
+  reply.value = ['Auto-mode visual review', 'Q1: ' + (meaning ?? 'See notes.'), notes ? 'Notes: ' + notes : '',
+    'This response concerns the plan, not implementation approval.'].filter(Boolean).join('\n\n');
+  status.textContent = 'Reply prepared. Select the text and copy it into the conversation.';
+}
+
+// Native text selection keeps copying available without clipboard permissions.
+function selectReply() {
+  const reply = document.getElementById('reply');
+  reply.focus();
+  reply.select();
+}
+
+for (const button of document.querySelectorAll('[data-scene]')) {
+  button.addEventListener('click', showScenario);
+}
+document.getElementById('review-form').addEventListener('submit', prepareReply);
+document.getElementById('select-reply').addEventListener('click', selectReply);
+</script>
+</body>
+</html>
