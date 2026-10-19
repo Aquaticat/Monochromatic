@@ -3,7 +3,6 @@ import {
   types
 } from 'node:util';
 import {SourceCollectionError} from '../../collector/collector.mjs';
-import {isCustomDataInput} from '../../collector/run-prompt-custody-v3/custom-data-input.mjs';
 import {isInputContentDescriptor} from '../../collector/run-prompt-custody-v3/input-content.ts';
 
 /** Shape-check already-owned records without invoking caller accessors or proxy traps. */
@@ -80,12 +79,7 @@ export function assertManagerOriginsAppended({
     publication,
     sessionInputOccurrence
   }=origin;
-  const admittedOrigin=isCustomDataInput(origin)||[
-    'native-manager-input',
-    'native-event-handler'
-  ].includes(source.inputOrigin);
-  if((source.kind!=='native-session-message-input')||(!admittedOrigin)
-    ||(source.registration!==undefined)
+  if((source.registration!==undefined)
     ||(source.permission!==false)
     ||(origin.runOccurrence!==undefined)
     ||(source.runOccurrence!==undefined)
@@ -93,7 +87,7 @@ export function assertManagerOriginsAppended({
     ||(!sessionInputOccurrence)
     ||(source.sessionInputOccurrence!==sessionInputOccurrence)
     ||(publication.sessionInputOccurrence!==sessionInputOccurrence)
-    ||(publication.sourceOccurrence!==source.occurrence))throw new SourceCollectionError('Only original unregistered manager, native event or custom data inputs may extend this source snapshot');
+    ||(publication.sourceOccurrence!==source.occurrence))throw new SourceCollectionError('Added inputs must retain their original session ownership without policy or permission authority');
  }
 }
 

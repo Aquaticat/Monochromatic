@@ -66,7 +66,7 @@ const SERVER_IDENTITY = {
 /**
  Model-facing guidance for this server's tools.
  */
-const SERVER_INSTRUCTIONS = 'Provides web_search and web_fetch with the same behavior as the pi search-fetch extension: Exa-first search with Linkup fallback, gh CLI routing for mapped GitHub URLs, and a global host blocklist enforced before providers are called. Truncated results carry their full text as a search-fetch://response resource.';
+const SERVER_INSTRUCTIONS = 'Provides web_search and web_fetch with the same behavior as the pi search-fetch extension: DeepSeek-first search (maximum results with page content) with Exa and Linkup fallback, gh CLI routing for mapped GitHub URLs, DeepSeek fetch before Linkup and Exa, and a global host blocklist enforced before providers are called. Truncated results carry their full text as a search-fetch://response resource.';
 
 //endregion Constants
 
@@ -162,11 +162,17 @@ if (isBinLaunch) {
    */
   const config = await loadLinkupConfig();
   /**
+   Value-free store diagnostic forwarded to missing-key errors.
+   */
+  const { storeError, } = config.source;
+  /**
    Provider-routing client shared by the registered tools.
    */
   const client = createSearchFetchClient({
+    ...(config.deepseekApiKey === undefined ? {} : { deepseekApiKey: config.deepseekApiKey, }),
     ...(config.exaApiKey === undefined ? {} : { exaApiKey: config.exaApiKey, }),
     ...(config.linkupApiKey === undefined ? {} : { linkupApiKey: config.linkupApiKey, }),
+    ...(storeError === undefined ? {} : { credentialHint: storeError, }),
     blocklist: config.blocklist,
   },);
   await serve({

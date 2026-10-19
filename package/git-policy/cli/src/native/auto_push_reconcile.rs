@@ -141,7 +141,8 @@ fn read_destination(
         git,
         &argv(&["rev-parse", "--symbolic-full-name", "@{push}"]),
     )?;
-    if upstream.code != Some(0) || pushed.code != Some(0) || upstream.stdout != pushed.stdout {
+    // A failed query prints nothing, so a failed `@{push}` differs from a resolved `@{upstream}` here as well.
+    if upstream.code != Some(0) || upstream.stdout != pushed.stdout {
         return Ok(None);
     }
     let remote = run_query(
@@ -152,9 +153,7 @@ fn read_destination(
         git,
         &argv(&["config", "--get", &format!("branch.{name}.merge")]),
     )?;
-    if remote.code != Some(0) || merge.code != Some(0) {
-        return Ok(None);
-    }
+    // A key that is not set prints nothing, and the checks below reject the empty remote and the empty ref.
     let remote_name = String::from_utf8_lossy(&remote.stdout).trim().to_owned();
     let merge_ref = String::from_utf8_lossy(&merge.stdout).trim().to_owned();
     if remote_name.is_empty() || remote_name == "." || !merge_ref.starts_with("refs/heads/") {
@@ -270,7 +269,7 @@ fn commit_merge(
             .collect();
         return Ok(Err(paths));
     }
-    if merged.code != Some(0) || tree.is_empty() {
+    if merged.code != Some(0) {
         return Err(SingleFlightError::Git {
             arguments: format!("merge-tree --write-tree {local} {remote}"),
             code: merged.code,

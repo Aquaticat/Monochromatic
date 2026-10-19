@@ -3,7 +3,9 @@
 ## Purpose
 
 This lane ports the landing critical section of the incumbent TypeScript commit path
-(`package/git-policy/cli/src/policy-engine/commit-landing.ts`, `commit-landing-index.ts`,
+(`package/git-policy/cli/src/policy-engine/commit-landing.ts`
+(moved on 2026-10-13 with the TypeScript wrapper: now `package/git-policy/cli/src/native/commit_landing_loop.rs`),
+`commit-landing-index.ts`,
 `commit-landing-objects.ts`, `commit-landing-support.ts`, `commit-landing-index-lock.ts`,
 `commit-landing-findings.ts`, `commit-transaction-test-phase.ts`) into the native Rust wrapper under
 `package/git-policy/cli/src/native/`.
@@ -110,7 +112,8 @@ Host runs use Git 2.55.0 (`/usr/bin/git`); container runs use Git 2.56.0.
 
 Each file ran alone through `gate-slot.ts` with `--timeout 600`, after the container gate built the image.
 The planted-control phase ran once, with the unmodified `bin/mutate-native-container.mjs`, on head `ee925b3955`
-(evidence `package/git-policy/cli/target/verification/native-mutation-Qj2qNr/planted-controls.json`):
+(evidence `package/git-policy/cli/target/verification/native-mutation-Qj2qNr/planted-controls.json`
+(scratch output of one run, not kept)):
 all 62 controls were noticed, including the five this lane added.
 Every later head differs from that one in test files only, which can add failing tests but not remove one,
 and the lane's source files are byte-identical; so the per-file runs use

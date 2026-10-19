@@ -1,5 +1,154 @@
 # Depot trial interview
 
+## Published research and accepted first interview round on 2026-10-18
+
+Research tip `64d814b21cae7399270cfcc244ad98c78aa905ec` is published through the isolated merge worktree.
+Direct remote readback is `3bd497b16a46b08f45a06d09b8c767ce83dbcad4`;
+the requested tip is verified in its ancestry.
+Publication used a normal push without force.
+The private controller journal is
+`latest-research-publication-64d814b21cae7399270cfcc244ad98c78aa905ec.private.json`.
+The accepted first-round answers and permanent GitHub-hosted execution correction are subsequently published
+at `8f6cc54eb38a46dc9c4702e06d56c80508fa3910`,
+with requested tip `2b39f13df685e79a115f2f91ba388d0991a539b0` verified in its ancestry.
+The matching private journal records a successful normal push and exact remote readback.
+All four changed CI documents pass scoped Markdown lint and CommonMark rendering,
+with no missing local links or italic spans.
+The rendered provider-allocation paragraphs have been read.
+The private renderer initially rejected the routing study because it was absent from its registered file list;
+after registering that owned document,
+the complete scoped render passes.
+The Git policy replayed the formatting commit during concurrent landing;
+the final published requested tip is the replayed identity,
+not the discarded prepared identity `aad99ed01e36ac42152c5c389703dddf9960ba59`.
+The finite factual execution and reconciliation queue is closed with the limits retained in the report.
+This does not assert complete product-feature or source-branch coverage.
+No fresh independent whole-report review ran after the agent service quota was exhausted.
+
+Correction (2026-10-18):
+the independent whole-report review has now run and is recorded in
+`doc/planning/depot-expanded-ci-evaluation-independent-review.md`.
+The later pending-review
+statements in this handover are historical;
+the record and the review verdict are current.
+
+The first interview round is answered through the question tool:
+
+- Q1 is accepted:
+  use a regression ratchet.
+  Enforce known-good checks and block new or changed failures.
+  Setup,
+  discovery and artifact-integrity failures always block.
+  Existing source failures require exact baselines;
+  raw `FAIL` log tokens are insufficient because the passing harness controls deliberately emit them.
+- Q2 is accepted:
+  core checks on PRs and the wider matrix weekly.
+  This replaces the recommended nightly breadth.
+  Private personal fixtures stay local.
+  Dependency-based selection still needs qualification because the frozen task graph has a cycle.
+- Q3 is accepted:
+  staged native promotion.
+  Introduce Depot-managed runners under GitHub orchestration,
+  then qualify selected Linux workflows for native Depot CI against explicit acceptance criteria.
+  This is a rollout order within a permanent hybrid,
+  not a path to making Depot the default for all eligible Linux work.
+  Native paused-session attachment is still unqualified.
+
+The user explicitly clarified that Depot never fully replaces GitHub Actions.
+GitHub-hosted runners themselves remain heavily used,
+including ordinary eligible work rather than only platform exceptions or emergency fallback.
+Retaining GitHub orchestration while moving its execution to Depot does not satisfy this requirement.
+The permanent design has GitHub-hosted execution,
+Depot-managed GitHub runners and selected native Depot CI workflows.
+Provider placement follows workload suitability and measured benefit within that constraint.
+The report's former description of native Depot as the Linux orchestration pool is retracted.
+The user's correction confirms the intentional hybrid already recorded in the Q14 trial answer.
+It does not reopen provider replacement as an interview choice.
+
+The Developer baseline,
+additional-pool approach and USD 200 all-provider planning ceiling remain settled.
+No production implementation is unlocked by posting this round.
+The second interview round is answered through the question tool.
+Q4 accepts standing bounded authority for recurring overage.
+Q5 accepts one reserved automatic recovery attempt for classified infrastructure failures.
+Q6 keeps the correction in CI documents and leaves `AUT` unchanged.
+The [concrete rollout plan](../planning/depot-expanded-ci-rollout.md) consolidates these answers.
+The plan and accepted operating policies are published at `a08edd938abdcffb84cf902a458f14b42ca340a3`.
+The publication journal verifies the exact requested tip and direct remote readback with a normal push.
+The plan,
+updated report and handover pass scoped Markdown lint and rendered checks;
+all local links exist and no italic spans occur.
+The complete rendered rollout plan has been read.
+The private renderer now registers the new plan explicitly.
+
+Q7 is posted through the question tool for confirmation of the linked concrete rollout plan.
+The current interview on 2026-10-18 settled the operating model:
+CI is advisory-only;
+the baseline is Developer with overage disabled on every product;
+native execution runs only in one bounded weekly matrix that covers every admitted native
+capability category;
+untrusted pull-request source stays on public GitHub;
+Node validation defaults to GitHub-hosted runners;
+cache writes come only from `main` and explicit dispatches;
+the default-branch advisory run uses sliding-window rate limiting and a fast static,
+build and unit subset,
+with the complete profile weekly;
+one independent whole-report review is recorded before any paid profile;
+each optional product and cache format receives an explicit disposition;
+and success targets are relative to the public GitHub baseline.
+The blocking-enforcement answer in Q1 and the standing-overage authority in Q4 are superseded
+by the advisory-only and no-overage answers above;
+Q1's baseline discipline remains.
+Q7,
+the confirmation of the revised rollout plan,
+is the only open confirmation question.
+The revised plan is published at `d94e50bec4` after the closure controls.
+The review record is at
+`doc/planning/depot-expanded-ci-evaluation-independent-review.md`,
+and the registration,
+duplicate,
+baseline and paused-session evidence is under `doc/audit/`.
+Q7 was answered on 2026-10-18:
+the user confirmed the revised plan at `d94e50bec4` and permitted
+implementation.
+The adoption proposal was accepted and moved to `doc/decision/depot-ci-adoption.md`;
+the provider and cache supersession notes are in effect.
+Implementation starts with the plan's work item 1;
+no further spend or recovery authorization is required.
+
+The posted second round covers independent decisions:
+
+- Q4 is accepted:
+  standing authority for bounded recurring overage under the existing USD 200 combined planning ceiling,
+  without approval of each paid batch.
+  Use standing authority for unattended CI,
+  using conservative published charges and the repository-owned allocation ledger.
+  This does not change subscriptions,
+  authorize account-wide inspection or guarantee an aggregate invoice.
+- Q5 is accepted:
+  one bounded recovery attempt for a classified provider/startup failure,
+  without requiring an individual recovery request.
+  Reserve exposure for both attempts and retain the first failure.
+  Source failures,
+  discovery failures and artifact-integrity failures cannot become successful checks by being ignored.
+- Q6 is accepted:
+  retain the correction only in CI documents and leave the existing general `AUT` rule unchanged,
+  consistent with the user's preference for narrowly scoped documentation changes.
+  The rejected concrete alternative proposed under `AGENTS.md`'s correction rule was:
+  "Execute requested work without expanding scope.
+  Preserve accepted systems and workload allocations unless the user explicitly authorizes replacing them."
+  No `AGENTS.md` edit has been applied.
+
+The remaining technical acceptance criteria are engineering work,
+not requests for the user to choose runner labels,
+cache formats or retry timers.
+Known-failure baselines must identify actual reproducible cases rather than waive whole failing tasks.
+They must be qualified on the implementation candidate's immutable source;
+historical failures cannot automatically become current waivers.
+Native promotion qualifies the features each selected workflow needs;
+workflows requiring unqualified paused-session attachment remain on GitHub until that boundary qualifies.
+No numerical GitHub/Depot allocation or eventual Depot-majority target is inferred from the word "heavy".
+
 ## Final local capture and publication checkpoint on 2026-10-18
 
 The corrected capture is terminal and its owned container is absent.
@@ -21,9 +170,19 @@ No new provider allocation or production source fix occurred.
 The first capture invocation was rejected before runtime because its admission commit had not completed.
 The still-prepared admission ran only after `b8c2dc9dcc` completed;
 there was no duplicate container allocation.
-Scoped JSON hashes and Markdown checks passed before this final capture update.
-The remaining action is the scoped final check/render and exact-tip isolated publication,
-then the first interview frontier.
+The final capture archive,
+its admission and prior evidence pass their byte/hash joins.
+Scoped JSON formatting and Markdown checks pass with no remaining diagnostic.
+The six approved report sections render with no missing local links or italic spans.
+The completed local source-test worktree is removed normally after its ignored-output dry run
+and root Git-dir entry checks.
+All 162 generated output roots are retained privately;
+the compiled harness identity and all three original/copy private fixture identities still match.
+Canonical worktree absence is checked with the registered main worktree as a positive control
+(`doc/audit/depot-local-source-worktree-retirement-2026-10-18.evidence.json`).
+The remaining action is exact-tip isolated publication,
+then the first interview frontier on failure enforcement,
+workflow cadence and the order of Linux orchestration adoption.
 The service quota still prevents a fresh independent whole-report sufficiency review.
 
 ## Local source-consumer checkpoint on 2026-10-18

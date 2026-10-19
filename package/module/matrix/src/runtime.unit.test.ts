@@ -13,7 +13,7 @@ import {
 import {
   runtimeExecCommand,
   runtimeInstallCommand,
-} from './runtime.ts';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'runtime',
@@ -38,6 +38,31 @@ await describe({
             const cmd = runtimeInstallCommand('deno',);
             expect(cmd,).toContain('deno.land/install.sh',);
             expect(cmd,).toContain('curl',);
+          },
+        },),
+
+        it({
+          name: 'node install bootstraps mise from /workspace and installs from repo config',
+          fn: async () => {
+            const cmd = runtimeInstallCommand('node',);
+
+            expect(cmd,).toBe(
+              'curl -fsSL https://mise.run | sh'
+                + ' && export PATH="$HOME/.local/bin:$PATH"'
+                + ' && cd /workspace'
+                + ' && MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace'
+                + ' mise install node',
+            );
+          },
+        },),
+
+        it({
+          name: 'node install changes to /workspace before mise install',
+          fn: async () => {
+            const cmd = runtimeInstallCommand('node',);
+
+            expect(cmd.indexOf('cd /workspace',),)
+              .toBeLessThan(cmd.indexOf('mise install node',),);
           },
         },),
       ],
@@ -80,6 +105,21 @@ await describe({
               filePath: '/workspace/packages/foo/src/bar.ts',
             },);
             expect(cmd,).toContain('/workspace/packages/foo/src/bar.ts',);
+          },
+        },),
+
+        it({
+          name: 'node exec runs the file through mise exec',
+          fn: async () => {
+            const cmd = runtimeExecCommand({
+              runtime: 'node',
+              filePath: '/workspace/test.ts',
+            },);
+
+            expect(cmd,).toBe(
+              'MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace'
+                + ' $HOME/.local/bin/mise exec node -- node /workspace/test.ts',
+            );
           },
         },),
       ],

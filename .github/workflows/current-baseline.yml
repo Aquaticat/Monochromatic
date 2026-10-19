@@ -1,0 +1,48 @@
+name: current-baseline
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_JOBS: '4'
+jobs:
+  baseline:
+    runs-on: depot-ubuntu-24.04-8
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Install system prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Install repository tools
+        continue-on-error: true
+        run: mise install
+      - name: Prepare dependencies
+        run: mise run prepare:pnpm
+      - name: Build fast subset
+        id: build
+        run: |
+          mise run //package/module/logger:build
+          mise run //package/module/p-map-fork:build
+          mise run //package/module/toml-edit:build
+          mise run //package/cli/forbidden-strings:build
+          mise run //package/linter/monochromatic-lint:build
+      - name: Unit fast subset
+        if: steps.build.outcome == 'success'
+        run: |
+          mise run //package/module/logger:test:unit
+          mise run //package/module/p-map-fork:test:unit
+          mise run //package/module/toml-edit:test:unit
+          mise run //package/cli/forbidden-strings:test
+          mise run //package/linter/monochromatic-lint:test

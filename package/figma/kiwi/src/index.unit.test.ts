@@ -12,7 +12,7 @@ import {
   parseKiwiSchema,
   parseMetaJson,
   resolveTypeName,
-} from './index.ts';
+} from '../dist/final/node/index.mjs';
 
 /**
  Example single-byte varuint payload used by reader tests.

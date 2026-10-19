@@ -30,11 +30,32 @@ The overview's advertised startup times are not a measured repository speed guar
 
 The [quickstart](https://depot.dev/docs/ci/quickstart)
 keeps original GitHub workflows running after copying workflows and local Actions into `.depot/`.
-Default-branch merging registers automatic native triggers.
+Automatic native triggers are registered server side when the workflow file is under
+`.depot/workflows/` on the default branch,
+its trigger matches the event,
+and the Code Access app is connected.
+The deployed docs do not require a pull-request merge event,
+and a native `pull_request` gate in this repository ran from a non-default base
+([registration research](depot-native-registration-research.md)).
 This creates duplicate deployment or publication risk for side-effecting workflows;
 the research uses bounded explicit dispatches instead.
 Migration also copies supporting non-symlink files,
 so the destination needs source and consumer checks rather than a workflow-file count.
+
+Correction (2026-10-19):
+the earlier text said "Default-branch merging registers automatic
+native triggers."
+The deployed docs state three conditions:
+the file is under
+`.depot/workflows/` on the default branch,
+the trigger matches the event,
+and the GitHub
+connection exists.
+They do not require a pull-request merge event,
+and the repository's native
+`pull_request` gate on a non-default base contradicts the sentence as a general rule.
+The
+original sentence is preserved in this note.
 
 The [compatibility matrix](https://depot.dev/docs/ci/compatibility)
 qualifies the quickstart's migration claims.

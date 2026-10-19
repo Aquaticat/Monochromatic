@@ -37,7 +37,7 @@ the fuzz smoke campaign and the mutation campaigns are recorded in their own sec
 ### How the incumbent runs with its optional plugins
 
 The incumbent is the built TypeScript wrapper of the main checkout,
-`package/git-policy/cli/dist/final/node/index.mjs`
+`package/git-policy/cli/dist/final/node/index.mjs` (build output of the TypeScript wrapper, gone since 2026-10-13)
 (built 2026-09-26 15:43, after the last source commit under `package/git-policy/cli/src`,
 `cf2bf70d2` at 15:39 the same day).
 It is run as `node <that file> <arguments>` with `PATH=/usr/bin:/bin`,

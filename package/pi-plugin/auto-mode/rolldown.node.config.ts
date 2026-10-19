@@ -12,6 +12,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: {
     index: './src/index.ts',
     'native-policy': './src/native-policy-api.ts',
+    'native-artifact-types': './src/native-artifact-types.ts',
   },
 });
 

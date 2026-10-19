@@ -14,7 +14,7 @@ function readCarrierSources({
     path
   }=carrier.inputLocation;
   if(field==='customPrompt'){
-   const source=input.slot==='customPrompt'?input.source:hostPrompt??input.resourceSystemInput;
+   const source=hostPrompt??input.resourceSystemInput;
    if((!source)||(base.options
      .customPrompt
      !==source.content)

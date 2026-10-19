@@ -7,14 +7,19 @@
 import { join, } from 'node:path';
 
 /**
- Environment variable that wins over config-file Exa API keys.
+ Environment variable that wins over the encrypted store Exa API key.
  */
 const EXA_API_KEY_ENV = 'EXA_API_KEY';
 
 /**
- Environment variable that wins over config-file Linkup API keys.
+ Environment variable that wins over the encrypted store Linkup API key.
  */
 const LINKUP_API_KEY_ENV = 'LINKUP_API_KEY';
+
+/**
+ Environment variable that wins over the encrypted store DeepSeek API key.
+ */
+const DEEPSEEK_API_KEY_ENV = 'DEEPSEEK_API_KEY';
 
 /**
  Directory below home that stores global Pi extension config.
@@ -31,12 +36,12 @@ const PI_EXTENSION_CONFIG_DIR: string = join(
 const PI_SEARCH_FETCH_CONFIG_FILE = 'pi-search-fetch.json';
 
 /**
- Legacy Pi Linkup config filename migrated once when present.
+ Legacy Pi Linkup config filename detected by the migration error.
  */
 const LEGACY_PI_LINKUP_CONFIG_FILE = 'pi-linkup.json';
 
 /**
- JSON indentation used when writing migrated config.
+ JSON indentation used when rewriting the Pi config during migration.
  */
 const CONFIG_JSON_INDENT_SPACES = 2;
 
@@ -46,20 +51,18 @@ const CONFIG_JSON_INDENT_SPACES = 2;
 const FILE_NOT_FOUND_CODE = 'ENOENT';
 
 /**
- Valid top-level config keys.
+ Valid top-level config keys; credentials moved to the encrypted store.
  */
 const CONFIG_KEYS = [
-  'exaApiKey',
-  'linkupApiKey',
   'blocklist',
 ] as const;
 
 /**
- Valid legacy top-level config keys.
+ Top-level key fields that require the one-time credential migration.
  */
-const LEGACY_CONFIG_KEYS = [
-  'apiKey',
-  'blocklist',
+const DEPRECATED_CREDENTIAL_KEYS = [
+  'exaApiKey',
+  'linkupApiKey',
 ] as const;
 
 /**
@@ -67,17 +70,13 @@ const LEGACY_CONFIG_KEYS = [
  */
 const CONFIG_KEY_SET: ReadonlySet<string> = new Set<string>(CONFIG_KEYS,);
 
-/**
- Valid legacy top-level config key lookup.
- */
-const LEGACY_CONFIG_KEY_SET: ReadonlySet<string> = new Set<string>(LEGACY_CONFIG_KEYS,);
-
 export {
   CONFIG_JSON_INDENT_SPACES,
   CONFIG_KEY_SET,
+  DEEPSEEK_API_KEY_ENV,
+  DEPRECATED_CREDENTIAL_KEYS,
   EXA_API_KEY_ENV,
   FILE_NOT_FOUND_CODE,
-  LEGACY_CONFIG_KEY_SET,
   LEGACY_PI_LINKUP_CONFIG_FILE,
   LINKUP_API_KEY_ENV,
   PI_EXTENSION_CONFIG_DIR,

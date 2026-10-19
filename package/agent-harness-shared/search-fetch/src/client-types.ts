@@ -125,6 +125,10 @@ type LinkupClientOptions = {
    Optional fetch implementation override for tests.
    */
   readonly fetchImpl?: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -207,6 +211,10 @@ type ClientRuntime = {
    Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**

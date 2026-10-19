@@ -37,7 +37,8 @@ the merge had no conflict.
 
 `src/native/policy_markdown.rs` checks the lifecycle's candidates in candidate order,
 as the installed wrapper's `markdownLintPolicy` does
-(`package/git-policy/markdown-lint/src/rewrite-candidates.ts`):
+(`package/git-policy/markdown-lint/src/rewrite-candidates.ts`
+(deleted 2026-10-13: now `package/git-policy/cli/src/native/policy_markdown.rs`)):
 
 - Deleted candidates,
   symbolic links and submodules are skipped,
@@ -280,7 +281,9 @@ so an installed linter can never stand in for it.
 
 The driver is `${HOME}/temp/agent/markdown-autofix-20261006/tools/differential.ts`;
 its last full record is `differential-final.txt` beside it.
-The incumbent is `package/git-policy/cli/dist/final/node/index.mjs` of the main checkout,
+The incumbent is `package/git-policy/cli/dist/final/node/index.mjs`
+(build output of the TypeScript wrapper, gone since 2026-10-13)
+of the main checkout,
 run as `node <file>` with `PATH=/usr/bin:/bin`,
 its configuration trusted with `git cli-git trust --yes`,
 and its Markdown command set to the main checkout's `node package/cli/markdown-lint/src/cli.ts` by absolute path;

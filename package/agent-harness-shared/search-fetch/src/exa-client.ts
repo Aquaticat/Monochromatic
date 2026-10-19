@@ -92,6 +92,7 @@ function createExaClient(clientOptions: ForeignBorrowed<ExaClientOptions>,): Exa
    */
   const runtime: ExaClientRuntime = {
     ...(clientOptions.apiKey === undefined ? {} : { apiKey: clientOptions.apiKey, }),
+    ...(clientOptions.credentialHint === undefined ? {} : { credentialHint: clientOptions.credentialHint, }),
     blocklist: clientOptions.blocklist,
     baseUrl: clientOptions.baseUrl ?? DEFAULT_EXA_BASE_URL,
     fetchImpl: clientOptions.fetchImpl ?? fetch,

@@ -197,11 +197,28 @@ function hasCredential({ value, }: { readonly value: string; }): boolean {
   return value.trim() !== '';
 }
 
+/**
+ Return whether an optional provider credential is configured.
+ 
+ @param value - optional provider credential
+ 
+ @returns whether the credential exists and is not blank
+ 
+ @example
+ ```ts
+ hasConfiguredCredential('linkup-key');
+ ```
+ */
+function hasConfiguredCredential(value?: string,): boolean {
+  return (value !== undefined) && hasCredential({ value, });
+}
+
 //endregion Utility helpers
 
 export {
   combinedFallbackError,
   fetchExaFallback,
+  hasConfiguredCredential,
   hasCredential,
   rethrowIfCancelled,
   searchLinkupFallback,

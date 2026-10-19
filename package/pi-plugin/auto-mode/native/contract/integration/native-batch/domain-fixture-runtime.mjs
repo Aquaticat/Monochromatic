@@ -16,7 +16,9 @@ export function createDomainFixtureRuntime({
   lifecycle,
   code,
   programProfile,
-  approvalHost
+  approvalHost,
+  beforePrimaryResponse,
+  beforeAssessmentResponse
 }){
  const {
    unconfiguredPolicies,
@@ -59,7 +61,8 @@ const runtime=bindNativePolicyRuntime({
    semanticAdmissionPolicy:policy('clause_operation_relation'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
-  sendWire(input){
+  async sendWire(input){
+   await beforeAssessmentResponse?.();
    if(observations.failAssessment){observations.assessments++;throw new Error('Fixture assessment unavailable');}
    return sendAssessment(input);
   },
@@ -85,6 +88,10 @@ const runtime=bindNativePolicyRuntime({
    };
    const proposal=(observations.requests===1)||(nextDecision&&(observations.requests===2));
    if(proposal)observations.originalBody=init.body;
+   await beforePrimaryResponse?.({
+     proposal,
+     requestBody:init.body
+   });
    return fixtureResponse({
      proposal,
      code

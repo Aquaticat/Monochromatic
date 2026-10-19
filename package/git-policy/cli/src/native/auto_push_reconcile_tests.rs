@@ -423,3 +423,158 @@ fn a_failure_that_is_not_a_stale_update_is_returned_unchanged() {
     );
     remove(&s.root);
 }
+
+#[test]
+fn an_unpublished_attempt_never_reports_success_and_keeps_a_real_exit_code() {
+    let from_zero = unpublished("before", 0, "reason");
+    assert_eq!(from_zero.exit_code, 1, "a failure must not carry exit code zero");
+    assert_eq!(
+        from_zero.output,
+        format!("before\n{RECONCILE_FAILED_PREFIX}reason")
+    );
+    assert_eq!(unpublished("before", 128, "reason").exit_code, 128);
+}
+
+/// The destination the reconcile would fetch from, as `remote merge_ref`, or nothing.
+fn destination_of(scenario: &Scenario, branch_ref: &str) -> Option<String> {
+    return read_destination(&push_git(&scenario.local), branch_ref)
+        .expect("destination")
+        .map(|destination| {
+            return format!("{} {}", destination.remote, destination.merge_ref);
+        });
+}
+
+/// The branch that tracks its own remote branch is the one case that is reconciled.
+#[test]
+fn a_branch_that_pushes_to_its_upstream_has_that_destination() {
+    let s = scenario("ar-dest-upstream");
+    assert_eq!(
+        destination_of(&s, "refs/heads/main").as_deref(),
+        Some("origin refs/heads/main")
+    );
+    remove(&s.root);
+}
+
+/// A branch without an upstream, or named outside `refs/heads`, has no destination to fetch from.
+#[test]
+fn a_branch_without_an_upstream_or_outside_the_heads_has_no_destination() {
+    let s = scenario("ar-dest-none");
+    git(&s.local, &["branch", "--quiet", "loose"]);
+    assert_eq!(destination_of(&s, "refs/heads/loose"), None);
+    assert_eq!(destination_of(&s, "refs/tags/main"), None);
+    remove(&s.root);
+}
+
+/// A push remote other than the upstream's remote would publish somewhere this module did not fetch.
+#[test]
+fn a_push_remote_that_differs_from_the_upstream_has_no_destination() {
+    let s = scenario("ar-dest-pushremote");
+    git(
+        &s.local,
+        &["remote", "add", "mirror", s.remote.to_str().expect("utf-8")],
+    );
+    git(&s.local, &["fetch", "--quiet", "mirror"]);
+    git(&s.local, &["config", "branch.main.pushRemote", "mirror"]);
+    assert_eq!(destination_of(&s, "refs/heads/main"), None);
+    remove(&s.root);
+}
+
+/// A branch that tracks a local branch has the remote `.`, which is never fetched from.
+#[test]
+fn a_branch_that_tracks_a_local_branch_has_no_destination() {
+    let s = scenario("ar-dest-dot");
+    git(&s.local, &["branch", "--quiet", "--track", "topic", "main"]);
+    git(&s.local, &["config", "push.default", "upstream"]);
+    assert_eq!(
+        text_of(&s.local, &["rev-parse", "--symbolic-full-name", "topic@{push}"]),
+        "refs/heads/main",
+        "the push query must agree with the upstream, or the remote check is not what decides"
+    );
+    assert_eq!(destination_of(&s, "refs/heads/topic"), None);
+    remove(&s.root);
+}
+
+/// An upstream outside `refs/heads` cannot be fetched into a private ref by branch name.
+#[test]
+fn an_upstream_outside_the_heads_has_no_destination() {
+    let s = scenario("ar-dest-namespace");
+    git(
+        &s.local,
+        &[
+            "config",
+            "--add",
+            "remote.origin.fetch",
+            "+refs/notes/*:refs/remotes/origin/notes/*",
+        ],
+    );
+    git(&s.local, &["update-ref", "refs/remotes/origin/notes/x", "HEAD"]);
+    git(&s.local, &["config", "branch.main.merge", "refs/notes/x"]);
+    assert_eq!(destination_of(&s, "refs/heads/main"), None);
+    remove(&s.root);
+}
+
+/// The base a branch must descend from is the last recorded push, not the tracking ref, when a push was recorded.
+#[test]
+fn the_recorded_push_is_the_base_even_when_the_tracking_ref_differs() {
+    let s = scenario("ar-base-record");
+    let seed = text_of(&s.local, &["rev-parse", "HEAD"]);
+    let first = commit_local(&s, "b.txt", "first\n");
+    let (published, err) = run(&s, &first);
+    assert_eq!(published.outcome, AutoPushOutcome::Pushed, "{err}");
+    git(
+        &s.local,
+        &["update-ref", "refs/remotes/origin/main", seed.as_str()],
+    );
+    assert_eq!(
+        published_base(&push_git(&s.local), "refs/heads/main").expect("base"),
+        first
+    );
+    remove(&s.root);
+}
+
+/// Without a recorded push, the base is the tracking ref.
+#[test]
+fn the_tracking_ref_is_the_base_when_no_push_was_recorded() {
+    let s = scenario("ar-base-upstream");
+    let seed = text_of(&s.local, &["rev-parse", "HEAD"]);
+    commit_local(&s, "b.txt", "unpublished\n");
+    assert_eq!(
+        published_base(&push_git(&s.local), "refs/heads/main").expect("base"),
+        seed
+    );
+    remove(&s.root);
+}
+
+/// A rejection while the remote is behind the branch was not a divergence, so it is returned as it came.
+#[test]
+fn a_rejection_while_the_remote_is_behind_is_returned_unchanged() {
+    let s = scenario("ar-behind");
+    let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
+    commit_local(&s, "b.txt", "local\n");
+    let rejected = PushAttempt {
+        exit_code: 1,
+        output: " ! [rejected]        main -> main (fetch first)".to_owned(),
+    };
+    let returned = reconcile_divergent_push(&push_git(&s.local), "refs/heads/main", rejected.clone())
+        .expect("reconcile");
+    assert_eq!(returned, rejected);
+    assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
+    assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "");
+    remove(&s.root);
+}
+
+/// Histories that share no commit cannot be merged by `merge-tree`, and that is a Git failure, not a conflict.
+#[test]
+fn unrelated_histories_are_a_git_failure_not_a_conflict() {
+    let s = scenario("ar-unrelated");
+    git(&s.local, &["checkout", "--quiet", "--orphan", "island"]);
+    git(&s.local, &["commit", "--quiet", "--allow-empty", "-m", "island"]);
+    let island = text_of(&s.local, &["rev-parse", "HEAD"]);
+    let main = text_of(&s.local, &["rev-parse", "main"]);
+    let outcome = commit_merge(&push_git(&s.local), &island, &main, "message");
+    assert!(
+        matches!(outcome, Err(SingleFlightError::Git { .. })),
+        "{outcome:?}"
+    );
+    remove(&s.root);
+}

@@ -1,120 +1,20 @@
 /**
- Pi Search Fetch config file parsing and migration.
+ Pi Search Fetch config file parsing.
  
  @module
  */
 
 import {
-  mkdir,
+  access,
   readFile,
-  unlink,
-  writeFile,
 } from 'node:fs/promises';
-import {
-  basename,
-  dirname,
-} from 'node:path';
+import { basename, } from 'node:path';
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-
-import {
-  CONFIG_JSON_INDENT_SPACES,
-  FILE_NOT_FOUND_CODE,
-} from './config-constants.ts';
-import { legacyConfigPathForHome, } from './config-paths.ts';
-import { validateLegacyConfigShape, } from './config-schema.ts';
+import { FILE_NOT_FOUND_CODE, } from './config-constants.ts';
 import type {
-  ConfigFileShape,
   ConfigJsonReadResult,
   ErrorWithCode,
-  LegacyMigrationResult,
 } from './config-types.ts';
-
-/**
- Migrate legacy Pi Linkup config into new Search Fetch config path when needed.
- 
- @param home - home directory
- 
- @param configPath - new config path
- 
- @returns migration result
- 
- @example
- ```ts
- await migrateLegacyConfigIfPresent({ home: '/tmp/home', configPath: '/tmp/home/new.json' });
- ```
- */
-async function migrateLegacyConfigIfPresent(
-  {
-    home,
-    configPath,
-  }: {
-    readonly home: string;
-    readonly configPath: string;
-  },
-): Promise<LegacyMigrationResult> {
-  /**
-   Local value for legacyPath.
-   */
-  const legacyPath = legacyConfigPathForHome({ home, },);
-  /**
-   Local value for legacyReadResult.
-   */
-  const legacyReadResult = await readOptionalConfigJson({ configPath: legacyPath, },);
-  if (!legacyReadResult.loaded)
-    return { migrated: false, };
-
-  /**
-   Local value for legacyConfig.
-   */
-  const legacyConfig = validateLegacyConfigShape({
-    value: legacyReadResult.value,
-    configPath: legacyPath,
-  },);
-  /**
-   Local value for migratedValue.
-   */
-  const migratedValue: ConfigFileShape = {
-    ...(legacyConfig.apiKey === undefined ? {} : { linkupApiKey: legacyConfig.apiKey, }),
-    ...(legacyConfig.blocklist === undefined ? {} : { blocklist: legacyConfig.blocklist, }),
-  };
-
-  await mkdir(
-    dirname(configPath,),
-    { recursive: true, },
-  );
-  await writeFile(
-    configPath,
-    `${JSON.stringify(
-      migratedValue,
-      null,
-      CONFIG_JSON_INDENT_SPACES,
-    )}\n`,
-    'utf8',
-  );
-  await removeLegacyConfig({ legacyPath, },);
-  return {
-    migrated: true,
-    value: migratedValue,
-    legacyPath,
-  };
-}
-
-/**
- Remove migrated legacy config when it is still present.
- 
- @param legacyPath - legacy config path
- */
-async function removeLegacyConfig({ legacyPath, }: { readonly legacyPath: string; }): Promise<void> {
-  try {
-    await unlink(legacyPath,);
-  }
-  catch (error: unknown) {
-    if (isMissingFileError(error,))
-      return;
-    throw error;
-  }
-}
 
 /**
  Read and parse optional config JSON.
@@ -157,13 +57,45 @@ async function readOptionalConfigJson(
 }
 
 /**
+ Report whether a path exists without exposing read errors as absence.
+ 
+ @param filePath - absolute or relative path to probe
+ 
+ @returns whether the path exists
+ 
+ @throws when access fails for a reason other than missing file
+ 
+ @example
+ ```ts
+ await fileExists({ filePath: '/tmp/pi-search-fetch.json' });
+ ```
+ */
+async function fileExists({ filePath, }: { readonly filePath: string; }): Promise<boolean> {
+  try {
+    await access(filePath,);
+    return true;
+  }
+  catch (error: unknown) {
+    if (isMissingFileError(error,))
+      return false;
+    throw error;
+  }
+}
+
+/**
  Parse config JSON content.
+ 
+ The parse failure message deliberately omits the parser detail: a
+ pre-migration Pi config can contain plaintext keys, and Node's JSON parser
+ includes an input snippet in its message.
  
  @param content - raw file content
  
  @param configPath - config path used in diagnostics
  
  @returns parsed JSON value
+ 
+ @throws when content is not valid JSON
  */
 function parseConfigJson(
   {
@@ -178,13 +110,10 @@ function parseConfigJson(
     return JSON.parse(content,) as unknown;
   }
   catch (error: unknown) {
-    /**
-     Local value for detail.
-     */
-    const detail = caughtValueText(error,);
+    void error;
     throw new Error(
-      `${basename(configPath,)} parsing failed at ${configPath}: ${detail}`,
-      { cause: error, },
+      `${basename(configPath,)} parsing failed at ${configPath}`,
+      { cause: error },
     );
   }
 }
@@ -214,6 +143,6 @@ function isErrorWithCode(error: unknown,): error is ErrorWithCode {
 }
 
 export {
-  migrateLegacyConfigIfPresent,
+  fileExists,
   readOptionalConfigJson,
 };

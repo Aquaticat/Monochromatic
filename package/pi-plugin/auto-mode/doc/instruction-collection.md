@@ -1,5 +1,52 @@
 # Instruction collection
 
+## Incoming messages and owned bookkeeping
+
+The session instrumentation records original inputs and their publications.
+These are package-owned records, not additional contracts imposed by Pi.
+The original growth gate rejects normal `steer` and `followUp` calls by comparing their origin labels
+with a hand-maintained list.
+That rejection opens a manual approval prompt for ordinary input handling and is a product defect.
+
+The category-specific repair is superseded by removal of that list and its new classifier helper.
+Appended original data inputs keep the existing session ownership and no-authority checks.
+The enclosing collector independently checks governing policy, resource inputs, executable tools and run material.
+Its need for further internal snapshot checks remains part of the architecture reduction review.
+This change requires fresh native-session and configured Pi verification before qualification.
+
+The installed Pi contract delivers steering after the current assistant turn's tool calls;
+follow-ups wait until the agent would otherwise stop.
+`abort` is a separate active-run operation.
+An authored string asking to stop does not itself exercise that cancellation API.
+The unmodified-SDK delivery probe and the native catalog must distinguish these behaviors.
+The bounded unmodified Pi 1.2.0 Agent probe confirms both queued delivery modes execute the current tool
+before delivering even text asking to stop; the separate actual abort control executes no tool.
+The category-gate removal at `4913ea2cd0` passes fresh JavaScript/native builds,
+both actual-session inflight delivery cases,
+source-binding capacity,
+constructor,
+input-content,
+session-input and execution consumers.
+Configured saved-history verification remains required.
+
+A separate timing regression queues input while the policy assessment is in flight.
+Its original build withholds the tool because a data-only native run view receives a new identity.
+The source collector has distinct checks before and after approval;
+the post-approval dependency comparison already permits appended original data without admitting changed policy or tools.
+The consolidation uses that same dependency check during review and removes the stricter duplicate identity path.
+Its review-time delivery,
+real policy/tool mutation,
+and configured-host checks are separate qualification requirements.
+The corrected native host passes configured full-history baseline,
+review-time steering and review-time follow-up replays.
+Their original serialized requests contain no injected note;
+steering appears in the second request and follow-up in the third.
+Each group executes automatically without an approval dialog.
+The previous native build reproduces the exact review-time failure under that same intervention.
+Genuine policy changes remain withheld in both named policy-change modes.
+Restoring strict pre-approval identity fails the maintained delivery regression after a fresh build;
+restoring the dependency comparison passes.
+
 ## Retained native input storage
 
 Every native input keeps its original occurrence,
@@ -57,6 +104,50 @@ to the native session collector.
 `native/contract/collector/rule-relevance-sdk-copy` observes original resource loading and reloads.
 `native/contract/lifecycle/rule-relevance-cache` retains relevance estimates by original rule content.
 The decision review consumes selected original excerpts rather than complete hidden provider requests.
+
+## One governing-policy loader
+
+`native-host/resources.ts` and `native-batch/environment.mjs` use `createGoverningPolicyLoader`.
+The owner captures the selected project policy,
+publishes it through the governing context emitter,
+and revalidates the original resource frame and policy capture before use.
+The loader retains ordinary host custom prompts,
+resource system inputs,
+appendices,
+context files and receipt inputs independently of that selected policy.
+Neither prompt placement nor observation supplies instruction authority.
+
+An unused alternative copied the selected policy into the native system slot.
+Its `createSystemPolicyLoader`,
+`readSystemPolicyInput` and `assertSystemPolicyInput` exports had no product caller,
+package export,
+reflective consumer or documented capability requirement.
+Source and built-entry traces establish that scope before removal.
+The retirement removes that selector,
+replacement callback,
+emission state,
+reload verification and carrier-selection arm.
+It preserves `customPromptAuthority`,
+ordinary host text,
+resource system-input selection and the existing binding layout constants.
+The remaining `system-slot` filename is historical;
+its maintained interface owns the governing-policy capability.
+
+The disposable retirement candidate passes fresh JavaScript/native builds,
+types,
+the typed interface's zero-warning/zero-error lint,
+identity and opacity checks,
+host isolation,
+source-binding capacity,
+the complete phase catalog,
+construction and session-input catalogs.
+Prompt capacity,
+retained run history,
+event receipts and startup relevance also pass on that unchanged candidate.
+The new retired-export assertion fails against the old artifact before rebuilding,
+demonstrating that the consumer observes the intended removal.
+The temporary loader declaration still describes an unported implementation;
+retiring that declaration requires the implementation's own typed port.
 
 This module exists because text alone does not identify its source,
 scope,

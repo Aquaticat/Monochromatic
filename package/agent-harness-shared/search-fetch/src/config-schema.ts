@@ -10,14 +10,46 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
   CONFIG_KEY_SET,
-  LEGACY_CONFIG_KEY_SET,
+  DEPRECATED_CREDENTIAL_KEYS,
 } from './config-constants.ts';
 import { normalizeBlocklist, } from './domain-policy.ts';
 import type {
   ApiKeyResolution,
   ConfigFileShape,
-  LegacyConfigFileShape,
 } from './config-types.ts';
+
+//region Errors
+
+/**
+ Pi config still carries a credential that now belongs in the encrypted store.
+ */
+class SearchFetchMigrationRequiredError extends Error {
+  /**
+   Creates the migration error for one config path.
+ 
+   @param configPath - config path holding the old credential shape
+ 
+   @param keys - old top-level keys that require migration
+   */
+  public constructor({
+    configPath,
+    keys,
+  }: {
+    readonly configPath: string;
+    readonly keys: readonly string[];
+  },) {
+    super(
+      `Pi config at ${configPath} still contains ${keys.join(', ',)}. `
+        + 'Run `mise run secrets:migrate` to move credentials into .env.local.json, '
+        + 'then remove the old fields.',
+    );
+    this.name = 'SearchFetchMigrationRequiredError';
+  }
+}
+
+//endregion Errors
+
+//region Schema
 
 /**
  Validate parsed config-file shape.
@@ -28,7 +60,7 @@ import type {
  
  @returns config-file shape
  
- @throws when value is not expected flat object
+ @throws when value is not the expected flat object or still has credential fields
  
  @example
  ```ts
@@ -51,6 +83,10 @@ function validateConfigShape(
     value,
     configPath,
   },);
+  rejectDeprecatedCredentialKeys({
+    value: record,
+    configPath,
+  },);
   rejectExtraKeys({
     value: record,
     configPath,
@@ -60,95 +96,76 @@ function validateConfigShape(
   /**
    Local destructured value.
    */
-  const {
-    exaApiKey,
-    linkupApiKey,
-    blocklist,
-  } = record;
-  rejectOptionalNonString({
-    value: exaApiKey,
-    configPath,
-    key: 'exaApiKey',
-  },);
-  rejectOptionalNonString({
-    value: linkupApiKey,
-    configPath,
-    key: 'linkupApiKey',
-  },);
+  const { blocklist, } = record;
   rejectOptionalNonStringArray({
     value: blocklist,
     configPath,
     key: 'blocklist',
   },);
 
-  return {
-    ...((typeof exaApiKey) === 'string' ? { exaApiKey, } : {}),
-    ...((typeof linkupApiKey) === 'string' ? { linkupApiKey, } : {}),
-    ...(isStringArray(blocklist,) ? { blocklist, } : {}),
-  };
+  return (isStringArray(blocklist,) ? { blocklist, } : {});
 }
 
+//endregion Schema
+
+//region Resolution
+
 /**
- Validate parsed legacy config-file shape.
+ Resolve API key precedence: environment, then encrypted store.
  
- @param value - parsed JSON value
+ @param env - environment values
  
- @param configPath - config path used in diagnostics
+ @param envKey - environment key to check
  
- @returns legacy config-file shape
+ @param storeValue - optional value from the encrypted store
  
- @throws when value is not expected flat object
+ @returns effective API key resolution
  
  @example
  ```ts
- validateLegacyConfigShape({ value: {}, configPath: '/tmp/pi-linkup.json' });
+ resolveApiKey({ env: {}, envKey: 'EXA_API_KEY' });
  ```
  */
-function validateLegacyConfigShape(
+function resolveApiKey(
   {
-    value,
-    configPath,
+    env,
+    envKey,
+    storeValue,
   }: {
-    readonly value: unknown;
-    readonly configPath: string;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly envKey: string;
+    readonly storeValue?: string;
   },
-): LegacyConfigFileShape {
+): ApiKeyResolution {
   /**
-   Local value for record.
+   Local value for envApiKey.
    */
-  const record = configRecord({
-    value,
-    configPath,
-  },);
-  rejectExtraKeys({
-    value: record,
-    configPath,
-    keySet: LEGACY_CONFIG_KEY_SET,
-  },);
+  const envApiKey = env[envKey]
+    ?.trim();
+  if ((envApiKey !== undefined) && (envApiKey !== ''))
+    return {
+      configured: true,
+      value: envApiKey,
+      origin: 'env',
+    };
 
   /**
-   Local destructured value.
+   Local value for storeApiKey.
    */
-  const {
-    apiKey,
-    blocklist,
-  } = record;
-  rejectOptionalNonString({
-    value: apiKey,
-    configPath,
-    key: 'apiKey',
-  },);
-  rejectOptionalNonStringArray({
-    value: blocklist,
-    configPath,
-    key: 'blocklist',
-  },);
-
+  const storeApiKey = storeValue
+    ?.trim();
+  if ((storeApiKey === undefined) || (storeApiKey === ''))
+    return { configured: false, };
   return {
-    ...((typeof apiKey) === 'string' ? { apiKey, } : {}),
-    ...(isStringArray(blocklist,) ? { blocklist, } : {}),
+    configured: true,
+    value: storeApiKey,
+    origin: 'store',
   };
 }
+
+//endregion Resolution
+
+//region Normalization
 
 /**
  Normalize blocklist from config and wrap failures with config context.
@@ -190,55 +207,9 @@ function normalizeConfigBlocklist(
   }
 }
 
-/**
- Resolve API key precedence.
- 
- @param env - environment values
- 
- @param envKey - environment key to check
- 
- @param configApiKey - optional config-file API key
- 
- @returns effective API key resolution
- 
- @example
- ```ts
- resolveApiKey({ env: {}, envKey: 'EXA_API_KEY' });
- ```
- */
-function resolveApiKey(
-  {
-    env,
-    envKey,
-    configApiKey,
-  }: {
-    readonly env: Readonly<NodeJS.ProcessEnv>;
-    readonly envKey: string;
-    readonly configApiKey?: string;
-  },
-): ApiKeyResolution {
-  /**
-   Local value for envApiKey.
-   */
-  const envApiKey = env[envKey]
-    ?.trim();
-  if ((envApiKey !== undefined) && (envApiKey !== ''))
-    return {
-      configured: true,
-      value: envApiKey,
-    };
+//endregion Normalization
 
-  /**
-   Local value for fileApiKey.
-   */
-  const fileApiKey = configApiKey?.trim();
-  if ((fileApiKey === undefined) || (fileApiKey === ''))
-    return { configured: false, };
-  return {
-    configured: true,
-    value: fileApiKey,
-  };
-}
+//region Validation helpers
 
 /**
  Return parsed config root as record or throw schema error.
@@ -264,6 +235,41 @@ function configRecord(
       reason: 'root value must be an object',
     },);
   return value;
+}
+
+/**
+ Reject credentials that now belong in the encrypted store.
+ 
+ @param value - config root record
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @throws SearchFetchMigrationRequiredError when an old credential field is present
+ */
+function rejectDeprecatedCredentialKeys(
+  {
+    value,
+    configPath,
+  }: {
+    readonly value: Readonly<Record<string, unknown>>;
+    readonly configPath: string;
+  },
+): void {
+  /**
+   Local value for presentKeys.
+   */
+  const presentKeys = DEPRECATED_CREDENTIAL_KEYS
+    .filter(function isPresent(key,) {
+      return Object.hasOwn(
+        value,
+        key,
+      );
+    },);
+  if (presentKeys.length > 0)
+    throw new SearchFetchMigrationRequiredError({
+      configPath,
+      keys: presentKeys,
+    },);
 }
 
 /**
@@ -298,33 +304,6 @@ function rejectExtraKeys(
     throw schemaError({
       configPath,
       reason: `unsupported keys: ${extraKeys.join(', ',)}`,
-    },);
-}
-
-/**
- Require optional value to be string when present.
- 
- @param value - candidate value
- 
- @param configPath - config path used in diagnostics
- 
- @param key - config key name
- */
-function rejectOptionalNonString(
-  {
-    value,
-    configPath,
-    key,
-  }: {
-    readonly value: unknown;
-    readonly configPath: string;
-    readonly key: string;
-  },
-): void {
-  if ((value !== undefined) && ((typeof value) !== 'string'))
-    throw schemaError({
-      configPath,
-      reason: `${key} must be a string when present`,
     },);
 }
 
@@ -403,9 +382,11 @@ function isStringArray(value: unknown,): value is readonly string[] {
     },);
 }
 
+//endregion Validation helpers
+
 export {
   normalizeConfigBlocklist,
   resolveApiKey,
+  SearchFetchMigrationRequiredError,
   validateConfigShape,
-  validateLegacyConfigShape,
 };

@@ -1,5 +1,37 @@
 # Review of the wall-clock bound test remediation plan
 
+## Status note
+
+This review's factual findings stand:
+the inventory correction,
+the measurements,
+the no-flag probe result,
+and the citation corrections.
+
+Its harness-level recommendations are superseded by
+[the execution architecture proposal](test-harness-execution-architecture.md)
+and
+[the refined remediation plan](wall-clock-bound-test-remedies-refinement.md).
+Specifically:
+
+- interval exposure is in scope,
+  not deferred;
+- `concurrency: 1` is not the logger remedy;
+  the harness should own virtual
+  time instead of replacing process globals;
+- items 2 and 3 are acceptance cases for scope-owned execution,
+  not test-file
+  workarounds;
+- the plan's "no runner changes" position is superseded by a runner-level
+  hard deadline for hung files.
+
+One measurement annotation:
+the character-scan quadratic model in item 6 is
+JIT-dependent and not reproducible across runs.
+Use the per-prefix split model (203 ms at 4000 prefixes,
+3.1 s at 16000)
+and the linear parse figures only.
+
 ## Verdict
 
 The reframing in the plan is correct and better evidenced than the original issue:

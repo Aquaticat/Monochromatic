@@ -14,8 +14,9 @@ import {
 import {
   detectPackageManager,
   prerequisiteCommand,
+  runtimeDependencyCommand,
   userCreationCommand,
-} from './distro.ts';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'distro',
@@ -208,6 +209,83 @@ await describe({
     },),
 
     //endregion prerequisiteCommand
+
+    //region runtimeDependencyCommand
+
+    describe({
+      name: runtimeDependencyCommand.name,
+      children: [
+        it({
+          name: 'node on apt installs libatomic1',
+          fn: async () => {
+            const cmd = runtimeDependencyCommand({
+              manager: 'apt',
+              runtime: 'node',
+            },);
+            expect(cmd,).toBe('apt-get install -y libatomic1',);
+          },
+        },),
+
+        it({
+          name: 'node on dnf installs libatomic',
+          fn: async () => {
+            const cmd = runtimeDependencyCommand({
+              manager: 'dnf',
+              runtime: 'node',
+            },);
+            expect(cmd,).toBe('dnf install -y libatomic',);
+          },
+        },),
+
+        it({
+          name: 'node on pacman installs gcc-libs',
+          fn: async () => {
+            const cmd = runtimeDependencyCommand({
+              manager: 'pacman',
+              runtime: 'node',
+            },);
+            expect(cmd,).toBe('pacman -Sy --noconfirm gcc-libs',);
+          },
+        },),
+
+        it({
+          name: 'bun needs no system package',
+          fn: async () => {
+            expect(runtimeDependencyCommand({
+              manager: 'apt',
+              runtime: 'bun',
+            },),)
+              .toBe('',);
+          },
+        },),
+
+        it({
+          name: 'deno needs no system package',
+          fn: async () => {
+            expect(runtimeDependencyCommand({
+              manager: 'apt',
+              runtime: 'deno',
+            },),)
+              .toBe('',);
+          },
+        },),
+
+        it({
+          name: 'node on apk throws a glibc diagnostic',
+          fn: async () => {
+            expect(function alpineNode() {
+              runtimeDependencyCommand({
+                manager: 'apk',
+                runtime: 'node',
+              },);
+            },)
+              .toThrow('official Node.js Linux builds require glibc',);
+          },
+        },),
+      ],
+    },),
+
+    //endregion runtimeDependencyCommand
 
     //region userCreationCommand
 

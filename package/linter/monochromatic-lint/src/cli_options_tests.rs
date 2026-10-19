@@ -9,8 +9,11 @@
 //! // Parse argv with the real CLI definition and inspect typed results or usage errors.
 //! ```
 
-/// Import the production command grammar and the parser's fallible entry point.
+/// Import the production command grammar,
+///  the severity an unused-directive finding carries,
+///  and the parser's fallible entry point.
 use super::CliOptions;
+use crate::diagnostic::Severity;
 use clap::Parser;
 /// Import native argv/path storage.
 use std::ffi::OsString;
@@ -140,4 +143,52 @@ fn native_non_utf8_path_arguments_are_preserved() {
     let parsed: CliOptions =
         CliOptions::try_parse_from::<Vec<OsString>, OsString>(arguments).expect("native path");
     assert_eq!(parsed.paths, [PathBuf::from(raw)]);
+}
+
+/// The unused-directive options resolve like oxlint's:
+///  absent reports nothing,
+///  the plain flag warns,
+///  and the severity option names its level in both `=` and separate-value forms.
+#[test]
+fn unused_directive_options_resolve_to_a_severity() {
+    assert_eq!(
+        parse(&[]).expect("no options").directive_options().unused,
+        None
+    );
+    assert_eq!(
+        parse(&["--report-unused-disable-directives"])
+            .expect("plain flag")
+            .directive_options()
+            .unused,
+        Some(Severity::Warn)
+    );
+    assert_eq!(
+        parse(&["--report-unused-disable-directives-severity=error"])
+            .expect("equals form")
+            .directive_options()
+            .unused,
+        Some(Severity::Error)
+    );
+    assert_eq!(
+        parse(&["--report-unused-disable-directives-severity", "off"])
+            .expect("separate form")
+            .directive_options()
+            .unused,
+        None
+    );
+}
+
+/// The two spellings are alternatives,
+///  and only the five known severities are accepted.
+#[test]
+fn unused_directive_options_reject_a_mixture_and_unknown_severities() {
+    let both: clap::Error = parse(&[
+        "--report-unused-disable-directives",
+        "--report-unused-disable-directives-severity=error",
+    ])
+    .expect_err("both spellings");
+    assert_eq!(both.kind(), clap::error::ErrorKind::ArgumentConflict);
+    let unknown: clap::Error =
+        parse(&["--report-unused-disable-directives-severity=loud"]).expect_err("unknown severity");
+    assert_eq!(unknown.kind(), clap::error::ErrorKind::InvalidValue);
 }

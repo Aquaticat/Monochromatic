@@ -70,6 +70,7 @@ async function verifyBuiltExtension(): Promise<string> {
   ),);
   process.env
     .HOME = tempHome;
+  process.chdir(tempHome,);
 
   /**
    Built extension module imported through package output.

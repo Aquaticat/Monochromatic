@@ -65,6 +65,7 @@ function createLinkupClient(clientOptions: ForeignBorrowed<LinkupClientOptions>,
    */
   const runtime: ClientRuntime = {
     ...(clientOptions.apiKey === undefined ? {} : { apiKey: clientOptions.apiKey, }),
+    ...(clientOptions.credentialHint === undefined ? {} : { credentialHint: clientOptions.credentialHint, }),
     blocklist: clientOptions.blocklist,
     baseUrl: clientOptions.baseUrl ?? DEFAULT_LINKUP_BASE_URL,
     fetchImpl: clientOptions.fetchImpl ?? fetch,

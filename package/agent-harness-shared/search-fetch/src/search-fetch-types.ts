@@ -15,7 +15,7 @@ import type { GhClient, } from './github-fetch-types.ts';
 /**
  Search Fetch provider identifier.
  */
-type SearchFetchProvider = 'exa' | 'gh' | 'linkup';
+type SearchFetchProvider = 'deepseek' | 'exa' | 'gh' | 'linkup';
 
 /**
  One fallback step taken between providers.
@@ -58,6 +58,10 @@ type ProviderResponse = {
  */
 type SearchFetchClientOptions = {
   /**
+   Optional DeepSeek API key.
+   */
+  readonly deepseekApiKey?: string;
+  /**
    Optional Exa API key.
    */
   readonly exaApiKey?: string;
@@ -69,6 +73,10 @@ type SearchFetchClientOptions = {
    Normalized global blocklist.
    */
   readonly blocklist: readonly string[];
+  /**
+   Optional DeepSeek base URL override for tests.
+   */
+  readonly deepseekBaseUrl?: string;
   /**
    Optional Exa base URL override for tests.
    */
@@ -85,12 +93,20 @@ type SearchFetchClientOptions = {
    Optional gh-backed fetch client override for tests.
    */
   readonly ghClient?: GhClient;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
  Search Fetch client runtime dependencies.
  */
 type SearchFetchClientRuntime = {
+  /**
+   Optional DeepSeek API key.
+   */
+  readonly deepseekApiKey?: string;
   /**
    Optional Exa API key.
    */
@@ -104,6 +120,10 @@ type SearchFetchClientRuntime = {
    */
   readonly blocklist: readonly string[];
   /**
+   DeepSeek base URL.
+   */
+  readonly deepseekBaseUrl: string;
+  /**
    Exa base URL.
    */
   readonly exaBaseUrl: string;
@@ -115,6 +135,10 @@ type SearchFetchClientRuntime = {
    Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -199,6 +223,10 @@ type ExaClientOptions = {
    Optional fetch implementation override for tests.
    */
   readonly fetchImpl?: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -235,6 +263,10 @@ type ExaClientRuntime = {
    Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -255,11 +287,121 @@ type ExaPostJsonOptions = {
   readonly signal?: AbortSignal;
 };
 
+/**
+ DeepSeek request body for `/v1/tools/search`.
+ */
+type DeepseekSearchRequestBody = {
+  /**
+   Search query, optionally carrying filter operators.
+   */
+  readonly query: string;
+  /**
+   Fixed maximum result count requested from DeepSeek.
+   */
+  readonly count: number;
+  /**
+   Fixed page-content request; summaries and bodies both return.
+   */
+  readonly need_content: true;
+};
+
+/**
+ DeepSeek request body for `/v1/tools/fetch`.
+ */
+type DeepseekFetchRequestBody = {
+  /**
+   URL to fetch.
+   */
+  readonly url: string;
+};
+
+/**
+ Low-level DeepSeek client constructor options.
+ */
+type DeepseekClientOptions = {
+  /**
+   Optional DeepSeek API key.
+   */
+  readonly apiKey?: string;
+  /**
+   Optional base URL override for tests.
+   */
+  readonly baseUrl?: string;
+  /**
+   Optional fetch implementation override for tests.
+   */
+  readonly fetchImpl?: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
+};
+
+/**
+ Low-level DeepSeek client surface.
+ */
+type DeepseekClient = {
+  /**
+   Execute fixed-policy DeepSeek search.
+   */
+  readonly search: (options: SearchOptions,) => Promise<unknown>;
+  /**
+   Execute fixed-policy DeepSeek fetch.
+   */
+  readonly fetch: (options: FetchOptions,) => Promise<unknown>;
+};
+
+/**
+ DeepSeek client runtime dependencies.
+ */
+type DeepseekClientRuntime = {
+  /**
+   Optional DeepSeek API key.
+   */
+  readonly apiKey?: string;
+  /**
+   DeepSeek API base URL.
+   */
+  readonly baseUrl: string;
+  /**
+   Fetch implementation.
+   */
+  readonly fetchImpl: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
+};
+
+/**
+ DeepSeek POST JSON options.
+ */
+type DeepseekPostJsonOptions = {
+  /**
+   Endpoint path beginning with slash.
+   */
+  readonly endpoint: string;
+  /**
+   JSON request body.
+   */
+  readonly body: unknown;
+  /**
+   Abort signal from tool execution.
+   */
+  readonly signal?: AbortSignal;
+};
+
 export type {
   LinkupWebFetchInput,
   LinkupWebSearchInput,
 } from './client.ts';
 export type {
+  DeepseekClient,
+  DeepseekClientOptions,
+  DeepseekClientRuntime,
+  DeepseekFetchRequestBody,
+  DeepseekPostJsonOptions,
+  DeepseekSearchRequestBody,
   ExaClient,
   ExaClientOptions,
   ExaClientRuntime,

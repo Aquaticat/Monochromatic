@@ -1213,13 +1213,25 @@ run = "node package/dev-script/file-enforcer/src/cli.ts --watch"
 [tasks."secrets:edit"]
 description = "Edit the age-encrypted secrets file (.env.local.json) via sops"
 # sops re-encrypts to the recipients recorded in the file's own metadata, so no
-# .sops.yaml is required. mise decrypts at runtime with its built-in rops, but
-# the sops CLI must be pointed at the identity explicitly.
+# .sops.yaml is required. The edit CLI shares the reader's mise-parity identity
+# resolver, so XDG_CONFIG_HOME and MISE_CONFIG_DIR are honored.
 # This command opens an interactive editor. Invoke it with:
 #   mise run --raw secrets:edit
 # The --raw flag gives sops and the editor direct stdin/stdout/stderr passthrough.
-env = { SOPS_AGE_KEY_FILE = "{{env.HOME}}/.config/mise/age.txt" }
-run = "sops edit .env.local.json"
+run = [
+  "mise run //package/module/env-local-json:build",
+  "node package/module/env-local-json/dist/final/node/bin.mjs edit .env.local.json",
+]
+
+[tasks."secrets:migrate"]
+description = "Move search-fetch provider credentials from the Pi config into .env.local.json"
+# Verify-then-delete migration: reads the old plaintext configs, writes the two
+# keys through sops, decrypts and compares in memory, then removes the fields,
+# the legacy file, and the shell exports. Backups stay under ~/temp/agent.
+run = [
+  "mise run //package/agent-harness-shared/search-fetch:build",
+  "node package/agent-harness-shared/search-fetch/dist/final/node/migrate.mjs",
+]
 
 #endregion Secrets
 

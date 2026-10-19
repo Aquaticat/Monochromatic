@@ -13,8 +13,8 @@ import {
   UNSET_SETTING,
 } from './auto-continue.ts';
 import {
+  createStopRemindersHandler,
   stopRemindersDecision,
-  stopRemindersHandler,
 } from './index.ts';
 
 /**
@@ -213,15 +213,17 @@ await describe({
           },
         },),
         it({
-          name: "wires the handler through to the opt-in switch on a live event",
+          name: "wires the handler through to the opt-in switch, with the Luna check off",
           fn: async () => {
-            // Reading the ambient switch instead of mutating it keeps this test from racing
-            // the others; the built-bundle suite drives both switch states explicitly.
-            expect((await stopRemindersHandler(stopEvent(),)).decision,).toBe(
-              autoContinueActive()
-                ? "block"
-                : undefined,
-            );
+            // The environment is injected, so the test neither races the others by mutating the
+            // process nor reaches the gateway; the built-bundle suite drives the real process.
+            const off = createStopRemindersHandler({ env: { MONOCHROMATIC_STOP_LUNA: "off", }, },);
+            const on = createStopRemindersHandler({
+              env: { MONOCHROMATIC_STOP_AUTO_CONTINUE: "on", MONOCHROMATIC_STOP_LUNA: "off", },
+            },);
+
+            expect((await off(stopEvent(),)).decision,).toBeUndefined();
+            expect((await on(stopEvent(),)).decision,).toBe("block",);
           },
         },),
       ],

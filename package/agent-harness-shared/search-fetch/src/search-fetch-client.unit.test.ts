@@ -32,6 +32,42 @@ const EXA_API_KEY = 'exa-secret-key';
 const LINKUP_API_KEY = 'linkup-secret-key';
 
 /**
+ DeepSeek API key fixture.
+ */
+const DEEPSEEK_API_KEY = 'deepseek-secret-key';
+
+/**
+ DeepSeek base URL fixture.
+ */
+const DEEPSEEK_BASE_URL = 'https://deepseek.test';
+
+/**
+ DeepSeek search response fixture.
+ */
+const DEEPSEEK_SEARCH_RESPONSE = {
+  results: [
+    {
+      title: 'DeepSeek',
+      url: 'https://example.com/deepseek',
+      snippet: 'DeepSeek result',
+      summary: 'DeepSeek summary',
+      content: 'DeepSeek content',
+      date: null,
+      authority: 3,
+      rerank_score: 2.4,
+    },
+  ],
+};
+
+/**
+ DeepSeek fetch response fixture.
+ */
+const DEEPSEEK_FETCH_RESPONSE = {
+  title: 'DeepSeek page',
+  content: '# DeepSeek page',
+};
+
+/**
  Exa base URL fixture.
  */
 const EXA_BASE_URL = 'https://exa.test';
@@ -151,7 +187,47 @@ await describe({
       name: createSearchFetchClient.name,
       children: [
         it({
-          name: 'search uses Exa when Exa key is configured',
+          name: 'search uses DeepSeek first when DeepSeek key is configured',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [{ body: DEEPSEEK_SEARCH_RESPONSE, },],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              deepseekApiKey: DEEPSEEK_API_KEY,
+              exaApiKey: EXA_API_KEY,
+              linkupApiKey: LINKUP_API_KEY,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.search({ input: { query: 'docs', }, },);
+            /**
+             Local value for requestBody.
+             */
+            const requestBody = requestJsonBody(firstCall(mock,),);
+
+            expect(result.provider,).toBe('deepseek',);
+            expect(result.response,).toEqual(DEEPSEEK_SEARCH_RESPONSE,);
+            expect(result.fallbackChain,).toBeUndefined();
+            expect(mock.calls,).toHaveLength(1,);
+            expect(firstCall(mock,).url,).toBe(`${DEEPSEEK_BASE_URL}/v1/tools/search`,);
+            expect(requestBody,).toEqual({
+              query: 'docs',
+              count: 50,
+              need_content: true,
+            },);
+          },
+        },),
+        it({
+          name: 'search uses Exa when only Exa key is configured',
           fn: async () => {
             /**
              Local value for mock.
@@ -168,15 +244,20 @@ await describe({
              Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('exa',);
             expect(result.response,).toEqual(EXA_SEARCH_RESPONSE,);
+            expect(firstStep?.reason,).toBe('missing DeepSeek API key',);
             expect(mock.calls,).toHaveLength(1,);
             expect(firstCall(mock,).url,).toBe(`${EXA_BASE_URL}/search`,);
           },
         },),
         it({
-          name: 'search falls back to Linkup when Exa key is missing',
+          name: 'search falls back to Linkup when earlier keys are missing',
           fn: async () => {
             /**
              Local value for mock.
@@ -194,13 +275,134 @@ await describe({
              */
             const result = await client.search({ input: { query: 'docs', }, },);
             /**
+             Local value for steps.
+             */
+            const [firstStep, secondStep,] = result.fallbackChain ?? [];
+
+            expect(result.provider,).toBe('linkup',);
+            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(firstStep?.from,).toBe('deepseek',);
+            expect(firstStep?.to,).toBe('exa',);
+            expect(firstStep?.reason,).toBe('missing DeepSeek API key',);
+            expect(secondStep?.from,).toBe('exa',);
+            expect(secondStep?.to,).toBe('linkup',);
+            expect(secondStep?.reason,).toBe('missing Exa API key',);
+            expect(firstCall(mock,).url,).toBe(`${LINKUP_BASE_URL}/search`,);
+          },
+        },),
+        it({
+          name: 'search falls back to Exa when DeepSeek request fails',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [
+                { body: { message: 'deepseek down', }, status: 502, statusText: 'Bad Gateway', },
+                { body: EXA_SEARCH_RESPONSE, },
+              ],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              deepseekApiKey: DEEPSEEK_API_KEY,
+              exaApiKey: EXA_API_KEY,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.search({ input: { query: 'docs', }, },);
+            /**
              Local value for firstStep.
              */
             const [firstStep,] = result.fallbackChain ?? [];
 
+            expect(result.provider,).toBe('exa',);
+            expect(result.fallbackChain,).toHaveLength(1,);
+            expect(firstStep?.from,).toBe('deepseek',);
+            expect(firstStep?.to,).toBe('exa',);
+            expect(firstStep?.reason,).toContain('deepseek down',);
+            expect(mock.calls.map(function callUrl(call,) {
+              return call.url;
+            },),).toEqual([
+              `${DEEPSEEK_BASE_URL}/v1/tools/search`,
+              `${EXA_BASE_URL}/search`,
+            ],);
+          },
+        },),
+        it({
+          name: 'search falls back to Linkup when DeepSeek and Exa fail',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [
+                { body: { message: 'deepseek down', }, status: 502, statusText: 'Bad Gateway', },
+                { body: { message: 'exa down', }, status: 502, statusText: 'Bad Gateway', },
+                { body: LINKUP_SEARCH_RESPONSE, },
+              ],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              deepseekApiKey: DEEPSEEK_API_KEY,
+              exaApiKey: EXA_API_KEY,
+              linkupApiKey: LINKUP_API_KEY,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.search({ input: { query: 'docs', }, },);
+
             expect(result.provider,).toBe('linkup',);
-            expect(firstStep?.reason,).toBe('missing Exa API key',);
-            expect(firstCall(mock,).url,).toBe(`${LINKUP_BASE_URL}/search`,);
+            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(result.fallbackChain?.[0]?.from,).toBe('deepseek',);
+            expect(result.fallbackChain?.[1]?.from,).toBe('exa',);
+            expect(mock.calls,).toHaveLength(3,);
+          },
+        },),
+        it({
+          name: 'search skips DeepSeek when the query exceeds the 128 code point limit',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [{ body: EXA_SEARCH_RESPONSE, },],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              deepseekApiKey: DEEPSEEK_API_KEY,
+              exaApiKey: EXA_API_KEY,
+            },);
+            /**
+             Long query that DeepSeek would reject.
+             */
+            const query = 'x'.repeat(129,);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.search({ input: { query, }, },);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
+
+            expect(result.provider,).toBe('exa',);
+            expect(firstStep?.reason,).toContain('128',);
+            expect(mock.calls,).toHaveLength(1,);
+            expect(firstCall(mock,).url,).toBe(`${EXA_BASE_URL}/search`,);
           },
         },),
         it({
@@ -224,14 +426,12 @@ await describe({
              Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
-            /**
-             Local value for firstStep.
-             */
-            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('linkup',);
-            expect(firstStep?.from,).toBe('exa',);
-            expect(firstStep?.to,).toBe('linkup',);
+            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(result.fallbackChain?.[0]?.from,).toBe('deepseek',);
+            expect(result.fallbackChain?.[1]?.from,).toBe('exa',);
+            expect(result.fallbackChain?.[1]?.to,).toBe('linkup',);
             expect(mock.calls.map(function callUrl(call,) {
               return call.url;
             },),).toEqual([
@@ -241,7 +441,82 @@ await describe({
           },
         },),
         it({
-          name: 'fetch uses Linkup first when Linkup key is configured',
+          name: 'fetch uses DeepSeek first when DeepSeek key is configured',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [{ body: DEEPSEEK_FETCH_RESPONSE, },],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              deepseekApiKey: DEEPSEEK_API_KEY,
+              exaApiKey: EXA_API_KEY,
+              linkupApiKey: LINKUP_API_KEY,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.fetch({ input: { url: 'https://example.com', }, },);
+            /**
+             Local value for requestBody.
+             */
+            const requestBody = requestJsonBody(firstCall(mock,),);
+
+            expect(result.provider,).toBe('deepseek',);
+            expect(result.response,).toEqual({ markdown: '# DeepSeek page', },);
+            expect(result.fallbackChain,).toBeUndefined();
+            expect(mock.calls,).toHaveLength(1,);
+            expect(firstCall(mock,).url,).toBe(`${DEEPSEEK_BASE_URL}/v1/tools/fetch`,);
+            expect(requestBody,).toEqual({ url: 'https://example.com', },);
+          },
+        },),
+        it({
+          name: 'fetch falls back to Linkup when DeepSeek fetch fails',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [
+                { body: { message: 'deepseek down', }, status: 502, statusText: 'Bad Gateway', },
+                { body: LINKUP_FETCH_RESPONSE, },
+              ],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              deepseekApiKey: DEEPSEEK_API_KEY,
+              linkupApiKey: LINKUP_API_KEY,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.fetch({ input: { url: 'https://example.com', }, },);
+
+            expect(result.provider,).toBe('linkup',);
+            expect(result.response,).toEqual(LINKUP_FETCH_RESPONSE,);
+            expect(result.fallbackChain,).toHaveLength(1,);
+            expect(result.fallbackChain?.[0]?.from,).toBe('deepseek',);
+            expect(result.fallbackChain?.[0]?.to,).toBe('linkup',);
+            expect(mock.calls.map(function callUrl(call,) {
+              return call.url;
+            },),).toEqual([
+              `${DEEPSEEK_BASE_URL}/v1/tools/fetch`,
+              `${LINKUP_BASE_URL}/fetch`,
+            ],);
+          },
+        },),
+        it({
+          name: 'fetch falls back to Linkup for a non-GitHub URL when no DeepSeek key is configured',
           fn: async () => {
             /**
              Local value for mock.
@@ -258,15 +533,21 @@ await describe({
              Local value for result.
              */
             const result = await client.fetch({ input: { url: 'https://example.com', }, },);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('linkup',);
             expect(result.response,).toEqual(LINKUP_FETCH_RESPONSE,);
+            expect(firstStep?.from,).toBe('deepseek',);
+            expect(firstStep?.reason,).toBe('missing DeepSeek API key',);
             expect(mock.calls,).toHaveLength(1,);
             expect(firstCall(mock,).url,).toBe(`${LINKUP_BASE_URL}/fetch`,);
           },
         },),
         it({
-          name: 'fetch falls back to Exa contents when Linkup key is missing',
+          name: 'fetch falls back to Exa contents when earlier keys are missing',
           fn: async () => {
             /**
              Local value for mock.
@@ -288,12 +569,15 @@ await describe({
              */
             const requestBody = requestJsonBody(firstCall(mock,),);
             /**
-             Local value for firstStep.
+             Local value for steps.
              */
-            const [firstStep,] = result.fallbackChain ?? [];
+            const [firstStep, secondStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('exa',);
-            expect(firstStep?.reason,).toBe('missing Linkup API key',);
+            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(firstStep?.reason,).toBe('missing DeepSeek API key',);
+            expect(secondStep?.from,).toBe('linkup',);
+            expect(secondStep?.reason,).toBe('missing Linkup API key',);
             expect(firstCall(mock,).url,).toBe(`${EXA_BASE_URL}/contents`,);
             expect(requestBody,).toEqual({
               urls: ['https://example.com',],
@@ -362,17 +646,16 @@ await describe({
              Local value for result.
              */
             const result = await client.fetch({ input: { url: GITHUB_REPOSITORY_URL, }, },);
-            /**
-             Local value for firstStep.
-             */
-            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('linkup',);
             expect(result.response,).toEqual(LINKUP_FETCH_RESPONSE,);
-            expect(result.fallbackChain,).toHaveLength(1,);
-            expect(firstStep?.from,).toBe('gh',);
-            expect(firstStep?.to,).toBe('linkup',);
-            expect(firstStep?.reason,).toBe(GH_FAILURE_REASON,);
+            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(result.fallbackChain?.[0]?.from,).toBe('gh',);
+            expect(result.fallbackChain?.[0]?.to,).toBe('deepseek',);
+            expect(result.fallbackChain?.[0]?.reason,).toBe(GH_FAILURE_REASON,);
+            expect(result.fallbackChain?.[1]?.from,).toBe('deepseek',);
+            expect(result.fallbackChain?.[1]?.to,).toBe('linkup',);
+            expect(result.fallbackChain?.[1]?.reason,).toBe('missing DeepSeek API key',);
           },
         },),
         it({
@@ -403,12 +686,15 @@ await describe({
             const result = await client.fetch({ input: { url: GITHUB_REPOSITORY_URL, }, },);
 
             expect(result.provider,).toBe('exa',);
-            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(result.fallbackChain,).toHaveLength(3,);
             expect(result.fallbackChain?.[0]?.from,).toBe('gh',);
-            expect(result.fallbackChain?.[0]?.to,).toBe('linkup',);
+            expect(result.fallbackChain?.[0]?.to,).toBe('deepseek',);
             expect(result.fallbackChain?.[0]?.reason,).toBe(GH_FAILURE_REASON,);
-            expect(result.fallbackChain?.[1]?.from,).toBe('linkup',);
-            expect(result.fallbackChain?.[1]?.to,).toBe('exa',);
+            expect(result.fallbackChain?.[1]?.from,).toBe('deepseek',);
+            expect(result.fallbackChain?.[1]?.to,).toBe('linkup',);
+            expect(result.fallbackChain?.[1]?.reason,).toBe('missing DeepSeek API key',);
+            expect(result.fallbackChain?.[2]?.from,).toBe('linkup',);
+            expect(result.fallbackChain?.[2]?.to,).toBe('exa',);
           },
         },),
         it({
@@ -625,6 +911,10 @@ type ClientWithMockOptions = {
    */
   readonly mock: FetchMock;
   /**
+   Optional DeepSeek API key.
+   */
+  readonly deepseekApiKey?: string;
+  /**
    Optional Exa API key.
    */
   readonly exaApiKey?: string;
@@ -666,15 +956,18 @@ type GhClientFixture = {
 function clientWithMock(
   {
     mock,
+    deepseekApiKey,
     exaApiKey,
     linkupApiKey,
     ghClient,
   }: ClientWithMockOptions,
 ) {
   return createSearchFetchClient({
+    ...(deepseekApiKey === undefined ? {} : { deepseekApiKey, }),
     ...(exaApiKey === undefined ? {} : { exaApiKey, }),
     ...(linkupApiKey === undefined ? {} : { linkupApiKey, }),
     blocklist: BLOCKLIST,
+    deepseekBaseUrl: DEEPSEEK_BASE_URL,
     exaBaseUrl: EXA_BASE_URL,
     linkupBaseUrl: LINKUP_BASE_URL,
     fetchImpl: mock.fetchImpl,

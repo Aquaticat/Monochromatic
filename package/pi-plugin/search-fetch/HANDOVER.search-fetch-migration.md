@@ -10,6 +10,17 @@ Change the current Pi Linkup package into an Exa-first search and fetch extensio
 - Rewire Pi to use the renamed extension.
 - Keep this package handover current while the work proceeds.
 
+Historical note:
+provider order has since changed to DeepSeek first,
+then Exa,
+then Linkup for
+search,
+and `gh`,
+DeepSeek,
+Linkup,
+then Exa for fetch.
+See [`doc/decision/search-fetch-deepseek-primary.md`](../../../doc/decision/search-fetch-deepseek-primary.md).
+
 ## Required skills for the next agent
 
 Use these when the matching work starts:

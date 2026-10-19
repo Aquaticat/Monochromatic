@@ -39,6 +39,13 @@ extends = "lint"
 [tasks."lint:types"]
 extends = "lint:types"
 
+[tasks."test:native:inflight-input"]
+description = "Verify original steer and follow-up receipts while the native provider request is in flight"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-inflight-input.test.mjs steer",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-inflight-input.test.mjs followUp",
+]
+
 [tasks."lint:native:syntax"]
 description = "Check every maintained native module with the consuming Node parser"
 shell = "node --input-type=module-typescript -e"
@@ -96,6 +103,10 @@ extends = "test:unit"
 [tasks."test:native:policy-slot-error"]
 description = "Verify built policy-slot errors, inherited setters, and stable facade identity"
 run = "node src/native-policy-slot-error.unit.test.ts"
+
+[tasks."test:native:policy-input-identity"]
+description = "Verify built policy-input ownership and rejection of counterfeit or borrowed receivers"
+run = "node --import ./dist/native/loader.mjs src/native-policy-input-identity.unit.test.ts"
 
 [tasks."test:native:approval-capture"]
 description = "Verify one built approval capture per operation, failed/absent capture and closure"
@@ -1028,6 +1039,14 @@ run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.m
 description = "Release completed group review storage while preserving terminal outcomes and the latest diagnostic"
 run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-review-retirement.test.mjs"
 
+[tasks."test:native:producer-retirement"]
+description = "Release superseded producer judgments with actual session history and latest request evidence live"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-producer-retirement.test.mjs"
+
+[tasks."test:native:producer-lifetime"]
+description = "Preserve active producer judgments, per-consumer diagnostics and original reuse tombstones"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-producer-lifetime.test.mjs"
+
 [tasks."test:native:pool-append-capacity"]
 description = "Keep manager append within a process CPU budget while publishing immutable original snapshots"
 run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-pool-append-capacity.test.mjs"
@@ -1040,3 +1059,8 @@ run = "node --max-old-space-size=512 src/native-phase.unit.test.ts"
 description = "Exercise one actual native group lifecycle mode"
 usage = 'arg "<mode>" help="Native phase fixture mode"'
 run = 'node --max-old-space-size=512 src/native-phase.unit.test.ts "$usage_mode"'
+[tasks."test:native:inflight-assessment-input"]
+run = [
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-inflight-input.test.mjs steer assessment',
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-inflight-input.test.mjs followUp assessment',
+]

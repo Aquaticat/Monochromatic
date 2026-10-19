@@ -113,20 +113,41 @@ session.agent
     fixtureState.executions,
     0
   );
-  if(['deny','stop','cancelled'].includes(mode)){
+  if([
+    'deny',
+    'stop',
+    'cancelled'
+  ].includes(mode)){
    const reason='The user stopped execution. Wait for their next instructions.';
-   assert.equal(fixtureState.handlerFailure,undefined);
-   assert.deepEqual(review.outcome,{state:'resolved',verdict:'deny',reason});
-   const results=session.messages.filter(function isOriginalToolResult(message){return message.role==='toolResult';});
-   assert.deepEqual(results.map(function originalBlockedCall(result){return {
+   assert.equal(
+     fixtureState.handlerFailure,
+     undefined
+   );
+   assert.deepEqual(
+     review.outcome,
+     {
+       state:'resolved',
+       verdict:'deny',
+       reason
+     }
+   );
+   const results=session.messages
+     .filter(function isOriginalToolResult(message){return message.role==='toolResult';});
+   assert.deepEqual(
+     results.map(function originalBlockedCall(result){return {
     toolCallId:result.toolCallId,
     isError:result.isError,
     content:result.content
-   };}),[{
+   };}),
+     [{
     toolCallId:'program',
     isError:true,
-    content:[{type:'text',text:reason}]
-   }]);
+    content:[{
+      type:'text',
+      text:reason
+    }]
+   }]
+   );
   }else assert.ok(
     fixtureState.handlerFailure,
     inspect(

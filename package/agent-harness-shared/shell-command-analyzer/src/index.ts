@@ -14,6 +14,10 @@ export {
   invokesBunTest,
 } from './bun-test.ts';
 export {
+  PROCESS_NAME_WAIT_BAN_REASON,
+  waitsOnProcessName,
+} from './process-name-wait.ts';
+export {
   extractParamRefs,
   looksLikePath,
 } from './refs.ts';

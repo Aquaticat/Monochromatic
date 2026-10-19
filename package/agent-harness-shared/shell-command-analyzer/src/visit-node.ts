@@ -261,18 +261,25 @@ function visitNode(
     };
   }
   if (node.type === 'While') {
+    /**
+     Context for the condition list and body, which both repeat on every iteration.
+     */
+    const conditionLoopContext: ShellCommandContext = {
+      ...context,
+      conditionLoopDepth: context.conditionLoopDepth + 1,
+    };
     return {
       ...EMPTY_VISIT_RESULT,
       workItems: [
         ...statementWorkItems({
           statements: node.clause
             .commands,
-          context,
+          context: conditionLoopContext,
         },),
         ...statementWorkItems({
           statements: node.body
             .commands,
-          context,
+          context: conditionLoopContext,
         },),
         ...redirectWorkItems({
           redirects,

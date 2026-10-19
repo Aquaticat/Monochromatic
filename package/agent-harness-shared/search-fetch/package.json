@@ -10,14 +10,20 @@
       "types": "./dist/final/node/index.d.mts",
       "default": "./dist/final/node/index.mjs"
     },
+    "./migrate": {
+      "types": "./dist/final/node/migrate.d.mts",
+      "default": "./dist/final/node/migrate.mjs"
+    },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
   "dependencies": {
     "@monochromatic-dev/agent-harness-shared-truncate": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
+    "@monochromatic-dev/module-env-local-json": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "nano-spawn": "catalog:",
     "type-fest": "catalog:",
     "typebox": "catalog:",
     "valibot": "catalog:"

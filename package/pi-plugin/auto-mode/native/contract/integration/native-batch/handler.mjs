@@ -100,6 +100,14 @@ export function createNativeBatchHandler({
       response:assistantMessage,
       stream
     });
+    using producerLifetime={
+      [Symbol.dispose](){
+        producerOwner.completeJudgment({
+          response:assistantMessage,
+          stream
+        });
+      }
+    };
     using operationReview=reviewer.createOperationReview();
     const group=createPreparedGroup({
       response:assistantMessage,

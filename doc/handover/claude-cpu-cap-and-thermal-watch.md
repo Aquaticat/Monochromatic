@@ -720,15 +720,17 @@ new-board row is 2026-10-18 03:15 UTC. Settled medians (previous 12 samples in t
 were 95.4 degrees at 4480 MHz on the old board (1033 samples) and 82.1 degrees at 5045 MHz on the new one
 (18 samples); at 180 to 200 W the new board held 90.1 degrees at 5183 MHz (57 samples); 100 to 120 W matched
 (75.5 and 75.1) and 40 to 60 W moved from 51.9 to 49.3. The old 180 to 200 W row (44 samples, 70.8 degrees) is not
-explained. The new rows are about 3.9 hours, mostly from before the fan curve fix, with no run-to-run spread
+explained. The new rows span about 1.4 hours, all from before the fan curve fix, with no run-to-run spread
 measured, and paste, board, fan removal and cooler height changed together, so no single change can be credited.
 Repeat the comparison after a few hours of normal use, using rows after the fan curve fix.
 
 Rerun at 18:07 EDT on 2026-10-18 (`node ~/temp/agent/before-after-swap.ts [fix-time-utc]`, a scratch script that
 splits at the last row with `board1_c` filled and at the fix time taken as 04:30 UTC; `~/temp/agent/band-detail.ts
-<lowest-watts-of-band>` prints per-chiplet medians for one band). The after-fix era had 64.7 hours and 885 settled
-samples. The stop condition (at least 100 settled samples in both the 120 to 140 W and 180 to 200 W buckets) was met
-only for the first: 170 samples at 120 to 140 W and 4 at 180 to 200 W.
+<lowest-watts-of-band>` prints per-chiplet medians for one band). The after-fix era spanned 17.6 hours
+(04:30 to 22:07 UTC; 23309 rows, because burst mode writes a row every 2 seconds; the first version of this note
+divided rows by 360 and overstated every span in this section) and had 885 settled samples. The stop condition
+(at least 100 settled samples in both the 120 to 140 W and 180 to 200 W buckets) was met only for the first:
+170 samples at 120 to 140 W and 4 at 180 to 200 W.
 - 120 to 140 W settled: old board 95.4 degrees median (p90 96.0, 1033 samples, 4480 MHz); new board after the fix
   80.0 degrees (p90 85.8, max 87.8, 170 samples, 5057 MHz). Before the fix the new board read 82.1 degrees (18 samples).
 - 40 to 60 W: 51.9 old, 51.1 new. 100 to 120 W: 75.5 old, 75.8 new (385 samples). Both match.
@@ -743,6 +745,34 @@ Caveats stand: paste, board, fan removal, cooler height and fan curve changed to
 logged; run-to-run spread was not measured. Still queued: the 180 to 200 W bucket needs at least 100 settled samples
 (sustained load near 190 W for about 17 minutes). Next check: 2026-10-19 18:07 EDT by a session-only cron job; this
 paragraph is the durable record.
+
+Correction from the user (2026-10-18, after the 18:07 EDT rerun): the comparison is still not apples to apples,
+because the fan curves were changed once more after the first fix. The log supports this. The CPU fan on the new board
+ran a median 1486 to 1501 RPM at 70 to 90 degrees Tctl until about 01:00 to 02:00 EDT, then 960 to 1200 RPM for the
+rest of 2026-10-18, so the "after the fan curve fix" era from 04:30 UTC mixes at least two curves; the exact times of
+the user's changes are not recorded. On the old board the Corsair channels ran at their maximum while the CPU sat at
+95 degrees: medians at 120 to 140 W were 1996, 2589, 0 (unused), 2034, 1504 and 1491 RPM on `fan1_rpm` to `fan6_rpm`
+(3178 rows; which channels drive the cooler was not checked). So the fan settings were never matched between the boards,
+and the old board had the faster fans. Read the 120 to 140 W result above as: the new board holds 80 degrees at fan
+speeds well below the old maximum, not as a controlled comparison. A fair comparison needs equal watts and equal CPU
+fan RPM, or a curve held fixed for the measurement window.
+
+Curve eras found in the log (2026-10-18; `~/temp/agent/curve-eras.ts` prints the steps): the CPU fan ran a median
+1465 to 1503 RPM at 75 to 85 degrees Tctl from the first fan data (00:46 EDT) until 02:00 EDT, 971 at 02:15 EDT and
+mostly 955 to 1000 after that. It drifted up to about 1150 in the afternoon; smaller curve edits and load sitting higher
+inside the band were not told apart. The main change is at about 02:10 EDT (06:10 UTC).
+Fan speed cannot be the comparison key: the curve sets RPM from Tctl, so grouping by RPM groups by the outcome (in the
+80 to 100 W bucket the higher RPM band was the hotter one, 82.5 against 72.6 degrees). This replaces the equal-RPM plan
+the user chose (2026-10-18) as the way to compare; the comparison uses windows with one curve instead
+(`~/temp/agent/before-after-swap.ts [start-utc] [end-utc]`).
+Settled medians, 04:46 to 06:10 UTC (about 1490 RPM): 120 to 140 W 80.6 degrees (8 samples, too few), 140 to 160 W 81.4
+(23), 160 to 180 W 82.5 (18), 180 to 200 W 90.0 (4). From 06:10 UTC (about 980 RPM and up, 16.6 hours): 120 to 140 W
+80.0 (164), 140 to 160 W 84.9 (17), 160 to 180 W 85.0 (5).
+Reading: at 120 to 140 W the new board sits near 80 degrees at either fan speed, so the gap to the old board's 95.4
+degrees (fans at their maximum) is not a fan speed effect, because the new fans ran slower. At 140 to 160 W the slower
+fan reads about 3.5 degrees warmer. The old Corsair channels were not mapped to the cooler (CoolerControl no longer
+lists that device), and fan RPM is not airflow (a fan was removed and the cooler fan moved lower), so this does not
+separate paste, board mounting and airflow.
 
 Decision (user, 2026-10-18): switch the sample log to the motherboard fans. The watcher no longer reads CoolerControl;
 the seven Corsair columns stay in the header as empty slots so older rows keep their positions, and eleven columns
