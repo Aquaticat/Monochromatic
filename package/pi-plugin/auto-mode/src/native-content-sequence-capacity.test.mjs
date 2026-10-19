@@ -5,6 +5,7 @@
  */
 import {strict as assert} from 'node:assert';
 import {createHash} from 'node:crypto';
+import {nonNullishOrThrow} from '@monochromatic-dev/module-or-throw/ts';
 import {
  createInputContentStore
 } from '../dist/native/contract/collector/run-prompt-custody-v3/input-content.ts';
@@ -25,11 +26,11 @@ const SNAPSHOT_VERSIONS=24;
 const ADDITIONAL_STORAGE_BUDGET=8_388_608;
 
 /**
- Retain changing tails over the same generated JSON catalog.
+ Retain changing prefix or tail versions over the same unique JSON catalog.
 
  @param {{readonly growing:boolean;readonly prefix:boolean}} input - selected changing region
 
- @returns {{contents:ReturnType<ReturnType<typeof createInputContentStore>>[],expected:string[]}} readers and digests
+ @returns {{contents:ReturnType<ReturnType<typeof createInputContentStore>>[],expected:string[],retain:ReturnType<typeof createInputContentStore>}} live store, readers and digests
  */
 function workload({growing,prefix}) {
  /**
@@ -61,7 +62,7 @@ function workload({growing,prefix}) {
  const expected=[];
  for(let version=0;version<SNAPSHOT_VERSIONS;version++){
   /**
-   Only the version tail changes between complete snapshots.
+   Only the selected prefix or tail changes; the complete catalog stays unchanged.
    */
   const text=JSON.stringify(prefix?{
    prefix:Array.from({length:growing?version:0},function prefixEntry(_,index){
@@ -113,7 +114,11 @@ function measure({growing,prefix}) {
  const retainedHeapBytes=process.memoryUsage()
    .heapUsed
    -before;
- assert.equal(retain({text:contents[0].read(),json:true}),contents[0]);
+ /**
+  Calling the live store after collection proves its maps survived the retained-heap observation.
+  */
+ const first=nonNullishOrThrow(contents[0]);
+ assert.equal(retain({text:first.read(),json:true}),first);
  for(const [index,content]of contents.entries()){
   assert.equal(
     createHash('sha256')
