@@ -60,27 +60,44 @@ fn stage(source: &Path, target: &Path) {
 }
 
 /// What:
-///  Run every fixture with this library loaded and the `dylint_lib` cfg declared.
+///  Run every fixture with this library loaded and the `dylint_lib` cfg declared,
+///  as the files of a package whose directory is `inside` and whose build script writes below `inside/auxiliary`.
 /// Why:
 ///  Each fixture names its own edition in a header comment;
 ///  `--check-cfg` stops rustc from warning about the `dylint_lib` cfg that the suppression attribute tests.
+///  The lint skips files that are generated or lie outside the package directory,
+///  and it learns both directories from the `CARGO_MANIFEST_DIR` and `OUT_DIR` variables that cargo exports,
+///  so the test exports them for the compiler processes it starts:
+///  `tests/outside` holds a file beside, not below, the package directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// test('ui', () => runFixtures(stagedCopyOf('tests/ui'), 'monochromatic_lint_closure'));
+/// test('ui', () => {
+///   stage('tests/ui', root + '/inside'); stage('tests/outside', root + '/outside');
+///   env.CARGO_MANIFEST_DIR = root + '/inside'; env.OUT_DIR = root + '/inside/auxiliary';
+///   runFixtures(root + '/inside', 'monochromatic_lint_closure');
+/// });
 /// ```
 #[test]
 fn ui() {
-    let staged: PathBuf = std::env::temp_dir().join(format!(
+    let root: PathBuf = std::env::temp_dir().join(format!(
         "monochromatic-lint-closure-ui-{}",
         std::process::id()
     ));
-    if staged.exists() {
-        fs::remove_dir_all(&staged).expect("a stale staging directory is removed");
+    if root.exists() {
+        fs::remove_dir_all(&root).expect("a stale staging directory is removed");
     }
-    stage(Path::new("tests/ui"), &staged);
-    Test::src_base("monochromatic_lint_closure", &staged)
+    let inside: PathBuf = root.join("inside");
+    stage(Path::new("tests/ui"), &inside);
+    stage(Path::new("tests/outside"), &root.join("outside"));
+    // SAFETY: this test starts no thread of its own before the compiler processes read the variables,
+    // and nextest runs every test in a process of its own.
+    unsafe {
+        std::env::set_var("CARGO_MANIFEST_DIR", &inside);
+        std::env::set_var("OUT_DIR", inside.join("auxiliary"));
+    }
+    Test::src_base("monochromatic_lint_closure", &inside)
         .rustc_flags(["--check-cfg=cfg(dylint_lib,values(any()))"])
         .run();
-    fs::remove_dir_all(&staged).expect("the staging directory is removed");
+    fs::remove_dir_all(&root).expect("the staging directory is removed");
 }

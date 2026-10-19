@@ -36,6 +36,8 @@ mod message;
 /// Unit tests for the wording.
 #[cfg(test)]
 mod message_tests;
+/// Whether a source file belongs to the package under lint.
+mod own_source;
 /// Where the closure sits relative to its call.
 mod placement;
 /// The callee's `'static` requirement.
@@ -53,6 +55,8 @@ use crate::capture::captured_names;
 use crate::declaration::{AVOIDABLE_CLOSURE, AvoidableClosure};
 /// Import the diagnostic value.
 use crate::diagnostic::ClosureFound;
+/// Import the ownership test that skips generated and foreign files.
+use crate::own_source::OwnSource;
 /// Import the placement classifier.
 use crate::placement::{Placement, classify_placement};
 /// Import the compiler's high-level IR node types:
@@ -60,6 +64,8 @@ use crate::placement::{Placement, classify_placement};
 use rustc_hir::{ClosureKind, Expr, ExprKind};
 /// Import the lint traits and the context passed to every check.
 use rustc_lint::{LateContext, LateLintPass, LintContext};
+/// Import the path of a source file as the compiler's source map records it.
+use rustc_span::FileName;
 
 /// What:
 ///  True for a plain closure and an async closure;
@@ -76,6 +82,27 @@ fn is_closure_expression(kind: ClosureKind) -> bool {
         kind,
         ClosureKind::Closure | ClosureKind::CoroutineClosure(_)
     );
+}
+
+/// What:
+///  True when the expression's span lies in a file that the package's author did not write:
+///  build-script output such as Slint's generated window code,
+///  or a file outside the package directory.
+/// Why:
+///  A file pasted into the crate by `include!` looks like ordinary source to the compiler,
+///  but it is overwritten on every build,
+///  so a report there cannot be acted on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function spanIsGeneratedOrForeign(expr: Expr): boolean { return ownSource.excludes(fileOf(expr.span)); }
+/// ```
+fn span_is_generated_or_foreign(cx: &LateContext<'_>, expr: &Expr<'_>) -> bool {
+    let name: FileName = cx.sess().source_map().span_to_filename(expr.span);
+    let Some(path) = name.into_local_path() else {
+        return false;
+    };
+    return OwnSource::from_environment().excludes(&path);
 }
 
 /// Hook the lint into rustc's late lint pass,
@@ -111,6 +138,9 @@ impl<'tcx> LateLintPass<'tcx> for AvoidableClosure {
             return;
         }
         if expr.span.in_external_macro(cx.sess().source_map()) {
+            return;
+        }
+        if span_is_generated_or_foreign(cx, expr) {
             return;
         }
         let captures: Vec<String> = captured_names(cx, closure.def_id);
