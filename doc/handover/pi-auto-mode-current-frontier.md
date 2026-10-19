@@ -6,6 +6,30 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- `bb0496f82f` ports admission selection to TypeScript using the actual maintained producer collections.
+  Candidate `1jnKM6` passes both builds, full types, full phases, source freshness,
+  both inflight-input consumers and schema controls. The gate's root-let diagnostic is gone.
+  Documentation-only follow-up `d36511f08d` passes its actual one-file scope with zero warnings/errors
+  in candidate `P8AaDv` frozen at `fa164036c6`.
+- Native MiMo commits `14e4649937` with exactly the registration declaration and its suppression doc.
+  Its actual twelve-file loader scope and types pass with zero warnings/errors.
+  The ambient error class needs no custom-error suppression.
+  Native worker `z78qJS` completes 18 tools with zero tool errors and no approval dialog.
+  Its post-GC checkpoint is 172,509,608 to 172,509,880 heap bytes, a 272-byte sample spread.
+  This is roughly 84.6 MB above its idle baseline, not evidence of a leak or of bounded long-term growth.
+  Separate lazy initialization and retained live histories from operation retention using subsequent checkpoints and profiles.
+- Native MiMo now owns the genuine generic producer-owner port, coherent lifetime/state splits,
+  actual closed artifact factory declarations through the existing generator, and necessary runtime specialization.
+  Source MiMo retains ownership of the producer-lifetime test split and its nine cases/five mutants.
+  Its steer explicitly forbids hiding the old artifact's untyped factory with assertions or fake facades.
+  Retarget the fault controls jointly after the owner's actual implementation paths are committed;
+  qualify all sources against a freshly built private artifact before declaring those imports lint-clean.
+  Main continues decision-module cleanup, fresh character/role/dependency evidence,
+  actual configured memory/payload/compaction/shutdown qualification and final full-package lint.
+- The full-lint tally now attributes every emitted warning/error, including Oxlint's unruled
+  minified-file display warning and unused-directive warning, and matches 11,047/129 exactly.
+  Of the warnings, 8,498 are unsafe member access, assignment, call, argument or return diagnostics.
+  Actual producer contracts are the main remaining typing work; additional runtime category gates are not a remedy.
 - Fresh full-package Oxlint at `329df9f855`: 11,047 warnings and 129 errors across 885 files,
   486 rules, completed in 28.2 seconds under two-GiB/two-CPU bounds.
   Receipt: scratch `decision-responsibility-split-full-lint.log`.
