@@ -4612,13 +4612,16 @@ For example,
 `IDE_CONTAINER_CPUS=2 IDE_CONTAINER_MEMORY=2g mise run //package/desktop-app/ide:test` reproduces the
 fixed bound of 2 GiB and 2 CPUs that the tasks used before 2026-10-18.
 A value that does not match its form stops the task with a message that names the variable and the accepted form.
-Every task prints the bound it uses on its first line.
+The container tasks print the bound they use on standard error before they start the container.
 
-The test runner is told the CPU limit through `NEXTEST_TEST_THREADS`
-because inside the container `nproc` and the runner's default report the CPUs of the host,
-while the control group allows only the quota (`cpu.max`).
-Without the variable the runner started one test thread per host CPU on a quota of two CPUs;
+The test runner is given the CPU limit explicitly through `NEXTEST_TEST_THREADS`.
+Inside the container `nproc` prints the CPUs of the host (32 on the measuring host,
+with a quota of 2),
+but the installed cargo-nextest reads the control group quota through Rust's `available_parallelism`,
+so on a quota of two CPUs it already ran two tests at once (measured with 48 sleeping tests).
+The variable makes the count explicit and lets `IDE_CONTAINER_TEST_THREADS` override it;
 see [the troubleshooting note](../../../doc/troubleshooting/container-nproc-ignores-cpu-quota.md).
+
 ### Running the tests
 
 `mise run //package/desktop-app/ide:test` runs every library and integration test.
@@ -4643,8 +4646,15 @@ one per scale (1 and 2) and width (600,
 named `every_row_of_real_source_fits_width_<width>_at_scale_<scale>`.
 It shapes every line of the crate's own `src` at one pair and applies the rule checks to every row,
 so its cost grows with the crate.
-As one test it took 720 to 750 seconds on a single thread and alone set the wall time of `test` and `test:wrap`;
-as six tests the pairs run side by side.
+As one test it took 720 to 750 seconds on a single thread and alone set the wall time of `test` and `test:wrap`.
+Most of that was one helper:
+`unexcused_breaks` measured the advance of a space for every source line by building a new text shaper,
+about 18,000 shapers per pair.
+The advance depends only on the scale,
+so a pair measures it once,
+and a pair takes about 9 seconds with 24 CPUs.
+The six tests also run side by side,
+and a failure names its pair.
 The coverage thresholds that keep the checks from passing without wrapping
 (more than 100 wrapped lines and a token wider than a row) hold at width 600 only,
 so the two width 600 tests assert them,

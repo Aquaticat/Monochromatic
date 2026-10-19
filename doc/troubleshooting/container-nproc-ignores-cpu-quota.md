@@ -114,10 +114,17 @@ and it lets a caller override it with `IDE_CONTAINER_TEST_THREADS`.
 It did not change the thread count on the installed runner,
 which already matched the quota.
 
-The slow IDE test suite had another cause:
-one test (`every_row_of_real_source_fits_its_width`) ran on a single thread for 720 to 750 seconds,
-so more threads could not shorten it.
-The package README and `doc/handover/slint-ide-0x.md` record the split into six tests.
+The slow IDE test suite had another cause,
+which the thread count did not touch.
+The test `every_row_of_real_source_fits_its_width` ran on one thread for 720 to 750 seconds.
+Its helper `unexcused_breaks` called `space_advance(scale)` for every source line,
+and `space_advance` in `tests/wrap.rs` builds a new `TextShaper`,
+about 18,000 shapers for each of the six scale and width pairs.
+The advance depends only on the scale,
+so the pair now measures it once,
+and the test is also split into six tests so that the pairs run side by side.
+Together they cut the six tests from about 700 seconds on one thread to 8.7 seconds each at once with 24 CPUs;
+the package README and `doc/handover/slint-ide-0x.md` record the numbers.
 
 ## Other containerised packages
 
@@ -146,7 +153,11 @@ needs the same probe per tool:
   It prints 32 while nextest used 2.
 - Lowering `NEXTEST_TEST_THREADS` below the quota to relieve throttling.
   The probe gave no evidence of throttling at the quota,
-  and the IDE suite's long pole is a single test.
+  and the IDE suite's long pole was one test whose cost was a shaper built per line.
+- Raising the container bound alone.
+  With the raised bound and the old test,
+  `test` still took about 800 seconds,
+  because the one test ran on one thread.
 
 ## Upstream filing decision
 
