@@ -180,12 +180,18 @@ moving to Developer is a user action.
 
 ## Next action
 
-Work item 3 policy and ledger are recorded in
-[the admission ledger](../planning/depot-admission-ledger.md) and
-[its JSON state](../planning/depot-admission-ledger.json).
-The executable dispatch gate is part of work item 4.
+Work item 3 policy,
+ledger and admission gate are recorded in
+[the admission ledger](../planning/depot-admission-ledger.md),
+[its JSON state](../planning/depot-admission-ledger.json) and
+[the gate workflow](../../.github/workflows/admission-gate.yml).
+Gate scenarios exercised admit,
+fallback,
+incomplete,
+ceiling and invalid decisions in
+[the gate evidence](../audit/depot-admission-gate-2026-10-19.evidence.json).
 Next:
-build the weekly native matrix gate from the ledger,
+build the weekly native matrix from the ledger,
 then exercise the first admitted reservation and record the attempt.
 Use bounded CI for any build or unit measurement.
 Do not run local full builds.

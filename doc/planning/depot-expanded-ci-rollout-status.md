@@ -79,7 +79,9 @@ pull request and manual dispatch.
 
 ### 3. Admission, caps and fallback
 
-Partial.
+Done for the policy,
+ledger and executable gate.
+The first paid reservation remains part of work item 4.
 
 - [The admission ledger](depot-admission-ledger.md) and
   [its machine-readable state](depot-admission-ledger.json) record the active plan,
@@ -90,11 +92,20 @@ Partial.
   the recovery rule and the reservation schema.
 - The USD 200 capacity ceiling,
   no-overage rule and storage stop are recorded.
-- The executable dispatch gate is part of work item 4,
-  the weekly native matrix.
-  It is not built yet.
+- [The admission gate](../../.github/workflows/admission-gate.yml) admits,
+  returns a public-GitHub fallback,
+  marks incomplete,
+  or rejects invalid input.
+- Gate scenarios `39267811638`,
+  `39267816590`,
+  `39267822418`,
+  `39267853939` and
+  `39267860138` exercised the admit,
+  fallback,
+  incomplete,
+  ceiling and invalid decisions.
 - The ledger attempts array is empty;
-  no paid profile has been admitted.
+  no paid profile has been admitted yet.
 
 ### 4. Weekly native matrix
 

@@ -93,6 +93,29 @@ The gate must produce these decisions:
 - admit free public GitHub reservations;
 - reject a negative allowance as invalid input.
 
+Executed on 2026-10-19 against `.github/workflows/admission-gate.yml`:
+
+- `admit-small` run `39267811638`:
+  admitted;
+- `fallback-meter` run `39267816590`:
+  public GitHub fallback;
+- `incomplete` run `39267822418`:
+  incomplete,
+  nonzero exit;
+- `ceiling` run `39267853939`:
+  public GitHub fallback for the USD ceiling;
+- `invalid-negative` run `39267860138`:
+  invalid input,
+  nonzero exit.
+
+The storage and recovery cases are specified and implemented in the gate rules,
+but they were not dispatched as separate scenarios.
+They remain part of the first weekly matrix acceptance.
+The gate evidence is in
+[the admission gate evidence](../audit/depot-admission-gate-2026-10-19.evidence.json).
+The ledger attempts array remains empty because these are gate scenarios,
+not paid allocations.
+
 The first weekly native matrix dispatch exercises the first admitted reservation.
 The gate records the decision and the ledger attempt before the paid profile starts.
 
