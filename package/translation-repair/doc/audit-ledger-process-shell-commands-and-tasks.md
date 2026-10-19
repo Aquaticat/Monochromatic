@@ -822,3 +822,27 @@ the hand-back of every round is read for breaks before its work is accepted,
 and a brief that repeats the rules is not counted as the prevention.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Shell commands".
+
+## M277: the lead named a mise task to the owner by its place in the file, not by its description
+
+Status:
+happened on 2026-10-19 (UTC),
+in the question that asked the owner to approve one meter reading with the keys for issue 1779 (B691).
+
+The question named `run:meter-report` as the task that takes one reading of every provider's meter.
+That description belongs to `run:budget-sample`,
+the entry before it in `run/mise.toml`;
+`meter-report` reads readings back out of run logs and calls no provider.
+The lead found the error before running anything,
+when the task's description was read,
+and ran `budget-sample`,
+which the approval had described.
+The classifier refused the keyed run once,
+and the owner granted the permission for that command.
+
+Prevention:
+a task named to the owner,
+or in a brief,
+is quoted with its `description` line read from its `mise.toml` in the same turn.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Questions to the owner".
