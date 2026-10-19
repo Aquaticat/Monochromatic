@@ -425,9 +425,13 @@ Closure workstreams:
   and `canvg`.
   A generic Depot GitHub runner is insufficient;
   the baseline needs a prepared environment or a documented prerequisite image.
+  Fast subset:
+  GitHub run `39199930641` passed the five-owner build and unit tasks in 10 minutes 17 seconds,
+  with only the tolerated tool-install annotation.
   The static baseline is advisory;
-  the unit baseline is invalid until rerun after a successful build;
-  the build profile requires that prepared environment,
+  the fast-subset unit baseline is valid;
+  the whole-repository unit baseline is invalid until a prepared build succeeds;
+  the complete build profile requires that prepared environment,
   not the shared development host.
   The evidence is in
   [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).

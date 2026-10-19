@@ -77,8 +77,30 @@
       {
         "runId": 39197594870,
         "result": "prepared glib, Qt6, Podman and workflow token; build failed after 14 minutes 26 seconds; unit skipped"
+      },
+      {
+        "runId": 39199930641,
+        "result": "fast subset build and unit both succeeded in 10 minutes 17 seconds; only the tolerated tool-install annotation failed"
       }
     ],
+    "fastSubset": {
+      "buildTasks": [
+        "//package/module/logger:build",
+        "//package/module/p-map-fork:build",
+        "//package/module/toml-edit:build",
+        "//package/cli/forbidden-strings:build",
+        "//package/linter/monochromatic-lint:build"
+      ],
+      "unitTasks": [
+        "//package/module/logger:test:unit",
+        "//package/module/p-map-fork:test:unit",
+        "//package/module/toml-edit:test:unit",
+        "//package/cli/forbidden-strings:test",
+        "//package/linter/monochromatic-lint:test"
+      ],
+      "rawLog": "doc/audit/depot-fast-subset-baseline-39199930641-2026-10-18.log.gz",
+      "result": "Known-good build and unit baseline for the five-owner fast subset. This is not a whole-repository baseline, not a complete-profile baseline, and not a gate."
+    },
     "rawLog": "doc/audit/depot-current-baseline-ci-39197594870-2026-10-18.log.gz",
     "failureClasses": [
       "pipx:slopo and vfox:cmake tool installation",

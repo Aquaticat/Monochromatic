@@ -156,12 +156,17 @@ At revision `4f3d5a65`:
   and `canvg`.
   A generic Depot GitHub runner is insufficient;
   the baseline needs the prepared environment or a documented prerequisite image.
+- fast subset:
+  GitHub run `39199930641` passed the five-owner build and unit tasks in 10 minutes 17 seconds;
+  the only failure annotation is the tolerated tool-install step.
+  This is the first known-good fast-subset baseline.
 
 The [baseline evidence](../audit/depot-current-baseline-2026-10-18.evidence.json) retains the
 compressed logs.
 The static baseline is advisory;
-the unit baseline is invalid until rerun after a successful build;
-the build profile requires a prepared CI environment.
+the fast-subset unit baseline is valid;
+the whole-repository unit baseline is invalid until a prepared build succeeds;
+the complete build profile requires the prepared environment.
 The pilot must separate product failures from harness,
 environment and resource failures.
 

@@ -195,8 +195,14 @@ Qt and Podman packages that make the complete `mise run build` profile fail on a
 runner.
 The complete profile stays a weekly,
 prepared-environment workload.
-GitHub run `39199930641` is the fast-subset baseline;
-its outcome is recorded when it finishes.
+GitHub run `39199930641` completed in 10 minutes 17 seconds.
+The `Build fast subset` and `Unit fast subset` steps both succeeded.
+The only annotation is the tolerated `Install repository tools` exit 1 on `pipx:slopo` and
+`vfox:cmake`.
+This makes the five-owner fast subset the first known-good build and unit baseline.
+It is not a whole-repository baseline and it is not a gate.
+The log is in
+[the fast-subset CI log](../audit/depot-fast-subset-baseline-39199930641-2026-10-18.log.gz).
 
 ## Build profile
 
