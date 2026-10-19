@@ -4561,14 +4561,101 @@ load average near 80).
 
 ## Build boundary
 
-Application builds and tests run in the IDE container extending the repository's native-app image,
-with 2 GiB RAM,
-2 CPUs,
-a 512-process limit,
-and a 4096-descriptor limit.
+Application builds and tests run in the IDE container extending the repository's native-app image.
 The container receives this package and a dedicated Cargo cache,
 not the user's home or credentials.
 The source documentation/line-budget task invokes the repository's Rust linter separately.
+
+### Container bound
+
+`bin/container-bounds.ts` is the one place that computes the bound of every container the tasks and the inspection
+scripts start,
+and of the `image` build.
+With nothing set,
+the bound is a computed share of the machine that runs the task:
+75 percent of the CPUs the process may use (`os.availableParallelism()`) and 75 percent of the physical memory
+(`os.totalmem()`),
+each rounded down,
+with at least one CPU and 2 GiB.
+The process limit is 256 per CPU with a floor of 512,
+and the descriptor limit is 4096.
+No CPU count or memory size is written in the repository.
+The owner decided on 2026-10-18 that the containers use 75 percent of the host and keep that;
+the share is the constant `hostShare` in the module.
+
+A caller on a loaded host,
+or one that wants another bound,
+sets these variables for the task:
+
+- `IDE_CONTAINER_CPUS`:
+  CPUs as a positive number with at most two decimals,
+  such as `4` or `1.5`.
+- `IDE_CONTAINER_MEMORY`:
+  a whole number with the unit `k`,
+  `m`,
+  or `g`,
+  such as `512m` or `8g`.
+- `IDE_CONTAINER_PIDS`:
+  the process limit,
+  a positive whole number.
+- `IDE_CONTAINER_NOFILE`:
+  the descriptor limit,
+  a positive whole number.
+- `IDE_CONTAINER_JOBS`:
+  `CARGO_BUILD_JOBS`,
+  which otherwise equals the whole CPUs of the bound.
+- `IDE_CONTAINER_TEST_THREADS`:
+  `NEXTEST_TEST_THREADS`,
+  which otherwise equals the whole CPUs of the bound.
+
+For example,
+`IDE_CONTAINER_CPUS=2 IDE_CONTAINER_MEMORY=2g mise run //package/desktop-app/ide:test` reproduces the
+fixed bound of 2 GiB and 2 CPUs that the tasks used before 2026-10-18.
+A value that does not match its form stops the task with a message that names the variable and the accepted form.
+Every task prints the bound it uses on its first line.
+
+The test runner is told the CPU limit through `NEXTEST_TEST_THREADS`
+because inside the container `nproc` and the runner's default report the CPUs of the host,
+while the control group allows only the quota (`cpu.max`).
+Without the variable the runner started one test thread per host CPU on a quota of two CPUs;
+see [the troubleshooting note](../../../doc/troubleshooting/container-nproc-ignores-cpu-quota.md).
+### Running the tests
+
+`mise run //package/desktop-app/ide:test` runs every library and integration test.
+`test:wrap` runs the soft-wrap tests,
+which `test` already contains,
+so running both repeats them.
+Run only the tests a change can reach.
+`test` takes an optional nextest filter expression to select or exclude tests;
+`test:native` takes one as well:
+
+```text
+mise run //package/desktop-app/ide:test 'test(/wrap/)'
+mise run //package/desktop-app/ide:test 'not test(/every_row_of_real_source/)'
+```
+
+With a filter the run does not stop at the first failure.
+Without one the task runs what it always ran.
+
+The real-source wrap check is six tests,
+one per scale (1 and 2) and width (600,
+900 and 1400),
+named `every_row_of_real_source_fits_width_<width>_at_scale_<scale>`.
+It shapes every line of the crate's own `src` at one pair and applies the rule checks to every row,
+so its cost grows with the crate.
+As one test it took 720 to 750 seconds on a single thread and alone set the wall time of `test` and `test:wrap`;
+as six tests the pairs run side by side.
+The coverage thresholds that keep the checks from passing without wrapping
+(more than 100 wrapped lines and a token wider than a row) hold at width 600 only,
+so the two width 600 tests assert them,
+which implies the totals the single test asserted.
+
+`.config/nextest.toml` gives the default profile a slow-timeout that kills a hung test after 1800 seconds.
+`mise run //package/desktop-app/ide:test:nextest-config` shows in the container that nextest reads that file
+from the package directory (the package is its own workspace root)
+and that the timeout terminates a test that sleeps for a minute.
+
+### Runtime grammars
 
 The `runtime` task prepares pinned Helix grammars for the measured language inventory,
 matching query assets,
