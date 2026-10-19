@@ -917,3 +917,76 @@ B684 lists each.
 Recurrence:
 `mistake-prevention-guards-searches-and-claims.md`,
 "Guards that cannot fail".
+
+## B688: the fixture runner of the oxlint plugin tests dropped a plugin's throw, and cases passed
+
+Found in the request memo round (`w190`),
+where the spread-bridge pair `50ccee0440` and `5dce27bb59` was held:
+two valid-fixture cases passed only because `runOxlintFixture` hid a plugin's throw (M275).
+
+Outcome written on 2026-10-19 (UTC).
+Oxlint reports a plugin that threw,
+and a source it could not parse,
+as a diagnostic with no rule code.
+The runner in `package/oxlint-plugin/test-support/src/index.ts` kept only the diagnostics whose code starts with the
+caller's prefix,
+so that diagnostic was dropped,
+and any fixture that expected no findings passed while the plugin crashed.
+The autofix cases did not use the runner at all:
+each ran oxlint with the fix flag itself,
+with a catch that only checked that some error existed,
+and read back a file that a crashed plugin would have left unchanged.
+
+Fixed in lint mode by the redo of the spread bridge (`w194`):
+red `04f54e0ca1`,
+fixed in `90fa8c2d44`.
+The runner throws and names the target and every message of such diagnostics.
+Two cases of `run-oxlint-fixture.unit.test.ts` failed before the fix:
+one for a plugin that throws on a valid source,
+and one for a plugin that throws although another rule of it reported.
+None fails after;
+the two controls pass before and after.
+
+Fixed in fix mode by the fix-mode fixture round (`w195`):
+red `169ab8a678`,
+fixed in `b6676c9a66`,
+under the same rule.
+`runOxlintFixture` gains a `fix` option and an `environment` option (`1c0fdc0f6e` and `48c87f8813`),
+and every fix-mode spawn in the plugin tests moved onto it
+(`5928802c78`,
+`484741ba4e`,
+`eac85debe9` and `e1debca690`,
+in the packages `no-restricted-syntax`,
+`tsdoc`,
+`prefer-readonly-parameter-type` and `stylistic`).
+The worktree range was `d16aaf67f7` to `483e74e462` on `729de4182d`;
+the landing is `169ab8a678` to `20ab2696b9`,
+pushed on 2026-10-19 (UTC) after gate g109.
+The gate had 144 of 145 family steps green and a suite of 2532 cases with 0 failing.
+Its one red step was the `lint:oxlint` task of the repair package,
+which aborted in libuv's `init_once` during a host-wide thread-creation failure (`EAGAIN`) between 02:38 and 02:40 UTC,
+and ran green again at `483e74e462`;
+the notes say the main session recorded that incident in
+`doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`
+in `174bddfeac` on `main`,
+a commit that is not in the history of the checkout this entry was written in.
+
+Not done:
+the red of the cases before their move onto the runner was not run again.
+Left open,
+each filed as an issue:
+
+- Issue 1777:
+  the `check-alignment` findings of `tsdoc`.
+- Issue 1778:
+  the findings of `stylistic`.
+- Issue 1779:
+  the Synthetic quota shape that B671 leaves open.
+- Issue 1780:
+  the allow-list of the request memo of `w190`.
+
+Gate g110 passed with the known lint findings of `tsdoc` (14) and of `stylistic` (2 and 1).
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".

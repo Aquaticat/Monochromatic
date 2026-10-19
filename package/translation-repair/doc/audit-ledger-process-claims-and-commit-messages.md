@@ -810,3 +810,72 @@ a log line quoted in a report is copied from the source or from the test that pi
 and a test that pins a line pins its exact text.
 `mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".
+
+## M274: an agent reported its own correct commit message as wrong and asked for a correction
+
+Status:
+happened in the fix-mode fixture round (`w195`),
+for the message of `a8f9296668` (landed as `e1debca690`).
+The message says the autofix cases of `oxlint-stylistic.unit.test.ts` ran oxlint with the fix flag "in nine places",
+and names four of the cases.
+The agent took the count for wrong because the message names four,
+and asked for a corrective commit comment.
+The notes record that the diff was counted before any comment was posted:
+nine `--fix` spawns are removed,
+so the message is accurate and the agent misread it.
+This filing counted the removals again in `git show a8f9296668`:
+one inside `fixUntilStable`,
+six single spawns,
+and one inside each of two loops of up to eight passes that now call `fixUntilStable`,
+which are nine spawns in all.
+No comment was posted.
+
+Prevention:
+a claimed error in a commit message is checked against the diff of that commit before a corrective comment is posted
+(the notes give this rule).
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Commit messages".
+
+## M275: the body of a held fix counted the cases it changed without naming them
+
+Status:
+happened on 2026-10-18 (UTC) in the spread-bridge pair of the request memo round (`w190`).
+The pair `50ccee0440` (red cases) and `5dce27bb59` (the fix) was held and not landed.
+The notes give three faults of the pair:
+two valid-fixture cases passed only because `runOxlintFixture` hid a plugin's throw (B688),
+one ambiguous-spread case newly failed,
+and the body counted failures without naming them.
+The body of `5dce27bb59` says that "two cases of oxlint-no-restricted-syntax.unit.test.ts that passed on degraded
+reports now fail on the error",
+and gives no case name.
+The redo (`w194`) landed `249c3d2d0b`,
+whose body lists the failing cases of the test task by name,
+once for the base,
+once for the throw without the load-time start,
+and once for the result after the change,
+and names the three cases that passed on the base only because the degraded report matched them (B689).
+
+Prevention:
+a fixture runner fails on a diagnostic with no rule code,
+which holds in lint mode since `w194` and in fix mode since `w195` (the notes give this),
+and a commit body names each failing case it counts.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Commit messages",
+and `mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".
+
+## M276: the lead wrote that the stylistic package had the same findings as before, without the redo
+
+Status:
+happened in the lead's account of the lint of the plugin packages for the redo of the spread bridge (`w194`).
+The lead first wrote that the stylistic package had "the same findings" without the redo.
+It had three shared findings,
+and type-aware warnings from dependencies that were not built.
+The notes say it was corrected before the commit,
+and do not say which summary line the first reading came from.
+
+Prevention:
+lint logs are compared by finding,
+and not by the summary line.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence".

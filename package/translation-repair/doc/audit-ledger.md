@@ -208,7 +208,8 @@ named for that subject and listed here.
 - [Audit ledger: test cases that cannot fail](audit-ledger-test-cases-that-cannot-fail.md):
   Cases and guards that would pass with the behaviour they name removed,
   a pass-through that no case depended on,
-  and the mutations of four rounds' guards that no test fails.
+  the mutations of four rounds' guards that no test fails,
+  and a fixture runner of the oxlint plugin tests that dropped a plugin's throw (B688).
 - [Audit ledger: survivors of the guard demonstrations and the tests that pin them](audit-ledger-guard-demonstration-survivors-and-their-pins.md):
   The mutations of four rounds' guards that every test passed,
   the test round that pinned the reachable ones,
@@ -487,7 +488,9 @@ named for that subject and listed here.
   which can quote a provider body or a document.
 - [Audit ledger: refusals that name too little](audit-ledger-refusals-that-name-too-little.md):
   Refusals and failure lines that named too little to act on,
-  or named the wrong cause.
+  or named the wrong cause,
+  a bridge that could not start and left degraded findings with exit code zero (B689),
+  and oxlint output that was not JSON and reached the plugin tests as a bare `SyntaxError` (B690).
 - [Audit ledger: process mistakes, shell commands and tasks](audit-ledger-process-shell-commands-and-tasks.md):
   Slips against the repository's shell and task rules:
   chained commands,
@@ -495,7 +498,7 @@ named for that subject and listed here.
   tasks run from the wrong place,
   scratch output without bound,
   a prescribed command changed and run from the wrong folder,
-  and the breaks that three rounds' agents listed in their own notes (M272).
+  and the breaks that agents and the main session listed in their own notes (M272 and M273).
 - [Audit ledger: process mistakes, launch checks and cache versions](audit-ledger-process-launch-checks-and-cache-versions.md):
   What went unchecked before a run launched:
   the full suite,
@@ -518,7 +521,10 @@ named for that subject and listed here.
   the ledger and notes,
   a generation called unstored while a live pass wrote it (M265),
   a commit body that miscounted the guards it pins (M267),
-  and a log line quoted with a space the source lacks (M271).
+  a log line quoted with a space the source lacks (M271),
+  a correct commit message reported as wrong (M274),
+  a commit body that counted failing cases without naming them (M275),
+  and a lint comparison taken from a summary line (M276).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,

@@ -6,7 +6,8 @@ commands batched with the write they read,
 tasks run from the wrong place,
 scratch output without bound,
 a worktree added without the flag that stops the copy of ignored files (M224),
-and a prescribed command changed and run from the wrong folder (M256).
+a prescribed command changed and run from the wrong folder (M256),
+and the breaks that agents listed in their own notes (M272 and M273).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -722,9 +723,12 @@ The review that the handover records as answered (`s245/sol-review/answer-gpt61.
 
 `doc/troubleshooting/pi-sdk-staging.md` records the launch directory at its lines 9086 to 9088:
 a task that changes the working directory makes the policy bootstrap read that directory's absent `AGENTS.md`
-and emit `ENOENT` before any request, and launching from the repository root reaches the intended consumer.
+and emit `ENOENT` before any request,
+and launching from the repository root reaches the intended consumer.
 The first filing of this entry searched for `ENOENT` beside `AGENTS.md` on one line
-and for the phrase "repository root", missed those lines, and said no record existed;
+and for the phrase "repository root",
+missed those lines,
+and said no record existed;
 the lead corrected it the same day by reading the file.
 
 Prevention:
@@ -769,3 +773,52 @@ pipes into `head` and `tail`,
 and scripts in a heredoc,
 and asks the hand-back to list each break,
 as these three did.
+
+## M273: the agents of the next rounds and the main session broke the shell rules again, after M272 recorded three
+
+Status:
+happened in the ledger round that filed M272 (`w193`),
+landed in `15b26d5048`,
+and in the rounds after it,
+and the notes give each agent's own account.
+The brief of the docs round listed the rules.
+
+- The docs round (`w193`):
+  `for` loops,
+  `;` chains,
+  pipes into `head` and `tail`,
+  and an `rg` piped into an `rg`.
+  The notes count it as the fourth agent in a row after the three of M272,
+  and say that a brief alone has not held the rule.
+- The fix-mode fixture round (`w195`):
+  `;` chains,
+  a pipe into `head`,
+  a chain of four `&&` steps,
+  and short flags.
+  The notes count it as the fifth agent in a row.
+  Its hand-back also lists,
+  as a follow-up and not as a shell break,
+  that the red of the cases before their move onto `runOxlintFixture` was not run again (B688).
+- The follow-up round
+  (`w196`,
+  a Sonnet agent):
+  one `;`,
+  and edits made through a `python3` heredoc.
+  It also rewrote `package/oxlint-plugin/test-support/README.md` (B690)
+  and the notes say it did not render it,
+  which the repository's `CLAUDE.md` requires before Markdown ships.
+- The main session:
+  one `;` chain,
+  to keep the log of a failing lint.
+  The notes say a scratch `.ts` file or two calls would have kept it.
+
+Prevention:
+the guardrail hook that issue 579 asks for is the standing proposal for a mechanical stop,
+and a brief that lists the rules has not been enough.
+The notes name nothing further.
+Written in this filing and not given by the notes:
+until the hook lands,
+the hand-back of every round is read for breaks before its work is accepted,
+and a brief that repeats the rules is not counted as the prevention.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands".

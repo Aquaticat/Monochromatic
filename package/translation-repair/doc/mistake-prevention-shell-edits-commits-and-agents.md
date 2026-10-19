@@ -196,9 +196,23 @@ with pipes into `head` and `tail`,
 `;`,
 a script in a heredoc and a shell loop,
 and each listed its own breaks (ledger M272).
-A brief repeats the rules and asks for that list.
-This rule was written by the filer of M272 on 2026-10-19 (UTC),
-and the notes did not give it.
+The docs round,
+the fix-mode fixture round and the follow-up round broke it after them,
+with `for` loops,
+`;`,
+pipes into `head`,
+`rg` piped into `rg`,
+a chain of four `&&` steps,
+short flags and a `python3` heredoc,
+and the main session chained with `;` once to keep a lint log (ledger M273).
+The notes say a brief alone has not held the rule,
+and that the hook of issue 579 is the standing proposal for a mechanical stop.
+A brief still repeats the rules and asks for that list,
+but it is not the prevention:
+the hand-back of every round is read for breaks before its work is accepted.
+The rule to ask for the list was written by the filer of M272 on 2026-10-19 (UTC),
+and the reading of each hand-back by the filer of M273,
+and the notes did not give either.
 
 ## Tasks, builds and bulk output
 
@@ -639,6 +653,13 @@ one body said six guards for the nine mutations it pins,
 and a commit comment corrected it (ledger M267).
 This rule was written by the filer of M267 on 2026-10-19 (UTC),
 and the notes did not give it.
+A body that counts failing cases names each one it counts:
+a held fix said two cases "now fail on the error" and named neither,
+and the redo listed every failing case of the test task by name for the base,
+for the throw alone and for the result after the change (ledger M275).
+A message said to be wrong is checked against the diff of its commit before a corrective comment is posted:
+an agent called "nine places" a wrong count because the message names four cases,
+and the diff removed nine spawns (ledger M274).
 
 What enforces it:
 habit,

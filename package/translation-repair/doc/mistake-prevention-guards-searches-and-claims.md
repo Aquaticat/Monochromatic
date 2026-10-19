@@ -250,6 +250,14 @@ A mutation spec is applied to the base and shown to match exactly once before a 
 and a spec whose find string or file has moved is rewritten and kept with the proofs (ledger M269).
 These two rules were written by the filer of M268 and M269 on 2026-10-19 (UTC),
 and the notes did not give them.
+A fixture runner fails on a diagnostic with no rule code,
+which is how oxlint reports a plugin that threw:
+the runner of the oxlint plugin tests kept only diagnostics with the caller's prefix,
+and every case that expected no findings passed while its plugin crashed (ledger B688 and M275).
+That holds in lint mode since `90fa8c2d44` and in fix mode since `b6676c9a66` (the notes give this rule),
+and a case that runs oxlint on its own,
+with a catch that only checks that some error exists,
+is moved onto the runner.
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -396,13 +404,18 @@ and eight small pages the seventh review built lost a quotation mark (ledger M18
 The scope of a rule is decided from what the language allows,
 and each shape a count shows as zero gets a hand-built input before the rule leans on its absence.
 
-A random search of 1,799,159 pages and quotes found no place whose words read another way with a page's definition, and a hand-built
-page found one at the first try (ledger B673).
-The sample rarely held an opener, a reference and a closer in the order the case needs,
+A random search of 1,799,159 pages and quotes found no place whose words read another way with a page's definition,
+and a hand-built page found one at the first try (ledger B673).
+The sample rarely held an opener,
+a reference and a closer in the order the case needs,
 so the null said nothing about reach.
 A fixture is also read as the span the counter locates and not as the text it was written as:
-`*a [b*] c*’` differs with a definition, and the counter locates `a [b*] c*’` after the opener, which does not.
-The search reports its own positive control, a case known to be found, before a null is written down,
+`*a [b*] c*’` differs with a definition,
+and the counter locates `a [b*] c*’` after the opener,
+which does not.
+The search reports its own positive control,
+a case known to be found,
+before a null is written down,
 and a fixture is run through the counter before a test leans on it.
 
 A link checker parses Markdown and not text:
@@ -624,6 +637,10 @@ and a test that pins a line pins its exact text:
 a report quoted the credential line with a space before a comma that the source lacks (ledger M271).
 These two rules were written by the filer of M270 and M271 on 2026-10-19 (UTC),
 and the notes did not give them.
+Two lint logs are compared by finding,
+not by their summary lines:
+a package was said to have "the same findings" when it had three shared ones
+and type-aware warnings from dependencies that were not built (ledger M276).
 
 What enforces it:
 habit;
@@ -909,6 +926,16 @@ and `expectRecordAsListed` for a record,
 each printing every difference whole and then making the scan's own comparison.
 A diagnostic seen to hide what it reports is fixed when it is first seen,
 or recorded as open with what it hides.
+A harness that reads the output of a tool names the target,
+the config,
+the command and both streams when that output cannot be read as expected:
+the runner of the oxlint plugin tests let a bare `SyntaxError` escape when oxlint printed a failure text (ledger B690).
+A failure that a tool reports only on standard error,
+with exit code zero,
+is turned into a failing run that names the file and the way out:
+a bridge that could not start left degraded findings and one stderr line (ledger B689).
+This rule was written by the filer of B689 and B690 on 2026-10-19 (UTC),
+and the notes did not give it.
 
 What enforces it:
 `scan-direct-comparisons.unit.test.ts`,

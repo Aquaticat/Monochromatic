@@ -610,3 +610,89 @@ every throw site interpolates positions,
 labels and vocabulary only,
 its sentences count places from one,
 and the message inventory names the part `invariant`.
+
+## B689: a TypeScript bridge that could not start made the spread rules report degraded findings with exit code zero
+
+Found in the request memo round (`w190`),
+where the first change for it,
+`50ccee0440` and `5dce27bb59`,
+was held (M275).
+The redo (`w194`) found the root cause.
+
+Outcome written on 2026-10-19 (UTC).
+The spread rules of `package/oxlint-plugin/no-restricted-syntax` ask the TypeScript bridge for a type,
+and read any bridge failure as an expression of unknown type.
+The plugin started the native child of its own copy of the bridge on the first file that needed a type.
+By then Oxlint had mapped 32 regions of 6 GiB for its 28 workers
+(the notes say about 192 GiB of address space),
+and a process that reserved more than the host holds in memory and swap (62 GiB and 79 GiB here) cannot fork.
+The spawn failed with `ENOMEM`,
+and the rules saw no type.
+An `Array.from` of an array was dropped with exit code zero,
+and a slice,
+a `concat` or a spread was reported as ambiguous;
+only a line on standard error mentioned the spawn failure,
+and no diagnostic did (the bodies of `50ccee0440` and `249c3d2d0b`).
+The held change had named loading the `prefer-readonly-parameter-type` plugin as a way out,
+and that cannot help a plugin that bundles its own bridge.
+
+Fixed in `249c3d2d0b`,
+landed with the redo after gate g108.
+The plugin starts the child when it loads,
+before Oxlint starts its workers,
+and keeps a failure to start instead of throwing,
+because only the spread rules need the bridge.
+The first spread rule that needs a type throws the stored failure,
+naming the file,
+the spawn failure and the ways out (the worker count and the host's memory),
+and does not spawn again.
+A file in no configured project still gets the type-free ambiguous report.
+Seven cases of the package's test task failed on the base.
+With the throw and without the load-time start 13 failed,
+and none fail after the change.
+Three of the 13 had passed on the base only because the degraded report happened to match what they expected:
+"reports ambiguous spreads without a fix when no type is available",
+"reports no-useless-spread when violated" and
+"reports prefer-spread when violated".
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"What a failing check prints".
+
+## B690: oxlint output that was not JSON reached the plugin tests as a bare `SyntaxError`
+
+Found by the agent of the fix-mode fixture round (`w195`),
+who left three follow-ups:
+a crash in the `stylistic` tests surfaced as a JSON `SyntaxError` and not as the check for a diagnostic with no rule
+code (B688),
+the README of the test support documented none of the options of `runOxlintFixture`,
+and `nano-spawn` stayed in the `package.json` of `tsdoc` after nothing imported it.
+
+Outcome written on 2026-10-19 (UTC).
+A Sonnet agent (`w196`) made the three changes:
+red `9ced79f658` (landed as `f68bf69f64`),
+fixed in `0c1114a3fa` (landed as `f09002e5b2`),
+README in `bd6965cc65` (landed as `51a577a131`),
+and the dependency removed in `29b3da16dc` (landed as `5e2fae86ca`).
+`runOxlintFixture` let the `SyntaxError` of the parse escape when oxlint printed a failure text,
+for example when a plugin throws in `createOnce`.
+It now throws `OxlintOutputParseError`,
+whose message names the target,
+the config,
+the command,
+the stdout and the stderr,
+with the parse failure as its cause
+(the change adds `string-dedent` for the multi-line message).
+A probe that throws in `createOnce` needs a plugin file of its own,
+because oxlint calls `createOnce` for every rule when it loads a plugin.
+The README (`package/oxlint-plugin/test-support/README.md`) documents the runner and its options.
+In `package/oxlint-plugin/tsdoc`,
+`rg` found no mention of `nano-spawn` except its `package.json` entry (the body of `5e2fae86ca`),
+and the lockfile loses the matching importer entry.
+Gate g110 ran the new parse-error case and passed with the known lint findings of `tsdoc` and `stylistic` (B688);
+the cherry-picks `f68bf69f64` to `5e2fae86ca` were pushed on 2026-10-19 (UTC).
+The agent did not render the README (M273).
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"What a failing check prints".
