@@ -196,7 +196,8 @@ export function createAssessmentHttpSender({
     catch (error) {
       dl.debug('assessment HTTP invocation failed');
       if ((options.signal
-        ?.aborted !== true) && (error instanceof TypeError))
+        ?.aborted
+        !== true) && (error instanceof TypeError))
         throw new AssessmentRequestFailureError('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
       throw error;
     }
