@@ -248,3 +248,19 @@ The disposable consumer is `~/temp/agent/pi-public-plugin-probe-20261019/probe.m
 Its denial candidate aborts the active run; that observed mechanism is not an adopted product decision.
 The [active plan](ground-up-rebuild.md) retains the stages and source inventory.
 Use the [verified visual review](ground-up-rebuild-review.html#frontier) to compare and prepare one response.
+
+The response form passes all 22 selectable option paths, nine navigation targets, four scenarios,
+four manual-decision branches, empty and populated replies, literal text preservation, selection, and keyboard use.
+Both themes pass at desktop width and 390 pixels without page overflow or browser errors.
+Every measured control meets the 48-pixel minimum.
+Inspected captures contain only PNG image chunks:
+
+- Round overview: [light](ground-up-rebuild-review/round2-frontier-light.png),
+  [dark](ground-up-rebuild-review/round2-frontier-dark.png).
+- Q7: [light](ground-up-rebuild-review/round2-q7-light.png), [dark](ground-up-rebuild-review/round2-q7-dark.png).
+- Q8: [light](ground-up-rebuild-review/round2-q8-light.png), [dark](ground-up-rebuild-review/round2-q8-dark.png).
+- Q9: [light](ground-up-rebuild-review/round2-q9-light.png), [dark](ground-up-rebuild-review/round2-q9-dark.png).
+- Q10: [light](ground-up-rebuild-review/round2-q10-light.png), [dark](ground-up-rebuild-review/round2-q10-dark.png).
+- Q11: [light](ground-up-rebuild-review/round2-q11-light.png), [dark](ground-up-rebuild-review/round2-q11-dark.png).
+- Q12: [light](ground-up-rebuild-review/round2-q12-light.png), [dark](ground-up-rebuild-review/round2-q12-dark.png).
+- Q13: [light](ground-up-rebuild-review/round2-q13-light.png), [dark](ground-up-rebuild-review/round2-q13-dark.png).

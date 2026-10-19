@@ -13,6 +13,15 @@ Question generation and shadow scheduling depend on this round's answers; built-
 The user explicitly challenged stopping after corrections. Finish verification, open Helium, and request this round.
 Do not stop at another status-only response. Implementation remains stopped.
 
+The round is implemented in `f9a7745779`, with dependency and accepted-limit corrections in `938c40034b`.
+All 22 option paths, nine navigation links, four scenarios, four manual branches, reply paths, and keyboard pass.
+Both themes and 390-pixel layout pass without overflow or browser errors; controls meet 48 pixels.
+The independent review distinguishes individually unresolved rules (Q9) from admitted-answer conflicts (Q7 B).
+Choosing Q7 B opens conflict reconciliation in the next round; it does not change Q9's individual-rule scope.
+Startup relevance failure now falls back to all freshly captured rules without asking solely about failed filtering.
+Retained captures are the `round2-*` PNGs beside the HTML, with no non-image PNG metadata.
+Next action: hand off the opened, verified Q7 to Q13 review through the question tool, then wait for answers.
+
 ### Later extension mutations accepted as a limitation, 2026-10-19
 
 The user says to pretend later extensions changing arguments after review do not exist.
