@@ -765,4 +765,10 @@ named for that subject and listed here.
   What was launched,
   read and decided on 2026-10-15.
   Entries:
-  TianqiChen66624.
+  TianqiChen66624,
+  TianqiChen66625.
+- [OpenRouter and the corpus passes: 2026-10-18](translation-repair-openrouter-2026-09-03-2026-10-18.md):
+  What was launched,
+  read and decided on 2026-10-18.
+  Entries:
+  TianqiChen66626.

@@ -64,11 +64,13 @@ the findings,
 their fixes and the process mistakes (M entries) are in
 [the audit ledger](audit-ledger.md),
 and the owner's rulings in [the design commitments](design-commitments.md).
-Four passes have run since the audit began,
+Six passes have run since the audit began,
 all of TianqiChen666:
 TianqiChen66621 on 2026-09-28,
 TianqiChen66622 on 2026-10-11,
-TianqiChen66623 on 2026-10-12 and TianqiChen66624 on 2026-10-15
+TianqiChen66623 on 2026-10-12,
+TianqiChen66624 and TianqiChen66625 on 2026-10-15
+and TianqiChen66626 on 2026-10-18
 (the repository's pass log,
 `doc/planning/translation-repair-openrouter-2026-09-03.md`,
 reads each).
@@ -90,7 +92,18 @@ and her last message keeps her present tense;
 its consistency pass carried the refrain to three of four places and left the other repeat,
 and seven replies were refused for naming a shown label in another form
 (the causes and fixes are in the handover's checkpoint of 2026-10-15).
-The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls;
+`TianqiChen66626` was launched on 2026-10-18 at 20:58 UTC at `7c21a56fc2`,
+and settled at 23:52 UTC with no high-severity defect on its page,
+the refrain and the repeat both carried and her last message in her own present tense
+(the pass log for 2026-10-18 reads it).
+No consistency run-off happened on it,
+since every first ask and carry had a strict majority,
+so the finalist extension the owner kept that day was not exercised on this page.
+The Synthetic meter was unreadable in every reading of the run,
+and a fix round for the pipeline defects of that read runs in a separate worktree;
+its result is not recorded here.
+The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls,
+while the meters read the Bedrock account as wet;
 no launch waits on them.
 
 Landed late on 2026-09-27,

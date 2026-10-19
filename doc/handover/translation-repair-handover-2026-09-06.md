@@ -506,7 +506,31 @@ before the other queued work.
     log beside it, unit `corpus-pass-corpus-pass-TianqiChen66626`, streams truncate and inherit,
     plan ok, meters: Synthetic unreadable and treated as spendable, Bedrock, Hyper and OpenRouter wet);
     her page has no reference or footnote definitions (the pattern finds 158 in 67 other pages),
-    so the open emphasis-definitions gap cannot reach this pass.
+    so the open emphasis-definitions gap cannot reach this pass;
+    it settled at 23:52 UTC the same day,
+    with 24 slices in a page of 8,525 characters and no `DEFECTS` line
+    (`verify-published`:
+    every wording present,
+    `read-at-generation=18`),
+    and the read is in
+    [the pass log for 2026-10-18](../planning/translation-repair-openrouter-2026-09-03-2026-10-18.md):
+    no high-severity defect,
+    the refrain and the repeat both carried (4 of 4 places and 2 of 2),
+    her last message in her own present tense,
+    and the most consistent of the pages of TianqiChen66624 to 66626,
+    with a medium fault in the Uno sentence at the close (source line 87);
+    no consistency run-off happened,
+    since every first ask and carry had a strict majority,
+    so the finalist extension the owner kept was not exercised
+    (group 1 had exactly quorum,
+    3 usable ballots of a bench of 4);
+    both Bedrock Gemma seats were dead all run on an expired security token (HTTP 401)
+    while every meter read `wet`;
+    the Synthetic meter was unreadable in 126 of 126 readings,
+    so 651 subscription calls ran with no allowance reading;
+    and 58 Qwen3.8-27B replies were cut at the straggler deadline without showing in the seat census;
+    a fix round for these three pipeline defects runs in `w191`,
+    and its result is not recorded here.
 7.  Under way in `w186` at `7c21a56fc2`:
     emphasis read with the page's definitions in the three calls that pass none
     (`consistency-loose-marks.ts:340`, and the fallbacks in `consistency-marks-past-markup.ts:73`

@@ -28,7 +28,7 @@ and every mistake made while fixing;
 [`mistake-prevention.md`](../../package/translation-repair/doc/mistake-prevention.md)
 holds the rule that prevents each family of mistakes.
 Open work is every ledger entry whose status reads open or recurring.
-The last pass,
+The first pass of 2026-10-15,
 `TianqiChen66624` at `db6c26a486`,
 settled on 2026-10-15 and was read the same day
 (the pass log's "TianqiChen66624 read,
@@ -47,6 +47,18 @@ It settled with every check clean and her last message in her own present tense;
 its consistency pass carried the refrain to three of four places and left the other repeat,
 and seven replies were refused for naming a shown label in another form;
 the causes and fixes are in the handover's checkpoint of 2026-10-15.
+The latest pass,
+`TianqiChen66626` at `7c21a56fc2`,
+settled on 2026-10-18 and was read the same day
+(the pass log's "TianqiChen66626 read,
+2026-10-18"):
+no high-severity defect on its page,
+the refrain and the repeat both carried,
+and her last message in her own present tense;
+no consistency run-off happened,
+so the finalist extension was not exercised,
+both Bedrock Gemma seats were dead all run on an expired token,
+and the Synthetic meter was unreadable in every reading.
 The owner's answers it serves are in the family's
 [design commitments](../../package/translation-repair/doc/design-commitments.md)
 under 2026-10-11.
@@ -76,7 +88,7 @@ Start with:
     for every OpenRouter run and its reading,
     one section per run or read,
     each heading dated;
-    when this map was written the newest was TianqiChen66624's read of 2026-10-15;
+    when this map was written the newest was TianqiChen66626's read of 2026-10-18;
 5.  [`translation-repair-redesign-failure-2026-09-01.md`](../audit/translation-repair-redesign-failure-2026-09-01.md)
     for the redesign's terminal disposition and A through M reconstruction;
 6.  [`translation-repair.md`](translation-repair.md)
