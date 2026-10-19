@@ -4,6 +4,10 @@ import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, sep } from 'node:path';
+import { containerBounds } from './container-bounds.ts';
+
+// The bound of every container this script starts: the shared computed share of the host, or the caller's IDE_CONTAINER_* values.
+const containerLimits = containerBounds();
 
 const privateRoot = join(homedir(), 'temp', 'agent');
 if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Guard scratch root must exclude group and other permissions: ' + privateRoot);
@@ -67,10 +71,10 @@ const results = [];
 const baselined = new Set();
 const run = (item, phase) => {
   const result = spawnSync('podman', [
-    'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
-    '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
+    'run', '--rm', '--network=none', ...containerLimits.limitArguments,
+    '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
-    '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2', '--env', 'SLINT_EMIT_DEBUG_INFO=1',
+    '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
     '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
     'localhost/monochromatic/ide',
     'cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')',
