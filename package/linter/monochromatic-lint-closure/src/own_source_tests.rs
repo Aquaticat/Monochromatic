@@ -67,7 +67,10 @@ fn keeps_a_parent_component_that_stays_inside_the_package() {
 /// A `..` component that climbs out of the output directory returns the path to the package's own source.
 #[test]
 fn keeps_a_path_that_leaves_the_output_directory_for_the_package() {
-    assert!(!package_with_output_inside().excludes(Path::new("/work/package/target/out/../../src/lib.rs")));
+    assert!(
+        !package_with_output_inside()
+            .excludes(Path::new("/work/package/target/out/../../src/lib.rs"))
+    );
 }
 
 /// Without the package directory (the compiler was not started by cargo) only the output directory excludes.
