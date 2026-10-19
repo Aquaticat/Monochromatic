@@ -121,7 +121,8 @@ pub fn columns_of(wrap: Option<f32>, scale: f32) -> u64 {
 
 /// What:
 ///  How tall a stretch of text one band answers for,
-///  in logical pixels, for a text wrapped at `wrap` shown at `scale`.
+///  in logical pixels,
+/// for a text wrapped at `wrap` shown at `scale`.
 /// Why:
 ///  The cuts of a text stand at multiples of this from its top,
 ///  so the window thread can name the bands the track shows without the worker.

@@ -595,7 +595,8 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
     window.hide().expect("close minimap window");
 }
 
-/// The bands a scroll to `offset` shows, in the reader's window.
+/// The bands a scroll to `offset` shows,
+/// in the reader's window.
 fn bands_at(reader: &Reader, offset: f32) -> std::ops::Range<usize> {
     let current = reader.source.borrow();
     let wrap = ide_app::wrap::has_wrap_width(current.width).then_some(current.width);
@@ -605,13 +606,18 @@ fn bands_at(reader: &Reader, offset: f32) -> std::ops::Range<usize> {
     );
 }
 
+/// The numbers of the bands a picture holds.
+fn bands_of_key(key: PictureKey) -> std::ops::Range<usize> {
+    return key.window.0..key.window.1;
+}
+
 /// Wait until the picture on screen is the one for `bands` and no newer request is posted.
 fn picture_of_bands(reader: &Reader, bands: &std::ops::Range<usize>) {
     let mut waiting = Waiting::slow();
     loop {
         {
             let current = reader.source.borrow();
-            let shown = current.minimap.shown.map(|key| key.window.0..key.window.1);
+            let shown = current.minimap.shown.map(bands_of_key);
             if shown.as_ref() == Some(bands) && current.minimap.posted == current.minimap.shown {
                 break;
             }
@@ -1067,7 +1073,8 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
 
 /// A change of one line of a file of fifty thousand lines that reaches the window through its watch
 /// renders the one band that holds the line and takes the others from the cache:
-/// the cost of an edit follows the lines it touches, not the length of the file.
+/// the cost of an edit follows the lines it touches,
+/// not the length of the file.
 #[test]
 fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
     let mut text = String::new();
@@ -1111,9 +1118,11 @@ fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
             {
                 let current = opened.source.borrow();
                 let shown = current.minimap.shown;
-                if shown.is_some_and(|key| key.stamp.revision == current.document.revision())
-                    && current.minimap.posted == shown
-                {
+                let followed = match shown {
+                    Some(key) => key.stamp.revision == current.document.revision(),
+                    None => false,
+                };
+                if followed && current.minimap.posted == shown {
                     break;
                 }
             }

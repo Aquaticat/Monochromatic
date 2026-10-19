@@ -64,7 +64,8 @@ pub struct Shared {
 /// Why:
 ///  The key of a band holds the digest of its text and of its syntax classes instead of copies,
 ///  so a band cut from the middle of a very long line costs a few words;
-///  the digest is FNV-1a, whose result does not depend on how a rope cut its text into chunks.
+///  the digest is FNV-1a,
+/// whose result does not depend on how a rope cut its text into chunks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -137,7 +138,8 @@ fn styles_digest(styles: &[StyleSpan], start: usize, end: usize) -> u64 {
     return digest.state;
 }
 
-/// A position `at`, measured from the band's first character `base`;
+/// A position `at`,
+/// measured from the band's first character `base`;
 /// negative when it lies before the band.
 fn from_base(at: usize, base: usize) -> i64 {
     return at as i64 - base as i64;
@@ -155,7 +157,9 @@ fn from_base(at: usize, base: usize) -> i64 {
 /// Why:
 ///  The overlays are compared as the band would draw them,
 ///  clipped to the band's characters and measured from the first,
-///  so a selection elsewhere in the text, or an edit before the band that moves its characters, changes nothing here;
+///  so a selection elsewhere in the text,
+/// or an edit before the band that moves its characters,
+/// changes nothing here;
 ///  equal keys render equal pixels.
 ///
 /// In TS you'd write (pseudocode):
@@ -260,7 +264,11 @@ pub fn key_of(band: &Band, scene: &Scene, shared: Shared) -> UnitKey {
         shared,
         lines: (band.first, band.count),
         clip: (band.clip.top.to_bits(), band.clip.bottom.to_bits()),
-        span: (band.span.start.to_bits(), band.span.end.to_bits(), band.last),
+        span: (
+            band.span.start.to_bits(),
+            band.span.end.to_bits(),
+            band.last,
+        ),
         layout,
         text: text_digest(scene, start_char, end_char),
         styles: styles_digest(scene.styles, start_char, end_char),

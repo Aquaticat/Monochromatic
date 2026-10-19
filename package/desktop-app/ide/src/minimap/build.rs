@@ -274,36 +274,6 @@ pub fn prepare(input: &Input) -> Prepared {
     };
 }
 
-/// Prepared pictures.
-impl Prepared {
-    /// What the picture would cost to render now,
-    /// in work:
-    /// the bands `cache` does not hold for their keys.
-    pub fn pending_work(&self, scene: &Scene, cache: &Cache) -> usize {
-        let mut total: usize = 0;
-        for (offset, band) in self.bands.iter().enumerate() {
-            if let Some(slot) = cache.get(self.window.start + offset)
-                && slot.key == self.keys[offset]
-            {
-                continue;
-            }
-            total = total.saturating_add(cost_of(scene, band));
-        }
-        return total;
-    }
-
-    /// Units of the picture.
-    pub fn units(&self) -> usize {
-        return self.bands.len();
-    }
-
-    /// The row of the whole picture the picture's first row is,
-    /// in physical pixels.
-    pub fn top(&self) -> usize {
-        return self.top;
-    }
-}
-
 /// The reduction of the rendered `band`.
 fn reduce_band(prepared: &Prepared, band: &Band, rendered: &Rendered) -> Result<Reduced> {
     let assigned = band.assigned(prepared.scale);

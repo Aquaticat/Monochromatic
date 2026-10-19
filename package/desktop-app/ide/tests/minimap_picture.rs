@@ -26,9 +26,9 @@ use ide_app::line_rows::LineRows;
 /// its plan,
 /// and its parts.
 use ide_app::minimap::{
-    BAND_BYTES, BUILD_WORK, Built, Cache, Cancel, Fills, Geometry, Input, Picture,
-    Reducer, Reduction, Scene, Strip, band_count, band_height, band_step, build, paint_fills, plan,
-    prepare, render, text_span,
+    BAND_BYTES, BUILD_WORK, Built, Cache, Cancel, Fills, Geometry, Input, Picture, Reducer,
+    Reduction, Scene, Strip, band_count, band_height, band_step, build, paint_fills, plan, prepare,
+    render, text_span,
 };
 /// The vertical mapping.
 use ide_app::row_map::{CODE_ROW, RowMap};
@@ -684,7 +684,8 @@ fn a_band_that_cannot_be_rendered_is_counted_and_leaves_the_picture_standing() {
     assert_eq!(built.stats.rendered, 0);
 }
 
-/// The part of `whole`'s rows that `part` holds, against `part`'s own:
+/// The part of `whole`'s rows that `part` holds,
+/// against `part`'s own:
 /// the largest channel difference.
 fn crop_difference(whole: &Built, part: &Built) -> u8 {
     assert_eq!(whole.width, part.width, "pictures of different widths");
@@ -813,7 +814,8 @@ fn moved(at: usize, from: usize, by: i64) -> usize {
 }
 
 /// `fixture` after the characters `from` to `to` are replaced by `insert`:
-/// the lines measured again, the matches and the diagnostics moved with the text after them.
+/// the lines measured again,
+/// the matches and the diagnostics moved with the text after them.
 fn edited(fixture: &Fixture, from: usize, to: usize, insert: &str) -> Fixture {
     let mut rope = fixture.document.text().clone();
     rope.remove(from..to);
@@ -840,15 +842,16 @@ fn edited(fixture: &Fixture, from: usize, to: usize, insert: &str) -> Fixture {
 /// An edit renders again the bands it touches and no others:
 /// a character changed in one line renders one band,
 /// a character added in a line far above renders none even though every character after it moved,
-/// and an added line, which moves the rows of everything below it,
+/// and an added line,
+/// which moves the rows of everything below it,
 /// renders the bands of the window again;
 /// the picture is the one a build without a cache gives in every case.
 #[test]
 fn an_edit_renders_only_the_bands_it_touches() {
     let mut base = fixture(2_000, 700.0, 1.0);
     let text = base.document.text().to_string();
-    let at = text.find("value_380 ").expect("a word to match and mark");
-    let at = text[..at].chars().count();
+    let found = text.find("value_380 ").expect("a word to match and mark");
+    let at = text[..found].chars().count();
     base.ranges = vec![FindRange {
         start: at,
         end: at + 9,
@@ -865,12 +868,17 @@ fn an_edit_renders_only_the_bands_it_touches() {
     let mut cache = Cache::new();
     let first = windowed(&base, window.clone(), &mut cache);
     assert_eq!((first.stats.rendered, first.stats.reused), (6, 0));
-    assert!(
-        first.bytes.chunks(4).any(|pixel| pixel[3] > 0),
-        "the window holds ink"
-    );
+    let mut inked = false;
+    for byte in &first.bytes {
+        if *byte != 0 {
+            inked = true;
+        }
+    }
+    assert!(inked, "the window holds ink");
     // A character changed in the middle of the window's third band: that band alone is rendered again.
-    let inside = base.map.line_at(step * (window.start + 2) as f32 + step / 2.0);
+    let inside = base
+        .map
+        .line_at(step * (window.start + 2) as f32 + step / 2.0);
     let letter = base
         .document
         .text()
@@ -887,8 +895,11 @@ fn an_edit_renders_only_the_bands_it_touches() {
         "one line changed: {:?}",
         after.stats
     );
-    let fresh = windowed(&changed, window.clone(), &mut Cache::new());
-    assert_eq!(after.bytes, fresh.bytes, "the reused bands are still right");
+    let from_scratch = windowed(&changed, window.clone(), &mut Cache::new());
+    assert_eq!(
+        after.bytes, from_scratch.bytes,
+        "the reused bands are still right"
+    );
     assert_ne!(after.bytes, first.bytes, "the edit shows");
     // A character added in the first line moves every character after it, the match and the diagnostic with them,
     // and no line: nothing in the window is rendered again.
@@ -900,8 +911,8 @@ fn an_edit_renders_only_the_bands_it_touches() {
         "characters moved, no line: {:?}",
         shifted.stats
     );
-    let fresh = windowed(&moved_text, window.clone(), &mut Cache::new());
-    assert_eq!(shifted.bytes, fresh.bytes);
+    let from_scratch_moved = windowed(&moved_text, window.clone(), &mut Cache::new());
+    assert_eq!(shifted.bytes, from_scratch_moved.bytes);
     // A line added above moves every row below it: the bands of the window are rendered again, and no others are.
     let longer = edited(&moved_text, 0, 0, "// a new first line\n");
     let below = windowed(&longer, window.clone(), &mut cache);
@@ -910,8 +921,8 @@ fn an_edit_renders_only_the_bands_it_touches() {
         below.stats.rendered >= 1,
         "an added line renders the bands it moves"
     );
-    let fresh = windowed(&longer, window.clone(), &mut Cache::new());
-    assert_eq!(below.bytes, fresh.bytes);
+    let from_scratch_longer = windowed(&longer, window.clone(), &mut Cache::new());
+    assert_eq!(below.bytes, from_scratch_longer.bytes);
     assert_eq!(cache.len(), 6, "only the window is kept");
 }
 

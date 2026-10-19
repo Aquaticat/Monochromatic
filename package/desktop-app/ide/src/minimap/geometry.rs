@@ -161,7 +161,8 @@ impl Geometry {
     }
 
     /// Logical pixels of the picture for each pixel of the text:
-    ///  [`PIXELS_PER_ROW`] over one code row, whatever the text's length.
+    ///  [`PIXELS_PER_ROW`] over one code row,
+    /// whatever the text's length.
     pub fn scale(&self) -> f32 {
         return PIXELS_PER_ROW / CODE_ROW;
     }
@@ -174,7 +175,8 @@ impl Geometry {
     }
 
     /// How far the picture has slid up past the track,
-    /// in logical pixels, for a view scrolled to `offset`:
+    /// in logical pixels,
+    /// for a view scrolled to `offset`:
     ///  the picture's overhang past the track,
     /// by the offset's share of the scroll range.
     ///  Zero for a text that fits.
@@ -305,7 +307,9 @@ impl Geometry {
     /// What:
     ///  The bands of the picture to keep with the view scrolled to `offset`,
     /// as a range of band numbers:
-    ///  the bands `step` logical pixels tall, counted from the top of the text, that the track shows,
+    ///  the bands `step` logical pixels tall,
+    /// counted from the top of the text,
+    /// that the track shows,
     ///  and one more on each side.
     /// Why:
     ///  Only the bands near the visible part of the picture are built and kept;

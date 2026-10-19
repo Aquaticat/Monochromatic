@@ -41,7 +41,8 @@ pub(in crate::native) const THROTTLE: Duration = Duration::from_millis(250);
 ///  Longest time the picture may fall behind while only the bands the track shows change.
 /// Why:
 ///  A scroll through a long text names new bands every band's height or so;
-/// the picture keeps one band on each side of the track, so a request a few tens of milliseconds after the change
+/// the picture keeps one band on each side of the track,
+/// so a request a few tens of milliseconds after the change
 ///  brings the next band in before the view reaches the edge of what the picture holds.
 ///
 /// In TS you'd write (pseudocode):
@@ -91,7 +92,8 @@ pub(in crate::native) enum Plan {
 /// at the throttle's pace,
 /// and never while a wait is running.
 ///  Since the previous look only the bands the track shows changed (a scroll):
-/// the same, at the slide period.
+/// the same,
+/// at the slide period.
 ///  Anything else,
 /// such as a new size,
 /// a new wrap width,

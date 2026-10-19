@@ -6,7 +6,8 @@
 use super::downscale::Reduced;
 /// The key a unit is valid for.
 use super::key::UnitKey;
-/// Units by band number, and the range of band numbers to keep.
+/// Units by band number,
+/// and the range of band numbers to keep.
 use std::{collections::BTreeMap, ops::Range};
 
 /// A unit of the last picture:
