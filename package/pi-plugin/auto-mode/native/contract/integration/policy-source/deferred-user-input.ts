@@ -23,7 +23,7 @@ type InputMetadata = Readonly<{
 type InputOrigin = Readonly<{
   source: Readonly<{
     inputOrigin: string;
-    inputLocation: Readonly<{
+    inputLocation?: Readonly<{
       field: string;
       metadataJSON: string;
     }>;
@@ -81,6 +81,14 @@ export function isDeferredUserInput({ source }: InputOrigin): boolean {
    Field names must agree with the specific native capture owner.
    */
   const { inputOrigin, inputLocation } = source;
+  if ((inputLocation === undefined) || (![
+    'native-call-input',
+    'native-unintercepted-input',
+    'native-input-event',
+    'native-transformed-input',
+    'native-queue',
+    'native-agent-input',
+  ].includes(inputOrigin))) return false;
   /**
    JSON parsing yields data only, so no caller getter can be invoked through metadata.
    */
