@@ -12,7 +12,16 @@ Q10 is withdrawn: the allowance governs Luna requests, and shadow traffic is sep
 Q14 concerns the comparison study's scope; Q15 concerns older genuine human messages outside the short window.
 Batch-member attribution, joint survivor selection, shared budgets, and shared manual approvals are withdrawn.
 The plan, understanding, review questions, historical batch plan, and HTML now use the individual-call boundary.
-Finish rendered and visual verification, open Helium at the complete frontier, and present all current choices together.
+Rendered and visual verification is complete.
+The browser pass covers all 25 options, 18 navigation links, four scenarios, four manual branches,
+keyboard operation, 48-pixel controls, and 390-pixel layout in both themes, with no page or console errors.
+All 12 diagrams pass geometry and narrow-screen keyboard scrolling in both themes.
+The final Q7 captures include Deny combined with Ask, Approve, and unresolved evidence for the same upload.
+Commit `ab027b3214` retains 44 inspected captures with image-only PNG chunks:
+`individual-chart-*` and `complete-review-*` beside the HTML.
+The Markdown renderer passed all 14 documents at `auto-mode-rebuild-plan-render-sisOvc`.
+Present all eight current questions together in the question tool after opening Helium at `#frontier`.
+After answers arrive, record them and develop only the dependent questions they unlock.
 Implementation remains stopped; no question has been answered by these corrections.
 
 ### Prior checkpoint before the individual-call revision

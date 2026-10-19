@@ -207,6 +207,15 @@ It does not claim every configured extension has identical context behavior.
 
 ## Coverage correction
 
+The complete review passes browser interaction checks for all 25 options and 18 navigation links,
+the scenario and manual-choice controls, keyboard operation, and 390-pixel layout in light and dark themes.
+All 12 diagrams pass geometry and narrow-screen keyboard scrolling in both themes.
+No page or console errors were reported.
+The retained [question overview](ground-up-rebuild-review/complete-review-frontier-dark.png)
+and [individual-call diagram](ground-up-rebuild-review/individual-chart-grouping-dark.png)
+show the revised scope; corresponding light captures and every question panel are retained beside them.
+The Markdown renderer passes this inventory and the other affected documents.
+
 The missed handoff was a process error: presenting one question concealed other independent choices.
 Proposed replacement for the existing `QGR` guidance:
 
