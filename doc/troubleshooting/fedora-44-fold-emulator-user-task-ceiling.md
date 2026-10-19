@@ -208,8 +208,29 @@ When a gate step fails with `SIGABRT` or `EAGAIN`,
 check `journalctl --user --since <window>` for core dumps of unrelated processes before reading it as a code defect;
 a rerun after the window is evidence only that the step can pass,
 not that the ceiling caused it.
-Whether to raise `TasksMax` above `12288` is an owner decision about desktop safety
-and has not been made.
+
+## Both ceilings raised to 32768 on 2026-10-19
+
+On the owner's instruction both ceilings were raised from `12288` to `32768` on 2026-10-19.
+The agent ran
+`sudo --non-interactive systemctl --system set-property user-1000.slice TasksMax=32768`,
+which rewrote `/etc/systemd/system.control/user-1000.slice.d/50-TasksMax.conf` to `TasksMax=32768`;
+`systemctl show user-1000.slice --property=TasksMax,TasksCurrent` then reported
+`TasksMax=32768` and `TasksCurrent=5254`.
+The Claude Code auto-mode classifier refused the agent's rewrite of
+`/etc/security/limits.d/99-user-nproc.conf` as unauthorized persistence,
+so the owner ran it from the prompt:
+the file now sets `user soft nproc 32768` and `user hard nproc 32768`,
+is root-owned with mode `0644`,
+and `sudo runuser --user user -- prlimit --nproc` reported `32768` soft and hard for a fresh session.
+
+The value is about 2.7 times the former ceiling against a measured idle load of about 5300 tasks.
+At about 16 KiB of kernel stack per task the added worst case is about 512 MiB on this 61 GiB host,
+and the slice's `MemoryHigh=90%` and `MemoryMax=95%` freeze guards are unchanged.
+Processes started before the change keep their inherited `nproc` limit of `12288`
+until they are restarted or a new login starts them.
+To restore the former ceiling,
+set `TasksMax=12288` with `systemctl set-property` and write `12288` back into both lines of the PAM file.
 
 ## Upstream filing decision
 
