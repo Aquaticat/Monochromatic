@@ -1,9 +1,10 @@
 ---
 name: troubleshooting-doc
-description: Use when investigating an external tool's behavior, bug, quirk, capability gap, or fix difficulty;
-proactively write the troubleshooting doc the moment you finish diagnosing or working around one, even
-when the user did not ask; also use when writing or updating a doc/troubleshooting/<topic>.md file.
-The write-up is a required completion step, not an offer.
+description: >-
+  Use when investigating an external tool's behavior, bug, quirk, capability gap, or fix difficulty;
+  proactively write the troubleshooting doc the moment you finish diagnosing or working around one, even
+  when the user did not ask; also use when writing or updating a doc/troubleshooting/<topic>.md file.
+  The write-up is a required completion step, not an offer.
 ---
 
 # Writing a troubleshooting file
