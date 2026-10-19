@@ -989,6 +989,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
   - Second clarification of 2026-10-19 (owner): the IDE is not restricted to Slint's builtin text elements. The
     constraints are: no CPU painting of text; any GPU renderer; any GPU text path, including Parley layout drawn by
     Vello into a wgpu texture shown in Slint. The study ranks those designs together with the builtin-text ones.
+  - Third clarification of 2026-10-19 (owner): "No CPU painting of anything." The ban covers every pixel the CPU
+    fills, not only text: the minimap picture (a CPU downscale of a CPU rendering), the overscan tile, any buffer
+    uploaded as an image, and the software renderer. CPU work stays allowed for layout, shaping, highlighting and
+    building scene data. The migration deletes every CPU pixel path; the agent was told to list them.
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
