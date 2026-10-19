@@ -88,7 +88,10 @@ const runtime=bindNativePolicyRuntime({
    };
    const proposal=(observations.requests===1)||(nextDecision&&(observations.requests===2));
    if(proposal)observations.originalBody=init.body;
-   await beforePrimaryResponse?.({proposal,requestBody:init.body});
+   await beforePrimaryResponse?.({
+     proposal,
+     requestBody:init.body
+   });
    return fixtureResponse({
      proposal,
      code

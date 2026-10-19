@@ -70,14 +70,26 @@ export function captureApprovalHostSource(input){
 
 /** One prepared operation shares its original presentation capture across automatic and manual review. */
 export function createApprovalHostOperation(captureSource){
- const l=tagged({tag:createApprovalHostOperation.name,l:tagged({tag:'auto-mode-approval'})});
+ const l=tagged({
+   tag:createApprovalHostOperation.name,
+   l:tagged({tag:'auto-mode-approval'})
+ });
  l.debug('opening original presentation capability scope');
- const state={closed:false,captured:false,host:undefined,failure:undefined};
+ const state={
+   closed:false,
+   captured:false,
+   host:undefined,
+   failure:undefined
+ };
  function captureHost(){
-  const cl=tagged({tag:captureHost.name,l});
+  const cl=tagged({
+    tag:captureHost.name,
+    l
+  });
   cl.debug('reading original operation presentation capabilities');
   if(state.closed)throw new PolicyApprovalError('The original approval capability scope has ended');
-  if(state.failure){cl.debug('rethrowing the original capture failure');throw state.failure.error;}
+  if(state.failure){cl.debug('rethrowing the original capture failure');throw state.failure
+    .error;}
   if(state.captured){cl.debug('retaining the original captured presentation view');return state.host;}
   state.captured=true;
   try{
@@ -90,7 +102,11 @@ export function createApprovalHostOperation(captureSource){
   }
  }
  function closeApprovalOperation(){
-  tagged({tag:closeApprovalOperation.name,l}).debug('retiring original presentation capability scope');
+  tagged({
+    tag:closeApprovalOperation.name,
+    l
+  })
+    .debug('retiring original presentation capability scope');
   state.closed=true;
   state.host=undefined;
   state.failure=undefined;

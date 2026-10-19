@@ -266,6 +266,22 @@ these concrete porting lessons remain package-local.
 
 ## Type interfaces belong with their owners
 
+The user keeps root `QF1` and the existing lint policy unchanged.
+The package-size audit measures Unicode code points,
+non-whitespace characters and executable structure.
+Formatter wrapping is formatting,
+not a regression or evidence of added implementation complexity.
+Modules exceeding `max-lines` still require meaningful responsibility splits.
+
+The formatter's producer owner changes from 11,829 to 11,958 characters,
+with 9,432 non-whitespace characters in both versions.
+The decision core changes from 12,290 to 12,307 characters,
+with 10,273 non-whitespace characters in both versions.
+Those changes add 146 whitespace characters in total.
+The initial rejection based on changed line-count diagnostics is withdrawn.
+The retained formatting has identical parser-normalized syntax trees and ordered comments;
+lint completion still requires splitting over-limit modules and fixing the remaining diagnostics.
+
 The proposed phase-catalog port exposes another design failure before acceptance.
 The original consumer has 432 code lines,
 126 AST statements and 25 functions.

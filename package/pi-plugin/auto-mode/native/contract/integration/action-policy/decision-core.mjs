@@ -1,5 +1,8 @@
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {captureApprovalHostSource,createApprovalHostOperation} from './approval.mjs';
+import {
+  captureApprovalHostSource,
+  createApprovalHostOperation
+} from './approval.mjs';
 import {capturePolicyInputs} from './inputs.mjs';
 import {
   captureAuthorizationInputs,
@@ -420,7 +423,10 @@ export function createDecisionGate({
    throw error;
   }
  }
- return Object.freeze({...host,review});
+ return Object.freeze({
+   ...host,
+   review
+ });
  }
  return Object.freeze({createOperationReview});
 }

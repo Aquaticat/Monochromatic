@@ -111,7 +111,7 @@ Work is incomplete. Continue the queue without another readiness handoff.
   preserving root branch and concurrent dirty work. No root merge or cleanup is authorized by that receipt.
 - Completion queue: finish coherent types/full lint/catalogs/payload audit/shutdown stderr,
   final inode/dependency/source inventories, package responsibility documentation and safe publication.
-  Root `TCV`, `CPN`, `RXI`, `MWK` stay unchanged by the user's explicit decisions;
+  Root `TCV`, `CPN`, `RXI`, `MWK`, `QF1` stay unchanged by the user's explicit decisions;
   concrete lessons remain package-local.
   Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
   project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
@@ -144,6 +144,16 @@ Work is incomplete. Continue the queue without another readiness handoff.
   native `Pcok7j` continues scoped lint and an explicit suppression-source record.
   The seven-file formatter scope preserves error codes but increases the reported line counts in two already-overlong files.
   Its exact diagnostic comparison rejects that adoption; no formatter changes have reached root.
+  User corrects that rejection: wrapping is formatting, not regression;
+  character counts assess implementation growth while existing max-lines still requires module splits.
+  The producer owner adds 129 whitespace characters and the decision core adds 17;
+  their non-whitespace counts stay 9,432 and 10,273 respectively.
+  Retain the eight previously AST/comment-qualified formatter patches,
+  including the lifecycle fixture's formatting, then split over-limit responsibilities.
+  Keep lint policy and root QF1 unchanged; the concrete sizing lesson stays in package docs.
+  The first reload probe lacks the host's resource-owner registration and fails after SDK reload.
+  It is a harness result, not evidence that the configured host cannot recover.
+  Repeat through the actual registered route before drawing a package conclusion.
   Native scoped lint drops to three chain warnings/zero errors across twelve files;
   a malformed escaped-path display command is stopped and the complete actual log is read by the supervisor.
   Native receives exact diagnostics and a named-local correction; source receives the exact proven type correction.
