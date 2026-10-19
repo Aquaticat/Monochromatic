@@ -1,5 +1,6 @@
 import {
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -16,18 +17,25 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type OxlintFixMode,
   type OxlintRuleDiagnostic,
   runOxlintFixture,
 } from '../dist/final/node/index.mjs';
-import { PROBE_FAILURE_TEXT, } from './harness-probe-plugin.test-fixture.ts';
+import {
+  PROBE_FAILURE_TEXT,
+  PROBE_FIX_MARKER,
+} from './harness-probe-plugin.test-fixture.ts';
 
 //region Helpers
 
-/** Plugin that reports, stays quiet, or throws, depending on which of its rules a config enables. */
+/** Plugin that reports, stays quiet, throws, or fixes, depending on which of its rules a config enables. */
 const PROBE_PLUGIN = resolve(
   import.meta.dirname,
   'harness-probe-plugin.test-fixture.ts',
 );
+
+/** Text of the source every probe project holds, which no rule has any reason to report. */
+const UNFIXED_SOURCE = 'export const answer = 42;\n';
 
 /** Disposable project holding one valid source and a config enabling the named probe rules. */
 type ProbeProject = {
@@ -74,7 +82,7 @@ function probeProject(rules: readonly string[],): ProbeProject {
   );
   writeFileSync(
     sourcePath,
-    'export const answer = 42;\n',
+    UNFIXED_SOURCE,
   );
   return {
     configPath,
@@ -97,10 +105,12 @@ function probeProject(rules: readonly string[],): ProbeProject {
  @example
  ```ts
  const outcome = await attempt(project,);
+ const fixing = await attempt(project, 'fixes',);
  ```
  */
 async function attempt(
   project: ProbeProject,
+  fix?: OxlintFixMode,
 ): Promise<{ readonly diagnostics: readonly OxlintRuleDiagnostic[]; readonly failure: unknown; }> {
   try {
     return {
@@ -110,6 +120,7 @@ async function attempt(
         fixtureConfig: project.configPath,
         target: project.sourcePath,
         threads: 1,
+        ...fix === undefined ? {} : { fix, },
       },),
       failure: undefined,
     };
@@ -165,6 +176,66 @@ await describe({
           fn: async () => {
             using project = probeProject(['reports-program', 'always-throws',],);
             const outcome = await attempt(project,);
+
+            expect(outcome.failure,).toBeInstanceOf(Error,);
+            expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);
+          },
+        },),
+        it({
+          name: 'leaves the source unchanged when no fix mode is asked, though a rule offers a fix',
+          fn: async () => {
+            using project = probeProject(['fixes-program',],);
+            const outcome = await attempt(project,);
+
+            expect(outcome.failure,).toBeUndefined();
+            expect(outcome.diagnostics.map(function codeOf(diagnostic,): string {
+              return diagnostic.code;
+            },),).toEqual(['harness-probe(fixes-program)',],);
+            expect(readFileSync(
+              project.sourcePath,
+              'utf8',
+            ),).toBe(UNFIXED_SOURCE,);
+          },
+        },),
+        it({
+          name: 'applies the fixes of a plugin that works in a fix run and reports nothing left over',
+          fn: async () => {
+            using project = probeProject(['fixes-program',],);
+            const outcome = await attempt(
+              project,
+              'fixes',
+            );
+
+            expect(outcome.failure,).toBeUndefined();
+            expect(outcome.diagnostics,).toEqual([],);
+            expect(readFileSync(
+              project.sourcePath,
+              'utf8',
+            ),).toBe(`${PROBE_FIX_MARKER}${UNFIXED_SOURCE}`,);
+          },
+        },),
+        it({
+          name: 'fails a fix run when the plugin throws on a valid source, naming the plugin error',
+          fn: async () => {
+            using project = probeProject(['always-throws',],);
+            const outcome = await attempt(
+              project,
+              'fixes',
+            );
+
+            expect(outcome.failure,).toBeInstanceOf(Error,);
+            expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);
+            expect(String(outcome.failure,),).toContain(project.sourcePath,);
+          },
+        },),
+        it({
+          name: 'fails a fix run when the plugin throws even though another rule of it fixed',
+          fn: async () => {
+            using project = probeProject(['fixes-program', 'always-throws',],);
+            const outcome = await attempt(
+              project,
+              'fixes-and-suggestions',
+            );
 
             expect(outcome.failure,).toBeInstanceOf(Error,);
             expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);
