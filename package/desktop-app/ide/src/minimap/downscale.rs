@@ -144,6 +144,8 @@ impl Reduced {
 pub struct Picture {
     /// Columns.
     width: usize,
+    /// The row of the whole picture that the first row of this one is.
+    top: usize,
     /// Rows.
     height: usize,
     /// Premultiplied RGBA bytes.
@@ -154,10 +156,12 @@ pub struct Picture {
 
 /// Placing strips.
 impl Picture {
-    /// A transparent picture `width` columns by `height` rows.
-    pub fn new(width: usize, height: usize) -> Self {
+    /// A transparent picture `width` columns wide holding the rows `rows` of the whole picture.
+    pub fn new(width: usize, rows: Range<usize>) -> Self {
+        let height = rows.end.saturating_sub(rows.start);
         return Self {
             width,
+            top: rows.start,
             height,
             bytes: vec![0; width * height * 4],
             pending: BTreeMap::new(),
@@ -165,7 +169,7 @@ impl Picture {
     }
 
     /// Place the rows of `reduced`;
-    /// a row past the picture's last is left out.
+    /// a row above the picture's first or past its last is left out.
     ///
     /// # Errors
     /// The strip was reduced to another width.
@@ -182,11 +186,14 @@ impl Picture {
         }
         let stride = self.width * 4;
         for index in 0..reduced.rows() {
-            let row = reduced.first + index;
+            let whole = reduced.first + index;
+            let Some(row) = whole.checked_sub(self.top) else {
+                continue;
+            };
             if row >= self.height {
                 break;
             }
-            if let Some(sum) = reduced.edges.get(&row) {
+            if let Some(sum) = reduced.edges.get(&whole) {
                 if let Some(held) = self.pending.get_mut(&row) {
                     for (total, part) in held.iter_mut().zip(sum) {
                         *total += *part;

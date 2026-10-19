@@ -27,8 +27,10 @@ use crate::native::{
 use ide_app::find::FindRange;
 /// The match list the find paints.
 use ide_app::find_navigation::paint_ranges;
-/// The inks of the selection and match fills.
-use ide_app::minimap::Fills;
+/// The inks of the selection and match fills,
+/// the geometry that names the bands the track shows,
+/// and the size of a band.
+use ide_app::minimap::{Fills, Geometry, band_step};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// Toolkit images,
@@ -62,9 +64,9 @@ fn fills_of(window: &AppWindow, active: bool) -> Fills {
 /// or nothing while the minimap has no size.
 /// Why:
 ///  A request is posted only when this differs from the last one;
-/// it holds no scroll offset,
-/// so a scroll step
-///  never changes it.
+/// it holds the bands the track shows with the view scrolled where it is,
+/// not the scroll offset,
+/// so a scroll step that keeps the bands never changes it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -95,6 +97,10 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         (Arc::as_ptr(&ranges).cast::<()>() as usize, ranges.len())
     };
     let active = present(current).active;
+    let wrap = has_wrap_width(current.width).then_some(current.width);
+    let scale = window.window().scale_factor();
+    let bands = Geometry::new(current.row_map.height(), height)
+        .bands_for(-window.get_scroll_y(), band_step(wrap, scale));
     return Some(Key {
         stamp: displayed(current),
         styles: Arc::as_ptr(&current.styles).cast::<()>() as usize,
@@ -107,6 +113,7 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         colors: code_colors(window),
         scale: window.window().scale_factor().to_bits(),
         size: (width.to_bits(), height.to_bits()),
+        window: (bands.start, bands.end),
         selection,
         find,
         active: active.map(range_pair),
@@ -211,9 +218,10 @@ fn flush(window: &AppWindow, state: &Rc<RefCell<State>>) {
 /// the syntax classes,
 /// the wrap width,
 /// the vertical mapping,
-/// and the size;
+/// the size,
+/// and the bands the track shows;
 ///  the scroll offset is none of them,
-/// because the viewport box moves in the markup.
+/// because the viewport box and the picture's slide move in the markup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

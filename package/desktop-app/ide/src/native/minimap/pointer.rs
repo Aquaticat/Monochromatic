@@ -91,7 +91,7 @@ fn jump(window: &AppWindow, state: &Rc<RefCell<State>>, y: f32, x: f32, shift: b
     let scale = window.window().scale_factor();
     let mut current = state.borrow_mut();
     let geometry = Geometry::new(current.row_map.height(), height);
-    let target = geometry.target(&current.row_map, y);
+    let target = geometry.target(&current.row_map, y, -window.get_scroll_y());
     let top = current.row_map.code_top(target.line) + target.row as f32 * CODE_ROW;
     // The picture is the text's whole width shrunk to the minimap's, so a position across it is the same share of
     // the text's width.

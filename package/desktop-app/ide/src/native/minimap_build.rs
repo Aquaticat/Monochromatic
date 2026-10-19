@@ -89,6 +89,7 @@ pub(super) static OFF_WORKER_BUILDS: AtomicU64 = AtomicU64::new(0);
 /// the palette,
 ///  the display scale,
 /// the minimap's size,
+/// the bands near the visible part of the picture,
 /// and what the window draws over the text (the selection,
 /// the matches,
 /// and the annotations).
@@ -97,13 +98,14 @@ pub(super) static OFF_WORKER_BUILDS: AtomicU64 = AtomicU64::new(0);
 /// and a finished picture is shown only while it still describes
 ///  the displayed text;
 /// the accept rule compares its stamp with the window's.
-///  The scroll offset is none of it,
-/// because the viewport box moves in the markup.
+///  The scroll offset is none of it but through the bands it shows:
+/// a scroll that keeps the same bands moves the picture and the viewport box in the markup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Key = { stamp: Stamp; styles: number; rows: RowKey | undefined; wrap: number; colors: Colors; scale: number;
-///   size: [number, number]; selection?: [number, number]; find: [number, number]; annotations: number };
+///   size: [number, number]; window: [number, number]; selection?: [number, number]; find: [number, number];
+///   annotations: number };
 /// ```
 #[derive(Clone, Copy, PartialEq)]
 pub(super) struct Key {
@@ -122,6 +124,9 @@ pub(super) struct Key {
     pub(super) scale: u32,
     /// Exact bits of the minimap's width and height.
     pub(super) size: (u32, u32),
+    /// The numbers of the first band the picture holds and of the one past its last,
+    /// counted from the top of the text.
+    pub(super) window: (usize, usize),
     /// The selected characters,
     /// nothing while the caret is alone.
     pub(super) selection: Option<(usize, usize)>,
@@ -188,23 +193,23 @@ pub(super) struct Job {
 
 /// What:
 ///  A finished picture of a request,
-/// with what it cost.
+/// with the row of the whole picture it starts at and what it cost.
 /// Why:
-///  A text whose picture would cost more than the quick budget gets two replies:
-/// the quick one,
-/// then the full.
+///  The picture holds the bands near the visible part of the whole picture,
+/// so the window needs to know where it stands to place it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Reply = { id: number; key: Key; last: boolean; pixels: Pixels; stats: Stats; elapsed: number };
+/// type Reply = { id: number; key: Key; top: number; pixels: Pixels; stats: Stats; elapsed: number };
 /// ```
 pub(super) struct Reply {
     /// The request this answers.
     pub(super) id: u64,
     /// What the picture is valid for.
     pub(super) key: Key,
-    /// Whether this is the request's final picture.
-    pub(super) last: bool,
+    /// The row of the whole picture that the picture's first row is,
+    /// in physical pixels.
+    pub(super) top: u32,
     /// Premultiplied pixels of the picture.
     pub(super) pixels: SharedPixelBuffer<Rgba8Pixel>,
     /// What the build cost and left out.

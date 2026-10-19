@@ -1,6 +1,6 @@
 //! The serving loop of the minimap worker:
 //!  it takes the newest request,
-//! builds its picture in the quick and the full pass,
+//! builds its picture,
 //!  and keeps the rendered units between requests.
 
 /// The job,
@@ -14,9 +14,7 @@ use crate::native::tile_build::same_typography;
 /// its budgets,
 /// its cache,
 /// and its inputs.
-use ide_app::minimap::{
-    Built, Cache, Cancel, FULL_WORK, Identity, Input, Pass, QUICK_WORK, Scene, build, prepare,
-};
+use ide_app::minimap::{BUILD_WORK, Built, Cache, Cancel, Identity, Input, Scene, build, prepare};
 /// Shaping finds where wrapped lines break.
 use ide_app::shaped_text::TextShaper;
 /// The painter whose glyph cache the worker keeps.
@@ -137,14 +135,7 @@ impl Builder {
 
     /// Hand one finished picture to `send`;
     ///  false when nobody receives it any more.
-    fn reply(
-        &self,
-        job: &Job,
-        built: Built,
-        last: bool,
-        started: Instant,
-        send: &mut dyn ReplySink,
-    ) -> bool {
+    fn reply(&self, job: &Job, built: Built, started: Instant, send: &mut dyn ReplySink) -> bool {
         let pixels = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
             &built.bytes,
             built.width,
@@ -153,7 +144,7 @@ impl Builder {
         let reply = Reply {
             id: job.id,
             key: job.key,
-            last,
+            top: built.top,
             pixels,
             stats: built.stats,
             elapsed: started.elapsed(),
@@ -161,7 +152,7 @@ impl Builder {
         tracing::debug!(
             id = job.id,
             elapsed_us = reply.elapsed.as_micros() as u64,
-            last,
+            top = reply.top,
             units = reply.stats.units,
             rendered = reply.stats.rendered,
             reused = reply.stats.reused,
@@ -172,12 +163,10 @@ impl Builder {
         return send.deliver(reply);
     }
 
-    /// Build `job`'s picture:
-    ///  a coarse one first when the full one would cost more than the quick budget,
-    ///  then the full one,
-    ///  which renders only the units the cache does not hold.
-    ///  `send` takes each finished picture.
-    ///  A newer request stops the build between units.
+    /// Build `job`'s picture,
+    ///  which renders only the bands the cache does not hold.
+    ///  `send` takes the finished picture.
+    ///  A newer request stops the build between bands.
     fn run(&mut self, job: &Job, newest: &AtomicU64, send: &mut dyn ReplySink) {
         let started = Instant::now();
         #[cfg(debug_assertions)]
@@ -212,39 +201,22 @@ impl Builder {
             },
             view: job.size.1,
             width: job.size.0,
+            window: job.key.window.0..job.key.window.1,
         };
-        let full = prepare(&input, Pass::Full);
-        if full.pending_work(&scene, &self.cache) > QUICK_WORK {
-            let quick = prepare(&input, Pass::Quick);
-            let Some(coarse) = build(
-                &mut self.shaper,
-                &mut self.raster,
-                &input,
-                &quick,
-                None,
-                FULL_WORK,
-                &cancelled,
-            ) else {
-                tracing::debug!(id = job.id, "a newer minimap request stopped the build");
-                return;
-            };
-            if !self.reply(job, coarse, false, started, send) {
-                return;
-            }
-        }
+        let prepared = prepare(&input);
         let Some(done) = build(
             &mut self.shaper,
             &mut self.raster,
             &input,
-            &full,
-            Some(&mut self.cache),
-            FULL_WORK,
+            &prepared,
+            &mut self.cache,
+            BUILD_WORK,
             &cancelled,
         ) else {
             tracing::debug!(id = job.id, "a newer minimap request stopped the build");
             return;
         };
-        self.reply(job, done, true, started, send);
+        self.reply(job, done, started, send);
     }
 }
 

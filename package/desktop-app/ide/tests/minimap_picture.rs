@@ -27,18 +27,20 @@ use ide_app::line_rows::LineRows;
 /// its plan,
 /// and its parts.
 use ide_app::minimap::{
-    BAND_BYTES, Built, Cache, Cancel, Density, FULL_WORK, Fills, Geometry, Identity, Input, Pass,
-    Picture, Reducer, Reduction, SAMPLES, Scene, Strip, band_height, build, full_density,
-    paint_fills, plan, prepare, render, text_span,
+    BAND_BYTES, BUILD_WORK, Built, Cache, Cancel, Fills, Geometry, Identity, Input, Picture,
+    Reducer, Reduction, Scene, Strip, band_count, band_height, band_step, build, paint_fills, plan,
+    prepare, render, text_span,
 };
 /// The vertical mapping.
 use ide_app::row_map::{CODE_ROW, RowMap};
 /// Shaping and the frame it prepares.
-use ide_app::shaped_text::{TextShaper, Viewport, line_work, raster_fits, raster_width};
+use ide_app::shaped_text::{TextShaper, Viewport, raster_fits, raster_width};
 /// Syntax classes.
 use ide_app::source_style::StyleSpan;
 /// The painter and its palette.
-use ide_app::text_raster::{CodeColors, MAX_RASTER_BYTES, TextRaster};
+use ide_app::text_raster::{CodeColors, TextRaster};
+/// A window of bands is a range of their numbers.
+use std::ops::Range;
 
 /// The dark scheme's palette of the tests.
 const DARK: CodeColors = CodeColors {
@@ -201,7 +203,13 @@ impl Fixture {
             },
             view,
             width,
+            window: self.all(),
         };
+    }
+
+    /// The numbers of every band of the text.
+    fn all(&self) -> Range<usize> {
+        return 0..band_count(self.map.height(), band_step(self.wrap, self.scale));
     }
 
     /// Select the characters `anchor` to `head`.
@@ -221,14 +229,14 @@ fn picture(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> Built {
     let input = fixture.input(scene, view, width);
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
-    let prepared = prepare(&input, Pass::Full);
+    let prepared = prepare(&input);
     return build(
         &mut shaper,
         &mut raster,
         &input,
         &prepared,
-        None,
-        FULL_WORK,
+        &mut Cache::new(),
+        BUILD_WORK,
         &Never,
     )
     .expect("a picture");
@@ -248,7 +256,8 @@ fn whole_frame(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> (Vec<u
     let geometry = Geometry::new(fixture.map.height(), view);
     let ratio = f64::from(geometry.scale());
     let out_width = ((width * scale).round() as usize).max(1);
-    let out_height = ((f64::from(geometry.track() * scale)) - 1e-3).ceil() as usize;
+    let out_height =
+        (f64::from(fixture.map.height()) * f64::from(scale) * ratio - 1e-3).ceil() as usize;
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     let lines = fixture.document.text().len_lines();
@@ -286,7 +295,7 @@ fn whole_frame(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> (Vec<u
         step: 1.0,
     };
     let reduced = reducer.reduce(&strip, &(0.0..f64::INFINITY));
-    let mut picture = Picture::new(out_width, out_height);
+    let mut picture = Picture::new(out_width, 0..out_height);
     picture.place(&reduced).expect("same width");
     return (picture.finish(), out_width, out_height);
 }
@@ -319,7 +328,8 @@ fn bands_cover_the_text_exactly_and_stay_within_their_budget() {
         for scale in [0.5_f32, 1.0, 1.25, 2.0, 3.0] {
             for width in [160.0_f32, 700.0, 1354.0, 3000.0, 7600.0] {
                 let columns = (raster_width(Some(width)) * scale).ceil() as u64;
-                let bands = plan(map, columns, scale);
+                let step = band_height(columns, scale);
+                let bands = plan(map, columns, scale, 0..band_count(map.height(), step));
                 let mut edge = 0.0_f32;
                 let mut line = 0;
                 for (index, band) in bands.iter().enumerate() {
@@ -459,7 +469,7 @@ fn selection_fill(bytes: &[u8]) -> usize {
 #[test]
 fn the_selection_fill_is_drawn_under_the_glyphs_of_a_band() {
     let mut fixture = fixture(6, 600.0, 1.0);
-    let band = plan(&fixture.map, 1000, 1.0).remove(0);
+    let band = plan(&fixture.map, 1000, 1.0, 0..1).remove(0);
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     let plain = render(&mut shaper, &mut raster, &fixture.scene(FILLS), &band).expect("a band");
@@ -493,14 +503,14 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
     let first = {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 400.0, 110.0);
-        let prepared = prepare(&input, Pass::Full);
+        let prepared = prepare(&input);
         build(
             &mut shaper,
             &mut raster,
             &input,
             &prepared,
-            Some(&mut cache),
-            FULL_WORK,
+            &mut cache,
+            BUILD_WORK,
             &Never,
         )
         .expect("a picture")
@@ -512,14 +522,14 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
     let again = {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 400.0, 110.0);
-        let prepared = prepare(&input, Pass::Full);
+        let prepared = prepare(&input);
         build(
             &mut shaper,
             &mut raster,
             &input,
             &prepared,
-            Some(&mut cache),
-            FULL_WORK,
+            &mut cache,
+            BUILD_WORK,
             &Never,
         )
         .expect("a picture")
@@ -532,14 +542,14 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
     let selected = {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 400.0, 110.0);
-        let prepared = prepare(&input, Pass::Full);
+        let prepared = prepare(&input);
         build(
             &mut shaper,
             &mut raster,
             &input,
             &prepared,
-            Some(&mut cache),
-            FULL_WORK,
+            &mut cache,
+            BUILD_WORK,
             &Never,
         )
         .expect("a picture")
@@ -564,14 +574,14 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
             ..DARK
         };
         let input = fixture.input(scene, 400.0, 110.0);
-        let prepared = prepare(&input, Pass::Full);
+        let prepared = prepare(&input);
         build(
             &mut shaper,
             &mut raster,
             &input,
             &prepared,
-            Some(&mut cache),
-            FULL_WORK,
+            &mut cache,
+            BUILD_WORK,
             &Never,
         )
         .expect("a picture")
@@ -591,14 +601,14 @@ fn a_unit_the_budget_cannot_pay_keeps_the_rows_of_the_last_picture() {
     let before = {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 300.0, 110.0);
-        let prepared = prepare(&input, Pass::Full);
+        let prepared = prepare(&input);
         build(
             &mut shaper,
             &mut raster,
             &input,
             &prepared,
-            Some(&mut cache),
-            FULL_WORK,
+            &mut cache,
+            BUILD_WORK,
             &Never,
         )
         .expect("a picture")
@@ -607,13 +617,13 @@ fn a_unit_the_budget_cannot_pay_keeps_the_rows_of_the_last_picture() {
     fixture.select(0, 30);
     let scene = fixture.scene(FILLS);
     let input = fixture.input(scene, 300.0, 110.0);
-    let prepared = prepare(&input, Pass::Full);
+    let prepared = prepare(&input);
     let kept = build(
         &mut shaper,
         &mut raster,
         &input,
         &prepared,
-        Some(&mut cache),
+        &mut cache,
         0,
         &Never,
     )
@@ -631,7 +641,7 @@ fn a_unit_the_budget_cannot_pay_keeps_the_rows_of_the_last_picture() {
         &mut raster,
         &input,
         &prepared,
-        Some(&mut empty),
+        &mut empty,
         0,
         &Never,
     )
@@ -654,7 +664,7 @@ fn a_band_that_cannot_be_rendered_is_counted_and_leaves_the_picture_standing() {
     // A raster so wide that not even three rows of it fit the limit.
     fixture.wrap = Some(5_000_000.0);
     let scene = fixture.scene(FILLS);
-    let band = plan(&fixture.map, 5_000_024, 1.0).remove(0);
+    let band = plan(&fixture.map, 5_000_024, 1.0, 0..1).remove(0);
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     let error = render(&mut shaper, &mut raster, &scene, &band)
@@ -662,14 +672,14 @@ fn a_band_that_cannot_be_rendered_is_counted_and_leaves_the_picture_standing() {
         .expect("a frame cut to the limit is refused");
     assert!(format!("{error:#}").contains("raster limit"), "{error:#}");
     let input = fixture.input(scene, 200.0, 110.0);
-    let prepared = prepare(&input, Pass::Full);
+    let prepared = prepare(&input);
     let built = build(
         &mut shaper,
         &mut raster,
         &input,
         &prepared,
-        None,
-        FULL_WORK,
+        &mut Cache::new(),
+        BUILD_WORK,
         &Never,
     )
     .expect("a picture");
@@ -677,111 +687,124 @@ fn a_band_that_cannot_be_rendered_is_counted_and_leaves_the_picture_standing() {
     assert_eq!(built.stats.rendered, 0);
 }
 
-/// A text with many more rows than the track has pixels is sampled:
-/// the lines rendered follow the track and not the text,
-/// and no raster passes the limit.
-#[test]
-fn a_long_text_is_sampled_within_the_track_and_never_passes_the_raster_limit() {
-    let fixture = fixture(3_000, 700.0, 1.0);
+/// The part of `whole`'s rows that `part` holds, against `part`'s own:
+/// the largest channel difference.
+fn crop_difference(whole: &Built, part: &Built) -> u8 {
+    assert_eq!(whole.width, part.width, "pictures of different widths");
+    let stride = whole.width as usize * 4;
+    let from = part.top as usize * stride;
+    let to = from + part.height as usize * stride;
+    assert!(
+        to <= whole.bytes.len(),
+        "the rows {from} to {to} are not in a picture of {}",
+        whole.bytes.len()
+    );
+    return worst_difference(&whole.bytes[from..to], &part.bytes);
+}
+
+/// The picture of the bands `window` of `fixture`,
+/// kept in `cache`.
+fn windowed(fixture: &Fixture, window: Range<usize>, cache: &mut Cache) -> Built {
     let scene = fixture.scene(FILLS);
-    let input = fixture.input(scene, 240.0, 110.0);
-    let ratio = f64::from(Geometry::new(fixture.map.height(), 240.0).scale());
-    assert_eq!(full_density(ratio), Density::Sampled(SAMPLES));
+    let input = Input {
+        window,
+        ..fixture.input(scene, 240.0, 110.0)
+    };
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
-    let quick = prepare(&input, Pass::Quick);
-    let coarse = build(
-        &mut shaper,
-        &mut raster,
-        &input,
-        &quick,
-        None,
-        FULL_WORK,
-        &Never,
-    )
-    .expect("a coarse picture");
-    assert_eq!(coarse.height, 240);
-    assert!(
-        coarse.stats.lines <= 240,
-        "the coarse picture rendered {} lines for 240 rows",
-        coarse.stats.lines
-    );
-    let prepared = prepare(&input, Pass::Full);
-    let full = build(
+    let prepared = prepare(&input);
+    return build(
         &mut shaper,
         &mut raster,
         &input,
         &prepared,
-        None,
-        FULL_WORK,
+        cache,
+        BUILD_WORK,
         &Never,
     )
     .expect("a picture");
-    assert!(full.stats.lines <= 240 * SAMPLES);
-    assert!(full.stats.lines >= 240 * SAMPLES / 2);
-    assert_eq!(full.stats.failed + full.stats.skipped, 0);
-    assert!(u64::try_from(full.stats.largest).expect("a size") <= MAX_RASTER_BYTES);
-    let mut inked = 0;
-    for pixel in full.bytes.chunks(4) {
-        if pixel[3] > 0 {
-            inked += 1;
-        }
-    }
-    assert!(
-        inked > 1000,
-        "the sampled picture holds only {inked} inked pixels"
-    );
-    // The coarse and the full picture are estimates of the same average.
-    let mut coarse_sum = 0_u64;
-    let mut full_sum = 0_u64;
-    for (one, other) in coarse.bytes.chunks(4).zip(full.bytes.chunks(4)) {
-        coarse_sum += u64::from(one[3]);
-        full_sum += u64::from(other[3]);
-    }
-    let low = full_sum * 7 / 10;
-    let high = full_sum * 13 / 10;
-    assert!(
-        coarse_sum >= low && coarse_sum <= high,
-        "the coarse picture holds {coarse_sum} of alpha against {full_sum}"
-    );
 }
 
-/// Lines that cost a great deal each make the full picture sample fewer code rows for each output row,
-/// down to one,
-/// so the picture stays whole within its budget instead of leaving rows out.
+/// A long text builds only the bands near the visible part of the picture,
+/// at every scroll,
+/// and what it builds is exactly those rows of the picture of the whole text:
+/// the window covers the track,
+/// holds a few bands,
+/// and never passes the raster limit.
 #[test]
-fn costly_lines_thin_the_samples_instead_of_leaving_rows_out() {
-    for (length, samples) in [(300, SAMPLES), (4_000, SAMPLES / 2), (20_000, 1)] {
-        let mut text = String::new();
-        for number in 0..2_000 {
-            text.push_str(&format!("{number:04} {}\n", "x".repeat(length)));
-        }
-        let document = Document::new(&text);
-        let map = RowMap::plain(document.text().len_lines());
-        let fixture = Fixture {
-            document,
-            styles: Vec::new(),
-            map,
-            marks: Vec::new(),
-            ranges: Vec::new(),
-            wrap: None,
-            scale: 1.0,
-        };
-        let scene = fixture.scene(FILLS);
-        let input = fixture.input(scene, 240.0, 110.0);
-        let prepared = prepare(&input, Pass::Full);
-        let pending = prepared.pending_work(&scene, &Cache::new());
-        let line = line_work(&fixture.document, 0);
+fn a_long_text_builds_only_the_bands_near_the_visible_part_and_they_are_rows_of_the_whole() {
+    for scale in [1.0_f32, 2.0] {
+        let fixture = fixture(3_000, 700.0, scale);
+        let geometry = Geometry::new(fixture.map.height(), 240.0);
+        let step = band_step(fixture.wrap, scale);
+        let whole = windowed(&fixture, fixture.all(), &mut Cache::new());
         assert!(
-            pending <= FULL_WORK,
-            "{length} characters a line: the plan costs {pending}, more than {FULL_WORK}"
+            whole.height as f32 > 20.0 * 240.0 * scale,
+            "the text is many views long"
         );
-        assert_eq!(
-            (pending as f64 / (240 * line) as f64).round() as usize,
-            samples,
-            "{length} characters a line: the plan costs {pending} for 240 rows of lines that cost {line}"
-        );
+        assert_eq!(whole.stats.failed + whole.stats.skipped, 0);
+        for share in [0.0_f32, 0.37, 0.81, 1.0] {
+            let offset = geometry.max_offset() * share;
+            let window = geometry.bands_for(offset, step);
+            let part = windowed(&fixture, window.clone(), &mut Cache::new());
+            assert_eq!(part.stats.units, window.len());
+            assert!(
+                part.stats.units * 8 < whole.stats.units,
+                "scale {scale} at {share}: {} of {} bands built",
+                part.stats.units,
+                whole.stats.units
+            );
+            assert_eq!(
+                crop_difference(&whole, &part),
+                0,
+                "scale {scale} at {share}: the rows differ from the whole picture's"
+            );
+            assert!(u64::try_from(part.stats.largest).expect("a size") <= BAND_BYTES);
+            // The rows in view are among the rows built.
+            let slide = (geometry.slide(offset) * scale).round() as u32;
+            let shown = (geometry.track() * scale).ceil() as u32;
+            assert!(
+                part.top <= slide && slide + shown <= part.top + part.height + 1,
+                "scale {scale} at {share}: rows {slide} to {} in view, rows {} to {} built",
+                slide + shown,
+                part.top,
+                part.top + part.height
+            );
+        }
     }
+}
+
+/// A window that slides by a band renders the band that came in and nothing else,
+/// the cache keeps the bands of the window and no others,
+/// and the rows built are still rows of the whole picture.
+#[test]
+fn a_window_that_slides_renders_only_the_band_that_came_in() {
+    let fixture = fixture(2_000, 700.0, 1.0);
+    let whole = windowed(&fixture, fixture.all(), &mut Cache::new());
+    let mut cache = Cache::new();
+    let first = windowed(&fixture, 10..16, &mut cache);
+    assert_eq!(
+        (first.stats.rendered, first.stats.reused),
+        (6, 0),
+        "{:?}",
+        first.stats
+    );
+    assert_eq!(cache.len(), 6);
+    let next = windowed(&fixture, 11..17, &mut cache);
+    assert_eq!(
+        (next.stats.rendered, next.stats.reused),
+        (1, 5),
+        "one band came in and five stayed"
+    );
+    assert_eq!(cache.len(), 6, "the band that went out is dropped");
+    assert!(cache.get(10).is_none() && cache.get(16).is_some());
+    assert_eq!(crop_difference(&whole, &first), 0);
+    assert_eq!(crop_difference(&whole, &next), 0);
+    assert!(next.top > first.top, "the picture moved down the text");
+    // A jump to another place keeps nothing of the old window.
+    let far = windowed(&fixture, 30..36, &mut cache);
+    assert_eq!((far.stats.rendered, far.stats.reused), (6, 0));
+    assert_eq!(cache.len(), 6);
 }
 
 /// A build that is cancelled answers nothing.
@@ -790,7 +813,7 @@ fn a_cancelled_build_answers_nothing() {
     let fixture = fixture(10, 500.0, 1.0);
     let scene = fixture.scene(FILLS);
     let input = fixture.input(scene, 200.0, 110.0);
-    let prepared = prepare(&input, Pass::Full);
+    let prepared = prepare(&input);
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     assert!(
@@ -799,8 +822,8 @@ fn a_cancelled_build_answers_nothing() {
             &mut raster,
             &input,
             &prepared,
-            None,
-            FULL_WORK,
+            &mut Cache::new(),
+            BUILD_WORK,
             &Always
         )
         .is_none()
@@ -820,14 +843,14 @@ fn a_tall_view_gives_a_picture_as_tall_as_its_track_within_the_budget() {
         let built = {
             let mut shaper = TextShaper::new();
             let mut raster = TextRaster::new();
-            let prepared = prepare(&input, Pass::Full);
+            let prepared = prepare(&input);
             build(
                 &mut shaper,
                 &mut raster,
                 &input,
                 &prepared,
-                None,
-                FULL_WORK,
+                &mut Cache::new(),
+                BUILD_WORK,
                 &Never,
             )
             .expect("a picture")

@@ -1,5 +1,6 @@
 //! The minimap's geometry without a window:
 //!  the picture's scale,
+//! how far it slides past the track,
 //! the viewport box,
 //! and the maps between a minimap position,
 //! a scroll offset,
@@ -10,8 +11,10 @@
 /// The visual row counts and the map built from them.
 use ide_app::line_rows::LineRows;
 /// The geometry and its constants.
-use ide_app::minimap::{Geometry, MIN_BOX, NARROWEST, Target, WIDTH, text_span, text_x, width_for};
-/// The vertical mapping the minimap squeezes.
+use ide_app::minimap::{
+    Geometry, MIN_BOX, NARROWEST, Target, WIDTH, band_count, text_span, text_x, width_for,
+};
+/// The vertical mapping the minimap shows.
 use ide_app::row_map::{CODE_ROW, RowMap};
 /// The width of an unwrapped raster.
 use ide_app::shaped_text::UNWRAPPED_RASTER_WIDTH;
@@ -36,7 +39,11 @@ fn a_text_that_fits_is_drawn_at_four_pixels_a_row() {
     let geometry = Geometry::new(100.0 * CODE_ROW, 600.0);
     assert_eq!(geometry.scale(), 4.0 / CODE_ROW);
     assert_eq!(geometry.track(), 400.0);
-    assert!(!geometry.squeezed());
+    assert_eq!(
+        geometry.slide(900.0),
+        0.0,
+        "a picture that fits does not slide"
+    );
     assert_eq!(geometry.box_height(), 100.0);
     assert_eq!(geometry.room(), 300.0);
     assert_eq!(geometry.max_offset(), 1800.0);
@@ -63,22 +70,40 @@ fn a_text_shorter_than_the_view_is_covered_by_the_box() {
     assert_eq!(tiny.box_height(), 12.0);
 }
 
-/// A text with more rows than the track has pixels is squeezed to the view,
-/// and the box keeps its least height.
+/// A text with more rows than the track has pixels keeps the scale:
+/// the picture slides past the track with the scroll,
+/// and the box keeps the view's share of the scale.
 #[test]
-fn a_text_with_more_rows_than_pixels_is_squeezed_and_the_box_keeps_a_floor() {
+fn a_long_text_keeps_the_scale_and_its_picture_slides_past_the_track() {
     let content = 50_000.0 * CODE_ROW;
     let geometry = Geometry::new(content, 600.0);
-    assert!(geometry.squeezed());
+    assert_eq!(
+        geometry.scale(),
+        4.0 / CODE_ROW,
+        "the scale does not follow the length"
+    );
     assert_eq!(geometry.track(), 600.0);
-    assert_eq!(geometry.scale(), 600.0 / content);
-    // The view is 600 of 1,200,000 px, a third of a pixel of picture; the box is the least height.
-    assert_eq!(geometry.box_height(), MIN_BOX);
-    assert_eq!(geometry.room(), 600.0 - MIN_BOX);
+    // The view is 600 of 1,200,000 px, a sixth of that in the picture.
+    assert_eq!(geometry.box_height(), 100.0);
+    // A view under 120 px would have a box under the least height.
+    assert_eq!(Geometry::new(content, 90.0).box_height(), MIN_BOX);
+    assert_eq!(geometry.room(), 500.0);
     assert_eq!(geometry.box_top(0.0), 0.0);
-    assert_eq!(geometry.box_top(geometry.max_offset()), 600.0 - MIN_BOX);
-    let middle = geometry.box_top(geometry.max_offset() / 2.0);
-    assert!((middle - (600.0 - MIN_BOX) / 2.0).abs() < 1e-3);
+    assert_eq!(geometry.box_top(geometry.max_offset()), 500.0);
+    // The picture is 200,000 px tall: it has slid nothing at the top and all of its overhang at the end.
+    assert_eq!(geometry.slide(0.0), 0.0);
+    let overhang = content / 6.0 - 600.0;
+    assert!((geometry.slide(geometry.max_offset()) - overhang).abs() < 1e-1);
+    // Whatever the offset, the box lies where the view's rows are in the picture as it has slid.
+    for share in [0.0_f32, 0.1, 0.5, 0.77, 1.0] {
+        let offset = geometry.max_offset() * share;
+        let in_picture = offset / 6.0 - geometry.slide(offset);
+        assert!(
+            (in_picture - geometry.box_top(offset)).abs() < 1e-1,
+            "at {share} of the range the view's rows lie at {in_picture} and the box at {}",
+            geometry.box_top(offset)
+        );
+    }
 }
 
 /// An offset or a position outside the range is held to its ends.
@@ -87,10 +112,10 @@ fn positions_outside_the_range_are_clamped_at_both_ends() {
     let geometry = Geometry::new(100.0 * CODE_ROW, 600.0);
     assert_eq!(geometry.box_top(-100.0), 0.0);
     assert_eq!(geometry.box_top(1e9), geometry.room());
-    assert_eq!(geometry.content_y(-20.0), 0.0);
-    assert!((geometry.content_y(1e6) - 100.0 * CODE_ROW).abs() < 1e-2);
-    assert_eq!(geometry.y_of(-5.0), 0.0);
-    assert_eq!(geometry.y_of(1e9), geometry.track());
+    assert_eq!(geometry.content_y(-20.0, 0.0), 0.0);
+    assert!((geometry.content_y(1e6, 0.0) - 100.0 * CODE_ROW).abs() < 1e-2);
+    assert_eq!(geometry.y_of(-5.0, 0.0), 0.0);
+    assert_eq!(geometry.y_of(1e9, 0.0), geometry.track());
     assert_eq!(geometry.drag_offset(500.0, 10.0, -1e6), 0.0);
     assert_eq!(
         geometry.drag_offset(500.0, 10.0, 1e6),
@@ -105,7 +130,8 @@ fn positions_outside_the_range_are_clamped_at_both_ends() {
     assert_eq!(geometry.centered(1000.0), 700.0);
 }
 
-/// A position on the minimap and the text position it shows are each other's inverse.
+/// A position on the minimap and the text position it shows are each other's inverse,
+/// at every scroll offset.
 #[test]
 fn a_minimap_position_and_its_text_position_are_each_others_inverse() {
     for (rows, view) in [
@@ -116,13 +142,16 @@ fn a_minimap_position_and_its_text_position_are_each_others_inverse() {
     ] {
         let geometry = Geometry::new(rows * CODE_ROW, view);
         let track = geometry.track();
-        for step in 0..=20 {
-            let y = track * step as f32 / 20.0;
-            let back = geometry.y_of(geometry.content_y(y));
-            assert!(
-                (back - y).abs() < 1e-2,
-                "{rows} rows in {view}: position {y} came back as {back}"
-            );
+        for share in [0.0_f32, 0.3, 1.0] {
+            let offset = geometry.max_offset() * share;
+            for step in 0..=20 {
+                let y = track * step as f32 / 20.0;
+                let back = geometry.y_of(geometry.content_y(y, offset), offset);
+                assert!(
+                    (back - y).abs() < 1e-1,
+                    "{rows} rows in {view} at {share}: position {y} came back as {back}"
+                );
+            }
         }
     }
 }
@@ -159,7 +188,6 @@ fn a_position_names_the_visual_row_it_shows_and_the_row_names_its_position_back(
     // A block of 48 px stands above line 5.
     let map = RowMap::new(100, &[(5, 48.0)]).with_rows(&rows);
     let geometry = Geometry::new(map.height(), 1000.0);
-    assert!(!geometry.squeezed());
     for target in [
         Target { line: 0, row: 0 },
         Target { line: 4, row: 0 },
@@ -171,35 +199,92 @@ fn a_position_names_the_visual_row_it_shows_and_the_row_names_its_position_back(
         Target { line: 99, row: 0 },
     ] {
         // The middle of the row's pixels, which are CODE_ROW over six tall.
-        let y = geometry.y_of_row(&map, target) + 0.5;
-        assert_eq!(geometry.target(&map, y), target, "the row at {y}");
+        let y = geometry.y_of_row(&map, target, 0.0) + 0.5;
+        assert_eq!(geometry.target(&map, y, 0.0), target, "the row at {y}");
     }
     // The block above line 5 shows line 5's first row.
-    let in_block = geometry.y_of(map.block_top(5) + 10.0);
-    assert_eq!(geometry.target(&map, in_block), Target { line: 5, row: 0 });
+    let in_block = geometry.y_of(map.block_top(5) + 10.0, 0.0);
+    assert_eq!(
+        geometry.target(&map, in_block, 0.0),
+        Target { line: 5, row: 0 }
+    );
     // Both ends.
-    assert_eq!(geometry.target(&map, -10.0), Target { line: 0, row: 0 });
-    assert_eq!(geometry.target(&map, 1e6), Target { line: 99, row: 0 });
+    assert_eq!(
+        geometry.target(&map, -10.0, 0.0),
+        Target { line: 0, row: 0 }
+    );
+    assert_eq!(geometry.target(&map, 1e6, 0.0), Target { line: 99, row: 0 });
 }
 
-/// In a squeezed minimap many rows share a pixel;
-/// the position names one of them,
-/// and it is on that pixel.
+/// In a long text a position names a row of the part of the picture that is in view:
+/// the row lies on that position,
+/// and the part in view follows the scroll.
 #[test]
-fn in_a_squeezed_minimap_a_position_names_a_row_that_lies_on_it() {
+fn in_a_long_text_a_position_names_a_row_that_lies_on_it_at_every_scroll() {
     let map = RowMap::plain(50_000);
     let geometry = Geometry::new(map.height(), 600.0);
-    assert!(geometry.squeezed());
-    for y in [0.0_f32, 0.5, 100.0, 299.5, 599.9] {
-        let target = geometry.target(&map, y);
-        let top = geometry.y_of_row(&map, target);
-        assert!(
-            top <= y + 1e-3 && y - top < 1.0 + 1e-3,
-            "position {y} named line {} at {top}",
-            target.line
-        );
+    for share in [0.0_f32, 0.25, 0.5, 1.0] {
+        let offset = geometry.max_offset() * share;
+        for y in [0.0_f32, 0.5, 100.0, 299.5, 599.9] {
+            let target = geometry.target(&map, y, offset);
+            let top = geometry.y_of_row(&map, target, offset);
+            // A code row is four pixels of the picture.
+            assert!(
+                top <= y + 1e-2 && y - top < 4.0 + 1e-2,
+                "at {share} of the range position {y} named line {} at {top}",
+                target.line
+            );
+        }
     }
-    assert!((24_999..=25_000).contains(&geometry.target(&map, 300.0).line));
+    // The middle of the track in the middle of the range shows the middle of the text.
+    let middle = geometry.max_offset() / 2.0;
+    assert!((24_999..=25_001).contains(&geometry.target(&map, 300.0, middle).line));
+    // The top of the track at the top shows the first line and the bottom at the end shows the last.
+    assert_eq!(geometry.target(&map, 0.0, 0.0).line, 0);
+    assert_eq!(
+        geometry.target(&map, 600.0, geometry.max_offset()).line,
+        49_999
+    );
+}
+
+/// The bands to keep are the ones the track shows and one on each side,
+/// held to the text,
+/// and the same bands for a scroll that stays within a band.
+#[test]
+fn the_bands_to_keep_surround_the_part_of_the_picture_in_view() {
+    let step = 24.0 * 33.0;
+    let content = 50_000.0 * CODE_ROW;
+    let geometry = Geometry::new(content, 600.0);
+    let total = band_count(content, step);
+    assert_eq!(total, (content / step).ceil() as usize);
+    for share in [0.0_f32, 0.001, 0.4, 0.999, 1.0] {
+        let offset = geometry.max_offset() * share;
+        let bands = geometry.bands_for(offset, step);
+        let shown_from = geometry.slide(offset) / geometry.scale();
+        let shown_to = (geometry.slide(offset) + geometry.track()) / geometry.scale();
+        assert!(bands.end <= total && bands.start < bands.end);
+        // A whole band of margin lies on each side of the part in view, but at the ends of the text.
+        assert!(
+            bands.start == 0 || (bands.start as f32 + 1.0) * step <= shown_from,
+            "at {share} the bands start at {} after the part in view at {shown_from} less a band",
+            bands.start
+        );
+        assert!(
+            bands.end == total || bands.end as f32 * step >= shown_to + step,
+            "at {share} the bands end at {} before the part in view ends at {shown_to} plus a band",
+            bands.end
+        );
+        // The picture's 600 px are 3,600 px of text, five bands of this height, with one more on each side.
+        assert!(bands.len() <= 8, "{} bands for one view", bands.len());
+    }
+    // A scroll within a band's height of the picture's slide names the same bands.
+    let at = geometry.max_offset() * 0.5;
+    let same = geometry.bands_for(at + 1.0, step);
+    assert_eq!(geometry.bands_for(at, step), same);
+    // A short text is one window of all its bands.
+    let short = Geometry::new(10.0 * CODE_ROW, 600.0);
+    assert_eq!(short.bands_for(0.0, step), 0..1);
+    assert_eq!(Geometry::new(0.0, 600.0).bands_for(0.0, step), 0..0);
 }
 
 /// The picture is the text's whole width shrunk to the minimap's,

@@ -24,7 +24,7 @@ use super::wrap_tests::{long_text, open, settled};
 /// and the accept rule.
 use super::{
     AppWindow,
-    minimap::{DEBOUNCE, Plan, THROTTLE, apply, plan},
+    minimap::{DEBOUNCE, Plan, SLIDE, THROTTLE, apply, plan},
     minimap_build::{Key as PictureKey, MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
     overscan_tile_tests::{scroll_to, settle_tile},
     theme_tests::switch,
@@ -32,7 +32,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::minimap::{FULL_WORK, Geometry, SAMPLES};
+use ide_app::minimap::{BUILD_WORK, Geometry, band_count, band_step};
 /// Toolkit events,
 /// models,
 /// and images.
@@ -145,8 +145,8 @@ fn picture_shown(reader: &Reader) {
     }
 }
 
-/// The box matches `ide_app::minimap::Geometry` at every scroll offset,
-/// and tracks the scroll live:
+/// The box and the picture's slide match `ide_app::minimap::Geometry` at every scroll offset,
+/// and track the scroll live:
 /// the first offset puts
 ///  it at the top,
 /// the last at the bottom of the track.
@@ -161,8 +161,8 @@ fn the_box_matches_the_geometry_at_every_offset() {
         "the text is longer than the view"
     );
     assert!(
-        shape.squeezed(),
-        "the picture of this text is squeezed into the view"
+        shape.slide(shape.max_offset()) > 100.0,
+        "the picture of this text is taller than the view and slides"
     );
     for wanted in [
         0.0,
@@ -182,6 +182,12 @@ fn the_box_matches_the_geometry_at_every_offset() {
         );
         assert!((window.get_minimap_box_height() - shape.box_height()).abs() < 0.01);
         assert!((window.get_minimap_track() - shape.track()).abs() < 0.01);
+        assert!(
+            (window.get_minimap_slide() - shape.slide(at)).abs() < 0.01,
+            "the picture's slide {} against {} at offset {at}",
+            window.get_minimap_slide(),
+            shape.slide(at)
+        );
     }
     scroll_to(window, 0.0);
     assert_eq!(
@@ -235,7 +241,7 @@ fn a_press_outside_the_box_jumps_to_the_row_and_the_keyboard_still_works() {
     let y = shape.track() * 0.6;
     let (target, expected) = {
         let current = opened.source.borrow();
-        let found = shape.target(&current.row_map, y);
+        let found = shape.target(&current.row_map, y, offset(&opened));
         let top = current.row_map.code_top(found.line) + found.row as f32 * 24.0;
         (found, shape.centered(top + 12.0).round())
     };
@@ -260,7 +266,16 @@ fn a_press_outside_the_box_jumps_to_the_row_and_the_keyboard_still_works() {
         );
     }
     let anchor = opened.source.borrow().document.position().head;
-    let second = shape.track() * 0.3;
+    // A place well above the row the first press centered, outside the box that now stands over it.
+    let second = {
+        let current = opened.source.borrow();
+        let row = shape.y_of_row(&current.row_map, target, offset(&opened));
+        (row - 150.0).max(2.0)
+    };
+    assert!(
+        second < window.get_minimap_box_top(),
+        "the second pressed place is outside the box"
+    );
     window.window().dispatch_event(WindowEvent::KeyPressed {
         text: Key::Shift.into(),
     });
@@ -296,15 +311,14 @@ fn a_press_across_the_minimap_puts_the_caret_in_the_same_share_of_the_text() {
     let (_project, opened) = open(&long_text(400));
     settled(&opened);
     let window = &opened.window;
-    let y = geometry(&opened).track() * 0.6;
+    let shape = geometry(&opened);
+    let y = shape.track() * 0.2;
     let width = window.get_minimap_width();
     let mut columns = Vec::new();
-    let far = geometry(&opened).track() * 0.97;
     for share in [0.05_f32, 0.3, 0.6, 0.95] {
-        // A press on the box starts a drag,
-        // so the box is first moved away from the pressed place.
-        press(&opened, over(window, 10.0, far));
-        lift(&opened, over(window, 10.0, far));
+        // A press on the box starts a drag, and a press moves the view,
+        // so the view is first put where the box is away from the pressed place and the same row lies under it.
+        scroll_to(window, shape.max_offset() / 2.0);
         calm(&opened);
         assert!(
             y < window.get_minimap_box_top()
@@ -515,8 +529,19 @@ fn the_wheel_over_the_minimap_scrolls_like_the_wheel_over_the_text() {
     window.hide().expect("close minimap window");
 }
 
+/// How many bands the whole text of the reader's window is cut into.
+pub(super) fn bands_of(reader: &Reader) -> usize {
+    let current = reader.source.borrow();
+    let wrap = ide_app::wrap::has_wrap_width(current.width).then_some(current.width);
+    return band_count(
+        current.row_map.height(),
+        band_step(wrap, reader.window.window().scale_factor()),
+    );
+}
+
 /// The picture is built on the worker thread,
-/// its size is the minimap's,
+/// its width is the minimap's,
+/// it holds the bands near the visible part of the text,
 /// and what it cost stays inside its bounds.
 #[test]
 fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
@@ -542,11 +567,18 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
     assert_eq!(image.width() as f32, window.get_minimap_width());
     assert_eq!(image.width() as f32, window.get_minimap_picture_width());
     assert_eq!(image.height() as f32, window.get_minimap_picture_height());
+    let scale = window.window().scale_factor();
     assert!(
-        (image.height() as f32 - window.get_minimap_track()).abs() <= 1.0,
-        "the picture is as tall as the track"
+        image.height() as f32 + 1.0 >= window.get_minimap_track() * scale,
+        "the picture covers the track"
     );
-    assert!(stats.work <= FULL_WORK);
+    assert!(
+        stats.units <= 12 && stats.units * 20 < bands_of(&opened),
+        "{} of {} bands were built for one view",
+        stats.units,
+        bands_of(&opened)
+    );
+    assert!(stats.work <= BUILD_WORK);
     assert_eq!(
         stats.rendered + stats.reused,
         stats.units,
@@ -563,37 +595,118 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
     window.hide().expect("close minimap window");
 }
 
-/// Scrolling posts no request and sets no picture:
-/// only the box moves.
+/// The bands a scroll to `offset` shows, in the reader's window.
+fn bands_at(reader: &Reader, offset: f32) -> std::ops::Range<usize> {
+    let current = reader.source.borrow();
+    let wrap = ide_app::wrap::has_wrap_width(current.width).then_some(current.width);
+    return geometry(reader).bands_for(
+        offset,
+        band_step(wrap, reader.window.window().scale_factor()),
+    );
+}
+
+/// Wait until the picture on screen is the one for `bands` and no newer request is posted.
+fn picture_of_bands(reader: &Reader, bands: &std::ops::Range<usize>) {
+    let mut waiting = Waiting::slow();
+    loop {
+        {
+            let current = reader.source.borrow();
+            let shown = current.minimap.shown.map(|key| key.window.0..key.window.1);
+            if shown.as_ref() == Some(bands) && current.minimap.posted == current.minimap.shown {
+                break;
+            }
+        }
+        waiting.step("the picture of the scrolled bands did not arrive");
+    }
+}
+
+/// A scroll that keeps the bands the track shows posts no request and sets no picture:
+/// only the box and the picture's slide move.
+/// A scroll that names other bands posts one request and sets one picture,
+/// which starts further down the whole picture.
 #[test]
-fn scrolling_posts_no_request_and_sets_no_picture() {
+fn a_scroll_posts_a_request_only_when_it_names_other_bands() {
     let (_project, opened) = open(&long_text(2000));
     settled(&opened);
     picture_shown(&opened);
     let window = &opened.window;
-    let (posts, images) = {
-        let current = opened.source.borrow();
-        (current.minimap.posts, current.minimap.images_set)
-    };
     let shape = geometry(&opened);
-    for step in 0..40 {
-        scroll_to(window, shape.max_offset() * step as f32 / 40.0);
+    // The stretch of offsets from the middle on that shows the same bands as the middle.
+    let start = (shape.max_offset() / 2.0).round();
+    scroll_to(window, start);
+    let named = bands_at(&opened, start);
+    picture_of_bands(&opened, &named);
+    calm(&opened);
+    let mut edge = start;
+    while bands_at(&opened, edge + 4.0) == named {
+        edge += 4.0;
+    }
+    assert!(
+        edge > start + 8.0,
+        "the stretch of the same bands is only {} px",
+        edge - start
+    );
+    let (posts, images, top) = {
+        let current = opened.source.borrow();
+        (
+            current.minimap.posts,
+            current.minimap.images_set,
+            window.get_minimap_picture_top() + window.get_minimap_picture_height(),
+        )
+    };
+    let slide = window.get_minimap_slide();
+    let mut at = start;
+    while at < edge {
+        at += 4.0;
+        scroll_to(window, at.min(edge));
         calm(&opened);
     }
     for _ in 0..30 {
         update_timers_and_animations();
         std::thread::sleep(Duration::from_millis(10));
     }
+    {
+        let current = opened.source.borrow();
+        assert_eq!(
+            current.minimap.posts, posts,
+            "a scroll within the bands posted a minimap request"
+        );
+        assert_eq!(
+            current.minimap.images_set, images,
+            "a scroll within the bands set a minimap picture"
+        );
+    }
+    assert!(
+        window.get_minimap_slide() > slide,
+        "the picture slid with the scroll"
+    );
+    assert_eq!(
+        window.get_minimap_picture_top() + window.get_minimap_picture_height(),
+        top,
+        "the picture is as it was"
+    );
+    // Four pixels more name other bands: one request, one picture.
+    scroll_to(window, edge + 4.0);
+    let other = bands_at(&opened, edge + 4.0);
+    assert_ne!(other, named);
+    picture_of_bands(&opened, &other);
+    calm(&opened);
     let current = opened.source.borrow();
     assert_eq!(
-        current.minimap.posts, posts,
-        "a scroll posted a minimap request"
+        current.minimap.posts,
+        posts + 1,
+        "one request for the new bands"
     );
     assert_eq!(
-        current.minimap.images_set, images,
-        "a scroll set a minimap picture"
+        current.minimap.images_set,
+        images + 1,
+        "one picture for the new bands"
     );
     drop(current);
+    assert!(
+        window.get_minimap_picture_top() + window.get_minimap_picture_height() > top,
+        "the new picture reaches further down the text"
+    );
     window.hide().expect("close minimap window");
 }
 
@@ -640,7 +753,7 @@ fn a_held_worker_never_blocks_the_view() {
 }
 
 /// A new wrap width rebuilds the picture without blocking the view,
-/// and the picture then has the new track.
+/// and the picture then covers the new text.
 #[test]
 fn a_new_wrap_width_rebuilds_the_picture() {
     let (_project, opened) = open(&long_text(400));
@@ -648,7 +761,7 @@ fn a_new_wrap_width_rebuilds_the_picture() {
     picture_shown(&opened);
     let window = &opened.window;
     let before = opened.source.borrow().minimap.shown.expect("a picture key");
-    let height = window.get_minimap_track();
+    let height = opened.source.borrow().row_map.height();
     super::sidebar_tests::resize(window, 760.0, 660.0);
     settled(&opened);
     {
@@ -673,16 +786,18 @@ fn a_new_wrap_width_rebuilds_the_picture() {
         "the picture is for the new wrap width"
     );
     assert_ne!(
-        window.get_minimap_track(),
+        opened.source.borrow().row_map.height(),
         height,
-        "the longer text has another track"
+        "the longer text is another height"
     );
     let image = window
         .get_minimap_image()
         .to_rgba8()
         .expect("picture pixels");
     assert_eq!(image.width() as f32, window.get_minimap_width());
-    assert!((image.height() as f32 - window.get_minimap_track()).abs() <= 1.0);
+    assert!(
+        image.height() as f32 + 1.0 >= window.get_minimap_track() * window.window().scale_factor()
+    );
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
     window.hide().expect("close minimap window");
 }
@@ -738,7 +853,7 @@ fn reply(
     return Reply {
         id: number,
         key: moved,
-        last: true,
+        top: 0,
         pixels: SharedPixelBuffer::new(4, 4),
         stats,
         elapsed: Duration::ZERO,
@@ -887,7 +1002,7 @@ fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
 
 /// Opening fifty thousand long lines builds a bounded picture off the window thread:
 /// no window-thread callback is slow,
-///  and the picture's cost follows its height,
+///  and the picture's cost follows the view,
 /// not the length of the text.
 #[test]
 fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
@@ -927,14 +1042,19 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
         .minimap
         .last_stats
         .expect("statistics");
-    let rows = window.get_minimap_picture_height();
-    assert!(rows <= window.get_viewport_height() + 1.0);
     assert!(
-        stats.lines as f32 <= rows * SAMPLES as f32,
-        "{} lines were rendered for {rows} rows",
-        stats.lines
+        stats.units <= 12 && stats.units * 100 < bands_of(&opened),
+        "{} of {} bands were built",
+        stats.units,
+        bands_of(&opened)
     );
-    assert!(stats.work <= FULL_WORK);
+    assert!(
+        stats.lines <= 40 * stats.units,
+        "{} lines were rendered for {} bands",
+        stats.lines,
+        stats.units
+    );
+    assert!(stats.work <= BUILD_WORK);
     assert!(
         stats.largest as u64 <= ide_app::text_raster::MAX_RASTER_BYTES,
         "a band of {} bytes passed the raster limit",
@@ -997,6 +1117,32 @@ fn each_kind_of_change_has_its_own_pace() {
     assert_eq!(
         plan(Some(base), Some(base), new_styles, long_ago, false),
         Plan::Wait(DEBOUNCE)
+    );
+    let mut other_bands = base;
+    other_bands.window.0 += 1;
+    other_bands.window.1 += 1;
+    assert_eq!(
+        plan(Some(base), Some(base), other_bands, long_ago, false),
+        Plan::Post,
+        "other bands after the slide period are posted at once"
+    );
+    assert_eq!(
+        plan(Some(base), Some(base), other_bands, just_now, false),
+        Plan::Wait(SLIDE - Duration::from_millis(40)),
+        "other bands inside the period wait for the rest of it, a shorter one than the mapping's"
+    );
+    assert_eq!(
+        plan(Some(base), Some(base), other_bands, just_now, true),
+        Plan::Keep,
+        "a wait that is already running is kept"
+    );
+    // The measurement of a long text moves the bands too: it keeps the mapping's slower pace.
+    let mut measured = another_row(base);
+    measured.window.1 += 1;
+    assert_eq!(
+        plan(Some(base), Some(base), measured, just_now, false),
+        Plan::Wait(THROTTLE - Duration::from_millis(40)),
+        "a mapping change that moves the bands is paced as a mapping change"
     );
     assert_eq!(
         plan(Some(base), Some(base), another_row(base), long_ago, false),

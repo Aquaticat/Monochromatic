@@ -5,12 +5,25 @@
 /// The unit the clip edges are rounded to,
 /// and the vertical mapping that says which lines a stretch holds.
 use crate::row_map::{CODE_ROW, RowMap};
-/// A clip is two distances below the first line's block.
-use crate::shaped_text::Clip;
+/// A clip is two distances below the first line's block,
+/// and a raster's width follows the wrap width.
+use crate::shaped_text::{Clip, raster_width};
 /// The most bytes any raster may hold.
 use crate::text_raster::MAX_RASTER_BYTES;
 /// A band's span of the text.
 use std::ops::Range;
+
+/// What:
+///  Least display scale the picture is built at.
+/// Why:
+///  A scale of zero or less would make every raster empty;
+///  no real display is this small.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const MIN_SCALE = 0.25;
+/// ```
+pub const MIN_SCALE: f32 = 0.25;
 
 /// What:
 ///  Most bytes the raster of one band may hold,
@@ -56,6 +69,21 @@ pub struct Band {
     pub last: bool,
 }
 
+/// The rows a band answers for.
+impl Band {
+    /// The source rows,
+    /// in physical pixels from the top of the text at `scale`,
+    /// this band answers for;
+    /// the last band answers for everything below as well.
+    pub fn assigned(&self, scale: f32) -> Range<f64> {
+        let from = f64::from(self.span.start) * f64::from(scale);
+        if self.last {
+            return from..f64::INFINITY;
+        }
+        return from..f64::from(self.span.end) * f64::from(scale);
+    }
+}
+
 /// What:
 ///  How tall a stretch of text a band answers for,
 ///  in logical pixels,
@@ -77,25 +105,75 @@ pub fn band_height(columns: u64, scale: f32) -> f32 {
 }
 
 /// What:
-///  The bands that cover the whole text of `map`,
+///  Physical pixels in a row of a band's raster,
+///  for a text wrapped at `wrap` shown at `scale`.
+/// Why:
+///  The window thread and the worker both size bands from it,
+///  so they agree on where the cuts are.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function columnsOf(wrap: number | undefined, scale: number): number;
+/// ```
+pub fn columns_of(wrap: Option<f32>, scale: f32) -> u64 {
+    return (raster_width(wrap) * scale.max(MIN_SCALE)).ceil() as u64;
+}
+
+/// What:
+///  How tall a stretch of text one band answers for,
+///  in logical pixels, for a text wrapped at `wrap` shown at `scale`.
+/// Why:
+///  The cuts of a text stand at multiples of this from its top,
+///  so the window thread can name the bands the track shows without the worker.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function bandStep(wrap: number | undefined, scale: number): number;
+/// ```
+pub fn band_step(wrap: Option<f32>, scale: f32) -> f32 {
+    return band_height(columns_of(wrap, scale), scale.max(MIN_SCALE));
+}
+
+/// What:
+///  How many bands of `step` logical pixels cover a text `height` logical pixels tall.
+/// Why:
+///  The window thread and the worker count the bands the same way,
+///  so a range of band numbers means the same bands to both.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function bandCount(height: number, step: number): number;
+/// ```
+pub fn band_count(height: f32, step: f32) -> usize {
+    if height <= 0.0 || step <= 0.0 {
+        return 0;
+    }
+    return (height / step).ceil() as usize;
+}
+
+/// What:
+///  The bands numbered `window` of the text of `map`,
 ///  in order,
 ///  for rasters `columns` pixels wide at `scale`.
 /// Why:
-///  The stretches are consecutive and cover the text exactly,
+///  Band `n` stands from `n` steps below the top of the text whatever the window,
+///  so scrolling moves the window and never a cut;
+///  the stretches are consecutive and cover the text exactly,
 ///  so the picture is their reductions side by side;
 ///  a line taller than a stretch is rendered in as many bands as it takes,
 ///  each with the rows of it that fall in its stretch.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function plan(map: RowMap, columns: number, scale: number): Band[];
+/// function plan(map: RowMap, columns: number, scale: number, window: [number, number]): Band[];
 /// ```
-pub fn plan(map: &RowMap, columns: u64, scale: f32) -> Vec<Band> {
+pub fn plan(map: &RowMap, columns: u64, scale: f32, window: Range<usize>) -> Vec<Band> {
     let height = map.height();
     let step = band_height(columns, scale);
+    let count = band_count(height, step);
     let mut bands = Vec::new();
-    let mut top = 0.0_f32;
-    while top < height {
+    for index in window.start..window.end.min(count) {
+        let top = index as f32 * step;
         let bottom = (top + step).min(height);
         let first = map.line_at(top);
         let last_line = map.line_at((bottom - 0.01).max(top));
@@ -113,9 +191,8 @@ pub fn plan(map: &RowMap, columns: u64, scale: f32) -> Vec<Band> {
                 bottom: to,
             },
             span: top..bottom,
-            last: bottom >= height,
+            last: index + 1 == count,
         });
-        top = bottom;
     }
     return bands;
 }

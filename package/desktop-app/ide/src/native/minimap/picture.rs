@@ -36,7 +36,7 @@ const POLL: Duration = Duration::from_millis(20);
 /// ```
 pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: Reply) {
     let mut current = state.borrow_mut();
-    if reply.id == current.minimap.awaited && reply.last {
+    if reply.id == current.minimap.awaited {
         current.minimap.awaited = 0;
     }
     let fresh = reply.id >= current.minimap.shown_id && reply.key.stamp == displayed(&current);
@@ -62,12 +62,14 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
     } else {
         window.set_minimap_image(Image::from_rgba8_premultiplied(reply.pixels));
     }
-    // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled.
+    // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled, and starts it
+    // at the row of the whole picture the worker built it from.
     window.set_minimap_picture_width(width as f32);
     window.set_minimap_picture_height(height as f32);
+    window.set_minimap_picture_top(reply.top as f32);
     tracing::debug!(
         id = reply.id,
-        last = reply.last,
+        top = reply.top,
         elapsed_us = reply.elapsed.as_micros() as u64,
         "set a minimap picture"
     );

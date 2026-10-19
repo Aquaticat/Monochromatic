@@ -158,7 +158,7 @@ fn whole(image: &Image, reduction: Reduction, height: usize) -> Vec<u8> {
         &image.strip(0, image.height, 0.0, 1.0),
         &(0.0..f64::INFINITY),
     );
-    let mut picture = Picture::new(reduction.width, height);
+    let mut picture = Picture::new(reduction.width, 0..height);
     picture.place(&reduced).expect("same width");
     return picture.finish();
 }
@@ -560,7 +560,7 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
 /// placed together.
 fn stitched(image: &Image, reduction: Reduction, height: usize, cuts: &[usize]) -> Vec<u8> {
     let reducer = Reducer::new(reduction, image.width);
-    let mut picture = Picture::new(reduction.width, height);
+    let mut picture = Picture::new(reduction.width, 0..height);
     let mut from: usize = 0;
     let mut edges = cuts.to_vec();
     edges.push(image.height);
@@ -646,7 +646,7 @@ fn a_strip_stretched_over_more_rows_reduces_like_the_stretched_image() {
     };
     let reducer = Reducer::new(reduction, 6);
     let sampled = reducer.reduce(&small.strip(0, 2, 0.0, 4.0), &(0.0..8.0));
-    let mut picture = Picture::new(2, 4);
+    let mut picture = Picture::new(2, 0..4);
     picture.place(&sampled).expect("same width");
     let got = picture.finish();
     let want = whole(&stretched, reduction, 4);
@@ -671,7 +671,7 @@ fn a_strip_of_another_width_cannot_be_placed() {
         4,
     );
     let reduced = reducer.reduce(&image.strip(0, 4, 0.0, 1.0), &(0.0..4.0));
-    let mut picture = Picture::new(3, 4);
+    let mut picture = Picture::new(3, 0..4);
     let error = picture.place(&reduced).expect_err("another width");
     assert!(
         format!("{error}").contains("2 columns wide"),

@@ -7,12 +7,16 @@ import { Surface } from "surface.slint";
 import { Palette } from "std-widgets.slint";
 
 export component Minimap inherits Rectangle {
-    // The picture, and its size in physical pixels. It is the window's own rendering of the whole text, already reduced
-    // to the minimap's resolution by native code, so it is drawn at exactly that many physical pixels: nothing is
-    // resampled, and no pixel of it is repeated or blended with a neighbour.
+    // The picture, and its size in physical pixels. It is the window's own rendering of the bands of the text near the
+    // visible part, already reduced to the minimap's resolution by native code, so it is drawn at exactly that many
+    // physical pixels: nothing is resampled, and no pixel of it is repeated or blended with a neighbour.
     in property <image> picture;
     in property <float> picture-width;
     in property <float> picture-height;
+    // The row of the whole picture the picture's first row is, in physical pixels, and how far the whole picture has
+    // slid up past the track, which is the picture's offset in a text taller than the track.
+    in property <float> picture-top;
+    in property <length> slide;
     // Height of the track the picture covers, and the box over it: its height and its distance from the top.
     in property <length> track;
     in property <length> box-height;
@@ -50,7 +54,8 @@ export component Minimap inherits Rectangle {
 
     Image {
         x: 0px;
-        y: 0px;
+        // Whole physical pixels, so the picture slides without being resampled.
+        y: (root.picture-top - round(root.slide / 1phx)) * 1phx;
         width: root.picture-width * 1phx;
         height: root.picture-height * 1phx;
         source: root.picture;
