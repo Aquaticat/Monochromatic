@@ -152,10 +152,7 @@ fn every_fourth(_x: usize, y: usize) -> [u8; 4] {
 /// as a picture of `height` rows.
 fn whole(image: &Image, reduction: Reduction, height: usize) -> Vec<u8> {
     let reducer = Reducer::new(reduction, image.width);
-    let reduced = reducer.reduce(
-        &image.strip(0, image.height, 0.0),
-        &(0.0..f64::INFINITY),
-    );
+    let reduced = reducer.reduce(&image.strip(0, image.height, 0.0), &(0.0..f64::INFINITY));
     let mut picture = Picture::new(reduction.width, 0..height);
     picture.place(&reduced).expect("same width");
     return picture.finish();

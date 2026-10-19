@@ -948,59 +948,54 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     the track, building only the bands near the view; the huge dark surfaces (editor, minimap, sidebar) become
     pure OLED black so the picture needs no gain, and the exact area average stays; edits are not rare (the
     files change under the reader), so a change must re-render only the bands it touches.
-    State on 2026-10-19, finished by the agent after a shutdown and a resume (landing stays pending: the coordinator
-    lands and installs; nothing is pushed, `origin/main` was merged cleanly at `1c4f9c7a30` and changed nothing in the
-    IDE).
-    Design (done): `src/minimap/` is now `downscale.rs` (exact fractional area averaging, separable, f32, bands stitched
-    through unrounded shared rows), `plan.rs` (bands of at most 4 MiB, `BAND_BYTES`), `unit.rs` (exact up to 8 code
-    rows per output row, else 8 sampled single code rows stretched over their share; `Sampled(1)` for the quick pass),
-    `fills.rs` (selection and match fills painted under the glyphs), `render.rs` (the window's own pipeline: shaper,
-    match rectangles, annotation layout, fills, `TextRaster::paint_onto`), `key.rs`/`cache.rs` (one slot per unit with a
-    key; fallback to the previous rows when a unit fails or the budget cannot pay it, with a `tracing::warn!` of the
-    line range), `build.rs` (`prepare`, `build`, `Cancel`, `QUICK_WORK` 250,000, `FULL_WORK` 5,000,000) and
-    `horizontal.rs`. `geometry.rs` is unchanged; `raster.rs` and `paint.rs` are deleted. The worker is
-    `src/native/minimap_build.rs` plus `minimap_build/serve.rs`; the window key holds selection, find, active match,
-    annotations version and inks. A late fix: the quick pass skipped units on tall windows, so it runs with
-    `FULL_WORK`, and the full plan halves its samples per output row (8, 4, 2, 1) until it fits `FULL_WORK` instead of
-    leaving rows out.
-    Gates, all on the branch head before the merge, each alone at the default bound: `lint:rustfmt`, `lint:clippy`,
-    `lint:release`, `lint:closures` (`MISE_RUST_VERSION=nightly`) and `monochromatic-lint` on `src`, `tests`, `ui`,
-    the guard script and the README exit 0 (the handover file itself reports about 1,280 Markdown line-break findings,
-    of which 238 are in this bullet's range; the file as a whole was never clean, so it was not rewrapped);
-    `test` 805 passed, 1 skipped; `test:native` 210 passed, 5 skipped; `test:wrap` 15 and 67 passed (`raster_width`
-    moved into `src/shaped_text/limit.rs`); `test:minimap` 32 passed.
-    Guards (`inspect:source-guards`, three phases, every one accepted): the 14 cases of the first run
-    (`minimap-renders-glyphs`, `fills-selection`, `fills-match`, `fills-boundary`, `key-selection`,
-    `window-key-selection`, `density-thins` kept their first proof; `cache-key`, `work-budget`, `degrade-keeps-rows`,
-    `failed-counted`, `cancel`, `band-bytes`, `sampling` were proved again with exact failure texts) and, in the second
-    and third run (`ide-source-guard-OkgUXN`, `ide-source-guard-s0ZphE` under `~/temp/agent`), `reduce-row-weight`
-    (now tested by the new `a_fractional_ratio_of_rows_weighs_the_row_on_the_edge_by_its_share`, the old column test
-    did not see the row weight), `reduce-column-weight`, `stitch-sum`, `stitch-complete`, `stretch-step`, `text-x`,
-    `press-column`, `quick-pass`, `coarse-whole` (its test now uses 230-character lines, because with 80-character
-    lines the quick cost stayed under the quick budget and the guard did not fail), and the 14 older minimap cases.
-    The failure texts of `reduce-column-weight`, `stitch-sum`, `stitch-complete` and `stretch-step` were tightened
-    from the logs of their removed phase after that run and not rerun; the anchors of all 136 cases still match after
-    rustfmt (checked by script). The formatter and lints changed no guard anchor.
-    Measured: README "Measured cost" holds the numbers. Release, synthetic 90-character lines, 1000 px view, 110 px
-    minimap, one process each: 1,000 lines 110 ms (scale 1) and 245 ms (scale 2); 10,000 lines 1,010 ms and 4,326 ms
-    (quick pass 109 and 491 ms); 50,000 and 200,000 lines the same cost (1.04 to 1.08 s and 4.7 to 4.9 s); peak
-    resident 19.7 to 162 MB; a picture with every unit valid 0.1 to 10 ms; a selection that touches one band renders
-    1 or 2 units in 2.6 to 14.7 ms. Debug build in the nested compositor, this package's longest source file (1,218
-    lines): first picture 665 ms (scale 1) and 1.73 s (scale 2), a pointer selection reuses 42 of 44 and 98 of 101
-    units, a find for `fn` renders 44 and 79 units; the 49,938-line copy: quick picture after 0.61 s and the full one
-    after 4.8 s at scale 1, 14.9 s at scale 2 in the debug build. No `warn` from the minimap in any run, no skipped or
-    failed unit.
-    Screenshots (`~/temp/agent/minimap-shots/`, dark scheme; windows 1790x4400 at scale 1 came out 1790x3704, at
-    scale 2 2160x3704 physical, and a request for 12,000 px also gave 3,704 px, so the compositor caps the height here
-    and 12,000 px is covered by the native test only; 1100x660 at scales 1 and 2 on the 50,000-line file): looked at
-    with zooms (`v-*-mm.png`, `v-*-zoom.png`). Seen: glyph texture in the syntax colors (blue types, purple keywords,
-    yellow names, green strings) with the indentation shape of the code, crisp at scale 2 and soft but textured at
-    scale 1 (it is an average), the box over it with its border, the selection as blue bars with the length of each
-    selected line, the matches of a find as faint tints at their places, no blocks, no blank stretches, no banding at
-    band borders that I could see at 8 times zoom. On the 50,000-line file the picture is a dim, finely
-    textured gray of uniform brightness (row means of the screenshot 34.4 to 35.5 for a background near 28), which is
-    what an exact average of that many rows is. The coarse picture could not be told apart by eye because the full one
-    follows within seconds; the test covers it.
+    State on 2026-10-19, finished by the agent after a shutdown, a resume and the owner's second round (landing stays
+    pending: the coordinator lands and installs; nothing is pushed or installed, `origin/main` was merged cleanly at
+    `1c4f9c7a30` and changed nothing in the IDE).
+    Design (done): `src/minimap/` is `downscale.rs` (exact fractional area averaging, separable, f32, rows of a
+    picture with an origin, edge rows shared unrounded), `plan.rs` (bands on a fixed pixel grid at multiples of
+    `band_step`, at most 4 MiB), `key.rs` (content keys: FNV-1a digests of a band's text and clipped style spans,
+    selection, matches and marks measured from the band's first character), `cache.rs` (a map of band number to slot,
+    `retain(window)`, fallback to the previous rows when a band fails or the budget cannot pay it, with a
+    `tracing::warn!`), `build.rs` (`prepare`, `build`, `Cancel`, `BUILD_WORK` 5,000,000), `geometry.rs` (fixed scale of a
+    sixth, `track`, `slide`, offset-aware `content_y`/`target`, `bands_for`), `fills.rs`, `render.rs`, `horizontal.rs`.
+    The worker is `src/native/minimap_build.rs` plus `minimap_build/serve.rs`; the window key holds selection, find,
+    active match, annotations version, inks and the window of bands. The sampled path, the quick pass, the coarse
+    picture, the stretched strip and `unit.rs` are deleted. This contradicts the original "coarse-then-full is kept":
+    the quick pass was `Sampled(1)`, which no longer exists, and a new wrap width now yields one reply.
+    Sliding: a text that fits the view at the fixed scale is drawn whole; a longer one slides past the track by
+    `slide = overhang * offset / max_offset`, and the box top is the same share of its room, so a press and a drag map
+    through the slide. The picture holds the bands the track shows and one more on each side; `ui/minimap.slint` places
+    the image at whole device pixels. `note` in `native/viewport.rs` and `minimap/pace.rs` post a request only when the
+    named bands change (`SLIDE` 60 ms, `THROTTLE` 250 ms, `DEBOUNCE` 120 ms).
+    Black: `ui/surface.slint` holds `Surface.background` (`#000000` in the dark scheme, `Palette.background` otherwise);
+    `app`, `tree`, `search`, `find`, `references` and `minimap` use it; the raster paints no background and `CodeColors`
+    has none. The picture needs no gain. Not changed: `hover.slint` `alternate-background` and the find input fill.
+    Gates, each alone at the default bound, on the branch head plus the uncommitted README and one rustfmt line of
+    `tests/minimap_downscale.rs`: `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:slint`, `lint:closures`
+    (`MISE_RUST_VERSION=nightly`) and `monochromatic-lint` on the changed files exit 0; `test` 807 passed, 1 skipped;
+    `test:native` 211 passed, 5 skipped; `test:minimap` 34 passed.
+    Guards (`inspect:source-guards`, three phases, every one accepted): 143 cases exist, all anchors match (script
+    `anchors.mjs`). The new and changed minimap cases were each proved failing and restored: `box-share`, `slide-share`,
+    `slide-offset`, `window-margin`, `picture-origin`, `origin-whole-rows`, `cache-window`, `key-text`, `key-styles`,
+    `key-from-band`, `key-text-reload`, `key-has-bands`, `key-selection`, `window-key-selection`, `scroll-notes-bands`,
+    `slide-period`, `throttle-period`, `follows-measurement`, `resize-keeps-wait`, `overscan-early-return`, and the
+    reducer, cache, budget and stitch cases (`ide-guards-a*.log`, `ide-guards-b*.log` under `~/temp/agent`). Two guards
+    first did not fail and were repaired: `origin-whole-rows` (its test now selects all text and runs at scale 1.3, so
+    ink lies on both sides of a border that falls between pixel rows) and `slide-period` (failure text).
+    Measured (README "Performance bounds"): release, 50,000 lines of about ninety characters, 1,000 px view, 110 px
+    minimap: cold picture 44 ms (scale 1) and 78 ms (scale 2); every band cached 0.13 and 0.38 ms; one line changed in
+    the window renders 1 band in 3.7 and 1.9 ms; a change above or a line inserted below the window renders none; a line
+    inserted or deleted above or in the window renders 10 to 12 of 12 bands (21 to 26 ms) or 64 to 66 of 66 (58 to 61 ms)
+    because the pixel grid shifts and keys are content, not position (bounded by the window; a content-anchored grid
+    was not built). Debug, nested compositor, 50,000 short lines edited on disk at the end: 1 of 4 bands in 44 ms (scale
+    1), 1 of 14 in 8.7 ms (scale 2); the 600-character wrapped copy re-renders the whole window while the measurement
+    after the reload moves the grid.
+    Screenshots (`~/temp/agent/minimap-shots/b-*`, dark scheme, 1500x900 at scale 1 and 1100x660 at scale 2, this
+    package's longest source file and 50,000-line copies; plain, selection, find, slid by a drag, `ctrl+End`, edited):
+    pixels at the editor, sidebar, header and minimap blanks read 0,0,0; selection, find matches, dim comments and the
+    box border read clearly on black; the picture slides with the box and ends at the last line with the box at the
+    bottom. Not provoked: blank edge rows during a very fast drag over a very long file; the compositor caps a window
+    at 3,704 px, so 12,000 px is covered by the native test only.
     Measurement pass in a tall window (resolved, not this branch): `settled` times out at 90 s for a window of 10,000
     px and above, on `origin/main` as well. Control: a throwaway test on a worktree of `origin/main` and on this branch,
     400 wrapped lines, heights 1500, 3500, 6000 and 8000 settle in 0.8 to 1.7 s on both; 10,000, 11,000 and 12,000 do
@@ -1009,11 +1004,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     worker thread (`ide-source-tile`) burns a full core (a thread CPU sample moved 510 ticks in 5 s), so the worker is
     computing, not blocked. It is the old tile path for very tall wrapped tiles (a cliff between 8,000 and 10,000 px,
     cause not located), not the minimap: the minimap worker is idle then. Worth its own issue.
-    Owner-decision tradeoffs (unchanged): the pure average is fainter than CodeGlance (`IMAGE_ALPHA` dropped; an alpha
-    gain is optional, and the 50,000-line picture shows it most); a squeezed file is an 8-sample estimate of the
-    average (alternatives: stratified or max-pool); the caret and the gutter are not in the picture; a press maps x
-    proportionally across the text width; any edit invalidates every band, and any change of vertical geometry too.
-    Left: the coordinator lands (merge, install). The throwaway control worktree and the probe test were removed.
+    Left: the coordinator lands (merge, install). The throwaway probe test and its mise task were removed.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
     worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
