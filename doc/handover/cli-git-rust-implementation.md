@@ -1696,6 +1696,35 @@ that is verification, not a decision for the user.
   `AGENTS.md` (completion-time forecasts need a rate measured across the whole task, otherwise say you cannot tell).
   Open design follow-up: advance the local branch after a reconcile when the worktree allows it (not done because
   it takes the index lock and touches files).
+  2026-10-19, the user asked "Make our git wrapper offer a flag to bypass forbidden strings." The flag already
+  exists: `--no-enforce-security/forbidden-strings` (the `security/` prefix is part of the spelling; table in
+  `wrapper_controls.rs`, README section "Wrapper-only options"), it applies to the one command that carries it, and
+  no test named it. The test `forbidden_strings_escape_skips_the_policy_for_one_command` (`binary_policy_tests.rs`,
+  commit `9c18e1f1f0`) pins it on `add` and `commit` and was shown to fail with the spelling removed. The
+  forbidden-strings finding does not name the flag in its message (the `final-newline` and `markdown/autofix`
+  remedies do); the event text is pinned by many tests, so it is unchanged and the user is told the flag instead.
+  Two defects of the 0.2.0 reconcile were found the same day, both fixed on main and not yet released:
+  - Unsigned merge. The merge made by the first real reconcile (`0044e85452`, `%G?` is `N`) drew the remote's
+    "Bypassed rule violations: Commits must have verified signatures" because `git commit-tree` never reads
+    `commit.gpgsign`. `commit_merge` now passes `-S` when `git config --type=bool commit.gpgsign` is true and a
+    failing signer publishes nothing (commit `fa164036c6`; tests use a stand-in `gpg.program`; both signing
+    tests failed with the guard removed). The signature format itself is verified only against the stand-in; the
+    next reconcile after the release is installed is the check against the real signer.
+  - Stall after a failed attempt. The next commit after the first reconcile printed "commit saved locally, but
+    auto-push to origin failed; run `git push` when ready" with no reconcile line. Cause shown by test: any failed
+    attempt wrote a `failed` record, `published_base` then used only the tracking ref, a reconcile leaves that ref on a
+    merge the branch does not contain, so the branch looked rewritten and every later commit kept its rejection until a
+    manual `git merge origin/main`. The failing control
+    `a_failed_attempt_between_two_reconciles_does_not_stop_the_next_one` was committed first (`be0e3eda65`).
+    The fix (`f701c8799a`): a `failed` record carries an optional
+    `publishedTip` copied from the record before it, and the branch may descend from the record's published tip or
+    the tracking ref (`published_bases`). Three mutants of that fix were killed by the new tests. The real record at
+    the time of the incident was overwritten by another session's push, so the exact trigger there is not recovered;
+    the mechanism is the one the control reproduces. SPEC section "Auto-push" is updated.
+  Queued, in this order: the container gate on the final head, then release 0.2.1 (one bump for both fixes, then the
+  usual verification and `mise upgrade cargo:monochromatic-git-policy-cli`), then a non-blocking mutation run over
+  `auto_push_reconcile.rs`, `auto_push_record.rs` and `auto_push_single_flight.rs`. The `signs_commits` branch for a
+  `git config` failure other than exit 1 has no test and is left to that run.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
