@@ -27,8 +27,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "- admitted by manual dispatch for qualification" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           now=$(date +%s)
           runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow advisory-core.yml --limit 100 --json databaseId,createdAt --jq '.' 2>/dev/null || echo '[]')
           counts=$(jq --argjson now "$now" --argjson current "$GITHUB_RUN_ID" '
