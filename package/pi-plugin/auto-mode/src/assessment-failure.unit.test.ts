@@ -5,7 +5,7 @@ import { assessmentFailure, assessmentFixtureKey, assessmentInput, assessmentSen
 
 //region Only failed HTTP invocations supply the owned retry category.
 await describe({ name: 'assessment failure classification', children: [
-  ...['request', 'credential', 'cancelled', 'response', 'status'].map(function failureStage(stage) {
+  ...['request', 'credential', 'cancelled', 'response', 'unavailable', 'permanent'].map(function failureStage(stage) {
     return it({ name: `classifies ${stage} failure without retaining private text`, fn: async function classifyActualFailure() {
       /** Cancellation remains owned by this isolated original caller. */
       const controller = new AbortController();
@@ -22,7 +22,8 @@ await describe({ name: 'assessment failure classification', children: [
         fetchImpl: async function rejectFixtureRequest() {
           calls.count++;
           if (stage === 'cancelled') controller.abort(privateFailure);
-          if (stage === 'status') return new Response('private upstream body', { status: 503 });
+          if (stage === 'unavailable') return new Response('private upstream body', { status: 503 });
+          if (stage === 'permanent') return new Response('private upstream body', { status: 400 });
           if (stage === 'response') return new Response(new ReadableStream({
             start(stream) { stream.error(privateFailure); },
           }));
@@ -33,7 +34,7 @@ await describe({ name: 'assessment failure classification', children: [
       const failure = await assessmentFailure(async function dispatchOriginalAttempt() {
         return await send({ ...assessmentInput(), signal: controller.signal });
       });
-      expect(isRetryableAssessmentFailure(failure)).toBe(stage === 'request');
+      expect(isRetryableAssessmentFailure(failure)).toBe((stage === 'request') || (stage === 'unavailable'));
       expect(calls.count).toBe(stage === 'credential' ? 0 : 1);
       expect(String(failure)).not.toContain(assessmentFixtureKey);
       expect(String(failure)).not.toContain('private upstream body');
