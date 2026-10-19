@@ -79,6 +79,11 @@ and the closure workstream record.
   It runs a fast static,
   build and unit subset;
   the complete profile runs in the weekly matrix.
+- The whole-tree static profile is not known-good:
+  85,719 findings across 1,046 files were measured at `4f3d5a65`.
+  The fast static subset is changed-path scoped,
+  and pre-existing whole-tree findings are a recorded baseline,
+  not a gate.
 - The repeated complete profile is paid only through one bounded weekly native matrix.
 - The weekly matrix covers these capability categories,
   and no others without a new decision:

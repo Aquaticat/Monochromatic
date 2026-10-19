@@ -392,12 +392,25 @@ Closure workstreams:
   The evidence is in
   [the duplicate control](../audit/depot-duplicate-control-2026-10-18.evidence.json).
   The adoption proposal uses explicit dispatch for the weekly matrix to avoid duplicate execution.
+- The current static baseline was measured at revision `4f3d5a65`:
+  `mise run lint:monochromatic-lint` exits 1 with 85,719 findings across 1,046 files,
+  dominated by 81,700 semantic line-break findings,
+  2,077 rustdoc findings and
+  1,894 bare-URL findings.
+  The whole-tree static profile is not known-good;
+  a changed-path profile or an explicit
+  advisory baseline is required.
+  The evidence is in
+  [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).
 
 ## Open closure items
 
 The following are not satisfied by this review record and remain work:
 
 - paused-session qualification;
+- unit and build baseline in a prepared environment,
+  because the clean static worktree had no
+  dependencies;
 - no-overage sliding-window admission and the operator cap verification;
 - adoption record and decision-record acceptance;
 - subscription transition from the Startup trial to Developer;
