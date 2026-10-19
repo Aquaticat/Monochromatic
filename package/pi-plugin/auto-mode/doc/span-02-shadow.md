@@ -72,6 +72,21 @@ and CPU quota `2000000000` nanocpus.
 Both request watchers and both diagnostic tails report ready.
 Their initial baselines contain 166 source-worker requests and 130 native-worker requests.
 Those baseline captures are not counted as newly shadowed calls.
-An actual new live request and its correlated result still require verification.
+The first four newly captured live requests returned HTTP `200`
+with model `respan/span-02-20261015` and matched their Luna diagnostic records.
+Native captures `130` and `131`,
+and source captures `166` and `167`,
+are the verified initial production sample.
+Both one-head whole-operation decisions agree.
+Seven categorical heads differ across the two 27-head clause assessments.
+These differences include selected meaning or admission under the user's current rule;
+they are not seven demonstrated model mistakes.
+Observed shadow call intervals range from `640.827` to `4259.027` milliseconds.
+No shadow request failed in that sample.
+
+The live runner is an immutable copy of its launch sources.
+Subsequent private source edits add boolean-question handling and more isolated input-error handling;
+those edits have not replaced the running copy or been qualified by its production results.
+Keep deployment source digests and results together.
 
 The [initial trial](span-02-trial.md) remains a separate replay experiment.

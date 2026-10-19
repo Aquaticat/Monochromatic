@@ -16,13 +16,30 @@ The [package deployment record](../../package/pi-plugin/auto-mode/doc/span-02-sh
 explains purpose,
 authority,
 correlation and bounds.
-Watchers are ready on both live sessions;
-no actual new shadow call has been verified yet.
-Next: verify a newly captured live request,
-its Span 02 response and its Luna comparison.
+The first four new live requests completed HTTP `200`
+with `respan/span-02-20261015` and correlated with actual Luna diagnostics:
+native captures `130`/`131` and source captures `166`/`167`.
+Both one-head operation decisions agree;
+seven meaning/admission heads differ across the two 27-head clause assessments.
+This is model disagreement, not established correctness.
+No shadow request failed in this initial sample.
+Its measured call intervals span `640.827` to `4259.027` milliseconds.
+The live runner is the immutable launch copy recorded by its manifest digests.
+Later private source edits adding boolean questions and input-error isolation remain undeployed.
+Next: inspect the differing clause heads,
+qualify observer recovery and bounded retention,
+then ship a maintained runner without coupling it to primary decisions.
 The idle native worker received an actual RPC `prompt` to resume its queued fixture work.
 RPC `follow_up` alone had queued the instruction without starting that idle worker.
 The source worker acknowledged the no-SDK constraint and continues its scoped checkpoint.
+Its scoped formatting and public-host-type inspection dialog
+`81d326af-3427-48ad-aab0-513034cf4afe` was authorized through RPC;
+tool completions advanced from 114 to 116.
+Active boundary monitors are source session `87836` and native session `96803`.
+The first-shadow monitor is `54529` and can now be collected.
+Rendered documentation verification passed for 51 documents with zero broken local links
+in `render-span02-shadow-docs.log` before the live-result text was added;
+render the updated evidence again.
 
 The provider boundary cleanup is committed as `94b79e7db1`:
 message and producer types derive from public Pi host declarations,
