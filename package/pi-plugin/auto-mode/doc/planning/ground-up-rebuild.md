@@ -66,6 +66,91 @@ Acceptance examples for this baseline:
 - Uploading a report can disclose its content even if the upload can later be deleted.
   Evaluate the disclosure; deleting the uploaded copy does not reverse every effect.
 
+## Built-in rule catalogue
+
+Built-in rules are plural and distinct. Reversibility is one criterion, not a replacement for general-agent review.
+The previous recovery-centric list is superseded by this concrete proposed catalogue.
+Exact wording remains a design proposal; the requirement for multiple built-ins is settled.
+
+Every registered built-in accompanies every first-pass review alongside the effective authored rules.
+The startup authored-rule relevance classifier does not select a subset of these built-ins.
+Each criterion gets its own answer key and the same choices:
+`approve`, `deny`, `ask`, and `not-applicable`.
+Interpret each question as the disposition under that criterion and the complete instruction context.
+No single built-in stands in for the other answers.
+
+### Useful progress or evidence
+
+Proposed question identity: `builtin.progress`.
+
+Does this group plausibly advance the work or produce useful evidence, including indirect verification and exploration?
+
+Cross-package tests, investigation, and repeated tests for reproducibility can approve. Exact package or verb matching is not required.
+Example: Test package B while changing package A to check a consumer.
+
+### Suitable tools and arguments
+
+Proposed question identity: `builtin.tool-fit`.
+
+Are the selected tools and concrete arguments appropriate for their intended operation or experiment?
+
+A deliberate probe or expected failure can be appropriate. Distinguish intentional experiments from a mistaken target or invocation.
+Example: An intentionally invalid request can test error handling.
+
+### Necessary prerequisites
+
+Proposed question identity: `builtin.prerequisites`.
+
+Are the prerequisites needed for this operation established, or is proceeding a reasonable way to discover them?
+
+Do not demand the answer an exploratory call is meant to discover. Harmless diagnostic failure can be useful; identify consequential missing prerequisites.
+Example: A local test can discover a missing dependency; it need not ask first.
+
+### Reversibility and recovery
+
+Proposed question identity: `builtin.reversibility`.
+
+Do the available prior state, restoration method, and recovery effort support executing this group under the current authorization?
+
+Protect uncommitted human work. Assess actual recovery rather than the presence of Git. An authorized irreversible operation is not automatically denied.
+Example: A disposable-checkout experiment is recoverable; overwriting uncaptured data is not.
+
+### Effects on other people and systems
+
+Proposed question identity: `builtin.external-effects`.
+
+Are effects on shared systems, other people, and external recipients within established authorization?
+
+Assess recipients, shared state, disclosure, and commitments. Local rollback does not undo external consequences. Existing authorization remains valid.
+Example: Deleting an uploaded report does not undo disclosure to its recipient.
+
+### Resource use and bounded execution
+
+Proposed question identity: `builtin.resources`.
+
+Are the group’s resource use, spending, and execution bounds appropriate for the work and established limits?
+
+Use concrete CPU, memory, process, storage, time, or spending evidence. Another package alone says nothing about excessive resource use.
+Example: A bounded local test differs from an unbounded process fan-out.
+
+### Explicit human constraints and decisions
+
+Proposed question identity: `builtin.human-constraints`.
+
+Does the group respect applicable explicit human restrictions and decisions, including approvals already given?
+
+Honor actual restrictions without treating an unmentioned intermediate step as forbidden or asking again for an already authorized action.
+Example: A specific instruction not to publish still applies to an otherwise recoverable edit.
+
+
+Useful progress and prerequisite checks must preserve ordinary autonomous exploration.
+Uncertain relevance alone does not justify blocking routine reversible investigation.
+The complete catalogue must pass cross-package tests, exploratory probes, intentional failure tests,
+reproducibility reruns, and recoverable experiments in their stated conditions.
+It must also distinguish mistaken targets, consequential missing prerequisites, unrecorded data loss,
+unapproved external effects, resource exhaustion, and violations of explicit instructions.
+Follow-ups can focus on any uncertain built-in without dropping the other first-pass questions.
+
 ## Settled stages
 
 ### Stage 0: effective rules on every Pi start
@@ -267,23 +352,6 @@ B is a literal cap on historical input but can lose the instruction needed to as
 Ranking: A > B because recency alone does not make the original request obsolete.
 Neither API user-role feedback nor compaction entries count as a new human request.
 
-### Q5 revised: built-ins assess effects and recovery
-
-The earlier scope-versus-coverage options are withdrawn.
-The proposed built-in questions now operationalize the accepted reversibility baseline:
-
-- What state does this group affect, and do its concrete effects permit routine automatic execution?
-- Can changed state be restored from an available prior state without losing existing human work?
-- Does the group have external or shared consequences that restoration would not undo?
-- Is the recovery effort and resource exposure established well enough to proceed automatically?
-- Does the group comply with explicit human restrictions and decisions that remain applicable?
-
-Each is evaluated using the same four answer choices, with question wording that asks for the disposition
-under the stated condition, rather than a free-form effects report.
-Usefulness and task context can guide investigation without turning every unmentioned intermediate step into a veto.
-The precise prompts and effect evidence need scenario qualification;
-they must approve the cross-package and recoverable-experiment examples when their stated conditions hold.
-
 ### Q6: preparation timing for sequential groups
 
 Installed Pi 1.3.0 prepares and executes A, then prepares and executes B.
@@ -306,7 +374,7 @@ The patch mechanism remains an engineering qualification, not this user decision
 ## Dependency tree after this round
 
 Q1 and Q2 unlock numeric boundaries and final reduction acceptance examples.
-The accepted reversibility baseline guides deterministic catalogues and built-in semantic fixtures.
+The accepted autonomy baseline and distinct built-in catalogue guide the deterministic and semantic fixtures.
 Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
 Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
 and retention using concrete designs and their measured constraints.
@@ -317,15 +385,17 @@ Do not present later dependent choices as settled merely because the flow is now
 
 The former question selector contradicted the stated architecture;
 the earlier scarcity question also inferred a constraint from incomplete evidence.
-These are proposed edits, not modifications to `AGENTS.md`:
+These are proposed edits, not modifications to `AGENTS.md`.
+The built-in correction adds a preservation requirement to the proposed `QPM` tightening:
 
 - Tighten `VHI` to:
   “Handoffs state purpose, changes, inspection, and response.
   Show architecture choices with verified HTML diagrams and examples,
   open them in the requested browser, and explain labels.”
 - Tighten `QPM` to:
-  “Before asking which mechanism, test the constraint against settled requirements and plausible designs.
-  Measure facts. Do not reopen a settled choice through an invented mechanism.”
+  “Test questions against settled requirements.
+  A correction to one criterion must preserve the other requirements.
+  Measure facts; ask only unresolved choices.”
 
 The scope correction also motivates a proposed tightening of the existing `AUT` guidance:
 “Autonomy includes reversible supporting work, including cross-package tests.

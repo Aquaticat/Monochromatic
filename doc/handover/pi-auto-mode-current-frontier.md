@@ -6,6 +6,23 @@ Plan review is active and implementation remains stopped.
 The reversibility-corrected visual form is open in Helium; Q1, Q2, Q4, and Q6 await the user’s answers.
 After answers, update the decision tree and continue the next unlocked review work.
 
+### Distinct built-in rules, 2026-10-19
+
+The user reiterates that built-in rules are plural.
+The prior correction overemphasized reversibility and replaced general-agent checks with its subquestions.
+The revised plan and HTML now show a concrete proposed catalogue of distinct criteria:
+useful progress/evidence, suitable tools/arguments, prerequisites, reversibility,
+effects on other people/systems, resource bounds, and explicit human constraints.
+Every criterion receives its own four-choice answer in every first-pass review,
+alongside every effective authored rule. Reversibility is not the sole built-in.
+Cross-package tests, exploration, intentional error probes, and reproducibility reruns remain valid work.
+Unknown relevance alone does not veto routine reversible exploration.
+The exact catalogue wording remains proposed; no new implementation authorization is inferred.
+The HTML moves the full catalogue near the main flow and shows all built-ins feeding the reducer.
+The proposed `QPM` tightening now says a correction to one criterion must preserve other requirements.
+Next: independent consistency check, targeted rendered verification, screenshots, and Helium handoff.
+Open user choices remain Q1, Q2, Q4, and Q6.
+
 ### Reversibility replaces package matching, 2026-10-19
 
 The user rejects preventing coding agents from running tests in another package.
