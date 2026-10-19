@@ -33,6 +33,11 @@ Q7 B keeps both calls pending for interpretation review; exhausted unresolved re
 Neither option has been accepted. Q7 to Q13 remain open; do not infer an answer from this correction.
 Proposed `ODM` tightening: option examples name pending actions, relevant rules, admitted answers,
 and each option's visible result; abstract labels alone are not examples. `AGENTS.md` is unchanged.
+Commit `4dd7fd96e7` supplies the concrete example.
+The independent reviewer confirms that HTML and Markdown agree and both complete Q7 captures are readable.
+All three Q7 response options pass; light/dark rendering and 390-pixel layout pass without browser errors.
+Markdown renders at `auto-mode-rebuild-plan-render-7LJZYv`; the Q7 captures replace the abstract-example images.
+Reopen Helium at Q7 and let the user inspect the corrected example before continuing the round.
 
 ### Later extension mutations accepted as a limitation, 2026-10-19
 
