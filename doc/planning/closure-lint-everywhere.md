@@ -332,7 +332,10 @@ capture but the callee does not keep it).
   The whole-repository `monochromatic-lint` run in this worktree takes 1.9 s (`time monochromatic-lint`,
   single run).
   Nearly all of the cold time is the dependency compile that `cargo check` itself pays;
-  the lint adds little.
+  the lint adds little:
+  plain `cargo check --all-targets` took 40.7 s cold on `package/git-policy/cli` and 33.6 s on
+  `package/cli/forbidden-strings` (three packages at a time),
+  against 33.9 s and 29.8 s for the lint run (one at a time).
 - Incremental runs after touching one file (single runs):
   1.2 s for `package/linter/monochromatic-lint`
   (`src/lib.rs`) and 11.1 s for `package/music-player/desktop-app` (`src/main.rs`).
