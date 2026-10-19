@@ -575,8 +575,21 @@ before the other queued work.
     the round landed as far as `5c1d1aef1b` with the tree identical to the gated one,
     the corpus check found no page that reaches the new throws (184 texts), and the correction is
     commit comment 205562500 on `5a0fe85281`.
-    Queued for the docs round after `w191` and `w190` land: file `s245/w187-notes.md` and `s245/w188-notes.md`
-    into the package ledger from B675 and M265, with the `w191` and `w190` notes.
+    The docs round filing `s245/w187-notes.md`, `s245/w188-notes.md` and the `w191` notes
+    into the package ledger from B675 and M265 runs in `w193`; the `w190` notes follow in a later round.
+    `w190` finished the per-snapshot request memo of the readonly plugin
+    (cold lint median over the 36 packages 191.5 s to 159.2 s in an alternating measurement,
+    199 of 199 packages identical in exit, summary and diagnostic headers cold and warm).
+    Its four memo commits are replayed as `a349c1a26d` to `abab8e541a` and gated as g107
+    (the plugin and config tasks, then the family gate); they land when it is green.
+    Its spread-bridge pair `50ccee0440` and `5dce27bb59` is held:
+    two valid-fixture cases passed only because `runOxlintFixture` hides a plugin's throw,
+    one ambiguous-spread case newly failed, and the commit body counts the failures without naming them.
+    `w194` redoes it on `abab8e541a`: the harness gap, the seven spread-rule cases that already fail on a
+    28-thread host, and the bridge-start failure.
+    The catch-all that warns `semantic evidence unavailable` and skips a file stays as it is:
+    `doc/troubleshooting/typescript-go-tuple-type-panic.md` records it as the deliberate handling
+    of the upstream tuple panic, and narrowing it would fail the `consistency` lint on that known panic.
     In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
     external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
     and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
