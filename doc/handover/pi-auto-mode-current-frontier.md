@@ -3,6 +3,15 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
+The latest correction separates whole-batch assessment from per-call execution outcomes.
+Do not enforce atomic batch execution: cleared tests can proceed while a prohibited upload is blocked.
+Public-only probes now pass 20 assertions, including allow-A/block-B and block-A/allow-B without run abort.
+The prior global abort was our last-sibling review prototype's behavior, not a Pi limitation.
+Shared context, every-rule coverage, interaction review, and one group budget remain.
+Terminality applies to resolved affected calls; unresolved siblings can still need review.
+The four-choice-per-rule attribution to call IDs/interactions is not yet designed; do not invent a schema silently.
+Q7 must compare conflicting rules for the upload only, leaving independently cleared tests permitted under either option.
+Update all affected diagrams and manual-scope text, not only the example, before handing the round back.
 Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
 The next review round is Q7 to Q13 in
 `package/pi-plugin/auto-mode/doc/planning/rebuild-review-round-2.md`

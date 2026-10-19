@@ -26,6 +26,11 @@ The user also accepts later extensions changing arguments after review as an uns
 Design as though those later mutations do not occur; this does not require ordering guards or fallback prompts.
 Historical post-guard mutation qualifications in this document are not remaining work.
 
+The user also clarifies that individual calls in a parallel batch can be blocked or canceled independently.
+Shared assessment of the complete batch does not require all-or-nothing execution.
+Preserve combined-effect review while enforcing decisions for the affected calls.
+The historical shared-decision and whole-group-denial prototypes do not establish a current execution requirement.
+
 ## Historical requirement and budgets
 
 On 2026-10-01,
