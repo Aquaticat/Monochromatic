@@ -118,26 +118,24 @@ export async function observe({
 }
 
 /**
- Report the exact failed semantic case without altering completion ownership or
- construction causes.
+ Report the exact failed semantic case while retaining the original assertion
+ and complete stderr.
 
  @param {{name: string, run: () => Promise<void>}} input - case inputs
 
  @param input.name - semantic case name reported on failure
 
- @param input.run - case body awaiting completion before failure checks
+ @param input.run - case body awaited before reporting
 
  @returns {Promise<void>}
  */
 export async function verify({name, run}) {
   try {
     await run();
-    assert.fail(`semantic case unexpectedly passed: ${name}`);
+    console.log(JSON.stringify({ name, passed: true }));
   } catch (error) {
-    assert.ok(
-      error instanceof Error,
-      `semantic case ${name} failed with a non-error value`
-    );
+    console.error(JSON.stringify({ name, passed: false }));
+    throw error;
   }
 }
 //endregion
