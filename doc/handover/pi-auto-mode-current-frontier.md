@@ -19,7 +19,12 @@ Persist the explanation with the snapshot, choice, and optional reason.
 The HTML manual example now demonstrates an upload whose destination identity is unresolved.
 This requirement does not answer the outstanding Q1 through Q6 choices or authorize implementation.
 A tightening of existing `DGT` is proposed in the plan, not applied to `AGENTS.md`.
-Next: verify the revised example, retain its screenshot, and reopen the updated review in Helium.
+Committed the requirement and example in `39c2793ae5`.
+The revised example passed Approve/Stop with and without reasons, literal-text preservation,
+light/dark rendering, and 390-pixel width, with no page errors or console messages.
+Retained `explained-ask-light.png` and `explained-ask-dark.png` beside the review.
+Markdown rendering passed at `auto-mode-rebuild-plan-render-HGeAJm`;
+repeat the rendered check after recording this evidence, then reopen Helium at the manual example.
 
 ### User-defined staged review, 2026-10-19
 

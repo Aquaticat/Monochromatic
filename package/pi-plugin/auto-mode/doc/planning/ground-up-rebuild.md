@@ -293,7 +293,7 @@ The missing ask explanation also exposes a diagnostic-guidance gap.
 Proposed replacement for the existing `DGT` body:
 “Diagnostics name affected inputs and calls.
 Every ask explains evidence, uncertainty, needed judgment, and each choice’s effect;
-transcript or rule repetition is insufficient. State all valid remedies.”
+transcript or rule repetition is insufficient. State valid remedies.”
 
 ## Proposed high-level modules and source budgets
 
@@ -745,7 +745,13 @@ Retained images:
 [manual feedback](ground-up-rebuild-review/staged-manual-dark.png),
 [light appearance](ground-up-rebuild-review/staged-scenario-tests-light.png),
 and [narrow response form](ground-up-rebuild-review/staged-response-narrow.png).
-Earlier screenshots without the `staged-` prefix document the superseded review.
+The later ask-explanation clarification is shown in
+[light](ground-up-rebuild-review/explained-ask-light.png)
+and [dark](ground-up-rebuild-review/explained-ask-dark.png).
+Its Approve/Stop examples passed with and without reasons, including literal markup in reason text.
+The updated panel fits a 390-pixel viewport and has no page errors or console messages.
+The older `staged-manual-dark.png` shows the prior manual example;
+the other screenshots without the `staged-` or `explained-ask-` prefixes document the superseded review.
 
 ## Inspected sources
 
