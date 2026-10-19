@@ -1,24 +1,31 @@
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Quota snapshot
-// Typed view over `GET /v2/quotas`, shape verified with a live call on 2026-07-16.
-// Only the fields budget decisions consume are modeled: the rolling five-hour
-// request limit (throttling) and the weekly credit limit (spend pacing). Quota
-// reads are free per provider docs, so drivers may poll without budget cost.
-// A malformed body is a provider protocol failure and throws, unlike model-content
+// Typed view over `GET /v2/quotas`. Only the fields budget decisions consume are modeled: the weekly credit limit (spend pacing)
+// and, where a reply still carries one, the rolling five-hour request limit (throttling). Quota reads are free per provider docs,
+// so drivers may poll without budget cost. A malformed body is a provider protocol failure and throws, unlike model-content
 // defects which flow as data.
 //
-// THE SHAPE READ HERE IS THE ONE OF 2026-07-16, AND NO PUBLIC SOURCE GIVES ANOTHER (ledger B671). A pre-launch reading on
-// 2026-10-18 met a body whose `rollingFiveHourLimit` was not an object, and this reader refuses such a body; the caller treats
-// the budget as spendable and warns (`meterRecordOf`, `provider-meters.ts`). Synthetic's documentation of the endpoint
-// (`dev.synthetic.new/docs/synthetic/quotas`) still shows only the older `subscription` block. Its maintainer wrote on
-// 2026-09-15, in `slkiser/opencode-quota` issue 276, that a bearer API key returns the full quota JSON with `weeklyTokenLimit`
-// and `rollingFiveHourLimit`, and that `subscription` and `freeToolCalls` are legacy keys the named limits replace. The same
-// issue records a key on an account the reporter took to be on the free tier answered with status 200 and the body `{}`,
-// which this reader refuses by the same message; Synthetic has not said whether `{}` is intended for such an account. The body
-// of the 2026-10-18 reading was not recorded, so whether it was `{}`, a block under another name or something else is not known,
-// and no second shape is read here. A refusal now says what arrived: the top-level key names with the JSON type of each, or the
-// type of a body that is no object, and never a value (`QuotaShapeError`), so the next reading settles it.
+// THE FIVE-HOUR WINDOW IS OPTIONAL SINCE 2026-10-19 (ledger B671; GitHub issue 1779 tracks the unreadable meter). Synthetic's
+// rate-limit page (`https://synthetic.new/rate-limits`, fetched 2026-10-19) describes only a weekly credit limit: "Every 202
+// minutes (about 3.4 hours), you get back 2% of your total weekly credit limit." Its rolling five-hour request limit and its
+// concurrency limits are gone from that page. A live reading of `GET /v2/quotas` on 2026-10-19 at 14:35 UTC returned an object
+// whose top-level keys were exactly `subscription`, `search`, `freeToolCalls` and `weeklyTokenLimit`, each an object, with no
+// `rollingFiveHourLimit`. The inner fields of `weeklyTokenLimit` were not observed in that reading, because the reader of the
+// day refused the body before reaching them; `percentRemaining` and `nextRegenAt` are the names of the 2026-07-16 reading, the
+// last in which the block was seen, and a refusal inside the block now says which keys it holds so the next live reading
+// settles them.
+//
+// A BODY WITHOUT THE `rollingFiveHourLimit` KEY YIELDS A SNAPSHOT WITH NO FIVE-HOUR WINDOW. A body that carries the key is read as
+// before: the block must be an object (`null` is refused) and each field must have its type, and the older two-block shape of
+// 2026-07-16 stays readable, so an account whose reply still carries the window is honoured. The refusal of the pre-launch reading
+// of 2026-10-18 (ledger B671) is consistent with a body that already lacked the key, though that body was not recorded. The
+// maintainer of Synthetic wrote on 2026-09-15, in `slkiser/opencode-quota` issue 276, that a bearer API key returns the full quota
+// JSON with `weeklyTokenLimit` and `rollingFiveHourLimit`; the reading of 2026-10-19 supersedes that for the five-hour block. The
+// same issue records a key on an account the reporter took to be on the free tier answered with status 200 and the body `{}`,
+// which this reader refuses for lack of `weeklyTokenLimit`. A refusal says what arrived: the top-level key names with the JSON type
+// of each, or the type of a body that is no object, and, when the fault is a field inside a block, that block's own key names with
+// the JSON type of each; never a value (`QuotaShapeError`).
 
 /**
  Budget-relevant quota state at one instant.
@@ -26,20 +33,26 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
  `freeToolCalls` blocks; they are deliberately unmodeled until something
  consumes them.
 
+ THE FIVE-HOUR WINDOW MAY BE ABSENT, as in the reply of 2026-10-19 (see the
+ region comment); the weekly block is always present.
+
  @example
  ```ts
  const snapshot: QuotaSnapshot = {
    fiveHour: { remaining: 750, max: 750, limited: false, nextTickAt: '2026-07-16T22:55:29.000Z', },
    weekly: { percentRemaining: 99.8, nextRegenAt: '2026-07-17T00:12:58.000Z', },
  };
+ const weeklyOnly: QuotaSnapshot = {
+   weekly: { percentRemaining: 99.8, nextRegenAt: '2026-10-20T00:12:58.000Z', },
+ };
  ```
  */
 export type QuotaSnapshot = {
   /**
-   Rolling five-hour request limit;
-   regenerates 5% every 15 minutes.
+   Rolling five-hour request limit, present only when the reply carries the
+   block; regenerates 5% every 15 minutes where it exists.
    */
-  readonly fiveHour: {
+  readonly fiveHour?: {
     /**
      Price-weighted requests still available.
      */
@@ -88,7 +101,7 @@ export type QuotaSnapshot = {
  */
 export class QuotaShapeError extends Error {
   /**
-   Declares this message safe to forward: it names the field that failed its shape and the keys and types the body held, never a value of the body.
+   Declares this message safe to forward: it names the field that failed its shape and the keys and types the body held, and the block's when the fault is inside one, never a value of the body.
    */
   readonly messageNamesOnly: true = true;
 
@@ -99,8 +112,9 @@ export class QuotaShapeError extends Error {
 
    @param cause - underlying parse error when JSON itself failed
 
-   @param received - the keys the body held and the JSON type of each, or the type of a body that is no object, so a reader of the
-   log sees what arrived without a value; absent when the body was no JSON
+   @param received - the keys the body held and the JSON type of each, or the type of a body that is no object, followed for a fault
+   inside a block by that block's own keys and the JSON type of each, so a reader of the log sees what arrived without a value;
+   absent when the body was no JSON
 
    @example
    ```ts
@@ -229,25 +243,23 @@ function boundedKeyOf({ key, }: { readonly key: string; },): string {
 }
 
 /**
- Describes what a refused body held without a value of it: the top-level key names with the JSON type of each, or the type of a
- body that is no object. A key name is cut to a bounded length and keeps printable ASCII only, and the keys listed are bounded.
+ Describes the keys of one JSON object without a value of it: each key name with the JSON type of its value. A key name is cut to a
+ bounded length and keeps printable ASCII only, and the keys listed are bounded.
 
- @param parsed - the parsed body
+ @param record - a parsed JSON object, the body or one block of it
 
- @returns `{}` for an empty object, `subscription:object, freeToolCalls:object` for keys, or the type name for any other value
+ @returns `{}` for an empty object, `subscription:object, freeToolCalls:object` for keys, or the first twenty keys and a count of the rest
 
  @example
  ```ts
- const received = receivedShapeOf({ parsed: { subscription: { limit: 1, }, }, },); // 'subscription:object'
+ const keys = describedKeysOf({ record: { percentRemaining: 87, nextRegenAt: 'soon', }, },); // 'percentRemaining:number, nextRegenAt:string'
  ```
  */
-function receivedShapeOf({ parsed, }: { readonly parsed: unknown; },): string {
-  if (!isJsonRecord(parsed,))
-    return jsonTypeOf({ value: parsed, },);
+function describedKeysOf({ record, }: { readonly record: Readonly<Record<string, unknown>>; },): string {
   /**
-   The keys and values of the body.
+   The keys and values of the object.
    */
-  const entries = Object.entries(parsed,);
+  const entries = Object.entries(record,);
   if (entries.length === 0)
     return '{}';
   /**
@@ -264,6 +276,25 @@ function receivedShapeOf({ parsed, }: { readonly parsed: unknown; },): string {
   return (entries.length > RECEIVED_KEYS_LISTED)
     ? `${listed.join(', ',)}, and ${String(entries.length - RECEIVED_KEYS_LISTED,)} more`
     : listed.join(', ',);
+}
+
+/**
+ Describes what a refused body held without a value of it: the top-level key names with the JSON type of each, or the type of a
+ body that is no object. A key name is cut to a bounded length and keeps printable ASCII only, and the keys listed are bounded.
+
+ @param parsed - the parsed body
+
+ @returns `{}` for an empty object, `subscription:object, freeToolCalls:object` for keys, or the type name for any other value
+
+ @example
+ ```ts
+ const received = receivedShapeOf({ parsed: { subscription: { limit: 1, }, }, },); // 'subscription:object'
+ ```
+ */
+function receivedShapeOf({ parsed, }: { readonly parsed: unknown; },): string {
+  if (!isJsonRecord(parsed,))
+    return jsonTypeOf({ value: parsed, },);
+  return describedKeysOf({ record: parsed, },);
 }
 
 /**
@@ -299,19 +330,193 @@ function shapeRefusal(
 }
 
 /**
+ Builds the refusal of a field inside one block of a parsed body.
+
+ DESCRIBES THE BLOCK AS WELL AS THE BODY. A field refused inside `weeklyTokenLimit` says which keys that block holds and the JSON
+ type of each, so the next live reading shows the block's real fields if they are not the ones this reader expects, with the same
+ bounds as the body's description and never a value.
+
+ @param detail - which expectation the block violated
+
+ @param parsed - the parsed body, described by its keys and their types
+
+ @param blockName - the key of the block at fault
+
+ @param block - the block at fault, described by its keys and their types
+
+ @returns The error to throw
+
+ @example
+ ```ts
+ throw blockRefusal({
+   detail: 'weeklyTokenLimit.percentRemaining is not a number',
+   parsed,
+   blockName: 'weeklyTokenLimit',
+   block: weekly,
+ },);
+ ```
+ */
+function blockRefusal(
+  {
+    detail,
+    parsed,
+    blockName,
+    block,
+  }: {
+    readonly detail: string;
+    readonly parsed: unknown;
+    readonly blockName: 'rollingFiveHourLimit' | 'weeklyTokenLimit';
+    readonly block: Readonly<Record<string, unknown>>;
+  },
+): QuotaShapeError {
+  return new QuotaShapeError({
+    detail,
+    received: `${receivedShapeOf({ parsed, },)}; ${blockName} holds ${describedKeysOf({ record: block, },)}`,
+  },);
+}
+
+/**
+ Validates the fields of a five-hour block and reads them out.
+
+ @param parsed - the parsed body, described in a refusal
+
+ @param block - the five-hour block of that body
+
+ @returns The typed five-hour window
+
+ @throws {@link QuotaShapeError} when a field is missing or mistyped
+
+ @example
+ ```ts
+ const fiveHour = fiveHourWindowOf({ parsed, block, },);
+ ```
+ */
+function fiveHourWindowOf(
+  {
+    parsed,
+    block,
+  }: {
+    readonly parsed: Readonly<Record<string, unknown>>;
+    readonly block: Readonly<Record<string, unknown>>;
+  },
+): NonNullable<QuotaSnapshot['fiveHour']> {
+  /**
+   Five-hour fields pulled out for type validation.
+   */
+  const {
+    remaining,
+    max,
+    limited,
+    nextTickAt,
+  } = block;
+  if ((typeof remaining) !== 'number')
+    throw blockRefusal({
+      detail: 'rollingFiveHourLimit.remaining is not a number',
+      parsed,
+      blockName: 'rollingFiveHourLimit',
+      block,
+    },);
+  if ((typeof max) !== 'number')
+    throw blockRefusal({
+      detail: 'rollingFiveHourLimit.max is not a number',
+      parsed,
+      blockName: 'rollingFiveHourLimit',
+      block,
+    },);
+  if ((typeof limited) !== 'boolean')
+    throw blockRefusal({
+      detail: 'rollingFiveHourLimit.limited is not a boolean',
+      parsed,
+      blockName: 'rollingFiveHourLimit',
+      block,
+    },);
+  if ((typeof nextTickAt) !== 'string')
+    throw blockRefusal({
+      detail: 'rollingFiveHourLimit.nextTickAt is not a string',
+      parsed,
+      blockName: 'rollingFiveHourLimit',
+      block,
+    },);
+
+  return {
+    remaining,
+    max,
+    limited,
+    nextTickAt,
+  };
+}
+
+/**
+ Validates the fields of a weekly block and reads them out.
+
+ @param parsed - the parsed body, described in a refusal
+
+ @param block - the weekly block of that body
+
+ @returns The typed weekly window
+
+ @throws {@link QuotaShapeError} when a field is missing or mistyped
+
+ @example
+ ```ts
+ const weekly = weeklyWindowOf({ parsed, block, },);
+ ```
+ */
+function weeklyWindowOf(
+  {
+    parsed,
+    block,
+  }: {
+    readonly parsed: Readonly<Record<string, unknown>>;
+    readonly block: Readonly<Record<string, unknown>>;
+  },
+): QuotaSnapshot['weekly'] {
+  /**
+   Weekly fields pulled out for type validation.
+   */
+  const {
+    percentRemaining,
+    nextRegenAt,
+  } = block;
+  if ((typeof percentRemaining) !== 'number')
+    throw blockRefusal({
+      detail: 'weeklyTokenLimit.percentRemaining is not a number',
+      parsed,
+      blockName: 'weeklyTokenLimit',
+      block,
+    },);
+  if ((typeof nextRegenAt) !== 'string')
+    throw blockRefusal({
+      detail: 'weeklyTokenLimit.nextRegenAt is not a string',
+      parsed,
+      blockName: 'weeklyTokenLimit',
+      block,
+    },);
+
+  return {
+    percentRemaining,
+    nextRegenAt,
+  };
+}
+
+/**
  Parses one `/quotas` body into the typed snapshot,
  validating every consumed field.
+
+ THE WEEKLY BLOCK IS REQUIRED AND THE FIVE-HOUR BLOCK IS NOT. A body without the `rollingFiveHourLimit` key yields a snapshot with no
+ `fiveHour` property; a body that carries the key must carry a well-formed block.
 
  @param bodyText - raw 200-response body
 
  @returns Typed snapshot of budget-relevant quota state
 
- @throws {@link QuotaShapeError} when body is not JSON or a consumed field is missing or mistyped
+ @throws {@link QuotaShapeError} when body is not JSON, the weekly block is missing or mistyped, or the five-hour block is present
+ and mistyped
 
  @example
  ```ts
  const snapshot = parseQuotaSnapshot({ bodyText: reply.bodyText, },);
- if (snapshot.fiveHour.limited) backOff(snapshot.fiveHour.nextTickAt,);
+ if (snapshot.fiveHour?.limited) backOff(snapshot.fiveHour.nextTickAt,);
  ```
  */
 export function parseQuotaSnapshot(
@@ -328,19 +533,26 @@ export function parseQuotaSnapshot(
     },);
 
   /**
-   Rolling five-hour block as delivered.
+   Whether the body carries the five-hour key at all, which is the only thing that makes the window optional: a present key must
+   hold an object.
    */
-  const { rollingFiveHourLimit: fiveHour, } = parsed;
-  if (!isJsonRecord(fiveHour,))
+  const carriesFiveHour = Object.hasOwn(
+    parsed,
+    'rollingFiveHourLimit',
+  );
+
+  /**
+   Rolling five-hour block and weekly credit block as delivered.
+   */
+  const {
+    rollingFiveHourLimit: fiveHourBlock,
+    weeklyTokenLimit: weekly,
+  } = parsed;
+  if (carriesFiveHour && (!isJsonRecord(fiveHourBlock,)))
     throw shapeRefusal({
       detail: 'rollingFiveHourLimit is not an object',
       parsed,
     },);
-
-  /**
-   Weekly credit block as delivered.
-   */
-  const { weeklyTokenLimit: weekly, } = parsed;
   if (!isJsonRecord(weekly,))
     throw shapeRefusal({
       detail: 'weeklyTokenLimit is not an object',
@@ -348,64 +560,24 @@ export function parseQuotaSnapshot(
     },);
 
   /**
-   Five-hour fields pulled out for type validation.
+   The five-hour window as a property to spread: empty when the body had no such key, since a key that is present and no object
+   was refused above.
    */
-  const {
-    remaining,
-    max,
-    limited,
-    nextTickAt,
-  } = fiveHour;
-  if ((typeof remaining) !== 'number')
-    throw shapeRefusal({
-      detail: 'rollingFiveHourLimit.remaining is not a number',
-      parsed,
-    },);
-  if ((typeof max) !== 'number')
-    throw shapeRefusal({
-      detail: 'rollingFiveHourLimit.max is not a number',
-      parsed,
-    },);
-  if ((typeof limited) !== 'boolean')
-    throw shapeRefusal({
-      detail: 'rollingFiveHourLimit.limited is not a boolean',
-      parsed,
-    },);
-  if ((typeof nextTickAt) !== 'string')
-    throw shapeRefusal({
-      detail: 'rollingFiveHourLimit.nextTickAt is not a string',
-      parsed,
-    },);
-
-  /**
-   Weekly fields pulled out for type validation.
-   */
-  const {
-    percentRemaining,
-    nextRegenAt,
-  } = weekly;
-  if ((typeof percentRemaining) !== 'number')
-    throw shapeRefusal({
-      detail: 'weeklyTokenLimit.percentRemaining is not a number',
-      parsed,
-    },);
-  if ((typeof nextRegenAt) !== 'string')
-    throw shapeRefusal({
-      detail: 'weeklyTokenLimit.nextRegenAt is not a string',
-      parsed,
-    },);
+  const fiveHourEntry = isJsonRecord(fiveHourBlock,)
+    ? {
+      fiveHour: fiveHourWindowOf({
+        parsed,
+        block: fiveHourBlock,
+      },),
+    }
+    : {};
 
   return {
-    fiveHour: {
-      remaining,
-      max,
-      limited,
-      nextTickAt,
-    },
-    weekly: {
-      percentRemaining,
-      nextRegenAt,
-    },
+    ...fiveHourEntry,
+    weekly: weeklyWindowOf({
+      parsed,
+      block: weekly,
+    },),
   };
 }
 

@@ -12,20 +12,21 @@ import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provi
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
 // than from a fixed split.
 //
-// The owner's policy, in the owner's order: send everything to Synthetic until
-// its per-model concurrency limit is reached, then overflow to Hyper, which has
-// no such limit; if Synthetic has run out of quota, use Hyper; when Hyper is
-// dry too, buy on OpenRouter (2026-09-03); if every provider is out at once,
-// throw an error saying so and end the run.
+// The owner's policy, in the owner's order: send everything to Synthetic, and when a provider's per-model concurrency
+// limit is reached, overflow to the next one with budget; if Synthetic has run out of quota, use Hyper; when Hyper is
+// dry too, buy on OpenRouter (2026-09-03); if every provider is out at once, throw an error saying so and end the run.
+// No provider states a per-model ceiling today (Synthetic dropped its own on 2026-10-19), so no live call overflows
+// for saturation; the walk still honours a ceiling a caller injects.
 //
-// THE POLICY IS A WALK DOWN `PROVIDER_ORDER`. The first provider that serves
-// the model and has budget takes the call, unless its per-model slots are all
-// taken and a later provider with budget can take it now; a saturated provider
-// with nobody behind it still gets the call, since a queue behind its limit is
-// slower than the split and still buys the answer.
+// THE POLICY IS A WALK DOWN `PROVIDER_ORDER`. The first provider that serves the model and has budget takes the call,
+// unless its per-model slots are all taken and a later provider with budget can take it now; a saturated provider
+// with nobody behind it still gets the call, since a queue behind its limit is slower than the split and still buys
+// the answer.
 //
-// SYNTHETIC HAS TWO LIMITS, not one. A five-hour rolling window and a weekly
-// credit budget, and either being empty is a reason to fail over. A second provider was
+// SYNTHETIC HAS A WEEKLY LIMIT, AND A REPLY MAY STILL CARRY A FIVE-HOUR WINDOW. Synthetic's rate-limit page of 2026-10-19
+// describes only a weekly credit budget, and its quota reply of that day had no `rollingFiveHourLimit`, so the weekly
+// budget decides every reading. An older reply, or an account still on the old terms, may carry the five-hour window, and
+// that window is honoured when present: either being empty is a reason to fail over. A second provider was
 // added because the weekly one emptied and 866 of 875 lost voices carried a
 // single HTTP 429, while the reader that would have seen it coming had been
 // parsing `weekly.percentRemaining` and discarding it since 2026-07-16.
@@ -80,7 +81,8 @@ export class EveryProviderDryError extends Error {
     { measured = 'no reading cited', }: { readonly measured?: string; } = {},
   ) {
     super(
-      'Every provider is out of budget at once: Synthetic has no five-hour or weekly credit left, Charm Hyper has '
+      'Every provider is out of budget at once: Synthetic has no weekly credit left (or no five-hour request left, on a '
+        + 'reply that still carries that window), Charm Hyper has '
         + 'no balance left, Amazon Bedrock has no credit left short of the owner\'s card, and OpenRouter has no '
         + 'credit left. Nothing further can be bought, so this run ends. Synthetic regenerates on its own '
         + 'schedule; Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
@@ -138,9 +140,9 @@ export type ProviderChoice =
 /**
  Whether Synthetic's budget reading says nothing more can be bought there.
 
- READS BOTH LIMITS. The provider throttling the account, an empty five-hour
- window and an empty weekly budget are three separate ways to be out, and the
- one that actually emptied was the weekly budget.
+ THE WEEKLY BUDGET ALWAYS DECIDES, and a five-hour window is read only when the snapshot has one. Synthetic's reply of 2026-10-19
+ carried no such window, so an empty weekly budget is the one way to be out; where an older reply still carries the window,
+ the provider throttling the account and an empty window are two more, and the one that actually emptied was the weekly budget.
 
  @param quota - most recent budget reading
 
@@ -155,25 +157,34 @@ export function syntheticIsDry(
   { quota, }: { readonly quota: QuotaSnapshot; },
 ): boolean {
   /**
+   Weekly budget, the limit that actually emptied and the one every reading has.
+   */
+  const { percentRemaining, } = quota.weekly;
+
+  if (percentRemaining <= 0)
+    return true;
+
+  /**
+   Rolling window, when the reply carried one.
+   */
+  const { fiveHour, } = quota;
+
+  // No window in the reply: the weekly budget has already decided.
+  if (fiveHour === undefined)
+    return false;
+
+  /**
    Rolling window, whose emptiness is stated two ways.
    */
   const {
     limited,
     remaining,
-  } = quota.fiveHour;
+  } = fiveHour;
 
   if (limited)
     return true;
 
-  if (remaining <= 0)
-    return true;
-
-  /**
-   Weekly budget, the limit that actually emptied.
-   */
-  const { percentRemaining, } = quota.weekly;
-
-  return percentRemaining <= 0;
+  return remaining <= 0;
 }
 
 /**
@@ -377,6 +388,11 @@ export function routeProviderFor(
 }
 
 /**
+ Field value naming a meter the reply did not carry, so a record shows an absent window rather than dropping its fields.
+ */
+const NO_WINDOW = 'none';
+
+/**
  Renders what the first provider's meter actually said, as record fields.
 
  A VERDICT ALONE CANNOT BE DIAGNOSED. `wet` and `dry` say what routing did,
@@ -386,9 +402,12 @@ export function routeProviderFor(
  second live call separates those, and once the moment has passed there is no
  second call to make.
 
- BOTH LIMITS EVERY TIME, including whichever one is full. A record naming
+ EVERY LIMIT THE REPLY CARRIED, EVERY TIME, including whichever one is full. A record naming
  only the limit that emptied would leave a reader unable to watch the other
- one approach.
+ one approach. A reply with no five-hour window (Synthetic's of 2026-10-19) prints
+ `syntheticFiveHour=none` and `syntheticThrottled=none`, so the fields keep their places and a reader can tell
+ an absent window from one that read zero; the readers of these records (`meter-sample-read.ts`, `meter-report-level.ts`)
+ carry fields verbatim, so the older `48/50` form and `none` both read.
 
  @param quota - snapshot the dryness verdict was read from
 
@@ -398,21 +417,34 @@ export function routeProviderFor(
  ```ts
  syntheticMeterLevel({ quota, },);
  // => ['syntheticWeekly=97%', 'syntheticFiveHour=48/50', 'syntheticThrottled=no',]
+ // => ['syntheticWeekly=97%', 'syntheticFiveHour=none', 'syntheticThrottled=none',] (no five-hour window)
  ```
  */
 export function syntheticMeterLevel(
   { quota, }: { readonly quota: QuotaSnapshot; },
 ): readonly string[] {
   /**
-   Rolling window and weekly budget, either of which emptying is a dry meter.
+   Rolling window, when the reply carried one, and weekly budget, either of which emptying is a dry meter.
    */
   const {
     fiveHour,
     weekly,
   } = quota;
 
+  /**
+   The weekly field, which every reply has.
+   */
+  const weeklyField = `syntheticWeekly=${String(weekly.percentRemaining,)}%`;
+
+  if (fiveHour === undefined)
+    return [
+      weeklyField,
+      `syntheticFiveHour=${NO_WINDOW}`,
+      `syntheticThrottled=${NO_WINDOW}`,
+    ];
+
   return [
-    `syntheticWeekly=${String(weekly.percentRemaining,)}%`,
+    weeklyField,
     `syntheticFiveHour=${String(fiveHour.remaining,)}/${String(fiveHour.max,)}`,
     `syntheticThrottled=${fiveHour.limited ? 'yes' : 'no'}`,
   ];
