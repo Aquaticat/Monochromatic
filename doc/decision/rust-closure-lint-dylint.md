@@ -107,6 +107,10 @@ What replaced it:
 the Dylint lint `avoidable_closure` of `package/linter/monochromatic-lint-closure`,
 run by a package's own `lint:closures` task.
 Only `package/desktop-app/ide` has that task today.
+Note of 2026-10-19:
+`monochromatic-lint` now runs the lint for every Rust package as the rule `rust/avoidable-closure`,
+and the IDE task was removed;
+see the section "Implementation of 2026-10-19" at the end of this record.
 
 Consequences:
 
@@ -159,5 +163,26 @@ and the IDE keeps error severity because it has no findings.
 - Dylint builds the target with the toolchain that built the library.
 - The generated Slint window type is unverified under rustc; the IDE build needs its runtime prepared first
   (`mise run //package/desktop-app/ide:runtime`).
+
+## Implementation of 2026-10-19
+
+Mechanism A of `doc/planning/closure-lint-everywhere.md` is built on the branch `feat/linter-closure-everywhere`.
+`monochromatic-lint` runs `cargo dylint --path <library>` for each Rust package that selects the rule
+`rust/avoidable-closure`,
+at warning severity by default,
+with the library named in the rule's `library` option.
+It compiles the library and binaries only,
+skips directories ending in `.fuzz` or `.bench`,
+and reads the per-package prerequisites from `monochromatic-lint.prerequisites.jsonc`.
+A package with a missing prerequisite or a cold cargo cache is skipped with a message;
+the linter does not fetch.
+The lint itself skips closures in generated code,
+so the Slint window code needs no per-package attribute,
+and only rustc's `expect` suppresses.
+The IDE keeps error severity through a per-path block of `monochromatic-lint.config.jsonc`.
+The behaviour is documented in `package/linter/monochromatic-lint/README.md`,
+section "Closure check".
+Activation in a checkout needs a released `monochromatic-lint` that knows the rule:
+the 0.2.0 release rejects the configuration with status 2.
 
 [proposal]: ../planning/linter-selective-anonymous-functions.md

@@ -30,6 +30,7 @@ pub const RULE_IDS: &[&str] = &[
     "rust/require-rustdoc",
     "rust/require-explicit-types",
     "rust/tests-in-sidecars",
+    "rust/avoidable-closure",
     "markdown/heading-increment",
     "markdown/commands-show-output",
     "markdown/no-duplicate-heading",
@@ -149,6 +150,15 @@ pub(crate) fn validate_setting(id: &str, setting: &JsoncValue) -> Result<(), Con
         }
         if id == "markdown/lfs-image-url" && name == "exclude" {
             strings(&entry.value, "exclude")?;
+            continue;
+        }
+        if id == "rust/avoidable-closure" && name == "library" {
+            // The path is read when the rule runs; an empty one can name no directory.
+            if text(&entry.value, "library")?.is_empty() {
+                return Err(ConfigError::new(
+                    "Rule rust/avoidable-closure option library must not be empty.",
+                ));
+            }
             continue;
         }
         return Err(ConfigError::new(

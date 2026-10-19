@@ -1124,7 +1124,21 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     final run, compared against the base text for the four files it did touch); the coordinator did not rerun it.
     The Dylint lint `avoidable_closure` is the only closure check from then on.
     Rust packages other than the IDE have no closure check until each gets its own `lint:closures` gate.
-    The record is the section "Removal of `rust/no-anonymous-functions`" of `doc/decision/rust-closure-lint-dylint.md`.
+    Note of 2026-10-19:
+    the IDE task `lint:closures` named throughout this record was removed.
+    `monochromatic-lint` now runs the same Dylint lint for every Rust package as the rule `rust/avoidable-closure`
+    (library and binaries only,
+    tests exempt),
+    and the repository configuration holds the IDE at error severity.
+    The five `expect` attributes stay.
+    See `package/linter/monochromatic-lint/README.md`,
+    section "Closure check",
+    and the section "Answers of 2026-10-19 to the proposal" of `doc/decision/rust-closure-lint-dylint.md`.
+    The IDE's `lint` aggregate task no longer lists `lint:closures`;
+    its stable-fetch step became the linter's offline check (a cold cache skips the package with a note),
+    and its runtime,
+    licenses and build-directory links became the prerequisite `ide-runtime-artifacts` in
+    `package/desktop-app/ide/monochromatic-lint.prerequisites.jsonc`.
   - Inline directives in the linter (D2 of `doc/planning/rust-linter-oxlint-parity.md`, built after the Dylint gate above;
     branch `feat/lint-directives`, worktree `.claude/worktrees/lint-directives`, an agent, 2026-10-18; landed as merge
     `6808166dfd`, after the coordinator reran 488 package tests, clippy, rustfmt and the fuzz sidecar tests on the

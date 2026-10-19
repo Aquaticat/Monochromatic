@@ -6,10 +6,14 @@ that reports a Rust closure expression unless a named function,
 a loop,
 or a `match` cannot replace it.
 The decision and its evidence are in `doc/decision/rust-closure-lint-dylint.md` and `doc/planning/linter-selective-anonymous-functions.md`.
-The IDE package (`package/desktop-app/ide`) runs it through its `lint:closures` task.
+`monochromatic-lint` runs it for every Rust package as the rule `rust/avoidable-closure`
+(`package/linter/monochromatic-lint/README.md`,
+section "Closure check"),
+so no package has a task of its own for it;
+the IDE's former `lint:closures` task was removed on 2026-10-19.
+The library path is the rule's `library` option in `monochromatic-lint.config.jsonc`.
 It replaced the syntax-only `rust/no-anonymous-functions` rule of `monochromatic-lint`,
-which was removed on 2026-10-18,
-so a Rust package has a closure check only when it has its own `lint:closures` gate.
+which was removed on 2026-10-18.
 
 ## Package name
 
@@ -65,6 +69,31 @@ inherent and trait methods (concrete receiver,
 generic receiver,
 universal call syntax,
 `dyn` receiver).
+
+## Generated and foreign files
+
+A closure is also skipped when its span lies in a file that the package's author did not write:
+a file below `OUT_DIR` (build-script output such as Slint's `include_modules!` window code,
+which is overwritten on every build),
+and any file with an absolute path outside `CARGO_MANIFEST_DIR`.
+Cargo exports both variables to the compiler process.
+A package source reaches the compiler as a path relative to the package root,
+so a relative path is always the package's own.
+`..` components are resolved before the comparison,
+and `OUT_DIR` wins over the manifest directory because a build script's output can sit inside the package's `target`
+directory.
+When the compiler was not started by cargo,
+the manifest variable is absent and only `OUT_DIR` can exclude.
+`src/own_source.rs` holds the decision with unit tests;
+the fixture `generated_code.rs` includes one file from each case and one closure of the package's own as the
+positive control.
+The UI test exports `CARGO_MANIFEST_DIR` and `OUT_DIR` for the compiler processes it starts,
+and `tests/outside/` holds the file that lies beside the package directory.
+Measured effect:
+before the change `package/music-player/desktop-app` reported 5252 closures and
+`package/desktop-app/terminal` 118 inside the generated `app.rs`;
+see the measurement in `doc/planning/closure-lint-everywhere.md` and the end-to-end run recorded in
+`doc/decision/rust-closure-lint-dylint.md`.
 
 ## Closures from macros
 
@@ -179,7 +208,10 @@ The `dylint_linting` and `dylint_testing` crates and the two tools must stay on 
   Clippy with `--deny warnings`,
   and `cargo fmt --check`;
   `lint:clippy` and `lint:rustfmt` run the last two alone.
-- `mise run //package/linter/monochromatic-lint-closure:run <package directory>` lints another package with `cargo dylint --all-targets`.
+- `mise run //package/linter/monochromatic-lint-closure:run <package directory>` lints another package with `cargo dylint --path . --all-targets`.
+  `monochromatic-lint` itself checks the library and the binaries only;
+  this task shows what that exemption of tests,
+  examples and benchmarks leaves out.
 - `mise run //package/linter/monochromatic-lint-closure:bless` rewrites `tests/ui/*.stderr` from the lint's current output.
 
 The aggregate tasks carry the names `build` and `lint`,
@@ -199,8 +231,10 @@ Only code that compiles under the chosen features,
 `cfg` and targets is linted,
 so pass `--all-targets` (the `run` task does) to reach test sidecars and examples.
 The repository's shared `~/.cargo/config.toml` sets `build.build-dir` outside the package,
-which moves the `lib<name>@<toolchain>.so` copy that `dylint-link` writes out of `target/`;
-the `run` task therefore stages a copy under the name Dylint expects.
+which moves the `lib<name>@<toolchain>.so` copy that `dylint-link` writes out of `target/`.
+`cargo dylint --path <this package>` builds the library itself and finds it under the name Dylint expects,
+so neither the `run` task nor the linter stages a copy (measured on 2026-10-19 under that setting;
+the IDE task removed on the same day staged one because it set its own `CARGO_BUILD_BUILD_DIR`).
 
 ## Limits
 

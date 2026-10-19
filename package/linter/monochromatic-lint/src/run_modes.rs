@@ -134,6 +134,12 @@ pub const RULES: &[RuleInfo] = &[
         suppressible: true,
     },
     RuleInfo {
+        id: "rust/avoidable-closure",
+        fixable: false,
+        options: &["library"],
+        suppressible: false,
+    },
+    RuleInfo {
         id: "markdown/heading-increment",
         fixable: false,
         options: &[],

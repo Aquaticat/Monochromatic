@@ -74,8 +74,10 @@ fn the_listing_describes_every_registered_rule_in_order() {
     assert!(listing.ends_with('\n'));
 }
 
-/// Exactly the line budget and the documentation requirement refuse inline directives,
+/// Exactly the line budget,
+///  the documentation requirement and the compiler-backed closure check refuse inline directives,
 ///  and the lookup answers by the identifier a finding carries.
+///  The closure check is suppressed by rustc's own `expect` attribute only.
 #[test]
 fn only_the_line_budget_and_rustdoc_rules_declare_themselves_unsuppressible() {
     let mut unsuppressible: Vec<&str> = Vec::<&str>::new();
@@ -84,7 +86,14 @@ fn only_the_line_budget_and_rustdoc_rules_declare_themselves_unsuppressible() {
             unsuppressible.push(rule.id);
         }
     }
-    assert_eq!(unsuppressible, ["rust/max-lines", "rust/require-rustdoc"]);
+    assert_eq!(
+        unsuppressible,
+        [
+            "rust/max-lines",
+            "rust/require-rustdoc",
+            "rust/avoidable-closure"
+        ]
+    );
     assert_eq!(
         rule_info("markdown/no-bare-urls").map(|rule| return rule.suppressible),
         Some(true)
@@ -98,7 +107,9 @@ fn only_the_line_budget_and_rustdoc_rules_declare_themselves_unsuppressible() {
     assert!(rule_info("directive/unused").is_none());
 }
 
-/// The starter is valid configuration that selects every rule except the Cargo-backed one.
+/// The starter is valid configuration that selects every rule except the Cargo-backed one
+///  and the closure check,
+///  which needs a library path that a starter cannot know.
 #[test]
 fn the_starter_configuration_is_valid_and_selects_the_documented_rules() {
     let blocks: Vec<ConfigBlock> =
@@ -114,7 +125,7 @@ fn the_starter_configuration_is_valid_and_selects_the_documented_rules() {
     }
     let mut expected: Vec<String> = Vec::<String>::new();
     for id in RULE_IDS {
-        if *id != "rust/require-explicit-types" {
+        if *id != "rust/require-explicit-types" && *id != "rust/avoidable-closure" {
             expected.push(String::from(*id));
         }
     }
