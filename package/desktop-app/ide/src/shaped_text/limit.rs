@@ -12,6 +12,42 @@ use crate::row_map::CODE_ROW;
 use crate::text_raster::MAX_RASTER_BYTES;
 
 /// What:
+///  Logical pixels a raster extends past the wrap width.
+/// Why:
+///  The raster holds glyphs,
+///  the terminator mark,
+///  and underlines of the row ends;
+///  everything else the window draws over it is drawn by the markup.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const RASTER_MARGIN = 24;
+/// ```
+pub const RASTER_MARGIN: f32 = 24.0;
+
+/// Raster width of a window that has not reported a width yet,
+/// in logical pixels.
+pub const UNWRAPPED_RASTER_WIDTH: f32 = 1300.0;
+
+/// What:
+///  The width in logical pixels of the raster of a frame whose lines are broken at `wrap`,
+///  or of unbroken lines when there is no wrap width.
+/// Why:
+///  The window's tiles and the minimap's bands are painted at the same width,
+///  so a band holds the glyphs of a tile pixel for pixel.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rasterWidth(wrap?: number): number;
+/// ```
+pub fn raster_width(wrap: Option<f32>) -> f32 {
+    return match wrap {
+        Some(width) => (width + RASTER_MARGIN).ceil(),
+        None => UNWRAPPED_RASTER_WIDTH,
+    };
+}
+
+/// What:
 ///  Whether a raster `columns` pixels wide and `rows` pixels tall holds at most [`MAX_RASTER_BYTES`].
 /// Why:
 ///  Every check against the limit asks this one question,

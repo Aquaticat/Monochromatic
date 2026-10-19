@@ -3060,7 +3060,7 @@ and `test:native` includes it.
 
 The source view has no scroll bar.
 The minimap at the right edge of the view is its scroll control:
-it shows the whole file as a picture and a box over it that marks what the view shows.
+it shows the file as a picture and a box over it that marks what the view shows.
 Pressing,
 dragging,
 and turning the wheel on it scroll the view,
@@ -3080,34 +3080,69 @@ and `render/MainMinimap.kt`.
 
 ### What it shows
 
-- The picture shows every line in visual rows,
-  so soft wrap is respected:
-  a line that wraps to three rows is three rows of the picture,
-  and the blocks of virtual rows above annotated lines
-  are blank stretches.
+- The picture is a zoomed-out reflection of the window's own rendering of the text:
+  the window's glyphs,
+  its syntax colors,
+  the selection,
+  the find matches and the active match's boundary,
+  the diagnostics' underlines and the hints,
+  the virtual rows above annotated lines,
+  and the rows soft wrap makes.
+  Each band of the text is rendered with the same code path that paints a tile of the source view
+  (`TextShaper::prepare_rows`,
+  the match rectangles,
+  the annotation layout,
+  the markup's fills,
+  and `TextRaster::paint_onto` in `src/minimap/render.rs`),
+  and the rendering is then reduced to the picture's size by exact area averaging at the final device-pixel size
+  (`src/minimap/downscale.rs`).
+  It is never rectangles or blocks:
+  a pixel of the picture is the average of the window's pixels it stands for,
+  and the native test `src/native/minimap_reflection_tests.rs` compares the picture with the box average of a
+  snapshot of the real window for plain text,
+  a selection,
+  find matches,
+  wrapped lines,
+  and diagnostics,
+  at display scales one and two.
+- The picture covers the whole width of the text area (the wrap width,
+  or 1,300 px while the view has none) shrunk to the minimap's width,
+  and the rows of the file in visual rows shrunk by a fixed scale of a sixth
+  (`Geometry::scale`,
+  so one code row of 24 px is four pixel rows,
+  whatever the length of the file).
   The rows come from the one vertical mapping (`RowMap`),
   never from a second estimate of the height.
-- One pixel stands for one source column,
-  a tab for four columns,
-  and a row of text for four pixel rows,
-  of which the first stays empty so rows can be told apart (CodeGlance Pro's "clean" renderer:
-  `BaseMinimap.renderClean`,
-  weights 0.8 for printable ASCII and 0.4 for other glyphs,
-  0.6 for each pixel row of the
-  glyph).
-  Columns past the minimap's width are not drawn,
-  as in CodeGlance Pro.
-  The whole picture is drawn at 0.8 opacity (`srcOver0_8` in `GlancePanel.paintComponent`).
-- A text that fits the view at four pixels a row is drawn at that size and ends above the bottom of the view.
-  A longer text is scaled so the whole file fits the height of the view,
-  and each pixel row shows the row of the text
-  at its center.
-  This is CodeGlance Pro's "Fit" mode (`curDocumentHeight > visibleArea.height`);
-  its default "Proportional" mode
-  slides a picture of the file with the scroll and cannot show a whole file of fifty thousand lines.
-- The glyphs take the syntax classes and the palette of the source text in the dark and the light scheme
+  Its pixels hold the averaged color with the averaged coverage,
+  so an average of ink and background is a fainter ink,
+  as in the window's own frame;
+  the caret and the line-number gutter are not part of the picture.
+- A text that fits the view at that scale is drawn at that size and ends above the bottom of the view.
+  A longer text keeps the scale,
+  and its picture slides up past the track with the scroll:
+  the picture's overhang past the track times the share of the scroll range the view has scrolled
+  (`Geometry::slide`).
+  This is CodeGlance Pro's "Proportional" mode;
+  its "Fit" mode,
+  which squeezes the whole file into the height of the view,
+  is not used,
+  because a file of fifty thousand lines then shares a pixel row among hundreds of code rows
+  and the picture stops being the window's own rendering.
+  The box is proportional too:
+  its top is the share of the scroll range times the room it has in the track,
+  which is exactly where the view's rows lie in the slid picture,
+  and a press or a drag maps through the slide (`Geometry::content_y`,
+  `Geometry::target`).
+  The picture holds only the bands near the visible part of it:
+  the bands the track shows and one more on each side (`Geometry::bands_for`),
+  so the work and the memory follow the view and not the length of the file.
+  Every pixel row is the exact average of the window's pixels;
+  nothing is sampled.
+- The inks are the syntax classes and the palette of the source text in the dark and the light scheme
   (`CodeColors`,
-  the same inks the tile uses).
+  the same inks the tile uses),
+  the selection's fill,
+  and the foreground at 0.14 opacity with a boundary for the other matches.
   A change of scheme builds the picture again.
 - The viewport box is the share of the text the view shows,
   never shorter than 20 px (CodeGlance Pro's
@@ -3151,7 +3186,8 @@ and `render/MainMinimap.kt`.
 - A press outside the box moves the caret to the row under the pointer and,
   in the same row,
   to the column under it
-  (one column for each pixel),
+  (the position across the minimap is the same share of the text's width,
+  `text_x` in `src/minimap/horizontal.rs`),
   and scrolls that row to the middle of the view,
   also near the ends of the file
   where the scroll range stops the view short of the middle.
@@ -3162,6 +3198,7 @@ and `render/MainMinimap.kt`.
   A press with Shift held keeps the anchor of the selection and extends it to that place.
   On a line too long to shape within a click's allowance the caret goes to the start of the line.
   A press in the virtual rows above a line jumps to that line's first row.
+  The row under the pointer is the one of the picture as it has slid with the scroll when the pointer went down.
 - A press on the box starts a drag without a jump.
   A press outside the box jumps and then continues as a drag of the box from where the jump left it
   (`ScrollBar.mousePressed`:
@@ -3182,10 +3219,15 @@ and `render/MainMinimap.kt`.
   so the toolkit's own wheel
   physics get the event.
   CodeGlance Pro also hands the wheel to the editor (`MouseEventAdapter.redispatch`).
-- The box follows the scroll live,
+- The box and the slide of the picture follow the scroll live,
   from the scroll offset and the height of the text alone,
-  in markup bindings.
-  Native code does nothing for a scroll step beyond what it did before the minimap.
+  in markup bindings (`minimap-box-top`,
+  `minimap-slide` in `ui/app.slint`,
+  which hold the same formulas as `Geometry`).
+  The picture is placed at whole device pixels,
+  so sliding it never resamples it.
+  Native code notes the bands the track shows after each scroll step (a comparison of a few words)
+  and asks the worker for a picture only when they change.
 - The keys keep working:
   PageUp,
   PageDown,
@@ -3215,11 +3257,49 @@ and `render/MainMinimap.kt`.
   This view never had one,
   so the minimap is the only scroll control and nothing is hidden.
 
+### Black surfaces in the dark scheme
+
+- In the dark scheme the editor's background,
+  the minimap's,
+  the sidebar's (the file tree,
+  the search results,
+  the references list),
+  the find box's,
+  and the tile raster's background are `#000000`;
+  the light scheme is unchanged.
+  They share one binding,
+  `Surface.background` in `ui/surface.slint`,
+  which is `#000000` while the color scheme is dark and `Palette.background` otherwise.
+  The raster paints no background of its own and `CodeColors` has no background field,
+  so no second black exists to drift from the first.
+- Checked on the real binary in the nested compositor
+  (`inspect:native`,
+  dark scheme,
+  1500 by 900 px at scale 1):
+  the pixels sampled in the editor,
+  the sidebar,
+  the header,
+  and the minimap's blank columns all read 0,
+  0, 0.
+  The selection (a blue fill),
+  the find matches (the active match in a blue box,
+  the others with a boundary),
+  the dim comment text,
+  and the borders of the viewport box and of the find box were viewed in screenshots at scales one and two,
+  and stay legible against black.
+- `ui/hover.slint`'s `alternate-background` and the find box's own input fill (`#1E1E1EB3`) are small surfaces and
+  were left as they were.
+
 ### Decisions where CodeGlance Pro is silent or differs
 
 - CodeGlance Pro draws an empty picture for a file over 20,000 lines (`maxLinesCount` with `outLineEmpty`).
   The picture here has no such limit,
-  because its cost follows the height of the track and not the length of the text.
+  because its cost follows the bands near the view and not the length of the text.
+- CodeGlance Pro draws its picture at 0.8 opacity with a weight for each glyph.
+  This picture is the exact average of the window's pixels,
+  and no gain is applied to it.
+  In the dark scheme the large surfaces are pure black (see Black surfaces in the dark scheme),
+  so the average of ink over black is as bright as the window's own ink at that coverage.
 - Its preview of the code under the pointer after 400 ms (`showEditorToolTip`) and its 7 px gutter for resizing the
   minimap are not implemented (see Limits and follow-ups).
 - A press below the end of a short picture jumps to the last line (`fitLineToEditor` clamps),
@@ -3231,7 +3311,7 @@ and `render/MainMinimap.kt`.
 ### Performance bounds
 
 - The picture is built on its own thread (`ide-minimap`,
-  `src/native/minimap_build.rs`),
+  `src/native/minimap_build.rs` and `src/native/minimap_build/serve.rs`),
   never on the window thread.
   The window thread takes a finished picture with one comparison and one image setter
   (`apply` in `src/native/minimap/picture.rs`).
@@ -3243,227 +3323,293 @@ and `render/MainMinimap.kt`.
   and `pointer.rs` turns a press,
   a drag,
   and a page step into scroll offsets.
+  The picture's own code is in `src/minimap/`:
+  `plan.rs` cuts the text into bands at fixed distances from its top,
+  `render.rs` renders a band,
+  `fills.rs` paints the selection and match fills under the glyphs,
+  `downscale.rs` reduces a rendering,
+  `key.rs` and `cache.rs` keep what is valid,
+  and `build.rs` runs one pass.
 - The picture depends on the text,
   its syntax classes,
   the vertical mapping,
   the wrap width,
   the palette,
-  the display
-  scale,
-  and the size of the minimap,
-  and on nothing else;
-  in particular not on the scroll offset
+  the display scale,
+  the size of the minimap,
+  the selection,
+  the matches,
+  the annotations,
+  the inks of the fills,
+  and the numbers of the bands the track shows with the view scrolled where it is,
+  and on nothing else
   (`Key` in `src/native/minimap_build.rs`).
-  A render that changes none of these costs a comparison of a few words.
+  A render that changes none of these costs a comparison of a few words:
+  a scroll step that keeps the bands posts no request and sets no picture,
+  and only the markup moves the picture and the box.
 - A request is posted at once for the first picture of a file,
   a new palette,
   and a new scale;
-  at most every 250 ms
-  while
-  only the vertical mapping changes,
+  at most every 60 ms while only the bands the track shows change (`SLIDE`),
+  which is how the picture follows a scroll through a long file;
+  at most every 250 ms while the vertical mapping changes (`THROTTLE`),
   which is how a long file's measurement shows in the picture while it runs;
   and 120 ms after the last change for everything else,
-  such as the size steps of a resize drag.
+  such as the size steps of a resize drag or an edit.
   The newest request wins:
-  the build of an older one stops at its next look at the flag,
-  every 16 pixel rows,
+  a build stops between two bands,
   and an older request that was never started is dropped.
-- A finished picture is shown only when its text stamp is the displayed text's and its request is not older than the
-  picture on screen.
-- The work is bounded by the track,
+- The picture is rendered one band at a time:
+  a band is a run of whole code rows whose raster is at most 4 MiB (`BAND_BYTES`,
+  a sixteenth of the 64 MiB raster limit),
+  and one very tall line is cut into bands by the same clip the window's tile uses.
+  The cuts stand at multiples of the band's height from the top of the text and do not move with the scroll.
+  The reduction of a band is kept as a unit of the cache with the key it is valid for,
+  and the cache keeps the units of the bands the last picture held and no others.
+  The key holds the band's lines and their rows,
+  a digest of the band's text,
+  a digest of the syntax classes that reach it,
+  the selection,
+  the matches,
+  the diagnostics,
+  and the blocks that touch it,
+  all measured from the band's first character,
+  plus what every unit shares.
+  No revision or address of the text is in it,
+  so an edit renders again the bands whose lines it changed
+  and takes the others from the cache,
+  and an edit above the window that moves characters but no row renders nothing.
+  An added or removed line moves every row below it,
+  so it renders the bands of the window below the edit (see Measured cost).
+  A new selection or match list renders the bands it touches.
+  Two bands that share a pixel row keep the unrounded sums of that row and complete it together,
+  so the picture does not depend on where the bands were cut
+  (the test `bands_put_together_make_the_picture_of_the_whole_without_a_seam`),
+  and the rows built for a window are exactly those rows of the picture of the whole text
+  (`a_long_text_builds_only_the_bands_near_the_visible_part_and_they_are_rows_of_the_whole`).
+- The work is bounded by the view,
   not by the text:
-  at most one source line is read for each pixel row of the track
-  (a text with more rows than the track has pixel rows is sampled),
-  and each row reads at most the minimap's width in
-  columns,
-  so one line of two hundred thousand characters costs no more than any other.
-  Wrapped lines need their break positions:
-  lines that cost more to shape than the budget allows are cut into rows of
-  equal
-  width instead of shaped,
-  250,000 units for the first (quick) picture and 5,000,000 for the full one,
-  which follows
-  only
-  when the quick one left a rough line.
-- The picture is `4 * width * track` bytes at the display scale squared,
-  and the worker's job holds a rope snapshot,
-  the row
-  map,
+  the picture holds the bands the track shows and one on each side,
+  whatever the length of the file,
+  and renders every code row of them.
+  A build may spend 5,000,000 units of `line_work` (`BUILD_WORK`).
+  A line past `WORK_SCAN_LIMIT` characters,
+  or a band the budget cannot pay,
+  or a band that fails to render,
+  is not drawn blank:
+  the rows the last picture held for the same place stay,
+  the unit is counted in `skipped` or `failed` of the build's statistics,
+  and a `tracing::warn!` gives the range of lines.
+- The memory of a build is the bands in flight (at most 4 MiB each),
+  the unrounded sums of the rows two bands share,
+  the units of the bands of the last picture (`4 * width * rows` bytes at the display scale squared),
+  and the worker's job,
+  which holds a rope snapshot,
+  the row map,
   and the shared syntax classes,
   not copies of the text.
 
 ### Measured cost
 
-The numbers are from release bundles of `main` at `be51f5b314`,
-the commit this branch started from (the baseline),
-and
-of this branch merged with `main` at `ec0ae6dbaf` (bundle sha1 `9317d00b9081a1e76373bf42905888167ffa6be5`),
-on one
-host,
-in the nested compositor 0.6.0 with its recorder at 60 frames a second and the application isolated in its own
-cgroup.
-Every run listed has zero frames dropped by the recorder and a one-minute load average below 20 when it started
-(7.4 to 13.2 here;
-earlier batches taken while other sessions kept the host at a load of 20 to 60 were set aside).
-The harness is a copy kept outside the repository;
-each condition has four runs on each side,
-alternated in order.
+The numbers are for the picture builder of this branch.
+The frame-pacing measurements of the earlier builder (scrolling by wheel,
+dragging a window edge,
+memory of a bundle)
+were not repeated:
+the window thread's part of a picture is still one comparison and one image setter,
+and a scroll step that shows the same bands posts nothing.
 
-- Scrolling a long file by wheel (160 notches down and 80 up,
-  one every 16 ms,
-  230 recorded slots):
-  in all 16 runs of
-  each build,
-  over the 50,000-line plain text at 1100 px and at 600 px,
-  the 50,000-line Rust file,
-  and the 2,000-line
-  text,
-  the longest gap between painted frames is 16.7 to 17.0 ms,
-  228 of 230 slots are painted,
-  and no gap exceeds
-  100 ms.
-  The window thread's time to draw a frame has a median of 0.30 to 0.37 ms for `main` and 0.33 to 0.41 ms with the
-  minimap,
-  and a 95th percentile of 2.0 to 3.9 ms in both,
-  so a scroll step costs the same with the minimap.
-- Dragging the window's width from 1100 px to 600 px and back in steps of 25 px,
-  one every 16 ms,
-  two sweeps
-  (78 slots):
-  the longest gap is 17.0 to 17.7 ms in all runs of both builds after leaving out the one slot at the
-  junction of the sweeps where the harness commands the same width twice (it appears in 1 of 8 runs of `main` and 2 of 8
-  runs of the minimap build;
-  the frames of that slot are identical).
-  Painted slots are 75 to 77 of 78 in both builds,
-  and no gap exceeds 100 ms.
-  The window thread's step for a new width has a median of 3.06 to 3.20 ms for `main` and 2.78 to 2.99 ms with the
-  minimap on the 50,000-line text,
-  and 5.9 to 6.7 ms against 5.3 to 6.2 ms on the 2,000-line text.
-- The picture settles after the last width of a drag:
-  41 to 60 ms later on the 50,000-line text and 242 to 260 ms
-  later on the 2,000-line text (a debounce of 120 ms and the build),
-  where `main` settles in 24 to 26 ms
-  because it has no picture.
-  The text itself is current at once;
-  only the picture is a step behind,
-  and it is never built on the window thread.
-- The frames the harness counts as not fitting the output are recorder frames that hold the buffer of the previous
-  width (`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`).
-  Its detector for `main` looks for ink in the last two columns of a frame and counts 45 to 53 of 102 on the
-  50,000-line text and 60 to 66 on the 2,000-line text;
-  it cannot be used for the minimap build,
-  whose rows reach those
-  columns.
-  A detector that compares the minimap box's border against the width of the frame counts 37 to 42 of 102 on the
-  50,000-line text and 56 to 70 on the 2,000-line text in the minimap build (four runs each,
-  on the final bundle).
-- A picture of the 50,000-line fixture is built in 13.0 to 14.7 ms (628 pixel rows at the window's height,
-  212 lines
-  shaped);
-  the pictures before it,
-  drawn while the measurement reaches more lines,
-  take 3.1 to 16.0 ms.
-  The first picture of the right size is on screen 0.99 to 1.03 s after launch,
-  0.25 to 0.26 s after the first frame of
-  the text (six runs);
-  the last,
-  complete one,
-  2.48 to 2.53 s after launch,
-  when the measurement of the whole file has
-  ended.
-  The Rust file of the same length builds pictures of 3.3 to 18.8 ms as its highlights arrive,
-  the last at 3.8 to 4.0 s.
-  Before the last merge,
-  the 2,000-line wrapped text took 94 to 114 ms for the quick picture and 243 to 262 ms for the
-  full one,
-  a single line of 200,000 characters took 1.1 to 2.5 ms,
-  and a picture for the transient height at start
-  took 0.7 to 1.1 ms.
-- Memory,
-  median resident size of six runs:
-  the minimap bundle holds 445.1 MB on the 50,000-line text against 443.3 MB
-  for the baseline `main` and 444.7 MB for the current `main` (bundle sha1 `c46d89cd7b1850a0f607aa34170f5fec41d03926`),
-  and 592.1 MB on the Rust file against 588.1 MB and 592.3 MB.
-  Against the current `main` the minimap bundle is 0.4 MB above on the text and 0.2 MB below on the Rust file,
-  which is
-  less than the spread between runs of one bundle (1.5 to 10.2 MB);
-  the difference to the baseline comes with the work
-  merged from `main`.
-  The picture itself is `4 * width * track` bytes,
-  276 KB at 110 by 628 px.
-  The minimap bundle runs 28 or 29 threads against 26 to 29 for the two `main` bundles.
+- The picture holds only the bands near the view,
+  so its cost follows the height of the view and not the length of the file.
+  Release build,
+  a throwaway test (not committed) that timed `prepare` and `build` on a file of 50,000 lines of about ninety
+  characters,
+  a view 1,000 px tall,
+  a minimap 110 px wide,
+  the view in the middle of the file:
+  the first picture takes 44 ms at display scale 1 (12 bands,
+  348 lines rendered) and 78 ms at scale 2 (66 bands,
+  330 lines rendered);
+  a picture whose bands are all in the cache takes 0.13 and 0.38 ms,
+  and the keys of the bands (`prepare`) take 0.05 to 0.2 ms.
+- The cost of an edit in the same setting,
+  with the cache holding the picture of the unedited text:
+  one line changed inside the window renders one band (3.7 ms at scale 1 and 1.9 ms at scale 2);
+  one line changed above the window renders nothing (0.09 and 0.27 ms),
+  and one line inserted below it renders nothing (0.11 and 0.35 ms).
+  A line inserted or deleted above or inside the window moves every row below it,
+  and the bands sit on a fixed pixel grid,
+  so the bands of the window whose content moved are rendered again:
+  21 ms at scale 1 for a line inserted or deleted in the window (10 of 12 bands),
+  26 ms for a line inserted above it (all 12),
+  and 58 to 61 ms at scale 2 (64 or 66 of 66).
+  The number of bands rendered again is bounded by the window,
+  never by the length of the file,
+  and a shift of the grid is not recognized as the same content.
+- Debug build in the nested compositor
+  (`inspect:native`,
+  dark scheme,
+  window of 1100 by 660 px),
+  a file of 50,000 short lines in which the last occurrence of a word is replaced on the disk while the view is at
+  the end:
+  the picture after the change renders 1 of 4 bands in 44 ms at scale 1,
+  and 1 of 14 bands in 8.7 ms at scale 2 (2 bands in 37 ms for a second change),
+  and the build that follows renders none.
+  The same change in a file of 50,000 lines of 600 characters that wrap
+  renders every band of the window,
+  because the measurement of the wrapped rows that follows a reload moves the pixel grid
+  while it runs (each picture of that run took 100 to 190 ms).
+- The first picture of a file at the top,
+  in the same debug build:
+  170 ms for the first two bands and 190 to 245 ms for the window of 7 bands at scale 1 and 14 at scale 2,
+  for this package's `src/native/wrap_resize_tests.rs` (1,218 lines).
+- The cache:
+  a picture whose bands are all valid costs 0.1 to 10 ms,
+  and a changed selection renders the bands it touches.
+  Only the bands near the visible part are ever built or kept (`Cache::retain`).
+- A window 12,000 px tall could not be shown in the nested compositor:
+  it hosts a window of at most 3,704 px of height here,
+  whatever size is asked.
+  The tall windows are covered by `src/native/tall_window_minimap_tests.rs` at 3,500 and 12,000 px instead.
+- The picture itself is `4 * width * rows` bytes at the display scale squared,
+  276 KB at 110 by 628 px,
+  and a band in flight is at most 4 MiB.
 
 ### Limits and follow-ups
 
-- Marks are not drawn.
-  CodeGlance Pro paints the caret line,
+- The caret and the line-number gutter are not part of the picture,
+  and neither are CodeGlance Pro's version control marks or IntelliJ's error stripe as a separate column;
   the selection,
-  the highlighters of the error stripe (find matches and
-  diagnostics),
-  and version control marks into the picture,
-  and IntelliJ's error stripe shows find matches and problems on its scroll
-  bar.
-  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`,
-  kept cheap by building
-  them
-  with the picture (a diagnostic and a find match each name a source position,
-  so no shaping is needed),
-  and they would
-  need a key part for the find and diagnostic snapshots.
+  the find matches,
+  and the diagnostics appear in the picture as the window draws them.
 - The code preview after 400 ms,
   the resizable width,
   and a drag with the middle button are not implemented.
-- A picture of a text with many long wrapped lines may be rough for a moment after a new wrap width,
-  because the quick
-  picture cuts what it cannot afford into rows of equal width;
-  the full picture follows within a second.
 - A picture is drawn at the size of the minimap,
-  so a very wide display scale makes a larger picture
-  (`4 * width * track` bytes at that scale squared).
-- The minimap shows the first 110 columns of each row,
-  like CodeGlance Pro;
-  text farther right is not drawn.
+  so a larger display scale makes a larger picture
+  (`4 * width * track` bytes at that scale squared),
+  and the markup draws it at exactly that many device pixels without resampling.
+- A line inserted or deleted renders again the bands of the window whose content moved,
+  because the bands sit on a fixed pixel grid and the key of a band is its content.
+  The cost is bounded by the window (see Performance bounds),
+  and a content-anchored grid that survives a shift is not implemented.
+- A very fast drag of the box over a very long file may show blank rows at the edge of the picture for a moment:
+  the worker builds the bands near the new place after the pause of the pace rule,
+  and the picture keeps its last rows until then.
+  This was not provoked on purpose in the nested compositor.
+- There is no quick pass of a coarse picture:
+  it drew a sample of the code rows,
+  and the sampled path was removed,
+  so a picture of a new wrap width arrives as one reply,
+  after the bands near the view are rendered.
 
 ### Minimap checks
 
-`mise run //package/desktop-app/ide:test:minimap` runs the integration tests of the geometry and the picture
-(`tests/minimap.rs`),
-and `test:native` runs the window tests (`src/native/minimap_tests.rs`):
-the box against the geometry at every offset,
+`mise run //package/desktop-app/ide:test:minimap` runs the integration tests without a window:
+the geometry (`tests/minimap.rs`),
+the reduction (`tests/minimap_downscale.rs`:
+a uniform field at every ratio,
+patterns averaged by hand,
+fractional edges,
+ratios above one,
+noise against an exact reference,
+alpha,
+the rows below the text,
+adversarial sizes,
+and bands put together without a seam),
+and the picture (`tests/minimap_picture.rs`:
+the plan of bands within the budget,
+the picture against one frame of the whole text,
+the selection fill,
+the cache,
+the budgets,
+a band that fails,
+the window of a long text (only the bands near the view are built,
+the picture is an exact crop of the picture of the whole text at fractional scales too,
+the cache keeps only the window),
+the content keys (an edit renders only the bands it touches,
+a selection or a match moves nothing outside its bands,
+text and styles are digested),
+costly lines,
+cancel,
+and a tall view).
+`test:native` runs the window tests:
+`src/native/minimap_tests.rs`
+(the box against the geometry at every offset,
 a short text,
 a press that jumps and the keys afterwards,
-a drag with both
-clamps and the release,
+a press across the width,
+a drag with both clamps and the release,
 hover with two channels,
 the wheel over the minimap against the wheel over the text,
 a picture built on the worker within its bounds,
 no request or picture for a scroll,
-a worker held at its gate
-that never blocks the view,
+a worker held at its gate that never blocks the view,
 a new wrap width,
+a scroll that posts a request only when it names other bands,
 the accept rule for stale pictures,
-the palette inks in both schemes
-and the new highlights,
+the palette inks in both schemes and the new highlights,
 fifty thousand lines,
-and the pace of requests for each kind of change.
+and the pace of requests for each kind of change),
+`src/native/minimap_reflection_tests.rs`
+(the picture against the box average of the window's own pixels:
+plain wrapped text,
+a selection,
+find matches,
+diagnostics and hints,
+at display scales one and two,
+with a control that a window read three pixels aside does not match),
+and `src/native/tall_window_minimap_tests.rs`
+(a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs and no band over the raster limit,
+and a long file in a tall window keeps its picture within the raster limit).
 `inspect:source-guards` removes each rule in a disposable copy and checks that its named test fails:
 `minimap-box-share`,
+`minimap-slide-share`,
 `minimap-drag-ratio`,
 `minimap-position-clamp`,
+`minimap-renders-glyphs`,
+`minimap-fills-selection`,
+`minimap-fills-match`,
+`minimap-fills-boundary`,
+`minimap-key-selection`,
+`minimap-window-key-selection`,
+`minimap-key-text`,
+`minimap-key-styles`,
+`minimap-key-from-band`,
+`minimap-key-text-reload`,
+`minimap-key-has-bands`,
+`minimap-cache-key`,
+`minimap-cache-window`,
 `minimap-work-budget`,
+`minimap-degrade-keeps-rows`,
+`minimap-failed-counted`,
+`minimap-cancel`,
+`minimap-band-bytes`,
+`minimap-reduce-row-weight`,
+`minimap-reduce-column-weight`,
+`minimap-stitch-sum`,
+`minimap-stitch-complete`,
+`minimap-slide-offset`,
+`minimap-window-margin`,
+`minimap-picture-origin`,
+`minimap-origin-whole-rows`,
+`minimap-text-x`,
+`minimap-press-column`,
 `minimap-press-centers`,
 `minimap-press-caret`,
 `minimap-shift-anchor`,
 `minimap-drag-scrolls`,
 `minimap-release-ends-drag`,
 `minimap-wheel-reaches-view`,
-`minimap-key-has-no-scroll`,
 `minimap-built-on-worker`,
 `minimap-stale-text`,
 `minimap-older-request`,
 `minimap-follows-measurement`,
 `minimap-resize-keeps-wait`,
-and `minimap-throttle-period`.
+`minimap-throttle-period`,
+`minimap-slide-period`,
+`minimap-scroll-notes-bands`,
+and `overscan-early-return`.
 
 Two native tests failed in full runs of the suite that run its tests in parallel (`mise run test:native` without a
 filter;

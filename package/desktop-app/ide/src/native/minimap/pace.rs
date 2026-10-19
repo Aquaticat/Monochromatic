@@ -38,6 +38,20 @@ pub(in crate::native) const DEBOUNCE: Duration = Duration::from_millis(120);
 pub(in crate::native) const THROTTLE: Duration = Duration::from_millis(250);
 
 /// What:
+///  Longest time the picture may fall behind while only the bands the track shows change.
+/// Why:
+///  A scroll through a long text names new bands every band's height or so;
+/// the picture keeps one band on each side of the track,
+/// so a request a few tens of milliseconds after the change
+///  brings the next band in before the view reaches the edge of what the picture holds.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const SLIDE_MS = 60;
+/// ```
+pub(in crate::native) const SLIDE: Duration = Duration::from_millis(60);
+
+/// What:
 ///  What the window does about a key that is not the one last posted.
 /// Why:
 ///  The decision is a pure function of the two keys and the clock,
@@ -77,6 +91,9 @@ pub(in crate::native) enum Plan {
 ///  Since the previous look only the vertical mapping changed:
 /// at the throttle's pace,
 /// and never while a wait is running.
+///  Since the previous look only the bands the track shows changed (a scroll):
+/// the same,
+/// at the slide period.
 ///  Anything else,
 /// such as a new size,
 /// a new wrap width,
@@ -112,25 +129,29 @@ pub(in crate::native) fn plan(
     {
         return Plan::Post;
     }
-    // Only the vertical mapping differs from the previous look: the measurement of the text is arriving.
-    let rows_only = match noted {
-        Some(before) => {
+    // Only the vertical mapping and the bands differ from the previous look: the measurement of the text is arriving,
+    // or the view is scrolling.
+    let (steady, scrolling) = match noted {
+        Some(before) => (
             (Key {
                 rows: key.rows,
+                window: key.window,
                 ..before
-            }) == key
-        }
-        None => false,
+            }) == key,
+            before.rows == key.rows,
+        ),
+        None => (false, false),
     };
-    if !rows_only {
+    if !steady {
         return Plan::Wait(DEBOUNCE);
     }
     if waiting {
         return Plan::Keep;
     }
-    let since = since_post.unwrap_or(THROTTLE);
-    if since >= THROTTLE {
+    let period = if scrolling { SLIDE } else { THROTTLE };
+    let since = since_post.unwrap_or(period);
+    if since >= period {
         return Plan::Post;
     }
-    return Plan::Wait(THROTTLE - since);
+    return Plan::Wait(period - since);
 }
