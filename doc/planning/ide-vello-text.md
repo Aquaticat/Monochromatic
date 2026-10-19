@@ -285,7 +285,8 @@ runs. Slint stays on `renderer-femtovg`.
   which the widened rule forbids literally;
   text is shaped twice (application and Slint) and per-run elements are the only way to carry colors;
   a dirty-cascade and ring discipline is needed or the minimap and rows relayout every step;
-  50,000-line drag showed every other frame in the spike (61 of 121) until the slice is cached;
+  50,000-line drag showed every other frame in the spike (61 of 121); a cached layer cannot help there because the
+  slice's first row changes on every drag step, and a sliding (ring) minimap model was not measured;
   debug builds drop to about a third of the frames (39 of 119).
 
 ### Design B: builtin `Text` elements on Slint's Vello renderer
@@ -330,6 +331,9 @@ parts are argued, not built.
   application's renderer from GL to wgpu (measured to run, not soaked);
   chrome text still goes through FemtoVG's CPU glyph atlas;
   custom scene code (about 300 lines in the spike for rows and the minimap) replaces `Text`;
+  Vello's compute shaders need storage buffers, so the whole application's wgpu device must be requested with
+  `wgpu::Limits::default()` instead of Slint's downlevel defaults, which excludes downlevel adapters for the entire
+  IDE (the integrated Raphael GPU of this host was not exercised);
   the headless pixel tests cannot import a wgpu texture, so painted-ink tests need a GPU snapshot harness;
   Slint's rendering notifier hands over the device only after setup, so the textures are created in the notifier;
   the tile is 6,048 px tall at scale 1, so a 2,000 px window at scale 2 needs a 12,096 px texture, above the 8,192 px
@@ -345,22 +349,33 @@ parts are argued, not built.
 
 ## Ranking
 
-Ranking: C > B > A.
+The first owner question under the last heading selects between two rankings, because it decides whether FemtoVG's
+CPU glyph atlas counts as the banned CPU painting. Slint's chrome text (tree, find bar, search, hover) goes through
+that atlas whenever Slint runs on FemtoVG, which is every design except B.
 
-- C ahead of B: C is the only measured design that is both fully GPU for the code view and exact against the
-  application's own layout, it holds 121 of 121 frames where B and A hold 60 of 121 under the 50,000-line drag, and it
-  adds fewer crates than B. B ranks behind because it needs a patched or upstreamed Slint fix for the minimap and has an
-  unexplained freeze in the real application; C ranks behind B on one point only: B needs no custom GPU code and has
-  GPU glyphs for the chrome as well, which C does not.
-- B ahead of A: under the widened rule A keeps CPU glyph raster inside FemtoVG, B does not. If the owner answers that
-  FemtoVG's cached glyph atlas does not count, A moves to second or first place on simplicity and proven behavior
-  (no new crates, working layer cache), and C stays first only if its extra GPU path is worth its unstable API.
+Strict reading (the atlas counts as CPU painting): B > C > A.
 
-My GPU renderer recommendation: Vello, through design C. It is the renderer whose glyphs and minimap are GPU vector
-output in both of its uses (Slint's own and the custom path), and C avoids the two Slint bugs found in B.
-FemtoVG is the right choice only if the owner accepts its Swash glyph atlas as GPU painting.
+- B ahead of C: B is the only design in which no pixel of the window, chrome included, comes from CPU glyph raster;
+  C draws the code view and minimap on the GPU but its chrome still goes through FemtoVG's atlas, and Slint's Vello
+  renderer cannot import a wgpu texture, so C cannot be moved onto Vello for the chrome.
+- C ahead of A: C produces the code view and the minimap on the GPU with no raster path left, while A leaves every
+  code glyph on the CPU atlas as well as the chrome.
 
-## Migration stages (design C)
+Lenient reading (the atlas is accepted): C > A > B.
+
+- C ahead of A: C holds 121 of 121 frames under the 50,000-line drag where A holds 61 of 121, shapes each line once,
+  and keeps the application's exact tab, wrap, and ligature geometry; the cadence comparison is against an
+  unoptimized `Text` minimap (a rebinding slice), so the gap is an upper bound, not a measured ceiling for A.
+- A ahead of B: A adds no crates and has a working layer cache, no clip bug, and no unexplained freeze, and its per-step
+  cost disadvantage (14.1 against 5.7 ms) did not show up in cadence (both 119 of 119 for scroll).
+
+My GPU renderer recommendation follows the same split. If the atlas counts, Vello through design B, with the
+font-size minimap and the one-line clip fix proposed upstream (design B has the least custom code, and the freeze of
+the real IDE must be re-checked once the tile is gone). If the atlas is accepted, Vello 0.11 drawing into textures
+under Slint's FemtoVG-on-wgpu renderer (design C), because it measured best and keeps one shaper. FemtoVG as the
+renderer of the `Text` elements (design A) is the choice only when simplicity outweighs both.
+
+## Migration stages (design C, with design B differences at the end)
 
 Each stage leaves the app usable and has its own check. Stages 1 and 2 are reversible by a flag until stage 5.
 
