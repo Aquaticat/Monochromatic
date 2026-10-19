@@ -17,7 +17,13 @@ Do not resume catalogue design or ask catalogue choices in this round.
 Continue architecture review; outstanding Q1, Q2, Q4, and Q6 are unchanged.
 Implementation remains stopped.
 The historical catalogue section and screenshots record an unaccepted proposal only.
-Next: check the simplified review rendering and reopen it in Helium.
+Committed deferral in `cbf9c8cf91`.
+The simplified panel passed light/dark, 390-pixel width, navigation, and rendered-state checks:
+no proposed catalogue entries remain; the four unrelated architecture questions remain available.
+Page errors and console records are empty. Markdown rendered at `auto-mode-rebuild-plan-render-rVRmtV`
+before these verification notes.
+The updated `#q5` page was reopened in Helium; verification browser closed and compositor quit.
+Next action: continue architecture review from user answers without reopening built-in content design.
 
 ### Historical built-in proposal, contents deferred on 2026-10-19
 

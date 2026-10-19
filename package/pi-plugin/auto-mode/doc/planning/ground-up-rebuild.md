@@ -831,6 +831,11 @@ and [complete first pass](ground-up-rebuild-review/builtin-first-pass-dark.png).
 These screenshots record an unaccepted proposal, not the active design.
 The current HTML shows only the plural-rule interface with contents deferred.
 
+After deferral, the simplified panel was checked in light and dark mode and at 390-pixel width.
+Rendered state contains no proposed catalogue entries and retains the four unrelated architecture questions.
+Its navigation works, it has no horizontal overflow, and page error and console records are empty.
+The updated interface was reopened in Helium.
+
 ## Inspected sources
 
 These are source-reading facts, not new runtime qualification results.
