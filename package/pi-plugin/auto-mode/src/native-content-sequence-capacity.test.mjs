@@ -6,36 +6,19 @@
 import {strict as assert} from 'node:assert';
 import {createHash} from 'node:crypto';
 import {
- createInputContentStore,
- type RetainedInputContent
+ createInputContentStore
 } from '../dist/native/contract/collector/run-prompt-custody-v3/input-content.ts';
 
 //region Unchanged controls separate snapshot growth from initialization and measurement spread
 
 /**
- Retained readers keep every version reachable until its post-GC measurement.
- */
-type Workload = {
- readonly contents:readonly RetainedInputContent[];
- readonly expected:readonly string[];
-};
-
-/**
- Measured heap growth excludes the temporary original serializations.
- */
-type Measurement = {
- readonly growing:boolean;
- readonly retainedHeapBytes:number;
-};
-
-/**
  Retain changing tails over the same generated JSON catalog.
 
- @param growing - changing tail forces distinct immutable snapshots
+ @param {boolean} growing - changing tail forces distinct immutable snapshots
 
- @returns readers and independent original digests
+ @returns {{contents:ReturnType<ReturnType<typeof createInputContentStore>>[],expected:string[]}} readers and digests
  */
-function workload(growing:boolean): Workload {
+function workload(growing) {
  /**
   Actual manager-local interner owns retained content.
   */
@@ -49,11 +32,11 @@ function workload(growing:boolean): Workload {
  /**
   All versions remain live through the measurement and independent verification.
   */
- const contents:RetainedInputContent[]=[];
+ const contents=[];
  /**
   Digests are computed before the original input is passed to storage.
   */
- const expected:string[]=[];
+ const expected=[];
  for(let version=0;version<24;version++){
   /**
    Only the version tail changes between complete snapshots.
@@ -68,11 +51,11 @@ function workload(growing:boolean): Workload {
 /**
  Measure retained storage after temporary workload-construction frames have returned.
 
- @param growing - distinct versions exercise shared-page storage
+ @param {boolean} growing - distinct versions exercise shared-page storage
 
- @returns measured retained heap and workload identity
+ @returns {{growing:boolean,retainedHeapBytes:number}} measured retained heap and workload identity
  */
-function measure(growing:boolean): Measurement {
+function measure(growing) {
  globalThis.gc();
  /**
   Collection precedes both baseline and final observations.
@@ -96,8 +79,10 @@ function measure(growing:boolean): Measurement {
 
 /**
  Repeated identical-input controls establish the unchanged-input measurement spread.
+
+ @type {readonly [ReturnType<typeof measure>,ReturnType<typeof measure>]}
  */
-const unchanged=[measure(false),measure(false)] as const;
+const unchanged=[measure(false),measure(false)];
 /**
  Distinct tails expose storage duplicated across otherwise unchanged versions.
  */
