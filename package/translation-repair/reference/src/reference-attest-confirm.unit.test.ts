@@ -20,7 +20,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   attestCitedReferences,
@@ -107,7 +107,7 @@ function twoRoundClient(
     readonly silentOnExtraction?: readonly string[];
     readonly silentOnConfirmation?: readonly string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

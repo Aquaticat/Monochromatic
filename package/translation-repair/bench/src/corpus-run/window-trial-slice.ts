@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   isInsertionChunk,
   type RosterModelId,
@@ -110,7 +110,7 @@ export async function runSliceArms(
     sheetFacts,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly slices: readonly ChunkPair[];
     readonly sliceIndex: number;
     readonly sliceClass: string;

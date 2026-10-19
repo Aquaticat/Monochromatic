@@ -16,7 +16,7 @@ import type {
   ChatTextRequest,
   DecisionReply,
   DecisionRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -350,12 +350,12 @@ export function seatTallyClient(
     minAsks,
     l,
   }: {
-    readonly inner: SyntheticClient;
+    readonly inner: ModelClient;
     readonly tally: SeatTally;
     readonly minAsks: number;
     readonly l: Logger;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Logger pre-tagged with this function's name.
    */

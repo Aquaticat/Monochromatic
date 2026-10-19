@@ -20,7 +20,7 @@ import {
 
 import {
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type ConsolidateSubject,
@@ -73,7 +73,7 @@ const SUBJECT: ConsolidateSubject = {
 function scriptedProducer(
   { answers, }: { readonly answers: readonly string[]; },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly calls: { count: number; };
 } {
   /**

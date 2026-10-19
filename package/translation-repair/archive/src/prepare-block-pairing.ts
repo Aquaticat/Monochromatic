@@ -12,7 +12,7 @@ import {
   pairingPictureContext,
   queriedBlockPairingDetails,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   type BlockPairingError,
@@ -148,7 +148,7 @@ export async function prepareBlockPairing(
     pictureReadings,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly pair: ChunkPair;
     readonly pairIndex: number;

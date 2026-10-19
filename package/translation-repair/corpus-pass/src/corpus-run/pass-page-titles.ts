@@ -7,7 +7,7 @@ import type {
   BenchSeating,
   SliceCache,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   hashContent,
@@ -256,7 +256,7 @@ export async function passPageTitles(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly beforeItem: () => Promise<BenchSeating>;
     readonly sourceText: string;

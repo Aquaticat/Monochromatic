@@ -22,7 +22,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   makeInsertionChunk,
@@ -101,7 +101,7 @@ const PREPARED: PreparedDocumentPair = {
  const client = recordingClient({ sheets: [], },);
  ```
  */
-function recordingClient({ sheets, }: { readonly sheets: string[]; },): SyntheticClient {
+function recordingClient({ sheets, }: { readonly sheets: string[]; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by coverage',);

@@ -17,7 +17,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { translateDocument, } from '../dist/final/node/index.mjs';
 import {
@@ -66,7 +66,7 @@ const ROSTER: readonly RosterModelId[] = [
 
  @returns Scripted client
  */
-function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): SyntheticClient {
+function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

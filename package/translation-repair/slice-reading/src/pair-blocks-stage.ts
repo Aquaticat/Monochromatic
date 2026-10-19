@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { blockPairingProtocol, } from './block-pairing-protocol.ts';
 import {
   type BlockPair,
@@ -169,7 +169,7 @@ export async function pairBlocksWithRoster(
     fanOut,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly sourceBlocks: readonly NumberedBlock[];
     readonly targetBlocks: readonly NumberedBlock[];

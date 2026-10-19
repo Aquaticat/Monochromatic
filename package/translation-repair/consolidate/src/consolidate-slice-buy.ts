@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import { produceConsolidations, } from './consolidate-produce.ts';
 import {
@@ -27,7 +27,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  Inputs shared by initial and continued consolidation attempts.
  */
 type ConsolidationBuyInput = {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly roster: readonly RosterModelId[];
   readonly judgeModelIds?: readonly RosterModelId[];
   readonly subject: ConsolidateSubject & ConsolidationSubject;

@@ -32,7 +32,7 @@ import type { EntryInfoRecord, } from '@monochromatic-dev/translation-repair-ins
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-archive';
 import { preparePassEntry, } from '../../dist/final/node/index.mjs';
@@ -143,7 +143,7 @@ function evidenceClient(
     readonly review: Review;
     readonly asked: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

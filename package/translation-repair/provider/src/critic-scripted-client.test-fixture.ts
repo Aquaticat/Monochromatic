@@ -1,7 +1,7 @@
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '../dist/final/node/index.mjs';
 
 //region Critic scripted client
@@ -48,7 +48,7 @@ export function criticClient(
   }: {
     readonly reportFor: (modelId: string,) => unknown;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     /**
      Text calls are outside this scripted protocol.

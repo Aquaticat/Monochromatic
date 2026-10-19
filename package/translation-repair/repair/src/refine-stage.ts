@@ -13,7 +13,7 @@ import {
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { selectBestCandidate, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type {
   EditableEnvelope,
   RosterModelId,
@@ -181,7 +181,7 @@ export async function runRefineStage(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly refinerModelIds: readonly RosterModelId[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;

@@ -9,7 +9,7 @@ import {
   type EditableEnvelope,
   parseDocument,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { runChunkCriticPhase, } from '@monochromatic-dev/translation-repair-repair/ts';
 import { runPanelStage, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type { BenchSlice, } from './bench-sample.ts';
@@ -137,7 +137,7 @@ export async function gatherWidthInput(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly slice: BenchSlice;
     readonly signal: AbortSignal;
     readonly l: Logger;

@@ -11,7 +11,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runTranslateStage, } from '../dist/final/node/index.mjs';
 import {
@@ -37,7 +37,7 @@ await describe({
         /** Writer and selector inputs are independently observable. */
         const seen = { writers: 0, judges: 0, };
         /** The stub checks inputs before producing any candidate or ballot. */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => { throw new Error('No unstructured call expected',); },
           quotas: async () => { throw new Error('No quota read expected',); },
           chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {

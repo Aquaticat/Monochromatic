@@ -19,7 +19,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { probeTranslate, } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -61,7 +61,7 @@ type Script = Readonly<Record<string, string>>;
  const client = scriptedClient({ script: { 'hf:cat/Cat-A': 'The cat naps.', }, },);
  ```
  */
-function scriptedClient({ script, }: { readonly script: Script; },): SyntheticClient {
+function scriptedClient({ script, }: { readonly script: Script; },): ModelClient {
   return {
     chatText: function noText(): never {
       throw new Error('chatText unused by the translate probe',);
@@ -142,7 +142,7 @@ async function probeOver(
     sinon,
   }: {
     readonly files: Readonly<Record<string, string>>;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly roster: readonly RosterModelId[];
     readonly sinon: Parameters<typeof divertingConsoleLog>[0]['sinon'];
   },
@@ -154,7 +154,7 @@ async function probeOver(
   /**
    Clients built, one entry each.
    */
-  const built: SyntheticClient[] = [];
+  const built: ModelClient[] = [];
 
   /**
    Builds the client for one slice and counts it.
@@ -166,7 +166,7 @@ async function probeOver(
    const client = counting();
    ```
    */
-  function counting(): SyntheticClient {
+  function counting(): ModelClient {
     /**
      Client the case scripted for this slice.
      */
@@ -255,7 +255,7 @@ await describe({
             'people/Mittens/page.md': SOURCE_PAGE,
             'people/Mittens/page.en.md': TARGET_PAGE,
           },
-          newClient: function oneVoice(): SyntheticClient {
+          newClient: function oneVoice(): ModelClient {
             return scriptedClient({ script: { [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'The cat naps and eats fish.', }, },);
           },
           roster: ROSTER,
@@ -294,7 +294,7 @@ await describe({
               return letter.repeat(450,);
             },).join('\n\n',)}\n`,
           },
-          newClient: function twoVoices(): SyntheticClient {
+          newClient: function twoVoices(): ModelClient {
             return scriptedClient({ script: {
               [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'The cat naps.',
               [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat sleeps.',
@@ -331,7 +331,7 @@ await describe({
             'people/Mittens/page.md': SOURCE_PAGE,
             'people/Mittens/page.en.md': TARGET_PAGE,
           },
-          newClient: function silent(): SyntheticClient {
+          newClient: function silent(): ModelClient {
             return scriptedClient({ script: {}, },);
           },
           roster: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
@@ -355,7 +355,7 @@ await describe({
             'people/Mittens/page.md': SOURCE_PAGE,
             'people/Mittens/page.en.md': TARGET_PAGE,
           },
-          newClient: function noKey(): SyntheticClient {
+          newClient: function noKey(): ModelClient {
             throw new StatedRefusalError({ says: 'the cat has no key', },);
           },
           roster: ROSTER,
@@ -382,7 +382,7 @@ await describe({
             'people/Mittens/page.md': ANCHORED_SOURCE,
             'people/Mittens/page.en.md': ANCHORED_TARGET,
           },
-          newClient: function oneVoice(): SyntheticClient {
+          newClient: function oneVoice(): ModelClient {
             return scriptedClient({ script: {
               [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'The cat naps on the sill.',
               [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the sill.',
@@ -416,7 +416,7 @@ await describe({
             'people/Mittens/page.md': '',
             'people/Mittens/page.en.md': TARGET_PAGE,
           },
-          newClient: function unused(): SyntheticClient {
+          newClient: function unused(): ModelClient {
             return scriptedClient({ script: {}, },);
           },
           roster: ROSTER,
@@ -433,7 +433,7 @@ await describe({
       fn: async (ctx) => {
         const probed = await probeOver({
           files: { 'people/Mittens/page.md': SOURCE_PAGE, },
-          newClient: function unused(): SyntheticClient {
+          newClient: function unused(): ModelClient {
             return scriptedClient({ script: {}, },);
           },
           roster: ROSTER,

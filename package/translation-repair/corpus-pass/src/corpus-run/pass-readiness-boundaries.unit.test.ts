@@ -24,7 +24,7 @@ import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glos
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NaturalnessCompletenessError, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
@@ -76,7 +76,7 @@ function pairingClient(
     readonly sheets?: string[];
     readonly pictureSupport?: string;
   } = {},
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

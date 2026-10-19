@@ -18,7 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { readImageAsset, } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -46,7 +46,7 @@ const PADDED_REPLY = `${A_READING}\n${'\u3000'.repeat(PADDING_WIDTH,)}`;
 /**
  Client answering every reading with the padded reply.
  */
-const client: SyntheticClient = {
+const client: ModelClient = {
   chatText: async () => ({ text: PADDED_REPLY, }),
   chatJson: async () => {
     throw new Error('chatJson unused by the reading stage',);

@@ -34,7 +34,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { isAsciiDigit, } from '@monochromatic-dev/translation-repair-markup';
 import {
@@ -258,7 +258,7 @@ function candidateNumberCarrying(
  const client = judgingClient({ rendering: DROPS_THE_ALIAS, },);
  ```
  */
-function judgingClient({ rendering, }: { readonly rendering: string; },): SyntheticClient {
+function judgingClient({ rendering, }: { readonly rendering: string; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

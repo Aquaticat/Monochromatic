@@ -41,7 +41,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type BenchSlice,
@@ -106,7 +106,7 @@ const TWO_SENTENCES: BenchSlice = {
  Refuses any chat exchange, since a control that reached one has already
  failed the question this file asks: every case here must decline before
  asking a judge anything. Assignable to both `chatText` and `chatJson` on
- `SyntheticClient`, since a function returning `never` never needs to produce
+ `ModelClient`, since a function returning `never` never needs to produce
  either reply type.
 
  @throws Error on any invocation
@@ -124,7 +124,7 @@ function refuseEveryExchange(): never {
  Client refusing every exchange, since a control that reached one has already
  failed the question this file asks.
  */
-const CLIENT: SyntheticClient = {
+const CLIENT: ModelClient = {
   chatText: refuseEveryExchange,
   chatJson: refuseEveryExchange,
   quotas: async () => {
@@ -140,7 +140,7 @@ const CLIENT: SyntheticClient = {
 
  @returns The client
  */
-function judgeBacking({ wanted, }: { readonly wanted: string; },): SyntheticClient {
+function judgeBacking({ wanted, }: { readonly wanted: string; },): ModelClient {
   return {
     ...CLIENT,
     chatJson: async function chatJson<ValueT,>(

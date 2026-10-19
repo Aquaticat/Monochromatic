@@ -753,4 +753,73 @@ which were measured against Synthetic only,
 though `failureForReply` raises it for every provider;
 whether Hyper,
 OpenRouter or Bedrock refuse at that size is unmeasured.
-`SyntheticClient` and `createSyntheticClient` keep the Synthetic name for the routed client.
+`SyntheticClient` (renamed `ModelClient` on 2026-10-19) and `createSyntheticClient`
+keep the Synthetic name for the routed client.
+
+## B693: the request-size refusal claimed Synthetic's cap for every provider's reply
+
+Status:
+fixed on 2026-10-19 (UTC),
+red `e5bf21649b`,
+fix `af2a0a27e5`,
+landed in `8b1eb54574`.
+It closes the first item B692 left open.
+
+`failureForReply` re-raises a reply as `SyntheticRequestTooLargeError`
+when it carries HTTP 400,
+a body beginning `Could not parse request as valid JSON`,
+and a request body over 10485760 bytes.
+The Charm Hyper,
+OpenRouter and Bedrock clients route their failures through the same helper,
+so a reply from any of them with those three signals named a cap measured on Synthetic's gateway alone.
+Whether those gateways cap a body at any size,
+and in what words they refuse it,
+is unmeasured.
+No run log under `~/temp/agent` holds the size refusal from any provider
+(`rg` for `API refused a request body` over every `*.log` there on 2026-10-19,
+three unrelated container directories unreadable),
+so no run has met it.
+
+The reply now has to come from Synthetic as a fourth signal;
+any other provider's reply stays a plain `ProviderHttpError` saying what that provider said.
+The class lost its `provider` parameter,
+since it can describe only Synthetic,
+and its message names Synthetic.
+`doc/troubleshooting/synthetic-request-body-size-cap.md` records the fourth signal and why.
+
+Prevention:
+a class or constant named for one provider,
+and measured on that provider,
+is gated on that provider where the decision is made,
+not only in its name.
+When a helper becomes shared across providers,
+every provider-named class it builds is read for that gate.
+
+## B694: the client type every driver takes was named for Synthetic
+
+Status:
+fixed on 2026-10-19 (UTC),
+`9081481c0d`,
+a rename with no change in behaviour.
+It closes the second item B692 left open.
+
+The type `SyntheticClient` in `provider/src/chat-contract.ts`
+was the client surface every driver consumes,
+and the routed client that spans every provider was typed with it
+(`run/src/corpus-run/run-config.ts`),
+so a reader of a driver's signature took the routed client for Synthetic's.
+It is now `ModelClient`,
+in 275 TypeScript files of 21 family packages,
+with its TSDoc saying it fits a provider's own client and the routed one alike.
+`createSyntheticClient` and `synthetic-client.ts` keep their names:
+they build Synthetic's own client.
+Historical mentions of the old name keep their text with an in-place rename note.
+Build,
+`lint:types`,
+`lint` and `test:unit` pass in all 21 packages,
+and the source scans pass.
+
+Prevention:
+the rule "Provider names in failures" in `mistake-prevention-messages-labels-and-counts.md` covers names
+as well as failures:
+a name that says one provider is kept for what only that provider serves.

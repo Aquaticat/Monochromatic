@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { runTranslateStage, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import type { BenchSlice, } from './bench-sample.ts';
@@ -57,7 +57,7 @@ export async function runBenchRow(
     readonly width: number;
     readonly pass: number;
     readonly roster: readonly RosterModelId[];
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly clock: { readonly now: () => number; };
     readonly stageSettings: StageSettings;
   },

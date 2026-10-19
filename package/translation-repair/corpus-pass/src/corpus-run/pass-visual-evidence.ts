@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { readDocumentPictures, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
 import {
   type ChunkPair,
@@ -131,7 +131,7 @@ export async function readPassVisualEvidence(
     beforePicture,
     pictureSources,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly slices: readonly ChunkPair[];
     readonly pin: CorpusPin;
     readonly entryId: string;

@@ -26,7 +26,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   attestationVerdicts,
@@ -161,7 +161,7 @@ function scriptedClient(
     readonly replies: Readonly<Record<string, unknown>>;
     readonly prompts: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

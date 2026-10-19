@@ -7,7 +7,7 @@ import {
   type DecisionQuestion,
   type DecisionState,
   isDecisionStateOverContext,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
@@ -91,7 +91,7 @@ export async function attemptDecisionCall<ValueT,>(
     stage,
     l,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelId: RosterModelId;
     readonly decision?: StageDecision;
     readonly signal: AbortSignal;

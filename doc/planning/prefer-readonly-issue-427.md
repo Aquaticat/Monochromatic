@@ -172,7 +172,7 @@ Of the 185 findings,
 
 The 25 bodyless-callable mentions come from three declarations:
 
-- 21 reach the injected `SyntheticClient.chatJson` interface method;
+- 21 reach the injected `SyntheticClient.chatJson` (renamed `ModelClient.chatJson` on 2026-10-19) interface method;
 - 3 reach the local `scorecard.ts` callback parameter;
 - 1 reaches a test helper's union-valued callback.
 

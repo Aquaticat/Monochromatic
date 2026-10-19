@@ -31,7 +31,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   AdjudicatedIssue,
@@ -89,7 +89,7 @@ const CHECKERS = [
  */
 function checkerClient(
   { reportFor, }: { readonly reportFor: (modelId: string,) => unknown; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -168,10 +168,10 @@ function refusingSeats(
     client,
     refused,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly refused: readonly RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     ...client,
     chatJson: async function chatJson<ValueT,>(
@@ -213,7 +213,7 @@ async function runStage(
     logger = l,
     checkerModelIds = CHECKERS,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly issues: readonly AdjudicatedIssue[];
     readonly authorship?: IssueAuthorship;
     readonly logger?: typeof l;

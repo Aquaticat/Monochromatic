@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -80,9 +80,9 @@ export async function runCoverageControl(
   }: {
     readonly line: CommandLineOf<'coverage-control-probe'>;
     readonly pin: CorpusPin;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly holds: (input: {
-      readonly client: SyntheticClient;
+      readonly client: ModelClient;
       readonly cases: readonly CoverageControlCase[];
       readonly modelIds: readonly RosterModelId[];
       readonly signal: AbortSignal;

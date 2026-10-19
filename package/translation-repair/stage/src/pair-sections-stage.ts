@@ -6,7 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   isSectionPairingWire,
@@ -252,7 +252,7 @@ export async function pairSectionsWithRoster(
     fanOut,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly sourceSections: readonly NumberedSection[];
     readonly targetSections: readonly NumberedSection[];

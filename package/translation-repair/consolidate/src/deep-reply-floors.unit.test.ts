@@ -37,7 +37,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   polishConsolidation,
@@ -106,7 +106,7 @@ type Answer = (input: { readonly stage: string; readonly modelId: string; },) =>
  const client = answeringClient({ answer: function reply(): unknown { return {}; }, },);
  ```
  */
-function answeringClient({ answer, }: { readonly answer: Answer; },): SyntheticClient {
+function answeringClient({ answer, }: { readonly answer: Answer; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by these stages',);

@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   repairChunk,
   settleRefinedSlice,
@@ -52,7 +52,7 @@ export async function runEditorLane(
     stageSettings,
   }: {
     readonly slice: BenchSlice;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<SliceRounds> {

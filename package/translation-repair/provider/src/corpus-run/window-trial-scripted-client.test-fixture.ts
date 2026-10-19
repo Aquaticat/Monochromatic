@@ -13,7 +13,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '../../dist/final/node/index.mjs';
 
 import { replyWith, } from '../scripted-reply-outcome.test-fixture.ts';
@@ -119,7 +119,7 @@ type TrialRig = {
   /**
    Client the walk calls through.
    */
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
 
   /**
    Translator calls served, one per translator asked.

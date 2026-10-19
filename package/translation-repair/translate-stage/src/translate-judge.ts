@@ -7,7 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { describeProducer, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { selectBestCandidate, } from './candidate-select-record.ts';
 import { declineConsequenceFor, } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { translatedSlateCriteria, } from './translated-slate-criteria.ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -164,7 +164,7 @@ export async function judgeTranslateSlate(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly produced: ProducedSlate;
     readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;

@@ -13,7 +13,7 @@ import {
   buildAbsoluteNaturalnessReviewMessages,
   isAbsoluteNaturalnessReviewWire,
 } from './absolute-naturalness-review-wire.ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   NaturalnessQuorumError,
@@ -213,7 +213,7 @@ export async function reviewAbsoluteNaturalness(
     fanOut,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: AbsoluteNaturalnessReviewSubject;
     readonly perspective?: AbsoluteNaturalnessReviewPerspective;

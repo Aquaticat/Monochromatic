@@ -29,7 +29,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import {
   type ChatTextRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   IMAGE_READING_PERSPECTIVES,
@@ -113,7 +113,7 @@ function pictureBytes(): Uint8Array {
 function sequencedClient(
   { replies, }: { readonly replies: readonly string[]; },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asks: RosterModelId[];
   readonly prompts: string[];
 } {
@@ -336,7 +336,7 @@ await describe({
         /**
          Client whose first answer stops the run before returning a refusal.
          */
-        const stopping: SyntheticClient = {
+        const stopping: ModelClient = {
           ...client,
           chatText: async (request,) => {
             /**

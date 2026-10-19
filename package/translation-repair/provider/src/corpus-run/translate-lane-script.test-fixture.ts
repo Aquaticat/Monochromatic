@@ -2,7 +2,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '../../dist/final/node/index.mjs';
 import { replyWith, } from '../scripted-reply-outcome.test-fixture.ts';
 import { candidateCarrying, } from '@monochromatic-dev/translation-repair-test-fixture/ts/translate-ballot.test-fixture.ts';
@@ -66,7 +66,7 @@ export function translateLaneClient(
     readonly renderings: Readonly<Record<string, string>>;
     readonly needle: string;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: refuseLaneText,
     chatJson: function answerLane<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {

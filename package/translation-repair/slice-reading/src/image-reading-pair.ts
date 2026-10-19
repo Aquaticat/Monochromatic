@@ -3,7 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
@@ -330,7 +330,7 @@ export async function readImagePair(
     perCallTimeoutMs,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly readerModelIds: readonly RosterModelId[];
     readonly readOcr: OcrReader;
     readonly bytes: Uint8Array;

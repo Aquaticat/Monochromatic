@@ -5,7 +5,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { StageDecision, } from './stage-decision-call.ts';
 import {
@@ -334,7 +334,7 @@ export async function runGatherRound<ValueT,>(
     graceMs,
     decision,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;

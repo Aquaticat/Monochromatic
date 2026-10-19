@@ -34,7 +34,7 @@ import type {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   AdjudicatedIssue,
@@ -180,7 +180,7 @@ function checkerBench(
     readonly refused: readonly RosterModelId[];
     readonly asked: AskedSheet[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText(): never {
       throw new Error(NOT_A_CHECKER_EXCHANGE,);

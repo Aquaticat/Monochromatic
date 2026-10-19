@@ -24,7 +24,7 @@ import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   gatherStageVoices,
@@ -102,7 +102,7 @@ function scriptedClient(
     readonly roles: ReadonlyMap<RosterModelId, SeatRole>;
     readonly calls: Record<string, number>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

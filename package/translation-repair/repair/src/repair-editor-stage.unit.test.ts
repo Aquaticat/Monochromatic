@@ -30,7 +30,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   AdjudicatedIssue,
@@ -129,7 +129,7 @@ function editorClient(
     readonly report: unknown;
     readonly calls: { count: number; };
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -162,7 +162,7 @@ function editorClient(
  const client = neverCalledClient();
  ```
  */
-function neverCalledClient(): SyntheticClient {
+function neverCalledClient(): ModelClient {
   return {
     chatText: async () => {
       throw new Error('the stage called a model it should not have',);
@@ -438,7 +438,7 @@ await describe({
          each envelope has exactly one editor's operation and
          `selectPerEnvelope` adopts a sole proposal without a vote.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },

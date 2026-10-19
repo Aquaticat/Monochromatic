@@ -36,7 +36,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   producedVolumeBound,
@@ -122,7 +122,7 @@ function recordingClient(
     readonly seen: SeenRequest[];
     readonly answers: readonly unknown[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

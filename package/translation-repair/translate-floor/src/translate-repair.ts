@@ -6,7 +6,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { allInInputOrder, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   type DisputedWording,
@@ -165,7 +165,7 @@ async function repairOneCandidate(
     perCallTimeoutMs,
     l,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly voice: HeardVoice<TranslateReportWire>;
     readonly sourceText: string;
     readonly incumbentText: string;
@@ -499,7 +499,7 @@ export async function repairInvalidCandidates(
     perCallTimeoutMs,
     l,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly sourceText: string;
     readonly incumbentText: string;

@@ -38,7 +38,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { firstRoundWindow, } from '@monochromatic-dev/translation-repair-stage';
 import {
@@ -164,7 +164,7 @@ function laneClient(
     readonly judgeSheets: string[];
     readonly producerPrompts: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

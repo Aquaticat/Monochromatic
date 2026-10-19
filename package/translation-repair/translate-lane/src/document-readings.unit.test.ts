@@ -30,7 +30,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type { PictureReaderSeating, } from '@monochromatic-dev/translation-repair-glossary';
@@ -151,7 +151,7 @@ function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
  ```
  */
 function agreeingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: RosterModelId[];
 } {
   /**
@@ -234,7 +234,7 @@ function recordingCache(
  ```
  */
 function failingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: RosterModelId[];
 } {
   /**
@@ -269,7 +269,7 @@ function failingClient(): {
  const { client, } = disagreeingClient();
  ```
  */
-function disagreeingClient(): { readonly client: SyntheticClient; } {
+function disagreeingClient(): { readonly client: ModelClient; } {
   /**
    Readings that share no words.
    */

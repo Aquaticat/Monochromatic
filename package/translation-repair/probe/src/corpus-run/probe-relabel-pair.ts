@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type PriorIssueDisclosure,
   type RepairRegion,
@@ -80,7 +80,7 @@ async function probeOnce(
     readonly disclosure: PriorIssueDisclosure;
     readonly sourceText: string;
     readonly baselineText: string;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<string> {
@@ -144,7 +144,7 @@ export async function probePair(
   }: {
     readonly relabelCase: RelabelCase;
     readonly production: PriorIssueDisclosure;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<void> {

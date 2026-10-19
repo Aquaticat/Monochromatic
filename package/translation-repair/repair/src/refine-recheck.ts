@@ -6,7 +6,7 @@ import type {
   AdjudicatedIssue,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { IssueCheckerReading, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
@@ -107,7 +107,7 @@ export async function retainsResolvedIssues(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly checkerModelIds: readonly RosterModelId[];
     readonly outcome: ChunkRepairOutcome;
     readonly refineContributors: readonly RosterModelId[];

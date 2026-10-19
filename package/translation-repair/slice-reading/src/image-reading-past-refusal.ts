@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type ImageReading,
   IMAGE_READING_PERSPECTIVES,
@@ -146,7 +146,7 @@ export async function readPastRefusal(
     perCallTimeoutMs,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;

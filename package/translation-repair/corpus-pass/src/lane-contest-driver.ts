@@ -5,7 +5,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   inSliceLogContext,
   wordForCount,
@@ -150,7 +150,7 @@ export async function contestDocumentLanes(
     beforeSlice,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly projected: ProjectedLanes;
     readonly modelIds: readonly RosterModelId[];
     readonly sheetFacts?: PreparedSheetFacts;

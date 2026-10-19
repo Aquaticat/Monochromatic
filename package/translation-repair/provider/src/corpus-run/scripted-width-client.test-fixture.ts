@@ -11,7 +11,7 @@
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -46,7 +46,7 @@ function unscriptedQuotas(): never {
  */
 export function scriptedClient(
   { script, }: { readonly script: Readonly<Record<string, unknown>>; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: unscriptedText,
     chatJson: function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {

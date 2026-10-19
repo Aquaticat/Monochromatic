@@ -29,7 +29,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
   type VisionMessage,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
@@ -136,7 +136,7 @@ function repairClient(
     readonly answer: unknown;
     readonly log: RepairLog;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

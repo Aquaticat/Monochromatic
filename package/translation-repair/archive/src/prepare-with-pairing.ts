@@ -9,7 +9,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   alignDocumentSections,
   type PairedReading,
@@ -155,7 +155,7 @@ export async function prepareDocumentPairWithRoster(
     stageSettings,
     sourceEntryInfo,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;

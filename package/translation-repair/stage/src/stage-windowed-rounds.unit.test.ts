@@ -17,7 +17,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
@@ -92,7 +92,7 @@ function scriptedClient(
     readonly refused?: readonly RosterModelId[];
   },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: RosterModelId[];
   readonly requests: readonly ChatJsonRequest<unknown>[];
 } {

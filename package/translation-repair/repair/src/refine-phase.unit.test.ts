@@ -34,7 +34,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   persistRefinePhaseSlice,
@@ -198,10 +198,10 @@ function measuringRefiners(
     inner,
     activity,
   }: {
-    readonly inner: SyntheticClient;
+    readonly inner: ModelClient;
     readonly activity: RefinerConcurrency;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: inner.chatText,
     chatJson: async (request) => {
@@ -384,7 +384,7 @@ function scriptedPhase(
     readonly dissent?: DissentingChecker;
     readonly probeClaim?: ProbeClaim;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the phase',);
@@ -564,10 +564,10 @@ function countingClient(
     inner,
     calls,
   }: {
-    readonly inner: SyntheticClient;
+    readonly inner: ModelClient;
     readonly calls: { count: number; };
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: inner.chatText,
     chatJson: async (request) => {

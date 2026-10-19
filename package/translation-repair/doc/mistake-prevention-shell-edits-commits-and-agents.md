@@ -1,7 +1,7 @@
 # Preventing mistakes: shell commands, edits, commits and agents
 
 Rules for how the work is carried out:
-shell commands and tasks,
+shell commands,
 lint and edits,
 commit messages,
 questions to the owner,
@@ -213,119 +213,12 @@ the hand-back of every round is read for breaks before its work is accepted.
 The rule to ask for the list was written by the filer of M272 on 2026-10-19 (UTC),
 and the reading of each hand-back by the filer of M273,
 and the notes did not give either.
-
-## Tasks, builds and bulk output
-
-What happened:
-a source-map build was named `build:coverage`,
-and the package's `build` fan-out starts every `build:*` child at once,
-so each plain build ran it beside the normal one into the same directory (M63);
-the census first chose `tmpdir()` for about 8 GB of raw coverage,
-where `/tmp` is a tmpfs held in memory (M64);
-a test's stand-in command carried a literal `[FAIL]`,
-which a warning quoted into the suite's own log,
-where the census counts it (M65);
-a scratch sweep walked the package and `doc/` with a recursive `readdirSync`
-and held 6.7 GB resident after 16 minutes,
-when it was stopped (M96).
-A background suite written as `<suite> > <log> || echo "exit $?"` printed its fallback into the task output,
-not the log,
-and the task reported exit 0 while the log held a failing scan (ledger B103).
-With that rule written,
-a script making agent worktrees failed at its first worktree twice behind the same fallback,
-its task reported exit 0,
-its log went unread,
-and an agent was sent to a worktree that did not exist (ledger M114).
-
-The type check ran before the build on a fix tree and reported ten errors in two test files,
-read against the old built declarations (ledger M132).
-Two listings printed several hundred file names into a session where a count was wanted (ledger M132).
-A message that resumed stopped agents said they had been stopped for a usage limit,
-and one read it as being cut short and handed back part of its work (ledger M127).
-The type check reads the built declarations,
-so it runs after the build;
-a count comes before a listing;
-and a message that resumes an agent says the whole task stands.
-A package task started from the main repository's root,
-not the worktree holding the branch,
-found no such task (ledger M134);
-every package task names its worktree as its directory in the call.
-A gate started as a user unit under `mise exec` met a `git` without the worktree flag its setup uses,
-failed in its first seconds,
-and was found about twenty minutes later,
-since the waiter armed on its log's last line never fired;
-and a unit wrote its log into a folder not made yet,
-and failed at setting up its output (ledger M141).
-The agent porting the runner observations change ran a lint beside the source scans,
-which rebuilt `dist` under it,
-and counted that lint void (ledger B366),
-the shared build directory of M63 again:
-a run that reads `dist` never runs beside one that rebuilds it.
-A reviewer's `verify-published` rebuilds `dist` too,
-and ran during probe reruns that read it,
-so five probes failed with a missing module and were run again (ledger M182);
-every task that builds counts as a rebuild.
-The eighth review ran its replay with `--skip-deps` for the same reason (ledger M185),
-and two commands that read `dist` together were started in one block in two more rounds (ledger M184,
-M186).
-The first lines of a started run's log are read before a waiter is armed,
-a waiter watches the failure line as well as the success line,
-and the folder a unit writes to exists before the unit starts;
-a gate runs in the plain shell,
-since it makes worktrees with the shell's `git`.
-The lead's brief for the runner leftovers handed on ten observations from a task title and two old notes,
-three of them with no source text in the notes,
-so the agent had to find each again from the code and the ledger (ledger M142).
-A brief names the source of each observation it hands on
-(a file and line,
-a ledger code or a report),
-or says it holds none,
-so the agent knows whether it is checking a claim or searching for one.
-On 2026-10-11 (UTC) the lead again started a package task from the main repository's root,
-ran the type check while the named-test runner was rebuilding `dist`,
-and piped `git apply --check` into a filter,
-so the shell reported the filter's exit and a patch that applied read as refused (ledger M150);
-a command whose exit decides the next step runs unpiped.
-An agent waiting on its suite read a background task's output file in the harness's task folder,
-which its brief forbids,
-then stopped and read its own scratch logs instead (ledger M149);
-a continuation brief restates every binding rule of the brief it continues,
-since a fresh agent has not read the old one's corrections.
-
-The rule:
-a task that must not run with a fan-out parent is named outside the parent's prefix,
-and a new task's first run is read in its log for every task it started.
-Output that can reach gigabytes goes under the package's cache directory on disk,
-after `df` has shown the filesystem.
-A fixture printing a marker that tooling counts builds the marker when it runs,
-and a new test file's first run is read for markers,
-not only for its exit.
-A background run appends its exit status to its own log
-(`<suite> > <log> 2>&1 || echo "suite exit $?" >> <log>`)
-and is read by its `[FAIL]` markers and that line,
-never by the task's reported status.
-A command that sets up what a later step uses
-(a worktree,
-a build,
-an install)
-is read by its log before that step starts,
-and a path an agent is sent to is listed in the call that sends it.
-A scratch scan lists its files from git's index,
-or walks with a bound that skips `node_modules`,
-and runs with a heap cap (`node --max-old-space-size=512`);
-one that runs past its expected time is checked once by process status.
-A task that depends on the build,
-run while other work reads `dist`,
-is run without it
-(`mise run --skip-deps <task>`),
-and the brief names that form (ledger M185).
-
-What enforces it:
-the coverage census,
-which refuses a suite whose log carries a failing marker,
-and one that printed no pass marker (ledger B384);
-habit for the names,
-the directories and the sources a brief names.
+The lead broke it again on 2026-10-19 (UTC):
+most calls that kept an exit code ended in `; printf`,
+one chained five `&&` steps,
+and twice an edit went in one batch with the command that read the edited file (ledger M282).
+An exit code is kept with `|| printf`,
+which needs no `;`.
 
 ## Lint and edits
 

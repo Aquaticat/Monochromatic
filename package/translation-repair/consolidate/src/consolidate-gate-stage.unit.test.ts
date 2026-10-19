@@ -25,7 +25,7 @@ import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   gateConsolidatedSlice,
@@ -92,7 +92,7 @@ const FIVE_SEATS: readonly RosterModelId[] = [
  */
 function refusingClient(
   { refused, }: { readonly refused: readonly RosterModelId[]; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the gate',);

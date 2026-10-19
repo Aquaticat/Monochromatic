@@ -846,3 +846,29 @@ or in a brief,
 is quoted with its `description` line read from its `mise.toml` in the same turn.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Questions to the owner".
+
+## M282: the lead chained five steps and captured exit codes with `;` through a whole session
+
+Status:
+happened on 2026-10-19 (UTC),
+in the main session,
+while it gated and landed the provider-naming work (B692) and the two plugin lint fixes,
+and read the first two entries of the readiness rotation.
+
+Most calls that kept a failing command's exit code ended in `; printf ...`,
+a `;` chain,
+and one call chained five `&&` steps,
+where the repository's `CLAUDE.md` allows three.
+Twice the lead also sent an edit and the command that read the edited file in one parallel batch
+(the source scans after a doc edit,
+and the rebuild after the mutant restore of the stylistic plugin),
+the slip M109 records;
+both were run again in order and came back green.
+
+Prevention:
+an exit code is kept with `cmd > log 2>&1 || printf 'x failed=%s\n' "$?"`,
+which needs no `;`,
+and anything longer than three steps goes in a scratch `.ts` file.
+An edit and the command that reads it go in separate calls.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands".

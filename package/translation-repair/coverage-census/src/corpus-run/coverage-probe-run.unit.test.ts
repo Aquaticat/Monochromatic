@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { readTextOrEmptyIfMissing, } from '@monochromatic-dev/translation-repair-typography';
 import type {
   CoverageAnswer,
@@ -246,7 +246,7 @@ async function runOver(
   /**
    Clients built, one entry each.
    */
-  const built: SyntheticClient[] = [];
+  const built: ModelClient[] = [];
 
   /**
    Instants still to hand out.
@@ -280,7 +280,7 @@ async function runOver(
         typed,
       },),
       pin: corpus.pin,
-      newClient: function newClient(): SyntheticClient {
+      newClient: function newClient(): ModelClient {
         return keptInertClient({ clients: built, },);
       },
       stage: scripted,

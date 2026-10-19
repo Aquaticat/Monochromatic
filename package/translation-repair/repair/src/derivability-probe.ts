@@ -2,7 +2,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   buildDerivabilityMessages,
   DERIVABILITY_RESPONSE_FORMAT,
@@ -154,7 +154,7 @@ export async function runDerivabilityProbe(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly references: readonly JudgeReference[];

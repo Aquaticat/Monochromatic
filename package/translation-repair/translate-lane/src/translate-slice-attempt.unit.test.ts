@@ -22,7 +22,7 @@ import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-rea
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
@@ -120,7 +120,7 @@ const MODELS: TranslateModels = {
  const client = silentClient();
  ```
  */
-function silentClient(): SyntheticClient {
+function silentClient(): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

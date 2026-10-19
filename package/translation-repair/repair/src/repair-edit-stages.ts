@@ -6,7 +6,7 @@ import type {
   AdjudicatedIssue,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type IssueAuthorship,
   wroteTextForIssue,
@@ -135,7 +135,7 @@ export async function runCheckerStage(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly checkerModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly patchedText: string;
