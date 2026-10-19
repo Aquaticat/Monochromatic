@@ -208,13 +208,33 @@ The guard stops a start nobody meant,
 a built file run by hand from a shell that happens to hold keys;
 it is not access control.
 
-Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N` line per seat to stderr,
+Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N abandoned=N` line per seat to stderr,
 and a `SEATS DARK:` line naming every seat that was asked and never once produced a usable answer.
+`asked` counts calls that settled.
+`abandoned` counts calls the caller left before they settled,
+chiefly the replies a round cut at its straggler deadline after quorum;
+they are in no other column, so a seat with a large `abandoned` was waited on less often than `asked` says
+and is neither withheld nor named dark for them.
 A dark seat is a provider that cannot serve it,
 a key that was never injected,
 or a model that answers nothing readable;
 the run log names which.
 Do not read a run with a dark seat as a comparison of the roster.
+
+The first time a provider rejects a seat's credential with HTTP 401,
+the run writes one `SEAT CREDENTIAL REFUSED <model>:` warn line naming the seat,
+the provider's own words and how many usable answers the seat had given,
+and says to renew the credential before the next run.
+A credential does not renew during a run,
+so asks to that seat are expected to keep failing until the run withholds it.
+
+Each `JUDGE SEATS` line names how every provider reads as `<provider>=<state>`:
+`dry` when the router holds the provider out,
+`wet` when its meter answered and the provider is not held out,
+and `unreadable-treated-as-spendable` when its meter could not be read,
+which routes as spendable by recorded policy (`package/translation-repair/provider/src/provider-budget.ts`).
+`wet` says the meter reports money left;
+it says nothing of whether a credential is accepted.
 
 ## Where a run writes
 

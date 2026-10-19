@@ -1,6 +1,14 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  exchangeFailureLogText,
+  SyntheticHttpError,
+} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -49,14 +57,16 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  `usable` is text returned or a JSON outcome of kind `ok`; `unusable` is a
  JSON outcome the guard rejected (refusal-shaped or off-schema); `threw` is a
  call that never returned an outcome at all and was not abandoned by its
- caller, since a call whose caller aborted its signal is not counted.
+ caller; `abandoned` is a call whose caller aborted its signal before it
+ settled, which is counted beside the others and in none of them: it is not an
+ ask the seat answered or failed (ledger B421).
 
  @example
  ```ts
  const outcome: SeatOutcome = 'threw';
  ```
  */
-export type SeatOutcome = 'usable' | 'unusable' | 'threw';
+export type SeatOutcome = 'usable' | 'unusable' | 'threw' | 'abandoned';
 
 /**
  Counts for one seat over the life of the tally.
@@ -73,7 +83,8 @@ export type SeatCount = {
   readonly modelId: RosterModelId;
 
   /**
-   Calls made, whatever came back.
+   Calls that settled, whatever came back; a call the caller abandoned is not
+   one, so it can neither raise a seat toward its withholding nor lower it.
    */
   readonly asked: number;
 
@@ -91,6 +102,12 @@ export type SeatCount = {
    Calls that threw instead of returning.
    */
   readonly threw: number;
+
+  /**
+   Calls the caller abandoned before they settled: a straggler a round cut
+   off after quorum, a stage deadline, an entry stop. Not in `asked`.
+   */
+  readonly abandoned: number;
 };
 
 /**
@@ -147,6 +164,7 @@ type SeatCounter = {
   usable: number;
   unusable: number;
   threw: number;
+  abandoned: number;
 };
 
 /**
@@ -193,6 +211,7 @@ export function createSeatTally(): SeatTally {
       usable: 0,
       unusable: 0,
       threw: 0,
+      abandoned: 0,
     };
     counters.set(
       modelId,
@@ -219,6 +238,7 @@ export function createSeatTally(): SeatTally {
         usable: counter.usable,
         unusable: counter.unusable,
         threw: counter.threw,
+        abandoned: counter.abandoned,
       };
     },);
   }
@@ -232,6 +252,10 @@ export function createSeatTally(): SeatTally {
        Counter for the seat this call went to.
        */
       const counter = counterFor(modelId,);
+      if (outcome === 'abandoned') {
+        counter.abandoned += 1;
+        return;
+      }
       counter.asked += 1;
       if (outcome === 'usable')
         counter.usable += 1;
@@ -270,6 +294,12 @@ export function createSeatTally(): SeatTally {
 export const RUN_SEATS: SeatTally = createSeatTally();
 
 /**
+ HTTP status a provider answers a request with when it rejects the request's
+ credential, expired or wrong.
+ */
+const HTTP_UNAUTHORIZED = 401;
+
+/**
  Wraps a client so every call it makes is counted against its seat.
 
  COUNTS AFTER THE CALL SETTLES, never before, so a call still in flight when
@@ -280,10 +310,20 @@ export const RUN_SEATS: SeatTally = createSeatTally();
  a `NoProviderForModelError` that a stage reads as an unreachable seat. Such a
  refusal is not an ask, so it leaves the counts as they were.
 
- A CALL THE CALLER ABORTED RECORDS NOTHING WHEN IT THROWS. The abort is the
- caller leaving the call, the same as a call the process ends before it
- settles, so a seat its callers cut off after quorum is not counted as asked
- and cannot be withheld for it.
+ A CALL THE CALLER ABORTED IS COUNTED AS ABANDONED WHEN IT THROWS, AND AS
+ NOTHING ELSE. The abort is the caller leaving the call, not the seat failing
+ to answer, so a seat its callers cut off after quorum is not counted as asked
+ and cannot be withheld for it, but its census line says how many replies were
+ cut: the TianqiChen66626 pass cut 58 Qwen3.8-27B replies and read
+ `asked=299 usable=299`, which hid them. A call still in flight when the
+ process ends is not counted at all.
+
+ A SEAT WHOSE PROVIDER REJECTS ITS CREDENTIAL (HTTP 401) IS SAID ONCE, in one
+ line naming the seat and the provider's words, the first time it happens in
+ this client's life. The expired Bedrock token of that pass failed 5 asks of each
+ Gemma seat among 283 per-call warn lines and a closing census that said "the
+ run log names which"; nothing told an operator, at the start, that the
+ credential needed renewing.
 
  @param inner - client whose calls are counted
 
@@ -292,13 +332,15 @@ export const RUN_SEATS: SeatTally = createSeatTally();
  @param minAsks - asks a seat must have been given, all of them thrown, before
  its calls are refused
 
+ @param l - logger the credential line goes to
+
  @returns Client with the same surface, counting into `tally`
 
  @throws {@link NoProviderForModelError} when the seat is withheld
 
  @example
  ```ts
- const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, minAsks: 4, },);
+ const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, minAsks: 4, l, },);
  ```
  */
 export function seatTallyClient(
@@ -306,12 +348,26 @@ export function seatTallyClient(
     inner,
     tally,
     minAsks,
+    l,
   }: {
     readonly inner: SyntheticClient;
     readonly tally: SeatTally;
     readonly minAsks: number;
+    readonly l: Logger;
   },
 ): SyntheticClient {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: seatTallyClient.name,
+    l,
+  },);
+  /**
+   Seats this client has already said a rejected credential of.
+   */
+  const credentialSaid = new Set<RosterModelId>();
+
   /**
    Typed exchange the wrapped client offers, bound once so the closure
    this function returns keeps the narrowing.
@@ -356,31 +412,105 @@ export function seatTallyClient(
   }
 
   /**
-   Counts a call that threw, unless the caller had aborted its signal: an abort
-   is the caller leaving the call (a straggler cut off after quorum, a stage
-   deadline, an entry stop), not the seat failing to answer, so it is not an ask.
+   Says, once per seat, that the provider rejected the seat's credential.
+
+   @param modelId - seat the call went to
+
+   @param error - what the call threw
+
+   @example
+   ```ts
+   sayRejectedCredential({ modelId: request.modelId, error, },);
+   ```
+   */
+  function sayRejectedCredential({
+    modelId,
+    error,
+  }: {
+    readonly modelId: RosterModelId;
+    readonly error: unknown;
+  },): void {
+    if (!(error instanceof SyntheticHttpError))
+      return;
+    if (error.status !== HTTP_UNAUTHORIZED)
+      return;
+    if (credentialSaid.has(modelId,))
+      return;
+    credentialSaid.add(modelId,);
+    /**
+     Counts of every seat asked so far.
+     */
+    const seatCounts = tally.counts();
+    /**
+     Counts of this seat, absent when it has never settled a call.
+     */
+    const seatCount = seatCounts.find(function isThisSeat(count,): boolean {
+      return count.modelId === modelId;
+    },);
+    /**
+     Answers the seat gave before its credential was rejected.
+     */
+    const answers = seatCount?.usable ?? 0;
+    rl.warn(
+      `SEAT CREDENTIAL REFUSED ${modelId}: ${exchangeFailureLogText({ error, },)}, after ${String(answers,)} usable ${
+        wordForCount({
+          count: answers,
+          one: 'answer',
+          many: 'answers',
+        },)
+      } this run. The provider does not accept the credential this seat is asked with, and a credential does not `
+        + 'renew during a run, so asks to it are expected to keep failing; the run withholds the seat after '
+        + `${String(minAsks,)} failed ${
+          wordForCount({
+            count: minAsks,
+            one: 'ask',
+            many: 'asks',
+          },)
+        }. Renew the credential for this seat's provider before the next run.`,
+    );
+  }
+
+  /**
+   Counts a call that threw: as abandoned when the caller had aborted its
+   signal, since an abort is the caller leaving the call (a straggler cut off
+   after quorum, a stage deadline, an entry stop) and not the seat failing to
+   answer, so it is not an ask; otherwise as threw, saying so once when the
+   provider rejected the credential.
 
    @param modelId - seat the call went to
 
    @param signal - signal the call was made with
 
+   @param error - what the call threw
+
    @example
    ```ts
-   recordThrow({ modelId: request.modelId, signal: request.signal, },);
+   recordThrow({ modelId: request.modelId, signal: request.signal, error, },);
    ```
    */
   function recordThrow({
     modelId,
     signal,
+    error,
   }: {
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
+    readonly error: unknown;
   },): void {
-    if (signal.aborted)
+    if (signal.aborted) {
+      tally.record({
+        modelId,
+        outcome: 'abandoned',
+      },);
       return;
+    }
     tally.record({
       modelId,
       outcome: 'threw',
+    },);
+    sayRejectedCredential({
+      modelId,
+      error,
     },);
   }
 
@@ -402,6 +532,7 @@ export function seatTallyClient(
         recordThrow({
           modelId: request.modelId,
           signal: request.signal,
+          error,
         },);
         throw error;
       }
@@ -425,6 +556,7 @@ export function seatTallyClient(
         recordThrow({
           modelId: request.modelId,
           signal: request.signal,
+          error,
         },);
         throw error;
       }
@@ -453,6 +585,7 @@ export function seatTallyClient(
             recordThrow({
               modelId: request.modelId,
               signal: request.signal,
+              error,
             },);
             throw error;
           }
@@ -497,7 +630,7 @@ export function seatReportLines(
    */
   const perSeat = counts.map(function toLine(count,): string {
     return `SEAT ${count.modelId} asked=${String(count.asked,)} usable=${String(count.usable,)} `
-      + `unusable=${String(count.unusable,)} threw=${String(count.threw,)}`;
+      + `unusable=${String(count.unusable,)} threw=${String(count.threw,)} abandoned=${String(count.abandoned,)}`;
   },);
 
   if (dark.length === 0)

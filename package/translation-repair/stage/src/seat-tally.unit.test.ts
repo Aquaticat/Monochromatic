@@ -19,6 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -206,6 +207,39 @@ async function thrownBy(call: () => Promise<unknown>,): Promise<unknown> {
   catch (error) {
     return error;
   }
+}
+
+/**
+ Makes one text call to a seat and hands back what it threw, or `undefined`
+ when it resolved.
+
+ @param client - client under test
+
+ @param modelId - seat the call names
+
+ @param signal - signal the call is made with
+
+ @returns The thrown value, or `undefined`
+
+ @example
+ ```ts
+ const thrown = await thrownByText({ client, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
+ ```
+ */
+async function thrownByText(
+  {
+    client,
+    modelId,
+    signal,
+  }: {
+    readonly client: SyntheticClient;
+    readonly modelId: RosterModelId;
+    readonly signal: AbortSignal;
+  },
+): Promise<unknown> {
+  return await thrownBy(function ask(): Promise<unknown> {
+    return client.chatText({ modelId, messages: MESSAGES, signal, },);
+  },);
 }
 
 /**
@@ -707,9 +741,7 @@ await describe({
               l: levelCapturingLogger({ lines: [], },),
             },);
 
-            await thrownBy(function askText(): Promise<unknown> {
-              return failing.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: aborted.signal, },);
-            },);
+            await thrownByText({ client: failing, modelId: SEAT_HYPER_VISION, signal: aborted.signal, },);
             await thrownBy(function askJson(): Promise<unknown> {
               return failing.chatJson({
                 modelId: SEAT_HYPER_VISION,
@@ -782,20 +814,20 @@ await describe({
               l: levelCapturingLogger({ lines, },),
             },);
 
-            await thrownBy(function askText(): Promise<unknown> {
-              return client.chatText({ modelId: SEAT_HYPER_TEXT_BEDROCK, messages: MESSAGES, signal: SIGNAL, },);
-            },);
-            await thrownBy(function askAgain(): Promise<unknown> {
-              return client.chatText({ modelId: SEAT_HYPER_TEXT_BEDROCK, messages: MESSAGES, signal: SIGNAL, },);
-            },);
+            await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
+            await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
 
             expect(lines,).toStrictEqual([
-              'warn SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it: refused by SyntheticHttpError with HTTP 401 '
-              + '(the provider said: "{\\"error\\":{\\"code\\":\\"invalid_api_key\\",\\"message\\":\\"The security '
-              + 'token included in the request has expired.\\",\\"param\\":null,\\"type\\":\\"permission_denied_error\\"}}"), '
-              + 'after 0 usable answers this run. The provider does not accept the credential this seat is asked '
-              + 'with, and a credential does not renew during a run, so every ask to it will fail; the run withholds '
-              + 'the seat after 4 failed asks. Renew the credential for this seat\'s provider before the next run.',
+              [
+                'warn [seatTallyClient] SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it: refused by SyntheticHttpError ',
+                'with HTTP 401 (the provider said: ',
+                String.raw`"{\"error\":{\"code\":\"invalid_api_key\",\"message\":\"The security token included in `,
+                String.raw`the request has expired.\",\"param\":null,\"type\":\"permission_denied_error\"}}"), `,
+                'after 0 usable answers this run. The provider does not accept the credential this seat is asked ',
+                'with, and a credential does not renew during a run, so asks to it are expected to keep failing; the ',
+                'run withholds the seat after 4 failed asks. Renew the credential for this seat\'s provider before ',
+                'the next run.',
+              ].join('',),
             ],);
           },
         },),
@@ -818,12 +850,8 @@ await describe({
               l: levelCapturingLogger({ lines, },),
             },);
 
-            await thrownBy(function askVision(): Promise<unknown> {
-              return client.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: SIGNAL, },);
-            },);
-            await thrownBy(function askBedrock(): Promise<unknown> {
-              return client.chatText({ modelId: SEAT_HYPER_TEXT_BEDROCK, messages: MESSAGES, signal: SIGNAL, },);
-            },);
+            await thrownByText({ client, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
+            await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
 
             expect(lines.length,).toBe(2,);
             expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3: ',);
@@ -864,15 +892,9 @@ await describe({
               l: levelCapturingLogger({ lines, },),
             },);
 
-            await thrownBy(function askServerError(): Promise<unknown> {
-              return serverError.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: SIGNAL, },);
-            },);
-            await thrownBy(function askPlainError(): Promise<unknown> {
-              return plainError.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: SIGNAL, },);
-            },);
-            await thrownBy(function askAbandoned(): Promise<unknown> {
-              return abandoned.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal: aborted.signal, },);
-            },);
+            await thrownByText({ client: serverError, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
+            await thrownByText({ client: plainError, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
+            await thrownByText({ client: abandoned, modelId: SEAT_HYPER_VISION, signal: aborted.signal, },);
 
             expect(lines,).toStrictEqual([],);
           },
