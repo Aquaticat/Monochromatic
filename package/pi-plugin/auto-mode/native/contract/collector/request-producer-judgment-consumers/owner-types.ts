@@ -42,6 +42,7 @@ export type ProducerStreamHandle = (request: {
  Original producer invocation stamps one request occurrence for its bound stream.
  */
 export type ProducerInvocation = {
+  readonly kind: 'main-agent' | 'auxiliary-summary';
   readonly stream: ProducerStreamCall;
   readonly model: ProducerRequest[0];
   readonly context: ProducerRequest[1];
@@ -75,7 +76,7 @@ export type JudgmentConstructor<Judgment> = (input: JudgmentConstructionEntry) =
  */
 export type ProducerJudgmentEntry = {
   readonly response: JudgmentConstructionInput['response'];
-  readonly stream: unknown;
+  readonly stream: object;
   readonly signal: AbortSignal;
   readonly group?: JudgmentConstructionInput['group'];
 };
