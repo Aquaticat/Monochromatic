@@ -20,7 +20,7 @@ export function createRequestProducerOwner({
     const claims=new WeakMap();
     const responses=new WeakMap();
     const streams=new WeakMap();
-  function responseRecord({
+  function ownedResponseRecord({
     response,
     stream
   }){
@@ -28,6 +28,10 @@ export function createRequestProducerOwner({
     const identity=(typeof stream)==='function'?consumers.get(stream):undefined;
     if((!record)||(!identity)
       ||(record.consumer!==identity))throw new RequestProducerError('Response has no producer observation for this exact consumer');
+    return record;
+  }
+  function responseRecord(input){
+    const record=ownedResponseRecord(input);
     if(record.ambiguous)throw new RequestProducerError('Response or stream identity was reused across producer invocations');
     return record;
   }
@@ -139,7 +143,8 @@ export function createRequestProducerOwner({
   function completeJudgment(input){
     const cl=tagged({tag:completeJudgment.name,l});
     if(constructionState.beginning)throw new RequestProducerError('Producer judgment completion cannot reenter judgment construction');
-    const record=responseRecord(input);
+    // Completion releases an already owned operation even if later reuse invalidates its authority.
+    const record=ownedResponseRecord(input);
     if(record.description.kind!=='main-agent')throw new RequestProducerError('Auxiliary request output cannot complete a tool judgment');
     const slot=record.judgment;
     if(slot===undefined){cl.debug('completing native operation without a judgment reservation');return;}

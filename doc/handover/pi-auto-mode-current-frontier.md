@@ -54,6 +54,12 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   A further regression now tests a late response alias while its original operation is active:
   completion cleanup must retain the original operation error rather than throw a fresh ownership error over it.
   This boundary is not yet qualified; run the committed black-box case before correcting the producer.
+  Frozen cleanup baseline `producer-lifetime-cleanup-baseline-candidate-8v0uDt` at `a940bf58b524`
+  now passes fresh builds and fails that exact regression with Node's actual `SuppressedError`:
+  the disposer adds a response-reuse error over the original operation error.
+  The authored correction separates original consumer ownership lookup from ambiguity authorization;
+  completion uses the former, while every policy read and new reservation retains the latter.
+  Fresh corrected qualification remains required.
   Native MiMo delivers its independent read-only trace at 101 tools,
   saved privately as `native-checkpoint-20261019.txt`.
   It supports the per-consumer current-slot/completion seam and identifies the same live consumers.
@@ -95,6 +101,9 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   Source worker `7HN2ZH` is asked to close normally after saving its complete 5,332-code-unit checkpoint,
   before a full-history resume on the corrected memory runtime.
   `source-checkpoint-20261019.txt` and its saved Pi session remain private and intact.
+  The controller now confirms normal exit zero with no signal.
+  Its complete stderr retains the existing source-growth and cancellation failures plus headless notification warnings;
+  a normal shutdown is not evidence those earlier incidents are fixed.
 - Factory identity, opacity and forwarding qualify in a separate frozen candidate.
   Every thirteen rebuilt mutations fail their named regressions, followed by a restored passing build/consumer.
   Receipt: `policy-input-factory-fixed-built-mutants.json`.
