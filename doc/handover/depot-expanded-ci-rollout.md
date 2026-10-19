@@ -134,9 +134,7 @@ These residuals are explicit and are not claimed as green:
   Run `2ls35xfpds` recorded the prepared-environment failure classes and skipped unit.
 - Weekly matrix BuildKit is qualified by rootful Podman runs `r1h68z8tzv`,
   `391g4q5t98` and `k1d5q6x48p`.
-- Weekly matrix VM is not yet verified end to end.
-  The vmsync path and guest prerequisites are fixed,
-  but the last two verification runs failed in `prepare:pnpm` before the categories.
+- Weekly matrix VM is qualified by run `s6ljx0bvw8` (Linux lifecycle).
 - Release-run attachment relies on check runs on the commit,
   not an explicit release workflow
   step.
@@ -166,7 +164,6 @@ The next practical steps are:
 
 - BuildKit is qualified;
   no further work is needed there.
-- Verify the VM matrix category once the `prepare:pnpm` setup flake clears.
 - Continue triaging the complete-build failures until the unit baseline can run.
 
 Use bounded CI for any build or unit measurement.
