@@ -79,45 +79,13 @@ async function buildGuarded({
   readonly installedVersion: string;
 },): Promise<void> {
   /**
-   Real rolldown build of the fixture entry.
+   Real rolldown build of the fixture entry; the bundler runs its hooks only once output is asked for.
    */
-  const build = await rolldown({
+  await using build = await rolldown({
     input: [join(packageDir, 'entry.ts',),],
     plugins: [checkoutBundlerPlugin({ installedVersion, },),],
   },);
-  await build.close();
-}
-
-/**
- Builds the fixture entry through the guard and returns what the build threw.
-
- @param packageDir - fixture directory holding entry.ts
-
- @param installedVersion - version the guard is told this checkout installs
-
- @returns The thrown value, or undefined when the build went through
-
- @example
- ```ts
- const refusal = await refusalOf({ packageDir: fixture.path, installedVersion: '0.0.0', },);
- ```
- */
-async function refusalOf({
-  packageDir,
-  installedVersion,
-}: {
-  readonly packageDir: string;
-  readonly installedVersion: string;
-},): Promise<unknown> {
-  try {
-    await buildGuarded({
-      packageDir,
-      installedVersion,
-    },);
-    return undefined;
-  } catch (error) {
-    return error;
-  }
+  await build.generate({ format: 'es', },);
 }
 
 await describe({
@@ -138,23 +106,24 @@ await describe({
       fn: async function refusesOtherVersion(): Promise<void> {
         using fixture = createEntryFixture();
         /**
-         Rejection the guarded build raised.
+         Every part the refusal must say: both versions, where the bundler came from, and each way to fix it.
          */
-        const refusal = await refusalOf({
-          packageDir: fixture.path,
-          installedVersion: '0.0.0-installed',
-        },);
-        expect(refusal,).toBeInstanceOf(Error,);
-        /**
-         The refusal's text.
-         */
-        const message = String((refusal as Error).message,);
-        expect(message,).toContain(`running rolldown ${VERSION}`,);
-        expect(message,).toContain('installs rolldown 0.0.0-installed',);
-        expect(message,).toContain('PATH',);
-        expect(message,).toContain('node_modules/.bin',);
-        expect(message,).toContain('--setenv=PATH',);
-        expect(message,).toContain('reinstall',);
+        const parts = [
+          `running rolldown ${VERSION}`,
+          'installs rolldown 0.0.0-installed',
+          'first on PATH',
+          'node_modules/.bin',
+          '--setenv=PATH',
+          'reinstall',
+        ] as const;
+        await Promise.all(parts.map(async function refusalSays(part: string,): Promise<void> {
+          await expect(buildGuarded({
+            packageDir: fixture.path,
+            installedVersion: '0.0.0-installed',
+          },),)
+            .rejects
+            .toThrow(part,);
+        },),);
       },
     },),
   ],
@@ -164,8 +133,11 @@ await describe({
   name: `${familyLibraryNodeConfig.name} bundler guard`,
   children: [
     it({
-      name: 'carries the checkout bundler guard first, ahead of every plugin that writes output',
-      fn: async function carriesGuardFirst(): Promise<void> {
+      // NOT "FIRST": `buildStart` is a parallel hook, so a plugin's place in the
+      // list does not order it; the guard holds because an error there ends the
+      // build before any output hook runs.
+      name: 'carries the checkout bundler guard',
+      fn: async function carriesGuard(): Promise<void> {
         using fixture = createEntryFixture();
         /**
          Library config for a member with no family siblings.
@@ -178,7 +150,9 @@ await describe({
          Plugins the config carries, in order.
          */
         const plugins = config.plugins as readonly Plugin[];
-        expect(plugins.at(0,)?.name,).toBe(CHECKOUT_BUNDLER_PLUGIN_NAME,);
+        expect(plugins.map(function nameOf(plugin: Plugin,): string {
+          return plugin.name;
+        },),).toContain(CHECKOUT_BUNDLER_PLUGIN_NAME,);
       },
     },),
   ],
