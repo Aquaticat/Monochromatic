@@ -39,6 +39,14 @@ Work is incomplete. Continue the queue without another readiness handoff.
   An independent unmodified-SDK probe must establish that behavior before correcting either implementation or assertion.
   Preserve actual abort/no-execution coverage and test next-request delivery, not text-based cancellation assumptions.
   Fresh builds, consumer/regression checks and configured replay are required for the category-gate removal.
+  Gate removal `4913ea2cd0` builds privately as `native-release-LqreQy` in `3eMYni`.
+  Both actual-session delivery cases, source-binding capacity, constructor, input content,
+  session inputs and execution pass; every named build/consumer result is zero.
+  The independent unmodified installed Agent probe also passes baseline, steering, follow-up and abort controls:
+  queued stop text arrives after execution in both delivery modes; actual abort executes zero tools.
+  Receipt: `stock-input-delivery-probe-fourth.log`, bounded at 2 GiB and 2 CPUs with network disabled.
+  The supervisor retracts its proposed immediate-stop interpretation of queued text.
+  Configured-history baseline and acknowledged inflight-steer replay are next on the corrected immutable artifact.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
@@ -48,6 +56,11 @@ Work is incomplete. Continue the queue without another readiness handoff.
   Original 432 code lines/126 statements/25 functions became 780/226/45 in the unaccepted consolidation.
   The complete phase catalog passes. The remaining preparation declaration must preserve invalid-input behavior
   while expressing the actual SDK registration boundary honestly.
+  The next proposal includes an always-true predicate asserting `BashToolInput` for every unknown;
+  the supervisor rejects that as an unsound assertion, regardless of its projection documentation.
+  MiMo receives concrete feedback to use the genuine SDK erasure boundary without claiming validation,
+  and to align steering assertions with the independently measured native queue timing.
+  Its scope now includes the phase catalog registration call if needed.
 - Native MiMo: `Pcok7j` resumes the complete `9Tl0ts` history on the corrected immutable runtime.
   Its queued concrete implementation is the real policy-loader TypeScript port, not a facade around untyped code.
   Neither worker may mutate root dist or another owner's files.

@@ -19,6 +19,15 @@ follow-ups wait until the agent would otherwise stop.
 `abort` is a separate active-run operation.
 An authored string asking to stop does not itself exercise that cancellation API.
 The unmodified-SDK delivery probe and the native catalog must distinguish these behaviors.
+The bounded unmodified Pi 1.2.0 Agent probe confirms both queued delivery modes execute the current tool
+before delivering even text asking to stop; the separate actual abort control executes no tool.
+The category-gate removal at `4913ea2cd0` passes fresh JavaScript/native builds,
+both actual-session inflight delivery cases,
+source-binding capacity,
+constructor,
+input-content,
+session-input and execution consumers.
+Configured saved-history verification remains required.
 
 ## Retained native input storage
 
