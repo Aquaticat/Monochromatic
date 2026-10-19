@@ -335,11 +335,17 @@ function parseOxlintOutput(stdout: string,): OxlintOutput {
 
 /**
  Runs oxlint with a fixture config and filters diagnostics to one plugin.
- 
+
+ Oxlint reports a plugin that threw, and a source it could not parse, as a diagnostic with no rule code. Keeping
+ only the diagnostics of one plugin would drop those silently, and a fixture expecting no findings would pass
+ while the plugin crashed, so such a diagnostic fails the run instead.
+
  @param params - oxlint fixture invocation details
- 
+
  @returns plugin diagnostics sorted exactly as oxlint emitted them
- 
+
+ @throws {@link Error} naming the target and every message when oxlint emitted a diagnostic with no rule code
+
  @example
  ```ts
  await runOxlintFixture({ codePrefix: 'tsdoc(', configFlag: '--config', fixtureConfig, target });
@@ -398,6 +404,25 @@ export async function runOxlintFixture(
    Diagnostics emitted by oxlint before plugin filtering.
    */
   const { diagnostics, } = output;
+  /**
+   Diagnostics oxlint emitted for something other than a rule, such as a plugin that threw.
+   */
+  const runnerFailures = diagnostics
+    .filter(function hasNoRuleCode(diagnostic,): boolean {
+      return (typeof diagnostic.code) !== 'string';
+    },);
+  if (runnerFailures.length > 0) {
+    throw new Error(
+      [
+        `oxlint emitted ${String(runnerFailures.length,)} diagnostic(s) with no rule code while linting ${target},`,
+        'which is how it reports a plugin that threw or a source it could not parse:',
+        ...runnerFailures.map(function describeFailure(diagnostic,): string {
+          return diagnostic.message;
+        },),
+      ]
+        .join('\n',),
+    );
+  }
   /**
    Diagnostics belonging to the requested plugin only.
    */
