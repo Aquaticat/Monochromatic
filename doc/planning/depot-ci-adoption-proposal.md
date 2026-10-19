@@ -84,6 +84,11 @@ and the closure workstream record.
   The fast static subset is changed-path scoped,
   and pre-existing whole-tree findings are a recorded baseline,
   not a gate.
+- The unit and build profiles are also not known-good at `4f3d5a65`:
+  unit exits 1 with about 751 named failing test files and 354 JSON-parse errors;
+  build exits 1 with `SIGABRT` and thread-creation failures under fanout.
+  The pilot triages failures per case and bounds build concurrency;
+  none of these profiles is a passing baseline.
 - The repeated complete profile is paid only through one bounded weekly native matrix.
 - The weekly matrix covers these capability categories,
   and no others without a new decision:
