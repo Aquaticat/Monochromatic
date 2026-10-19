@@ -508,7 +508,9 @@ the owner-lock token and PID of the attempt,
 its exit code,
 and,
 for a failed attempt,
-its complete push output.
+its complete push output
+and the newest tip the branch is known to have published (`publishedTip`),
+copied from the record before it so that a failure does not erase it.
 It is published by rename,
 and an absent or unreadable record reads as no attempt,
 which only costs an extra push.
@@ -543,11 +545,14 @@ and distinct on case-insensitive filesystems.
   (its output holds `[rejected]`, the marker Git does not translate)
   is reconciled by the same attempt, under the same lock, when all of these hold:
   the push destination is the upstream (`@{push}` equals `@{upstream}`, and the remote is not `.`);
-  and the branch tip contains the commit that the last successful record names
-  (the upstream tracking tip when there is no such record),
-  because a branch that no longer contains it was amended or rebased,
+  and the branch tip contains the newest published tip the record names
+  (the tip of a successful record, or the `publishedTip` a failed record kept)
+  or the upstream tracking tip,
+  because a branch that contains neither was amended or rebased,
   a merge would bring the replaced commits back,
   and its rejection stays visible as before.
+  Either is enough: a reconcile leaves the tracking ref on a merge that the branch does not contain,
+  and a failed attempt must not make the next commit look rewritten.
   The attempt fetches the remote branch into the private ref `refs/cli-git/auto-push/fetch-<pid>`
   (never `FETCH_HEAD`, which every fetch shares),
   deletes that ref,
@@ -555,7 +560,9 @@ and distinct on case-insensitive filesystems.
   A remote tip that the branch contains means the rejection was not a divergence and is returned unchanged.
   A remote tip that contains the branch means the commit is delivered, and nothing is pushed.
   Otherwise `git merge-tree --write-tree --no-messages --name-only` computes the merge from objects alone
-  and `git commit-tree` records it with the branch tip first and the remote tip second.
+  and `git commit-tree` records it with the branch tip first and the remote tip second,
+  signed (`-S`) when `commit.gpgsign` is true because `commit-tree` never reads that setting;
+  a signer that fails publishes nothing.
   The merge is pushed with a plain push to `<remote> <merge>:<merge ref>`, never forced.
   A conflict (merge-tree exit `1`) publishes nothing and names the conflicting paths.
   A push that is refused as stale again repeats the fetch, the merge and the push,
