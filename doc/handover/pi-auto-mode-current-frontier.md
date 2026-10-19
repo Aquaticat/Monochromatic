@@ -26,6 +26,16 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   whole-outcome equality omits the actual diagnostic `reason` member.
   This is explicitly not memory-retention evidence; the correction checks state/verdict independently.
   Preserve that failed candidate and qualify the corrected committed guard separately.
+  Corrected guard `1145180abb` now fails its named memory assertion on a fresh original build:
+  `Completed producer judgments retain 55919400 heap bytes with historical assistant responses live`.
+  Receipt: `producer-retirement-guard-corrected-results.json`, candidate `UWs6GQ`.
+  The production correction is now authored for independent review and built verification:
+  each private consumer retains its current slot;
+  only completed slots retire, either on later reservation or on completion after being superseded while active.
+  A handler-owned outer using scope completes the producer after both group and selector disposal.
+  No reservation, failed construction, auxiliary/reused identities and reentrant completion retain explicit handling.
+  Response/stream ownership maps and reservation tombstones remain.
+  No production qualification is claimed yet; native MiMo's independent consumer trace is still active.
   The parent collector initially mistakes a build receipt for a test receipt,
   and its restart output path collides with the second child's log.
   Both collector failures are retained; that collided log is excluded and a distinct fourth-run log is collected.

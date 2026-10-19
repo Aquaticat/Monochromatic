@@ -1,3 +1,6 @@
+import {tagged} from '@monochromatic-dev/module-logger/ts';
+const l=tagged({tag:'auto-mode-request-producer'});
+
 export class RequestProducerError extends Error {constructor(
   message,
   options
@@ -35,6 +38,15 @@ export function createRequestProducerOwner({
     .kind
     !=='main-agent')throw new RequestProducerError('Auxiliary request output is not a main-agent tool response');}
   const constructionState={beginning:false};
+  /** Release completed evidence without discarding response ownership or reuse tombstones. */
+  function retireJudgment(slot){
+    const rl=tagged({tag:retireJudgment.name,l});
+    if(!slot.completed)throw new RequestProducerError('An active producer judgment cannot be retired');
+    rl.debug(`retiring completed producer evidence in state ${slot.state}`);
+    slot.value=undefined;
+    slot.error=undefined;
+    slot.state='retired';
+  }
   function beginJudgment(input){
     if(constructionState.beginning)throw new RequestProducerError('Judgment construction cannot reenter');
     if((typeof now)!=='function')throw new RequestProducerError('Owned judgment clock and constructor are unavailable');
@@ -66,9 +78,13 @@ export function createRequestProducerOwner({
       if(record.judgment!==undefined)throw new RequestProducerError('Response already reserved its enclosing judgment');
       const slot={
         state:'constructing',
+        completed:false,
         value:undefined,
         error:undefined
       };record.judgment=slot;
+      const previous=record.consumer.judgments.current;
+      if(previous?.completed)retireJudgment(previous);
+      record.consumer.judgments.current=slot;
       try{
         const value=construct(Object.freeze({
           startedAt,
@@ -111,6 +127,7 @@ export function createRequestProducerOwner({
     })
       .judgment;
     if(!slot)throw new RequestProducerError('Response has no enclosing judgment reservation');
+    if(slot.state==='retired')throw new RequestProducerError('Response judgment completed and was superseded by a later original judgment');
     if(slot.state==='failed')throw new RequestProducerError(
       'Response judgment construction failed',
       {cause:slot.error}
@@ -118,12 +135,26 @@ export function createRequestProducerOwner({
     if(slot.state!=='active')throw new RequestProducerError('Response judgment is still being constructed');
     return slot.value;
   }
+  /** The native operation lifetime completes every outcome after group and selector cleanup. */
+  function completeJudgment(input){
+    const cl=tagged({tag:completeJudgment.name,l});
+    if(constructionState.beginning)throw new RequestProducerError('Producer judgment completion cannot reenter judgment construction');
+    const record=responseRecord(input);
+    if(record.description.kind!=='main-agent')throw new RequestProducerError('Auxiliary request output cannot complete a tool judgment');
+    const slot=record.judgment;
+    if(slot===undefined){cl.debug('completing native operation without a judgment reservation');return;}
+    if(slot.completed)throw new RequestProducerError('Producer judgment operation already completed');
+    if((slot.state!=='active')&&(slot.state!=='failed'))throw new RequestProducerError('Producer judgment construction must settle before operation completion');
+    slot.completed=true;
+    if(record.consumer.judgments.current!==slot){retireJudgment(slot);return;}
+    cl.debug(`preserving latest completed producer diagnostic in state ${slot.state}`);
+  }
   function makeConsumer({
     handle,
     construct
   }){
     if((typeof handle)!=='function')throw new RequestProducerError('Producer consumer must be an owned function');
-    const identity=Object.freeze({construct});
+    const identity=Object.freeze({construct,judgments:{current:undefined}});
     function createStreamCallback() {
       return async function stream(
       model,
@@ -265,6 +296,7 @@ export function createRequestProducerOwner({
     describeResponse,
     assertMainAgentResponse,
     beginJudgment,
+    completeJudgment,
     judgmentFor
   });
 }
