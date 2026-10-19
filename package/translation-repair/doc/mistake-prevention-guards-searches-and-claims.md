@@ -641,6 +641,10 @@ Two lint logs are compared by finding,
 not by their summary lines:
 a package was said to have "the same findings" when it had three shared ones
 and type-aware warnings from dependencies that were not built (ledger M276).
+A fact a run's evidence states,
+such as a work's English title its lookup found,
+is checked against the sources that evidence cites before it is called wrong;
+one store's silence is not the absence of an edition (ledger M279).
 
 What enforces it:
 habit;
