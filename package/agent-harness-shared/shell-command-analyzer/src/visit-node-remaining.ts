@@ -229,6 +229,7 @@ function visitRemainingNode(
       functionName: node.name
         .value,
       loopBindings: [],
+      conditionLoopDepth: 0,
     };
     return {
       ...EMPTY_VISIT_RESULT,

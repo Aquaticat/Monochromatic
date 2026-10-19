@@ -227,6 +227,7 @@ const NO_SCRIPT: unique symbol = Symbol('nested script payload absent from unbas
 const EXECUTED_CONTEXT: ShellCommandContext = {
   kind: 'executed',
   loopBindings: [],
+  conditionLoopDepth: 0,
 };
 
 /**
