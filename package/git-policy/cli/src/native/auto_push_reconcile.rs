@@ -6,7 +6,9 @@
 //!  A rejected `push` of a branch that the remote moved cannot succeed again, and an ordinary merge in the active
 //!  worktree can be blocked, or made unsafe, by another consumer's uncommitted files.
 //!  `git merge-tree --write-tree` and `git commit-tree` read and write only objects, so the active worktree,
-//!  its index and its untracked files are never touched, and both histories stay reachable from the published tip.
+//!  its index and its untracked files are never touched while merging, and both histories stay reachable from the
+//!  published tip.
+//!  Only after the push succeeds is the branch fast-forwarded, and only in a worktree with nothing to lose.
 //!  A branch whose published history was rewritten (an amend or a rebase) is never merged:
 //!  the merge would bring the replaced commits back, so its rejection stays visible as it always was.
 
@@ -320,12 +322,77 @@ fn signs_commits(git: &PushGit) -> Result<bool, SingleFlightError> {
 }
 
 /// What:
+///  Fast-forward the pushed branch and this worktree to the published merge, or the reason that was not done.
+/// Why:
+///   A branch left behind the remote makes the next commit rejected again, and the person at the keyboard would have
+///  to merge by hand; the merge contains the branch tip, so the move is a pure fast-forward.
+///   It is attempted only where nothing can be lost or surprised: the worktree has the branch checked out at the tip
+///  that was pushed and has no change to a tracked file.
+///   The status read takes no optional lock, and `git merge --ff-only` refuses, without changing anything, a move that
+///  would overwrite an untracked file or a change made after the status read.
+///   Every refusal is a reason for the report, never a failure: the merge is already published.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function advanceLocalBranch({ git, branchRef, local, mergeOid }): Promise<{ reason?: string }>;
+/// ```
+fn advance_local_branch(
+    git: &PushGit,
+    branch_ref: &str,
+    local: &str,
+    merge_oid: &str,
+) -> Result<Result<(), String>, SingleFlightError> {
+    let checked_out = run_query(git, &argv(&["symbolic-ref", "--quiet", "HEAD"]))?;
+    if checked_out.code != Some(0) {
+        return Ok(Err(String::from("HEAD is detached")));
+    }
+    if String::from_utf8_lossy(&checked_out.stdout).trim() != branch_ref {
+        return Ok(Err(String::from(
+            "this worktree has another branch checked out",
+        )));
+    }
+    let head = run_query(git, &argv(&["rev-parse", "--verify", "HEAD^{commit}"]))?;
+    if String::from_utf8_lossy(&head.stdout).trim() != local {
+        return Ok(Err(String::from(
+            "the branch moved after the commit landed",
+        )));
+    }
+    let status = run_query(
+        git,
+        &argv(&[
+            "--no-optional-locks",
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=no",
+        ]),
+    )?;
+    if status.code != Some(0) {
+        return Ok(Err(String::from("the worktree status could not be read")));
+    }
+    if !status.stdout.is_empty() {
+        return Ok(Err(String::from(
+            "the worktree has uncommitted changes to tracked files",
+        )));
+    }
+    let moved = run_query(git, &argv(&["merge", "--ff-only", "--quiet", merge_oid]))?;
+    if moved.code != Some(0) {
+        let detail = String::from_utf8_lossy(&moved.stderr);
+        return Ok(Err(format!(
+            "Git refused the fast-forward: {}",
+            detail.lines().next().unwrap_or_default().trim()
+        )));
+    }
+    return Ok(Ok(()));
+}
+
+/// What:
 ///  Merge the remote tip into the pushed branch's tip and publish the result, a bounded number of times.
 /// Why:
 ///   Another worktree advancing the remote makes the plain push fail for good, while both histories are valid and
 ///  must both be kept; the merge is published as a new commit above the local tip, so the landed commit stays
 ///  reachable and nothing is forced.
-///   The local branch, the index and the worktree are left as they are.
+///   Once the merge is published, the branch and its worktree are fast-forwarded to it when that cannot lose or
+///  overwrite anything; otherwise they are left as they are and the report says why.
 ///   A rewritten branch, a different push destination, a conflict, an exhausted retry budget and every failure of a
 ///  command are reported, and only the first two leave the original rejection unchanged.
 ///
@@ -454,13 +521,26 @@ pub fn reconcile_divergent_push(
         apply_low_speed_defaults(&mut command, &git.environment);
         let pushed = run_bounded_push(command, push_deadline(&git.environment), STOP_GRACE)?;
         if pushed.exit_code == 0 {
+            let branch = branch_ref
+                .strip_prefix("refs/heads/")
+                .unwrap_or(branch_ref);
+            let followed = match advance_local_branch(git, branch_ref, &local, &merge_oid)? {
+                Ok(()) => format!("{branch} and the worktree were fast-forwarded to it."),
+                Err(reason) => {
+                    debug(TAG, &format!("{branch} was not fast-forwarded: {reason}"));
+                    format!(
+                        "{branch} itself and the worktree are unchanged ({reason}); update {branch} with `git merge --ff-only {}/{short}` \
+                         when the worktree allows.",
+                        destination.remote
+                    )
+                }
+            };
             return Ok(PushAttempt {
                 exit_code: 0,
                 output: format!(
-                    "{}\n{RECONCILE_LINE_PREFIX}{}/{short} had new commits, so the merge {merge_oid} of {short} and {}/{short} \
-                     was published. {short} itself and the worktree are unchanged; update {short} with `git merge --ff-only {}/{short}` \
-                     when the worktree allows.",
-                    pushed.output, destination.remote, destination.remote, destination.remote
+                    "{}\n{RECONCILE_LINE_PREFIX}{}/{short} had new commits, so the merge {merge_oid} of {branch} and {}/{short} \
+                     was published. {followed}",
+                    pushed.output, destination.remote, destination.remote
                 )
                 .trim_start_matches('\n')
                 .to_owned(),

@@ -671,12 +671,242 @@ fn an_unreadable_signing_setting_publishes_nothing() {
     remove(&s.root);
 }
 
-/// The local branch stays behind after a reconcile, so the next commit does not contain the published merge; that
-/// is a branch that moved on, not one that was rewritten, and its auto-push is reconciled again.
+/// Fetch the remote branch into the tracking ref and return its tip, which a clean checkout of the old tip may fast-forward to.
+fn fetched_remote_tip(scenario: &Scenario) -> String {
+    git(&scenario.local, &["fetch", "--quiet", "origin"]);
+    return text_of(&scenario.local, &["rev-parse", "origin/main"]);
+}
+
+/// Run the fast-forward of the repository under test from its current tip to `target`.
+fn advance(scenario: &Scenario, target: &str) -> Result<(), String> {
+    let local = text_of(&scenario.local, &["rev-parse", "HEAD"]);
+    return advance_local_branch(&push_git(&scenario.local), "refs/heads/main", &local, target)
+        .expect("git");
+}
+
+/// A clean worktree on the pushed branch follows the published merge, so the next commit starts from it.
+#[test]
+fn a_clean_worktree_is_fast_forwarded_to_the_published_merge() {
+    let s = scenario("ar-follow");
+    advance_remote(&s, "a.txt", "remote\n");
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let (result, err) = run(&s, &landed);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    let published = text_of(&s.remote, &["rev-parse", "main"]);
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), published);
+    assert_eq!(text_of(&s.local, &["rev-parse", "main"]), published);
+    assert_eq!(
+        std::fs::read_to_string(s.local.join("a.txt")).expect("a.txt"),
+        "remote\n"
+    );
+    assert_eq!(text_of(&s.local, &["status", "--porcelain=v1"]), "");
+    assert!(err.contains("main and the worktree were fast-forwarded"), "{err}");
+    assert!(!err.contains("unchanged"), "{err}");
+    remove(&s.root);
+}
+
+/// A tracked change keeps the branch and the worktree where they are, and the report names the reason and the command.
+#[test]
+fn a_worktree_with_a_tracked_change_is_left_behind_with_the_reason_reported() {
+    let s = scenario("ar-dirty-report");
+    advance_remote(&s, "a.txt", "remote\n");
+    std::fs::write(s.local.join("a.txt"), "dirty-local\n").expect("dirty file");
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let (_result, err) = run(&s, &landed);
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), landed);
+    assert!(
+        err.contains("unchanged (the worktree has uncommitted changes to tracked files)"),
+        "{err}"
+    );
+    assert!(err.contains("git merge --ff-only origin/main"), "{err}");
+    remove(&s.root);
+}
+
+/// The fast-forward moves the checked-out branch to the target and nothing else.
+#[test]
+fn the_fast_forward_moves_a_clean_checkout_to_the_target() {
+    let s = scenario("ar-ff");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    assert_eq!(advance(&s, &target), Ok(()));
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), target);
+    remove(&s.root);
+}
+
+/// A detached `HEAD` is not a branch to move.
+#[test]
+fn a_detached_head_is_not_fast_forwarded() {
+    let s = scenario("ar-ff-detached");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    git(&s.local, &["checkout", "--quiet", "--detach"]);
+    assert_eq!(advance(&s, &target), Err(String::from("HEAD is detached")));
+    assert_eq!(text_of(&s.local, &["rev-parse", "main"]), before);
+    remove(&s.root);
+}
+
+/// Another branch checked out in this worktree leaves the pushed branch alone.
+#[test]
+fn another_checked_out_branch_is_not_fast_forwarded() {
+    let s = scenario("ar-ff-other");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    git(&s.local, &["switch", "--quiet", "--create", "topic"]);
+    assert_eq!(
+        advance(&s, &target),
+        Err(String::from("this worktree has another branch checked out"))
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "main"]), before);
+    assert_eq!(text_of(&s.local, &["rev-parse", "topic"]), before);
+    remove(&s.root);
+}
+
+/// A branch whose tip is no longer the pushed tip moved on its own, and is not moved again.
+#[test]
+fn a_branch_that_moved_after_the_landing_is_not_fast_forwarded() {
+    let s = scenario("ar-ff-moved");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    let result = advance_local_branch(
+        &push_git(&s.local),
+        "refs/heads/main",
+        &target,
+        &target,
+    )
+    .expect("git");
+    assert_eq!(
+        result,
+        Err(String::from("the branch moved after the commit landed"))
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    remove(&s.root);
+}
+
+/// A modified tracked file blocks the move, whether or not the target touches it.
+#[test]
+fn a_modified_tracked_file_blocks_the_fast_forward() {
+    let s = scenario("ar-ff-modified");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    std::fs::write(s.local.join("b.txt"), "edited\n").expect("edit");
+    assert_eq!(
+        advance(&s, &target),
+        Err(String::from(
+            "the worktree has uncommitted changes to tracked files"
+        ))
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    remove(&s.root);
+}
+
+/// A staged new file blocks the move: the index holds work that is not committed.
+#[test]
+fn a_staged_file_blocks_the_fast_forward() {
+    let s = scenario("ar-ff-staged");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    std::fs::write(s.local.join("c.txt"), "staged\n").expect("c.txt");
+    git(&s.local, &["add", "c.txt"]);
+    assert_eq!(
+        advance(&s, &target),
+        Err(String::from(
+            "the worktree has uncommitted changes to tracked files"
+        ))
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    remove(&s.root);
+}
+
+/// An untracked file does not block the move unless the target would overwrite it; Git then refuses and nothing changes.
+#[test]
+fn an_untracked_file_the_target_would_overwrite_is_kept() {
+    let s = scenario("ar-ff-untracked");
+    advance_remote(&s, "new.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    std::fs::write(s.local.join("new.txt"), "mine\n").expect("untracked");
+    let result = advance(&s, &target);
+    assert!(
+        result
+            .as_ref()
+            .is_err_and(|reason| reason.starts_with("Git refused the fast-forward: ")),
+        "{result:?}"
+    );
+    assert_eq!(
+        std::fs::read_to_string(s.local.join("new.txt")).expect("new.txt"),
+        "mine\n"
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    remove(&s.root);
+}
+
+/// An untracked file the target does not touch is not a reason to stay behind.
+#[test]
+fn an_unrelated_untracked_file_does_not_block_the_fast_forward() {
+    let s = scenario("ar-ff-scratch");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    std::fs::write(s.local.join("scratch.txt"), "scratch\n").expect("untracked");
+    assert_eq!(advance(&s, &target), Ok(()));
+    assert_eq!(
+        std::fs::read_to_string(s.local.join("scratch.txt")).expect("scratch.txt"),
+        "scratch\n"
+    );
+    remove(&s.root);
+}
+
+/// A target that is not above the branch tip is not a fast-forward, and Git's refusal is reported.
+#[test]
+fn a_target_that_is_not_a_fast_forward_is_refused() {
+    let s = scenario("ar-ff-diverged");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let result = advance(&s, &target);
+    assert!(
+        result
+            .as_ref()
+            .is_err_and(|reason| reason.starts_with("Git refused the fast-forward: ")),
+        "{result:?}"
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), landed);
+    remove(&s.root);
+}
+
+/// A status that cannot be read is a reason to stay behind, never a failure of the published push.
+#[test]
+fn an_unreadable_status_blocks_the_fast_forward() {
+    let s = scenario("ar-ff-status");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    std::fs::write(s.local.join(".git").join("index"), b"not an index").expect("index");
+    assert_eq!(
+        advance(&s, &target),
+        Err(String::from("the worktree status could not be read"))
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    remove(&s.root);
+}
+
+/// The local branch stays behind after a reconcile that could not fast-forward it, so the next commit does not
+/// contain the published merge; that is a branch that moved on, not one that was rewritten, and its auto-push is
+/// reconciled again.
 #[test]
 fn a_second_commit_on_a_branch_left_behind_by_a_reconcile_is_reconciled_again() {
     let s = scenario("ar-twice");
     advance_remote(&s, "a.txt", "remote\n");
+    // A tracked change keeps the worktree from following the merge.
+    std::fs::write(s.local.join("a.txt"), "dirty-local\n").expect("dirty file");
     let first = commit_local(&s, "b.txt", "local\n");
     let (first_result, first_err) = run(&s, &first);
     assert_eq!(
@@ -711,6 +941,8 @@ fn a_second_commit_on_a_branch_left_behind_by_a_reconcile_is_reconciled_again() 
 fn a_failed_attempt_between_two_reconciles_does_not_stop_the_next_one() {
     let s = scenario("ar-failure-between");
     advance_remote(&s, "a.txt", "remote\n");
+    // A tracked change keeps the worktree from following the merge, so the next commit starts from the old tip.
+    std::fs::write(s.local.join("a.txt"), "dirty-local\n").expect("dirty file");
     let first = commit_local(&s, "b.txt", "local\n");
     let (first_result, first_err) = run(&s, &first);
     assert_eq!(
