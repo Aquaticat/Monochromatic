@@ -986,6 +986,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
   - Clarification of 2026-10-19 (owner): only CPU painting of text is banned. Vello is not mandatory; text drawn on
     the GPU by any Slint renderer, FemtoVG included, is acceptable. The study ranks designs on that basis and
     compares FemtoVG and Vello for every question (the agent was told so).
+  - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
+    (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
+    worktree. Agent worktrees are for code.
   - Minimap drag jank (owner report of 2026-10-19, a screenshot of `client.unit.test.ts` in the search-fetch package:
     dragging and holding the viewport box is janky; the owner says it reproduces in a debug build too). Standing
     owner instructions: when the nested compositor cannot do something, improve it, release it and install it; the
