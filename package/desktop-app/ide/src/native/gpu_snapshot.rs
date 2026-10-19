@@ -124,7 +124,10 @@ fn open_hardware_device() -> Result<(wgpu::Instance, wgpu::Device, wgpu::Queue, 
     let mut best: Option<(u32, wgpu::Adapter)> = None;
     for adapter in adapters {
         let info = adapter.get_info();
-        seen.push(format!("{} ({:?}, {})", info.name, info.device_type, info.driver));
+        seen.push(format!(
+            "{} ({:?}, {})",
+            info.name, info.device_type, info.driver
+        ));
         // What: `let Some(rank) = ... else { continue }` unwraps a present value or skips this adapter.
         // Why: adapters of any kind but a GPU, such as lavapipe, are skipped here and never chosen.
         //
