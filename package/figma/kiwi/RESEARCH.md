@@ -51,6 +51,10 @@ Reading the first nine bytes as a nine-character magic therefore broke the momen
 `canvasVersion` on `FigmaFile`),
  accepting every uint32 value.
 Two real exports from 2026-10-18 (276 MB and 301 MB) carry version 106 in their `canvas.fig` header.
+`parseFigmaFile` decodes both through the package entry point:
+ 5624 nodes and 207 images (403 s),
+ and 5702 nodes and 335 images (407 s),
+ matching an independent scratch decoder.
 
 Sources read for this finding:
 
