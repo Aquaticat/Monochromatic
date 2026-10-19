@@ -19,8 +19,11 @@ weekly native matrix,
 cache admission,
 trust controls,
 native qualification and fast-subset measurement are recorded.
+The weekly matrix real categories pass:
+fast subset,
+Android,
+BuildKit and the Linux VM lifecycle.
 The complete build and whole-repository unit baseline are still not known-good.
-BuildKit and the VM matrix category remain unqualified for environment-specific reasons.
 The subscription transition remains a user action.
 These residuals are listed at the end of this status.
 
@@ -148,20 +151,22 @@ Done.
   BuildKit is qualified by runs `r1h68z8tzv`,
   `391g4q5t98` and `k1d5q6x48p`.
 - The VM category reaches guest Node setup.
-  A final verification run is blocked by intermittent `prepare:pnpm` setup failures in
-  `xgd08stcz2` and `fkwfbqh5wn`;
-  both failed before the matrix categories and are recorded.
+  Lockfile drift (`ERR_PNPM_OUTDATED_LOCKFILE`) blocked two setup runs;
+  regenerating the lockfile fixed it.
+- Final matrix run `s6ljx0bvw8` passed all named real categories:
+  fast subset,
+  Android,
+  BuildKit and the Linux VM lifecycle.
+  The Windows guest block is excluded from the Linux matrix with
+  `VMSYNC_E2E_GUEST=linux`.
+- Static checks reproduce the known baseline.
+  Categories without a qualified command remain incomplete.
 - The clean re-dispatch `r2mxbc40rh` reproduced the first category outcomes.
   No duplicate execution occurred.
   Every paid attempt is in the ledger;
   overlapping retries share the r10 allocation.
 - Evidence:
   [the weekly matrix evidence](../audit/depot-weekly-native-2026-10-19.evidence.json).
-- Residual capability gap:
-  the VM category is not yet verified end to end because the last two runs failed in setup.
-  BuildKit,
-  the fast subset,
-  Android and static carry the matrix result.
 
 ### 5. Cache admission
 
@@ -247,11 +252,9 @@ All planned work items are implemented and recorded.
 The remaining residuals are explicit:
 
 - the complete build and unit baseline is not known-good;
-- the VM matrix category is not yet verified end to end because the last two runs failed in
-  `prepare:pnpm` setup;
 - release-run attachment still relies on check runs on the commit;
+- Gradle cache writes remain disabled until their controls pass;
 - the subscription transition remains a user action.
 
-Retry the weekly matrix once the setup flake clears,
-or run a focused vmsync check with the same prerequisites.
+Continue triaging the complete-build failures until the unit baseline can run.
 Keep the complete build and unit baseline marked not known-good until it actually passes.

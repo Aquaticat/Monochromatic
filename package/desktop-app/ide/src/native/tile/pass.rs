@@ -84,6 +84,8 @@ pub(in crate::native) fn sync_pass(
     }
     let job = PassJob {
         key,
+        // The worker handle numbers the post.
+        generation: 0,
         document: current.document.clone(),
         styles: Arc::clone(&current.styles),
         typography: current.shaper.typography().clone(),

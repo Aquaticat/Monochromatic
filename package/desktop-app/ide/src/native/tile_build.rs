@@ -24,6 +24,9 @@ use std::{
 /// The inputs and result of one tile,
 ///  and the construction both threads run.
 mod job;
+/// Which pass the handle counts as open.
+#[cfg(test)]
+mod pass_tests;
 /// The worker thread's loop,
 ///  its shaper,
 ///  and the test gates that hold it.
@@ -114,8 +117,11 @@ pub(super) struct TileWorker {
     ready: bool,
     /// A job is running or its reply is unread.
     busy: bool,
-    /// A pass was posted and its last output has not been taken.
+    /// The newest posted pass was not finished when its last output was taken.
     pass_open: bool,
+    /// How many passes were posted;
+    /// the newest post's number tells its output from the output of a pass it replaced.
+    pass_generation: u64,
     /// Newest job not yet sent;
     /// an older waiting job is dropped unbuilt.
     waiting: Option<TileJob>,
@@ -167,6 +173,7 @@ impl TileWorker {
             ready: false,
             busy: false,
             pass_open: false,
+            pass_generation: 0,
             waiting: None,
             thread: Some(worker),
         });
@@ -190,7 +197,9 @@ impl TileWorker {
     /// ```ts
     /// postPass(job: PassJob): void;
     /// ```
-    pub(super) fn post_pass(&mut self, job: PassJob) -> Result<()> {
+    pub(super) fn post_pass(&mut self, mut job: PassJob) -> Result<()> {
+        self.pass_generation += 1;
+        job.generation = self.pass_generation;
         self.shared.control.set(job);
         self.pass_open = true;
         let sender = self
@@ -211,10 +220,13 @@ impl TileWorker {
 
     /// Take what the pass measured since the last take,
     /// at most `limit` lines;
-    ///  the pass is no longer open once its last output is taken.
+    ///  the pass is no longer open once the last output of the newest post is taken.
+    ///  The finishing output of a replaced pass still arrives after the newer pass was posted,
+    ///  and closing on it would hide the newer pass from `is_busy` while it runs,
+    ///  so the poll would stop and the newer pass's output would never be taken.
     pub(super) fn take_pass(&mut self, limit: usize) -> Option<PassOutput> {
         let output = self.shared.outbox.take(limit)?;
-        if output.done {
+        if output.done && output.generation == self.pass_generation {
             self.pass_open = false;
         }
         return Some(output);

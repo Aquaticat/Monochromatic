@@ -32,14 +32,13 @@ Evidence root:
   `391g4q5t98` and
   `k1d5q6x48p`.
   The terminal and IDE images built successfully.
+- Weekly matrix VM category:
+  the Linux lifecycle is qualified by run `s6ljx0bvw8`.
+  The Windows guest block is excluded from the Linux matrix through
+  `VMSYNC_E2E_GUEST=linux`.
 
 ## Not qualified
 
-- Weekly matrix VM category:
-  the vmsync path and guest prerequisites are fixed,
-  but the last two verification runs (`xgd08stcz2` and `fkwfbqh5wn`) failed in
-  `prepare:pnpm` before the matrix categories.
-  The VM category is not yet verified end to end.
 - Paused-session SSH,
   `--ssh-after-step`,
   tmate and interactive session strings.

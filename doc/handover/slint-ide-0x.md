@@ -948,13 +948,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     120 s, terminate after 15 periods), proved in the container by `mise run test:nextest-config`.
     Rules for agents: run only the tests a change can reach, never `test` and `test:wrap` together (the second repeats
     the first), and use the filter (`mise run //package/desktop-app/ide:test 'test(/wrap/)'`).
-    Flaky test seen once, not caused by this branch: at the old 2 CPU bound, `test:native` failed
-    `wrap_clip_tests::revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view` ("the last line wraps to 1 rows",
-    `src/native/wrap_clip_tests.rs:294`) after 125 s, and passed in every other measured run of the suite (old code
-    at the old and the raised bound, new code at the default bound three times). Its precondition `settled(&opened)`
-    does not wait for the background measurement to reach the last line, so a slow worker leaves that line at one
-    row. It is a race of the test, found because the 2 CPU run was slow; fixing it (wait for the measurement, or
-    build the map by hand) is open.
+    The flaky `wrap_clip_tests::revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view` is fixed on
+    `fix/ide-wrap-clip-flake`: `TileWorker::take_pass` closed the pass on the finishing output of a replaced pass, so
+    the window stopped polling for the newer one (about 1 failure in 100 runs at one CPU before, 0 in 1500 after).
     Gates of this branch, re-run by the coordinator after merging `origin/main` (default bound, each task alone):
     `test:bin`, `test:nextest-config`, `lint:rustfmt`, `lint:clippy`, `lint:closures` (nightly) and `test:wrap` (15 and
     67 tests, 8 s) passed. Not re-run, because nothing they exercise changed (the only Rust change is
@@ -964,17 +960,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 44, language lifecycle 28, ignored 75, theme 13, search 49, language navigation 45, source 300). The other
     six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
-  - Queued after the minimap landing (2026-10-19, agents running in worktrees off `origin/main`):
-    `fix/ide-wrap-clip-flake` (worktree `.claude/worktrees/ide-flake`) fixes the wrap-clip test race;
-    issue #1785 (a 10,000 px or taller window over wrapped text never settled) is fixed: landed on `main` as
-    `8c597c3c58` on 2026-10-19 after the coordinator reran the gates and the `tall-window-edge` guard, and installed
-    (the installed binary was not launched). Next, after the flake fix lands:
-    the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test` task
-    still runs `cargo test`). On 2026-10-19 the owner authorized deleting the merged IDE branches on origin
-    and 34 were deleted
-    (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the unmerged IDE
-    branches (language, live theme, navigation, runtime languages, sidebar resize, source keys, prototypes, research)
-    were left.
+  - After the minimap landing (2026-10-19): issue #1785 (a 10,000 px or taller window over wrapped text never
+    settled) is fixed and landed as `8c597c3c58`; the wrap-clip flake, a production bug in `take_pass`, is fixed
+    and landed as `8627edeeba`. The coordinator reran the gates for both (`lint:rustfmt`, `lint:clippy`,
+    `lint:release`, `lint:closures`, `test`, `test:native`), the `tall-window-edge` guard, and 400 stress runs of the
+    flaky test (400 passed), and installed the build after each (the installed binary was not launched).
+    The IDE parts of issues #1756 (root `clippy.toml` in the container, `75b9aee2a3`) and #1757 (nextest, `bd12a2fb62`)
+    were already on `main` from 2026-10-18; the issues stay open for the other packages. The owner authorized deleting the merged IDE branches on origin and 34 were
+    deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
+    unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
+    prototypes, research) were left.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the

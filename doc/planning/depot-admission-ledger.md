@@ -121,8 +121,8 @@ Its two attempts are recorded in the ledger.
 ## Current state
 
 The trial allowances are active.
-Eleven paid native attempts were admitted across ten allocations,
+Thirteen paid native attempts were admitted across twelve allocations,
 including the overlapping r10 setup retries.
-Observed native use is 154 minutes,
+Observed native use is 195 minutes,
 well below the Startup allowance.
 The remaining allowance is far above the observed use.

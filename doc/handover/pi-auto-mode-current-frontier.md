@@ -4,6 +4,43 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Visual plan review and corrected question pool, 2026-10-19
+
+The current user request is to review the ground-up plan and grill toward a better plan.
+Implementation remains stopped.
+The user rejected text-only architecture questions and requires HTML diagrams.
+The user also requires opening the HTML review in Helium as part of the handoff.
+The installed `${HOME}/AppImages/helium.appimage` accepted the review URL
+and reported "Opening in existing browser session."
+The initial Q1 is withdrawn pending visual examples; its proposed per-rule meaning is not accepted.
+The user also rejected Q2's inferred shortage of useful follow-ups,
+then clarified that the around-100 minimum was set because potentially useful questions remain plentiful.
+Unresolved-rule count is not useful-question count.
+Remove the scarcity branch rather than ask for an exception to the batch-size requirement.
+
+The [updated plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md)
+and [visual review](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild-review.html)
+show the corrected adaptive pool and proposed decision examples.
+The next user judgment concerns the meaning of each rule's approval under complete context,
+using the actual displayed scenarios.
+The HTML response is about plan semantics and does not authorize implementation.
+
+Read-only source review corrected the nested host entry to `runToolCall`,
+identified sequential preparation timing as a real integration constraint,
+and distinguished raw branch entries from effective session context.
+Parser field omissions, logger output/drain behavior, and replacement task migration are qualification prerequisites.
+The source findings are not replacement runtime evidence.
+
+Commits `cd5d6b3b35`, `6f6d46ba30`, and `5ad93dadfb` record the review findings,
+the corrected question-pool premise, and the HTML scenarios respectively.
+Visual verification uses a disposable Chrome profile in a nested compositor.
+All scenario controls and form branches passed; 16 controls meet a measured 48-pixel minimum in both dimensions.
+All scenarios render in light and dark mode; every section fits a 390-pixel viewport without horizontal overflow.
+Browser error and console records are empty.
+Evidence is under `${HOME}/temp/agent/auto-mode-visual-review-20261019`.
+The diagrams await the user's answer; reduction, reassessment conflict handling,
+host group semantics, and remaining review branches follow that answer and their independent evidence.
+
 ### Implementation stopped for plan review, 2026-10-19
 
 The user explicitly stops implementation and requests a Markdown plan for review.

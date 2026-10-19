@@ -13,8 +13,31 @@ Discussion of this plan alone does not resume implementation.
 
 The grilling review started on 2026-10-19.
 The decision tree and source corrections in this document are review work, not accepted architecture.
-The first question round concerns per-rule approval meaning and useful adaptive batches.
-No answers to that round have been recorded yet.
+The user requires HTML diagrams before further design questions.
+Open the review in Helium as part of the handoff.
+On 2026-10-19 the installed Helium launcher accepted this HTML and reported "Opening in existing browser session."
+The initial prose questions are withdrawn.
+The user clarified that the around-100 minimum reflects an ample supply of potentially useful questions per call.
+Unresolved-rule count is not a limit on that supply.
+Use the [HTML review](ground-up-rebuild-review.html) to inspect the overall flow,
+adaptive question selection, worked decisions, and the host preparation conflict.
+The form records the proposed per-rule meaning; its answer is still pending.
+
+The HTML was exercised in a nested Chrome window with a disposable profile.
+Every scenario control, navigation link, and reply-form branch passed;
+keyboard activation and literal markup in notes also passed.
+All 16 controls measured at least 48 pixels in both dimensions.
+Light and dark scenarios passed, and every section fit a 390-pixel viewport without horizontal overflow.
+The browser reported no page errors or console messages.
+This verifies the review artifact, not the replacement plugin or the proposed model semantics.
+
+Retained rendered examples:
+[requested tests](ground-up-rebuild-review/scenario-tests-dark.png),
+[unrequested edit](ground-up-rebuild-review/scenario-scope-dark.png),
+[explicit approval](ground-up-rebuild-review/scenario-exception-dark.png),
+[missing fact](ground-up-rebuild-review/scenario-missing-dark.png),
+[light appearance](ground-up-rebuild-review/scenario-tests-light.png),
+and [narrow response form](ground-up-rebuild-review/response-narrow.png).
 
 ### Assessment before implementation approval
 
@@ -88,22 +111,29 @@ For example, a CSS formatting rule neither authorizes nor objects to an explicit
 Whether its answer is `approve` depends on whether approval means independent authorization or clearance from that rule.
 An unsolicited code edit after a review-only request must also have an explicit expected outcome.
 
-Round-one question Q1 proposes clearance under the complete instructions and request,
-including an explicit request-scope check.
-That proposal is awaiting the user's answer.
+The initial prose question proposed clearance under the complete instructions and request,
+including an explicit request-scope check, but did not make the alternatives visible enough to assess.
+That question is withdrawn pending the HTML scenario review; its proposal is not accepted.
 Its dependent decisions are precedence examples, reduction, and conflicting reassessments.
 Examples must include an explicit exception to a general confirmation requirement,
 an unrelated rule, missing information, and an operation outside the user's request.
 
 ### Adaptive evidence before scheduling
 
-The minimum of 100 meaningful questions per call is settled.
-Counting tagged rules does not resolve a follow-up with only one uncertain result.
-Round-one question Q2 asks whether to reassess a meaningful set of at least 100 rules
-or request manual review when such a follow-up cannot be formed.
-Neither path permits filler questions or treats repetition as independent evidence.
+The user clarified the minimum's purpose:
+there is an ample supply of potentially useful questions, including in later batches.
+The withdrawn Q2 incorrectly inferred a shortage of useful questions from a shortage of unresolved rule verdicts.
+No smaller-batch fallback or early manual-review branch follows from that inference.
 
-After that answer, define when a newer result supersedes an older one,
+Questions bind authored rules to concrete operation parts, resources, conditions, evidence, and interactions.
+The same rule may support distinct useful questions while the complete operation stays visible.
+Use prewritten forms with code-bound references;
+returned distributions select the next focus, not model-authored question wording or conclusions.
+The original adaptive requirements in `doc/planning/pi-auto-mode-batched-assessment.md:667` to `:746`
+support these selection mechanics; their superseded semantic categories do not return.
+Select around 100 or more meaningful questions per call from that pool without constructing filler Cartesian products.
+
+Define when a newer result supersedes an older one,
 how conflicting results remain unresolved, and what prevents repeated sampling until approval.
 Account for retries, stale snapshots, and nested work within the chosen operation budget.
 
@@ -144,6 +174,21 @@ The private hook remains a candidate until the required execution behavior is se
 Questions in these branches follow their prerequisite answers and source investigations.
 The review ends with a revised plan and confirmation of shared understanding;
 implementation still requires explicit authorization.
+
+### Proposed agent-guidance corrections
+
+The text-only question round concealed the decision flow,
+and the question-scarcity choice depended on an inference the original requirements did not support.
+Tighten existing `AGENTS.md` guidance rather than add overlapping rules.
+These are proposals, not changes to that file:
+
+- Replace the `VHI` body with:
+  "Handoffs state purpose, changes, inspection, and response.
+  Show architecture choices with verified HTML diagrams and examples,
+  open them in the requested browser, and explain labels."
+- Replace the `QPM` body with:
+  "Before asking which mechanism, test whether the constraint survives existing requirements and plausible designs;
+  measure facts yourself. Ask only choices that remain."
 
 ## Proposed end-to-end flow
 
@@ -244,9 +289,10 @@ Already resolved checks may be reassessed when their interpretation depends on a
 Question IDs retain source and evaluation-form identity.
 Parallel questions are not majority votes and repeated questions are not independent evidence.
 
-If a supported workload cannot supply 100 meaningful questions, or an adaptive follow-up cannot meet that requirement,
-bring that concrete conflict back for review.
-Do not invent filler or silently ship a one-question fallback.
+The useful pool spans rule, operation, resource, condition, evidence, and interaction bindings.
+An uncertain result can redirect many useful questions; it does not limit the next batch to one question.
+The user rejected the proposed question-scarcity branch on 2026-10-19.
+Qualify the selected question sets against actual scenarios, without filler, votes, or a one-question fallback.
 Input capacity exhaustion also remains unresolved; it never permits dropping required rules.
 
 ### Deterministic decision resolution: 2,000 to 4,000 characters
@@ -325,6 +371,14 @@ Persistent retention is therefore an unresolved shared-logger requirement.
 Any proposed shared-logger change needs a concrete design and version bump for auto-publishing.
 It is not included as an already solved property of this rebuild.
 
+The 2026-10-19 source review identifies separate logging qualification requirements:
+default sinks include console output, and `info` maps to `console.info`.
+Verify the chosen configuration through actual RPC stdout and interactive sessions.
+The current `flush` may return at its deadline while sink work continues,
+and the file sink reports append failures without propagating them to the caller.
+Do not equate `flush` with guaranteed durable evidence or complete drain.
+Record the evidence-loss and overload behavior separately from disk retention.
+
 ### Package entry and bootstrap: 1,000 to 2,000 characters
 
 Purpose: register the host integration before the host execution module loads, and start Pi with its normal settings.
@@ -376,7 +430,8 @@ Import: `@monochromatic-dev/module-logger/ts`.
 - `tagged`: construct module and function loggers with correlated tags.
 - Returned `debug`, `info`, `warn`, and `error` methods:
   lifecycle detail, decision evidence, degraded review, and actionable failures respectively.
-- Returned `flush`: join queued writes during shutdown.
+- Returned `flush`: request bounded flushing during shutdown;
+  qualify its timeout and failure behavior before claiming complete drain or durable evidence.
 - `Logger`: type-only declaration for passing an already tagged logger.
 
 Necessary because this repository requires this logger and complete decision diagnostics.
@@ -399,6 +454,13 @@ The rebuild does not use its command-ban helpers or replace parsing with command
 Qualification gap: installed `unbash` is `6.0.0`, while the adapter documentation and catalog comments name version 5.
 Reading the source is not proof that the adapter works with version 6.
 Reuse stays provisional until its consumed syntax cases and actual model-bound projections pass.
+
+The source review also found a specific contract mismatch to reproduce:
+installed declarations expose `Pipeline.prefixes`, `TestLogical.operands`, and `TestNot.negations`,
+but the shared projection's `structuralFields` omits those fields and its generic projection filters them out.
+Exercise pipeline negation and compound test predicates with positive controls before accepting this dependency.
+Any required shared-parser changes need explicit scope and size accounting.
+This finding is source evidence, not a completed runtime reproduction or repair.
 
 ### Runtime transitive dependencies of the proposed production imports
 
@@ -590,6 +652,11 @@ Old legacy shadow traffic does not verify the new question contract.
 
 ### Demonstrate regression detection and finish measurement
 
+Replace package tasks that still build the native pipeline or reference deleted `src` files.
+The replacement type-check input must exclude retired native implementation unless explicitly required.
+Start acceptance from fresh replacement artifacts; old `dist` output cannot supply a passing result.
+Verify the project-first log destination without the legacy task environment overriding it.
+
 Commit important guard tests, remove each guard in a disposable copy, rebuild, and show the intended failure.
 Restore and demonstrate the original behavior passes.
 Capture complete stdout and stderr for stop, abort, deny, allow, and shutdown scenarios.
@@ -607,7 +674,7 @@ No cleanup or deletion is performed as part of writing this plan.
 - Whether the proposed narrow private Pi hook is an acceptable integration cost.
 - Whether the proposed per-rule reduction expresses the desired approval/denial semantics,
   including explicit exceptions and instruction precedence.
-- How to handle a workload with fewer than 100 meaningful questions without inventing filler or a hidden exception.
+- How the selected prewritten question forms and their concrete bindings resolve the recorded scenario set.
 - Whether the model-call ceiling includes shadow calls, or the separately counted mirror proposal is acceptable.
 - Whether the proposed source and deployment budgets are appropriate.
 - How to bound persistent decision-log retention through the shared logger, with a version bump if changed.

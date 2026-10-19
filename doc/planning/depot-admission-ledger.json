@@ -203,6 +203,38 @@
       },
       "reservedUsd": 10,
       "actualUsd": 0.1
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r13",
+      "id": "s6ljx0bvw8",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 20,
+        "buildMinutes": 16,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.48
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r11",
+      "id": "09tm4nft2n",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 21,
+        "buildMinutes": 16,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.5
     }
   ]
 }

@@ -287,6 +287,16 @@ fn revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view() {
     let window = &opened.window;
     let scale = window.window().scale_factor();
     let last = 200;
+    // The window opens at a first width and takes a second one a moment later, so two passes are posted;
+    // `settled` returns when the worker reports no open pass, which the first pass's finishing output used to cause
+    // while the second was still running. Only a map that counts the last line past one row shows that the
+    // measurement at the current width has reached it and been applied.
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().row_map.rows_of(last) > 4) {
+            waiting.step("the measurement did not reach the last line");
+        }
+    }
     // Forget what the measurement found for the last line, as it is before the measurement reaches it.
     {
         let mut current = opened.source.borrow_mut();
