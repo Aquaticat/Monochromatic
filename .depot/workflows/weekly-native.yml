@@ -103,9 +103,9 @@ jobs:
         timeout-minutes: 35
         run: |
           cd package/desktop-app/terminal
-          sudo podman build --memory=16g --cpus=6 --tag localhost/monochromatic/terminal --file Containerfile .
+          sudo podman build --memory=16g --tag localhost/monochromatic/terminal --file Containerfile .
           cd ../ide
-          sudo podman build --memory=16g --cpus=6 --tag localhost/monochromatic/ide --file Containerfile .
+          sudo podman build --memory=16g --tag localhost/monochromatic/ide --file Containerfile .
       - name: Android consumer
         id: android
         continue-on-error: true
@@ -116,7 +116,7 @@ jobs:
       - name: Install VM prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-utils qemu-system-x86 libvirt-clients libvirt-daemon-system
+          sudo apt-get install -y --no-install-recommends qemu-utils qemu-system-x86 virtiofsd libvirt-clients libvirt-daemon-system
           sudo chmod 666 /dev/kvm || true
           sudo -u "$USER" /usr/sbin/libvirtd --session --daemon || true
       - name: VM and desktop consumer
