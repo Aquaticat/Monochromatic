@@ -133,19 +133,9 @@ async function safeDestroy(vmName: string,): Promise<void> {
   /** VM name for the Linux lifecycle test. */
   const VM = 'vmsync-e2e-linux';
 
-  /** Guest path to vmsync bundle on the virtiofs mount. */
-  const BUNDLE = '/mnt/shared/index.mjs';
-
   /** Shell preamble to set HOME and activate mise-managed Node. */
   const MISE =
     'export HOME=/home/ubuntu && eval "$(/home/ubuntu/.local/bin/mise activate bash)"';
-
-  /**
-   Guest command to run vmsync with sudo.
-   All commands use sudo for consistent HOME since import requires
-   root for qemu-nbd, and non-root commands must read data from the same location.
-   */
-  const VMSYNC = `${MISE} && sudo -E "$(which node)" ${BUNDLE}`;
 
   // beforeAll setup
   await safeDestroy(VM,);
@@ -154,8 +144,20 @@ async function safeDestroy(vmName: string,): Promise<void> {
     timeout: CREATE_TIMEOUT_MS,
   },);
 
-  // Push the tsdown bundle via virtiofs (instant)
-  await mvm({ args: ['push', VM, BUNDLE_PATH, 'index.mjs',], },);
+  // Push the tsdown bundle. Without virtiofsd the guest-agent route needs an
+  // absolute guest path; with virtiofs the command returns the mounted path.
+  const pushOutput = await mvm({
+    args: ['push', VM, BUNDLE_PATH, '/home/ubuntu/index.mjs',],
+  },);
+  /** Guest path to the vmsync bundle, as reported by mvm push. */
+  const BUNDLE = pushOutput.match(/ -> (\S+) in VM /u,)?.[1] ?? '/mnt/shared/index.mjs';
+
+  /**
+   Guest command to run vmsync with sudo.
+   All commands use sudo for consistent HOME since import requires
+   root for qemu-nbd, and non-root commands must read data from the same location.
+   */
+  const VMSYNC = `${MISE} && sudo -E "$(which node)" ${BUNDLE}`;
 
   // Install mise, then use mise to install Node (handles arch detection).
   // guest-exec runs without login shell so HOME is unset; export it explicitly.

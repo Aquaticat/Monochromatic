@@ -116,7 +116,7 @@ jobs:
       - name: Install VM prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-utils qemu-system-x86 virtiofsd libvirt-clients libvirt-daemon-system
+          sudo apt-get install -y --no-install-recommends qemu-utils qemu-system-x86 libvirt-clients libvirt-daemon-system
           sudo chmod 666 /dev/kvm || true
           sudo -u "$USER" /usr/sbin/libvirtd --session --daemon || true
       - name: VM and desktop consumer
