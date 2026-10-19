@@ -427,9 +427,8 @@ The following are not satisfied by this review record and remain work:
 - unit and build failure triage,
   including a bounded build rerun with reduced fanout;
 - no-overage sliding-window admission and the operator cap verification;
-- adoption record and decision-record acceptance;
 - subscription transition from the Startup trial to Developer;
-- revised rollout plan and Q7 confirmation.
+- implementation work items from the accepted plan.
 
 ## Limits
 

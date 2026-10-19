@@ -1,17 +1,14 @@
 # Expanded GitHub and Depot CI rollout
 
 Status:
-proposed revision for the Q7 shared-understanding check,
-2026-10-18.
+accepted on 2026-10-18 after Q7.
 This revision replaces the earlier rollout draft.
-It is not accepted until Q7 is answered and the adoption record is accepted.
-Implementation does not start before those two acceptances.
+Implementation is permitted and proceeds through the work items below.
 
 The [evaluation](depot-expanded-ci-evaluation.md) supplies the evidence and its limits.
 The [independent review record](depot-expanded-ci-evaluation-independent-review.md) records the
 whole-report review and the closure controls.
-The [adoption proposal](depot-ci-adoption-proposal.md) consolidates the operating decisions that
-move to `doc/decision/` on acceptance.
+The [adoption decision](../decision/depot-ci-adoption.md) records the accepted operating decisions.
 The [handover](../handover/depot-trial-grilling.md) records the interview answers and the
 2026-10-18 settlement.
 
@@ -32,7 +29,7 @@ The operating account is Developer at USD 20 per month with overage disabled on 
 The pilot runs on the remaining Startup trial;
 phase 2 runs on Developer.
 No paid overage is authorized.
-The [adoption proposal](depot-ci-adoption-proposal.md) governs the subscription transition.
+The [adoption decision](../decision/depot-ci-adoption.md) governs the subscription transition.
 
 The combined planning ceiling remains USD 200,
 but with overage disabled it is a capacity
@@ -281,7 +278,7 @@ Advisory-only results leave no required check to unwind.
 ## Optional products
 
 The per-product dispositions are recorded in the
-[adoption proposal](depot-ci-adoption-proposal.md).
+[adoption decision](../decision/depot-ci-adoption.md).
 The default is out of scope.
 Enabling a product requires a new dated decision record with eligibility,
 meter,
@@ -426,14 +423,12 @@ the subscription transition.
     Rollback:
     stop the schedule and fall back to public GitHub.
 
-9.  Decision records and Q7.
-    Move the accepted decisions to `doc/decision/depot-ci-adoption.md`.
-    Amend `doc/decision/ci-provider.md` and `doc/decision/ci-caching.md` with dated supersession
-    notes.
-    Record the subscription transition.
-    Put this plan to Q7.
+9.  Governance follow-through.
+    The decision records are accepted and Q7 is answered.
+    The subscription transition from the Startup trial to Developer remains a user action.
+    Keep the records current when measured bounds change.
     Acceptance:
-    the decision records are accepted and Q7 is answered.
+    the active plan is recorded and any later decision change has a dated note.
     Rollback:
     none;
     this is governance.
@@ -476,8 +471,7 @@ they are recorded above or remain explicitly open.
 
 ## Shared-understanding check
 
-Confirm whether this revised plan captures the agreed operating model and permits implementation.
-If it differs,
-identify the requirement or assignment to change.
-The plan is not accepted until Q7 is answered and
-[the adoption proposal](depot-ci-adoption-proposal.md) is accepted.
+Q7 was answered on 2026-10-18:
+the user confirmed this revised plan and permitted implementation.
+[The adoption decision](../decision/depot-ci-adoption.md) is accepted.
+This section is retained as the record of the shared-understanding check.

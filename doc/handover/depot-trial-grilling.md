@@ -108,13 +108,13 @@ The review record is at
 and the registration,
 duplicate,
 baseline and paused-session evidence is under `doc/audit/`.
-Implementation has not started while the required shared-understanding confirmation is pending.
-The next action is to record Q7.
-If confirmed,
-start the plan's independently verifiable work items without requesting the already granted spend
-or recovery authority again.
-If revised,
-update the affected branch of the plan and ask only newly unsettled decisions.
+Q7 was answered on 2026-10-18:
+the user confirmed the revised plan at `d94e50bec4` and permitted
+implementation.
+The adoption proposal was accepted and moved to `doc/decision/depot-ci-adoption.md`;
+the provider and cache supersession notes are in effect.
+Implementation starts with the plan's work item 1;
+no further spend or recovery authorization is required.
 
 The posted second round covers independent decisions:
 
