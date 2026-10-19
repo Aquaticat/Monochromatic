@@ -17,6 +17,9 @@ The user requires HTML diagrams before further design questions.
 The initial prose questions are withdrawn.
 The user clarified that the around-100 minimum reflects an ample supply of potentially useful questions per call.
 Unresolved-rule count is not a limit on that supply.
+Use the [HTML review](ground-up-rebuild-review.html) to inspect the overall flow,
+adaptive question selection, worked decisions, and the host preparation conflict.
+The form records the proposed per-rule meaning; its answer is still pending.
 
 ### Assessment before implementation approval
 
@@ -153,6 +156,20 @@ The private hook remains a candidate until the required execution behavior is se
 Questions in these branches follow their prerequisite answers and source investigations.
 The review ends with a revised plan and confirmation of shared understanding;
 implementation still requires explicit authorization.
+
+### Proposed agent-guidance corrections
+
+The text-only question round concealed the decision flow,
+and the question-scarcity choice depended on an inference the original requirements did not support.
+Tighten existing `AGENTS.md` guidance rather than add overlapping rules.
+These are proposals, not changes to that file:
+
+- Replace the `VHI` body with:
+  "Handoffs state purpose, changes, what to inspect, and how to respond.
+  Architecture questions show verified HTML flows and outcome examples; explain labels."
+- Replace the `QPM` body with:
+  "Before asking which mechanism, test whether the constraint survives existing requirements and plausible designs;
+  measure facts yourself. Ask only choices that remain."
 
 ## Proposed end-to-end flow
 
@@ -335,6 +352,14 @@ Persistent retention is therefore an unresolved shared-logger requirement.
 Any proposed shared-logger change needs a concrete design and version bump for auto-publishing.
 It is not included as an already solved property of this rebuild.
 
+The 2026-10-19 source review identifies separate logging qualification requirements:
+default sinks include console output, and `info` maps to `console.info`.
+Verify the chosen configuration through actual RPC stdout and interactive sessions.
+The current `flush` may return at its deadline while sink work continues,
+and the file sink reports append failures without propagating them to the caller.
+Do not equate `flush` with guaranteed durable evidence or complete drain.
+Record the evidence-loss and overload behavior separately from disk retention.
+
 ### Package entry and bootstrap: 1,000 to 2,000 characters
 
 Purpose: register the host integration before the host execution module loads, and start Pi with its normal settings.
@@ -386,7 +411,8 @@ Import: `@monochromatic-dev/module-logger/ts`.
 - `tagged`: construct module and function loggers with correlated tags.
 - Returned `debug`, `info`, `warn`, and `error` methods:
   lifecycle detail, decision evidence, degraded review, and actionable failures respectively.
-- Returned `flush`: join queued writes during shutdown.
+- Returned `flush`: request bounded flushing during shutdown;
+  qualify its timeout and failure behavior before claiming complete drain or durable evidence.
 - `Logger`: type-only declaration for passing an already tagged logger.
 
 Necessary because this repository requires this logger and complete decision diagnostics.
@@ -409,6 +435,13 @@ The rebuild does not use its command-ban helpers or replace parsing with command
 Qualification gap: installed `unbash` is `6.0.0`, while the adapter documentation and catalog comments name version 5.
 Reading the source is not proof that the adapter works with version 6.
 Reuse stays provisional until its consumed syntax cases and actual model-bound projections pass.
+
+The source review also found a specific contract mismatch to reproduce:
+installed declarations expose `Pipeline.prefixes`, `TestLogical.operands`, and `TestNot.negations`,
+but the shared projection's `structuralFields` omits those fields and its generic projection filters them out.
+Exercise pipeline negation and compound test predicates with positive controls before accepting this dependency.
+Any required shared-parser changes need explicit scope and size accounting.
+This finding is source evidence, not a completed runtime reproduction or repair.
 
 ### Runtime transitive dependencies of the proposed production imports
 
@@ -599,6 +632,11 @@ Keep original and replacement evidence distinct.
 Old legacy shadow traffic does not verify the new question contract.
 
 ### Demonstrate regression detection and finish measurement
+
+Replace package tasks that still build the native pipeline or reference deleted `src` files.
+The replacement type-check input must exclude retired native implementation unless explicitly required.
+Start acceptance from fresh replacement artifacts; old `dist` output cannot supply a passing result.
+Verify the project-first log destination without the legacy task environment overriding it.
 
 Commit important guard tests, remove each guard in a disposable copy, rebuild, and show the intended failure.
 Restore and demonstrate the original behavior passes.
