@@ -6,6 +6,23 @@ Plan review is active and implementation remains stopped.
 Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
 Continue the next unlocked review round; implementation remains stopped.
 
+### Permanent public-API boundary and graceful fallback, 2026-10-19
+
+The user links the historical parallel-batch plan and explicitly rejects maintaining or copying Pi internals,
+duplicating existing Pi functionality, and private Pi APIs, ever.
+This is not an option awaiting reconsideration or permission.
+Use supported public plugin APIs; gracefully fall back where they cannot provide the intended behavior.
+Use public manual review where enforceable, explaining the missing guarantee.
+Otherwise visibly report unavailable coverage without claiming approval or rebuilding Pi functionality.
+The historical parallel-batch plan now marks its private prototypes and remaining integration work as withdrawn.
+Pi retains execution, scheduling, preparation, sessions, UI, and existing tool behavior.
+The active plan and visual review must reflect the same boundary.
+Public-only disposable probes continue; they do not authorize a replacement implementation.
+
+Native cleanup is complete. Commit `213a4ebce4` regenerates the lockfile after retired dependencies were removed.
+No unrelated lockfile drift was found; the worktree was clean before this documentation correction.
+Next action: finish the public-plugin evidence and fallback record, then resume the remaining design frontier.
+
 ### Unapproved Pi modification removed, 2026-10-19
 
 The user identifies issue #1786 and prohibits modifying Pi itself; use its public plugin API.

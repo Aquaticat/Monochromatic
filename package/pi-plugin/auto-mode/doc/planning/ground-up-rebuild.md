@@ -23,9 +23,11 @@ Q6 is withdrawn: a parallel tool-call batch is one group; each nonparallel call 
 The user corrected the approval baseline: assess reversibility, not exact requested-package matching.
 The former Q3 and Q5 alternatives are withdrawn; their remaining engineering details follow that baseline.
 Dependency qualification, shadow scheduling, retention, and size fit remain open engineering work.
-The user requires an ordinary Pi plugin. Modifying Pi itself is prohibited.
+The user requires an ordinary Pi plugin using supported public APIs only.
+Maintaining or copying Pi internals, duplicating existing Pi functionality, and private Pi APIs are prohibited,
+without exception. Gracefully fall back when a desired behavior is unavailable through public APIs.
 The proposed private loading hook is withdrawn, including in-memory source transformation.
-No replacement code, dependency installation, package build, or configuration change accompanies this review.
+Cleanup retires the unapproved architecture; replacement implementation remains stopped.
 
 The preserved reference worktree is
 `/var/home/user/temp/agent/pi-auto-mode-before-rebuild-20261019`
@@ -377,7 +379,8 @@ Their fit remains unverified.
 
 Purpose: expose the complete parallel batch or individual nonparallel call and bind its review to dispatch.
 Interface: supported public plugin events and APIs; Pi retains execution, results, and configured extensions.
-Own parallel, sequential, nested, denied, aborted, and shutdown paths.
+Observe supported parallel, sequential, nested, denied, aborted, and shutdown events.
+Pi owns execution and lifecycle behavior; the plugin must not duplicate those implementations.
 A public per-call event alone does not establish final complete-group interception.
 
 The user explicitly directs the rebuild to Pi's plugin API.
@@ -386,7 +389,11 @@ or monkey-patch Pi's runtime methods.
 Leaving installed package files unchanged does not make a transformed runtime acceptable.
 The former `registerHooks` candidate is withdrawn, not awaiting qualification or approval.
 Qualify public event ordering, complete parallel-batch visibility, final arguments, and cancellation.
-If those public surfaces leave a requirement unresolved, document the exact gap without modifying Pi.
+If those public surfaces cannot provide a requirement, use graceful fallback rather than reconstructing Pi.
+Use public manual confirmation where the public API can enforce it, explaining the exact missing guarantee.
+If that gate is unavailable too, visibly report unavailable coverage and preserve ordinary Pi operation;
+never describe unreviewed execution as automatically approved or claim an unenforceable group guarantee.
+Do not recreate Pi tools, scheduling, argument preparation, sessions, or UI to recover a missing capability.
 The settled group boundary preserves separate reviews for nonparallel calls and whole-batch review for parallel calls.
 
 Installed Pi 1.3.0 awaits the completed assistant `message_end` event before tool execution
@@ -641,29 +648,18 @@ Package: host-provided `@earendil-works/pi-agent-core`, inspected `1.3.0`.
 No new direct application dependency or SDK copy is proposed.
 The proposed hook into `dist/agent-loop.js` is withdrawn under the no-Pi-modification constraint.
 
-These private functions explain host behavior for public-plugin qualification only;
-the plugin must not replace or instrument them:
-
-- `executeToolCalls`: identify the host dispatch mode and its actual batch boundary.
-- `executeToolCallsParallel`: review the entire prepared parallel group before any member executes.
-- `executeToolCallsSequential`: review each prepared call as its own group before executing that call.
-- `prepareToolCall`: retain the host's argument preparation, validation, and existing pre-execution hooks.
-- `executePreparedToolCall`: execute exactly the reviewed prepared call.
-- `finalizeExecutedToolCall`: retain post-execution hooks and result handling.
-- `emitToolExecutionUpdate`: retain streaming tool updates.
-- `emitToolExecutionEnd`: retain final execution events.
-- `createToolResultMessage` and `emitToolResultMessage`: preserve host result messages and ordering.
-- `shouldTerminateToolBatch`: preserve batch termination semantics.
-- `createErrorToolResult`: represent denied and cancelled calls through ordinary host results.
-- `runToolCall`: cover individual nested tool invocation as well as the root group path.
-  The host session routes `_executeNestedToolCall` through this exported core function.
-  Complete result-dependent child-group review is not established by intercepting individual calls.
+The former private-function integration inventory is withdrawn.
+Source inspection established that Pi owns argument preparation, dispatch, lifecycle events, and result delivery.
+Those remain host responsibilities, not functionality to reproduce inside auto-mode.
+Historical inspection of `runToolCall` and session `_executeNestedToolCall` explained individual nested calls;
+it did not establish a public complete-child-group boundary.
 
 The original inventory incorrectly named `executeNestedToolCall` as a core function;
 the 2026-10-19 source review corrects that name and location.
 The replacement integration is not implemented or qualified.
 This inventory grants no permission to couple the plugin to private functions.
 Real public-plugin tests must establish the required behavior without source substitution.
+Unsupported cases must exercise the documented graceful fallback instead of requiring private integration.
 
 ### Node runtime and built-in functions
 

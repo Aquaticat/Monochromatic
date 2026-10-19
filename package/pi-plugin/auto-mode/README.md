@@ -4,6 +4,8 @@
 
 Implementation is stopped while the [ground-up plan](doc/planning/ground-up-rebuild.md) is reviewed.
 The replacement will be a TypeScript plugin using Pi's public API.
+Maintaining or copying Pi internals, duplicating existing Pi functionality, and private APIs are prohibited.
+Unsupported review behavior must gracefully fall back through public interfaces with its limitation explained.
 The user did not approve the old copied/transformed Pi architecture and has removed `bin`, `native`, and `dist`.
 Native build tasks and the mixed-language TypeScript configuration are retired.
 Normal plugin output may recreate `dist`; it must not contain a rebuilt or transformed Pi distribution.
