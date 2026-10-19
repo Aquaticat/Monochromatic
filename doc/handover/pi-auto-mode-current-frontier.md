@@ -147,6 +147,31 @@ The next consolidation should reuse actual typed `session-root.ts`,
 put missing environment/assessment contracts with their owners,
 and retain honest distinctions between source-backed ABI evidence and runtime validation.
 Do not accept the current port merely because lint is clean.
+Its actual failure is `Native phase consumer needs an object at created`.
+The port both drops the original await of the async factory and looks for an invented `created` member.
+The proposed follow-up still drops the await;
+the supervisor stops that held edit before application,
+then explicitly requests a read-only checkpoint as `source-prompt-phase-checkpoint-20261019-07`.
+The ten-file port is still uncommitted and unaccepted.
+
+The paused-dialog retained-heap comparison is now captured and bounded-analysis verified:
+post-GC 511,619,256 bytes after 24 tools versus baseline 89,823,320 bytes before work.
+The private checkpoint snapshot is 233,176,406 bytes and contains the actual retained positive control.
+The inspector closes before the supervisor answers the dialog.
+`retained-heap-analysis-phase-checkpoint-Po9Em5` traces historical request bodies through
+producer `responses` map records,
+their `judgment.value`,
+the `readSourceSnapshot` closure and `receipt.request.body`.
+Weak-map ephemeron paths require their keys' actual external liveness;
+Pi retains historical assistant responses,
+so inspect those keys and prove the causal regression before claiming the older OOM is explained.
+`native-producer-retention-investigation-20261019-09` gives the existing native MiMo worker
+a focused read-only retirement-seam investigation while the supervisor builds that regression.
+The real policy-loader implementation port stays queued after this active memory failure.
+Preserve latest diagnostic freshness,
+response/stream reuse tombstones,
+active concurrent consumers and cancellation/failure/manual/bypass behavior.
+Do not use WeakRef/finalization as authority or execution state.
 Opacity comparison is complete in `policy-input-factory-opacity-results.json`:
 the original class passes all sixteen named cases;
 fresh JS and native builds of the committed factory pass fourteen and fail the two new cases.
