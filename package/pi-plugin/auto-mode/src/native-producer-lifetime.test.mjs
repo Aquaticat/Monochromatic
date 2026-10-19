@@ -4,15 +4,17 @@ import { createRequestProducerOwner, RequestProducerError } from '../dist/native
 
 //region Controlled streams isolate producer ownership; the separate capacity guard uses the actual native session.
 /** Supply unique result-bearing streams without substituting producer claims or response registration. */
-function createFixture({ construct, sharedStream } = {}) {
-  const owner = createRequestProducerOwner({ now() { return 1; } });
+function createResultStream({ context }) {
+  return {
+    async *[Symbol.asyncIterator]() {},
+    async result() { return context.response; },
+  };
+}
+
+/** Bind distinct consumers to the supplied issuer while preserving the actual private ownership tables. */
+function createFixture({ construct, handle = createResultStream, owner = createRequestProducerOwner({ now() { return 1; } }) } = {}) {
   const stream = owner.bindJudgmentConsumer({
-    handle({ context }) {
-      return sharedStream ?? {
-        async *[Symbol.asyncIterator]() {},
-        async result() { return context.response; },
-      };
-    },
+    handle,
     construct: construct ?? function constructValue({ response }) { return Object.freeze({ name: response.name }); },
   });
   return { owner, stream };
@@ -69,7 +71,7 @@ await verify({ name: 'newer construction preserves an active earlier operation u
 
 await verify({ name: 'independent consumers preserve their own latest completed diagnostic', async run() {
   const left = createFixture();
-  const right = createFixture();
+  const right = createFixture({ owner: left.owner });
   const a = await observe({ fixture: left, name: 'left' });
   const b = await observe({ fixture: right, name: 'right' });
   const first = left.owner.beginJudgment(a);
@@ -78,7 +80,7 @@ await verify({ name: 'independent consumers preserve their own latest completed 
   right.owner.completeJudgment(b);
   assert.equal(left.owner.judgmentFor(a), first);
   assert.equal(right.owner.judgmentFor(b), second);
-  assert.throws(() => left.owner.completeJudgment(b), /exact consumer/);
+  assert.throws(() => left.owner.completeJudgment({ response: b.response, stream: left.stream }), /exact consumer/);
 } });
 
 await verify({ name: 'auxiliary and unjudged main responses do not retire an active primary operation', async run() {
@@ -132,5 +134,21 @@ await verify({ name: 'retirement preserves historical response reuse detection',
   await assert.rejects(observe({ fixture, response: first.response }), /identity was reused/);
   assert.throws(() => fixture.owner.describeResponse(first), /identity was reused/);
   fixture.owner.completeJudgment(next);
+} });
+
+await verify({ name: 'retirement preserves historical stream reuse detection', async run() {
+  const response = { name: 'original' };
+  const reused = createResultStream({ context: { response } });
+  const fixture = createFixture({ handle(input) {
+    return input.context.response === response ? reused : createResultStream(input);
+  } });
+  const first = await observe({ fixture, response });
+  fixture.owner.beginJudgment(first);
+  fixture.owner.completeJudgment(first);
+  const next = await observe({ fixture, name: 'next' });
+  fixture.owner.beginJudgment(next);
+  fixture.owner.completeJudgment(next);
+  await assert.rejects(observe({ fixture, response }), /identity was reused/);
+  assert.throws(() => fixture.owner.describeResponse(first), /identity was reused/);
 } });
 //endregion Controlled streams isolate producer ownership; the separate capacity guard uses the actual native session.

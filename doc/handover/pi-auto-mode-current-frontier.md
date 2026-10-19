@@ -43,6 +43,14 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   The sequential remaining lifecycle/consumer catalogs run under two GiB/two CPUs;
   receipt `producer-retirement-qualified-results.json` stays incomplete until every named task terminates.
   Currentness/identity/reuse/completion branch tests, built removal controls and actual long-history MiMo replay remain required.
+  That immutable candidate now completes every fifteen named build/type/consumer tasks with exit zero,
+  including the full phase and fallback catalogs, execution, constructor, host isolation,
+  source binding, run history, event receipts, startup relevance and session inputs.
+  Its actual twelve-group memory guard retains 16,688,184 heap bytes with all 24 historical responses live.
+  New `test:native:producer-lifetime` black-box cases are committed separately for active/concurrent completion,
+  latest diagnostics, auxiliary/unjudged responses, failed/reentrant construction and response/stream reuse.
+  The independence case binds both consumers to the same issuer so it can detect an incorrectly global current slot.
+  These new cases still require their fresh built run and positive-controlled mutations.
   The parent collector initially mistakes a build receipt for a test receipt,
   and its restart output path collides with the second child's log.
   Both collector failures are retained; that collided log is excluded and a distinct fourth-run log is collected.
