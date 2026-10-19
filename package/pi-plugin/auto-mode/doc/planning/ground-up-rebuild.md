@@ -4,6 +4,7 @@
 
 Revised to the user's staged design on 2026-10-19.
 Implementation is stopped. Plan discussion does not authorize implementation.
+The [working understanding](rebuild-understanding.md) records meanings, evidence, corrections, and unresolved boundaries.
 The [HTML review](ground-up-rebuild-review.html) shows the active flow, concrete cases, and remaining questions.
 Open that review in Helium for the handoff.
 
@@ -131,6 +132,12 @@ Use the user's explicit grouping boundary:
   Prepare, review, and execute A before preparing and reviewing a later nonparallel call B.
   Do not combine sequential calls into an artificial multi-call group.
 
+A review group is shared assessment context, not an indivisible execution transaction.
+Individual calls can be approved, blocked, or held for a human decision independently.
+Keep combined effects and dependencies in the review: selective execution must not ignore interactions.
+In the tests-plus-prohibited-upload example, cleared tests remain permitted while the upload is blocked.
+The tests do not need a new proposal merely because they shared a batch with the upload.
+
 Include permitted argument mutations visible before review in each prepared group's snapshot.
 Parse every tool call deeply, retaining tool identity, named arguments, resources, and execution structure.
 For shell calls this includes control flow, redirects, expansions, literal values, and nested syntax.
@@ -143,17 +150,20 @@ Queue adjacency or a shared workflow does not merge distinct nonparallel calls.
 Future dynamically created calls are not pretended to exist already.
 Apply the same parallel-batch versus individual-call boundary to nested calls;
 qualify how the host exposes that boundary rather than treating an individual-call hook as proof of batch coverage.
-Approval, denial, manual feedback, and the review budget bind to this group, not the entire future workflow.
+The review budget and evidence snapshot bind to the group.
+Decisions and manual feedback also identify the affected calls or interaction within it.
 
 ### Stage 2: deterministic parsed checks
 
 Code can immediately return `approve`, `deny`, or `ask` when a named deterministic condition establishes it.
-Record the condition, parsed evidence, exact group, and outcome.
+Record the condition, parsed evidence, exact group, affected calls, and outcome.
 A parser-success flag or apparently read-only command is not by itself proof that the whole group is authorized.
 The deterministic approval catalogue is a review decision, distinct from selecting model questions.
-Each established verdict exits automatic review: approve releases the fresh group, deny blocks it,
-and ask presents the explained human decision. None invokes per-group Luna review.
-Only when deterministic checks cannot establish any of these verdicts does Stage 3 run.
+Each established verdict ends automatic review for its affected calls:
+approve permits those calls, deny blocks those calls, and ask presents the explained human decision.
+Do not use Luna to reconsider those resolved decisions.
+Other unresolved calls may still require Stage 3 within the same shared group budget.
+A completely deterministic group uses no per-group Luna requests.
 
 ### Stage 3: every effective rule becomes a Luna question
 
@@ -161,6 +171,9 @@ Send the complete prepared group, effective ruleset, and bounded visible context
 For the first pass, each rule is a question. Do not select a useful subset in code.
 Each question offers exactly `approve`, `deny`, `ask`, and `not-applicable`.
 Bind answer keys to rule occurrences, including built-ins, so missing or duplicate answers are detectable.
+The answer-to-call and interaction attribution mechanism remains a design decision.
+A scalar four-choice answer per rule does not itself identify which members should be blocked.
+Do not silently multiply questions per rule/call or change the four labels to fill that gap.
 Each assessment includes the instruction hierarchy and applicable explicit user exceptions.
 An unrelated rule can return `not-applicable`; it need not manufacture permission or uncertainty.
 
@@ -176,18 +189,20 @@ Use original provenance, not merely an API user role, to identify that request.
 
 Batch only as required by verified endpoint capacity, with the complete rule context accompanying each partition.
 All first-pass rules must receive coverage before automatic approval.
-Early terminal denial or required human review can end work without fabricating the remaining answers.
+Early terminal denial or required human review ends automatic review for the affected calls,
+without fabricating answers or ending review of unrelated unresolved members.
 There is no replacement whole-operation judge and no permission/prohibition taxonomy stage.
 
 ### Stage 4: aggregate, then refine only unresolved evidence
 
-Normalize Luna's answers into an attributed object and compute the group outcome in code.
+Normalize Luna's answers into an attributed object and compute affected-call outcomes in code,
+including any jointly applicable interaction constraints from the complete group.
 No averaging of unrelated rules, majority voting, or repeated sampling until approval.
 Admit the unique highest-probability choice in a valid response, with no minimum probability or margin.
 The user selected Q1 B. Separate confidence metadata does not add another admission threshold.
 Exact ties, invalid responses, or missing answers remain unresolved, not a fifth answer choice.
 
-Only while the group outcome remains unresolved, construct questions addressing the particular uncertainty.
+Only while a call or interaction remains unresolved, construct questions addressing that uncertainty.
 An established `ask` goes to the human; do not spend follow-ups reconsidering that verdict.
 An applicable authored rule can require asking even when all relevant facts are known.
 For example, decompose uncertainty about a test command’s reversibility into
@@ -202,7 +217,8 @@ the previous fixed-form selector is not a settled requirement.
 At most three sequential review batches and three parallel Luna calls per batch.
 HTTP retries consume those call slots.
 These are model-review limits, not a limit on the number of tool calls in a parallel tool-call group.
-Stop early once the outcome is established; unresolved after the permitted batches routes to `ask`.
+Stop reviewing a resolved call or interaction; unresolved scopes after the permitted batches route to `ask`.
+The group still shares one review allowance, not a fresh allowance for every member.
 Stage 0 is startup work, outside the per-group review budget.
 Shadow requests are accounted separately only if the proposed shadow policy is accepted.
 Conflicting follow-up answers require an explicit reconciliation contract;
@@ -236,13 +252,14 @@ the reviewed evidence does not establish that B is that workspace.
 Approve permits this report upload to B. Stop aborts the run without uploading.
 Confirm whether B is the intended destination; you may include a reason.”
 
-Offer Approve and Stop for that explained group, with an optional reason for either choice.
+Offer Approve and Stop for the explained affected calls, with an optional reason for either choice.
 Approve records `user approved tool call ...`; Stop records `user declined tool call ...`.
-Include the group identity and supplied reason in the durable session record and model-visible session context.
+Include group identity, affected call identities, and supplied reason in durable and model-visible session records.
 Skipping the optional reason preserves the selected decision.
 Stop retains the existing run-abort behavior; dismissal or unavailable UI withholds execution.
 An established denial does not turn into an Allow prompt.
-A manual approval applies to the displayed group after a freshness check, not future unrelated work.
+A manual approval applies only to the displayed affected calls after a freshness check, not unrelated siblings.
+The existing human Stop interaction aborts the run; that is distinct from automatic denial of an individual call.
 
 Pi 1.3.0 provides `ui.select` and `ui.input` in both TUI and RPC declarations.
 Use a choice followed by optional reason entry as the initial cross-mode proposal.
@@ -272,23 +289,21 @@ The former minimum-threshold proposal is rejected and removed from the active re
 For approve 0.40, deny 0.40, ask 0.10, not-applicable 0.10, the exact tie remains unresolved.
 Invalid distributions and missing answers remain unresolved too.
 Attribution, expected labels, finite normalized probabilities, and reported-choice consistency still require validation.
-Admission concerns one rule answer; it does not override other rules when code computes the group outcome.
+Admission concerns one rule answer; code still combines the rules governing each affected call or interaction.
 
 ### Q2 withdrawn: ask is a resolved verdict
 
 Some applicable `AGENTS.md` rules require the human to confirm or decide.
 An established ask follows those rules; it is not an ambiguous answer needing another model check.
-Deterministic approve, deny, and ask all terminate automatic review before per-group Luna calls.
-Luna runs only when deterministic checks establish no verdict.
-After Luna, code aggregates answers; an established group ask routes to the human without further batches.
-Only an unresolved group outcome enters follow-up review. Q1 B now settles numeric admission.
+Deterministic approve, deny, and ask terminate automatic review for their affected calls.
+Luna runs only for unresolved decisions; resolved siblings do not need reconsideration.
+After Luna, code aggregates answers; an established ask routes its affected calls to the human.
+Only unresolved call or interaction outcomes enter follow-up review. Q1 B settles numeric admission.
 The former proposal to spend remaining batches on every ask is withdrawn.
 
-Group reduction under review after Q1 B:
-any admitted deny blocks; otherwise an admitted substantive ask routes to the human;
-otherwise unresolved evidence refines; otherwise approve if all required checks approve or are not applicable.
-Approval needs positive evidence for the applicable effects and reversibility checks;
-all-not-applicable cannot manufacture that evidence. Exact request or package matching is not required.
+Q7 concerns reduction of answers governing the same call or interaction, not pooling unrelated calls' outcomes.
+Q8 separately asks whether complete all-not-applicable coverage permits the affected action.
+Neither question is answered by the selective-execution correction.
 A deny based on a superseded instruction is invalid evidence, not a lower-priority veto.
 Precedence must be reflected in contextual questions and tested with explicit exceptions.
 
@@ -320,10 +335,12 @@ each nonparallel call is a separate group.
 The former menu incorrectly imposed complete-group preparation on sequential A and B together.
 Its proposed timing change and rejection of ordinary result-dependent sequential calls are withdrawn.
 
-For parallel A and B, prepare both, review the complete group, and release both only after group approval.
+For parallel A and B, review their complete shared context and apply the resulting decision to each call.
+An approved A can execute while a denied B is blocked; shared review does not require identical outcomes.
 For nonparallel A then B, prepare/review A, execute A, then prepare/review B and execute B if approved.
 B's preparation may therefore use A's completed result in the nonparallel sequence.
-This does not authorize partial execution of a parallel group before its review completes.
+Selective outcomes do not discard cross-call interactions.
+Release timing when one member remains unresolved is a separate design detail, not an atomicity requirement.
 
 Installed Pi 1.3.0 source supplies separate dispatch paths in `dist/agent-loop.js`:
 `executeToolCalls` at line 366 selects the mode using configuration and tool execution metadata;
@@ -406,7 +423,7 @@ Do not recreate Pi tools, scheduling, argument preparation, sessions, or UI to r
 The preferred group boundary preserves individual nonparallel reviews and whole-batch parallel review.
 The accepted graceful-fallback rule permits reduced grouping coverage when public APIs cannot provide that boundary.
 
-The disposable public-plugin consumer passes 18 assertions, including deliberate limitation cases,
+The disposable public-plugin consumer passes 20 asserted cases, including deliberate limitation cases,
 through `mise run lint:types` and `mise run probe` in `~/temp/agent/pi-public-plugin-probe-20261019`.
 It uses extension factories, a scripted public provider registration, and inert tools, without copied Pi source.
 Public `prepareLoadout` exposes tool execution metadata; `tool_execution_start` can observe the persisted message.
@@ -414,7 +431,12 @@ Earlier parallel `tool_call` handlers return after collecting prepared inputs;
 the final sibling handler awaits shared review before execution.
 The probe demonstrates approved parallel execution, denial, review failure, per-tool sequential review,
 and skipped-callback accounting through `tool_execution_end`.
-The candidate denial uses public `ctx.abort()` and aborts the active run; that behavior is not an adopted choice.
+Two additional fixtures review both declared calls and return public per-ID `tool_call` blocking results:
+allow A/block B executes only A, and block A/allow B executes only B.
+Both produce separate successful/blocked results and continue without `ctx.abort()`.
+The earlier whole-run abort belongs to the last-sibling review prototype, not a Pi batch limitation.
+Prefer whole-context review with decisions keyed by `toolCallId` and enforced at each public call hook.
+The final attribution and prepared-input strategy still require design; do not copy Pi to supply them.
 Qualify preparation and mutations visible before review, global/per-tool sequential mode, and nested calls.
 The user accepts later extensions changing arguments after review as an unsupported case on 2026-10-19.
 Design as though those later mutations do not occur; do not add ordering guards, prompts, fallback triggers,
@@ -772,6 +794,8 @@ The shell parser and shared logger are the only proposed production library resp
 Qualify the public plugin events with a minimal actual Pi consumer before expanding the design.
 Cover parallel, sequential, nested, pre-review mutated inputs, denied, cancellation, and configured-extension behavior.
 Assert one review snapshot contains every member of a parallel batch and no member executes before its verdict.
+Verify mixed outcomes in both member orders: the allowed sibling executes, the denied sibling does not,
+and Pi continues without a global abort. Also exercise cross-call effects that forbid a combination.
 Assert nonparallel A and B produce distinct reviews in prepare/review/execute order,
 including B preparation that reads A's completed result.
 Do not infer grouping solely from queue length or assume a per-call interception covers parallel batches.
@@ -791,9 +815,9 @@ Exercise the five-to-ten-unit window, original human provenance, and approval/de
 For every ask-producing branch, assert an evidence-backed explanation, required human decision,
 any actual uncertainty, and action consequences in the TUI/RPC payload; a generic prompt must fail the fixture.
 An applicable rule requiring confirmation with all facts known must ask without inventing uncertainty.
-Deterministic approve, deny, and ask must each produce zero per-group Luna calls; count startup separately.
-A group without a deterministic verdict must reach every-rule Luna review.
-A model-resolved group ask must prompt without a follow-up batch intended to reverse that verdict.
+Fully deterministic groups must use zero per-group Luna calls; count startup separately.
+Resolved affected calls do not receive reconsideration, while unresolved siblings can still require Luna review.
+A model-resolved ask must prompt for its affected calls without a follow-up intended to reverse that verdict.
 Assert model-visible inclusion and exclusion using actual serialized requests.
 
 ### Connect primary review and shadow

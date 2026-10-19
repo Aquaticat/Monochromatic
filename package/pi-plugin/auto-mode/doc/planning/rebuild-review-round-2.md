@@ -12,16 +12,18 @@ retain all freshly parsed rules for ordinary review; do not ask solely because r
 The prior parser probe counted 213 authored rules with a 214-rule positive control.
 That measurement excludes future built-ins and other instruction sources; final request capacity is unmeasured.
 
-The public-only disposable consumer passed 18 assertions, including deliberate limitation cases.
+The public-only disposable consumer passed 20 assertions, including deliberate limitation cases.
 Its qualified configuration supports prepared parallel review and per-tool sequential reviews.
+Allow-A/block-B and block-A/allow-B fixtures execute only the permitted member and continue without a run abort.
+Shared review context and budget do not require identical outcomes for every call.
 This is finite evidence, not a claim that every Pi host configuration is covered.
 
 ## Questions for this round
 
-### Q7: How should different admitted rule answers combine?
+### Q7: For the same call, how should Deny and Ask combine?
 
-This concerns combining individual rule answers before a group verdict exists.
-An established group verdict remains terminal.
+This concerns rules governing the same call or interaction.
+Shared batch review does not require the calls to share an execution outcome.
 
 A pending parallel batch contains two calls:
 run the logger package's tests using disposable local fixtures,
@@ -30,35 +32,40 @@ to a public file-sharing service.
 Neither call has started.
 For this example, assume these project rules and admitted Luna answers:
 
-- “Run relevant package tests.” returns Approve because the batch includes the relevant test run.
-- “Never publish raw customer fixtures.” returns Deny because the upload exposes the unredacted fixture publicly.
-- “Ask before any public upload.” returns Ask because this rule requires a human decision for that upload.
+- Test call: “Run relevant package tests.” returns Approve.
+  Assume its other applicable checks also clear; the tests remain permitted.
+- Upload call: “Never publish raw customer fixtures.” returns Deny because it exposes the unredacted fixture publicly.
+- Upload call: “Ask before any public upload.” returns Ask.
+  This second rule also applies to the upload, not the local tests.
 
-These answers can all be correct:
-the tests are useful, the upload is prohibited, and another rule also requires asking.
-The question is what code does with this combination.
+The test answer is not a vote on the upload.
+Tests are independently cleared under either option; Q7 concerns only the upload's Deny and Ask answers.
+This example supplies the affected-call attribution explicitly.
+Its encoding in actual rule answers remains to be designed.
 
 #### A: Deny takes precedence (recommended)
 
-In this example, deny the entire pending batch.
-Neither the tests nor the upload executes as part of this batch.
+In this example, block the upload only.
+The cleared tests remain permitted in the same batch and need no new proposal.
 Do not present Approve for the prohibited upload.
-The agent can propose the tests alone as a new group.
 
-General rule: Deny takes precedence over Ask, Ask over unresolved answers,
+For answers governing the same affected call or interaction:
+Deny takes precedence over Ask, Ask over unresolved answers,
 and unresolved answers prevent approval.
-Approve and not-applicable are the remaining clear answers.
+Do not pool unrelated calls' answers.
 
-- Pro: Useful tests cannot cancel a separate prohibition on exposing customer data.
-- Con: If the prohibition was misinterpreted, this reducer still blocks instead of seeking another interpretation.
+- Pro: The upload's confirmation rule cannot override its separate prohibition.
+  Independent tests keep their own outcome.
+- Con: If the prohibition was misinterpreted, this reducer still blocks that upload instead of reinterpreting it.
 
 #### B: Refine mixed Deny outcomes first
 
-In this example, keep both calls pending and spend another review batch reconciling the mixed answers,
-even though each has a concrete basis.
-If review remains unresolved when the budget ends, ask the human.
+In this example, keep only the upload's decision unresolved and spend another review batch
+reconciling its Deny and Ask answers.
+The tests remain permitted; their decision is not reopened.
+If the upload remains unresolved at the budget limit, ask about that upload.
 
-General rule: Deny combined with Approve, Ask, or unresolved answers remains unresolved.
+For the same affected call or interaction, Deny combined with Approve, Ask, or unresolved answers remains unresolved.
 Deny with only other Deny or not-applicable answers can terminate.
 Selecting B opens a separate conflict-reconciliation decision after this round.
 
@@ -66,8 +73,10 @@ Selecting B opens a separate conflict-reconciliation decision after this round.
 - Con: These rules do not actually contradict each other.
   Extra review delays a valid denial and may escalate an already clear case.
 
-Ranking: A > B, because permission to run tests does not cancel the separate restriction on publishing customer data.
+Ranking: A > B, because the upload prohibition is not permission waiting for confirmation.
 B trades immediate reduction for another interpretation attempt.
+Neither option requires blocking the independent tests.
+Release timing while another member remains unresolved is a separate design detail.
 
 ### Q8: What if every effective rule returns not-applicable?
 
@@ -101,7 +110,7 @@ resolved evidence. B buys a positive-permission gate at the cost of additional i
 This question concerns an individually unresolved rule under either Q7 choice, such as a tied distribution.
 It does not resolve conflicts among already admitted rule answers; Q7 B opens that separate later decision.
 Follow-ups must ask something new and focused, preserve all evidence, and stay within three review batches.
-No established group Ask or Deny is reconsidered. Question generation details follow this choice.
+No established affected-call Ask or Deny is reconsidered. Question generation details follow this choice.
 
 Example: The rule says tests may modify only disposable fixtures and must not transfer data externally. Its first
 answer ties. Useful follow-ups concern fixture confinement and external transfer.
@@ -128,7 +137,8 @@ silently change the rule.
 #### C: Every follow-up decides the whole rule
 
 The new question examines a concrete distinction, such as the actual fixture target, but still asks for this rule's
-disposition for the entire group. Its answer updates that unresolved rule assessment, with previous evidence
+disposition for affected calls or interactions, with the entire group in context.
+Its answer updates that unresolved rule assessment, with previous evidence
 retained.
 
 - Pro: Avoids child-to-parent inference and leaves another batch available for a different focused whole-rule
@@ -253,6 +263,9 @@ continuous recent evidence at the explicit cost of losing older records.
 ## Dependent work after the answers
 
 - Q7 and Q8 determine the reducer truth table and when a partial response set can establish a terminal verdict.
+- Rule answers still need explicit attribution to affected call identities and interactions.
+  A scalar four-choice answer per rule alone does not establish that attribution.
+  Do not silently change the question schema or multiply questions per rule/call.
 - Q7 B additionally opens conflict reconciliation among admitted rule answers; Q9 concerns individual-rule uncertainty.
 - Q9 determines focused-question generation, evidence bindings, and whether reconciliation reserves a batch.
 - Q10 determines the feasible shadow concurrency and preemption policies; do not assume an extra network slot.
@@ -267,7 +280,8 @@ continuous recent evidence at the explicit cost of losing older records.
 
 The disposable consumer is `~/temp/agent/pi-public-plugin-probe-20261019/probe.mts`;
 `results.json` records each assertion, and `mise run lint:types` plus `mise run probe` pass.
-Its denial candidate aborts the active run; that observed mechanism is not an adopted product decision.
+An earlier last-sibling review prototype aborted the active run on denial.
+That is a limitation of the chosen prototype, not Pi: the selective-blocking fixtures do not abort the run.
 The [active plan](ground-up-rebuild.md) retains the stages and source inventory.
 Use the [verified visual review](ground-up-rebuild-review.html#frontier) to compare and prepare one response.
 

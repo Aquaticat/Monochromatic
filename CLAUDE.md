@@ -137,17 +137,19 @@ QWD:
  an unwritten queue item is lost at compaction.
 
 DCK:
- Long sessions:
- after each correction,
- decision,
- answer,
- verification,
- and pre-compaction,
+ After corrections,
+ decisions,
+ answers,
+ checks,
+ and before compaction,
  update canonical docs:
+ meanings,
  requirements,
  evidence,
- rejected ideas,
- open questions,
+ assumptions,
+ limits,
+ rejections,
+ unknowns,
  commits,
  next action.
 
@@ -361,9 +363,14 @@ QSP:
  in this order" must be reachable.
 
 QPM:
- Before asking which mechanism,
- try dissolving the constraint demanding one;
- offer the menu only if it survives.
+ Before options,
+ research and record relied-on concepts,
+ even familiar terms;
+ distinguish facts,
+ assumptions,
+ and limits.
+ Try removing constraints first;
+ see `doc/agent/understanding.md`.
 
 ### Present options with pros, cons, and a personal ranking
 
@@ -399,7 +406,11 @@ YKZ:
  design each until disqualifying problems surface.
 
 ODM:
- Option examples must demonstrate every concept the question asks the user to compare.
+ Option examples use concrete inputs,
+ relevant constraints,
+ and each option's visible result;
+ abstract labels aren't examples.
+ Demonstrate every concept being compared.
 
 ### Exhaust evidence layers when assessing system usage
 

@@ -3,6 +3,24 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
+The user requires thorough research and durable records of all relied-on understandings, including familiar terms.
+`package/pi-plugin/auto-mode/doc/planning/rebuild-understanding.md` is the current semantic/evidence record.
+`doc/agent/understanding.md` defines the standing practice; `AGENTS.md` tightens existing DCK, QPM, and ODM rules.
+Managed `CLAUDE.md` is regenerated in `4bb5e492ee`.
+Independent source and semantic review confirms the record; all 12 diagrams pass geometry and keyboard checks
+in both themes, and all 22 response options pass.
+The Markdown renderer checked all 13 affected documents at `auto-mode-rebuild-plan-render-Rik6O5`.
+Two additional stale example captions were corrected: all-not-applicable approval remains open,
+and one resolved Ask does not end sibling review.
+The latest correction separates whole-batch assessment from per-call execution outcomes.
+Do not enforce atomic batch execution: cleared tests can proceed while a prohibited upload is blocked.
+Public-only probes now pass 20 asserted cases, including allow-A/block-B and block-A/allow-B without run abort.
+The prior global abort was our last-sibling review prototype's behavior, not a Pi limitation.
+Shared context, every-rule coverage, interaction review, and one group budget remain.
+Terminality applies to resolved affected calls; unresolved siblings can still need review.
+The four-choice-per-rule attribution to call IDs/interactions is not yet designed; do not invent a schema silently.
+Q7 must compare conflicting rules for the upload only, leaving independently cleared tests permitted under either option.
+All affected diagrams and manual-scope text now distinguish member outcomes from shared review.
 Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
 The next review round is Q7 to Q13 in
 `package/pi-plugin/auto-mode/doc/planning/rebuild-review-round-2.md`
@@ -28,11 +46,14 @@ The user rejects “Rule A returns Approve; rule B returns Deny” as an example
 Replace that abstract restatement before continuing the round.
 The new example has a pending parallel test run plus publication of an unredacted customer fixture,
 explicit illustrative project rules, each admitted answer's concrete basis, and each option's execution result.
-Q7 A denies the whole group; tests alone may be proposed as a new group.
-Q7 B keeps both calls pending for interpretation review; exhausted unresolved review reaches the human.
+The initial concrete example still incorrectly made the whole batch atomic.
+The subsequent user correction supersedes those outcomes:
+Q7 A blocks only the upload; Q7 B keeps only its decision unresolved.
+Both preserve permission for independently cleared tests in the same batch.
 Neither option has been accepted. Q7 to Q13 remain open; do not infer an answer from this correction.
 Proposed `ODM` tightening: option examples name pending actions, relevant rules, admitted answers,
-and each option's visible result; abstract labels alone are not examples. `AGENTS.md` is unchanged.
+and each option's visible result; abstract labels alone are not examples.
+That proposal was later implemented in `84f13f569d` after the user's standing research-and-record instruction.
 Commit `4dd7fd96e7` supplies the concrete example.
 The independent reviewer confirms that HTML and Markdown agree and both complete Q7 captures are readable.
 All three Q7 response options pass; light/dark rendering and 390-pixel layout pass without browser errors.
