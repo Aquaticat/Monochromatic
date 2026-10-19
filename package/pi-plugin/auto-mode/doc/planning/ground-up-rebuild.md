@@ -4,6 +4,7 @@
 
 Revised to the user's staged design on 2026-10-19.
 Implementation is stopped. Plan discussion does not authorize implementation.
+The [working understanding](rebuild-understanding.md) records meanings, evidence, corrections, and unresolved boundaries.
 The [HTML review](ground-up-rebuild-review.html) shows the active flow, concrete cases, and remaining questions.
 Open that review in Helium for the handoff.
 

@@ -9383,3 +9383,83 @@ The first filing condition, an upstream defect, is not met.
 Upstream fixability, supported use case, contribution policy, willingness, and patch prototyping
 do not change that conclusion and were not investigated for a proposed upstream report.
 The existing repository issue is the incident record; no duplicate or external comment was sent.
+
+## Pi 1.3.0 selective blocking misunderstood as atomic batch execution, 2026-10-19
+
+### Symptom and corrected cause
+
+The rebuild proposal incorrectly required rejecting every member of a parallel batch
+when one member was denied.
+This was an agent design error, not a Pi diagnostic or runtime failure.
+The earlier prototype's whole-run abort was mistaken for a host constraint.
+
+Pi's installed public `ToolCallEventResult` at
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/types.d.ts:1089`
+offers per-event blocking:
+
+```typescript
+// Pi 1.3.0 public result, excerpt; the separate terminate hint is omitted.
+export interface ToolCallEventResult {
+    block?: boolean;
+    reason?: string;
+}
+```
+
+The same installed package's `dist/core/agent-session.js:333` forwards the current call identity:
+
+```javascript
+// Pi 1.3.0: dist/core/agent-session.js:333
+return await runner.emitToolCall({
+    type: "tool_call",
+    toolName: toolCall.name,
+    toolCallId: toolCall.id,
+    ...(parentToolCallId ? { parentToolCallId } : {}),
+    input: args,
+});
+```
+
+Its `dist/core/extensions/runner.js:965` returns the blocking result for that event:
+
+```javascript
+// Pi 1.3.0: dist/core/extensions/runner.js:965
+if (result.block) {
+    return result;
+}
+```
+
+### Consumer verification and limits
+
+Run `mise run lint:types` and `mise run probe` in
+`~/temp/agent/pi-public-plugin-probe-20261019/`.
+The disposable public-only consumer uses a scripted provider and inert tools.
+Its `results.json` records 20 asserted cases;
+`results-18-cases.json` preserves the previous results.
+
+The working mixed-outcome catalog contains `member-allow-a-block-b` and `member-block-a-allow-b`.
+Both record the whole pending batch, return a blocking result for the denied ID,
+execute only the allowed sibling, and reach the scripted final response without `ctx.abort()`.
+The reversed order is the control for accidentally granting only the first member.
+
+The rejected design catalog contains the assertion that a shared review group must execute atomically,
+and the requirement to repropose allowed siblings as a new group.
+Neither follows from the public contract or these consumer traces.
+The previous prototype's abort after already returning approval to earlier hooks cannot establish that restriction.
+
+No upstream workaround is required for selective pre-execution blocking.
+The consumer must preserve call identity in its own decisions while retaining shared batch context.
+The evidence does not establish arbitrary cancellation of already-running calls,
+the complete replacement plugin's prepared-input capture,
+or a chosen rule-answer attribution mechanism.
+Those limits are recorded in the [working understanding](../../package/pi-plugin/auto-mode/doc/planning/rebuild-understanding.md).
+
+### Upstream filing decision
+
+1.  Upstream fault: none demonstrated; the incorrect atomic-batch assumption was ours.
+2.  Fixability: supported per-event blocking already satisfies the exercised case.
+3.  Supported use: the public event result explicitly exposes blocking.
+4.  Contribution policy: not investigated because no external contribution is proposed.
+5.  Upstream movement: no defect claim or duplicate-tracker claim is made.
+6.  Prototype: the owned public consumer demonstrates both mixed-outcome orders;
+    no Pi source was modified and no upstream patch is required.
+
+There is nothing to file upstream for this correction.
