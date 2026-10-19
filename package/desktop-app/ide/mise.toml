@@ -382,61 +382,6 @@ run = """
 runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'clippy', '--release', '--bin', 'monochromatic-ide', '--', '--deny', 'warnings'])
 """
 
-[tasks."lint:closures"]
-# The application binary embeds target/debug/runtime and target/crate-licenses.json, so its build needs both.
-depends = ["runtime", "notices"]
-description = "Run the avoidable_closure Dylint lint (package/linter/monochromatic-lint-closure) over every IDE target on the host with the shared nightly; fetches with the stable cargo and builds offline because an OpenSnitch rule on this host rejects the network of the shared nightly cargo path (doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md)"
-shell = "node --input-type=module-typescript -e"
-run = '''
-const { execFileSync, spawnSync } = await import('node:child_process')
-const { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } = await import('node:fs')
-const { tmpdir } = await import('node:os')
-const { join, resolve } = await import('node:path')
-const ide = process.cwd()
-const lintPackage = resolve(ide, '../../linter/monochromatic-lint-closure')
-if (!existsSync(join(ide, 'target', 'debug', 'runtime', 'manifest.json')) || !existsSync(join(ide, 'target', 'crate-licenses.json'))) {
-  throw new Error('The runtime and notices tasks did not leave target/debug/runtime and target/crate-licenses.json; run them first.')
-}
-// An OpenSnitch rule on this host rejects the network of the shared nightly cargo path, so it cannot connect to crates.io
-// (doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md).
-// The stable cargo fills the registry and git caches of the lint library and of the IDE, and every cargo below runs offline.
-for (const directory of [lintPackage, ide]) execFileSync('cargo', ['+stable', 'fetch', '--locked'], { cwd: directory, stdio: 'inherit' })
-// This build directory also receives the intermediates of the lint library, whose cargo reads the same variable.
-// The shared cargo config would otherwise place them under a path hashed from the checkout, which build.rs cannot find:
-// it climbs three levels from OUT_DIR, which this nightly lays out as <build dir>/debug/build/<package>/<hash>/out,
-// and reads <build dir>/debug/build/runtime and <build dir>/debug/crate-licenses.json. The container tasks write both
-// under target/, so the build directory gets links to them instead of copies.
-const buildDirectory = join(ide, 'target', 'dylint')
-mkdirSync(join(buildDirectory, 'debug', 'build'), { recursive: true })
-const links = [
-  [join(buildDirectory, 'debug', 'build', 'runtime'), join('..', '..', '..', 'debug', 'runtime')],
-  [join(buildDirectory, 'debug', 'crate-licenses.json'), join('..', '..', 'crate-licenses.json')],
-]
-for (const [link, destination] of links) {
-  rmSync(link, { force: true })
-  symlinkSync(destination, link)
-}
-const env = { ...process.env, CARGO_BUILD_JOBS: '4', CARGO_NET_OFFLINE: 'true', CARGO_BUILD_BUILD_DIR: buildDirectory }
-execFileSync('cargo', ['build'], { cwd: lintPackage, env, stdio: 'inherit' })
-// cargo dylint finds a library only by the file name lib<name>@<toolchain>.so, and the build directory of the shared
-// cargo config keeps dylint-link's copy of that name away from the library's target/, so stage a copy under the
-// expected name, as the lint package's own run task does.
-const host = execFileSync('rustc', ['--version', '--verbose'], { encoding: 'utf8' }).split(String.fromCharCode(10)).find(line => line.startsWith('host: ')).slice('host: '.length)
-const staged = join(mkdtempSync(join(tmpdir(), 'avoidable-closure-')), 'libmonochromatic_lint_closure@' + process.env.RUSTUP_TOOLCHAIN + '-' + host + '.so')
-copyFileSync(join(lintPackage, 'target', 'debug', 'libmonochromatic_lint_closure.so'), staged)
-// --all-targets reaches the unit tests, the integration tests, and the src/bin helpers; --keep-going lists every
-// target's reports in one run (a target that depends on a failing library, such as an integration test, still waits for
-// it). -D turns the lint's reports and unfulfilled suppression expectations into errors, so the task fails on either;
-// DYLINT_RUSTFLAGS='-W avoidable_closure' in the environment lists every report as a warning instead.
-const result = spawnSync('cargo', ['dylint', '--lib-path', staged, '--manifest-path', join(ide, 'Cargo.toml'), '--', '--all-targets', '--keep-going'], {
-  stdio: 'inherit',
-  env: { ...env, DYLINT_RUSTFLAGS: process.env.DYLINT_RUSTFLAGS ?? '-D avoidable_closure -D unfulfilled_lint_expectations' },
-})
-rmSync(resolve(staged, '..'), { recursive: true, force: true })
-if (result.error) throw result.error
-process.exitCode = result.status ?? 1
-'''
-
 [tasks."inspect:search-runtime"]
 description = "Probe the actual ripgrep runtime available in the bounded IDE environment"
 shell = "node --input-type=module-typescript -e"
@@ -703,8 +648,11 @@ runCargo(['fmt', '--check'])
 """
 
 [tasks.lint]
-# lint:closures runs last: it is the only gate that needs the host nightly toolchain with rustc-dev and cargo-dylint.
-run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rustfmt", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint", "mise run //package/desktop-app/ide:lint:closures"]
+# The avoidable_closure check is part of monochromatic-lint (the third command): the linter runs the Dylint library over
+# this package at error severity (monochromatic-lint.config.jsonc, block closure-check-ide). It needs the runtime and
+# notices artifacts that lint:clippy, which runs first, prepares; the host nightly with rustc-dev and cargo-dylint
+# are checked by the linter, which skips the package with a note when one is missing.
+run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rustfmt", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
 
 [tasks."format:rust"]
 description = "Format application-owned Rust sources"

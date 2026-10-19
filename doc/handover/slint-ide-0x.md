@@ -970,14 +970,20 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
-  - Closure check everywhere (owner requirement of 2026-10-19, recorded in `doc/decision/rust-closure-lint-dylint.md`):
-    `avoidable_closure` must run by default for every Rust package from the linter itself, with no separate
-    `lint:closures` task. Only the IDE has a check today, because the syntax-only rule left `monochromatic-lint` on
-    2026-10-18. An agent measures the feasibility per package and writes `doc/planning/closure-lint-everywhere.md`
-    on branch `docs/closure-lint-everywhere` (worktree `.claude/worktrees/closure-everywhere`); no source is
-    changed yet. Answers of 2026-10-19: the linter runs `cargo dylint` per package (mechanism A), warnings first, tests,
-    fuzz and bench exempt, a package missing its prerequisites is skipped with a note; the implementation runs as an
-    agent on `feat/linter-closure-everywhere`. The owner also chose to leave the OpenSnitch pop-up default (reject, forever, 30 s) as it is.
+  - Closure check everywhere (owner requirement of 2026-10-19, recorded in `doc/decision/rust-closure-lint-dylint.md`,
+    proposal in `doc/planning/closure-lint-everywhere.md`): done. `monochromatic-lint` runs `cargo dylint` per Rust
+    package as the rule `rust/avoidable-closure` (mechanism A), warnings first, tests, fuzz and bench exempt, a package
+    missing its prerequisites skipped with a note, the IDE held at error severity, and the IDE `lint:closures` task
+    removed. Released on 2026-10-19 as `monochromatic-lint` 0.3.0 at the owner's request (dry run of the
+    `cargo-publish` workflow first, then the push of the bump published the crate and the GitHub release with eight
+    archives; crates.io lists 0.3.0), installed with `mise upgrade cargo:monochromatic-lint` (`mise.lock`, commit
+    `bca9a2856e`), and the config activated in `e2a0653130`. The coordinator reran the container suite (592 passed,
+    2 skipped) and the closure package tests (23 passed), and ran the installed 0.3.0 over the whole repository:
+    1692 warnings in 15 packages, none in the IDE, no `core/` failures; the run exits 1 because of Markdown
+    `semantic-line-breaks` errors that were already there. Not proven: the mutation proofs were run by the agent on
+    its debug build and not repeated; the GTK and Qt prerequisite kinds ran only their happy path; the generated-code
+    skip of the lint is shown by its fixture and not by a removed-guard run. The owner also chose to leave the
+    OpenSnitch pop-up default (reject, forever, 30 s) as it is.
   - Minimap box fill removed (owner request of 2026-10-19): the viewport box is an outline without a fill
     (`ui/minimap.slint`); hover and drag change its border width and opacity only. The native test is now
     `the_box_is_an_outline_whose_border_changes_under_the_pointer`. Checked: `lint:slint`, `lint:rustfmt`,
