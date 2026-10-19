@@ -122,33 +122,48 @@ Partial.
 
 ### 5. Cache admission
 
-Not implemented.
+Partial.
 
-- Main-only write policy and the disabled pnpm and target-archive formats are recorded.
-- Gradle command-boundary admission and later format controls are not implemented.
-- No cache admission record or invalidation control exists yet.
+- [The cache admission record](depot-cache-admission.md) inventories the admitted cargo,
+  CodeQL and MSYS2 families,
+  the disabled pnpm store and target archive,
+  and the Gradle restore-only state.
+- The music player release workflow now exposes a separate `save_gradle_cache` flag and sets it
+  false,
+  so Gradle writes are disabled until its controls pass.
+- Cache-off,
+  invalidation and stale-output evidence for Gradle is still missing.
+- The existing cargo and MSYS2 families rely on the 2026-10-15 measurements,
+  not a fresh rerun.
 
 ### 6. Trust and identity controls
 
-Not implemented.
+Done for configuration verification.
 
-- Fork approval,
+- [The trust and identity record](depot-trust-and-identity-controls.md) verifies fork approval,
   Dependabot exclusion,
   publishing-host binding,
-  secret boundary and cache-isolation
-  controls are recorded as requirements but not implemented or verified in this rollout.
-- Publishing remains GitHub-hosted by plan;
-  no workflow change has been made.
+  the secret boundary and cache isolation.
+- Fork approval is `first_time_contributors`.
+  Fork and Dependabot events cannot reach a Depot runner because the Depot workflows are
+  dispatch-only and no PR-triggered workflow requests a Depot label.
+- Publishing stays GitHub-hosted.
+- Depot CI has no secrets or variables.
+- Residual:
+  fork approval is not `all_external`,
+  and the checks are configuration inspection rather than a live fork event.
 
 ### 7. Native evidence closure
 
-Mostly done.
+Done.
 
 - Push and pull-request registration proven;
   duplicate execution observed.
 - Check names observed as `<workflow> / <job>` from app `219785`.
-- Paused-session remains unqualified and is excluded from the weekly matrix.
-- Evidence is in `doc/audit/`.
+- [The qualification register](../audit/depot-native-qualification-register-2026-10-19.md) states
+  exactly what is qualified and what is not.
+- Paused-session is not qualified and is excluded from the weekly matrix.
+  The decision is not to rerun it in this rollout.
 
 ### 8. Measurement and relative targets
 
