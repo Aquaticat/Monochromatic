@@ -17,7 +17,9 @@ unresolved-rule count does not measure the supply of useful follow-ups.
 This document records settled requirements separately from proposed semantics.
 The user selected Q1 B and Q4 A: admit any unique leading probability,
 and retain the latest genuine human request separately from the capped historical context.
-The next review frontier concerns remaining aggregation, failure, and observation behavior.
+The [next review round](rebuild-review-round-2.md) contains Q7 to Q13:
+aggregation, approval sufficiency, follow-up evidence, shadow accounting and delivery, and evidence retention.
+The visual review presents these options together; their dependent engineering choices follow the answers.
 Q2 is withdrawn: an established `ask` is a resolved outcome requiring the human, not model uncertainty.
 Q6 is withdrawn: a parallel tool-call batch is one group; each nonparallel call is its own group.
 The user corrected the approval baseline: assess reversibility, not exact requested-package matching.
@@ -100,6 +102,9 @@ Retain original rule text, source, heading context, and instruction precedence.
 Materialize the effective ruleset and add general-agent built-in rules.
 The user expects approximately 100 effective authored rules; do not pad, truncate, or select to that number.
 Every Pi start performs this classification, even when cached parsing is reusable.
+If classification fails but fresh parsing and source capture succeed, retain all parsed rules for group review.
+This follows the accepted least-degrading fallback rule; failed filtering alone does not require human approval.
+Final request capacity still needs measurement with all effective sources and built-ins.
 
 The removed implementation contained relevance classification, retained in the reference worktree:
 `native/contract/integration/native-host/startup-relevance.mjs`
@@ -400,13 +405,15 @@ Do not recreate Pi tools, scheduling, argument preparation, sessions, or UI to r
 The preferred group boundary preserves individual nonparallel reviews and whole-batch parallel review.
 The accepted graceful-fallback rule permits reduced grouping coverage when public APIs cannot provide that boundary.
 
-Installed Pi 1.3.0 awaits the completed assistant `message_end` event before tool execution
-(`pi-agent-core/dist/agent-loop.js:319` and `:156`).
-The public plugin can observe the model-issued call list there and enforce a cached verdict through
-`tool_call` blocking results (`pi-coding-agent/dist/core/extensions/runner.js:958`).
-This is source evidence for a plugin candidate, not a qualified implementation.
-Argument preparation and schema validation occur after `message_end`;
-other extensions may also change messages or inputs.
+The disposable public-plugin consumer passes 18 assertions, including deliberate limitation cases,
+through `mise run lint:types` and `mise run probe` in `~/temp/agent/pi-public-plugin-probe-20261019`.
+It uses extension factories, a scripted public provider registration, and inert tools, without copied Pi source.
+Public `prepareLoadout` exposes tool execution metadata; `tool_execution_start` can observe the persisted message.
+Earlier parallel `tool_call` handlers return after collecting prepared inputs;
+the final sibling handler awaits shared review before execution.
+The probe demonstrates approved parallel execution, denial, review failure, per-tool sequential review,
+and skipped-callback accounting through `tool_execution_end`.
+The candidate denial uses public `ctx.abort()` and aborts the active run; that behavior is not an adopted choice.
 Qualify preparation and mutations visible before review, global/per-tool sequential mode, and nested calls.
 The user accepts later extensions changing arguments after review as an unsupported case on 2026-10-19.
 Design as though those later mutations do not occur; do not add ordering guards, prompts, fallback triggers,
@@ -663,7 +670,7 @@ it did not establish a public complete-child-group boundary.
 
 The original inventory incorrectly named `executeNestedToolCall` as a core function;
 the 2026-10-19 source review corrects that name and location.
-The replacement integration is not implemented or qualified.
+The replacement plugin is not implemented; disposable public-only probes establish finite integration behavior.
 This inventory grants no permission to couple the plugin to private functions.
 Real public-plugin tests must establish the required behavior without source substitution.
 Unsupported cases must exercise the documented graceful fallback instead of requiring private integration.

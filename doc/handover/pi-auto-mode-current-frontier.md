@@ -4,7 +4,14 @@
 
 Plan review is active and implementation remains stopped.
 Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
-Continue the next unlocked review round; implementation remains stopped.
+The next review round is Q7 to Q13 in
+`package/pi-plugin/auto-mode/doc/planning/rebuild-review-round-2.md`
+and the visual review's `#frontier` section.
+It covers reduction, all-not-applicable approval, follow-up reconciliation, shadow budget and durability,
+retention mode, and storage-pressure behavior.
+Question generation and shadow scheduling depend on this round's answers; built-in contents remain deferred.
+The user explicitly challenged stopping after corrections. Finish verification, open Helium, and request this round.
+Do not stop at another status-only response. Implementation remains stopped.
 
 ### Later extension mutations accepted as a limitation, 2026-10-19
 
