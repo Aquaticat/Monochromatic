@@ -53,7 +53,8 @@ Other labels, by first wake:
 
 ## Deterministic signals at the stop
 
-Crude transcript tracking of `TaskCreate`, `TaskUpdate` and `TodoWrite`; the real list state is not stored in transcripts.
+Crude transcript tracking of `TaskCreate`, `TaskUpdate` and `TodoWrite`;
+the real list state is not stored in transcripts.
 
 - A task list had been used by 88% of stops, and had pending items at 81%.
 - Pending items by label: 93% of background waits, 94% of announces, 78% of pauses, 68% of open-work stops,
@@ -113,8 +114,8 @@ challenge each unchanged evidence state at most once; budget releases are unreso
 
 Ranking: standing condition with evidence > keep as is plus audit > ledger > detector.
 
-- Use `/goal` today in long sessions, with a condition such as an empty queue in the handover or a user-only blocker asked
-   through `AskUserQuestion`. No build. Limits: typed per session, a small model reading only what the conversation
+- Use `/goal` today in long sessions, with a condition such as an empty queue in the handover
+   or a user-only blocker asked through `AskUserQuestion`. No build. Limits: typed per session, a small model reading only what the conversation
    surfaced, and it cannot see a handover file the agent did not print.
 - Keep the six-label check, add nothing, and measure first. It is right about background waits and has the cheapest
    failure mode. Its precision on the 75 announce and open-work stops is unmeasured.
@@ -138,7 +139,8 @@ and the investment is local state tracking or a local detector.
 
 - One user's repository sessions, 5.5-series models only; the label accuracy of Luna is itself unmeasured.
 - Wake classification uses the first later event; a notification may belong to a different task than the wait.
-- Hook inputs (`background_tasks`, `session_crons`) are not stored in transcripts, so task-level proxies are approximate.
+- Hook inputs (`background_tasks`, `session_crons`) are not stored in transcripts,
+   so task-level proxies are approximate.
 - The installed `pi` command (the auto-mode native host) failed on 2026-10-19 with `Cannot find package 'cross-spawn'`
    from its active release directory under `package/pi-plugin/auto-mode/dist`; a stock `pi` from a sibling package's
    `node_modules/.bin` was used for the second-model pass. Not investigated: that package has concurrent changes.
