@@ -42,6 +42,7 @@ const endpoint = 'https://api.llmgateway.io/v1/decisions';
 const limits = {
   attempts: 9,
   successfulStatus: 200,
+  unavailableStatus: 503,
 } as const;
 /**
  Transport logs contain lifecycle information only.
@@ -168,7 +169,7 @@ export function createAssessmentHttpSender({
    
    @returns original complete HTTP response
    
-   @throws AssessmentRequestFailure for a fetch TypeError while the caller remains active
+   @throws AssessmentRequestFailure for active fetch TypeError or temporary HTTP 503 response
    
    @throws original error for cancellation or a nontransport failure
    */
@@ -265,11 +266,15 @@ export function createAssessmentHttpSender({
       },);
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
-      if (response.status !== limits.successfulStatus)
-        throw new AssessmentTransportError(assessmentHttpFailure({
+    if (response.status !== limits.successfulStatus) {
+      const message = assessmentHttpFailure({
           raw,
           status: response.status,
-        },),);
+      },);
+      if (response.status === limits.unavailableStatus)
+        throw new AssessmentRequestFailure(message);
+      throw new AssessmentTransportError(message);
+    }
       signal.throwIfAborted();
       sl.debug('original assessment HTTP response completed',);
       return raw;

@@ -15,7 +15,7 @@ export class AssessmentTransportError extends Error {
 }
 
 /**
- Only an actual failed HTTP invocation can produce this transport category.
+ Failed HTTP invocations and temporary HTTP 503 responses permit the original bounded retry.
  */
 export class AssessmentRequestFailure extends AssessmentTransportError {
   /**

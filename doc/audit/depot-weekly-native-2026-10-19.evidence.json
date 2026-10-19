@@ -106,5 +106,18 @@
     "categoriesMatchFirst": true,
     "duplicateExecution": "absent",
     "result": "The clean re-dispatch reproduced the same category outcomes and produced one run."
+  },
+  "retryAfterFixes": {
+    "runId": "xv1dwhq3h4",
+    "attemptId": "w09xgdn5s3",
+    "startedAt": "2026-10-19T15:00:17Z",
+    "finishedAt": "2026-10-19T15:15:53Z",
+    "durationSeconds": 936,
+    "artifact": {
+      "id": "01a154bb-be08-71c9-8c83-af8e80ba36e0",
+      "name": "weekly-native-evidence",
+      "bytes": 652
+    },
+    "changed": "vmsync path resolved to the mvm CLI, but the VM step then failed because qemu-img was absent; BuildKit still failed on the rootless Podman namespace with PODMAN_USERNS=host"
   }
 }

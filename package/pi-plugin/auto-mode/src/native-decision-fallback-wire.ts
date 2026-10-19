@@ -253,7 +253,9 @@ export function createDecisionFallbackWireSender({
     operationDecision: plan.operationDecision,
     operatingPolicy: true,
     httpTransport: true,
-    transientHttpFailure: plan.transient
+    transientHttpFailure: plan.mode.startsWith('unavailable')
+      ? 'unavailable'
+      : plan.transient ? 'request' : 'none'
   };
   /**
    Maintained assessment path author answers over the real HTTP transport.

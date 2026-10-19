@@ -22,6 +22,8 @@ const DECISION_FALLBACK_MODES: readonly DecisionFallbackMode[] = [
   'deny',
   'transient',
   'transient-deny',
+  'unavailable',
+  'unavailable-deny',
   'unknown',
   'low',
   'transport',
@@ -45,6 +47,7 @@ const DECISION_FALLBACK_MODES: readonly DecisionFallbackMode[] = [
 const AUTO_APPROVE_MODES: readonly DecisionFallbackMode[] = [
   'approve',
   'transient',
+  'unavailable',
   'initial-failure',
   'stale',
   'abort',
@@ -57,6 +60,7 @@ const AUTO_APPROVE_MODES: readonly DecisionFallbackMode[] = [
 const AUTO_DENY_MODES: readonly DecisionFallbackMode[] = [
   'deny',
   'transient-deny',
+  'unavailable-deny',
   'prohibition'
 ];
 
@@ -66,6 +70,7 @@ const AUTO_DENY_MODES: readonly DecisionFallbackMode[] = [
 const ALLOWED_EXECUTION_MODES: readonly DecisionFallbackMode[] = [
   'approve',
   'transient',
+  'unavailable',
   'unknown',
   'low',
   'transport',
@@ -225,7 +230,7 @@ export function readDecisionFallbackPlan({ requestedMode }: Readonly<{ requested
   /**
    Transient modes consume one extra assessment round through retry.
    */
-  const transient = mode.startsWith('transient');
+  const transient = mode.startsWith('transient') || mode.startsWith('unavailable');
   return {
     requestedMode,
     mode,
