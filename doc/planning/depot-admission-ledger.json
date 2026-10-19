@@ -59,6 +59,22 @@
       },
       "reservedUsd": 10,
       "actualUsd": 0.35
+    },
+    {
+      "allocationId": "weekly-native-2026-10-19-r3",
+      "id": "xv1dwhq3h4",
+      "profile": "weekly-native-matrix",
+      "provider": "depot-native",
+      "status": "finished",
+      "meters": {
+        "nativeMinutes": 15,
+        "buildMinutes": 0,
+        "githubRunnerMinutes": 0,
+        "passingTestResults": 0,
+        "storageGb": 0
+      },
+      "reservedUsd": 10,
+      "actualUsd": 0.38
     }
   ]
 }
