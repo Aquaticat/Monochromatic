@@ -127,11 +127,17 @@ type Situation = (typeof SITUATIONS)[number];
 
 /**
  Criterion text sent beside each label.
+
+ The first two criteria were reworded on 2026-10-18 after a stop that said "I'll verify its report and rerun the
+ gates, then land it" while a subagent ran was labelled an announced next step at 0.95. Naming the dependence on a
+ running agent or its report lowered that label to 0.57 (below the 0.60 cutoff) and left a genuine early stop at 0.97;
+ see `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
  */
 const SITUATION_CRITERIA: Readonly<Record<Situation, string>> = {
-  announces_own_next_step: 'States an action the agent itself will do next, with nothing external blocking it.',
+  announces_own_next_step:
+    'States an action the agent itself will do next that does not depend on any running agent, command, build, or report, and nothing external blocks it.',
   waits_on_background_work:
-    'Waits for running agents, commands, builds, or tests to report before it can proceed.',
+    'Waits for running agents, commands, builds, or tests to report, including when it lists steps it will take only after they report.',
   waits_on_user: 'Needs a decision, authorization, resource, or answer only the user can give.',
   pauses_for_handoff:
     'Deliberately pauses or hands off (user is away, compaction, end of session) with next steps recorded.',

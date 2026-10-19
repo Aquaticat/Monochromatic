@@ -940,6 +940,34 @@ Handler code logs at `debug` (stderr) or `warn`.
    for four matching messages,
    and the hook blocked the first three.
 
+### False block, 2026-10-19
+
+A stop ending "I'll verify its report and rerun the gates, then land it before verifying the tall-window fix" was blocked
+with the resume-now reason while a subagent was running.
+The verdict log (`~/.local/state/monochromatic/stop-reminder/verdicts.jsonl`, record at 02:06:12 UTC) shows Luna labelled it
+`announces_own_next_step` at 0.95 with `waits_on_background_work` at 0.02.
+The next stop, 74 seconds later, restated the blocker and was released at 0.99, so the cost was one wasted continuation.
+The cause is that Luna reads only the last reply and the criterion said "with nothing external blocking it", which the
+message did not contradict on its face.
+
+Of the three blocks in the log at that point, one was a genuine early stop (0.99, "Next I'm continuing the queue with
+the template cleanup"), one was this false block, and one (0.64 `waits_on_user`, a message that only offered a veto)
+was borderline.
+
+Fix: the criteria now say an announced step "does not depend on any running agent, command, build, or report" and that
+a background wait includes "steps it will take only after they report".
+Measured on the 44 logged stops plus the 63-stop unbiased sample (108 messages), run to run identical across six repeats:
+
+- This stop: 0.95 to 0.57 for `announces_own_next_step`, below the 0.60 cutoff, so it is released.
+- The genuine early stop: 0.99 to 0.97, still blocked.
+- Announce labels overall: 8 to 2; blocks at 0.60 or higher: 3 to 1.
+- Rejected: prepending the running task types to the input.
+   It also released this stop (0.90 for `waits_on_background_work`) but dropped the genuine early stop to 0.48,
+   and it widened what is sent beyond the final reply.
+
+The margin on this stop is 0.03 under the cutoff, so a differently worded variant of the same message could still block.
+Precision of the blocking labels is still unmeasured; see #1772.
+
 ### Not yet known
 
 - Agreement between Luna's label and a human label.
