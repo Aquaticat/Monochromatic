@@ -5,7 +5,7 @@
 //! the cache,
 //! the budgets,
 //! a band that fails,
-//!  a long text that is sampled,
+//!  the window of a long text and what an edit renders again,
 //! and a build that is cancelled.
 
 /// Diagnostics are marks of a range with a severity.
@@ -730,8 +730,13 @@ fn windowed(fixture: &Fixture, window: Range<usize>, cache: &mut Cache) -> Built
 /// and never passes the raster limit.
 #[test]
 fn a_long_text_builds_only_the_bands_near_the_visible_part_and_they_are_rows_of_the_whole() {
-    for scale in [1.0_f32, 2.0] {
-        let fixture = fixture(3_000, 700.0, scale);
+    // At 1.3 the cuts between bands fall between two pixel rows, as they do at every fractional scale.
+    for scale in [1.0_f32, 1.3, 2.0] {
+        let mut fixture = fixture(3_000, 700.0, scale);
+        // All of the text is selected: the fill covers whole code rows,
+        // so a pixel row cut in two by a border has ink on both sides.
+        let end = fixture.document.text().len_chars();
+        fixture.select(0, end);
         let geometry = Geometry::new(fixture.map.height(), 240.0);
         let step = band_step(fixture.wrap, scale);
         let whole = windowed(&fixture, fixture.all(), &mut Cache::new());
