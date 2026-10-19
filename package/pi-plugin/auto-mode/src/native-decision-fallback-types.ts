@@ -28,6 +28,8 @@ export type DecisionFallbackMode =
   | 'unavailable-deny'
   | 'unknown'
   | 'low'
+  | 'low-unknown-approve'
+  | 'low-unknown-deny'
   | 'transport'
   | 'malformed'
   | 'initial-failure'
