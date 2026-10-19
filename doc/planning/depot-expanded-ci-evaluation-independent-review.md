@@ -332,7 +332,16 @@ Closure workstreams:
   cleanup and acceptance evidence.
   E1,
   the parallel-step correction dispatch,
-  is running as native run `gns8864w4s`.
+  completed as native run `gns8864w4s`.
+  The state and consumer jobs finished;
+  the two parallel jobs failed intentionally and both receipts passed:
+  `parallel-default` returned with `siblingFinishedAtReturn: false`,
+  and
+  `parallel-allrun` returned with `siblingFinishedAtReturn: true`.
+  Both receipts record `descendantCleanupGuaranteeAsserted: false`.
+  The workflow and job failure statuses are the intentional failure controls,
+  not product failures.
+  Artifact hashes are retained from the run logs.
 - The default-branch advisory window starts from the Scorecard pattern,
   2 admitted starts per
   minute,
@@ -350,25 +359,29 @@ Closure workstreams:
   mitigated by the usage pages,
   an operational stop and
   graceful degradation.
+- The product disposition research is recorded:
+  11 products are out for pilot and phase 2;
+  custom runner images and registry pull-through are out for the pilot and conditional for
+  phase 2.
+  The adoption proposal carries the list and its activation conditions.
 - Paused-session qualification is a separate bounded experiment and is excluded from the weekly
   matrix.
-- Automatic event registration will be tested on `main` with a side-effect-free probe,
-  then
-  removed;
-  the user explicitly accepted that reversible main-branch test.
+- Automatic event registration was tested on `main` with a side-effect-free probe.
+  The probe commit `6523bcaedd` produced GitHub run `39182515195` and no Depot workflow
+  registration within two minutes;
+  the probe was removed in commit `f8bc2d6c67`.
+  The direct-to-main path therefore did not reproduce automatic registration;
+  a PR merge or disposable-repository test remains open.
 
 ## Open closure items
 
 The following are not satisfied by this review record and remain work:
 
-- native evidence experiments,
-  including the parallel-step correction,
-  event registration and
-  duplicate publication,
+- native evidence experiments still open:
+  event registration and duplicate publication,
   check-name mapping,
   and paused-session qualification;
 - no-overage sliding-window admission and the operator cap verification;
-- per-product disposition list;
 - adoption record and decision-record acceptance;
 - subscription transition from the Startup trial to Developer;
 - revised rollout plan and Q7 confirmation.

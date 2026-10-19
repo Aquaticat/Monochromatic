@@ -180,21 +180,43 @@ and the closure workstream record.
   cost and
   trust boundary.
 - "Applicable capabilities" language does not authorize any product.
-- The per-product disposition list is pending the closure research and will be attached before
-  acceptance.
-- Known defaults:
+- The per-product disposition list from the closure research is recorded here.
+- Out for the pilot and phase 2:
   Depot Code,
   Depot Agents,
   Dagger,
   GPU,
-  managed and customer AWS,
-  custom runner
-  images,
+  managed AWS,
+  customer AWS,
   private connectivity,
   external observability sinks,
-  registry pull-through and Fast CDN
-  are out unless a new record activates them.
-  Signing trust and release publishing remain unchanged.
+  Fast CDN,
+  server-side registry promotion,
+  and unbounded autoscaling in its unbounded form.
+- Out for the pilot and conditional for phase 2:
+  custom GitHub runner images,
+  pending a measured tool-install and bootstrap share of Depot GitHub runner jobs;
+  and registry pull-through,
+  pending a measured base-image pull share and Docker Hub rate-limit incidence.
+- Depot Code Access app `219785` is the connected app,
+  not the Depot Code product.
+  Native CI needs the app and default-branch `.depot` workflows,
+  not a Code repository.
+- Managed AWS and customer AWS are two layers of one product.
+  Both are out;
+  the customer layer would require two standing `AdministratorAccess` roles.
+- Fast CDN and server-side promotion are out because no staging or production promotion exists
+  in the repository,
+  not because no images exist.
+- GPU is out because the accepted interaction path uses software rendering and no hardware
+  `/dev/dri` device was found.
+- Unbounded autoscaling is out because the audited schema has no provider-side total-builder
+  ceiling.
+- Enabling any of these requires a new dated decision record with eligibility,
+  meter,
+  cost and
+  trust boundary.
+- Signing trust and release publishing remain unchanged.
 
 ## Success and acceptance
 
