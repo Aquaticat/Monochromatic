@@ -18,11 +18,14 @@ unresolved-rule count does not measure the supply of useful follow-ups.
 This document records settled requirements separately from proposed semantics.
 The user selected Q1 B and Q4 A: admit any unique leading probability,
 and retain the latest genuine human request separately from the capped historical context.
-The [next review round](rebuild-review-round-2.md) contains Q7 to Q13:
-aggregation, approval sufficiency, follow-up evidence, shadow accounting and delivery, and evidence retention.
+The [next review round](rebuild-review-round-2.md) contains Q7 to Q9 and Q11 to Q13:
+aggregation, approval sufficiency, follow-up evidence, shadow delivery, and evidence retention.
+Q10 is withdrawn: the Luna review allowance applies per tool call; shadow observations are counted separately.
 The visual review presents these options together; their dependent engineering choices follow the answers.
 Q2 is withdrawn: an established `ask` is a resolved outcome requiring the human, not model uncertainty.
-Q6 is withdrawn: a parallel tool-call batch is one group; each nonparallel call is its own group.
+Q6 is withdrawn: every tool call is judged individually, including calls Pi schedules in parallel.
+`codemode` is one outer call; parse its complete body without creating inner approval units.
+The previous whole-parallel-batch review requirement is superseded.
 The user corrected the approval baseline: assess reversibility, not exact requested-package matching.
 The former Q3 and Q5 alternatives are withdrawn; their remaining engineering details follow that baseline.
 Dependency qualification, shadow scheduling, retention, and size fit remain open engineering work.
@@ -49,7 +52,7 @@ A coding agent can inspect dependencies, test consumers, compare alternatives, a
 without the human enumerating every package and command.
 The former mandatory positive request-scope gate and package-match follow-ups were too restrictive and are withdrawn.
 
-Assess the prepared group's actual effects and reversibility:
+Assess the prepared outer call's actual effects and reversibility:
 what changes, what can be restored, how restoration works, and what consequences remain after restoration.
 Consider recovery effort, existing uncommitted work, shared state, external effects, and resource consumption.
 A command called `test` is not an effect description;
@@ -103,7 +106,7 @@ Retain original rule text, source, heading context, and instruction precedence.
 Materialize the effective ruleset and add general-agent built-in rules.
 The user expects approximately 100 effective authored rules; do not pad, truncate, or select to that number.
 Every Pi start performs this classification, even when cached parsing is reusable.
-If classification fails but fresh parsing and source capture succeed, retain all parsed rules for group review.
+If classification fails but fresh parsing and source capture succeed, retain all parsed rules for each call's review.
 This follows the accepted least-degrading fallback rule; failed filtering alone does not require human approval.
 Final request capacity still needs measurement with all effective sources and built-ins.
 
@@ -122,65 +125,58 @@ Rule changes require a new effective-rules snapshot before another operation can
 A failed or incomplete classification must be visible; its missing rules cannot silently disappear.
 Startup failure behavior requires qualification before implementation acceptance.
 
-### Stage 1: capture and parse the entire pending group
+### Stage 1: capture and parse one outer tool call
 
-Use the user's explicit grouping boundary:
+Every call is judged individually, including calls Pi schedules in parallel.
+Each invocation has a separate immutable snapshot, every-rule answer set, review allowance, and manual decision.
+Do not combine siblings into a shared review or create joint-interaction outcomes.
+Cleared local tests remain permitted when a separate upload is denied; neither needs a new proposal.
+Pi owns scheduling. Individual decisions do not promise that cleared siblings execute before pending reviews finish.
 
-- When the model calls tools in parallel, the entire parallel batch is one review group.
-  Capture and prepare every member before any member executes.
-- When calls are not parallel, each call is its own review group.
-  Prepare, review, and execute A before preparing and reviewing a later nonparallel call B.
-  Do not combine sequential calls into an artificial multi-call group.
+`codemode` counts as one outer tool call.
+Parse its complete body, including contained operations and their relationships, for that single decision.
+Do not create inner approval units, separate rule answer sets, or fresh review budgets within its body.
 
-A review group is shared assessment context, not an indivisible execution transaction.
-Individual calls can be approved, blocked, or held for a human decision independently.
-Keep combined effects and dependencies in the review: selective execution must not ignore interactions.
-In the tests-plus-prohibited-upload example, cleared tests remain permitted while the upload is blocked.
-The tests do not need a new proposal merely because they shared a batch with the upload.
-
-Include permitted argument mutations visible before review in each prepared group's snapshot.
-Parse every tool call deeply, retaining tool identity, named arguments, resources, and execution structure.
+Include permitted argument mutations visible before review in the prepared call's snapshot.
+Parse each tool call deeply, retaining tool identity, named arguments, resources, and execution structure.
 For shell calls this includes control flow, redirects, expansions, literal values, and nested syntax.
 Parsing alone does not establish expanded runtime values or actual side effects.
 
-Bind all review evidence to one immutable group, instructions, tool catalog, and context snapshot.
+Bind all review evidence to one immutable outer call, instructions, tool catalog, and context snapshot.
 A changed argument, instruction, branch, or tool definition observed within the review boundary invalidates approval.
 Later extensions mutating arguments after review are explicitly outside coverage and need no guard.
-Queue adjacency or a shared workflow does not merge distinct nonparallel calls.
+Queue adjacency, parallel dispatch, or a shared workflow does not merge distinct calls.
 Future dynamically created calls are not pretended to exist already.
-Apply the same parallel-batch versus individual-call boundary to nested calls;
-qualify how the host exposes that boundary rather than treating an individual-call hook as proof of batch coverage.
-The review budget and evidence snapshot bind to the group.
-Decisions and manual feedback also identify the affected calls or interaction within it.
+Qualify the public outer-call boundary without recreating Pi execution or splitting `codemode` into approvals.
+The review budget, evidence, outcome, and manual feedback all bind to that outer invocation.
 
 ### Stage 2: deterministic parsed checks
 
 Code can immediately return `approve`, `deny`, or `ask` when a named deterministic condition establishes it.
-Record the condition, parsed evidence, exact group, affected calls, and outcome.
-A parser-success flag or apparently read-only command is not by itself proof that the whole group is authorized.
+Record the condition, parsed evidence, exact outer call, and outcome.
+A parser-success flag or apparently read-only command is not by itself proof that the call is authorized.
 The deterministic approval catalogue is a review decision, distinct from selecting model questions.
-Each established verdict ends automatic review for its affected calls:
-approve permits those calls, deny blocks those calls, and ask presents the explained human decision.
+Each established verdict ends automatic review for this call:
+approve permits it, deny blocks it, and ask presents the explained human decision.
 Do not use Luna to reconsider those resolved decisions.
-Other unresolved calls may still require Stage 3 within the same shared group budget.
-A completely deterministic group uses no per-group Luna requests.
+Other unresolved calls retain their own independent Stage 3 review and allowance.
+A completely deterministic call uses no per-call Luna requests.
 
 ### Stage 3: every effective rule becomes a Luna question
 
-Send the complete prepared group, effective ruleset, and bounded visible context.
+Send the complete prepared outer call, effective ruleset, and bounded visible context.
 For the first pass, each rule is a question. Do not select a useful subset in code.
 Each question offers exactly `approve`, `deny`, `ask`, and `not-applicable`.
 Bind answer keys to rule occurrences, including built-ins, so missing or duplicate answers are detectable.
-The answer-to-call and interaction attribution mechanism remains a design decision.
-A scalar four-choice answer per rule does not itself identify which members should be blocked.
-Do not silently multiply questions per rule/call or change the four labels to fill that gap.
+Every answer belongs to this outer call's snapshot and its identified rule occurrence.
+Each separate tool call gets its own every-rule first pass; no sibling-attribution schema is needed.
 Each assessment includes the instruction hierarchy and applicable explicit user exceptions.
 An unrelated rule can return `not-applicable`; it need not manufacture permission or uncertainty.
 
 The historical context length is `clamp(5, units since the latest human message, 10)`.
 A unit is an assistant thinking/output block or a tool-call set, not Pi's `turn_end` event.
 Use available history when fewer than five units exist; never invent padding.
-The complete pending group is a separate snapshot field and is never cut down by this history window.
+The complete pending outer call is a separate snapshot field and is never cut down by this history window.
 Private thinking content remains excluded under the existing payload constraint;
 its boundary can count as a unit without transmitting its contents.
 Retain the latest genuine human request in a separate snapshot field, even when it falls outside the window.
@@ -189,38 +185,37 @@ Use original provenance, not merely an API user role, to identify that request.
 
 Batch only as required by verified endpoint capacity, with the complete rule context accompanying each partition.
 All first-pass rules must receive coverage before automatic approval.
-Early terminal denial or required human review ends automatic review for the affected calls,
-without fabricating answers or ending review of unrelated unresolved members.
+Early terminal denial or required human review ends automatic review for this call,
+without fabricating answers or ending another call's independent review.
 There is no replacement whole-operation judge and no permission/prohibition taxonomy stage.
 
 ### Stage 4: aggregate, then refine only unresolved evidence
 
-Normalize Luna's answers into an attributed object and compute affected-call outcomes in code,
-including any jointly applicable interaction constraints from the complete group.
+Normalize Luna's answers into an attributed object and compute this outer call's outcome in code.
 No averaging of unrelated rules, majority voting, or repeated sampling until approval.
 Admit the unique highest-probability choice in a valid response, with no minimum probability or margin.
 The user selected Q1 B. Separate confidence metadata does not add another admission threshold.
 Exact ties, invalid responses, or missing answers remain unresolved, not a fifth answer choice.
 
-Only while a call or interaction remains unresolved, construct questions addressing that uncertainty.
+Only while this call remains unresolved, construct questions addressing that uncertainty.
 An established `ask` goes to the human; do not spend follow-ups reconsidering that verdict.
 An applicable authored rule can require asking even when all relevant facts are known.
 For example, decompose uncertainty about a test command’s reversibility into
 which environment it targets, whether its writes are confined to disposable fixtures,
 and whether any existing state would be lost or externally exposed.
-Keep the whole prepared group and relevant rule context visible in every follow-up.
+Keep the complete prepared outer call and relevant rule context visible in every follow-up.
 Do not treat uncertainty in one rule as proof that only one useful follow-up exists.
 Question wording and bindings must expose the distinction being tested.
 The generation and validation mechanism follows the accepted semantic examples;
 the previous fixed-form selector is not a settled requirement.
 
-At most three sequential review batches and three parallel Luna calls per batch.
+Each outer tool call has at most three sequential review batches and three parallel Luna requests per batch.
 HTTP retries consume those call slots.
-These are model-review limits, not a limit on the number of tool calls in a parallel tool-call group.
-Stop reviewing a resolved call or interaction; unresolved scopes after the permitted batches route to `ask`.
-The group still shares one review allowance, not a fresh allowance for every member.
-Stage 0 is startup work, outside the per-group review budget.
-Shadow requests are accounted separately only if the proposed shadow policy is accepted.
+These are per-call model-review limits, not a limit on how many tool calls Pi may schedule in parallel.
+Stop reviewing a resolved call; an unresolved call after its permitted batches routes to `ask`.
+Each separate outer call has its own allowance. `codemode` contained operations do not receive additional allowances.
+Stage 0 is startup work, outside the per-call review budget.
+Shadow requests are counted separately from the Luna allowance.
 Conflicting follow-up answers require an explicit reconciliation contract;
 newer answers do not silently erase prior evidence merely because they allow execution.
 
@@ -252,13 +247,13 @@ the reviewed evidence does not establish that B is that workspace.
 Approve permits this report upload to B. Stop aborts the run without uploading.
 Confirm whether B is the intended destination; you may include a reason.”
 
-Offer Approve and Stop for the explained affected calls, with an optional reason for either choice.
+Offer Approve and Stop for the explained single outer call, with an optional reason for either choice.
 Approve records `user approved tool call ...`; Stop records `user declined tool call ...`.
-Include group identity, affected call identities, and supplied reason in durable and model-visible session records.
+Include outer-call identity, review snapshot identity, and supplied reason in durable and model-visible session records.
 Skipping the optional reason preserves the selected decision.
 Stop retains the existing run-abort behavior; dismissal or unavailable UI withholds execution.
 An established denial does not turn into an Allow prompt.
-A manual approval applies only to the displayed affected calls after a freshness check, not unrelated siblings.
+A manual approval applies only to the displayed single outer call after a freshness check, not unrelated siblings.
 The existing human Stop interaction aborts the run; that is distinct from automatic denial of an individual call.
 
 Pi 1.3.0 provides `ui.select` and `ui.input` in both TUI and RPC declarations.
@@ -289,19 +284,19 @@ The former minimum-threshold proposal is rejected and removed from the active re
 For approve 0.40, deny 0.40, ask 0.10, not-applicable 0.10, the exact tie remains unresolved.
 Invalid distributions and missing answers remain unresolved too.
 Attribution, expected labels, finite normalized probabilities, and reported-choice consistency still require validation.
-Admission concerns one rule answer; code still combines the rules governing each affected call or interaction.
+Admission concerns one rule answer; code still combines the rules governing that same outer call.
 
 ### Q2 withdrawn: ask is a resolved verdict
 
 Some applicable `AGENTS.md` rules require the human to confirm or decide.
 An established ask follows those rules; it is not an ambiguous answer needing another model check.
-Deterministic approve, deny, and ask terminate automatic review for their affected calls.
+Deterministic approve, deny, and ask terminate automatic review for the individual call.
 Luna runs only for unresolved decisions; resolved siblings do not need reconsideration.
-After Luna, code aggregates answers; an established ask routes its affected calls to the human.
-Only unresolved call or interaction outcomes enter follow-up review. Q1 B settles numeric admission.
+After Luna, code aggregates answers; an established ask routes this call to the human.
+Only unresolved individual-call outcomes enter follow-up review. Q1 B settles numeric admission.
 The former proposal to spend remaining batches on every ask is withdrawn.
 
-Q7 concerns reduction of answers governing the same call or interaction, not pooling unrelated calls' outcomes.
+Q7 concerns reduction of answers governing the same call, not pooling unrelated calls' outcomes.
 Q8 separately asks whether complete all-not-applicable coverage permits the affected action.
 Neither question is answered by the selective-execution correction.
 A deny based on a superseded instruction is invalid evidence, not a lower-priority veto.
@@ -321,43 +316,39 @@ they are not a request to confirm the rejected boundary again.
 ### Q4 A accepted: retain the latest human request separately
 
 The user chose A: include the latest genuine human request in a separate snapshot field,
-plus the specified five-to-ten-unit visible history and the complete prepared group.
+plus the specified five-to-ten-unit visible history and the complete prepared outer call.
 The separate request is retained even when it lies outside the historical window.
 For example, after twelve assistant/tool units following “review only”, that instruction remains in the request field.
 The historical window still follows its existing clamp; it is not expanded to include all older conversation.
 API user-role feedback, compaction entries, and other synthetic messages do not become the genuine human anchor.
 The former capped-history-only alternative is rejected and removed from the active review.
 
-### Q6 withdrawn: parallel batches and individual calls define groups
+### Q6 withdrawn: every outer tool call is judged individually
 
-The user explicitly settles the group boundary: one parallel batch is one group;
-each nonparallel call is a separate group.
-The former menu incorrectly imposed complete-group preparation on sequential A and B together.
-Its proposed timing change and rejection of ordinary result-dependent sequential calls are withdrawn.
-
-For parallel A and B, review their complete shared context and apply the resulting decision to each call.
-An approved A can execute while a denied B is blocked; shared review does not require identical outcomes.
-For nonparallel A then B, prepare/review A, execute A, then prepare/review B and execute B if approved.
-B's preparation may therefore use A's completed result in the nonparallel sequence.
-Selective outcomes do not discard cross-call interactions.
-Release timing when one member remains unresolved is a separate design detail, not an atomicity requirement.
+The latest user correction on 2026-10-19 supersedes the earlier whole-parallel-batch review requirement.
+Parallel A and B receive independent snapshots, rule answers, review allowances, and manual decisions.
+`codemode` remains one outer call even when its parsed body contains multiple operations.
+There is no shared group verdict, joint call-attribution question, or sibling-conflict decision branch.
+The earlier complete-group and shared-budget requirements are historical and withdrawn.
+Pi retains scheduling, including result-dependent sequential preparation and parallel dispatch barriers.
+Independent judgment does not promise that A starts while B awaits review or a human decision.
 
 Installed Pi 1.3.0 source supplies separate dispatch paths in `dist/agent-loop.js`:
 `executeToolCalls` at line 366 selects the mode using configuration and tool execution metadata;
 `executeToolCallsSequential` at line 374 prepares and executes each call in its loop;
 `executeToolCallsParallel` at line 411 prepares calls before its `Promise.all` dispatch at line 453.
 Source inspection supports the distinction, not a claim that the replacement integration already works.
-Verify configured mode overrides, nested boundaries, pre-review argument mutation, and cancellation at the host boundary.
+Verify configured modes, outer-call boundaries, pre-review argument mutation, and cancellation at the host boundary.
 
 ## Dependency tree after this round
 
-Accepted Q1 B fixes numeric boundaries and unlocks remaining group-reduction acceptance examples.
+Accepted Q1 B fixes numeric boundaries and unlocks remaining per-call reduction acceptance examples.
 The settled terminal ask contract supplies deterministic and model-resolved ask acceptance cases.
 The accepted autonomy baseline guides behavioral examples.
 Catalogue-specific fixtures wait until built-in rule design is resumed; the catalogue is not part of this round.
 Accepted Q4 A fixes the separate human anchor and unlocks snapshot boundary fixtures.
-The settled parallel-batch/individual-call rule determines group-boundary and timing fixtures.
-Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
+The individual-call rule determines snapshot, budget, `codemode`, and manual-decision fixtures.
+Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery and scheduling,
 and retention using concrete designs and their measured constraints.
 Source budgets remain proposals pending those designs and exact resolved dependency inventories.
 Do not present later dependent choices as settled merely because the flow is now defined.
@@ -400,44 +391,43 @@ Their fit remains unverified.
 
 ### Public Pi plugin integration: provisional 10,000 to 16,000 characters
 
-Purpose: expose the complete parallel batch or individual nonparallel call and bind its review to dispatch.
+Purpose: capture each outer tool call independently and bind its review to dispatch.
 Interface: supported public plugin events and APIs; Pi retains execution, results, and configured extensions.
 Observe supported parallel, sequential, nested, denied, aborted, and shutdown events.
 Pi owns execution and lifecycle behavior; the plugin must not duplicate those implementations.
-A public per-call event alone does not establish final complete-group interception.
+Qualify prepared input capture and the `codemode` outer-call boundary through supported public events.
 
 The user explicitly directs the rebuild to Pi's plugin API.
 Do not patch installed files, transform copied Pi source, replace private modules through loading hooks,
 or monkey-patch Pi's runtime methods.
 Leaving installed package files unchanged does not make a transformed runtime acceptable.
 The former `registerHooks` candidate is withdrawn, not awaiting qualification or approval.
-Qualify public event ordering, complete parallel-batch visibility, final arguments, and cancellation.
+Qualify public event ordering, individual-call arguments, and cancellation.
 If those public surfaces cannot provide a requirement, use graceful fallback rather than reconstructing Pi.
 Degrade as little as possible, aiming for no degradation of the end-user experience where possible.
 First seek an equivalent supported public-API path; otherwise preserve the greatest supported functionality.
-Supported per-call review may replace unavailable batch review, with the reduced coverage disclosed.
+Individual-call review is the accepted design, including parallel calls; no batch-review fallback is needed.
 Missing integration capability alone does not require manual approval, blocked execution, or disabled auto-mode.
 Keep ordinary Pi usable; disclose material limitations without claiming guarantees the fallback lacks.
 An actual rule requiring human approval still requires human approval; a capability gap is not such a rule.
 Do not recreate Pi tools, scheduling, argument preparation, sessions, or UI to recover a missing capability.
-The preferred group boundary preserves individual nonparallel reviews and whole-batch parallel review.
-The accepted graceful-fallback rule permits reduced grouping coverage when public APIs cannot provide that boundary.
+Keep one review per outer invocation and one approval for the complete `codemode` body.
 
-The disposable public-plugin consumer passes 20 asserted cases, including deliberate limitation cases,
+The historical disposable public-plugin consumer passes 20 asserted cases, including deliberate limitation cases,
 through `mise run lint:types` and `mise run probe` in `~/temp/agent/pi-public-plugin-probe-20261019`.
 It uses extension factories, a scripted public provider registration, and inert tools, without copied Pi source.
-Public `prepareLoadout` exposes tool execution metadata; `tool_execution_start` can observe the persisted message.
-Earlier parallel `tool_call` handlers return after collecting prepared inputs;
-the final sibling handler awaits shared review before execution.
-The probe demonstrates approved parallel execution, denial, review failure, per-tool sequential review,
+Its earlier shared-review prototype used `prepareLoadout` metadata and `tool_execution_start` message capture,
+then held the final sibling's `tool_call` handler for shared review.
+That mechanism is historical, not part of the individual-call design.
+The probe exercised approved parallel execution, denial, review failure, per-tool sequential review,
 and skipped-callback accounting through `tool_execution_end`.
 Two additional fixtures review both declared calls and return public per-ID `tool_call` blocking results:
 allow A/block B executes only A, and block A/allow B executes only B.
 Both produce separate successful/blocked results and continue without `ctx.abort()`.
 The earlier whole-run abort belongs to the last-sibling review prototype, not a Pi batch limitation.
-Prefer whole-context review with decisions keyed by `toolCallId` and enforced at each public call hook.
-The final attribution and prepared-input strategy still require design; do not copy Pi to supply them.
-Qualify preparation and mutations visible before review, global/per-tool sequential mode, and nested calls.
+Review each call independently at its supported public boundary, keyed by `toolCallId`.
+The prepared-input strategy still requires qualification; do not copy Pi to supply it.
+Qualify preparation and mutations visible before review, configured execution modes, and `codemode` outer-call identity.
 The user accepts later extensions changing arguments after review as an unsupported case on 2026-10-19.
 Design as though those later mutations do not occur; do not add ordering guards, prompts, fallback triggers,
 or private hooks to defend against them. This limitation is accepted, not an unresolved qualification blocker.
@@ -449,7 +439,7 @@ the parallel dispatcher prepares siblings sequentially before execution, so that
 ### Rules and review input capture: 8,000 to 14,000 characters
 
 Purpose: startup relevance, built-in rule registration, visible history, and structured prepared operations.
-Interface: one immutable effective-rules snapshot and one immutable group snapshot.
+Interface: one immutable effective-rules snapshot and one immutable outer-call snapshot per review.
 Preserve original text and provenance without inventing meaning categories.
 Do not silently discard untagged substantive instructions.
 Reuse parsing caches only without bypassing every-start classification.
@@ -459,13 +449,13 @@ Pi's `getBranch` returns raw active-branch entries;
 Use original provenance to count human requests and the resolved view for visible context.
 Later context transformations also need qualification.
 No closed role allow-list may reject ordinary incoming chat.
-A historical parse failure cannot authorize the pending group.
+A historical parse failure cannot authorize the pending call.
 
 ### Review scheduling and manual feedback: 8,000 to 12,000 characters
 
 Purpose: every-rule first coverage, bounded adaptive follow-ups, and recorded human decisions.
 Interface: one review entry returns disposition and correlated evidence.
-Question IDs retain rule occurrence, group snapshot, and follow-up purpose.
+Question IDs retain rule occurrence, outer-call snapshot, and follow-up purpose.
 No useful-rule filtering occurs in the first pass.
 Transport retries and partitioning consume explicit budget slots.
 Actual endpoint capacity must be verified with the selected effective rules and payload sizes.
@@ -477,12 +467,13 @@ Keep feedback provenance separate from genuine incoming human requests.
 
 ### Deterministic decision resolution: 2,000 to 4,000 characters
 
-Purpose: immediate parsed checks, answer admission, and group reduction in ordinary code.
+Purpose: immediate parsed checks, answer admission, and individual-call reduction in ordinary code.
 Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
 Q1 B admits any unique probability leader; established approve, deny, and ask terminate automatic review.
 Deterministic approval must establish actual effects and recovery properties while satisfying other applicable checks;
 it cannot bypass applicable rules once they are defined. No specific built-in catalogue is selected here.
-No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
+Parser success, missing fields, and unavailable answers do not imply authorization.
+Whether a complete admitted not-applicable-only set permits execution remains open in Q8.
 Validate answer attribution, expected labels, finite probabilities, normalization, and leading-choice consistency.
 Accept irrelevant response metadata; do not require optional confidence or usage fields that reduction does not consume.
 Missing, malformed, refused, or unavailable answers are missing evidence.
@@ -510,7 +501,7 @@ The exact response-size and timeout values remain qualification inputs, not inve
 Purpose: compare Span 02 with the actual primary question sets without influencing execution.
 Interface: observe an immutable primary request and its result; retain a correlated shadow comparison.
 
-For group review it preserves the same state, question text, and four answer choices.
+For each call's review it preserves the same state, question text, and four answer choices.
 The proposed mirror also covers startup relevance using that request’s unchanged relevance-answer schema;
 it does not convert startup relevance into operation approval.
 Only the endpoint envelope and model identifier differ.
@@ -521,11 +512,10 @@ The retained queue, unmatched comparisons, and completed-state cache have explic
 Correlation includes request occurrence, so identical repeated requests do not overwrite one another.
 It does not repeatedly scan ever-growing log files or import the old built policy implementation.
 
-Proposed budget interpretation: the three-by-three limit governs primary Luna review.
-Shadow requests are separately counted and dispatched after primary review batches, with a concurrency limit of one.
-They do not overlap a primary HTTP batch.
-This adds network calls beyond the primary nine-call ceiling and is an explicit review point.
-If the ceiling applies to all providers combined, the mirror policy must change before implementation.
+The accepted three-by-three allowance governs Luna review separately for each outer tool call.
+Shadow requests are counted separately and do not consume that allowance; Q10's combined-budget menu is withdrawn.
+Dispatch after primary review batches with a concurrency limit of one remains a scheduling proposal,
+not an accepted resource limit or a new budget question.
 
 ### Diagnostics and lifecycle evidence: 3,000 to 5,000 characters
 
@@ -793,12 +783,14 @@ The shell parser and shared logger are the only proposed production library resp
 
 Qualify the public plugin events with a minimal actual Pi consumer before expanding the design.
 Cover parallel, sequential, nested, pre-review mutated inputs, denied, cancellation, and configured-extension behavior.
-Assert one review snapshot contains every member of a parallel batch and no member executes before its verdict.
+Assert parallel calls receive separate snapshots, complete rule answer sets, budgets, and manual decisions.
+Assert `codemode` body parsing is complete while its nested operations remain one outer approval unit.
+No call executes before its own verdict; do not assert execution timing beyond Pi's scheduler.
 Verify mixed outcomes in both member orders: the allowed sibling executes, the denied sibling does not,
-and Pi continues without a global abort. Also exercise cross-call effects that forbid a combination.
+and Pi continues without a global abort. Do not add a shared sibling-conflict review branch.
 Assert nonparallel A and B produce distinct reviews in prepare/review/execute order,
 including B preparation that reads A's completed result.
-Do not infer grouping solely from queue length or assume a per-call interception covers parallel batches.
+Do not merge reviews because calls share a queue, assistant message, or parallel dispatch.
 Generate the exact resolved production and development dependency inventories and disk accounting.
 Qualify the consumed parser projection against installed `unbash` 6.
 Verify actual hundred-question endpoint capacity without executing proposed operations.
@@ -815,9 +807,9 @@ Exercise the five-to-ten-unit window, original human provenance, and approval/de
 For every ask-producing branch, assert an evidence-backed explanation, required human decision,
 any actual uncertainty, and action consequences in the TUI/RPC payload; a generic prompt must fail the fixture.
 An applicable rule requiring confirmation with all facts known must ask without inventing uncertainty.
-Fully deterministic groups must use zero per-group Luna calls; count startup separately.
+Fully deterministic calls must use zero per-call Luna requests; count startup separately.
 Resolved affected calls do not receive reconsideration, while unresolved siblings can still require Luna review.
-A model-resolved ask must prompt for its affected calls without a follow-up intended to reverse that verdict.
+A model-resolved ask must prompt for its single outer call without a follow-up intended to reverse that verdict.
 Assert model-visible inclusion and exclusion using actual serialized requests.
 
 ### Connect primary review and shadow
@@ -851,23 +843,28 @@ No cleanup or deletion is performed as part of writing this plan.
 
 Q1 B and Q4 A are accepted; they are no longer open questions.
 Q2 is withdrawn because established asks already terminate automatic review.
-Q6 is withdrawn because parallel batches and individual nonparallel calls now define the group boundary.
+Q6 is withdrawn because every outer call is judged individually, including parallel calls and complete `codemode` bodies.
+Q10 is withdrawn because each call's Luna allowance and separate shadow accounting are settled.
 The package-match gate is rejected; the former Q3 and Q5 options are withdrawn.
-Further dependent work covers follow-up conflicts, startup failures, shadow call accounting and preemption,
+Further dependent work covers follow-up conflicts, startup failures, shadow scheduling and preemption,
 persistent log retention, exact dependency closure, and source/deployment budgets.
 Actual host semantics, endpoint capacity, parser compatibility, RPC output, and lifecycle behavior remain unqualified.
 No implementation proceeds while the user is reviewing this plan.
 
 ## Review artifact verification
 
-The grouping correction replaces Q6 with the settled parallel-batch/individual-call boundary.
+The records in this section are historical verification of earlier review artifacts.
+They do not verify the latest individual-call requirement, `codemode` boundary, or Q10 withdrawal.
+New rendered verification must cover the revised surface before handoff.
+
+The earlier grouping correction replaced Q6 with the then-settled parallel-batch/individual-call boundary.
 Its flowchart shows one review before parallel dispatch and independent reviews for nonparallel calls.
 The Q6 form field and serialized answer are absent; Q1 and Q4 remain.
 The new diagram passed light/dark text-fit and 390-pixel keyboard-scroll checks without page overflow.
 All eight navigation links, four examples, six remaining answer options, manual examples,
 reply handling, and keyboard activation passed. The 21 controls meet the 48-pixel minimum.
 Page errors and console records are empty.
-Current grouping captures: [light](ground-up-rebuild-review/flowchart-grouping-light.png)
+Historical grouping captures: [light](ground-up-rebuild-review/flowchart-grouping-light.png)
 and [dark](ground-up-rebuild-review/flowchart-grouping-dark.png).
 
 The complete drawing inventory now contains 12 connected SVG charts, including the four worked-example tabs.

@@ -6,6 +6,11 @@ Q1 B admits any valid unique leading probability. Q4 A retains the genuine human
 Use only public Pi plugin APIs and preserve the end-user experience through the least-degrading fallback.
 Later extensions changing arguments after review are an accepted limitation, not work to defend against.
 Built-in contents remain deferred and implementation remains stopped.
+The latest requirement judges every parallel tool call individually.
+`codemode` is one outer tool call: parse its complete body without creating inner approval units.
+Each call has separate evidence, every-rule answers, review allowance, and manual decision.
+Pi owns scheduling; separate judgments do not promise early execution of a cleared sibling.
+The earlier whole-batch review, joint attribution, and sibling-conflict questions are superseded.
 
 Fresh-rule fallback after failed startup relevance classification follows the accepted minimal-degradation rule:
 retain all freshly parsed rules for ordinary review; do not ask solely because relevance filtering failed.
@@ -13,43 +18,34 @@ The prior parser probe counted 213 authored rules with a 214-rule positive contr
 That measurement excludes future built-ins and other instruction sources; final request capacity is unmeasured.
 
 The public-only disposable consumer passed 20 assertions, including deliberate limitation cases.
-Its qualified configuration supports prepared parallel review and per-tool sequential reviews.
+Its historical configurations exercised prepared parallel review and per-tool sequential reviews.
 Allow-A/block-B and block-A/allow-B fixtures execute only the permitted member and continue without a run abort.
-Shared review context and budget do not require identical outcomes for every call.
+Those fixtures establish selective blocking, not implementation of the newly accepted individual-review design.
 This is finite evidence, not a claim that every Pi host configuration is covered.
 
 ## Questions for this round
 
 ### Q7: For the same call, how should Deny and Ask combine?
 
-This concerns rules governing the same call or interaction.
-Shared batch review does not require the calls to share an execution outcome.
-
-A pending parallel batch contains two calls:
-run the logger package's tests using disposable local fixtures,
-and upload `fixtures/customers.json`, containing customer names and email addresses,
-to a public file-sharing service.
-Neither call has started.
+This concerns rules governing the same single call.
+A pending call uploads `fixtures/customers.json`, containing customer names and email addresses,
+to a public file-sharing service. It has not started.
 For this example, assume these project rules and admitted Luna answers:
 
-- Test call: “Run relevant package tests.” returns Approve.
-  Assume its other applicable checks also clear; the tests remain permitted.
 - Upload call: “Never publish raw customer fixtures.” returns Deny because it exposes the unredacted fixture publicly.
 - Upload call: “Ask before any public upload.” returns Ask.
-  This second rule also applies to the upload, not the local tests.
 
-The test answer is not a vote on the upload.
-Tests are independently cleared under either option; Q7 concerns only the upload's Deny and Ask answers.
-This example supplies the affected-call attribution explicitly.
-Its encoding in actual rule answers remains to be designed.
+A separate call runs the logger package's tests using disposable local fixtures.
+Assume its own every-rule review clears. It remains permitted under either option.
+It shares no review snapshot, answers, budget, or manual decision with the upload, even if Pi schedules them together.
 
 #### A: Deny takes precedence (recommended)
 
 In this example, block the upload only.
-The cleared tests remain permitted in the same batch and need no new proposal.
+The independently cleared tests remain permitted and need no new proposal.
 Do not present Approve for the prohibited upload.
 
-For answers governing the same affected call or interaction:
+For answers governing the same call:
 Deny takes precedence over Ask, Ask over unresolved answers,
 and unresolved answers prevent approval.
 Do not pool unrelated calls' answers.
@@ -65,7 +61,7 @@ reconciling its Deny and Ask answers.
 The tests remain permitted; their decision is not reopened.
 If the upload remains unresolved at the budget limit, ask about that upload.
 
-For the same affected call or interaction, Deny combined with Approve, Ask, or unresolved answers remains unresolved.
+For the same call, Deny combined with Approve, Ask, or unresolved answers remains unresolved.
 Deny with only other Deny or not-applicable answers can terminate.
 Selecting B opens a separate conflict-reconciliation decision after this round.
 
@@ -76,7 +72,7 @@ Selecting B opens a separate conflict-reconciliation decision after this round.
 Ranking: A > B, because the upload prohibition is not permission waiting for confirmation.
 B trades immediate reduction for another interpretation attempt.
 Neither option requires blocking the independent tests.
-Release timing while another member remains unresolved is a separate design detail.
+Pi controls execution timing; this choice does not change its scheduler.
 
 ### Q8: What if every effective rule returns not-applicable?
 
@@ -137,7 +133,7 @@ silently change the rule.
 #### C: Every follow-up decides the whole rule
 
 The new question examines a concrete distinction, such as the actual fixture target, but still asks for this rule's
-disposition for affected calls or interactions, with the entire group in context.
+disposition for the same outer call, with its complete snapshot in context.
 Its answer updates that unresolved rule assessment, with previous evidence
 retained.
 
@@ -150,33 +146,12 @@ Ranking: A > C > B. A makes subsidiary evidence and final interpretation separat
 reconciliation round but makes that distinction less explicit. C handles arbitrary prose without the exhaustive code
 decomposition B requires.
 
-### Q10: Does the review request budget include Span 02 observations?
+### Q10 withdrawn: Luna allowance is per tool call
 
-Luna owns decisions; Span 02 observes the same requests without changing execution. The existing review allowance is
-at most three batches with three calls per batch, including retries. Budget scope must be decided before exact
-shadow scheduling.
-
-Example: A review uses all nine allowed primary requests. Mirroring each request would add nine Span 02 requests.
-
-#### A: Primary budget, separately counted shadow (recommended)
-
-The nine primary requests remain allowed. Up to nine corresponding shadow requests may also be sent, under
-separately specified scheduling and accounting.
-
-- Pro: Preserves the complete primary review allowance and complete comparison coverage.
-- Con: The existing nine-request bound no longer bounds all provider traffic; shadow work needs its own resource
-limits.
-
-#### B: One combined request budget
-
-Nine primary requests leave no slots for Span 02. Primary review takes priority; shadow observations use only
-remaining budget.
-
-- Pro: Preserves the existing request ceiling across providers.
-- Con: The hardest reviews can lose all comparison evidence, precisely where shadow results may be useful.
-
-Ranking: A > B, because it preserves both primary review and comparison evidence with explicit separate accounting.
-B is preferable only if the combined provider-request ceiling is itself the priority.
+Each outer tool call has at most three sequential review batches with three parallel Luna requests per batch.
+Retries consume those Luna slots. Span 02 observation requests are counted separately and cannot reduce that allowance.
+The combined-provider-budget menu incorrectly reopened the settled Luna allowance and is withdrawn.
+Shadow scheduling and Q11 delivery durability remain separate work; no new budget choice is requested.
 
 ### Q11: Must unfinished shadow observations survive a restart?
 
@@ -263,17 +238,16 @@ continuous recent evidence at the explicit cost of losing older records.
 ## Dependent work after the answers
 
 - Q7 and Q8 determine the reducer truth table and when a partial response set can establish a terminal verdict.
-- Rule answers still need explicit attribution to affected call identities and interactions.
-  A scalar four-choice answer per rule alone does not establish that attribution.
-  Do not silently change the question schema or multiply questions per rule/call.
+- Each answer binds to its own outer-call snapshot and rule occurrence.
+  There is no joint-attribution or cross-call reconciliation branch.
 - Q7 B additionally opens conflict reconciliation among admitted rule answers; Q9 concerns individual-rule uncertainty.
 - Q9 determines focused-question generation, evidence bindings, and whether reconciliation reserves a batch.
-- Q10 determines the feasible shadow concurrency and preemption policies; do not assume an extra network slot.
+- Shadow scheduling uses separate accounting and must preserve each call's accepted Luna allowance.
 - Q11 determines persistent replay ownership, cancellation accounting, and recovery fixtures.
 - Q12 and Q13 determine the retention mechanism; numerical limits need measured record volume and a later decision.
 - Ask explanations must use recorded operation evidence and question bindings.
   The Decisions API does not return free-form rationale; do not infer reasons from probabilities.
-- Current public probes leave custom global execution modes, dynamic loadouts, nested grouping,
+- Current public probes leave custom global execution modes, dynamic loadouts, `codemode` outer-call boundaries,
   real TUI cancellation, and session transitions unqualified. Apply the accepted graceful-fallback rule.
 
 ## Evidence and response
@@ -285,7 +259,9 @@ That is a limitation of the chosen prototype, not Pi: the selective-blocking fix
 The [active plan](ground-up-rebuild.md) retains the stages and source inventory.
 Use the [verified visual review](ground-up-rebuild-review.html#frontier) to compare and prepare one response.
 
-The response form passes all 22 selectable option paths, nine navigation targets, four scenarios,
+The following records describe the earlier response form before individual review and Q10 withdrawal.
+They are historical verification, not verification of the revised review surface.
+That form passed all 22 selectable option paths, nine navigation targets, four scenarios,
 four manual-decision branches, empty and populated replies, literal text preservation, selection, and keyboard use.
 Both themes pass at desktop width and 390 pixels without page overflow or browser errors.
 Every measured control meets the 48-pixel minimum.

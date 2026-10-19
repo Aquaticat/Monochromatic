@@ -15,8 +15,8 @@ and makes material remaining limits clear.
 
 Example: if relevance classification fails but fresh rules can be captured,
 review all those rules rather than requiring human approval solely because relevance filtering failed.
-If whole-batch review is unavailable through public APIs, supported per-call review can remain useful.
-That does not establish that it catches every cross-call interaction.
+Each tool call is reviewed individually through public APIs.
+Cross-call interaction analysis is not a separate shared review or approval requirement.
 
 The agent's former interpretation, automatically escalating or withholding execution whenever integration coverage
 was incomplete, was too restrictive and was explicitly corrected.
@@ -28,23 +28,26 @@ extra prompts, and interruption of otherwise permitted work.
 Changing an internal mechanism is not necessarily degradation.
 No numeric latency or fidelity target is implied by that definition.
 
-## Parallel batch, review group, and execution outcome
+## Individual tool-call review
 
-The user defines a complete parallel tool-call batch as one review group.
-Nonparallel calls each have their own group.
-The whole group supplies shared context for effects, interactions, rules, and the review budget.
-It is not an indivisible execution transaction.
+The latest user requirement on 2026-10-19 is that parallel tool calls are always judged individually.
+Every outer invocation has its own immutable evidence snapshot, rule answers, review allowance, and human decision.
+This supersedes the earlier whole-parallel-batch review requirement.
+That earlier requirement is historical, including shared budgets and joint-interaction attribution questions.
 
-A parallel batch can produce different outcomes for different members.
+`codemode` counts as one tool call.
+Parse its complete body and execution structure, but do not create inner approval units for its contained operations.
+Its body can contain many actions while its review still returns one outer-call disposition.
+
+Parallel calls can produce different outcomes.
 One denied call does not inherently require canceling its allowed siblings or aborting the run.
 For independent local tests and a prohibited public upload, tests may remain permitted in the same batch
 while the upload is blocked.
 The agent's earlier requirement to reject both and request a new tests-only batch was incorrect.
 
-Combined effects remain relevant.
-For example, two individually ordinary calls writing the same fixture can interfere when allowed together.
-The selective-execution correction does not justify evaluating each call without its siblings' context.
-How to select between otherwise equivalent conflicting members is not decided here.
+Pi retains scheduling and execution ordering.
+Independent judgments do not promise that a permitted call starts while another call's review is pending.
+Do not add a group verdict, sibling-conflict branch, or shared manual approval to recover the superseded design.
 
 ### Verified public Pi behavior
 
@@ -86,7 +89,7 @@ if (result.block) {
 The public-only disposable consumer in `~/temp/agent/pi-public-plugin-probe-20261019/`
 passes `mise run lint:types` and `mise run probe`, with 20 asserted cases.
 Its scripted provider and inert tools do not invoke a remote model or perform the represented real actions.
-The two selective-blocking cases include the whole declared batch in review:
+These historical selective-blocking fixtures include the whole declared batch in review:
 
 - `member-allow-a-block-b`: review both IDs, allow A, block B, receive B's blocked result,
   execute A, receive A's successful result, and continue to the scripted final response.
@@ -97,6 +100,7 @@ Neither calls `ctx.abort()`.
 The traces are in `results.json`; the earlier 18-case output is retained as `results-18-cases.json`.
 The all-run abort discussed previously belonged to a prototype that had already returned approval for earlier hooks.
 It is not a Pi parallel-batch requirement.
+These fixtures prove per-call blocking; their shared-review prototype does not implement the latest review unit.
 
 ## Blocking, cancellation, and human Stop
 
@@ -109,7 +113,7 @@ That scoped observation is not proof that every other host surface lacks cancell
 The existing review illustration uses Approve and Stop with an optional reason.
 Its Stop action aborts the run; automatic denial of a call is a different action.
 The latest correction does not itself settle a change to the human Stop interaction.
-Any manual approval is scoped to the displayed calls, not unrelated siblings or future work.
+Any manual approval is scoped to the displayed single outer call, not unrelated siblings or future work.
 
 ## Public plugin APIs and ownership
 
@@ -131,23 +135,23 @@ The design assumes those later mutations do not occur.
 They do not justify ordering guards, extra prompts, fallback triggers, or private hooks.
 
 The selective-blocking probes establish public per-call decisions, not final prepared-input capture in every host mode.
-The prepared-group probes and the selective-blocking probes are distinct evidence surfaces.
+The historical prepared-group probes and the selective-blocking probes are distinct evidence surfaces.
 Their results cannot be combined into a claim that one complete replacement implementation already works.
 
-## Rule answer, admission, and affected-call decision
+## Rule answer, admission, and individual decision
 
 First-pass coverage includes every effective authored rule and every built-in rule.
 Each rule uses the four choices `approve`, `deny`, `ask`, and `not-applicable`.
 The accepted Q1 B rule admits a valid unique leading probability without a minimum or winning-margin threshold.
 A tie, malformed answer, or missing answer remains unresolved.
 
-A rule answer is not automatically a verdict for every call in the batch.
-The answer needs attribution to the affected call identities or joint interaction before code can apply it selectively.
-The scalar four-choice answer alone does not carry that attribution.
-Its representation is unresolved; multiplying questions per rule/call or changing the choice schema is not adopted.
+Every first-pass rule answer belongs to one outer call's review snapshot.
+The scalar four-choice answer is attributed by that call identity and rule occurrence.
+There is no separate sibling-attribution problem or joint-interaction question schema.
+Each call receives its own complete every-rule first pass unless deterministic review already resolves it.
 
 The tests' Approve answer is not a vote capable of canceling an upload's Deny answer.
-Q7 concerns how rules governing the same affected call or interaction combine.
+Q7 concerns how rules governing the same call combine.
 Q8 concerns complete all-not-applicable coverage for the affected action.
 Neither choice is settled merely by correcting the parallel-batch misconception.
 
@@ -159,8 +163,8 @@ Unresolved review means evidence or interpretation is not yet sufficient to esta
 Those states do not have the same follow-up behavior.
 
 An established Ask is not sent through more model batches to seek a different verdict.
-That terminality concerns its affected calls; unrelated unresolved members can still require review.
-The whole group shares the existing review allowance rather than receiving a fresh allowance per member.
+That terminality concerns this call; other calls retain their separate review state.
+Each call has at most three sequential review batches with three parallel Luna requests per batch, including retries.
 
 An Ask explanation names the action, target, relevant rule, recorded evidence,
 the human judgment required, and the consequences of the available actions.
@@ -170,7 +174,7 @@ The explanation and focused-question mechanisms therefore remain explicit design
 
 ## Snapshot, startup rules, and shadow observation
 
-The pending group is separate from the bounded visible-history field.
+The pending outer call is separate from the bounded visible-history field.
 Q4 A also retains the latest genuine human request in its own field.
 Synthetic user-role feedback does not become a new human request.
 Private thinking content remains excluded even if its boundary counts as a history unit.
@@ -180,18 +184,18 @@ The expected effective-rule count is not a truncation limit.
 The built-in catalogue is plural but its count, members, and wording remain deferred.
 
 Span 02 observes the primary review and does not own execution permission.
-Its budget scope, delivery durability, scheduling, and evidence retention remain proposals or open questions.
+Luna's three-by-three review allowance applies per tool call; Span 02 observations are counted separately.
+The former combined-provider-budget question is withdrawn.
+Delivery durability, scheduling, and evidence retention remain proposals or open questions.
 A logger call or bounded flush does not by itself establish durable replay state.
 
 ## Unresolved boundaries and next evidence
 
-- Attribution of each rule answer to calls and interactions without silently changing the agreed question contract.
-- Release timing when a permitted member shares a group with unresolved review.
-- Reduction and follow-up reconciliation for rules governing the same affected scope.
-- Public behavior for custom global execution modes, dynamic loadouts, arbitrary nested grouping,
+- Reduction and follow-up reconciliation for rules governing the same outer call.
+- Public behavior for custom global execution modes, dynamic loadouts, `codemode` outer-call boundaries,
   real TUI cancellation, and session transitions.
 - Final serialized question capacity with all effective instruction sources and built-ins.
-- Shadow accounting, persistence, and local evidence retention.
+- Shadow scheduling, persistence, and local evidence retention.
 
 These are named gaps, not permission to stop all execution or expand into Pi internals.
 Their treatment follows the user's least-degrading fallback rule and the current review's explicit decisions.
