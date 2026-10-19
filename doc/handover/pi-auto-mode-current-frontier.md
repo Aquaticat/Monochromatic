@@ -3,8 +3,61 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
-The active visual form has open choices Q1 and Q4; Q2 and Q6 are withdrawn as settled.
-After answers, update the decision tree and continue the next unlocked review work.
+Q1 B and Q4 A are accepted; Q2 and Q6 are withdrawn as settled.
+Continue the next unlocked review round; implementation remains stopped.
+
+### Unapproved Pi modification removed, 2026-10-19
+
+The user identifies issue #1786 and prohibits modifying Pi itself; use its public plugin API.
+The agent introduced the copied/transformed Pi architecture without the user's approval.
+The agent also proposed a private loading hook in the rebuild plan and has withdrawn it.
+Do not describe these as a shared choice or an accepted user decision.
+
+Before the user's removal, a direct import of the copied Pi child-process module reproduced
+`ERR_MODULE_NOT_FOUND` for `cross-spawn`; importing the installed Pi module passed.
+Source inspection confirms generated replacements for the agent loop, session, and other Pi modules.
+The active release's dependency link targeted an absent Pi 1.2.0 dependency directory.
+The user removed `dist`, then explicitly removed `bin` and `native`.
+Normal plugin build output may recreate `dist`; the prohibition concerns rebuilding or transforming Pi.
+
+The package had two tracked TypeScript projects plus two empty untracked probe files.
+The tracked split supported the removed mixed TypeScript/JavaScript implementation.
+The package now has one standard TypeScript config; native tasks and empty probe files are removed.
+The user also challenges the copied `types: ["node"]` override.
+The shared `tsconfig.options.json` already supplies it; the package now only declares `extends`.
+Do not copy sibling overrides without checking inherited configuration.
+The generated PATH source also removes the deleted auto-mode launcher directory.
+Preserve the user's deletions and the pre-rebuild reference worktree.
+Finish generated configuration, stale launcher, documentation, and rendered verification before the next review round.
+
+Public Pi 1.3.0 source supports observing complete model-issued calls through `message_end`
+and blocking calls through `tool_call`, without modifying Pi.
+This is a candidate public-plugin design, not runtime qualification.
+Final argument mutation, handler ordering, sequential-mode identification, and nested boundaries need disposable probes.
+Do not infer that a missing public capability authorizes private source transformation.
+
+The remaining review queue covers rule reduction, approval sufficiency, focused-evidence reconciliation,
+Stage 0 full-rule fallback, shadow delivery/accounting, and local evidence retention.
+Built-in rule contents remain deferred; Q1 B and Q4 A remain accepted.
+
+Proposed guidance correction: tighten `HON` to require attributing design choices to their actual decision-maker
+and never calling an agent choice shared without recorded user acceptance. `AGENTS.md` is unchanged.
+
+### Unique-leader admission and separate human anchor accepted, 2026-10-19
+
+The user answers “Q1 B, Q4 A.”
+Admit any unique highest-probability choice in a valid response, without a minimum, margin, or confidence threshold.
+Exact ties, malformed or missing responses remain unresolved; rule-answer admission does not bypass group reduction.
+Keep the latest genuine human request in a separate snapshot field in addition to the bounded visible history.
+Synthetic API user-role feedback and compaction entries do not reset that anchor.
+Remove the rejected threshold and capped-history-only menus from the active review.
+
+The next design frontier requires fresh facts rather than inferred constraints.
+Read-only agents are checking aggregation/follow-up semantics, Stage 0 failure fallback and endpoint capacity,
+and existing shadow/logger lifecycle ownership and retention preferences.
+Do not reopen the group boundary, terminal Ask contract, or deferred built-in catalogue.
+Next action: commit the accepted choices, assemble the whole unlocked frontier with concrete examples,
+verify its HTML flowcharts/form, open it in Helium, and request the next round of answers.
 
 ### Parallel-batch versus individual-call grouping, 2026-10-19
 

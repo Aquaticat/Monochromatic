@@ -1,5 +1,15 @@
 # JavaScript lint context
 
+## Historical configuration, retired 2026-10-19
+
+The user removed the unapproved native Pi implementation during the ground-up rebuild.
+The mixed-language lint project and separate `tsconfig.types.json` are retired.
+One `tsconfig.json` now extends the standard repository configuration for the future TypeScript plugin.
+Two empty, untracked probe configs were also removed.
+The findings that follow describe the removed implementation, not a required plugin architecture.
+
+## Original reason for the split
+
 The default TypeScript project includes maintained MJS files so semantic lint can resolve their imports.
 The previous TS-only project leaves ordinary Node assertion imports error-typed in MJS consumers.
 This is an input-project problem,

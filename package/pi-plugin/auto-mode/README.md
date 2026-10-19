@@ -1,5 +1,18 @@
 # @monochromatic-dev/pi-plugin-auto-mode
 
+## Rebuild status
+
+Implementation is stopped while the [ground-up plan](doc/planning/ground-up-rebuild.md) is reviewed.
+The replacement will be a TypeScript plugin using Pi's public API.
+The user did not approve the old copied/transformed Pi architecture and has removed `bin`, `native`, and `dist`.
+Native build tasks and the mixed-language TypeScript configuration are retired.
+Normal plugin output may recreate `dist`; it must not contain a rebuilt or transformed Pi distribution.
+The remaining native descriptions and source links in this README are historical.
+Their source is preserved at `~/temp/agent/pi-auto-mode-before-rebuild-20261019/package/pi-plugin/auto-mode/`.
+No replacement plugin is currently available.
+
+## Historical implementation
+
 > Scratch-path note:
 > `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
