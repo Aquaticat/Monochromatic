@@ -508,9 +508,8 @@ the owner-lock token and PID of the attempt,
 its exit code,
 and,
 for a failed attempt,
-its complete push output
-and the newest tip the branch is known to have published (`publishedTip`),
-copied from the record before it so that a failure does not erase it.
+its complete push output.
+A record that an earlier release wrote with a `publishedTip` field still reads, and the field is dropped on the next write.
 It is published by rename,
 and an absent or unreadable record reads as no attempt,
 which only costs an extra push.
@@ -543,16 +542,21 @@ and distinct on case-insensitive filesystems.
   successful or failed.
 - A push of a branch with an upstream that the remote refuses as stale
   (its output holds `[rejected]`, the marker Git does not translate)
-  is reconciled by the same attempt, under the same lock, when all of these hold:
-  the push destination is the upstream (`@{push}` equals `@{upstream}`, and the remote is not `.`);
-  and the branch tip contains the newest published tip the record names
-  (the tip of a successful record, or the `publishedTip` a failed record kept)
-  or the upstream tracking tip,
-  because a branch that contains neither was amended or rebased,
-  a merge would bring the replaced commits back,
-  and its rejection stays visible as before.
-  Either is enough: a reconcile leaves the tracking ref on a merge that the branch does not contain,
-  and a failed attempt must not make the next commit look rewritten.
+  is reconciled by the same attempt, under the same lock,
+  whenever the push destination can be named.
+  The destination remote follows Git's order
+  (`branch.<name>.pushRemote`, then `remote.pushDefault`, then `branch.<name>.remote`),
+  and `push.default` picks the ref:
+  `current` and a triangular `simple` (push remote other than the tracked remote) use `refs/heads/<name>`,
+  `upstream`, `tracking` and a non-triangular `simple` use the tracked ref.
+  `@{push}` is not used, because Git refuses to resolve it for a push remote other than the tracked one
+  although the push itself works.
+  The remote `.`, a `remote.<name>.push` refspec, `matching`, `nothing` and a ref outside `refs/heads`
+  name no destination, and the rejection is returned unchanged.
+  An amended or rebased branch is reconciled like any other:
+  the merge brings the published commits it replaced into the remote history beside the new ones,
+  and only a real overlap between the two is a conflict.
+  Histories that share no commit are merged too (`--allow-unrelated-histories`).
   The attempt fetches the remote branch into the private ref `refs/cli-git/auto-push/fetch-<pid>`
   (never `FETCH_HEAD`, which every fetch shares),
   deletes that ref,

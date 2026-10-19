@@ -132,5 +132,90 @@
       "bytes": 652
     },
     "changed": "qemu-img was installed; mvm then required virsh/libvirt, which the sandbox does not provide. BuildKit still failed on the rootless Podman namespace."
+  },
+  "retryAfterLibvirt": {
+    "runId": "qzdndcpnl4",
+    "attemptId": "rvb7vh33zx",
+    "startedAt": "2026-10-19T15:35:45Z",
+    "finishedAt": "2026-10-19T15:50:19Z",
+    "durationSeconds": 874,
+    "artifact": {
+      "id": "01a154db-45ba-73dc-8693-bdb22505fa4e",
+      "name": "weekly-native-evidence",
+      "bytes": 653
+    },
+    "changed": "libvirt and qemu-utils installed and a user session daemon started; virsh define then failed because no qemu-system-x86_64 emulator was installed"
+  },
+  "retryAfterQemuSystem": {
+    "runId": "lv1pxlx50c",
+    "attemptId": "fwjdtxt1nk",
+    "startedAt": "2026-10-19T15:51:23Z",
+    "finishedAt": "2026-10-19T16:07:23Z",
+    "durationSeconds": 960,
+    "artifact": {
+      "id": "01a154ea-e35e-7da7-b881-018111913a25",
+      "name": "weekly-native-evidence",
+      "bytes": 652
+    },
+    "changed": "qemu-system-x86 enabled VM creation; the VM then had no virtiofsd, so push fell back to the guest agent and rejected the relative test path. Rootful podman build rejected --cpus."
+  },
+  "buildkitSuccess": {
+    "runId": "r1h68z8tzv",
+    "attemptId": "jb5fnt9gw4",
+    "startedAt": "2026-10-19T16:08:39Z",
+    "finishedAt": "2026-10-19T16:27:02Z",
+    "durationSeconds": 1103,
+    "artifact": {
+      "id": "01a154fc-e1e2-7b6a-98ff-d090672f71c0",
+      "name": "weekly-native-evidence",
+      "bytes": 654
+    },
+    "changed": "rootful Podman built the terminal and IDE images. VM creation then failed to start because the virtiofs chardev socket was refused."
+  },
+  "vmGuestProgress": {
+    "runId": "391g4q5t98",
+    "attemptId": "dd13dn64m8",
+    "startedAt": "2026-10-19T16:28:14Z",
+    "finishedAt": "2026-10-19T16:45:47Z",
+    "durationSeconds": 1053,
+    "artifact": {
+      "id": "01a1550e-0b95-796c-b667-ba385b688021",
+      "name": "weekly-native-evidence",
+      "bytes": 653
+    },
+    "changed": "VM created and the bundle push used the guest-agent path; mise then failed because the guest lacked libatomic1"
+  },
+  "libatomicOrdering": {
+    "runId": "k1d5q6x48p",
+    "attemptId": "sknws5h6rm",
+    "startedAt": "2026-10-19T16:46:54Z",
+    "finishedAt": "2026-10-19T17:03:59Z",
+    "durationSeconds": 1025,
+    "artifact": {
+      "id": "01a1551e-b726-7d08-86ec-65558485a838",
+      "name": "weekly-native-evidence",
+      "bytes": 653
+    },
+    "changed": "VM and BuildKit succeeded up to guest Node setup; the libatomic install still ran after Node and was moved earlier."
+  },
+  "setupRetries": {
+    "runs": [
+      {
+        "runId": "xgd08stcz2",
+        "attemptId": "dxxkdl9bdm",
+        "startedAt": "2026-10-19T17:05:18Z",
+        "finishedAt": "2026-10-19T17:09:26Z",
+        "artifact": "01a15523-b48d-7993-baf6-ed19e798f8c2",
+        "failure": "prepare:pnpm failed after tool install"
+      },
+      {
+        "runId": "fkwfbqh5wn",
+        "attemptId": "rmvg1fpv8c",
+        "startedAt": "2026-10-19T17:09:53Z",
+        "finishedAt": "2026-10-19T17:13:30Z",
+        "artifact": "01a15527-6daa-72a2-8b1e-b9936fdb4213",
+        "failure": "prepare:pnpm failed after tool install"
+      }
+    ]
   }
 }

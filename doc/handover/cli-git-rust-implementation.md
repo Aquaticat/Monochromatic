@@ -1733,15 +1733,33 @@ that is verification, not a decision for the user.
   other than exit 1 had no test and was not reported as a miss, so it got one anyway, commit `9555cd128f`
   (`an_unreadable_signing_setting_publishes_nothing`, a `commit.gpgsign` value of `sometimes`); shown failing when
   that branch returns `Ok(false)` instead of the error, then restored. The `rec3` images and container are removed.
-  Requirement from the user (2026-10-19): auto-push must never fail when there are no conflicts; offline and
-  authentication failures are exempt. Task 50. Done so far: the worktree fast-forwards to a published reconcile merge
-  when it is clean (commit `2bb616bf57`, refusals reported with a reason), and the reconcile retries up to 10 times
-  instead of 3 (commit `e302913b94`). Audit of the other no-conflict failures, not yet fixed: a branch whose
-  published history was amended or rebased keeps its rejection by design (asked of the user); a push destination
-  other than the upstream (`push.default=current`, a push remote, a tracked local branch) is not reconciled;
-  unrelated histories fail as a Git error; a remote hook refusal and a failing signer are reported as they are.
-  Unreleased: the next release (0.2.2) carries both commits; the mutation run must be repeated over
-  `advance_local_branch` first.
+  Requirement from the user (2026-10-19, task 50): auto-push must never fail when there are no conflicts; offline and
+  authentication failures are exempt. The user chose, by question, to merge an amended or rebased branch when
+  conflict-free and to handle the rare cases too. Done on main and released as 0.2.2 (below):
+  `2bb616bf57` the worktree fast-forwards to a published reconcile merge when `HEAD` is the pushed branch at the
+  pushed tip and no tracked file differs (refusals are reported with the reason); `e302913b94` up to 10 reconcile
+  attempts instead of 3; `de1ce26e2f` the "published base" guard is gone (so an amended or rebased branch is merged;
+  the `publishedTip` record field from 0.2.1 is removed again, old records still parse), the destination follows
+  `pushRemote`, `remote.pushDefault` and `push.default` (`@{push}` is not used: Git refuses it for a push remote
+  other than the tracked one although the push works), and unrelated histories merge. A `remote.<name>.push`
+  refspec, `matching`, `nothing` and the remote `.` still name no destination. SPEC section "Auto-push" is updated
+  (`5507ad381b`). Guard tests shown failing on their mutants: the clean-worktree check, the attempt bound, the
+  unrelated-histories flag and the triangular `simple` rule (the last survived the first test set and got
+  `496875c8cf`). Remaining failures without a conflict that are by nature outside the rule: a remote hook refusal
+  and a signer that fails.
+  Real-signer check passed 2026-10-19: the reconcile merge `08b8bd1547`, made by the installed 0.2.1 wrapper, shows
+  `%G?` of `G` on origin.
+  Running (started 2026-10-19, non-blocking): unit `cli-git-rec4`, script `~/temp/agent/rec4-run.ts`, image tag
+  `rec4`, head `496875c8cf`: the container gate, then mutation over the three auto-push files limited to the functions
+  this work touched; logs `~/temp/agent/rec4-container.log` and `rec4-mutation.log`. Read the final "mutants tested"
+  line, kill every missed mutant with a test (a miss ships in a follow-up release), and remove the `rec4` image and
+  container. If the unit is gone without a result, restart it with `systemd-run --user --unit=cli-git-rec4 --collect
+  --property=MemoryMax=24G node ~/temp/agent/rec4-run.ts`.
+  Released 2026-10-19 as 0.2.2 (commit `63a67d1b5f`) after the container gate passed (1995 tests, 5 skipped): the
+  publish workflow succeeded, crates.io lists 0.2.2, both archives exist, the glibc floor on the x86_64 archive is
+  still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it
+  (mise caches the remote version list for an hour, so the upgrade needed `MISE_FETCH_REMOTE_VERSIONS_CACHE=0s`;
+  `mise.lock` was restored).
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open

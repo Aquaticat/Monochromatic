@@ -2,7 +2,8 @@
  Maps Luna's reading of a final message to a stop decision.
 
  The table follows rules this repository already states rather than a fresh
- judgment: an announced next step is done now, a wait on the user goes through
+ judgment: an announced next step, or open work the agent could do itself, is
+ done now, a wait on the user goes through
  `AskUserQuestion`, and a wait on background work is refused only when no
  background task is running, because then nothing can resume the turn. A
  running task means Claude Code will wake the session itself, and whether it
@@ -59,6 +60,17 @@ const LEAD = autoContinueReason()[0] ?? '';
 const ANNOUNCED_REASON: readonly string[] = autoContinueReason();
 
 /**
+ Block reason for an agent that lists open work it could do itself and stops.
+ */
+const OPEN_WORK_REASON: readonly string[] = [
+  LEAD,
+  'Your final message lists open items, failures, or follow-ups that you can act on yourself.',
+  'Do them now: file the issue, fix the failing test, or run the audit.',
+  'Ask with the AskUserQuestion tool only for a choice that is the user\'s to make,',
+  'and name what is left only after it is done.',
+];
+
+/**
  Block reason for an agent that asks the user for input in prose.
  */
 const WAITS_ON_USER_REASON: readonly string[] = [
@@ -89,6 +101,13 @@ const ACTIONS: Readonly<Record<Situation, (state: { readonly backgroundTasks: re
       kind: 'block',
       why: 'announced next step',
       reason: ANNOUNCED_REASON,
+    };
+  },
+  leaves_open_work: function leavesOpenWork(): SituationAction {
+    return {
+      kind: 'block',
+      why: 'lists open work it could do itself',
+      reason: OPEN_WORK_REASON,
     };
   },
   waits_on_user: function waitsOnUser(): SituationAction {

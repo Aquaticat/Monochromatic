@@ -37,12 +37,20 @@ const DECISION_DEADLINE_EXTENSION_MS = 16_000;
 /**
  Recorded incident scores separate the leading action from its competitor and uncertainty.
  */
-const recordedDecisionScores = Object.freeze({ leading: 0.56, competing: 0.38, unknown: 0.06, });
+const recordedDecisionScores = Object.freeze({
+  leading: 0.56,
+  competing: 0.38,
+  unknown: 0.06,
+});
 
 /**
  Existing high-uncertainty contrast requires scoped manual confirmation.
  */
-const uncertainDecisionScores = Object.freeze({ leading: 0.59, competing: 0, unknown: 0.41, });
+const uncertainDecisionScores = Object.freeze({
+  leading: 0.59,
+  competing: 0,
+  unknown: 0.41,
+});
 
 /**
  Build the fixture wire transport asserting each authored decision request.

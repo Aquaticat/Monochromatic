@@ -2,10 +2,16 @@
 //! where the picture,
 //! the viewport box,
 //! and a pointer position are,
-//!  as pure functions of the text's height and the view's height.
+//!  as pure functions of the text's height,
+//! the view's height,
+//! and the scroll offset.
 
+/// How many bands cover the text.
+use super::plan::band_count;
 /// The vertical mapping the minimap's rows come from and go back to.
 use crate::row_map::{CODE_ROW, RowMap};
+/// The bands to keep are a range of numbers.
+use std::ops::Range;
 
 /// What:
 ///  Logical width of the minimap at full size,
@@ -47,11 +53,13 @@ pub const NARROWEST: f32 = 15.0;
 pub const VIEW_SHARE: f32 = 6.0;
 
 /// What:
-///  Logical pixels of the picture for each source row while the whole text fits the view.
+///  Logical pixels of the picture for each source row.
 /// Why:
 ///  CodeGlance Pro's `pixelsPerLine` default is 4;
-/// the picture of a longer text is squeezed to the view
-///  (its `Fit` size mode) because the whole file has to show.
+/// the picture keeps that scale however long the text is,
+///  and a text taller than the view slides past the track with the scroll
+///  (CodeGlance Pro's proportional size mode),
+///  so a row of the picture is always one of the window's own rows averaged and never a guess.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,10 +120,10 @@ pub struct Target {
 /// What:
 ///  The minimap column for a text `content` logical pixels tall in a view `view` pixels tall:
 ///  the scale of its picture,
-/// the track the picture covers,
+/// the track the picture shows,
+/// how far the picture has slid past the track,
 /// the viewport box,
-/// and the maps between a minimap
-///  position,
+/// and the maps between a minimap position,
 /// a scroll offset,
 /// and a visual row.
 /// Why:
@@ -153,29 +161,32 @@ impl Geometry {
     }
 
     /// Logical pixels of the picture for each pixel of the text:
-    ///  [`PIXELS_PER_ROW`] over one code row while the text fits the view at that scale,
-    /// otherwise the view over the
-    ///  text,
-    /// so the picture always shows the whole text.
+    ///  [`PIXELS_PER_ROW`] over one code row,
+    /// whatever the text's length.
     pub fn scale(&self) -> f32 {
-        let natural = PIXELS_PER_ROW / CODE_ROW;
-        if self.content <= 0.0 {
-            return natural;
-        }
-        return natural.min(self.view / self.content);
+        return PIXELS_PER_ROW / CODE_ROW;
     }
 
-    /// Height of the picture in logical pixels:
-    /// the whole text at [`Self::scale`],
-    /// never taller than the view.
+    /// Height of the track the picture is seen through:
+    /// the whole text at [`Self::scale`] while that fits the view,
+    /// otherwise the view.
     pub fn track(&self) -> f32 {
         return (self.content * self.scale()).min(self.view);
     }
 
-    /// Whether the picture is squeezed:
-    /// several rows of the text share one pixel of it.
-    pub fn squeezed(&self) -> bool {
-        return self.scale() < PIXELS_PER_ROW / CODE_ROW;
+    /// How far the picture has slid up past the track,
+    /// in logical pixels,
+    /// for a view scrolled to `offset`:
+    ///  the picture's overhang past the track,
+    /// by the offset's share of the scroll range.
+    ///  Zero for a text that fits.
+    pub fn slide(&self, offset: f32) -> f32 {
+        let range = self.max_offset();
+        if range <= 0.0 {
+            return 0.0;
+        }
+        let overhang = (self.content * self.scale() - self.track()).max(0.0);
+        return overhang * (offset / range).clamp(0.0, 1.0);
     }
 
     /// Height of the viewport box:
@@ -213,19 +224,21 @@ impl Geometry {
 
     /// The text position,
     /// in logical pixels from its top,
-    /// the minimap position `y` shows.
+    /// the minimap position `y` shows with the view scrolled to `offset`.
     ///  A position above or below the track is clamped to its ends.
-    pub fn content_y(&self, y: f32) -> f32 {
+    pub fn content_y(&self, y: f32, offset: f32) -> f32 {
         let track = self.track();
         if track <= 0.0 {
             return 0.0;
         }
-        return (y.clamp(0.0, track) / self.scale()).min(self.content);
+        return ((y.clamp(0.0, track) + self.slide(offset)) / self.scale()).min(self.content);
     }
 
-    /// The minimap position of the text position `content_y`.
-    pub fn y_of(&self, content_y: f32) -> f32 {
-        return (content_y.clamp(0.0, self.content) * self.scale()).min(self.track());
+    /// The minimap position of the text position `content_y` with the view scrolled to `offset`,
+    /// held to the track.
+    pub fn y_of(&self, content_y: f32, offset: f32) -> f32 {
+        let y = content_y.clamp(0.0, self.content) * self.scale() - self.slide(offset);
+        return y.clamp(0.0, self.track());
     }
 
     /// What:
@@ -267,10 +280,10 @@ impl Geometry {
         return (content_y - self.view / 2.0).clamp(0.0, self.max_offset());
     }
 
-    /// The visual row of `map` the minimap position `y` shows.
+    /// The visual row of `map` the minimap position `y` shows with the view scrolled to `offset`.
     ///  A position in the virtual rows above a line shows that line's first row.
-    pub fn target(&self, map: &RowMap, y: f32) -> Target {
-        let content_y = self.content_y(y);
+    pub fn target(&self, map: &RowMap, y: f32, offset: f32) -> Target {
+        let content_y = self.content_y(y, offset);
         let place = map.locate(content_y);
         let row = if place.in_block {
             0
@@ -283,11 +296,38 @@ impl Geometry {
         };
     }
 
-    /// The minimap position of the top of `target`'s visual row:
+    /// The minimap position of the top of `target`'s visual row with the view scrolled to `offset`:
     /// the inverse of [`Self::target`] up to the pixel.
-    pub fn y_of_row(&self, map: &RowMap, target: Target) -> f32 {
+    pub fn y_of_row(&self, map: &RowMap, target: Target, offset: f32) -> f32 {
         let line = target.line.min(map.lines() - 1);
         let row = target.row.min(map.rows_of(line) - 1);
-        return self.y_of(map.code_top(line) + row as f32 * CODE_ROW);
+        return self.y_of(map.code_top(line) + row as f32 * CODE_ROW, offset);
+    }
+
+    /// What:
+    ///  The bands of the picture to keep with the view scrolled to `offset`,
+    /// as a range of band numbers:
+    ///  the bands `step` logical pixels tall,
+    /// counted from the top of the text,
+    /// that the track shows,
+    ///  and one more on each side.
+    /// Why:
+    ///  Only the bands near the visible part of the picture are built and kept;
+    ///  the extra band on each side lets a scroll of up to a band move the picture without a new one.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bandsFor(offset: number, step: number): [number, number];
+    /// ```
+    pub fn bands_for(&self, offset: f32, step: f32) -> Range<usize> {
+        if self.content <= 0.0 || step <= 0.0 {
+            return 0..0;
+        }
+        let total = band_count(self.content, step);
+        let from = self.slide(offset) / self.scale();
+        let to = (self.slide(offset) + self.track()) / self.scale();
+        let first = (((from - step) / step).floor().max(0.0) as usize).min(total - 1);
+        let end = (((to + step) / step).ceil() as usize).clamp(first + 1, total);
+        return first..end;
     }
 }

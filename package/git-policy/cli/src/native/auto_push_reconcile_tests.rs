@@ -253,9 +253,10 @@ fn a_conflicting_merge_is_kept_unpublished_with_the_conflicting_paths() {
     remove(&s.root);
 }
 
-/// An amended published commit is never merged: the replaced commit would come back, so the rejection stays.
+/// An amended published commit is merged like any other divergence: nothing published is lost, the replaced commit
+/// stays in the remote history beside the amended one, and the push is not refused.
 #[test]
-fn an_amended_published_commit_keeps_its_rejection() {
+fn an_amended_published_commit_is_merged_when_nothing_conflicts() {
     let s = scenario("ar-amend");
     let first = commit_local(&s, "b.txt", "first\n");
     let (published, _) = run(&s, &first);
@@ -268,11 +269,46 @@ fn an_amended_published_commit_keeps_its_rejection() {
     );
     let amended = text_of(&s.local, &["rev-parse", "HEAD"]);
     let (result, err) = run(&s, &amended);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    let merged = text_of(&s.remote, &["rev-parse", "main"]);
+    assert_eq!(
+        text_of(&s.remote, &["rev-list", "--parents", "--max-count=1", "main"]),
+        format!("{merged} {amended} {remote_before}")
+    );
+    assert_eq!(text_of(&s.remote, &["show", "main:a.txt"]), "remote");
+    assert_eq!(text_of(&s.remote, &["show", "main:b.txt"]), "first");
+    remove(&s.root);
+}
+
+/// An amend that changes the same lines as the published commit is a conflict, and the conflict is reported.
+#[test]
+fn an_amend_that_conflicts_with_the_published_commit_is_reported() {
+    let s = scenario("ar-amend-conflict");
+    let first = commit_local(&s, "b.txt", "first\n");
+    let (published, _) = run(&s, &first);
+    assert_eq!(published.outcome, AutoPushOutcome::Pushed);
+    advance_remote(&s, "c.txt", "remote\n");
+    std::fs::write(s.local.join("b.txt"), "second\n").expect("amend change");
+    git(
+        &s.local,
+        &["commit", "--quiet", "--amend", "-m", "amended", "b.txt"],
+    );
+    // The remote's copy of the published commit changes the same line differently.
+    git(&s.other, &["fetch", "--quiet", "origin"]);
+    git(&s.other, &["merge", "--quiet", "--ff-only", "origin/main"]);
+    std::fs::write(s.other.join("b.txt"), "third\n").expect("remote change");
+    git(&s.other, &["commit", "--quiet", "-m", "remote b", "--", "b.txt"]);
+    git(&s.other, &["push", "--quiet", "origin", "main"]);
+    let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
+    let amended = text_of(&s.local, &["rev-parse", "HEAD"]);
+    let (result, err) = run(&s, &amended);
     assert_eq!(result.outcome, AutoPushOutcome::Failed, "{err}");
     assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
-    assert!(err.contains("[rejected]"), "{err}");
-    assert!(err.contains(PUSH_FAILED_NOTE), "{err}");
-    assert!(!err.contains(RECONCILE_LINE_PREFIX), "{err}");
+    assert!(err.contains("conflicts in: b.txt"), "{err}");
     remove(&s.root);
 }
 
@@ -362,9 +398,9 @@ fn a_commit_the_remote_already_contains_is_reported_as_delivered() {
     remove(&s.root);
 }
 
-/// A push destination other than the upstream is not reconciled: the tracked tip is the wrong thing to merge.
+/// A push remote other than the tracked one is reconciled against the push remote: the rejection came from there.
 #[test]
-fn a_push_remote_other_than_the_upstream_is_not_reconciled() {
+fn a_push_remote_other_than_the_upstream_is_reconciled_against_the_push_remote() {
     let s = scenario("ar-push-remote");
     git(
         &s.local,
@@ -375,10 +411,17 @@ fn a_push_remote_other_than_the_upstream_is_not_reconciled() {
     let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
     let landed = commit_local(&s, "b.txt", "local\n");
     let (result, err) = run(&s, &landed);
-    assert_eq!(result.outcome, AutoPushOutcome::Failed, "{err}");
-    assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
-    assert!(err.contains(PUSH_FAILED_NOTE), "{err}");
-    assert!(!err.contains(RECONCILE_LINE_PREFIX), "{err}");
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    let merged = text_of(&s.remote, &["rev-parse", "main"]);
+    assert_eq!(
+        text_of(&s.remote, &["rev-list", "--parents", "--max-count=1", "main"]),
+        format!("{merged} {landed} {remote_before}")
+    );
+    assert!(err.contains("mirror/main had new commits"), "{err}");
     remove(&s.root);
 }
 
@@ -485,16 +528,83 @@ fn a_branch_without_an_upstream_or_outside_the_heads_has_no_destination() {
     remove(&s.root);
 }
 
-/// A push remote other than the upstream's remote would publish somewhere this module did not fetch.
+/// A push remote other than the tracked one is where a triangular push goes, so it is the destination.
 #[test]
-fn a_push_remote_that_differs_from_the_upstream_has_no_destination() {
+fn a_push_remote_that_differs_from_the_upstream_is_the_destination() {
     let s = scenario("ar-dest-pushremote");
     git(
         &s.local,
         &["remote", "add", "mirror", s.remote.to_str().expect("utf-8")],
     );
-    git(&s.local, &["fetch", "--quiet", "mirror"]);
     git(&s.local, &["config", "branch.main.pushRemote", "mirror"]);
+    assert_eq!(
+        destination_of(&s, "refs/heads/main").as_deref(),
+        Some("mirror refs/heads/main")
+    );
+    git(&s.local, &["config", "--unset", "branch.main.pushRemote"]);
+    git(&s.local, &["config", "remote.pushDefault", "mirror"]);
+    assert_eq!(
+        destination_of(&s, "refs/heads/main").as_deref(),
+        Some("mirror refs/heads/main"),
+        "remote.pushDefault is the next in Git's order"
+    );
+    remove(&s.root);
+}
+
+/// `push.default` picks the ref: `current` pushes to the branch's own name, `upstream` to the tracked ref, and
+/// `matching` and `nothing` name no single destination.
+#[test]
+fn push_default_decides_which_ref_is_the_destination() {
+    let s = scenario("ar-dest-modes");
+    git(&s.local, &["branch", "--quiet", "--track", "feature", "origin/main"]);
+    let cases = [
+        ("current", Some("origin refs/heads/feature")),
+        ("upstream", Some("origin refs/heads/main")),
+        ("tracking", Some("origin refs/heads/main")),
+        ("matching", None),
+        ("nothing", None),
+    ];
+    for (mode, expected) in cases {
+        git(&s.local, &["config", "push.default", mode]);
+        assert_eq!(
+            destination_of(&s, "refs/heads/feature").as_deref(),
+            expected,
+            "{mode}"
+        );
+    }
+    remove(&s.root);
+}
+
+/// With the default `simple`, a push remote other than the tracked one gets the branch's own name, and the tracked
+/// remote gets the tracked ref; a branch whose name differs from what it tracks tells the two apart.
+#[test]
+fn simple_pushes_by_name_to_a_push_remote_and_to_the_tracked_ref_otherwise() {
+    let s = scenario("ar-dest-simple");
+    git(&s.local, &["branch", "--quiet", "--track", "feature", "origin/main"]);
+    assert_eq!(
+        destination_of(&s, "refs/heads/feature").as_deref(),
+        Some("origin refs/heads/main")
+    );
+    git(
+        &s.local,
+        &["remote", "add", "mirror", s.remote.to_str().expect("utf-8")],
+    );
+    git(&s.local, &["config", "branch.feature.pushRemote", "mirror"]);
+    assert_eq!(
+        destination_of(&s, "refs/heads/feature").as_deref(),
+        Some("mirror refs/heads/feature")
+    );
+    remove(&s.root);
+}
+
+/// An explicit `remote.<name>.push` refspec overrides every default, so the destination is not the one derived.
+#[test]
+fn a_configured_push_refspec_has_no_destination() {
+    let s = scenario("ar-dest-refspec");
+    git(
+        &s.local,
+        &["config", "remote.origin.push", "refs/heads/main:refs/heads/elsewhere"],
+    );
     assert_eq!(destination_of(&s, "refs/heads/main"), None);
     remove(&s.root);
 }
@@ -533,38 +643,6 @@ fn an_upstream_outside_the_heads_has_no_destination() {
     remove(&s.root);
 }
 
-/// The bases are the last recorded push and then the tracking ref, which may differ.
-#[test]
-fn the_recorded_push_and_the_tracking_ref_are_both_bases() {
-    let s = scenario("ar-base-record");
-    let seed = text_of(&s.local, &["rev-parse", "HEAD"]);
-    let first = commit_local(&s, "b.txt", "first\n");
-    let (published, err) = run(&s, &first);
-    assert_eq!(published.outcome, AutoPushOutcome::Pushed, "{err}");
-    git(
-        &s.local,
-        &["update-ref", "refs/remotes/origin/main", seed.as_str()],
-    );
-    assert_eq!(
-        published_bases(&push_git(&s.local), "refs/heads/main").expect("bases"),
-        vec![first, seed]
-    );
-    remove(&s.root);
-}
-
-/// Without a recorded push, the only base is the tracking ref.
-#[test]
-fn the_tracking_ref_is_the_base_when_no_push_was_recorded() {
-    let s = scenario("ar-base-upstream");
-    let seed = text_of(&s.local, &["rev-parse", "HEAD"]);
-    commit_local(&s, "b.txt", "unpublished\n");
-    assert_eq!(
-        published_bases(&push_git(&s.local), "refs/heads/main").expect("bases"),
-        vec![seed]
-    );
-    remove(&s.root);
-}
-
 /// A rejection while the remote is behind the branch was not a divergence, so it is returned as it came.
 #[test]
 fn a_rejection_while_the_remote_is_behind_is_returned_unchanged() {
@@ -583,18 +661,21 @@ fn a_rejection_while_the_remote_is_behind_is_returned_unchanged() {
     remove(&s.root);
 }
 
-/// Histories that share no commit cannot be merged by `merge-tree`, and that is a Git failure, not a conflict.
+/// Histories that share no commit are merged like any other: that is not a conflict, and the merge has both parents.
 #[test]
-fn unrelated_histories_are_a_git_failure_not_a_conflict() {
+fn unrelated_histories_are_merged() {
     let s = scenario("ar-unrelated");
     git(&s.local, &["checkout", "--quiet", "--orphan", "island"]);
+    git(&s.local, &["rm", "--quiet", "--force", "-r", "."]);
     git(&s.local, &["commit", "--quiet", "--allow-empty", "-m", "island"]);
     let island = text_of(&s.local, &["rev-parse", "HEAD"]);
     let main = text_of(&s.local, &["rev-parse", "main"]);
-    let outcome = commit_merge(&push_git(&s.local), &island, &main, "message");
-    assert!(
-        matches!(outcome, Err(SingleFlightError::Git { .. })),
-        "{outcome:?}"
+    let merged = commit_merge(&push_git(&s.local), &island, &main, "message")
+        .expect("git")
+        .expect("no conflict");
+    assert_eq!(
+        text_of(&s.local, &["rev-list", "--parents", "--max-count=1", &merged]),
+        format!("{merged} {island} {main}")
     );
     remove(&s.root);
 }
@@ -858,7 +939,9 @@ fn an_untracked_file_the_target_would_overwrite_is_kept() {
     assert!(
         result
             .as_ref()
-            .is_err_and(|reason| reason.starts_with("Git refused the fast-forward: ")),
+            .is_err_and(|reason| {
+                return reason.starts_with("Git refused the fast-forward: ");
+            }),
         "{result:?}"
     );
     assert_eq!(
@@ -895,7 +978,9 @@ fn a_target_that_is_not_a_fast_forward_is_refused() {
     assert!(
         result
             .as_ref()
-            .is_err_and(|reason| reason.starts_with("Git refused the fast-forward: ")),
+            .is_err_and(|reason| {
+                return reason.starts_with("Git refused the fast-forward: ");
+            }),
         "{result:?}"
     );
     assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), landed);

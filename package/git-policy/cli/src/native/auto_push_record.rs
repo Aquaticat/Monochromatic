@@ -71,7 +71,7 @@ impl LastPushedOutcome {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type LastPushedRecord = { schemaVersion: 1; tip; outcome; ownerToken; ownerPid; exitCode; output; publishedTip?: string };
+/// type LastPushedRecord = { schemaVersion: 1; tip; outcome; ownerToken; ownerPid; exitCode; output };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LastPushedRecord {
@@ -87,28 +87,6 @@ pub struct LastPushedRecord {
     pub exit_code: i64,
     /// Complete push output of a failed attempt; empty on success.
     pub output: String,
-    /// The newest tip of the branch known to be on the remote, kept by a failed attempt so that a failure does not
-    ///  erase what the branch is known to have published; absent from a record of a successful push, whose `tip` is it.
-    pub published_tip: Option<String>,
-}
-
-impl LastPushedRecord {
-    /// What:
-    ///  The newest tip of the branch this record shows on the remote, if it shows one.
-    /// Why:
-    ///   A successful push published its `tip`; a failed one published nothing, so it can only repeat what the record
-    ///  before it showed.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// const published = (record) => (record.outcome === 'pushed' ? record.tip : record.publishedTip);
-    /// ```
-    pub fn published(&self) -> Option<&str> {
-        return match self.outcome {
-            LastPushedOutcome::Pushed => Some(self.tip.as_str()),
-            LastPushedOutcome::Failed => self.published_tip.as_deref(),
-        };
-    }
 }
 
 /// What:
@@ -153,11 +131,6 @@ pub fn parse_last_pushed_record(text: &str) -> Option<LastPushedRecord> {
     let owner_pid = safe_integer_field(&object, "ownerPid")?;
     let exit_code = safe_integer_field(&object, "exitCode")?;
     let output = string_field(&object, "output")?;
-    // Written only by this wrapper; a record without it is valid, one with an empty or non-string value is not.
-    let published_tip = match object.get("publishedTip") {
-        None => None,
-        Some(_) => Some(non_empty_string(&object, "publishedTip")?),
-    };
     return Some(LastPushedRecord {
         tip,
         outcome,
@@ -165,7 +138,6 @@ pub fn parse_last_pushed_record(text: &str) -> Option<LastPushedRecord> {
         owner_pid,
         exit_code,
         output: output.to_owned(),
-        published_tip,
     });
 }
 
@@ -231,12 +203,8 @@ pub fn read_last_pushed_record(record_path: &Path) -> std::io::Result<LastPushed
 /// `${JSON.stringify(record)}\n`
 /// ```
 pub fn encode_last_pushed_record(record: &LastPushedRecord) -> String {
-    let published_tip = match &record.published_tip {
-        Some(tip) => format!(",\"publishedTip\":{}", quote(tip)),
-        None => String::new(),
-    };
     return format!(
-        "{{\"schemaVersion\":{LAST_PUSHED_SCHEMA_VERSION},\"tip\":{},\"outcome\":{},\"ownerToken\":{},\"ownerPid\":{},\"exitCode\":{},\"output\":{}{published_tip}}}\n",
+        "{{\"schemaVersion\":{LAST_PUSHED_SCHEMA_VERSION},\"tip\":{},\"outcome\":{},\"ownerToken\":{},\"ownerPid\":{},\"exitCode\":{},\"output\":{}}}\n",
         quote(&record.tip),
         quote(record.outcome.as_str()),
         quote(&record.owner_token),

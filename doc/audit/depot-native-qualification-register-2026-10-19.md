@@ -27,17 +27,19 @@ Evidence root:
   qualified by runs `dmjf38bcz0` and `r2mxbc40rh`.
 - Weekly matrix static baseline:
   reproduced the known whole-tree findings rather than passing.
+- Weekly matrix BuildKit and Bake category:
+  qualified by rootful Podman runs `r1h68z8tzv`,
+  `391g4q5t98` and
+  `k1d5q6x48p`.
+  The terminal and IDE images built successfully.
 
 ## Not qualified
 
-- Weekly matrix BuildKit category:
-  rootless Podman cannot create the user namespace in the native sandbox.
-  `PODMAN_USERNS=host` did not fix it.
-  A rootful Podman command is needed before this category is qualified.
 - Weekly matrix VM category:
-  the vmsync path defect is fixed,
-  but the sandbox has no `virsh` or libvirt.
-  The category is incomplete until a libvirt-capable sandbox is admitted.
+  the vmsync path and guest prerequisites are fixed,
+  but the last two verification runs (`xgd08stcz2` and `fkwfbqh5wn`) failed in
+  `prepare:pnpm` before the matrix categories.
+  The VM category is not yet verified end to end.
 - Paused-session SSH,
   `--ssh-after-step`,
   tmate and interactive session strings.
