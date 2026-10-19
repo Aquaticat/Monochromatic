@@ -2,12 +2,14 @@
 
 ## Current work and next actions
 
-Work is incomplete. Continue the queue without another readiness handoff.
+Plan review is active and implementation remains stopped.
+The revised visual form is open in Helium; the current round awaits the user’s answers.
+After answers, update the decision tree and continue the next unlocked review work.
 
 ### User-defined staged review, 2026-10-19
 
 The latest user message replaces the proposed first-pass question selector and three-choice interpretation.
-The plan and HTML now follow this settled sequence. Browser and Markdown checks have passed; Helium handoff remains:
+The plan and HTML now follow this settled sequence. Browser and Markdown checks passed, and the updated review was opened in Helium:
 
 - Stage 0: on every Pi start, send parsed `AGENTS.md` rules to Luna for potential relevance.
   Materialize the effective ruleset, expected to contain about 100 rules, and add general-agent built-in rules.
@@ -54,8 +56,12 @@ The Markdown renderer passed at `auto-mode-rebuild-plan-render-m8SREJ` under dur
 Commit `73c90ccb77` contains the new HTML; `3d034972e5` adds full built-in wording and the host timeline.
 Commit `1a8758044e` is empty after replay: its intended newline fix was already applied in the parent.
 A corrective GitHub commit comment records that distinction; no history was amended.
-Next: commit verification evidence, re-render the updated verification notes, open Helium,
-and ask for the current round’s answers. Implementation remains stopped.
+Verification evidence is committed in `6934973012`.
+The final evidence-bearing Markdown rendered at `auto-mode-rebuild-plan-render-dNtIOb`; all 30 local links resolved.
+The Helium launcher reported “Opening in existing browser session.” for the updated review.
+The disposable verification browser was closed and the nested compositor accepted `quit`.
+Current round: await Q1 through Q6 answers or corrections from the HTML form.
+No answer is implementation authorization; the broader plan review remains active.
 No plugin implementation is authorized by this planning clarification.
 
 ### Historical visual review, superseded by the staged contract on 2026-10-19
