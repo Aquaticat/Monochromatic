@@ -9,6 +9,7 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { pathToFileURL, } from 'node:url';
 
 import {
   describe,
@@ -29,6 +30,12 @@ import spawn from 'nano-spawn';
 
 /** Spread and copy rules covered by this file. */
 type SpreadRule = 'no-useless-spread' | 'prefer-spread';
+
+/** Fault injection that makes every native TypeScript spawn fail as an out-of-memory spawn does. */
+const REFUSE_NATIVE_SPAWN = pathToFileURL(resolve(
+  import.meta.dirname,
+  'refuse-native-api-spawn.test-fixture.ts',
+),).href;
 
 /** Fixture source root. */
 const FIXTURES = fixtureSourceRoot({
@@ -224,10 +231,12 @@ async function fixedSource(
     rule,
     source,
     typed,
+    refuseSpawn = false,
   }: {
     readonly rule: SpreadRule;
     readonly source: string;
     readonly typed: boolean;
+    readonly refuseSpawn?: boolean;
   },
 ): Promise<string> {
   using scratch = scratchSource({
@@ -245,7 +254,10 @@ async function fixedSource(
         ruleConfig(rule,),
         scratch.filePath,
       ],
-      { cwd: ROOT, },
+      {
+        cwd: ROOT,
+        env: refuseSpawn ? { NODE_OPTIONS: `--import=${REFUSE_NATIVE_SPAWN}`, } : {},
+      },
     );
   }
   catch (error: unknown) {
@@ -386,6 +398,26 @@ await describe({
           },
         },),
         it({
+          name: 'fails the fix run, not reading the issue 563 source back as untouched, when the TypeScript bridge cannot start',
+          fn: async () => {
+            /** Failure of the fix run, which stays undefined when the run reads the untouched file back. */
+            let caught: unknown;
+            try {
+              await fixedSource({
+                rule: 'no-useless-spread',
+                source: ISSUE_563_SOURCE,
+                typed: true,
+                refuseSpawn: true,
+              },);
+            }
+            catch (error: unknown) {
+              caught = error;
+            }
+            expect(caught,).toBeInstanceOf(Error,);
+            expect(String(caught,),).toContain('spawn ENOMEM',);
+          },
+        },),
+        it({
           name: 'fixes certain copies, literal spreads, and iterable consumers',
           fn: async () => {
             /** Source whose every spread is provably removable. */
@@ -490,6 +522,26 @@ await describe({
               typed: false,
             },),)
               .toBe(ISSUE_565_SOURCE,);
+          },
+        },),
+        it({
+          name: 'fails the fix run, not reading the issue 565 source back as untouched, when the TypeScript bridge cannot start',
+          fn: async () => {
+            /** Failure of the fix run, which stays undefined when the run reads the untouched file back. */
+            let caught: unknown;
+            try {
+              await fixedSource({
+                rule: 'prefer-spread',
+                source: ISSUE_565_SOURCE,
+                typed: true,
+                refuseSpawn: true,
+              },);
+            }
+            catch (error: unknown) {
+              caught = error;
+            }
+            expect(caught,).toBeInstanceOf(Error,);
+            expect(String(caught,),).toContain('spawn ENOMEM',);
           },
         },),
         it({
