@@ -19,7 +19,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type {
+  BudgetView,
+  MeterState,
+} from '@monochromatic-dev/translation-repair-provider';
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   mapOverlapped,
@@ -107,9 +110,21 @@ const BEDROCK_ALONE: BudgetView = {
 const l = tagged({ tag: 'run-seats-read-test', },);
 
 /**
- Builds a client whose dryness view and holds answer as scripted.
+ What every meter said when each one answered wet.
+ */
+const ALL_METERS_WET: Readonly<Record<keyof BudgetView, MeterState>> = {
+  synthetic: 'wet',
+  bedrock: 'wet',
+  hyper: 'wet',
+  openrouter: 'wet',
+};
+
+/**
+ Builds a client whose dryness view, meter states and holds answer as scripted.
 
  @param providerDryness - scripted view
+
+ @param providerMeterStates - scripted meter states, every meter wet when absent
 
  @param providerHolds - scripted holds, none when absent
 
@@ -123,14 +138,17 @@ const l = tagged({ tag: 'run-seats-read-test', },);
 function viewClient(
   {
     providerDryness,
+    providerMeterStates = async () => ALL_METERS_WET,
     providerHolds = () => NO_HOLDS,
   }: {
     readonly providerDryness: () => Promise<BudgetView>;
+    readonly providerMeterStates?: () => Promise<Readonly<Record<keyof BudgetView, MeterState>>>;
     readonly providerHolds?: () => typeof NO_HOLDS;
   },
 ) {
   return {
     providerDryness,
+    providerMeterStates,
     providerHolds,
   };
 }
@@ -245,6 +263,63 @@ await describe({
               + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
               + 'threw-withheld=none waited=0ms',
             ],);
+          },
+        },),
+        it({
+          name: 'NAMES IN THE JUDGE SEATS LINE a meter that could not be read as unreadable and treated as '
+            + 'spendable, never as wet, while a meter that answered wet still reads wet and a provider routed '
+            + 'dry reads dry whatever its meter said',
+          fn: async () => {
+            /** Lines the reading writes at the info level. */
+            const lines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({
+                providerDryness: async () => ({
+                  synthetic: false,
+                  bedrock: true,
+                  hyper: false,
+                  openrouter: false,
+                }),
+                providerMeterStates: async () => ({
+                  synthetic: 'unreadable',
+                  bedrock: 'unreadable',
+                  hyper: 'wet',
+                  openrouter: 'wet',
+                }),
+              },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            expect(lines.length,).toBe(1,);
+            expect(lines[0],).toContain(
+              'info JUDGE SEATS phase=lanes synthetic=unreadable-treated-as-spendable bedrock=dry hyper=wet openrouter=wet ',
+            );
+          },
+        },),
+        it({
+          name: 'NAMES EVERY METER AS UNREADABLE when the states cannot be read either, since a view that could '
+            + 'not be read says nothing of any budget',
+          fn: async () => {
+            /** Lines the reading writes at the info level. */
+            const lines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({
+                providerDryness: async () => ALL_WET,
+                providerMeterStates: async () => {
+                  throw new Error('meters offline',);
+                },
+              },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            expect(lines.length,).toBe(1,);
+            expect(lines[0],).toContain(
+              'info JUDGE SEATS phase=lanes synthetic=unreadable-treated-as-spendable '
+              + 'bedrock=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
+              + 'openrouter=unreadable-treated-as-spendable ',
+            );
           },
         },),
         it({
