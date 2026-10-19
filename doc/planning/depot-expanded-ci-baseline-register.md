@@ -216,8 +216,17 @@ uses the changed-path static selector,
 and runs the five-owner fast subset build and unit tasks.
 Results are advisory;
 no required checks and no branch-protection change follow.
-GitHub run `39201349364` is the first implementation run;
-its outcome is recorded when it finishes.
+The first admitted run was `39201617300`.
+Its changed-path static step failed on pre-existing semantic-line-break findings in
+`doc/handover/slint-ide-0x.md`,
+a changed file in the pushed range.
+The old workflow stopped there and skipped build and unit.
+The workflow now lets static and build continue,
+runs unit after a successful build,
+and fails once at the end if any profile failed.
+The first run is therefore an observed changed-file lint failure,
+not a product assertion or a workflow success.
+The next run records the full three-part profile.
 
 ## Build profile
 
