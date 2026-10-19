@@ -10,7 +10,7 @@ import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import type {
   AgentSession,
   AgentToolResult,
-  createBashToolDefinition,
+  defineTool,
   ExtensionAPI,
   ExtensionHandler,
   ToolCallEvent,
@@ -181,7 +181,7 @@ export function wrapPhaseBashTool({
   observations: NativePhaseObservations;
   state: NativePhaseState;
   events: NativePhaseEvents;
-  original: ReturnType<typeof createBashToolDefinition>;
+  original: ReturnType<typeof defineTool>;
   readSession: () => AgentSession;
 }>): FixtureBashTool {
   return {

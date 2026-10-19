@@ -130,6 +130,7 @@ export async function runNativePhaseCatalog({
   const state: NativePhaseState = {
     updates: new Map(),
     sawNotification: false,
+    sawSteering: false,
     followupProposed: false
   };
   const environment = await createEnvironment({
@@ -184,7 +185,7 @@ export async function runNativePhaseCatalog({
       options: {
         ...environment.options,
         tools: ['bash'],
-        customTools: [environment.defineTool(bash)]
+        customTools: [bash]
       }
     });
   session.agent
