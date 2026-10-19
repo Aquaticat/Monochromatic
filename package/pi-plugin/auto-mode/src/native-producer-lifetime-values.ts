@@ -32,7 +32,7 @@ const authoredNames = new WeakMap<object, string>();
 const authoredContextResponses = new WeakMap<object, AssistantMessage>();
 
 /** The single authored chat model shared by every controlled fixture. */
-export const authoredModel: ProducerRequest[0] = Object.freeze({
+const authoredModelValue: ProducerRequest[0] = {
   id: 'e2e-fake-model',
   name: 'E2E fake model',
   api: 'e2e-fake',
@@ -48,7 +48,11 @@ export const authoredModel: ProducerRequest[0] = Object.freeze({
   reasoning: false,
   contextWindow: 1,
   maxTokens: 1
-});
+};
+
+/** The frozen authored chat model shared by every controlled fixture. */
+export const authoredModel: ProducerRequest[0] =
+  Object.freeze(authoredModelValue);
 
 /**
  Register one authored response carrying a correlation name.
