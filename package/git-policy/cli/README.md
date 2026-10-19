@@ -98,7 +98,7 @@ Install it as a `cargo:` tool of [mise][mise],
 ```toml
 # mise.toml
 [tools]
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.6", os = ["linux"] }
+"cargo:monochromatic-git-policy-cli" = { version = "0.2.0", os = ["linux"] }
 ```
 
 `mise install` downloads the release archive of the crate's GitHub release when one exists for the host.
