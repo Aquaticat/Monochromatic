@@ -737,10 +737,13 @@ before the other queued work.
     `174bddfeac`);
     that step reran green at the same commit,
     and `w195` landed ending at `20ab2696b9`.
-    `w196` (from `483e74e462`) adds `OxlintOutputParseError` with the raw oxlint output,
-    documents the runner's options in the `test-support` README,
-    and drops the unused `nano-spawn` from `tsdoc`;
-    gate g110 on `29b3da16dc` runs before it lands.
+    `w196` (from `483e74e462`) added `OxlintOutputParseError` with the raw oxlint output,
+    documented the runner's options in the `test-support` README,
+    and dropped the unused `nano-spawn` from `tsdoc`;
+    gate g110 on `29b3da16dc` was green apart from the same two packages' findings,
+    and it landed ending at `5e2fae86ca`.
+    The user slice's `TasksMax` was raised from 12288 to 32768 on the owner's instruction (2026-10-19);
+    the matching PAM `nproc` file still reads 12288 until the owner rewrites it.
     Issues filed 2026-10-19 for what is not fixed:
     1777 (`tsdoc` asterisk alignment),
     1778 (`stylistic` findings),
