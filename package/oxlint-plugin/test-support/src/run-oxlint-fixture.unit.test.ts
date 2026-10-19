@@ -18,6 +18,7 @@ import {
 
 import {
   type OxlintFixMode,
+  OxlintOutputParseError,
   type OxlintRuleDiagnostic,
   runOxlintFixture,
 } from '../dist/final/node/index.mjs';
@@ -329,9 +330,8 @@ await describe({
             },);
             const outcome = await attempt(project,);
 
-            expect(outcome.failure,).toBeInstanceOf(Error,);
-            expect((outcome.failure as Error).name,).toBe('OxlintOutputParseError',);
-            expect((outcome.failure as Error).cause,).toBeInstanceOf(SyntaxError,);
+            expect(outcome.failure,).toBeInstanceOf(OxlintOutputParseError,);
+            expect(Error.isError(outcome.failure,) ? outcome.failure.cause : undefined,).toBeInstanceOf(SyntaxError,);
             expect(String(outcome.failure,),).toContain(PROBE_CREATE_ONCE_FAILURE_TEXT,);
             expect(String(outcome.failure,),).toContain(project.sourcePath,);
             expect(String(outcome.failure,),).toContain(project.configPath,);
