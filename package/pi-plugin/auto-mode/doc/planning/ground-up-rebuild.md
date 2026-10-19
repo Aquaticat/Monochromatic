@@ -2,319 +2,325 @@
 
 ## Status and review request
 
-Draft for the user's review, 2026-10-19.
-Implementation is stopped.
-This document proposes a design and dependency inventory; it does not authorize building it.
-No replacement source, dependency installation, manifest change, or package build accompanies this plan.
+Revised to the user's staged design on 2026-10-19.
+Implementation is stopped. Plan discussion does not authorize implementation.
+The [HTML review](ground-up-rebuild-review.html) shows the active flow, concrete cases, and remaining questions.
+Open that review in Helium for the handoff.
 
-Review the model contract, the host integration proposal, each dependency, and the size budgets.
-Reply with corrections or an explicit approval to implement.
-Discussion of this plan alone does not resume implementation.
+The previous first-pass useful-question selector and three-choice interpretation are withdrawn.
+Every effective rule is a first-pass question with the choices
+`approve`, `deny`, `ask`, and `not-applicable`.
+The approximately 100 effective rules are an expectation, not a count imposed by code.
+The earlier shortage-of-useful-questions question was also withdrawn;
+unresolved-rule count does not measure the supply of useful follow-ups.
 
-The grilling review started on 2026-10-19.
-The decision tree and source corrections in this document are review work, not accepted architecture.
-The user requires HTML diagrams before further design questions.
-Open the review in Helium as part of the handoff.
-On 2026-10-19 the installed Helium launcher accepted this HTML and reported "Opening in existing browser session."
-The initial prose questions are withdrawn.
-The user clarified that the around-100 minimum reflects an ample supply of potentially useful questions per call.
-Unresolved-rule count is not a limit on that supply.
-Use the [HTML review](ground-up-rebuild-review.html) to inspect the overall flow,
-adaptive question selection, worked decisions, and the host preparation conflict.
-The form records the proposed per-rule meaning; its answer is still pending.
-
-The HTML was exercised in a nested Chrome window with a disposable profile.
-Every scenario control, navigation link, and reply-form branch passed;
-keyboard activation and literal markup in notes also passed.
-All 16 controls measured at least 48 pixels in both dimensions.
-Light and dark scenarios passed, and every section fit a 390-pixel viewport without horizontal overflow.
-The browser reported no page errors or console messages.
-This verifies the review artifact, not the replacement plugin or the proposed model semantics.
-
-Retained rendered examples:
-[requested tests](ground-up-rebuild-review/scenario-tests-dark.png),
-[unrequested edit](ground-up-rebuild-review/scenario-scope-dark.png),
-[explicit approval](ground-up-rebuild-review/scenario-exception-dark.png),
-[missing fact](ground-up-rebuild-review/scenario-missing-dark.png),
-[light appearance](ground-up-rebuild-review/scenario-tests-light.png),
-and [narrow response form](ground-up-rebuild-review/response-narrow.png).
-
-### Assessment before implementation approval
-
-The rule-batching contract now matches the user's stated direction.
-The architecture is not yet sufficiently established for implementation approval.
-The host proposal depends on experimental Node hooks and private Pi functions,
-without a complete demonstrated execution sequence for every required mode.
-Rule precedence and final reduction, shadow call accounting, and persistent log retention remain unresolved.
-The size ranges are proposed budgets, not evidence that this integration fits them.
-The direct dependency-function inventory is present;
-the complete resolved transitive development inventory is still missing.
-These are substantive limits of this draft, not reasons to resume building while review is pending.
+This document records settled requirements separately from proposed semantics.
+Remaining choices concern score admission, the meaning of an admitted `ask`, built-in rule coverage,
+deterministic approval, context anchoring, and preparation timing.
+Dependency qualification, shadow scheduling, retention, and size fit remain open engineering work.
+No replacement code, dependency installation, package build, or configuration change accompanies this review.
 
 The preserved reference worktree is
 `/var/home/user/temp/agent/pi-auto-mode-before-rebuild-20261019`
 at `e74f84bb9f60c3e1ea90f1325cf2e64947715ba0`.
-Unfinished worker source edits were subsequently checkpointed in `3ef7f32d19`.
-Commit `7ac15b19b4` deletes the old `src` from `main`.
-The old native implementation and generated artifacts have not been removed.
-The package is between implementations and has no current replacement verification claim.
+Worker edits were checkpointed in `3ef7f32d19`; `7ac15b19b4` deletes the old `src` from `main`.
+Old native code and generated output remain reference material, not verified replacement artifacts.
+Existing abstractions, dependencies, and historical test assertions get no automatic place in this rebuild.
 
-## What rebuilding means
+## Settled stages
 
-The replacement gets a fresh architecture and implementation in `main`.
-Old source, traces, documents, and failures are available as reference material.
-Existing abstractions, interfaces, dependencies, and test infrastructure get no automatic place in the replacement.
-An existing utility is proposed only for a named responsibility in this document.
-Historical tests supply scenarios to examine; their assertions are not automatically correct.
+### Stage 0: effective rules on every Pi start
 
-The package's job is to decide whether a specific prepared tool group may execute automatically.
-It does not become an agent framework, provider SDK, general policy compiler, or replacement Pi distribution.
+Send parsed `AGENTS.md` to Luna to identify rules that could be potentially relevant to agent operations.
+Retain original rule text, source, heading context, and instruction precedence.
+Materialize the effective ruleset and add general-agent built-in rules.
+The user expects approximately 100 effective authored rules; do not pad, truncate, or select to that number.
+Every Pi start performs this classification, even when cached parsing is reusable.
 
-## Required behavior
+The existing implementation already contains relevance classification:
+`native/contract/integration/native-host/startup-relevance.mjs`
+and `native/contract/lifecycle/rule-relevance-cache/refresh.ts`.
+However, the old warm-cache path classified only missing rules.
+The old definition also excluded tool choice, syntax, style, testing, documentation, and workflow.
+Those exclusions do not establish the new remit.
+Historical evidence in `doc/handover/pi-auto-mode-frontier-2026-10-18.md`
+records 25 retained of 211 classified rules; it is not evidence for the new expected count.
+The old threshold and 200-question chunking are legacy choices requiring fresh qualification.
 
-- Luna evaluates authored rules against the current request, with 100 or more meaningful questions per call.
-- Each question offers `approve`, `deny`, and unknown probability.
-  There are no permission/prohibition, heading, adoption, or other meaning categories.
-- Code determines the final `approve`, `deny`, or `ask` outcome.
-- Review permits at most three sequential Luna batches and three parallel Luna calls per batch.
-  HTTP retries consume those same call slots.
-- Subsequent batches adapt question selection to observed results and remaining uncertainty.
-  There is no mandatory sequence of semantic classification stages or separate whole-operation judge.
-- For `unknown < 0.2`, select the highest-scored action.
-  For `unknown >= 0.2`, that action must score at least `0.6`; otherwise ask.
-  Exact action ties remain unresolved.
-- API requests use platform `fetch` exclusively.
-  Auto-mode imports or calls neither `pi-ai` nor `openai`.
-- Span 02 observes matching production requests as a shadow and has no decision authority.
-- The reviewed operation includes the entire prepared group before any member executes.
-  It reflects argument preparation and other extensions' permitted argument mutations.
-- Model input contains readable instructions, relevant visible conversation, and structured operations.
-  Private thinking and complete raw Bash command archives stay out of model requests.
-  Parsed literal arguments and quoted data retain their meaning.
-- Ordinary incoming messages are never rejected because a role or category is absent from a local allow-list.
-- Cancellation and shutdown stop pending work and produce no bare shutdown errors.
-- Every substantial module has its purpose, interface, limitations, and size recorded inside this package.
+Startup classification is session-wide potential relevance, not a per-operation useful-question selector.
+Rule changes require a new effective-rules snapshot before another operation can inherit it.
+A failed or incomplete classification must be visible; its missing rules cannot silently disappear.
+Startup failure behavior requires qualification before implementation acceptance.
 
-The current repository `AGENTS.md` contains 213 tagged rules, measured with
-`rg --count '^[A-Z0-9]{3}:' AGENTS.md`.
-That establishes an instruction inventory large enough to examine a hundred-question workload.
-It does not prove that every rule supplies a meaningful question for every operation or adaptive follow-up.
-It does not establish the final complete rule count after session and package instructions are included.
+### Stage 1: capture and parse the entire pending group
 
-## Grilling review and decision tree
+Capture every pending tool-call set as a group before any member executes.
+Prepare every member, including permitted argument mutations by other extensions.
+Parse every tool call deeply, retaining tool identity, named arguments, resources, and execution structure.
+For shell calls this includes control flow, redirects, expansions, literal values, and nested syntax.
+Parsing alone does not establish expanded runtime values or actual side effects.
 
-### Per-rule meaning before reduction
+Bind all review evidence to one immutable group, instructions, tool catalog, and context snapshot.
+A changed argument, instruction, branch, or tool definition invalidates affected approval.
+Group boundaries follow pending calls; future dynamically created calls are not pretended to exist already.
+The relationship between a parent call and result-dependent nested groups must be qualified at the host boundary.
 
-The proposed reducer uses "applicable" and "required" without defining how those properties are obtained.
-The answer contract must explain an unrelated rule without introducing a meaning-classification stage.
-For example, a CSS formatting rule neither authorizes nor objects to an explicitly requested test run.
-Whether its answer is `approve` depends on whether approval means independent authorization or clearance from that rule.
-An unsolicited code edit after a review-only request must also have an explicit expected outcome.
+### Stage 2: deterministic parsed checks
 
-The initial prose question proposed clearance under the complete instructions and request,
-including an explicit request-scope check, but did not make the alternatives visible enough to assess.
-That question is withdrawn pending the HTML scenario review; its proposal is not accepted.
-Its dependent decisions are precedence examples, reduction, and conflicting reassessments.
-Examples must include an explicit exception to a general confirmation requirement,
-an unrelated rule, missing information, and an operation outside the user's request.
+Code can immediately return `approve`, `deny`, or `ask` when a named deterministic condition establishes it.
+Record the condition, parsed evidence, exact group, and outcome.
+A parser-success flag or apparently read-only command is not by itself proof that the whole group is authorized.
+The deterministic approval catalogue is a review decision, distinct from selecting model questions.
+If no terminal condition applies, continue with every effective rule.
 
-### Adaptive evidence before scheduling
+### Stage 3: every effective rule becomes a Luna question
 
-The user clarified the minimum's purpose:
-there is an ample supply of potentially useful questions, including in later batches.
-The withdrawn Q2 incorrectly inferred a shortage of useful questions from a shortage of unresolved rule verdicts.
-No smaller-batch fallback or early manual-review branch follows from that inference.
+Send the complete prepared group, effective ruleset, and bounded visible context.
+For the first pass, each rule is a question. Do not select a useful subset in code.
+Each question offers exactly `approve`, `deny`, `ask`, and `not-applicable`.
+Bind answer keys to rule occurrences, including built-ins, so missing or duplicate answers are detectable.
+Each assessment includes the instruction hierarchy and applicable explicit user exceptions.
+An unrelated rule can return `not-applicable`; it need not manufacture permission or uncertainty.
 
-Questions bind authored rules to concrete operation parts, resources, conditions, evidence, and interactions.
-The same rule may support distinct useful questions while the complete operation stays visible.
-Use prewritten forms with code-bound references;
-returned distributions select the next focus, not model-authored question wording or conclusions.
-The original adaptive requirements in `doc/planning/pi-auto-mode-batched-assessment.md:667` to `:746`
-support these selection mechanics; their superseded semantic categories do not return.
-Select around 100 or more meaningful questions per call from that pool without constructing filler Cartesian products.
+The historical context length is `clamp(5, units since the latest human message, 10)`.
+A unit is an assistant thinking/output block or a tool-call set, not Pi's `turn_end` event.
+Use available history when fewer than five units exist; never invent padding.
+The complete pending group is a separate snapshot field and is never cut down by this history window.
+Private thinking content remains excluded under the existing payload constraint;
+its boundary can count as a unit without transmitting its contents.
+Whether to retain the latest human request separately when outside the window is a remaining choice.
 
-Define when a newer result supersedes an older one,
-how conflicting results remain unresolved, and what prevents repeated sampling until approval.
-Account for retries, stale snapshots, and nested work within the chosen operation budget.
+Batch only as required by verified endpoint capacity, with the complete rule context accompanying each partition.
+All first-pass rules must receive coverage before automatic approval.
+Early terminal denial or required human review can end work without fabricating the remaining answers.
+There is no replacement whole-operation judge and no permission/prohibition taxonomy stage.
 
-### Execution semantics before selecting a host hook
+### Stage 4: aggregate, then refine only unresolved evidence
 
-Installed Pi `1.3.0` prepares each sequential call immediately before executing it:
-`pi-agent-core/dist/agent-loop.js:374`, `:384`, and `:394`.
-Its parallel path prepares the group before invoking the execution callbacks at `:453`.
-Moving every sequential preparation before the first execution changes extension-hook timing.
-For example, call A writes a file and call B's preparation hook reads that file to revise B's arguments.
-The plan must settle this observable behavior before claiming to preserve host semantics.
+Normalize Luna's answers into an attributed object and compute the group outcome in code.
+No averaging of unrelated rules, majority voting, or repeated sampling until approval.
+An answer needs both a valid label and sufficient numeric evidence under the admission policy still under review.
+Low-confidence or missing evidence is internal unresolved state, not a fifth answer choice.
 
-Nested calls are created during their parent's execution;
-`pi-coding-agent/dist/core/nested-tool-calls.js:98` creates each child when invoked.
-A child whose arguments depend on a preceding result is not available in the initial prepared group.
-Define the group boundary, parent/child approval relationship, and unsupported cases explicitly.
-The earlier limited evidence in `doc/troubleshooting/pi-nested-tool-context.md`
-does not qualify arbitrary result-dependent nested programs.
+When unresolved, construct a new set of questions addressing the particular uncertainty.
+For example, decompose whether the operation advances the requested work into
+whether the command targets the requested package and whether its action matches the requested verb.
+Keep the whole prepared group and relevant rule context visible in every follow-up.
+Do not treat uncertainty in one rule as proof that only one useful follow-up exists.
+Question wording and bindings must expose the distinction being tested.
+The generation and validation mechanism follows the accepted semantic examples;
+the previous fixed-form selector is not a settled requirement.
 
-These are source-reading findings, not executed replacement tests.
-The private hook remains a candidate until the required execution behavior is settled and exercised.
+At most three sequential review batches and three parallel Luna calls per batch.
+HTTP retries consume those call slots.
+Stop early once the outcome is established; unresolved after the permitted batches routes to `ask`.
+Stage 0 is startup work, outside the per-group review budget.
+Shadow requests are accounted separately only if the proposed shadow policy is accepted.
+Conflicting follow-up answers require an explicit reconciliation contract;
+newer answers do not silently erase prior evidence merely because they allow execution.
 
-### Remaining branches and acceptance evidence
+### Stage 5: manual decision and session feedback
 
-- Define which effective context and original authored history inform review after compaction or context edits.
-  The source APIs for those views are different.
-- Resolve shadow delivery and overflow behavior before scheduling:
-  a running shadow cannot both avoid all primary overlap and never delay a newly arriving primary request
-  unless it can be interrupted or abandoned.
-- Select persistent retention and deployment budgets using measured evidence;
-  the character budgets remain design constraints, not forecasts.
-- Define semantic acceptance examples and expected outcomes before evaluating model answers.
-  Payload validity, endpoint capacity, and passing transport fixtures do not establish decision quality.
-- Preserve separate verification for host execution, parser projection, model semantics,
-  manual review, lifecycle cleanup, and footprint.
-  Passing one does not establish the others.
+Offer Approve and Stop for an exact displayed group, with an optional reason for either choice.
+Approve records `user approved tool call ...`; Stop records `user declined tool call ...`.
+Include the group identity and supplied reason in the durable session record and model-visible session context.
+Skipping the optional reason preserves the selected decision.
+Stop retains the existing run-abort behavior; dismissal or unavailable UI withholds execution.
+An established denial does not turn into an Allow prompt.
+A manual approval applies to the displayed group after a freshness check, not future unrelated work.
 
-Questions in these branches follow their prerequisite answers and source investigations.
-The review ends with a revised plan and confirmation of shared understanding;
-implementation still requires explicit authorization.
+Pi 1.3.0 provides `ui.select` and `ui.input` in both TUI and RPC declarations.
+Use a choice followed by optional reason entry as the initial cross-mode proposal.
+Its `ui.custom` RPC implementation returns `undefined`, so a custom TUI form alone cannot satisfy both modes.
+The design must verify cancellation during each input step and interruption of stale prompts.
 
-### Proposed agent-guidance corrections
+`appendEntry` supplies audit persistence but is not model-visible by itself.
+`sendMessage` with `triggerTurn: false` is the candidate feedback channel.
+While streaming, the host queues it and flushes after tool results; after Stop, it must remain on the next resume.
+`deliverAs: nextTurn` is not equivalent to the next internal assistant continuation.
+Verify approval and decline with actual continuation, abort, reload, and resume.
+Feedback messages and compaction summaries converted to API user roles must not reset the genuine human anchor.
 
-The text-only question round concealed the decision flow,
-and the question-scarcity choice depended on an inference the original requirements did not support.
-Tighten existing `AGENTS.md` guidance rather than add overlapping rules.
-These are proposals, not changes to that file:
+## Remaining semantic decisions for this round
 
-- Replace the `VHI` body with:
-  "Handoffs state purpose, changes, inspection, and response.
+### Q1: probability admission with four choices
+
+The previous `unknown` was an authored choice, not automatic provider uncertainty.
+The current decisions endpoints return probabilities for the caller's choices and may return separate confidence.
+Removing `unknown` therefore removes the input to the former 0.2/0.6 formula.
+Do not substitute `ask`, missing-score zero, or `1 - confidence` into it.
+
+Concrete distribution: approve 0.46, deny 0.04, ask 0.29, not-applicable 0.21.
+Option A admits a unique leading choice only at probability at least 0.6; this example stays unresolved.
+Option B admits any unique leader; this example becomes approve.
+A avoids treating a split distribution as established but may require more follow-up or human review.
+B resolves more distributions immediately but treats a plurality as sufficient.
+Ranking: A > B because the split example does not establish a decisive result.
+The 0.6 value is a proposed reuse of a previous threshold, not a calibrated model-quality claim.
+Exact ties, invalid distributions, or missing answers remain unresolved in both options.
+
+### Q2: ask as a verdict versus uncertainty
+
+For an admitted `ask`, option A means a human decision is required now.
+Numerically unresolved answers can use follow-up batches; an established ask routes to the human immediately.
+Option B treats every ask as a request for further model questions until the budget is exhausted.
+Example: a rule explicitly requires the human to choose which account to charge and no choice exists.
+A asks immediately; B can spend the remaining batches before asking.
+A avoids repeated questions that cannot supply a human preference; B gives ambiguous asks another chance.
+Ranking: A > B because a confident need for a human decision is already a resolved disposition.
+This choice does not add another answer label.
+
+Proposed group reduction, pending Q1 and Q2:
+any admitted deny blocks; otherwise an admitted substantive ask routes to the human;
+otherwise unresolved evidence refines; otherwise approve if all required checks approve or are not applicable.
+The request-scope built-in must positively approve; all-not-applicable cannot grant permission.
+A deny based on a superseded instruction is invalid evidence, not a lower-priority veto.
+Precedence must be reflected in contextual questions and tested with explicit exceptions.
+
+### Q3: deterministic approval scope
+
+Option A initially approves deterministically only an exact fresh group with recorded human authorization;
+other groups proceed to every-rule review unless a deterministic deny or ask condition applies.
+Option B additionally permits published machine-checkable allow conditions for recurring operations.
+Example: an explicitly requested test command has no recorded approval of that exact prepared group.
+A sends every effective rule to Luna; B can approve if a complete audited condition covers that group.
+A minimizes duplicated semantic policy but makes more model calls.
+B avoids those calls but requires proving scope, tool behavior, and every condition the shortcut bypasses.
+Ranking: A > B for the first implementation because each approval shortcut needs evidence of complete coverage.
+Both preserve deterministic approve, deny, and ask; neither selects first-pass model questions.
+
+### Q4: keep the latest human request when the window moves past it
+
+Option A includes the latest genuine human request in a separate snapshot field,
+plus the specified five-to-ten-unit visible history.
+Option B includes only the capped historical window and whatever request text remains inside it.
+Example: after twelve units, the original request says review only,
+while the latest ten units discuss possible edits.
+A retains review-only scope; B requires asking if the available evidence cannot establish scope.
+A preserves the authorization anchor but adds input beyond the historical cap.
+B is a literal cap on historical input but can lose the instruction needed to assess the operation.
+Ranking: A > B because recency alone does not make the original request obsolete.
+Neither API user-role feedback nor compaction entries count as a new human request.
+
+### Q5: initial built-in rule coverage
+
+Option A adds the following precise general-agent questions to every first pass:
+
+- Does the prepared group advance the latest human-requested task within its requested action scope?
+- Are the chosen tools and their concrete arguments suitable for the requested operation?
+- Does the visible evidence establish prerequisites on which executing this group depends?
+- Is each operation justified by new work or evidence, rather than an unchanged retry of a known failure?
+- Does this group preserve task-relevant state except for changes the current request authorizes?
+
+Each question uses the same four outcomes and full contextual precedence.
+Option B starts with request scope and tool/argument suitability only, relying on effective authored rules for the rest.
+Example: an identical failing request is repeated without changed inputs or evidence.
+A explicitly evaluates the retry; B depends on an authored rule covering it.
+A gives explicit general coverage but needs careful scenarios to avoid objecting to valid retries or intentional mutation.
+B has fewer overlapping checks but leaves more behavior dependent on project instructions.
+Ranking: A > B because the questions cover distinct reasons an otherwise valid operation can fail the user's purpose.
+Exact wording remains editable; neither version uses the vague phrase “make sense”.
+
+### Q6: preparation timing for sequential groups
+
+Installed Pi 1.3.0 prepares and executes A, then prepares and executes B.
+A B-preparation hook can therefore read A's result.
+The required complete prepared group moves B's preparation before A executes.
+
+Option A adopts prepare-all-once semantics for guarded groups, then executes the frozen arguments in original order.
+Extensions needing A's result to prepare B must submit a later group or receive an actionable unsupported-case result.
+Option B keeps compatibility by blocking those grouped operations pending an upstream host integration
+that explicitly supports the complete-group contract.
+Example: A writes a file; B's preparation hook uses that file's new content as an argument.
+A requires B in a later group; B declines the incompatible operation without claiming transparent support.
+A enables the group contract but changes sequential preparation timing.
+B makes the compatibility limit explicit but leaves those grouped operations unavailable.
+Ranking: A > B if group preparation is part of auto-mode's public contract,
+because it provides a usable execution model without pretending future results already exist.
+Neither option authorizes silently reviewing unprepared B or executing A before initial group review.
+The patch mechanism remains an engineering qualification, not this user decision.
+
+## Dependency tree after this round
+
+Q1 and Q2 unlock numeric boundaries and final reduction acceptance examples.
+Q3 and Q5 unlock deterministic catalogues and built-in semantic fixtures.
+Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
+Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
+and retention using concrete designs and their measured constraints.
+Source budgets remain proposals pending those designs and exact resolved dependency inventories.
+Do not present later dependent choices as settled merely because the flow is now defined.
+
+## Proposed agent-guidance corrections
+
+The former question selector contradicted the stated architecture;
+the earlier scarcity question also inferred a constraint from incomplete evidence.
+These are proposed edits, not modifications to `AGENTS.md`:
+
+- Tighten `VHI` to:
+  “Handoffs state purpose, changes, inspection, and response.
   Show architecture choices with verified HTML diagrams and examples,
-  open them in the requested browser, and explain labels."
-- Replace the `QPM` body with:
-  "Before asking which mechanism, test whether the constraint survives existing requirements and plausible designs;
-  measure facts yourself. Ask only choices that remain."
-
-## Proposed end-to-end flow
-
-1.  Obtain the complete prepared group at Pi's execution seam.
-2.  Capture one instruction, conversation, tool-catalog, and operation snapshot for that group.
-3.  Parse shell programs locally and construct the model-visible request.
-4.  Create rule-versus-request questions and schedule the first batch.
-5.  Decode each returned distribution and apply the user's score rule in code.
-6.  Resolve the group or select another batch from the remaining uncertainty and rule dependencies.
-7.  Ask the user if review remains unresolved after the allowed batches or a required input cannot be obtained.
-8.  Execute the reviewed group only after an approval bound to that group, or return a normal blocked result.
-
-Any decision-bearing snapshot change invalidates the affected review,
-including arguments, instructions, relevant conversation, active branch, or tool definition.
-It cannot inherit approval merely because a tool-call ID is unchanged.
-This needs a snapshot comparison at dispatch, not an object-capability graph spanning the SDK.
-Re-review remains subject to explicit operation-level limits; mutation must not create an unbounded review loop.
-
-For manual review, Allow binds only to the displayed exact group after freshness checks.
-Stop, dismissal, and an absent interactive channel withhold execution.
-An established denial does not become a generic Allow prompt.
-These outcomes retain the existing behavior contract in `doc/confirmation.md` without adopting its implementation.
+  open them in the requested browser, and explain labels.”
+- Tighten `QPM` to:
+  “Before asking which mechanism, test the constraint against settled requirements and plausible designs.
+  Measure facts. Do not reopen a settled choice through an invented mechanism.”
 
 ## Proposed high-level modules and source budgets
 
-These are design budgets, not measured implementation sizes or completion forecasts.
-Units are raw Unicode characters, including types, comments, and whitespace.
-Formatting remains valid; existing max-lines lint still requires coherent file splits.
-An over-budget module requires a revised explanation and review before expanding it.
+Budgets are raw Unicode characters including types, comments, and whitespace, not measured sizes or forecasts.
+Existing max-lines lint still requires coherent files; formatting is not removed to fit a budget.
+Startup and manual feedback responsibilities are included explicitly in the existing module budgets.
+Their fit remains unverified.
 
 ### Host integration: 10,000 to 16,000 characters
 
-Purpose: intercept complete prepared groups, preserve Pi execution behavior, and bind decisions to execution.
-Interface: one review callback receiving the prepared group and its cancellation signal.
-The callback returns the group disposition; Pi continues to own actual tool execution and tool results.
+Purpose: expose the complete prepared group, preserve selected execution semantics, and bind review to dispatch.
+Interface: a group review callback with cancellation; Pi retains execution, results, and configured extensions.
+Own parallel, sequential, nested, denied, aborted, and shutdown paths.
+A public per-call event alone does not establish final complete-group interception.
 
-It owns parallel, sequential, nested-tool, blocked-result, and shutdown integration
-within the execution semantics still requiring review.
-It must prevent partial execution while a group is awaiting review.
-It must retain other extensions' tool hooks and final argument mutations.
+The candidate is a narrow version-qualified Node loading hook in the installed agent loop.
+It must not copy or stage Pi, its SDKs, or its dependency tree.
+Installed `registerHooks` declarations mark it experimental; private Pi functions are maintenance coupling.
+A supported source fingerprint and real host qualification are required before adoption.
+Q6 determines the timing contract this seam must implement.
 
-This is the largest unresolved architectural risk.
-Pi 1.3.0's public `tool_call` event exposes one call and allows later handlers to mutate its input.
-Its agent loop prepares calls individually.
-Therefore a public per-call extension alone is not established as sufficient for final complete-group review.
+### Rules and review input capture: 8,000 to 14,000 characters
 
-Proposed approach: a narrowly scoped, version-qualified Node loading hook on the installed Pi agent loop.
-The hook adds a group review seam after preparation and before execution.
-It does not copy, compile, or stage Pi, its provider clients, or its dependency tree inside auto-mode.
-The approved upstream source fingerprint identifies the supported patch surface.
-The Node hook and all execution modes need qualification before this approach can be adopted.
+Purpose: startup relevance, built-in rule registration, visible history, and structured prepared operations.
+Interface: one immutable effective-rules snapshot and one immutable group snapshot.
+Preserve original text and provenance without inventing meaning categories.
+Do not silently discard untagged substantive instructions.
+Reuse parsing caches only without bypassing every-start classification.
 
-If this cannot fit the budget while preserving host semantics, return the concrete integration problem for review.
-Do not silently reintroduce the legacy native framework or broaden the patch to provider serialization.
+Pi's `getBranch` returns raw active-branch entries;
+`buildSessionContext` resolves compaction and context edits through `buildSessionProjection`.
+Use original provenance to count human requests and the resolved view for visible context.
+Later context transformations also need qualification.
+No closed role allow-list may reject ordinary incoming chat.
+A historical parse failure cannot authorize the pending group.
 
-### Review input capture: 8,000 to 14,000 characters
+### Review scheduling and manual feedback: 8,000 to 12,000 characters
 
-Purpose: produce the complete model-visible snapshot without leaking thinking or raw shell archives.
-Interface: one immutable review input containing authored rule occurrences, visible context, and prepared operations.
+Purpose: every-rule first coverage, bounded adaptive follow-ups, and recorded human decisions.
+Interface: one review entry returns disposition and correlated evidence.
+Question IDs retain rule occurrence, group snapshot, and follow-up purpose.
+No useful-rule filtering occurs in the first pass.
+Transport retries and partitioning consume explicit budget slots.
+Actual endpoint capacity must be verified with the selected effective rules and payload sizes.
 
-It gets effective instructions and the selected conversation views from the host.
-Pi's `getBranch` returns path entries, not resolved model messages;
-`session-manager.js:1058` directs callers to `buildSessionContext` for the resolved view.
-`sessionEntryToContextMessages` alone does not apply the compaction and context-edit orchestration
-in `buildSessionProjection`.
-The capture contract must also account for later host context transformations.
-It retains source identifiers and precedence context rather than interpreting prose into a meaning taxonomy.
-Tagged rules remain original authored text.
-Untagged instruction handling must preserve substantive instructions rather than silently discarding them.
-
-It projects shell commands through the shared syntax parser.
-It preserves control flow, redirects, expansions, literal arguments, and nested execution structure.
-Parsing does not establish expanded runtime values or actual effects.
-The original local command remains the command Pi executes.
-
-It projects text from host messages without requiring a closed role enum.
-Historical shell parse failures do not reject incoming chat or grant permission to a current operation.
-A current operation that cannot be represented completely requires an actionable review failure.
-
-### Question planning and review scheduling: 8,000 to 12,000 characters
-
-Purpose: keep the entire bounded, adaptive review behind one caller interface.
-Interface: `review` takes a captured request, authored rules, a provider adapter, and cancellation.
-It returns the group outcome and correlated decision evidence.
-Callers do not manage individual stages.
-
-It selects prewritten rule-evaluation question forms and binds them to original rule occurrences.
-It does not ask another model to manufacture questions or extract rule categories.
-The full precedence context accompanies each rule assessment.
-
-Each call carries at least 100 genuine rule/request questions.
-Partition only when required by verified provider capacity, balancing groups rather than leaving tiny remainder calls.
-The legacy converter's local 200-question cap is not proof of a current provider limit.
-Hundred-question capacity must be exercised through the actual selected endpoint before implementation is accepted.
-
-Later batches select rule checks and question forms based on unresolved dependencies and returned evidence.
-Already resolved checks may be reassessed when their interpretation depends on a remaining uncertainty.
-Question IDs retain source and evaluation-form identity.
-Parallel questions are not majority votes and repeated questions are not independent evidence.
-
-The useful pool spans rule, operation, resource, condition, evidence, and interaction bindings.
-An uncertain result can redirect many useful questions; it does not limit the next batch to one question.
-The user rejected the proposed question-scarcity branch on 2026-10-19.
-Qualify the selected question sets against actual scenarios, without filler, votes, or a one-question fallback.
-Input capacity exhaustion also remains unresolved; it never permits dropping required rules.
+Subsequent questions address recorded uncertainty; contradictory results cannot be silently replaced.
+Manual decision plus optional reason is persisted and reaches model-visible continuation or resume.
+Keep feedback provenance separate from genuine incoming human requests.
 
 ### Deterministic decision resolution: 2,000 to 4,000 characters
 
-Purpose: implement the score rule and the final group disposition in ordinary code.
-Interface: distributions become per-rule dispositions, then a group outcome with decisive rule references.
-
-Proposed reduction for review:
-
-- An admitted `deny` for an applicable rule blocks automatic execution.
-- All required rule checks admitted as `approve` permit automatic execution.
-- An unresolved check that can change the result triggers another adaptive batch, then `ask` at exhaustion.
-
-Each question assesses its rule under the complete instruction hierarchy and explicit exceptions.
-A low-priority rule must not override a higher-priority instruction merely because its score is larger.
-This precedence interpretation and the proposed reduction need explicit scenario coverage.
-There is no arithmetic averaging of unrelated rules and no separate whole-operation model verdict.
-
-The response codec checks actual API data needed for this calculation:
-question attribution, complete expected distributions, finite probabilities, and valid normalization.
-It accepts unrelated response metadata and does not validate arbitrary SDK message categories.
-Missing, malformed, refused, or unavailable answers remain missing evidence, never manufactured denials or approvals.
+Purpose: immediate parsed checks, answer admission, and group reduction in ordinary code.
+Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
+Q1 through Q3 determine the score and shortcut contracts.
+No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
+Validate answer attribution, expected labels, finite probabilities, normalization, and leading-choice consistency.
+Accept irrelevant response metadata; do not require optional confidence or usage fields that reduction does not consume.
+Missing, malformed, refused, or unavailable answers are missing evidence.
 
 ### Decisions HTTP transport: 6,000 to 10,000 characters
 
@@ -339,7 +345,9 @@ The exact response-size and timeout values remain qualification inputs, not inve
 Purpose: compare Span 02 with the actual primary question sets without influencing execution.
 Interface: observe an immutable primary request and its result; retain a correlated shadow comparison.
 
-It preserves the same state, question text, and approval/denial choices.
+For group review it preserves the same state, question text, and four answer choices.
+The proposed mirror also covers startup relevance using that request’s unchanged relevance-answer schema;
+it does not convert startup relevance into operation approval.
 Only the endpoint envelope and model identifier differ.
 Shadow failures do not become primary permission failures or hold execution open.
 Shutdown cancels and joins observer work.
@@ -492,7 +500,9 @@ Proposed peer dependency plus catalog development dependency for declarations an
 - `sessionEntryToContextMessages`: convert individual entries only if original-entry conversion is required;
   this is not a substitute for resolved session projection.
 - `sessionManager.getSessionId`: correlate operations without retaining every session object.
-- `ui.select`: present scoped manual choices in supported TUI and RPC modes.
+- `ui.select` and `ui.input`: collect Approve or Stop and an optional reason in TUI and RPC.
+- `sendMessage` with `triggerTurn: false`: persist model-visible manual feedback without starting a new run.
+- `appendEntry`: optional structured audit metadata, never the sole feedback channel.
 - `ui.notify` and `ui.setStatus`: report actionable failures and review state.
 - `ExtensionContext.signal`: propagate the host cancellation signal.
 
@@ -636,10 +646,12 @@ An unsupported assumption returns to this plan; it does not trigger an unreviewe
 
 ### Implement review through one interface
 
-Build the capture, scheduler, codec, and deterministic reducer behind the single review interface.
-Use the real hundred-question scale in request-capture fixtures.
+Build startup relevance, capture, scheduler, codec, deterministic reducer, and manual feedback.
+Assert every-start classification and complete effective-rule first-pass coverage in captured requests.
+Use the actual effective ruleset at the expected hundred-rule scale.
 Cover early resolution, adaptive second and third batches, exhausted review, partial call failures,
-missing answers, and exact `0.2`/`0.6` boundaries.
+missing answers, every admitted label, and the exact probability boundaries accepted in Q1.
+Exercise the five-to-ten-unit window, original human provenance, and approval/decline reasons on resume.
 Assert model-visible inclusion and exclusion using actual serialized requests.
 
 ### Connect primary review and shadow
@@ -671,17 +683,35 @@ No cleanup or deletion is performed as part of writing this plan.
 
 ## Decisions still requiring review or qualification
 
-- Whether the proposed narrow private Pi hook is an acceptable integration cost.
-- Whether the proposed per-rule reduction expresses the desired approval/denial semantics,
-  including explicit exceptions and instruction precedence.
-- How the selected prewritten question forms and their concrete bindings resolve the recorded scenario set.
-- Whether the model-call ceiling includes shadow calls, or the separately counted mirror proposal is acceptable.
-- Whether the proposed source and deployment budgets are appropriate.
-- How to bound persistent decision-log retention through the shared logger, with a version bump if changed.
-- Actual provider capacity, parser compatibility, and the resolved development closure,
-  all unqualified rather than assumed complete.
-
+The current semantic frontier is Q1 through Q6 in this document and the HTML form.
+Further dependent work covers follow-up conflicts, startup failures, shadow call accounting and preemption,
+persistent log retention, exact dependency closure, and source/deployment budgets.
+Actual host semantics, endpoint capacity, parser compatibility, RPC output, and lifecycle behavior remain unqualified.
 No implementation proceeds while the user is reviewing this plan.
+
+## Review artifact verification
+
+The revised HTML passed the disposable nested-browser interaction check on 2026-10-19.
+Every scenario, navigation control, all 18 answer options, and manual Approve/Stop examples with and without reasons ran.
+Reply generation passed for empty input, notes only, choices only, literal markup, text selection, and keyboard activation.
+All 23 interactive controls measured at least 48 pixels in both dimensions.
+Light and dark appearances and a 390-pixel viewport passed without horizontal overflow.
+Expanded built-in wording and preparation timelines were recaptured after their final edit.
+Browser error and console records were empty.
+This verifies the planning artifact, not plugin behavior or model quality.
+
+Retained images:
+[active stages](ground-up-rebuild-review/staged-overview-dark.png),
+[score admission](ground-up-rebuild-review/staged-q1-dark.png),
+[ask meaning](ground-up-rebuild-review/staged-q2-dark.png),
+[deterministic approval](ground-up-rebuild-review/staged-q3-dark.png),
+[human anchor](ground-up-rebuild-review/staged-q4-dark.png),
+[built-in wording](ground-up-rebuild-review/staged-q5-dark.png),
+[preparation timing](ground-up-rebuild-review/staged-q6-dark.png),
+[manual feedback](ground-up-rebuild-review/staged-manual-dark.png),
+[light appearance](ground-up-rebuild-review/staged-scenario-tests-light.png),
+and [narrow response form](ground-up-rebuild-review/staged-response-narrow.png).
+Earlier screenshots without the `staged-` prefix document the superseded review.
 
 ## Inspected sources
 

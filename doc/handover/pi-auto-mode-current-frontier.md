@@ -2,9 +2,72 @@
 
 ## Current work and next actions
 
-Work is incomplete. Continue the queue without another readiness handoff.
+Plan review is active and implementation remains stopped.
+The revised visual form is open in Helium; the current round awaits the user’s answers.
+After answers, update the decision tree and continue the next unlocked review work.
 
-### Visual plan review and corrected question pool, 2026-10-19
+### User-defined staged review, 2026-10-19
+
+The latest user message replaces the proposed first-pass question selector and three-choice interpretation.
+The plan and HTML now follow this settled sequence. Browser and Markdown checks passed, and the updated review was opened in Helium:
+
+- Stage 0: on every Pi start, send parsed `AGENTS.md` rules to Luna for potential relevance.
+  Materialize the effective ruleset, expected to contain about 100 rules, and add general-agent built-in rules.
+  The count is an expectation, not a quota or a reason to pad or discard rules.
+- Capture every pending tool-call set as a complete group and parse every member deeply.
+- Deterministic checks may immediately produce `approve`, `deny`, or `ask` from the parsed results.
+- Otherwise send the complete prepared group, effective ruleset, and bounded visible context to Luna.
+  Context length is `clamp(5, turns since last user message, 10)`;
+  a turn is an assistant thinking/output block or a tool-call set.
+  Every effective rule is a question. Code must not select a useful subset for this first pass.
+- Each question offers `approve`, `deny`, `ask`, and `not-applicable`.
+  Normalize answers into an attributed object; code determines the group outcome.
+- If unresolved, ask a new set of focused questions addressing why the evidence is insufficient.
+  At most three batches; unresolved after that routes to the user.
+- Manual Approve records "user approved tool call ..." in session state.
+  Manual Stop records "user declined tool call ...".
+  Both offer an optional reason and record it in session state.
+
+Read-only follow-up confirms the startup classifier exists, but warm caches skipped model calls;
+the new every-start instruction supersedes that optimization.
+Its old remit excluded workflow, testing, documentation, and tool-choice rules;
+historical evidence retained 25 of 211, not the newly expected approximately 100.
+Pi exposes separate `select` and `input`; custom TUI forms are unavailable through its RPC custom method.
+`appendEntry` is audit-only; `sendMessage` with `triggerTurn:false` can make feedback visible to the agent.
+Converted custom feedback and compaction summaries use API user roles,
+so context anchoring must use original human-message provenance.
+
+The old `unknown` was an explicit caller-defined choice, not automatic provider uncertainty.
+The four-choice contract therefore needs an explicit numeric admission decision;
+do not substitute `ask` or `1 - confidence` into the old threshold silently.
+Remaining visual questions should concern real unresolved semantics, such as this score mapping and the
+last human instruction when it lies outside the ten-turn history cap, rather than reopen settled stages.
+The rewritten plan is committed in `030091cf07`. The replacement HTML shows only the active staged architecture.
+Its current questions cover four-choice score admission, admitted ask meaning, deterministic approval scope,
+latest-human anchoring, built-in coverage, and sequential preparation timing.
+A separate factual review confirms alignment with the latest instruction.
+Dependency inventory, parser/logger findings, and implementation stop are preserved.
+Verified the new HTML: six navigation targets, four scenarios, all 18 answer options,
+manual Approve/Stop with and without reasons, form validation, literal notes, selection, and keyboard use.
+All 23 controls meet 48 pixels in both dimensions. Both color schemes and 390-pixel width passed.
+No console messages or browser errors. Expanded Q5/Q6 panels were checked again after their final content edits.
+Screenshots with the `staged-` prefix are retained beside the HTML.
+The Markdown renderer passed at `auto-mode-rebuild-plan-render-m8SREJ` under durable scratch.
+Commit `73c90ccb77` contains the new HTML; `3d034972e5` adds full built-in wording and the host timeline.
+Commit `1a8758044e` is empty after replay: its intended newline fix was already applied in the parent.
+A corrective GitHub commit comment records that distinction; no history was amended.
+Verification evidence is committed in `6934973012`.
+The final evidence-bearing Markdown rendered at `auto-mode-rebuild-plan-render-dNtIOb`; all 30 local links resolved.
+The Helium launcher reported “Opening in existing browser session.” for the updated review.
+The disposable verification browser was closed and the nested compositor accepted `quit`.
+Current round: await Q1 through Q6 answers or corrections from the HTML form.
+No answer is implementation authorization; the broader plan review remains active.
+No plugin implementation is authorized by this planning clarification.
+
+### Historical visual review, superseded by the staged contract on 2026-10-19
+
+This section records the earlier artifact and verification only.
+Its clearance question and question-selection design are superseded by the user-defined stages.
 
 The current user request is to review the ground-up plan and grill toward a better plan.
 Implementation remains stopped.
@@ -21,8 +84,8 @@ Remove the scarcity branch rather than ask for an exception to the batch-size re
 The [updated plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md)
 and [visual review](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild-review.html)
 show the corrected adaptive pool and proposed decision examples.
-The next user judgment concerns the meaning of each rule's approval under complete context,
-using the actual displayed scenarios.
+That artifact asked about the meaning of each rule’s approval under complete context.
+The user subsequently settled the four-choice contract; that old question is withdrawn.
 The HTML response is about plan semantics and does not authorize implementation.
 
 Read-only source review corrected the nested host entry to `runToolCall`,
