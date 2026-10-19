@@ -6,6 +6,51 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Resumed after shutdown, 2026-10-19
 
+`1896dbce7b` extends the maintained sequence-capacity regression to unique catalog text,
+growing message prefixes and a live interner retained through collection.
+The maintained test fails on fixed pages with 32,937,656 additional retained bytes.
+Private same-catalog comparison independently measures tail growth at 83,688 bytes
+and prefix growth at 32,853,608 bytes.
+Fixed page offsets duplicate reference arrays when earlier messages shift unchanged text.
+Receipts: `maintained-prefix-red.log`, `unique-tail-capacity-probe.log`, `prefix-capacity-probe.log`.
+
+`7cd0274c5d` adds content-aligned page selection with an eight-ordinal rolling window,
+64-reference minimum and 256-reference maximum; the final page can be shorter.
+Fingerprint collisions affect boundary selection only; exact ordinal sequences still determine equality.
+`b2515d2891` moves slicing into the partition generator and documents the module without a root-scoped mutable offset.
+The separate causal candidate `anchored-pages-causal-candidate-YEc6MF/dist/native-release-e7qSh0`
+contains base `3a21255dde` with only the page fix and its regression from `7cd0274c5d` overlaid.
+It passes fresh JS/native builds, full types, the maintained prefix guard,
+exact content, streaming/retained context and producer lifetime/retirement consumers.
+The negative prefix heap delta is not a literal storage size or quantified improvement.
+Scope at the first overlay has 27 warnings/four errors; documentation/scope errors are addressed in the later source,
+but actual formatting and fresh scope receipts remain required.
+Do not alter this causal artifact while its configured replay runs.
+
+The fixed-page configured run A completes 36 tools, zero tool errors and normal exit zero/signal null,
+ending at 208,384,280 to 208,404,824 heap bytes.
+It still grows about 20 MB between the final warmed stages.
+Fixed-page run B is repeating the same original history and will capture a private final heap.
+Content-aligned run A is independently active as `anchored-pages-memory a` on `e7qSh0`;
+after 12 tools its three samples are 152,517,120, 151,125,464 and 151,118,736 bytes.
+These partial observations do not establish bounded long-term retention.
+Keep all `content-pages-memory-*` and `anchored-pages-memory-*` receipts separate.
+
+Native MiMo commits `27e9ea0277`, including an actual constructor-binding type consumer,
+and is continuing its remaining owned lint corrections.
+Root independently reads pre-port `owner.mjs` at `520a947723~1` and confirms original conditional omission of absent group.
+Root's assertion that omission began during the typed port was incorrect and has been retracted.
+The one genuine production constructor contract and valid controlled SDK fixtures remain the chosen simplification;
+do not describe a changed invalid-fixture invocation as preserving historical omission behavior.
+Source MiMo is constructing those genuine fixtures, still without incoming SDK category gates or type assertions.
+
+`d95dd376a0` adds the missing producer-owner module justification and actual Oxlint 1.88.0 exception audit.
+Forty-nine documents render with no broken local links in `render-current-docs-AG3KMl`,
+including the owner module doc and Git recovery incident.
+The latest complete frozen full lint at `3a21255dde` is 10,716 warnings/86 errors on 894 files,
+486 rules, 30.5 seconds within two-GiB/two-CPU bounds.
+This precedes the new regression, page fix and subsequent constructor/fixture corrections.
+
 Fresh combined artifact `resumed-owner-combined-candidate-N8p6OB/dist/native-release-NTWxaG`
 at `3a21255dde` passes JS/native builds and full types.
 The generated-import closure failure is cleared at this source checkpoint.
