@@ -327,6 +327,32 @@ TODO | DONE
     stop the pass with `systemctl --user stop corpus-pass-<name>`,
     where the steps that follow say to kill it by pid.
 
+    A `--setenv=PATH=` on the unit decides which build tools the task's build runs.
+    A session's shell started in the main checkout carries that checkout's `node_modules/.bin` first,
+    and its `rolldown` need not be the version the worktree's lockfile installs.
+    On 2026-10-19 `CuspariaKLSY16` was launched with the shell's whole `PATH`:
+    its build ran the main checkout's `rolldown v1.2.14`,
+    not the worktree's `1.2.13`,
+    and its bundle wrapped CommonJS modules differently,
+    so the pipeline digest moved with no family source changed.
+    Pass no `PATH`,
+    or one with every main-checkout entry removed and the worktree's `node_modules/.bin` first.
+    Before trusting a launch meant to run on a known build,
+    read the bundler version off the build lines and the digest off `START`:
+
+    ```sh
+    grep --only-matching --max-count 1 'rolldown v[0-9.]*' "${RUNDIR}.log"
+    grep '^START ' "${RUNDIR}.log"
+    ```
+
+    Expected:
+    the version `node_modules/.bin/rolldown --version` prints in the worktree,
+    and,
+    for a rotation,
+    the same `pipeline=` as the rotation's first entry.
+    A different digest is a different build:
+    stop the unit before it spends.
+
     Launch-time dials,
     each printed above the work so the log says which run this was:
     `TRANSLATION_REPAIR_SLICE_OVERLAP=<n>` (prints `OVERLAP <entry> value=<n> source=...` per entry),
