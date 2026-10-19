@@ -39,15 +39,13 @@ impl Image {
         };
     }
 
-    /// The rows `from` to `to` as a strip placed at row `top` of the source,
-    /// each row covering `step` source rows.
-    fn strip(&self, from: usize, to: usize, top: f64, step: f64) -> Strip<'_> {
+    /// The rows `from` to `to` as a strip placed at row `top` of the source.
+    fn strip(&self, from: usize, to: usize, top: f64) -> Strip<'_> {
         return Strip {
             bytes: &self.bytes[from * self.width * 4..to * self.width * 4],
             width: self.width,
             height: to - from,
             top,
-            step,
         };
     }
 }
@@ -155,7 +153,7 @@ fn every_fourth(_x: usize, y: usize) -> [u8; 4] {
 fn whole(image: &Image, reduction: Reduction, height: usize) -> Vec<u8> {
     let reducer = Reducer::new(reduction, image.width);
     let reduced = reducer.reduce(
-        &image.strip(0, image.height, 0.0, 1.0),
+        &image.strip(0, image.height, 0.0),
         &(0.0..f64::INFINITY),
     );
     let mut picture = Picture::new(reduction.width, 0..height);
@@ -477,7 +475,7 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
         },
         0,
     );
-    let reduced = reducer.reduce(&empty.strip(0, 0, 0.0, 1.0), &(0.0..f64::INFINITY));
+    let reduced = reducer.reduce(&empty.strip(0, 0, 0.0), &(0.0..f64::INFINITY));
     assert_eq!(reduced.rows(), 0);
     let blank = Image::made(3, 3, faint);
     for bad in [
@@ -508,7 +506,7 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
         },
     ] {
         let refusing = Reducer::new(bad, 3);
-        let nothing_reduced = refusing.reduce(&blank.strip(0, 3, 0.0, 1.0), &(0.0..f64::INFINITY));
+        let nothing_reduced = refusing.reduce(&blank.strip(0, 3, 0.0), &(0.0..f64::INFINITY));
         assert_eq!(nothing_reduced.rows(), 0, "{bad:?} reduces to nothing");
     }
     // One pixel to one pixel.
@@ -574,7 +572,7 @@ fn stitched(image: &Image, reduction: Reduction, height: usize, cuts: &[usize]) 
         // Each band renders a few rows more than it answers for, on both sides.
         let low = from.saturating_sub(2);
         let high = (*edge + 3).min(image.height);
-        let reduced = reducer.reduce(&image.strip(low, high, low as f64, 1.0), &assigned);
+        let reduced = reducer.reduce(&image.strip(low, high, low as f64), &assigned);
         picture.place(&reduced).expect("same width");
         from = *edge;
     }
@@ -618,45 +616,6 @@ fn bands_put_together_make_the_picture_of_the_whole_without_a_seam() {
     }
 }
 
-/// A strip that stands for more rows than it holds
-/// gives the picture of the stretched image.
-#[test]
-fn a_strip_stretched_over_more_rows_reduces_like_the_stretched_image() {
-    let small = Image::made(6, 2, speckle);
-    // The same two rows, each repeated four times.
-    let mut stretched = Image::made(6, 8, nothing);
-    for y in 0..8 {
-        let source = y / 4;
-        for x in 0..6 {
-            let from = (source * 6 + x) * 4;
-            let to = (y * 6 + x) * 4;
-            let pixel = [
-                small.bytes[from],
-                small.bytes[from + 1],
-                small.bytes[from + 2],
-                small.bytes[from + 3],
-            ];
-            stretched.bytes[to..to + 4].copy_from_slice(&pixel);
-        }
-    }
-    let reduction = Reduction {
-        source_width: 6.0,
-        width: 2,
-        ratio: 0.5,
-    };
-    let reducer = Reducer::new(reduction, 6);
-    let sampled = reducer.reduce(&small.strip(0, 2, 0.0, 4.0), &(0.0..8.0));
-    let mut picture = Picture::new(2, 0..4);
-    picture.place(&sampled).expect("same width");
-    let got = picture.finish();
-    let want = whole(&stretched, reduction, 4);
-    let mut worst = 0_u8;
-    for (left, right) in got.iter().zip(&want) {
-        worst = worst.max(left.abs_diff(*right));
-    }
-    assert!(worst <= 1, "the stretched strip differs by {worst}");
-}
-
 /// A strip reduced to another width than the picture's is refused with a message,
 /// and the picture is unchanged.
 #[test]
@@ -670,7 +629,7 @@ fn a_strip_of_another_width_cannot_be_placed() {
         },
         4,
     );
-    let reduced = reducer.reduce(&image.strip(0, 4, 0.0, 1.0), &(0.0..4.0));
+    let reduced = reducer.reduce(&image.strip(0, 4, 0.0), &(0.0..4.0));
     let mut picture = Picture::new(3, 0..4);
     let error = picture.place(&reduced).expect_err("another width");
     assert!(

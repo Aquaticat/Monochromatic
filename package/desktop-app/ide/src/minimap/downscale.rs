@@ -59,12 +59,10 @@ pub struct Reduction {
 ///  A strip is one band of the text,
 ///  rendered at full size,
 ///  whose rows stand at known places in the source's row coordinates.
-///  A strip may stand for more rows than it holds:
-///  each of its rows then covers `step` source rows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Strip = { bytes: Uint8Array; width: number; height: number; top: number; step: number };
+/// type Strip = { bytes: Uint8Array; width: number; height: number; top: number };
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Strip<'a> {
@@ -78,8 +76,6 @@ pub struct Strip<'a> {
     /// Where the first row starts,
     /// in rows of the whole source.
     pub top: f64,
-    /// How many rows of the whole source one row of the strip covers.
-    pub step: f64,
 }
 
 /// What:
@@ -363,15 +359,13 @@ impl Reducer {
         let valid = self.offsets.len() > 1
             && strip.height > 0
             && strip.width > 0
-            && strip.step.is_finite()
-            && strip.step > 0.0
             && strip.top.is_finite()
             && strip.bytes.len() >= strip.width * strip.height * 4;
         if !valid {
             return empty;
         }
         let ratio = reduction.ratio;
-        let end = strip.top + strip.height as f64 * strip.step;
+        let end = strip.top + strip.height as f64;
         let from = assigned.start.max(strip.top);
         let to = assigned.end.min(end);
         if to.is_nan() || from.is_nan() || to <= from {
@@ -382,11 +376,11 @@ impl Reducer {
         let stride = reduction.width * 4;
         let mut sums = vec![0.0_f32; (last - first) * stride];
         let mut gathered = vec![0.0_f32; stride];
-        let first_row = ((from - strip.top) / strip.step).floor().max(0.0) as usize;
-        let last_row = (((to - strip.top) / strip.step).ceil() as usize).min(strip.height);
+        let first_row = (from - strip.top).floor().max(0.0) as usize;
+        let last_row = ((to - strip.top).ceil() as usize).min(strip.height);
         for row in first_row..last_row {
-            let start = (strip.top + row as f64 * strip.step).max(from);
-            let stop = (strip.top + (row + 1) as f64 * strip.step).min(to);
+            let start = (strip.top + row as f64).max(from);
+            let stop = (strip.top + (row + 1) as f64).min(to);
             if stop <= start {
                 continue;
             }

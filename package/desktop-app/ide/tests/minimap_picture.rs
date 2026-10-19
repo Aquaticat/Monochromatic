@@ -289,7 +289,6 @@ fn whole_frame(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> (Vec<u
         width: pixels.width as usize,
         height: pixels.height as usize,
         top: f64::from(frame.origin) * f64::from(scale),
-        step: 1.0,
     };
     let reduced = reducer.reduce(&strip, &(0.0..f64::INFINITY));
     let mut picture = Picture::new(out_width, 0..out_height);

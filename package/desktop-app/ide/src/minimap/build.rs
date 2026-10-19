@@ -293,7 +293,6 @@ fn reduce_band(prepared: &Prepared, band: &Band, rendered: &Rendered) -> Result<
         width: rendered.width,
         height: rendered.height,
         top: rendered.top,
-        step: 1.0,
     };
     return Ok(prepared.reducer.reduce(&strip, &assigned));
 }
