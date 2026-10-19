@@ -37,6 +37,15 @@ The consolidation uses that same dependency check during review and removes the 
 Its review-time delivery,
 real policy/tool mutation,
 and configured-host checks are separate qualification requirements.
+The corrected native host passes configured full-history baseline,
+review-time steering and review-time follow-up replays.
+Their original serialized requests contain no injected note;
+steering appears in the second request and follow-up in the third.
+Each group executes automatically without an approval dialog.
+The previous native build reproduces the exact review-time failure under that same intervention.
+Genuine policy changes remain withheld in both named policy-change modes.
+Restoring strict pre-approval identity fails the maintained delivery regression after a fresh build;
+restoring the dependency comparison passes.
 
 ## Retained native input storage
 

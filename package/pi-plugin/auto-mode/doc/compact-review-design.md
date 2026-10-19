@@ -80,6 +80,15 @@ its installed implementation returns its argument unchanged.
 This preserves the original Bash tool and renderer identities without weakening the consumer's compiler settings.
 The complete native phase catalog and fresh emitted declaration type check remain the verification boundary.
 
+An independent SDK consumer keeps the wrapper's preparation return as `unknown`
+and retains the SDK erasure in its declared definition type before placing it in `customTools`.
+A deliberately invalid registry name proves the compiler checks that fixture.
+The valid fixture has no own type diagnostics and confirms the original SDK definition and renderer identities at runtime.
+The separate catalog still needs that actual boundary in its declared types;
+calling `defineTool` before discarding its erasure does not fix the registration contract.
+No predicate can claim schema-valid input merely to satisfy that contract.
+The SDK's later argument validation remains responsible for malformed model arguments.
+
 The source compiler retains clause, heading, incorporation, authorization, admission,
 and complete-operation fallback semantics.
 Model replies supply estimates; selected readable instructions and observed authorization supply authority.

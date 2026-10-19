@@ -42,6 +42,17 @@ Work is incomplete. Continue the queue without another readiness handoff.
   The source MiMo's held edit is read completely and stopped: an unmatched parenthesis and another normalization drift
   make that patch unaccepted. It resumes at a settled boundary with a truthful, small JavaScript fixture-helper option
   and genuine SDK erasure guidance; no invented predicates or new input validation are accepted.
+  Review-time corrected host `native-release-iw9xzU` passes baseline `PQ0UjR`, steering `clGcSZ`
+  and follow-up `Mxx37Y` with full saved history and 3,061,618-byte original requests.
+  Each executes its sole reviewed `pwd`, opens zero approval dialogs, captures four HTTP-200 Luna responses,
+  and passes required/excluded payload controls over 239 questions.
+  Actual serialized requests show steering first delivered in request two and follow-up first in request three;
+  neither is rewritten into the original request. Complete stderr and normal shutdown audits pass.
+  Previous-build control `RSjiZv` reproduces the exact review-time snapshot rejection and approval dialog;
+  its complete sole-`pwd` group is audited and stopped, then normal shutdown is requested.
+  Rebuilt controls in `ijhWT8` catch removal of the actual schema guard and restoration of strict review identity;
+  restored build, schema, primary-delivery and review-delivery cases all pass.
+  Receipts: `review-current-*-audit.log`, `review-old-control-audit.log`, `currentness-controls-results.json`.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
@@ -57,9 +68,23 @@ Work is incomplete. Continue the queue without another readiness handoff.
   MiMo receives concrete feedback to use the genuine SDK erasure boundary without claiming validation,
   and to align steering assertions with the independently measured native queue timing.
   Its scope now includes the phase catalog registration call if needed.
+  It commits the JavaScript value helper, truthful unknown preparation and actual queued delivery assertions
+  as `46fd9cb0c4`, with exactly eight captured paths.
+  Its report incorrectly attributes an already-verified unknown-through-final-defineTool chain to the supervisor;
+  no such clean-chain qualification exists. The wrapper's declared type still loses the SDK's renderer erasure.
+  Independent `sdk-tool-erasure-proof` establishes the real solution with a negative registry-name compiler control,
+  zero diagnostics on the honest unknown-return fixture, and actual SDK/renderer identity assertions.
+  The remaining package diagnostic is the old phase catalog registration at line 185, not the independent proof.
+  Deliver that concrete prototype at the settled checkpoint; do not add validation to satisfy the declared schema.
 - Native MiMo: `Pcok7j` resumes the complete `9Tl0ts` history on the corrected immutable runtime.
   Its queued concrete implementation is the real policy-loader TypeScript port, not a facade around untyped code.
   Neither worker may mutate root dist or another owner's files.
+  It delivers the actual loader implementation, publication split and boundary declarations with 19 scoped warnings/23 errors.
+  Its twelve-path commit fails in the RPC container at the known unrelated staged-LFS shadow boundary.
+  The documented qualified host-wrapper route succeeds as `a751fe27fe`; committed paths exactly match the captured twelve.
+  A post-commit receipt command initially guesses unsupported `git diff-tree --recursive` and fails after committing;
+  the recovery uses the installed command's documented `-r`, verifies exact scope and does not repeat the commit.
+  Qualify the combined build/types/catalogs, then finish scoped lint and inspect every suppression under the package rules.
 - Declaration build: the incumbent Rolldown/Oxc generator emits closed `native-artifact-types` declarations.
   Release-relative facades eliminate copied source paths and raw-built-TypeScript project traversal.
   The environment forwards the actual identity-preserving SDK `defineTool` function.
