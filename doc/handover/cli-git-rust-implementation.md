@@ -1686,15 +1686,14 @@ that is verification, not a decision for the user.
   both release archives exist; the glibc floor measured on the x86_64 archive is still 2.39; `mise upgrade
   cargo:monochromatic-git-policy-cli` installed 0.2.0 and `mise.lock` was restored), and issue 1769 closed by the
   commit with a release comment plus a correction of its control count (19, not 20).
-  Queued, in order: (1) read the scoped mutation run when it ends and kill or justify every survivor, with a patch
-  release if a source change is needed. The run is unit `cli-git-rec2` (tag `rec2`, logs
-  `~/temp/agent/rec2-container.log` and `rec2-mutation.log`, started 20:30 on 2026-10-18; the gate ended 20:37,
-  the 78 planted controls ended about 22:25, and at 22:51 the 50 mutants stood at 30 caught, 5 unviable and 0 missed;
-  the container report is `mutants.out` under `/home/tester/mutation-report`)
-  and replaces `rec1`, which missed nine of the nine mutants it tested before it was stopped (`unpublished`, the
-  `||` chains of `read_destination`, `published_base`, `commit_merge` and the `(Some(true), _)` arm); those
-  were killed with eleven new tests and three redundant checks removed; (2) remove the image tags `rec1` and
-  `rec2` once the results are read.
+  Mutation result (unit `cli-git-rec2`, head `7f8c5a4ce0`, the same source as release 0.2.0): 50 mutants tested in
+  36 minutes, 44 caught, 6 unviable, 0 missed, after the 1972-test gate passed and the 78 planted controls were noticed.
+  The earlier `rec1` run had missed nine of the nine mutants it tested (`unpublished`, the `||` chains of
+  `read_destination`, `published_base`, `commit_merge` and the `(Some(true), _)` arm); those were killed with
+  eleven new tests and three redundant checks removed. The images `rec1` and `rec2` and the stopped `rec1` container
+  were removed. Nothing is queued for issue 1769.
+  Rule change 2026-10-18: the user said QJ1 was worded wrongly; its duration clause is replaced by the rule FRC in
+  `AGENTS.md` (completion-time forecasts need a rate measured across the whole task, otherwise say you cannot tell).
   Open design follow-up: advance the local branch after a reconcile when the worktree allows it (not done because
   it takes the index lock and touches files).
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
