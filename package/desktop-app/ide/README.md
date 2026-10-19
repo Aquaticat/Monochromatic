@@ -4876,22 +4876,24 @@ the application does not inherit Helix's modal commands or editing features.
   the line budget,
   the rustdoc requirement,
   Markdown line breaks,
-  and the syntax-only closure rule,
-  which still reports the closures that remain as warnings.
+  and the type-aware closure check (section Closures).
 - `slint-viewer --check` over every UI file.
-- `lint:closures`,
-  described next.
 
 `lint:release` checks the release profile and is a separate task.
 
 #### Closures
 
-`lint:closures` runs the Dylint lint `avoidable_closure` (`package/linter/monochromatic-lint-closure`)
-over every target of the crate with `cargo dylint --all-targets`:
-the library,
-the binaries,
-the unit tests,
-and the integration tests.
+The Dylint lint `avoidable_closure` (`package/linter/monochromatic-lint-closure`) is part of `monochromatic-lint`,
+which runs it over this package as `rust/avoidable-closure`.
+The IDE task `lint:closures` was removed on 2026-10-19:
+the linter now runs the lint for every Rust package,
+and the IDE has no task of its own for it.
+The linter checks the library and the binaries (`cargo check` without `--all-targets`);
+tests,
+fuzz crates and bench crates are exempt.
+The configuration `monochromatic-lint.config.jsonc` holds the IDE at error severity (block `closure-check-ide`),
+because it has no finding left,
+while other packages report warnings.
 The lint reports a closure unless it captures state
 and is passed straight to a callee whose parameter requires `'static`.
 Such a callee keeps the state past the call,
@@ -4905,16 +4907,16 @@ and `Builder::spawn` bodies are of this kind and pass.
 Every other closure is a named function,
 a `for` loop,
 a `match`,
-or a small named type,
-test code included.
+or a small named type.
 That includes closures written inside macro arguments such as `assert!` and `json_value!`,
-which the syntax-only rule cannot see.
+which the former syntax-only rule could not see.
 
 A closure that its callee requires,
 although the callee's parameter is not `'static`,
 carries rustc's own suppression
 on the closure argument,
-or on the `let` statement that binds it:
+or on the `let` statement that binds it.
+Comment directives do not suppress this rule:
 
 ```text
 // src/syntax_loader.rs
@@ -4928,49 +4930,47 @@ These are the two `catch_unwind` bodies of the minimap and tile workers,
 the two `tree_house` callbacks in `src/syntax_loader.rs`,
 and the caret callback in `src/native/language/actions.rs`.
 `expect` makes rustc report a suppression that no longer suppresses anything (`unfulfilled_lint_expectations`),
-and the task turns that report into an error.
+and the linter reports that as a finding of the same rule,
+at the same severity.
 The `check-cfg` entry in `Cargo.toml` that declares the `dylint_lib` name is written by file-enforcer
 (`file-enforcer.config.ts`,
 `CARGO_DYLINT_DIRS`).
-The syntax-only rule cannot read the attribute,
-so it keeps reporting these five.
 
-The task runs on the host,
-not in the container,
-because the lint is a rustc driver plugin:
+What the IDE needs on the host,
+and what the linter does about it:
 
-- It uses the shared nightly of the repository,
-  which carries the `rustc-dev` component,
-  and the mise tools `cargo-dylint` and `dylint-link`.
-- It depends on `runtime` and `notices`,
-  because the IDE build embeds `target/debug/runtime` and
-  `target/crate-licenses.json`.
-  The build runs in `target/dylint` with links to both,
+- The shared nightly of the repository with the `rustc-dev` component,
+  and the mise tools `cargo-dylint` and
+  `dylint-link`.
+  Without them the linter skips every package with one note on standard error.
+- The `runtime` and `notices` artifacts,
+  `target/debug/runtime` and `target/crate-licenses.json`,
+  because the IDE
+  build embeds them.
+  `lint:clippy` prepares both before the linter runs in `lint`.
+  The prerequisite manifest `monochromatic-lint.prerequisites.jsonc` of this package names
+  `ide-runtime-artifacts`:
+  the linter checks the two artifacts,
+  builds in `target/dylint`,
+  and links both into it,
   because `build.rs` finds them relative to the build directory and the shared cargo configuration would otherwise
   place that directory under a path hashed from the checkout.
-- The nightly cargo of the development host cannot connect to crates.io
+  A missing artifact skips the IDE with a note that names the two tasks.
+- The cargo cache.
+  The linter never fetches,
+  so on a cold cache it skips the package and names `cargo fetch --locked`.
+  The nightly cargo of the development host could not connect to crates.io when this check was written
   (`doc/troubleshooting/dylint-library-tests-and-shared-build-dir.md`),
-  so the task fetches with `cargo +stable fetch --locked` and builds offline.
-- `DYLINT_RUSTFLAGS` defaults to `-D avoidable_closure -D unfulfilled_lint_expectations`;
-  `DYLINT_RUSTFLAGS='-W avoidable_closure'` lists every report as a warning instead.
-  A target that depends on a library with reports,
-  such as an integration test,
-  is not linted until the library is clean.
+  so fill the cache with `cargo +stable fetch --locked` in this directory.
 
-Measured on 2026-10-18 with a load average between 12 and 19 from other work,
-three runs each:
-
-- With `target/dylint` deleted:
-  78.9 to 87.1 seconds,
-  median 81.4.
-- With nothing changed:
-  15.0 to 16.9 seconds,
-  median 16.0.
-- After touching `src/lib.rs`:
-  16.5 to 21.6 seconds,
-  median 17.6.
-
-The first run with an empty Dylint driver cache adds about 30 seconds for the driver build.
+The removed task `lint:closures` ran `cargo dylint --all-targets` and measured,
+on 2026-10-18 with a load average
+between 12 and 19 from other work and three runs each:
+80 to 87 seconds (median 81.4) with `target/dylint` deleted,
+15.0 to 16.9 seconds (median 16.0) with nothing changed,
+and 16.5 to 21.6 seconds (median 17.6) after touching `src/lib.rs`.
+Those figures cover all targets;
+the linter's run covers the library and binaries only.
 
 ## Release build and single executable
 
