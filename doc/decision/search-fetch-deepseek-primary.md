@@ -203,7 +203,9 @@ Measured with the stored key on 2026-10-18.
 - `mise run //package/agent-harness-shared/search-fetch:test:unit` passes,
   including the new DeepSeek client suite and both fallback-chain suites.
 - MCP server `buildAndTest` passes,
-  and the pi extension build,
+  and a stdio smoke call against the built server at protocol revision
+  2026-07-28 returned eight JSONL results with page content through DeepSeek.
+- The pi extension build,
   unit tests,
   type lint,
   and oxlint pass.
