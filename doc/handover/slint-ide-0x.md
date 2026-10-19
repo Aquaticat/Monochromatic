@@ -970,6 +970,17 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
+  - Closure check everywhere (owner requirement of 2026-10-19, recorded in `doc/decision/rust-closure-lint-dylint.md`):
+    `avoidable_closure` must run by default for every Rust package from the linter itself, with no separate
+    `lint:closures` task. Only the IDE has a check today, because the syntax-only rule left `monochromatic-lint` on
+    2026-10-18. An agent measures the feasibility per package and writes `doc/planning/closure-lint-everywhere.md`
+    on branch `docs/closure-lint-everywhere` (worktree `.claude/worktrees/closure-everywhere`); no source is
+    changed yet. The owner also chose to leave the OpenSnitch pop-up default (reject, forever, 30 s) as it is.
+  - Minimap box fill removed (owner request of 2026-10-19): the viewport box is an outline without a fill
+    (`ui/minimap.slint`); hover and drag change its border width and opacity only. The native test is now
+    `the_box_is_an_outline_whose_border_changes_under_the_pointer`. Checked: `lint:slint`, `lint:rustfmt`,
+    `lint:clippy`, `lint:closures`, `test:native` (214 passed) and a screenshot of the real binary in the nested
+    compositor; installed.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the

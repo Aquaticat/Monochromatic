@@ -42,7 +42,7 @@ import {
   createSyntheticClient,
   DEFAULT_RETRY_POLICY,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { contestDocumentLanes, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -619,7 +619,7 @@ async function drive(
   /**
    Client-level fixture outside provider slot limiting.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: inner.chatText,
     chatJson: async (request) => {
       admitted.count += 1;
@@ -726,7 +726,7 @@ const RESEATED_JUDGES: readonly RosterModelId[] = [
  */
 function judgeRecordingClient(
   { asked, }: { readonly asked: RosterModelId[]; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);
@@ -781,7 +781,7 @@ async function contestOneSlice(
     beforeSlice,
     looked = [],
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly beforeSlice?: () => Promise<BenchSeating>;
     readonly looked?: string[];
   },

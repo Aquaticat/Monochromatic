@@ -29,7 +29,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   makeInsertionChunk,
@@ -162,7 +162,7 @@ function coverageClient(
     readonly replies: readonly ScriptedCoverageOutcome[];
     readonly followupReplies?: readonly ScriptedCoverageOutcome[];
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Iterator advancing one response per roster seat.
    */
@@ -753,7 +753,7 @@ const RESEATED_ROSTER: readonly RosterModelId[] = [
  */
 function seatRecordingCoverageClient(
   { asked, }: { readonly asked: RosterModelId[]; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by coverage',);

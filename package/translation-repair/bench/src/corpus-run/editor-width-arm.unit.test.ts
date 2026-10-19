@@ -22,7 +22,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   AdjudicatedIssue,
@@ -152,7 +152,7 @@ const JUDGES = [
  */
 function scriptedClient(
   { answers, }: { readonly answers: Readonly<Record<string, unknown>>; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

@@ -6,7 +6,7 @@ import {
 import { join, } from 'node:path';
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { FidelityReferenceError, } from '../fidelity-reference-error.ts';
@@ -206,7 +206,7 @@ export async function runFidelityProbe(
       },
     ) => Promise<readonly ReviewedFidelityReference[]>;
     readonly resolveRuns: () => Promise<string>;
-    readonly newClient: (options: { readonly promptPayloadDir: string; },) => SyntheticClient;
+    readonly newClient: (options: { readonly promptPayloadDir: string; },) => ModelClient;
     readonly now: () => string;
     readonly pipelineDigest: string;
     readonly runnerClosure: RunnerClosure;

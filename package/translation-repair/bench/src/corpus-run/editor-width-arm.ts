@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import { producerModelIds, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type EditorStageResult,
   runEditorStage,
@@ -135,7 +135,7 @@ export async function runArm(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly input: WidthProbeInput;
     readonly editorModelIds: readonly RosterModelId[];
     readonly judgeModelIds: readonly RosterModelId[];

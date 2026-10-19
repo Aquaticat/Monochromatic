@@ -48,7 +48,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   translateDocument,
@@ -293,7 +293,7 @@ function recordingClient(
     readonly requests: RecordedRequest[];
     readonly translatorRendering: string;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

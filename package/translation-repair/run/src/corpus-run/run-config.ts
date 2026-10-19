@@ -38,7 +38,7 @@ import {
 import {
   createRoutingClient,
   readsImages,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RunClient, } from './run-client-contract.ts';
 import {
@@ -1177,7 +1177,7 @@ export function runClientFrom(
   /**
    Routed client with stable compatibility quota surface.
    */
-  const routed: SyntheticClient = {
+  const routed: ModelClient = {
     ...createRoutingClient({
       // THE CONFIGURED CLIENTS AND NO OTHERS: a provider with no key has no
       // caller, reads dry, and is never routed to (ledger T8). A stand-in

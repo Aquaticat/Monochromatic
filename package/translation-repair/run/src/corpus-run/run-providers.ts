@@ -11,7 +11,7 @@ import {
   hyperRequestsPerHour,
   type OpenRouterClient,
   type ProviderBudgetsWithStates,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { createDecisionsClient, } from '../decisions-client.ts';
@@ -38,7 +38,7 @@ export type ConfiguredProviders = {
   /**
    First provider client, when its key is set.
    */
-  readonly synthetic?: SyntheticClient;
+  readonly synthetic?: ModelClient;
 
   /**
    Second provider client, when its key is set.

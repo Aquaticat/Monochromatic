@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type CheckerStageResult,
   runCheckerStage,
@@ -63,7 +63,7 @@ async function askCheckers(
     issues,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly sourceText: string;
     readonly patchedText: string;
     readonly issues: readonly AdjudicatedIssue[];
@@ -155,7 +155,7 @@ export async function checkOne(
     readonly label: string;
     readonly patchedText: string;
     readonly expectation: string;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
@@ -208,7 +208,7 @@ export async function checkMixedSheet(
     client,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
@@ -283,7 +283,7 @@ export async function checkAllFixedSheet(
     client,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
@@ -342,7 +342,7 @@ export async function runCheckerSensitivity(
     newClient,
     stageSettings,
   }: {
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<void> {

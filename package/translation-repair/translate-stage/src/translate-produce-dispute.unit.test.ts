@@ -22,7 +22,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { produceTranslateSlate, } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -61,7 +61,7 @@ await describe({
         /**
          Client that records each sheet and answers with one rendering.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused by the translate lane',);
           },

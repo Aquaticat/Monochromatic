@@ -123,6 +123,18 @@ Consequences:
 - Closures inside macro arguments that the syntax-only rule never saw are reported by the Dylint lint
   where the closure span is in the author's own code.
 
+## Owner requirement of 2026-10-19
+
+Asked whether to add a `lint:closures` gate to the other Rust packages,
+the owner answered through the question tool that `avoidable_closure` should be enabled by default everywhere in
+the linter, and that there should be no separate `lint:closures` task.
+The owner had taken the closure check for a built-in rule of `monochromatic-lint` enabled everywhere;
+it was until the removal of 2026-10-18, and the consequence above (only the IDE keeps a check) was not known to them.
+The mechanism is not decided:
+the lint needs rustc type information,
+so `monochromatic-lint` would have to run the Dylint library over each Rust package itself,
+or carry the criterion in its own type analysis (the rejected option of the original choice).
+The feasibility and the options are in `doc/planning/closure-lint-everywhere.md`.
 ## Known limits to carry into the lint's README
 
 - Wrappers are not recognised (`Arc::new(closure)`, `Some(closure)`, struct fields, `Option<F>`, a callee that is

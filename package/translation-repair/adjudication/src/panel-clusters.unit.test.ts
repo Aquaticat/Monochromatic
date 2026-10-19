@@ -12,7 +12,7 @@ import type {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildAdjudicationMessages,
@@ -53,9 +53,9 @@ type Capture = { readonly prompt: string; readonly modelId: string; readonly cla
  const fixture = panelFixture({});
  ```
  */
-function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird?: boolean; } = {}): { client: SyntheticClient; captures: Capture[]; } {
+function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird?: boolean; } = {}): { client: ModelClient; captures: Capture[]; } {
   const captures: Capture[] = [];
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => { throw new Error('Unexpected text request',); },
     quotas: async () => { throw new Error('Unexpected quota request',); },
     chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
@@ -82,7 +82,7 @@ function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird
 }
 
 /** Fixture call retains source boundaries and the wider configured electorate. */
-function panelInput(client: SyntheticClient) {
+function panelInput(client: ModelClient) {
   return {
     client,
     panelModelIds: MODELS,
@@ -189,7 +189,7 @@ await describe({
         const fixture = panelFixture();
         const controller = new AbortController();
         const reason = new Error('Cancel after the first packet starts');
-        const client: SyntheticClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
+        const client: ModelClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
           const outcome = await fixture.client.chatJson(request);
           controller.abort(reason);
           return outcome;

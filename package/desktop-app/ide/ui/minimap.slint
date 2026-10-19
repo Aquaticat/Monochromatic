@@ -62,14 +62,14 @@ export component Minimap inherits Rectangle {
         image-fit: fill;
     }
 
-    // The viewport box. Two channels tell its state: the fill (0.15, 0.25 hovered, 0.35 dragged) and the border
-    // (1 px, 2 px when hovered or dragged), besides the cursor.
+    // The viewport box, an outline without a fill so the picture under it stays unchanged. Two channels tell its
+    // state: the border's width (1 px, 2 px when hovered or dragged) and its opacity (0.5, 0.75 hovered, 0.9
+    // dragged), besides the cursor.
     Rectangle {
         x: 0px;
         y: root.box-top;
         width: parent.width;
         height: root.box-height;
-        background: Palette.foreground.with-alpha(touch.pressed ? 0.35 : root.over-box ? 0.25 : 0.15);
         border-width: touch.pressed || root.over-box ? 2px : 1px;
         border-color: Palette.foreground.with-alpha(touch.pressed ? 0.9 : root.over-box ? 0.75 : 0.5);
         border-radius: self.height > 20px ? 5px : 0px;

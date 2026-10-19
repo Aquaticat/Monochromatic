@@ -39,7 +39,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   repairPreparedDocument,
@@ -197,7 +197,7 @@ function blockNumbers({ text, marker, }: { readonly text: string; readonly marke
  const client = recordingClient({ checkerSheets: [], },);
  ```
  */
-function recordingClient({ checkerSheets, }: { readonly checkerSheets: string[]; },): SyntheticClient {
+function recordingClient({ checkerSheets, }: { readonly checkerSheets: string[]; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the checker drivers',);

@@ -34,7 +34,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { archiveDisputesOf, } from '@monochromatic-dev/translation-repair-archive';
 import type {
@@ -174,7 +174,7 @@ const JUDGES: readonly RosterModelId[] = [
  const client = copyingClient();
  ```
  */
-function copyingClient(): SyntheticClient {
+function copyingClient(): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

@@ -26,7 +26,7 @@ import { hashContent, } from '@monochromatic-dev/translation-repair-document-str
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type BenchSeating,
@@ -108,7 +108,7 @@ function titleClient(
     readonly asked: RosterModelId[];
     readonly usable: boolean;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

@@ -31,7 +31,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   contestLaneSlice,
@@ -190,7 +190,7 @@ function refusingClient(
     readonly choice: 'repair' | 'translate' | 'neither';
     readonly refused: readonly RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the lane contest',);

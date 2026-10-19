@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type {
   RepairModels,
   RepairSliceSeating,
@@ -22,7 +22,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  ```
  */
 export type RepairChunkRequest = {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly sliceIndex: number;
   readonly sourceText: string;
   readonly targetText: string;

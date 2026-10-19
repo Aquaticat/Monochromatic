@@ -28,20 +28,26 @@ named for that subject and listed here.
 
 - [Preventing mistakes: shell commands, edits, commits and agents](mistake-prevention-shell-edits-commits-and-agents.md):
   Rules for how the work is carried out:
-  shell commands and tasks,
+  shell commands,
   lint and edits,
   commit messages,
   questions to the owner,
   and work handed to agents.
   Sections:
   - [Shell commands](mistake-prevention-shell-edits-commits-and-agents.md#shell-commands)
-  - [Tasks, builds and bulk output](mistake-prevention-shell-edits-commits-and-agents.md#tasks-builds-and-bulk-output)
   - [Lint and edits](mistake-prevention-shell-edits-commits-and-agents.md#lint-and-edits)
   - [Commit messages](mistake-prevention-shell-edits-commits-and-agents.md#commit-messages)
   - [Questions to the owner](mistake-prevention-shell-edits-commits-and-agents.md#questions-to-the-owner)
   - [Work merged from parallel briefs](mistake-prevention-shell-edits-commits-and-agents.md#work-merged-from-parallel-briefs)
   - [How an agent waits](mistake-prevention-shell-edits-commits-and-agents.md#how-an-agent-waits)
   - [Briefs and hand-backs](mistake-prevention-shell-edits-commits-and-agents.md#briefs-and-hand-backs)
+- [Preventing mistakes: tasks, builds and bulk output](mistake-prevention-tasks-builds-and-bulk-output.md):
+  Rules for running the repository's tasks and builds:
+  where a task runs from,
+  which install a build uses,
+  and where large output goes.
+  Sections:
+  - [Tasks, builds and bulk output](mistake-prevention-tasks-builds-and-bulk-output.md#tasks-builds-and-bulk-output)
 - [Preventing mistakes: guards, searches and claims](mistake-prevention-guards-searches-and-claims.md):
   Rules for evidence:
   guards that must be able to fail,
@@ -141,7 +147,8 @@ named for that subject and listed here.
   its labels,
   its counts,
   what a catch adds to it,
-  and the reason a line gives when it reports nothing done.
+  the reason a line gives when it reports nothing done,
+  and the provider a failure names.
   Sections:
   - [Messages a marked class carries](mistake-prevention-messages-labels-and-counts.md#messages-a-marked-class-carries)
   - [Counts a finding states](mistake-prevention-messages-labels-and-counts.md#counts-a-finding-states)
@@ -150,6 +157,7 @@ named for that subject and listed here.
   - [Counts in printed text](mistake-prevention-messages-labels-and-counts.md#counts-in-printed-text)
   - [What a catch charges](mistake-prevention-messages-labels-and-counts.md#what-a-catch-charges)
   - [Log lines that report nothing done](mistake-prevention-messages-labels-and-counts.md#log-lines-that-report-nothing-done)
+  - [Provider names in failures](mistake-prevention-messages-labels-and-counts.md#provider-names-in-failures)
 - [Preventing mistakes: moves, splits and rewrite scripts](mistake-prevention-moves-splits-and-rewrite-scripts.md):
   Rules for moving or rewriting many files at once:
   the dry run,

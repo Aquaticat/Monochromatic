@@ -486,14 +486,18 @@ export type ModelCaller = {
 };
 
 /**
- Injected-transport client surface drivers consume.
+ The client surface every driver consumes, whichever provider or router serves it.
+
+ A provider's own client (`createSyntheticClient` builds the Synthetic one)
+ and the routed client that spans every provider both fit this type,
+ so a driver takes `ModelClient` and never names the provider behind it.
 
  @example
  ```ts
- const client: SyntheticClient = createSyntheticClient({ apiKey, transport, },);
+ async function drive({ client, }: { readonly client: ModelClient; },): Promise<void> {}
  ```
  */
-export type SyntheticClient = ModelCaller & {
+export type ModelClient = ModelCaller & {
   /**
    Current quota snapshot; free per provider docs.
    */

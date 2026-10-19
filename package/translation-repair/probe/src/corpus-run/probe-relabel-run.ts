@@ -1,4 +1,4 @@
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { PriorIssueDisclosure, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type { gatherRelabelCases, } from './probe-relabel-case.ts';
@@ -57,7 +57,7 @@ export async function runProbeRelabel(
     readonly dir: string;
     readonly pin: CorpusPin;
     readonly production: PriorIssueDisclosure;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly gather: {
       readonly damaged: typeof gatherRelabelCases;
       readonly controls: typeof gatherControlCases;

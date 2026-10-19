@@ -24,7 +24,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
@@ -186,7 +186,7 @@ function scriptedClient(
     readonly proberEvidence?: string;
     readonly proberOmittedText?: string;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the repair pipeline',);
@@ -306,7 +306,7 @@ function trackingChatJson(
     scripted,
   }: {
     readonly asked: string[];
-    readonly scripted: SyntheticClient;
+    readonly scripted: ModelClient;
   },
 ): <ValueT,>(request: ChatJsonRequest<ValueT>,) => Promise<ChatJsonOutcome<ValueT>> {
   return async function chatJson<ValueT,>(
@@ -360,7 +360,7 @@ function steeringClient(
     criticConcurrency,
     refinerConcurrency,
   }: {
-    readonly base: SyntheticClient;
+    readonly base: ModelClient;
     readonly controller: AbortController;
     readonly calls: { critic: number; };
     readonly abortAfterCriticCalls?: number;
@@ -369,7 +369,7 @@ function steeringClient(
     readonly criticConcurrency?: CriticConcurrency;
     readonly refinerConcurrency?: RefinerConcurrency;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: base.chatText,
     chatJson: async <ValueT,>(
@@ -584,7 +584,7 @@ await describe({
         const sent: { readonly stage: string; readonly text: string; }[] = [];
 
         /** Scripted client that records what each stage was asked. */
-        const recording: SyntheticClient = {
+        const recording: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused by the repair pipeline',);
           },
@@ -992,7 +992,7 @@ await describe({
         /**
          Client counting every structured call it serves.
          */
-        const counting: SyntheticClient = {
+        const counting: ModelClient = {
           chatText: base.chatText,
           chatJson: async <ValueT,>(
             request: ChatJsonRequest<ValueT>,
@@ -1555,7 +1555,7 @@ Meow meow meow meow.
          */
         function countingClient(
           { key, }: { readonly key: 'plain' | 'anchored'; },
-        ): SyntheticClient {
+        ): ModelClient {
           /**
            Scripted client this one delegates to.
            */
@@ -2507,7 +2507,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           const ballots: string[] = [];
 
           /** Client that records panel prompts and otherwise follows the script. */
-          const recording: SyntheticClient = {
+          const recording: ModelClient = {
             chatText: async () => {
               throw new Error('chatText unused by the repair pipeline',);
             },

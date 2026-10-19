@@ -33,7 +33,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type ArchiveDispute,
@@ -140,7 +140,7 @@ function scriptedClient(
     readonly sheets: string[];
     readonly unplanned: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

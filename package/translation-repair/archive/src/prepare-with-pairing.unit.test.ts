@@ -34,7 +34,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { prepareDocumentPairWithRoster, } from '../dist/final/node/index.mjs';
 import {
@@ -236,7 +236,7 @@ async function roundsAsked(
    Client pairing a question's first two blocks or sections in order, a
    reply a sheet may refuse, which leaves only the seat to record.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText not used',);
     },

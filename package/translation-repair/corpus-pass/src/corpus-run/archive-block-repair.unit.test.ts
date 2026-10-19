@@ -23,7 +23,7 @@ import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
@@ -77,7 +77,7 @@ const l = tagged({ tag: 'archive-block-repair-test', },);
  */
 function correctionClient(
   { replacementFor, }: { readonly replacementFor: (prompt: string) => string; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

@@ -5,7 +5,7 @@ import {
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   CONTEST_REFUSAL,
@@ -180,7 +180,7 @@ export async function gateConsolidationPolish(
     l,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: ConsolidationPolishGateSubject;
     readonly signal: AbortSignal;

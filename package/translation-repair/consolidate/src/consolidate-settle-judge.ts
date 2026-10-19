@@ -2,7 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { INELIGIBLE_STANDING_WITHHELD_FINDING, } from './consolidate-ineligible-standing.ts';
 import type { ConsolidationSubject, } from './consolidate-settle.ts';
 import type { SettlementIdentity, } from './consolidate-settle-context.ts';
@@ -317,7 +317,7 @@ export async function judgeConsolidationSlate(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly judgeModelIds: readonly RosterModelId[];
     readonly subject: ConsolidationSubject;
     readonly built: TranslateCandidateSet;

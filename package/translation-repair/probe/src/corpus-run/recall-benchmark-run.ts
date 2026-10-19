@@ -1,6 +1,6 @@
 import { mkdir, } from 'node:fs/promises';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { runRepairBenchmark, } from '@monochromatic-dev/translation-repair-repair/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -123,7 +123,7 @@ export async function runRecallBenchmark(
     readonly runsDir: string;
     readonly readTip: () => Promise<string>;
     readonly pin: CorpusPin;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly now: () => string;
     readonly stageSettings: StageSettings;
   },

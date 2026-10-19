@@ -43,7 +43,7 @@ import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-rea
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type RefinedSliceSettlement,
@@ -194,7 +194,7 @@ async function keysKept(
   /**
    Client scripting each stage by the schema it asks for.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the step',);
     },

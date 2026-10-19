@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import {
   type CoverageControlResult,
   runCoverageControl,
@@ -123,7 +123,7 @@ async function runOver(
   /**
    Clients the run built.
    */
-  const clients: SyntheticClient[] = [];
+  const clients: ModelClient[] = [];
 
   /**
    What the control was asked.
@@ -184,7 +184,7 @@ async function runOver(
         typed,
       },),
       pin: corpus.pin,
-      newClient: function newClient(): SyntheticClient {
+      newClient: function newClient(): ModelClient {
         return keptInertClient({ clients, },);
       },
       holds: scripted,

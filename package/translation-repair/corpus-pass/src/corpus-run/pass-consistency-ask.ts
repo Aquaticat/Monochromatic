@@ -3,7 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   buildConsistencyMessages,
   canonicalBallotOf,
@@ -212,7 +212,7 @@ export async function askConsistencyBench(
     l,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: ConsistencySubject;
     readonly cache: SliceCache<ConsistencyCacheValue>;

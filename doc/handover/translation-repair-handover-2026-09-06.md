@@ -401,8 +401,25 @@ its "Next" list is still the queue the merge went ahead of.
     with both courses,
     renew or leave the seat withheld;
     the rotation's build still prints the old line until the branch worktree is updated.
-2.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
-3.  Each `monochromatic-lint` release moves `mise.lock`:
+    Both items B692 left open are closed on `main`:
+    the request-size refusal is read only from Synthetic's replies
+    (red `e5bf21649b`,
+    fix `af2a0a27e5`,
+    B693),
+    and the client type every driver takes is `ModelClient`
+    (`9081481c0d`,
+    B694).
+    The rotation's build carries neither.
+2.  Issue 1780,
+    more read-only TypeScript requests in the readonly plugin's memo:
+    a Sonnet agent works in the keyless worktree `w209` at `8b1eb54574`,
+    reading each candidate's handler at the pinned TypeScript version
+    and measuring a cold family lint before and after.
+    Read its hand-back for shell-rule breaks,
+    check that the family's lint findings are unchanged,
+    then land it and comment on the issue.
+3.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
+4.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,
     after its unit suite passes with the real program.
 

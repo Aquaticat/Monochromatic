@@ -32,7 +32,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type BenchSlice,
@@ -93,7 +93,7 @@ const SCRIPT: Readonly<Record<string, unknown>> = {
 /**
  Client filing one claim and then voting it down.
  */
-const CLIENT: SyntheticClient = {
+const CLIENT: ModelClient = {
   chatText: async () => {
     throw new Error('chatText unused while gathering width probe input',);
   },

@@ -21,7 +21,7 @@ import type { SettledArtifact, } from '@monochromatic-dev/translation-repair-art
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { unflooredFinding, } from '@monochromatic-dev/translation-repair-translate-stage';
 import {
@@ -102,7 +102,7 @@ const REJECTION_RECORDED = 'absolute naturalness rejection recorded as evidence'
 /**
  Client serving rewrite, selection and final gate schemas.
  */
-const client: SyntheticClient = {
+const client: ModelClient = {
   chatText: async () => {
     throw new Error('chatText unused by structured polish stages',);
   },
@@ -178,7 +178,7 @@ const client: SyntheticClient = {
  */
 function singleRoundClient(
   { reviewAcceptableByRound, }: { readonly reviewAcceptableByRound: readonly boolean[]; },
-): SyntheticClient {
+): ModelClient {
   /**
    Stateful call counts separating refine and review rounds.
    */
@@ -287,7 +287,7 @@ function singleRoundClient(
  */
 function recordingClient(
   { gateChoice, }: { readonly gateChoice: 'base' | 'polished'; },
-): { readonly client: SyntheticClient; readonly asked: readonly string[]; } {
+): { readonly client: ModelClient; readonly asked: readonly string[]; } {
   /**
    Schema of every request, in the order asked.
    */
@@ -449,7 +449,7 @@ await describe({
 
          @returns Scripted client
          */
-        function rewritingClient({ newText, }: { readonly newText: string; },): SyntheticClient {
+        function rewritingClient({ newText, }: { readonly newText: string; },): ModelClient {
           return {
             ...client,
             chatJson: async <ValueT,>(

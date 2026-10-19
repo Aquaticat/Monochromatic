@@ -26,7 +26,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   runTranslateStage,
@@ -91,7 +91,7 @@ const JUDGES: readonly RosterModelId[] = [
  const client = translatorsClient({ heard: true, },);
  ```
  */
-function translatorsClient({ heard, }: { readonly heard: boolean; },): SyntheticClient {
+function translatorsClient({ heard, }: { readonly heard: boolean; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

@@ -112,7 +112,7 @@ export {
   messageText,
   type ModelCaller,
   type SchemaMismatchReason,
-  type SyntheticClient,
+  type ModelClient,
   type VisionMessage,
 } from './chat-contract.ts';
 export { readJsonOutcome, } from './chat-json-outcome.ts';

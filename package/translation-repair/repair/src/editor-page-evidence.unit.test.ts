@@ -30,7 +30,7 @@ import type {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
@@ -138,7 +138,7 @@ await describe({
         /**
          Client whose editors propose two repairs and whose judges pick the first.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('Unexpected text call',);
           },

@@ -25,7 +25,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { repairTranslation, } from '../dist/final/node/index.mjs';
 import {
@@ -174,7 +174,7 @@ function scriptedClient(
     readonly flyVerdicts: readonly string[];
     readonly resolutionCalls: { count: number; };
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the repair pipeline',);

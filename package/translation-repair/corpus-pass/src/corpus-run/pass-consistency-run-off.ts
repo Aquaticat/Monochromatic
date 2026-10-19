@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   buildConsistencyRunOffMessages,
   canonicalChoiceOf,
@@ -171,7 +171,7 @@ export async function askRunOff(
     l,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: ConsistencySubject;
     readonly finalists: readonly string[];

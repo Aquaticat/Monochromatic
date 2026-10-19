@@ -16,7 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
   attemptStageCall,
@@ -86,8 +86,8 @@ const DECISION: StageDecision = {
  ```
  */
 function clientWith(
-  { decide, }: { readonly decide?: SyntheticClient['decide']; },
-): SyntheticClient {
+  { decide, }: { readonly decide?: ModelClient['decide']; },
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('a decision seat must never be asked for chat',);

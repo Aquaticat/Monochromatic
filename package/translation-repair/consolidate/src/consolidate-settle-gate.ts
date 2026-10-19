@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { gateConsolidatedSlice, } from './consolidate-gate-stage.ts';
 import type { GateBallot, } from './consolidate-gate-wire.ts';
 import {
@@ -162,7 +162,7 @@ export async function gateAndShip(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly judgeModelIds: readonly RosterModelId[];
     readonly subject: ConsolidationSubject;
     readonly decided: TranslateStageResult;

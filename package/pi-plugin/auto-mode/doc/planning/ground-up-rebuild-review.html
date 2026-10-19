@@ -106,249 +106,123 @@ footer { color: var(--color-muted); font-size: 0.88rem; line-height: 1.6; border
   .arrow { transform: rotate(90deg); }
   .comparison .node { flex-basis: auto; }
 }
+li { line-height: 1.5; margin-block: 0.4rem; }
+select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline: 0.6rem; }
+.decision .ranking { font-size: 0.94rem; }
 </style>
 </head>
-<body>
-<main>
-<header>
-  <div class="eyebrow">Auto-mode / Ground-up rebuild / Review in progress</div>
-  <h1>Review the decision flow</h1>
-  <p class="lead">A prepared operation stays visible while Luna answers many focused questions.
-  Code uses the answers to approve, deny, or ask. These diagrams separate settled requirements
-  from the meaning that still needs your judgment.</p>
-  <div class="chips"><span class="chip">Settled: around 100+ useful questions / call</span>
-  <span class="chip">Settled: up to 3 batches × 3 parallel calls</span>
-  <span class="chip">Draft: how per-rule answers combine</span></div>
-  <nav aria-label="Review sections"><a href="#overview">1. Overall flow</a>
-  <a href="#adaptive">2. Adaptive questions</a><a href="#meaning">3. Worked decisions</a>
-  <a href="#host">4. Host constraint</a><a href="#response">Your response</a></nav>
+<body><main>
+<header><div class="eyebrow">Auto-mode / Active staged design / Plan review</div>
+<h1>Every effective rule.<br>One complete group.</h1>
+<p class="lead">Your staged architecture is now the plan. Inspect the flow and examples, then answer the remaining decisions. This page calls no model and executes no tools.</p>
+<div class="chips"><span class="chip">Every Pi start: Luna relevance</span><span class="chip">First pass: every effective rule</span><span class="chip">Autonomy: assess reversibility</span><span class="chip">Four answer choices</span><span class="chip">At most 3 review batches</span></div>
+<nav aria-label="Review sections"><a href="#overview">Stages</a><a href="#q5">Built-in rules</a><a href="#adaptive">Snapshot and follow-ups</a><a href="#meaning">Worked outcomes</a><a href="#manual">Human feedback</a><a href="#q1">Open decisions</a><a href="#response">Prepare response</a></nav>
 </header>
-
-<section id="overview" class="panel" aria-labelledby="overview-title">
-  <div class="eyebrow">Settled structure</div>
-  <h2 id="overview-title">The model supplies evidence. Code owns the outcome.</h2>
-  <div class="flow" role="group" aria-label="Review data flow">
-    <div class="node"><span class="step">Capture</span><strong>One current snapshot</strong>
-    <p>Authored instructions + visible context + complete prepared group.</p></div>
-    <span class="arrow" aria-hidden="true">→</span>
-    <div class="node" data-kind="code"><span class="step">Select in code</span><strong>Useful question set</strong>
-    <p>Prewritten forms bound to rules, operation details, conditions, and interactions.</p></div>
-    <span class="arrow" aria-hidden="true">→</span>
-    <div class="node"><span class="step">Evaluate with Luna</span><strong>100+ focused questions</strong>
-    <p>Each returns approve / deny / unknown probabilities. The complete group stays in context.</p></div>
-    <span class="arrow" aria-hidden="true">→</span>
-    <div class="node" data-kind="code"><span class="step">Resolve in code</span><strong>Apply score rule</strong>
-    <p>Admit each result, reconcile the evidence, and determine the group outcome.</p></div>
-  </div>
-  <div class="grid">
-    <div class="node" data-kind="approve"><strong>✓ Approve</strong><p>Check snapshot freshness, then release the reviewed group.</p></div>
-    <div class="node" data-kind="deny"><strong>× Deny</strong><p>Withhold the group and name the decisive rule evidence.</p></div>
-    <div class="node" data-kind="ask"><strong>? Unresolved</strong><p>Adapt the next batch. If the permitted batches are exhausted, ask.</p></div>
-  </div>
-  <p class="return">↶ Unresolved evidence selects different useful forms and bindings for the same operation.</p>
-  <p class="caption">An early resolved outcome ends review. Retries consume call slots.
-  A changed snapshot cannot inherit approval. Span 02 observes matching requests without decision authority.</p>
-  <div class="rail"><strong>The settled numeric rule</strong>
-  <p>Unknown &lt; 0.2: take the uniquely highest approve/deny score.
-  Unknown ≥ 0.2: that score must also be ≥ 0.6. A tie remains unresolved.
-  These are per-question rules; the reduction from many answers is the draft contract explored in the scenarios.</p></div>
-</section>
-
-<section id="adaptive" class="panel" aria-labelledby="adaptive-title">
-  <div class="eyebrow">Corrected interpretation</div>
-  <h2 id="adaptive-title">One uncertain issue can open many useful questions.</h2>
-  <p>Example request: <strong>“Review the rebuild plan and deliver a better plan.”</strong>
-  Proposed group: read evidence, write the planning document and HTML diagrams, then commit those documents.</p>
-  <div class="node" data-kind="ask"><strong>? Shared issue: does the whole group stay within review work?</strong>
-  <p>The issue is shared. The evidence to examine is different for each question.</p></div>
-  <div class="pool" role="group" aria-label="Distinct useful question bindings">
-    <div class="node"><strong>Document contents</strong><p><code>VRB · AUT · DRR</code><br>Does a proposed architecture become an unaccepted implementation decision?</p></div>
-    <div class="node"><strong>Written files</strong><p><code>IWT · ANN · EC1</code><br>Are writes confined to the requested review artifacts and their proper locations?</p></div>
-    <div class="node"><strong>Evidence and scope</strong><p><code>QPM · FCH · QGR</code><br>Does a choice reopen a settled requirement or rely on an untested constraint?</p></div>
-    <div class="node"><strong>Visible review</strong><p><code>ODM · CXD · HDM</code><br>Do the diagrams expose the differences and make their states readable?</p></div>
-    <div class="node"><strong>Combined commit</strong><p><code>CLG · CPN · PX3</code><br>Does the exact commit preserve concurrent work and stay within the authorized scope?</p></div>
-  </div>
-  <p class="caption">Illustrative bindings from actual repository rules, not a complete production batch or a measured model result.
-  Every question still evaluates a rule against the complete request and operation; the focus identifies evidence to inspect.</p>
-  <div class="flow" role="group" aria-label="Adaptive batch selection">
-    <div class="node"><span class="step">Batch 1</span><strong>Cover the operation</strong>
-    <p>Choose a broad useful set from authored rules and concrete operation details.</p></div>
-    <span class="arrow" aria-hidden="true">→</span>
-    <div class="node"><span class="step">Batch 2, if unresolved</span><strong>Follow the uncertainty</strong>
-    <p>If scope remains unclear, examine contents, destinations, review-only restrictions, and their interactions.</p></div>
-    <span class="arrow" aria-hidden="true">→</span>
-    <div class="node"><span class="step">Batch 3, if unresolved</span><strong>Resolve remaining dependencies</strong>
-    <p>Choose further useful checks based on the actual evidence. Then resolve or ask.</p></div>
-  </div>
-  <p class="return">Each call selects around 100 or more useful questions. One uncertain result does not imply one useful question.</p>
-  <p>Question identity includes the rule occurrence, evaluation form, focused evidence, and snapshot.
-  Responses guide selection; they do not become facts or instructions telling the next call what to conclude.
-  Repeated paraphrases and votes do not add independent evidence.</p>
-  <p class="caption">Source: <code>doc/planning/pi-auto-mode-batched-assessment.md</code>, lines 667 to 746
-  (adaptive mechanics only; the old meaning categories remain superseded), plus your clarified batch-size intent.</p>
-</section>
-
-<section id="meaning" class="panel" aria-labelledby="meaning-title">
-  <div class="eyebrow">Design judgment / Illustrative expected outcomes</div>
-  <h2 id="meaning-title">What should each rule’s approval contribute?</h2>
-  <p>The draft below means <strong>“this rule permits this group under the complete instructions and request.”</strong>
-  A rule can clear an operation without independently authorizing it. Request scope is evaluated too.</p>
-  <div class="choice-tabs" role="group" aria-label="Choose a worked scenario">
-    <button type="button" data-scene="tests" aria-pressed="true">Requested tests</button>
-    <button type="button" data-scene="scope" aria-pressed="false">Unrequested edit</button>
-    <button type="button" data-scene="exception" aria-pressed="false">Explicit approval</button>
-    <button type="button" data-scene="missing" aria-pressed="false">Missing fact</button>
-  </div>
-  <article class="scenario" data-case="tests">
-    <p class="quote">“Run the package tests.” → The group runs that package’s test task.</p>
-    <div class="flow comparison">
-      <div class="node"><strong>Request scope</strong><p>The requested test run is within scope.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <div class="node"><strong>Package task rule</strong><p>The command uses the prescribed package task.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <div class="node"><strong>CSS formatting rule</strong><p>No CSS is being written. This rule does not object.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <span class="arrow" aria-hidden="true">→</span>
-      <div class="node" data-kind="approve"><strong>✓ Group: approve</strong><p>Assuming the remaining required evidence also clears the group.</p></div>
-    </div>
-    <p class="caption">Alternative meaning: if each rule must independently authorize the test run, the unrelated CSS rule
-    cannot approve it. Treating that as unknown would leave this otherwise authorized operation unresolved.</p>
-  </article>
-  <article class="scenario" data-case="scope" hidden>
-    <p class="quote">“Review this module.” → The group changes its production implementation.</p>
-    <div class="flow comparison">
-      <div class="node"><strong>Formatting and task rules</strong><p>The edit could follow all formatting and task conventions.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <div class="node"><strong>Review-only instruction</strong><p>Implementation changes exceed the requested review.</p><span class="outcome" data-result="deny">× Deny</span></div>
-      <span class="arrow" aria-hidden="true">→</span>
-      <div class="node" data-kind="deny"><strong>× Group: deny</strong><p>Passing unrelated rules does not establish authorization.</p></div>
-    </div>
-    <p class="caption">The reducer needs the scope check. “Nothing else objected” cannot substitute for it.</p>
-  </article>
-  <article class="scenario" data-case="exception" hidden>
-    <p class="quote">Rule: “Ask before publishing.” You then say: “Publish this exact artifact to this destination.”</p>
-    <div class="flow comparison">
-      <div class="node"><strong>Publication rule in context</strong><p>The exact requested publication supplies the required approval.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <div class="node"><strong>Operation match</strong><p>Artifact, destination, and current request match the prepared operation.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <span class="arrow" aria-hidden="true">→</span>
-      <div class="node" data-kind="approve"><strong>✓ Group: approve</strong><p>Assuming no independent prohibition or missing evidence.</p></div>
-    </div>
-    <p class="caption">The rule’s answer must already account for the actual approval and instruction precedence.
-    An isolated “ask before publishing” answer must not veto the explicit matching request.</p>
-  </article>
-  <article class="scenario" data-case="missing" hidden>
-    <p class="quote">“Upload this report to our approved destination.” → The supplied URL’s approval is unknown.</p>
-    <div class="flow comparison">
-      <div class="node"><strong>Upload request</strong><p>The general upload is requested.</p><span class="outcome" data-result="approve">✓ Approve</span></div>
-      <div class="node"><strong>Destination condition</strong><p>The evidence does not establish that this URL is the approved destination.</p><span class="outcome" data-result="ask">? Unresolved</span></div>
-      <span class="arrow" aria-hidden="true">→</span>
-      <div class="node" data-kind="ask"><strong>? Group: unresolved</strong><p>Use further useful questions if evidence can resolve it; ask at exhaustion.</p></div>
-    </div>
-    <p class="caption">Additional model questions cannot manufacture a missing external fact.
-    Unknown is uncertainty, not the category for an unrelated rule.</p>
-  </article>
-  <div class="grid">
-    <div class="node"><strong>A. Approval means clearance from the rule</strong>
-    <p>Benefit: irrelevant rules can clear ordinary authorized work; precedence stays in each contextual assessment.</p>
-    <p>Cost: authorization and request scope must be covered explicitly. A missing scope check would be a real gap.</p></div>
-    <div class="node"><strong>B. Approval means this rule independently grants permission</strong>
-    <p>Benefit: positive authorization is explicit in each approving answer.</p>
-    <p>Cost: unrelated rules cannot approve. The all-approve reducer would need a different contract to distinguish neutral rules.</p></div>
-  </div>
-  <p class="ranking"><strong>Recommendation and ranking: A &gt; B.</strong>
-  A fits rule-by-rule review without restoring a separate meaning taxonomy.
-  B does not compose with the draft’s all-approve reducer for ordinary unrelated rules.
-  This is a proposed interpretation, not an accepted decision.</p>
-</section>
-
-<section id="host" class="panel" aria-labelledby="host-title">
-  <div class="eyebrow">Verified source finding / Integration not qualified</div>
-  <h2 id="host-title">Preparing the whole group changes sequential timing.</h2>
-  <p>Call A writes a file. Call B’s extension hook reads that file to prepare B’s arguments.</p>
-  <h3>Installed Pi sequential path</h3>
-  <div class="flow" role="group" aria-label="Current sequential timing">
-    <div class="node"><strong>Prepare A</strong></div><span class="arrow" aria-hidden="true">→</span>
-    <div class="node" data-kind="approve"><strong>Execute A</strong><p>File changes here.</p></div><span class="arrow" aria-hidden="true">→</span>
-    <div class="node"><strong>Prepare B</strong><p>Hook sees A’s result.</p></div><span class="arrow" aria-hidden="true">→</span>
-    <div class="node"><strong>Execute B</strong></div>
-  </div>
-  <h3>Draft’s complete-preparation proposal</h3>
-  <div class="flow" role="group" aria-label="Proposed preparation timing">
-    <div class="node"><strong>Prepare A + B</strong><p>B’s hook runs before A changes the file.</p></div><span class="arrow" aria-hidden="true">→</span>
-    <div class="node" data-kind="code"><strong>Review entire group</strong><p>All prepared arguments visible.</p></div><span class="arrow" aria-hidden="true">→</span>
-    <div class="node"><strong>Execute A, then B</strong><p>B has the earlier prepared arguments.</p></div>
-  </div>
-  <div class="rail"><strong>Required plan correction</strong><p>The proposal cannot claim unchanged sequential extension behavior.
-  The supported group semantics must be designed before choosing the hook. Result-dependent nested calls have a related
-  issue: the next child’s final arguments may not exist until the previous child finishes.</p></div>
-  <p class="caption">Source: installed Pi 1.3.0 <code>pi-agent-core/dist/agent-loop.js:374,384,394,453,559</code>.
-  Nested calls use <code>runToolCall</code>, reached from the coding agent’s <code>_executeNestedToolCall</code>.
-  These are source observations, not replacement runtime tests. This section does not ask you to choose a patch mechanism.</p>
-</section>
-
-<section id="response" class="panel" aria-labelledby="response-title">
-  <div class="eyebrow">Current question / No implementation approval</div>
-  <h2 id="response-title">Judge the worked outcomes first.</h2>
-  <p>Use the scenario buttons to inspect all four cases. The question is whether the proposed clearance meaning and
-  those outcomes express your intent. Later decisions about reduction and conflicting reassessments depend on this answer.</p>
-  <form id="review-form">
-    <fieldset><legend>Q1. Does interpretation A match your intended rule evaluation?</legend>
-      <label class="answer"><input type="radio" name="meaning" value="A matches the intended meaning and worked outcomes."><span>A matches the intended meaning and worked outcomes. Recommended; scope remains an explicit check.</span></label>
-      <label class="answer"><input type="radio" name="meaning" value="Change the meaning or one or more worked outcomes; see my notes."><span>Change the meaning or an outcome. Describe the rule and case in the notes.</span></label>
-      <label class="answer"><input type="radio" name="meaning" value="The diagram still misses the intended model; see my notes."><span>The diagram still misses the intended model. Describe what should connect differently.</span></label>
-    </fieldset>
-    <label for="notes">Corrections, expected outcomes, or missing cases</label>
-    <textarea id="notes" name="notes" placeholder="For example: in the explicit-approval case, the rule’s answer should be…"></textarea>
-    <button type="submit" class="primary">Prepare reply</button>
-    <p id="status" class="status" role="status">Your choices stay on this page. Prepare a reply, then copy it into the conversation.</p>
-    <label for="reply">Reply to copy</label>
-    <textarea id="reply" readonly aria-describedby="status" placeholder="Your selected answer and notes will appear here."></textarea>
-    <button id="select-reply" type="button">Select reply text</button>
-  </form>
-</section>
-<footer>Local review artifact, 2026-10-19. No model is called and no operation is executed by this page.
-The batch-size scarcity question has been withdrawn. Architecture and implementation remain unapproved.
-The maintained proposal is <code>package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md</code>.</footer>
-</main>
-<script>
-// Scenario switching changes the displayed example, never the user's answer.
+<section id="overview" class="panel"><div class="eyebrow">Settled by your instructions</div><h2>Startup selects potential relevance. Every rule then gets assessed.</h2>
+<div class="flow" aria-label="Startup flow"><div class="node"><span class="step">Stage 0 / Every Pi start</span><strong>Parsed AGENTS.md → Luna</strong><p>Which rules could be relevant to agent operations? A parsing cache never skips this call.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Effective authored rules + built-ins</strong><p>About 100 authored rules expected. No fixed-count truncation or padding.</p></div></div>
+<div class="flow" aria-label="Pending group review flow"><div class="node"><span class="step">1 / Capture</span><strong>Prepare + parse the whole group</strong><p>All pending calls, all final arguments, full execution structure.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><span class="step">2 / Deterministic checks</span><strong>Immediate approve / deny / ask</strong><p>Only when a named condition establishes that outcome. Otherwise continue.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><span class="step">3 / Luna</span><strong>Every rule = one question</strong><p>Complete snapshot. Approve / deny / ask / not-applicable.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><span class="step">4 / Code</span><strong>Aggregate answers</strong><p>Resolve, or refine the recorded uncertainty.</p></div></div>
+<div class="grid"><div class="node" data-kind="approve"><strong>✓ Approve</strong><p>Verify freshness, then release the reviewed group.</p></div><div class="node" data-kind="deny"><strong>× Deny</strong><p>Withhold execution and explain the decisive evidence.</p></div><div class="node" data-kind="ask"><strong>? Ask</strong><p>Present the exact group and capture the human’s decision.</p></div></div>
+<p class="return">↶ Unresolved → focused new questions → code aggregates again. Still unresolved after batch 3 → ask.</p>
+<p class="caption">No useful-question subset selection in the first pass. Up to three parallel Luna calls per batch; retries consume those slots. Span 02 remains an observer with no decision authority.</p></section>
+<section id="q5" class="panel"><div class="eyebrow">Architecture settled / Rule contents deferred</div><h2>Multiple built-in rules. The catalogue comes later.</h2><p>We are not choosing the rules, their count, names, or wording in this round.</p><div class="flow"><div class="node"><strong>Built-in rules</strong><p>Multiple general-agent rules. Contents remain unspecified.</p></div><span class="arrow" aria-hidden="true">+</span><div class="node"><strong>Effective authored rules</strong><p>The rules selected at startup.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><strong>Every rule gets an answer</strong><p>Approve / deny / ask / not-applicable. Code aggregates the attributed answers.</p></div></div><p class="caption">Reversibility remains an assessment principle; this does not finalize a particular built-in. The previous proposed catalogue is withdrawn from the active review. No catalogue decision is requested now.</p></section>
+<section id="adaptive" class="panel"><div class="eyebrow">Settled structure / Context-anchor detail open in Q4</div><h2>The snapshot stays whole while questions become more specific.</h2>
+<div class="grid"><div class="node"><h3>Prepared group</h3><p>Tool identities, parsed arguments, resources, control flow, and all pending members. Separate from the history cap.</p></div><div class="node"><h3>Visible context</h3><p><code>clamp(5, units since latest human message, 10)</code>. Units are assistant thinking/output blocks or tool-call sets. Count private-thinking boundaries without sending private content.</p></div><div class="node"><h3>Effective ruleset</h3><p>Original text, source, hierarchy, and explicit exceptions. Every rule appears in first-pass coverage, including unrelated ones.</p></div></div>
+<div class="flow"><div class="node"><span class="step">First batch</span><strong>All built-ins + authored rules</strong><p>Every built-in and every effective authored rule receives its own answer. Built-in contents will be decided later.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="ask"><strong>Unresolved evidence</strong><p>Record the specific uncertainty in the returned answers. This architecture does not prescribe a built-in list.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><span class="step">Next batch / Illustrative questions</span><strong>Resolve the specific ambiguity</strong><p>For example: is the unusual argument an intentional probe? Does the test use disposable fixtures? Does the existing approval cover the recipient?</p></div></div>
+<p class="caption">Follow-ups do not replace the complete snapshot or silently erase conflicting evidence. Uncertainty in one rule does not imply a shortage of useful questions. Follow-up construction and reconciliation follow the accepted semantics.</p></section>
+<section id="meaning" class="panel"><div class="eyebrow">Illustrative outcomes / Reduction details pending Q1 and Q2</div><h2>Four labels remove the unrelated-rule ambiguity.</h2>
+<div class="choice-tabs" role="group" aria-label="Worked scenarios"><button type="button" data-scene="tests" aria-pressed="true">Cross-package tests</button><button type="button" data-scene="scope" aria-pressed="false">Irreversible test effects</button><button type="button" data-scene="exception" aria-pressed="false">Explicit approval</button><button type="button" data-scene="missing" aria-pressed="false">Human choice missing</button></div>
+<article class="scenario" data-case="tests"><p class="quote">Working on package A → Run package B’s consumer tests using disposable local fixtures.</p><div class="flow"><div class="node"><strong>Actual effects</strong><span class="outcome" data-result="approve">✓ Routine verification</span><p>Local fixture writes are disposable. No shared data or external delivery.</p></div><div class="node"><strong>Different package</strong><span class="outcome">○ No objection by itself</span><p>The agent can test consumers without an exact package-by-package instruction.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="approve"><strong>✓ Approve</strong><p>Established reversible work can proceed. Other applicable explicit restrictions still matter.</p></div></div></article>
+<article class="scenario" data-case="scope" hidden><p class="quote">A command named “test” resets a shared database. No recovery path or authorization for the loss is established.</p><div class="flow"><div class="node"><strong>Command label</strong><p>“Test” says nothing conclusive about its effects.</p></div><div class="node"><strong>Actual effects</strong><span class="outcome" data-result="ask">? Unresolved data loss</span><p>Shared state may be destroyed and other users affected.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="ask"><strong>? Explain and ask</strong><p>Name the database, threatened state, absent recovery evidence, and what approval would permit.</p></div></div></article>
+<article class="scenario" data-case="exception" hidden><p class="quote">“Ask before publishing.” Then: “Publish this exact artifact to this destination.”</p><div class="flow"><div class="node"><strong>Confirmation rule in context</strong><span class="outcome" data-result="approve">✓ Approve</span><p>The explicit matching request supplies approval.</p></div><div class="node"><strong>Exact operation match</strong><span class="outcome" data-result="approve">✓ Approve</span><p>Artifact and destination match the request.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="approve"><strong>✓ Group approves</strong><p>If remaining evidence clears it. No isolated lower-priority veto.</p></div></div></article>
+<article class="scenario" data-case="missing" hidden><p class="quote">An applicable rule requires the human to select the account to charge. No selection exists.</p><div class="flow"><div class="node"><strong>Operation scope</strong><span class="outcome" data-result="approve">✓ Approve</span><p>The general action is requested.</p></div><div class="node"><strong>Required human choice</strong><span class="outcome" data-result="ask">? Ask</span><p>A model cannot invent the human’s account preference.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="ask"><strong>? Human review</strong><p>Q2 determines whether an established ask routes immediately.</p></div></div></article>
+<p class="caption">These examples assume admitted answers. Q1 determines whether a probability distribution is strong enough to admit a label. An all-not-applicable result cannot authorize the group; applicable effects and recovery checks need positive support. Exact package matching is not a permission condition.</p></section>
+<section id="manual" class="panel"><div class="eyebrow">Settled manual feedback / Local illustration</div><h2>Every Ask explains the decision.</h2><p>The human can already see the transcript and AGENTS.md. The prompt must explain the evidence that triggered escalation, what remains unresolved, and what each choice will do.</p>
+<div class="flow"><div class="node"><strong>Explain the exact group</strong><p>Pending action + concrete evidence + unresolved judgment + consequences.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Choose + optional reason</strong><p>Skipping the reason preserves the choice.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="code"><strong>Record in session</strong><p>Persist the choice and reason, and expose them to the agent on continuation or resume.</p></div></div>
+<div class="rail" id="ask-explanation"><h3>Illustrative Ask: report upload to workspace B</h3><p>The upload targets workspace B. Your request specifies the approved team workspace; the reviewed evidence does not establish that B is that workspace.</p><p><strong>Approve</strong> permits this report upload to B. <strong>Stop</strong> aborts the run without uploading. Confirm whether B is the intended destination; you may include a reason.</p><p class="caption">Every escalation path needs this decision-specific explanation. Scores alone, a transcript recap, or a rule dump do not supply it. State a review failure honestly when evidence is unavailable.</p></div><label for="demo-reason">Optional reason for this illustration</label><textarea id="demo-reason" placeholder="For example: workspace B is the approved team destination."></textarea>
+<div class="choice-tabs"><button type="button" data-action="approved">Illustrate Approve</button><button type="button" data-action="declined">Illustrate Stop</button></div>
+<p id="demo-output" class="quote" role="status">Choose an illustration to see the session record. Nothing executes.</p>
+<p class="caption">Proposed cross-mode interaction: choice, then optional reason. Pi supports select and input in TUI and RPC; a custom TUI form alone does not cover RPC. Stop aborts the run; the decline record remains available on resume. This page illustrates the record, not an implemented plugin.</p></section>
+<section id="q1" class="panel decision" aria-labelledby="q1-title">
+<div class="eyebrow">Open decision / Q1</div><h2 id="q1-title">When is a four-choice answer decisive?</h2>
+<p>The old formula used an explicit unknown choice. The new response has four different labels; ask is not automatically unknown, and confidence is separate metadata.</p><p class="quote">Same answer: approve 0.46 · deny 0.04 · ask 0.29 · not-applicable 0.21.</p>
+<div class="grid"><article class="node" data-kind="code"><h3>A. Require a unique leading probability of at least 0.6</h3><p>Benefit: The split example stays unresolved and can be refined.</p><p>Cost: More follow-ups or human reviews; 0.6 still needs calibration.</p></article>
+<article class="node"><h3>B. Accept any unique leading probability</h3><p>Benefit: The example immediately admits approve; fewer unresolved distributions.</p><p>Cost: A plurality is treated as sufficient even when most probability lies elsewhere.</p></article></div>
+<p class="ranking"><strong>Ranking: A > B because the split example does not establish a decisive answer. Exact ties and invalid or missing responses stay unresolved in either option.</strong></p>
+<label for="answer-q1">Q1: your choice</label>
+<select id="answer-q1" name="q1" form="review-form"><option value="">Not answered</option>
+<option value="A: Require a unique leading probability of at least 0.6">A (Recommended): Require a unique leading probability of at least 0.6</option><option value="B: Accept any unique leading probability">B: Accept any unique leading probability</option>
+<option value="Revise: see notes">Revise the options or wording; see notes</option></select></section>
+<section id="q2" class="panel decision" aria-labelledby="q2-title">
+<div class="eyebrow">Open decision / Q2</div><h2 id="q2-title">What does an admitted ask mean?</h2>
+<p>This concerns an answer that already passes the numeric admission rule. A weak or missing answer can remain unresolved without adding a fifth choice.</p><p class="quote">A rule requires the human to select the account to charge. No account choice exists in the conversation.</p>
+<div class="grid"><article class="node" data-kind="code"><h3>A. An established ask routes to the human immediately</h3><p>Benefit: Avoids model questions that cannot supply a human preference.</p><p>Cost: A mistaken but decisive ask reaches the human without further model refinement.</p></article>
+<article class="node"><h3>B. Every ask uses remaining follow-up batches first</h3><p>Benefit: Gives an ambiguous ask more chances to be resolved.</p><p>Cost: Can repeat review when the missing input is inherently a human decision.</p></article></div>
+<p class="ranking"><strong>Ranking: A > B because a confident need for human input is itself a resolved disposition. In both options, unresolved answers may use the remaining batches.</strong></p>
+<label for="answer-q2">Q2: your choice</label>
+<select id="answer-q2" name="q2" form="review-form"><option value="">Not answered</option>
+<option value="A: An established ask routes to the human immediately">A (Recommended): An established ask routes to the human immediately</option><option value="B: Every ask uses remaining follow-up batches first">B: Every ask uses remaining follow-up batches first</option>
+<option value="Revise: see notes">Revise the options or wording; see notes</option></select></section>
+<section id="q3" class="panel"><div class="eyebrow">Corrected baseline / Former Q3 withdrawn</div><h2>Reversibility sets the autonomy baseline.</h2><p>Coding agents can inspect dependencies, test another package, and perform recoverable experiments without the human enumerating every intermediate command.</p><div class="flow"><div class="node"><strong>Establish effects</strong><p>What state changes? Which environment and people are affected?</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Establish recovery</strong><p>Available prior state, restoration effort, and consequences that cannot be undone.</p></div><span class="arrow" aria-hidden="true">→</span><div class="node" data-kind="approve"><strong>Allow routine reversible work</strong><p>No exact-call approval or same-package requirement. Unknown effects need investigation; significant irreversible effects need appropriate authorization.</p></div></div><p class="caption">A test-command allowlist is not sufficient. A local edit with retained prior state differs from overwriting unrecorded human work. Reversibility does not override explicit human restrictions. This correction does not choose which approvals bypass Luna; concrete shortcut conditions still need design.</p></section>
+<section id="q4" class="panel decision" aria-labelledby="q4-title">
+<div class="eyebrow">Open decision / Q4</div><h2 id="q4-title">Keep the latest human request outside the history cap?</h2>
+<p>The pending group is always complete. This choice concerns the separate history input: five to ten assistant blocks or tool-call sets since the latest genuine human message.</p><p class="quote">Twelve units after “review only”, the latest ten units discuss possible implementation edits.</p>
+<div class="grid"><article class="node" data-kind="code"><h3>A. Retain the latest human request separately</h3><p>Benefit: Preserves the review-only authorization boundary alongside the capped recent history.</p><p>Cost: Adds that request beyond the historical window.</p></article>
+<article class="node"><h3>B. Keep only the capped history</h3><p>Benefit: Maintains a literal cap on historical input.</p><p>Cost: Can lose review-only scope and require asking when authorization cannot be established.</p></article></div>
+<p class="ranking"><strong>Ranking: A > B because the original request remains authoritative when it becomes less recent. Feedback and compaction messages do not reset the human anchor.</strong></p>
+<label for="answer-q4">Q4: your choice</label>
+<select id="answer-q4" name="q4" form="review-form"><option value="">Not answered</option>
+<option value="A: Retain the latest human request separately">A (Recommended): Retain the latest human request separately</option><option value="B: Keep only the capped history">B: Keep only the capped history</option>
+<option value="Revise: see notes">Revise the options or wording; see notes</option></select></section>
+<section id="q6" class="panel decision" aria-labelledby="q6-title">
+<div class="eyebrow">Open decision / Q6</div><h2 id="q6-title">Adopt upfront preparation for guarded sequential groups?</h2>
+<p>Pi currently prepares A, executes A, then prepares B. Reviewing a complete prepared group moves B’s preparation before A executes.</p><p class="quote">A writes a file. B’s preparation hook reads the new file to determine B’s arguments.</p><div class="flow" aria-label="Current Pi timing"><div class="node"><strong>Current Pi</strong><p>Prepare A → Execute A → Prepare B → Execute B</p><p>B’s hook sees A’s output.</p></div><div class="node" data-kind="code"><strong>Complete prepared-group contract</strong><p>Prepare A + B → Review group → Execute A → Execute B</p><p>B’s hook runs before A. Result-dependent B needs a later group.</p></div></div>
+<div class="grid"><article class="node" data-kind="code"><h3>A. Prepare the whole group once, then execute frozen arguments in order</h3><p>Benefit: Provides a usable complete-group contract. Result-dependent B must be submitted as a later group.</p><p>Cost: Changes hook timing; incompatible result-dependent groups need an actionable rejection.</p></article>
+<article class="node"><h3>B. Leave incompatible groups blocked pending compatible host support</h3><p>Benefit: Makes the compatibility limit explicit without claiming unchanged behavior.</p><p>Cost: Those grouped operations remain unavailable while integration support is unresolved.</p></article></div>
+<p class="ranking"><strong>Ranking: A > B if upfront preparation is auto-mode’s documented contract, because it supplies an executable group model. Neither choice executes A before initial group review.</strong></p>
+<label for="answer-q6">Q6: your choice</label>
+<select id="answer-q6" name="q6" form="review-form"><option value="">Not answered</option>
+<option value="A: Prepare the whole group once, then execute frozen arguments in order">A (Recommended): Prepare the whole group once, then execute frozen arguments in order</option><option value="B: Leave incompatible groups blocked pending compatible host support">B: Leave incompatible groups blocked pending compatible host support</option>
+<option value="Revise: see notes">Revise the options or wording; see notes</option></select></section>
+<section id="response" class="panel"><div class="eyebrow">Response / Planning only</div><h2>Send choices or corrections in one reply.</h2>
+<p>The four open decisions (Q1, Q2, Q4, Q6) concern unresolved behavior, not approval to implement. The former Q3 and Q5 choices are withdrawn. Built-in rule contents are explicitly deferred and are not a question in this round. Change any wording or expected outcome in the notes. Unanswered items remain open.</p>
+<form id="review-form"><label for="notes">Corrections, missing cases, or alternative choices</label><textarea id="notes" name="notes" placeholder="For example: Q1 should retain a different threshold, because…"></textarea><button type="submit" class="primary">Prepare reply</button><p id="status" class="status" role="status">Choices stay on this page. Prepare a reply, then copy it into the conversation.</p><label for="reply">Reply to copy</label><textarea id="reply" readonly aria-describedby="status"></textarea><button id="select-reply" type="button">Select reply text</button></form></section>
+<footer>Local planning artifact, 2026-10-19. No model calls or execution. The current source findings have not qualified a replacement host integration. After these decisions: follow-up conflict handling, startup failures, shadow scheduling, retention, and measured footprint. Maintained plan: <code>package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md</code>.</footer>
+</main><script>
+// Switch examples without changing the response form.
 function showScenario(event) {
   const selected = event.currentTarget.dataset.scene;
-  for (const button of document.querySelectorAll('[data-scene]')) {
-    button.setAttribute('aria-pressed', String(button.dataset.scene === selected));
-  }
-  for (const article of document.querySelectorAll('[data-case]')) {
-    article.hidden = article.dataset.case !== selected;
-  }
+  for (const button of document.querySelectorAll('[data-scene]')) button.setAttribute('aria-pressed', String(button.dataset.scene === selected));
+  for (const article of document.querySelectorAll('[data-case]')) article.hidden = article.dataset.case !== selected;
 }
-
-// Construct plain text from native form values without interpreting notes as markup.
+// Demonstrate the exact decision wording and optional-reason preservation as plain text.
+function illustrateDecision(event) {
+  const decision = event.currentTarget.dataset.action;
+  const reason = document.getElementById('demo-reason').value.trim();
+  document.getElementById('demo-output').textContent = 'user ' + decision + ' tool call: upload report to workspace B.' + (reason ? ' Reason: ' + reason : ' No reason supplied.');
+}
+// Native form values remain text even when a note contains markup.
 function prepareReply(event) {
   event.preventDefault();
-  const form = event.currentTarget;
-  const values = new FormData(form);
-  const meaning = values.get('meaning');
+  const values = new FormData(event.currentTarget);
   const notes = String(values.get('notes') ?? '').trim();
+  const answers = ['q1','q2','q4','q6'].map(key => [key, String(values.get(key) ?? '')]);
   const reply = document.getElementById('reply');
   const status = document.getElementById('status');
-  if (!meaning && !notes) {
-    status.textContent = 'Select an answer or write a correction before preparing a reply.';
+  if (!answers.some(([, value]) => value) && !notes) {
     reply.value = '';
+    status.textContent = 'Select an answer or write a correction before preparing a reply.';
     return;
   }
-  reply.value = ['Auto-mode visual review', 'Q1: ' + (meaning ?? 'See notes.'), notes ? 'Notes: ' + notes : '',
-    'This response concerns the plan, not implementation approval.'].filter(Boolean).join('\n\n');
+  reply.value = ['Auto-mode staged design review', ...answers.map(([key, value]) => key.toUpperCase() + ': ' + (value || 'Not answered')), notes ? 'Notes: ' + notes : '', 'Planning response only; implementation remains stopped.'].filter(Boolean).join('\n\n');
   status.textContent = 'Reply prepared. Select the text and copy it into the conversation.';
 }
-
-// Native text selection keeps copying available without clipboard permissions.
 function selectReply() {
   const reply = document.getElementById('reply');
   reply.focus();
   reply.select();
 }
-
-for (const button of document.querySelectorAll('[data-scene]')) {
-  button.addEventListener('click', showScenario);
-}
+for (const button of document.querySelectorAll('[data-scene]')) button.addEventListener('click', showScenario);
+for (const button of document.querySelectorAll('[data-action]')) button.addEventListener('click', illustrateDecision);
 document.getElementById('review-form').addEventListener('submit', prepareReply);
 document.getElementById('select-reply').addEventListener('click', selectReply);
-</script>
-</body>
-</html>
+</script></body></html>

@@ -3,7 +3,7 @@ import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '../dist/final/node/index.mjs';
 
 //region Refusing-seats client
@@ -108,7 +108,7 @@ export function refusingSeatsClient(
     readonly reply: string;
     readonly refused: readonly RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     /**
      Text calls are outside this scripted protocol.

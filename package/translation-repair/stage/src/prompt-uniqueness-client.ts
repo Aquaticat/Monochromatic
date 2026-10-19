@@ -9,7 +9,7 @@ import {
   type ChatTextRequest,
   readJsonOutcome,
   reaskElsewhereNudged,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { MalformedCompletionError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -166,10 +166,10 @@ export function promptUniqueClient(
     inner,
     store,
   }: ForeignBorrowed<{
-    readonly inner: SyntheticClient;
+    readonly inner: ModelClient;
     readonly store?: PromptPayloadStore;
   }>,
-): SyntheticClient {
+): ModelClient {
   /**
    Prompt identities mapped to first in-flight or completed provider payload.
    */

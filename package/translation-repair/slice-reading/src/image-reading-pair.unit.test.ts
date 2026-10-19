@@ -36,7 +36,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type {
   ChatTextRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
@@ -178,7 +178,7 @@ function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
 function scriptedClient(
   { byModel, }: { readonly byModel: Readonly<Record<string, string>>; },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: RosterModelId[];
 } {
   /**
@@ -234,7 +234,7 @@ function failingClient(
     readonly byModel: Readonly<Record<string, string>>;
   },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: RosterModelId[];
 } {
   /**

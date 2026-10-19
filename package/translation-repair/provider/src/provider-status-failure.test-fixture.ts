@@ -7,7 +7,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '../dist/final/node/index.mjs';
 import { WHISKER_KEY, } from '@monochromatic-dev/translation-repair-test-fixture/ts/quoting-failure.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
@@ -176,7 +176,7 @@ export function refusedClient(
     readonly sinon: DisposableSandbox;
     readonly status: number;
   },
-): SyntheticClient {
+): ModelClient {
   answerEveryFetchWithRefusal({
     sinon,
     status,

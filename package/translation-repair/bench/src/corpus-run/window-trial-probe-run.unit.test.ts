@@ -29,7 +29,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run';
 import { CorpusReadError, } from '@monochromatic-dev/translation-repair-corpus-source';
@@ -289,11 +289,11 @@ function scriptedPick(
     clients,
   }: {
     readonly outcomes: readonly PickOutcome[];
-    readonly clients: SyntheticClient[];
+    readonly clients: ModelClient[];
   },
 ): typeof runPick {
   return async function pickFromScript(
-    { client, }: { readonly client: SyntheticClient; },
+    { client, }: { readonly client: ModelClient; },
   ): Promise<PickOutcome> {
     /**
      Outcome this call answers with.
@@ -324,7 +324,7 @@ await describe({
         await runWindowTrial({
           runsDir: scratch.path,
           headSha: HEAD,
-          makeClient: function makeClient(): SyntheticClient {
+          makeClient: function makeClient(): ModelClient {
             return rig.client;
           },
           pin: CAT_PIN,
@@ -409,7 +409,7 @@ await describe({
         await runWindowTrial({
           runsDir: scratch.path,
           headSha: HEAD,
-          makeClient: function makeClient(): SyntheticClient {
+          makeClient: function makeClient(): ModelClient {
             return rig.client;
           },
           pin: CAT_PIN,
@@ -447,13 +447,13 @@ await describe({
         /**
          Client each slice was bought through.
          */
-        const clients: SyntheticClient[] = [];
+        const clients: ModelClient[] = [];
         const { logger, } = capturingLoggerPair();
 
         await runWindowTrial({
           runsDir: scratch.path,
           headSha: HEAD,
-          makeClient: function makeClient(): SyntheticClient {
+          makeClient: function makeClient(): ModelClient {
             return rig.client;
           },
           pin: CAT_PIN,
@@ -492,7 +492,7 @@ await describe({
         await runWindowTrial({
           runsDir: scratch.path,
           headSha: HEAD,
-          makeClient: function makeClient(): SyntheticClient {
+          makeClient: function makeClient(): ModelClient {
             return rig.client;
           },
           pin: CAT_PIN,
@@ -535,7 +535,7 @@ await describe({
           promise: runWindowTrial({
             runsDir: scratch.path,
             headSha: HEAD,
-            makeClient: function makeClient(): SyntheticClient {
+            makeClient: function makeClient(): ModelClient {
               return scriptedTrialClient({
                 narrowBallot: 0,
                 wideBallot: 0,
@@ -577,7 +577,7 @@ await describe({
         await runWindowTrial({
           runsDir: scratch.path,
           headSha: HEAD,
-          makeClient: function makeClient(): SyntheticClient {
+          makeClient: function makeClient(): ModelClient {
             return scriptedTrialClient({
               narrowBallot: 0,
               wideBallot: 0,
@@ -631,7 +631,7 @@ await describe({
           promise: runWindowTrial({
             runsDir: scratch.path,
             headSha: HEAD,
-            makeClient: function makeClient(): SyntheticClient {
+            makeClient: function makeClient(): ModelClient {
               return scriptedTrialClient({
                 narrowBallot: 0,
                 wideBallot: 0,
@@ -677,7 +677,7 @@ await describe({
           promise: runWindowTrial({
             runsDir: scratch.path,
             headSha: HEAD,
-            makeClient: function makeClient(): SyntheticClient {
+            makeClient: function makeClient(): ModelClient {
               return scriptedTrialClient({
                 narrowBallot: 0,
                 wideBallot: 0,
@@ -740,7 +740,7 @@ await describe({
           promise: runWindowTrial({
             runsDir: scratch.path,
             headSha: HEAD,
-            makeClient: function makeClient(): SyntheticClient {
+            makeClient: function makeClient(): ModelClient {
               touched.push('client',);
               return scriptedTrialClient({
                 narrowBallot: 0,
@@ -789,7 +789,7 @@ await describe({
           promise: runWindowTrial({
             runsDir: scratch.path,
             headSha: HEAD,
-            makeClient: function makeClient(): SyntheticClient {
+            makeClient: function makeClient(): ModelClient {
               throw new StatedRefusalError({ says: 'no key is set', },);
             },
             pin: CAT_PIN,
@@ -820,7 +820,7 @@ await describe({
         await runWindowTrial({
           runsDir: scratch.path,
           headSha: HEAD,
-          makeClient: function makeClient(): SyntheticClient {
+          makeClient: function makeClient(): ModelClient {
             return scriptedTrialClient({
               narrowBallot: 0,
               wideBallot: 0,

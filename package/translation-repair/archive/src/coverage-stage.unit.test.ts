@@ -26,7 +26,7 @@ import { firstRoundWindow, } from '@monochromatic-dev/translation-repair-stage';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runCoverageStage, } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -88,7 +88,7 @@ type CoverageScript = Record<string, {
 function scriptedClient({ script, asks, }: {
   readonly script: CoverageScript;
   readonly asks?: ChatJsonRequest<unknown>['messages'][];
-},): SyntheticClient {
+},): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the coverage stage',);

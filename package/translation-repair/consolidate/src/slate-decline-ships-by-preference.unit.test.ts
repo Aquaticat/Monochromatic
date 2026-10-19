@@ -37,7 +37,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type ConsolidationSettlement,
@@ -149,7 +149,7 @@ function rejectingClient(
     readonly refinerSheets: string[];
     readonly rejection?: string;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Translator calls served so far.
    */
@@ -260,13 +260,13 @@ async function judgedRejecting(
     readonly judgeSheets: string[];
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly rejection?: string;
-    readonly decide?: SyntheticClient['decide'];
+    readonly decide?: ModelClient['decide'];
   },
 ): Promise<TranslateStageResult> {
   /**
    Client every judge rejects under.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     ...rejectingClient({
       judgeSheets,
       refinerSheets: [],

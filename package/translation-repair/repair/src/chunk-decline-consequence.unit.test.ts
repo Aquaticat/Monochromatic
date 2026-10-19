@@ -36,7 +36,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule';
 import { selectChunkPatch, } from '../dist/final/node/index.mjs';
@@ -100,7 +100,7 @@ function judgesClient(
     readonly named: readonly RosterModelId[];
     readonly sheets: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the selection',);

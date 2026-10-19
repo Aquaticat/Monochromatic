@@ -21,7 +21,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
@@ -107,7 +107,7 @@ const JUDGES: readonly RosterModelId[] = [
  const client = backingClient({ backed: BACKED_REPLACEMENT, },);
  ```
  */
-function backingClient({ backed, }: { readonly backed: string; },): SyntheticClient {
+function backingClient({ backed, }: { readonly backed: string; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by envelope selection',);

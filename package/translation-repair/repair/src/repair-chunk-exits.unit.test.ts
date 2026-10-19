@@ -28,7 +28,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   repairChunk,
@@ -198,7 +198,7 @@ function scriptedChunkClient(
     readonly script: ChunkScript;
     readonly sent: Map<string, string[]>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the repair chunk',);

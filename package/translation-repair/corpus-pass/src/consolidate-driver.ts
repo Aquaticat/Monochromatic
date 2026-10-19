@@ -15,7 +15,7 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   buyConsolidationSlice,
@@ -158,7 +158,7 @@ export async function consolidateDocument(
     l,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly projected: ProjectedLanes;
 
     /**

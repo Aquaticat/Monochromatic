@@ -49,7 +49,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildRefineSelectionContext,
@@ -230,7 +230,7 @@ async function stepSheets(
   /**
    Client scripting each stage by the schema it asks for.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the step',);
     },

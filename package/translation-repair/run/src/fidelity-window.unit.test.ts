@@ -33,7 +33,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type FidelityOutcome,
@@ -101,7 +101,7 @@ type SentSheets = {
   /**
    Client that records them and votes for the first candidate.
    */
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
 };
 
 /**

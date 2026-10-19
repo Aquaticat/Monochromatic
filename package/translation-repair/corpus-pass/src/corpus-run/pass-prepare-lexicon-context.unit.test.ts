@@ -25,7 +25,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { preparePassEntry, } from '../../dist/final/node/index.mjs';
 import {
@@ -86,7 +86,7 @@ const LOOKUP_LINE = 'web lookup 《猫之歌》: "Song of the Cats", the officia
  const client = lexiconClient({ lexicon: [], },);
  ```
  */
-function lexiconClient({ lexicon, }: { readonly lexicon: string[]; },): SyntheticClient {
+function lexiconClient({ lexicon, }: { readonly lexicon: string[]; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

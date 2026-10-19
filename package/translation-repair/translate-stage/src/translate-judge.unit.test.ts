@@ -29,7 +29,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   BlankSelectionError,
@@ -115,7 +115,7 @@ const RENDERINGS: readonly string[] = [
  ```
  */
 function driftingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly judgeSheets: string[];
 } {
   /**
@@ -336,14 +336,14 @@ function candidateNumberOf(
  question with no candidates in it, and this turns that into a failure rather
  than a slower green.
  */
-const NOBODY_TO_ASK: SyntheticClient = {
+const NOBODY_TO_ASK: ModelClient = {
   chatText: async () => {
     throw new Error('an empty slate must buy no judging round',);
   },
   chatJson: async () => {
     throw new Error('an empty slate must buy no judging round',);
   },
-} as unknown as SyntheticClient;
+} as unknown as ModelClient;
 
 /**
  Builds an empty slate that reports how many translators were heard producing
@@ -915,7 +915,7 @@ await describe({
              `produceTranslateSlate` is never called in this case, so no
              translator schema request ever reaches this client.
              */
-            const client: SyntheticClient = {
+            const client: ModelClient = {
               chatText: async () => {
                 throw new Error('chatText unused by the translate lane',);
               },

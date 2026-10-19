@@ -23,7 +23,7 @@ import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glos
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type BenchSeating,
@@ -95,7 +95,7 @@ function seatRecordingClient(
     readonly asked: RosterModelId[];
     readonly attested?: RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

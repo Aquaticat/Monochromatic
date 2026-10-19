@@ -25,7 +25,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   BlankSelectionError,
@@ -162,7 +162,7 @@ function scriptedRig(
     readonly judgeCount: number;
   },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly judgeCalls: { count: number; };
   readonly judgePrompts: string[];
 } {
@@ -693,7 +693,7 @@ await describe({
           try {
             return await judgeSlateWithRetry({
               judging: {
-                client: {} as unknown as SyntheticClient,
+                client: {} as unknown as ModelClient,
                 produced,
                 judgeModelIds: JUDGES,
                 sourceText: SOURCE_TEXT,
@@ -728,7 +728,7 @@ await describe({
         /**
          Client whose every judge names the only candidate.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused by the translate lane',);
           },

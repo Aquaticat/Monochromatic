@@ -1,4 +1,4 @@
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { readCorpusFile, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -152,7 +152,7 @@ export async function runSettledAudit(
     stageSettings,
   }: {
     readonly line: CommandLineOf<'rendering-audit-settled'>;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly reader: PassReferenceReader;
     readonly runCloneDir: string;
     readonly roster: readonly string[];

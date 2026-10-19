@@ -32,7 +32,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildTranslateCandidates,
@@ -444,7 +444,7 @@ function routedClient(
  */
 function standingPolishClient(
   { servedSchemas, }: { readonly servedSchemas: string[]; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by structured consolidation stages',);

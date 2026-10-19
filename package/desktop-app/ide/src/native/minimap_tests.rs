@@ -414,11 +414,12 @@ fn dragging_the_box_scrolls_continuously_and_release_ends_it() {
     window.hide().expect("close minimap window");
 }
 
-/// The box shows two changes besides the cursor when the pointer is on it,
-/// and none while the pointer is beside it:
-///  its fill and its border.
+/// The box is an outline without a fill:
+///  its border changes in width and opacity when the pointer is on it,
+/// the picture inside it never changes,
+/// and nothing changes while the pointer is beside it.
 #[test]
-fn the_box_changes_fill_and_border_under_the_pointer() {
+fn the_box_is_an_outline_whose_border_changes_under_the_pointer() {
     let (release, gate) = std::sync::mpsc::channel();
     *MINIMAP_GATE.lock().expect("minimap gate") = Some(gate);
     let (_project, opened) = open(&long_text(400));
@@ -439,15 +440,11 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
     );
     let rest = window.window().take_snapshot().expect("a frame");
     let plain = pixel_at(window, &rest, 40.0, below);
-    let fill_rest = pixel_at(window, &rest, 40.0, height / 2.0);
-    assert_ne!(
-        fill_rest, plain,
-        "the box has a fill beside the plain minimap"
-    );
+    let inside_rest = pixel_at(window, &rest, 40.0, height / 2.0);
     assert_ne!(
         pixel_at(window, &rest, 40.0, 0.0),
         pixel_at(window, &rest, 40.0, 1.0),
-        "the box has a border besides its fill"
+        "the box has a border"
     );
     assert_eq!(
         pixel_at(window, &rest, 40.0, 1.0),
@@ -467,8 +464,8 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
     assert_eq!(pixel_at(window, &beside, 40.0, below), plain);
     assert_eq!(
         pixel_at(window, &beside, 40.0, height / 2.0),
-        fill_rest,
-        "the fill does not change while the pointer is beside the box"
+        inside_rest,
+        "the inside does not change while the pointer is beside the box"
     );
     assert_eq!(
         pixel_at(window, &beside, 40.0, 0.0),
@@ -478,7 +475,7 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
         pixel_at(window, &beside, 40.0, 1.0),
         pixel_at(window, &rest, 40.0, 1.0)
     );
-    // On the box, the fill changes and the border widens.
+    // On the box, the border widens and the inside stays as it is.
     travel(&opened, over(window, 40.0, height / 2.0));
     update_timers_and_animations();
     assert!(window.get_minimap_over_box(), "the pointer is over the box");
@@ -488,10 +485,10 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
         plain,
         "the plain minimap does not change under the pointer"
     );
-    assert_ne!(
+    assert_eq!(
         pixel_at(window, &hovered, 40.0, height / 2.0),
-        fill_rest,
-        "hover changes the fill"
+        inside_rest,
+        "hover does not fill the box"
     );
     assert_eq!(
         pixel_at(window, &hovered, 40.0, 0.0),

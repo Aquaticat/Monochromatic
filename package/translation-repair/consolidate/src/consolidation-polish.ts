@@ -2,7 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { confirmAbsoluteNaturalness, } from '@monochromatic-dev/translation-repair-archive/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { describeReviewFindings, } from './consolidation-naturalness-state.ts';
 import type {
@@ -150,7 +150,7 @@ export async function polishConsolidation(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly sourceText: string;
     readonly archiveText: string;
     readonly baseText: string;

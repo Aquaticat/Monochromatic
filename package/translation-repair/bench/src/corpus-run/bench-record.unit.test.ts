@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
   type BenchCall,
@@ -90,7 +90,7 @@ function scriptedClient(
     readonly refusal?: Error;
   },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly quotaCalls: readonly string[];
 } {
   /**
@@ -119,7 +119,7 @@ function scriptedClient(
       quotaCalls.push('asked',);
       return {};
     },
-  } as unknown as SyntheticClient;
+  } as unknown as ModelClient;
 
   return {
     client,

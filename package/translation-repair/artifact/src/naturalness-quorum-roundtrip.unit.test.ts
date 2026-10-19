@@ -9,7 +9,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   confirmAbsoluteNaturalness,
@@ -48,7 +48,7 @@ const WIDE_BENCH = 9;
 
  @returns Client with no provider traffic
  */
-function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: boolean; },): SyntheticClient {
+function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: boolean; },): ModelClient {
   /** Per-seat calls separate discovery from its same-seat challenge. */
   const calls = new Map<RosterModelId, number>();
   return {
@@ -78,7 +78,7 @@ function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: bo
 
  @returns Shared request for discovery and confirmation
  */
-function requestFor(client: SyntheticClient,): Parameters<typeof reviewAbsoluteNaturalness>[0] {
+function requestFor(client: ModelClient,): Parameters<typeof reviewAbsoluteNaturalness>[0] {
   return {
     client,
     modelIds: ROSTER,

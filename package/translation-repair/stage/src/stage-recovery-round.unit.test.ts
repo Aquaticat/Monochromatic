@@ -17,7 +17,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   CUT_SHORT_RECOVERY_NUDGE,
@@ -81,7 +81,7 @@ function scriptedClient(
     readonly asks: Map<string, SeatAsks>;
     readonly unreadableSeat: RosterModelId | 'none';
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);

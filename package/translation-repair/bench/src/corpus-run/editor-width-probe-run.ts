@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
@@ -129,7 +129,7 @@ export async function runEditorWidthProbe(
     stageSettings,
   }: {
     readonly line: CommandLineOf<'editor-width-probe'>;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly drawSample: typeof sampleBenchSlices;
     readonly pin: CorpusPin;
     readonly readHeadSha: () => Promise<string>;

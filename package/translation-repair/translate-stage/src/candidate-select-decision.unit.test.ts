@@ -24,7 +24,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type Candidate,
@@ -150,7 +150,7 @@ await describe({
          Client whose written judges pick candidate 2 and whose decision seat
          picks it too.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },

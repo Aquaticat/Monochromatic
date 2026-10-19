@@ -11,7 +11,7 @@ import {
   monotonicMs,
   type SeedRestoration,
 } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { BenchmarkEntry, } from '@monochromatic-dev/translation-repair-archive/ts';
 import type {
   RepairModels,
@@ -218,7 +218,7 @@ export async function runRepairBenchmark(
     judgeModelIds,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly entries: readonly BenchmarkEntry[];
     readonly models: RepairModels;
     readonly signal: AbortSignal;

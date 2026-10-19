@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wholeOpening, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -114,7 +114,7 @@ export async function askModelHealth(
     timeoutMs,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelId: RosterModelId;
     readonly timeoutMs: number;
     readonly l: Logger;
