@@ -112,7 +112,7 @@ const scopes = new Map([
     description: 'orchestration, the entry point, the command grammar, Rust rule selection, input expansion and the fix loop against every test except the five Cargo-workspace tests',
     select: [
       'src/run_*.rs', 'src/main.rs', 'src/cli_options.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
-      'src/file_discovery.rs', 'src/path_inputs.rs', 'src/fix_loop.rs',
+      'src/file_discovery.rs', 'src/path_inputs.rs', 'src/fix_loop.rs', 'src/closure_*.rs',
     ].flatMap(fileArguments),
     run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],

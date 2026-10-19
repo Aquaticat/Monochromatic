@@ -2,7 +2,8 @@
 //!  Decide whether a source file belongs to the package under lint or was generated for it.
 //! Why:
 //!  A build script writes code such as Slint's `include_modules!` output below the build directory and pastes it into the
-//!  crate, so its spans look like the author's own code although nobody can rewrite it by hand;
+//!  crate,
+//! so its spans look like the author's own code although nobody can rewrite it by hand;
 //!  the lint skips a closure whose span lies in such a file.
 //!
 //! In TS you'd write (pseudocode):
@@ -26,10 +27,12 @@ use std::sync::OnceLock;
 mod tests;
 
 /// What:
-///  The two directories cargo exports to the compiler process, which decide ownership of a source file.
+///  The two directories cargo exports to the compiler process,
+/// which decide ownership of a source file.
 /// Why:
 ///  `CARGO_MANIFEST_DIR` is the package's own directory;
-///  `OUT_DIR` is where its build script writes generated code, which can sit inside the package's `target` directory.
+///  `OUT_DIR` is where its build script writes generated code,
+/// which can sit inside the package's `target` directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -48,7 +51,8 @@ pub struct OwnSource {
 /// What:
 ///  Resolve `.` and `..` components of a path without reading the file system.
 /// Why:
-///  A module reached through `#[path = "../x.rs"]` keeps its `..` in the span's file name, and a prefix test on the raw
+///  A module reached through `#[path = "../x.rs"]` keeps its `..` in the span's file name,
+/// and a prefix test on the raw
 ///  components would count `inside/../outside` as inside.
 ///
 /// In TS you'd write (pseudocode):
@@ -107,7 +111,8 @@ impl OwnSource {
     /// Why:
     ///  A package source reaches the compiler as a path relative to the package root,
     ///  while build-script output and files from other directories are absolute.
-    ///  A relative path is therefore always the package's own, and an absolute one counts as own only below the package
+    ///  A relative path is therefore always the package's own,
+    /// and an absolute one counts as own only below the package
     ///  directory and outside the build script's output directory.
     ///
     /// In TS you'd write (pseudocode):
@@ -143,6 +148,7 @@ impl OwnSource {
     /// const environmentRoots = memoize(() => fromValues(process.env.CARGO_MANIFEST_DIR, process.env.OUT_DIR));
     /// ```
     pub fn from_environment() -> &'static OwnSource {
+        /// The roots of this compiler process.
         static ROOTS: OnceLock<OwnSource> = OnceLock::new();
         return ROOTS.get_or_init(environment_roots);
     }
