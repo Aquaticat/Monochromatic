@@ -879,3 +879,30 @@ lint logs are compared by finding,
 and not by the summary line.
 `mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".
+
+## M279: the lead called a work's English title invented after reading one store page, against the run's own lookup
+
+Status:
+happened on 2026-10-19 (UTC),
+in the reading of `zheermao14`;
+retracted in the same reading,
+before anything was recorded or changed.
+
+The page names the galgame 《恋爱绮谭·不存在的真相》 as *Mystery Lover 2: Forgotten Truth*,
+where the archive writes *Mystery Lover 2*.
+The lead searched the web,
+read the game's Steam page (no English title, "English language not supported"),
+and told the owner the subtitle matched no source.
+The run's own title lookup,
+cached at `~/.cache/translation-repair/lookup/1c88e047….json` since 2026-09-19,
+holds the VNDB entry `v36674` listing one English release under that title,
+two indienova pages giving the same title,
+and the Nintendo Hong Kong eShop page listing English among its languages.
+Steam's release is the one without English.
+The judges who cited "the web lookup" were right.
+
+Prevention:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence":
+a fact the run's evidence states is checked against the sources that evidence cites
+before it is called wrong.

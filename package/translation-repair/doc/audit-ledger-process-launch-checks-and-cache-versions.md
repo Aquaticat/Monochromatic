@@ -275,3 +275,44 @@ where the faulty form shows `StandardError=append`;
 both shown on throwaway units the same day).
 The runbook's launch step now gives the unit form.
 The lead's named-test units drop their `StandardError=append:` part the same way.
+
+## M278: a rotation launch handed its unit the session shell's whole PATH, and its build ran the main checkout's bundler
+
+Status:
+happened on 2026-10-19 (UTC),
+at the launch of `CuspariaKLSY16`,
+the second entry of the readiness rotation;
+stopped at its `START` line.
+
+The lead launched the unit with `--setenv=PATH="${PATH}"`,
+a flag the runbook's unit form does not carry.
+The session's shell was started in the main checkout,
+so its `PATH` led with that checkout's `node_modules/.bin`,
+which held `rolldown v1.2.14`;
+the worktree's lockfile installs `1.2.13`,
+which built `zheermao14`.
+The build ran `1.2.14`,
+whose bundle wraps CommonJS modules with a third argument
+(`cb((mod={exports:{}}).exports,mod,mod.exports)`, and `acorn`'s UMD wrapper with it),
+so `corpus-pass.mjs` moved from `9a4ffb21…` to `dcb2f0cd…`
+and `START` printed `pipeline=sha256-tree-v1:475fbdbb…`
+against the rotation's `a92725968adf…`,
+with no family source changed between the two launches.
+The lead read the digest off `START`,
+stopped the unit after five `SPEND` lines,
+diffed the two bundles,
+and found the version on the build lines (`✔ rolldown v1.2.14`).
+`CuspariaKLSY17` relaunched the entry with the main-checkout entries removed from `PATH`
+and the worktree's `node_modules/.bin` first:
+`rolldown v1.2.13`,
+and `START` read `a92725968adf…`.
+
+Prevention:
+`mistake-prevention.md`,
+"Before a run launches",
+step 9;
+the runbook's launch step names the hazard and the two lines to read back.
+The pipeline digest did its job:
+it is over the built files,
+so a bundler that changes the output changes the generation,
+and the run was refused as evidence before its page existed.

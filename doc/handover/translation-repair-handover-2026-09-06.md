@@ -345,11 +345,26 @@ its "Next" list is still the queue the merge went ahead of.
 1.  The readiness rotation in the State list,
     one entry at a time,
     each page read by the seven steps and the three checks before the next launch.
-    `zheermao14` launched at 15:42 UTC on 2026-10-19
-    (unit `corpus-pass-corpus-pass-zheermao14`,
-    runs directory `~/temp/agent/corpus-pass-zheermao14`,
+    `zheermao14` settled with no class
+    ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md)).
+    `CuspariaKLSY17` launched at 17:09 UTC
+    (unit `corpus-pass-corpus-pass-CuspariaKLSY17`,
+    runs directory `~/temp/agent/corpus-pass-CuspariaKLSY17`,
     log beside it,
-    pipeline `sha256-tree-v1:a92725968adf…`).
+    pipeline `sha256-tree-v1:a92725968adf…`,
+    `rolldown v1.2.13`);
+    `CuspariaKLSY16` before it ran the main checkout's bundler on another build and was stopped (M278).
+    Each later entry launches with the main-checkout entries removed from the unit's `PATH`
+    and is stopped unless its `START` line reads `a92725968adf…`
+    (`~/temp/agent/tr-fan/s245/split/launch-rotation.ts <run> <entry>` does both).
+    Then `XingZ60`,
+    `yingying`,
+    `hulicaijia`,
+    `mikaela_khara`,
+    `shi_Yumiaoya`
+    and `TianqiChen666`.
+    Held for after the rotation, with a guard that the build's bundler is the worktree's:
+    the corpus-pass task builds with whatever `rolldown` the caller's `PATH` reaches first.
     Held for after the rotation or the next rebuild a class forces,
     so every entry runs on one build:
     `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` for a Bedrock seat's HTTP 401,
