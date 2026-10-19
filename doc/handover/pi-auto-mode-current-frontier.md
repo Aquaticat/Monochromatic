@@ -4,6 +4,42 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Provider calls use platform fetch, 2026-10-19
+
+The user prohibits `pi-ai` and `openai` package usage and requires plain `fetch` for API calls.
+Do not recover the native build by reinstalling or reconnecting either package.
+The existing Decisions transport and the completed Span 02 trial already use direct HTTP.
+The unwanted coupling remains in native source emission, provider serializer extraction,
+producer fixtures/contracts, and visible-message type imports.
+Remove that coupling while preserving the actual Pi host integration and permission behavior.
+The assistant's suggestion to replace API calls through Pi was corrected by the user:
+API calls use platform `fetch`.
+
+The interrupted dependency-inspection command partially changed the private inspector to resolve
+the installed `pi-ai` sibling by filesystem path.
+Do not run that inspector as a recovery path.
+Shared installed Pi is now `1.3.0`, while the maintained native source qualification remains `1.2.0`.
+A fresh cancellation-regression build stopped with Node's `Cannot find module 'openai'` before the test ran.
+This is a build failure, not a cancellation-test result.
+The installed active native release remains unchanged.
+
+The uncertainty-rule controls completed 13 recorded steps in
+`uncertainty-built-guard-results.json` under the persistent preparation-failure scratch directory.
+Both rebuilt counterfactuals failed the intended unit and native cases;
+restoring the actual rule made both native boundary cases and the unit suite pass.
+The refined candidate also passed all nine real producer-lifetime case receipts.
+Commit `20c90b6b18` introduced a fixture verifier that swallowed assertion failures;
+`b86bc331cd` repaired it.
+The original `3a21255dde` verifier rethrew failures, so its older guard evidence remains valid.
+
+The native MiMo worker finished its separate main-agent and auxiliary type controls.
+Its restored full check is blocked by concurrent shell-analyzer type drift;
+it did not call that check green.
+Its queued next scope remains the 81-warning HTTP assessment fixture,
+followed by the 127-warning frontier assertion file.
+The source worker owns its uncommitted producer-lifetime fixture/value edits;
+coordinate the new dependency constraint before touching those files.
+
 ### Verified retry and current proof gaps, 2026-10-19
 
 The user replaces the unconditional action-score floor with an exact uncertainty-dependent rule:
