@@ -1678,16 +1678,17 @@ that is verification, not a decision for the user.
   which keeps the amend invariant of `doc/decision/cli-git-concurrent-commits.md`). The local branch stays behind the
   remote after a reconcile and the note names `git merge --ff-only`. Nine controls pass on the host, the real binary
   was driven end to end, and the amend guard was shown to fail without it.
-  Queued, in order: (1) release 0.2.0 now, because the gate passed 1972 tests at the head `7f8c5a4ce0`
-  (README version lines, `Cargo.toml`, `Cargo.lock`, `cli.fuzz:lock:members`, dry-run publish from a
-  `systemd-run --user` unit, push, verify crates.io and the release, `mise upgrade cargo:monochromatic-git-policy-cli`,
-  `git checkout -- mise.lock`); (2) comment on and close issue 1769 with the release; (3) read the scoped mutation run
-  when it ends and kill or justify every survivor, with a patch release if a source change is needed. The run is unit
-  `cli-git-rec2` (tag `rec2`, logs `~/temp/agent/rec2-container.log` and `rec2-mutation.log`, started 20:30 on
-  2026-10-18, about two hours in total) and replaces `rec1`, which missed nine of the nine mutants it tested before it
-  was stopped (`unpublished`, the `||` chains of `read_destination`, `published_base`, `commit_merge` and the
-  `(Some(true), _)` arm); those were killed with eleven new tests and three redundant checks removed.
-  (4) remove the image tags `rec1` and `rec2` once the results are read. Open design follow-up: advance the local branch
+  Done 2026-10-18: release 0.2.0 (commit `47ab52df08`; the publish workflow succeeded; crates.io lists 0.2.0 unyanked;
+  both release archives exist; the glibc floor measured on the x86_64 archive is still 2.39; `mise upgrade
+  cargo:monochromatic-git-policy-cli` installed 0.2.0 and `mise.lock` was restored), and issue 1769 closed by the
+  commit with a release comment plus a correction of its control count (19, not 20).
+  Queued, in order: (1) read the scoped mutation run when it ends and kill or justify every survivor, with a patch
+  release if a source change is needed. The run is unit `cli-git-rec2` (tag `rec2`, logs
+  `~/temp/agent/rec2-container.log` and `rec2-mutation.log`, started 20:30 on 2026-10-18, about two hours in total)
+  and replaces `rec1`, which missed nine of the nine mutants it tested before it was stopped (`unpublished`, the
+  `||` chains of `read_destination`, `published_base`, `commit_merge` and the `(Some(true), _)` arm); those
+  were killed with eleven new tests and three redundant checks removed; (2) remove the image tags `rec1` and
+  `rec2` once the results are read; (3) the issue 1713 handover path notes below. Open design follow-up: advance the local branch
   after a reconcile when the worktree allows it (not done because it takes the index lock and touches files).
   Issue 1713 (handover paths and `mise run //` targets that moved) is queued after the release: a scan of the
   `doc/handover/cli-git*.md` files found 25 backticked paths that no longer resolve in 11 files (the TypeScript
