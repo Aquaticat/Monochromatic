@@ -730,6 +730,24 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar (18), theme (7), find (39) and annotation (65) guards, all status 0. Not guarded: the tab measuring pass
     (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
     ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
+  - Tall window blanked the text (branch `fix/ide-tall-window-tile`, worktree `.claude/worktrees/ide-tall-tile`,
+    2026-10-18; landing: pending). Cause: the window chooses a tile clip from its row map, where a wrapped line the
+    background pass has not reached counts as one row, while the shaper sizes the raster from the rows it just shaped,
+    several times taller. At a text width of 1354 the cap is 11,994 px at scale 1, so the three-view tile of a window
+    over 4,000 px tall passed 64 MiB (journal: `Source viewport 1360x12768 exceeds the 64 MiB raster limit`), the
+    painter refused it, and the window thread then replaced the picture with an empty image. Fix: `fit_clip` and
+    `fit_viewport` in `src/shaped_text/limit.rs` cut every prepared frame to the cap around its middle, and log it at
+    warn level (`cut a frame to the raster limit`); `TileBuilt::bounds` and its stamp name the clip really painted, and
+    `TileBuilt::requested` the job it answers; a refused tile keeps the picture and names the failure; a failed worker
+    job is freed; a worker tile the window discards still hands the window the offset its measured heights moved.
+    `band_clip` moved to `limit.rs`, centers on the view, and keeps the last row of the text. Tests:
+    `tests/raster_limit.rs`, `src/native/tall_window_tests.rs` (end to end and a property test over scales 0.5 to 3,
+    text widths 160 to 3000, heights 660 to 12000, stale and measured maps), `src/native/refused_tile_tests.rs`,
+    `src/native/tall_window_minimap_tests.rs`; seven `inspect:source-guards` cases were seen failing (`frame-fit`,
+    `tile-stamp-names-its-clip`, `refused-tile-keeps-image`, `failed-job-freed`, `clip-centered-on-view`,
+    `clip-keeps-last-row`, `minimap-glyph-pixels`) and the three `clip-*` cases were re-anchored. Not reliably
+    guarded: the discarded-tile offset (the tall-window test failed once without it, and passed once without it). The
+    real binary at 1790x3300 shows text and logs one cut; no persistent blank frame was captured before the fix.
   - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;
     the user approved removing every `rust/no-anonymous-functions` finding without suppressing any). The count in
     `package/desktop-app/ide` fell from 1135 to 67; `rust/max-lines`, `rust/require-rustdoc` and
