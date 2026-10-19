@@ -740,7 +740,7 @@ For every ask-producing branch, assert an evidence-backed explanation, required 
 any actual uncertainty, and action consequences in the TUI/RPC payload; a generic prompt must fail the fixture.
 An applicable rule requiring confirmation with all facts known must ask without inventing uncertainty.
 Deterministic approve, deny, and ask must each produce zero per-group Luna calls; count startup separately.
-No deterministic verdict must reach every-rule Luna review.
+A group without a deterministic verdict must reach every-rule Luna review.
 A model-resolved group ask must prompt without a follow-up batch intended to reverse that verdict.
 Assert model-visible inclusion and exclusion using actual serialized requests.
 
@@ -793,10 +793,10 @@ Expanded built-in wording and preparation timelines were recaptured after their 
 Browser error and console records were empty.
 This verifies the planning artifact, not plugin behavior or model quality.
 
-Retained images:
-[active stages](ground-up-rebuild-review/staged-overview-dark.png),
+Historical images, predating the terminal-verdict correction and withdrawal of Q2:
+[earlier stages](ground-up-rebuild-review/staged-overview-dark.png),
 [score admission](ground-up-rebuild-review/staged-q1-dark.png),
-[ask meaning](ground-up-rebuild-review/staged-q2-dark.png),
+[withdrawn ask alternatives](ground-up-rebuild-review/staged-q2-dark.png),
 [deterministic approval](ground-up-rebuild-review/staged-q3-dark.png),
 [human anchor](ground-up-rebuild-review/staged-q4-dark.png),
 [built-in wording](ground-up-rebuild-review/staged-q5-dark.png),

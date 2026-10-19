@@ -19,7 +19,15 @@ The plan and HTML remove Q2's alternatives and response field and show the termi
 Independent read-only review confirmed the flow and the explanation-contract correction.
 The former Q2 screenshots and historical open-question lists record withdrawn proposals, not current requirements.
 Built-in contents remain deferred. Implementation remains stopped.
-Next action: verify the edited diagram and response form, reopen Helium, then continue from user answers.
+Committed the correction in `5da6f40e9b`.
+The revised artifact passed seven navigation targets, four scenarios, all nine remaining answer options,
+manual decisions with and without reasons, all reply branches, literal text handling, and keyboard activation.
+All 21 controls meet the 48-pixel minimum. Light/dark and 390-pixel checks report no horizontal overflow.
+Page errors and console records are empty; the Q2 field and serialized answer are absent.
+The complete terminal-flow and settled-ask panels fit in both color schemes and were visually inspected.
+Markdown rendered at `auto-mode-rebuild-plan-render-zba1NV` before these verification notes.
+Independent review found no remaining contradiction in the corrected plan or HTML.
+Next action: reopen the verified page in Helium, then continue from user answers to Q1, Q4, and Q6.
 
 ### Built-in contents deferred, 2026-10-19
 
