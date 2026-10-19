@@ -8,10 +8,9 @@
 import type {
   AgentSession,
   AgentToolResult,
-  AgentToolUpdateCallback,
   createBashToolDefinition,
   defineTool,
-  ExtensionToolContext
+  ToolDefinition
 } from '@earendil-works/pi-coding-agent';
 
 //region Named catalog modes keep every native phase branch addressable.
@@ -97,6 +96,7 @@ export type NativePhaseUpdateDeferred = PromiseWithResolvers<void>;
 export type NativePhaseState = {
   abortTask?: Promise<void>;
   updates: Map<string, NativePhaseUpdateDeferred>;
+  authoredUpdates: Set<unknown>;
   sawNotification: boolean;
   sawSteering: boolean;
   followupProposed: boolean;
@@ -154,13 +154,10 @@ export type FixtureBashDetails = OriginalBashDetails | Readonly<{ phaseProbe?: b
  Wrapper execute signature dictated by the SDK tool interface, declaring the
  fixture's update details while forwarding original identities and arguments.
  */
-export type FixtureBashExecute = (
-  toolCallId: string,
-  input: OriginalBashParameters[1],
-  signal: OriginalBashParameters[2],
-  onUpdate: AgentToolUpdateCallback<FixtureBashDetails> | undefined,
-  context: ExtensionToolContext
-) => Promise<AgentToolResult<FixtureBashDetails>>;
+export type FixtureBashExecute = ToolDefinition<
+  ReturnType<typeof createBashToolDefinition>['parameters'],
+  FixtureBashDetails
+>['execute'];
 
 /**
  Wrapped bash tool declared at the SDK `defineTool` erasure boundary.
