@@ -785,3 +785,66 @@ never opened a word:
 `namesAt` and `isSEndingWord` now read whole code points by general category.
 All 131 aliases and 92 names match;
 the candidate count per page did not move on the corpus.
+
+## B675: span agreement counted a quote inside a longer word that ends at a joint
+
+Found on 2026-10-18 (UTC) by the sol review of the production diff of five landed rounds
+(`s245/sol-review/answer-gpt61.md`,
+finding 1),
+and reproduced before the fix.
+
+Outcome written on 2026-10-19 (UTC).
+Red `a5fecc9bad`,
+fixed in `f416ffa3a2`.
+
+What a reader of a page would have seen:
+judges who quoted `cat` and `cat's bowl` agreed on `cat`.
+The shorter span was located,
+and a splice then moved fewer words than one judge named.
+This reaches real pages narrowly,
+only where judges' quotes differ by a longer word that ends at a joint.
+
+The cause:
+`containsWords` (`consistency/src/consistency-contains-words.ts`) barred containment only where a letter,
+a digit or a combining mark of a spaced script stood beside the match.
+The locator also refuses a match at a joint of a longer word
+(an apostrophe or a hyphen between letters or digits,
+a full stop,
+comma,
+colon or slash between digits;
+`consistency-word-joints.ts`),
+so the span agreement counted a quote that the locator would not have located.
+B645 had made the same test read a combining mark,
+and a joint was the part left out.
+
+Fixed:
+`containsWords` also asks `cutsWord`,
+the locator's own joint test,
+about both edges of the match.
+`cat` is no longer contained in `cat's bowl` or `cat-nap`,
+nor `5` in `0.5`.
+Both readers of containment follow:
+the candidate spans of a place (`consistency-span-agreement.ts`)
+and the slot words of a frame (`agreedSlotWordsOf`,
+`consistency-majority.ts`).
+
+Test:
+a case in `consistency-span-agreement.unit.test.ts`.
+
+Left as it is and documented in `consistency-contains-words.ts` (`fbc866e2f0`):
+the fold writes a single corner bracket (`『cat』and`) as an apostrophe,
+and a folded quote cannot tell it from one,
+so `containsWords` differs from the locator there.
+It withholds a candidate span and leaves a place unlocated,
+and never locates one wrongly.
+
+Stored artifacts and caches:
+the stricter count would refuse a stored artifact that was right under the count its pass used,
+so the recount of an artifact reads containment by the generation the artifact records (B682).
+`CONSISTENCY_CACHE_VERSION` stays at 5:
+its TSDoc says the counting of quotes is not stored,
+and that a change to how quotes are located moves no key and needs no number.
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Words inside words".

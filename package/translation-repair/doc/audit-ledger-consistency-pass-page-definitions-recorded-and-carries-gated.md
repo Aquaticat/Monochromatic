@@ -15,6 +15,12 @@ and a refusal text that still named the quotes of the place (B667,
 left as it was in B662).
 The test commit is `f5dc1482dc` and the fix commit `7410c9948f`.
 
+The generation that followed,
+19,
+gates the stricter recount of containment and inline code that the sol review
+made necessary (B682).
+It was written on 2026-10-19 (UTC) from the notes of the port (`s245/w187-notes.md`).
+
 ## B665: generation 18 records the page definitions that move a slot
 
 Decided on 2026-10-18 by the lead,
@@ -159,3 +165,101 @@ as the place's English holds them".
 The two tests that pinned the old text in `artifact-two-lane-read-consistency-span.unit.test.ts`
 were changed first and failed at the red commit,
 and pass with the text.
+
+## B682: the stricter recount of containment and inline code is gated by a new artifact generation
+
+Found on 2026-10-18 (UTC) in the port of the sol review round (B675 to B681) onto `e87411447d` (`w189`).
+
+Outcome written on 2026-10-19 (UTC).
+Tests `6b6f340737` (the options of the consistency package,
+which failed because the options were ignored) and `e204ed2681` (the artifact,
+which fails to load without `ARTIFACT_SCHEMA_VERSION_V19`),
+options `1dc3932a1d`,
+the mint `550b14452c` without the gate,
+the slot containment case `fe4bd68315`,
+and the gate `b462a030a9`.
+
+Why a generation:
+the round of the sol review made the recount of an artifact stricter in two ways (B675 and B677),
+and the stricter recount would refuse an artifact that was right under the count its pass used.
+The first plan was to let the change ride inside generation 18,
+because the stored artifacts then known were all of generation 17.
+That did not hold:
+a live pass was writing generation 18 files,
+and `corpus-pass-TianqiChen66626` held one when this was checked (M265).
+
+What a file of generation 18 is read by,
+and what 19 changes (`ARTIFACT_SCHEMA_VERSION_V19`,
+`artifact/src/corpus-run/artifact-two-lane-contract.ts`):
+
+- The writer stamps 19 (`artifact-two-lane-build.ts`),
+  and `pass-schema-guard.ts` writes and expects 19,
+  so a build of 19 refuses to resume a run directory stamped 18 (`assertResumableSchemaGeneration`).
+  That is expected,
+  and the V19 TSDoc says so.
+  Files of 18 stay readable by `readSettledArtifact`.
+- `artifactGenerationCutsContainmentAtJoints` (19 and later):
+  `containsWords` asks `cutsWord` about the edges of a match.
+  Before 19,
+  only a letter,
+  a digit or a combining mark beside the match bars containment,
+  so `cat` is contained in `cat's bowl`.
+  The option is `edges: 'locator' | 'letters'` (`ContainmentEdges`) on `containsWords`,
+  `containedQuoteWordsOf`,
+  `agreedSlotWordsOf` and `slotInSpan`.
+  The default is the locator's,
+  which is all that any pass and any reader of a page uses.
+- `artifactGenerationReadsLineEndingsAsCodePadding` (19 and later):
+  a line ending pads inline code as a space does.
+  Before 19,
+  a literal space alone pads.
+  The option is `codePadding: 'spaces' | 'spaces-and-line-endings'` (`CodePadding`) on `locateWords` and `slotInSpan`.
+  It is passed on through `cutsShownWord`,
+  `unitKindsOf`,
+  `transparentUnitsOf`,
+  `rememberedViewOf`,
+  `proseViewOf` and `markupRangesOf` to `codeContentOf`,
+  and the remembered parse is keyed by it as well as by the English and the definitions.
+- The callers pass the generation:
+  `expectedSlotOf` passes both options,
+  `assertSpanRenderingAgrees` passes the first to `containedQuoteWordsOf`,
+  and `asLocatedBySpan` takes `generation` and passes the second to `locateWords`.
+- Not gated:
+  the refusal of a run-off beside an unasked carry (B680) applies to every generation,
+  since no pass writes one.
+- No cache version moves:
+  counting is not stored,
+  so `CONSISTENCY_CACHE_VERSION` stays at 5.
+
+Proof:
+without the gate,
+the generation 18 cases fail with the whole refusal text,
+`words that the quotes of more than half of all the usable ballots contain` for `cat` beside `cat's bowl`,
+and the slot refusal for the padded code.
+Each of four points where the generation is handed on was removed in turn,
+and the generation test failed each time.
+
+Reader check (read-only):
+the reader of this build accepted six files of generations 14,
+14,
+14,
+15,
+17 and 17,
+and the generation 18 file of `corpus-pass-TianqiChen66626` (two groups).
+That file does not show that the gate was needed.
+It shows that a file the live pass wrote is read.
+
+Found on the way:
+the TSDoc of `locateWords` (`consistency-fold.ts`) said that definitions are stored "generation 18 for a slot,
+19 for the words".
+The second half described the withdrawn attempt of B673,
+and `b9ca743e06` removes it.
+The source-scan test `clock times written with no zone` failed at `e87411447d` on `16:58` and `17:00` with no zone
+in the handover,
+a file that this work had not changed;
+`57165b3f07` zones the corrected time,
+and also rewrites the handover sentence about the withdrawn generation 19 to say that the number went to this gate.
+
+Recurrence:
+`mistake-prevention-stored-files-and-cached-decisions.md`,
+"Files a later run reads back".

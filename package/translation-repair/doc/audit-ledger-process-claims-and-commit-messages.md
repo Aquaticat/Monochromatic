@@ -729,3 +729,31 @@ a number in an agent's hand-back is recounted from the raw files the agent names
 and the recount is named beside the figure.
 `mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".
+
+## M265: a claim that no file of a generation was stored failed once a live pass wrote one
+
+Status:
+happened on 2026-10-18 (UTC) in the round of the sol review (`w187`).
+Its notes said that `ARTIFACT_SCHEMA_VERSION_V18` was still open:
+both stored artifacts under the corpus-pass runs were generation 17,
+and no file of 18 was stored,
+so the stricter recounts of B675 and B677 could ride inside generation 18.
+The notes of the same round say,
+under the cache versions,
+that a pass was writing into `corpus-pass-TianqiChen66626`
+(`pass.lock` held,
+and the count of slice-cache records rose from 62 to 74 during the work).
+That pass was writing generation 18 files,
+and the port found one there.
+A recount stricter than the pass that wrote the file counted would have refused it,
+so the recount is gated by a new generation instead (B682).
+
+Prevention:
+the notes name none.
+Written in this filing and not given by the notes:
+before a generation or a version is called unused or unstored,
+the run directories are searched for a pass that is writing now (a held `pass.lock`),
+the claim names the date and time of the search,
+and a change that makes a reader stricter is gated by a generation and does not rely on a directory being static.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence".

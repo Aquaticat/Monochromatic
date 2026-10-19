@@ -449,3 +449,96 @@ The rule breaches of the round are M231.
 Recurrence:
 `mistake-prevention.md`,
 "Guards a census wants gone".
+
+## B683: four branches of the markup ranges answered with an empty list for a node the parser had not placed
+
+Found on 2026-10-18 (UTC) by the test round `w188`,
+which went through the survivors of the guard demonstrations of n168,
+n169,
+n171 and n173 (B674) looking for a named invariant error behind each unreachable branch,
+and found none.
+
+Outcome written on 2026-10-19 (UTC).
+Red `74f0593e20`,
+fixed in `71e4880707`,
+with `5c1d1aef1b` clearing the source-scan findings of these tests and of the ported ones (M268).
+
+What the code did:
+four branches of `consistency/src/consistency-markup-ranges.ts` fell back to `[]`,
+so a link's resource or a stretch was left out without a word:
+
+- `labelEnd > end` in `linkResourcesOf`,
+  a label ending after its link.
+- The last child of a label with no position.
+- A link with no start or end offset in `linkResourcesOf`.
+- A node with no start in the walk of `labelledLinksOf`,
+  which runs after `linkResourcesOf`.
+
+The fallback of `stretchesOfNodes` (a node with no `position?.start.offset`) was of the same kind,
+and was changed with them.
+None was reachable:
+the parser places every link and every node it reads (0 of 21,870 probe rows),
+and `markupRangesOf` was not exported,
+so no test could reach them.
+
+Fixed:
+all of them throw `ConsistencyInvariantError`,
+the class that the consistency package already throws for unreachable states.
+The messages name the node type and the offsets and never page text:
+
+- A node of a stretch kind with no start or end offset (`stretchesOfNodes`,
+  reached by `stretchesOfTypes` and `stretchesOfLabelsShowing`):
+  "the `<type>` node has no start or no end offset,
+  and the parser places every node it reads".
+- A link with no start or end offset in `linkResourcesOf`:
+  the same sentence,
+  from one helper,
+  `placeOf`.
+- A label that ends in a child with no end offset:
+  "the label of a `<type>` node ends in a child with no end offset,
+  and the parser places every child of a label".
+- A label ending after its link:
+  "the label of a `<type>` node ends at 12,
+  after the link ends at 8,
+  and a label ends inside its link".
+- The branch for a node with no start in the walk of `labelledLinksOf` is gone.
+  `labelledLinksOf` now takes its start and its resource from `placeOf` and `resourceOfLink`,
+  which throw.
+  It could not be tested apart from `linkResourcesOf`,
+  which runs first in `markupRangesOf` and throws first.
+
+`markupRangesOf` is now exported by `index.ts`,
+as the package may export a small helper so that a test of the built artifact reaches it.
+The tests build their trees by hand in `consistency-markup-ranges-unplaced.unit.test.ts`.
+
+Test,
+red then green:
+the tests were committed first.
+Four of the five failed with `Expected reading to throw, but it returned`
+(no node placed,
+no start or end,
+an unplaced last child,
+a label past the end).
+The fifth is the control that a placed link reads its resource,
+and it passes at both heads.
+After the fix all five pass,
+and so does the existing `consistency-markup-ranges.unit.test.ts`.
+
+Corpus check (read-only,
+run before the throws and again after):
+the pinned corpus `~/one-among-us/data` (git head `a41fc607ea`),
+every `page.md` and `page.en.md`,
+184 files.
+Before the throws,
+a mirror walk of the parse (14,547 nodes) counted no node of a range kind without a position,
+no link without offsets,
+no label ending in an unplaced child,
+and no label past the end of its link.
+After the throws,
+`proseViewOf` over the same 184 texts threw on none of them.
+All 184 parsed,
+so none was skipped.
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards a census wants gone".

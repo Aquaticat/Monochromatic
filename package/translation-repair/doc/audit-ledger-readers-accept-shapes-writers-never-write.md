@@ -440,3 +440,56 @@ which settles the gap B440 left open.
 The slice checks moved to `artifact-two-lane-read-consistency-slices.ts`,
 with a test of its own.
 A round trip from the real writer through the reader for every outcome and reason passed before and after.
+
+## B680: the recount of a carry the bench was not asked about never read its run-off
+
+Found on 2026-10-18 (UTC) by the sol review of the production diff of five landed rounds
+(`s245/sol-review/answer-gpt61.md`,
+finding 7),
+and reproduced before the fix.
+
+Outcome written on 2026-10-19 (UTC).
+Red `bfca728da0`,
+fixed in `9df04023d0`.
+
+What the reader accepted:
+`assertCarryRecounts`
+(`artifact/src/corpus-run/artifact-two-lane-read-consistency-carry-recount.ts`)
+checked the ballots,
+the usable count,
+the quorum and the candidates of a carry whose bench was not asked,
+and returned before it read `carry.runOff`.
+A run-off beside a decision of no alternative names finalists that nobody voted among,
+and it was accepted.
+
+What the writer can produce:
+`carryWithoutChoice` (`corpus-pass/src/corpus-run/pass-consistency-carry-choose.ts`)
+records `no-alternative` with no run-off,
+and the pass attaches a run-off only after `askCarryChoice` has been asked with finalists
+(`runOffAsked`,
+in the same file).
+So no pass writes the shape.
+
+Fixed:
+the branch for an unasked carry refuses a run-off at `...runOff`,
+with the reason "no run-off,
+since the bench was not asked among the candidates".
+The refusal is not gated by generation:
+no pass of any generation wrote the shape,
+so no stored artifact is refused for it.
+
+Reader check (read-only):
+`readSettledArtifact` over every JSON file under the `artifacts` directories of `corpus-pass-TianqiChen66624`,
+`corpus-pass-TianqiChen66625` and `corpus-pass-TianqiChen66626`.
+At the time of the check the three held two files,
+none of them in the third,
+both of generation 17 and both accepted,
+before and after all the fixes of this round.
+They hold located renderings and carries,
+so the recounts of B675,
+B677 and this entry ran over them.
+It changes no page.
+
+Recurrence:
+`mistake-prevention-stored-files-and-cached-decisions.md`,
+"Files a later run reads back".

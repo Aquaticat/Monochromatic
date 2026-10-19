@@ -570,6 +570,12 @@ Recurrence:
 `mistake-prevention-text-comparison-and-structure.md`,
 "Text that shows nothing".
 
+Revised on 2026-10-19 (UTC):
+the clause "a line ending is not read as a space" was wrong for CommonMark,
+which turns each line ending in inline code into a space before it strips the padding.
+B677 holds the correction,
+and the recount of an artifact written before it reads the padding by the generation the artifact records (B682).
+
 ## B634: raw HTML elements did not end a word
 
 Found on 2026-10-15 by the review of n162 (`s233/review.md`,
@@ -687,3 +693,98 @@ The probe after the fix answered `SAME` on all six rows.
 Recurrence:
 `mistake-prevention-text-comparison-and-structure.md`,
 "Structure read off the parse".
+
+## B677: inline code padded by line endings was read as unpadded
+
+Found on 2026-10-18 (UTC) by the sol review of the production diff of five landed rounds
+(`s245/sol-review/answer-gpt61.md`,
+finding 5),
+and reproduced before the fix.
+It reopens B633,
+whose fix wrote that a line ending is not read as a space.
+
+Outcome written on 2026-10-19 (UTC).
+Red `4aafb65895`,
+fixed in `2cfefcd2e1`,
+with a layout follow-up `840b65d249`.
+
+What a reader of a page would have seen:
+CommonMark turns each line ending in inline code into a space,
+then strips one space from each side when the content begins and ends with a space and is not all spaces.
+`codeContentOf` (`consistency/src/consistency-markup-ranges.ts`) stripped literal spaces only.
+A code span of `tens` between two line endings,
+written right after `kit`,
+kept both line endings as separators,
+and `kit` stood as a whole word although the page shows `kittens`.
+On real pages this reaches only a word directly before or after inline code padded by line endings.
+
+Fixed:
+`codeContentOf` reads a line feed,
+a carriage return or the two together as a space.
+`transparentUnitsOf` (`consistency-unread-units.ts`) hides the line ending directly outside a content stretch.
+Without that,
+the stripped line ending stayed a shown separator,
+and the stand of `kit` before that code span would still have been found.
+
+Test:
+a case in `consistency-fold.unit.test.ts`.
+`locateWords` finds no `kit` in the text with the code span between two line feeds,
+between two carriage return and line feed pairs,
+and between a line feed and a space.
+It finds `kit` once where only one side holds a line ending,
+and where the content is a line ending alone.
+
+Stored artifacts:
+the stricter reading would refuse a stored artifact that was right under the reading its pass used,
+so the recount of an artifact reads the padding by the generation it records (B682).
+
+Recurrence:
+`mistake-prevention-text-comparison-and-structure.md`,
+"Text that shows nothing".
+
+## B678: two review findings about link labels did not reproduce, and their cases are pinned
+
+Found on 2026-10-18 (UTC) by the same sol review
+(`s245/sol-review/answer-gpt61.md`,
+findings 3 and 4).
+Neither reproduces on the code at `bc9b2db70d`.
+
+Outcome written on 2026-10-19 (UTC).
+Both cases are pinned in `64707f0e48`,
+a test-only commit,
+in `consistency-fold.unit.test.ts`.
+
+Finding 3 said that a labelled link was read as its label for closing marks.
+The case is `kit["](u)'s`,
+a word before a link whose label is a straight quotation mark,
+and then an apostrophe.
+The label is classed `marks` (`linkLabelKindOf`,
+`consistency-link-label.ts`),
+and it also ends in an open mark (`linkLabelEndsOpenOf`).
+`foldedLinksOf` therefore records the stretches of that link in `openLabelStretches`,
+`closingJointsOf` (`consistency-closing-links.ts`) sees that the set is not empty and builds the twin,
+and `linkTwinOf` writes the link as its label.
+The twin `kit"'s` closes,
+so the stand is refused,
+as the review asks.
+
+Finding 4 said that a raw `)` still joins an apostrophe after a label ending in white space.
+The case is `[cat ](u)'kit`.
+The existing tests read the forward direction (`[kit ](u)'s bowl`,
+in `consistency-closing-links.unit.test.ts`),
+and the backward direction after a labelled link had no case,
+so it is kept.
+`afterBracket` in `consistency-word-joints.ts` excludes `openLabelEnds`,
+and a label ending in white space ends open (`linkLabelEndsOpenOf`),
+so the word after the apostrophe is a stand,
+as it is in the plain text `cat 'kit`.
+
+Control:
+each case compares the answer for the linked text with the answer for its plain twin and pins the twin's answer.
+A control run showed that the locator answers differently for a label that ends in a letter:
+`[cat](u)'kit` is refused and `[cat ](u)'kit` is a stand,
+so the comparison can fail.
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".

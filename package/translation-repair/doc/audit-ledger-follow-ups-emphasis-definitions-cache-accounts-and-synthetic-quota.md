@@ -386,3 +386,8 @@ because the first changes nothing the reachable case needs changed,
 the second is faithful in every case at the price of a generation,
 and the third carries the second's price and unlocates places the pass carries correctly today.
 The attempt is kept outside the repository by the agent that ran it.
+
+Written on 2026-10-19 (UTC):
+the generation 19 that this entry raised was withdrawn and never landed.
+The number 19 now belongs to the gate of B682,
+which is a different change and records no definitions.

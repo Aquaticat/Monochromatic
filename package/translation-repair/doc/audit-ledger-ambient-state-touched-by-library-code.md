@@ -817,3 +817,42 @@ where relying on the type checker alone is the alternative.
 Recurrence:
 `mistake-prevention.md`,
 "Tests touching the real world".
+
+## B679: the shown-label lookup kept its answer under the identity of the list
+
+Found on 2026-10-18 (UTC) by the sol review of the production diff of five landed rounds
+(`s245/sol-review/answer-gpt61.md`,
+finding 6),
+and reproduced as a defect of the interface,
+since no production caller changes a list.
+
+Outcome written on 2026-10-19 (UTC).
+Red `eb5b23e45c`,
+fixed in `12ba110124`.
+
+The cause:
+`shownLabelOf` (`consistency/src/consistency-label-form.ts`) cached the lookup of each list of shown labels
+in a module `WeakMap` under the identity of the array.
+The cache came in with B639 (`29d6064708`).
+A list that its owner changed after one lookup kept answering for the labels it had held at the first.
+Every caller passes a fresh array
+(`consistencyLabels`,
+`runOffChoiceFinalistsOf`,
+the candidate labels),
+and the parameter is typed `readonly string[]`,
+so the cache was safe in production and wrong for the interface it exposes.
+
+Fixed:
+the module `WeakMap` is gone.
+`shownLabelReaderOf` reads a list once and answers for the names put to it,
+`shownLabelOf` is one lookup of a reader,
+and `shownOnceLabelsOf` (`consistency-wire.ts`) looks up all the names of a ballot field through one reader,
+so a ballot that names many places still reads a list once per field.
+Counts and ballots are unchanged on every real page.
+
+Test:
+a case in `consistency-label-form.unit.test.ts` changes one shown label between two lookups.
+
+Prevention:
+the notes name none,
+and this filing adds none for a defect that no caller reached.

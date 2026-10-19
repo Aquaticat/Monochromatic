@@ -318,6 +318,14 @@ Recurrence:
 `mistake-prevention-sheets-quorums-and-outcome-rules.md`,
 "A rule a sheet states about tense and what it does not cover".
 
+Revised on 2026-10-19 (UTC):
+the fix described here still joined marks of different pairs,
+because it counted the paired openings and closings that were curly with one depth counter.
+The sol review found it,
+and B676 holds the correction:
+a pair is blanked only when it opens with the opening curly mark and closes with the closing one,
+and three cache versions moved with it.
+
 ## B637: two sentences of the house tense rule could be read against the quoted-words rule
 
 Found on 2026-10-15 by the review of n162 (`s233/review.md`,
@@ -387,6 +395,75 @@ those versions or the order of seats were red in the first whole run,
 and the round updated them (B631).
 No corpus effect can be measured,
 since no run has read the new text.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"A rule a sheet states about tense and what it does not cover".
+
+## B676: the quotation mask joined marks of different pairs and hid the narration between them
+
+Found on 2026-10-18 (UTC) by the sol review of the production diff of five landed rounds
+(`s245/sol-review/answer-gpt61.md`,
+finding 2),
+and reproduced before the fix.
+It reopens the fix of B636.
+
+Outcome written on 2026-10-19 (UTC).
+Red `470b23b57c`,
+fixed in `32a2907529`,
+with a lint follow-up `25131f2e1d`.
+The cache versions moved in `1021136c4a`.
+
+The cause:
+`maskSingleCurlyQuotations` (`translate-stage/src/present-tense-text.ts`)
+kept a depth counter over the paired openings and closings that were curly.
+`nestedSinglePairs` of `typography` returns two sets of offsets,
+the openings and the closings,
+and not pairs.
+A curly opening mark that a straight mark closed,
+and a straight opening mark that a curly mark closed,
+were therefore joined,
+and the narration between them was blanked as one quotation.
+
+Fixed:
+the scan keeps the paired openings on a stack,
+and blanks a pair only when it opens with the opening curly mark and closes with the closing one.
+
+What a reader would have seen:
+only the tense candidates of a page that records a death
+(`candidatesOfParagraph` in `translate-stage/src/present-tense-candidates.ts`
+reads the paragraph through `maskQuotedSpeech`).
+A paragraph with a mixed pair now yields the candidates of its narration where it yielded none.
+
+The cache versions:
+the change alters the tense candidates that the translate slice,
+the consolidation and the lane contest show their judges for an entry that records a death.
+Their keys hash the version,
+the shape of the run and the texts,
+and not the sheet.
+`TRANSLATE_SLICE_CACHE_VERSION` moved from 18 to 19,
+`CONSOLIDATE_CACHE_VERSION` from 24 to 25
+and `LANE_CONTEST_CACHE_VERSION` from 9 to 10,
+each with a paragraph in its TSDoc,
+and the pinned key literal moved with it in `translate-slice-key.unit.test.ts`,
+`consolidate-key.unit.test.ts` and `lane-contest-key.unit.test.ts`,
+as the comments of those tests ask.
+The reason is a measurement:
+`cache-account-audit` over `corpus-pass-TianqiChen66626` (log `s245/w187-cache-audit-66626.log`)
+read 74 slice-cache records,
+the newest written at 22:32 UTC on 2026-10-18,
+and reported "cache versions set after it:
+0 of 8",
+so the change could not ride inside the current numbers.
+A search of those records found no opening curly single mark in any candidate text,
+so no stored record is known to differ,
+and the bump follows the rule of the comments and is not a measured staleness.
+A pass was writing into that directory while the work ran
+(`pass.lock` held,
+and the record count rose from 62 to 74).
+The bump is its own commit,
+so that it could be dropped if the lead judged the absence of affected records enough;
+it landed.
 
 Recurrence:
 `mistake-prevention-sheets-quorums-and-outcome-rules.md`,

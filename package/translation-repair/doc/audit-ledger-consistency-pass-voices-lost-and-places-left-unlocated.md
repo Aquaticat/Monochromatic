@@ -449,6 +449,13 @@ Recurrence:
 `mistake-prevention-text-comparison-and-structure.md`,
 "Words inside words".
 
+Revised on 2026-10-19 (UTC):
+a word that runs on through a combining mark was not the whole of the locator's test of an edge.
+The locator also refuses a match at a joint of a longer word,
+such as an apostrophe or a hyphen between letters or digits,
+and the span agreement did not.
+B675 holds the correction.
+
 ## B656: a lone leader without a strict majority was kept and not run off
 
 Found on 2026-10-18 by the lead's replay of the `TianqiChen66625` decisions on the n171 build.

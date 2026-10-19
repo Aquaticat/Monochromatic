@@ -597,6 +597,15 @@ An account of a cache version names the date and the search that backs "no recor
 and says what retires a stored record besides the number.
 A figure in an agent's hand-back is recounted from the raw files the hand-back names before it is recorded:
 a summary said 6,751 shared hits where the agent's own counter files total 6,628 (ledger M257).
+A claim that no file of a generation is stored is made after the run directories are searched
+for a pass that is writing now (a held `pass.lock`),
+and it names the date and time of the search:
+the round of the sol review called generation 18 open while a pass was writing files of it,
+and the recount it had made stricter would have refused one (ledger M265).
+A change that makes a reader stricter is gated by a generation,
+and does not rely on a directory standing still (ledger B682).
+This rule was written by the filer of M265 on 2026-10-19 (UTC),
+and the notes did not give it.
 
 What enforces it:
 habit;

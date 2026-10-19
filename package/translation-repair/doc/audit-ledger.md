@@ -155,10 +155,12 @@ named for that subject and listed here.
   TSDoc that documents nothing or the wrong thing,
   comments citing what does not exist,
   characters in the source a reader cannot see,
-  and header sentences that the code did not make true.
+  header sentences that the code did not make true,
+  and the direction of the evidence in the header of the span agreement (B681).
 - [Audit ledger: text by code point, and words inside words](audit-ledger-code-points-and-word-boundaries.md):
   Text read by UTF-16 unit or ordered by locale where code points were meant,
-  and fixed words found inside longer words.
+  fixed words found inside longer words,
+  and a quote counted inside a longer word that ends at a joint (B675).
 - [Audit ledger: folds and quote forms](audit-ledger-folds-and-quote-forms.md):
   Comparisons that used the wrong fold for their question:
   straight against curly quotes,
@@ -237,8 +239,10 @@ named for that subject and listed here.
   what the review of the tense records and sheets found loose,
   what was fixed,
   the rule that quoted words keep their speaker's tense,
-  and the two findings of the review of n162 about that rule:
-  quotations in single curly marks and two sentences that could be read against it.
+  the two findings of the review of n162 about that rule:
+  quotations in single curly marks and two sentences that could be read against it,
+  and the quotation mask that still joined marks of different pairs,
+  with the three cache versions that moved for it (B676).
 - [Audit ledger: building the consistency pass, repeat groups and the carry](audit-ledger-consistency-pass-repeat-groups-and-the-carry.md):
   The record of building the page-level consistency pass up to the independent review of its rebuild:
   how the repeated wording is located,
@@ -338,7 +342,9 @@ named for that subject and listed here.
   n169 and n173 fixed and that landed on 2026-10-18,
   and the padded inline code,
   the raw elements and the label order that the review of n162 and n168 added (B633,
-  B634 and B638).
+  B634 and B638),
+  inline code padded by line endings (B677),
+  and two review findings about link labels that did not reproduce (B678).
 - [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md):
   The pairing of single marks on a curly page:
   elisions inside a quotation,
@@ -374,7 +380,9 @@ named for that subject and listed here.
   the page definitions a slot needs,
   which artifact generation 18 records,
   the carry run-off that generation 18 requires,
-  and a refusal text that named the wrong quotes.
+  a refusal text that named the wrong quotes,
+  and generation 19,
+  which gates the stricter recount of containment and inline code (B682).
 - [Audit ledger: follow-ups on emphasis definitions, cache accounts and the Synthetic quota shape](audit-ledger-follow-ups-emphasis-definitions-cache-accounts-and-synthetic-quota.md):
   The emphasis readers that parsed without the page's definitions (B668),
   the contradictions in the TSDoc of the consistency cache version (B669),
@@ -397,7 +405,8 @@ named for that subject and listed here.
   Sheets that lacked a block their role needs to judge or write.
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
-  a name or a value their own writer never produces.
+  a name or a value their own writer never produces,
+  and a carry recount that never read a run-off beside a bench that was not asked (B680).
 - [Audit ledger: references to titles](audit-ledger-title-references.md):
   How a title named in running text is recognized,
   glossed and rewritten.
@@ -420,7 +429,8 @@ named for that subject and listed here.
   and the refusals a retry decision reads.
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
-  most met when a coverage census asked for them to be removed.
+  most met when a coverage census asked for them to be removed,
+  and the four branches of the markup ranges that left a node out for want of a position (B683).
 - [Audit ledger: the source scans and the coverage census](audit-ledger-source-scans-and-coverage-census.md):
   What the source scans and the coverage census counted wrongly,
   could not see,
@@ -430,7 +440,8 @@ named for that subject and listed here.
 - [Audit ledger: ambient state touched by library code](audit-ledger-ambient-state-touched-by-library-code.md):
   Library code that read or wrote the process environment,
   the exit code or a module-load default,
-  where a caller could not supply or see it.
+  where a caller could not supply or see it,
+  and a lookup kept under the identity of a list (B679).
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md):
   What went wrong when two pieces of work written apart met in the same files.
 - [Audit ledger: which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md):
@@ -492,7 +503,8 @@ named for that subject and listed here.
 - [Audit ledger: process mistakes, claims and commit messages](audit-ledger-process-claims-and-commit-messages.md):
   Claims written without their evidence,
   in commit messages,
-  the ledger and notes.
+  the ledger and notes,
+  and a generation called unstored while a live pass wrote it (M265).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,

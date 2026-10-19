@@ -427,3 +427,33 @@ The sources of this entry hold no result of that audit after the landing.
 Recurrence:
 `mistake-prevention-stored-files-and-cached-decisions.md`,
 "Cached decisions".
+
+## B681: the header of the span agreement named the wrong direction of its evidence
+
+Found on 2026-10-18 (UTC) by the sol review of the production diff of five landed rounds
+(`s245/sol-review/answer-gpt61.md`,
+finding 8),
+and partly reproduced.
+
+Outcome written on 2026-10-19 (UTC).
+Fixed in `ae0b9e28e9`,
+a comment only,
+with no test.
+
+What was wrong:
+the header of `consistency/src/consistency-span-agreement.ts`
+said that a quote is evidence for every quote that contains it.
+The code runs the other way:
+a quote is evidence for every quote it contains,
+so the longer `wanted to stay` supports the shorter candidate `to stay`,
+and the shorter supports no longer one.
+The header now says so with that example,
+and says that the count is over every usable ballot and not over the quotes of the place.
+
+What did not reproduce:
+the second half of the finding,
+that the denominator was unstated.
+The TSDoc of `containedQuoteWordsOf` already states it as all the usable ballots.
+
+Prevention:
+the notes name none for a header whose direction of evidence was written backwards.
