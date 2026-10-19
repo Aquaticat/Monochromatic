@@ -21,6 +21,22 @@ Use the [HTML review](ground-up-rebuild-review.html) to inspect the overall flow
 adaptive question selection, worked decisions, and the host preparation conflict.
 The form records the proposed per-rule meaning; its answer is still pending.
 
+The HTML was exercised in a nested Chrome window with a disposable profile.
+Every scenario control, navigation link, and reply-form branch passed;
+keyboard activation and literal markup in notes also passed.
+All 16 controls measured at least 48 pixels in both dimensions.
+Light and dark scenarios passed, and every section fit a 390-pixel viewport without horizontal overflow.
+The browser reported no page errors or console messages.
+This verifies the review artifact, not the replacement plugin or the proposed model semantics.
+
+Retained rendered examples:
+[requested tests](ground-up-rebuild-review/scenario-tests-dark.png),
+[unrequested edit](ground-up-rebuild-review/scenario-scope-dark.png),
+[explicit approval](ground-up-rebuild-review/scenario-exception-dark.png),
+[missing fact](ground-up-rebuild-review/scenario-missing-dark.png),
+[light appearance](ground-up-rebuild-review/scenario-tests-light.png),
+and [narrow response form](ground-up-rebuild-review/response-narrow.png).
+
 ### Assessment before implementation approval
 
 The rule-batching contract now matches the user's stated direction.
