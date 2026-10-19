@@ -304,7 +304,7 @@ await describe({
             /**
              Number of lines the tool's entry holds.
              */
-            const entryLength = (entryEnd === -1) ? entryLines.length : entryEnd;
+            const entryLength = (entryEnd === (-1)) ? entryLines.length : entryEnd;
             /**
              The entry's version line.
              */
