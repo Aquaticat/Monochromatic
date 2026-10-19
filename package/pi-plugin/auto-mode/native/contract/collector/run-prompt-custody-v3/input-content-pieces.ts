@@ -4,6 +4,8 @@
  @module
  */
 import {Buffer} from 'node:buffer';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {nonNullishOrThrow} from '@monochromatic-dev/module-or-throw/ts';
 import {inputContentChunks} from './input-content-chunks.ts';
 
 //region Manager-local page identities share representation without merging source occurrences
@@ -25,9 +27,80 @@ export type ContentPage = {
 };
 
 /**
- Pages bound reference duplication when a growing snapshot reuses most chunks.
+ Maximum page references bound fallback runs without a content anchor.
  */
 const PAGE_CHUNKS=256;
+
+/**
+ Minimum page size bounds reference overhead when common tokens repeatedly select anchors.
+ */
+const MIN_PAGE_CHUNKS=64;
+/**
+ A bounded preceding window lets page boundaries recover after an earlier insertion.
+ */
+const WINDOW_CHUNKS=8;
+/**
+ Prime modulus keeps every rolling product exactly representable as a JavaScript integer.
+ */
+const WINDOW_MODULUS=65_521;
+/**
+ Polynomial radix combines preceding chunk identities without storing their complete prefix.
+ */
+const WINDOW_RADIX=31;
+/**
+ Removing the oldest window member keeps each update constant-time.
+ */
+const WINDOW_POWER=WINDOW_RADIX**WINDOW_CHUNKS%WINDOW_MODULUS;
+/**
+ Boundary diagnostics retain counts without exposing retained input text.
+ */
+const l=tagged({tag:'auto-mode-native-input-pages'});
+
+/**
+ Select bounded pages using preceding content rather than a complete snapshot's starting offset.
+ Fingerprints select boundaries only; exact ordinal sequences still determine page identity.
+
+ @param pieces - original chunk identities remain stable when an earlier message is inserted
+
+ @returns exclusive page ends covering every original chunk exactly once
+ */
+function* contentPageEnds(pieces:readonly ContentChunk[]): Generator<number> {
+ const pl=tagged({tag:contentPageEnds.name,l});
+ pl.debug('selecting bounded content-aligned input pages');
+ /**
+  The rolling window uses constant space and never becomes an equality or authority witness.
+  */
+ const window=new Uint16Array(WINDOW_CHUNKS);
+ /**
+  One cursor updates the bounded fingerprint independently of the most recent page cut.
+  */
+ const cursor={index:0,offset:0,hash:0,start:0};
+ for(const piece of pieces){
+  /**
+   Modulo keeps outgoing products below the exact-integer limit even for later manager ordinals.
+   */
+  const value=piece.ordinal%WINDOW_MODULUS;
+  /**
+   A valid ring position always contains its initialized previous ordinal residue.
+   */
+  const outgoing=nonNullishOrThrow(window[cursor.offset]);
+  cursor.hash=(cursor.hash*WINDOW_RADIX+value
+   -(outgoing*WINDOW_POWER%WINDOW_MODULUS)+WINDOW_MODULUS)%WINDOW_MODULUS;
+  window[cursor.offset]=value;
+  cursor.offset=(cursor.offset+1)%WINDOW_CHUNKS;
+  cursor.index++;
+  /**
+   Common anchors cannot create tiny pages, and absent anchors cannot create oversized pages.
+   */
+  const size=cursor.index-cursor.start;
+  if((size>=PAGE_CHUNKS)||((size>=MIN_PAGE_CHUNKS)&&(cursor.hash%PAGE_CHUNKS===0))){
+   yield cursor.index;
+   cursor.start=cursor.index;
+  }
+ }
+ if(cursor.start<pieces.length)yield pieces.length;
+ pl.debug('completed content-aligned input page selection');
+}
 
 /**
  Intern text and bounded pages for one owning input pool.
@@ -47,6 +120,8 @@ export function createInputContentPieces(): (input:{
   readonly key:string;
   readonly pages:readonly ContentPage[]
 } {
+ const il=tagged({tag:createInputContentPieces.name,l});
+ il.debug('created manager-owned content page interner');
  /**
   Detached text has one identity within this owning manager.
   */
@@ -152,13 +227,15 @@ export function createInputContentPieces(): (input:{
    Complete snapshots retain page references instead of every chunk reference.
    */
   const sequence:ContentPage[]=[];
-  for(let offset=0;offset<pieces.length;offset+=PAGE_CHUNKS){
+  let offset=0;
+  for(const end of contentPageEnds(pieces)){
    sequence.push(
      internPage(pieces.slice(
        offset,
-       offset+PAGE_CHUNKS
+       end
      )),
    );
+   offset=end;
   }
   return {
    key:JSON.stringify(sequence.map(function pageOrdinal(page){return page.ordinal;})),
