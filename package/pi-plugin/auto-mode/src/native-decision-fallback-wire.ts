@@ -20,7 +20,12 @@ import type {
   HarnessEnvironment
 } from './native-decision-fallback-types.ts';
 
-import { assertClauseRelationDefinition, assertDecisionWire, assertMutableDecisionResponse, type DecisionWireQuestion, } from './native-decision-fallback-wire-data.ts';
+import {
+  assertClauseRelationDefinition,
+  assertDecisionWire,
+  assertMutableDecisionResponse,
+  type DecisionWireQuestion,
+} from './native-decision-fallback-wire-data.ts';
 
 //region The fixture wire sender keeps the original failure and rewrite modes.
 
@@ -28,6 +33,16 @@ import { assertClauseRelationDefinition, assertDecisionWire, assertMutableDecisi
  Clock offset the deadline mode applies after its authored answer arrives.
  */
 const DECISION_DEADLINE_EXTENSION_MS = 16_000;
+
+/**
+ Recorded incident scores separate the leading action from its competitor and uncertainty.
+ */
+const recordedDecisionScores = Object.freeze({ leading: 0.56, competing: 0.38, unknown: 0.06, });
+
+/**
+ Existing high-uncertainty contrast requires scoped manual confirmation.
+ */
+const uncertainDecisionScores = Object.freeze({ leading: 0.59, competing: 0, unknown: 0.41, });
 
 /**
  Build the fixture wire transport asserting each authored decision request.
@@ -176,7 +191,9 @@ export function createDecisionFallbackWireSender({
     const raw = await sendAssessment(input);
     if (operation && (plan.mode === 'deadline'))
       state.clockOffset = DECISION_DEADLINE_EXTENSION_MS;
-    if (operation && ((plan.mode === 'low') || (plan.mode === 'low-unknown-approve') || (plan.mode === 'low-unknown-deny'))) {
+    if (operation && ((plan.mode === 'low')
+      || (plan.mode === 'low-unknown-approve')
+      || (plan.mode === 'low-unknown-deny'))) {
       /**
        Authored distributions exercise both uncertain abstention and the recorded low-unknown action.
        */
@@ -192,18 +209,14 @@ export function createDecisionFallbackWireSender({
          */
         const choice = plan.mode === 'low-unknown-deny' ? 'deny' : 'approve';
         /**
-         Low-unknown modes reproduce the original 0.56/0.38/0.06 incident.
+         Named score profiles retain the incident and high-uncertainty contrast independently.
          */
-        const leading = lowUnknown ? 0.56 : 0.59;
-        /**
-         Competing action stays distinct from the unresolved category.
-         */
-        const competing = lowUnknown ? 0.38 : 0;
+        const scores = lowUnknown ? recordedDecisionScores : uncertainDecisionScores;
         answer.choice = choice;
         answer.probabilities = {
-          approve: choice === 'approve' ? leading : competing,
-          deny: choice === 'deny' ? leading : competing,
-          unknown: lowUnknown ? 0.06 : 0.41
+          approve: choice === 'approve' ? scores.leading : scores.competing,
+          deny: choice === 'deny' ? scores.leading : scores.competing,
+          unknown: scores.unknown
         };
       }
       return JSON.stringify(response);

@@ -566,16 +566,23 @@ and distinct on case-insensitive filesystems.
   The merge is pushed with a plain push to `<remote> <merge>:<merge ref>`, never forced.
   A conflict (merge-tree exit `1`) publishes nothing and names the conflicting paths.
   A push that is refused as stale again repeats the fetch, the merge and the push,
-  at most `MAX_RECONCILE_ATTEMPTS` (3) times in all.
-  The local branch, the index, the worktree and the untracked files are never read or written by the reconcile,
+  at most `MAX_RECONCILE_ATTEMPTS` (10) times in all,
+  because sibling worktrees that keep pushing are contention and not a conflict.
+  The merge is computed without reading or writing the local branch, the index, the worktree or the untracked files,
   so another consumer's uncommitted files cannot block it or be changed by it.
+  After the merge is published, the branch and its worktree are fast-forwarded to it
+  (`git merge --ff-only <merge>`) only when all of these hold:
+  `HEAD` is the pushed branch at the tip that was pushed,
+  and `git --no-optional-locks status --porcelain=v1 --untracked-files=no` is empty.
+  Git itself refuses, without changing anything, a move that would overwrite an untracked file.
+  Any other state leaves the branch behind the remote, and the report names the reason.
   The merge commit skips commit-time hooks and policies because it is made from objects.
   Every line the reconcile adds begins with `cli-git: auto-push: `;
   a line that begins with `cli-git: auto-push: not published: `
   explains a failure and replaces the generic "run `git push`" note,
   which would repeat a push that cannot succeed.
-  The published merge leaves the local branch behind the remote,
-  and the note names `git merge --ff-only <remote>/<branch>` for when the worktree allows it.
+  When the branch could not be fast-forwarded it stays behind the remote,
+  and the note names the reason and `git merge --ff-only <remote>/<branch>` for when the worktree allows it.
 - An invocation finishes auto-push once a successful push covers its OID,
   or once the push that would cover it has failed.
   Covering is `git merge-base --is-ancestor <landed OID> <tip>`

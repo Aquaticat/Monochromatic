@@ -90,6 +90,11 @@ function wireMemberRecord(value: unknown): Readonly<Record<string, unknown>> {
  @returns narrowed state projection for the clause comparison
 
  @throws DecisionFallbackWireShapeError when a dereferenced container is missing
+
+ @example
+ ```ts
+ assertClauseRelationDefinition(parsedState);
+ ```
  */
 export function assertClauseRelationDefinition(value: unknown): asserts value is DecisionWire['state'] {
   /**

@@ -28,6 +28,12 @@ Fetches are retained as `span-02-endpoints.json`, `span-02-page.html` and `openr
 Next: call the documented Decisions endpoint with the original captured state string and mapped criteria,
 preserving original instruction text and distributions; compare recorded requests and an explicit prohibition control.
 This authorizes a trial, not changing the production provider.
+The trial completes as `span02-trial-gXoI7U`: all eight HTTP calls route as authored.
+The recorded escalation's three Span 02 repeats approve at `0.982006` to `0.98549366`;
+both explicit prohibition controls deny.
+Its original state SHA-256 matches the Luna incident exactly.
+See the [Span 02 package trial](../../package/pi-plugin/auto-mode/doc/span-02-trial.md).
+Keep provider adoption separate from the completed trial.
 
 The per-message fixed-prefix audit counts 636,425 complete input-budget validations,
 797,221 readable-policy freshness checks and 158,257 native finalizations across 58 prepared batches.

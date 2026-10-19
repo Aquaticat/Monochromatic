@@ -16,7 +16,12 @@ import type { QuestionEvidence } from '../../lifecycle/claim-evidence-batch-sele
 /**
  Malformed original evidence cannot become an execution decision.
  */
-export class OperationDecisionEvidenceError extends Error {}
+export class OperationDecisionEvidenceError extends Error {
+  /**
+   Diagnostic identity distinguishes rejected evidence from unresolved model estimates.
+   */
+  override readonly name = 'OperationDecisionEvidenceError';
+}
 
 /**
  Decision logs contain choices and lifecycle events, never original command or policy text.
@@ -100,6 +105,11 @@ function resolveOperationDecision(record: QuestionEvidence): GuardOutcome {
  @returns decision and retained original evidence for currentness and audit checks
 
  @throws OperationDecisionEvidenceError for an incomplete or foreign evidence set
+
+ @example
+ ```ts
+ const decision = await reviewOperationDecision(judgment);
+ ```
  */
 export async function reviewOperationDecision(judgment: Pick<JudgmentPublicAPI,
   'claimOperationDecision' | 'issue' | 'assess' | 'captureBatchEvidence' | 'assertBatchEvidence'
@@ -138,7 +148,7 @@ export async function reviewOperationDecision(judgment: Pick<JudgmentPublicAPI,
   /**
    Array length is checked independently of the retained original member.
    */
-  const record = evidence[0];
+  const [record] = evidence;
   if (record === undefined)
     throw new OperationDecisionEvidenceError('Whole-operation decision evidence is absent');
   /**
