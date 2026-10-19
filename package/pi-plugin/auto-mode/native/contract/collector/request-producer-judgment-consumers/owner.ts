@@ -175,11 +175,10 @@ export function createRequestProducerOwner<Judgment>({
     /**
      Original description kind proves the main-agent request stream.
      */
-    const description = responseRecord({
+    const {description} = responseRecord({
       response,
       stream
-    })
-      .description;
+    });
     if (description.kind !== 'main-agent') throw new RequestProducerError('Auxiliary request output is not a main-agent tool response');
   }
 
@@ -392,11 +391,13 @@ export function createRequestProducerOwner<Judgment>({
     const consumer = (typeof stream) === 'function' ? consumers.get(stream) : undefined;
     if (!consumer) throw new RequestProducerError('Native producer stream is not bound to this issuer');
     if ((options !== undefined) && ((options === null) || ((typeof options) !== 'object')
-      || Array.isArray(options)
-      || (![
-        Object.prototype,
-        null
-      ].includes(Object.getPrototypeOf(options))))) throw new RequestProducerError('Native request options must be an owned plain record');
+      || Array.isArray(options))) throw new RequestProducerError('Native request options must be an owned plain record');
+    /**
+     Original options prototype must be the plain record root or its null root.
+     */
+    const optionsPrototype: unknown = options === undefined ? undefined : Object.getPrototypeOf(options);
+    if ((options !== undefined) && (optionsPrototype !== Object.prototype)
+      && (optionsPrototype !== null)) throw new RequestProducerError('Native request options must be an owned plain record');
     for (const key of Reflect.ownKeys(options ?? {})) {
       /**
        Original own descriptor proves the option key is a visible data property.
@@ -409,7 +410,7 @@ export function createRequestProducerOwner<Judgment>({
         descriptor,
         'value'
       ))
-        || (!descriptor.enumerable)) throw new RequestProducerError('Native request options contain an accessor or hidden property');
+        || (descriptor.enumerable !== true)) throw new RequestProducerError('Native request options contain an accessor or hidden property');
     }
     /**
      Stamped options freeze this claim's exact request occurrence.

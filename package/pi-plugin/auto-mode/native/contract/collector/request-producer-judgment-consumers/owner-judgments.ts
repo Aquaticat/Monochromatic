@@ -73,7 +73,8 @@ export function createJudgmentLifecycle<Judgment>({
     /**
      Retired state label identifies the released evidence record.
      */
-    const retiredStateLabel = slot.state.state;
+    const retiredStateLabel = slot.state
+      .state;
     rl.debug(`retiring completed producer evidence in state ${retiredStateLabel}`);
     slot.state = { state: 'retired' };
   }
@@ -126,7 +127,7 @@ export function createJudgmentLifecycle<Judgment>({
       /**
        Original description kind proves the main-agent response.
        */
-      const description = record.description;
+      const {description} = record;
       if (description.kind !== 'main-agent') throw new RequestProducerError('Auxiliary request output cannot own a tool judgment');
       /**
        Original consumer owns the judgment constructor for this response.
@@ -164,11 +165,12 @@ export function createJudgmentLifecycle<Judgment>({
           group
         }));
         if ((!reference(value)) || ((typeof value) !== 'object')
-          || (!Object.isFrozen(value))
-          || (![
-            Object.prototype,
-            null
-          ].includes(Object.getPrototypeOf(value)))) throw new RequestProducerError('Judgment constructor must return an owned frozen plain record');
+          || (!Object.isFrozen(value))) throw new RequestProducerError('Judgment constructor must return an owned frozen plain record');
+        /**
+         Original result prototype must be the plain record root or its null root.
+         */
+        const valuePrototype: unknown = Object.getPrototypeOf(value);
+        if ((valuePrototype !== Object.prototype) && (valuePrototype !== null)) throw new RequestProducerError('Judgment constructor must return an owned frozen plain record');
         for (const key of Reflect.ownKeys(value)) {
           /**
            Original own descriptor proves the key is a visible data property.
@@ -182,7 +184,7 @@ export function createJudgmentLifecycle<Judgment>({
               descriptor,
               'value'
             ))
-            || (!descriptor.enumerable)) throw new RequestProducerError('Judgment result contains an accessor, symbol or hidden property');
+            || (descriptor.enumerable !== true)) throw new RequestProducerError('Judgment result contains an accessor, symbol or hidden property');
         }
         if ((typeof Reflect.get(
           value,
@@ -275,7 +277,8 @@ export function createJudgmentLifecycle<Judgment>({
     /**
      Settled construction states complete; constructing slots cannot.
      */
-    const settledState = slot.state.state;
+    const settledState = slot.state
+      .state;
     if ((settledState !== 'active') && (settledState !== 'failed')) throw new RequestProducerError('Producer judgment construction must settle before operation completion');
     slot.completed = true;
     /**
@@ -291,7 +294,8 @@ export function createJudgmentLifecycle<Judgment>({
     /**
      Preserved state label identifies the latest completed diagnostic.
      */
-    const preservedStateLabel = slot.state.state;
+    const preservedStateLabel = slot.state
+      .state;
     cl.debug(`preserving latest completed producer diagnostic in state ${preservedStateLabel}`);
   }
 
