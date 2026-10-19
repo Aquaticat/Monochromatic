@@ -331,8 +331,8 @@ description = "Check in the build container that cargo-nextest reads .config/nex
 run = "node bin/check-nextest-config.mjs"
 
 [tasks."test:bin"]
-description = "Check the compositor version reader and the container bound of the bin scripts with node:test"
-run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts"
+description = "Check the compositor version reader, the container bound, and the frame-pattern analysis of the bin scripts with node:test"
+run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts"
 
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
@@ -952,6 +952,31 @@ if (!/^[1-9][0-9]*x[1-9][0-9]*$/.test(size)) { throw new Error('IDE_NATIVE_SIZE 
 const scale = process.env.IDE_NATIVE_SCALE ?? '1'
 if (!/^[0-9]+([.][0-9]+)?$/.test(scale)) { throw new Error('IDE_NATIVE_SCALE must be a number such as 2 or 1.25') }
 execFileSync(compositor, ['--socket', socket, '--size', size, '--scale', scale, '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
+"""
+
+[tasks."inspect:cadence"]
+depends = ["runtime", "notices"]
+description = "Record the IDE's frames in the repo compositor during a scroll or a held minimap drag and print how many changed or stayed identical, with the longest identical run and every run"
+usage = '''
+arg "<scenario>" help="Input to send: scroll (a two-finger scroll over the source) or drag (hold the minimap viewport box and pull it down)"
+arg "<project>" help="Disposable project directory below the system temporary directory"
+arg "<file>" help="File to open, relative to the project"
+arg "[profile]" default="debug" help="Cargo profile of the binary to build and drive: debug or release"
+arg "[size]" default="1100x660" help="Nested screen size as WIDTHxHEIGHT"
+arg "[steps]" default="120" help="Pointer events of the input, sent 16 ms apart"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const profile = process.env.usage_profile ?? 'debug'
+if (profile !== 'debug' && profile !== 'release') { throw new Error('profile must be debug or release') }
+// Only the application binary, built as the build:debug and build tasks build it, so the driven binary is the shipped one.
+if (profile === 'release') {
+  runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release', '--bin', 'monochromatic-ide'])
+} else {
+  runCargo(['build', '--bin', 'monochromatic-ide'])
+}
+execFileSync('node', ['bin/inspect-cadence.mjs'], { stdio: 'inherit' })
 """
 
 [tasks.run]
