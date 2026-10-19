@@ -90,7 +90,8 @@ Work is incomplete. Continue the queue without another readiness handoff.
   The environment forwards the actual identity-preserving SDK `defineTool` function.
   Eight owned files have zero scoped lint warnings/errors; all five formatter-generated declaration outputs match byte for byte.
   Fresh complete types remain open on the phase preparation contract; do not reuse older clean-type claims.
-- Full package lint: latest complete frozen scan reports 11,418 warnings/126 errors at `9e14b79e86`.
+- Full package lint: latest complete frozen scan reports 11,325 warnings/157 errors across 882 files at `d58b695428`.
+  The preceding `9e14b79e86` scan reports 11,418 warnings/126 errors across 869 files.
   A fresh complete scan and zero-diagnostic repair remain required after the current ports.
 - Source inventory: frozen `9e14b79e86` now has a bounded, positive-controlled role graph over 869 owned source files,
   actual generated native imports, explicit shared roles and Node type erasure.
@@ -125,6 +126,21 @@ Work is incomplete. Continue the queue without another readiness handoff.
   Source MiMo receives the proven SDK erasure prototype; native MiMo resumes its scoped lint repair.
   Deliver the additional exact TS2741 evidence at the source worker's next settled boundary.
   Previous-build negative controller `RSjiZv` exits normally after its audited Stop response.
+  The combined checkpoint finishes constructor/execution consumers successfully; its only type errors remain the two phase fixtures.
+  The full formatter experiment changes 34 of 882 files: eight preserve complete AST/comments,
+  seventeen change the AST and nine overlap active worker scopes.
+  Rejected changes are restored only in the private candidate.
+  The initial eight-file candidate builds and passes phases but introduces one extra producer-lifetime lint error.
+  That file is restored privately; seven candidates remain under critical consumer verification before adoption.
+  Its first inflight task does not execute because the private driver lacks that task registration;
+  the resumed driver adds the exact maintained tasks without rerunning completed builds or the formatter.
+  The source monitor incorrectly hides an approval dialog when its tool count is below the minimum;
+  pending approvals now bypass that threshold. Old loaded watchers remain unchanged until they exit.
+  The supervisor gives a proof path whose host-temp symlink target is not mounted in the worker,
+  then stops the complete read-only directory-listing detour and supplies the actual proof and fresh diagnostics
+  in `/fixture-home` at the next idle boundary.
+  Source `kARc6q` resumes as `source-local-proof-and-exact-diagnostics-20261019-18`;
+  native `Pcok7j` continues scoped lint and an explicit suppression-source record.
 
 ## Detailed qualification evidence
 
