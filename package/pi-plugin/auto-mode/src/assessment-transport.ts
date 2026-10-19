@@ -195,7 +195,8 @@ export function createAssessmentHttpSender({
     }
     catch (error) {
       dl.debug('assessment HTTP invocation failed');
-      if ((options.signal?.aborted !== true) && (error instanceof TypeError))
+      if ((options.signal
+        ?.aborted !== true) && (error instanceof TypeError))
         throw new AssessmentRequestFailureError('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
       throw error;
     }
@@ -266,7 +267,9 @@ export function createAssessmentHttpSender({
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
     if (response.status !== limits.successfulStatus) {
-      /** Only sanitized HTTP evidence crosses the owned failure boundary. */
+      /**
+       Only sanitized HTTP evidence crosses the owned failure boundary.
+       */
       const message = assessmentHttpFailure({
           raw,
           status: response.status,

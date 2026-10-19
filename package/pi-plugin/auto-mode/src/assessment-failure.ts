@@ -62,7 +62,11 @@ export function isRetryableAssessmentFailure(error: unknown): boolean {
     if (current instanceof AggregateError) {
       if (visited.has(current)) return false;
       visited.add(current);
-      pending.push(...current.errors);
+      /**
+       Aggregate members remain unknown until each owned failure category is inspected.
+       */
+      const errors: readonly unknown[] = current.errors;
+      pending.push(...errors);
       continue;
     }
     if (!(current instanceof AssessmentRequestFailureError)) {
