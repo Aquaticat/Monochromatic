@@ -24,6 +24,7 @@ import {
 import {
   PROBE_FAILURE_TEXT,
   PROBE_FIX_MARKER,
+  PROBE_THROW_VARIABLE,
 } from './harness-probe-plugin.test-fixture.ts';
 
 //region Helpers
@@ -106,11 +107,13 @@ function probeProject(rules: readonly string[],): ProbeProject {
  ```ts
  const outcome = await attempt(project,);
  const fixing = await attempt(project, 'fixes',);
+ const asked = await attempt(project, undefined, { [PROBE_THROW_VARIABLE]: '1', },);
  ```
  */
 async function attempt(
   project: ProbeProject,
   fix?: OxlintFixMode,
+  environment?: Readonly<Record<string, string>>,
 ): Promise<{ readonly diagnostics: readonly OxlintRuleDiagnostic[]; readonly failure: unknown; }> {
   try {
     return {
@@ -121,6 +124,7 @@ async function attempt(
         target: project.sourcePath,
         threads: 1,
         ...fix === undefined ? {} : { fix, },
+        ...environment === undefined ? {} : { environment, },
       },),
       failure: undefined,
     };
@@ -176,6 +180,44 @@ await describe({
           fn: async () => {
             using project = probeProject(['reports-program', 'always-throws',],);
             const outcome = await attempt(project,);
+
+            expect(outcome.failure,).toBeInstanceOf(Error,);
+            expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);
+          },
+        },),
+        it({
+          name: 'runs oxlint with the environment it is given, so a plugin can see it',
+          fn: async () => {
+            using project = probeProject(['throws-when-asked',],);
+            const outcome = await attempt(
+              project,
+              undefined,
+              { [PROBE_THROW_VARIABLE]: '1', },
+            );
+
+            expect(outcome.failure,).toBeInstanceOf(Error,);
+            expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);
+          },
+        },),
+        it({
+          name: 'runs a plugin that checks the environment quietly when the variable is not given',
+          fn: async () => {
+            using project = probeProject(['throws-when-asked',],);
+            const outcome = await attempt(project,);
+
+            expect(outcome.failure,).toBeUndefined();
+            expect(outcome.diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'passes the environment to a fix run as well',
+          fn: async () => {
+            using project = probeProject(['throws-when-asked',],);
+            const outcome = await attempt(
+              project,
+              'fixes',
+              { [PROBE_THROW_VARIABLE]: '1', },
+            );
 
             expect(outcome.failure,).toBeInstanceOf(Error,);
             expect(String(outcome.failure,),).toContain(PROBE_FAILURE_TEXT,);

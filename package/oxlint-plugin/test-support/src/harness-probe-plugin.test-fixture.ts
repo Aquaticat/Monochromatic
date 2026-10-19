@@ -1,9 +1,10 @@
 /**
  Oxlint plugin that exists to misbehave on demand, so the fixture runner can be shown a plugin that throws.
 
- Four rules, each enabled alone or together by the config a test writes: one reports every program, one
- reports nothing, one throws on every program the way a crashed plugin does, and one reports every program
- with a fix that puts a marker line at the top of the file.
+ Five rules, each enabled alone or together by the config a test writes: one reports every program, one
+ reports nothing, one throws on every program the way a crashed plugin does, one reports every program
+ with a fix that puts a marker line at the top of the file, and one throws only when the process that runs
+ it carries a named environment variable.
 
  @module
  */
@@ -52,6 +53,11 @@ type ProbeContext = {
 export const PROBE_FAILURE_TEXT = 'harness probe plugin failed on purpose';
 
 /**
+ Name of the environment variable that makes the conditional rule throw.
+ */
+export const PROBE_THROW_VARIABLE = 'HARNESS_PROBE_THROW';
+
+/**
  Line the fixing rule puts at the top of a source, searched for by tests.
  */
 export const PROBE_FIX_MARKER = '// fixed by the harness probe plugin\n';
@@ -86,6 +92,16 @@ const plugin = {
                 return fixer.insertTextBeforeRange([0, 0,], PROBE_FIX_MARKER,);
               },
             },);
+          },
+        };
+      },
+    },
+    'throws-when-asked': {
+      create(): { readonly Program: () => void; } {
+        return {
+          Program(): void {
+            if (process.env[PROBE_THROW_VARIABLE] !== undefined)
+              throw new Error(PROBE_FAILURE_TEXT,);
           },
         };
       },
