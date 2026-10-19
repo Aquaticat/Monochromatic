@@ -4,6 +4,74 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+- Incoming-message rejection: the reproduced category-gate defect is closed on `4913ea2cd0`.
+  The gate and its newly introduced classifier are removed; normal input does not need membership in an origin list.
+  Fresh builds and six native consumer suites pass on immutable `native-release-LqreQy` in `3eMYni`.
+  Configured full-history replays `rVn75u` and `zdzKWP` each perform one actual reviewed `pwd`,
+  with zero errors or approval dialogs; steering is acknowledged before the original response is released.
+  Each actual primary request is 3,060,823 bytes; each payload audit checks four Luna requests and 239 questions,
+  including required/excluded positive controls. All responses are HTTP 200 and both controllers close normally.
+  Complete stderr has no source-growth, error-level, fatal or bare shutdown error.
+  The strengthened later-request delivery guard at `984834983e` is under fresh rebuilt fault controls.
+  Unmodified installed Pi confirms that steering follows current tools, follow-ups wait for normal completion,
+  and actual abort prevents execution. The queued-text immediate-stop assumption is retracted.
+  Next: finish delivery controls, align phase tests with that contract, and repeat final coherent host verification
+  after the remaining package changes. Live MiMo runtime artifacts remain immutable.
+- Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
+  and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
+  Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
+  Five rebuilt mutations are caught in independent `8nNXOe`; restored build, lifetime cases and memory guard pass.
+  Actual long-history growth and final configured replay remain open.
+- Source MiMo: `kARc6q` owns only the phase callback/mode/transport/assertion/type reduction.
+  Original 432 code lines/126 statements/25 functions became 780/226/45 in the unaccepted consolidation.
+  The catalog passes on its named pre-removal snapshot; its queued-steering assumptions now need correction.
+  The preparation declaration must preserve invalid-input behavior
+  while expressing the actual SDK registration boundary honestly.
+  The next proposal includes an always-true predicate asserting `BashToolInput` for every unknown;
+  the supervisor rejects that as an unsound assertion, regardless of its projection documentation.
+  MiMo receives concrete feedback to use the genuine SDK erasure boundary without claiming validation,
+  and to align steering assertions with the independently measured native queue timing.
+  Its scope now includes the phase catalog registration call if needed.
+- Native MiMo: `Pcok7j` resumes the complete `9Tl0ts` history on the corrected immutable runtime.
+  Its queued concrete implementation is the real policy-loader TypeScript port, not a facade around untyped code.
+  Neither worker may mutate root dist or another owner's files.
+- Declaration build: the incumbent Rolldown/Oxc generator emits closed `native-artifact-types` declarations.
+  Release-relative facades eliminate copied source paths and raw-built-TypeScript project traversal.
+  The environment forwards the actual identity-preserving SDK `defineTool` function.
+  Eight owned files have zero scoped lint warnings/errors; all five formatter-generated declaration outputs match byte for byte.
+  Fresh complete types remain open on the phase preparation contract; do not reuse older clean-type claims.
+- Full package lint: latest complete frozen scan reports 11,418 warnings/126 errors at `9e14b79e86`.
+  A fresh complete scan and zero-diagnostic repair remain required after the current ports.
+- Source inventory: frozen `9e14b79e86` now has a bounded, positive-controlled role graph over 869 owned source files,
+  actual generated native imports, explicit shared roles and Node type erasure.
+  It reports 75,477 runtime source lines and 31,073 runtime statements across all roles;
+  runtime-reached files contribute 32,953 lines/12,949 statements,
+  build-only files 4,879/1,184, and verification-only files 36,953/16,681.
+  There are 113 nonliteral imports and 65 unresolved local references, so this is not a complete deployment graph.
+  No production exclusion uses `assertion`, `case` or `fixture` substrings.
+  The first inventory rejects the executable symlink as an unrecorded root;
+  the correction records its owned `native/command.ts` target without following directory links.
+  A repeated scratch preparation also initially duplicates its own task block; preparation is now idempotent.
+- Architecture reduction: the measured runtime source remains unaccepted.
+  Audit internal snapshot checks against their genuine callers and justify each retained validation boundary.
+  The user rejects normal-input category gates; more accepted categories are not the redesign.
+  Package responsibility docs must justify the retained implementation and its executable consumer evidence.
+- Publication: normal wrapper auto-push publishes root `984834983e` through remote merge `f66614cac61c`,
+  preserving root branch and concurrent dirty work. No root merge or cleanup is authorized by that receipt.
+- Completion queue: finish coherent types/full lint/catalogs/payload audit/shutdown stderr,
+  final inode/dependency/source inventories, package responsibility documentation and safe publication.
+  Root `TCV`, `CPN`, `RXI` stay unchanged; concrete lessons remain package-local.
+  Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
+  project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
+
+## Detailed qualification evidence
+
+Work is incomplete. Continue the independently verifiable queue without a readiness handoff.
+
+### Incoming-message investigation checkpoints
+
+These checkpoints preserve the investigation sequence; current status is in `Current work and next actions`.
+
 - Actual configured host: source replay `kARc6q` uses corrected immutable `native-release-YGJ1JD`
   with the complete saved history. Its first group still fails source growth with
   `Only original unregistered manager, native event or custom data inputs may extend this source snapshot`.
@@ -65,49 +133,8 @@ Work is incomplete. Continue the queue without another readiness handoff.
   avoiding the earlier empty-JSON reader race without altering live controllers.
   The maintained delivery guard now also observes queued input in the subsequent actual serialized request,
   after the original tool executes; qualify this committed assertion against dropped-delivery controls.
-- Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
-  and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
-  Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
-  Five rebuilt mutations are caught in independent `8nNXOe`; restored build, lifetime cases and memory guard pass.
-  Actual long-history growth and final configured replay remain open.
-- Source MiMo: `kARc6q` owns only the phase callback/mode/transport/assertion/type reduction.
-  Original 432 code lines/126 statements/25 functions became 780/226/45 in the unaccepted consolidation.
-  The complete phase catalog passes. The remaining preparation declaration must preserve invalid-input behavior
-  while expressing the actual SDK registration boundary honestly.
-  The next proposal includes an always-true predicate asserting `BashToolInput` for every unknown;
-  the supervisor rejects that as an unsound assertion, regardless of its projection documentation.
-  MiMo receives concrete feedback to use the genuine SDK erasure boundary without claiming validation,
-  and to align steering assertions with the independently measured native queue timing.
-  Its scope now includes the phase catalog registration call if needed.
-- Native MiMo: `Pcok7j` resumes the complete `9Tl0ts` history on the corrected immutable runtime.
-  Its queued concrete implementation is the real policy-loader TypeScript port, not a facade around untyped code.
-  Neither worker may mutate root dist or another owner's files.
-- Declaration build: the incumbent Rolldown/Oxc generator emits closed `native-artifact-types` declarations.
-  Release-relative facades eliminate copied source paths and raw-built-TypeScript project traversal.
-  The environment forwards the actual identity-preserving SDK `defineTool` function.
-  Eight owned files have zero scoped lint warnings/errors; all five formatter-generated declaration outputs match byte for byte.
-  Fresh complete types remain open on the phase preparation contract; do not reuse older clean-type claims.
-- Full package lint: latest complete frozen scan reports 11,418 warnings/126 errors at `9e14b79e86`.
-  A fresh complete scan and zero-diagnostic repair remain required after the current ports.
-- Source inventory: frozen `9e14b79e86` now has a bounded, positive-controlled role graph over 869 owned source files,
-  actual generated native imports, explicit shared roles and Node type erasure.
-  It reports 75,477 runtime source lines and 31,073 runtime statements across all roles;
-  runtime-reached files contribute 32,953 lines/12,949 statements,
-  build-only files 4,879/1,184, and verification-only files 36,953/16,681.
-  There are 113 nonliteral imports and 65 unresolved local references, so this is not a complete deployment graph.
-  No production exclusion uses `assertion`, `case` or `fixture` substrings.
-  The first inventory rejects the executable symlink as an unrecorded root;
-  the correction records its owned `native/command.ts` target without following directory links.
-  A repeated scratch preparation also initially duplicates its own task block; preparation is now idempotent.
-- Completion queue: finish actual-host source growth, coherent types/full lint/catalogs/payload audit/shutdown stderr,
-  final inode/dependency/source inventories, package responsibility documentation and safe publication.
-  Root `TCV`, `CPN`, `RXI` stay unchanged; concrete lessons remain package-local.
-  Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
-  project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
 
-## Detailed qualification evidence
-
-Work is incomplete. Continue the independently verifiable queue without a readiness handoff.
+### Other qualification checkpoints
 
 - Active memory incident: recovered source worker `7HN2ZH` grows from 89,823,320 to 511,619,256 post-GC heap bytes
   over 24 tools. Private positive-controlled heap graphs trace old request bodies through producer response records

@@ -153,10 +153,15 @@ Inventories and receipts remain private under
 ## Checkpoint maintenance lessons
 
 An RPC tool-completion event does not establish an idle agent.
-The next model response can already depend on its original instruction snapshot.
-Send supervisory guidance at an actual settled boundary.
-If instructions change during a response,
-retain the stale-evidence rejection and obtain a fresh review or explicit approval for the complete operation.
+Pi accepts steering during a model request and delivers it after the current turn's tools;
+follow-ups wait until the agent would otherwise stop.
+The package's input records are owned instrumentation, not additional SDK contracts.
+Their origin category cannot turn ordinary queued input into a manual approval request.
+The category gate and its later whitelist repair are removed after actual configured-host reproduction.
+Genuine changes to governing policy or executable tools still invalidate the corresponding approval inputs.
+The unmodified SDK probe distinguishes queued text from the separate active-run abort operation.
+An assertion that queued text saying stop guarantees immediate cancellation invents behavior Pi does not provide.
+Native regression tests check both automatic execution and subsequent actual serialized delivery.
 
 Correct use by reasonable consumers is the UX requirement.
 A behavior being documented does not excuse a surprising result.
