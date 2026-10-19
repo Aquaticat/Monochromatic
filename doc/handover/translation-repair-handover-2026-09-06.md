@@ -518,9 +518,10 @@ before the other queued work.
     the page's definitions; the version TSDoc is consistent; pairing need not move (the pipeline digest retires its
     records); no public source gives Synthetic's new body, so only a note.
     A second round there (`54e693c569` to `67c9b1accb`, ledger B672 and B673) corrected a local time the agent
-    labelled UTC (20:58 to 21:00 UTC, not 16:58 to 17:00) and made the Synthetic warning name the received keys
+    labelled UTC (20:58 to 21:00 UTC, not the host's 16:58 to 17:00 EDT) and made the Synthetic warning name the received keys
     and JSON types, never values.
-    Generation 19, recording the definitions that move the words of a place, was built and withdrawn:
+    An attempt at generation 19 that recorded the definitions moving the words of a place was built and withdrawn,
+    never landed, so generation 19 later went to the stricter recount of `w189`:
     a definition cannot supply a delimiter outside the span, so on `Take *[*]a*’ now.` the words read with the
     recorded definition call the edge mark loose while the page calls it an apostrophe of its word,
     and a probe of 205,740 short strings found no case where reading with definitions is the faithful one.
