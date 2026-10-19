@@ -975,7 +975,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `lint:closures` task. Only the IDE has a check today, because the syntax-only rule left `monochromatic-lint` on
     2026-10-18. An agent measures the feasibility per package and writes `doc/planning/closure-lint-everywhere.md`
     on branch `docs/closure-lint-everywhere` (worktree `.claude/worktrees/closure-everywhere`); no source is
-    changed yet. The owner also chose to leave the OpenSnitch pop-up default (reject, forever, 30 s) as it is.
+    changed yet. Answers of 2026-10-19: the linter runs `cargo dylint` per package (mechanism A), warnings first, tests,
+    fuzz and bench exempt, a package missing its prerequisites is skipped with a note; the implementation runs as an
+    agent on `feat/linter-closure-everywhere`. The owner also chose to leave the OpenSnitch pop-up default (reject, forever, 30 s) as it is.
   - Minimap box fill removed (owner request of 2026-10-19): the viewport box is an outline without a fill
     (`ui/minimap.slint`); hover and drag change its border width and opacity only. The native test is now
     `the_box_is_an_outline_whose_border_changes_under_the_pointer`. Checked: `lint:slint`, `lint:rustfmt`,

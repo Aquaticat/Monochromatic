@@ -135,6 +135,21 @@ the lint needs rustc type information,
 so `monochromatic-lint` would have to run the Dylint library over each Rust package itself,
 or carry the criterion in its own type analysis (the rejected option of the original choice).
 The feasibility and the options are in `doc/planning/closure-lint-everywhere.md`.
+### Answers of 2026-10-19 to the proposal
+
+The owner answered four questions about `doc/planning/closure-lint-everywhere.md` through the question tool:
+
+- Mechanism A: `monochromatic-lint` runs `cargo dylint` for each Rust package itself,
+  with the library path named in the rule options and a per-package manifest of build prerequisites.
+- Severity: warnings first.
+- Exemptions: tests, fuzz crates and bench crates are exempt.
+- A package whose prerequisites are missing on the machine is skipped, and the linter says so.
+
+Adopted as defaults without asking, open to veto:
+the floating nightly stays (no pin),
+only rustc's `expect` suppresses the Dylint lint (no comment directives),
+generated code is skipped by the lint itself (spans outside the package's own source),
+and the IDE keeps error severity because it has no findings.
 ## Known limits to carry into the lint's README
 
 - Wrappers are not recognised (`Arc::new(closure)`, `Some(closure)`, struct fields, `Option<F>`, a callee that is
