@@ -27,9 +27,18 @@ Work is incomplete. Continue the queue without another readiness handoff.
   passes builds and fails the exact inflight-steer execution assertion with the same source-growth cause.
   A private diagnostic copy reads the actual SDK's four new bare-session origins:
   call input, unintercepted input, user queue and user Agent steer input, all unregistered with permission=false.
-  The authored correction recognizes their precise field/method/role profiles plus the existing native event/transform stages;
-  it preserves every exact original identity, registration, permission, run, replacement and reorder guard.
-  Fresh builds, both delivery modes, adversarial classifier cases and configured replay are still required.
+  The user rejects category-based rejection of ordinary incoming messages as unacceptable.
+  The supervisor retracts the phrase "SDK receipts": these records are owned instrumentation,
+  not a requirement imposed by Pi.
+  The category-specific repair at `869818daa9` passes both actual-session delivery cases,
+  but remains unaccepted and is superseded by removal of the category gate and its new helper.
+  Original ownership, registration, permission, run, replacement and reorder checks remain;
+  actual governing-policy and executable-tool changes retain their independent guards.
+  Its full phase catalog also fails `steer-primary`: three executions versus an expected zero.
+  The test queues text asking to stop; installed Pi explicitly delivers steering after the current turn's tools.
+  An independent unmodified-SDK probe must establish that behavior before correcting either implementation or assertion.
+  Preserve actual abort/no-execution coverage and test next-request delivery, not text-based cancellation assumptions.
+  Fresh builds, consumer/regression checks and configured replay are required for the category-gate removal.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
@@ -47,7 +56,7 @@ Work is incomplete. Continue the queue without another readiness handoff.
   The environment forwards the actual identity-preserving SDK `defineTool` function.
   Eight owned files have zero scoped lint warnings/errors; all five formatter-generated declaration outputs match byte for byte.
   Fresh complete types remain open on the phase preparation contract; do not reuse older clean-type claims.
-- Full package lint: last complete committed snapshot remains 11,393 warnings/96 errors at `cabff94ee49a`.
+- Full package lint: latest complete frozen scan reports 11,418 warnings/126 errors at `9e14b79e86`.
   A fresh complete scan and zero-diagnostic repair remain required after the current ports.
 - Source inventory: frozen `9e14b79e86` now has a bounded, positive-controlled role graph over 869 owned source files,
   actual generated native imports, explicit shared roles and Node type erasure.

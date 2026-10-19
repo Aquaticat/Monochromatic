@@ -1,5 +1,25 @@
 # Instruction collection
 
+## Incoming messages and owned bookkeeping
+
+The session instrumentation records original inputs and their publications.
+These are package-owned records, not additional contracts imposed by Pi.
+The original growth gate rejects normal `steer` and `followUp` calls by comparing their origin labels
+with a hand-maintained list.
+That rejection opens a manual approval prompt for ordinary input handling and is a product defect.
+
+The category-specific repair is superseded by removal of that list and its new classifier helper.
+Appended original data inputs keep the existing session ownership and no-authority checks.
+The enclosing collector independently checks governing policy, resource inputs, executable tools and run material.
+Its need for further internal snapshot checks remains part of the architecture reduction review.
+This change requires fresh native-session and configured Pi verification before qualification.
+
+The installed Pi contract delivers steering after the current assistant turn's tool calls;
+follow-ups wait until the agent would otherwise stop.
+`abort` is a separate active-run operation.
+An authored string asking to stop does not itself exercise that cancellation API.
+The unmodified-SDK delivery probe and the native catalog must distinguish these behaviors.
+
 ## Retained native input storage
 
 Every native input keeps its original occurrence,
