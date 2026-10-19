@@ -289,7 +289,8 @@ its "Next" list is still the queue the merge went ahead of.
   a refusal inside a block names that block's keys,
   dryness reads the weekly budget,
   and Synthetic has no per-model ceiling.
-  Gate g116 ran on `23381065e0`.
+  Gate g116 on `23381065e0` passed every family step (2532 suite lines pass, 0 fail),
+  and the source scans passed on the docs commits.
   Ledger B691 and M277.
 
 #### Next
