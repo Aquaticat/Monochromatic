@@ -529,7 +529,7 @@ before the other queued work.
     the Synthetic meter was unreadable in 126 of 126 readings,
     so 651 subscription calls ran with no allowance reading;
     and 58 Qwen3.8-27B replies were cut at the straggler deadline without showing in the seat census;
-    a fix round for these three pipeline defects runs in `w191`,
+    a fix round for three pipeline defects of the read runs in `w191`,
     and its result is not recorded here.
 7.  Under way in `w186` at `7c21a56fc2`:
     emphasis read with the page's definitions in the three calls that pass none

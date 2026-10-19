@@ -46,12 +46,9 @@ because the verdict does not show them:
   and the meters did not say so.
 - The Synthetic meter was unreadable in every one of its 126 readings.
 
-A fix round for the three pipeline defects the reading names
-(the dead seats the meters did not show,
-the unreadable Synthetic meter,
-and the Qwen3.8-27B replies cut at the straggler deadline that the seat census does not count)
-runs in `w191`.
-Nothing of its result is recorded here.
+A fix round for three pipeline defects of this reading runs in `w191`.
+Nothing of its result is recorded here,
+and which defects it takes is not recorded here either.
 
 ### Seats
 
