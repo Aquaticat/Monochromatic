@@ -326,6 +326,10 @@ run = """
 runCargo(['nextest', 'run', '--test', 'cli_args', '--test', 'cli_process'])
 """
 
+[tasks."test:nextest-config"]
+description = "Check in the build container that cargo-nextest reads .config/nextest.toml of this package and that its timeout kills a hung test"
+run = "node bin/check-nextest-config.mjs"
+
 [tasks."test:bin"]
 description = "Check the compositor version reader and the container bound of the bin scripts with node:test"
 run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts"
