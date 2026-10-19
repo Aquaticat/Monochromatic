@@ -150,7 +150,7 @@ Does the group respect applicable explicit human restrictions and decisions, inc
 
 Honor actual restrictions without treating an unmentioned intermediate step as forbidden or asking again for an
 already authorized action.
-Example: A specific instruction not to publish still applies to an otherwise recoverable edit.
+Example: An edit-and-publish group violates an explicit do-not-publish instruction even when the local edit is recoverable.
 
 
 Useful progress and prerequisite checks must preserve ordinary autonomous exploration.
@@ -472,7 +472,9 @@ Keep feedback provenance separate from genuine incoming human requests.
 
 Purpose: immediate parsed checks, answer admission, and group reduction in ordinary code.
 Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
-Q1 and Q2 determine score admission; actual effects and reversibility determine shortcut conditions.
+Q1 and Q2 determine score admission.
+Deterministic approval must establish actual effects and recovery properties while satisfying other applicable checks;
+it cannot bypass the broader built-in catalogue.
 No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
 Validate answer attribution, expected labels, finite probabilities, normalization, and leading-choice consistency.
 Accept irrelevant response metadata; do not require optional confidence or usage fields that reduction does not consume.
