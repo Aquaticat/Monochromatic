@@ -19,6 +19,10 @@ Explicit restrictions remain applicable. Implementation remains stopped.
 The revised HTML contrasts disposable cross-package tests with shared-data-reset tests,
 and recoverable experiments with disclosures that deletion cannot reverse.
 Open user choices are now Q1, Q2, Q4, and Q6.
+Independent review confirms the rejected package-match gates and distinguishes actual effects from command labels.
+It also clarified that former Q3 only concerned skipping Luna, not prohibiting work;
+no deterministic shortcut implementation is selected by this correction.
+The old unchanged-retry premise is also withdrawn: repeating a test can gather reproducibility evidence.
 A tightening of existing `AUT` is proposed in the plan, not applied to `AGENTS.md`.
 Next: independent correction review, targeted visual/form checks, screenshot evidence, rendered docs, Helium handoff.
 

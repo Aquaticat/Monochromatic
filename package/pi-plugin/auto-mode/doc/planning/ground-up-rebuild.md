@@ -52,6 +52,8 @@ not an ask caused only by a different package name.
 Irreversible or costly-to-recover consequences receive the corresponding authorization review.
 Reversibility does not cancel an explicit human prohibition or supply a missing human-only decision.
 Task context helps explain the work; exact package or verb matching is not a generic permission condition.
+Repeating an unchanged test can gather evidence about reproducibility or timing;
+identical command text alone is not grounds to veto a retry.
 
 Acceptance examples for this baseline:
 
@@ -243,9 +245,10 @@ Precedence must be reflected in contextual questions and tested with explicit ex
 
 ### Q3 withdrawn: exact-call approval is not the default autonomy boundary
 
-The earlier recommended shortcut policy privileged a recorded approval of the exact call.
-It did not provide the intended autonomy for ordinary reversible coding work.
-The user’s reversibility correction supersedes that framing.
+The earlier Q3 concerned skipping Luna, not whether Luna could approve ordinary work.
+The user’s correction does not select a deterministic shortcut implementation.
+Withdraw that abstract menu while designing concrete effect-and-recovery conditions;
+the accepted behavior is that package mismatch alone cannot block or escalate routine reversible work.
 Deterministic approval conditions must express actual effects and recovery properties,
 including cross-package verification, rather than exact package matching or a test-command allowlist.
 The concrete effect evidence and recovery checks remain engineering work;
@@ -766,7 +769,8 @@ No implementation proceeds while the user is reviewing this plan.
 
 ## Review artifact verification
 
-The revised HTML passed the disposable nested-browser interaction check on 2026-10-19.
+Before the reversibility correction, the staged HTML passed the disposable nested-browser interaction check
+on 2026-10-19. These counts describe that earlier form; the revised form has four open questions.
 Every scenario, navigation control, all 18 answer options, and manual Approve/Stop examples with and without reasons ran.
 Reply generation passed for empty input, notes only, choices only, literal markup, text selection, and keyboard activation.
 All 23 interactive controls measured at least 48 pixels in both dimensions.
