@@ -128,9 +128,11 @@ At revision `4f3d5a65`:
   2,077 rustdoc findings and 1,894 bare-URL
   findings;
 - unit:
-  `mise run test:unit` exits 1 with about 751 named test-file mentions in its failure list,
-  354 JSON-parse errors
-  and 94 AggregateErrors;
+  `mise run test:unit` exits 1 with 1,979 `ERR_MODULE_NOT_FOUND` and 987 `Cannot find` errors;
+  the run lacked built prerequisites,
+  so the 751 named files are a missing-prerequisite cascade,
+  not product failures.
+  Rerun after a successful build;
 - build:
   `mise run build` exits 1 with `SIGABRT` and thread-creation failures under parallel
   fanout,
@@ -138,8 +140,9 @@ At revision `4f3d5a65`:
 
 The [baseline evidence](../audit/depot-current-baseline-2026-10-18.evidence.json) retains the
 compressed logs.
-These are dispositions to triage,
-not passing checks.
+The static baseline is advisory;
+the unit baseline is invalid until rerun after a successful build;
+the build failure requires a bounded rerun.
 The pilot must separate product failures from harness,
 environment and resource failures.
 

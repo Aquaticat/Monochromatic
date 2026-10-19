@@ -64,21 +64,46 @@ Exit code: 1.
 Named failing test files: 751.
 The exact repository-relative file identities are in
 [the unit failure list](../audit/depot-current-baseline-unit-files-2026-10-18.json).
+Distribution by package family:
+`package/module` 284,
+`package/pi-plugin` 260,
+`package/cli` 51,
+`package/oxlint-plugin` 40,
+`package/dev-script` 27,
+`package/agent-harness-shared` 25,
+`package/pi-shared` 19,
+`package/config` 10,
+`package/mcp` 8,
+`package/claude-code-plugin` 6,
+`package/cloudflare-worker` 6,
+`package/desktop-app` 6,
+`package/build-tool` 3,
+`package/git` 3,
+`package/music-player` 2,
+`package/rolldown-plugin` 1.
 The raw log is in
 [the compressed unit log](../audit/depot-current-baseline-unit-2026-10-18.log.gz).
-Observed failure classes include 354 `Unexpected token ... is not valid JSON` errors and
+Observed failure classes:
+1,979 `ERR_MODULE_NOT_FOUND`,
+987 `Cannot find`,
+354 `Unexpected token ... is not valid JSON` and
 94 AggregateErrors.
-The first named failures are in `package/pi-shared/model-selection`:
-`budget-override.unit.test.ts` and `budget-report.unit.test.ts`.
-The JSON-parse class points at harness or fixture output,
-not at product assertions alone.
+The first failures reference missing `dist/final/node/index.mjs`.
+The run executed without built prerequisites,
+so the 751 names are a missing-prerequisite cascade,
+not product failure evidence.
+A sampled JSON-parse failure comes from
+`package/oxlint-plugin/test-support/src/index.ts:331`,
+where `JSON.parse(stdout)` receives a `Failed to ...` child-output string.
+That is a harness or child-command boundary,
+not a product assertion.
 No unit case is converted to a pass by this register.
 
 Disposition:
-triage the 751 identities by cause (product assertion,
-harness JSON parse,
-environment or resource),
-then decide which classes belong in the fast subset.
+this run is invalid as a product baseline.
+Rerun the unit profile after a successful build,
+then partition the remaining failures by cause.
+No product failure is attributed from this run.
 This is work item 1 and its acceptance artifact.
 
 ## Build profile

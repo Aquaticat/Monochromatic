@@ -35,12 +35,15 @@
       "failedTestFileMentions": 751,
       "unexpectedTokenJsonErrors": 354,
       "aggregateErrors": 94,
+      "moduleNotFoundErrors": 1979,
+      "cannotFindErrors": 987,
       "firstNamedFailures": [
         "package/pi-shared/model-selection/src/budget-override.unit.test.ts",
         "package/pi-shared/model-selection/src/budget-report.unit.test.ts"
-      ]
+      ],
+      "prerequisiteState": "No build artifacts were present. The first failures reference missing dist/final/node/index.mjs, and the run is dominated by module-resolution errors."
     },
-    "result": "The unit profile is not known-good. The run names about 751 test files in its failure list and includes 354 'Unexpected token ... is not valid JSON' errors and 94 AggregateErrors. The causes mix product failures with harness JSON-parse failures and require per-case triage; this is not a passing baseline."
+    "result": "The unit run is invalid as a product baseline. It executed without built prerequisites; 1,979 ERR_MODULE_NOT_FOUND and 987 Cannot find errors dominate, and the 751 named files are a missing-prerequisite cascade rather than product failures. The JSON-parse and Aggregate classes remain separate harness signals. The unit baseline must be rerun after a successful build."
   },
   "build": {
     "command": "mise run build",
@@ -63,6 +66,7 @@
   },
   "limits": [
     "Counts are linter findings or named test files, not distinct product defects.",
+    "The unit run lacked built prerequisites; it is not a product baseline and must be rerun after a successful build.",
     "The build failures include a resource assertion; they are not yet attributed to source.",
     "The raw logs are retained compressed; per-finding and per-case identities can be re-derived from them.",
     "The baseline revision moved after the capture; later commits require a fresh baseline."

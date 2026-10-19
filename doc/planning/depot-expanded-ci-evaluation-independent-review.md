@@ -407,15 +407,17 @@ Closure workstreams:
   1,894 bare-URL findings.
   Unit:
   `mise run test:unit` exits 1,
-  names about 751 test files in its failure list,
-  and includes 354 `Unexpected token ... is not valid JSON` errors and 94 AggregateErrors.
+  dominated by 1,979 `ERR_MODULE_NOT_FOUND` and 987 `Cannot find` errors;
+  the run lacked built prerequisites,
+  so the 751 named files are a missing-prerequisite cascade,
+  not product failures.
   Build:
   `mise run build` exits 1 with `SIGABRT` failures and a thread-creation assertion under
   parallel fanout,
   which may be host-resource or concurrency induced rather than product defects.
-  None of the three profiles is known-good in this capture;
-  changed-path scoping,
-  per-case triage and a bounded build rerun are required.
+  The static baseline is advisory;
+  the unit baseline is invalid until rerun after a successful build;
+  the build failure requires a bounded rerun.
   The evidence is in
   [the current baseline](../audit/depot-current-baseline-2026-10-18.evidence.json).
 
