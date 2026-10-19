@@ -583,6 +583,13 @@ before the other queued work.
     Its four memo commits are replayed as `a349c1a26d` to `abab8e541a` and gated as g107
     (the plugin and config tasks, then the family gate); g107 was green and they landed ending at `a47fa17b02`.
     The ledger round `w193` landed as B675 to B687 and M265 to M272 (`15b26d5048`).
+    The spread-bridge redo `w194` is replayed as `729de4182d` and gated as g108
+    (the six plugin packages that use the fixture runner, the config bundle, then the family gate).
+    Its root cause: oxlint reserves about 192 GiB of address space for 28 workers,
+    so a fork after the workers exist fails with `ENOMEM`; the plugin now starts its bridge at load.
+    `w195` closes the fix-mode fixture runs that still pass through a plugin crash.
+    The next ledger round files the `w190`, `w194` and `w195` notes
+    and the tail of `s245/ledger-notes-after-split.md`.
     Its spread-bridge pair `50ccee0440` and `5dce27bb59` is held:
     two valid-fixture cases passed only because `runOxlintFixture` hides a plugin's throw,
     one ambiguous-spread case newly failed, and the commit body counts the failures without naming them.
