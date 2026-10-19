@@ -6,6 +6,44 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- `bb0496f82f` ports admission selection to TypeScript using the actual maintained producer collections.
+  Candidate `1jnKM6` passes both builds, full types, full phases, source freshness,
+  both inflight-input consumers and schema controls. The gate's root-let diagnostic is gone.
+  Documentation-only follow-up `d36511f08d` passes its actual one-file scope with zero warnings/errors
+  in candidate `P8AaDv` frozen at `fa164036c6`.
+- Native MiMo commits `14e4649937` with exactly the registration declaration and its suppression doc.
+  Its actual twelve-file loader scope and types pass with zero warnings/errors.
+  The ambient error class needs no custom-error suppression.
+  Native worker `z78qJS` completes 18 tools with zero tool errors and no approval dialog.
+  Its post-GC checkpoint is 172,509,608 to 172,509,880 heap bytes, a 272-byte sample spread.
+  This is roughly 84.6 MB above its idle baseline, not evidence of a leak or of bounded long-term growth.
+  Separate lazy initialization and retained live histories from operation retention using subsequent checkpoints and profiles.
+- Native MiMo now owns the genuine generic producer-owner port, coherent lifetime/state splits,
+  actual closed artifact factory declarations through the existing generator, and necessary runtime specialization.
+  Source MiMo retains ownership of the producer-lifetime test split and its nine cases/five mutants.
+  Its steer explicitly forbids hiding the old artifact's untyped factory with assertions or fake facades.
+  Retarget the fault controls jointly after the owner's actual implementation paths are committed;
+  qualify all sources against a freshly built private artifact before declaring those imports lint-clean.
+  Main continues decision-module cleanup, fresh character/role/dependency evidence,
+  actual configured memory/payload/compaction/shutdown qualification and final full-package lint.
+- The full-lint tally now attributes every emitted warning/error, including Oxlint's unruled
+  minified-file display warning and unused-directive warning, and matches 11,047/129 exactly.
+  Of the warnings, 8,498 are unsafe member access, assignment, call, argument or return diagnostics.
+  Actual producer contracts are the main remaining typing work; additional runtime category gates are not a remedy.
+- Fresh full-package Oxlint at `329df9f855`: 11,047 warnings and 129 errors across 885 files,
+  486 rules, completed in 28.2 seconds under two-GiB/two-CPU bounds.
+  Receipt: scratch `decision-responsibility-split-full-lint.log`.
+  The preceding complete baseline was 11,325 warnings and 157 errors across 882 files at `d58b695428`.
+  Whole-package zero lint remains unfinished.
+- Recovered source worker `wmudZ2` and native worker `z78qJS` have opened the saved histories
+  on `o30Fdb/dist/native-release-fO486Z` and received their scoped work prompts.
+  Their idle explicit post-GC baselines are 96,868,984 to 96,869,592 heap bytes and
+  87,951,928 to 87,952,536 heap bytes respectively, with 608-byte unchanged-input spreads.
+  Source owns the producer-lifetime test responsibility split; native owns the registration suppression warning.
+  Main owns decision modules and actual long-history memory qualification.
+- Decision gate closure now returns its named immutable gate, following the root-let rule's actual
+  helper-function exception. The private shared active review remains owned by that gate across operations.
+  This shape still requires a fresh lint/build/consumer run before claiming the diagnostic resolved.
 - Recovery after the user's October 19 REISUB: the committed package changes and private qualification receipts survive.
   `podman ps --all` lists no live worker containers; cached worker state still says connected and is stale.
   Do not change that interrupted state to a successful shutdown or treat old session IDs as live processes.

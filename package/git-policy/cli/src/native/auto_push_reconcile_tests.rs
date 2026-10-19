@@ -578,3 +578,155 @@ fn unrelated_histories_are_a_git_failure_not_a_conflict() {
     );
     remove(&s.root);
 }
+
+/// Make the repository under test sign commits with a stand-in `gpg` that exits `status`: it reads the payload,
+/// answers the status line Git waits for and prints a placeholder signature, so no key or keyring is involved.
+fn sign_commits_with_stand_in(scenario: &Scenario, status: u32) {
+    let program = scenario.root.join("stand-in-gpg");
+    let script = format!(
+        "#!/bin/sh\ncat > /dev/null\n[ {status} -eq 0 ] || exit {status}\necho '[GNUPG:] SIG_CREATED ' >&2\nprintf -- '-----BEGIN PGP SIGNATURE-----\\n\\nplaceholder\\n-----END PGP SIGNATURE-----\\n'\n"
+    );
+    std::fs::write(&program, script).expect("stand-in gpg");
+    std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    git(
+        &scenario.local,
+        &["config", "gpg.program", program.to_str().expect("utf-8")],
+    );
+    git(&scenario.local, &["config", "commit.gpgsign", "true"]);
+}
+
+/// Whether the commit `oid` of the remote carries a signature header.
+fn is_signed(scenario: &Scenario, oid: &str) -> bool {
+    return text_of(&scenario.remote, &["cat-file", "commit", oid]).contains("\ngpgsig ");
+}
+
+/// A repository that signs its commits publishes a signed merge, so a remote that requires verified signatures
+/// accepts it; `git commit-tree` does not read `commit.gpgsign` by itself.
+#[test]
+fn the_merge_is_signed_when_the_repository_signs_commits() {
+    let s = scenario("ar-signed");
+    advance_remote(&s, "a.txt", "remote\n");
+    let landed = commit_local(&s, "b.txt", "local\n");
+    sign_commits_with_stand_in(&s, 0);
+    let (result, err) = run(&s, &landed);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    let published = text_of(&s.remote, &["rev-parse", "main"]);
+    assert!(is_signed(&s, &published), "the merge is unsigned");
+    remove(&s.root);
+}
+
+/// A repository that does not sign its commits gets an unsigned merge, and no signer is run.
+#[test]
+fn the_merge_is_unsigned_when_the_repository_does_not_sign_commits() {
+    let s = scenario("ar-unsigned");
+    advance_remote(&s, "a.txt", "remote\n");
+    let landed = commit_local(&s, "b.txt", "local\n");
+    sign_commits_with_stand_in(&s, 1);
+    git(&s.local, &["config", "commit.gpgsign", "false"]);
+    let (result, err) = run(&s, &landed);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    let published = text_of(&s.remote, &["rev-parse", "main"]);
+    assert!(!is_signed(&s, &published), "the merge is signed");
+    remove(&s.root);
+}
+
+/// A signer that fails leaves the merge uncreated and the failure visible, never an unsigned merge in its place.
+#[test]
+fn a_failing_signer_publishes_nothing() {
+    let s = scenario("ar-signer-fails");
+    advance_remote(&s, "a.txt", "remote\n");
+    let landed = commit_local(&s, "b.txt", "local\n");
+    sign_commits_with_stand_in(&s, 1);
+    let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
+    let (result, err) = run(&s, &landed);
+    assert_ne!(result.outcome, AutoPushOutcome::Pushed, "{err}");
+    assert_ne!(result.exit_code, 0, "{err}");
+    assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
+    assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "");
+    remove(&s.root);
+}
+
+/// The local branch stays behind after a reconcile, so the next commit does not contain the published merge; that
+/// is a branch that moved on, not one that was rewritten, and its auto-push is reconciled again.
+#[test]
+fn a_second_commit_on_a_branch_left_behind_by_a_reconcile_is_reconciled_again() {
+    let s = scenario("ar-twice");
+    advance_remote(&s, "a.txt", "remote\n");
+    let first = commit_local(&s, "b.txt", "local\n");
+    let (first_result, first_err) = run(&s, &first);
+    assert_eq!(
+        (first_result.outcome, first_result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{first_err}"
+    );
+    let first_merge = text_of(&s.remote, &["rev-parse", "main"]);
+    // The local branch is not advanced; a new commit lands on top of the first local tip.
+    let second = commit_local(&s, "b.txt", "local second\n");
+    let (second_result, second_err) = run(&s, &second);
+    assert_eq!(
+        (second_result.outcome, second_result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{second_err}"
+    );
+    let published = text_of(&s.remote, &["rev-parse", "main"]);
+    assert_eq!(
+        text_of(
+            &s.remote,
+            &["rev-list", "--parents", "--max-count=1", "main"]
+        ),
+        format!("{published} {second} {first_merge}")
+    );
+    remove(&s.root);
+}
+
+/// A failed attempt must not make the branch look rewritten: the record of a failure keeps the last tip known to be
+/// published, so once the remote accepts pushes again the next commit is reconciled instead of staying rejected until
+/// someone merges by hand.
+#[test]
+fn a_failed_attempt_between_two_reconciles_does_not_stop_the_next_one() {
+    let s = scenario("ar-failure-between");
+    advance_remote(&s, "a.txt", "remote\n");
+    let first = commit_local(&s, "b.txt", "local\n");
+    let (first_result, first_err) = run(&s, &first);
+    assert_eq!(
+        (first_result.outcome, first_result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{first_err}"
+    );
+    let first_merge = text_of(&s.remote, &["rev-parse", "main"]);
+    // The remote refuses every update for one attempt, which records a failure.
+    let refusal = s.remote.join("hooks/pre-receive");
+    std::fs::create_dir_all(s.remote.join("hooks")).expect("hooks");
+    std::fs::write(&refusal, "#!/bin/sh\nexit 1\n").expect("pre-receive");
+    std::fs::set_permissions(&refusal, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    let second = commit_local(&s, "b.txt", "local second\n");
+    let (second_result, second_err) = run(&s, &second);
+    assert_ne!(second_result.exit_code, 0, "{second_err}");
+    assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), first_merge);
+    // The remote accepts updates again, and the next commit is published.
+    std::fs::remove_file(&refusal).expect("remove pre-receive");
+    let third = commit_local(&s, "b.txt", "local third\n");
+    let (third_result, third_err) = run(&s, &third);
+    assert_eq!(
+        (third_result.outcome, third_result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{third_err}"
+    );
+    let published = text_of(&s.remote, &["rev-parse", "main"]);
+    assert_eq!(
+        text_of(
+            &s.remote,
+            &["rev-list", "--parents", "--max-count=1", "main"]
+        ),
+        format!("{published} {third} {first_merge}")
+    );
+    remove(&s.root);
+}

@@ -1,0 +1,131 @@
+name: advisory-core
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+concurrency:
+  group: advisory-core-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  gate:
+    name: advisory window
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: advisory-core-gate
+      cancel-in-progress: false
+    outputs:
+      allowed: ${{ steps.gate.outputs.allowed }}
+      latest_pending: ${{ steps.gate.outputs.latest_pending }}
+    steps:
+      - name: Count recent admitted runs
+        id: gate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          now=$(date +%s)
+          runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow advisory-core.yml --limit 100 --json databaseId,createdAt --jq '.' 2>/dev/null || echo '[]')
+          counts=$(jq --argjson now "$now" --argjson current "$GITHUB_RUN_ID" '
+            def age: $now - (.createdAt | fromdateiso8601);
+            [ .[] | select(.databaseId != $current) | age ] as $ages |
+            {
+              minute: ([$ages[] | select(. < 60)] | length),
+              hour: ([$ages[] | select(. < 3600)] | length),
+              day: ([$ages[] | select(. < 86400)] | length)
+            }' <<<"$runs")
+          minute=$(jq -r '.minute' <<<"$counts")
+          hour=$(jq -r '.hour' <<<"$counts")
+          day=$(jq -r '.day' <<<"$counts")
+          {
+            echo "## Advisory core window"
+            echo "- recent runs: minute $minute, hour $hour, day $day"
+            echo "- budgets: 2 per minute, 4 per hour, 8 per day"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$minute" -ge 2 ] || [ "$hour" -ge 4 ] || [ "$day" -ge 8 ]; then
+            echo "allowed=false" >> "$GITHUB_OUTPUT"
+            echo "latest_pending=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+            echo "- skipped: newest tip $HEAD_SHA marked pending" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "- admitted: $HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
+          fi
+  core:
+    name: advisory core
+    needs: gate
+    if: needs.gate.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      MISE_AUTO_INSTALL: 'false'
+      MISE_JOBS: '4'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Install system prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Install repository tools
+        continue-on-error: true
+        run: mise install
+      - name: Prepare dependencies
+        run: mise run prepare:pnpm
+      - name: Static changed paths
+        id: static
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.before }}"
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base="HEAD^"
+          fi
+          if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$base" || true
+          fi
+          mapfile -t files < <(git diff --name-only "$base" "${{ github.sha }}" -- '*.md' '*.mdx' '*.rs' 2>/dev/null || true)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No changed static files"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            printf '%s\n' "${files[@]}"
+            mise run lint:monochromatic-lint -- "${files[@]}"
+          fi
+      - name: Build fast subset
+        run: |
+          mise run //package/module/logger:build
+          mise run //package/module/p-map-fork:build
+          mise run //package/module/toml-edit:build
+          mise run //package/cli/forbidden-strings:build
+          mise run //package/linter/monochromatic-lint:build
+      - name: Unit fast subset
+        run: |
+          mise run //package/module/logger:test:unit
+          mise run //package/module/p-map-fork:test:unit
+          mise run //package/module/toml-edit:test:unit
+          mise run //package/cli/forbidden-strings:test
+          mise run //package/linter/monochromatic-lint:test
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Advisory core result"
+            echo "- commit: ${{ github.sha }}"
+            echo "- provider: GitHub-hosted Linux"
+            echo "- fast subset: module/logger, module/p-map-fork, module/toml-edit, cli/forbidden-strings, linter/monochromatic-lint"
+            echo "- results are advisory; no required checks and no branch-protection change"
+          } >> "$GITHUB_STEP_SUMMARY"

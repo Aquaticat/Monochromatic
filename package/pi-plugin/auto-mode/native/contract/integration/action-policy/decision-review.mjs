@@ -8,7 +8,7 @@ import {recordDecision,recordDecisionEvidence} from './decision-diagnostics.ts';
 import {resolveManualReviewOutcome} from './review-outcome.ts';
 import {reviewOperationDecision} from './operation-decision.ts';
 import {PolicyReviewPhaseError,EstablishedPolicyDecisionError} from './decision-errors.mjs';
-import {captureScopes} from './decision-scopes.mjs';
+import {captureScopes} from './decision-scopes.ts';
 
 const l=tagged({tag:'auto-mode-decision-review'});
 

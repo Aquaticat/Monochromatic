@@ -23,10 +23,16 @@ It receives an existing judgment rather than creating a second execution owner.
 ## Admission questions
 
 `native/contract/integration/action-policy/decision-scopes.mjs`
+(current path: `native/contract/integration/action-policy/decision-scopes.ts`,
+moved October 19, 2026)
 chooses which clause,
 heading-context and same-source incorporation questions apply.
 This calculation reads the selected policies and original candidate collections.
 It does not add message categories or a new input-validation protocol.
+Its TypeScript inputs derive the candidate collections from the maintained judgment's
+`InstructionPolicySelection` and its effects from `SemanticAdmissionInputs`.
+Absent policies remain absent at the typed call seam;
+the scope wrapper already omits absent policies before calling its maintained consumer.
 
 ## Error identity
 

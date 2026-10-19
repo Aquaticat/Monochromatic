@@ -465,6 +465,76 @@ fn forbidden_strings_scan_candidates_from_each_rules_source() {
     remove(&fixture);
 }
 
+/// `--no-enforce-security/forbidden-strings` skips the policy for the one command that carries it:
+///  the add stages a file the policy would stop,
+///  a commit without the flag still stops it,
+///  and a commit with the flag records it.
+#[test]
+fn forbidden_strings_escape_skips_the_policy_for_one_command() {
+    let fixture: Fixture = fixture("forbidden-strings-escape");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    let needle: String = ["PLANTED", "ESCAPE", "NEEDLE"].join("_");
+    std::fs::write(repo.join("a.txt"), format!("first\n{needle}\n")).expect("needle");
+    std::fs::create_dir(repo.join("rules")).expect("rules directory");
+    std::fs::write(repo.join("rules/private.txt"), format!("{needle}\n")).expect("rules");
+    std::fs::write(
+        repo.join(CONFIG_FILE_NAME),
+        "{ \"policies\": { \"security/forbidden-strings\": [\"error\", { \"builtinRules\": false, \"rulesFile\": \"rules/private.txt\" }] } }\n",
+    )
+    .expect("configuration");
+    // Without the flag the add stops and stages nothing.
+    let stopped: Observed = run_wrapped(&fixture, repo.as_path(), &["add", "--", "a.txt"]);
+    assert_eq!(stopped.code, Some(1));
+    // With the flag the add stages the file and prints nothing.
+    assert_eq!(
+        run_wrapped(
+            &fixture,
+            repo.as_path(),
+            &["add", "--no-enforce-security/forbidden-strings", "--", "a.txt"]
+        ),
+        Observed {
+            code: Some(0),
+            stdout: Vec::<u8>::new(),
+            stderr: Vec::<u8>::new(),
+        }
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&status(&fixture, repo.as_path())),
+        "A  a.txt\n?? cli-git.config.jsonc\n?? rules/private.txt\n"
+    );
+    // The flag does not carry over: a commit without it stops on the staged file.
+    let blocked: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=blocked", "--", "a.txt"],
+    );
+    assert_eq!(blocked.code, Some(1), "{}", String::from_utf8_lossy(&blocked.stderr));
+    assert!(
+        String::from_utf8_lossy(&blocked.stderr).contains("security/forbidden-strings"),
+        "{}",
+        String::from_utf8_lossy(&blocked.stderr)
+    );
+    // With the flag the commit records it.
+    let committed: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &[
+            "commit",
+            "--quiet",
+            "--no-enforce-security/forbidden-strings",
+            "--message=escaped",
+            "--",
+            "a.txt",
+        ],
+    );
+    assert_eq!(committed.code, Some(0), "{}", String::from_utf8_lossy(&committed.stderr));
+    assert_eq!(
+        String::from_utf8_lossy(&status(&fixture, repo.as_path())),
+        "?? cli-git.config.jsonc\n?? rules/private.txt\n"
+    );
+    remove(&fixture);
+}
+
 /// A direct fix corrects the selected worktree files,
 ///  executable ones included,
 ///  reads
