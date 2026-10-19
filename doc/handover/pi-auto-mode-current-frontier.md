@@ -23,6 +23,13 @@ Work is incomplete. Continue the queue without another readiness handoff.
   The scratch orchestrator initially races the controller's non-atomic state write and reads empty JSON;
   its request/steer/release already occurred. Subsequent state and complete stderr establish the actual host failure.
   Repair that reader/producer race separately; do not rerun the already-submitted commands or blame the package for it.
+  Fresh committed regression candidate `inflight-input-baseline-candidate-1aAqgX` at `2e183592cf`
+  passes builds and fails the exact inflight-steer execution assertion with the same source-growth cause.
+  A private diagnostic copy reads the actual SDK's four new bare-session origins:
+  call input, unintercepted input, user queue and user Agent steer input, all unregistered with permission=false.
+  The authored correction recognizes their precise field/method/role profiles plus the existing native event/transform stages;
+  it preserves every exact original identity, registration, permission, run, replacement and reorder guard.
+  Fresh builds, both delivery modes, adversarial classifier cases and configured replay are still required.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
