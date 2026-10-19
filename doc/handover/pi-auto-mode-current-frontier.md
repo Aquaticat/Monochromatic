@@ -47,6 +47,13 @@ Work is incomplete. Continue the queue without another readiness handoff.
   Receipt: `stock-input-delivery-probe-fourth.log`, bounded at 2 GiB and 2 CPUs with network disabled.
   The supervisor retracts its proposed immediate-stop interpretation of queued text.
   Configured-history baseline and acknowledged inflight-steer replay are next on the corrected immutable artifact.
+  Corrected configured-history baseline `rVn75u` and acknowledged inflight-steer replay `zdzKWP`
+  each settle after one successful actual `pwd`, zero tool errors and no held approval dialog.
+  Both capture four actual Luna HTTP responses; full payload and shutdown audits remain required.
+  Future controller instances publish state synchronously through atomic rename,
+  avoiding the earlier empty-JSON reader race without altering live controllers.
+  The maintained delivery guard now also observes queued input in the subsequent actual serialized request,
+  after the original tool executes; qualify this committed assertion against dropped-delivery controls.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.

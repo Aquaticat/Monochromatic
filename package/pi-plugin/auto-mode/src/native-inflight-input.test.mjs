@@ -28,12 +28,20 @@ const { env, session, root, lifecycle } = await createDomainFixtureEnvironment({
   settings, observations, readRuntime() { return runtime; },
 });
 let delivered = false;
+let observedLaterDelivery = false;
 runtime = createDomainFixtureRuntime({
   settings, observations, env, session, root, lifecycle,
   code: 'return await tools.fixture_value({path:"seed"});',
   programProfile: 'awaited-literal-single-call',
-  async beforePrimaryResponse({ proposal }) {
-    if (!proposal) return;
+  async beforePrimaryResponse({ proposal, requestBody }) {
+    if (!proposal) {
+      if (requestBody.includes(marker)) {
+        assert.equal(observations.executions, 1,
+          'Queued input must reach a subsequent provider request after the current tool executes');
+        observedLaterDelivery = true;
+      }
+      return;
+    }
     assert.equal(delivered, false);
     delivered = true;
     await session[method](marker);
@@ -56,6 +64,8 @@ assert.equal(observations.originalBody.includes(marker), false,
   'Later input must not be rewritten into the original provider request');
 assert.equal(observations.executions, 1,
   `Original inflight ${method} must retain one automatic approved execution without source-growth fallback`);
+assert.equal(observedLaterDelivery, true,
+  `Original inflight ${method} must reach a subsequent actual serialized provider request`);
 assert.ok(observations.assessments > 0);
 const latest = runtime.inspect();
 assert.equal(latest.lastReview.outcome.state, 'resolved');
