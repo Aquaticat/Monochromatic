@@ -970,6 +970,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
+  - Minimap drag jank (owner report of 2026-10-19, a screenshot of `client.unit.test.ts` in the search-fetch package:
+    dragging and holding the viewport box is janky). An agent reproduces it in a release build over that file, finds
+    the cause and fixes it on branch `fix/ide-minimap-drag-jank` (worktree `.claude/worktrees/ide-drag`, control
+    checkout `.claude/worktrees/ide-drag-control` at the minimap before the redesign). The frame pacing of a drag was
+    listed as not measured for the sliding minimap.
   - Closure check everywhere (owner requirement of 2026-10-19, recorded in `doc/decision/rust-closure-lint-dylint.md`,
     proposal in `doc/planning/closure-lint-everywhere.md`): done. `monochromatic-lint` runs `cargo dylint` per Rust
     package as the rule `rust/avoidable-closure` (mechanism A), warnings first, tests, fuzz and bench exempt, a package
