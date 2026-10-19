@@ -2,6 +2,62 @@
 
 ## Current verified state
 
+Work is incomplete. Continue the independently verifiable queue without a readiness handoff.
+
+- Active memory incident: recovered source worker `7HN2ZH` grows from 89,823,320 to 511,619,256 post-GC heap bytes
+  over 24 tools. Private positive-controlled heap graphs trace old request bodies through producer response records
+  and their retained judgments. Weak-map key liveness and a causal retirement probe still require proof.
+  Native MiMo `9Tl0ts` investigates lifetime semantics read-only on command
+  `native-producer-retention-investigation-20261019-09`.
+- The supervisor's full native-host reproduction is `producer-retention-host-probe-candidate-tWDuzA`,
+  frozen at `e601e1043350`. Fresh JavaScript/native builds pass.
+  An actual session completes twelve approved tool groups and retains all 24 historical assistant responses.
+  Post-GC heap grows by 51,189,592 bytes; the final actual request is 1,632,936 bytes.
+  The matching no-judgment control and causal retirement comparison remain in progress.
+  This measurement alone does not establish the earlier OOM's cause.
+- Source MiMo `7HN2ZH` delivers the requested read-only checkpoint and now receives
+  `source-owner-contract-consolidation-20261019-08`.
+  Its unaccepted phase port grows from 432 code lines/126 statements/25 functions
+  to 1,216 code lines/357 statements/71 functions and fails the complete catalog.
+  It drops the actual async factory await and reads an invented `created` member.
+  Consolidation reuses actual session/runtime/SDK owners and removes the generic reader/session adapter.
+  Authorized new owner declarations are `native-batch/environment.d.mts`
+  and `domain-fixture-assessment.d.mts`, with one shared fixture-type sibling only if needed.
+  The immutable live artifact must not change; the supervisor builds and verifies the new emitted contract separately.
+- Factory identity, opacity and forwarding qualify in a separate frozen candidate.
+  Every thirteen rebuilt mutations fail their named regressions, followed by a restored passing build/consumer.
+  Receipt: `policy-input-factory-fixed-built-mutants.json`.
+- Unused selected-policy-as-system placement is retired and committed as `c0e861302f`.
+  Ordinary host custom prompts and resource system inputs remain.
+  Fresh builds, types, scoped zero-warning/zero-error lint and the full recorded catalog set pass.
+  The removed-export assertion fails against the old artifact before the corrected build.
+  Root dist and both live worker artifacts remain unchanged.
+- Next native implementation item, after the memory incident: port the real `policy-loader.mjs` implementation
+  to TypeScript and remove its temporary declaration without a duplicate adapter layer.
+- Last full committed-package lint remains 11,393 warnings and 96 errors at `cabff94ee49a`.
+  It excludes the workers' subsequent ports and is not an exact count for current worktree changes.
+- Clean configured replay and payload audit pass for `native-release-sT3Ufn`.
+  They precede the newer factory, retirement and unfinished phase changes.
+  Final acceptance still requires a coherent fresh build, full package lint, maintained catalogs,
+  actual configured long-history host/payload verification, shutdown stderr checks,
+  corrected source/footprint inventories, package responsibility docs and safe publication.
+- Logger `0.4.4` is published and installed-consumer verified.
+  The selected default remains project-first with user-state fallback; explicit destinations stay strict.
+  Private pnpr `E401` access remains a pending question and does not block independent local work.
+- Keep root `TCV`, `CPN` and `RXI` unchanged. Record their concrete lessons in package documentation.
+  Preserve every concurrent unrelated worktree change.
+
+The canonical scratch directory is `~/temp/agent/pi-mimo-preparation-failure-20261018`.
+All host-exhausting reproduction, graph analysis and package verification runs use two-GiB/two-CPU containers.
+Snapshots and complete raw histories stay private.
+The latest package/handover CommonMark render reports 41 documents with no broken local links;
+the rendered instruction-collection retirement section is inspected.
+
+## Historical verification checkpoints
+
+These entries retain intermediate evidence and decisions.
+The active queue and accepted state are recorded in `Current verified state`.
+
 Work remains incomplete; no readiness handoff has been established.
 After the user's distance-to-completion question,
 a fresh committed `cabff94ee49a` snapshot reports 11,393 warnings and 96 errors across 853 files and 486 rules.
