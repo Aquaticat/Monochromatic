@@ -102,6 +102,35 @@ governing context policy and original binding layout constants remain.
 It adds an explicit retired-export assertion;
 that assertion must fail the old artifact before the rebuilt removal qualifies.
 Main-worktree retirement still awaits this experiment and the native worker's read-only investigation.
+The experiment now completes every planned task successfully:
+fresh JS/native builds,
+types,
+four-file zero-warning/zero-error lint,
+retired-surface consumer,
+actual host isolation,
+source-binding capacity,
+complete phase catalog,
+construction and complete session-input aggregate.
+The old-artifact retired-export assertion fails its named case as the required positive control.
+Main-worktree adoption still awaits the separate read-only consumer trace.
+
+The recovered source worker reaches clean types and ten-file zero-warning/zero-error lint,
+but its first complete phase catalog exits one.
+Supervisor parser review also rejects its interface growth before acceptance:
+original 432 code lines,
+126 statements and 25 functions;
+proposal 1,216 code lines,
+357 statements and 71 functions.
+Physical source changes from 444 lines/12,322 bytes to 2,655 lines/71,116 bytes.
+The positive-controlled comparison is `phase-port-comparison.log` in the canonical scratch directory.
+`source-phase-design-checkpoint-20261018-05` asks the worker to retain and diagnose the exact catalog failure,
+deliver its checkpoint and identify owner-side contracts that remove the generic field readers/session adapter.
+No new native/config writes are authorized for that worker yet.
+The next consolidation should reuse actual typed `session-root.ts`,
+`runtime.d.mts` and `maintained-policy.d.mts`,
+put missing environment/assessment contracts with their owners,
+and retain honest distinctions between source-backed ABI evidence and runtime validation.
+Do not accept the current port merely because lint is clean.
 Opacity comparison is complete in `policy-input-factory-opacity-results.json`:
 the original class passes all sixteen named cases;
 fresh JS and native builds of the committed factory pass fourteen and fail the two new cases.

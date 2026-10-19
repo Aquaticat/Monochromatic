@@ -185,3 +185,31 @@ The temporary loader declaration is an interop boundary;
 it does not establish that the underlying JavaScript implementation is type-checked.
 The root `TCV` rule remains unchanged;
 these concrete porting lessons remain package-local.
+
+## Type interfaces belong with their owners
+
+The proposed phase-catalog port exposes another design failure before acceptance.
+The original consumer has 432 code lines,
+126 AST statements and 25 functions.
+Its ten-file replacement has 1,216 code lines,
+357 statements and 71 functions.
+The same positive-controlled parser excludes comments and type-only declarations from both code-line counts.
+Its physical source grows from 444 lines and 12,322 bytes to 2,655 lines and 71,116 bytes.
+The replacement's first complete catalog fails despite clean types and scoped lint.
+That checkpoint is not accepted.
+
+Much of the added interface reconstructs an owned session through generic unknown-field readers
+and a forwarding operation for each session method.
+The original session factory already has a typed implementation;
+the runtime and maintained policy modules already have source-backed interop declarations.
+The next consolidation puts the missing environment and assessment fixture contracts with those owners,
+uses the actual built-module contracts,
+and removes the duplicate consumer interface.
+Untrusted external data still requires runtime narrowing.
+A trusted source-backed declaration and a runtime callable check are different evidence;
+neither needs to masquerade as the other.
+
+Lint success must accompany a simpler ownership model and preserved consumer behavior.
+Adding field readers around every call transfers the implementation's missing interface into each caller.
+Review the resulting interface,
+executable statement count and real consumer before accepting a typed port.
