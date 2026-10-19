@@ -39,7 +39,8 @@ The pinned incumbent revision,
    the four packages
   with their ignored `node_modules`,
    the three mirror blocks of `file-enforcer.config.ts` and
-  `package/dev-script/file-enforcer/src/generated-policy-contracts.unit.test.ts`;
+  `package/dev-script/file-enforcer/src/generated-policy-contracts.unit.test.ts`
+  (deleted 2026-10-13 with the differentials, no replacement);
    it drops the cli devDependency on
   `git-policy-repository`,
    fixes the `markdown/autofix` sentence of `package/config/lfs-r2-worker/README.md`,
@@ -72,7 +73,8 @@ The pinned incumbent revision,
   comment of the oxlint plugin and `cli-git.config.jsonc`.
 - `8cf1d0f5a6` removes `package.json:36` (the root dependency on the incumbent) and the matching `pnpm-lock.yaml`
   lines,
-   and the `mise.toml` path entry `package/git-policy/cli/node_modules/.bin`.
+   and the `mise.toml` path entry `package/git-policy/cli/node_modules/.bin`
+   (installed with the TypeScript wrapper, gone since 2026-10-13).
 - `7c7e5c8140` names a constant that oxlint flagged and states the Git floor of the end-to-end run.
 - `d42107ec3b` adds this file, the in-place notes to four lane records and the state paragraph of the cutover
   runbook.
@@ -109,7 +111,9 @@ The pinned incumbent revision,
    `module-caught-value`,
    `module-logger`,
   `module-test`) declares a `bin`,
-   which is why `package/git-policy/cli/node_modules/.bin` no longer exists.
+   which is why `package/git-policy/cli/node_modules/.bin`
+   (installed with the TypeScript wrapper, gone since 2026-10-13)
+   no longer exists.
   `mise run sync:files` in this worktree also removes 13 other `node_modules/.bin` path entries (eight under
   `package/claude-code-plugin`,
    plus `package/dev-script/file-enforcer`,
@@ -247,7 +251,9 @@ Listed read-only on 2026-10-14 with `ls -d` and `git check-ignore --verbose`;
 - `package/git-policy/cli/dist` (holds `final`,
    `pack` and `perf`;
    2.2 MiB).
-- `package/git-policy/cli/.cache` (holds `typescript`).
+- `package/git-policy/cli/.cache`
+  (gone since 2026-10-13; the launcher directory is `.cache/cli-git-bin` at the repository root)
+  (holds `typescript`).
 - `package/git-policy/api`,
    `package/git-policy/forbidden-strings`,
    `package/git-policy/markdown-lint` and

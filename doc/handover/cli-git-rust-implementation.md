@@ -884,7 +884,9 @@ State found on 2026-10-10:
   and the comment-only Rust fixes re-applied.
   A delegate is producing the consumer differential (old and new linter findings on the same tree).
   Landing still needs the choreography below: the installed commit wrapper hardcodes
-  `package/cli/markdown-lint/src/cli.ts`, so after the deletion lands every commit with a Markdown file fails in
+  `package/cli/markdown-lint/src/cli.ts`
+  (deleted 2026-10-06: now the `package/linter/monochromatic-lint` package),
+  so after the deletion lands every commit with a Markdown file fails in
   `markdown/autofix` until the wrapper's `dist` is rebuilt from the landed source.
 - Linter cutover landed on 2026-10-10 as `b111c0ca39` (fast-forward, pushed); evidence in
   `doc/handover/unified-linter-cutover.md`.
@@ -1598,7 +1600,9 @@ that is verification, not a decision for the user.
   Rehearsals in a throwaway repository with a local bare remote did not cover credentialed remotes, which is how the
   push defect escaped; keep a real-remote check in every release verification.
   The ignored leftovers in the main checkout (the four package directories, the cli `dist` and `.cache`, the old
-  `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
+  `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`
+  (installed with the TypeScript wrapper, gone since 2026-10-13))
+  were removed on 2026-10-14 by
   explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
   afterwards `mise run sync:files` leaves the repository unchanged.
   Audit of 2026-10-14 (user: the old wrapper must be nowhere to be found and unusable): the main checkout has no old

@@ -93,7 +93,7 @@ and `dependent_version_differential_tests.rs`.
 
 ### Differential harness
 
-The driver is `package/git-policy/cli/bin/dependent-version-differential.mjs`,
+The driver is `package/git-policy/cli/bin/dependent-version-differential.mjs` (deleted 2026-10-13, no replacement),
 run as `mise run //package/git-policy/cli:native:differential:dependent-version -- <record | check | corpus>`.
 Its modules in the same directory, all named `dependent-version-<role>.mjs`:
 
@@ -521,8 +521,9 @@ because the incumbent would not return.
 The incumbent lists a package's source files with the pathspec `:(glob)<directory>/src/**`,
 so a directory name holding glob magic selects other paths.
 Measured with Git 2.55.0 in a disposable repository holding `package/module/[ab]/src/index.ts`
-and `package/module/a/src/index.ts`:
-`git ls-files ':(glob)package/module/[ab]/src/**'` printed only `package/module/a/src/index.ts`,
+and `package/module/a/src/index.ts` (an illustrative fixture path; no package has existed there):
+`git ls-files ':(glob)package/module/[ab]/src/**'` printed only `package/module/a/src/index.ts`
+(an illustrative fixture path; no package has existed there),
 which the incumbent's own prefix check then discards,
 so the package's own source is never scanned.
 The native planner selects `<directory>/src/` by literal prefix.

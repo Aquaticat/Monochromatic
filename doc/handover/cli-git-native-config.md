@@ -176,9 +176,11 @@ What each unported policy must produce, taken from the incumbent in the same fix
   code `markdown/autofix/markdown-autofix`,
   message `monochromatic-lint --fix (markdown/lfs-image-url) rewrites doc.md.`,
   exit 0 on `check` and on `add` (the event goes to stderr on `add`).
-- `mono/dependent-version-bump` on a hand-bumped `package/module/a/package.json`:
+- `mono/dependent-version-bump` on a hand-bumped `package/module/a/package.json`
+  (an illustrative fixture path; no package has existed there):
   exit 1, one `finding` event at `error`,
-  code `mono/dependent-version-bump/dependent-version-stale` on `package/module/b/package.json`,
+  code `mono/dependent-version-bump/dependent-version-stale` on `package/module/b/package.json`
+  (an illustrative fixture path; no package has existed there),
   `fix` `available`; `fix --policy mono/dependent-version-bump` exits 0, prints a `fix-summary` naming that manifest
   and rewrites its version.
   The incumbent skips this policy for `add` (`src/optional/repository-policy/dependent-version-bump-policy.ts`,
