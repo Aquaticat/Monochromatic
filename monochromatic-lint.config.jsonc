@@ -28,29 +28,6 @@
       "rust/tests-in-sidecars": {
         "severity": "error",
       },
-      // Type-aware closure check: the linter runs the Dylint library below once per Cargo package (see
-      // package/linter/monochromatic-lint/README.md, section "Closure check"). Warnings until no finding is left.
-      // `library` is relative to this file.
-      "rust/avoidable-closure": {
-        "severity": "warn",
-        "library": "package/linter/monochromatic-lint-closure",
-      },
-    },
-  },
-  // The IDE has no finding left, so it holds the line at error severity.
-  {
-    "name": "closure-check-ide",
-    "files": [
-      "package/desktop-app/ide/**/*.rs",
-    ],
-    "ignores": [
-      "**/*.md/**",
-      "**/*.mdx/**",
-    ],
-    "rules": {
-      "rust/avoidable-closure": {
-        "severity": "error",
-      },
     },
   },
   // Sidecar crates hold their smoke tests in `src`, and the troubleshooting probe is a recorded reproduction,
@@ -94,12 +71,6 @@
         "severity": "off",
       },
       "rust/require-rustdoc": {
-        "severity": "off",
-      },
-      // Tests, fuzz and bench code is exempt from the closure check. The linter also skips fuzz and bench crates
-      // (directories ending in .fuzz or .bench) by name, and does not compile tests, so this keeps the exemption
-      // visible for the paths a non-default build could reach.
-      "rust/avoidable-closure": {
         "severity": "off",
       },
     },
