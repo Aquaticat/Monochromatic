@@ -24,7 +24,10 @@ The revised example passed Approve/Stop with and without reasons, literal-text p
 light/dark rendering, and 390-pixel width, with no page errors or console messages.
 Retained `explained-ask-light.png` and `explained-ask-dark.png` beside the review.
 Markdown rendering passed at `auto-mode-rebuild-plan-render-HGeAJm`;
-repeat the rendered check after recording this evidence, then reopen Helium at the manual example.
+verification evidence is committed in `751e1a630d`.
+The updated `#manual` example was reopened in Helium, which reported “Opening in existing browser session.”
+The disposable browser was closed and the nested compositor accepted `quit`.
+The current plan questions remain open; this clarification is adopted without requesting confirmation.
 
 ### User-defined staged review, 2026-10-19
 
