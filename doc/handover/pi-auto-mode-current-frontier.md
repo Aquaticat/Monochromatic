@@ -9,6 +9,9 @@ Work is incomplete. Continue the queue without another readiness handoff.
 The current user request is to review the ground-up plan and grill toward a better plan.
 Implementation remains stopped.
 The user rejected text-only architecture questions and requires HTML diagrams.
+The user also requires opening the HTML review in Helium as part of the handoff.
+The installed `${HOME}/AppImages/helium.appimage` accepted the review URL
+and reported "Opening in existing browser session."
 The initial Q1 is withdrawn pending visual examples; its proposed per-rule meaning is not accepted.
 The user also rejected Q2's inferred shortage of useful follow-ups,
 then clarified that the around-100 minimum was set because potentially useful questions remain plentiful.

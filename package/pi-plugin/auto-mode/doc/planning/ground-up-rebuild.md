@@ -14,6 +14,8 @@ Discussion of this plan alone does not resume implementation.
 The grilling review started on 2026-10-19.
 The decision tree and source corrections in this document are review work, not accepted architecture.
 The user requires HTML diagrams before further design questions.
+Open the review in Helium as part of the handoff.
+On 2026-10-19 the installed Helium launcher accepted this HTML and reported "Opening in existing browser session."
 The initial prose questions are withdrawn.
 The user clarified that the around-100 minimum reflects an ample supply of potentially useful questions per call.
 Unresolved-rule count is not a limit on that supply.
@@ -181,8 +183,9 @@ Tighten existing `AGENTS.md` guidance rather than add overlapping rules.
 These are proposals, not changes to that file:
 
 - Replace the `VHI` body with:
-  "Handoffs state purpose, changes, what to inspect, and how to respond.
-  Architecture questions show verified HTML flows and outcome examples; explain labels."
+  "Handoffs state purpose, changes, inspection, and response.
+  Show architecture choices with verified HTML diagrams and examples,
+  open them in the requested browser, and explain labels."
 - Replace the `QPM` body with:
   "Before asking which mechanism, test whether the constraint survives existing requirements and plausible designs;
   measure facts yourself. Ask only choices that remain."
