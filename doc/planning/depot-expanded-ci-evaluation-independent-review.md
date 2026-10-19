@@ -310,18 +310,64 @@ The handover line 78 now records the 2026-10-18 settlement and names Q7 as the o
 confirmation question.
 The handover review-pending statements are marked historical by a dated correction note.
 
+## Closure evidence recorded after this review
+
+Owner-map refresh at pinned revision `98381bfa32`:
+
+- 225 package directories,
+  210 active,
+  13 paused and 2 archived.
+- 14,301 tracked files.
+- 2,600 authored task declarations and 2,464 expanded `mise` task records.
+- The evaluation's 223,
+  13,860 and 2,425 counts are historical for its frozen cohort and are not
+  a current starting scope.
+
+Closure workstreams:
+
+- A bounded native experiment list E0 to E7 was prepared with provider,
+  minutes,
+  cost ceiling,
+  admission,
+  cleanup and acceptance evidence.
+  E1,
+  the parallel-step correction dispatch,
+  is running as native run `gns8864w4s`.
+- The default-branch advisory window starts from the Scorecard pattern,
+  2 admitted starts per
+  minute,
+  4 per hour and 8 per day,
+  and adjusts from measured capacity.
+  Derived zero-fallback options are recorded separately;
+  the pilot starts with the Scorecard
+  pattern as the user directed.
+- The user reports that product caps are configured but does not record the values.
+  Current documentation supports configured caps for container build minutes and GitHub Actions
+  runner minutes only;
+  native CI,
+  Tests and storage caps are not documented as configurable.
+  This remains a residual control gap,
+  mitigated by the usage pages,
+  an operational stop and
+  graceful degradation.
+- Paused-session qualification is a separate bounded experiment and is excluded from the weekly
+  matrix.
+- Automatic event registration will be tested on `main` with a side-effect-free probe,
+  then
+  removed;
+  the user explicitly accepted that reversible main-branch test.
+
 ## Open closure items
 
 The following are not satisfied by this review record and remain work:
 
-- owner-map refresh and failure baselines at the pinned revision;
 - native evidence experiments,
   including the parallel-step correction,
   event registration and
   duplicate publication,
   check-name mapping,
   and paused-session qualification;
-- no-overage sliding-window derivation and the operator cap verification;
+- no-overage sliding-window admission and the operator cap verification;
 - per-product disposition list;
 - adoption record and decision-record acceptance;
 - subscription transition from the Startup trial to Developer;
