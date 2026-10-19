@@ -129,7 +129,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
 
 //region Linux lifecycle tests
 
-{
+if (process.env.VMSYNC_E2E_GUEST !== 'windows') {
   /** VM name for the Linux lifecycle test. */
   const VM = 'vmsync-e2e-linux';
 
@@ -301,7 +301,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
 
 //region Windows lifecycle tests
 
-{
+if (process.env.VMSYNC_E2E_GUEST !== 'linux') {
   /** VM name for the Windows lifecycle test. */
   const VM = 'vmsync-e2e-win';
 
