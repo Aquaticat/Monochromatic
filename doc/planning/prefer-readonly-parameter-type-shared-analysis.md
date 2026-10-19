@@ -499,11 +499,42 @@ so this needs a configuration without that plugin
 or a host where the late spawn fails.
 The first fix,
 which stops the lint and names the cause,
-is held:
-the fixture runner hides a plugin's throw,
+was held:
+the fixture runner hid a plugin's throw,
 so two valid-fixture cases passed only because the plugin threw,
 and one ambiguous-spread case newly failed.
-It is being redone with the runner fixed and with the seven spread-rule cases that already fail on a 28-thread host.
+
+The redo landed on 2026-10-19 (UTC),
+ending at `249c3d2d0b`.
+The cause of the seven spread-rule cases that failed on a 28-thread host is the fork itself:
+before the first file needs a type,
+oxlint has reserved about 192 GiB of address space for its workers,
+and a probe forks at 132 GiB reserved and fails at 144 GiB on this host (62 GiB of memory and 79 GiB of swap),
+so the parent's `clone` returns `ENOMEM` whatever the child's size.
+Pinning `--threads` would test a setting that bare `oxlint` and editors do not use,
+and Node's `spawn` cannot fork more cheaply,
+so the plugin now starts its bridge when it loads,
+before the workers exist.
+A failed start is kept:
+the other rules keep working,
+and the first spread rule that needs a type throws the stored error and names the way out.
+`runOxlintFixture` now fails a run when oxlint reports a diagnostic with no rule code,
+which is how a plugin's throw shows.
+In the production bundle both plugins share one bridge,
+so the extra start is a no-op there;
+the standalone `no-restricted-syntax` build carries its own copy,
+which is where the failures came from.
+Gate g108 ran the six plugin packages that use the fixture runner,
+the config bundle and the translation-repair family gate,
+and every step exited 0 except `lint:oxlint` of `tsdoc` (14 errors) and `stylistic` (1 error,
+2 warnings);
+on the branch without the redo `tsdoc` reports the same 14 errors,
+and `stylistic` the same three findings plus type-aware warnings from dependencies that worktree had not built,
+so they are existing findings of those packages,
+not of this change.
+Fix-mode fixture runs that read the file back without looking at diagnostics still pass through a crash;
+that gap is being closed separately.
+
 The readonly rule's own catch,
 which warns `semantic evidence unavailable` and skips the file,
 stays:

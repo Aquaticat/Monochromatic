@@ -587,6 +587,8 @@ before the other queued work.
     (the six plugin packages that use the fixture runner, the config bundle, then the family gate).
     Its root cause: oxlint reserves about 192 GiB of address space for 28 workers,
     so a fork after the workers exist fails with `ENOMEM`; the plugin now starts its bridge at load.
+    g108 was green apart from the existing `lint:oxlint` findings of `tsdoc` and `stylistic`,
+    which the branch without the redo reports the same; it landed ending at `249c3d2d0b`.
     `w195` closes the fix-mode fixture runs that still pass through a plugin crash.
     The next ledger round files the `w190`, `w194` and `w195` notes
     and the tail of `s245/ledger-notes-after-split.md`.
