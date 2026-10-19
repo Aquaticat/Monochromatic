@@ -16,6 +16,12 @@ high-level modules, estimated character budgets, deployment budgets, and unresol
 These budgets are proposals, not measured implementation footprints.
 The current task ends with the rendered, committed plan and a review handoff.
 Discussion of the plan alone is not authorization to resume implementation.
+The draft is committed as `13c7a2767b`.
+Documentation-only verification, `mise run verify-rebuild-plan` in the preparation-failure scratch directory,
+renders the plan and handover through Pandoc and checks their local links.
+The first receipt is `auto-mode-rebuild-plan-render-bKxA2N/receipt.json` under the durable agent scratch root:
+both documents render and all 17 local links resolve within two GiB and two CPUs, without network access.
+No package build, dependency installation, or replacement source execution ran for the plan.
 
 ### Fresh implementation in main, 2026-10-19
 
