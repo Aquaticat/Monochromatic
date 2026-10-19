@@ -1,5 +1,5 @@
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { MeterState, } from './provider-meters.ts';
+import type { MeterState, } from '../dist/final/node/index.mjs';
 
 //region Meter states fixture
 // TEST SUPPORT, NOT PACKAGE SOURCE. What a scripted run client answers when a
