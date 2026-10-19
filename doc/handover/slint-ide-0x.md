@@ -966,10 +966,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
   - Queued after the minimap landing (2026-10-19, agents running in worktrees off `origin/main`):
     `fix/ide-wrap-clip-flake` (worktree `.claude/worktrees/ide-flake`) fixes the wrap-clip test race;
-    `fix/ide-tall-wrapped-settle` (worktree `.claude/worktrees/ide-settle`) investigates issue #1785, the
-    measurement pass of a 10,000 px or taller window over wrapped text that never settles. Next, after both land:
+    issue #1785 (a 10,000 px or taller window over wrapped text never settled) is fixed: landed on `main` as
+    `8c597c3c58` on 2026-10-19 after the coordinator reran the gates and the `tall-window-edge` guard, and installed
+    (the installed binary was not launched). Next, after the flake fix lands:
     the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test` task
-    still runs `cargo test`). On 2026-10-19 the owner authorized deleting the merged IDE branches on origin and 34 were deleted
+    still runs `cargo test`). On 2026-10-19 the owner authorized deleting the merged IDE branches on origin
+    and 34 were deleted
     (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the unmerged IDE
     branches (language, live theme, navigation, runtime languages, sidebar resize, source keys, prototypes, research)
     were left.
