@@ -410,14 +410,19 @@ its "Next" list is still the queue the merge went ahead of.
     (`9081481c0d`,
     B694).
     The rotation's build carries neither.
-2.  Issue 1780,
-    more read-only TypeScript requests in the readonly plugin's memo:
-    a Sonnet agent works in the keyless worktree `w209` at `8b1eb54574`,
-    reading each candidate's handler at the pinned TypeScript version
-    and measuring a cold family lint before and after.
-    Read its hand-back for shell-rule breaks,
-    check that the family's lint findings are unchanged,
-    then land it and comment on the issue.
+2.  Done:
+    issue 1780 closed.
+    The readonly plugin's memo answers six more read-only requests
+    (`b37d8cfdf2`,
+    landed in `a34edeba64`),
+    and the rest are named in its TSDoc with the reason;
+    a cold family lint sends about 24,000 fewer requests,
+    with no time saving that the run-to-run spread lets one claim,
+    and findings are unchanged.
+    The planning doc `doc/planning/prefer-readonly-parameter-type-shared-analysis.md` has the measurements.
+    The agent removed the guard before committing its tests,
+    against the order the repository's `CLAUDE.md` gives for a guard test;
+    its seven stub cases and the native case failed without the six names.
 3.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
 4.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,
