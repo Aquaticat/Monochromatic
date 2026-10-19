@@ -536,6 +536,14 @@ which the accounts of the versions record as riding inside them (ledger P1);
 on 2026-10-19 the cache-account audit counts 827 of 865 source commits since `d614a0c1d` named by no account,
 so these five go to the next pre-launch account with the rest.
 
-Not done:
-the second reading after the change lands,
-which closes issue 1779 when the meter reads.
+Confirmed on 2026-10-19 (UTC).
+After the change landed on `main` at `bcf2545b8e`,
+a second keyed `run:budget-sample` reading,
+approved by the owner,
+at 15:23 UTC read the Synthetic meter:
+`synthetic=wet`,
+`syntheticWeekly=86.76063906122448%`,
+`syntheticFiveHour=none`
+and `syntheticThrottled=none`.
+So `weeklyTokenLimit` still holds `percentRemaining` and `nextRegenAt` as a number and a string,
+and issue 1779 was closed with that reading.
