@@ -1733,6 +1733,15 @@ that is verification, not a decision for the user.
   other than exit 1 had no test and was not reported as a miss, so it got one anyway, commit `9555cd128f`
   (`an_unreadable_signing_setting_publishes_nothing`, a `commit.gpgsign` value of `sometimes`); shown failing when
   that branch returns `Ok(false)` instead of the error, then restored. The `rec3` images and container are removed.
+  Requirement from the user (2026-10-19): auto-push must never fail when there are no conflicts; offline and
+  authentication failures are exempt. Task 50. Done so far: the worktree fast-forwards to a published reconcile merge
+  when it is clean (commit `2bb616bf57`, refusals reported with a reason), and the reconcile retries up to 10 times
+  instead of 3 (commit `e302913b94`). Audit of the other no-conflict failures, not yet fixed: a branch whose
+  published history was amended or rebased keeps its rejection by design (asked of the user); a push destination
+  other than the upstream (`push.default=current`, a push remote, a tracked local branch) is not reconciled;
+  unrelated histories fail as a Git error; a remote hook refusal and a failing signer are reported as they are.
+  Unreleased: the next release (0.2.2) carries both commits; the mutation run must be repeated over
+  `advance_local_branch` first.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
