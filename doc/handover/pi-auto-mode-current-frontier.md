@@ -51,6 +51,15 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   latest diagnostics, auxiliary/unjudged responses, failed/reentrant construction and response/stream reuse.
   The independence case binds both consumers to the same issuer so it can detect an incorrectly global current slot.
   These new cases still require their fresh built run and positive-controlled mutations.
+  A further regression now tests a late response alias while its original operation is active:
+  completion cleanup must retain the original operation error rather than throw a fresh ownership error over it.
+  This boundary is not yet qualified; run the committed black-box case before correcting the producer.
+  Native MiMo delivers its independent read-only trace at 101 tools,
+  saved privately as `native-checkpoint-20261019.txt`.
+  It supports the per-consumer current-slot/completion seam and identifies the same live consumers.
+  Its bypass claim is incorrect: `prepared-group.mjs:188` calls `constructSource` unconditionally.
+  Its description of disposal error aggregation also requires a real Node probe;
+  do not treat either statement as deciding evidence or silently relax invalid-input guards.
   The parent collector initially mistakes a build receipt for a test receipt,
   and its restart output path collides with the second child's log.
   Both collector failures are retained; that collided log is excluded and a distinct fourth-run log is collected.
@@ -70,6 +79,22 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   This checkpoint is committed for independent freezing and verification, not accepted as complete.
   Its new no-op `send` callback only satisfies an overly strict runtime input declaration;
   remove that invented callback by accurately expressing the configured semantic transport branch in the owner contract.
+  Frozen `phase-owner-contract-checkpoint-candidate-6uvAWU` at `09e386c087` now passes fresh JavaScript/native builds,
+  the complete rewritten phase catalog and its then-committed producer lifetime cases.
+  Those lifetime cases precede the same-issuer/stream additions in `7383cebd94` and do not qualify those additions.
+  Package types fail with 26 actual diagnostics:
+  copied declarations point into nonexistent `dist/src`,
+  and importing built TypeScript implementations crosses the composite project's file list.
+  There are also honest fixture-contract mismatches for cwd and the optional SDK update callback.
+  Keep the compiler configuration strict; repair the build owner's emitted declaration boundary,
+  using the existing Rolldown/Oxc declaration bundle rather than another caller-side reader/adapter layer.
+  The current consolidated AST comparison measures 780 code lines/226 statements/45 functions,
+  against the original 432/126/25; its two owner declarations have zero runtime code/statements/functions.
+  Exported/ambient type-only removal has a new positive control so declaration syntax is not counted as executable code.
+  This is less than the rejected port's 1,216/357/71 but remains an unaccepted design checkpoint.
+  Source worker `7HN2ZH` is asked to close normally after saving its complete 5,332-code-unit checkpoint,
+  before a full-history resume on the corrected memory runtime.
+  `source-checkpoint-20261019.txt` and its saved Pi session remain private and intact.
 - Factory identity, opacity and forwarding qualify in a separate frozen candidate.
   Every thirteen rebuilt mutations fail their named regressions, followed by a restored passing build/consumer.
   Receipt: `policy-input-factory-fixed-built-mutants.json`.

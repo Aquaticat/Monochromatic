@@ -136,6 +136,19 @@ await verify({ name: 'retirement preserves historical response reuse detection',
   fixture.owner.completeJudgment(next);
 } });
 
+await verify({ name: 'late response ambiguity does not replace the primary operation failure during cleanup', async run() {
+  const fixture = createFixture();
+  const input = await observe({ fixture, name: 'active' });
+  fixture.owner.beginJudgment(input);
+  await assert.rejects(observe({ fixture, response: input.response }), /identity was reused/);
+  const failure = new Error('original operation failure after response reuse');
+  assert.throws(function disposeFailedOperation() {
+    using completion = { [Symbol.dispose]() { fixture.owner.completeJudgment(input); } };
+    throw failure;
+  }, error => error === failure);
+  assert.throws(() => fixture.owner.describeResponse(input), /identity was reused/);
+} });
+
 await verify({ name: 'retirement preserves historical stream reuse detection', async run() {
   const response = { name: 'original' };
   const reused = createResultStream({ context: { response } });
