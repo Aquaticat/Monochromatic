@@ -36,8 +36,9 @@ approval. Approve and not-applicable are the remaining clear answers.
 
 #### B: Refine mixed Deny outcomes first
 
-Deny combined with Approve or Ask keeps the group unresolved for focused review. An all-Deny result can terminate;
-exhausted unresolved review goes to the human.
+Deny combined with Approve, Ask, or unresolved answers keeps the group unresolved for focused review.
+Deny with only other Deny or not-applicable answers can terminate; exhausted unresolved review goes to the human.
+Selecting B opens a separate conflict-reconciliation decision after this round.
 
 - Pro: Mixed answers get another chance to expose a mistaken rule interpretation before the group is denied.
 - Con: Different rules can correctly return different outcomes. This spends review budget on ordinary combinations
@@ -75,9 +76,10 @@ resolved evidence. B buys a positive-permission gate at the cost of additional i
 
 ### Q9: What lets focused follow-ups resolve an earlier rule uncertainty?
 
-The first-pass rule answer is unresolved. Follow-ups must ask something new and focused, preserve all evidence, and
-stay within three review batches. No established Ask or Deny is reconsidered. Question generation details follow
-this choice.
+This question concerns an individually unresolved rule under either Q7 choice, such as a tied distribution.
+It does not resolve conflicts among already admitted rule answers; Q7 B opens that separate later decision.
+Follow-ups must ask something new and focused, preserve all evidence, and stay within three review batches.
+No established group Ask or Deny is reconsidered. Question generation details follow this choice.
 
 Example: The rule says tests may modify only disposable fixtures and must not transfer data externally. Its first
 answer ties. Useful follow-ups concern fixture confinement and external transfer.
@@ -229,6 +231,7 @@ continuous recent evidence at the explicit cost of losing older records.
 ## Dependent work after the answers
 
 - Q7 and Q8 determine the reducer truth table and when a partial response set can establish a terminal verdict.
+- Q7 B additionally opens conflict reconciliation among admitted rule answers; Q9 concerns individual-rule uncertainty.
 - Q9 determines focused-question generation, evidence bindings, and whether reconciliation reserves a batch.
 - Q10 determines the feasible shadow concurrency and preemption policies; do not assume an extra network slot.
 - Q11 determines persistent replay ownership, cancellation accounting, and recovery fixtures.

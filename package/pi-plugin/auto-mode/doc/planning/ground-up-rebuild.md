@@ -131,13 +131,14 @@ Use the user's explicit grouping boundary:
   Prepare, review, and execute A before preparing and reviewing a later nonparallel call B.
   Do not combine sequential calls into an artificial multi-call group.
 
-Include permitted argument mutations by other extensions in each prepared group's snapshot.
+Include permitted argument mutations visible before review in each prepared group's snapshot.
 Parse every tool call deeply, retaining tool identity, named arguments, resources, and execution structure.
 For shell calls this includes control flow, redirects, expansions, literal values, and nested syntax.
 Parsing alone does not establish expanded runtime values or actual side effects.
 
 Bind all review evidence to one immutable group, instructions, tool catalog, and context snapshot.
-A changed argument, instruction, branch, or tool definition invalidates affected approval.
+A changed argument, instruction, branch, or tool definition observed within the review boundary invalidates approval.
+Later extensions mutating arguments after review are explicitly outside coverage and need no guard.
 Queue adjacency or a shared workflow does not merge distinct nonparallel calls.
 Future dynamically created calls are not pretended to exist already.
 Apply the same parallel-batch versus individual-call boundary to nested calls;
@@ -329,7 +330,7 @@ Installed Pi 1.3.0 source supplies separate dispatch paths in `dist/agent-loop.j
 `executeToolCallsSequential` at line 374 prepares and executes each call in its loop;
 `executeToolCallsParallel` at line 411 prepares calls before its `Promise.all` dispatch at line 453.
 Source inspection supports the distinction, not a claim that the replacement integration already works.
-Verify configured mode overrides, nested boundaries, argument mutation, and cancellation at the real host boundary.
+Verify configured mode overrides, nested boundaries, pre-review argument mutation, and cancellation at the host boundary.
 
 ## Dependency tree after this round
 
@@ -769,7 +770,7 @@ The shell parser and shared logger are the only proposed production library resp
 ### Establish the host seam and dependency facts
 
 Qualify the public plugin events with a minimal actual Pi consumer before expanding the design.
-Cover parallel, sequential, nested, mutated-input, denied, cancellation, and configured-extension behavior.
+Cover parallel, sequential, nested, pre-review mutated inputs, denied, cancellation, and configured-extension behavior.
 Assert one review snapshot contains every member of a parallel batch and no member executes before its verdict.
 Assert nonparallel A and B produce distinct reviews in prepare/review/execute order,
 including B preparation that reads A's completed result.
