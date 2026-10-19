@@ -581,7 +581,8 @@ before the other queued work.
     (cold lint median over the 36 packages 191.5 s to 159.2 s in an alternating measurement,
     199 of 199 packages identical in exit, summary and diagnostic headers cold and warm).
     Its four memo commits are replayed as `a349c1a26d` to `abab8e541a` and gated as g107
-    (the plugin and config tasks, then the family gate); they land when it is green.
+    (the plugin and config tasks, then the family gate); g107 was green and they landed ending at `a47fa17b02`.
+    The ledger round `w193` landed as B675 to B687 and M265 to M272 (`15b26d5048`).
     Its spread-bridge pair `50ccee0440` and `5dce27bb59` is held:
     two valid-fixture cases passed only because `runOxlintFixture` hides a plugin's throw,
     one ambiguous-spread case newly failed, and the commit body counts the failures without naming them.

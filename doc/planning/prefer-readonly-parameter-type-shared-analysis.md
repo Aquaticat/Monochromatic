@@ -31,7 +31,8 @@ scripts and outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/
   the analysis result stored in the entry (`payload`)
   and the deliberately omitted callables were the same in every project.
 - For all 992 files,
-  the dependency closure (`dependencyDigests`, compared as sorted entries)
+  the dependency closure (`dependencyDigests`,
+  compared as sorted entries)
   was the same in every project,
   as were the augmentation surface and the lockfile digest,
   and no closure was unresolved.
@@ -44,8 +45,10 @@ scripts and outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/
   no family source names either alias
   (searched with a pattern that matches one file elsewhere in `package/`).
 
-Each entry is addressed by its project key (`effect-summary-persistent-cache.ts`, `cacheIdentity`)
-and validated against all five surface digests (`effect-cache-envelope.ts`, `surfacesMatch`),
+Each entry is addressed by its project key (`effect-summary-persistent-cache.ts`,
+`cacheIdentity`)
+and validated against all five surface digests (`effect-cache-envelope.ts`,
+`surfacesMatch`),
 so no entry written under one project is ever read under another.
 The TSDoc of `projectSourceText` in `effect-project-fingerprint.ts` says entries
 "are keyed by path and shared across projects";
@@ -59,10 +62,17 @@ and the comment should be corrected whatever is decided here.
 - The declaration surface binds every `.d.ts` file in the program,
   because the closure walk "stays inside indexed sources:
   declaration and external files are excluded because whole-scope surface digests already bind them"
-  (`effect-dependency-closure.ts`, `createDependencyClosureResolver`).
+  (`effect-dependency-closure.ts`,
+  `createDependencyClosureResolver`).
 - The compiler options bind checking semantics
-  (`strict`, `exactOptionalPropertyTypes`, `lib`, `target`)
-  and module resolution (`paths`, `baseUrl`, `rootDirs`, `moduleResolution`).
+  (`strict`,
+  `exactOptionalPropertyTypes`,
+  `lib`,
+  `target`)
+  and module resolution (`paths`,
+  `baseUrl`,
+  `rootDirs`,
+  `moduleResolution`).
 
 All three are whole-program because the closure records only workspace sources.
 Two projects whose programs differ anywhere,
@@ -79,11 +89,15 @@ so that two projects that agree on all of it share one entry:
     with each file's content digest.
     A changed resolution then changes the closure,
     so the file list and the resolution-only options
-    (`paths`, `baseUrl`, `rootDirs`)
+    (`paths`,
+    `baseUrl`,
+    `rootDirs`)
     no longer need to be in the key.
 2.  Keep a narrow ambient surface in the key:
     declaration files that apply without an import
-    (global scripts, the `types` entries, `lib` files)
+    (global scripts,
+    the `types` entries,
+    `lib` files)
     and the augmentation surface the key already has.
 3.  Keep in the key the compiler options that change checking,
     named by an explicit list,
@@ -133,23 +147,32 @@ The hardening owed before landing:
 bump `EFFECT_CACHE_SCHEMA`;
 correct the `projectSourceText` TSDoc;
 show each fallback's test failing with its guard removed;
-add fixtures for `export ... from`, `import =` and an added `/// <reference types>` global;
+add fixtures for `export ... from`,
+`import =` and an added `/// <reference types>` global;
 and compare lint output over every repository package against the baseline bundle.
-The hardening is done on `w177`'s detached head (`6cab24de4c` to `6899ef69af`, notes `w177-notes/harden/`):
+The hardening is done on `w177`'s detached head (`6cab24de4c` to `6899ef69af`,
+notes `w177-notes/harden/`):
 the schema is 9;
 the TSDoc says each project pays the fingerprint once and shares only the source analysis;
 every fallback's test fails with its guard removed (`guards.md`),
 including a newly found third layer (whole-scope snapshots) that had masked the unresolved-specifier case;
-the `export ... from`, `import =` and `/// <reference types>` fixtures do not share when their targets differ;
+the `export ... from`,
+`import =` and `/// <reference types>` fixtures do not share when their targets differ;
 `readonly-declaration-ownership.ts` now names a workspace path `workspace` whatever the library flag says;
 the README documents the sharing.
 A cold family lint with verification on gave the prototype's exact totals:
-6856 hits verified, 0 mismatches, 110 unresolved-specifier fallbacks.
+6856 hits verified,
+0 mismatches,
+110 unresolved-specifier fallbacks.
 The comparison over every repository package against the baseline bundle (`w177-notes/fullrepo/`)
-gave identical exit codes, summary lines and sorted diagnostic headers in all 199 packages with a `lint:oxlint` task,
-cold and warm (41 skipped, reasons in `skipped.txt`);
-109 packages have diagnostics, 4 have this rule's (10 diagnostics).
-It left three items, closed before landing:
+gave identical exit codes,
+summary lines and sorted diagnostic headers in all 199 packages with a `lint:oxlint` task,
+cold and warm (41 skipped,
+reasons in `skipped.txt`);
+109 packages have diagnostics,
+4 have this rule's (10 diagnostics).
+It left three items,
+closed before landing:
 `readonly-type-origin-location.ts` (`workspaceOrigin`) still reads the raw library flag,
 so a workspace declaration reached through a `node_modules` symlink gets the guidance of an external one,
 which the ownership fix no longer masks;
@@ -163,7 +186,8 @@ and those 75 lint identically under both bundles;
 a consumer's entry now persists the omissions of the installed implementations it was built from
 (cache schema 10),
 so a warm run reports them as a cold one does.
-Under that bundle all 199 packages again gave identical exit codes, summary lines and diagnostic headers,
+Under that bundle all 199 packages again gave identical exit codes,
+summary lines and diagnostic headers,
 cold and warm,
 and every differing body line is a paired "omitted" and "restored" report of the same file,
 count and reasons,
@@ -173,12 +197,15 @@ with the plugin tree identical to the verified one.
 Profiling the remaining cold time runs in `w177-notes/profile/`.
 The owner also chose to profile the remaining cold time
 (about 131 s against 11.5 s without the plugin)
-after landing, not before.
+after landing,
+not before.
 
 ## Prototype results
 
 The prototype is on the detached head of the keyless scratch worktree `w177`
-(`0f2f380e59` to `1b0cdd8653`, on top of `da4c8dcab9`, unmerged);
+(`0f2f380e59` to `1b0cdd8653`,
+on top of `da4c8dcab9`,
+unmerged);
 scripts and per-package logs are under `/var/home/user/temp/agent/tr-fan/w177-notes/`.
 I re-totalled the timings and lint results from its `out/<round>/results.json` files
 (`s245/split/lint/proto-totals.ts`)
@@ -186,9 +213,12 @@ and the verification counters from its per-process files (`w177-notes/sum-verify
 
 ### What it builds
 
-- The key is a digest of the analyzer digest, file name, source digest,
+- The key is a digest of the analyzer digest,
+  file name,
+  source digest,
   the closure of every file reached through module references
-  (walked through declaration and external files, each with its content digest),
+  (walked through declaration and external files,
+  each with its content digest),
   an ambient surface,
   the augmentation surface,
   the lockfile digest,
@@ -202,15 +232,31 @@ and the verification counters from its per-process files (`w177-notes/sum-verify
   the project's file list,
   its unreachable declaration files,
   and the resolution-only options
-  (`paths`, `baseUrl`, `rootDirs`, `rootDir`, `outDir`, `declarationDir`, `tsBuildInfoFile`, `typeRoots`,
-  `mapRoot`, `sourceRoot`, `project`, `configFilePath`, `pathsBasePath`).
+  (`paths`,
+  `baseUrl`,
+  `rootDirs`,
+  `rootDir`,
+  `outDir`,
+  `declarationDir`,
+  `tsBuildInfoFile`,
+  `typeRoots`,
+  `mapRoot`,
+  `sourceRoot`,
+  `project`,
+  `configFilePath`,
+  `pathsBasePath`).
 - An option on neither list sends the whole project back to per-project entries.
   So does a source that is a global script,
-  reaches a `.tsx`, `.jsx`, `.astro`, `.mdx`, `.vue` or `.svelte` file (implicit JSX import),
+  reaches a `.tsx`,
+  `.jsx`,
+  `.astro`,
+  `.mdx`,
+  `.vue` or `.svelte` file (implicit JSX import),
   names a specifier that does not resolve,
   or has an unresolved existing closure.
 - Shared entries live at `shared/<hash(file)>/<keyDigest>.json` under the cache root;
-  a read tries the shared entry first, then the per-project one.
+  a read tries the shared entry first,
+  then the per-project one.
 - `PRPT_VERIFY_SHARED=1` analyses every shared hit afresh and compares callable summaries,
   omitted callables and omission reasons.
 
@@ -219,11 +265,20 @@ and the verification counters from its per-process files (`w177-notes/sum-verify
 Each round linted all 36 family packages in a fresh `systemd-run` unit,
 cold (cache emptied) then warm.
 
-- Baseline (`da4c8dcab9`): cold 325.6, 323.9 and 318.2 s; warm 71.0, 74.0 and 70.8 s.
-- Prototype (`ce6354e62f`, verification off): cold 130.5 and 131.9 s; warm 73.3 and 73.2 s.
+- Baseline (`da4c8dcab9`):
+  cold 325.6,
+  323.9 and 318.2 s;
+  warm 71.0,
+  74.0 and 70.8 s.
+- Prototype (`ce6354e62f`,
+  verification off):
+  cold 130.5 and 131.9 s;
+  warm 73.3 and 73.2 s.
   Warm is inside the baseline's spread.
-- Prototype with verification on: cold 410.5 s and more,
-  so the mode is a probe, not a gate setting.
+- Prototype with verification on:
+  cold 410.5 s and more,
+  so the mode is a probe,
+  not a gate setting.
 - The slowest packages cold went from 30 to 33 s to 15 s (`corpus-pass`),
   24 s to 7 s (`probe`) and 21 s to 10 s (`bench`).
 
@@ -235,35 +290,63 @@ so per-project program load and walks are the next thing to measure.
 ### Outside the family
 
 48 other packages
-(Astro, DOM, CLI, config, plugin and harness packages; lists in `w177-notes/extra-list.txt` and `group2-list.txt`)
-showed no speedup claim: cold 56.2 against 57.7 s and 124.2 against 111.6 s in single paired runs.
+(Astro,
+DOM,
+CLI,
+config,
+plugin and harness packages;
+lists in `w177-notes/extra-list.txt` and `group2-list.txt`)
+showed no speedup claim:
+cold 56.2 against 57.7 s and 124.2 against 111.6 s in single paired runs.
 Sharing there is thin:
-166 shared hits, 123 across projects.
+166 shared hits,
+123 across projects.
 `pi-plugin/auto-mode` takes about 356 s cold and 374 s warm in both baseline and prototype,
-so the cache does not help that package at all; this is not investigated.
+so the cache does not help that package at all;
+this is not investigated.
 
 ### Equality
 
-- Verification over the family, cold:
-  8467 keys, 1611 shared writes, 6856 shared hits (6628 across projects),
-  6856 verified, 0 mismatches, 0 invalid entries;
-  110 fallbacks, all unresolved specifiers
-  (`node:*` names in `nano-spawn`'s JavaScript, one `undici-types` path).
-- Outside the family: 166 hits verified, 0 mismatches, 241 unresolved-specifier fallbacks.
+- Verification over the family,
+  cold:
+  8467 keys,
+  1611 shared writes,
+  6856 shared hits (6628 across projects),
+  6856 verified,
+  0 mismatches,
+  0 invalid entries;
+  110 fallbacks,
+  all unresolved specifiers
+  (`node:*` names in `nano-spawn`'s JavaScript,
+  one `undici-types` path).
+- Outside the family:
+  166 hits verified,
+  0 mismatches,
+  241 unresolved-specifier fallbacks.
 - Positive control for the verification mode (`w177-notes/control/`):
   `shared-contract` linted on an empty cache,
   then one summary in its shared entry for `src/chunk-placement.ts` was changed
-  (`mutated` from `[]` to `[0]`, envelope and digests untouched),
+  (`mutated` from `[]` to `[0]`,
+  envelope and digests untouched),
   then `artifact` linted with verification on:
-  38 shared hits, 1 mismatch naming that summary.
-  With the entry restored and the cache emptied, the same two lints gave 38 hits and 0 mismatches.
-  Only a payload change was tried, not omitted callables or omission reasons.
-- Lint output (exit code, summary line, sorted diagnostic headers) was identical to baseline in every package run:
-  144 family runs per comparison, all with no diagnostics,
-  and 96 outside-family runs, 74 of them with diagnostics and 6 with this rule's (10 diagnostics, cold and warm).
+  38 shared hits,
+  1 mismatch naming that summary.
+  With the entry restored and the cache emptied,
+  the same two lints gave 38 hits and 0 mismatches.
+  Only a payload change was tried,
+  not omitted callables or omission reasons.
+- Lint output (exit code,
+  summary line,
+  sorted diagnostic headers) was identical to baseline in every package run:
+  144 family runs per comparison,
+  all with no diagnostics,
+  and 96 outside-family runs,
+  74 of them with diagnostics and 6 with this rule's (10 diagnostics,
+  cold and warm).
   This is thin evidence for the rule's output where sharing is heavy:
   the family has no diagnostics to lose.
-- The plugin's unit suite passes (27 suites), including the existing invalidation suite
+- The plugin's unit suite passes (27 suites),
+  including the existing invalidation suite
   and 11 new sharing cases.
 
 ### Not proven
@@ -275,61 +358,161 @@ so the cache does not help that package at all; this is not investigated.
 - The option lists beyond TypeScript's option interface rest on one probe.
 - Program file order and call edges that are not module references are not in the key;
   the existing workspace-only dependency check is the only guard for the latter.
-- Verification compares only hits; it cannot see a source that should have shared and did not.
-- At the prototype: `EFFECT_CACHE_SCHEMA` was not bumped,
+- Verification compares only hits;
+  it cannot see a source that should have shared and did not.
+- At the prototype:
+  `EFFECT_CACHE_SCHEMA` was not bumped,
   `readonly-declaration-ownership.ts` classified a symlink-reached workspace file as external,
   and the `projectSourceText` TSDoc was wrong.
-  The hardening closed all three before landing (landed as `a6a42f8416`, `b88c34eec0`, `c501702670`).
+  The hardening closed all three before landing (landed as `a6a42f8416`,
+  `b88c34eec0`,
+  `c501702670`).
 
 The prototype agent's summary said "6751 cross-project shared hits";
-its own counter files total 6628, and its detailed section said so.
+its own counter files total 6628,
+and its detailed section said so.
 
 ## Cold time after landing
 
-Profiled on 2026-10-18 at `f931308964` with the landed bundle, on a shared host (load 5 to 47 on 28 cores);
-the profiles, logs and scripts are in `w177-notes/profile/`.
+Profiled on 2026-10-18 at `f931308964` with the landed bundle,
+on a shared host (load 5 to 47 on 28 cores);
+the profiles,
+logs and scripts are in `w177-notes/profile/`.
 
 ### Spread
 
-Three sequential cold family lints took 151.2, 155.1 and 161.7 s, and three warm ones 96.9, 82.9 and 84.5 s,
+Three sequential cold family lints took 151.2,
+155.1 and 161.7 s,
+and three warm ones 96.9,
+82.9 and 84.5 s,
 so a difference under about 10 s cold or 14 s warm is noise.
-The prototype's 131 s was measured on a quieter host; how much of the gap is load was not separated.
+The prototype's 131 s was measured on a quieter host;
+how much of the gap is load was not separated.
 With no JavaScript plugin the family lints in about 20 s,
 with the other four JavaScript plugins in about 40 s,
 so this rule's own work is about 110 to 120 s of the cold time.
 
 ### Where the time goes
 
-- Each package runs its own oxlint process, which starts two `tsc --api` children and one `tsgolint`;
-  every program is built from scratch, and a family source such as `shared-contract/src/index.ts`
+- Each package runs its own oxlint process,
+  which starts two `tsc --api` children and one `tsgolint`;
+  every program is built from scratch,
+  and a family source such as `shared-contract/src/index.ts`
   is read once per engine per package (96 reads in one family lint).
 - 2.86 million requests to the TypeScript children cost 73.8 s as seen by Node:
-  30.0 s of server work and about 49 s of pipe round trip, wake-up and JSON codec.
+  30.0 s of server work and about 49 s of pipe round trip,
+  wake-up and JSON codec.
 - 67.1 percent of those requests repeat a request already made on the same immutable snapshot
-  (`resolveName` 86.6 percent repeats, `getSymbolAtLocation` 65.6 percent),
+  (`resolveName` 86.6 percent repeats,
+  `getSymbolAtLocation` 65.6 percent),
   35.9 s of the 73.4 s of request time.
-- Project fingerprint, program open and index scope together cost 21.6 s cold;
-  the shared-key walk 4.8 s; cache reads and writes 3.7 s; plugin load 1.8 s;
-  garbage collection 12.3 s; per-process start and tail about 30 s across the 36 processes.
+- Project fingerprint,
+  program open and index scope together cost 21.6 s cold;
+  the shared-key walk 4.8 s;
+  cache reads and writes 3.7 s;
+  plugin load 1.8 s;
+  garbage collection 12.3 s;
+  per-process start and tail about 30 s across the 36 processes.
 
 ### Levers, ranked
 
-1. Memoize TypeScript requests per snapshot: at most 35.9 s, low risk because a snapshot is immutable,
+1. Memoize TypeScript requests per snapshot:
+   at most 35.9 s,
+   low risk because a snapshot is immutable,
    provided the memo is dropped with the snapshot and bounded.
-2. One oxlint invocation for the family: 15 to 55 s on a sequential run, depending on load,
-   but the repository already lints packages in parallel, which hides most per-process cost,
+2. One oxlint invocation for the family:
+   15 to 55 s on a sequential run,
+   depending on load,
+   but the repository already lints packages in parallel,
+   which hides most per-process cost,
    and it costs 5.5 to 6.8 GB of peak memory and merges 36 reports into one.
-3. Cheaper project setup: at most about 6.6 s of fingerprint transport plus part of index scope,
+3. Cheaper project setup:
+   at most about 6.6 s of fingerprint transport plus part of index scope,
    medium risk because disk text can disagree with the analysed snapshot.
-4. Skip files the rule cannot report on: at most 2.8 to 15.2 s, and it changes cache population order.
-5. Share one program across packages: at most about 2 s.
+4. Skip files the rule cannot report on:
+   at most 2.8 to 15.2 s,
+   and it changes cache population order.
+5. Share one program across packages:
+   at most about 2 s.
 
-The first lever is being built;
-the second is recorded and not built, because parallel linting already takes most of its gain.
+The first lever landed on 2026-10-19 (UTC) as `a47fa17b02` and the three commits before it;
+the second is recorded and not built,
+because parallel linting already takes most of its gain.
+
+### The first lever after landing
+
+The memo wraps each TypeScript API instance and answers ten read-only requests from memory
+(`resolveName`,
+`getSymbolAtLocation`,
+`getTypeAtLocation`,
+`getResolvedSignature`,
+`getSignaturesOfType`,
+`getTypeOfSymbolAtLocation`,
+`getPropertiesOfType`,
+`getShorthandAssignmentValueSymbol`,
+`getTypesOfType`,
+`getTypeArguments`),
+keyed by snapshot id,
+then by method and parameters.
+Each was chosen by reading its handler in the native server's `internal/api/session.go`;
+a request a later TypeScript release adds goes to the server every time until its handler is read.
+A snapshot's store is dropped when the snapshot is released,
+failures are never stored,
+and a store holds at most 131,072 answers,
+oldest out first:
+replaying the recorded request streams of the 36 family processes,
+only `corpus-pass` (136,050 at its peak) evicts at that bound,
+and the hit rate stays at 70.99 percent.
+
+- Requests in one cold family lint fell from 2,879,340 to 975,205,
+  and Node-side request time from 72.8 to 45.3 s.
+  What remains is mostly requests left out on purpose (`getSourceFile`,
+  `updateSnapshot`,
+  `getSymbolsAtLocations`).
+- Over ten alternating cold passes,
+  the per-package medians sum to 191.5 s before and 159.2 s after,
+  a saving of 32.3 s (17 percent),
+  which agrees with the request time removed.
+  The pass totals alone spread by about 50 s within each variant on this host and cannot show the saving.
+- Peak memory per package unit is unchanged within noise (median change of the maxima minus 9 MiB).
+- All 199 packages give the same exit code,
+  summary line and diagnostic headers cold and warm.
+  The one package whose full output differs,
+  `translation-repair/consistency`,
+  prints the same error with its
+  stack window shifted by the memo's wrapper frame.
+- Gate g107 at `abab8e541a`:
+  the plugin's build,
+  type check,
+  lint,
+  unit tests and three host tests,
+  the config bundle rebuilt and carrying the memo,
+  and the translation-repair family gate (145 steps),
+  all exit 0.
+
+### The spread rule when the bridge cannot start
+
+The spread rule fell back without a word when the bridge could not start:
+it dropped `Array.from` from its report and called slices and spreads ambiguous.
+In production the readonly plugin starts the bridge at load,
+so this needs a configuration without that plugin
+or a host where the late spawn fails.
+The first fix,
+which stops the lint and names the cause,
+is held:
+the fixture runner hides a plugin's throw,
+so two valid-fixture cases passed only because the plugin threw,
+and one ambiguous-spread case newly failed.
+It is being redone with the runner fixed and with the seven spread-rule cases that already fail on a 28-thread host.
+The readonly rule's own catch,
+which warns `semantic evidence unavailable` and skips the file,
+stays:
+`doc/troubleshooting/typescript-go-tuple-type-panic.md` records it as the handling of an upstream panic.
 
 ### Coupling found on the way
 
 `no-restricted-syntax/src/rule/spread-evidence/expression-kind.ts` imports the semantic bridge.
-Without this plugin loaded, the bridge starts lazily mid-lint,
+Without this plugin loaded,
+the bridge starts lazily mid-lint,
 and on `corpus-pass` it failed with `spawn ENOMEM`;
-what that rule loses then is being checked with the first lever.
+what that rule loses then is in "The spread rule when the bridge cannot start".
