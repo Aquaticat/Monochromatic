@@ -39,7 +39,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runRefinePhase, } from '../dist/final/node/index.mjs';
 import {
@@ -325,7 +325,7 @@ async function probeSheets(
   /**
    Client scripting each stage by the schema it asks for.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the phase',);
     },

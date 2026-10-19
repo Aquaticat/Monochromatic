@@ -34,7 +34,7 @@ import {
   type EnvelopeSelection,
   NOBODY_WROTE_IT,
 } from './editor-selection-result.ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type {
   EditableEnvelope,
   RosterModelId,
@@ -136,7 +136,7 @@ export async function selectPerEnvelope(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly candidates: readonly EditorCandidate[];
     readonly envelopes: readonly EditableEnvelope[];
     readonly judgeModelIds: readonly RosterModelId[];
@@ -364,7 +364,7 @@ export async function selectChunkPatch(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly candidates: readonly Candidate<PatchOutcome>[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;

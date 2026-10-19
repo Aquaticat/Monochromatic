@@ -18,7 +18,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   EMPTY_INTRODUCED_DEFECT_REPORT,
@@ -91,7 +91,7 @@ function catClient(
     readonly twiceModelIds?: readonly string[];
     readonly prompts?: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the probe',);

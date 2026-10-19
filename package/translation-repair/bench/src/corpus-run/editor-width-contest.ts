@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   selectChunkPatch,
   type ShippedProducer,
@@ -110,7 +110,7 @@ async function contest(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly input: WidthProbeInput;
     readonly first: ArmOutcome;
     readonly second: ArmOutcome;
@@ -363,7 +363,7 @@ export async function bothOrders(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly input: WidthProbeInput;
     readonly narrow: ArmOutcome;
     readonly wide: ArmOutcome;

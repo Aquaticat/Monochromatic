@@ -1,5 +1,5 @@
 import type { ContestLedger, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
@@ -168,7 +168,7 @@ export async function runEditorCalibrate(
     readonly pin: CorpusPin;
     readonly adoptGrace: () => CalibrationGrace;
     readonly readWriterGrace: () => WriterGrace;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly contestLedger: ContestLedger;
     readonly editorBenchStart?: number;
   },

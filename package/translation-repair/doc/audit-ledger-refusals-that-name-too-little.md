@@ -753,4 +753,5 @@ which were measured against Synthetic only,
 though `failureForReply` raises it for every provider;
 whether Hyper,
 OpenRouter or Bedrock refuse at that size is unmeasured.
-`SyntheticClient` and `createSyntheticClient` keep the Synthetic name for the routed client.
+`SyntheticClient` (renamed `ModelClient` on 2026-10-19) and `createSyntheticClient`
+keep the Synthetic name for the routed client.

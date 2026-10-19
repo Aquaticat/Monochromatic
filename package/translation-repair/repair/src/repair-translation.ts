@@ -10,7 +10,7 @@ import {
   sliceTagged,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   assessNonTranslationDominance,
@@ -142,7 +142,7 @@ export async function repairPreparedDocument(
     parentLogger = l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
     readonly signal: AbortSignal;

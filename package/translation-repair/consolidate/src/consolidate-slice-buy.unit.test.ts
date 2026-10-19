@@ -23,7 +23,7 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buyConsolidationSlice,
@@ -93,7 +93,7 @@ const SUBJECT = {
  ```
  */
 function countingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly asked: { producer: number; judge: number; gate: number; };
 } {
   /**
@@ -163,7 +163,7 @@ async function buyOverEmptyStanding(
     client,
     laneTexts,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly laneTexts: readonly LaneText[];
   },
 ): Promise<ConsolidationSettlement> {

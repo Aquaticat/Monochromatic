@@ -1,7 +1,7 @@
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '../../dist/final/node/index.mjs';
 
 //region Model reply scripted client
@@ -164,7 +164,7 @@ function outcomeOf<ValueT,>(
 export function modelReplyScriptedClient(
   { replies, }: { readonly replies: ReadonlyMap<string, ScriptedModelReply>; },
 ): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly requests: ChatJsonRequest<unknown>[];
 } {
   /**

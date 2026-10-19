@@ -29,7 +29,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { RUN_MODELS, } from '@monochromatic-dev/translation-repair-run';
 import type { RunnerClosure, } from '@monochromatic-dev/translation-repair-insertion';
@@ -240,7 +240,7 @@ async function driveOver(
           ...typed,
         ],
       },),
-      newClient: function buildClient(): SyntheticClient {
+      newClient: function buildClient(): ModelClient {
         counts.clients += 1;
         return auditScriptedClient({
           reportFor: function quiet() {

@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   rendersAsNothing,
   wordForCount,
@@ -372,7 +372,7 @@ async function tryCase(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly probe: CoverageControlCase;
     readonly modelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
@@ -602,7 +602,7 @@ export async function coverageControlHolds(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly cases: readonly CoverageControlCase[];
     readonly modelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;

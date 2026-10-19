@@ -32,7 +32,7 @@ import {
   decideBestCandidate,
   TranslationRepairInterruptedError,
 } from '@monochromatic-dev/translation-repair-translate-stage/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   gatherStageVoices,
   type HeardVoice,
@@ -136,7 +136,7 @@ export async function runArchiveBlockReviewStage(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;

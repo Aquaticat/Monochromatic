@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { runIntroducedDefectProbe, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { singleRegionTally, } from './probe-single-tally.ts';
 import type {
@@ -46,7 +46,7 @@ async function probeOne(
     stageSettings,
   }: {
     readonly arm: SensitivityArm;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<void> {
@@ -105,7 +105,7 @@ export async function runSensitivity(
     production,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly arms: readonly SensitivityArm[];
     readonly production: PriorIssueList;
     readonly stageSettings: StageSettings;

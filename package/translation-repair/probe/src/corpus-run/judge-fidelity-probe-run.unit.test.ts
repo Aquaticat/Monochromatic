@@ -32,7 +32,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
@@ -200,7 +200,7 @@ function inventedReader(
  const client = firstPositionClient({ asked: [], },);
  ```
  */
-function firstPositionClient({ asked, }: { readonly asked: string[]; },): SyntheticClient {
+function firstPositionClient({ asked, }: { readonly asked: string[]; },): ModelClient {
   return {
     chatText: () => Promise.reject(new Error('chatText unused by selection',),),
     quotas: () => Promise.reject(new Error('quotas unused by selection',),),
@@ -304,7 +304,7 @@ async function probeIn(
         runsAsked.push(runsDir,);
         return Promise.resolve(runsDir,);
       },
-      newClient: function buildClient({ promptPayloadDir, },): SyntheticClient {
+      newClient: function buildClient({ promptPayloadDir, },): ModelClient {
         clientBuilds.push({
           promptPayloadDir,
           planWasOnDisk: existsSync(join(

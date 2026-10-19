@@ -27,7 +27,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   AggregatedClaim,
@@ -134,7 +134,7 @@ function soloCluster({ suffix, }: { readonly suffix: string; },): ClaimCluster {
  */
 function panelClient(
   { ballotFor, }: { readonly ballotFor: (modelId: string,) => unknown; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -194,7 +194,7 @@ async function runStage(
     client,
     clusters,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly clusters: readonly ClaimCluster[];
   },
 ) {

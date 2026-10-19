@@ -33,7 +33,7 @@ import type {
   ChatTextReply,
   DecisionReply,
   DecisionRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   createSeatTally,
@@ -119,7 +119,7 @@ function innerClient(
     readonly text: string;
     readonly failing?: boolean;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     async chatText(): Promise<ChatTextReply> {
       if (failing)
@@ -182,7 +182,7 @@ function refusingClient(
     readonly provider: ProviderName;
     readonly status: number;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Failure every call raises.
    */
@@ -245,7 +245,7 @@ async function thrownByText(
     modelId,
     signal,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
   },
@@ -275,7 +275,7 @@ async function askFourTimes(
     client,
     signal,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly signal: AbortSignal;
   },
 ): Promise<unknown[]> {

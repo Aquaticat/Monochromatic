@@ -26,7 +26,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runTranslateStage, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -108,7 +108,7 @@ function deepVoiceClient(
     readonly deepReply: string;
     readonly needle: string;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    What each ordinary translator writes.
    */

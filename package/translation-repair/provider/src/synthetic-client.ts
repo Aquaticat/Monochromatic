@@ -8,7 +8,7 @@ import {
 import type {
   ChatTextReply,
   ChatTextRequest,
-  SyntheticClient,
+  ModelClient,
 } from './chat-contract.ts';
 import { chatJsonThrough, } from './chat-json-through.ts';
 import {
@@ -197,7 +197,7 @@ export function createSyntheticClient(
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;
   },
-): SyntheticClient {
+): ModelClient {
   /**
    Per-model limiter, created lazily for each model (`per-model-limiter.ts`).
    */

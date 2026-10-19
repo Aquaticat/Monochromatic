@@ -2,7 +2,7 @@ import { textsInCodePointOrder, } from '@monochromatic-dev/translation-repair-ma
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   buildCriticMessages,
@@ -141,7 +141,7 @@ export async function runCriticStage(
     fanOut,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly criticModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;

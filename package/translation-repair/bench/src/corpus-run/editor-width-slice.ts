@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { runArm, } from './editor-width-arm.ts';
 import { bothOrders, } from './editor-width-contest.ts';
@@ -65,7 +65,7 @@ export async function runWidthSlice(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly input: WidthProbeInput;
     readonly narrowEditorIds: readonly RosterModelId[];
     readonly wideEditorIds: readonly RosterModelId[];

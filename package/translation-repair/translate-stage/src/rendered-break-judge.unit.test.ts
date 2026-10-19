@@ -12,7 +12,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   judgeTranslateSlate,
@@ -41,7 +41,7 @@ await describe({
         /** Capture the exact sheets delivered to the judge client. */
         const sheets: string[] = [];
         /** This client responds only to the new evidence, not candidate order. */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => { throw new Error('No unstructured call expected',); },
           quotas: async () => { throw new Error('No quota read expected',); },
           chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {

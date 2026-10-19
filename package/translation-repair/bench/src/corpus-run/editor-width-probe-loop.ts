@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import type { gatherWidthInput, } from './editor-width-input.ts';
@@ -80,7 +80,7 @@ export async function runWidthDraw(
     runsDir,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly drawn: readonly BenchSlice[];
     readonly narrowEditorIds: readonly RosterModelId[];
     readonly wideEditorIds: readonly RosterModelId[];

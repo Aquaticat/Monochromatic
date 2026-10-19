@@ -536,7 +536,7 @@ const result = await repairTranslation({
 ```
 
 - `client` is an injected model client (`createSyntheticClient` or any
-  `SyntheticClient` implementation);
+  `ModelClient` implementation);
   the library performs no IO of its own.
 - `stageSettings` is the value `readStageSettings` (declared in the `stage` package) returns;
   `repairTranslation` requires it.

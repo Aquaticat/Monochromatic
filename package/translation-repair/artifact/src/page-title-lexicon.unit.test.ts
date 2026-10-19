@@ -20,7 +20,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   buildPageTitleLexiconMessages,
@@ -91,7 +91,7 @@ function scriptedClient(
     readonly replies: Readonly<Record<string, unknown>>;
     readonly asked: RosterModelId[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

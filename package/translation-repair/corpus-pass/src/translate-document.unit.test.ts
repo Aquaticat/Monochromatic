@@ -37,7 +37,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   makeInsertionChunk,
@@ -289,7 +289,7 @@ function laneClient(
     readonly silentForSource?: string;
     readonly translateConcurrency?: TranslateConcurrency;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);
@@ -673,7 +673,7 @@ await describe({
          Client that fails any exchange, so the case proves nothing was bought
          rather than only that the run refused.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('no exchange may be attempted under an empty roster',);
           },

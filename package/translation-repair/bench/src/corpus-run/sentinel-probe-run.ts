@@ -1,4 +1,4 @@
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type CorpusPin,
   listCorpusPeople,
@@ -78,9 +78,9 @@ export async function probeCorpusEntries(
   }: {
     readonly line: CommandLineOf<'sentinel-probe'>;
     readonly pin: CorpusPin;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly repair: (input: {
-      readonly client: SyntheticClient;
+      readonly client: ModelClient;
       readonly sourceText: string;
       readonly targetText: string;
       readonly models: RepairModels;

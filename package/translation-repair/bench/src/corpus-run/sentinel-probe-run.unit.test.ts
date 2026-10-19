@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
 import {
   probeCorpusEntries,
@@ -133,7 +133,7 @@ async function probeWith(
   /**
    Clients the run built.
    */
-  const clients: SyntheticClient[] = [];
+  const clients: ModelClient[] = [];
 
   /**
    Clock readings still to hand out.
@@ -150,7 +150,7 @@ async function probeWith(
         typed,
       },),
       pin: corpus.pin,
-      newClient: function newClient(): SyntheticClient {
+      newClient: function newClient(): ModelClient {
         return keptInertClient({ clients, },);
       },
       repair: async function scripted(input,): Promise<ProbedResult> {

@@ -1,4 +1,4 @@
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { readAskedCount, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -85,7 +85,7 @@ export async function runRosterBench(
   }: {
     readonly line: CommandLineOf<'roster-bench'>;
     readonly roster: readonly RosterModelId[];
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly drawSlices: (input: { readonly count: number; },) => Promise<readonly BenchSlice[]>;
     readonly readHead: () => Promise<string>;
     readonly writeReport: typeof writeBenchReport;

@@ -34,7 +34,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { slicePairOf, } from '@monochromatic-dev/translation-repair-slice-reading/ts/corpus-run/slice-pair-of.test-fixture.ts';
@@ -124,7 +124,7 @@ const LANE_ON: RepairModels = {
 /**
  Client no case here may call: the lane is off, or refused before it asks.
  */
-const SILENT_CLIENT: SyntheticClient = {
+const SILENT_CLIENT: ModelClient = {
   chatText: async () => {
     throw new Error('no call expected',);
   },

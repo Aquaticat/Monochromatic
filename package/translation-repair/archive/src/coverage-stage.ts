@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { TargetRegion, } from './coverage-foreign-region.ts';
 import {
   type CoverageVerdict,
@@ -109,7 +109,7 @@ export async function runCoverageStage(
     fanOut,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly sourcePassage: string;
     readonly translation: AnchorTarget;

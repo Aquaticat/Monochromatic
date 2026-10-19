@@ -20,7 +20,7 @@ import {
 
 import type {
   ChatTextRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   modelPromptDigest,
@@ -273,7 +273,7 @@ await describe({
             const store = promptPayloadStore({ dir: dir.path, },);
             /** Provider calls across both client instances. */
             let providerCalls = 0;
-            const firstInner: SyntheticClient = {
+            const firstInner: ModelClient = {
               chatText: async () => {
                 providerCalls += 1;
                 return {
@@ -298,7 +298,7 @@ await describe({
             },);
             const initial = await first.chatText(REQUEST,);
 
-            const resumedInner: SyntheticClient = {
+            const resumedInner: ModelClient = {
               chatText: async () => {
                 providerCalls += 1;
                 throw new Error('resumed client must not call provider',);
@@ -392,7 +392,7 @@ await describe({
             );
             const store = promptPayloadStore({ dir: dir.path, },);
             let providerCalls = 0;
-            const inner: SyntheticClient = {
+            const inner: ModelClient = {
               chatText: async () => {
                 providerCalls += 1;
                 return { text: 'must not run', };

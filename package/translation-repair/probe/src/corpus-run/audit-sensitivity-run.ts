@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type RenderingAuditReport,
   runRenderingAudit,
@@ -98,7 +98,7 @@ async function auditOne(
     readonly candidateText: string;
     readonly arm: string;
     readonly expectation: string;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<AuditArmRow> {
@@ -181,7 +181,7 @@ export async function runAuditSensitivity(
     stageSettings,
   }: {
     readonly arms: readonly AuditArm[];
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly runsDir: string;
     readonly startedAt: string;
     readonly now: () => string;

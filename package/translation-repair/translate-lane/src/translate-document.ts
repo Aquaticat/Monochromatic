@@ -5,7 +5,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   admitInsertions,
@@ -149,7 +149,7 @@ export async function translateDocument(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
 

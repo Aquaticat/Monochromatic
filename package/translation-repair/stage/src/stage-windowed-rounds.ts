@@ -4,7 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
@@ -202,7 +202,7 @@ export async function runWindowedRounds<ValueT,>(
     graceMs,
     fanOut = 'window',
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;

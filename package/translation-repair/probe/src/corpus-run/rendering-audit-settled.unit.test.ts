@@ -31,7 +31,7 @@ import { CacheFileUnreadableError, } from '@monochromatic-dev/translation-repair
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   auditOne,
@@ -251,7 +251,7 @@ function quietClient(
     readonly asked: string[];
     readonly shown: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the audit',);

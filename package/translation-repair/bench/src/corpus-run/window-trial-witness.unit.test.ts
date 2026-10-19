@@ -24,7 +24,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   assertWindowReachedJudges,
@@ -45,7 +45,7 @@ import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixtur
  ```
  */
 function recordingClient(): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly served: string[];
 } {
   /**

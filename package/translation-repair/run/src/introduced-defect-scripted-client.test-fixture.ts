@@ -3,7 +3,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { RUN_MODELS, } from '../dist/final/node/index.mjs';
 import { replyWith, } from '@monochromatic-dev/translation-repair-provider/ts/scripted-reply-outcome.test-fixture.ts';
@@ -210,7 +210,7 @@ export function probeScriptedClient(
     readonly asked: string[];
     readonly prompts?: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: unexpectedText,
     /**
@@ -266,9 +266,9 @@ export function probeScriptedClient(
  ```
  */
 export function successiveClients(
-  { clients, }: { readonly clients: readonly SyntheticClient[]; },
+  { clients, }: { readonly clients: readonly ModelClient[]; },
 ): {
-  readonly newClient: () => SyntheticClient;
+  readonly newClient: () => ModelClient;
   readonly built: () => number;
 } {
   /**
@@ -276,7 +276,7 @@ export function successiveClients(
    */
   const handed = { count: 0, };
   return {
-    newClient: function newClient(): SyntheticClient {
+    newClient: function newClient(): ModelClient {
       /**
        Client this call is owed.
        */

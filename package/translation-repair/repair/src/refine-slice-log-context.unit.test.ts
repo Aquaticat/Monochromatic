@@ -31,7 +31,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runRefinePhase, } from '../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -151,7 +151,7 @@ const OUTCOME: ChunkRepairOutcome = {
 /**
  Client answering every stage the phase runs.
  */
-const CLIENT: SyntheticClient = {
+const CLIENT: ModelClient = {
   chatText: async () => {
     throw new Error('chatText unused by the phase',);
   },

@@ -10,7 +10,7 @@ import type {
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { CANDIDATE_NONE, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { selectBestCandidate, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { FidelityDamageKind, } from '@monochromatic-dev/translation-repair-repair/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
@@ -342,7 +342,7 @@ export async function runFidelityTrial(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly trial: FidelityTrial;
     readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;

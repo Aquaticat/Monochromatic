@@ -25,7 +25,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
@@ -94,7 +94,7 @@ function silentClient(
     readonly silentModel: string;
     readonly calls: Record<string, number>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -155,7 +155,7 @@ function dryBenchClient(
     readonly failingSeat: string;
     readonly calls?: Record<string, number>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -217,7 +217,7 @@ function answeringBenchClient(
     readonly answeringSeats: readonly string[];
     readonly calls: Record<string, number>;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -310,7 +310,7 @@ function stallingClient(
     readonly calls: Record<string, number>;
     readonly cuts: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -386,7 +386,7 @@ function flakyClient(
     readonly calls: Record<string, number>;
     readonly transport?: boolean;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -460,7 +460,7 @@ function hangingClient(
     };
     readonly lateMs?: number;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -842,7 +842,7 @@ await describe({
         /** Text of every message each call to the flaky model carried, in call order. */
         const seen: (readonly string[])[] = [];
         /** Client whose named model reads badly until the prompt tells it what went wrong. */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },
@@ -921,7 +921,7 @@ await describe({
         + 'seven cap-cut replies as an outage)',
       fn: async () => {
         /** Client whose named model answers, but in a shape nothing can read, every time. */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },
@@ -1358,7 +1358,7 @@ await describe({
         /** Seat that never delivers. */
         const silent = SEAT_SYNTHETIC_VISION_WITHHELD;
         /** Client scripting the three seats. */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },
@@ -1426,7 +1426,7 @@ await describe({
         /** Seat whose first reply parsed to nothing the guard reads. */
         const offShape = SEAT_SYNTHETIC_VISION_WITHHELD;
         /** Client scripting the three seats. */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },

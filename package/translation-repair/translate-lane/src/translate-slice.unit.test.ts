@@ -34,7 +34,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { settleTranslateSlice, } from '../dist/final/node/index.mjs';
 import {
@@ -153,7 +153,7 @@ type SentRequests = {
   /**
    Client recording them and answering both roles.
    */
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
 };
 
 /**

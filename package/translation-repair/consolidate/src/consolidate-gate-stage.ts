@@ -5,7 +5,7 @@ import {
 
 import type {
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { contestResponseFormat, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import {
@@ -211,7 +211,7 @@ export async function gateConsolidatedSlice(
     fanOut,
     stageSettings,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: ConsolidateGateSubject;
     readonly signal: AbortSignal;

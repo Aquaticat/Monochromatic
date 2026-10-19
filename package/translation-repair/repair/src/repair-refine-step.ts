@@ -2,7 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   failureWritten,
@@ -128,7 +128,7 @@ export async function refineSettledSlices(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly targetText: string;
     readonly slices: readonly ChunkPair[];
     readonly outcomes: readonly ChunkRepairOutcome[];

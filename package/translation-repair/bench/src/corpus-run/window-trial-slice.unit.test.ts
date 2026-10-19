@@ -31,7 +31,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   armOrderFor,
@@ -141,7 +141,7 @@ const TENSE_BLOCK_LINE = 'These sentences match present-tense shapes in a memori
 function driftingClient({ ballot = 0, }: {
   readonly ballot?: number;
 } = {},): {
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
   readonly judgeSheets: string[];
   readonly translateSheets: string[];
   readonly served: { count: number; };

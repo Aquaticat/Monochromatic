@@ -1,6 +1,6 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type {
   ChunkRepairOutcome,
@@ -84,7 +84,7 @@ export async function repairTranslation(
     overlap = 1,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly sourceText: string;
     readonly targetText: string;
     readonly models: RepairModels;

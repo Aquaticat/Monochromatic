@@ -31,7 +31,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   translateDocument,
@@ -126,7 +126,7 @@ const ATTESTED_QUOTE = 'inside of the cardboard box';
  */
 function recordingClient(
   { requests, }: { readonly requests: { readonly schema: string; readonly content: string; }[]; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the translate lane',);

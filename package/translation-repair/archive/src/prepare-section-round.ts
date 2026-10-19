@@ -2,7 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { alignHeadingsForced, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type {
   ContentChunk,
@@ -299,7 +299,7 @@ export async function buySectionPairing(
     sectionCache,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly source: RepairDocument;
     readonly target: RepairDocument;

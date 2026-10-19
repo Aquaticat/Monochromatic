@@ -49,7 +49,7 @@ import {
 import {
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   coverageControlHolds,
@@ -151,7 +151,7 @@ const TIGHT_CASES = coverageControlCasesAt({
  */
 function sheetReadingClient(
   { carries, }: { readonly carries: (sheet: string) => boolean; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by the coverage control',);
@@ -291,7 +291,7 @@ await describe({
         /**
          Client answering that the passage is not carried at all.
          */
-        const denying: SyntheticClient = {
+        const denying: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused by the coverage control',);
           },

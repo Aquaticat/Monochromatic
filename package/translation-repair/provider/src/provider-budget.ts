@@ -12,7 +12,7 @@ import {
   type ProviderRecord,
   providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { SyntheticClient, } from './chat-contract.ts';
+import type { ModelClient, } from './chat-contract.ts';
 import {
   type MeterState,
   readEveryMeter,
@@ -320,7 +320,7 @@ export function createProviderBudgets(
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
     now = monotonicMs,
   }: {
-    readonly synthetic?: Pick<SyntheticClient, 'quotas'>;
+    readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;

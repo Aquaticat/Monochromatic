@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type CorpusPin,
   listCorpusPeople,
@@ -128,7 +128,7 @@ export async function runCoverageProbe(
   }: {
     readonly line: CommandLineOf<'coverage-probe'>;
     readonly pin: CorpusPin;
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly stage: typeof runCoverageStage;
     readonly roster: readonly RosterModelId[];
     readonly exchangeTimeoutMs: number;

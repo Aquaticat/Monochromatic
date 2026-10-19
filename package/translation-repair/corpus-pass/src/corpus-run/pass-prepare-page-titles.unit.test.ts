@@ -22,7 +22,7 @@ import { PAGE_TITLE_LEXICON_RESPONSE_FORMAT, } from '@monochromatic-dev/translat
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { preparePassEntry, } from '../../dist/final/node/index.mjs';
@@ -82,7 +82,7 @@ const ARCHIVE = 'The kitten sang.\n\nShe fell asleep.\n';
  const client = lexiconClient({ lexiconAsked: [], },);
  ```
  */
-function lexiconClient({ lexiconAsked, }: { readonly lexiconAsked: RosterModelId[]; },): SyntheticClient {
+function lexiconClient({ lexiconAsked, }: { readonly lexiconAsked: RosterModelId[]; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

@@ -4,7 +4,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 
 //region Window trial witness
@@ -89,7 +89,7 @@ export type SheetWitness = {
   /**
    Stand-in passed to the arms in place of the real client.
    */
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
 
   /**
    Every sheet sent through it, joined per exchange, in order.
@@ -115,7 +115,7 @@ export type SheetWitness = {
  ```
  */
 export function witnessSheets(
-  { client, }: ForeignBorrowed<{ readonly client: SyntheticClient; }>,
+  { client, }: ForeignBorrowed<{ readonly client: ModelClient; }>,
 ): SheetWitness {
   /**
    Sheets seen so far, which the caller reads after the first purchase.

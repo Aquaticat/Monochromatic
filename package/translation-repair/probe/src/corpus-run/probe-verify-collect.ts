@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   runIntroducedDefectProbe,
@@ -69,7 +69,7 @@ async function probeWithheld(
     stageSettings,
   }: {
     readonly relabelCase: RelabelCase;
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<readonly ScreenedDefectClaim[]> {
@@ -129,7 +129,7 @@ export async function collectFlagged(
   }: {
     readonly cases: readonly RelabelCase[];
     readonly kind: 'damaged' | 'control';
-    readonly newClient: () => SyntheticClient;
+    readonly newClient: () => ModelClient;
     readonly stageSettings: StageSettings;
   },
 ): Promise<readonly VerifyItem[]> {

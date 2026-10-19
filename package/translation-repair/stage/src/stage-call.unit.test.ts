@@ -27,7 +27,7 @@ import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provid
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { attemptStageCall, } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -71,7 +71,7 @@ function scriptedClient(
     readonly outcome?: unknown;
     readonly thrown?: Error;
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused',);
@@ -122,7 +122,7 @@ async function callWith(
     signal,
     logger = l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly signal: AbortSignal;
     readonly logger?: typeof l;
   },
@@ -504,7 +504,7 @@ await describe({
         /**
          Client recording the request it was handed.
          */
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => {
             throw new Error('chatText unused',);
           },

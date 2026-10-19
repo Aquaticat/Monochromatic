@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { ConsolidateGateOutcome, } from './consolidate-gate-stage.ts';
 import { gateAndShip, } from './consolidate-settle-gate.ts';
@@ -401,7 +401,7 @@ export async function settleConsolidation(
     l,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly roster: readonly RosterModelId[];
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly subject: ConsolidationSubject;

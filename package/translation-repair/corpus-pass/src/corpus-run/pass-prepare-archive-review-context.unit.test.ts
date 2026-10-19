@@ -26,7 +26,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-archive';
 import { preparePassEntry, } from '../../dist/final/node/index.mjs';
@@ -108,7 +108,7 @@ function contextClient(
     readonly reviews: string[];
     readonly selections: string[];
   },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);

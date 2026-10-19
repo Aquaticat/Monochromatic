@@ -1,6 +1,6 @@
 import {
   createSyntheticClient,
-  type SyntheticClient,
+  type ModelClient,
 } from '../dist/final/node/index.mjs';
 
 //region Streaming reply client
@@ -25,7 +25,7 @@ import {
  */
 export function cannedClient(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
-): SyntheticClient {
+): ModelClient {
   /**
    Calls served so far, so each model gets its own reply.
    */

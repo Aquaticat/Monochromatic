@@ -2,7 +2,7 @@ import { join, } from 'node:path';
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type {
   CorpusPin,
   listCorpusPeople,
@@ -114,7 +114,7 @@ export async function runWindowTrial(
   }: {
     readonly runsDir: string;
     readonly headSha: string;
-    readonly makeClient: () => SyntheticClient;
+    readonly makeClient: () => ModelClient;
     readonly pin: CorpusPin;
     readonly listPeople: PeopleLister;
     readonly readPage: CorpusPageReader;

@@ -43,7 +43,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
-  type SyntheticClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { repairChunk, } from '../dist/final/node/index.mjs';
 import {
@@ -146,7 +146,7 @@ async function criticSheets(
   /**
    Client answering every critic with a report naming nothing.
    */
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => {
       throw new Error('chatText unused by the slice driver',);
     },

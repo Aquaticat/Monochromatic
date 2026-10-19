@@ -7,7 +7,7 @@ import type {
   ChatTextReply,
   ChatTextRequest,
   JsonSchemaResponseFormat,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -112,7 +112,7 @@ export type RecordingClient = {
   /**
    Client to hand to the stage.
    */
-  readonly client: SyntheticClient;
+  readonly client: ModelClient;
 
   /**
    Rows accumulated so far; read after the run.
@@ -199,7 +199,7 @@ function usageOf(
  ```
  */
 export function recordingClient(
-  { inner, }: ForeignBorrowed<{ readonly inner: SyntheticClient; }>,
+  { inner, }: ForeignBorrowed<{ readonly inner: ModelClient; }>,
 ): RecordingClient {
   /**
    Rows this wrapper has recorded.

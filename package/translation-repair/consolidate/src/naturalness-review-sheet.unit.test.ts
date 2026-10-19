@@ -26,7 +26,7 @@ import {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { buildAbsoluteNaturalnessReviewMessages, } from '@monochromatic-dev/translation-repair-archive';
 import { polishConsolidation, } from '../dist/final/node/index.mjs';
@@ -76,7 +76,7 @@ const reviewSystem = buildAbsoluteNaturalnessReviewMessages({
 
  @returns Scripted client
  */
-function recordingClient({ reviewSheets, }: { readonly reviewSheets: string[]; },): SyntheticClient {
+function recordingClient({ reviewSheets, }: { readonly reviewSheets: string[]; },): ModelClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by structured polish stages',);

@@ -20,7 +20,7 @@ import {
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type {
   ChatTextRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { readImagePair, } from '../dist/final/node/index.mjs';
 import {
@@ -98,7 +98,7 @@ async function found(): Promise<{
  */
 function scriptedClient(
   { byModel, }: { readonly byModel: Readonly<Record<string, string>>; },
-): SyntheticClient {
+): ModelClient {
   return {
     chatText: async (request,) => {
       /**

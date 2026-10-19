@@ -12,7 +12,7 @@ import type {
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
@@ -63,9 +63,9 @@ function proposed({ modelId, text, }: { readonly modelId: RosterModelId; readonl
  const fixture = judges();
  ```
  */
-function judges(): { readonly client: SyntheticClient; readonly prompts: string[]; } {
+function judges(): { readonly client: ModelClient; readonly prompts: string[]; } {
   const prompts: string[] = [];
-  const client: SyntheticClient = {
+  const client: ModelClient = {
     chatText: async () => { throw new Error('Unexpected text call'); },
     quotas: async () => { throw new Error('Unexpected quota call'); },
     chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
@@ -97,7 +97,7 @@ await describe({
         const controller = new AbortController();
         const reason = new Error('Stop after observing the panel boundary');
         const prompts: string[] = [];
-        const client: SyntheticClient = {
+        const client: ModelClient = {
           chatText: async () => { throw new Error('Unexpected text call'); },
           quotas: async () => { throw new Error('Unexpected quota call'); },
           chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
@@ -127,7 +127,7 @@ await describe({
       name: 'CARRIES document evidence through the editor stage to both selecting responsibilities',
       fn: async () => {
         const fixture = judges();
-        const client: SyntheticClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
+        const client: ModelClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
           if (request.responseFormat?.json_schema.name !== 'editor_report') return await fixture.client.chatJson(request);
           const value = { edits: [{ region: 1, newText: request.modelId === SEAT_HYPER_OPENROUTER_VISION_EDITOR ? 'She greeted her friend warmly.' : 'Her friend greeted her.', },], };
           if (!request.validate(value)) throw new Error('Invalid fixture editor reply');

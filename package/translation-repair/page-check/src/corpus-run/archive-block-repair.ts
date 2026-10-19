@@ -3,7 +3,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { runArchiveBlockReviewStage, } from '@monochromatic-dev/translation-repair-archive/ts';
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { UnclaimedTargetBlock, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -250,7 +250,7 @@ export async function repairArchiveBlocks(
     beforeBlock,
     stageSettings,
   }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
+    readonly client: ModelClient;
     readonly modelIds: readonly RosterModelId[];
     readonly targetText: string;
     readonly sourceContexts: ReadonlyMap<string, string>;

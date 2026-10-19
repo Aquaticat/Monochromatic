@@ -12,7 +12,7 @@ import {
 
 import type {
   ChatTextRequest,
-  SyntheticClient,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import { MalformedCompletionError, } from '@monochromatic-dev/translation-repair-provider-stream';
@@ -59,7 +59,7 @@ await describe({
       fn: async () => {
         /** Provider calls crossing wrapper. */
         let providerCalls = 0;
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async () => {
             providerCalls += 1;
             return { text: 'first payload', };
@@ -83,7 +83,7 @@ await describe({
       fn: async () => {
         /** Provider calls crossing wrapper. */
         let providerCalls = 0;
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async () => {
             providerCalls += 1;
             return { text: 'not-json', };
@@ -134,7 +134,7 @@ await describe({
       fn: async () => {
         /** Provider calls crossing wrapper. */
         let providerCalls = 0;
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async () => {
             providerCalls += 1;
             if (providerCalls === 1)
@@ -162,7 +162,7 @@ await describe({
       fn: async () => {
         /** Provider calls crossing wrapper. */
         let providerCalls = 0;
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async () => {
             providerCalls += 1;
             throw new MalformedCompletionError({
@@ -265,7 +265,7 @@ await describe({
       fn: async () => {
         /** Provider calls crossing wrapper. */
         let providerCalls = 0;
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async () => {
             providerCalls += 1;
             return { text: 'single payload', };
@@ -293,7 +293,7 @@ await describe({
       fn: async () => {
         /** Every request that crossed the wrapper, in order. */
         const asked: ChatTextRequest[] = [];
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async (request,) => {
             asked.push(request,);
             return (asked.length === 1)
@@ -332,7 +332,7 @@ await describe({
       fn: async () => {
         /** Every request that crossed the wrapper, in order. */
         const asked: ChatTextRequest[] = [];
-        const inner: SyntheticClient = {
+        const inner: ModelClient = {
           chatText: async (request,) => {
             asked.push(request,);
             if (asked.length === 2)
