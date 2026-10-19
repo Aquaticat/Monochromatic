@@ -1015,17 +1015,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     1 dev-profile groundwork plus the cadence driver kept in the repo; 2 renderer switch; 3 row scene on the GPU;
     4 selection, find, underlines, hint rows and wrap sign as scene content; 5 minimap as a GPU slice texture;
     6 delete the CPU pipeline (`text_raster.rs`, `glyph_cache.rs`, tile image path, `swash`, `renderer-software`).
-    Skia (owner question of 2026-10-19): Slint 1.18.1 has `renderer-skia` (also `-opengl`, `-vulkan`) and its Skia
-    renderer has a wgpu 30 surface (`i-slint-renderer-skia-1.18.1/wgpu_30_surface.rs`), so design C could sit on Skia
-    instead of FemtoVG; it draws text with `draw_glyphs_at` (`itemrenderer.rs:1109`). Not built or measured. Stage 2
-    measures `renderer-skia` against `renderer-femtovg-wgpu` on the real IDE (cadence, build time, binary size,
-    memory) before the renderer is fixed; whether Skia's own glyph masks count as CPU painting is the same
-    library-atlas question the owner already answered for FemtoVG. Read in a shallow clone of Skia at `chrome/m150`
-    (`~/temp/agent/skia-2026-10-19`, the milestone `skia-bindings` pins): `SkStrike::prepareForImage`
-    (`src/core/SkStrike.cpp:356`) sets the glyph image through the scaler context, whose FreeType backend
-    (`src/ports/SkFontHost_FreeType.cpp:1398`, `generateImage`) rasterizes it on the CPU, and Ganesh uploads that image
-    into its glyph atlas; larger glyphs are drawn as paths or distance fields. So Skia has the same CPU glyph atlas
-    as FemtoVG for chrome-size text and gains nothing on the strict reading; it is a quality and speed candidate only.
+    Skia (owner decision of 2026-10-19): not pursued; the stage 2 renderer is `renderer-femtovg-wgpu` and Skia is not
+    measured. Finding kept: Skia rasterizes chrome-size glyph masks on the CPU through FreeType into its atlas
+    (`src/core/SkStrike.cpp:356`, `src/ports/SkFontHost_FreeType.cpp:1398` at `chrome/m150`), like FemtoVG.
     Running now (started 2026-10-19, Sonnet agents in worktrees, nothing pushed by them): stage 0 agent
     `a90c692a544c2aecc` (feasibility doc `doc/planning/ide-gpu-snapshot-harness.md`, harness, one test file migrated;
     a CPU Vulkan driver such as lavapipe is an open owner question, not adopted) and stage 1 agent
