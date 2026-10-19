@@ -87,6 +87,18 @@ Removing the obsolete extension entry does not remove native bypass or its fixed
 
 ## Alternatives and verification
 
+### Interpreting a low operation score
+
+The 2026-10-19 scoped-commit incident receives an `approve` score of `0.56`,
+below the adopted `0.6` cutoff.
+This establishes the manual-routing mechanism, not the reason for the model's estimate.
+Root's subsequent claim that excluding `APG` proves a concrete authorization gap was incorrect.
+That rule describes auto-push behavior and does not grant permission;
+the captured context includes `PX3`, which addresses local work and current-repository GitHub mutations.
+Policy-text omission alone does not establish a missing authorization or justify changing admission policy.
+
+### Existing fallback alternatives
+
 Reusing old approval by action description would bind permission to an ambiguous description.
 Automatically allowing after a transport failure would authorize without evidence.
 Blocking confirmation because parsing failed would prevent the human from reviewing the original operation.

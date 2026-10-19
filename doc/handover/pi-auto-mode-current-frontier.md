@@ -6,6 +6,15 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Verified retry and current proof gaps, 2026-10-19
 
+The user corrected root's claim that omitting `APG` establishes a concrete authorization gap.
+That claim is retracted.
+`APG` states that auto-push is enabled; it does not authorize or prohibit the operation.
+Captured requests include `PX3`, which addresses local work and current-repository GitHub mutations.
+The measured absence of `APG` proves neither lost permission evidence nor the cause of the low operation score.
+The command's actual effects and its authorization remain separate questions.
+Do not broaden policy material or change the admission cutoff on the basis of that unsupported inference.
+Continue investigating the actual supplied permission evidence and unchanged-request variation.
+
 Root checkpoints `73c798fd8b`, `8b77ad7bf4` and `23088d1d4a` preserve formatting,
 correct the wrapper type-check direction and keep aggregate members unknown during classification.
 Frozen combined `post-style-combined-candidate-ZwhD7d` at `8b77ad7bf4` passes both builds,
