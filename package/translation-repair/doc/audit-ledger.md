@@ -205,7 +205,8 @@ named for that subject and listed here.
   and checks that vouched for a whole text on one part of it.
 - [Audit ledger: test cases that cannot fail](audit-ledger-test-cases-that-cannot-fail.md):
   Cases and guards that would pass with the behaviour they name removed,
-  and a pass-through that no case depended on.
+  a pass-through that no case depended on,
+  and the mutations of four rounds' guards that no test fails.
 - [Audit ledger: files a later run reads back](audit-ledger-files-a-later-run-reads-back.md):
   Caches,
   ledgers,
@@ -378,7 +379,8 @@ named for that subject and listed here.
   The emphasis readers that parsed without the page's definitions (B668),
   the contradictions in the TSDoc of the consistency cache version (B669),
   the account of the pairing cache version from `d614a0c1d` to `29d606470` (B670),
-  the Synthetic quota body the meter reader refused on 2026-10-18 (B671),
+  the Synthetic quota body the meter reader refused on 2026-10-18 (B671,
+  seen again for a whole pass),
   a clock-zone slip in that account (B672),
   and the request to read the words of a place with recorded definitions, which reads the page the other way and was not built (B673).
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
@@ -471,7 +473,8 @@ named for that subject and listed here.
   chained commands,
   commands batched with the write they read,
   tasks run from the wrong place,
-  and scratch output without bound.
+  scratch output without bound,
+  and a prescribed command changed and run from the wrong folder.
 - [Audit ledger: process mistakes, launch checks and cache versions](audit-ledger-process-launch-checks-and-cache-versions.md):
   What went unchecked before a run launched:
   the full suite,
@@ -525,6 +528,10 @@ named for that subject and listed here.
   a mistake of the lead's brief for the archive fixes,
   and two of the lead's brief for the docs round.
   The lead's other two mistakes of those days are filed in the shell commands and the claims files.
+- [Audit ledger: process mistakes, agents and briefs in the rounds after the split](audit-ledger-process-agents-and-briefs-rounds-after-the-split.md):
+  Two briefs of the lead whose search text was never run against what it searches,
+  a proof pattern and a pathspec,
+  and a report that the tool refused to write.
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
   The lead's own slips as they were collected at the close of each batch of work,
   and in merging the work of two rounds.
@@ -534,11 +541,13 @@ named for that subject and listed here.
   briefs that left out the owner of shared helpers and the scans,
   shell and commit rules broken again,
   estimates and probes of the lint cost,
-  and a control and a link checker that read the wrong thing.
+  a control and a link checker that read the wrong thing,
+  and a baseline lint run that linted the changed plugin.
 - [Audit ledger: process mistakes, checks run before a commit](audit-ledger-process-commit-gates.md):
   Commits made without the suite,
   the lint,
-  the scans or the type check that would have refused them.
+  the scans or the type check that would have refused them,
+  and a round landed without the round before it.
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md):
   Turns that ended with work still listed,
   and waits spent polling.
@@ -790,6 +799,7 @@ Filed in:
 - [Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md)
 - [Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds](audit-ledger-process-agents-and-briefs-reference-edge-and-prose-mask-rounds.md)
 - [Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)
+- [Audit ledger: process mistakes, agents and briefs in the rounds after the split](audit-ledger-process-agents-and-briefs-rounds-after-the-split.md)
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md)
 - [Audit ledger: process mistakes, the package split](audit-ledger-process-the-package-split.md)
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md)

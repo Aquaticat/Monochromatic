@@ -5,7 +5,8 @@ chained commands,
 commands batched with the write they read,
 tasks run from the wrong place,
 scratch output without bound,
-and a worktree added without the flag that stops the copy of ignored files (M224).
+a worktree added without the flag that stops the copy of ignored files (M224),
+and a prescribed command changed and run from the wrong folder (M256).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -703,3 +704,31 @@ before the entries are named by a cause.
 "Shell commands",
 and `mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".
+
+## M256: the first review call to `pi` changed the prescribed command and ran from a scratch folder
+
+Status:
+happened after the split of 2026-10-18 (UTC),
+in the lead's first `pi` call of the review that the repository's `CLAUDE.md` prescribes beside the advisor,
+and was read from the error file `s245/sol-review/answer.err`.
+The call added `--no-context-files` and `--no-session` to the prescribed command
+and ran from a scratch folder.
+The notes say that `pi`'s bootstrap for its automatic mode reads `<cwd>/AGENTS.md`,
+which the scratch folder does not hold,
+and that the call failed with `ENOENT`.
+The cause is the notes' reading of that error file;
+the bootstrap source was not opened for this entry.
+The review that the handover records as answered (`s245/sol-review/answer-gpt61.md`) is a later call.
+
+The notes say that `doc/troubleshooting/pi-sdk-staging.md` already records the launch directory.
+A search of `doc/troubleshooting` and `doc/runbook` for `ENOENT` beside `AGENTS.md`,
+for `--no-context-files`
+and for a launch from the repository root found no such record about `pi`,
+so no troubleshooting document is cited here.
+
+Prevention:
+the command a rule prescribes is run as written,
+from the directory the rule names,
+and a flag is added only after a call without it has failed for a reason the flag removes.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands".

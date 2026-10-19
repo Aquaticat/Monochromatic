@@ -175,6 +175,11 @@ an agent's read of the corpus clone was refused inside the agent,
 and the count it then asked the lead to run stayed untaken and went to the owner (M118);
 a before-and-after measurement of one module renders both versions from scratch copies
 whose relative imports point at the worktree's sources.
+A command that the repository's rules prescribe is run as written and from the folder the rule names:
+the review call to `pi` was sent with two flags added,
+from a scratch folder,
+and failed on a missing `AGENTS.md` there (ledger M256).
+A flag is added only after a call without it has failed for a reason the flag removes.
 
 What enforces it:
 nothing automated yet;
@@ -694,6 +699,10 @@ with the round's own change,
 file by file and by a script,
 before the commit,
 and the build of the merged tree follows at once (ledger M238).
+A range is landed only after its base is checked to be an ancestor of the branch
+and every earlier round from the same worktree is found in the branch's `git log`:
+the first round of `w186` stood in the handover as done and was never landed,
+and the second round's conflict on the ledger file the first had created was what showed it (ledger M264).
 
 What enforces it:
 nothing in the package;
@@ -887,6 +896,19 @@ a checksum or a `diff` of a file counted as a read of it,
 and a ban on searching session transcripts,
 and the heading of its rules says "the last author broke the first three" (ledger M234).
 The docs round for the seven broke the same forms in spite of its brief (ledger M235).
+A search text in a brief is run against the thing it searches before the brief is sent:
+a proof pattern for a bundle matched nothing in either bundle,
+because the built code writes its digit between backticks (ledger M259),
+and a pathspec `'package/translation-repair/*/src'` matched no file below `src`
+and returned 10 commits all from before the split,
+where 40 production commits were wanted (ledger M260).
+Each carries a positive control,
+a case known to be found,
+and a proof pattern a negative control as well,
+run on both bundles.
+A report that a brief asks for is returned as text in the hand-back too,
+since the tool has twice refused an agent's Write of its report file (ledger M226,
+M261).
 A brief that carries a cause into a doc cites the report that names it with the report's own limit,
 and cites beside it the later finding that confirmed or refuted it (ledger M236).
 A brief names a path only after the lead has listed it,

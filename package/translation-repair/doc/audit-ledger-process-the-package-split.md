@@ -13,7 +13,10 @@ a handover past its line limit (M250),
 a control read at the wrong commit (M251),
 estimates and probes of the lint cost (M252 and M253),
 a comparison that read key order as a difference (M254),
-and a link checker that read text as Markdown (M255).
+a link checker that read text as Markdown (M255),
+and,
+after the split,
+a baseline lint run that linted the changed plugin (M262).
 All are the split lead's own unless the entry says an agent's.
 The defects the work found in the moved code,
 configs and scans are filed in
@@ -24,6 +27,7 @@ the evidence files they cite under `s245/split/`,
 which were not reopened for this file,
 and the messages of the commits named in each entry.
 The sizes and counts are the notes' own.
+M262 was written on 2026-10-19 (UTC) from the lead's notes after the split (`s245/ledger-notes-after-split.md`).
 Paths here are written in the layout after the split.
 Where the notes name no prevention,
 the entry says so.
@@ -394,3 +398,23 @@ The handover commit `a3f38fc909` records that the reported dead link is an escap
 Prevention:
 a link checker parses Markdown and not text.
 Recorded in "Searches and censuses that miss" of `mistake-prevention-guards-searches-and-claims.md`.
+
+## M262: the first baseline run of the whole-repository lint comparison linted the hardened plugin
+
+Status:
+happened after the split of 2026-10-18 (UTC),
+in the comparison of the lint of every package under the baseline bundle and under the hardened bundle of the shared
+analysis (`w177-notes/fullrepo/`).
+The saved baseline copy of `package/config/oxlint/dist` kept its old file times.
+The lint task of the root `mise.toml` runs `ensureOxlintConfig` first,
+which rebuilds that `dist` when a plugin source is newer than the oldest output,
+so the first baseline run rebuilt the bundle from the hardened plugin source and linted with it.
+The run is kept as `w177-notes/fullrepo/base-cold-invalid-rebuilt/`
+and was not used as the baseline.
+
+Prevention:
+a bundle is swapped in with fresh file times,
+and the live bundle is proved after every package,
+not only at the start of a phase.
+`mistake-prevention-moves-splits-and-rewrite-scripts.md`,
+"Estimating and measuring a cost".

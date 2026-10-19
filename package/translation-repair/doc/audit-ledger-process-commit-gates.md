@@ -2,7 +2,8 @@
 
 Commits made without the suite,
 the lint,
-the scans or the type check that would have refused them.
+the scans or the type check that would have refused them,
+and a round landed without the round before it (M264).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -430,3 +431,23 @@ path lists for a commit are generated from the worktree status immediately befor
 and at no other time.
 `mistake-prevention.md`,
 "Commit messages".
+
+## M264: a round recorded in the handover as done was never landed, and its successor conflicted
+
+Status:
+happened on 2026-10-18 (UTC) with the two rounds of `w186`.
+The first round (`074599761e` to `dcf55b5eae`,
+B668 to B671) was recorded in the handover as done,
+and was never cherry-picked onto the branch.
+Landing the second round (B672 and B673) alone conflicted on the ledger file that the first round had created,
+and the conflict showed that the first had not landed.
+Both rounds landed together after gate g104
+(the gate was green on `67c9b1accb`,
+with the landing pushed as far as `ce7be13112`).
+
+Prevention:
+before a range is landed,
+its base is checked to be an ancestor of the branch,
+and every earlier round from the same worktree is found in the branch's `git log`.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Work merged from parallel briefs".

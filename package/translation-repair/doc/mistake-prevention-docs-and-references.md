@@ -22,6 +22,10 @@ and "Copies of shared code" went on saying nothing fails on a shared module with
 A batch's state file listed two agents as running after the session that launched them had ended,
 their folders unwritten since 2026-10-06 (UTC) and nothing handed back,
 and four days passed before a merge showed their patches missing (ledger M140).
+The design commitments page went on calling the fixes of n166,
+n168 and n169 "green and not landed"
+after they landed with n171,
+and had no record of the carry run-off of B641 (ledger M263).
 
 The rule:
 a page read,
@@ -42,6 +46,10 @@ A change that adds a guard searches this doc for sentences calling the gap open
 (`rg --line-number 'Nothing yet|is open' package/translation-repair/doc/mistake-prevention.md`,
 and the guard's subject by name)
 and rewrites each in the same change.
+A landing does the same for the commitments page:
+it searches `package/translation-repair/doc/design-commitments.md` for the name of each round it lands
+and for "not landed",
+and rewrites each sentence that states the old state in the same sitting (ledger M263).
 
 What enforces it:
 habit,

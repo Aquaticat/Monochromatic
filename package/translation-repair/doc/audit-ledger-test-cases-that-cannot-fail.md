@@ -858,3 +858,48 @@ since the pass-through exists,
 so its failure is shown by guard removal:
 with `definitions,` removed from the call,
 1 row passes and 2 fail.
+
+## B674: 64 of 287 mutations of the guards of four rounds passed every test, and three change what the code does
+
+Found after the split of 2026-10-18 (UTC) by the guard demonstrations of the rounds n168,
+n169,
+n171 and n173
+(`w181`;
+the tables are `w181-notes/report-tests.md` and `w181-notes/report-tables.md`,
+which give the reason for each mutation).
+
+Outcome written on 2026-10-19 (UTC).
+The demonstrations ran 287 mutations of the guards.
+223 failed at least one test and 64 still pass.
+
+Three survivors change what the code does,
+and no test sees it:
+
+- `n169-locate-shown-definitions` changes the result on 266 of the 21,870 rows that the demonstration generated.
+- `n171-B639-lf-last-digit` makes the reader refuse a bare label `12`.
+- `n171-slot-apostrophes`,
+  for which the notes name no input.
+
+The other survivors fall in three kinds,
+each with its reason in `report-tables.md`:
+paths no test pins
+(the log line of the run-off,
+the key and stage of the run-off,
+and recount checks that shadow each other),
+equivalent mutants,
+and unreachable branches.
+
+The agent's Write of `report.md` was refused by the tool,
+and its hand-back is the report (M261).
+
+Status:
+open.
+The handover records that a test round (`w188`) pinned every reachable survivor in 15 commits that change tests only,
+on `95a57f628d`,
+and that they are not yet on the branch;
+its notes land with that code and are not read here,
+so this entry does not say whether each new case fails under its mutation.
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".

@@ -502,3 +502,33 @@ The scope of a rule is decided from what the language allows,
 and each shape the count shows as zero gets a hand-built input before the rule leans on its absence.
 `mistake-prevention.md`,
 "Searches and censuses that miss".
+
+## M258: a null over stored runs was taken from artifacts that predate the field under test
+
+Status:
+happened after the split of 2026-10-18 (UTC),
+in the first check of stored artifacts for the finalist extension (`w180-notes/reader-check/`).
+The check searched the pooled runs directory only and found 164 legacy artifacts,
+none with a consistency record.
+Every hand-picked pass writes to a throwaway `${HOME}/temp/agent/<run>/` directory
+(step 1 of `doc/runbook/translation-repair-corpus-pass.md`),
+so the consistency-era runs of TianqiChen666 were not in the pool,
+and a null over artifacts that predate the feature cannot test the feature.
+
+The notes record it as caught because a null over artifacts that predate the feature cannot test the feature.
+The handover records the re-run over the five consistency-era TianqiChen666 run directories:
+the new reader refused `corpus-pass-TianqiChen66624` group 0
+(generation 17,
+2 to 1 to 1 of 4,
+no run-off),
+which the old reader accepted,
+so the artifact generation was bumped and generation 17 and earlier were recounted under the tied-only rule
+(B657 to B664).
+None of the 164 artifacts of the first search could have shown that refusal.
+
+Prevention:
+before a null over stored runs is trusted,
+at least one searched artifact is shown to carry the field under test,
+and the places where hand-picked passes write are listed as searched or not searched.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Searches and censuses that miss".

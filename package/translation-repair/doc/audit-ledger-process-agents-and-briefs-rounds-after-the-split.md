@@ -1,0 +1,79 @@
+# Audit ledger: process mistakes, agents and briefs in the rounds after the split
+
+What went wrong in the briefs and hand-backs of the rounds that ran after the split of the package into 36
+on 2026-10-18 (UTC):
+two briefs whose search text was never run against the thing it searches (M259 and M260),
+and a report that the tool refused to write (M261).
+The first two are the lead's own.
+The third is the tool's behaviour and no agent's breach,
+and is filed because it came again.
+
+Written on 2026-10-19 (UTC) from the lead's notes after the split (`s245/ledger-notes-after-split.md`).
+The entries before these are filed in
+[Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md).
+Paths here are written in the layout after the split.
+
+Part of [Audit ledger](audit-ledger.md),
+which lists every file of this record.
+
+## M259: a brief gave a proof pattern that matches nothing in the bundle it was meant to prove
+
+Status:
+happened in the brief for the comparison of the lint of every package under the baseline bundle and under the hardened
+bundle of the shared analysis (`w177`).
+The brief gave the proof that a bundle is the one in use as a count of matches of `update\('9'\)`.
+The built bundle writes that call with the digit between backticks,
+``update(`9`)``,
+so the pattern with single quotes matches nothing in either bundle.
+Every `proof-*.json` therefore records a zero.
+The agent used `update\(.9.\)` instead,
+where each dot stands for any one character.
+
+Prevention:
+a pattern that proves which bundle is live is run against both bundles before it is written into a brief,
+and it is shown to find the mark in the bundle that holds it
+and to find nothing in the bundle that does not,
+the positive and the negative control.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs".
+
+## M260: a brief gave a pathspec that matches no file below the directory it names
+
+Status:
+happened in the brief for the account of the cache versions since the round n171 (`w185`).
+The brief gave the pathspec `'package/translation-repair/*/src'`,
+which matches no file below `src`.
+It returned 10 commits,
+all of them before the split,
+and would have left out 40 production commits.
+The agent caught it and used `'package/translation-repair/*/src/*'`.
+
+Prevention:
+a pathspec in a brief carries a positive control:
+a commit known to touch the path must appear in its result before the result is used.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs".
+
+## M261: the tool refused an agent's Write of its report, as it had refused n170's
+
+Status:
+happened in the guard demonstrations for n168,
+n169,
+n171 and n173 (`w181`).
+The harness refused the agent's Write of `report.md`,
+and the hand-back text was the report.
+The agent's tables of results are in `w181-notes/report-tests.md` and `w181-notes/report-tables.md`.
+The same refusal met n170's Write of its report on 2026-10-15
+(M226 and the introduction of
+[the file for the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)),
+which also returned the report as text,
+and the file for those rounds does not count that refusal as a breach.
+The notes record this one as the harness's refusal and not as a slip of the agent.
+
+Prevention:
+the notes name none.
+A brief for a review or a demonstration that produces a report names the hand-back text as the report,
+and a report file as optional,
+so that a refused Write loses nothing.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Briefs and hand-backs".

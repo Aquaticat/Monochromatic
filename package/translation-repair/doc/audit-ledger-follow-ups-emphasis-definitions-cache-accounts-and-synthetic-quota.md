@@ -255,6 +255,23 @@ Open:
 the first reading after this change says what the provider returns,
 and no second shape is read until it does.
 
+Seen again on 2026-10-18 (UTC) in the pass TianqiChen66626,
+which launched at 20:58 UTC at `7c21a56fc2`,
+before the change that names the received keys.
+The meter read `unreadable` in 126 of 126 readings,
+with the warning `Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object`
+and no key names (log line 204).
+The pass treats the call as spendable,
+so 651 Synthetic calls (298 of Qwen3.8-27B and 353 of Kimi-K3) ran with no reading of the allowance,
+and the `JUDGE SEATS` lines printed `synthetic=wet` beside `METERS synthetic=unreadable`.
+The lead's notes after the split say the reader is fixed in `w186`;
+the outcome of this entry records that `w186` changed the warning and added no second shape,
+so the open point stands.
+A fix round for the pipeline defects of that pass runs in `w191`,
+and its result is not recorded here.
+[The pass log for 2026-10-18](../../../doc/planning/translation-repair-openrouter-2026-09-03-2026-10-18.md)
+carries the reading.
+
 ## B672: local file times written as UTC in the account of the pairing cache version
 
 Found on 2026-10-18 by the lead,

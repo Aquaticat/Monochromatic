@@ -90,6 +90,9 @@ The first probe of the raised cache bounds edited the plugin's `src` while the r
 so its edit never ran and the measure read the old bounds (ledger M253).
 A comparison of closures serialized maps with `JSON.stringify`,
 and key order read as 708 differing closures (ledger M254).
+The first baseline run of the whole-repository lint comparison linted with the hardened plugin:
+the saved baseline bundle kept its old file times,
+and the lint task rebuilds `package/config/oxlint/dist` when a plugin source is newer than the oldest output (ledger M262).
 
 The rule:
 a cost that scales with the number of packages is measured on the whole family before it is promised,
@@ -98,6 +101,8 @@ Before a measure of an edit,
 the artifact the measure loads is searched for the edited value.
 Maps are compared as sorted entries,
 and one example is read before a count of differences is trusted.
+A bundle that stands in for another is swapped in with fresh file times,
+and the live bundle is proved after every package and not only at the start of a phase.
 
 What enforces it:
 habit.

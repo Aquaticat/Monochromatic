@@ -235,6 +235,13 @@ and the parse of a reference implementation,
 which showed the oracle wrong and production right (ledger M194,
 M196,
 B549).
+A guard demonstration states a reason for every mutation that still passes:
+of 287 mutations of the guards of four rounds,
+64 passed every test,
+and three of those changed what the code does (ledger B674).
+Each survivor is classed as a missing test,
+an equivalent mutant or an unreachable branch;
+a missing test is written and shown to fail under its mutation.
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -394,6 +401,13 @@ A link checker parses Markdown and not text:
 one reported an escaped bracket in quoted output as a dead link,
 and the line held no link (ledger M255).
 A finding of a checker is read in its file before it is reported or fixed.
+
+A null over stored runs is taken only from artifacts that can carry the field under test:
+the first check for the finalist extension searched the pooled runs directory,
+found 164 legacy artifacts with no consistency record,
+and missed that hand-picked passes write to a throwaway folder of their own (ledger M258).
+At least one searched artifact is shown to carry the field,
+and the places where hand-picked passes write are listed as searched or not searched.
 
 What enforces it:
 habit,
@@ -581,6 +595,8 @@ A cache version's account said no record had been written since it was set,
 and a pass wrote three under it three weeks later (ledger B670).
 An account of a cache version names the date and the search that backs "no record since",
 and says what retires a stored record besides the number.
+A figure in an agent's hand-back is recounted from the raw files the hand-back names before it is recorded:
+a summary said 6,751 shared hits where the agent's own counter files total 6,628 (ledger M257).
 
 What enforces it:
 habit;

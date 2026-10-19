@@ -176,3 +176,22 @@ never from a line count;
 a file name that would need a counter means the boundary is wrong.
 The rule and its guard are under "Docs that only grow" in `mistake-prevention-docs-and-references.md`.
 A check that a transformation lost nothing is not a check that its result is what was asked for.
+
+## M263: the design commitments page called landed rounds "green and not landed"
+
+Status:
+happened after the fixes of n166,
+n168 and n169 landed with n171 (`555bb74aa0` and `29d6064708`).
+`design-commitments.md` still called them "green and not landed",
+and had no record of the carry run-off of B641,
+until it was brought up to date in `1939670f87`
+("design commitments say the B619 rows and the carry run-off landed").
+The notes name no cause beyond the page not having been rewritten when the rounds landed.
+
+Prevention:
+the notes name none.
+The rule adopted here follows the one already recorded for the current snapshot:
+a landing searches `design-commitments.md` for the round's name and for "landed" or "not landed",
+and rewrites each sentence that states the old state in the same sitting.
+`mistake-prevention-docs-and-references.md`,
+"Current-state docs".

@@ -708,3 +708,24 @@ and describes a count that a log line prints only after reading the code that co
 A listing that is named by a cause gets the type of each entry first (M224).
 `mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".
+
+## M257: an agent's hand-back counted 6,751 hits where its own counter files total 6,628
+
+Status:
+happened after the split of 2026-10-18 (UTC),
+in the hand-back of the agent that prototyped the shared analysis for the lint plugin in `w177`.
+The summary said "6751 cross-project shared hits".
+The lead summed the agent's own counter files
+(`w177-notes/sum-verify.ts`,
+family `vfinal-family`)
+and they total 6,628.
+The gap is 123,
+and the notes do not say which count the summary used.
+
+The notes record that it was caught by recounting from the raw files before the figure was recorded.
+
+Prevention:
+a number in an agent's hand-back is recounted from the raw files the agent names before it is recorded,
+and the recount is named beside the figure.
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence".
