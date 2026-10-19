@@ -37,19 +37,48 @@ const NO_SNAPSHOT: unique symbol = Symbol('request names no snapshot',);
 /**
  Request names whose answer is a pure function of snapshot, project, and parameters.
 
- Each was read in the native server (`internal/api/session.go` at the revision TypeScript 7.0.2 was built
- from, `2bd066d87f5b`). Every handler resolves its snapshot and project, looks handles up in registries
+ Each was read in the native server (`internal/api/session.go` at `microsoft/typescript-go` commit
+ `2bd066d87f5bafd315be9f40889d0a60b9e58e0b`, the `gitHead` of the installed `typescript@7.0.2`).
+ Every handler resolves its snapshot and project, looks handles up in registries
  that live exactly as long as the snapshot, asks the persistent API checker a read-only question, and
  answers with handles into those same registries. The synchronous client turns every answer into an
  object through `getOrCreateSymbol`, `getOrCreateType` or `getOrCreateSignature`, which return the object
  already registered for an id and ignore the later answer, so replaying the first answer changes nothing
  a caller can observe.
 
+ The registration those handlers do is the identity-keyed kind: the same checker object always gets the same
+ id in a registry owned by the snapshot, and the entry stays until the snapshot is released. A handler that
+ opens a project, registers something per request, or answers from a language service that takes its own
+ checker does not qualify.
+
+ The last six entries were added on 2026-10-19 (UTC) at that revision, each after a cold lint of the 36
+ `translation-repair` packages showed it repeating a request on one snapshot (requests that reached the
+ server in one lint, repeats among them): `getIndexInfosOfType` 28,175 and 10,017, `isArrayType` 24,879 and
+ 6,770, `getAliasedSymbol` 6,700 and 5,198, `getNonNullableType` 1,710 and 402, `getBaseConstraintOfType`
+ 699 and 531, `getExportsOfModule` 153 and 57. In a second lint every repeated answer of the six kinds (9,788,
+ 6,541, 5,198, 402, 531 and 57 repeats) was compared with the first answer to the same request: none differed
+ in anything the client keeps. Only 299 `getIndexInfosOfType` and 18 `getBaseConstraintOfType` answers
+ differed in raw text, in the `objectFlags` bits the checker sets lazily on a type, which the client ignores
+ for an id it has already registered.
+
  It is an allow-list so that a request added by a later TypeScript release is sent every time until
- someone has read its handler. Left out on purpose: `updateSnapshot` and `release` change which
- snapshots exist; `initialize`, `parseConfigFile` and the profiling requests name no snapshot;
- `getDefaultProjectForFile` and `getSourceFileNames` return values the client hands to callers as they
- arrive; `getSourceFile` and `getSourceFileMetadata` already have client-side caches and show no repeats.
+ someone has read its handler. Left out on purpose:
+ - `updateSnapshot` and `release` change which snapshots exist.
+ - `initialize`, `parseConfigFile` and the profiling requests name no snapshot.
+ - `getDefaultProjectForFile` and `getSourceFileNames` return values the client hands to callers as they
+ arrive, so a hit would give every caller the same array (119 of 176 `getSourceFileNames` requests repeated).
+ - `getSourceFile` and `getSourceFileMetadata` already have client-side caches and show no repeats.
+ - `getSymbolsAtLocations`, `getSymbolOfType`, `getAliasSymbolOfType`, `getParametersOfSignature`,
+ `getAliasTypeArgumentsOfType` and `isTupleType` meet the rule, but none of their 26,437, 12,092, 4,431,
+ 2,615, 17 and 3 requests repeated on a snapshot, so storing their answers would cost memory and save nothing.
+ Add one when a workload repeats it.
+ - `typeToString` returns a rendering, not a handle: the printer resolves type members lazily while it
+ prints (`internal/checker/printer.go`), and no check showed the text independent of earlier queries
+ (4,266 of 4,338 requests repeated, 0.07 s).
+ - `isTypeAssignableTo` is a relation check run against the checker's relation caches, and no check showed
+ its answer independent of earlier queries (64 of 92 requests repeated).
+ - `getSignatureUsages` is answered by a language service that takes its own checker and walks every source
+ file, not by the persistent API checker the others use (12 of 97 requests repeated).
  */
 export const MEMOIZED_SNAPSHOT_REQUESTS: ReadonlySet<string> = new Set<string>([
   'getResolvedSignature',
@@ -62,6 +91,13 @@ export const MEMOIZED_SNAPSHOT_REQUESTS: ReadonlySet<string> = new Set<string>([
   'getTypeOfSymbolAtLocation',
   'getTypesOfType',
   'resolveName',
+  // Read and added on 2026-10-19 (UTC), after a cold family lint showed each one repeating on a snapshot.
+  'getAliasedSymbol',
+  'getBaseConstraintOfType',
+  'getExportsOfModule',
+  'getIndexInfosOfType',
+  'getNonNullableType',
+  'isArrayType',
 ],);
 
 /**
@@ -78,6 +114,15 @@ export const MEMOIZED_SNAPSHOT_REQUESTS: ReadonlySet<string> = new Set<string>([
 
  The bound applies to each snapshot. The bridge keeps one live snapshot and, while it replaces it,
  one more, so a lint process holds a small multiple of it at most.
+
+ Size in bytes, measured on 2026-10-19 (UTC) by serializing each distinct request key and its answer in one
+ cold lint of the same 36 packages: the sixteen memoized request kinds stored 823,446 distinct entries of
+ 561 bytes on average (440.7 MiB serialized across the 36 processes). `corpus-pass`, the largest, stored
+ 141,367 entries and 75.1 MiB. The average per request kind runs from 149 bytes (`isArrayType`) to 2.8 KiB
+ (`getPropertiesOfType`). With the six added kinds that process peaks at 141,220 entries in one store and
+ evicts 10,167 at this bound; the other 35 do not evict, and the eviction costs 22 of the 2,060 repeats
+ that process could still answer from memory. The heap held by the parsed answers was not measured and
+ is larger than the serialized size.
  */
 export const MAXIMUM_MEMOIZED_RESPONSES_PER_SNAPSHOT = 131_072;
 

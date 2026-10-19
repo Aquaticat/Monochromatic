@@ -24,11 +24,26 @@ const PROJECT_SOURCE = 'export function twice(value: number,): number { return v
 /** Hot request every case below repeats. */
 const LOCATION_REQUEST = 'getTypeAtLocation';
 
+/** Second file of the project the added-request case queries, so an import has an alias to follow. */
+const OTHER_SOURCE = 'export const exported = 1;\n';
+
+/** Source whose declarations give each added request something to answer. */
+const ADDED_SOURCE = [
+  "import { exported as renamed, } from './other';",
+  'export const list: readonly string[] = [];',
+  'export const table: { [key: string]: number } = {};',
+  'export const maybe: string | undefined = undefined;',
+  'export function generic<T extends string,>(value: T,): T { return value; }',
+  'export const used = renamed;',
+  '',
+].join('\n');
+
 /** Configured one-file project served by a memoized native API, closed and removed on scope exit. */
 type MemoizedProject = {
   readonly api: API;
   readonly configPath: string;
   readonly sourcePath: string;
+  readonly otherPath: string;
   readonly sent: readonly string[];
   [Symbol.dispose]: () => void;
 };
@@ -71,17 +86,22 @@ function recordServerRequests(api: API,): readonly string[] {
 
  @returns the project, with the API closed and the directory removed when the scope ends.
  */
-function openMemoizedProject(): MemoizedProject {
+function openMemoizedProject({
+  source = PROJECT_SOURCE,
+}: {
+  readonly source?: string;
+} = {},): MemoizedProject {
   /** Unique directory holding the project. */
   const path = mkdtempSync(join(tmpdir(), 'semantic-request-memo-',),);
   writeFileSync(
     join(path, 'tsconfig.json',),
     `${JSON.stringify({
-      compilerOptions: { strict: true, },
-      include: ['input.ts',],
+      compilerOptions: { strict: true, module: 'esnext', moduleResolution: 'bundler', },
+      include: ['input.ts', 'other.ts',],
     },)}\n`,
   );
-  writeFileSync(join(path, 'input.ts',), PROJECT_SOURCE,);
+  writeFileSync(join(path, 'input.ts',), source,);
+  writeFileSync(join(path, 'other.ts',), OTHER_SOURCE,);
   /** Native API whose client the memo wraps. */
   const api = new API({ cwd: path, },);
   memoizeApiSnapshotRequests({ api, },);
@@ -89,6 +109,7 @@ function openMemoizedProject(): MemoizedProject {
     api,
     configPath: join(path, 'tsconfig.json',),
     sourcePath: join(path, 'input.ts',),
+    otherPath: join(path, 'other.ts',),
     sent: recordServerRequests(api,),
     [Symbol.dispose]: function closeMemoizedProject(): void {
       api.close();
@@ -98,16 +119,35 @@ function openMemoizedProject(): MemoizedProject {
 }
 
 /**
- Counts the checker queries that reached the native server.
+ Counts the requests of one method that reached the native server.
+
+ @param sent - Method names sent to the native server.
+
+ @param method - Request name to count.
+
+ @returns how many of the sent requests had that name.
+ */
+function sentCount({
+  sent,
+  method,
+}: {
+  readonly sent: readonly string[];
+  readonly method: string;
+},): number {
+  return sent.filter(function isQuery(name,): boolean {
+    return name === method;
+  },).length;
+}
+
+/**
+ Counts the location queries that reached the native server.
 
  @param sent - Method names sent to the native server.
 
  @returns how many were the repeated query.
  */
 function locationQueryCount(sent: readonly string[],): number {
-  return sent.filter(function isQuery(method,): boolean {
-    return method === LOCATION_REQUEST;
-  },).length;
+  return sentCount({ sent, method: LOCATION_REQUEST, },);
 }
 
 await describe({
@@ -135,6 +175,62 @@ await describe({
         if (first === undefined)
           throw new Error('Expected a type for the parameter.',);
         expect(project.checker.typeToString(first,),).toBe('number',);
+      },
+    },),
+    it({
+      name: 'sends each request added to the allow-list to the native server once and replays its answer',
+      fn: async () => {
+        using opened = openMemoizedProject({ source: ADDED_SOURCE, },);
+        const snapshot = opened.api.updateSnapshot({ openProjects: [opened.configPath,], },);
+        const project = snapshot.getProject(opened.configPath,);
+        const sourceFile = project?.program.getSourceFile(opened.sourcePath,);
+        if ((project === undefined) || (sourceFile === undefined))
+          throw new Error('Expected the disposable project and its source.',);
+        const { checker, } = project;
+        /**
+         Finds the node whose text starts at the first occurrence of a fragment.
+
+         @param fragment - Source text the node starts with.
+
+         @returns the node at that offset.
+         */
+        const nodeAt = (fragment: string,) => findNodeAtOffset({
+          sourceFile,
+          offset: ADDED_SOURCE.indexOf(fragment,),
+        },);
+        const listType = checker.getTypeAtLocation(nodeAt('list',),);
+        const tableType = checker.getTypeAtLocation(nodeAt('table',),);
+        const maybeType = checker.getTypeAtLocation(nodeAt('maybe',),);
+        const genericType = checker.getTypeAtLocation(nodeAt('T extends',),);
+        const aliasSymbol = checker.getSymbolAtLocation(nodeAt('renamed',),);
+        const moduleSymbol = checker.getSymbolAtLocation(nodeAt("'./other'",),);
+        if ((listType === undefined) || (tableType === undefined) || (maybeType === undefined) || (genericType === undefined)
+          || (aliasSymbol === undefined) || (moduleSymbol === undefined)) {
+          throw new Error('Expected a type or symbol for every declaration the case queries.',);
+        }
+        /** Each added request, asked twice by the same call, with the answer the real server gave. */
+        const asked = [
+          ['isArrayType', () => checker.isArrayType(listType,),],
+          ['getIndexInfosOfType', () => checker.getIndexInfosOfType(tableType,),],
+          ['getNonNullableType', () => checker.getNonNullableType(maybeType,),],
+          ['getBaseConstraintOfType', () => checker.getBaseConstraintOfType(genericType,),],
+          ['getAliasedSymbol', () => checker.getAliasedSymbol(aliasSymbol,),],
+          ['getExportsOfModule', () => checker.getExportsOfModule(moduleSymbol,),],
+        ] as const;
+        for (const [method, ask,] of asked) {
+          const first = ask();
+          const second = ask();
+
+          expect(sentCount({ sent: opened.sent, method, },),).toBe(1,);
+          expect(second,).toEqual(first,);
+        }
+        expect(checker.isArrayType(listType,),).toBe(true,);
+        expect(checker.getIndexInfosOfType(tableType,),).toHaveLength(1,);
+        expect(checker.getExportsOfModule(moduleSymbol,).map((exported,) => exported.name),).toEqual(['exported',],);
+        // A request left off the allow-list reaches the server on every repeat, so the count above can fail.
+        checker.typeToString(listType,);
+        checker.typeToString(listType,);
+        expect(sentCount({ sent: opened.sent, method: 'typeToString', },),).toBe(2,);
       },
     },),
     it({

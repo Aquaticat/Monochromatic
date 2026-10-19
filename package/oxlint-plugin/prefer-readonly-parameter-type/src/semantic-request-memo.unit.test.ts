@@ -29,14 +29,18 @@ type CountingClient = {
 
  @param empty - Methods that answer with nothing.
 
+ @param falsy - Methods that answer with the boolean `false`.
+
  @returns the client and the live list of requests that reached it.
  */
 function countingClient({
   fail = [],
   empty = [],
+  falsy = [],
 }: {
   readonly fail?: readonly string[];
   readonly empty?: readonly string[];
+  readonly falsy?: readonly string[];
 },): CountingClient {
   /** Requests that reached the stub, appended as they arrive. */
   const reached: ServerRequest[] = [];
@@ -52,6 +56,8 @@ function countingClient({
           throw new Error(`stub server refused ${method}`,);
         if (empty.includes(method,))
           return undefined;
+        if (falsy.includes(method,))
+          return false;
         return { answeredRequest: reached.length, };
       },
     },
@@ -82,6 +88,19 @@ function reachedCount({
 /** Hot request every case below repeats. */
 const LOCATION_REQUEST = 'getTypeAtLocation';
 
+/**
+ Requests added to the allow-list after a cold lint of the `translation-repair` packages showed each one repeating
+ on a snapshot, with the parameters the synchronous client sends for each.
+ */
+const ADDED_REQUESTS: readonly (readonly [method: string, params: Readonly<Record<string, unknown>>,])[] = [
+  ['getAliasedSymbol', { snapshot: 1, project: 'p', symbol: 'symbol-a', },],
+  ['getBaseConstraintOfType', { snapshot: 1, project: 'p', type: 'type-a', },],
+  ['getExportsOfModule', { snapshot: 1, project: 'p', symbol: 'symbol-a', },],
+  ['getIndexInfosOfType', { snapshot: 1, project: 'p', type: 'type-a', },],
+  ['getNonNullableType', { snapshot: 1, project: 'p', type: 'type-a', },],
+  ['isArrayType', { snapshot: 1, project: 'p', type: 'type-a', },],
+];
+
 await describe({
   name: memoizeSnapshotRequests.name,
   concurrency: 1,
@@ -97,6 +116,36 @@ await describe({
 
         expect(reachedCount({ reached, method: LOCATION_REQUEST, },),).toBe(1,);
         expect(second,).toBe(first,);
+      },
+    },),
+    ...ADDED_REQUESTS.map(function mapAdded([method, params,],) {
+      return it({
+        name: `sends a repeated ${method} request on one snapshot to the server once`,
+        fn: async () => {
+          const { client, reached, } = countingClient({},);
+          memoizeSnapshotRequests({ client, },);
+          const first = client.apiRequest(method, params,);
+          const second = client.apiRequest(method, { ...params, },);
+          client.apiRequest(method, { ...params, snapshot: 2, },);
+          client.apiRequest(method, { ...params, project: 'q', },);
+
+          expect(MEMOIZED_SNAPSHOT_REQUESTS.has(method,),).toBe(true,);
+          // One reach for snapshot 1, one for snapshot 2, one for the other project.
+          expect(reachedCount({ reached, method, },),).toBe(3,);
+          expect(second,).toBe(first,);
+        },
+      },);
+    },),
+    it({
+      name: 'remembers the false answer of isArrayType as an answer',
+      fn: async () => {
+        const { client, reached, } = countingClient({ falsy: ['isArrayType',], },);
+        memoizeSnapshotRequests({ client, },);
+        const params = { snapshot: 1, project: 'p', type: 'type-a', };
+
+        expect(client.apiRequest('isArrayType', params,),).toBe(false,);
+        expect(client.apiRequest('isArrayType', { ...params, },),).toBe(false,);
+        expect(reachedCount({ reached, method: 'isArrayType', },),).toBe(1,);
       },
     },),
     it({
@@ -130,7 +179,15 @@ await describe({
         const { client, reached, } = countingClient({},);
         memoizeSnapshotRequests({ client, },);
         /** State-changing, snapshot-scoped, and unknown requests alike. */
-        const unmemoized = ['updateSnapshot', 'getDefaultProjectForFile', 'getSourceFileNames', 'aFutureMethod',];
+        const unmemoized = [
+          'updateSnapshot',
+          'getDefaultProjectForFile',
+          'getSourceFileNames',
+          'getSignatureUsages',
+          'isTypeAssignableTo',
+          'typeToString',
+          'aFutureMethod',
+        ];
         for (const method of unmemoized) {
           client.apiRequest(method, { snapshot: 1, project: 'p', },);
           client.apiRequest(method, { snapshot: 1, project: 'p', },);
