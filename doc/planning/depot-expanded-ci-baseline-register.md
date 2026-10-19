@@ -207,10 +207,14 @@ The log is in
 ## Advisory profile
 
 `.github/workflows/advisory-core.yml` implements the default-branch advisory profile.
-It runs on a push to `main` and on dispatch.
+It runs on a push to `main`,
+on pull requests to `main`,
+and on dispatch.
 The gate admits 2 starts per rolling minute,
 4 per hour and 8 per day,
 and records the newest skipped tip as pending.
+Pull-request runs do not consume the push budget;
+manual dispatch bypasses it for qualification.
 The core job runs on GitHub-hosted Linux,
 uses the changed-path static selector,
 and runs the five-owner fast subset build and unit tasks.
