@@ -32,6 +32,24 @@ Proposed `EC4` tightening: unsupported capabilities use the least-degrading supp
 aiming to preserve user experience; explain remaining limits without presenting reduced coverage as full support.
 This proposal addresses the fallback misunderstanding; `AGENTS.md` is unchanged.
 
+Commit `bf8d6731ca` records the minimum-degradation rule and supersedes manual-first fallback wording.
+The updated boundary panel passes light/dark rendering and a 390-pixel viewport without overflow or browser errors.
+The seven affected/referenced Markdown documents render with valid local links at
+`~/temp/agent/auto-mode-rebuild-plan-render-A05tSs`.
+
+Public-plugin qualification finished in `~/temp/agent/pi-public-plugin-probe-20261019/`.
+`mise run lint:types` and `mise run probe` pass all 18 assertions, including deliberate limitation cases.
+Public `prepareLoadout` metadata, persisted message observation, and final sibling `tool_call` review demonstrate
+prepared parallel approval, denial, review failure, per-tool sequential reviews, and skipped-callback accounting.
+These use scripted provider responses and inert tools; no Pi source was copied or modified.
+The candidate denial aborts the active run; this observed behavior is not an adopted product decision.
+Later extensions can still mutate arguments after the guard, as reproduced by the probe.
+Global execution overrides in custom hosts, dynamic loadouts, arbitrary nested grouping,
+real CLI/TUI cancellation, reload/session transitions, and retained-reference mutation remain unqualified.
+Use these facts to find equivalent public paths or the least-degrading supported fallback.
+Do not inherit the probe report's suggestion to withhold execution whenever qualification is incomplete;
+the user's accepted fallback rule supersedes that suggestion.
+
 ### Unapproved Pi modification removed, 2026-10-19
 
 The user identifies issue #1786 and prohibits modifying Pi itself; use its public plugin API.
