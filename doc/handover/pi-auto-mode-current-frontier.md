@@ -50,6 +50,17 @@ Work is incomplete. Continue the queue without another readiness handoff.
   Corrected configured-history baseline `rVn75u` and acknowledged inflight-steer replay `zdzKWP`
   each settle after one successful actual `pwd`, zero tool errors and no held approval dialog.
   Both capture four actual Luna HTTP responses; full payload and shutdown audits remain required.
+  Complete configured replay audits now pass in both variants: each original primary request is 3,060,823 bytes,
+  each Luna capture contains four requests/two operation reviews/239 questions,
+  and required-data removal controls plus structured command/thinking/signature controls all detect their faults.
+  Every captured Luna response is HTTP 200, both controllers close normally, and both complete 708-byte stderr logs
+  contain only preflight, model retirement, headless settled notification and helper-shutdown entries.
+  No approval dialog, source-growth error, error-level log, bare shutdown error or fatal error occurs.
+  This closes the reproduced category-gate incident on `4913ea2cd0`; final whole-package qualification remains open.
+  The new later-delivery guard passes its fresh build, but its first restored-old-gate control
+  reaches an assertion inside the provider fixture before the intended terminal assertion.
+  That is not a qualified control result. Move timing assertions out of the provider callback,
+  preserve its recorded observations, and repeat controls on the corrected committed test.
   Future controller instances publish state synchronously through atomic rename,
   avoiding the earlier empty-JSON reader race without altering live controllers.
   The maintained delivery guard now also observes queued input in the subsequent actual serialized request,
