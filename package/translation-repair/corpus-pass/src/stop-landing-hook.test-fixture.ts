@@ -2,9 +2,9 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run';
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract';
+import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 import type {
   BudgetView,
-  MeterState,
   SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
@@ -196,25 +196,6 @@ export const BEDROCK_ALONE_STOP_LINE: string = 'JUDGE SEATS phase=lanes writing 
  */
 function refuseSeating<SeatingT,>(): Reseated<SeatingT> {
   throw new Error('unreachable: a reading that stopped the entry was asked for a seating',);
-}
-
-/**
- What every meter says in these cases: all answered wet.
-
- @returns Every meter wet
-
- @example
- ```ts
- const states = await metersAllWet();
- ```
- */
-function metersAllWet(): Promise<ProviderRecord<MeterState>> {
-  return Promise.resolve({
-    synthetic: 'wet',
-    bedrock: 'wet',
-    hyper: 'wet',
-    openrouter: 'wet',
-  },);
 }
 
 /**

@@ -149,6 +149,9 @@ async function drawWith(
         providerDryness: function noDryness() {
           return Promise.reject(new Error('providerDryness unused by the probe',),);
         },
+        providerMeterStates: function noMeterStates() {
+          return Promise.reject(new Error('providerMeterStates unused by the probe',),);
+        },
         providerHolds: function noHolds() {
           throw new Error('providerHolds unused by the probe',);
         },
