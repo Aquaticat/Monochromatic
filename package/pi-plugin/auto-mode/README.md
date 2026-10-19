@@ -31,7 +31,7 @@ excluding shared dependency symlink targets.
 Later verification builds add retained artifacts;
 this historical checkpoint is not a current deployment-closure measurement.
 
-## Current native behavior
+## Historical native behavior
 
 The old installed `pi` command used the host described in `native/README.md`
 (removed 2026-10-19; retained in the pre-rebuild worktree named in Rebuild status).
