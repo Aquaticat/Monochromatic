@@ -205,8 +205,7 @@ function apiKeyForEndpoint(
 ): string {
   if ((apiKey === undefined) || (apiKey.trim() === ''))
     throw new Error(
-      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY in the environment or add it to .env.local.json.`
-        + (credentialHint === undefined ? '' : ` Credential store: ${credentialHint}`),
+      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY in the environment or add it to .env.local.json.${credentialHint === undefined ? '' : ` Credential store: ${credentialHint}`}`,
     );
   return apiKey;
 }

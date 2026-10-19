@@ -542,6 +542,9 @@ importers:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
       type-fest:
         specifier: 'catalog:'
         version: 5.10.0

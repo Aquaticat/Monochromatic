@@ -109,9 +109,11 @@ function parseConfigJson(
   try {
     return JSON.parse(content,) as unknown;
   }
-  catch {
+  catch (error: unknown) {
+    void error;
     throw new Error(
       `${basename(configPath,)} parsing failed at ${configPath}`,
+      { cause: error },
     );
   }
 }

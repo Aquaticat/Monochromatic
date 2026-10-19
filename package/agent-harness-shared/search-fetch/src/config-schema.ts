@@ -103,9 +103,7 @@ function validateConfigShape(
     key: 'blocklist',
   },);
 
-  return {
-    ...(isStringArray(blocklist,) ? { blocklist, } : {}),
-  };
+  return (isStringArray(blocklist,) ? { blocklist, } : {});
 }
 
 //endregion Schema
@@ -262,7 +260,10 @@ function rejectDeprecatedCredentialKeys(
    */
   const presentKeys = DEPRECATED_CREDENTIAL_KEYS
     .filter(function isPresent(key,) {
-      return Object.hasOwn(value, key,);
+      return Object.hasOwn(
+        value,
+        key,
+      );
     },);
   if (presentKeys.length > 0)
     throw new SearchFetchMigrationRequiredError({

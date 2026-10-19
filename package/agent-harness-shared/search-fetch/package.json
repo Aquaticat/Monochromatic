@@ -23,6 +23,7 @@
     "@monochromatic-dev/module-env-local-json": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "nano-spawn": "catalog:",
     "type-fest": "catalog:",
     "typebox": "catalog:",
     "valibot": "catalog:"

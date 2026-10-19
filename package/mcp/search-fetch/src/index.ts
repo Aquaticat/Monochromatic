@@ -162,12 +162,16 @@ if (isBinLaunch) {
    */
   const config = await loadLinkupConfig();
   /**
+   Value-free store diagnostic forwarded to missing-key errors.
+   */
+  const { storeError, } = config.source;
+  /**
    Provider-routing client shared by the registered tools.
    */
   const client = createSearchFetchClient({
     ...(config.exaApiKey === undefined ? {} : { exaApiKey: config.exaApiKey, }),
     ...(config.linkupApiKey === undefined ? {} : { linkupApiKey: config.linkupApiKey, }),
-    ...(config.source.storeError === undefined ? {} : { credentialHint: config.source.storeError, }),
+    ...(storeError === undefined ? {} : { credentialHint: storeError, }),
     blocklist: config.blocklist,
   },);
   await serve({

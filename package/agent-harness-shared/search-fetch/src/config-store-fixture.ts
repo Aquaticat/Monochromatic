@@ -7,16 +7,16 @@
  @module
  */
 
-import { execFileSync, } from 'node:child_process';
 import {
   chmod,
   mkdtemp,
-  readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+
+import spawn from 'nano-spawn';
 
 /**
  Prefix for disposable fixture directories.
@@ -29,43 +29,82 @@ const FIXTURE_PREFIX = 'search-fetch-store-test-';
 const PLAINTEXT_SENTINEL = 'plaintext-sentinel-value';
 
 /**
- Resolve the public age recipient from an age-keygen identity file.
- 
- @param identityPath - generated identity path
- 
- @returns age public recipient
- 
- @throws when the identity file has no public-key comment
+ Mode for a disposable fixture directory.
  */
-async function readRecipient(identityPath: string,): Promise<string> {
-  /**
-   Local value for identityText.
-   */
-  const identityText = await readFile(identityPath, 'utf8',);
-  /**
-   Local value for match.
-   */
-  const match = /public key: (age1[0-9a-z]+)/u.exec(identityText,);
-  const recipient = match?.[1];
-  if (recipient === undefined)
-    throw new Error('synthetic age identity has no public-key comment',);
-  return recipient;
-}
+const FIXTURE_DIRECTORY_MODE = 0o700;
+
+/**
+ Mode for private fixture files.
+ */
+const FIXTURE_FILE_MODE = 0o600;
 
 /**
  Fail with remediation when a real crypto tool is unavailable.
  
  @param command - executable name to probe
+ 
+ @throws when the command is not on `PATH`
+ 
+ @example
+ ```ts
+ await requireTool('sops');
+ ```
  */
-function requireTool(command: string,): void {
+async function requireTool(command: string,): Promise<void> {
   try {
-    execFileSync('sh', ['-c', `command -v ${command}`,], { stdio: 'ignore', },);
-  }
-  catch {
-    throw new Error(
-      `${command} is required for these tests; run them from a mise shell where sops and age are installed.`,
+    await spawn(
+      'sh',
+      [
+        '-c',
+        `command -v ${command}`,
+      ],
+      {
+        stdout: 'ignore',
+        stderr: 'ignore',
+      },
     );
   }
+  catch (error: unknown) {
+    throw new Error(
+      `${command} is required for these tests; run them from a mise shell where sops and age are installed.`,
+      { cause: error, },
+    );
+  }
+}
+
+/**
+ Resolve the public age recipient with the age-keygen identity converter.
+ 
+ @param identityPath - generated identity path
+ 
+ @returns age public recipient
+ 
+ @throws when age-keygen cannot read the identity
+ 
+ @example
+ ```ts
+ const recipient = await readRecipient('/tmp/identity.txt');
+ ```
+ */
+async function readRecipient(identityPath: string,): Promise<string> {
+  /**
+   Local value for result.
+   */
+  const result = await spawn(
+    'age-keygen',
+    [
+      '-y',
+      identityPath,
+    ],
+  );
+  /**
+   Local value for recipient.
+   */
+  const recipient = result.stdout
+    .trim();
+  if (recipient === '')
+    throw new Error('synthetic age identity has no public key',);
+  return recipient;
 }
 
 /**
@@ -74,35 +113,76 @@ function requireTool(command: string,): void {
  @returns fixture root and identity path
  
  @throws when sops or age-keygen is unavailable
+ 
+ @example
+ ```ts
+ const { root, identityPath } = await createIdentityFixture();
+ ```
  */
 async function createIdentityFixture(): Promise<{
   readonly root: string;
   readonly identityPath: string;
 }> {
-  requireTool('sops',);
-  requireTool('age-keygen',);
+  await requireTool('sops',);
+  await requireTool('age-keygen',);
   /**
    Local value for root.
    */
-  const root = await mkdtemp(join(tmpdir(), FIXTURE_PREFIX,),);
-  await chmod(root, 0o700,);
+  const root = await mkdtemp(
+    join(
+      tmpdir(),
+      FIXTURE_PREFIX,
+    ),
+  );
+  await chmod(
+    root,
+    FIXTURE_DIRECTORY_MODE,
+  );
   /**
    Local value for identityPath.
    */
-  const identityPath = join(root, 'identity.txt',);
-  execFileSync('age-keygen', ['--output', identityPath,], { stdio: 'ignore', },);
-  await chmod(identityPath, 0o600,);
-  return { root, identityPath, };
+  const identityPath = join(
+    root,
+    'identity.txt',
+  );
+  await spawn(
+    'age-keygen',
+    [
+      '--output',
+      identityPath,
+    ],
+    {
+      stdout: 'ignore',
+      stderr: 'ignore',
+    },
+  );
+  await chmod(
+    identityPath,
+    FIXTURE_FILE_MODE,
+  );
+  return {
+    root,
+    identityPath,
+  };
 }
 
 /**
  Create an encrypted store at a fixture root.
  
- @param options - root, identity path, and synthetic values
+ @param root - fixture root
+ 
+ @param identityPath - generated age identity path
+ 
+ @param values - synthetic values to encrypt
  
  @returns store path and the environment that decrypts it
  
  @throws when sops encryption fails
+ 
+ @example
+ ```ts
+ const { storePath } = await writeEncryptedStore({ root, identityPath, values: { A: 'x' } });
+ ```
  */
 async function writeEncryptedStore(
   {
@@ -125,13 +205,23 @@ async function writeEncryptedStore(
   /**
    Local value for plaintextPath.
    */
-  const plaintextPath = join(root, 'store.plain.json',);
+  const plaintextPath = join(
+    root,
+    'store.plain.json',
+  );
   /**
    Local value for storePath.
    */
-  const storePath = join(root, '.env.local.json',);
-  await writeFile(plaintextPath, JSON.stringify(values,), 'utf8',);
-  execFileSync(
+  const storePath = join(
+    root,
+    '.env.local.json',
+  );
+  await writeFile(
+    plaintextPath,
+    JSON.stringify(values,),
+    'utf8',
+  );
+  await spawn(
     'sops',
     [
       '--encrypt',
@@ -145,14 +235,22 @@ async function writeEncryptedStore(
       storePath,
       plaintextPath,
     ],
-    { stdio: 'ignore', },
+    {
+      stdout: 'ignore',
+      stderr: 'ignore',
+    },
   );
-  await chmod(storePath, 0o600,);
+  await chmod(
+    storePath,
+    FIXTURE_FILE_MODE,
+  );
   await rm(plaintextPath,);
   return {
     storePath,
     env: {
-      PATH: process.env.PATH ?? '',
+      PATH: process.env
+        .PATH
+        ?? '',
       HOME: root,
       SOPS_AGE_KEY_FILE: identityPath,
     },
@@ -167,6 +265,11 @@ async function writeEncryptedStore(
  @param values - synthetic values to write
  
  @returns store path
+ 
+ @example
+ ```ts
+ const storePath = await writePlaintextStore({ root, values: { A: 'x' } });
+ ```
  */
 async function writePlaintextStore(
   {
@@ -180,8 +283,15 @@ async function writePlaintextStore(
   /**
    Local value for storePath.
    */
-  const storePath = join(root, '.env.local.json',);
-  await writeFile(storePath, JSON.stringify(values,), 'utf8',);
+  const storePath = join(
+    root,
+    '.env.local.json',
+  );
+  await writeFile(
+    storePath,
+    JSON.stringify(values,),
+    'utf8',
+  );
   return storePath;
 }
 

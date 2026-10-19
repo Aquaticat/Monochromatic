@@ -155,10 +155,10 @@ await describe({
           caught = error;
         }
 
-        expect((caught as Error | undefined)?.name,).toBe('SearchFetchMigrationRequiredError',);
-        expect((caught as Error | undefined)?.message,).toContain('exaApiKey',);
-        expect((caught as Error | undefined)?.message,).toContain('mise run secrets:migrate',);
-        expect((caught as Error | undefined)?.message,).not.toContain(DEPRECATED_SENTINEL,);
+        expect(requireError(caught,).name,).toBe('SearchFetchMigrationRequiredError',);
+        expect(requireError(caught,).message,).toContain('exaApiKey',);
+        expect(requireError(caught,).message,).toContain('mise run secrets:migrate',);
+        expect(requireError(caught,).message,).not.toContain(DEPRECATED_SENTINEL,);
       },
     },),
     it({
@@ -191,8 +191,8 @@ await describe({
           caught = error;
         }
 
-        expect((caught as Error | undefined)?.message,).toContain('linkupApiKey',);
-        expect((caught as Error | undefined)?.message,).toContain('mise run secrets:migrate',);
+        expect(requireError(caught,).message,).toContain('linkupApiKey',);
+        expect(requireError(caught,).message,).toContain('mise run secrets:migrate',);
       },
     },),
     it({
@@ -225,9 +225,9 @@ await describe({
           caught = error;
         }
 
-        expect((caught as Error | undefined)?.name,).toBe('SearchFetchMigrationRequiredError',);
-        expect((caught as Error | undefined)?.message,).toContain('pi-linkup.json',);
-        expect((caught as Error | undefined)?.message,).not.toContain(DEPRECATED_SENTINEL,);
+        expect(requireError(caught,).name,).toBe('SearchFetchMigrationRequiredError',);
+        expect(requireError(caught,).message,).toContain('pi-linkup.json',);
+        expect(requireError(caught,).message,).not.toContain(DEPRECATED_SENTINEL,);
       },
     },),
     it({
@@ -259,9 +259,9 @@ await describe({
           caught = error;
         }
 
-        expect((caught as Error | undefined)?.message,).toContain('pi-search-fetch.json',);
-        expect((caught as Error | undefined)?.message,).toContain('parsing',);
-        expect((caught as Error | undefined)?.message,).toContain(configPath,);
+        expect(requireError(caught,).message,).toContain('pi-search-fetch.json',);
+        expect(requireError(caught,).message,).toContain('parsing',);
+        expect(requireError(caught,).message,).toContain(configPath,);
       },
     },),
     it({
@@ -291,14 +291,29 @@ await describe({
           caught = error;
         }
 
-        expect((caught as Error | undefined)?.message,).toContain('pi-search-fetch.json',);
-        expect((caught as Error | undefined)?.message,).toContain('blocklist normalization',);
+        expect(requireError(caught,).message,).toContain('pi-search-fetch.json',);
+        expect(requireError(caught,).message,).toContain('blocklist normalization',);
       },
     },),
   ],
 },);
 
 //region Helpers
+
+/**
+ Require a caught value to be an Error for assertions.
+
+ @param value - caught value
+
+ @returns the caught Error
+
+ @throws when the caught value is not an Error
+ */
+function requireError(value: unknown,): Error {
+  if (!Error.isError(value,))
+    throw new Error(`expected an Error, received ${String(value,)}`,);
+  return value;
+}
 
 /**
  Create an isolated home directory.

@@ -118,7 +118,7 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
    Local value for legacyPath.
    */
   const legacyPath = legacyConfigPathForHome({ home, },);
-  if (!readResult.loaded && await fileExists({ filePath: legacyPath, },))
+  if ((!readResult.loaded) && await fileExists({ filePath: legacyPath, },))
     throw new SearchFetchMigrationRequiredError({
       configPath: legacyPath,
       keys: ['apiKey',],
@@ -154,54 +154,31 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     return (value === undefined) || (value === '');
   },);
   /**
-   Values read from the encrypted store.
+   Store values and facts, either read now or absent without discovery.
    */
-  let storeValues: Readonly<Record<string, string>> = {};
-  /**
-   Absolute store path when discovery found one.
-   */
-  let storePath: string | undefined;
-  /**
-   Whether the store was read and decrypted.
-   */
-  let storeLoaded = false;
-  /**
-   Value-free store diagnostic.
-   */
-  let storeError: string | undefined;
-  if (missingKeys.length > 0) {
-    try {
-      /**
-       Local value for storeResult.
-       */
-      const storeResult = await readEnvLocalJson({
-        keys: missingKeys,
-        cwd,
-        env,
-        home,
-        ...(options.envLocalJsonPath === undefined ? {} : { path: options.envLocalJsonPath, }),
-        ...(options.signal === undefined ? {} : { signal: options.signal, }),
-      },);
-      storeValues = storeResult.values;
-      storePath = storeResult.path;
-      storeLoaded = storeResult.loaded;
-    }
-    catch (error: unknown) {
-      if (!isExpectedStoreError(error,))
-        throw error;
-      storeError = error.message;
-      innerL.warn(`encrypted store unavailable: ${storeError}`,);
-    }
-  }
+  const store = missingKeys.length === 0
+    ? EMPTY_STORE
+    : await resolveStoreValues({
+      missingKeys,
+      cwd,
+      env,
+      home,
+      ...(options.envLocalJsonPath === undefined
+        ? {}
+        : { envLocalJsonPath: options.envLocalJsonPath, }),
+      ...(options.signal === undefined ? {} : { signal: options.signal, }),
+    },);
+  if (store.error !== undefined)
+    innerL.warn(`encrypted store unavailable: ${store.error}`,);
   /**
    Local value for exaApiKey.
    */
   const exaApiKey = resolveApiKey({
     env,
     envKey: EXA_API_KEY_ENV,
-    ...(storeValues[EXA_API_KEY_ENV] === undefined
+    ...(store.values[EXA_API_KEY_ENV] === undefined
       ? {}
-      : { storeValue: storeValues[EXA_API_KEY_ENV], }),
+      : { storeValue: store.values[EXA_API_KEY_ENV], }),
   },);
   /**
    Local value for linkupApiKey.
@@ -209,9 +186,9 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
   const linkupApiKey = resolveApiKey({
     env,
     envKey: LINKUP_API_KEY_ENV,
-    ...(storeValues[LINKUP_API_KEY_ENV] === undefined
+    ...(store.values[LINKUP_API_KEY_ENV] === undefined
       ? {}
-      : { storeValue: storeValues[LINKUP_API_KEY_ENV], }),
+      : { storeValue: store.values[LINKUP_API_KEY_ENV], }),
   },);
   /**
    Source metadata, with optional store facts only when discovery ran.
@@ -219,15 +196,13 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
   const source: LinkupConfigSource = {
     path: configPath,
     loaded: readResult.loaded,
-    ...(storePath === undefined ? {} : { storePath, }),
-    ...(storeLoaded ? { storeLoaded: true, } : {}),
-    ...(storeError === undefined ? {} : { storeError, }),
+    ...(store.path === undefined ? {} : { storePath: store.path, }),
+    ...(store.loaded ? { storeLoaded: true, } : {}),
+    ...(store.error === undefined ? {} : { storeError: store.error, }),
   };
 
   innerL.debug(
-    `loaded pi-search-fetch config from ${configPath}; present=${String(readResult.loaded,)}`
-      + `${storePath === undefined ? '' : `; store=${storePath}`}`
-      + `${storeError === undefined ? '' : '; store unavailable'}`,
+    `loaded pi-search-fetch config from ${configPath}; present=${String(readResult.loaded,)}${store.path === undefined ? '' : `; store=${store.path}`}${store.error === undefined ? '' : '; store unavailable'}`,
   );
   return {
     ...(exaApiKey.configured ? { exaApiKey: exaApiKey.value, } : {}),
@@ -242,6 +217,101 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
 //endregion Public API
 
 //region Helpers
+
+/**
+ Store facts returned by a read attempt.
+ */
+type StoreResolution = {
+  /**
+   Fill-in values keyed by environment name.
+   */
+  readonly values: Readonly<Record<string, string>>;
+  /**
+   Canonical store path when the store loaded.
+   */
+  readonly path?: string;
+  /**
+   Whether the store was discovered and decrypted.
+   */
+  readonly loaded: boolean;
+  /**
+   Value-free diagnostic when the store was expected but unusable.
+   */
+  readonly error?: string;
+};
+
+/**
+ Store result when the environment already supplied every requested key.
+ */
+const EMPTY_STORE: StoreResolution = {
+  values: {},
+  loaded: false,
+};
+
+/**
+ Resolve store values, degrading only for the reader's expected failures.
+ 
+ @param missingKeys - provider keys the environment did not supply
+ 
+ @param cwd - directory used for store discovery
+ 
+ @param env - environment used for identity and precedence
+ 
+ @param home - home directory used by the identity resolver
+ 
+ @param envLocalJsonPath - optional explicit store path
+ 
+ @param signal - optional cancellation signal
+ 
+ @returns fill-in values and store facts
+ 
+ @throws when the reader raises an unexpected error
+ */
+async function resolveStoreValues(
+  {
+    missingKeys,
+    cwd,
+    env,
+    home,
+    envLocalJsonPath,
+    signal,
+  }: {
+    readonly missingKeys: readonly string[];
+    readonly cwd: string;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly home: string;
+    readonly envLocalJsonPath?: string;
+    readonly signal?: AbortSignal;
+  },
+): Promise<StoreResolution> {
+  try {
+    /**
+     Local value for result.
+     */
+    const result = await readEnvLocalJson({
+      keys: missingKeys,
+      cwd,
+      env,
+      home,
+      ...(envLocalJsonPath === undefined ? {} : { path: envLocalJsonPath, }),
+      ...(signal === undefined ? {} : { signal, }),
+    },);
+    return {
+      values: result.values,
+      loaded: result.loaded,
+      ...(result.path === undefined ? {} : { path: result.path, }),
+    };
+  }
+  catch (error: unknown) {
+    if (!isExpectedStoreError(error,))
+      throw error;
+    return {
+      values: {},
+      loaded: false,
+      error: error.message,
+    };
+  }
+}
 
 /**
  Report whether an error is one of the store reader's expected failures.
