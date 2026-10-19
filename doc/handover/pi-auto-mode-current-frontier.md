@@ -6,6 +6,46 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Verified retry and current proof gaps, 2026-10-19
 
+Root checkpoints `73c798fd8b`, `8b77ad7bf4` and `23088d1d4a` preserve formatting,
+correct the wrapper type-check direction and keep aggregate members unknown during classification.
+Frozen combined `post-style-combined-candidate-ZwhD7d` at `8b77ad7bf4` passes both builds,
+full types, assessment transport units, all decision-fallback cases and producer lifetime/retirement.
+The first lifetime invocation failed in the scratch task allow-list before running a consumer;
+the registered follow-up actually passes both producer consumers.
+The first scope task attempted to rebuild the shared Oxlint config on a read-only mount.
+Giving only that config's generated `dist` a disposable writable mount makes the real task run.
+It reports 84 warnings/zero errors on sixteen files and 486 rules.
+Eighty-one warnings remain in the HTTP fixture; the other three are fixed in `23088d1d4a`
+and need fresh compilation/scope on a new frozen candidate.
+The handover and package documents render: 49 documents, zero broken local links.
+
+Decoded native decision records establish why the valid scoped commit escalated:
+review `0a9d99e3-941a-456a-8361-708b3a64f23d` receives an operation-decision estimate
+`approve: 0.56`, `deny: 0.38`, `unknown: 0.06` from `openai/gpt-6-luna-decisions`.
+The adopted 0.6 cutoff routes that estimate to manual review.
+This explains routing, not why the model doubts the authorized operation.
+Inspect the original supplied policy/conversation and unchanged-request variation before changing policy.
+Receipt `native-review-trace-NxM2p6/summary.json` scans 2,374 events with zero skipped records.
+The logger stores JSONL envelopes whose `message` contains the tagged decision JSON;
+looking for unescaped JSON in raw lines misses the evidence.
+The first 128-MiB and 512-MiB bounded scans hit their explicit byte limits and establish no absence.
+The completed scan reads 1,077,602,982 bytes within two-GiB/two-CPU bounds.
+Its two substantial private worker logs measure 569,531,445 and 475,233,446 bytes at inventory time.
+Measure emitting tags and duplication; disk volume is an open investigation, not proof of a logger queue leak.
+
+Source MiMo then escalates an ordinary explicit five-path `git add`, again on the older pinned artifact.
+Root inspects its whole prepared group and sends Allow for dialog
+`669aba43-edae-4f6d-97d7-0d4eec72d28b` to continue the already authorized work.
+The deleted MJS path was already staged; inspect the real tool result before prescribing repeat staging.
+No general claim of freedom from false escalations is supported.
+
+The bounded heap analyzer accepts the repeat snapshot and finds the actual 2,097,168-byte control backing store.
+Its largest request-body strings are 7,405,880 and 7,405,328 bytes,
+reachable respectively through observation `currentScope` and runtime `lastReview`.
+Other paths expose retained source-contribution/context copies and the chunk interner.
+Receipt `retained-heap-analysis-anchored-repeat-dvCipA/heap-summary.json` records the graph.
+These are strong graph paths, not dominator sizes or proof of the remaining growth cause.
+
 `cff20750f2` fixes temporary HTTP 503 classification within the existing bounded retry allowance.
 Separate candidate `unavailable-http-green-candidate-LTnUVp` passes fresh JS/native builds,
 full types, assessment transport units and the complete native decision-fallback catalog.
