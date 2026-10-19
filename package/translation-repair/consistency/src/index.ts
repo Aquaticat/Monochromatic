@@ -63,7 +63,10 @@ export {
   type ContainmentEdges,
   containsWords,
 } from './consistency-contains-words.ts';
-export type { CodePadding, } from './consistency-markup-ranges.ts';
+export {
+  type CodePadding,
+  markupRangesOf,
+} from './consistency-markup-ranges.ts';
 export { markPastRunOf, } from './consistency-closing-marks.ts';
 export { joinedMarksOf, } from './consistency-joined-marks.ts';
 export { isCornerBracket, } from './consistency-corner-brackets.ts';
