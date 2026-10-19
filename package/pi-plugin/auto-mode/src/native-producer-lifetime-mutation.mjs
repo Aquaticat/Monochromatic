@@ -188,7 +188,7 @@ export async function runProducerMutationControls() {
     async run() {
     const response = createAuthoredResponse({ name: 'original' });
     const reused = resultStreamFor({ response });
-    const fixture = createFixture({ async handle(input) {
+    const fixture = createFixture({ handle(input) {
       return contextResponseOf({ context: input.context })
         === response ? reused : createResultStream(input);
     } });

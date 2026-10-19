@@ -4,10 +4,8 @@
  */
 import {
   createAssistantMessageEventStream,
-  normalizeContext
-} from '@earendil-works/pi-ai';
-import type {
-  AssistantMessage
+  normalizeContext,
+  type AssistantMessage
 } from '@earendil-works/pi-ai';
 import type {
   ProducerJudgmentEntry,
@@ -17,21 +15,27 @@ import type {
 
 //region Authored SDK values pair valid obligations with fixture-owned correlation.
 /**
- * One authored judgment value recorded for a registered response.
- *
- * Controlled test correlation field, never asserted onto SDK input.
- */
-export interface AuthoredJudgment {
-  readonly name: string;
-}
+ One authored judgment value recorded for a registered response.
 
-/** Correlation names for authored values, held only in fixture-owned storage. */
+ Controlled test correlation field, never asserted onto SDK input.
+ */
+export type AuthoredJudgment = {
+  readonly name: string;
+};
+
+/**
+ Correlation names for authored values, held only in fixture-owned storage.
+ */
 const authoredNames = new WeakMap<object, string>();
 
-/** Registered responses for authored request contexts, held only here. */
+/**
+ Registered responses for authored request contexts, held only here.
+ */
 const authoredContextResponses = new WeakMap<object, AssistantMessage>();
 
-/** The single authored chat model shared by every controlled fixture. */
+/**
+ The single authored chat model shared by every controlled fixture.
+ */
 const authoredModelValue: ProducerRequest[0] = {
   id: 'e2e-fake-model',
   name: 'E2E fake model',
@@ -50,20 +54,30 @@ const authoredModelValue: ProducerRequest[0] = {
   maxTokens: 1
 };
 
-/** The frozen authored chat model shared by every controlled fixture. */
+/**
+ The frozen authored chat model shared by every controlled fixture.
+ */
 export const authoredModel: ProducerRequest[0] =
   Object.freeze(authoredModelValue);
 
 /**
  Register one authored response carrying a correlation name.
 
- @param input - correlation name
+ @param name - correlation name
 
  @returns frozen response keeping a mutable SDK content array
+
+ @example
+ ```ts
+ const response = createAuthoredResponse({ name: 'first' });
+ ```
  */
 export function createAuthoredResponse({ name }: {
   readonly name: string;
 }): AssistantMessage {
+  /**
+   The authored response record carrying a mutable SDK content array.
+   */
   const response: AssistantMessage = {
     role: 'assistant',
     content: [],
@@ -87,20 +101,31 @@ export function createAuthoredResponse({ name }: {
     stopReason: 'stop',
     timestamp: 1
   };
-  authoredNames.set(response, name);
+  authoredNames.set(
+    response,
+    name
+  );
   return Object.freeze(response);
 }
 
 /**
  Read the correlation name registered for an authored response.
 
- @param input - registered response
+ @param value - registered response
 
  @returns correlation name
+
+ @example
+ ```ts
+ const name = authoredNameOf({ value: response });
+ ```
  */
 export function authoredNameOf({ value }: {
   readonly value: object;
 }): string {
+  /**
+   Registered correlation name, absent when the value was never registered.
+   */
   const name = authoredNames.get(value);
   if (name === undefined) {
     throw new Error('missing authored correlation name');
@@ -112,6 +137,11 @@ export function authoredNameOf({ value }: {
  Create one normalized request context carrying no correlation fields.
 
  @returns branded request context
+
+ @example
+ ```ts
+ const context = createAuthoredContext();
+ ```
  */
 export function createAuthoredContext(): ProducerRequest[1] {
   return normalizeContext({ messages: [] });
@@ -120,27 +150,46 @@ export function createAuthoredContext(): ProducerRequest[1] {
 /**
  Register which response an authored request context targets.
 
- @param input - correlation pair
+ @param context - request context
 
- @returns nothing
+ @param response - registered response
+
+ @example
+ ```ts
+ registerContextResponse({ context, response });
+ ```
  */
-export function registerContextResponse({ context, response }: {
+export function registerContextResponse({
+  context,
+  response
+}: {
   readonly context: object;
   readonly response: AssistantMessage;
 }): void {
-  authoredContextResponses.set(context, response);
+  authoredContextResponses.set(
+    context,
+    response
+  );
 }
 
 /**
  Read the response registered for an authored request context.
 
- @param input - request context
+ @param context - request context
 
  @returns registered response
+
+ @example
+ ```ts
+ const response = contextResponseOf({ context });
+ ```
  */
 export function contextResponseOf({ context }: {
   readonly context: object;
 }): AssistantMessage {
+  /**
+   Registered response, absent when the context was never registered.
+   */
   const response = authoredContextResponses.get(context);
   if (response === undefined) {
     throw new Error('missing authored context response');
@@ -151,13 +200,21 @@ export function contextResponseOf({ context }: {
 /**
  Build one result-bearing SDK stream ended with a response.
 
- @param input - response to register
+ @param response - response to register
 
  @returns result-bearing stream
+
+ @example
+ ```ts
+ const stream = resultStreamFor({ response });
+ ```
  */
 export function resultStreamFor({ response }: {
   readonly response: AssistantMessage;
 }): ProducerStream {
+  /**
+   Fresh SDK event stream carrying the registered response.
+   */
   const stream = createAssistantMessageEventStream();
   stream.end(response);
   return stream;
@@ -166,9 +223,14 @@ export function resultStreamFor({ response }: {
 /**
  Build one result-bearing SDK stream for a request context.
 
- @param input - request carrying registered response
+ @param context - request carrying registered response
 
  @returns result-bearing stream
+
+ @example
+ ```ts
+ const stream = createResultStream({ context });
+ ```
  */
 export function createResultStream({ context }: {
   readonly context: object;
@@ -180,9 +242,12 @@ export function createResultStream({ context }: {
  A prepared-group capability the fixtures never use; it throws if the owner
  unexpectedly invokes it.
 
- @returns never
-
  @throws always
+
+ @example
+ ```ts
+ const entry = judgmentEntry({ response, stream });
+ ```
  */
 export function unusedPreparedGroup(): never {
   throw new Error('deliberately unused prepared group');
@@ -192,11 +257,21 @@ export function unusedPreparedGroup(): never {
  Build one judgment entry carrying the production contract's required signal and
  group capabilities.
 
- @param input - identity pair
+ @param response - identity response
+
+ @param stream - identity stream
 
  @returns complete judgment entry
+
+ @example
+ ```ts
+ const entry = judgmentEntry({ response, stream });
+ ```
  */
-export function judgmentEntry({ response, stream }: {
+export function judgmentEntry({
+  response,
+  stream
+}: {
   readonly response: AssistantMessage;
   readonly stream: object;
 }): ProducerJudgmentEntry {

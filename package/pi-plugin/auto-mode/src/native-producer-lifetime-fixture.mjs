@@ -33,9 +33,9 @@ function constructValue({ response }) {
 
  @param {{ readonly context: object }} input - request carrying registered response
 
- @returns {Promise<import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStream>} result-bearing stream
+ @returns {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStream} result-bearing stream the owner awaits
  */
-async function handleRequest(input) {
+function handleRequest(input) {
   return createResultStream(input);
 }
 
@@ -100,7 +100,10 @@ export async function observe({
   auxiliary = false
 }) {
   const context = createAuthoredContext();
-  registerContextResponse({ context, response });
+  registerContextResponse({
+    context,
+    response
+  });
   const input = {
     stream: fixture.stream,
     model: authoredModel,
@@ -114,7 +117,10 @@ export async function observe({
     await result.result(),
     response
   );
-  return judgmentEntry({ response, stream: fixture.stream });
+  return judgmentEntry({
+    response,
+    stream: fixture.stream
+  });
 }
 
 /**
@@ -129,12 +135,21 @@ export async function observe({
 
  @returns {Promise<void>}
  */
-export async function verify({name, run}) {
+export async function verify({
+  name,
+  run
+}) {
   try {
     await run();
-    console.log(JSON.stringify({ name, passed: true }));
+    console.log(JSON.stringify({
+      name,
+      passed: true
+    }));
   } catch (error) {
-    console.error(JSON.stringify({ name, passed: false }));
+    console.error(JSON.stringify({
+      name,
+      passed: false
+    }));
     throw error;
   }
 }
@@ -152,6 +167,12 @@ export async function verify({name, run}) {
  @returns {(error: unknown) => boolean} message predicate
  */
 export function messageIncludes({ substring }) {
-  return (error) => Error.isError(error) && error.message.includes(substring);
+  return function matchesMessage(error) {
+    return Error
+      .isError(error)
+      && error
+        .message
+        .includes(substring);
+  };
 }
 //endregion
