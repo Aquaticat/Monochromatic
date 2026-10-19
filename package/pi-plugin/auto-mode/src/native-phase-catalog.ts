@@ -182,7 +182,7 @@ export async function runNativePhaseCatalog({
       options: {
         ...environment.options,
         tools: ['bash'],
-        customTools: [bash]
+        customTools: [environment.defineTool(bash)]
       }
     });
   session.agent

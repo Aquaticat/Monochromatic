@@ -132,6 +132,11 @@ export async function createEnvironment({
    'dist/core/tools/tool-definition-wrapper.js'
  ))
    .href);
+ const {defineTool}=await import(pathToFileURL(join(
+   pkg,
+   'dist/core/extensions/types.js'
+ ))
+   .href);
  const settings=SettingsManager.inMemory({
    compaction:{enabled:false},
    retry:{enabled:false}
@@ -273,6 +278,7 @@ export async function createEnvironment({
    readNativeExtensionToolOrigin,
    createReadToolDefinition,
    wrapToolDefinition,
+   defineTool,
    parser,
    policyInput,
    readRootOccurrence,

@@ -42,13 +42,40 @@ it does not qualify its retirement timing for active/concurrent operations or pr
 Its original-request size,
 historical response count,
 completed executions and latest diagnostic assertions prevent a missing-work or cleared-history false pass.
-The constructor and caller lifetime still need the production correction,
-followed by rebuilt positive controls and all terminal/consumer paths.
+The production owner keeps each consumer's current judgment and retires only completed, superseded judgments.
+The handler completes its producer after group and selector disposal, including exceptional paths.
+The frozen production qualification passes its fifteen build/type/consumer tasks;
+its actual-session guard retains 16,688,184 additional heap bytes with every historical response still live.
+New lifetime cases and built mutation controls extend this evidence separately.
 The earlier group-only review-retirement test covers a different owner and cannot establish producer retirement.
 The first maintained producer guard fails on an incorrect whole-outcome comparison:
 the actual native outcome also includes its diagnostic reason.
 That failure is not memory-retirement evidence.
 The corrected fixture checks the required state and verdict independently and preserves the existing diagnostic.
+
+Late response reuse invalidates authority without removing the original operation's cleanup obligation.
+The committed cleanup regression fails the built pre-correction artifact with Node's `SuppressedError`:
+the disposer adds a second ownership failure over the original operation failure.
+Cleanup therefore checks exact original consumer ownership without authorizing a policy read.
+New reservations and policy reads still reject ambiguous responses; response/stream tombstones remain.
+The corrected build passes every nine lifetime cases, constructor and execution catalogs,
+and the actual-session memory guard at 17,742,936 retained heap bytes.
+The older MiMo OOM still requires full-history replay on the corrected artifact.
+
+### Native fixture declarations
+
+Typed fixture callers consume the immutable native artifact, whose runtime modules retain source-owner identity.
+Copying source declarations into that artifact leaves their imports pointing at nonexistent source paths,
+or makes the caller's composite TypeScript project traverse raw built implementations outside its file list.
+The existing Rolldown/Oxc declaration generator now closes those types in a type-only fixture entry.
+Native generation writes release-relative facades referencing that emitted type graph before activation.
+No fixture runtime implementation is bundled into the policy entry.
+
+The fixture environment forwards the qualified SDK's original `defineTool` function.
+Its installed declaration explicitly supports concrete tool definitions passed through generic `customTools` arrays;
+its installed implementation returns its argument unchanged.
+This preserves the original Bash tool and renderer identities without weakening the consumer's compiler settings.
+The complete native phase catalog and fresh emitted declaration type check remain the verification boundary.
 
 The source compiler retains clause, heading, incorporation, authorization, admission,
 and complete-operation fallback semantics.

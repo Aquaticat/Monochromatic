@@ -104,6 +104,16 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   Source owners refine the guaranteed cwd and optional SDK update callback;
   the runtime transport union distinguishes configured raw-wire policy from the legacy normalized sender.
   The invented no-op `send` callback is removed. Fresh emitted type/catalog/lint verification is pending.
+  Frozen `relocatable-fixture-types-candidate-ZJd3cN` at `ab9e6ed62a` passes fresh builds,
+  the complete phase catalog and the properly registered group-only review-retirement test.
+  Types improve from 26 failures to one concrete Bash-renderer variance failure in SDK `customTools`.
+  The installed SDK publishes `defineTool` specifically for this array boundary and returns its argument unchanged.
+  The authored correction forwards that exact function through the fixture environment and uses it at registration;
+  no renderer or tool wrapper is invented. Fresh verification is pending.
+  Source MiMo resumes complete saved history in `kARc6q`, immutable corrected runtime `native-release-YGJ1JD`,
+  under two GiB/two CPUs/1,536-MiB heap with allocation and payload capture.
+  Its bounded write scope reduces the phase callback/mode/transport/assertion/type files;
+  build/declaration and catalog registration changes remain supervisor-owned.
   The current consolidated AST comparison measures 780 code lines/226 statements/45 functions,
   against the original 432/126/25; its two owner declarations have zero runtime code/statements/functions.
   Exported/ambient type-only removal has a new positive control so declaration syntax is not counted as executable code.

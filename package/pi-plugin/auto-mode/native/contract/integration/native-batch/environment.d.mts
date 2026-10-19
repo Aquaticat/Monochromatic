@@ -5,7 +5,7 @@
  session-root, and parser types are the owners' published contracts rather than
  caller-authored substitutes. @module
  */
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import type { defineTool, ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import type { ManagerConstructorInput } from '../../lifecycle/runtime-custody/manager-types.ts';
 import type { NativeMarkdownParser } from '../../native-index/native-parser-types.ts';
 import type { NativeForwardedFunction } from './runtime-types.ts';
@@ -61,6 +61,7 @@ export type NativeBatchEnvironment = Readonly<{
   readNativeExtensionToolOrigin: NativeForwardedFunction;
   createReadToolDefinition: NativeForwardedFunction;
   wrapToolDefinition: NativeForwardedFunction;
+  defineTool: typeof defineTool;
   parser: NativeMarkdownParser;
   policyInput: unknown;
   readRootOccurrence: RootSessionDefinition<RootSessionOptions>['readRootOccurrence'];
