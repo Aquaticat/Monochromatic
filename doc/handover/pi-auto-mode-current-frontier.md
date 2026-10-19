@@ -60,6 +60,11 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   The authored correction separates original consumer ownership lookup from ambiguity authorization;
   completion uses the former, while every policy read and new reservation retains the latter.
   Fresh corrected qualification remains required.
+  Corrected candidate `producer-lifetime-cleanup-fixed-candidate-DQrRuL` at `b8ec3f2e32`
+  passes fresh builds, every nine producer-lifetime cases, the actual-session memory guard,
+  constructor and execution catalogs.
+  The review-retirement command is rejected by the scratch driver's allow-list before entering the container;
+  this is a verification-driver gap, not a package-test result, and must be rerun after registration.
   Native MiMo delivers its independent read-only trace at 101 tools,
   saved privately as `native-checkpoint-20261019.txt`.
   It supports the per-consumer current-slot/completion seam and identifies the same live consumers.
@@ -94,6 +99,11 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   There are also honest fixture-contract mismatches for cwd and the optional SDK update callback.
   Keep the compiler configuration strict; repair the build owner's emitted declaration boundary,
   using the existing Rolldown/Oxc declaration bundle rather than another caller-side reader/adapter layer.
+  The authored build correction adds a type-only fixture entry to the incumbent Rolldown/Oxc build,
+  emits release-relative declaration facades during native generation and exposes the original session owner via `.mjs`.
+  Source owners refine the guaranteed cwd and optional SDK update callback;
+  the runtime transport union distinguishes configured raw-wire policy from the legacy normalized sender.
+  The invented no-op `send` callback is removed. Fresh emitted type/catalog/lint verification is pending.
   The current consolidated AST comparison measures 780 code lines/226 statements/45 functions,
   against the original 432/126/25; its two owner declarations have zero runtime code/statements/functions.
   Exported/ambient type-only removal has a new positive control so declaration syntax is not counted as executable code.

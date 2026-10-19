@@ -34,7 +34,10 @@ export type NativeApprovalHost = {
 /**
  Existing native consumers authenticate the forwarded owners before installing policy hooks.
  */
-export type NativePolicyRuntimeInput = {
+export type NativePolicyRuntimeInput = NativePolicyRuntimeDependencies & NativePolicyAssessmentTransport;
+
+/** Fixed bootstrap capabilities are independent of the selected assessment transport. */
+type NativePolicyRuntimeDependencies = {
   /**
    Current native session branch supplies explicit user bypass, never model output.
    */
@@ -46,14 +49,9 @@ export type NativePolicyRuntimeInput = {
   readonly parsePolicy: NativeMarkdownParser['parse'];
   readonly catalogText?: string;
   readonly files: readonly unknown[];
-  readonly send: NativeForwardedFunction;
   readonly effectOwnerFor?: NativeForwardedFunction;
   readonly authorizationOwnerFor?: NativeForwardedFunction;
-  readonly semanticAdmissionPolicy?: SemanticAdmissionPolicy;
-  readonly headingContextAdmissionPolicy?: SemanticAdmissionPolicy;
-  readonly unitAdoptionAdmissionPolicy?: SemanticAdmissionPolicy;
   readonly approvalHost?: () => NativeApprovalHost;
-  readonly sendWire?: ReturnType<typeof createAssessmentSender>;
   readonly wrapToolDefinition: NativeForwardedFunction;
   readonly readSessionDisposalState: NativeForwardedFunction;
   readonly trace: (event: string) => void;
@@ -61,6 +59,25 @@ export type NativePolicyRuntimeInput = {
   readonly originalStream?: NativeForwardedFunction;
   readonly terminalFetch?: typeof fetch;
 };
+
+/** Configured semantic policy uses raw wire; the legacy branch requires its normalized sender. */
+type NativePolicyAssessmentTransport = {
+  readonly send: NativeForwardedFunction;
+  readonly sendWire?: ReturnType<typeof createAssessmentSender>;
+  readonly semanticAdmissionPolicy?: undefined;
+  readonly headingContextAdmissionPolicy?: undefined;
+  readonly unitAdoptionAdmissionPolicy?: undefined;
+} | ({
+  readonly send?: NativeForwardedFunction;
+  readonly sendWire: ReturnType<typeof createAssessmentSender>;
+  readonly semanticAdmissionPolicy?: SemanticAdmissionPolicy;
+  readonly headingContextAdmissionPolicy?: SemanticAdmissionPolicy;
+  readonly unitAdoptionAdmissionPolicy?: SemanticAdmissionPolicy;
+} & (
+  { readonly semanticAdmissionPolicy: SemanticAdmissionPolicy }
+  | { readonly headingContextAdmissionPolicy: SemanticAdmissionPolicy }
+  | { readonly unitAdoptionAdmissionPolicy: SemanticAdmissionPolicy }
+));
 
 /**
  Original runtime exposes inspection and completed-session detachment.

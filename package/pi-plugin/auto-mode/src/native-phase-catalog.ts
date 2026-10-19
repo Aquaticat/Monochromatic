@@ -15,7 +15,7 @@ import type {
 import { createDomainFixtureAssessment } from '../dist/native/contract/integration/native-batch/domain-fixture-assessment.mjs';
 import { createEnvironment } from '../dist/native/contract/integration/native-batch/environment.mjs';
 import { bindNativePolicyRuntime } from '../dist/native/contract/integration/native-batch/runtime.mjs';
-import { createRootSessionFactory } from '../dist/native/contract/integration/native-batch/session-root.ts';
+import { createRootSessionFactory } from '../dist/native/contract/integration/native-batch/session-root.mjs';
 import { createNativeSemanticOperatingPolicies } from '../dist/native/contract/integration/maintained-policy.mjs';
 import { assertNativePhaseOutcome } from './native-phase-assertions.ts';
 import {
@@ -231,7 +231,6 @@ export async function runNativePhaseCatalog({
     wrapToolDefinition: environment.wrapToolDefinition,
     readSessionDisposalState: environment.readSessionDisposalState,
     trace: traceRuntimeEvent,
-    send: traceRuntimeEvent,
     ...createNativeSemanticOperatingPolicies(),
     sendWire: transport.sendWire,
     terminalFetch: transport.terminalFetch

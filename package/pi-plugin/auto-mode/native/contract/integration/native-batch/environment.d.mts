@@ -43,6 +43,7 @@ export type NativeBatchEnvironmentInput = Readonly<{
  Session options emitted by the environment plus its harness-owned fields.
  */
 export type NativeBatchEnvironmentOptions = RootSessionOptions & Readonly<{
+  cwd: string;
   agentDir: string;
   modelRuntime: unknown;
   resourceLoader: unknown;

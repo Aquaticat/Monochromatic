@@ -20,6 +20,7 @@ import {
 } from './build-contract.ts';
 import { activateNativeBuild } from './build-activation.ts';
 import { reuseNativeBuildFiles } from './build-reuse.ts';
+import { writeNativeDeclarations } from './build-types.ts';
 
 //region The maintained artifact owns every native module loaded at runtime.
 
@@ -127,6 +128,7 @@ await cp(
     'loader.mjs',
   ),
 );
+await writeNativeDeclarations(output);
 await cp(
   join(
     import.meta.dirname,

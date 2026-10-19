@@ -155,7 +155,7 @@ export type FixtureBashExecute = (
   toolCallId: string,
   input: OriginalBashParameters[1],
   signal: OriginalBashParameters[2],
-  onUpdate: AgentToolUpdateCallback<FixtureBashDetails>,
+  onUpdate: AgentToolUpdateCallback<FixtureBashDetails> | undefined,
   context: ExtensionToolContext
 ) => Promise<AgentToolResult<FixtureBashDetails>>;
 
