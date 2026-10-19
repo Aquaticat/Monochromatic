@@ -991,7 +991,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     yellow names, green strings) with the indentation shape of the code, crisp at scale 2 and soft but textured at
     scale 1 (it is an average), the box over it with its border, the selection as blue bars with the length of each
     selected line, the matches of a find as faint tints at their places, no blocks, no blank stretches, no banding at
-    band borders (bands are 6 to 8 times the view here). On the 50,000-line file the picture is a dim, finely
+    band borders that I could see at 8 times zoom. On the 50,000-line file the picture is a dim, finely
     textured gray of uniform brightness (row means of the screenshot 34.4 to 35.5 for a background near 28), which is
     what an exact average of that many rows is. The coarse picture could not be told apart by eye because the full one
     follows within seconds; the test covers it.
