@@ -986,6 +986,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
   - Clarification of 2026-10-19 (owner): only CPU painting of text is banned. Vello is not mandatory; text drawn on
     the GPU by any Slint renderer, FemtoVG included, is acceptable. The study ranks designs on that basis and
     compares FemtoVG and Vello for every question (the agent was told so).
+  - Second clarification of 2026-10-19 (owner): the IDE is not restricted to Slint's builtin text elements. The
+    constraints are: no CPU painting of text; any GPU renderer; any GPU text path, including Parley layout drawn by
+    Vello into a wgpu texture shown in Slint. The study ranks those designs together with the builtin-text ones.
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
