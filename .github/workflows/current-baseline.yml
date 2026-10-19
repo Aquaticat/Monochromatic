@@ -4,7 +4,7 @@ on:
 permissions:
   contents: read
 env:
-  MISE_AUTO_INSTALL: 'true'
+  MISE_AUTO_INSTALL: 'false'
   MISE_JOBS: '4'
 jobs:
   baseline:
@@ -19,6 +19,9 @@ jobs:
           version: 2026.10.9
           install: false
           cache: false
+      - name: Install repository tools
+        continue-on-error: true
+        run: mise install
       - name: Prepare dependencies
         run: mise run prepare:pnpm
       - name: Build
