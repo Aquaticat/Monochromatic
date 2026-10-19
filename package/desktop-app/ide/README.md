@@ -3080,34 +3080,59 @@ and `render/MainMinimap.kt`.
 
 ### What it shows
 
-- The picture shows every line in visual rows,
-  so soft wrap is respected:
-  a line that wraps to three rows is three rows of the picture,
-  and the blocks of virtual rows above annotated lines
-  are blank stretches.
+- The picture is a zoomed-out reflection of the window's own rendering of the text:
+  the window's glyphs,
+  its syntax colors,
+  the selection,
+  the find matches and the active match's boundary,
+  the diagnostics' underlines and the hints,
+  the virtual rows above annotated lines,
+  and the rows soft wrap makes.
+  Each band of the text is rendered with the same code path that paints a tile of the source view
+  (`TextShaper::prepare_rows`,
+  the match rectangles,
+  the annotation layout,
+  the markup's fills,
+  and `TextRaster::paint_onto` in `src/minimap/render.rs`),
+  and the rendering is then reduced to the picture's size by exact area averaging at the final device-pixel size
+  (`src/minimap/downscale.rs`).
+  It is never rectangles or blocks:
+  a pixel of the picture is the average of the window's pixels it stands for,
+  and the native test `src/native/minimap_reflection_tests.rs` compares the picture with the box average of a
+  snapshot of the real window for plain text,
+  a selection,
+  find matches,
+  wrapped lines,
+  and diagnostics,
+  at display scales one and two.
+- The picture covers the whole width of the text area (the wrap width,
+  or 1,300 px while the view has none) shrunk to the minimap's width,
+  and the whole height of the file in visual rows shrunk by the scale of the minimap
+  (`Geometry::scale`,
+  at most a sixth,
+  so one code row of 24 px is at most four pixel rows).
   The rows come from the one vertical mapping (`RowMap`),
   never from a second estimate of the height.
-- One pixel stands for one source column,
-  a tab for four columns,
-  and a row of text for four pixel rows,
-  of which the first stays empty so rows can be told apart (CodeGlance Pro's "clean" renderer:
-  `BaseMinimap.renderClean`,
-  weights 0.8 for printable ASCII and 0.4 for other glyphs,
-  0.6 for each pixel row of the
-  glyph).
-  Columns past the minimap's width are not drawn,
-  as in CodeGlance Pro.
-  The whole picture is drawn at 0.8 opacity (`srcOver0_8` in `GlancePanel.paintComponent`).
-- A text that fits the view at four pixels a row is drawn at that size and ends above the bottom of the view.
-  A longer text is scaled so the whole file fits the height of the view,
-  and each pixel row shows the row of the text
-  at its center.
+  Its pixels hold the averaged color with the averaged coverage,
+  so an average of ink and background is a fainter ink,
+  as in the window's own frame;
+  the caret and the line-number gutter are not part of the picture.
+- A text that fits the view at the scale of a sixth is drawn at that size and ends above the bottom of the view.
+  A longer text is scaled so the whole file fits the height of the view.
   This is CodeGlance Pro's "Fit" mode (`curDocumentHeight > visibleArea.height`);
   its default "Proportional" mode
   slides a picture of the file with the scroll and cannot show a whole file of fifty thousand lines.
-- The glyphs take the syntax classes and the palette of the source text in the dark and the light scheme
+  Up to eight code rows for each pixel row the reduction is exact.
+  A text that squeezes to more rows is sampled:
+  each pixel row averages eight code rows spread evenly over what it stands for,
+  each stretched over its share,
+  which estimates the same box average from a bounded number of lines,
+  with the lines the budgets below allow.
+- The inks are the syntax classes and the palette of the source text in the dark and the light scheme
   (`CodeColors`,
-  the same inks the tile uses).
+  the same inks the tile uses),
+  the selection's fill,
+  and the foreground at 0.14 opacity with a boundary for the other matches.
   A change of scheme builds the picture again.
 - The viewport box is the share of the text the view shows,
   never shorter than 20 px (CodeGlance Pro's
@@ -3151,7 +3176,8 @@ and `render/MainMinimap.kt`.
 - A press outside the box moves the caret to the row under the pointer and,
   in the same row,
   to the column under it
-  (one column for each pixel),
+  (the position across the minimap is the same share of the text's width,
+  `text_x` in `src/minimap/horizontal.rs`),
   and scrolls that row to the middle of the view,
   also near the ends of the file
   where the scroll range stops the view short of the middle.
@@ -3220,6 +3246,10 @@ and `render/MainMinimap.kt`.
 - CodeGlance Pro draws an empty picture for a file over 20,000 lines (`maxLinesCount` with `outLineEmpty`).
   The picture here has no such limit,
   because its cost follows the height of the track and not the length of the text.
+- CodeGlance Pro draws its picture at 0.8 opacity with a weight for each glyph.
+  This picture is the exact average of the window's pixels,
+  so it is fainter than CodeGlance Pro's;
+  whether to raise its coverage with a gain is left to the owner (see the handover `doc/handover/slint-ide-0x.md`).
 - Its preview of the code under the pointer after 400 ms (`showEditorToolTip`) and its 7 px gutter for resizing the
   minimap are not implemented (see Limits and follow-ups).
 - A press below the end of a short picture jumps to the last line (`fitLineToEditor` clamps),
@@ -3231,7 +3261,7 @@ and `render/MainMinimap.kt`.
 ### Performance bounds
 
 - The picture is built on its own thread (`ide-minimap`,
-  `src/native/minimap_build.rs`),
+  `src/native/minimap_build.rs` and `src/native/minimap_build/serve.rs`),
   never on the window thread.
   The window thread takes a finished picture with one comparison and one image setter
   (`apply` in `src/native/minimap/picture.rs`).
@@ -3243,14 +3273,25 @@ and `render/MainMinimap.kt`.
   and `pointer.rs` turns a press,
   a drag,
   and a page step into scroll offsets.
+  The picture's own code is in `src/minimap/`:
+  `plan.rs` cuts the text into bands,
+  `unit.rs` says which bands make each row of the picture,
+  `render.rs` renders a band,
+  `fills.rs` paints the selection and match fills under the glyphs,
+  `downscale.rs` reduces a rendering,
+  `key.rs` and `cache.rs` keep what is valid,
+  and `build.rs` runs one pass.
 - The picture depends on the text,
   its syntax classes,
   the vertical mapping,
   the wrap width,
   the palette,
-  the display
-  scale,
-  and the size of the minimap,
+  the display scale,
+  the size of the minimap,
+  the selection,
+  the matches,
+  the annotations,
+  and the inks of the fills,
   and on nothing else;
   in particular not on the scroll offset
   (`Key` in `src/native/minimap_build.rs`).
@@ -3265,30 +3306,50 @@ and `render/MainMinimap.kt`.
   and 120 ms after the last change for everything else,
   such as the size steps of a resize drag.
   The newest request wins:
-  the build of an older one stops at its next look at the flag,
-  every 16 pixel rows,
+  a build stops between two units,
   and an older request that was never started is dropped.
-- A finished picture is shown only when its text stamp is the displayed text's and its request is not older than the
-  picture on screen.
+- The picture is rendered one band at a time:
+  a band is a run of whole code rows whose raster is at most 4 MiB (`BAND_BYTES`,
+  a sixteenth of the 64 MiB raster limit),
+  and one very tall line is cut into bands by the same clip the window's tile uses.
+  The reduction of a band is kept as a unit of the cache with the key it is valid for
+  (the lines,
+  their rows,
+  and the selection,
+  the matches,
+  the diagnostics,
+  and the blocks that touch them,
+  plus what every unit shares).
+  A new picture renders only the units whose key changed:
+  a selection in one place or a new match list renders the bands it touches,
+  and an edit changes the revision every key holds,
+  so it renders them all.
+  Two bands that share a pixel row keep the unrounded sums of that row and complete it together,
+  so the picture does not depend on where the bands were cut
+  (the test `bands_put_together_make_the_picture_of_the_whole_without_a_seam`).
 - The work is bounded by the track,
   not by the text:
-  at most one source line is read for each pixel row of the track
-  (a text with more rows than the track has pixel rows is sampled),
-  and each row reads at most the minimap's width in
-  columns,
-  so one line of two hundred thousand characters costs no more than any other.
-  Wrapped lines need their break positions:
-  lines that cost more to shape than the budget allows are cut into rows of
-  equal
-  width instead of shaped,
-  250,000 units for the first (quick) picture and 5,000,000 for the full one,
-  which follows
-  only
-  when the quick one left a rough line.
-- The picture is `4 * width * track` bytes at the display scale squared,
-  and the worker's job holds a rope snapshot,
-  the row
-  map,
+  a text with more than eight code rows for each pixel row is sampled with at most eight code rows for each pixel row,
+  and the plan samples fewer rows,
+  down to one,
+  when the lines it samples would cost more than 5,000,000 units of `line_work`
+  (`FULL_WORK`).
+  A text that would cost more than 250,000 units (`QUICK_WORK`) to render in full is first drawn with one code row
+  for each pixel row,
+  rendered whole and not cached,
+  and the full picture follows it as a second reply of the same request.
+  A line past `WORK_SCAN_LIMIT` characters, or a unit the budget cannot pay,
+  or a band that fails to render,
+  is not drawn blank:
+  the rows the last picture held for the same place stay,
+  the unit is counted in `skipped` or `failed` of the build's statistics,
+  and a `tracing::warn!` gives the range of lines.
+- The memory of a build is the bands in flight (at most 4 MiB each),
+  the unrounded sums of the rows two bands share,
+  the units of the last picture (`4 * width * rows` bytes at the display scale squared),
+  and the worker's job,
+  which holds a rope snapshot,
+  the row map,
   and the shared syntax classes,
   not copies of the text.
 
@@ -3395,62 +3456,110 @@ alternated in order.
 
 ### Limits and follow-ups
 
-- Marks are not drawn.
-  CodeGlance Pro paints the caret line,
+- The caret and the line-number gutter are not part of the picture,
+  and neither are CodeGlance Pro's version control marks or IntelliJ's error stripe as a separate column;
   the selection,
-  the highlighters of the error stripe (find matches and
-  diagnostics),
-  and version control marks into the picture,
-  and IntelliJ's error stripe shows find matches and problems on its scroll
-  bar.
-  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`,
-  kept cheap by building
-  them
-  with the picture (a diagnostic and a find match each name a source position,
-  so no shaping is needed),
-  and they would
-  need a key part for the find and diagnostic snapshots.
+  the find matches,
+  and the diagnostics appear in the picture as the window draws them.
 - The code preview after 400 ms,
   the resizable width,
   and a drag with the middle button are not implemented.
-- A picture of a text with many long wrapped lines may be rough for a moment after a new wrap width,
-  because the quick
-  picture cuts what it cannot afford into rows of equal width;
-  the full picture follows within a second.
+- A picture of a text with many long wrapped lines is the quick one for a moment after a new wrap width,
+  which draws one code row for each pixel row;
+  the full picture follows as a second reply.
 - A picture is drawn at the size of the minimap,
-  so a very wide display scale makes a larger picture
-  (`4 * width * track` bytes at that scale squared).
-- The minimap shows the first 110 columns of each row,
-  like CodeGlance Pro;
-  text farther right is not drawn.
+  so a larger display scale makes a larger picture
+  (`4 * width * track` bytes at that scale squared),
+  and the markup draws it at exactly that many device pixels without resampling.
+- A squeezed text is an estimate of the average:
+  eight sampled code rows for each pixel row can differ from the exact average where a few long lines stand
+  among short ones.
+  A text that squeezes to at most eight code rows for each pixel row is exact.
+- An edit changes every unit's key,
+  so the first picture after an edit renders every band again;
+  a change of the vertical geometry (a resize that changes the scale of the minimap) does too.
 
 ### Minimap checks
 
-`mise run //package/desktop-app/ide:test:minimap` runs the integration tests of the geometry and the picture
-(`tests/minimap.rs`),
-and `test:native` runs the window tests (`src/native/minimap_tests.rs`):
-the box against the geometry at every offset,
+`mise run //package/desktop-app/ide:test:minimap` runs the integration tests without a window:
+the geometry (`tests/minimap.rs`),
+the reduction (`tests/minimap_downscale.rs`:
+a uniform field at every ratio,
+patterns averaged by hand,
+fractional edges,
+ratios above one,
+noise against an exact reference,
+alpha,
+the rows below the text,
+adversarial sizes,
+bands put together without a seam,
+and strips stretched over more rows),
+and the picture (`tests/minimap_picture.rs`:
+the plan of bands within the budget,
+the picture against one frame of the whole text,
+the selection fill,
+the cache,
+the budgets,
+a band that fails,
+sampling within the raster limit,
+costly lines,
+cancel,
+and a tall view).
+`test:native` runs the window tests:
+`src/native/minimap_tests.rs`
+(the box against the geometry at every offset,
 a short text,
 a press that jumps and the keys afterwards,
-a drag with both
-clamps and the release,
+a press across the width,
+a drag with both clamps and the release,
 hover with two channels,
 the wheel over the minimap against the wheel over the text,
 a picture built on the worker within its bounds,
 no request or picture for a scroll,
-a worker held at its gate
-that never blocks the view,
+a worker held at its gate that never blocks the view,
 a new wrap width,
 the accept rule for stale pictures,
-the palette inks in both schemes
-and the new highlights,
+the palette inks in both schemes and the new highlights,
 fifty thousand lines,
-and the pace of requests for each kind of change.
+and the pace of requests for each kind of change),
+`src/native/minimap_reflection_tests.rs`
+(the picture against the box average of the window's own pixels:
+plain wrapped text,
+a selection,
+find matches,
+diagnostics and hints,
+at display scales one and two,
+with a control that a window read three pixels aside does not match),
+and `src/native/tall_window_minimap_tests.rs`
+(a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs and no band over the raster limit,
+and a long file in a tall window shows the coarse picture and then the full one).
 `inspect:source-guards` removes each rule in a disposable copy and checks that its named test fails:
 `minimap-box-share`,
 `minimap-drag-ratio`,
 `minimap-position-clamp`,
+`minimap-renders-glyphs`,
+`minimap-fills-selection`,
+`minimap-fills-match`,
+`minimap-fills-boundary`,
+`minimap-key-selection`,
+`minimap-window-key-selection`,
+`minimap-cache-key`,
 `minimap-work-budget`,
+`minimap-degrade-keeps-rows`,
+`minimap-failed-counted`,
+`minimap-cancel`,
+`minimap-band-bytes`,
+`minimap-sampling`,
+`minimap-density-thins`,
+`minimap-reduce-row-weight`,
+`minimap-reduce-column-weight`,
+`minimap-stitch-sum`,
+`minimap-stitch-complete`,
+`minimap-stretch-step`,
+`minimap-text-x`,
+`minimap-press-column`,
+`minimap-quick-pass`,
+`minimap-coarse-whole`,
 `minimap-press-centers`,
 `minimap-press-caret`,
 `minimap-shift-anchor`,

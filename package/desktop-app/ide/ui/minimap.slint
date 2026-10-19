@@ -1,9 +1,8 @@
 // The minimap beside the source text: the picture of the whole file, which is the window's own rendering of the text
 // zoomed out, and the viewport box over it that is the scroll control. Native code builds the picture and decides what
-// a press or a drag scrolls to; this file only places the box and reports the pointer. The box follows CodeGlance
-// Pro's defaults: the box is the palette's
-// foreground at 0.15 opacity, 0.25 under the pointer, and 0.35 while it is dragged, and a hand cursor shows
-// outside the box where a press jumps.
+// a press or a drag scrolls to; this file only places the picture and the box and reports the pointer. The box follows
+// CodeGlance Pro's defaults: it is the palette's foreground at 0.15 opacity, 0.25 under the pointer, and 0.35 while it
+// is dragged, and a hand cursor shows outside the box where a press jumps.
 import { Palette } from "std-widgets.slint";
 
 export component Minimap inherits Rectangle {
