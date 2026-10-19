@@ -302,8 +302,8 @@ export function createPhaseEventSubscriber({
       events.push(`finish:${event.toolCallId}:${event.isError}`);
     if ((event.type === 'message_end')
       && (event.message
-      .role
-      === 'toolResult'))
+        .role
+        === 'toolResult'))
       events.push(`message:${event.message
         .toolCallId}`);
     if (event.type === 'tool_execution_update') {
