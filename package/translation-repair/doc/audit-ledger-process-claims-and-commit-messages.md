@@ -888,10 +888,12 @@ in the reading of `zheermao14`;
 retracted in the same reading,
 before anything was recorded or changed.
 
-The page names the galgame 《恋爱绮谭·不存在的真相》 as *Mystery Lover 2: Forgotten Truth*,
+The page names the galgame 《恋爱绮谭·不存在的真相》 as *Mystery Lover 2:
+Forgotten Truth*,
 where the archive writes *Mystery Lover 2*.
 The lead searched the web,
-read the game's Steam page (no English title, "English language not supported"),
+read the game's Steam page,
+which gives no English title and says "English language not supported",
 and told the owner the subtitle matched no source.
 The run's own title lookup,
 cached at `~/.cache/translation-repair/lookup/1c88e047….json` since 2026-09-19,

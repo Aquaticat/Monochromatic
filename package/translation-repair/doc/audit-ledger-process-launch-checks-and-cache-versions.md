@@ -293,7 +293,8 @@ the worktree's lockfile installs `1.2.13`,
 which built `zheermao14`.
 The build ran `1.2.14`,
 whose bundle wraps CommonJS modules with a third argument
-(`cb((mod={exports:{}}).exports,mod,mod.exports)`, and `acorn`'s UMD wrapper with it),
+(`cb((mod={exports:{}}).exports,mod,mod.exports)`,
+and `acorn`'s UMD wrapper with it),
 so `corpus-pass.mjs` moved from `9a4ffb21…` to `dcb2f0cd…`
 and `START` printed `pipeline=sha256-tree-v1:475fbdbb…`
 against the rotation's `a92725968adf…`,

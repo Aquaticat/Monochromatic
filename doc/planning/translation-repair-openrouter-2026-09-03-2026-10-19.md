@@ -85,7 +85,10 @@ all three open:
 - The three straight apostrophes after a letter are the `PhotoScroll` path literals,
   as in the archive;
   every apostrophe in prose is curly,
-  and every ellipsis is three dots (6, the archive 7, no U+2026).
+  and every ellipsis is three dots
+  (6 on the page,
+  7 in the archive,
+  no U+2026).
 - Canadian spelling:
   "favourite" twice,
   where the archive writes "favorite".
@@ -111,7 +114,8 @@ all three open:
   the other separates the closing line "Wishing you the blessings of spring.",
   which the archive lacks,
   and copies the archive's form byte for byte.
-- The galgame title reads *Mystery Lover 2: Forgotten Truth*,
+- The galgame title reads *Mystery Lover 2:
+  Forgotten Truth*,
   where the archive writes *Mystery Lover 2*.
   The run's title lookup,
   cached since 2026-09-19,
@@ -120,7 +124,8 @@ all three open:
   and the Nintendo Hong Kong eShop listing English;
   the Steam release has no English.
   The lead first called the subtitle invented from the Steam page alone,
-  and retracted it on reading the lookup (the package's audit ledger, M279).
+  and retracted it on reading the lookup
+  (M279 in the package's audit ledger).
 - Narration of her life is in the past tense throughout;
   the letter and the email,
   written to her while she lived,
@@ -147,7 +152,7 @@ and the unit was stopped after five `SPEND` lines.
 The build had run `rolldown v1.2.14`,
 the main checkout's,
 because the launch passed the session shell's whole `PATH`
-(the package's audit ledger, M278);
+(M278 in the package's audit ledger);
 the worktree's lockfile installs `1.2.13`.
 The two bundles differ only where the bundler wraps CommonJS modules.
 Nothing from this run is read.
