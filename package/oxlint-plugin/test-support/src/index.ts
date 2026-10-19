@@ -130,6 +130,13 @@ export type ResolveFixtureTargetParams = {
 };
 
 /**
+ Which fixes an oxlint run writes back to the target file.
+ 
+ `fixes` passes `--fix`; `fixes-and-suggestions` also passes `--fix-suggestions`.
+ */
+export type OxlintFixMode = 'fixes' | 'fixes-and-suggestions';
+
+/**
  Options for running oxlint against a fixture target.
  */
 export type RunOxlintFixtureParams = {
@@ -153,6 +160,10 @@ export type RunOxlintFixtureParams = {
    Optional Oxlint worker count for resource-sensitive plugin tests.
    */
   readonly threads?: number;
+  /**
+   Fixes to write back to the target. When absent the run only lints and leaves the target untouched.
+   */
+  readonly fix?: OxlintFixMode;
 };
 
 /**
@@ -334,15 +345,42 @@ function parseOxlintOutput(stdout: string,): OxlintOutput {
 }
 
 /**
+ Returns the oxlint flags that write fixes back to the target.
+ 
+ @param fix - requested fix mode, absent for a lint-only run
+ 
+ @returns no flags for a lint-only run, otherwise the flags of the mode
+ 
+ @example
+ ```ts
+ fixFlags('fixes-and-suggestions');
+ ```
+ */
+function fixFlags(fix: OxlintFixMode | undefined,): readonly string[] {
+  if (fix === undefined)
+    return [];
+  if (fix === 'fixes')
+    return ['--fix',];
+  return [
+    '--fix',
+    '--fix-suggestions',
+  ];
+}
+
+/**
  Runs oxlint with a fixture config and filters diagnostics to one plugin.
 
  Oxlint reports a plugin that threw, and a source it could not parse, as a diagnostic with no rule code. Keeping
  only the diagnostics of one plugin would drop those silently, and a fixture expecting no findings would pass
  while the plugin crashed, so such a diagnostic fails the run instead.
 
+ A fix run (the `fix` option) rewrites the target and applies the same rule. A plugin that crashes fixes
+ nothing, so a test that reads the target back to show a source was left alone would otherwise pass through
+ the crash.
+
  @param params - oxlint fixture invocation details
 
- @returns plugin diagnostics sorted exactly as oxlint emitted them
+ @returns plugin diagnostics left after the run, sorted exactly as oxlint emitted them
 
  @throws {@link Error} naming the target and every message when oxlint emitted a diagnostic with no rule code
 
@@ -363,6 +401,7 @@ export async function runOxlintFixture(
     fixtureConfig,
     target,
     threads,
+    fix,
   } = params;
   /**
    Captures stdout from oxlint whether diagnostics make the process exit non-zero or not.
@@ -381,6 +420,7 @@ export async function runOxlintFixture(
             '--threads',
             String(threads,),
           ],
+          ...fixFlags(fix,),
           '--format',
           'json',
           configFlag,
