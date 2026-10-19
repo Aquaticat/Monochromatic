@@ -745,6 +745,10 @@ that a pass was writing into `corpus-pass-TianqiChen66626`
 and the count of slice-cache records rose from 62 to 74 during the work).
 That pass was writing generation 18 files,
 and the port found one there.
+The notes had anticipated the case:
+they said that if a file of generation 18 turned out to exist elsewhere,
+the readings would need a gate on the generation,
+or a generation 19.
 A recount stricter than the pass that wrote the file counted would have refused it,
 so the recount is gated by a new generation instead (B682).
 

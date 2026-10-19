@@ -533,10 +533,12 @@ The generic tally withholds a seat that threw on every one of `SEAT_WITHHOLD_ASK
 `stage/src/seat-tally.ts`,
 B420,
 open to the owner's veto).
-Five asks each were counted,
-because the four `repair slice 0..3` critic rounds (lines 284 to 298 of the pass log) asked concurrently
+By the notes' reading of the pass log (which this filing did not open),
+five asks each were counted,
+because the four `repair slice 0..3` critic rounds (lines 284 to 298 of the log) asked concurrently
 after two or three sequential block-pairing asks per seat,
 before the tally reached four.
+The TSDoc of `seatTallyClient` agrees on the five asks.
 After that the router refuses the seat before any provider is asked,
 which every stage reads as an unreachable seat.
 
@@ -572,8 +574,10 @@ so the line is said once per seat and per client.
 
 First-contact check:
 before this change no line named a rejected credential or said what to do.
-What existed was the warn of each call (line 212 of the pass log,
-one of 283 lines naming the failure)
+By the notes' reading of the pass log,
+what existed was the warn of each call (line 212 of the log,
+one of 283 lines naming the failure,
+the count that the TSDoc of `seatTallyClient` also gives)
 and,
 after the withholding,
 `threw-withheld=` on the `JUDGE SEATS` line (line 9220),
@@ -601,7 +605,7 @@ They were not counted at all.
 `seatTallyClient` returned early when the signal of the call had aborted (B421,
 to stop a slow seat being withheld),
 and `runGatherRound` cuts a straggler by aborting its signal (`stage/src/stage-round.ts`).
-The log check found 298 Qwen `SPEND` lines,
+The round's check of the pass log (not repeated in this filing) found 298 Qwen `SPEND` lines,
 298 `stream ... completed` lines,
 58 abandoned replies,
 and a census of `asked=299 usable=299`,
@@ -617,10 +621,11 @@ Did the cut replies spend their budget on reasoning:
 the report said they had no answer text and 30,000 to 63,000 characters of reasoning.
 They were cut by the straggler window of 120 seconds,
 and not by `finish_reason=length`.
-Over the 58 lines:
+The notes measured the 58 lines:
 55 have no answer characters and 3 have some,
 and the reasoning runs from 18,470 to 62,639 characters (median 37,121).
-The 298 completed Qwen replies reach 16,788 completion tokens at most,
+By the same reading,
+the 298 completed Qwen replies reach 16,788 completion tokens at most,
 against the cap of 20,894 on the card (`shared-contract/src/model-cards.ts`),
 and 45 of them carry 30,000 characters of reasoning or more,
 so a reasoning length of that size completes normally.
