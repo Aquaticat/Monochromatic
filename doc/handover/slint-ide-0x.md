@@ -752,6 +752,8 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bound): `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:closures`, `test` (792), `test:wrap` (15 and 67) and
     `test:native` (203) passed, and the ten `inspect:source-guards` cases above (seven new, three re-anchored) each
     passed at baseline, failed with the guard removed, and passed restored.
+    The IDE was reinstalled from `main` at `482a3cf220` on 2026-10-19 (`dist/monochromatic-ide` and the installed binary
+    both sha256 `7e6b2f6a8aab…`; the previous binary is `~/.local/bin/monochromatic-ide.previous`, sha256 `f068d238b760…`).
   - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;
     the user approved removing every `rust/no-anonymous-functions` finding without suppressing any). The count in
     `package/desktop-app/ide` fell from 1135 to 67; `rust/max-lines`, `rust/require-rustdoc` and
