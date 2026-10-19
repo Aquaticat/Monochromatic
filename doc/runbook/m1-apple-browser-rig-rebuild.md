@@ -689,8 +689,15 @@ A script that evaluates JavaScript instead of capturing (`vm-safari-eval.mjs`) i
 replaced by one `POST /session/{id}/url` and one `POST /session/{id}/execute/sync` whose result it prints.
 Keyboard input uses `POST /session/{id}/actions` with key code points (`` Space, `` Tab).
 
-If `POST /session` answers "already paired with another WebDriver session", `DELETE /session/<id>` the stale one;
-if it times out "connecting to a Safari instance", quit any normal Safari window in the guest
+If `POST /session` answers "already paired with another WebDriver session", `DELETE /session/<id>` the stale one.
+`GET /status` still answers `ready: true` while paired, so it proves nothing about a free session.
+When no live client knows the id (the script died before its `finally` ran), restart that driver's launch agent in
+the guest (`launchctl kickstart -k gui/$(id -u)/dev.monochromatic.safaridriver-stp`, or
+`dev.monochromatic.safaridriver` for regular Safari) and quit the leftover automation window; this ends whatever
+that driver was running, so check that no other job holds its lock first.
+A common way to kill a script before cleanup is piping it into `head`: `head` exits after its lines and the script
+dies on SIGPIPE at its next write, so redirect WebDriver scripts to a file instead.
+If it times out "connecting to a Safari instance", quit any normal Safari window in the guest
 (`osascript -e 'quit app "Safari"'`) and never start Safari's binary directly.
 
 ## Verify the rebuilt rig
