@@ -882,7 +882,8 @@ matching `doc/troubleshooting/llmgateway-luna-admission.md`.
 
 State still decides without a model call when the depth limit is reached,
 when the last forced continuation issued no tool call,
-and when a trailing question already owns the stop.
+when a trailing question already owns the stop,
+and, since 2026-10-19, when a subagent is running.
 Every block reason starts with the sentence the depth guard counts,
 so the depth limit keeps bounding the chain.
 
@@ -967,6 +968,27 @@ Measured on the 44 logged stops plus the 63-stop unbiased sample (108 messages),
 
 The margin on this stop is 0.03 under the cutoff, so a differently worded variant of the same message could still block.
 Precision of the blocking labels is still unmeasured; see #1772.
+
+### Skipping the call while a subagent runs, 2026-10-19
+
+The user proposed skipping Luna whenever a subagent is running.
+The verdict log supported it:
+37 of 46 consulted stops had a running subagent,
+35 of those were already released,
+and both blocks among them were wrong
+(the false block above, and a 0.64 `waits_on_user` block on a message that only offered a veto).
+The one correct block in the log, a 0.99 announced next step, had only a shell task running.
+So the skip lost no correct block in that data and removed most of the requests.
+
+The skip covers type `subagent` with status `running` only.
+A running shell command, monitor, or workflow still goes to Luna.
+The skip is logged as outcome `skipped`, so the log still shows which stops it covered.
+
+The cost is a stop that announces independent work while a subagent runs
+(the original failure shape, such as "I'll start n66 when a new defect appears") is no longer blocked.
+No such stop appears in the log; the 63-stop unbiased sample was drawn before `background_tasks` was recorded
+and cannot say.
+Revisit with #1772 if the log shows one.
 
 ### Not yet known
 

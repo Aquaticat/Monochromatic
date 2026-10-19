@@ -303,11 +303,11 @@ await describe({
           },
         },),
         it({
-          name: 'releases a background wait while a background task is running',
+          name: 'releases a background wait while a background command is running',
           fn: async () => {
             const h = await harness({ lines: OPEN, reply: verdictReply('waits_on_background_work',), },);
 
-            const output = await h.run({ background_tasks: [{ id: '1', type: 'subagent', status: 'running', },], },);
+            const output = await h.run({ background_tasks: [{ id: '1', type: 'shell', status: 'running', },], },);
 
             expect(output.decision,).toBeUndefined();
             expect((await records(h.logPath,))[0]?.action,).toBe('release',);
@@ -387,6 +387,55 @@ await describe({
     describe({
       name: 'skips Luna without spending a request',
       children: [
+        it({
+          name: 'when a subagent is running, releasing even a blocking verdict and logging the skip',
+          fn: async () => {
+            const h = await harness({ lines: OPEN, reply: verdictReply('announces_own_next_step',), },);
+
+            const output = await h.run({
+              background_tasks: [{ id: '1', type: 'subagent', status: 'running', },],
+            },);
+
+            expect(output.decision,).toBeUndefined();
+            expect(h.requests,).toHaveLength(0,);
+            const [record,] = await records(h.logPath,);
+            expect(record?.outcome,).toBe('skipped',);
+            expect(record?.action,).toBe('release',);
+            expect(record?.detail,).toBe('a subagent is running',);
+          },
+        },),
+        it({
+          name: 'when a subagent is running, still giving a trailing question its own reason',
+          fn: async () => {
+            const h = await harness({ lines: OPEN, reply: verdictReply('work_closed',), },);
+
+            const output = await h.run({
+              stop_hook_active: false,
+              last_assistant_message: 'Which package should I migrate first?',
+              background_tasks: [{ id: '1', type: 'subagent', status: 'running', },],
+            },);
+
+            expect(output.reason,).toContain('AskUserQuestion',);
+            expect(h.requests,).toHaveLength(0,);
+          },
+        },),
+        it({
+          name: 'not when only a command, a monitor, or a finished subagent is in the task list',
+          fn: async () => {
+            const lists = [
+              [{ id: '1', type: 'shell', status: 'running', },],
+              [{ id: '1', type: 'monitor', status: 'running', },],
+              [{ id: '1', type: 'subagent', status: 'completed', },],
+            ];
+            const counts = await Promise.all(lists.map(async function askedFor(list,) {
+              const h = await harness({ lines: OPEN, reply: verdictReply('work_closed',), },);
+              await h.run({ background_tasks: list, },);
+              return h.requests.length;
+            },),);
+
+            expect(counts,).toEqual([1, 1, 1,],);
+          },
+        },),
         it({
           name: 'when forced continuation is not opted in',
           fn: async () => {
@@ -533,7 +582,7 @@ await describe({
 
             await h.run({
               last_assistant_message: 'Needs your approval.',
-              background_tasks: [{ id: '1', type: 'subagent', status: 'running', command: 'secret-command', },],
+              background_tasks: [{ id: '1', type: 'shell', status: 'running', command: 'secret-command', },],
             },);
 
             const [record,] = await records(h.logPath,);
@@ -543,7 +592,7 @@ await describe({
             expect(record?.depth,).toBe(0,);
             expect(record?.message,).toBe('Needs your approval.',);
             expect(record?.sessionId,).toBe('test-session',);
-            expect(record?.backgroundTasks,).toEqual([{ type: 'subagent', status: 'running', },],);
+            expect(record?.backgroundTasks,).toEqual([{ type: 'shell', status: 'running', },],);
             expect(JSON.stringify(record,),).not.toContain('secret-command',);
             expect(record?.probabilities,).toMatchObject({ waits_on_user: 0.8, },);
           },

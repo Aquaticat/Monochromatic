@@ -19,6 +19,7 @@ import {
 } from './continuation-depth.ts';
 import {
   hasRunningBackgroundTask,
+  hasRunningSubagent,
   workedSinceLastForcedContinuation,
 } from './continuation-progress.ts';
 import { taskListState, } from './continuation-tasks.ts';
@@ -395,6 +396,25 @@ function createStopRemindersHandler(
      Where this stop's record is appended.
      */
     const path = verdictLogPath(env,);
+
+    if (hasRunningSubagent(event.background_tasks,)) {
+      // A running subagent reports back on its own, so the stop is released without a request.
+      // Recorded so the verdict log still shows what the skip covered.
+      l.debug('Luna skipped because a subagent is running',);
+      await appendVerdict({
+        path,
+        record: {
+          ...base,
+          outcome: 'skipped',
+          detail: 'a subagent is running',
+          action: 'release',
+        },
+      },);
+      return stopRemindersDecision({
+        event,
+        forcedContinuationAllowed: false,
+      },);
+    }
 
     try {
       /**
