@@ -4,6 +4,33 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Resumed after shutdown, 2026-10-19
+
+The user returned and authorized continuing.
+The package's tracked, staged and untracked pending paths survived shutdown;
+unrelated `.serena/project.yml` and `package/dev-script/ci-admission/` changes remain untouched.
+The stopped controllers' terminal states were checked before copying their saved histories.
+
+- Source MiMo resumed as `~/temp/agent/pi-mimo-rpc-session-MbAReU`.
+  Native MiMo resumed as `~/temp/agent/pi-mimo-rpc-session-n17RAD`.
+  Both connected on the pinned qualified private artifact with fresh private homes,
+  explicit recursion guards and two-GiB/two-CPU limits.
+  Scratch controller logs are `mimo-rpc-source-after-pause.log` and `mimo-rpc-native-after-pause.log`.
+- Source owns the exact four matcher/test documentation paths.
+  Native owns the typed producer-owner split and declaration-closure repair.
+  Both received explicit resume prompts requiring exact-path checkpoint commits,
+  preservation of concurrent staging and inspection after ambiguous Git failures.
+- Producer repair: finish checkpoints, freeze combined sources, fresh-build JS/native, run types,
+  scope lint, nine semantic lifetime cases and the retirement capacity guard;
+  retarget and rebuild the five separate source-removal controls.
+- Retention qualification: run the actual configured full-history replay on the fresh combined artifact,
+  compare warmed post-GC retention against unchanged baseline runs and retain payload/shutdown checks.
+- Lint completion: resolve the complete backlog without weakening policy or adding incoming SDK category gates.
+  The latest complete frozen receipt remains 10,835 warnings and 136 errors, not zero lint.
+- Architecture and deployment size: continue character/role and dependency-closure reduction,
+  justify major responsibilities in package docs and verify the actual configured consumer.
+  Existing directory/inode and installed-dependency measurements are not a minimal deployment proof.
+
 ### Shutdown checkpoint, 2026-10-19
 
 The user explicitly pauses work to power off the PC and investigate their room.
