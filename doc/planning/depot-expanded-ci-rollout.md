@@ -1,194 +1,483 @@
 # Expanded GitHub and Depot CI rollout
 
+Status:
+proposed revision for the Q7 shared-understanding check,
+2026-10-18.
+This revision replaces the earlier rollout draft.
+It is not accepted until Q7 is answered and the adoption record is accepted.
+Implementation does not start before those two acceptances.
+
+The [evaluation](depot-expanded-ci-evaluation.md) supplies the evidence and its limits.
+The [independent review record](depot-expanded-ci-evaluation-independent-review.md) records the
+whole-report review and the closure controls.
+The [adoption proposal](depot-ci-adoption-proposal.md) consolidates the operating decisions that
+move to `doc/decision/` on acceptance.
+The [handover](../handover/depot-trial-grilling.md) records the interview answers and the
+2026-10-18 settlement.
+
 ## Purpose and accepted constraints
 
-This is the concrete rollout plan for the shared-understanding check after the research interview.
-The [evaluation](depot-expanded-ci-evaluation.md) supplies the evidence and its limits;
-the [handover](../handover/depot-trial-grilling.md) records the answers.
-Implementation follows the user's confirmation of this plan.
+The permanent design uses GitHub-hosted execution,
+Depot-managed GitHub runners and selected native
+Depot CI capabilities.
+GitHub remains the forge,
+the check consumer,
+the release holder and the default executor.
+It also remains the only executor for untrusted pull-request source.
+Ordinary per-push work stays on GitHub-hosted compute.
+Depot adds bounded capacity for selected work and one bounded weekly native matrix.
+There is no target of progressively draining ordinary work from GitHub.
 
-The permanent design heavily uses GitHub-hosted runners themselves.
-It also uses Depot-managed GitHub runners,
-selected native Depot CI workflows and applicable Depot build,
-cache,
-registry,
-test and VM capabilities.
-Ordinary Linux workloads remain on GitHub's own compute.
-There is no target of progressively moving all eligible work to Depot.
+The operating account is Developer at USD 20 per month with overage disabled on every product.
+The pilot runs on the remaining Startup trial;
+phase 2 runs on Developer.
+No paid overage is authorized.
+The [adoption proposal](depot-ci-adoption-proposal.md) governs the subscription transition.
 
-Developer is the USD 20 planning baseline.
-The combined monthly planning ceiling remains USD 200.
-Standing authority covers bounded recurring overage under conservative reservations.
-The repository ledger observes its own allocations;
-its estimates do not guarantee an aggregate account invoice.
-This plan does not change the subscription.
+The combined planning ceiling remains USD 200,
+but with overage disabled it is a capacity
+ceiling,
+not a spending authority.
+The user reports that product caps are configured;
+the exact values are not recorded.
+Current Depot documentation exposes configured caps for container build minutes and GitHub
+Actions runner minutes only.
+Native CI,
+Tests and storage caps are not documented as configurable.
+That is a recorded residual control gap,
+not a passing control.
 
-## Workload allocation and cadence
+## Delivery model
 
-### Core validation
+### Gates and results
 
-Run the qualified static,
-build and unit profiles on PRs and default-branch pushes.
-Preserve the existing direct-commit and auto-push workflow.
-Coalesce superseded intermediate validation while keeping explicit release handling separate.
+CI results are advisory.
+No required status checks are configured and no branch protection is changed.
+Direct commits and auto-push remain.
+A failure is reported,
+not blocking.
+The operator and reviewing agent use results to keep,
+revert,
+review or promote.
 
-GitHub-hosted Linux runners own ordinary type checking,
-linting and Node unit validation as permanent workloads.
-GitHub-hosted Windows and Mac runners retain broad native-platform validation,
-alongside the existing GitHub-hosted publication boundaries.
-These assignments establish useful GitHub execution beyond platform exceptions and emergency fallback.
+Default-branch and PR results attach to the run and to the release run for visibility.
+Release workflows keep their existing behavior;
+this plan adds no release or promotion gate.
+Adding a blocking gate later requires a new decision record.
 
-Depot-managed GitHub runners initially receive selected shared-build and Rust-heavy profiles,
-where the retained comparisons establish completed-phase benefits.
-Keep actual provider,
+### Execution routing
+
+GitHub-hosted runners are the default executor for ordinary Node type,
+lint,
+unit and process
+validation,
+for Windows and Mac validation,
+for untrusted pull-request source and for publishing.
+
+The default-branch advisory run executes a fast static,
+build and unit subset.
+The static part is changed-path scoped.
+The complete profile runs in the weekly matrix,
+not on every push.
+The default-branch run uses the sliding-window limiter currently used by the Scorecard workflow as
+its starting point:
+2 admitted starts per rolling minute,
+4 per hour and 8 per day.
+The limits adjust from measured capacity.
+Excess events are skipped and recorded;
+the newest skipped tip is marked pending,
+not retried
+blindly.
+
+Depot-managed GitHub runners and native Depot CI execute only admitted profiles.
+The repeated complete profile runs only through one bounded weekly native matrix.
+The matrix is triggered by explicit `depot ci dispatch`,
+not by automatic push.
+It covers these capability categories in one bounded run:
+static checks;
+Node and Rust test consumers;
+browser and E2E consumers;
+packaged artifacts and host consumers;
+OS,
+architecture and application consumers;
+VM,
+desktop and Android consumers;
+BuildKit and Bake container producers;
+Depot Tests;
+cache and Disk;
+SDK VM profiles.
+
+Native automatic registration is proven for `pull_request` and for `push` on the default branch,
+for both PR-merge and direct-push landing.
+See [the registration evidence](../audit/depot-registration-control-2026-10-18.evidence.json).
+The matrix still uses explicit dispatch so admission and duplicate execution stay under control.
+
+Paused-session SSH,
+`--ssh-after-step`,
+tmate and interactive session strings are excluded from
+the matrix.
+The bounded paused-session qualification did not reach a job and remains unqualified
+([paused-session evidence](../audit/depot-paused-session-qualification-2026-10-18.evidence.json)).
+A future debug-feature decision may revisit it.
+
+### Current baselines
+
+The current-source baseline is not known-good.
+At revision `4f3d5a65`:
+
+- static:
+  `mise run lint:monochromatic-lint` exits 1 with 85,719 findings across 1,046 files,
+  dominated by 81,700 semantic line-break findings,
+  2,077 rustdoc findings and 1,894 bare-URL
+  findings;
+- unit:
+  `mise run test:unit` exits 1 with about 751 named test-file mentions in its failure list,
+  354 JSON-parse errors
+  and 94 AggregateErrors;
+- build:
+  `mise run build` exits 1 with `SIGABRT` and thread-creation failures under parallel
+  fanout,
+  which may be host-resource or concurrency induced.
+
+The [baseline evidence](../audit/depot-current-baseline-2026-10-18.evidence.json) retains the
+compressed logs.
+These are dispositions to triage,
+not passing checks.
+The pilot must separate product failures from harness,
+environment and resource failures.
+
+### Workload-to-provider map
+
+The map is a maintained artifact,
+not prose hidden in this plan.
+It starts with:
+
+- GitHub-hosted Linux:
+  fast static,
+  build and unit advisory subset;
+  Node type,
+  lint and unit
+  default;
+  ordinary per-push work.
+- GitHub-hosted Windows and Mac:
+  platform validation and publication boundaries.
+- GitHub-hosted public fallback:
+  any admitted profile that cannot run inside the no-overage cap.
+- Depot-managed GitHub runners:
+  admitted complete-profile work and the weekly matrix where the
+  measured profile and resource shape qualify.
+- Native Depot CI:
+  the weekly matrix categories,
+  explicit dispatch only.
+- Public GitHub only:
+  untrusted pull requests,
+  fork source and Dependabot updates.
+
+Every result keeps provider,
 machine,
 source,
-case and artifact identities in every result.
-The research does not establish a whole-CI speed multiplier.
+case and artifact identities.
 
-Start with explicit owning commands and a visible workload-to-provider map.
-Use a conservative complete eligible profile when affected scope is unqualified.
-The frozen Mise dependency cycle prevents making that graph authoritative without repair and controls.
-Current-source task discovery must preserve active,
-paused and archived distinctions.
-An owner with no literal test task is not automatically an untested product or a passing check.
-
-### Weekly breadth
-
-Run the wider qualified OS and architecture,
-browser,
-packaged-consumer,
-property and mutation matrix weekly.
-Keep Chromium,
-Firefox and WebKit results separate.
-Execute actual packed artifacts in fresh consumers rather than substituting source imports or build success.
-Retain native-platform case identities and overlaps rather than adding incompatible counts.
-
-GitHub-hosted runners remain a substantial execution pool for this breadth.
-Use Depot for selected accelerator,
-ARM,
-container and VM profiles where the particular workload qualifies.
-Provide explicit manual or agent-requested profile dispatch for investigation and qualification.
-Keep private personal fixtures local.
-Use deterministic model fixtures rather than paid model/API calls.
-No recurring local desktop,
-emulator or device service is installed by this rollout.
-
-## Verdicts and recovery
-
-Use the accepted regression ratchet.
-Qualified known-good checks and new or changed failures block their validation gate.
-Only explicitly identified existing source failures can remain advisory.
-Baseline actual reproducible cases,
-inputs and assertions;
-never exempt an entire failing owner or command.
-Reproduce baselines on the implementation candidate's immutable source before accepting them.
-The historical failures are evidence to investigate,
-not automatically current exceptions.
-
-Setup,
-discovery and artifact-integrity failures always fail validation.
-Missing or unexecuted consumers cannot become passes.
-Preserve original stdout and stderr separately and retain per-case outcomes.
-The harness's deliberate inner failure controls remain separate from product failures.
-
-Stable GitHub validation gates consume the exact required artifact set and worker outcomes.
-Exercise genuine PR association,
-source failure,
-cancellation,
-missing-artifact and altered-artifact controls before relying on a new gate.
-Automatic artifact or release promotion respects its qualified gates;
-this work does not trigger a release or impose a PR-only development policy.
-
-Allow one automatic recovery attempt for a classified provider or startup failure.
-It may use the same pool or an eligible alternate pool.
-Reserve exposure for both attempts and preserve the original diagnostic and attempt identities.
-Source failures retain their failure verdict;
-an unrelated passing provider cannot erase them.
-An unclassified failure blocks rather than becoming an automatic recovery candidate.
-
-## Depot capabilities and cache policy
-
-Promote selected Linux workflows to native Depot CI after qualification of their actual features,
-case identities,
-GitHub result association and producer/consumer boundaries.
-This promotion complements permanent heavy GitHub-hosted execution.
-Workflows requiring the unqualified paused-session attachment stay on GitHub until that boundary qualifies.
-Other selected workflows qualify against their own needs.
-
-Use admitted BuildKit and Bake profiles for immutable container producers,
-with actual runtime consumers and preserved provenance checks.
-Use Depot Tests where adapters retain original JUnit identities,
-shard membership and attempts.
-Expose qualified SDK VM and native KVM work as bounded profiles with lifecycle consumers and cleanup.
-Do not infer a universal test-splitting benefit,
-signing trust or complete VM coverage from the selected research controls.
-
-Select caches by owner and cache system rather than enabling one blanket cache policy:
-
-- The measured pnpm store profiles using `actions/cache` do not justify a universal store-cache default.
-- The Kotlin linter's Gradle task-output cache has a measured command-phase benefit;
-  retain the qualification and distinguish it from whole-job setup.
-- Direct sccache and compiled test-target archives require their own source,
-  toolchain and reader controls.
-  The archived-target CLI build result does not establish a Nextest execution speedup.
-- Prepared tools,
-  snapshots and Disk mounts need executable admission,
-  secret-exclusion controls and single-writer or partitioned ownership.
-
-Respect the existing [CI caching policy](../decision/ci-caching.md),
-including the prohibition on caching artifacts a workflow ships.
-Untrusted PR source uses a secret-free GitHub-hosted profile.
-Shared cache writers,
-paid execution and privileged artifact consumers retain explicit trust boundaries.
-Cache-key prefixes do not establish isolation.
-Retain existing publishing issuer and workflow bindings.
-Validate cache-off execution,
-invalidation and stale-output rejection before enabling each format.
-Keep release producers fresh under their owning policy.
-Reviewed registry and transfer options receive no invented performance benefit.
-Unbounded autoscaling remains outside automatic paid admission.
-
-## Admission and implementation sequence
+## Spend and admission
 
 Every paid profile declares resource and execution bounds,
-retention exposure and its conservative reservation.
-Where remaining included allowances are unknown,
-do not assume unused credits.
-Track allocations and overlapping recovery attempts without double counting.
-Keep terminal API timestamps separate from invoice and physical-deallocation claims.
-Insufficient headroom selects an eligible GitHub profile where qualified;
-otherwise report incomplete admission rather than a successful test.
+retention exposure and a conservative
+reservation.
+No profile starts without an admission record.
+The active plan and allowance source are recorded at implementation start.
+The repository does not assume unused included credits.
 
-Implement these independently verifiable work items:
+When an included allowance is exhausted or a cap stops a run:
 
-1.  Refresh current-source owners,
-    profiles and reproducible failure baselines from the retained source/runtime methodology.
-2.  Add the GitHub-hosted core profiles,
-    explicit Depot-managed build profiles and exact-result collection.
-3.  Implement and exercise conservative admission,
-    concurrent reservations,
-    supersession and the single recovery attempt.
-4.  Add the weekly breadth and actual packaged-artifact consumers,
-    with private fixtures and local devices kept within their accepted boundaries.
-5.  Enable measured cache formats and admitted BuildKit,
-    Tests and VM profiles after their consumer controls pass.
-6.  Qualify and promote selected native Linux workflows,
-    retaining the permanent GitHub-hosted assignments and a visible routing override.
-7.  Verify the real PR and artifact-promotion boundaries,
-    then measure configured-profile duration,
-    failure results and allocation exposure before relying on the recurring schedule.
+- an ordinary Linux,
+  Windows or Mac workload falls back to free public GitHub when a qualified
+  equivalent exists;
+- a capability with no equivalent is marked incomplete for that period;
+- publishing waits or stays on GitHub-hosted compute;
+- no overage is incurred and no cap is raised automatically.
 
-Reuse existing task,
-generation and budgeting owners where they apply.
-Keep experiments isolated while deliberating.
-Do not claim every product feature or source branch is covered by the research or by this plan.
+Storage is the weak meter.
+The 25 GB included storage is an hourly-sampled monthly average,
+and no combined hard cap was
+documented.
+The pilot records the storage average,
+retention settings and an operational stop near 25 GB.
+If storage becomes the binding constraint,
+the plan reports it rather than assuming headroom.
+
+The allocation ledger records each attempt with its provider,
+run,
+job,
+attempt,
+resource shape,
+timestamps,
+reservation and source receipt.
+Overlapping recovery attempts are counted once.
+
+## Caches
+
+Cache writes come only from `main` pushes and explicit dispatches.
+Pull requests,
+merge groups and untrusted source restore only.
+This applies to GitHub Actions cache,
+Depot Actions cache,
+Depot project BuildKit cache and
+organization-global Disk.
+
+The measured cache decisions are:
+
+- the pnpm store archive is a measured regression and stays disabled;
+- the archived Rust target is a reuse proof,
+  not a Nextest speed or job speedup;
+- the Kotlin Gradle task-output cache is admitted only for the `test --rerun jar` command boundary,
+  not as a whole-job saving;
+- BuildKit layers,
+  Disk mounts,
+  prepared tools and snapshots require their own executable,
+  invalidation,
+  secret-exclusion and reader controls before enablement.
+
+No cache contains shipped,
+attested or published bytes.
+Release producers stay fresh.
+On a cache incident,
+writes stop and the affected family is invalidated before resuming.
+
+## Trust and publishing
+
+Untrusted pull-request source,
+fork pull requests and Dependabot updates run only on public
+GitHub-hosted runners.
+Depot executes trusted `main` pushes,
+explicit dispatches and the weekly trigger only.
+Fork approval settings and Dependabot exclusion are verified before any Depot runner receives work.
+
+Egress filtering and Tailscale are not assumed.
+No secret-bearing workflow runs on Depot unless separately admitted.
+Publishing stays on GitHub-hosted runners:
+npm trusted publishing excludes self-hosted runners and
+the pnpr binding names the exact GitHub workflow.
+Native CI does not sign or publish.
+
+## Recovery and rollback
+
+One automatic recovery attempt is reserved for a classified provider or startup failure.
+Both attempts are reserved and the original diagnostic and attempt identities are retained.
+Source failures keep their failure result;
+a passing provider does not erase them.
+An unclassified failure is reported and does not become an automatic retry.
+
+Removing the weekly dispatch disables every paid native profile.
+The operator may disable Depot admission without further approval on repeated classified failures,
+an allowance or storage breach,
+a trust incident,
+or evidence of a cache or isolation defect.
+Safety disablement records the date,
+profile,
+reason and fallback.
+Re-enabling requires the review gate and user notice.
+Advisory-only results leave no required check to unwind.
+
+## Optional products
+
+The per-product dispositions are recorded in the
+[adoption proposal](depot-ci-adoption-proposal.md).
+The default is out of scope.
+Enabling a product requires a new dated decision record with eligibility,
+meter,
+cost and trust
+boundary.
+"Applicable capabilities" language authorizes nothing.
+
+Depot Code,
+Depot Agents,
+Dagger,
+GPU,
+managed AWS,
+customer AWS,
+private connectivity,
+external
+observability sinks,
+Fast CDN,
+server-side registry promotion and unbounded autoscaling are out.
+Custom GitHub runner images and registry pull-through are out for the pilot and conditional for
+phase 2 on the recorded measurements.
+
+## Work items
+
+Each item has an owner,
+an acceptance artifact,
+a threshold and a rollback.
+The implementing agent owns the engineering steps;
+the user owns acceptance,
+account changes and
+the subscription transition.
+
+1.  Baseline refresh and triage.
+    Pin the implementation candidate.
+    Re-run the owner census and the static,
+    unit and build baselines.
+    Split product failures from harness,
+    environment and resource failures.
+    Produce a failure disposition register with exact case identities.
+    The register and the refreshed coverage manifest define the admitted owner set used by later
+    coverage targets.
+    Acceptance:
+    the register lists every observed failure class with a disposition and the baseline commands
+    reproduce it.
+    Rollback:
+    none;
+    this is measurement.
+
+2.  GitHub-hosted advisory profiles.
+    Add the fast static,
+    build and unit subset,
+    the changed-path static selector,
+    the
+    sliding-window limiter and release-run visibility.
+    Keep direct commits and auto-push.
+    No required checks and no branch-protection change.
+    Acceptance:
+    a direct push and a pull request each produce an advisory result;
+    a skipped event is recorded and the newest tip is marked pending;
+    a release run shows the result without changing release behavior.
+    Rollback:
+    disable the workflow;
+    no branch protection to restore.
+
+3.  Admission,
+    caps and fallback.
+    Record the active plan and allowance source.
+    Record that caps are configured,
+    without recording their values,
+    and record the documented gaps.
+    Implement reservation,
+    graceful degradation,
+    public-GitHub fallback and the allocation ledger.
+    Acceptance:
+    an exhausted allowance or cap produces the documented fallback and no overage;
+    the ledger reconstructs the attempt.
+    Rollback:
+    stop paid dispatch and retain the ledger.
+
+4.  Weekly native matrix.
+    Define the explicit-dispatch matrix,
+    its per-category bounds and its evidence set.
+    Include every capability category listed in Delivery model.
+    Exclude paused-session.
+    Keep publication on GitHub.
+    Acceptance:
+    one weekly dispatch produces the named categories with provider,
+    case and artifact identities;
+    duplicate execution is absent because the matrix is dispatch-only;
+    the run stays within its reservation.
+    Rollback:
+    remove the dispatch;
+    retain evidence.
+
+5.  Cache admission.
+    Keep main-only writes and the disabled formats.
+    Admit the Gradle command boundary and any later format only after the consumer,
+    invalidation
+    and stale-output controls pass.
+    Acceptance:
+    cache-off,
+    invalidation and stale-output rejection are demonstrated for each admitted format.
+    Rollback:
+    disable the format and invalidate its family.
+
+6.  Trust and identity controls.
+    Verify fork approval,
+    Dependabot exclusion,
+    publishing-host bindings,
+    secret boundaries and
+    cache isolation.
+    Acceptance:
+    a fork or Dependabot event cannot reach a Depot runner;
+    a publish workflow stays GitHub-hosted;
+    cache writes from non-main refs are rejected.
+    Rollback:
+    disable Depot admission;
+    publishing is unaffected.
+
+7.  Native evidence closure.
+    Keep the registration and duplicate controls.
+    Decide whether to rerun the paused-session qualification from a checkout with working
+    default-branch detection.
+    Record the result either way.
+    Acceptance:
+    the evidence register states exactly which native features are qualified and which are not.
+    Rollback:
+    none;
+    evidence only.
+
+8.  Measurement and relative targets.
+    Measure the configured profiles against the public GitHub baseline for the same workload.
+    Record duration,
+    failure results and allocation exposure.
+    Finalize the relative targets:
+    25 percent faster core feedback,
+    100 percent admitted-owner
+    coverage,
+    zero unclassified failures and spend at or below the Developer fee with no overage.
+    Acceptance:
+    a review point compares the measured results with those targets before the recurring schedule
+    is relied on.
+    Rollback:
+    stop the schedule and fall back to public GitHub.
+
+9.  Decision records and Q7.
+    Move the accepted decisions to `doc/decision/depot-ci-adoption.md`.
+    Amend `doc/decision/ci-provider.md` and `doc/decision/ci-caching.md` with dated supersession
+    notes.
+    Record the subscription transition.
+    Put this plan to Q7.
+    Acceptance:
+    the decision records are accepted and Q7 is answered.
+    Rollback:
+    none;
+    this is governance.
+
+## Verification
+
+- Every result keeps provider,
+  machine,
+  source,
+  case and artifact identities.
+- Gates are advisory;
+  a missing or unexecuted consumer is not a pass.
+- Setup,
+  discovery and artifact-integrity failures are reported as failures.
+- The baseline register retains exact case identities and commands.
+- The weekly matrix uses explicit dispatch and retains its admission record.
+- The review record and the decision records are linked from every measured result.
+
+## Limits
+
+The evaluation is sufficient for a bounded pilot,
+not for a production certification.
+It does not establish complete coverage,
+an aggregate invoice guarantee,
+provider availability or a
+universal speed multiplier.
+The source cohort and the pinned baseline are recorded;
+later source changes require a fresh
+baseline.
+The plan does not claim every product feature or source branch is covered.
+Runner labels,
+cache encodings,
+retry timers and workflow file names are engineering details chosen
+during implementation.
+Required-check membership,
+spend authority,
+trust boundaries and the weekly matrix membership are
+not engineering details;
+they are recorded above or remain explicitly open.
 
 ## Shared-understanding check
 
-Confirm whether this captures the agreed operating model and permits implementation.
+Confirm whether this revised plan captures the agreed operating model and permits implementation.
 If it differs,
 identify the requirement or assignment to change.
-Runner labels,
-cache encodings,
-retry timers and other engineering details are chosen and verified during implementation.
+The plan is not accepted until Q7 is answered and
+[the adoption proposal](depot-ci-adoption-proposal.md) is accepted.
