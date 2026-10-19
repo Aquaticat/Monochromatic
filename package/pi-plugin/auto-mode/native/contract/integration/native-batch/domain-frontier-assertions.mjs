@@ -199,7 +199,7 @@ export function assertDomainReview({
    assert.equal(
      review.outcome
        .state,
-     relation==='none'?'unspecified':'resolved'
+     relation==='none'?'unresolved':'resolved'
    );
    if(relation!=='none')assert.equal(
      review.outcome
