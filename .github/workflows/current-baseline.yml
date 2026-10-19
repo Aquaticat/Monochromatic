@@ -1,0 +1,30 @@
+name: current-baseline
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  MISE_AUTO_INSTALL: 'true'
+  MISE_JOBS: '4'
+jobs:
+  baseline:
+    runs-on: depot-ubuntu-24.04-8
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Prepare dependencies
+        run: mise run prepare:pnpm
+      - name: Build
+        id: build
+        continue-on-error: true
+        run: mise run build
+      - name: Unit
+        if: steps.build.outcome == 'success'
+        run: mise run test:unit
