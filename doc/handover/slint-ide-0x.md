@@ -970,6 +970,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
+  - Vello all the way (owner decision of 2026-10-19): the application must never paint text itself. The CPU text
+    pipeline (Parley layout, Swash glyph raster, `TextRaster`, the overscan tile as an `Image`, and the minimap's
+    downscale of a CPU rendering) is to be replaced by Slint elements drawn by the Vello renderer on the GPU. The
+    owner's premise that Slint has Vello by default is not true for Slint 1.18.1 (read from the registry manifests:
+    the default features are `renderer-femtovg` and `renderer-software`; `renderer-vello` is an opt-in, experimental
+    feature), so the migration enables it. Why the CPU path existed is not documented; the renderer comparison of
+    2026-10-10 (`doc/planning/slint-ide-scroll-pipeline.md`) compared renderers that all showed an image the CPU had
+    painted, so it never tested GPU-drawn text. The drag jank agent was stopped because its fix (prefetch and parallel
+    CPU raster) is moot; its worktree `.claude/worktrees/ide-drag` holds uncommitted timing instrumentation (do not
+    land it) and the measured period of the freezes (41 frames) matches the tile re-center margin at the drag speed.
+    An agent writes `doc/planning/ide-vello-text.md`: feasibility of Vello in the nested compositor and the real
+    app, what Slint 1.18.1 text can do (colored runs, wrap, tabs, selection, caret and point mapping), a windowed
+    row model, the minimap on the GPU, what is deleted, and a staged plan, with measurements.
   - Minimap drag jank (owner report of 2026-10-19, a screenshot of `client.unit.test.ts` in the search-fetch package:
     dragging and holding the viewport box is janky; the owner says it reproduces in a debug build too). Standing
     owner instructions: when the nested compositor cannot do something, improve it, release it and install it; the
