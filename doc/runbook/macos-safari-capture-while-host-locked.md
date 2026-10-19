@@ -4,6 +4,8 @@ Visual checks of web pages in Apple browsers run on `m1` (Apple M1, 16 GiB RAM, 
 Keep-awake tools on the host (Vorssaint, `caffeinate`, pointer nudging) have proven unreliable,
 so every capture path here must keep working while the host's login session is locked.
 Last verified 2026-10-18.
+To rebuild the whole rig from a wiped `m1`, follow [`m1-apple-browser-rig-rebuild.md`](m1-apple-browser-rig-rebuild.md);
+it embeds every file and command that otherwise lives only on `m1`.
 
 ## What fails while the host is locked
 
