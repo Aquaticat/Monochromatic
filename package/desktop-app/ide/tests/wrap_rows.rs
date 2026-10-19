@@ -683,7 +683,7 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
     let document = Document::new(&"x".repeat(15_000));
     let mut shaper = TextShaper::new();
     let plain = RowMap::plain(1);
-    let view = shaper.prepare_rows(
+    let mut view = shaper.prepare_rows(
         &document,
         Viewport {
             first: 0,
@@ -707,7 +707,6 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
         view.viewport.clip.is_some(),
         "the shaper did not cut the oversized frame"
     );
-    let mut view = view;
     view.height = (MAX_RASTER_BYTES / 4 / u64::from(view.width)) as u32 + 1;
     let refused = TextRaster::new().paint(&view, colors, 0.0);
     let mut message = None;
