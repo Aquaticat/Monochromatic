@@ -4,6 +4,42 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Shutdown checkpoint, 2026-10-19
+
+The user explicitly pauses work to power off the PC and investigate their room.
+Do not interpret this checkpoint as completion or readiness for another lint handoff.
+Resume from the saved sessions and pending edits when the user returns.
+
+- Both supervised MiMo controllers received `controller_shutdown` and reached `closed`,
+  exit code zero, signal null.
+  Source ends at 65 tool results and ten tool errors;
+  native ends at 63 tool results and ten tool errors, including interrupted work.
+  These are shutdown receipts, not passing verification results.
+- Persistent scratch is `~/temp/agent/pi-mimo-preparation-failure-20261018`.
+  `shutdown-preserved-current.json` records both terminal controller states and backup location.
+  The backup is `shutdown-preserved-TtsSZD`, with separate staged, unstaged and combined tracked patches,
+  the package status, untracked owner implementation files and `receipt.json`.
+  Backup runs with two-GiB/two-CPU bounds and a read-only repository mount.
+  Two permission-restricted, untracked probe configs remain preserved in the repository;
+  their backup read failures are explicitly recorded. Do not delete or change their permissions.
+- Source fixture: `~/temp/agent/pi-mimo-rpc-session-wmudZ2`;
+  saved history: `home/resumed-source-session.jsonl`.
+  Native fixture: `~/temp/agent/pi-mimo-rpc-session-z78qJS`;
+  saved history: `home/resumed-native-session.jsonl`.
+  Both last used the qualified private artifact
+  `decision-responsibility-split-candidate-o30Fdb/dist/native-release-fO486Z`.
+  Reuse persistent histories; do not assume stopped containers or old process IDs survive reboot.
+- Repository HEAD before this documentation checkpoint is `aec7d2c714`.
+  Native owner/type/factory edits and new `owner-errors.ts`/`owner-judgments.ts` remain uncommitted.
+  Source matcher documentation and three lifetime helpers retain both staged and unstaged corrections.
+  Preserve the index and working tree independently; no reset, stash or bulk staging.
+  Preserve unrelated concurrent changes, including `.serena/project.yml` if still present.
+- First resume action: inspect current HEAD, pending paths, saved controller states and histories.
+  Finish and review the exact native/source checkpoints before freezing new verification inputs.
+  Then fresh-build JS and native together, run types, scoped lint, nine lifetime cases and capacity guard;
+  retarget and rebuild the five separate source-removal controls, then run the configured full-history replay.
+  The complete lint backlog and footprint/deployment reduction remain open.
+
 ### Latest checkpoint
 
 - Owned content storage scope now passes zero warnings/errors after private formatting and named probe constants:
