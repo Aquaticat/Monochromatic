@@ -942,6 +942,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     width, replacing the separate pixel-per-column builder of `src/minimap/` (`raster.rs`, `paint.rs`) and the
     picture side of `src/native/minimap_build.rs`. It must be tiled and cached so that a long file stays fast and
     under the raster limit.
+    State at the owner's shutdown, 2026-10-19: the agent stopped early; the work is WIP commit `d37bc53d79` on
+    `feat/ide-minimap-downscale` (also pushed to origin as a backup; worktree `.claude/worktrees/ide-minimap`, clean).
+    The agent's full state, measurements, owner-decision tradeoffs and resume commands are in the "Minimap redesign"
+    bullet of that branch's copy of this file. Done there: the downscale builder, 31 minimap tests, the reflection test
+    (worst channel difference 1 of 255 for text, 7 to 9 for find matches), tall-window tests, 14 guard cases proved.
+    Next, in order: `git fetch origin main` and merge it into the branch; fix the guard case `minimap-reduce-row-weight`
+    (it does not fail on its mutation); run the 8 unrun guard cases and the 17 older minimap cases; run
+    `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:closures`, `test` and `test:native`; run the written
+    screenshot driver `~/temp/agent/verify-minimap.mjs <name> <file> <WxH> <scale>` and look at the pictures; fix the
+    README "Measured cost" section; then land and reinstall. Open: a 12,000 px window over wrapped text never
+    finishes the measurement pass (`settled` times out at 90 s), cause not investigated. Owner decisions pending:
+    the exact-average picture is fainter than CodeGlance (alpha gain or not), how squeezed files are sampled, caret
+    and gutter not in the picture, press mapped proportionally across the text width.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
     worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
