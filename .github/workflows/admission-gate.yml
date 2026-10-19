@@ -67,6 +67,19 @@ jobs:
           }
           used.storageGb += ledger.storageAverageGb ?? 0;
           const requested = reservation.meters ?? {};
+          const invalidMeter = meters.find((meter) => (requested[meter] ?? 0) < 0);
+          const invalidReservation = invalidMeter !== undefined
+            || (reservation.reservedUsd ?? 0) < 0
+            || !['depot-native', 'depot-github', 'github-hosted'].includes(reservation.provider);
+          if (invalidReservation) {
+            const message = invalidMeter !== undefined
+              ? `reservation meter ${invalidMeter} is negative`
+              : 'reservation has an invalid provider or reservedUsd';
+            appendFileSync(process.env.GITHUB_OUTPUT, 'decision=invalid\n');
+            appendFileSync(process.env.GITHUB_STEP_SUMMARY, `invalid: ${message}\n`);
+            console.error(message);
+            process.exit(2);
+          }
           const overMeter = meters.find((meter) => {
             return used[meter] + (requested[meter] ?? 0) > plan[meter];
           });
