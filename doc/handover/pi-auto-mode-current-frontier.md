@@ -10,9 +10,37 @@ The user replaces the unconditional action-score floor with an exact uncertainty
 `unknown < 0.2` selects the uniquely highest-scored supported action;
 `unknown >= 0.2` requires that action to score `>= 0.6`, otherwise ask.
 Ties and unresolved winning labels still ask.
-The shared categorical admission function implements this rule, with independent exact-boundary tests.
-Fresh frozen build, full types, scoped lint and original native-consumer verification are next.
-The recorded `0.56/0.38/0.06` case must execute automatically under this rule.
+The shared categorical admission function implements this rule in `c5fe88ee50`,
+with independent exact-boundary tests; `008066f50e` adds native incident and denial counterparts.
+Frozen `uncertainty-policy` passes both builds, full types, built policy tests and the full native fallback catalog.
+The exact `0.56/0.38/0.06` mode executes both calls with zero selections;
+the reversed denial executes none with zero selections.
+Scoped lint still reports findings and rebuilt negative controls remain required.
+The broader native semantic task fails its `none` assertion (`unresolved` versus `unspecified`)
+on both the new build and the previously frozen SDK combined baseline.
+This failure predates the uncertainty change; inspect the final fallback semantics before updating that assertion.
+
+The user requests a bounded trial of `https://openrouter.ai/respan/span-02`
+using scoped `AUTO_MODE_OPENROUTER_API_KEY`.
+Current anonymous endpoint metadata advertises `respan/span-02-20261015`, 131,072 context tokens
+and prompt pricing of USD 0.01 per million tokens.
+Fetches are retained as `span-02-endpoints.json`, `span-02-page.html` and `openrouter-decisions-current.md`.
+Next: call the documented Decisions endpoint with the original captured state string and mapped criteria,
+preserving original instruction text and distributions; compare recorded requests and an explicit prohibition control.
+This authorizes a trial, not changing the production provider.
+
+The per-message fixed-prefix audit counts 636,425 complete input-budget validations,
+797,221 readable-policy freshness checks and 158,257 native finalizations across 58 prepared batches.
+The call amplification needs a source/runtime causal probe, rather than a logger-level workaround.
+Root accidentally searched the whole scratch tree on the host and interrupted it with SIGINT;
+the process audit confirms no matching `rg --files --glob` remains.
+Further scratch traversal must remain narrowly scoped or wholly container-bounded.
+
+Source MiMo's `b86bc331cd` restores real semantic case receipts and failure propagation:
+the prior fixture `verify()` swallowed assertions, so prior exit-zero producer results alone were insufficient.
+Source subsequently reports all nine real cases passing and is fixing the authored values helper's lint.
+Root allows Native's private wrapper mutation in dialog `091c826d-82db-4d89-b05c-42f77dbf7678`;
+the backend advances to 74 completed tools, so the UI response was actually consumed.
 
 The user corrected root's claim that omitting `APG` establishes a concrete authorization gap.
 That claim is retracted.
