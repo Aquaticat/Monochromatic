@@ -326,8 +326,8 @@ The built-in correction adds a preservation requirement to the proposed `QPM` ti
 
 - Tighten `VHI` to:
   “Handoffs state purpose, changes, inspection, and response.
-  Control-flow diagrams use connected arrows, labeled decision branches, loops, and terminal outcomes.
-  Verify and open in the requested browser.”
+  Use connected flowcharts with labeled branches for every flow.
+  Verify hidden examples too; open in the requested browser.”
 - Tighten `QPM` to:
   “Test questions against settled requirements.
   A correction to one criterion must preserve the other requirements.

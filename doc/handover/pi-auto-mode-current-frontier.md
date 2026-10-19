@@ -6,6 +6,18 @@ Plan review is active and implementation remains stopped.
 The active visual form has open choices Q1, Q4, and Q6; Q2 is withdrawn as already settled.
 After answers, update the decision tree and continue the next unlocked review work.
 
+### Complete drawing inventory correction, 2026-10-19
+
+The user points out that the flowchart correction did not cover every drawing.
+The prior pass changed startup, group review, and human decision but left nine card-based drawings.
+Replace rule composition, follow-up detail, all four worked-example tabs, Ask routing,
+reversibility, and preparation timing with connected SVG diagrams too.
+The active artifact now has 12 SVG charts and no `class="flow"` or `class="arrow"` drawing remnants.
+The proposed `VHI` tightening now covers every flow and explicitly includes hidden examples in verification.
+No existing architecture choice, pending question, or deferred built-in catalogue decision changes.
+Next action: inspect every diagram in both themes, drive all example tabs and narrow-screen scrolling,
+retain evidence, and reopen the complete review in Helium.
+
 ### Flowchart correction, 2026-10-19
 
 The user rejects the card-row drawings as improper flowcharts.
