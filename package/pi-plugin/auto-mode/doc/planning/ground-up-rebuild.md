@@ -423,7 +423,7 @@ Do not recreate Pi tools, scheduling, argument preparation, sessions, or UI to r
 The preferred group boundary preserves individual nonparallel reviews and whole-batch parallel review.
 The accepted graceful-fallback rule permits reduced grouping coverage when public APIs cannot provide that boundary.
 
-The disposable public-plugin consumer passes 20 assertions, including deliberate limitation cases,
+The disposable public-plugin consumer passes 20 asserted cases, including deliberate limitation cases,
 through `mise run lint:types` and `mise run probe` in `~/temp/agent/pi-public-plugin-probe-20261019`.
 It uses extension factories, a scripted public provider registration, and inert tools, without copied Pi source.
 Public `prepareLoadout` exposes tool execution metadata; `tool_execution_start` can observe the persisted message.
