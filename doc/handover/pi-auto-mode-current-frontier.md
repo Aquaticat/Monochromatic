@@ -32,6 +32,16 @@ Work is incomplete. Continue the queue without another readiness handoff.
   It still authenticates snapshots and checks current policy, tool inputs, event runner, immutable governing material,
   original input append-only ownership and the newly captured base snapshot.
   Fresh review-time, original primary-time, genuine-policy/tool-change and configured-host checks remain required.
+  Corrected `bLWXAD` at `324a7ed707` passes both primary-time cases and both review-time cases,
+  source-freshness work, run-message freshness, session inputs, event receipts, host isolation,
+  constructor, execution and source-binding capacity.
+  A separate schema-mutation fixture fails before checking its schema because it passes retired `manualOrigins`
+  instead of the current `executionOrigins` map; this is not evidence of a changed production schema guard.
+  The fixture correction uses the actual argument and requires the exact schema-change diagnostic,
+  preventing unrelated ownership errors from satisfying its assertion.
+  The source MiMo's held edit is read completely and stopped: an unmatched parenthesis and another normalization drift
+  make that patch unaccepted. It resumes at a settled boundary with a truthful, small JavaScript fixture-helper option
+  and genuine SDK erasure guidance; no invented predicates or new input validation are accepted.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.
