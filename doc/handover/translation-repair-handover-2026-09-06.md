@@ -751,10 +751,13 @@ before the other queued work.
     needs one keyed reading),
     1780 (more read-only requests for the memo);
     the feature-branch `GH006` rejection is commented on 1032.
-    The next ledger round files the `w190`,
+    The ledger round `w197` filed the `w190`,
     `w194`,
-    `w195` and `w196` notes
-    and the tail of `s245/ledger-notes-after-split.md`.
+    `w195` and `w196` notes and the tail of `s245/ledger-notes-after-split.md`
+    as B688 to B690 and M273 to M276;
+    gate g111 was green and it landed as `8a475ed139`.
+    The next entries start at B691 and M277.
+    Running processes keep the old `nproc` limit of 12288 until the owner logs in again.
     Its spread-bridge pair `50ccee0440` and `5dce27bb59` is held:
     two valid-fixture cases passed only because `runOxlintFixture` hides a plugin's throw,
     one ambiguous-spread case newly failed,
