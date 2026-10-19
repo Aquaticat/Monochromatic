@@ -179,6 +179,25 @@ The baseline needs the prepared environment described by the evaluation or a doc
 prerequisite image.
 The unit baseline remains invalid until that build succeeds.
 
+## Fast subset
+
+The first fast subset is five owning build tasks and their tests:
+
+- `//package/module/logger:build` and `:test:unit`;
+- `//package/module/p-map-fork:build` and `:test:unit`;
+- `//package/module/toml-edit:build` and `:test:unit`;
+- `//package/cli/forbidden-strings:build` and `:test`;
+- `//package/linter/monochromatic-lint:build` and `:test`.
+
+This subset avoids the desktop,
+Android,
+Qt and Podman packages that make the complete `mise run build` profile fail on a generic
+runner.
+The complete profile stays a weekly,
+prepared-environment workload.
+GitHub run `39199930641` is the fast-subset baseline;
+its outcome is recorded when it finishes.
+
 ## Build profile
 
 Command:

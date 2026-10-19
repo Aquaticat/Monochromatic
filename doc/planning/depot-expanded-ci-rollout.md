@@ -74,6 +74,15 @@ for untrusted pull-request source and for publishing.
 The default-branch advisory run executes a fast static,
 build and unit subset.
 The static part is changed-path scoped.
+The first fast subset is five owning build tasks and their tests:
+`module/logger`,
+`module/p-map-fork`,
+`module/toml-edit`,
+`cli/forbidden-strings` and
+`linter/monochromatic-lint`.
+Desktop,
+Android,
+Qt and Podman stay in the weekly prepared environment.
 The complete profile runs in the weekly matrix,
 not on every push.
 The default-branch run uses the sliding-window limiter currently used by the Scorecard workflow as
