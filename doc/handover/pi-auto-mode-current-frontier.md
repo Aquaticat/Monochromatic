@@ -4,7 +4,7 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
-- Incoming-message rejection: the reproduced category-gate defect is closed on `4913ea2cd0`.
+- Incoming-message rejection: the primary-request category-gate defect is closed on `4913ea2cd0`.
   The gate and its newly introduced classifier are removed; normal input does not need membership in an origin list.
   Fresh builds and six native consumer suites pass on immutable `native-release-LqreQy` in `3eMYni`.
   Configured full-history replays `rVn75u` and `zdzKWP` each perform one actual reviewed `pwd`,
@@ -24,6 +24,14 @@ Work is incomplete. Continue the queue without another readiness handoff.
   which the old `steer-user` phase expectation treats as withholding.
   The new `test:native:inflight-assessment-input` uses real SDK delivery during the assessment response;
   qualify it against the unchanged freshness guards before changing that implementation.
+  Baseline `yKnXp3` at `a93c37afe93e` passes builds and primary-time delivery,
+  but the new review-time case executes zero tools and fails its exact automatic-execution assertion.
+  Deciding cause: `resource-bindings.mjs` reports `Native run prompt was replaced after this source snapshot`.
+  `policy-input-collector` has separate pre-approval identity and post-approval dependency checks.
+  The authored consolidation uses the incumbent dependency comparison in both phases and removes the stricter duplicate path.
+  It still authenticates snapshots and checks current policy, tool inputs, event runner, immutable governing material,
+  original input append-only ownership and the newly captured base snapshot.
+  Fresh review-time, original primary-time, genuine-policy/tool-change and configured-host checks remain required.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.

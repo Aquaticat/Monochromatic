@@ -29,6 +29,15 @@ input-content,
 session-input and execution consumers.
 Configured saved-history verification remains required.
 
+A separate timing regression queues input while the policy assessment is in flight.
+Its original build withholds the tool because a data-only native run view receives a new identity.
+The source collector has distinct checks before and after approval;
+the post-approval dependency comparison already permits appended original data without admitting changed policy or tools.
+The consolidation uses that same dependency check during review and removes the stricter duplicate identity path.
+Its review-time delivery,
+real policy/tool mutation,
+and configured-host checks are separate qualification requirements.
+
 ## Retained native input storage
 
 Every native input keeps its original occurrence,
