@@ -571,7 +571,7 @@ logs and per-process files are in `/var/home/user/temp/agent/w209-notes/`.
   and `pnpm-lock.yaml` pins 7.0.2 (the catalog entry is `>=7.0.2`).
 - That commit exists in `microsoft/typescript-go`,
   as "Merge branch 'main' into ts7-release"
-  (author date Tue Jul 7 21:22:40 2026 -0700),
+  (author date 2026-07-08 04:22:40 UTC),
   and not in `microsoft/TypeScript`,
   whose `v7.0.2` tag (`1e4744d68260`) is a merge commit with the same subject and date.
 - I cloned `microsoft/typescript-go` at that commit and read `internal/api/session.go`
