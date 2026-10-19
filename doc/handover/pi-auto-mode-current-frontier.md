@@ -6,6 +6,32 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Recovery after the user's October 19 REISUB: the committed package changes and private qualification receipts survive.
+  `podman ps --all` lists no live worker containers; cached worker state still says connected and is stale.
+  Do not change that interrupted state to a successful shutdown or treat old session IDs as live processes.
+  Resume the complete original `kARc6q` and `Pcok7j` histories, both closed with exit zero before the reboot,
+  on qualified decision-split candidate `o30Fdb` at `329df9f855`.
+  The interrupted startup-only copies `vbLtPm` and `PMHU0O` had no submitted work or completed tools.
+- `329df9f855` separates decision operation lifetime, judgment review, admission questions and shared errors.
+  Fresh JavaScript/native builds, full types, phase catalog, source-freshness work,
+  primary/review inflight input and schema mutation consumers all pass.
+  Aggregate characters rise from 12,307 to 13,161 through linkage and module structure;
+  the split is not aggregate source reduction. The four-file lint scope has 130 warnings and one error,
+  with no max-lines diagnostic; the remaining error is the original function-root `let` state.
+- `2f2eca3467` commits the seven-path typed-loader cleanup and suppression explanation.
+  Fresh builds/types/phases and both input consumers pass, followed by the actual freshness/schema tasks.
+  One attempted task name, `test:native:source-freshness`, was not registered and never executed;
+  its correctly named `test:native:source-freshness-work` replacement passes.
+  Twelve-file scoped Oxlint reports one warning and zero errors:
+  `Unused oxlint-disable directive (no problems were reported)` at the registration class's re-enable comment.
+  Resolve that warning with the actual ambient shape; preserve writable dynamic names and the message-only constructor.
+- Explicit post-GC instrumentation uses the installed Node inspector's `HeapProfiler.collectGarbage`,
+  requested through a private worker signal handler, with atomic measurement receipts.
+  Its bounded fixture releases 8,372,120 bytes after dropping the eight-MiB allocation control;
+  unchanged-input spread is 7,864 bytes. This qualifies the measurement mechanism, not real MiMo retention.
+  Actual resumed-worker post-GC baselines and long-history growth remain open.
+  Preparation input traversal ran with two-GiB/two-CPU bounds and measured 1,896,731 bytes across
+  mise configuration/state and project Pi configuration before their fixed-scope copies.
 - Day accounting through `2026-10-19T03:34:17Z`, October 18 in America/New_York:
   243 relevant commits, comprising 42 fixes, 21 refactors, four performance changes,
   65 test checkpoints, ten style changes, 100 documentation checkpoints and one chore.
