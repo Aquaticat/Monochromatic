@@ -6,6 +6,26 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Correct the catalog terminology: `test:native:producer-lifetime` runs nine semantic cases,
+  four lifetime cases and five mutation-path cases. Those five cases are not rebuilt source-removal controls.
+  Separate scratch `verify-producer-built-guards.ts` rebuilds five source variants and requires their
+  lifetime/capacity consumers to fail, then restores both consumers. Keep both evidence layers separate.
+- `97197764fa` installs the mixed-language default lint project and explicitly retained `tsconfig.types.json`.
+  Fresh full-package Oxlint at this frozen commit reports 10,835 warnings/136 errors across 892 files,
+  486 rules, 45.5 seconds under two-GiB/two-CPU bounds.
+  Its fresh JS build still hits the known native declaration-closure failure; the native fix is uncommitted.
+  Owned content-page scope reports 46 formatting warnings/zero errors; its private formatter is running.
+- Native content-page consumer regressions pass in candidate `KPNOhL` at `62c3796aca`:
+  changing sequences preserve every digest with 56,296 additional retained bytes;
+  exact code units, surrogate digest collision and foreign-accessor controls pass;
+  1,600 native streaming updates retain 11,033,856 measured bytes;
+  600 distinct source publications preserve 713,092,714 logical receipt bytes.
+  The last retained-heap delta is negative, so do not describe it as a literal storage size.
+  This candidate rebuilt native sources over the pinned initial JS output after the clean JS build blocker,
+  so these are component consumer results, not a freshly combined host qualification.
+- The phase identity negative control replaces only the stored original update with a clone.
+  The actual parallel native consumer fails `updated` after `returned` at `native-phase-assertions.ts:162`.
+  Restoring the private source passes the same consumer. Root sources and publication remain unchanged.
 - `9163ffd584` shares immutable pages of at most 256 chunk references across retained input versions.
   The isolated red probe retains 24,589,536 bytes for 24 changing versions versus unchanged controls
   of 1,091,016 and 1,029,504 bytes. The new source probe retains 131,160 bytes versus controls
