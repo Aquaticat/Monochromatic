@@ -9,6 +9,7 @@ import type {
 } from '../../../../src/semantic-admission-types.ts';
 import type { InstructionPolicySelection } from '../../collector/program-rule-batch-sdk-copy-v2/input/instruction-api.ts';
 
+//region Scope contracts derive their collections from the maintained input producers.
 /**
  Candidate collections retain their actual judgment producer types.
  */
@@ -39,9 +40,14 @@ type AdmissionScopes = Readonly<{
  headingScope: HeadingScope;
  unitScope: UnitScope;
 }>;
+//endregion Scope contracts
 
 //region Admission questions follow the selected policy and original input candidates.
-/** Same-source incorporation needs the original single-member clause interpretation. */
+/**
+ Same-source incorporation needs the original single-member clause interpretation.
+
+ @returns configured original scope or the specific missing incorporation prerequisite
+ */
 function captureUnitScope({
   inputs,
   unitPolicy,
@@ -51,6 +57,9 @@ function captureUnitScope({
  readonly unitPolicy?: SemanticAdmissionPolicy;
  readonly scope: SemanticAdmissionScope;
 }): UnitScope {
+ /**
+  The maintained consumer checks the selected policy's actual inspection profile first.
+  */
  const inspected=semanticAdmissionScope({
    ...(unitPolicy===undefined?{}:{policy:unitPolicy}),
    inputs
@@ -72,7 +81,16 @@ function captureUnitScope({
   });
  return inspected;
 }
-/** Current selected sources and the retained native program determine which questions are meaningful. */
+/**
+ Current selected sources and the retained native program determine which questions are meaningful.
+
+ @returns independent clause, heading and incorporation question selections
+
+ @example
+ ```ts
+ const scopes = captureScopes({ inputs });
+ ```
+ */
 export function captureScopes({
   inputs,
   policy,
@@ -84,15 +102,24 @@ export function captureScopes({
  readonly headingPolicy?: SemanticAdmissionPolicy;
  readonly unitPolicy?: SemanticAdmissionPolicy;
 }): AdmissionScopes {
+ /**
+  Clause selection remains the prerequisite for same-source incorporation.
+  */
  const scope=semanticAdmissionScope({
    ...(policy===undefined?{}:{policy}),
    inputs
  });
+ /**
+  Contextual headings can require assessment even without indexed clause candidates.
+  */
  const inspectedHeading=semanticAdmissionScope({
    ...(headingPolicy===undefined?{}:{policy:headingPolicy}),
    inputs,
    requireCandidates:false
  });
+ /**
+  Empty contextual-heading collections require no model estimate.
+  */
  const headingScope=(inspectedHeading.state==='matching')&&(inputs.headingContextCandidates
    .length
    ===0)
@@ -101,6 +128,9 @@ export function captureScopes({
     reason:'No original contextual-heading groups need assessment.'
   })
   :inspectedHeading;
+ /**
+  Same-source incorporation retains the original member and pair prerequisites.
+  */
  const unitScope=captureUnitScope({
    inputs,
    ...(unitPolicy===undefined?{}:{unitPolicy}),
