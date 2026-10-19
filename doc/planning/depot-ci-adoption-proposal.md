@@ -94,10 +94,11 @@ and the closure workstream record.
   Depot Tests;
   cache and Disk;
   SDK VM profiles.
-- Native automatic trigger registration is under primary-source research.
-  Until that research reports and a positive control passes,
-  native profiles run only by explicit dispatch;
-  the weekly matrix does not rely on an automatic native trigger.
+- Native `pull_request` registration is proven in this repository on a non-default base.
+  Push-on-main registration remains untested;
+  native profiles run by explicit dispatch for the weekly matrix,
+  and no push-triggered native workflow is relied on until the corrected positive control
+  passes.
 - Paused-session SSH,
   `--ssh-after-step`,
   tmate and interactive session strings are excluded from

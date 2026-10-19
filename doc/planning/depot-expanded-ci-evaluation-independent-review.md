@@ -233,12 +233,10 @@ explicitly accepted by the user.
 - EF-B2,
   native promotion prerequisites are missing:
   P,
-  the native closure work covers the
-  parallel-step correction,
-  event registration and duplicate publication,
-  check-name mapping,
-  and
-  paused-session qualification.
+  the parallel-step correction is complete,
+  native `pull_request` registration is proven on a non-default base,
+  push-on-main registration is the remaining trigger test,
+  and check-name mapping and paused-session qualification remain open.
 - EF-B3,
   frozen owner map is stale:
   M,
@@ -366,23 +364,28 @@ Closure workstreams:
   The adoption proposal carries the list and its activation conditions.
 - Paused-session qualification is a separate bounded experiment and is excluded from the weekly
   matrix.
-- Automatic event registration was tested on `main` with a side-effect-free probe.
-  The probe commit `6523bcaedd` produced GitHub run `39182515195` and no Depot workflow
-  registration within two minutes;
-  the probe was removed in commit `f8bc2d6c67`.
-  The current Depot quickstart describes a push and merge of the `.depot` changes as the
-  registration step,
-  so this direct-push observation is not a valid negative for the documented
-  merge path.
-  Primary-source research into the registration model is in progress,
-  and no automatic native trigger is assumed until it reports.
+- Automatic event registration was investigated with a side-effect-free direct-push probe.
+  The probe is not a valid negative for three reasons:
+  the marker push arrived at `00:49:35`,
+  during the add push's native run
+  `ps_hf4mk4q5l6` from `00:49:30` to `00:50:03`;
+  the listing command observes executions,
+  not registered triggers;
+  and the workflow was removed before a later push could exercise a registration that completed.
+  Native `pull_request` registration is already proven in this repository on a non-default base:
+  six native runs,
+  Depot checks from app `219785`,
+  and a required-check 405 control.
+  The open path is push on `main`.
+  The primary-source research is recorded in
+  [the registration research](depot-native-registration-research.md).
 
 ## Open closure items
 
 The following are not satisfied by this review record and remain work:
 
 - native evidence experiments still open:
-  event registration and duplicate publication,
+  push-on-main registration and duplicate publication,
   check-name mapping,
   and paused-session qualification;
 - no-overage sliding-window admission and the operator cap verification;
