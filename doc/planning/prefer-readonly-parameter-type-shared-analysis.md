@@ -547,3 +547,300 @@ Without this plugin loaded,
 the bridge starts lazily mid-lint,
 and on `corpus-pass` it failed with `spawn ENOMEM`;
 what that rule loses then is in "The spread rule when the bridge cannot start".
+
+### Remaining repeated requests, read on 2026-10-19
+
+Issue 1780 asked for the requests the memo still sends to be read and,
+where the rule allows,
+added.
+It estimated about 130,000 repeats,
+and named `getSymbolsAtLocations`,
+`getIndexInfosOfType`,
+`isArrayType`,
+`getSymbolOfType`
+and `getAliasedSymbol`.
+This section records what was measured,
+what was read,
+and what changed.
+The scripts,
+logs and per-process files are in `/var/home/user/temp/agent/w209-notes/`.
+
+#### Source read
+
+- The installed `typescript@7.0.2` records `gitHead` `2bd066d87f5bafd315be9f40889d0a60b9e58e0b`,
+  and `pnpm-lock.yaml` pins 7.0.2 (the catalog entry is `>=7.0.2`).
+- That commit exists in `microsoft/typescript-go`,
+  as "Merge branch 'main' into ts7-release"
+  (author date 2026-07-08 04:22:40 UTC),
+  and not in `microsoft/TypeScript`,
+  whose `v7.0.2` tag (`1e4744d68260`) is a merge commit with the same subject and date.
+- I cloned `microsoft/typescript-go` at that commit and read `internal/api/session.go`
+  and the checker functions the handlers call in `internal/checker`.
+- The ten memoized requests were read at the same commit,
+  so one standard covers all sixteen.
+
+#### How repeats were counted
+
+- The measurement preload of `w177-notes/profile/` and `w190-notes/profile/` (`PRPT_DEDUPE=1`) wraps
+  `Client.prototype.apiRequest` of the installed synchronous client,
+  keys each request by method plus its JSON parameters (which include the snapshot id),
+  and totals requests and distinct keys per process.
+- The memo sits on the client instance and forwards to that prototype method,
+  so the preload counts only requests that reach the server.
+  A repeat it reports is a request the memo did not answer.
+- Each run was one cold lint of the 36 `translation-repair` packages in its own capped systemd unit,
+  with the cache emptied first.
+- The same preload gave 975,205 requests after the memo in the earlier measurement,
+  and 976,608 and 976,463 here in two runs,
+  so the setup reproduces the earlier numbers.
+
+#### What repeats
+
+- Two baseline runs,
+  before this change:
+  976,608 requests with 27,475 repeated (2.8 percent),
+  and 976,463 with 28,697 repeated.
+  Together they use about 36 s of Node-side request time,
+  and the repeated requests cost about 0.7 s of it.
+- The issue's 130,000 is not reproduced.
+  The five methods it names sent 98,283 requests,
+  of which 21,985 were repeats,
+  and two of them repeated none:
+  `getSymbolsAtLocations` (26,437 requests,
+  all distinct)
+  and `getSymbolOfType` (12,092,
+  all distinct).
+- Repeats by method in the first baseline run (the second run in parentheses):
+  - `getIndexInfosOfType`:
+    28,175 requests,
+    10,017 repeated (28,732 and 10,574).
+  - `isArrayType`:
+    24,879 and 6,770 (25,436 and 7,327).
+  - `getAliasedSymbol`:
+    6,700 and 5,198 (the same).
+  - `typeToString`:
+    4,338 and 4,266 (4,448 and 4,376).
+  - `getBaseConstraintOfType`:
+    699 and 531 (the same).
+  - `getNonNullableType`:
+    1,710 and 402 (the same).
+  - `getSourceFileNames`:
+    176 and 119 (the same).
+  - `isTypeAssignableTo`:
+    92 and 64 (the same).
+  - `getExportsOfModule`:
+    153 and 57 (the same).
+  - `getSignatureUsages`:
+    97 and 12 (the same).
+  - Every other kind repeated 12 times or fewer
+    (`getSignaturesOfType` 11 and 12,
+    `initialize` 9,
+    the rest fewer),
+    and the kinds that repeated none are named in the verdicts.
+- Repeat counts move a little between identical runs (10,017 against 10,574),
+  because the order in which 36 processes share cached analysis is not fixed.
+
+#### Verdicts
+
+Added,
+after reading each handler and its checker call:
+
+- `getIndexInfosOfType`:
+  `setupChecker`,
+  handle lookup,
+  `GetIndexInfosOfType` on the persistent API checker,
+  and responses made of type handles and a node handle.
+- `isArrayType`:
+  a pure test of the type's flags and target against the checker's global array types.
+  A `false` answer is replayed as an answer.
+- `getAliasedSymbol`:
+  resolves an alias symbol to its target with the checker's own alias resolution.
+  The plugin already checks the alias flag before asking,
+  because the checker panics on a symbol that is not an alias.
+- `getBaseConstraintOfType`:
+  reads the resolved base constraint,
+  which the checker stores on the type (`resolvedBaseConstraint`) once computed.
+- `getNonNullableType`:
+  asks the checker for the type with `null` and `undefined` removed,
+  which it builds as a union looked up by its constituents in the checker's union table.
+- `getExportsOfModule`:
+  resolved exports of a module symbol,
+  sorted by the checker's own symbol order.
+
+Read and not added:
+
+- `getSymbolsAtLocations`,
+  `getSymbolOfType`,
+  `getAliasSymbolOfType`,
+  `getParametersOfSignature`,
+  `getAliasTypeArgumentsOfType` and `isTupleType` meet the rule,
+  but none of their 26,437,
+  12,092,
+  4,431,
+  2,615,
+  17 and 3 requests repeated on a snapshot.
+  Adding them would store answers (2.5 KB per `getSymbolsAtLocations` answer)
+  and save no request.
+- `typeToString` returns a rendering and not a handle.
+  The printer resolves type members lazily while it prints (a comment in `internal/checker/printer.go` says so),
+  and nothing here shows the text independent of earlier queries.
+  It repeats 4,266 times for 0.07 s.
+- `isTypeAssignableTo` is a relation check against the checker's relation caches,
+  and nothing here shows its answer independent of earlier queries.
+  It repeats 64 times.
+- `getSignatureUsages` is answered by a language service that acquires its own checker
+  and asks for references across every source file,
+  so it does not follow the persistent API checker the other handlers use.
+  It repeats 12 times.
+- `getSourceFileNames` hands the client's raw array to the caller,
+  so a hit would give every caller the same array,
+  and `getDefaultProjectForFile` likewise.
+  `getSourceFileNames` repeats 119 times for 0.05 s.
+
+The registration the handlers do is idempotent and keyed by the checker object,
+in registries that live until the snapshot is released,
+the same as for the ten already memoized.
+The synchronous client returns the object already registered for an id and ignores later data for it
+(`getOrCreateSymbol`,
+`getOrCreateType` and `getOrCreateSignature` in `dist/api/sync/api.js`),
+and the client's wrappers for the six read the answer without changing it.
+
+#### Replay check
+
+One more cold lint with the baseline bundle (`PRPT_BYTES=1`) compared every repeated answer
+with the first answer to the same request.
+
+- No answer differed in anything the client keeps,
+  in any repeat of the six kinds:
+  `getIndexInfosOfType` 9,788 repeats,
+  `isArrayType` 6,541,
+  `getAliasedSymbol` 5,198,
+  `getNonNullableType` 402,
+  `getBaseConstraintOfType` 531,
+  `getExportsOfModule` 57.
+- 299 `getIndexInfosOfType` and 18 `getBaseConstraintOfType` answers differed in raw text,
+  and each difference was an `objectFlags` value on a type that had the same id,
+  which the checker sets lazily.
+  One `getTypesOfType` answer of the already memoized kinds differed the same way.
+  The client ignores that data for an id it has registered,
+  which is why replaying the first answer changes nothing a caller can see.
+- The comparison reduces every nested object that carries an id to the id.
+
+#### Size of a stored answer
+
+- Serialized,
+  one distinct request key plus its answer is 561 bytes on average over the sixteen kinds
+  (823,446 entries,
+  440.7 MiB across the 36 processes).
+  The six added kinds average 212 bytes (39,341 entries,
+  7.95 MiB).
+- `corpus-pass`,
+  the largest process,
+  stored 141,367 entries and 75.1 MiB serialized.
+- The heap held by parsed answers was not measured and is larger.
+- The bound stays at 131,072.
+  Replaying the recorded request stream with the six added,
+  `corpus-pass` peaks at 141,220 entries in one store and evicts 10,167 at this bound
+  (4,896 with the ten alone,
+  on the same stream),
+  and no other process evicts.
+  The eviction costs 22 of the 2,060 repeats that process could still answer.
+- These figures are in the TSDoc of `MAXIMUM_MEMOIZED_RESPONSES_PER_SNAPSHOT`.
+
+#### Before and after
+
+Two cold family lints each,
+same flags,
+same host,
+load average between 4 and 13 when each started.
+
+- Requests that reached the server:
+  976,608 and 976,463 before,
+  951,964 and 953,148 after.
+  That is 24,644 and 23,315 fewer,
+  2.4 to 2.5 percent.
+- Per added method,
+  before in the two baseline runs and after in the two later runs:
+  - `getIndexInfosOfType`:
+    28,175 and 28,732,
+    then 18,160 and 18,160.
+  - `isArrayType`:
+    24,879 and 25,436,
+    then 18,109 and 18,109.
+  - `getAliasedSymbol`:
+    6,700 and 6,700,
+    then 1,502 and 1,502.
+  - `getNonNullableType`:
+    1,710 and 1,710,
+    then 1,308 and 1,308.
+  - `getBaseConstraintOfType`:
+    699 and 699,
+    then 168 and 168.
+  - `getExportsOfModule`:
+    153 and 153,
+    then 96 and 96.
+  After each run an added method's count equals its distinct keys (two `getIndexInfosOfType` repeats remain).
+- Repeats left in a run:
+  4,588 and 4,585,
+  of which 4,330 are `typeToString` and 119 `getSourceFileNames`.
+- Node-side request time:
+  35.76 and 36.02 s before,
+  38.81 and 35.72 s after.
+  The baseline runs differ by 0.26 s and the later two by 3.09 s,
+  so the saving cannot be seen in this measurement.
+  The repeats removed cost about 0.35 s in the first baseline run (1 percent),
+  well inside that spread.
+- Wall time of the 36 lints in sequence:
+  111.6 and 110.8 s before,
+  121.5 and 112.9 s after;
+  the 121.5 s run started at a load average of 12.6.
+  The section "Spread" puts noise at about 10 s cold.
+
+The change removes about 2.5 percent of the requests and stores about 8 MiB of serialized answers more,
+and its effect on cold time is below this measurement's spread.
+What is left of the 950,000 requests is almost all distinct requests,
+so another memo kind cannot buy more than the 4,600 repeats listed.
+
+#### Findings are unchanged
+
+- All 36 family packages gave the same exit code,
+  summary line and sorted diagnostic headers
+  in the first baseline run,
+  the second,
+  and both later runs.
+  The family has no diagnostics in this tree (every package says 0 warnings and 0 errors),
+  so this shows the rule did not start reporting,
+  and cannot show a finding preserved.
+- To cover that,
+  four packages outside the family were linted before and after:
+  `desktop-app/electron-infra`,
+  `pi-plugin/morph-compact`,
+  `rolldown-plugin/import-attributes`
+  and `claude-code-plugin/statusline`.
+  They carry 105 diagnostic headers,
+  9 of them this rule's,
+  and every one is identical after the change,
+  as is the whole normalized log text.
+- Normalized log text means the output with timestamps,
+  Go panic addresses,
+  and bundle chunk names with their columns replaced,
+  sorted by line.
+  Between the first two baseline runs the same normalization shows no difference,
+  so it does not hide run-to-run noise that would also hide a change.
+- `translation-repair/consistency` prints the same native panic (the tuple type panic recorded in
+  `doc/troubleshooting/typescript-go-tuple-type-panic.md`) before and after.
+
+#### Gate
+
+- The plugin's `build`,
+  `lint:types`,
+  `lint` and `test:unit` exit 0 on the final source:
+  34 suite lines passed and none failed,
+  0 warnings and 0 errors from `lint`.
+- The new cases fail without the change:
+  with the six names removed from the allow-list,
+  seven stub cases and the native case failed.
+- The native case runs the real server on a two-file project,
+  asks each added request twice through the checker,
+  and sees it reach the server once with equal answers;
+  a request left off the list (`typeToString`) reaches it twice.

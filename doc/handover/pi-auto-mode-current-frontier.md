@@ -3,8 +3,58 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
-The revised visual form is open in Helium; the current round awaits the user’s answers.
+The reversibility-corrected visual form is open in Helium; Q1, Q2, Q4, and Q6 await the user’s answers.
 After answers, update the decision tree and continue the next unlocked review work.
+
+### Built-in contents deferred, 2026-10-19
+
+The user says not to decide exactly what the built-in rules are now.
+Withdraw the proposed catalogue from the active plan and HTML without accepting or rejecting its members.
+Retain only multiple built-ins, each included in the first pass with its own four-choice answer,
+alongside every effective authored rule. Exact count, names, identities, and wording remain unspecified.
+Reversibility is an accepted assessment principle, not a finalized built-in rule.
+Do not resume catalogue design or ask catalogue choices in this round.
+Continue architecture review; outstanding Q1, Q2, Q4, and Q6 are unchanged.
+Implementation remains stopped.
+The historical catalogue section and screenshots record an unaccepted proposal only.
+Committed deferral in `cbf9c8cf91`.
+The simplified panel passed light/dark, 390-pixel width, navigation, and rendered-state checks:
+no proposed catalogue entries remain; the four unrelated architecture questions remain available.
+Page errors and console records are empty. Markdown rendered at `auto-mode-rebuild-plan-render-rVRmtV`
+before these verification notes.
+The updated `#q5` page was reopened in Helium; verification browser closed and compositor quit.
+Next action: continue architecture review from user answers without reopening built-in content design.
+
+### Historical built-in proposal, contents deferred on 2026-10-19
+
+The catalogue in this historical entry is not active or accepted.
+
+
+The user reiterates that built-in rules are plural.
+The prior correction overemphasized reversibility and replaced general-agent checks with its subquestions.
+The revised plan and HTML now show a concrete proposed catalogue of distinct criteria:
+useful progress/evidence, suitable tools/arguments, prerequisites, reversibility,
+effects on other people/systems, resource bounds, and explicit human constraints.
+Every criterion receives its own four-choice answer in every first-pass review,
+alongside every effective authored rule. Reversibility is not the sole built-in.
+Cross-package tests, exploration, intentional error probes, and reproducibility reruns remain valid work.
+Unknown relevance alone does not veto routine reversible exploration.
+The exact catalogue wording remains proposed; no new implementation authorization is inferred.
+The HTML moves the full catalogue near the main flow and shows all built-ins feeding the reducer.
+The proposed `QPM` tightening now says a correction to one criterion must preserve other requirements.
+Catalogue committed in `72b75585f1`; exploration clarifications in `5a11ebb5ea`;
+independent review corrections in `06a4017136`.
+Independent review confirmed plural criteria and no package-match gate,
+then corrected a publishing restriction example to name a group that actually publishes,
+and required deterministic shortcuts to satisfy other applicable built-ins.
+Verified seven navigation links, four scenarios, 12 answer options, all manual/form branches,
+keyboard behavior, and all 22 controls at least 48 pixels in both dimensions.
+All seven builtin cards render in light/dark and at 390-pixel width without overflow; page logs are empty.
+Three inspected `builtin-` screenshots are retained. Markdown rendering passed at `auto-mode-rebuild-plan-render-77WFdO`
+before these evidence notes.
+The updated catalogue was opened in Helium at `#q5`; verification browser closed and compositor quit.
+Next action is to continue plan review from user answers; this correction does not need reconfirmation.
+Open user choices remain Q1, Q2, Q4, and Q6.
 
 ### Reversibility replaces package matching, 2026-10-19
 
@@ -24,7 +74,16 @@ It also clarified that former Q3 only concerned skipping Luna, not prohibiting w
 no deterministic shortcut implementation is selected by this correction.
 The old unchanged-retry premise is also withdrawn: repeating a test can gather reproducibility evidence.
 A tightening of existing `AUT` is proposed in the plan, not applied to `AGENTS.md`.
-Next: independent correction review, targeted visual/form checks, screenshot evidence, rendered docs, Helium handoff.
+The correction is committed in `7eee3e5c83`, with independent-review clarifications in `82a720736f`
+and the scoped guidance proposal in `8f920ee572`.
+Verified four scenarios, six navigation targets, all 12 remaining answer options,
+all manual decision/reason branches, form validation, literal text, selection, and keyboard activation.
+All 21 controls meet 48 pixels in both dimensions. Both color schemes and 390-pixel width passed.
+Page errors and console messages are empty. Five inspected `reversibility-` screenshots are retained.
+The Markdown render passed at `auto-mode-rebuild-plan-render-BRQ1p7` before evidence notes were appended.
+The verification browser was closed and nested compositor quit; Helium accepted the updated `#meaning` URL.
+Current next action: use the user’s answers to Q1, Q2, Q4, and Q6 to advance the plan review.
+Implementation remains stopped; the accepted reversibility baseline does not require another confirmation.
 
 ### Every ask explains the decision, 2026-10-19
 

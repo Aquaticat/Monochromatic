@@ -66,6 +66,21 @@ Acceptance examples for this baseline:
 - Uploading a report can disclose its content even if the upload can later be deleted.
   Evaluate the disclosure; deleting the uploaded copy does not reverse every effect.
 
+## Built-in rules: content deferred
+
+The user explicitly defers deciding which built-in rules to include and their exact wording.
+The previously proposed catalogue is withdrawn from the active design, not accepted or rejected rule by rule.
+Do not select a count, names, identities, or membership now.
+
+The settled architecture requires multiple general-agent built-in rules in addition to effective authored rules.
+Every built-in will receive its own first-pass question with the same four choices:
+`approve`, `deny`, `ask`, and `not-applicable`.
+Every first pass includes all built-ins alongside all effective authored rules; code does not select a useful subset.
+The identities and rule text are unspecified inputs to this architecture until that design work is resumed.
+Reversibility remains an accepted assessment principle; it does not finalize a particular built-in rule.
+
+Continue reviewing the stages, snapshot, aggregation, and human feedback without deciding the built-in catalogue.
+
 ## Settled stages
 
 ### Stage 0: effective rules on every Pi start
@@ -267,23 +282,6 @@ B is a literal cap on historical input but can lose the instruction needed to as
 Ranking: A > B because recency alone does not make the original request obsolete.
 Neither API user-role feedback nor compaction entries count as a new human request.
 
-### Q5 revised: built-ins assess effects and recovery
-
-The earlier scope-versus-coverage options are withdrawn.
-The proposed built-in questions now operationalize the accepted reversibility baseline:
-
-- What state does this group affect, and do its concrete effects permit routine automatic execution?
-- Can changed state be restored from an available prior state without losing existing human work?
-- Does the group have external or shared consequences that restoration would not undo?
-- Is the recovery effort and resource exposure established well enough to proceed automatically?
-- Does the group comply with explicit human restrictions and decisions that remain applicable?
-
-Each is evaluated using the same four answer choices, with question wording that asks for the disposition
-under the stated condition, rather than a free-form effects report.
-Usefulness and task context can guide investigation without turning every unmentioned intermediate step into a veto.
-The precise prompts and effect evidence need scenario qualification;
-they must approve the cross-package and recoverable-experiment examples when their stated conditions hold.
-
 ### Q6: preparation timing for sequential groups
 
 Installed Pi 1.3.0 prepares and executes A, then prepares and executes B.
@@ -306,7 +304,8 @@ The patch mechanism remains an engineering qualification, not this user decision
 ## Dependency tree after this round
 
 Q1 and Q2 unlock numeric boundaries and final reduction acceptance examples.
-The accepted reversibility baseline guides deterministic catalogues and built-in semantic fixtures.
+The accepted autonomy baseline guides behavioral examples.
+Catalogue-specific fixtures wait until built-in rule design is resumed; the catalogue is not part of this round.
 Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
 Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
 and retention using concrete designs and their measured constraints.
@@ -317,19 +316,22 @@ Do not present later dependent choices as settled merely because the flow is now
 
 The former question selector contradicted the stated architecture;
 the earlier scarcity question also inferred a constraint from incomplete evidence.
-These are proposed edits, not modifications to `AGENTS.md`:
+These are proposed edits, not modifications to `AGENTS.md`.
+The built-in correction adds a preservation requirement to the proposed `QPM` tightening:
 
 - Tighten `VHI` to:
   “Handoffs state purpose, changes, inspection, and response.
   Show architecture choices with verified HTML diagrams and examples,
   open them in the requested browser, and explain labels.”
 - Tighten `QPM` to:
-  “Before asking which mechanism, test the constraint against settled requirements and plausible designs.
-  Measure facts. Do not reopen a settled choice through an invented mechanism.”
+  “Test questions against settled requirements.
+  A correction to one criterion must preserve the other requirements.
+  Measure facts; ask only unresolved choices.”
 
 The scope correction also motivates a proposed tightening of the existing `AUT` guidance:
-“Execute the requested action with ordinary reversible supporting work, including cross-package tests.
-Do not equate a different package with unauthorized work. Honor explicit restrictions.”
+“Autonomy includes reversible supporting work, including cross-package tests.
+A different package is not scope expansion.
+Honor explicit limits and leave undecided product choices to the user.”
 This is a proposal, not an edit to `AGENTS.md`.
 
 The missing ask explanation also exposes a diagnostic-guidance gap.
@@ -391,7 +393,9 @@ Keep feedback provenance separate from genuine incoming human requests.
 
 Purpose: immediate parsed checks, answer admission, and group reduction in ordinary code.
 Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
-Q1 and Q2 determine score admission; actual effects and reversibility determine shortcut conditions.
+Q1 and Q2 determine score admission.
+Deterministic approval must establish actual effects and recovery properties while satisfying other applicable checks;
+it cannot bypass applicable rules once they are defined. No specific built-in catalogue is selected here.
 No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
 Validate answer attribution, expected labels, finite probabilities, normalization, and leading-choice consistency.
 Accept irrelevant response metadata; do not require optional confidence or usage fields that reduction does not consume.
@@ -797,6 +801,40 @@ Its Approve/Stop examples passed with and without reasons, including literal mar
 The updated panel fits a 390-pixel viewport and has no page errors or console messages.
 The older `staged-manual-dark.png` shows the prior manual example;
 the other screenshots without the `staged-` or `explained-ask-` prefixes document the superseded review.
+
+The reversibility revision passed all four scenarios, six navigation targets,
+all 12 remaining answer options, both manual decisions with and without reasons,
+form validation, literal-text handling, text selection, and keyboard activation.
+All 21 remaining controls measured at least 48 pixels in both dimensions.
+The scenarios passed in light and dark mode; all sections fit a 390-pixel viewport without horizontal overflow.
+Page error and console records were empty.
+The verified review was reopened in Helium at the worked examples.
+
+Current correction evidence:
+[cross-package tests](ground-up-rebuild-review/reversibility-scenario-tests-dark.png),
+[destructive test effects](ground-up-rebuild-review/reversibility-scenario-scope-dark.png),
+[autonomy baseline](ground-up-rebuild-review/reversibility-q3-dark.png),
+[effects and recovery checks](ground-up-rebuild-review/reversibility-q5-dark.png),
+and [focused recovery questions](ground-up-rebuild-review/reversibility-adaptive-light.png).
+The older `staged-q3`, `staged-q5`, and exact-package test screenshots are superseded historical evidence.
+These checks verify the review artifact; no replacement plugin has been implemented or qualified.
+
+The distinct built-in catalogue was subsequently verified in both color schemes and at 390-pixel width.
+All seven named criteria render, and the first-pass diagram explicitly includes the complete catalogue.
+The seven navigation links, four scenarios, 12 answer options, manual decisions, form branches,
+text handling, and keyboard behavior passed again after adding the catalogue navigation.
+All 22 controls meet the 48-pixel minimum; page error and console records are empty.
+Historical catalogue evidence, withdrawn from the active review when the user deferred its contents:
+[dark](ground-up-rebuild-review/builtin-catalogue-dark.png),
+[light](ground-up-rebuild-review/builtin-catalogue-light.png),
+and [complete first pass](ground-up-rebuild-review/builtin-first-pass-dark.png).
+These screenshots record an unaccepted proposal, not the active design.
+The current HTML shows only the plural-rule interface with contents deferred.
+
+After deferral, the simplified panel was checked in light and dark mode and at 390-pixel width.
+Rendered state contains no proposed catalogue entries and retains the four unrelated architecture questions.
+Its navigation works, it has no horizontal overflow, and page error and console records are empty.
+The updated interface was reopened in Helium.
 
 ## Inspected sources
 
