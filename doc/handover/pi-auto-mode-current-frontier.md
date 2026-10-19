@@ -6,6 +6,30 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Controlled replay B completes 36 groups, zero tool errors, no approval dialog, normal exit zero/signal null.
+  Three post-GC samples are 271,912,280 to 271,933,368 bytes, reproducing run A's continued warmed growth.
+  Its private heap snapshot is 254,001,162 bytes; bounded analysis succeeds with the positive retained-array control.
+  Redacted strong paths reach large `chunks` backing arrays through SessionManager's constructed-input reader,
+  `retainContent`, and the content store's `contents` Map. This is a concrete retention path, not yet a causal fix.
+  Current request and last-review bodies also retain about 7.4 MB each.
+  Analysis receipt: scratch `retained-heap-analysis-repeat-b-final-latest.json`, output `gyayjW`.
+- A discriminating lint probe separates Node assertions from genuinely unsafe JavaScript.
+  Both default and named Node assertions are error-typed with the current TS-only project;
+  a private default project including JavaScript with `allowJs` removes those findings while preserving
+  the intentional unsafe member/return findings. An equivalent TypeScript file also resolves Node correctly.
+  Passing a separate config through Oxlint's import-resolution `--tsconfig` flag did not fix the program context.
+  The production remedy must retain declaration checks; private probes disabled `isolatedDeclarations` only
+  because TypeScript disallows combining it with JavaScript input. No production config has changed.
+- Native MiMo commits `520a947723`, exactly five paths: generic typed owner, SDK-derived contracts,
+  MJS entry facade, artifact factory types and the existing declaration generator.
+  Its checkpoint reports 21 warnings/46 errors in scope and six type errors, so it is not qualified.
+  Root approved its exact five-path checkpoint commit through RPC using existing commit authorization;
+  automatic review had left this operation unresolved. Record this manual intervention in consumer evidence.
+  The next native assignment fixes types and splits the owner; source retains its test ownership.
+- Candidate `phase-identity-clean` at frozen `f42d8884d0` passes both builds and full types.
+  A mistakenly broad lint invocation ran the whole package instead of the intended three-file scope;
+  its 10,999 warnings/86 errors are a whole-package snapshot, not a scoped phase result.
+  Correct the invocation and retain the original build logs because the matrix summary is overwritten per call.
 - Source MiMo commits `937954199a`: four files, four lifetime cases plus five rebuilt fault controls,
   nine total, with the actual nine-case consumer passing. Its reported scope has 103 warnings/zero errors.
   Main rejects its rationale for fifteen new regex suppressions: test error-message matchers are not
