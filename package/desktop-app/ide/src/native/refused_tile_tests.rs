@@ -124,7 +124,8 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
 
 /// A tile the shaper cuts to the raster limit is stamped with the clip it was cut to:
 /// the window compares that stamp to the inputs it would paint with now,
-/// and a stamp of the clip that was asked for would discard every cut tile, however fresh.
+/// and a stamp of the clip that was asked for would discard every cut tile,
+/// however fresh.
 #[test]
 fn a_tile_cut_by_the_shaper_is_stamped_with_the_clip_it_was_cut_to() {
     let (_project, opened) = open(&mixed(6000));
