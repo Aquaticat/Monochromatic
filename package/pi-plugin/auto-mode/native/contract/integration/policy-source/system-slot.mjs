@@ -2,13 +2,10 @@
 export {
   PolicySlotBindingError,
   readPolicyInput,
-  readSystemPolicyInput,
   assertPolicyInput,
-  assertSystemPolicyInput,
   readAuthorityRegistration,
   readHostPromptInput,
   bindPolicyCollector,
   bindPolicySessionCollector,
-  createGoverningPolicyLoader,
-  createSystemPolicyLoader
+  createGoverningPolicyLoader
 } from './system-slot.ts';

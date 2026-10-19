@@ -17,7 +17,7 @@ import {bindReadablePolicyFiles} from './readable-policy-files.mjs';
 //region The loader owns mutable input publication and its exact native resource binding.
 /**
  Extend the existing resource owner with an actual policy-capture-to-input link.
- The fixed override hands the same capture occurrence to the native system slot.
+ The governing context emitter links its original policy capture to the native context.
  Other resource inputs are preserved, not removed to manufacture coverage.
  */
 export function createPolicyLoaderState({
@@ -26,7 +26,6 @@ export function createPolicyLoaderState({
   policy,
   authority,
   customPromptAuthority,
-  systemSlot,
   readSessionConstructedInputs,
   readResourceToolInputs,
   readResourceToolOrigin,
@@ -41,9 +40,9 @@ export function createPolicyLoaderState({
  const options=copyOptions(inputOptions);
  const registration=copyAuthorityRegistration(authority);
  const hostRegistration=copyAuthorityRegistration(customPromptAuthority);
- if(hostRegistration&&(systemSlot||((typeof options.systemPrompt)!=='string')
+ if(hostRegistration&&(((typeof options.systemPrompt)!=='string')
    ||(options.systemPromptOverride!==undefined)))throw new PolicySlotBindingError('Host prompt authority requires explicit systemPrompt text without a replacement callback');
- const hostPrompt=(!systemSlot)&&((typeof options.systemPrompt)==='string')
+ const hostPrompt=((typeof options.systemPrompt)==='string')
    &&(options.systemPromptOverride===undefined)?Object.freeze({
    kind:'bootstrap-host-custom-prompt',
    content:options.systemPrompt,
@@ -53,29 +52,18 @@ export function createPolicyLoaderState({
    occurrence:Object.freeze({}),
    registration:hostRegistration
  }):undefined;
- if(systemSlot&&((options.systemPromptOverride!==undefined)||(options.systemPrompt!==undefined)))throw new PolicySlotBindingError('An existing system override cannot be silently replaced');
  const inputState={
   binding:undefined,
   contextPublication:undefined,
-  emission:undefined,
   failure:undefined,
   loader:undefined,
   retainedResourceReceipts:Object.freeze([])
  };
- const contextEmitter=systemSlot?undefined:createGoverningContextEmitter({
+ const contextEmitter=createGoverningContextEmitter({
    callback:options.agentsFilesOverride,
    readSource:function captureDesignatedPolicy() { return (owner.captureGoverningPolicy(inputState.loader)); }
  });
- function systemPromptOverride(previous){
-  const source=owner.captureGoverningPolicy(inputState.loader);
-  if((previous!==undefined)&&(previous!==source.content))throw new PolicySlotBindingError('Existing native system instructions cannot be removed to qualify this source profile');
-  inputState.emission=Object.freeze({source});
-  return source.content;
- }
- inputState.loader=owner.create(systemSlot?{
-   ...options,
-   systemPromptOverride
- }:{
+ inputState.loader=owner.create({
    ...options,
    agentsFilesOverride:contextEmitter.emit
  });
@@ -116,27 +104,15 @@ export function createPolicyLoaderState({
   }catch(error){inputState.failure={cause:error};throw error;}
  }
  async function reload(options){
-  inputState.binding=undefined;inputState.emission=undefined;inputState.failure=undefined;inputState.contextPublication=undefined;
-  contextEmitter?.reset();
+  inputState.binding=undefined;inputState.failure=undefined;inputState.contextPublication=undefined;
+  contextEmitter.reset();
   await inputState.loader
     .reload(options);
   const frame=readBoundResourceFrame({
     binding:nativeBinding,
     loader:inputState.loader
   });
-  if(systemSlot){
-   if((!inputState.emission)||(owner.captureGoverningPolicy(inputState.loader)
-     !==inputState.emission
-     .source))throw new PolicySlotBindingError('System input did not retain its selected policy capture');
-   const system=frame.stages
-     .find(function isReloadedSystemStage(value) { return (value.kind==='system'); });
-   if(system?.after
-     !==inputState.emission
-     .source
-     .content)throw new PolicySlotBindingError('Published system input differs from the owner-captured policy');
-  }
-  const source=systemSlot?inputState.emission
-    .source:owner.captureGoverningPolicy(inputState.loader);
+  const source=owner.captureGoverningPolicy(inputState.loader);
   let relevance;
   let relevanceFailure;
   if(policy.relevance){
@@ -153,7 +129,7 @@ export function createPolicyLoaderState({
   }
   const system=frame.stages
     .find(function isResourceSystemStage(value) { return (value.kind==='system'); });
-  const resourceSystemInput=systemSlot||hostPrompt
+  const resourceSystemInput=hostPrompt
     ||(system.after===undefined)?undefined:Object.freeze({
     kind:'native-resource-system-input',
     content:system.after,
@@ -164,7 +140,7 @@ export function createPolicyLoaderState({
     registration:undefined,
     pathToRawFileIdentity:'not-established'
   });
-  inputState.contextPublication=contextEmitter?.publish({
+  inputState.contextPublication=contextEmitter.publish({
     nativeBinding,
     loader:inputState.loader,
     frame,
@@ -180,13 +156,6 @@ export function createPolicyLoaderState({
   const context=frame.stages
     .find(function isResourceContextStage(value) { return (value.kind==='context'); }); const append=frame.stages
       .find(function isResourceAppendStage(value) { return (value.kind==='append'); });
-  const singleCarrier=systemSlot&&(context?.after
-    .agentsFiles
-    .length
-    ===0)
-    &&(append?.after
-      .length
-      ===0);
   const appendInputs=Object.freeze(append.after
     .map(function captureResourceAppendInput(
       content,
@@ -256,9 +225,9 @@ export function createPolicyLoaderState({
     contextCarriers,
     priorContext:inputState.contextPublication
       ?.prior,
-    slot:systemSlot?'customPrompt':'governing-policy',
-    singleCarrier,
-    sourceOccurrenceLinked:systemSlot,
+    slot:'governing-policy',
+    singleCarrier:false,
+    sourceOccurrenceLinked:false,
     otherInstructionCoverage:'not-established',
     permission:false
   });

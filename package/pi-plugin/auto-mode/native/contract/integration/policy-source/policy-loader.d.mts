@@ -5,7 +5,7 @@
  */
 /** Original policy binding carries the placement profile label the capability owner reads. */
 export type PolicyInputBinding = {
-  readonly slot: 'customPrompt' | 'governing-policy';
+  readonly slot: 'governing-policy';
 };
 /** Loader publication state promises exactly the members its factory freezes on every normal path. */
 export type PolicyLoaderState = {
@@ -34,10 +34,8 @@ export type PolicyLoaderConfiguration = {
   readonly readSessionDomainEvents?: unknown;
 };
 /**
- Build one loader-owned publication state for the selected placement profile.
+ Build one loader-owned publication state for the governing-policy publication.
 
- @param input - original loader configuration and the placement profile selector
+ @param input - original loader configuration
  */
-export function createPolicyLoaderState(input: PolicyLoaderConfiguration & {
-  readonly systemSlot: boolean;
-}): PolicyLoaderState;
+export function createPolicyLoaderState(input: PolicyLoaderConfiguration): PolicyLoaderState;

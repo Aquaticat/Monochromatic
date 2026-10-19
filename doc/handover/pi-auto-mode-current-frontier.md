@@ -113,6 +113,22 @@ complete phase catalog,
 construction and complete session-input aggregate.
 The old-artifact retired-export assertion fails its named case as the required positive control.
 Main-worktree adoption still awaits the separate read-only consumer trace.
+That trace is now delivered by `9Tl0ts` and independently agrees with retirement.
+It checks source and actual built export surfaces,
+reflective consumers,
+requirements,
+parallel paths,
+TODOs and suppressions,
+and distinguishes ordinary host custom prompts from selected-policy-as-system placement.
+The additional prompt-capacity,
+run-history,
+event-receipt and startup-relevance catalogs pass on unchanged `Lyoq9R`.
+The guarded adoption now copies exactly the six qualified paths into the main worktree,
+after comparing every destination against frozen `2362c1124ce9` to preserve concurrent edits.
+Root dist and both worker runtimes remain unchanged.
+Next assign the native worker the real `policy-loader.ts` implementation port
+and removal of the temporary declaration;
+reject a duplicate reader/adapter layer or implementation growth merely to clear lint.
 
 The recovered source worker reaches clean types and ten-file zero-warning/zero-error lint,
 but its first complete phase catalog exits one.

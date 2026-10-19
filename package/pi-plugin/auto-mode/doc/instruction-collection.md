@@ -58,6 +58,50 @@ to the native session collector.
 `native/contract/lifecycle/rule-relevance-cache` retains relevance estimates by original rule content.
 The decision review consumes selected original excerpts rather than complete hidden provider requests.
 
+## One governing-policy loader
+
+`native-host/resources.ts` and `native-batch/environment.mjs` use `createGoverningPolicyLoader`.
+The owner captures the selected project policy,
+publishes it through the governing context emitter,
+and revalidates the original resource frame and policy capture before use.
+The loader retains ordinary host custom prompts,
+resource system inputs,
+appendices,
+context files and receipt inputs independently of that selected policy.
+Neither prompt placement nor observation supplies instruction authority.
+
+An unused alternative copied the selected policy into the native system slot.
+Its `createSystemPolicyLoader`,
+`readSystemPolicyInput` and `assertSystemPolicyInput` exports had no product caller,
+package export,
+reflective consumer or documented capability requirement.
+Source and built-entry traces establish that scope before removal.
+The retirement removes that selector,
+replacement callback,
+emission state,
+reload verification and carrier-selection arm.
+It preserves `customPromptAuthority`,
+ordinary host text,
+resource system-input selection and the existing binding layout constants.
+The remaining `system-slot` filename is historical;
+its maintained interface owns the governing-policy capability.
+
+The disposable retirement candidate passes fresh JavaScript/native builds,
+types,
+the typed interface's zero-warning/zero-error lint,
+identity and opacity checks,
+host isolation,
+source-binding capacity,
+the complete phase catalog,
+construction and session-input catalogs.
+Prompt capacity,
+retained run history,
+event receipts and startup relevance also pass on that unchanged candidate.
+The new retired-export assertion fails against the old artifact before rebuilding,
+demonstrating that the consumer observes the intended removal.
+The temporary loader declaration still describes an unported implementation;
+retiring that declaration requires the implementation's own typed port.
+
 This module exists because text alone does not identify its source,
 scope,
 or current version.

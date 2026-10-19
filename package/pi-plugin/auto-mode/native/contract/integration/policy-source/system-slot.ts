@@ -138,29 +138,6 @@ export function readPolicyInput(input: unknown): PolicyInputBinding {
 }
 
 /**
- Require the actual system-input carrier when proving system-message placement.
-
- @param input - original policy-input capability
-
- @returns original policy binding carrying the system placement profile
-
- @throws PolicySlotBindingError when the binding is not a system-prompt carrier
-
- @example
- ```ts
- const system = readSystemPolicyInput(policyInput);
- ```
- */
-export function readSystemPolicyInput(input: unknown): PolicyInputBinding {
-  /**
-   Original binding read through {@link readPolicyInput}.
-   */
-  const value = readPolicyInput(input);
-  if (value.slot !== 'customPrompt') throw new PolicySlotBindingError('Original policy input is not a system-prompt carrier');
-  return value;
-}
-
-/**
  Revalidate through the original ownership map; copied methods cannot mint a link.
 
  @param input - original policy-input capability and its earlier binding
@@ -181,25 +158,6 @@ export function assertPolicyInput({
 }): void {
   stateFor(input)
     .assertCurrent(binding);
-}
-
-/**
- Revalidate the system placement carrier through the same original owner.
-
- @param input - original policy-input capability and its earlier binding
-
- @throws PolicySlotBindingError when the binding is not this state's current one
-
- @example
- ```ts
- assertSystemPolicyInput({ input: policyInput, binding });
- ```
- */
-export function assertSystemPolicyInput(input: {
-  readonly input: unknown;
-  readonly binding: unknown;
-}): void {
-  assertPolicyInput(input);
 }
 
 /**
@@ -305,27 +263,5 @@ export function bindPolicySessionCollector({
  ```
  */
 export function createGoverningPolicyLoader(input: PolicyLoaderConfiguration): PolicyInputCapability {
-  return issuePolicyInput(createPolicyLoaderState({
-    ...input,
-    systemSlot: false
-  }));
-}
-
-/**
- Feed the same policy capture through a fixed system callback for the narrow placement profile.
-
- @param input - original owner, options, designation and fixed native readers
-
- @returns original policy-input capability for the system placement profile
-
- @example
- ```ts
- const systemInput = createSystemPolicyLoader({ owner, options, policy, authority, customPromptAuthority });
- ```
- */
-export function createSystemPolicyLoader(input: PolicyLoaderConfiguration): PolicyInputCapability {
-  return issuePolicyInput(createPolicyLoaderState({
-    ...input,
-    systemSlot: true
-  }));
+  return issuePolicyInput(createPolicyLoaderState(input));
 }

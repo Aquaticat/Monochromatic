@@ -54,11 +54,9 @@ const resource: object = loadedResource;
 /** Public operations accept either the capability or their original aggregate argument. */
 const readers = [
   { name: 'readPolicyInput', field: undefined },
-  { name: 'readSystemPolicyInput', field: undefined },
   { name: 'readAuthorityRegistration', field: undefined },
   { name: 'readHostPromptInput', field: undefined },
   { name: 'assertPolicyInput', field: 'binding' },
-  { name: 'assertSystemPolicyInput', field: 'binding' },
   { name: 'bindPolicyCollector', field: 'context' },
   { name: 'bindPolicySessionCollector', field: 'session' },
 ] as const;
@@ -109,6 +107,13 @@ await describe({
   concurrency: 1,
   children: [
     it({
+      name: 'keeps unused system-placement operations outside the native module surface',
+      fn: async function retiredSystemProfile() {
+        for (const name of ['createSystemPolicyLoader', 'readSystemPolicyInput', 'assertSystemPolicyInput'])
+          assert.equal(Reflect.has(policy, name), false);
+      },
+    }),
+    it({
       name: 'keeps capability operations out of implicit property enumeration',
       fn: async function opaqueEnumeration() {
         assert.deepEqual(Object.keys(input), []);
@@ -134,9 +139,6 @@ await describe({
         assert.equal(Object.isFrozen(input), true);
         assert.equal(invoke({ namespace: policy, name: 'readPolicyInput', argument: input }), binding);
         assert.equal(invoke({ namespace: policy, name: 'assertPolicyInput', argument: { input, binding } }), undefined);
-        assert.throws(function wrongPlacement() {
-          invoke({ namespace: policy, name: 'readSystemPolicyInput', argument: input });
-        }, { name: 'PolicySlotBindingError', message: 'Original policy input is not a system-prompt carrier' });
         assert.throws(function foreignBinding() {
           invoke({ namespace: policy, name: 'assertPolicyInput', argument: { input, binding: {} } });
         }, { name: 'PolicySlotBindingError', message: 'Policy input link is not this loader original binding' });
