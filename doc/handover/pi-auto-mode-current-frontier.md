@@ -17,6 +17,13 @@ Work is incomplete. Continue the queue without another readiness handoff.
   and actual abort prevents execution. The queued-text immediate-stop assumption is retracted.
   Next: finish delivery controls, align phase tests with that contract, and repeat final coherent host verification
   after the remaining package changes. Live MiMo runtime artifacts remain immutable.
+  Primary-delivery guard controls now detect all three rebuilt faults: restored old category gate,
+  dropped native steering delivery and dropped native follow-up delivery; restored build and both delivery cases pass.
+  Receipt: `inflight-input-delivery-final-controls-results.json`, complete=true, candidate `zn5ROv` at `984834983e`.
+  A separate timing window remains under investigation: input arriving during Luna review,
+  which the old `steer-user` phase expectation treats as withholding.
+  The new `test:native:inflight-assessment-input` uses real SDK delivery during the assessment response;
+  qualify it against the unchanged freshness guards before changing that implementation.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.

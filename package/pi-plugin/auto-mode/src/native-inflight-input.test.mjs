@@ -7,6 +7,8 @@ import { createDomainFixtureRuntime } from '../dist/native/contract/integration/
 //region The genuine SDK captures incoming call, event and queue receipts before its original response returns.
 const method = process.argv[2];
 assert.ok(['steer', 'followUp'].includes(method));
+const phase = process.argv[3] ?? 'primary';
+assert.ok(['primary', 'assessment'].includes(phase));
 const marker = 'Original inflight supervisor fixture data, not new permission.';
 const settings = {
   text: 'The complete proposed local inspection is permitted.',
@@ -42,9 +44,17 @@ runtime = createDomainFixtureRuntime({
       }
       return;
     }
-    assert.equal(delivered, false);
-    delivered = true;
-    await session[method](marker);
+    if (phase === 'primary') {
+      assert.equal(delivered, false);
+      delivered = true;
+      await session[method](marker);
+    }
+  },
+  async beforeAssessmentResponse() {
+    if (phase === 'assessment' && !delivered) {
+      delivered = true;
+      await session[method](marker);
+    }
   },
 });
 await using cleanup = {
@@ -73,5 +83,5 @@ const latest = runtime.inspect();
 assert.equal(latest.lastReview.outcome.state, 'resolved');
 assert.equal(latest.lastReview.outcome.verdict, 'approve');
 assert.equal(latest.lastReview.inputs.requestObservation.request.body, observations.originalBody);
-console.log(JSON.stringify({ inflightInput: method, executions: observations.executions, assessments: observations.assessments }));
+console.log(JSON.stringify({ inflightInput: method, phase, executions: observations.executions, assessments: observations.assessments }));
 //endregion The genuine SDK captures incoming call, event and queue receipts before its original response returns.
