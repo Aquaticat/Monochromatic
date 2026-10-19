@@ -934,8 +934,8 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
-    `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landing:
-    pending). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
+    `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
+    `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
     Dylint gate are landed (their bullets). The owner wants the minimap to stay crisp, never replaced by rectangles,
     and to be merely a zoomed-out reflection of the main window; the owner chose "downscale the real rendering": the
     window's own glyph rendering with selection, find matches, diagnostics and virtual rows, shrunk to the minimap
@@ -948,9 +948,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     the track, building only the bands near the view; the huge dark surfaces (editor, minimap, sidebar) become
     pure OLED black so the picture needs no gain, and the exact area average stays; edits are not rare (the
     files change under the reader), so a change must re-render only the bands it touches.
-    State on 2026-10-19, finished by the agent after a shutdown, a resume and the owner's second round (landing stays
-    pending: the coordinator lands and installs; nothing is pushed or installed, `origin/main` was merged cleanly at
-    `1c4f9c7a30` and changed nothing in the IDE).
+    State on 2026-10-19, finished by the agent after a shutdown, a resume and the owner's second round (then landed:
+    the coordinator reran `lint:rustfmt`, `lint:clippy`, `lint:release`, `lint:closures` and `lint:slint` (exit 0),
+    `test` (807 passed, 1 skipped) and `test:native` (211 passed, 5 skipped) after merging `origin/main`, reran eight
+    of the new guard cases (all three phases accepted), viewed the screenshots, and installed the release build;
+    the installed binary was not launched, the previous one is `~/.local/bin/monochromatic-ide.previous`).
     Design (done): `src/minimap/` is `downscale.rs` (exact fractional area averaging, separable, f32, rows of a
     picture with an origin, edge rows shared unrounded), `plan.rs` (bands on a fixed pixel grid at multiples of
     `band_step`, at most 4 MiB), `key.rs` (content keys: FNV-1a digests of a band's text and clipped style spans,
