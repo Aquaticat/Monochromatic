@@ -1,0 +1,132 @@
+# Current CI baseline register
+
+Status:
+implementation work item 1,
+opened 2026-10-18.
+This register records what the current static,
+unit and build profiles actually do.
+It is not a passing baseline.
+No profile here is a gate.
+
+## Pinned revision and owner map
+
+The baseline revision is `4f3d5a65a776355f55d32e1334109c05debfaa09`.
+The worktree was clean for the measurement aside from dependencies.
+The owner map at that revision is 225 package directories,
+210 active,
+13 paused and 2 archived,
+with 14,301 tracked files.
+The source-owned task declarations are 2,600,
+expanded by `mise` to 2,464 records.
+The evaluation's 223,
+208,
+13,860 and 2,425 counts are historical for its frozen cohort.
+They are not a current starting scope.
+
+## Static profile
+
+Command:
+`mise run lint:monochromatic-lint`.
+Exit code: 1.
+Affected files:
+1,046.
+Findings:
+85,719.
+The dominant classes are:
+
+- `markdown/semantic-line-breaks`:
+  81,700.
+- `rust/require-rustdoc`:
+  2,077.
+- `markdown/no-bare-urls`:
+  1,894.
+- `rust/max-lines`: 27.
+- `markdown/heading-increment`: 5.
+- `markdown/no-trailing-punctuation`: 4.
+- `markdown/link-image-style`: 3.
+- `markdown/link-image-reference-definitions`: 2.
+- `markdown/fenced-code-language`: 2.
+- `markdown/single-h1`: 1.
+
+Exact per-finding identities are in
+[the compressed static log](../audit/depot-current-baseline-static-2026-10-18.log.gz).
+Disposition:
+the fast static subset is changed-path scoped.
+The whole-tree result is an advisory baseline,
+not a gate.
+The selector and the exact lint configuration are work item 2.
+
+## Unit profile
+
+Command:
+`mise run test:unit`.
+Exit code: 1.
+Named failing test files: 751.
+The exact repository-relative file identities are in
+[the unit failure list](../audit/depot-current-baseline-unit-files-2026-10-18.json).
+The raw log is in
+[the compressed unit log](../audit/depot-current-baseline-unit-2026-10-18.log.gz).
+Observed failure classes include 354 `Unexpected token ... is not valid JSON` errors and
+94 AggregateErrors.
+The first named failures are in `package/pi-shared/model-selection`:
+`budget-override.unit.test.ts` and `budget-report.unit.test.ts`.
+The JSON-parse class points at harness or fixture output,
+not at product assertions alone.
+No unit case is converted to a pass by this register.
+
+Disposition:
+triage the 751 identities by cause (product assertion,
+harness JSON parse,
+environment or resource),
+then decide which classes belong in the fast subset.
+This is work item 1 and its acceptance artifact.
+
+## Build profile
+
+Command:
+`mise run build`.
+Exit code: 1.
+Failed tasks:
+
+- `//package/config/lfs-r2-worker:build:js:browser`.
+- `//package/cli/wg-allowedips:build:js`.
+- `//package/dev-script/file-enforcer:build:js`.
+- `//package/dev-script/task-util:build:js`.
+
+Observed errors include `rolldown exited with non-zero status: killed by SIGABRT`,
+`node exited with non-zero status: killed by SIGABRT` and
+`Assertion failed: (0) == (uv_thread_create(t.get(), start_thread, this))`.
+The raw log is in
+[the compressed build log](../audit/depot-current-baseline-build-2026-10-18.log.gz).
+
+Disposition:
+the SIGABRT and thread-creation results are consistent with host-resource or
+concurrency pressure under the parallel fanout.
+They are not attributed to product source.
+The bounded rerun with reduced fanout is required before any build failure is classified.
+
+## Triage queue
+
+1.  Re-run the build with reduced concurrency and capture per-task logs.
+    Classify each failed task as product,
+    harness,
+    environment or resource.
+2.  Partition the 751 unit failures by cause.
+    Separate the 354 JSON-parse errors and 94 AggregateErrors from product assertions.
+3.  Select the changed-path static selector and its exact lint rules.
+    Confirm the whole-tree baseline remains advisory.
+4.  Record the refreshed owner map and the three baselines in the implementation evidence.
+5.  Set the relative target baseline from these measurements;
+    do not claim a speed target from a
+    failed baseline.
+
+## Acceptance and limits
+
+Acceptance:
+every observed failure class has a disposition,
+the baseline commands reproduce the
+recorded exit codes,
+and the exact identities are linked.
+This register does not claim product failure attribution,
+complete coverage or a passing CI state.
+It records the state the rollout starts from.
