@@ -79,16 +79,22 @@ pull request and manual dispatch.
 
 ### 3. Admission, caps and fallback
 
-Not implemented.
+Partial.
 
-- The user reports the product caps are configured;
-  values are not recorded.
-- Documented caps exist for container build minutes and GitHub Actions runner minutes.
-- Native CI,
-  Tests and storage caps are not documented as configurable.
-- The reservation ledger,
-  public-GitHub fallback rule and graceful-degradation implementation are
-  not built.
+- [The admission ledger](depot-admission-ledger.md) and
+  [its machine-readable state](depot-admission-ledger.json) record the active plan,
+  both allowance sets,
+  the configured-cap statement,
+  the documented gaps,
+  the fallback matrix,
+  the recovery rule and the reservation schema.
+- The USD 200 capacity ceiling,
+  no-overage rule and storage stop are recorded.
+- The executable dispatch gate is part of work item 4,
+  the weekly native matrix.
+  It is not built yet.
+- The ledger attempts array is empty;
+  no paid profile has been admitted.
 
 ### 4. Weekly native matrix
 

@@ -180,12 +180,13 @@ moving to Developer is a user action.
 
 ## Next action
 
-Start work item 3:
-admission,
-caps and fallback.
-Read the status,
-plan,
-adoption decision and baseline register first.
+Work item 3 policy and ledger are recorded in
+[the admission ledger](../planning/depot-admission-ledger.md) and
+[its JSON state](../planning/depot-admission-ledger.json).
+The executable dispatch gate is part of work item 4.
+Next:
+build the weekly native matrix gate from the ledger,
+then exercise the first admitted reservation and record the attempt.
 Use bounded CI for any build or unit measurement.
 Do not run local full builds.
 Do not enable overage or raise a cap automatically.
