@@ -20,7 +20,6 @@
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "nano-spawn": "catalog:",
     "type-fest": "catalog:"
   },
   "type": "module",
