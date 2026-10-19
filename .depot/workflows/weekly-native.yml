@@ -114,11 +114,15 @@ jobs:
       - name: Install VM prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-utils
+          sudo apt-get install -y --no-install-recommends qemu-utils libvirt-clients libvirt-daemon-system
+          sudo chmod 666 /dev/kvm || true
+          sudo -u "$USER" /usr/sbin/libvirtd --session --daemon || true
       - name: VM and desktop consumer
         id: vm
         continue-on-error: true
         timeout-minutes: 25
+        env:
+          LIBVIRT_DEFAULT_URI: qemu:///session
         run: mise run //package/cli/vmsync:test:e2e
       - name: Write evidence
         if: always()

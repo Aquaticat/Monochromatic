@@ -1,5 +1,5 @@
 {
-  "id": "weekly-native-2026-10-19-r4",
+  "id": "weekly-native-2026-10-19-r5",
   "profile": "weekly-native-matrix",
   "provider": "depot-native",
   "meters": {
@@ -11,5 +11,5 @@
   },
   "reservedUsd": 10,
   "hasGithubEquivalent": true,
-  "used": true
+  "used": false
 }
