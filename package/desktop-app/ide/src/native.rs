@@ -158,11 +158,6 @@ mod language;
 mod minimap;
 /// The minimap's worker thread.
 mod minimap_build;
-/// The minimap's geometry,
-/// picture,
-/// and pointer paths.
-#[cfg(test)]
-mod minimap_tests;
 /// The minimap's picture is the average of the window's own pixels,
 /// for plain text,
 /// selections,
@@ -171,6 +166,11 @@ mod minimap_tests;
 /// and diagnostics.
 #[cfg(test)]
 mod minimap_reflection_tests;
+/// The minimap's geometry,
+/// picture,
+/// and pointer paths.
+#[cfg(test)]
+mod minimap_tests;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.

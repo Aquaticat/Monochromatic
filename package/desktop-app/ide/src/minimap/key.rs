@@ -1,22 +1,34 @@
 //! What a kept unit of the picture is valid for.
 //!  A unit is rendered again only when its key differs:
-//!  the text and its classes, the palette, the geometry of the picture,
-//!  and the overlays that touch the lines it renders (the selection, the matches, the annotations).
+//!  the text and its classes,
+//! the palette,
+//! the geometry of the picture,
+//!  and the overlays that touch the lines it renders (the selection,
+//! the matches,
+//! the annotations).
 
 /// The geometry and the fill inks.
 use super::fills::Fills;
-/// A piece names its lines, clip and stretch.
+/// A piece names its lines,
+/// clip and stretch.
 use super::render::{Scene, blocks_between, marks_between};
 /// The pieces of a unit.
 use super::unit::Unit;
 /// Hints and diagnostics are compared by value.
 use crate::annotation::Mark;
+/// The annotation inks.
 use crate::annotation_layout::AnnotationColors;
+/// The matches of the in-file find.
 use crate::find::FindRange;
+/// The matches that touch a stretch of characters.
 use crate::find_navigation::visible;
+/// Which text a picture is for.
 use crate::language::identity::DocumentStamp;
+/// The glyph palette.
 use crate::text_raster::CodeColors;
+/// Blocks of virtual rows.
 use crate::virtual_row::Block;
+/// Ranges of characters and shared blocks.
 use std::{ops::Range, sync::Arc};
 
 /// What:
@@ -69,7 +81,10 @@ pub struct Shared {
 
 /// What:
 ///  What one piece renders:
-///  the lines, the clip, the stretch, the heights of the lines,
+///  the lines,
+/// the clip,
+/// the stretch,
+/// the heights of the lines,
 ///  and the overlays that touch them.
 /// Why:
 ///  The overlays are compared as the band would draw them,

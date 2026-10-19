@@ -1,8 +1,12 @@
 //! The serving loop of the minimap worker:
-//!  it takes the newest request, builds its picture in the quick and the full pass,
+//!  it takes the newest request,
+//! builds its picture in the quick and the full pass,
 //!  and keeps the rendered units between requests.
 
-/// The job, the key, the reply, and the thread name.
+/// The job,
+/// the key,
+/// the reply,
+/// and the thread name.
 use super::{Job, Reply};
 /// Typography comparison shared with the tile worker.
 use crate::native::tile_build::same_typography;
@@ -96,7 +100,8 @@ impl ReplySink for ChannelSink<'_> {
 ///  and the units of the last picture.
 /// Why:
 ///  A change of typography replaces the shaper and empties the cache;
-///  another file or other classes empty the shaper's rows, which carry the classes' inks.
+///  another file or other classes empty the shaper's rows,
+/// which carry the classes' inks.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,12 +1,16 @@
 //! Rendering one band of the text exactly as the window renders a tile:
 //!  the same shaping at the same wrap width and scale,
-//!  the same rows, glyphs, virtual rows and underlines,
+//!  the same rows,
+//! glyphs,
+//! virtual rows and underlines,
 //!  and the markup's selection and match fills behind them.
 
-/// Which stretch of lines a band renders.
-use super::plan::Band;
 /// The markup's fills behind the glyphs.
 use super::fills::{Fills, paint_fills};
+/// Which stretch of lines a band renders.
+use super::plan::Band;
+/// Diagnostic marks.
+use crate::annotation::Mark;
 /// Hints and diagnostic marks that touch a band's lines.
 use crate::annotation::Visible;
 /// The positioning of hints and messages beside the rows.
@@ -28,8 +32,9 @@ use crate::source_style::StyleSpan;
 use crate::text_raster::{CodeColors, TextRaster};
 /// Blocks of virtual rows and diagnostics are the annotations of a band.
 use crate::virtual_row::Block;
-use crate::annotation::Mark;
+/// A band that cannot be rendered is an error with the reason.
 use anyhow::{Result, bail};
+/// Blocks are shared between the window and the worker.
 use std::sync::Arc;
 
 /// What:
@@ -141,8 +146,10 @@ pub fn marks_between(marks: &[Mark], start: usize, end: usize) -> Vec<Mark> {
 ///  Render `band` of `scene`.
 /// Why:
 ///  This is `build_tile` with a clip:
-///  it prepares the frame, adds the matches and annotations of its lines,
-///  draws the fills, and paints the glyphs over them.
+///  it prepares the frame,
+/// adds the matches and annotations of its lines,
+///  draws the fills,
+/// and paints the glyphs over them.
 ///
 /// # Errors
 /// The shaper had to cut the frame to the raster limit,

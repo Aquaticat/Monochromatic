@@ -88,8 +88,8 @@ impl Canvas<'_> {
         for row in cell.top.max(0)..cell.bottom.min(self.height) {
             for column in cell.left.max(0)..cell.right.min(self.width) {
                 let at = ((row * self.width + column) * 4) as usize;
-                for channel in 0..3 {
-                    let source = (u32::from(color[channel]) * alpha + 127) / 255;
+                for (channel, ink) in color.iter().take(3).enumerate() {
+                    let source = (u32::from(*ink) * alpha + 127) / 255;
                     let below = (u32::from(self.bytes[at + channel]) * inverse + 127) / 255;
                     self.bytes[at + channel] = (source + below).min(255) as u8;
                 }
@@ -106,8 +106,20 @@ impl Canvas<'_> {
         let thick = width.max(1);
         let inner_top = (cell.top + thick).min(cell.bottom);
         let inner_bottom = (cell.bottom - thick).max(inner_top);
-        self.fill(Cell { bottom: inner_top, ..cell }, color);
-        self.fill(Cell { top: inner_bottom, ..cell }, color);
+        self.fill(
+            Cell {
+                bottom: inner_top,
+                ..cell
+            },
+            color,
+        );
+        self.fill(
+            Cell {
+                top: inner_bottom,
+                ..cell
+            },
+            color,
+        );
         let left = Cell {
             top: inner_top,
             bottom: inner_bottom,
@@ -131,7 +143,8 @@ fn faded(color: [u8; 4], opacity: f32) -> [u8; 4] {
     return [color[0], color[1], color[2], alpha];
 }
 
-/// The pixels of `rectangle`, in logical pixels of the text,
+/// The pixels of `rectangle`,
+/// in logical pixels of the text,
 /// in a raster whose top is `origin` logical pixels down the text,
 /// at `scale`:
 /// edges rounded to the nearest pixel.
@@ -156,7 +169,8 @@ fn cell_of(rectangle: &ReadingRect, origin: f32, scale: f32, grow: (f32, f32, f3
 ///  The markup draws a selection rectangle in the selection fill,
 ///  then each other match as a translucent foreground fill with a thin boundary over it,
 ///  and the glyphs over both;
-///  a band does the same, so the glyphs painted next land on the same pixels the window shows.
+///  a band does the same,
+/// so the glyphs painted next land on the same pixels the window shows.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -174,7 +188,12 @@ pub fn paint_fills(bytes: &mut [u8], size: (u32, u32), view: &ShapedView, fills:
         canvas.fill(cell, fills.selection);
         if fills.boundary {
             // The boundary sits just outside the character cells, two pixels to each side.
-            let outer = cell_of(rectangle, view.origin, scale, (ACTIVE_BOUNDARY_WIDTH, 0.0, 0.0));
+            let outer = cell_of(
+                rectangle,
+                view.origin,
+                scale,
+                (ACTIVE_BOUNDARY_WIDTH, 0.0, 0.0),
+            );
             let width = (ACTIVE_BOUNDARY_WIDTH * scale).round() as i64;
             canvas.outline(outer, width, fills.foreground);
         }

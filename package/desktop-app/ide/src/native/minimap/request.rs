@@ -25,6 +25,7 @@ use crate::native::{
 };
 /// The matches the window paints.
 use ide_app::find::FindRange;
+/// The match list the find paints.
 use ide_app::find_navigation::paint_ranges;
 /// The inks of the selection and match fills.
 use ide_app::minimap::Fills;
@@ -110,7 +111,10 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         find,
         active: active.map(range_pair),
         annotations: current.annotations.version(),
-        inks: (fills_of(window, active.is_some()), annotation_colors(window)),
+        inks: (
+            fills_of(window, active.is_some()),
+            annotation_colors(window),
+        ),
     });
 }
 

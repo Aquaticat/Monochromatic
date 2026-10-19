@@ -1,5 +1,7 @@
 //! The units a picture is built from.
-//!  A unit is what is rendered, reduced, and kept together:
+//!  A unit is what is rendered,
+//! reduced,
+//! and kept together:
 //!  an exact unit is one band of consecutive text;
 //!  a sampled unit is one output row of a squeezed picture,
 //!  made of a few code rows picked evenly from the text that row stands for.

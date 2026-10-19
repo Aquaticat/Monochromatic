@@ -1,7 +1,12 @@
 //! The minimap's picture without a window:
-//!  the plan of bands, the picture as the box average of one frame of the whole text,
-//!  the fills of the selection and the matches, the cache, the budgets, a band that fails,
-//!  a long text that is sampled, and a build that is cancelled.
+//!  the plan of bands,
+//! the picture as the box average of one frame of the whole text,
+//!  the fills of the selection and the matches,
+//! the cache,
+//! the budgets,
+//! a band that fails,
+//!  a long text that is sampled,
+//! and a build that is cancelled.
 
 /// Diagnostics are marks of a range with a severity.
 use ide_app::annotation::Mark;
@@ -15,9 +20,12 @@ use ide_app::find::FindRange;
 use ide_app::find_paint::rectangles;
 /// Severity of a diagnostic.
 use ide_app::language::diagnostics::Severity;
+use ide_app::language::identity::DocumentStamp;
 /// The lines' visual rows.
 use ide_app::line_rows::LineRows;
-/// The picture, its plan, and its parts.
+/// The picture,
+/// its plan,
+/// and its parts.
 use ide_app::minimap::{
     BAND_BYTES, Built, Cache, Cancel, Density, FULL_WORK, Fills, Geometry, Identity, Input, Pass,
     Picture, Reducer, Reduction, SAMPLES, Scene, Strip, band_height, build, full_density,
@@ -31,7 +39,6 @@ use ide_app::shaped_text::{TextShaper, Viewport, line_work, raster_fits, raster_
 use ide_app::source_style::StyleSpan;
 /// The painter and its palette.
 use ide_app::text_raster::{CodeColors, MAX_RASTER_BYTES, TextRaster};
-use ide_app::language::identity::DocumentStamp;
 
 /// The dark scheme's palette of the tests.
 const DARK: CodeColors = CodeColors {
@@ -232,7 +239,9 @@ fn picture(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> Built {
 ///  reduced in one strip:
 ///  the independent reference of the banded build.
 /// Why:
-///  The bands, the stitch, and the cache are all absent from it.
+///  The bands,
+/// the stitch,
+/// and the cache are all absent from it.
 fn whole_frame(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> (Vec<u8>, usize, usize) {
     let scene = fixture.scene(fills);
     let scale = fixture.scale;
@@ -314,20 +323,26 @@ fn bands_cover_the_text_exactly_and_stay_within_their_budget() {
                 let mut edge = 0.0_f32;
                 let mut line = 0;
                 for (index, band) in bands.iter().enumerate() {
-                    assert_eq!(band.span.start, edge, "band {index} starts where the last ended");
+                    assert_eq!(
+                        band.span.start, edge,
+                        "band {index} starts where the last ended"
+                    );
                     assert!(band.span.end > band.span.start);
-                    assert!(band.first >= line, "a band never starts before the line of the band before it");
+                    assert!(
+                        band.first >= line,
+                        "a band never starts before the line of the band before it"
+                    );
                     line = band.first;
                     assert_eq!(band.last, index + 1 == bands.len());
-                    let rows = ((band.clip.bottom - band.clip.top) * scale).ceil() as u64;
+                    let band_rows = ((band.clip.bottom - band.clip.top) * scale).ceil() as u64;
                     // A window so wide that the shortest band passes the budget gets the shortest band.
                     let shortest = columns * 4 * (4.0 * CODE_ROW * scale).ceil() as u64;
                     assert!(
-                        columns * rows * 4 <= BAND_BYTES.max(shortest),
+                        columns * band_rows * 4 <= BAND_BYTES.max(shortest),
                         "band {index} holds {} bytes",
-                        columns * rows * 4
+                        columns * band_rows * 4
                     );
-                    assert!(raster_fits(columns, rows));
+                    assert!(raster_fits(columns, band_rows));
                     assert!(
                         band.clip.top >= 0.0 && band.clip.top < band.clip.bottom,
                         "band {index} has a clip {:?}",
@@ -354,7 +369,10 @@ fn bands_cover_the_text_exactly_and_stay_within_their_budget() {
 
 /// The picture is the box average of the window's own rendering:
 /// the banded build equals the reduction of one frame of the whole text,
-/// with a selection, find matches, wrapped lines, and a diagnostic,
+/// with a selection,
+/// find matches,
+/// wrapped lines,
+/// and a diagnostic,
 /// at scale one and two.
 #[test]
 fn the_picture_is_the_box_average_of_one_frame_of_the_whole_text() {
@@ -390,8 +408,14 @@ fn the_picture_is_the_box_average_of_one_frame_of_the_whole_text() {
         };
         let built = picture(&fixture, fills, 900.0, 110.0);
         let (expected, width, height) = whole_frame(&fixture, fills, 900.0, 110.0);
-        assert_eq!((built.width as usize, built.height as usize), (width, height));
-        assert!(built.stats.rendered > 1, "the picture is made of several bands");
+        assert_eq!(
+            (built.width as usize, built.height as usize),
+            (width, height)
+        );
+        assert!(
+            built.stats.rendered > 1,
+            "the picture is made of several bands"
+        );
         assert_eq!(built.stats.failed + built.stats.skipped, 0);
         let worst = worst_difference(&built.bytes, &expected);
         assert!(
@@ -410,8 +434,22 @@ fn the_picture_is_the_box_average_of_one_frame_of_the_whole_text() {
             }
         }
         assert!(inked > 100, "scale {scale}: only {inked} inked pixels");
-        assert!(blue > 5, "scale {scale}: the selection fill reaches {blue} pixels");
+        assert!(
+            blue > 5,
+            "scale {scale}: the selection fill reaches {blue} pixels"
+        );
     }
+}
+
+/// How many pixels of `bytes` are the opaque selection fill of the tests.
+fn selection_fill(bytes: &[u8]) -> usize {
+    let mut found = 0;
+    for pixel in bytes.chunks(4) {
+        if pixel[..3] == [30, 90, 200] && pixel[3] == 255 {
+            found += 1;
+        }
+    }
+    return found;
 }
 
 /// The selection's fill lies under the glyphs in a band,
@@ -427,25 +465,20 @@ fn the_selection_fill_is_drawn_under_the_glyphs_of_a_band() {
     let plain = render(&mut shaper, &mut raster, &fixture.scene(FILLS), &band).expect("a band");
     fixture.select(0, 12);
     let selected = render(&mut shaper, &mut raster, &fixture.scene(FILLS), &band).expect("a band");
-    let fill = |bytes: &[u8]| -> usize {
-        let mut found = 0;
-        for pixel in bytes.chunks(4) {
-            if pixel[..3] == [30, 90, 200] && pixel[3] == 255 {
-                found += 1;
-            }
-        }
-        return found;
-    };
-    assert_eq!(fill(&plain.bytes), 0, "no selection, no fill");
+    assert_eq!(selection_fill(&plain.bytes), 0, "no selection, no fill");
     assert!(
-        fill(&selected.bytes) > 12 * 6 * 10,
+        selection_fill(&selected.bytes) > 12 * 6 * 10,
         "the selected characters have {} pixels of the fill",
-        fill(&selected.bytes)
+        selection_fill(&selected.bytes)
     );
     // The fill is only behind the first row: the pixels below the first code row hold none.
     let row_bytes = selected.width * 4;
     let below = &selected.bytes[(CODE_ROW as usize + 2) * row_bytes..];
-    assert_eq!(fill(below), 0, "the fill stops with the selected characters");
+    assert_eq!(
+        selection_fill(below),
+        0,
+        "the fill stops with the selected characters"
+    );
 }
 
 /// An unchanged picture is taken whole from the cache,
@@ -461,8 +494,16 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 400.0, 110.0);
         let prepared = prepare(&input, Pass::Full);
-        build(&mut shaper, &mut raster, &input, &prepared, Some(&mut cache), FULL_WORK, &Never)
-            .expect("a picture")
+        build(
+            &mut shaper,
+            &mut raster,
+            &input,
+            &prepared,
+            Some(&mut cache),
+            FULL_WORK,
+            &Never,
+        )
+        .expect("a picture")
     };
     assert_eq!(first.stats.reused, 0);
     assert!(first.stats.rendered > 3);
@@ -472,8 +513,16 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 400.0, 110.0);
         let prepared = prepare(&input, Pass::Full);
-        build(&mut shaper, &mut raster, &input, &prepared, Some(&mut cache), FULL_WORK, &Never)
-            .expect("a picture")
+        build(
+            &mut shaper,
+            &mut raster,
+            &input,
+            &prepared,
+            Some(&mut cache),
+            FULL_WORK,
+            &Never,
+        )
+        .expect("a picture")
     };
     assert_eq!(again.stats.rendered, 0);
     assert_eq!(again.stats.reused, first.stats.units);
@@ -484,8 +533,16 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 400.0, 110.0);
         let prepared = prepare(&input, Pass::Full);
-        build(&mut shaper, &mut raster, &input, &prepared, Some(&mut cache), FULL_WORK, &Never)
-            .expect("a picture")
+        build(
+            &mut shaper,
+            &mut raster,
+            &input,
+            &prepared,
+            Some(&mut cache),
+            FULL_WORK,
+            &Never,
+        )
+        .expect("a picture")
     };
     assert!(selected.stats.rendered >= 1);
     assert!(
@@ -494,7 +551,10 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
         selected.stats.rendered,
         first.stats.units
     );
-    assert_eq!(selected.stats.rendered + selected.stats.reused, first.stats.units);
+    assert_eq!(
+        selected.stats.rendered + selected.stats.reused,
+        first.stats.units
+    );
     assert_ne!(selected.bytes, first.bytes, "the selection shows");
     // A new palette changes every unit (positive control for the cache keys).
     let recolored = {
@@ -505,8 +565,16 @@ fn only_the_units_whose_inputs_changed_are_rendered_again() {
         };
         let input = fixture.input(scene, 400.0, 110.0);
         let prepared = prepare(&input, Pass::Full);
-        build(&mut shaper, &mut raster, &input, &prepared, Some(&mut cache), FULL_WORK, &Never)
-            .expect("a picture")
+        build(
+            &mut shaper,
+            &mut raster,
+            &input,
+            &prepared,
+            Some(&mut cache),
+            FULL_WORK,
+            &Never,
+        )
+        .expect("a picture")
     };
     assert_eq!(recolored.stats.reused, 0);
     assert_eq!(recolored.stats.rendered, first.stats.units);
@@ -524,28 +592,62 @@ fn a_unit_the_budget_cannot_pay_keeps_the_rows_of_the_last_picture() {
         let scene = fixture.scene(FILLS);
         let input = fixture.input(scene, 300.0, 110.0);
         let prepared = prepare(&input, Pass::Full);
-        build(&mut shaper, &mut raster, &input, &prepared, Some(&mut cache), FULL_WORK, &Never)
-            .expect("a picture")
+        build(
+            &mut shaper,
+            &mut raster,
+            &input,
+            &prepared,
+            Some(&mut cache),
+            FULL_WORK,
+            &Never,
+        )
+        .expect("a picture")
     };
     // Another selection changes the keys, but no work is allowed.
     fixture.select(0, 30);
     let scene = fixture.scene(FILLS);
     let input = fixture.input(scene, 300.0, 110.0);
     let prepared = prepare(&input, Pass::Full);
-    let kept = build(&mut shaper, &mut raster, &input, &prepared, Some(&mut cache), 0, &Never)
-        .expect("a picture");
+    let kept = build(
+        &mut shaper,
+        &mut raster,
+        &input,
+        &prepared,
+        Some(&mut cache),
+        0,
+        &Never,
+    )
+    .expect("a picture");
     assert!(kept.stats.skipped >= 1, "the budget skipped nothing");
     assert_eq!(kept.stats.rendered, 0);
-    assert_eq!(kept.bytes, before.bytes, "the rows of the last picture stay");
+    assert_eq!(
+        kept.bytes, before.bytes,
+        "the rows of the last picture stay"
+    );
     // Without a last picture the skipped units are transparent, and the build still answers.
     let mut empty = Cache::new();
-    let blank = build(&mut shaper, &mut raster, &input, &prepared, Some(&mut empty), 0, &Never)
-        .expect("a picture");
-    assert!(blank.bytes.iter().all(|byte| *byte == 0));
+    let blank = build(
+        &mut shaper,
+        &mut raster,
+        &input,
+        &prepared,
+        Some(&mut empty),
+        0,
+        &Never,
+    )
+    .expect("a picture");
+    let mut all_blank = true;
+    for byte in &blank.bytes {
+        if *byte != 0 {
+            all_blank = false;
+        }
+    }
+    assert!(all_blank, "the skipped units are transparent");
 }
 
 /// A band whose frame the shaper must cut to the raster limit cannot be rendered:
-/// the render says so, and a build counts every such unit and still answers.
+/// the render says so,
+/// and a build counts every such unit and still answers.
 #[test]
 fn a_band_that_cannot_be_rendered_is_counted_and_leaves_the_picture_standing() {
     let mut fixture = fixture(8, 400.0, 1.0);
@@ -588,8 +690,16 @@ fn a_long_text_is_sampled_within_the_track_and_never_passes_the_raster_limit() {
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     let quick = prepare(&input, Pass::Quick);
-    let coarse = build(&mut shaper, &mut raster, &input, &quick, None, FULL_WORK, &Never)
-        .expect("a coarse picture");
+    let coarse = build(
+        &mut shaper,
+        &mut raster,
+        &input,
+        &quick,
+        None,
+        FULL_WORK,
+        &Never,
+    )
+    .expect("a coarse picture");
     assert_eq!(coarse.height, 240);
     assert!(
         coarse.stats.lines <= 240,
@@ -597,8 +707,16 @@ fn a_long_text_is_sampled_within_the_track_and_never_passes_the_raster_limit() {
         coarse.stats.lines
     );
     let prepared = prepare(&input, Pass::Full);
-    let full = build(&mut shaper, &mut raster, &input, &prepared, None, FULL_WORK, &Never)
-        .expect("a picture");
+    let full = build(
+        &mut shaper,
+        &mut raster,
+        &input,
+        &prepared,
+        None,
+        FULL_WORK,
+        &Never,
+    )
+    .expect("a picture");
     assert!(full.stats.lines <= 240 * SAMPLES);
     assert!(full.stats.lines >= 240 * SAMPLES / 2);
     assert_eq!(full.stats.failed + full.stats.skipped, 0);
@@ -609,7 +727,10 @@ fn a_long_text_is_sampled_within_the_track_and_never_passes_the_raster_limit() {
             inked += 1;
         }
     }
-    assert!(inked > 1000, "the sampled picture holds only {inked} inked pixels");
+    assert!(
+        inked > 1000,
+        "the sampled picture holds only {inked} inked pixels"
+    );
     // The coarse and the full picture are estimates of the same average.
     let mut coarse_sum = 0_u64;
     let mut full_sum = 0_u64;
@@ -673,11 +794,21 @@ fn a_cancelled_build_answers_nothing() {
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     assert!(
-        build(&mut shaper, &mut raster, &input, &prepared, None, FULL_WORK, &Always).is_none()
+        build(
+            &mut shaper,
+            &mut raster,
+            &input,
+            &prepared,
+            None,
+            FULL_WORK,
+            &Always
+        )
+        .is_none()
     );
 }
 
-/// A very tall window at both scales: the picture is as tall as its track,
+/// A very tall window at both scales:
+/// the picture is as tall as its track,
 /// and no band passes the band budget.
 #[test]
 fn a_tall_view_gives_a_picture_as_tall_as_its_track_within_the_budget() {
@@ -690,8 +821,16 @@ fn a_tall_view_gives_a_picture_as_tall_as_its_track_within_the_budget() {
             let mut shaper = TextShaper::new();
             let mut raster = TextRaster::new();
             let prepared = prepare(&input, Pass::Full);
-            build(&mut shaper, &mut raster, &input, &prepared, None, FULL_WORK, &Never)
-                .expect("a picture")
+            build(
+                &mut shaper,
+                &mut raster,
+                &input,
+                &prepared,
+                None,
+                FULL_WORK,
+                &Never,
+            )
+            .expect("a picture")
         };
         assert_eq!(
             built.height as usize,

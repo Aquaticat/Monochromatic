@@ -3338,7 +3338,8 @@ and `render/MainMinimap.kt`.
   for each pixel row,
   rendered whole and not cached,
   and the full picture follows it as a second reply of the same request.
-  A line past `WORK_SCAN_LIMIT` characters, or a unit the budget cannot pay,
+  A line past `WORK_SCAN_LIMIT` characters,
+  or a unit the budget cannot pay,
   or a band that fails to render,
   is not drawn blank:
   the rows the last picture held for the same place stay,

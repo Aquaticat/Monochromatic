@@ -9,7 +9,9 @@
 //!  a strip adds the share of its rows to the output rows it touches,
 //!  and the rows two strips share are completed by their sum.
 
+/// A strip of another width cannot be placed.
 use anyhow::{Result, bail};
+/// The shared rows and the ranges of rows.
 use std::{collections::BTreeMap, ops::Range};
 
 /// What:
@@ -224,15 +226,13 @@ fn round_channel(value: f32) -> u8 {
 /// Whether every byte of `row` is zero,
 /// eight bytes at a time.
 fn is_blank(row: &[u8]) -> bool {
-    let mut chunks = row.chunks_exact(8);
-    for chunk in chunks.by_ref() {
-        let mut word = [0_u8; 8];
-        word.copy_from_slice(chunk);
-        if u64::from_ne_bytes(word) != 0 {
+    let (words, rest) = row.as_chunks::<8>();
+    for word in words {
+        if u64::from_ne_bytes(*word) != 0 {
             return false;
         }
     }
-    for byte in chunks.remainder() {
+    for byte in rest {
         if *byte != 0 {
             return false;
         }

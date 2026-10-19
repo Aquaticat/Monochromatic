@@ -5,6 +5,8 @@
 //! Nothing here waits on the window thread:
 //! every wait advances timers and lets the workers answer.
 
+/// The reader fixture.
+use super::find_tests::Reader;
 /// The reader fixture,
 /// the wrapped text,
 /// and the window sizing.
@@ -14,8 +16,6 @@ use super::{
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
-/// The reader fixture.
-use super::find_tests::Reader;
 /// The limit on the size of one raster.
 use ide_app::text_raster::MAX_RASTER_BYTES;
 /// Toolkit events.

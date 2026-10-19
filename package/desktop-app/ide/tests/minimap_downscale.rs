@@ -3,7 +3,8 @@
 //!  an independent exact reference,
 //!  adversarial sizes,
 //!  alpha,
-//!  and the stitch of strips (no seam at a border, however the source is cut).
+//!  and the stitch of strips (no seam at a border,
+//! however the source is cut).
 
 /// The reduction under test.
 use ide_app::minimap::{Picture, Reducer, Reduction, Strip};
@@ -22,7 +23,8 @@ struct Image {
 
 /// Making and reading images.
 impl Image {
-    /// An image whose pixel at (`x`, `y`) is `paint(x, y)`.
+    /// An image whose pixel at (`x`,
+    /// `y`) is `paint(x, y)`.
     fn made(width: usize, height: usize, paint: fn(usize, usize) -> [u8; 4]) -> Self {
         let mut bytes = Vec::new();
         for y in 0..height {
@@ -50,10 +52,102 @@ impl Image {
     }
 }
 
-/// A pixel of the picture `bytes`, `width` columns wide.
+/// A pixel of the picture `bytes`,
+/// `width` columns wide.
 fn pixel(bytes: &[u8], width: usize, column: usize, row: usize) -> [u8; 4] {
     let at = (row * width + column) * 4;
     return [bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]];
+}
+
+/// A pixel of the solid color of the uniform field.
+fn solid(_x: usize, _y: usize) -> [u8; 4] {
+    return [200, 100, 50, 255];
+}
+
+/// A checkerboard of single pixels.
+fn checkerboard(x: usize, y: usize) -> [u8; 4] {
+    if (x + y) % 2 == 0 {
+        return [255, 255, 255, 255];
+    }
+    return [0, 0, 0, 255];
+}
+
+/// White on the left half of eight columns and black on the right.
+fn halves(x: usize, _y: usize) -> [u8; 4] {
+    if x < 4 {
+        return [255, 255, 255, 255];
+    }
+    return [0, 0, 0, 255];
+}
+
+/// One ink in a field of nothing.
+fn dot(x: usize, y: usize) -> [u8; 4] {
+    if x == 1 && y == 2 {
+        return [200, 100, 0, 200];
+    }
+    return [0; 4];
+}
+
+/// A ramp of red along the columns.
+fn ramp_across(x: usize, _y: usize) -> [u8; 4] {
+    return [(x as u8 + 1) * 10, 0, 0, 255];
+}
+
+/// A ramp of red down the rows.
+fn ramp_down(_x: usize, y: usize) -> [u8; 4] {
+    return [(y as u8 + 1) * 10, 0, 0, 255];
+}
+
+/// A gradient of both coordinates.
+fn gradient(x: usize, y: usize) -> [u8; 4] {
+    return [(x * 100 + y * 50) as u8, 0, 0, 255];
+}
+
+/// A half transparent red pixel in the first column and nothing after.
+fn half_red_first(x: usize, _y: usize) -> [u8; 4] {
+    if x == 0 {
+        return [128, 0, 0, 128];
+    }
+    return [0; 4];
+}
+
+/// Opaque white in the first column and nothing after.
+fn white_first(x: usize, _y: usize) -> [u8; 4] {
+    if x == 0 {
+        return [255, 255, 255, 255];
+    }
+    return [0; 4];
+}
+
+/// Opaque white everywhere.
+fn white(_x: usize, _y: usize) -> [u8; 4] {
+    return [255; 4];
+}
+
+/// Nothing.
+fn nothing(_x: usize, _y: usize) -> [u8; 4] {
+    return [0; 4];
+}
+
+/// The same pixel everywhere,
+/// with ink in every channel.
+fn faint(_x: usize, _y: usize) -> [u8; 4] {
+    return [9; 4];
+}
+
+/// One pixel of mixed channels.
+fn single(_x: usize, _y: usize) -> [u8; 4] {
+    return [10, 20, 30, 40];
+}
+
+/// A ramp of red that wraps every 256 columns.
+fn wide_ramp(x: usize, _y: usize) -> [u8; 4] {
+    return [(x % 256) as u8, 0, 0, 255];
+}
+
+/// Ink on every fourth row.
+fn every_fourth(_x: usize, y: usize) -> [u8; 4] {
+    return [0, 0, 0, if y % 4 == 0 { 255 } else { 0 }];
 }
 
 /// The reduction of the whole image in one strip,
@@ -132,8 +226,14 @@ fn speckle(x: usize, y: usize) -> [u8; 4] {
 /// whole numbers of pixels or not.
 #[test]
 fn a_uniform_field_keeps_its_color_at_every_ratio() {
-    let image = Image::made(37, 53, |_, _| [200, 100, 50, 255]);
-    for (width, ratio) in [(1, 1.0 / 53.0), (3, 0.37), (7, 1.0 / 6.0), (37, 1.0), (60, 0.25)] {
+    let image = Image::made(37, 53, solid);
+    for (width, ratio) in [
+        (1, 1.0 / 53.0),
+        (3, 0.37),
+        (7, 1.0 / 6.0),
+        (37, 1.0),
+        (60, 0.25),
+    ] {
         let reduction = Reduction {
             source_width: 37.0,
             width,
@@ -161,13 +261,7 @@ fn a_uniform_field_keeps_its_color_at_every_ratio() {
 /// and a half white image to half.
 #[test]
 fn known_patterns_average_to_the_values_computed_by_hand() {
-    let checker = Image::made(8, 8, |x, y| {
-        if (x + y) % 2 == 0 {
-            [255, 255, 255, 255]
-        } else {
-            [0, 0, 0, 255]
-        }
-    });
+    let checker = Image::made(8, 8, checkerboard);
     let reduction = Reduction {
         source_width: 8.0,
         width: 2,
@@ -184,15 +278,9 @@ fn known_patterns_average_to_the_values_computed_by_hand() {
         }
     }
     // The left half white, the right half black: 4 to 1 across, so the two output columns are the halves.
-    let halves = Image::made(8, 4, |x, _| {
-        if x < 4 {
-            [255, 255, 255, 255]
-        } else {
-            [0, 0, 0, 255]
-        }
-    });
-    let picture = whole(
-        &halves,
+    let split = Image::made(8, 4, halves);
+    let picture_2 = whole(
+        &split,
         Reduction {
             source_width: 8.0,
             width: 2,
@@ -200,18 +288,12 @@ fn known_patterns_average_to_the_values_computed_by_hand() {
         },
         2,
     );
-    assert_eq!(pixel(&picture, 2, 0, 0), [255, 255, 255, 255]);
-    assert_eq!(pixel(&picture, 2, 1, 0), [0, 0, 0, 255]);
+    assert_eq!(pixel(&picture_2, 2, 0, 0), [255, 255, 255, 255]);
+    assert_eq!(pixel(&picture_2, 2, 1, 0), [0, 0, 0, 255]);
     // Four source columns, one ink and three blanks: a quarter of the ink.
-    let dot = Image::made(4, 4, |x, y| {
-        if x == 1 && y == 2 {
-            [200, 100, 0, 200]
-        } else {
-            [0; 4]
-        }
-    });
-    let picture = whole(
-        &dot,
+    let speck = Image::made(4, 4, dot);
+    let picture_3 = whole(
+        &speck,
         Reduction {
             source_width: 4.0,
             width: 1,
@@ -219,14 +301,18 @@ fn known_patterns_average_to_the_values_computed_by_hand() {
         },
         1,
     );
-    assert_eq!(pixel(&picture, 1, 0, 0), [13, 6, 0, 13], "a sixteenth of the ink");
+    assert_eq!(
+        pixel(&picture_3, 1, 0, 0),
+        [13, 6, 0, 13],
+        "a sixteenth of the ink"
+    );
 }
 
 /// A ratio that is not a whole number splits the pixel on the edge:
 /// five columns into two take two and a half each.
 #[test]
 fn a_fractional_ratio_weighs_the_pixel_on_the_edge_by_its_share() {
-    let image = Image::made(5, 1, |x, _| [(x as u8 + 1) * 10, 0, 0, 255]);
+    let image = Image::made(5, 1, ramp_across);
     let picture = whole(
         &image,
         Reduction {
@@ -248,7 +334,7 @@ fn a_fractional_ratio_weighs_the_pixel_on_the_edge_by_its_share() {
 /// weighed by their share of the output row.
 #[test]
 fn a_fractional_ratio_of_rows_weighs_the_row_on_the_edge_by_its_share() {
-    let image = Image::made(1, 5, |_, y| [(y as u8 + 1) * 10, 0, 0, 255]);
+    let image = Image::made(1, 5, ramp_down);
     let picture = whole(
         &image,
         Reduction {
@@ -269,7 +355,7 @@ fn a_fractional_ratio_of_rows_weighs_the_row_on_the_edge_by_its_share() {
 /// every output pixel is the pixel it lies in.
 #[test]
 fn a_ratio_above_one_repeats_the_pixels() {
-    let image = Image::made(2, 2, |x, y| [(x * 100 + y * 50) as u8, 0, 0, 255]);
+    let image = Image::made(2, 2, gradient);
     let picture = whole(
         &image,
         Reduction {
@@ -323,7 +409,7 @@ fn the_reduction_matches_the_exact_average_of_noise() {
 /// a half transparent pixel and a transparent one make a quarter.
 #[test]
 fn alpha_is_averaged_without_weighting_by_it() {
-    let image = Image::made(2, 1, |x, _| if x == 0 { [128, 0, 0, 128] } else { [0; 4] });
+    let image = Image::made(2, 1, half_red_first);
     let picture = whole(
         &image,
         Reduction {
@@ -335,8 +421,8 @@ fn alpha_is_averaged_without_weighting_by_it() {
     );
     assert_eq!(pixel(&picture, 1, 0, 0), [64, 0, 0, 64]);
     // Opaque ink next to nothing never exceeds its alpha in any channel.
-    let ink = Image::made(3, 3, |x, _| if x == 0 { [255, 255, 255, 255] } else { [0; 4] });
-    let picture = whole(
+    let ink = Image::made(3, 3, white_first);
+    let picture_2 = whole(
         &ink,
         Reduction {
             source_width: 3.0,
@@ -345,7 +431,7 @@ fn alpha_is_averaged_without_weighting_by_it() {
         },
         3,
     );
-    for chunk in picture.chunks(4) {
+    for chunk in picture_2.chunks(4) {
         assert!(chunk[0] <= chunk[3] && chunk[1] <= chunk[3] && chunk[2] <= chunk[3]);
     }
 }
@@ -355,7 +441,7 @@ fn alpha_is_averaged_without_weighting_by_it() {
 /// the last output row of five source rows at half a row each is a third covered.
 #[test]
 fn the_rows_below_the_text_count_as_transparent() {
-    let image = Image::made(1, 5, |_, _| [255, 255, 255, 255]);
+    let image = Image::made(1, 5, white);
     let picture = whole(
         &image,
         Reduction {
@@ -367,15 +453,22 @@ fn the_rows_below_the_text_count_as_transparent() {
     );
     assert_eq!(pixel(&picture, 1, 0, 0)[3], 255);
     assert_eq!(pixel(&picture, 1, 0, 1)[3], 255);
-    assert_eq!(pixel(&picture, 1, 0, 2)[3], 128, "one of two source rows lies in the text");
+    assert_eq!(
+        pixel(&picture, 1, 0, 2)[3],
+        128,
+        "one of two source rows lies in the text"
+    );
 }
 
 /// Sizes at the edges of what a reduction is asked:
-/// nothing, one pixel, a strip a hundred thousand pixels wide, and a ratio that makes a hundred thousand rows one.
+/// nothing,
+/// one pixel,
+/// a strip a hundred thousand pixels wide,
+/// and a ratio that makes a hundred thousand rows one.
 #[test]
 fn adversarial_sizes_neither_panic_nor_lose_the_average() {
     // Zero rows, zero columns, and a reduction to no columns.
-    let empty = Image::made(0, 0, |_, _| [0; 4]);
+    let empty = Image::made(0, 0, nothing);
     let reducer = Reducer::new(
         Reduction {
             source_width: 4.0,
@@ -386,20 +479,40 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
     );
     let reduced = reducer.reduce(&empty.strip(0, 0, 0.0, 1.0), &(0.0..f64::INFINITY));
     assert_eq!(reduced.rows(), 0);
-    let blank = Image::made(3, 3, |_, _| [9; 4]);
+    let blank = Image::made(3, 3, faint);
     for bad in [
-        Reduction { source_width: 3.0, width: 0, ratio: 1.0 },
-        Reduction { source_width: 0.0, width: 1, ratio: 1.0 },
-        Reduction { source_width: f64::NAN, width: 1, ratio: 1.0 },
-        Reduction { source_width: 3.0, width: 1, ratio: 0.0 },
-        Reduction { source_width: 3.0, width: 1, ratio: f64::INFINITY },
+        Reduction {
+            source_width: 3.0,
+            width: 0,
+            ratio: 1.0,
+        },
+        Reduction {
+            source_width: 0.0,
+            width: 1,
+            ratio: 1.0,
+        },
+        Reduction {
+            source_width: f64::NAN,
+            width: 1,
+            ratio: 1.0,
+        },
+        Reduction {
+            source_width: 3.0,
+            width: 1,
+            ratio: 0.0,
+        },
+        Reduction {
+            source_width: 3.0,
+            width: 1,
+            ratio: f64::INFINITY,
+        },
     ] {
-        let reducer = Reducer::new(bad, 3);
-        let reduced = reducer.reduce(&blank.strip(0, 3, 0.0, 1.0), &(0.0..f64::INFINITY));
-        assert_eq!(reduced.rows(), 0, "{bad:?} reduces to nothing");
+        let refusing = Reducer::new(bad, 3);
+        let nothing_reduced = refusing.reduce(&blank.strip(0, 3, 0.0, 1.0), &(0.0..f64::INFINITY));
+        assert_eq!(nothing_reduced.rows(), 0, "{bad:?} reduces to nothing");
     }
     // One pixel to one pixel.
-    let one = Image::made(1, 1, |_, _| [10, 20, 30, 40]);
+    let one = Image::made(1, 1, single);
     let picture = whole(
         &one,
         Reduction {
@@ -411,8 +524,8 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
     );
     assert_eq!(pixel(&picture, 1, 0, 0), [10, 20, 30, 40]);
     // A hundred thousand columns to one: the average of a ramp.
-    let wide = Image::made(100_000, 1, |x, _| [(x % 256) as u8, 0, 0, 255]);
-    let picture = whole(
+    let wide = Image::made(100_000, 1, wide_ramp);
+    let picture_2 = whole(
         &wide,
         Reduction {
             source_width: 100_000.0,
@@ -425,10 +538,13 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
     for x in 0..100_000_u64 {
         sum += x % 256;
     }
-    assert_eq!(u64::from(picture[0]), (sum as f64 / 100_000.0).round() as u64);
+    assert_eq!(
+        u64::from(picture_2[0]),
+        (sum as f64 / 100_000.0).round() as u64
+    );
     // A hundred thousand rows to one.
-    let tall = Image::made(1, 100_000, |_, y| [0, 0, 0, if y % 4 == 0 { 255 } else { 0 }]);
-    let picture = whole(
+    let tall = Image::made(1, 100_000, every_fourth);
+    let picture_3 = whole(
         &tall,
         Reduction {
             source_width: 1.0,
@@ -437,10 +553,10 @@ fn adversarial_sizes_neither_panic_nor_lose_the_average() {
         },
         1,
     );
-    assert_eq!(picture[3], 64);
+    assert_eq!(picture_3[3], 64);
 }
 
-/// The strips two bands of a picture reduce to,
+/// The strips two bands of a picture_3 reduce to,
 /// placed together.
 fn stitched(image: &Image, reduction: Reduction, height: usize, cuts: &[usize]) -> Vec<u8> {
     let reducer = Reducer::new(reduction, image.width);
@@ -484,7 +600,9 @@ fn bands_put_together_make_the_picture_of_the_whole_without_a_seam() {
             vec![60],
             vec![7, 8, 9],
             vec![1, 2, 3, 50, 99],
-            vec![6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114],
+            vec![
+                6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114,
+            ],
             vec![10, 45, 46, 47, 118],
         ] {
             let many = stitched(&image, reduction, height, &cuts);
@@ -506,7 +624,7 @@ fn bands_put_together_make_the_picture_of_the_whole_without_a_seam() {
 fn a_strip_stretched_over_more_rows_reduces_like_the_stretched_image() {
     let small = Image::made(6, 2, speckle);
     // The same two rows, each repeated four times.
-    let mut stretched = Image::made(6, 8, |_, _| [0; 4]);
+    let mut stretched = Image::made(6, 8, nothing);
     for y in 0..8 {
         let source = y / 4;
         for x in 0..6 {
@@ -543,7 +661,7 @@ fn a_strip_stretched_over_more_rows_reduces_like_the_stretched_image() {
 /// and the picture is unchanged.
 #[test]
 fn a_strip_of_another_width_cannot_be_placed() {
-    let image = Image::made(4, 4, |_, _| [255; 4]);
+    let image = Image::made(4, 4, white);
     let reducer = Reducer::new(
         Reduction {
             source_width: 4.0,
@@ -559,5 +677,11 @@ fn a_strip_of_another_width_cannot_be_placed() {
         format!("{error}").contains("2 columns wide"),
         "the message names the widths: {error}"
     );
-    assert!(picture.finish().iter().all(|byte| *byte == 0));
+    let mut all_blank = true;
+    for byte in picture.finish() {
+        if byte != 0 {
+            all_blank = false;
+        }
+    }
+    assert!(all_blank, "a refused strip leaves the picture blank");
 }

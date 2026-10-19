@@ -8,12 +8,12 @@
 use super::cache::{Cache, Slot};
 /// The reduction of a rendered band.
 use super::downscale::{Picture, Reduced, Reducer, Reduction, Strip};
-/// What the units of a picture are valid for.
-use super::key::{Identity, Shared, UnitKey, key_of};
 /// The geometry of the track the picture covers.
 use super::geometry::Geometry;
 /// The width of the text the picture covers.
 use super::horizontal::text_span;
+/// What the units of a picture are valid for.
+use super::key::{Identity, Shared, UnitKey, key_of};
 /// Rendering one band as the window renders a tile.
 use super::render::{Rendered, Scene, render};
 /// The units of a picture.
@@ -79,7 +79,8 @@ pub enum Pass {
     /// One code row for each output row,
     /// and nothing kept.
     Quick,
-    /// Every code row, or a fixed number for each output row of a squeezed picture.
+    /// Every code row,
+    /// or a fixed number for each output row of a squeezed picture.
     Full,
 }
 
@@ -167,7 +168,9 @@ pub struct Built {
 
 /// What:
 ///  A picture's plan:
-///  its units, their keys, and the reduction that fits them to the picture.
+///  its units,
+/// their keys,
+/// and the reduction that fits them to the picture.
 /// Why:
 ///  The plan says what a build would render before anything is rendered,
 ///  so the worker can decide whether a coarse picture is worth its time.
@@ -242,7 +245,7 @@ pub fn prepare(input: &Input, pass: Pass) -> Prepared {
         width,
         ratio,
     };
-    let density = match pass {
+    let mut density = match pass {
         Pass::Quick => Density::Sampled(1),
         Pass::Full => full_density(ratio),
     };
@@ -256,7 +259,6 @@ pub fn prepare(input: &Input, pass: Pass) -> Prepared {
         ratio: ratio.to_bits(),
         width,
     };
-    let mut density = density;
     let mut planned = units(scene.map, density, (ratio, scale, columns), height);
     // A full picture samples fewer code rows for each output row when the lines it samples cost more than it may spend,
     // down to one: the whole picture is rendered thinner, never with rows left out.
@@ -309,11 +311,7 @@ impl Prepared {
 }
 
 /// The reduction of the rendered `piece`.
-fn reduce_piece(
-    prepared: &Prepared,
-    piece: &Piece,
-    rendered: &Rendered,
-) -> Result<Reduced> {
+fn reduce_piece(prepared: &Prepared, piece: &Piece, rendered: &Rendered) -> Result<Reduced> {
     let (top, step) = if piece.stretch {
         let length = piece.assigned.end - piece.assigned.start;
         (piece.assigned.start, length / rendered.height.max(1) as f64)
@@ -556,8 +554,8 @@ pub fn build(
             run.degrade(index, &reason);
         }
     }
-    if let Some(cache) = run.cache.as_deref_mut() {
-        cache.truncate(prepared.units.len());
+    if let Some(held) = run.cache.as_deref_mut() {
+        held.truncate(prepared.units.len());
     }
     let stats = run.stats;
     tracing::debug!(

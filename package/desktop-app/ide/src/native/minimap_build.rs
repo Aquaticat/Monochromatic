@@ -89,13 +89,16 @@ pub(super) static OFF_WORKER_BUILDS: AtomicU64 = AtomicU64::new(0);
 /// the palette,
 ///  the display scale,
 /// the minimap's size,
-/// and what the window draws over the text (the selection, the matches, and the annotations).
+/// and what the window draws over the text (the selection,
+/// the matches,
+/// and the annotations).
 /// Why:
 ///  A request is posted only when this changes,
 /// and a finished picture is shown only while it still describes
 ///  the displayed text;
 /// the accept rule compares its stamp with the window's.
-///  The scroll offset is none of it, because the viewport box moves in the markup.
+///  The scroll offset is none of it,
+/// because the viewport box moves in the markup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

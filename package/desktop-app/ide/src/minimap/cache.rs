@@ -1,10 +1,11 @@
-//! The units of the last picture, kept with the keys they were rendered for.
+//! The units of the last picture,
+//! kept with the keys they were rendered for.
 //!  A new picture reuses every unit whose key is unchanged and renders the others.
 
-/// The key a unit is valid for.
-use super::key::UnitKey;
 /// What a unit reduced to.
 use super::downscale::Reduced;
+/// The key a unit is valid for.
+use super::key::UnitKey;
 
 /// A unit of the last picture:
 /// its key and the rows it reduced to,

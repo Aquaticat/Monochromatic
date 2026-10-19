@@ -18,11 +18,11 @@ use ide_app::annotation_layout::AnnotationColors;
 use ide_app::find::{FindRange, FindRanges};
 /// Match ranges of the displayed find results.
 use ide_app::find_navigation::paint_ranges;
+/// The rule that gives the tallest tile for a raster width.
+use ide_app::shaped_text::tile_cap as raster_cap;
 /// Physical viewport description for shared shaping,
 ///  and the width of its raster.
 use ide_app::shaped_text::{Viewport, raster_width};
-/// The rule that gives the tallest tile for a raster width.
-use ide_app::shaped_text::tile_cap as raster_cap;
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
 /// Native palette values retain syntax and selection contrast.

@@ -307,7 +307,8 @@ fn a_press_across_the_minimap_puts_the_caret_in_the_same_share_of_the_text() {
         lift(&opened, over(window, 10.0, far));
         calm(&opened);
         assert!(
-            y < window.get_minimap_box_top() || y > window.get_minimap_box_top() + window.get_minimap_box_height(),
+            y < window.get_minimap_box_top()
+                || y > window.get_minimap_box_top() + window.get_minimap_box_height(),
             "the pressed place is outside the box"
         );
         press(&opened, over(window, width * share, y));
@@ -318,8 +319,14 @@ fn a_press_across_the_minimap_puts_the_caret_in_the_same_share_of_the_text() {
         let line = current.document.text().char_to_line(head);
         columns.push(head - current.document.text().line_to_char(line));
     }
+    let mut grows = true;
+    for pair in columns.windows(2) {
+        if pair[0] >= pair[1] {
+            grows = false;
+        }
+    }
     assert!(
-        columns.windows(2).all(|pair| pair[0] < pair[1]),
+        grows,
         "the caret columns {columns:?} do not grow across the minimap"
     );
     window.hide().expect("close minimap window");

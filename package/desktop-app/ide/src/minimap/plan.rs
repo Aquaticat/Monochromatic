@@ -2,11 +2,11 @@
 //!  consecutive stretches of the text,
 //!  each short enough that its raster at the window's width stays a small part of the raster limit.
 
-/// A clip is two distances below the first line's block.
-use crate::shaped_text::Clip;
 /// The unit the clip edges are rounded to,
 /// and the vertical mapping that says which lines a stretch holds.
 use crate::row_map::{CODE_ROW, RowMap};
+/// A clip is two distances below the first line's block.
+use crate::shaped_text::Clip;
 /// The most bytes any raster may hold.
 use crate::text_raster::MAX_RASTER_BYTES;
 /// A band's span of the text.

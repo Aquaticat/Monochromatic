@@ -4,18 +4,17 @@
 //! and the maps between a minimap position,
 //! a scroll offset,
 //!  and a visual row.
-//!  The picture has its own test files (`minimap_downscale.rs`, `minimap_picture.rs`).
+//!  The picture has its own test files (`minimap_downscale.rs`,
+//! `minimap_picture.rs`).
 
 /// The visual row counts and the map built from them.
 use ide_app::line_rows::LineRows;
 /// The geometry and its constants.
-use ide_app::minimap::{
-    Geometry, MIN_BOX, NARROWEST, Target, WIDTH, text_span, text_x, width_for,
-};
-/// The width of an unwrapped raster.
-use ide_app::shaped_text::UNWRAPPED_RASTER_WIDTH;
+use ide_app::minimap::{Geometry, MIN_BOX, NARROWEST, Target, WIDTH, text_span, text_x, width_for};
 /// The vertical mapping the minimap squeezes.
 use ide_app::row_map::{CODE_ROW, RowMap};
+/// The width of an unwrapped raster.
+use ide_app::shaped_text::UNWRAPPED_RASTER_WIDTH;
 
 /// The minimap is as wide as CodeGlance's 110 pixels,
 /// and shrinks to a sixth of a narrow view down to 15.

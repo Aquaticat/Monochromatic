@@ -13,11 +13,17 @@
 //! The picture is the window's own rendering of the text,
 //!  zoomed out.
 //!  The text is rendered in bands as the window renders a tile (`render`),
-//!  with the selection, the matches, and the annotations the window draws,
+//!  with the selection,
+//! the matches,
+//! and the annotations the window draws,
 //!  and each band is reduced to the minimap's resolution by area averaging (`downscale`),
 //!  so a minimap pixel is the average of the window's pixels it stands for.
-//!  The bands are planned (`plan`, `unit`), kept by what they were rendered for (`key`, `cache`),
-//!  and put together by `build`, which runs on a worker thread within a work budget.
+//!  The bands are planned (`plan`,
+//! `unit`),
+//! kept by what they were rendered for (`key`,
+//! `cache`),
+//!  and put together by `build`,
+//! which runs on a worker thread within a work budget.
 
 /// The picture of the whole text,
 /// built unit by unit and kept.
