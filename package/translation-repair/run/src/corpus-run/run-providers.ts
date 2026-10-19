@@ -10,7 +10,7 @@ import {
   type HyperClient,
   hyperRequestsPerHour,
   type OpenRouterClient,
-  type ProviderBudgets,
+  type ProviderBudgetsWithStates,
   type SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -64,7 +64,7 @@ export type ConfiguredProviders = {
   /**
    Shared budget view every provider is routed by.
    */
-  readonly budgets: ProviderBudgets;
+  readonly budgets: ProviderBudgetsWithStates;
 };
 
 /**

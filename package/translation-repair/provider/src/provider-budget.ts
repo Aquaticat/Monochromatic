@@ -185,6 +185,31 @@ export type ProviderBudgets = {
 };
 
 /**
+ The budget view with the meter states beside it, which is what the run
+ builds: the router needs only the view, the holds and the correction
+ (`ProviderBudgets`), and a seat reading that names how each provider reads
+ needs the states too.
+
+ @example
+ ```ts
+ const budgets: ProviderBudgetsWithStates = createProviderBudgets({ synthetic, hyper, openrouter, },);
+ ```
+ */
+export type ProviderBudgetsWithStates = ProviderBudgets & {
+  /**
+   What each meter said in the reading `read` decides on, re-reading the
+   meters when the cached one has aged out: `wet` and `dry` for a meter that
+   answered, `unreadable` for one that did not.
+
+   BESIDE THE VIEW, NOT IN IT: the view is one routed bit per provider, in
+   which an unreadable meter already counts as spendable, so a seat reading
+   that prints the bit alone prints `wet` for a meter that said nothing. A
+   hold or a payment refusal changes the routed bit and never this state.
+   */
+  readonly readStates: (args: { readonly signal: AbortSignal; },) => Promise<ProviderRecord<MeterState>>;
+};
+
+/**
  The reading before any meter has answered: nothing is dry.
 
  @returns Spendable
@@ -277,7 +302,7 @@ function unreadBeforeReading(): MeterState {
  default, since a hold read on the system clock lasted an hour longer when
  it was set back (ledger B78)
 
- @returns Budget view plus the correction a refused call feeds back
+ @returns Budget view plus the correction a refused call feeds back, and the states the meters gave
 
  @example
  ```ts
@@ -304,7 +329,7 @@ export function createProviderBudgets(
     readonly rateLimitBackoffMs?: number;
     readonly now?: () => number;
   },
-): ProviderBudgets {
+): ProviderBudgetsWithStates {
   /**
    Last meter reading and when it was taken, stamped infinitely long ago until
    the first.
@@ -610,15 +635,41 @@ export function createProviderBudgets(
     };
   }
 
-  return {
-    read: async function read({ signal, },): Promise<BudgetView> {
-      // STAMPED BEFORE THE READ IS STARTED, never after it returns. The stamp
-      // says when this reading BEGAN, so a call arriving while it is still in
-      // flight sees a fresh stamp and waits on the same promise instead of
-      // starting a second read of every meter.
-      if ((now() - cache.startedAt) >= freshForMs)
-        await readNow({ signal, },);
+  /**
+   The meter reading the cache holds, taken afresh when it has aged out.
 
+   @param signal - abort signal of the call asking
+
+   @returns Reading shared with every other call that arrived inside the same window
+
+   @example
+   ```ts
+   const { states, } = await currentReading({ signal, },);
+   ```
+   */
+  async function currentReading(
+    { signal, }: { readonly signal: AbortSignal; },
+  ): Promise<MeterReading> {
+    // STAMPED BEFORE THE READ IS STARTED, never after it returns. The stamp
+    // says when this reading BEGAN, so a call arriving while it is still in
+    // flight sees a fresh stamp and waits on the same promise instead of
+    // starting a second read of every meter.
+    if ((now() - cache.startedAt) >= freshForMs)
+      await readNow({ signal, },);
+
+    return await cache.reading;
+  }
+
+  return {
+    readStates: async function readStates({ signal, },): Promise<ProviderRecord<MeterState>> {
+      /**
+       Meter reading this call reports the states of.
+       */
+      const { states, } = await currentReading({ signal, },);
+      return states;
+    },
+
+    read: async function read({ signal, },): Promise<BudgetView> {
       /**
        Meter reading this call is decided on, shared with every other call
        that arrived inside the same window.
@@ -626,7 +677,7 @@ export function createProviderBudgets(
       const {
         view,
         levels,
-      } = await cache.reading;
+      } = await currentReading({ signal, },);
 
       // A hold can only keep a provider OUT, never bring one back in.
       return providerRecord({

@@ -1228,6 +1228,7 @@ export function runClientFrom(
       minAsks: SEAT_WITHHOLD_ASKS,
     },),
     providerDryness: budgets.read,
+    providerMeterStates: budgets.readStates,
     providerHolds: budgets.holds,
   };
 }

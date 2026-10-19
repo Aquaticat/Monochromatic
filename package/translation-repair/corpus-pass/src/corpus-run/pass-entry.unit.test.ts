@@ -840,6 +840,12 @@ function entryClient(
   },
 ): RunClient {
   return {
+    providerMeterStates: async () => ({
+      synthetic: 'wet',
+      bedrock: 'wet',
+      hyper: 'wet',
+      openrouter: 'wet',
+    } as const),
     providerHolds: () => ({
       synthetic: 0,
       bedrock: 0,

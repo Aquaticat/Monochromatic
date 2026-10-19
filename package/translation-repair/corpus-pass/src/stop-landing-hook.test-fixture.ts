@@ -4,6 +4,7 @@ import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-re
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type {
   BudgetView,
+  MeterState,
   SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
@@ -198,6 +199,25 @@ function refuseSeating<SeatingT,>(): Reseated<SeatingT> {
 }
 
 /**
+ What every meter says in these cases: all answered wet.
+
+ @returns Every meter wet
+
+ @example
+ ```ts
+ const states = await metersAllWet();
+ ```
+ */
+function metersAllWet(): Promise<ProviderRecord<MeterState>> {
+  return Promise.resolve({
+    synthetic: 'wet',
+    bedrock: 'wet',
+    hyper: 'wet',
+    openrouter: 'wet',
+  },);
+}
+
+/**
  Builds the pass's re-seat for the repair lane over a client whose dryness
  read stops the caller and then reports the editors unreachable.
 
@@ -236,6 +256,7 @@ export function stopLandingSeatReading<SeatingT,>(
   const holdReads = { count: 0, };
   return reseatHookFor<SeatingT>({
     client: {
+      providerMeterStates: metersAllWet,
       providerHolds: function holdsAsRead(): ProviderRecord<number> {
         holdReads.count += 1;
         return (holdReads.count === 1) ? HYPER_HELD : NONE_HELD;

@@ -3,6 +3,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   type BudgetView,
   HOLD_POLL_MS,
+  type MeterState,
   shortestHold,
   waitOutHold,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -15,6 +16,8 @@ import {
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   PROVIDER_ORDER,
+  type ProviderName,
+  type ProviderRecord,
   providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { RunClient, } from './run-client-contract.ts';
@@ -61,7 +64,21 @@ import {
  const client: SeatReadingClient = createRunClient();
  ```
  */
-export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHolds'>;
+export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHolds' | 'providerMeterStates'>;
+
+/**
+ The state of a meter whose states could not be read: nothing was learned.
+
+ @returns Unreadable
+
+ @example
+ ```ts
+ const meters = providerRecord({ of: unreadableMeter, },);
+ ```
+ */
+function unreadableMeter(): MeterState {
+  return 'unreadable';
+}
 
 /**
  The view when the budgets could not be read: nothing is dry.
@@ -75,6 +92,78 @@ export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHol
  */
 function wetWhenUnread(): boolean {
   return false;
+}
+
+/**
+ Names how a provider reads in the `JUDGE SEATS` line: dry when the router
+ holds it out, otherwise what its meter said, an unreadable meter spelled out
+ as the spendable provider the router treats it as.
+
+ NOT `wet` FOR A METER THAT SAID NOTHING. The routed bit counts an unreadable
+ meter as spendable (`provider-budget.ts`), which is the recorded policy and
+ stays; the line only stops claiming the meter answered. TWO WORDS, NO SPACE,
+ so each `name=state` token still reads on its own.
+
+ @param routedDry - whether the router holds the provider out, holds and payment refusals included
+
+ @param meter - what the provider's meter said
+
+ @returns The state word the line prints
+
+ @example
+ ```ts
+ const word = stateWordOf({ routedDry: false, meter: 'unreadable', },);
+ // => 'unreadable-treated-as-spendable'
+ ```
+ */
+function stateWordOf(
+  {
+    routedDry,
+    meter,
+  }: {
+    readonly routedDry: boolean;
+    readonly meter: MeterState;
+  },
+): string {
+  if (routedDry)
+    return 'dry';
+  return (meter === 'unreadable') ? 'unreadable-treated-as-spendable' : 'wet';
+}
+
+/**
+ Reads what each meter said, or that none could be read when the states
+ cannot be had.
+
+ @param client - run client whose meter states are the router's own
+
+ @param signal - entry abort
+
+ @param l - entry logger, which records a failed read
+
+ @returns What each meter said, every meter unreadable when the read failed
+
+ @example
+ ```ts
+ const meters = await readMeterStates({ client, signal, l, },);
+ ```
+ */
+async function readMeterStates(
+  {
+    client,
+    signal,
+    l,
+  }: {
+    readonly client: SeatReadingClient;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+  },
+): Promise<ProviderRecord<MeterState>> {
+  try {
+    return await client.providerMeterStates({ signal, },);
+  } catch (error) {
+    l.warn(`judge seats: the meter states could not be read (${exchangeFailureLogText({ error, },)}); naming every meter unreadable`,);
+    return providerRecord({ of: unreadableMeter, },);
+  }
 }
 
 /**
@@ -421,10 +510,23 @@ export async function readPhaseSeats(
     withheld,
   } = seats;
   /**
+   What each meter said in the reading the dryness came from.
+   */
+  const meters = await readMeterStates({
+    client,
+    signal,
+    l,
+  },);
+  /**
    Each provider's state, for the line.
    */
-  const states = PROVIDER_ORDER.map(function stateOf(provider,): string {
-    return `${provider}=${dry[provider] ? 'dry' : 'wet'}`;
+  const states = PROVIDER_ORDER.map(function stateOf(provider: ProviderName,): string {
+    return `${provider}=${
+      stateWordOf({
+        routedDry: dry[provider],
+        meter: meters[provider],
+      },)
+    }`;
   },);
   /**
    Counts of the seats the run has withheld for throwing on every ask.

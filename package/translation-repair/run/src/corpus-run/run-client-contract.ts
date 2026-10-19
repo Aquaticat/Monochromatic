@@ -1,5 +1,6 @@
 import type {
   BudgetView,
+  MeterState,
   SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -33,6 +34,18 @@ export type RunClient = SyntheticClient & {
    about where a call would go.
    */
   readonly providerDryness: (args: { readonly signal: AbortSignal; },) => Promise<BudgetView>;
+
+  /**
+   What each provider's meter said in the reading the dryness view is drawn
+   from: `wet` or `dry` for a meter that answered, `unreadable` for one that
+   did not.
+
+   READ BESIDE THE DRYNESS by `run-seats-read.ts`, so the `JUDGE SEATS` line
+   can say that a provider the router treats as spendable is one whose meter
+   said nothing, which the dryness bit alone cannot tell from a meter that
+   answered wet.
+   */
+  readonly providerMeterStates: (args: { readonly signal: AbortSignal; },) => Promise<ProviderRecord<MeterState>>;
 
   /**
    How long each provider's last refusal still holds it out, in

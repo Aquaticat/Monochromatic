@@ -187,6 +187,12 @@ function viewChangingClient(
       counter.reads += 1;
       return (counter.reads === 1) ? ALL_WET : later;
     },
+    providerMeterStates: async () => ({
+      synthetic: 'wet',
+      bedrock: 'wet',
+      hyper: 'wet',
+      openrouter: 'wet',
+    } as const),
     providerHolds: () => ({
       synthetic: held ? HOLD_MS : 0,
       bedrock: 0,

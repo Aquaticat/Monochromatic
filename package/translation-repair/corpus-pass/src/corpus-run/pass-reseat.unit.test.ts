@@ -123,6 +123,12 @@ function viewClient(
         counter.reads += 1;
         return view;
       },
+      providerMeterStates: async () => ({
+        synthetic: 'wet',
+        bedrock: 'wet',
+        hyper: 'wet',
+        openrouter: 'wet',
+      } as const),
       providerHolds: () => ({ ...holds, }),
     },
   };

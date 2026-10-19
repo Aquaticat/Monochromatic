@@ -314,8 +314,11 @@ await describe({
               signal: new AbortController().signal,
               l: levelCapturingLogger({ lines, },),
             },);
-            expect(lines.length,).toBe(1,);
-            expect(lines[0],).toContain(
+            expect(lines[0],).toBe(
+              'warn judge seats: the meter states could not be read (refused by Error); naming every meter unreadable',
+            );
+            expect(lines.length,).toBe(2,);
+            expect(lines[1],).toContain(
               'info JUDGE SEATS phase=lanes synthetic=unreadable-treated-as-spendable '
               + 'bedrock=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
               + 'openrouter=unreadable-treated-as-spendable ',

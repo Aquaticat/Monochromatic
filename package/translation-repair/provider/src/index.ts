@@ -209,6 +209,7 @@ export {
   type BudgetView,
   createProviderBudgets,
   type ProviderBudgets,
+  type ProviderBudgetsWithStates,
 } from './provider-budget.ts';
 export {
   type MeterLevel,

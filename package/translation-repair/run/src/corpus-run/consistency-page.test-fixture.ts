@@ -19,6 +19,7 @@ import type {
   BudgetView,
   ChatJsonOutcome,
   ChatJsonRequest,
+  MeterState,
 } from '@monochromatic-dev/translation-repair-provider';
 import type {
   ArtifactComparisonRow,
@@ -280,6 +281,25 @@ export type SeatScript = (
 ) => SeatBehaviour;
 
 /**
+ What every meter says when a run client is scripted: all answered wet.
+
+ @returns Every meter wet
+
+ @example
+ ```ts
+ const states = await metersAllWet();
+ ```
+ */
+function metersAllWet(): Promise<ProviderRecord<MeterState>> {
+  return Promise.resolve({
+    synthetic: 'wet',
+    bedrock: 'wet',
+    hyper: 'wet',
+    openrouter: 'wet',
+  },);
+}
+
+/**
  Holds of a client none of whose providers is held.
 
  @returns Zero hold for every provider
@@ -370,6 +390,7 @@ export function scriptedJudgeClient(
     providerDryness: function viewOfDryness(): Promise<BudgetView> {
       return Promise.resolve(dryness,);
     },
+    providerMeterStates: metersAllWet,
     providerHolds: noHolds,
     chatText: unservedCall,
     quotas: unservedCall,
