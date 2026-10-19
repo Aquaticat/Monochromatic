@@ -121,7 +121,32 @@ newer answers do not silently erase prior evidence merely because they allow exe
 
 ### Stage 5: manual decision and session feedback
 
-Offer Approve and Stop for an exact displayed group, with an optional reason for either choice.
+Every ask must give the human decision-relevant information beyond the chat transcript and `AGENTS.md`,
+which the human can already inspect.
+This applies to deterministic asks, admitted model asks, exhausted uncertainty, and review failures.
+Before the choices, explain:
+
+- The exact pending action and affected target, briefly enough to identify the decision.
+- The concrete evidence or conflicting interpretations that triggered escalation,
+  tied to the relevant rule and operation detail.
+- What remains unresolved, why automatic review could not resolve it,
+  and the particular judgment or missing fact needed from the human.
+- What Approve will permit and what Stop will prevent or abort.
+
+A transcript recap, rule dump, score alone, or generic “approve this tool call?” is not an explanation.
+Name limits of the reviewer's available context as those limits;
+do not claim the human omitted information merely because the snapshot lacks it.
+Explain only recorded evidence. Do not invent Luna's reasoning from probabilities or require private thinking.
+For unavailable review evidence, state the actual failure and which checks could not be completed.
+Keep the explanation attached to the exact snapshot and persist it with the resulting decision.
+
+Illustrative ask:
+“The upload targets workspace B. Your request specifies the approved team workspace;
+the reviewed evidence does not establish that B is that workspace.
+Approve permits this report upload to B. Stop aborts the run without uploading.
+Confirm whether B is the intended destination; you may include a reason.”
+
+Offer Approve and Stop for that explained group, with an optional reason for either choice.
 Approve records `user approved tool call ...`; Stop records `user declined tool call ...`.
 Include the group identity and supplied reason in the durable session record and model-visible session context.
 Skipping the optional reason preserves the selected decision.
@@ -264,6 +289,12 @@ These are proposed edits, not modifications to `AGENTS.md`:
   “Before asking which mechanism, test the constraint against settled requirements and plausible designs.
   Measure facts. Do not reopen a settled choice through an invented mechanism.”
 
+The missing ask explanation also exposes a diagnostic-guidance gap.
+Proposed replacement for the existing `DGT` body:
+“Diagnostics name affected inputs and calls.
+Every ask explains evidence, uncertainty, needed judgment, and each choice’s effect;
+transcript or rule repetition is insufficient. State all valid remedies.”
+
 ## Proposed high-level modules and source budgets
 
 Budgets are raw Unicode characters including types, comments, and whitespace, not measured sizes or forecasts.
@@ -309,7 +340,8 @@ Transport retries and partitioning consume explicit budget slots.
 Actual endpoint capacity must be verified with the selected effective rules and payload sizes.
 
 Subsequent questions address recorded uncertainty; contradictory results cannot be silently replaced.
-Manual decision plus optional reason is persisted and reaches model-visible continuation or resume.
+Every ask carries an evidence-backed explanation of the unresolved decision and the consequences of each choice.
+That explanation, the manual decision, and the optional reason persist into model-visible continuation or resume.
 Keep feedback provenance separate from genuine incoming human requests.
 
 ### Deterministic decision resolution: 2,000 to 4,000 characters
@@ -652,6 +684,8 @@ Use the actual effective ruleset at the expected hundred-rule scale.
 Cover early resolution, adaptive second and third batches, exhausted review, partial call failures,
 missing answers, every admitted label, and the exact probability boundaries accepted in Q1.
 Exercise the five-to-ten-unit window, original human provenance, and approval/decline reasons on resume.
+For every ask-producing branch, assert a concrete evidence-backed explanation, unresolved judgment,
+and action consequences in the actual TUI/RPC payload; a generic prompt must fail the fixture.
 Assert model-visible inclusion and exclusion using actual serialized requests.
 
 ### Connect primary review and shadow

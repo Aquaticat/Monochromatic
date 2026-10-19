@@ -6,6 +6,21 @@ Plan review is active and implementation remains stopped.
 The revised visual form is open in Helium; the current round awaits the user’s answers.
 After answers, update the decision tree and continue the next unlocked review work.
 
+### Every ask explains the decision, 2026-10-19
+
+The user requires decision-relevant information in every ask;
+the human can already see the transcript and `AGENTS.md`.
+The plan now requires the triggering evidence, exact unresolved judgment,
+why automatic review could not settle it, and the effect of Approve versus Stop.
+This covers deterministic asks, model asks, exhausted review, and failures.
+Do not substitute scores or copied context for an explanation, invent model reasoning,
+or mislabel missing reviewer context as missing human input.
+Persist the explanation with the snapshot, choice, and optional reason.
+The HTML manual example now demonstrates an upload whose destination identity is unresolved.
+This requirement does not answer the outstanding Q1 through Q6 choices or authorize implementation.
+A tightening of existing `DGT` is proposed in the plan, not applied to `AGENTS.md`.
+Next: verify the revised example, retain its screenshot, and reopen the updated review in Helium.
+
 ### User-defined staged review, 2026-10-19
 
 The latest user message replaces the proposed first-pass question selector and three-choice interpretation.
