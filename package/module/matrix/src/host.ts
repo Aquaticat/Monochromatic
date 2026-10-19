@@ -22,15 +22,18 @@ import type {
 const RUNTIME_HOST_BIN: Record<Runtime, string> = {
   bun: 'bun',
   deno: 'deno',
+  node: 'node',
 };
 
 /**
  Builds the arguments array for executing a file with the given runtime on the host.
- 
+
+ Node takes the file path directly; bun and deno select their `run` subcommand first.
+
  @param runtime - Runtime to use
- 
+
  @param filePath - Absolute path to the file on the host
- 
+
  @returns arguments array for `nano-spawn`
  */
 function runtimeArgs({
@@ -40,6 +43,10 @@ function runtimeArgs({
   readonly runtime: Runtime;
   readonly filePath: string;
 },): readonly string[] {
+  if (runtime === 'node') {
+    return [filePath,];
+  }
+
   if (runtime === 'deno') {
     return [
       'run',

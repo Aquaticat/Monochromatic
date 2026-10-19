@@ -66,8 +66,11 @@ so concurrency is safe without additional coordination.
    array of JS runtimes to install.
   Supported:
    `'bun'`,
-   `'deno'`.
+   `'deno'`,
+   `'node'`.
    Defaults to `['bun']`.
+  `'node'` is installed through mise from the repository config mounted at `/workspace`,
+  so the version comes from `mise.toml`/`mise.lock` at run time.
 
 - **`exclude`**:
    array of partial match objects to exclude from the cartesian product.
@@ -95,7 +98,7 @@ For large matrices,
 await matrix({
   os: ['container:ubuntu', 'container:fedora', 'container:alpine',],
   user: ['root', 'user',],
-  runtime: ['bun', 'deno',],
+  runtime: ['bun', 'deno', 'node',],
   concurrency: 8,
 },);
 ```
@@ -116,6 +119,45 @@ await matrix({
   runtime: ['bun',],
 },);
 ```
+
+To run a Node package's `*.unit.matrix.test.ts` files,
+select the `node` runtime:
+
+```ts
+await matrix({
+  os: ['container:ubuntu', 'container:fedora',],
+  user: ['root', 'user',],
+  runtime: ['node',],
+},);
+```
+
+The node runtime bootstraps mise with `curl -fsSL https://mise.run | sh`,
+adds `$HOME/.local/bin` to `PATH`,
+changes to `/workspace`,
+and runs
+`MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace mise install node`.
+Node's version is read from the mounted repository's `mise.toml` and `mise.lock`
+at run time;
+this package hardcodes no Node version.
+
+Test files execute as
+`MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace $HOME/.local/bin/mise exec node -- node <file>`.
+The `MISE_SOPS_STRICT=false` flag means a checkout that carries the gitignored,
+age-encrypted `.env.local.json`
+does not fail in a container that has no age key;
+the quiet flags keep progress output out of the captured UTF-8 stream.
+
+Node's official Linux builds require glibc and `libatomic`.
+Before installing Node the runner installs the distro's atomic library
+(`libatomic1` on apt,
+`libatomic` on dnf,
+`gcc-libs` on pacman).
+Alpine is rejected for the node runtime
+because its musl libc cannot load the glibc Node builds.
+
+The runner installs only Node;
+package-specific tests install tools such as `sops` and `age` themselves,
+using the same mise bootstrap.
 
 ### `host:`: direct execution
 
@@ -199,6 +241,14 @@ The package manager is detected from the distro name:
    installed via `curl -fsSL https://deno.land/install.sh | sh`;
    on host,
    must be on PATH
+- **node**:
+   in glibc containers,
+   bootstrapped through mise (`curl -fsSL https://mise.run | sh`),
+   with the version resolved from the mounted repository's
+   `mise.toml`/`mise.lock` by `mise install node`;
+   on host,
+   must be on PATH.
+   Alpine is rejected because Node's official Linux builds are glibc-only.
 
 ## What the package handles per combination
 
@@ -210,6 +260,8 @@ The package manager is detected from the distro name:
    - Install prerequisites (curl,
       unzip,
       optionally sudo and bash)
+   - Install runtime system libraries (for node:
+     the distro's atomic library)
    - If `user` context:
       create non-root user with passwordless sudo
    - Install the selected runtime
@@ -228,6 +280,8 @@ The package manager is detected from the distro name:
 - `matrix()` throws `"vm: protocol not yet implemented"` when any `os` entry uses the `vm:` protocol.
 - `parseOs` throws when the OS specification is missing a protocol prefix or uses an unknown protocol.
 - `detectPackageManager` throws when the distro name does not match any known distro.
+- `runtimeDependencyCommand` throws for the `node` runtime on an `apk` (Alpine) image,
+  naming the glibc requirement and the remedy (exclude node combinations or use a glibc distro).
 
 ## File naming convention
 

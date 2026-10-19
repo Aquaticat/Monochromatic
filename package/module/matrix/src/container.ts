@@ -9,6 +9,7 @@ import spawn from 'nano-spawn';
 import {
   detectPackageManager,
   prerequisiteCommand,
+  runtimeDependencyCommand,
   userCreationCommand,
 } from './distro.ts';
 import {
@@ -94,9 +95,11 @@ export function parseOs(os: string,): ParsedOs {
  The command sequence:
  1.  Install prerequisites (curl, unzip, optionally sudo) via
      {@link prerequisiteCommand}
- 2.  Create non-root user if needed via {@link userCreationCommand}
- 3.  Install the JS runtime via {@link runtimeInstallCommand}
- 4.  Execute each test file via {@link runtimeExecCommand}
+ 2.  Install runtime system libraries (node needs `libatomic`) via
+     {@link runtimeDependencyCommand}
+ 3.  Create non-root user if needed via {@link userCreationCommand}
+ 4.  Install the JS runtime via {@link runtimeInstallCommand}
+ 5.  Execute each test file via {@link runtimeExecCommand}
  
  For non-root users, writes a script to `/tmp/run-test.sh` and
  executes it via `sudo -u testuser -i` to avoid nested quoting issues.
@@ -106,6 +109,8 @@ export function parseOs(os: string,): ParsedOs {
  @param monorepoRoot - Absolute path to the monorepo root on the host
  
  @returns shell command string for `sh -c`
+ 
+ @throws Error when the runtime cannot run on the distro's libc
  
  @example
  ```ts
@@ -135,16 +140,30 @@ export function buildContainerCommand({
     user: combination.user,
   },);
   /**
-   Step 2: create the non-root test user when needed; empty string for root.
+   Step 2: system libraries the runtime links against; empty for bun and deno.
+   */
+  const runtimeDependencies = runtimeDependencyCommand({
+    manager,
+    runtime: combination.runtime,
+  },);
+  /**
+   Step 3: create the non-root test user when needed; empty string for root.
    */
   const userSetup = userCreationCommand({
     manager,
     user: combination.user,
   },);
   /**
-   Step 3: install the JS runtime that will execute the test file.
+   Step 4: install the JS runtime that will execute the test file.
    */
   const runtimeInstall = runtimeInstallCommand(combination.runtime,);
+  /**
+   System packages that must be installed as root before the runtime setup;
+   empty for bun and deno, so their command chains stay unchanged.
+   */
+  const runtimeDependenciesList: readonly string[] = runtimeDependencies === ''
+    ? []
+    : [runtimeDependencies,];
 
   /**
    Path to the test file inside the container (mounted at /workspace).
@@ -160,7 +179,7 @@ export function buildContainerCommand({
    */
   const containerFilePath = `/workspace/${relativePath}`;
   /**
-   Step 4: actual `runtime run <file>` invocation built from the resolved binary path.
+   Step 5: actual `runtime run <file>` invocation built from the resolved binary path.
    */
   const execCommand = runtimeExecCommand({
     runtime: combination.runtime,
@@ -183,14 +202,26 @@ export function buildContainerCommand({
       .join('\n',);
 
     /**
+     Heredoc terminator must occupy its own line, so the trailing `chmod` and
+     `sudo` commands start after it rather than being swallowed as script text.
+     */
+    const runScriptPart = [
+      `cat > /tmp/run-test.sh << 'TESTSCRIPT'`,
+      scriptLines,
+      'TESTSCRIPT',
+      'chmod +x /tmp/run-test.sh',
+      'sudo -u testuser -i /tmp/run-test.sh',
+    ]
+      .join('\n',);
+
+    /**
      Non-root variant: heredoc the inner script so `sudo -u` does not need nested quoting.
      */
     const parts = [
       prerequisites,
       userSetup,
-      `cat > /tmp/run-test.sh << 'TESTSCRIPT'\n${scriptLines}\nTESTSCRIPT`,
-      'chmod +x /tmp/run-test.sh',
-      'sudo -u testuser -i /tmp/run-test.sh',
+      ...runtimeDependenciesList,
+      runScriptPart,
     ];
 
     return parts.join(' && ',);
@@ -201,6 +232,7 @@ export function buildContainerCommand({
    */
   const parts = [
     prerequisites,
+    ...runtimeDependenciesList,
     runtimeInstall,
     'cd /workspace',
     execCommand,

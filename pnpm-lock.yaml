@@ -533,6 +533,9 @@ importers:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
+      '@monochromatic-dev/module-env-local-json':
+        specifier: workspace:*
+        version: link:../../module/env-local-json
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2553,6 +2556,40 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/env-local-json:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../fs-path
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      string-dedent:
+        specifier: 'catalog:'
+        version: 3.0.2
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-matrix':
+        specifier: workspace:*
+        version: link:../matrix
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

@@ -85,6 +85,10 @@ type SearchFetchClientOptions = {
    Optional gh-backed fetch client override for tests.
    */
   readonly ghClient?: GhClient;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -115,6 +119,10 @@ type SearchFetchClientRuntime = {
    Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -199,6 +207,10 @@ type ExaClientOptions = {
    Optional fetch implementation override for tests.
    */
   readonly fetchImpl?: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**
@@ -235,6 +247,10 @@ type ExaClientRuntime = {
    Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
+  /**
+   Optional value-free credential-store diagnostic appended to missing-key errors.
+   */
+  readonly credentialHint?: string;
 };
 
 /**

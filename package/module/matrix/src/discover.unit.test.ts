@@ -23,7 +23,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { discoverTestFiles, } from './discover.ts';
+import { discoverTestFiles, } from '../dist/final/node/index.mjs';
 
 /** Unique prefix avoids collisions with parallel test runs. */
 const TEST_DIR_PREFIX = 'matrix-discover-test';

@@ -81,6 +81,7 @@ async function postJson(
    */
   const apiKey = apiKeyForEndpoint({
     ...(runtime.apiKey === undefined ? {} : { apiKey: runtime.apiKey, }),
+    ...(runtime.credentialHint === undefined ? {} : { credentialHint: runtime.credentialHint, }),
     endpoint,
   },);
   /**
@@ -195,14 +196,17 @@ function apiKeyForEndpoint(
   {
     apiKey,
     endpoint,
+    credentialHint,
   }: {
     readonly apiKey?: string;
     readonly endpoint: string;
+    readonly credentialHint?: string;
   },
 ): string {
   if ((apiKey === undefined) || (apiKey.trim() === ''))
     throw new Error(
-      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY or linkupApiKey in pi-search-fetch.json.`,
+      `Linkup ${endpoint} missing API key. Set LINKUP_API_KEY in the environment or add it to .env.local.json.`
+        + (credentialHint === undefined ? '' : ` Credential store: ${credentialHint}`),
     );
   return apiKey;
 }

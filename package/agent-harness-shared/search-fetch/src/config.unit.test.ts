@@ -1,5 +1,5 @@
 /**
- Unit tests for Pi Search Fetch config loading.
+ Unit tests for Pi Search Fetch config loading without the encrypted store.
  
  @module
  */
@@ -7,11 +7,11 @@
 import {
   mkdir,
   mkdtemp,
-  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { dirname, join, } from 'node:path';
+
 import {
   describe,
   expect,
@@ -26,14 +26,9 @@ import {
 //region Fixtures
 
 /**
- Config API key fixture.
- */
-const CONFIG_API_KEY = 'config-key';
-
-/**
  Environment API key fixture.
  */
-const ENV_API_KEY = 'env-key';
+const ENV_API_KEY = 'env-key-sentinel';
 
 /**
  Blocklist entry fixture.
@@ -45,23 +40,30 @@ const BLOCKLIST_ENTRY = 'badwikipedia.invalid';
  */
 const INVALID_BLOCKLIST_ENTRY = 'badwikipedia.invalid:443';
 
+/**
+ Deprecated credential value sentinel.
+ */
+const DEPRECATED_SENTINEL = 'deprecated-credential-sentinel';
+
 //endregion Fixtures
 
 await describe({
   name: loadLinkupConfig.name,
   children: [
     it({
-      name: 'uses empty blocklist and no config API key when config is absent',
+      name: 'uses empty blocklist and no keys when config and store are absent',
       fn: async () => {
         /**
          Local value for home.
          */
         const home = await tempHome();
+
         /**
          Local value for config.
          */
         const config = await loadLinkupConfig({
           home,
+          cwd: home,
           env: {},
         },);
 
@@ -72,25 +74,19 @@ await describe({
       },
     },),
     it({
-      name: 'lets environment API keys beat config API keys',
+      name: 'lets environment API keys configure both providers',
       fn: async () => {
         /**
          Local value for home.
          */
         const home = await tempHome();
-        await writeConfig({
-          home,
-          value: {
-            exaApiKey: CONFIG_API_KEY,
-            linkupApiKey: CONFIG_API_KEY,
-          },
-        },);
 
         /**
          Local value for config.
          */
         const config = await loadLinkupConfig({
           home,
+          cwd: home,
           env: {
             EXA_API_KEY: ENV_API_KEY,
             LINKUP_API_KEY: ENV_API_KEY,
@@ -99,10 +95,38 @@ await describe({
 
         expect(config.exaApiKey,).toBe(ENV_API_KEY,);
         expect(config.linkupApiKey,).toBe(ENV_API_KEY,);
+        expect(config.exaApiKeyOrigin,).toBe('env',);
+        expect(config.linkupApiKeyOrigin,).toBe('env',);
       },
     },),
     it({
-      name: 'loads flat provider keys and blocklist config',
+      name: 'loads the blocklist from the Pi config',
+      fn: async () => {
+        /**
+         Local value for home.
+         */
+        const home = await tempHome();
+        await writeConfig({
+          home,
+          value: { blocklist: [BLOCKLIST_ENTRY,], },
+        },);
+
+        /**
+         Local value for config.
+         */
+        const config = await loadLinkupConfig({
+          home,
+          cwd: home,
+          env: {},
+        },);
+
+        expect(config.blocklist,).toEqual([BLOCKLIST_ENTRY,],);
+        expect(config.source.path,).toBe(configPathForHome({ home, },),);
+        expect(config.source.loaded,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'rejects a deprecated Exa credential field with the migration command',
       fn: async () => {
         /**
          Local value for home.
@@ -111,29 +135,68 @@ await describe({
         await writeConfig({
           home,
           value: {
-            exaApiKey: CONFIG_API_KEY,
-            linkupApiKey: CONFIG_API_KEY,
-            blocklist: [BLOCKLIST_ENTRY,],
+            exaApiKey: DEPRECATED_SENTINEL,
+            blocklist: [],
           },
         },);
 
         /**
-         Local value for config.
+         Local value for caught.
          */
-        const config = await loadLinkupConfig({
-          home,
-          env: {},
-        },);
+        let caught: unknown;
+        try {
+          await loadLinkupConfig({
+            home,
+            cwd: home,
+            env: {},
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
 
-        expect(config.exaApiKey,).toBe(CONFIG_API_KEY,);
-        expect(config.linkupApiKey,).toBe(CONFIG_API_KEY,);
-        expect(config.blocklist,).toEqual([BLOCKLIST_ENTRY,],);
-        expect(config.source.path,).toBe(configPathForHome({ home, },),);
-        expect(config.source.loaded,).toBe(true,);
+        expect((caught as Error | undefined)?.name,).toBe('SearchFetchMigrationRequiredError',);
+        expect((caught as Error | undefined)?.message,).toContain('exaApiKey',);
+        expect((caught as Error | undefined)?.message,).toContain('mise run secrets:migrate',);
+        expect((caught as Error | undefined)?.message,).not.toContain(DEPRECATED_SENTINEL,);
       },
     },),
     it({
-      name: 'migrates legacy config into new config path',
+      name: 'rejects a deprecated Linkup credential field',
+      fn: async () => {
+        /**
+         Local value for home.
+         */
+        const home = await tempHome();
+        await writeConfig({
+          home,
+          value: {
+            linkupApiKey: DEPRECATED_SENTINEL,
+            blocklist: [],
+          },
+        },);
+
+        /**
+         Local value for caught.
+         */
+        let caught: unknown;
+        try {
+          await loadLinkupConfig({
+            home,
+            cwd: home,
+            env: {},
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect((caught as Error | undefined)?.message,).toContain('linkupApiKey',);
+        expect((caught as Error | undefined)?.message,).toContain('mise run secrets:migrate',);
+      },
+    },),
+    it({
+      name: 'rejects a legacy pi-linkup config with the migration command',
       fn: async () => {
         /**
          Local value for home.
@@ -142,33 +205,33 @@ await describe({
         await writeLegacyConfig({
           home,
           value: {
-            apiKey: CONFIG_API_KEY,
-            blocklist: [BLOCKLIST_ENTRY,],
+            apiKey: DEPRECATED_SENTINEL,
+            blocklist: [],
           },
         },);
 
         /**
-         Local value for config.
+         Local value for caught.
          */
-        const config = await loadLinkupConfig({
-          home,
-          env: {},
-        },);
-        /**
-         Local value for migratedContent.
-         */
-        const migratedContent = JSON.parse(
-          await readFile(configPathForHome({ home, },), 'utf8',),
-        ) as Record<string, unknown>;
+        let caught: unknown;
+        try {
+          await loadLinkupConfig({
+            home,
+            cwd: home,
+            env: {},
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
 
-        expect(config.linkupApiKey,).toBe(CONFIG_API_KEY,);
-        expect(config.blocklist,).toEqual([BLOCKLIST_ENTRY,],);
-        expect(config.source.migratedFrom,).toBe(legacyConfigPathForHome({ home, },),);
-        expect(migratedContent.linkupApiKey,).toBe(CONFIG_API_KEY,);
+        expect((caught as Error | undefined)?.name,).toBe('SearchFetchMigrationRequiredError',);
+        expect((caught as Error | undefined)?.message,).toContain('pi-linkup.json',);
+        expect((caught as Error | undefined)?.message,).not.toContain(DEPRECATED_SENTINEL,);
       },
     },),
     it({
-      name: 'reports invalid JSON with config path and parsing phase',
+      name: 'reports invalid JSON with the Pi config path',
       fn: async () => {
         /**
          Local value for home.
@@ -181,10 +244,14 @@ await describe({
         await mkdir(dirname(configPath,), { recursive: true, },);
         await writeFile(configPath, '{',);
 
+        /**
+         Local value for caught.
+         */
         let caught: unknown;
         try {
           await loadLinkupConfig({
             home,
+            cwd: home,
             env: {},
           },);
         }
@@ -192,14 +259,13 @@ await describe({
           caught = error;
         }
 
-        expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain('pi-search-fetch.json',);
-        expect((caught as Error).message,).toContain('parsing',);
-        expect((caught as Error).message,).toContain(configPath,);
+        expect((caught as Error | undefined)?.message,).toContain('pi-search-fetch.json',);
+        expect((caught as Error | undefined)?.message,).toContain('parsing',);
+        expect((caught as Error | undefined)?.message,).toContain(configPath,);
       },
     },),
     it({
-      name: 'reports invalid blocklist entry with offending entry',
+      name: 'reports an invalid blocklist entry',
       fn: async () => {
         /**
          Local value for home.
@@ -207,15 +273,17 @@ await describe({
         const home = await tempHome();
         await writeConfig({
           home,
-          value: {
-            blocklist: [INVALID_BLOCKLIST_ENTRY,],
-          },
+          value: { blocklist: [INVALID_BLOCKLIST_ENTRY,], },
         },);
 
+        /**
+         Local value for caught.
+         */
         let caught: unknown;
         try {
           await loadLinkupConfig({
             home,
+            cwd: home,
             env: {},
           },);
         }
@@ -223,10 +291,8 @@ await describe({
           caught = error;
         }
 
-        expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain('pi-search-fetch.json',);
-        expect((caught as Error).message,).toContain('blocklist normalization',);
-        expect((caught as Error).message,).toContain(INVALID_BLOCKLIST_ENTRY,);
+        expect((caught as Error | undefined)?.message,).toContain('pi-search-fetch.json',);
+        expect((caught as Error | undefined)?.message,).toContain('blocklist normalization',);
       },
     },),
   ],
@@ -247,7 +313,7 @@ async function tempHome(): Promise<string> {
 }
 
 /**
- Write Pi Search Fetch config under a temp home.
+ Write Pi config under a temp home.
  
  @param home - temp home directory
  
@@ -267,10 +333,7 @@ async function writeConfig(
    */
   const configPath = configPathForHome({ home, },);
   await mkdir(dirname(configPath,), { recursive: true, },);
-  await writeFile(
-    configPath,
-    JSON.stringify(value,),
-  );
+  await writeFile(configPath, JSON.stringify(value,), 'utf8',);
 }
 
 /**
@@ -294,10 +357,7 @@ async function writeLegacyConfig(
    */
   const configPath = legacyConfigPathForHome({ home, },);
   await mkdir(dirname(configPath,), { recursive: true, },);
-  await writeFile(
-    configPath,
-    JSON.stringify(value,),
-  );
+  await writeFile(configPath, JSON.stringify(value,), 'utf8',);
 }
 
 //endregion Helpers

@@ -80,6 +80,7 @@ function createSearchFetchClient(
   const runtime: SearchFetchClientRuntime = {
     ...(clientOptions.exaApiKey === undefined ? {} : { exaApiKey: clientOptions.exaApiKey, }),
     ...(clientOptions.linkupApiKey === undefined ? {} : { linkupApiKey: clientOptions.linkupApiKey, }),
+    ...(clientOptions.credentialHint === undefined ? {} : { credentialHint: clientOptions.credentialHint, }),
     blocklist: clientOptions.blocklist,
     exaBaseUrl: clientOptions.exaBaseUrl ?? DEFAULT_EXA_BASE_URL,
     linkupBaseUrl: clientOptions.linkupBaseUrl ?? DEFAULT_LINKUP_BASE_URL,
@@ -90,6 +91,7 @@ function createSearchFetchClient(
    */
   const exaClient = createExaClient({
     ...(runtime.exaApiKey === undefined ? {} : { apiKey: runtime.exaApiKey, }),
+    ...(runtime.credentialHint === undefined ? {} : { credentialHint: runtime.credentialHint, }),
     blocklist: runtime.blocklist,
     baseUrl: runtime.exaBaseUrl,
     fetchImpl: runtime.fetchImpl,
@@ -99,6 +101,7 @@ function createSearchFetchClient(
    */
   const linkupClient = createLinkupClient({
     ...(runtime.linkupApiKey === undefined ? {} : { apiKey: runtime.linkupApiKey, }),
+    ...(runtime.credentialHint === undefined ? {} : { credentialHint: runtime.credentialHint, }),
     blocklist: runtime.blocklist,
     baseUrl: runtime.linkupBaseUrl,
     fetchImpl: runtime.fetchImpl,

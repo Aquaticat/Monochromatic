@@ -82,6 +82,7 @@ async function postExaJson(
    */
   const apiKey = exaApiKeyForEndpoint({
     ...(runtime.apiKey === undefined ? {} : { apiKey: runtime.apiKey, }),
+    ...(runtime.credentialHint === undefined ? {} : { credentialHint: runtime.credentialHint, }),
     endpoint,
   },);
   /**
@@ -196,14 +197,17 @@ function exaApiKeyForEndpoint(
   {
     apiKey,
     endpoint,
+    credentialHint,
   }: {
     readonly apiKey?: string;
     readonly endpoint: string;
+    readonly credentialHint?: string;
   },
 ): string {
   if ((apiKey === undefined) || (apiKey.trim() === ''))
     throw new Error(
-      `Exa ${endpoint} missing API key. Set EXA_API_KEY or exaApiKey in pi-search-fetch.json.`,
+      `Exa ${endpoint} missing API key. Set EXA_API_KEY in the environment or add it to .env.local.json.`
+        + (credentialHint === undefined ? '' : ` Credential store: ${credentialHint}`),
     );
   return apiKey;
 }

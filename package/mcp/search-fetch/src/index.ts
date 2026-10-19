@@ -167,6 +167,7 @@ if (isBinLaunch) {
   const client = createSearchFetchClient({
     ...(config.exaApiKey === undefined ? {} : { exaApiKey: config.exaApiKey, }),
     ...(config.linkupApiKey === undefined ? {} : { linkupApiKey: config.linkupApiKey, }),
+    ...(config.source.storeError === undefined ? {} : { credentialHint: config.source.storeError, }),
     blocklist: config.blocklist,
   },);
   await serve({

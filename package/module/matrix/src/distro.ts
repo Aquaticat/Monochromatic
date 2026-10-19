@@ -8,6 +8,7 @@
 
 import type {
   PackageManager,
+  Runtime,
   UserContext,
 } from './types.ts';
 
@@ -133,6 +134,66 @@ export function prerequisiteCommand({
 }
 
 //endregion Prerequisite installation
+
+//region Runtime system dependencies
+
+/**
+ System packages the node runtime links against on glibc distros.
+ Official Node.js Linux builds need `libatomic.so.1`, which minimal container
+ images omit; without it `mise install node` fails while it verifies the
+ freshly extracted binary. Bun and deno bundle their dependencies.
+ */
+const NODE_DEPENDENCY_COMMANDS: Record<Exclude<PackageManager, 'apk'>, string> = {
+  apt: 'apt-get install -y libatomic1',
+  dnf: 'dnf install -y libatomic',
+  pacman: 'pacman -Sy --noconfirm gcc-libs',
+};
+
+/**
+ Returns the shell command installing system libraries the runtime needs.
+
+ Bun and deno need none, so this returns an empty string for them.
+
+ @param manager - Package manager for the distro
+
+ @param runtime - Runtime to prepare
+
+ @returns shell command string, or empty string when no system package is needed
+
+ @throws Error when the runtime cannot run on the distro's libc
+ (`node` on Alpine, whose musl libc cannot load the glibc Node.js builds)
+
+ @example
+ ```ts
+ runtimeDependencyCommand({ manager: 'apt', runtime: 'node' });
+ // 'apt-get install -y libatomic1'
+
+ runtimeDependencyCommand({ manager: 'apt', runtime: 'bun' });
+ // ''
+ ```
+ */
+export function runtimeDependencyCommand({
+  manager,
+  runtime,
+}: {
+  readonly manager: PackageManager;
+  readonly runtime: Runtime;
+},): string {
+  if (runtime !== 'node')
+    return '';
+
+  if (manager === 'apk') {
+    throw new Error(
+      'Cannot install the node runtime on an apk (Alpine) image: '
+        + 'official Node.js Linux builds require glibc, but Alpine uses musl. '
+        + 'Exclude node combinations on alpine images or use a glibc distro.',
+    );
+  }
+
+  return NODE_DEPENDENCY_COMMANDS[manager];
+}
+
+//endregion Runtime system dependencies
 
 //region User creation
 

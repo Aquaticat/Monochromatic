@@ -13,7 +13,7 @@ import {
 import {
   buildContainerCommand,
   parseOs,
-} from './container.ts';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'container',
@@ -128,6 +128,26 @@ await describe({
             expect(cmd,).toContain('run-test.sh',);
             expect(cmd,).toContain('useradd',);
             expect(cmd,).toContain('NOPASSWD',);
+          },
+        },),
+
+        it({
+          name: 'non-root heredoc terminator sits on its own line',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/home/user/Mono/packages/foo/test.ts',
+                os: 'container:ubuntu',
+                user: 'user',
+                runtime: 'bun',
+              },
+              monorepoRoot: '/home/user/Mono',
+            },);
+
+            /** A delimiter sharing a line with `&& chmod` never terminates the heredoc. */
+            expect(cmd,).toContain('TESTSCRIPT\nchmod +x /tmp/run-test.sh',);
+            expect(cmd,).not.toContain('TESTSCRIPT &&',);
+            expect(cmd,).toContain('sudo -u testuser -i /tmp/run-test.sh',);
           },
         },),
 
@@ -250,6 +270,173 @@ await describe({
             },);
 
             expect(cmd,).toContain('cd /workspace',);
+          },
+        },),
+
+        it({
+          name: 'node root install installs libatomic, bootstraps mise, and cds before install',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/repo/test.ts',
+                os: 'container:ubuntu',
+                user: 'root',
+                runtime: 'node',
+              },
+              monorepoRoot: '/repo',
+            },);
+
+            expect(cmd,).toContain('apt-get install -y libatomic1',);
+            expect(cmd,).toContain('curl -fsSL https://mise.run | sh',);
+            expect(cmd,).toContain(
+              'MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace mise install node',
+            );
+            expect(cmd.indexOf('cd /workspace',),)
+              .toBeLessThan(cmd.indexOf('mise install node',),);
+          },
+        },),
+
+        it({
+          name: 'node root exec runs the workspace file through mise exec',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/home/user/Mono/packages/foo/src/bar.ts',
+                os: 'container:ubuntu',
+                user: 'root',
+                runtime: 'node',
+              },
+              monorepoRoot: '/home/user/Mono',
+            },);
+
+            expect(cmd,).toContain(
+              'MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace'
+                + ' $HOME/.local/bin/mise exec node -- node'
+                + ' /workspace/packages/foo/src/bar.ts',
+            );
+          },
+        },),
+
+        it({
+          name: 'node non-root installs libatomic as root and cds before install in heredoc',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/repo/test.ts',
+                os: 'container:ubuntu',
+                user: 'user',
+                runtime: 'node',
+              },
+              monorepoRoot: '/repo',
+            },);
+
+            expect(cmd,).toContain('sudo -u testuser',);
+            expect(cmd,).toContain('apt-get install -y libatomic1',);
+            expect(cmd,).toContain('cd /workspace',);
+            expect(cmd,).toContain('MISE_TRUSTED_CONFIG_PATHS=/workspace mise install node',);
+            expect(cmd.indexOf('cd /workspace',),)
+              .toBeLessThan(cmd.indexOf('mise install node',),);
+          },
+        },),
+
+        it({
+          name: 'node non-root installs each root-only step exactly once',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/repo/test.ts',
+                os: 'container:ubuntu',
+                user: 'user',
+                runtime: 'node',
+              },
+              monorepoRoot: '/repo',
+            },);
+
+            /** The heredoc body runs as testuser, so root-only steps stay outside it. */
+            const heredoc = cmd.slice(cmd.indexOf('TESTSCRIPT',),);
+
+            expect(cmd.split('apt-get install -y libatomic1',).length
+              - 1,)
+              .toBe(1,);
+            expect(cmd.split('mise install node',).length
+              - 1,)
+              .toBe(1,);
+            expect(heredoc,).not.toContain('libatomic',);
+          },
+        },),
+
+        it({
+          name: 'non-root bun runtime install appears once, in the heredoc',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/repo/test.ts',
+                os: 'container:ubuntu',
+                user: 'user',
+                runtime: 'bun',
+              },
+              monorepoRoot: '/repo',
+            },);
+
+            expect(cmd.split('bun.sh/install',).length
+              - 1,)
+              .toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'node exec uses mise exec inside the non-root heredoc',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/repo/test.ts',
+                os: 'container:ubuntu',
+                user: 'user',
+                runtime: 'node',
+              },
+              monorepoRoot: '/repo',
+            },);
+
+            expect(cmd,).toContain(
+              'MISE_QUIET=1 MISE_TERMINAL_PROGRESS=false MISE_SOPS_STRICT=false MISE_TRUSTED_CONFIG_PATHS=/workspace'
+                + ' $HOME/.local/bin/mise exec node -- node /workspace/test.ts',
+            );
+          },
+        },),
+
+        it({
+          name: 'node on alpine throws instead of generating a musl-incompatible command',
+          fn: async () => {
+            expect(function buildAlpineNode() {
+              buildContainerCommand({
+                combination: {
+                  file: '/repo/test.ts',
+                  os: 'container:alpine',
+                  user: 'root',
+                  runtime: 'node',
+                },
+                monorepoRoot: '/repo',
+              },);
+            },)
+              .toThrow('official Node.js Linux builds require glibc',);
+          },
+        },),
+
+        it({
+          name: 'bun keeps its command free of node runtime system packages',
+          fn: async () => {
+            const cmd = buildContainerCommand({
+              combination: {
+                file: '/repo/test.ts',
+                os: 'container:ubuntu',
+                user: 'root',
+                runtime: 'bun',
+              },
+              monorepoRoot: '/repo',
+            },);
+
+            expect(cmd,).not.toContain('libatomic',);
+            expect(cmd,).not.toContain('mise',);
           },
         },),
       ],

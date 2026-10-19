@@ -29,6 +29,11 @@ extends = "format:oxlint"
 extends = "lint:types"
 
 [tasks.test]
-description = "Self-test matrix (builds first)"
+description = "Run matrix self-tests against the built artifact (builds first)"
 depends = ["build"]
-run = "node src/self.unit.test.ts"
+run = [
+  "node src/distro.unit.test.ts",
+  "node src/runtime.unit.test.ts",
+  "node src/container.unit.test.ts",
+  "node src/discover.unit.test.ts",
+]

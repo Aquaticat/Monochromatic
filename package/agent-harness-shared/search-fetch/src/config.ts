@@ -5,6 +5,16 @@
  */
 
 import { homedir, } from 'node:os';
+import {
+  EnvLocalJsonDecryptError,
+  EnvLocalJsonMissingIdentityError,
+  EnvLocalJsonPathError,
+  EnvLocalJsonPlaintextError,
+  EnvLocalJsonReadError,
+  EnvLocalJsonShapeError,
+  EnvLocalJsonSopsMissingError,
+  readEnvLocalJson,
+} from '@monochromatic-dev/module-env-local-json/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -12,7 +22,7 @@ import {
   LINKUP_API_KEY_ENV,
 } from './config-constants.ts';
 import {
-  migrateLegacyConfigIfPresent,
+  fileExists,
   readOptionalConfigJson,
 } from './config-file.ts';
 import {
@@ -22,6 +32,7 @@ import {
 import {
   normalizeConfigBlocklist,
   resolveApiKey,
+  SearchFetchMigrationRequiredError,
   validateConfigShape,
 } from './config-schema.ts';
 import type {
@@ -54,11 +65,12 @@ const l = tagged({
 /**
  Load Pi Search Fetch global config.
  
- @param options - optional environment and home overrides for tests
+ @param options - optional environment, home, cwd, and store overrides for tests
  
  @returns loaded config with normalized blocklist and API key precedence
  
- @throws when config file has invalid JSON, schema, or blocklist entries
+ @throws when the Pi config has invalid JSON or schema, a legacy credential shape,
+ or the requested blocklist cannot be normalized
  
  @example
  ```ts
@@ -90,31 +102,27 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
   const env = options.env
     ?? process.env;
   /**
+   Local value for cwd.
+   */
+  const cwd = options.cwd
+    ?? process.cwd();
+  /**
    Local value for configPath.
    */
   const configPath = configPathForHome({ home, },);
   /**
-   Local value for initialReadResult.
-   */
-  const initialReadResult = await readOptionalConfigJson({ configPath, },);
-  /**
-   Local value for migration.
-   */
-  const migration = initialReadResult.loaded
-    ? { migrated: false, } as const
-    : await migrateLegacyConfigIfPresent({
-      home,
-      configPath,
-    },);
-  /**
    Local value for readResult.
    */
-  const readResult: ConfigJsonReadResult = migration.migrated
-    ? {
-      loaded: true,
-      value: migration.value,
-    }
-    : initialReadResult;
+  const readResult: ConfigJsonReadResult = await readOptionalConfigJson({ configPath, },);
+  /**
+   Local value for legacyPath.
+   */
+  const legacyPath = legacyConfigPathForHome({ home, },);
+  if (!readResult.loaded && await fileExists({ filePath: legacyPath, },))
+    throw new SearchFetchMigrationRequiredError({
+      configPath: legacyPath,
+      keys: ['apiKey',],
+    },);
   /**
    Local value for configFile.
    */
@@ -132,12 +140,68 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     configPath,
   },);
   /**
+   Requested provider keys that the environment did not supply.
+   */
+  const missingKeys = [
+    EXA_API_KEY_ENV,
+    LINKUP_API_KEY_ENV,
+  ].filter(function isMissingFromEnv(envKey,) {
+    /**
+     Local value for value.
+     */
+    const value = env[envKey]
+      ?.trim();
+    return (value === undefined) || (value === '');
+  },);
+  /**
+   Values read from the encrypted store.
+   */
+  let storeValues: Readonly<Record<string, string>> = {};
+  /**
+   Absolute store path when discovery found one.
+   */
+  let storePath: string | undefined;
+  /**
+   Whether the store was read and decrypted.
+   */
+  let storeLoaded = false;
+  /**
+   Value-free store diagnostic.
+   */
+  let storeError: string | undefined;
+  if (missingKeys.length > 0) {
+    try {
+      /**
+       Local value for storeResult.
+       */
+      const storeResult = await readEnvLocalJson({
+        keys: missingKeys,
+        cwd,
+        env,
+        home,
+        ...(options.envLocalJsonPath === undefined ? {} : { path: options.envLocalJsonPath, }),
+        ...(options.signal === undefined ? {} : { signal: options.signal, }),
+      },);
+      storeValues = storeResult.values;
+      storePath = storeResult.path;
+      storeLoaded = storeResult.loaded;
+    }
+    catch (error: unknown) {
+      if (!isExpectedStoreError(error,))
+        throw error;
+      storeError = error.message;
+      innerL.warn(`encrypted store unavailable: ${storeError}`,);
+    }
+  }
+  /**
    Local value for exaApiKey.
    */
   const exaApiKey = resolveApiKey({
     env,
     envKey: EXA_API_KEY_ENV,
-    ...(configFile.exaApiKey === undefined ? {} : { configApiKey: configFile.exaApiKey, }),
+    ...(storeValues[EXA_API_KEY_ENV] === undefined
+      ? {}
+      : { storeValue: storeValues[EXA_API_KEY_ENV], }),
   },);
   /**
    Local value for linkupApiKey.
@@ -145,25 +209,63 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
   const linkupApiKey = resolveApiKey({
     env,
     envKey: LINKUP_API_KEY_ENV,
-    ...(configFile.linkupApiKey === undefined ? {} : { configApiKey: configFile.linkupApiKey, }),
+    ...(storeValues[LINKUP_API_KEY_ENV] === undefined
+      ? {}
+      : { storeValue: storeValues[LINKUP_API_KEY_ENV], }),
   },);
+  /**
+   Source metadata, with optional store facts only when discovery ran.
+   */
+  const source: LinkupConfigSource = {
+    path: configPath,
+    loaded: readResult.loaded,
+    ...(storePath === undefined ? {} : { storePath, }),
+    ...(storeLoaded ? { storeLoaded: true, } : {}),
+    ...(storeError === undefined ? {} : { storeError, }),
+  };
 
   innerL.debug(
-    `loaded pi-search-fetch config from ${configPath}; present=${String(readResult.loaded,)}`,
+    `loaded pi-search-fetch config from ${configPath}; present=${String(readResult.loaded,)}`
+      + `${storePath === undefined ? '' : `; store=${storePath}`}`
+      + `${storeError === undefined ? '' : '; store unavailable'}`,
   );
   return {
     ...(exaApiKey.configured ? { exaApiKey: exaApiKey.value, } : {}),
     ...(linkupApiKey.configured ? { linkupApiKey: linkupApiKey.value, } : {}),
+    ...(exaApiKey.configured ? { exaApiKeyOrigin: exaApiKey.origin, } : {}),
+    ...(linkupApiKey.configured ? { linkupApiKeyOrigin: linkupApiKey.origin, } : {}),
     blocklist,
-    source: {
-      path: configPath,
-      loaded: readResult.loaded,
-      ...(migration.migrated ? { migratedFrom: migration.legacyPath, } : {}),
-    },
+    source,
   };
 }
 
 //endregion Public API
+
+//region Helpers
+
+/**
+ Report whether an error is one of the store reader's expected failures.
+ 
+ @param error - caught value
+ 
+ @returns whether the loader may degrade to an unconfigured store
+ 
+ @example
+ ```ts
+ isExpectedStoreError(new EnvLocalJsonPlaintextError({ path: '/tmp/store' }));
+ ```
+ */
+function isExpectedStoreError(error: unknown,): error is Error {
+  return (error instanceof EnvLocalJsonPathError)
+    || (error instanceof EnvLocalJsonReadError)
+    || (error instanceof EnvLocalJsonPlaintextError)
+    || (error instanceof EnvLocalJsonSopsMissingError)
+    || (error instanceof EnvLocalJsonMissingIdentityError)
+    || (error instanceof EnvLocalJsonDecryptError)
+    || (error instanceof EnvLocalJsonShapeError);
+}
+
+//endregion Helpers
 
 export {
   loadLinkupConfig,

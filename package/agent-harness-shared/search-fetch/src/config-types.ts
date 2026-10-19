@@ -9,13 +9,21 @@
  */
 type LinkupConfig = {
   /**
-   Optional Exa API key after environment and file precedence are applied.
+   Optional Exa API key after environment and store precedence are applied.
    */
   readonly exaApiKey?: string;
   /**
-   Optional Linkup API key after environment and file precedence are applied.
+   Optional Linkup API key after environment and store precedence are applied.
    */
   readonly linkupApiKey?: string;
+  /**
+   Source of the effective Exa key, when configured.
+   */
+  readonly exaApiKeyOrigin?: ApiKeyOrigin;
+  /**
+   Source of the effective Linkup key, when configured.
+   */
+  readonly linkupApiKeyOrigin?: ApiKeyOrigin;
   /**
    Normalized global host suffix blocklist.
    */
@@ -27,21 +35,34 @@ type LinkupConfig = {
 };
 
 /**
+ Origin of an effective API key.
+ */
+type ApiKeyOrigin = 'env' | 'store';
+
+/**
  Pi Search Fetch config source metadata.
  */
 type LinkupConfigSource = {
   /**
-   Absolute config file path checked by the loader.
+   Absolute Pi config path checked by the loader.
    */
   readonly path: string;
   /**
-   Whether config file existed and loaded successfully.
+   Whether the Pi config file existed and loaded successfully.
    */
   readonly loaded: boolean;
   /**
-   Legacy config path migrated into this source, when migration happened.
+   Absolute encrypted store path, when discovery found one.
    */
-  readonly migratedFrom?: string;
+  readonly storePath?: string;
+  /**
+   Whether the encrypted store was read and decrypted successfully.
+   */
+  readonly storeLoaded?: boolean;
+  /**
+   Value-free diagnostic explaining why the encrypted store was not read.
+   */
+  readonly storeError?: string;
 };
 
 /**
@@ -49,41 +70,32 @@ type LinkupConfigSource = {
  */
 type LoadLinkupConfigOptions = {
   /**
-   Home directory used to resolve global Pi config.
+   Home directory used to resolve global Pi config and the identity.
    */
   readonly home?: string;
   /**
-   Environment used for API key precedence.
+   Environment used for API key precedence and store discovery.
    */
   readonly env?: Readonly<NodeJS.ProcessEnv>;
+  /**
+   Directory used for store discovery; defaults to the process working
+   directory.
+   */
+  readonly cwd?: string;
+  /**
+   Explicit encrypted store path; when set it is authoritative.
+   */
+  readonly envLocalJsonPath?: string;
+  /**
+   Optional cancellation signal forwarded to the store reader.
+   */
+  readonly signal?: AbortSignal;
 };
 
 /**
  Parsed config-file shape after schema validation.
  */
 type ConfigFileShape = {
-  /**
-   Optional Exa API key from config file.
-   */
-  readonly exaApiKey?: string;
-  /**
-   Optional Linkup API key from config file.
-   */
-  readonly linkupApiKey?: string;
-  /**
-   Optional raw host suffix blocklist.
-   */
-  readonly blocklist?: readonly string[];
-};
-
-/**
- Parsed legacy config-file shape after schema validation.
- */
-type LegacyConfigFileShape = {
-  /**
-   Optional legacy Linkup API key from config file.
-   */
-  readonly apiKey?: string;
   /**
    Optional raw host suffix blocklist.
    */
@@ -126,29 +138,10 @@ type ApiKeyResolution = {
    Effective API key.
    */
   readonly value: string;
-};
-
-/**
- Legacy migration result.
- */
-type LegacyMigrationResult = {
   /**
-   Whether legacy config migrated.
+   Source that supplied the effective key.
    */
-  readonly migrated: false;
-} | {
-  /**
-   Whether legacy config migrated.
-   */
-  readonly migrated: true;
-  /**
-   Migrated new config shape.
-   */
-  readonly value: ConfigFileShape;
-  /**
-   Legacy config path consumed by migration.
-   */
-  readonly legacyPath: string;
+  readonly origin: ApiKeyOrigin;
 };
 
 /**
@@ -162,12 +155,11 @@ type ErrorWithCode = Error & {
 };
 
 export type {
+  ApiKeyOrigin,
   ApiKeyResolution,
   ConfigFileShape,
   ConfigJsonReadResult,
   ErrorWithCode,
-  LegacyConfigFileShape,
-  LegacyMigrationResult,
   LinkupConfig,
   LinkupConfigSource,
   LoadLinkupConfigOptions,
