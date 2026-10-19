@@ -720,11 +720,12 @@ The cause is the notes' reading of that error file;
 the bootstrap source was not opened for this entry.
 The review that the handover records as answered (`s245/sol-review/answer-gpt61.md`) is a later call.
 
-The notes say that `doc/troubleshooting/pi-sdk-staging.md` already records the launch directory.
-A search of `doc/troubleshooting` and `doc/runbook` for `ENOENT` beside `AGENTS.md`,
-for `--no-context-files`
-and for a launch from the repository root found no such record about `pi`,
-so no troubleshooting document is cited here.
+`doc/troubleshooting/pi-sdk-staging.md` records the launch directory at its lines 9086 to 9088:
+a task that changes the working directory makes the policy bootstrap read that directory's absent `AGENTS.md`
+and emit `ENOENT` before any request, and launching from the repository root reaches the intended consumer.
+The first filing of this entry searched for `ENOENT` beside `AGENTS.md` on one line
+and for the phrase "repository root", missed those lines, and said no record existed;
+the lead corrected it the same day by reading the file.
 
 Prevention:
 the command a rule prescribes is run as written,
