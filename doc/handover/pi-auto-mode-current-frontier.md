@@ -4,6 +4,41 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Latest checkpoint
+
+- Day accounting through `2026-10-19T03:34:17Z`, October 18 in America/New_York:
+  243 relevant commits, comprising 42 fixes, 21 refactors, four performance changes,
+  65 test checkpoints, ten style changes, 100 documentation checkpoints and one chore.
+  These are commit classifications, not completed feature counts.
+  Receipt: `today-work-20261018.json`; reproduction task: `summarize-today-work` in the current private scratch.
+- The eight AST/comment-qualified formatter patches are retained in `b0c703f79c`.
+  Wrapping is formatting, not regression. Character counts audit implementation growth;
+  existing max-lines still requires meaningful module splits. Root QF1 and lint policy stay unchanged.
+- Source checkpoint `f66ab1e340` commits exactly the three phase SDK-erasure corrections.
+  The fixture initializes `sawSteering`, erases the genuine SDK tool before wrapping it,
+  and registers that erased wrapper directly. Worker `kARc6q` holds its phase scope unchanged.
+  Fresh candidate `I5x3ww` freezes committed `79ba2916b3` with those changes;
+  JavaScript and native builds pass. Types, full phase catalog and input/schema consumers are running.
+- Native worker `Pcok7j` has three scoped warnings and zero errors at its last measured checkpoint.
+  Its remaining ambient declaration must preserve the original writable dynamic error name
+  and message-only constructor. The proposed corrected name is sound, but its suppression enable
+  comes after the constructor rather than immediately after the documented declaration.
+  Stop that complete write and correct the declaration scope before committing and qualifying it.
+- The registered-host reload probe reports zero executions after a genuine disposable policy change,
+  followed by one automatic execution after the original SDK reload.
+  The initial unregistered probe was not a configured-host reproduction.
+  The registered no-reload negative control and complete log audit remain in progress.
+- Next implementation work: split the decision core by review orchestration and admission-scope responsibility;
+  preserve constructor identity and original decision/lifetime behavior.
+  Source MiMo's next held assignment splits the producer-lifetime test by responsibility,
+  retaining all nine lifecycle cases and the five rebuilt fault controls.
+- Completion still requires zero package lint, architecture and character/dependency inventories,
+  resumed configured MiMo histories, actual long-history memory qualification,
+  final provider payload and compaction/tool/shutdown verification, package docs and publication.
+  The last full frozen lint baseline remains 11,325 warnings and 157 errors across 882 files.
+
+### Investigation checkpoints
+
 - Incoming-message rejection: the primary-request category-gate defect is closed on `4913ea2cd0`.
   The gate and its newly introduced classifier are removed; normal input does not need membership in an origin list.
   Fresh builds and six native consumer suites pass on immutable `native-release-LqreQy` in `3eMYni`.
