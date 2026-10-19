@@ -79,8 +79,9 @@ const TILE_SPARE_LINES: usize = 2;
 
 /// What:
 ///  Whether the materialized tile still holds the view:
-///  the view's top edge is at least `RECENTER_EDGE_VIEWS` view heights below the tile's top edge,
-///  and its bottom edge is as far above the tile's bottom edge.
+///  the view's top edge is at least `edge` below the tile's top edge,
+///  and its bottom edge is as far above the tile's bottom edge,
+///  where `edge` is [`recenter_edge`].
 ///  A side that touches the first or last line of the text is always held.
 /// Why:
 ///  Edges come from the live vertical mapping,
@@ -88,17 +89,44 @@ const TILE_SPARE_LINES: usize = 2;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function holds(current: State, view: number, height: number): boolean;
+/// function holds(current: State, bounds: TileBounds, view: number, height: number): boolean;
 /// ```
 pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32) -> bool {
     let lines = current.document.text().len_lines();
-    let edge = RECENTER_EDGE_VIEWS * height;
+    let edge = recenter_edge(bounds.width, current.scale, height);
     let end = (bounds.first + bounds.count).min(lines);
     let (top, bottom) = tile_edges(current, bounds, end);
     // The top of the text and its bottom are always held; with a clip they can lie inside a line.
     let top_held = top <= 0.0 || view >= top + edge;
     let bottom_held = bottom >= current.row_map.height() || view + height <= bottom - edge;
     return top_held && bottom_held;
+}
+
+/// What:
+///  How close,
+///  in logical pixels,
+///  the view's edge may come to the edge of a tile built for a text area `width` wide at display `scale`
+///  before the tile is re-centered:
+///  `RECENTER_EDGE_VIEWS` view heights,
+///  or what a raster of the largest height the limit allows leaves around a view `height` tall,
+///  when that is less.
+///  Two code rows are kept back for the rounding of the clip's edges to whole rows,
+///  and the answer is negative for a view taller than the raster can be.
+/// Why:
+///  A tile is never taller than its raster limit.
+///  Demanding more room than the limit leaves around the view made every tile the worker built for a window of
+///  about 10,000 px or more fail the hold test, so the window discarded it and asked for the same one again, for
+///  as long as the window stayed that size, and the measurement pass never finished.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function recenterEdge(width: number, scale: number, height: number): number {
+///   return Math.min(RECENTER_EDGE_VIEWS * height, (tileCap(width, scale) - height) / 2 - 2 * CODE_ROW);
+/// }
+/// ```
+fn recenter_edge(width: f32, scale: f32, height: f32) -> f32 {
+    let room = (render::tile_cap(width, scale) - height) / 2.0 - 2.0 * CODE_ROW;
+    return (RECENTER_EDGE_VIEWS * height).min(room);
 }
 
 /// What:
