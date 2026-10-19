@@ -141,6 +141,37 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
 
 
 /**
+ Runs oxlint --fix once on a fixture file.
+ 
+ Oxlint exits non-zero while unfixable findings remain, which is expected here; a plugin that crashed is not,
+ and fails the run, so a file read back afterwards was never left alone by a crash.
+ 
+ @param params - file to rewrite and the config to fix it under
+ 
+ @example
+ ```ts
+ await fixOnce({ filePath: fixture.filePath, fixtureConfig: FIXTURE_CONFIG });
+ ```
+ */
+async function fixOnce(
+  {
+    filePath,
+    fixtureConfig,
+  }: {
+    readonly filePath: string;
+    readonly fixtureConfig: string;
+  },
+): Promise<void> {
+  await runOxlintFixture({
+    codePrefix: 'stylistic(',
+    configFlag: '--config',
+    fixtureConfig,
+    target: filePath,
+    fix: 'fixes',
+  },);
+}
+
+/**
  Runs oxlint --fix on a fixture until content stops changing.
  
  Some stylistic fixes overlap, so oxlint applies only one fix for that source
@@ -162,23 +193,11 @@ async function fixUntilStable(filePath: string,): Promise<void> {
   ) {
     /** File content before this pass; unchanged output means convergence. */
     const before = readFileSync(filePath, 'utf8',);
-    try {
-      // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
-      await spawn(
-        'oxlint',
-        [
-          '--fix',
-          '--config',
-          FIXTURE_CONFIG,
-          filePath,
-        ],
-        { cwd: ROOT, },
-      );
-    }
-    catch (error: unknown) {
-      // --fix may exit non-zero while later passes or unfixable rules remain.
-    expect(error,).toBeDefined();
-    }
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
+    await fixOnce({
+      filePath,
+      fixtureConfig: FIXTURE_CONFIG,
+    },);
     if (readFileSync(filePath, 'utf8',) === before)
       return;
   }
@@ -999,16 +1018,10 @@ await describe({
               tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
-            await spawn(
-              'oxlint',
-              [
-                '--fix',
-                '--config',
-                ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
-                fixtureCopy.filePath,
-              ],
-              { cwd: ROOT, },
-            );
+            await fixOnce({
+              filePath: fixtureCopy.filePath,
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },);
             const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
             expect(fixedOnce,).toContain(
               '/**\n * Star-less description.\n *\n * **Leading bold** remains literal content.\n *\n * *through* remains literal content.',
@@ -1017,16 +1030,10 @@ await describe({
               '/**\n * Description whose closing delimiter shares its final line.\n */',
             );
 
-            await spawn(
-              'oxlint',
-              [
-                '--fix',
-                '--config',
-                ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
-                fixtureCopy.filePath,
-              ],
-              { cwd: ROOT, },
-            );
+            await fixOnce({
+              filePath: fixtureCopy.filePath,
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },);
             expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
             expect(await lintWithConfig({
               fixturePath: fixtureCopy.filePath,
@@ -1050,22 +1057,10 @@ await describe({
               tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '--config',
-                  FIXTURE_CONFIG,
-                  semiCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch (error: unknown) {
-              // --fix may still exit non-zero if unfixable issues remain
-            expect(error,).toBeDefined();
-            }
+            await fixOnce({
+              filePath: semiCopy.filePath,
+              fixtureConfig: FIXTURE_CONFIG,
+            },);
 
             const fixedContent = readFileSync(semiCopy.filePath, 'utf8',);
             expect(fixedContent,).toContain('const value = 1;',);
@@ -1175,22 +1170,10 @@ await describe({
               tempPrefix: 'oxlint-stylistic-autofix-',
             },);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  trailingCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch (error: unknown) {
-              // --fix may still exit non-zero
-            expect(error,).toBeDefined();
-            }
+            await fixOnce({
+              filePath: trailingCopy.filePath,
+              fixtureConfig: FIXTURE_CONFIG,
+            },);
 
             const fixedContent = readFileSync(trailingCopy.filePath, 'utf8',);
 
@@ -1325,22 +1308,10 @@ await describe({
             /** Original content; the suppressed fix must leave it byte-for-byte. */
             const before = readFileSync(commentCopy.filePath, 'utf8',);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  commentCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch (error: unknown) {
-              // --fix may exit non-zero when unfixable issues remain
-            expect(error,).toBeDefined();
-            }
+            await fixOnce({
+              filePath: commentCopy.filePath,
+              fixtureConfig: FIXTURE_CONFIG,
+            },);
             expect(readFileSync(commentCopy.filePath, 'utf8',),).toBe(before,);
           },
         },),
@@ -1362,22 +1333,10 @@ await describe({
             /** Original content; unlike the head-comment case, the fix must rewrite it. */
             const before = readFileSync(argsCopy.filePath, 'utf8',);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  argsCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch (error: unknown) {
-              // --fix may exit non-zero when unfixable issues remain
-            expect(error,).toBeDefined();
-            }
+            await fixOnce({
+              filePath: argsCopy.filePath,
+              fixtureConfig: FIXTURE_CONFIG,
+            },);
             /** Content after the fix: the chain broke at the member step. */
             const after = readFileSync(argsCopy.filePath, 'utf8',);
             // The fix applied rather than being suppressed by the interior comment.
@@ -1446,35 +1405,7 @@ await describe({
             // passes: pass 1 breaks the chain, pass 2 wraps the mixed operands, pass 3
             // re-indents the now-nested inner chain. Run --fix until the file stops
             // changing (capped well above the need) rather than hard-coding a count.
-            for (
-              let pass = 0;
-              pass < 8;
-              pass += 1
-            ) {
-              /** File content before this pass; an unchanged result after it means convergence. */
-              const before = readFileSync(combinedCopy.filePath, 'utf8',);
-              try {
-                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
-                await spawn(
-                  'oxlint',
-                  [
-                    '--fix',
-                    '-c',
-                    FIXTURE_CONFIG,
-                    combinedCopy.filePath,
-                  ],
-                  { cwd: ROOT, },
-                );
-              }
-              catch (error: unknown) {
-                // --fix may exit non-zero when unfixable issues remain
-              expect(error,).toBeDefined();
-              }
-              if (readFileSync(combinedCopy.filePath, 'utf8',)
-                === before) {
-                break;
-              }
-            }
+            await fixUntilStable(combinedCopy.filePath,);
 
             const diagnostics = await lint(combinedCopy.filePath,);
             const stylisticDiags = diagnostics.filter(
@@ -1581,35 +1512,7 @@ await describe({
             // so a deep spine and the sibling per-line rules settle over several
             // passes. Run --fix until the file stops changing (capped well above
             // the need) rather than hard-coding a count.
-            for (
-              let pass = 0;
-              pass < 8;
-              pass += 1
-            ) {
-              /** File content before this pass; an unchanged result means convergence. */
-              const before = readFileSync(convergeCopy.filePath, 'utf8',);
-              try {
-                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
-                await spawn(
-                  'oxlint',
-                  [
-                    '--fix',
-                    '-c',
-                    FIXTURE_CONFIG,
-                    convergeCopy.filePath,
-                  ],
-                  { cwd: ROOT, },
-                );
-              }
-              catch (error: unknown) {
-                // --fix may exit non-zero when unfixable issues remain
-              expect(error,).toBeDefined();
-              }
-              if (readFileSync(convergeCopy.filePath, 'utf8',)
-                === before) {
-                break;
-              }
-            }
+            await fixUntilStable(convergeCopy.filePath,);
 
             const diagnostics = await lint(convergeCopy.filePath,);
             const stylisticDiags = diagnostics.filter(

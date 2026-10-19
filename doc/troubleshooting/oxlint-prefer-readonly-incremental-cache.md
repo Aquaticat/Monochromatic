@@ -100,7 +100,7 @@ The cache-hit branch in `effect-demand-index.ts` therefore returns without repop
 A warm completeness assertion sees a caller edge with no callee summary and no omission identity,
 then throws `Owned effect edge lacks callee summary`.
 
-A one-worker cold-to-warm control over `package/module/translation-repair` measured:
+A one-worker cold-to-warm control over `package/translation-repair` measured:
 
 - cold:
   188 findings,

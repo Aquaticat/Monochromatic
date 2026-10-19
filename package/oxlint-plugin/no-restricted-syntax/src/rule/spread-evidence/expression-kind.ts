@@ -3,9 +3,13 @@
 
  Rules first decide what syntax alone proves. When syntax cannot tell an array
  from a string, typed array, or iterator, they ask this module, which consults
- the TypeScript 7 semantic bridge owned by the readonly plugin. Every failure to
- obtain a type degrades to `untyped`, so the rule falls back to its type-free
- report instead of guessing.
+ the TypeScript 7 semantic bridge owned by the readonly plugin. A failure that is
+ about one source, such as a file outside every configured project, degrades to
+ `untyped`, so the rule falls back to its type-free report instead of guessing.
+ A bridge that cannot start is not about one source: every later answer would be
+ degraded the same way and nothing would say so, so it stops the lint instead. The
+ bridge is started when the plugin loads, before Oxlint reserves memory for its
+ workers, so a host with many cores does not take that path for want of a fork.
 
  @module
  */
@@ -23,6 +27,11 @@ import {
 } from '@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 import type { Node, } from 'typescript/unstable/ast';
 
+import {
+  bridgeStartFailure,
+  bridgeUnavailableError,
+  NO_START_FAILURE,
+} from './bridge-start.ts';
 import {
   valueKindOfType,
   type ValueKind,
@@ -175,9 +184,10 @@ function locateSemanticNode(
 
  @param node - Expression whose value kind decides the report.
 
- @returns Value kind, `untyped` when no semantic type is available.
+ @returns Value kind, `untyped` when no semantic type is available for this source.
 
- @throws Rethrows failures other than {@link SemanticBridgeError}, which mean a bridge defect.
+ @throws {@link SemanticBridgeError} with reason `api-unavailable` when the native TypeScript child cannot start,
+ and rethrows failures other than {@link SemanticBridgeError}, which mean a bridge defect.
 
  @example
  ```ts
@@ -201,13 +211,28 @@ export function expressionValueKind(
     l,
   },);
   /**
+   Why the bridge could not start when the plugin loaded. It is not asked again, because a second spawn
+   would only repeat the failure.
+   */
+  const startFailure = bridgeStartFailure();
+  /**
    Located semantic node, or the bridge failure explaining why none exists.
    */
-  const located = locateSemanticNode({
-    context,
-    node,
-  },);
+  const located = (startFailure === NO_START_FAILURE)
+    ? locateSemanticNode({
+      context,
+      node,
+    },)
+    : startFailure;
   if (located instanceof SemanticBridgeError) {
+    if (located.reason === 'api-unavailable') {
+      rl.error(`semantic bridge unavailable for ${context.physicalFilename}: ${located.message}`,);
+      throw bridgeUnavailableError({
+        reason: located.reason,
+        message: located.message,
+        fileName: context.physicalFilename,
+      },);
+    }
     rl.debug(`no semantic evidence for ${context.physicalFilename} (${located.reason}); using type-free report`,);
     return 'untyped';
   }

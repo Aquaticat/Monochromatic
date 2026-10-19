@@ -20,6 +20,7 @@ Problems with test execution and test suite organization:
 
 - Duplicate describe blocks causing missing or misattributed test output
 - Test suite organization best practices
+- [Sinon drops an injected undefined exception](sinon-undefined-exception-sentinel.md)
 
 ### [Editor Setup](editors.md)
 
@@ -35,6 +36,7 @@ Package management and dependency resolution problems:
 
 - pnpm workspace configuration issues
 - Dependency resolution conflicts
+- [PNPM offline verifier metadata mirrors](pnpm-offline-verifier-metadata-mirrors.md)
 - [Pi update allowScripts warnings](pi-update-allow-scripts.md)
 
 ### [Performance Optimization](performance.md)
@@ -154,6 +156,57 @@ js code leaks into browser bundles:
 - `node:` protocol dynamic imports cause CORS errors in browser consoles
 - Environment guards for dual-target modules
 
+### [Barrel `export *` drops an ambiguous name](barrel-star-export-drops-ambiguous-names.md)
+
+A symbol exported by two barrels vanishes from the package at runtime:
+
+- `oxlint` and the bundler pass,
+  and the built file contains both function bodies
+- `tsc` DOES catch it,
+  as TS2308,
+  for values as well as types;
+   an earlier claim to the contrary is corrected in the document with a reduction
+- The only symptom otherwise is `does not provide an export named`
+   at an import three steps away
+- How to ask the built package what it actually exports
+
+### [A finished process that will not exit](finished-process-does-not-exit.md)
+
+A run wrote its results,
+printed its completion line,
+and held the process for three more minutes:
+
+- `Promise.race` does nothing to the loser,
+  and `wait` is a bare `setTimeout` with no handle,
+   so a won race leaves a live timer holding the event loop
+- The first diagnosis blamed leaked sockets and was wrong;
+   the source said otherwise in a minute
+- Why the leak test had to spawn a child process rather than count timers in-process
+
+### [NUL bytes land invisibly in source](nul-bytes-land-invisibly-in-source.md)
+
+A control character written where a space was intended,
+committed,
+and found only when an `Edit` would not apply:
+
+- `rg` and `grep --perl-regexp` both report nothing on a file full of them
+- `tr --delete --complement`,
+  `od --format=c` and `cat --show-all` do find them
+- Why a working NUL separator is still a defect,
+   and the shared escaped constant that fixes it
+
+### [V8 first-call compile at the stack edge](v8-first-call-compile-at-the-stack-edge.md)
+
+A handler that turns a stack exhaustion into its own error
+let the engine's `RangeError` escape instead:
+
+- V8 compiles a function on its first call,
+  and a compile with too little stack raises the stack-exhaustion `RangeError`
+- The failure depended on load and test order,
+  and a smaller `--stack-size` did not reproduce it
+- The module-load warm-up that fixed it,
+  and what it still cannot cover
+
 ### [dprint-plugin-exec](dprint-exec.md)
 
 Why the exec plugin silently does nothing and why certain tools are incompatible:
@@ -164,6 +217,18 @@ Why the exec plugin silently does nothing and why certain tools are incompatible
 - Exec reads stdout as formatted content;
    in-place file modifiers (oxlint --fix) are incompatible
 - `cacheKeyFilesHash: null` in resolved config is expected (hash is moved to global `cacheKey`)
+
+### [mise detached-worktree trust](mise-detached-worktree-trust.md)
+
+A detached worktree fails `mise run` before task execution when its copied config requires trust and its new canonical
+path is not trusted:
+
+- trust is bound to canonical config paths,
+  not equal Git content;
+- command-scoped `MISE_TRUSTED_CONFIG_PATHS` trusts one inventoried disposable root without persistent trust-state
+  mutation,
+  but descendants can inherit the variable;
+- dependency availability remains a separate prerequisite after trust succeeds.
 
 ### [mise watch](mise-watch.md)
 
@@ -183,6 +248,9 @@ Bash shell and CLI tool quirks that cause confusing behavior:
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
 - [Clack note formatter snapshots need newer nested `styleText()` behavior](clack-note-nested-styletext-node-floor.md)
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
+- [GitHub CLI JSON readbacks rewrite literal control escapes](github-cli-json-control-escapes.md)
+- [A `pgrep --full` wait loop matches its own shell and never exits](pgrep-wait-loop-matches-itself.md),
+   so the step it was gating silently never runs
 - [GitHub REST Issue creation should be serial and paced](github-issue-creation-concurrency.md)
 - [GitHub REST omits its Issue title length limit](github-issue-title-length.md)
 - [nano-spawn timeout is not a hard child-process deadline](nano-spawn-timeout-is-not-a-hard-deadline.md)
@@ -341,9 +409,16 @@ For common issues:
 - **Escape fails across Firefox and Ghostty after agent input automation?
   ** →
   [Reset interrupted ydotool virtual-key state](ydotool-interrupted-key-release.md)
+- **Caller `AbortSignal` getters leak error metadata into an operation?
+  ** →
+  [Own live signal observations](node-abort-signal-owned-observation.md)
 - **Android `uiautomator dump` cannot get idle state while an app loads?
   ** →
   [Wait for stable rendered content](android-uiautomator-dump-idle-state.md)
+
+- **Definition-order indexes vanish in persisted preparation inputs?
+  ** →
+  [Use explicit JSON data for root definition indexes](translation-repair-root-order-serialization.md)
 
 ## Contributing
 

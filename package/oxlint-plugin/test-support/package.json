@@ -6,7 +6,8 @@
   "description": "Dev-only shared test harness helpers for Monochromatic oxlint plugin fixtures.",
   "dependencies": {
     "@monochromatic-dev/module-fs-path": "workspace:*",
-    "nano-spawn": "catalog:"
+    "nano-spawn": "catalog:",
+    "string-dedent": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",

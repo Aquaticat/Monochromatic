@@ -11,13 +11,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
 import {
   fixtureConfigPath,
   fixtureSourceRoot,
   type OxlintRuleDiagnostic as OxlintDiagnostic,
-  OXLINT_PLUGIN_TEST_ROOT as ROOT,
   resolveFixtureTarget,
   runOxlintFixture,
 } from '@monochromatic-dev/oxlint-plugin-test-support/ts';
@@ -134,30 +132,15 @@ async function fixReadonlyGeneratedSource({
       rmSync(dirPath, { recursive: true, force: true, },);
     },
   };
-  /** Fix flags preserving suggestion opt-in seam. */
-  const fixFlags = fixSuggestions
-    ? ['--fix', '--fix-suggestions',]
-    : ['--fix',];
-  try {
-    await spawn(
-      'oxlint',
-      [
-        '--threads',
-        '1',
-        ...fixFlags,
-        '--format',
-        'json',
-        '-c',
-        READONLY_FIXTURE_CONFIG,
-        fixture.filePath,
-      ],
-      { cwd: ROOT, },
-    );
-  }
-  catch (error: unknown) {
-    if ((!((typeof error) === 'object')) || (error === null) || (!('stdout' in error)))
-      throw error;
-  }
+  await runOxlintFixture({
+    codePrefix: 'prefer-readonly-parameter-type(',
+    configFlag: '-c',
+    fixtureConfig: READONLY_FIXTURE_CONFIG,
+    target: fixture.filePath,
+    threads: 1,
+    // Suggestions stay opt-in so a case can show what the ordinary fix leaves alone.
+    fix: fixSuggestions ? 'fixes-and-suggestions' : 'fixes',
+  },);
   return readFileSync(fixture.filePath, 'utf8',);
 }
 
