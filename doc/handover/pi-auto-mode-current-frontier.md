@@ -22,6 +22,11 @@ renders the plan and handover through Pandoc and checks their local links.
 The first receipt is `auto-mode-rebuild-plan-render-bKxA2N/receipt.json` under the durable agent scratch root:
 both documents render and all 17 local links resolve within two GiB and two CPUs, without network access.
 No package build, dependency installation, or replacement source execution ran for the plan.
+The user's subsequent assessment question does not lift the implementation stop.
+The plan now explicitly records why it is not ready for implementation approval:
+an unqualified private host hook, unresolved behavioral reduction and shadow accounting,
+unbounded persistent log retention, unproven size fit, and an incomplete transitive development inventory.
+Do not describe the dependency inventory or the architecture as fully validated.
 
 ### Fresh implementation in main, 2026-10-19
 

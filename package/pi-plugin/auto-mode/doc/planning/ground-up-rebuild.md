@@ -11,6 +11,18 @@ Review the model contract, the host integration proposal, each dependency, and t
 Reply with corrections or an explicit approval to implement.
 Discussion of this plan alone does not resume implementation.
 
+### Assessment before implementation approval
+
+The rule-batching contract now matches the user's stated direction.
+The architecture is not yet sufficiently established for implementation approval.
+The host proposal depends on experimental Node hooks and private Pi functions,
+without a complete demonstrated execution sequence for every required mode.
+Rule precedence and final reduction, shadow call accounting, and persistent log retention remain unresolved.
+The size ranges are proposed budgets, not evidence that this integration fits them.
+The direct dependency-function inventory is present;
+the complete resolved transitive development inventory is still missing.
+These are substantive limits of this draft, not reasons to resume building while review is pending.
+
 The preserved reference worktree is
 `/var/home/user/temp/agent/pi-auto-mode-before-rebuild-20261019`
 at `e74f84bb9f60c3e1ea90f1325cf2e64947715ba0`.
