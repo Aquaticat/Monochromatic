@@ -1,8 +1,12 @@
 //! What:
 //!  Unit tests of the ownership decision for source files.
 //! Why:
-//!  The decision has four inputs (relative or absolute path, inside or outside the package directory, inside or outside the
-//!  build script's output directory, environment present or absent), and the UI fixture covers only the compiler-facing path.
+//!  The decision has four inputs (relative or absolute path,
+//! inside or outside the package directory,
+//! inside or outside the
+//!  build script's output directory,
+//! environment present or absent),
+//! and the UI fixture covers only the compiler-facing path.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -81,7 +85,8 @@ fn keeps_every_path_without_a_manifest_directory() {
     assert!(!roots.excludes(Path::new("x.rs")));
 }
 
-/// A relative output directory never matches an absolute path, and a relative path below it is excluded.
+/// A relative output directory never matches an absolute path,
+/// and a relative path below it is excluded.
 #[test]
 fn excludes_below_a_relative_output_directory() {
     let roots: OwnSource = OwnSource::from_values(Some("/work/package".into()), Some("out".into()));

@@ -68,7 +68,9 @@ fn stage(source: &Path, target: &Path) {
 ///  The lint skips files that are generated or lie outside the package directory,
 ///  and it learns both directories from the `CARGO_MANIFEST_DIR` and `OUT_DIR` variables that cargo exports,
 ///  so the test exports them for the compiler processes it starts:
-///  `tests/outside` holds a file beside, not below, the package directory.
+///  `tests/outside` holds a file beside,
+/// not below,
+/// the package directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

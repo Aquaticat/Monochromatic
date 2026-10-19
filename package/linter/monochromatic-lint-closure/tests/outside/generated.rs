@@ -2,7 +2,8 @@
 // Every closure here would be reported if the file were the package's own source; none is reported
 // because the lint skips a file outside the package directory.
 
-/// Apply a closure that captures nothing and is not kept by the callee, as generated code does.
+/// Apply a closure that captures nothing and is not kept by the callee,
+/// as generated code does.
 pub fn outside_capture_free() -> bool {
     return "a1".bytes().all(|byte| byte.is_ascii_digit());
 }
