@@ -345,7 +345,9 @@ The exact response-size and timeout values remain qualification inputs, not inve
 Purpose: compare Span 02 with the actual primary question sets without influencing execution.
 Interface: observe an immutable primary request and its result; retain a correlated shadow comparison.
 
-It preserves the same state, question text, and four answer choices.
+For group review it preserves the same state, question text, and four answer choices.
+The proposed mirror also covers startup relevance using that request’s unchanged relevance-answer schema;
+it does not convert startup relevance into operation approval.
 Only the endpoint envelope and model identifier differ.
 Shadow failures do not become primary permission failures or hold execution open.
 Shutdown cancels and joins observer work.
