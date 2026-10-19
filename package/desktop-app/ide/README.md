@@ -3356,104 +3356,64 @@ and `render/MainMinimap.kt`.
 
 ### Measured cost
 
-The numbers are from release bundles of `main` at `be51f5b314`,
-the commit this branch started from (the baseline),
-and
-of this branch merged with `main` at `ec0ae6dbaf` (bundle sha1 `9317d00b9081a1e76373bf42905888167ffa6be5`),
-on one
-host,
-in the nested compositor 0.6.0 with its recorder at 60 frames a second and the application isolated in its own
-cgroup.
-Every run listed has zero frames dropped by the recorder and a one-minute load average below 20 when it started
-(7.4 to 13.2 here;
-earlier batches taken while other sessions kept the host at a load of 20 to 60 were set aside).
-The harness is a copy kept outside the repository;
-each condition has four runs on each side,
-alternated in order.
+The numbers are for the picture builder of this branch.
+The frame-pacing measurements of the earlier builder (scrolling by wheel,
+dragging a window edge,
+memory of a bundle)
+were not repeated:
+the window thread's part of a picture is still one comparison and one image setter,
+and a scroll step still posts nothing.
 
-- Scrolling a long file by wheel (160 notches down and 80 up,
-  one every 16 ms,
-  230 recorded slots):
-  in all 16 runs of
-  each build,
-  over the 50,000-line plain text at 1100 px and at 600 px,
-  the 50,000-line Rust file,
-  and the 2,000-line
-  text,
-  the longest gap between painted frames is 16.7 to 17.0 ms,
-  228 of 230 slots are painted,
-  and no gap exceeds
-  100 ms.
-  The window thread's time to draw a frame has a median of 0.30 to 0.37 ms for `main` and 0.33 to 0.41 ms with the
-  minimap,
-  and a 95th percentile of 2.0 to 3.9 ms in both,
-  so a scroll step costs the same with the minimap.
-- Dragging the window's width from 1100 px to 600 px and back in steps of 25 px,
-  one every 16 ms,
-  two sweeps
-  (78 slots):
-  the longest gap is 17.0 to 17.7 ms in all runs of both builds after leaving out the one slot at the
-  junction of the sweeps where the harness commands the same width twice (it appears in 1 of 8 runs of `main` and 2 of 8
-  runs of the minimap build;
-  the frames of that slot are identical).
-  Painted slots are 75 to 77 of 78 in both builds,
-  and no gap exceeds 100 ms.
-  The window thread's step for a new width has a median of 3.06 to 3.20 ms for `main` and 2.78 to 2.99 ms with the
-  minimap on the 50,000-line text,
-  and 5.9 to 6.7 ms against 5.3 to 6.2 ms on the 2,000-line text.
-- The picture settles after the last width of a drag:
-  41 to 60 ms later on the 50,000-line text and 242 to 260 ms
-  later on the 2,000-line text (a debounce of 120 ms and the build),
-  where `main` settles in 24 to 26 ms
-  because it has no picture.
-  The text itself is current at once;
-  only the picture is a step behind,
-  and it is never built on the window thread.
-- The frames the harness counts as not fitting the output are recorder frames that hold the buffer of the previous
-  width (`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`).
-  Its detector for `main` looks for ink in the last two columns of a frame and counts 45 to 53 of 102 on the
-  50,000-line text and 60 to 66 on the 2,000-line text;
-  it cannot be used for the minimap build,
-  whose rows reach those
-  columns.
-  A detector that compares the minimap box's border against the width of the frame counts 37 to 42 of 102 on the
-  50,000-line text and 56 to 70 on the 2,000-line text in the minimap build (four runs each,
-  on the final bundle).
-- A picture of the 50,000-line fixture is built in 13.0 to 14.7 ms (628 pixel rows at the window's height,
-  212 lines
-  shaped);
-  the pictures before it,
-  drawn while the measurement reaches more lines,
-  take 3.1 to 16.0 ms.
-  The first picture of the right size is on screen 0.99 to 1.03 s after launch,
-  0.25 to 0.26 s after the first frame of
-  the text (six runs);
-  the last,
-  complete one,
-  2.48 to 2.53 s after launch,
-  when the measurement of the whole file has
-  ended.
-  The Rust file of the same length builds pictures of 3.3 to 18.8 ms as its highlights arrive,
-  the last at 3.8 to 4.0 s.
-  Before the last merge,
-  the 2,000-line wrapped text took 94 to 114 ms for the quick picture and 243 to 262 ms for the
-  full one,
-  a single line of 200,000 characters took 1.1 to 2.5 ms,
-  and a picture for the transient height at start
-  took 0.7 to 1.1 ms.
-- Memory,
-  median resident size of six runs:
-  the minimap bundle holds 445.1 MB on the 50,000-line text against 443.3 MB
-  for the baseline `main` and 444.7 MB for the current `main` (bundle sha1 `c46d89cd7b1850a0f607aa34170f5fec41d03926`),
-  and 592.1 MB on the Rust file against 588.1 MB and 592.3 MB.
-  Against the current `main` the minimap bundle is 0.4 MB above on the text and 0.2 MB below on the Rust file,
-  which is
-  less than the spread between runs of one bundle (1.5 to 10.2 MB);
-  the difference to the baseline comes with the work
-  merged from `main`.
-  The picture itself is `4 * width * track` bytes,
-  276 KB at 110 by 628 px.
-  The minimap bundle runs 28 or 29 threads against 26 to 29 for the two `main` bundles.
+- Release build,
+  one process for each measurement
+  (a throwaway test that timed `prepare` and `build` on synthetic lines of about ninety characters,
+  a view 1,000 px tall,
+  a minimap 110 px wide,
+  the cost of the first picture of the text,
+  with an empty cache):
+  1,000 lines take 110 ms at display scale 1 (34 units) and 245 ms at scale 2 (200 units),
+  with a peak resident size of 19.7 and 24.3 MB.
+  10,000 lines take 1,010 ms at scale 1 (1,000 units,
+  8,000 lines rendered) after a quick pass of 109 ms,
+  and 4,326 ms at scale 2 after a quick pass of 491 ms,
+  with a peak of 46.8 and 114.6 MB.
+  50,000 lines take 1,040 ms and 4,692 ms (peaks 56.5 and 124 MB),
+  and 200,000 lines take 1,079 ms and 4,868 ms (peaks 94.0 and 162 MB):
+  the cost follows the height of the track and the samples taken,
+  not the length of the file.
+- The cache:
+  a picture whose units are all valid costs 0.1 to 10 ms
+  (all 34 units at 1,000 lines,
+  all 2,000 at scale 2 on 200,000 lines),
+  and a selection of twenty characters renders the one or two units it touches
+  (2.6 ms at 1,000 lines,
+  4.1 ms at 10,000 lines and scale 1,
+  14.7 ms at scale 2).
+  A selection inside a squeezed text that no sampled code row touches renders nothing.
+- Debug build in the nested compositor
+  (`inspect:native`,
+  dark scheme,
+  this package's `src/native/wrap_resize_tests.rs`,
+  1,218 lines,
+  in a window of 1790 px at scale 1 and 1080 px at scale 2,
+  3,704 px tall):
+  the first picture of the file takes 665 ms at scale 1 (44 units,
+  30 rendered and 14 reused from a picture the first layout had already asked for)
+  and 1.73 s at scale 2 (101 units);
+  a selection made with the pointer renders 2 units in 82 ms at scale 1 and 3 units in 172 ms at scale 2;
+  a find for `fn` renders 44 and 79 units in 0.9 and 1.3 s.
+  The same file repeated to 49,938 lines in a window of 1100 by 660 px:
+  a quick picture after 0.61 s and the full one after 4.8 s at scale 1,
+  and a quick picture after 2.0 s at scale 2,
+  where the full one took 14.9 s in the debug build after a width change had cancelled the first build.
+  The window never waited for a build.
+- A window 12,000 px tall could not be shown in the nested compositor:
+  it hosts a window of at most 3,704 px of height here,
+  whatever size is asked.
+  The tall windows are covered by `src/native/tall_window_minimap_tests.rs` at 3,500 and 12,000 px instead.
+- The picture itself is `4 * width * rows` bytes at the display scale squared,
+  276 KB at 110 by 628 px,
+  and a band in flight is at most 4 MiB.
 
 ### Limits and follow-ups
 
