@@ -106,6 +106,7 @@ footer { color: var(--color-muted); font-size: 0.88rem; line-height: 1.6; border
   .arrow { transform: rotate(90deg); }
   .comparison .node { flex-basis: auto; }
 }
+li { line-height: 1.5; margin-block: 0.4rem; }
 select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline: 0.6rem; }
 .decision .ranking { font-size: 0.94rem; }
 </style>
@@ -182,7 +183,7 @@ select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline
 <option value="Revise: see notes">Revise the options or wording; see notes</option></select></section>
 <section id="q5" class="panel decision" aria-labelledby="q5-title">
 <div class="eyebrow">Open decision / Q5</div><h2 id="q5-title">Which general-agent rules should be built in?</h2>
-<p>Exact proposed checks: requested scope; suitable tools and arguments; established prerequisites; justified retries; preservation of task-relevant state except for authorized changes.</p><p class="quote">The same failing request is repeated with identical inputs and no new evidence. Is retry justification always checked explicitly?</p>
+<p>Proposed built-in questions, each answered approve / deny / ask / not-applicable:</p><ul><li>Does the prepared group advance the latest human-requested task within its requested action scope?</li><li>Are the chosen tools and their concrete arguments suitable for the requested operation?</li><li>Does the visible evidence establish prerequisites on which executing this group depends?</li><li>Is each operation justified by new work or evidence, rather than an unchanged retry of a known failure?</li><li>Does this group preserve task-relevant state except for changes the current request authorizes?</li></ul><p class="quote">The same failing request is repeated with identical inputs and no new evidence. Is retry justification always checked explicitly?</p>
 <div class="grid"><article class="node" data-kind="code"><h3>A. Include all five proposed checks</h3><p>Benefit: The retry and other distinct failure reasons get explicit coverage on every first pass.</p><p>Cost: Needs scenarios preventing false objections to valid retries and intentional changes.</p></article>
 <article class="node"><h3>B. Start with scope and tool/argument suitability only</h3><p>Benefit: Fewer overlapping checks; project rules cover remaining behavior when present.</p><p>Cost: The retry may have no explicit check in projects without an applicable rule.</p></article></div>
 <p class="ranking"><strong>Ranking: A > B because these checks cover distinct reasons an operation may fail the user’s purpose. Exact wording can be corrected in the response.</strong></p>
@@ -192,7 +193,7 @@ select { display: block; inline-size: 100%; margin-block: 0.7rem; padding-inline
 <option value="Revise: see notes">Revise the options or wording; see notes</option></select></section>
 <section id="q6" class="panel decision" aria-labelledby="q6-title">
 <div class="eyebrow">Open decision / Q6</div><h2 id="q6-title">Adopt upfront preparation for guarded sequential groups?</h2>
-<p>Pi currently prepares A, executes A, then prepares B. Reviewing a complete prepared group moves B’s preparation before A executes.</p><p class="quote">A writes a file. B’s preparation hook reads the new file to determine B’s arguments.</p>
+<p>Pi currently prepares A, executes A, then prepares B. Reviewing a complete prepared group moves B’s preparation before A executes.</p><p class="quote">A writes a file. B’s preparation hook reads the new file to determine B’s arguments.</p><div class="flow" aria-label="Current Pi timing"><div class="node"><strong>Current Pi</strong><p>Prepare A → Execute A → Prepare B → Execute B</p><p>B’s hook sees A’s output.</p></div><div class="node" data-kind="code"><strong>Complete prepared-group contract</strong><p>Prepare A + B → Review group → Execute A → Execute B</p><p>B’s hook runs before A. Result-dependent B needs a later group.</p></div></div>
 <div class="grid"><article class="node" data-kind="code"><h3>A. Prepare the whole group once, then execute frozen arguments in order</h3><p>Benefit: Provides a usable complete-group contract. Result-dependent B must be submitted as a later group.</p><p>Cost: Changes hook timing; incompatible result-dependent groups need an actionable rejection.</p></article>
 <article class="node"><h3>B. Leave incompatible groups blocked pending compatible host support</h3><p>Benefit: Makes the compatibility limit explicit without claiming unchanged behavior.</p><p>Cost: Those grouped operations remain unavailable while integration support is unresolved.</p></article></div>
 <p class="ranking"><strong>Ranking: A > B if upfront preparation is auto-mode’s documented contract, because it supplies an executable group model. Neither choice executes A before initial group review.</strong></p>
