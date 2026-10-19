@@ -127,8 +127,8 @@ async function lint({
         return { stdout: result.stdout, stderr: result.stderr, exitCode: 0, };
       },
       function failed(error: unknown,): { stdout: string; stderr: string; exitCode: number; } {
-        if ((typeof error) !== 'object' || error === null || !('stdout' in error) || !('stderr' in error)
-          || !('exitCode' in error))
+        if (((typeof error) !== 'object') || (error === null) || (!('stdout' in error)) || (!('stderr' in error))
+          || (!('exitCode' in error)))
           throw error;
         return {
           stdout: String(error.stdout,),
@@ -209,8 +209,8 @@ await describe({
             },);
 
             expect(pluginFailures(outcome,),).toEqual([],);
-            expect(outcome.diagnostics.map(function codeOf(diagnostic,): string | undefined {
-              return diagnostic.code;
+            expect(outcome.diagnostics.map(function codeOf(diagnostic,): string {
+              return diagnostic.code ?? 'no rule code';
             },),).toEqual([testCase.typedReport,],);
             expect(outcome.stderr,).not.toContain('refused',);
           },

@@ -167,14 +167,19 @@ await describe({
       timeout: PROCESS_TIMEOUT_MILLISECONDS,
     },),
     it({
-      name: 'types a source of a configured project, so a slice of an array is not reported as ambiguous',
+      name: 'types a source of a configured project, so a slice of an array is reported as a plain copy',
       fn: async () => {
         using project = scratchProject({
           source: 'declare const toppings: readonly string[];\nexport const copy = toppings.slice();\n',
           typed: true,
         },);
 
-        expect(await preferSpreadMessages(project.filePath,),).toHaveLength(0,);
+        /** Messages for the one slice. */
+        const messages = await preferSpreadMessages(project.filePath,);
+
+        expect(messages,).toHaveLength(1,);
+        expect(messages[0],).toContain('only copies it; write',);
+        expect(messages[0],).not.toContain('No type information is available here',);
       },
       timeout: PROCESS_TIMEOUT_MILLISECONDS,
     },),
