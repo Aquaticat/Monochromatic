@@ -394,14 +394,14 @@ its "Next" list is still the queue the merge went ahead of.
     The branch worktree stays at `2eeef91fac` until the rotation ends,
     so the rotation's build does not carry it;
     update the branch worktree only after the last entry is read.
-    Held for after the rotation or the next rebuild a class forces,
-    so every entry runs on one build:
-    `SEAT CREDENTIAL REFUSED` names the class `SyntheticHttpError` (renamed `ProviderHttpError` on 2026-10-19)
-    for a Bedrock seat's HTTP 401,
-    which reads as a Synthetic refusal;
-    the class is the HTTP error every provider shares
-    (`provider-stream/src/completion-shape.ts`),
-    so the line should name the seat's provider.
+    The seat line now names its provider
+    (red `180a72421d`,
+    fix `a81da6863e`,
+    B692):
+    `SEAT CREDENTIAL REFUSED <model> on <provider>`,
+    with both courses,
+    renew or leave the seat withheld;
+    the rotation's build still prints the old line until the branch worktree is updated.
 2.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
 3.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,

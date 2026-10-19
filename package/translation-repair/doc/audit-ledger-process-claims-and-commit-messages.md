@@ -908,3 +908,28 @@ Prevention:
 "Claims without their evidence":
 a fact the run's evidence states is checked against the sources that evidence cites
 before it is called wrong.
+
+## M281: a commit body described a README change another commit had already made
+
+Status:
+happened on 2026-10-19 (UTC),
+in the docs commit `79e96f63b6` of the bundler guard;
+corrected by a commit comment,
+`commitcomment-205673566`,
+since commits are never amended.
+
+The body of `79e96f63b6` opened with a `docs(config-rolldown)` paragraph
+saying the package README's behaviour notes now name the refusal.
+That README change was in the fix commit `0fa3120174`,
+whose pathspec listed `README.md`;
+the docs commit touched no file of `config-rolldown`.
+The lead wrote the body from the plan of the change,
+not from what was staged,
+and caught it afterwards when the commit's file count
+was one short of the paths the body named.
+
+Prevention:
+before a commit lands,
+read `git show --stat` of it beside its body;
+every package paragraph of the body names a file the stat lists,
+and every package the stat lists has its paragraph.

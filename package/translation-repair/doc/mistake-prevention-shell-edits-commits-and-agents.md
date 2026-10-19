@@ -587,6 +587,9 @@ and a check of a message for task-list numbers matched the message's own words,
 and stopped the commit without a word (ledger M130).
 A message that names what fails names every failure of its tree,
 and a check that stops a commit says that it stopped it.
+A docs commit's body gave a package paragraph for a README the fix commit before it had changed (ledger M281):
+in a multi-package body,
+each package paragraph names a file the commit's stat lists.
 
 The rule:
 a message states only what `git show --stat` of that commit shows;
