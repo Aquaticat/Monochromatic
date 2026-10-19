@@ -153,8 +153,9 @@ await describe({
       },
     },),
     it({
-      name: 'CARRIES THE PROVIDER THAT SERVED THE CALL on the plain failure and on the size failure alike, and the '
-        + 'size message names that provider rather than the one it was first measured against',
+      name: 'CARRIES THE PROVIDER THAT SERVED THE CALL on every failure, and READS THE SIZE ONLY ON SYNTHETIC, whose '
+        + 'gateway the cap and its parse-failure words were measured on: the same reply from another provider stays '
+        + 'a plain failure rather than claiming a size nobody measured there',
       fn: async () => {
         /**
          Plain failure for a throttle on Bedrock.
@@ -166,20 +167,31 @@ await describe({
           requestBodyBytes: 4_096,
         },);
         /**
-         Size failure for an oversize body on Charm Hyper.
+         Reply on Charm Hyper with every size signal Synthetic's gateway gives.
          */
-        const size = failureForReply({
+        const elsewhere = failureForReply({
           provider: 'hyper',
+          status: 400,
+          bodyText: PARSE_FAILURE,
+          requestBodyBytes: PASSING_BODY_BYTES + 1,
+        },);
+        /**
+         The same reply on Synthetic.
+         */
+        const onSynthetic = failureForReply({
+          provider: 'synthetic',
           status: 400,
           bodyText: PARSE_FAILURE,
           requestBodyBytes: PASSING_BODY_BYTES + 1,
         },);
 
         expect(plain.provider,).toBe('bedrock',);
-        expect(size.provider,).toBe('hyper',);
-        expect(size instanceof SyntheticRequestTooLargeError,).toBe(true,);
-        expect(size.message.startsWith('The hyper API refused a request body of',),).toBe(true,);
-        expect(size.message.includes('Synthetic',),).toBe(false,);
+        expect(elsewhere.provider,).toBe('hyper',);
+        expect(elsewhere instanceof SyntheticRequestTooLargeError,).toBe(false,);
+        expect(elsewhere.message.includes('measured to pass',),).toBe(false,);
+        expect(onSynthetic.provider,).toBe('synthetic',);
+        expect(onSynthetic instanceof SyntheticRequestTooLargeError,).toBe(true,);
+        expect(onSynthetic.message.startsWith('The Synthetic API refused a request body of',),).toBe(true,);
       },
     },),
 
