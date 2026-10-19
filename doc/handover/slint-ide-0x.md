@@ -960,17 +960,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     sidebar 44, language lifecycle 28, ignored 75, theme 13, search 49, language navigation 45, source 300). The other
     six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
     guard runners and were not run; they carry the same mechanical import and limit-argument change.
-  - Queued after the minimap landing (2026-10-19, agents running in worktrees off `origin/main`):
-    `fix/ide-wrap-clip-flake` (worktree `.claude/worktrees/ide-flake`) fixes the wrap-clip test race;
-    issue #1785 (a 10,000 px or taller window over wrapped text never settled) is fixed: landed on `main` as
-    `8c597c3c58` on 2026-10-19 after the coordinator reran the gates and the `tall-window-edge` guard, and installed
-    (the installed binary was not launched). Next, after the flake fix lands:
-    the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test` task
-    still runs `cargo test`). On 2026-10-19 the owner authorized deleting the merged IDE branches on origin
-    and 34 were deleted
-    (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the unmerged IDE
-    branches (language, live theme, navigation, runtime languages, sidebar resize, source keys, prototypes, research)
-    were left.
+  - After the minimap landing (2026-10-19): issue #1785 (a 10,000 px or taller window over wrapped text never
+    settled) is fixed and landed as `8c597c3c58`; the wrap-clip flake, a production bug in `take_pass`, is fixed
+    and landed as `8627edeeba`. The coordinator reran the gates for both (`lint:rustfmt`, `lint:clippy`,
+    `lint:release`, `lint:closures`, `test`, `test:native`), the `tall-window-edge` guard, and 400 stress runs of the
+    flaky test (400 passed), and installed the build after each (the installed binary was not launched).
+    Next: the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test`
+    task still runs `cargo test`). The owner authorized deleting the merged IDE branches on origin and 34 were
+    deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
+    unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
+    prototypes, research) were left.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
