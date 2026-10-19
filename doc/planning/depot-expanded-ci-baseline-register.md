@@ -204,6 +204,21 @@ It is not a whole-repository baseline and it is not a gate.
 The log is in
 [the fast-subset CI log](../audit/depot-fast-subset-baseline-39199930641-2026-10-18.log.gz).
 
+## Advisory profile
+
+`.github/workflows/advisory-core.yml` implements the default-branch advisory profile.
+It runs on a push to `main` and on dispatch.
+The gate admits 2 starts per rolling minute,
+4 per hour and 8 per day,
+and records the newest skipped tip as pending.
+The core job runs on GitHub-hosted Linux,
+uses the changed-path static selector,
+and runs the five-owner fast subset build and unit tasks.
+Results are advisory;
+no required checks and no branch-protection change follow.
+GitHub run `39201349364` is the first implementation run;
+its outcome is recorded when it finishes.
+
 ## Build profile
 
 Command:

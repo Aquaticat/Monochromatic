@@ -85,6 +85,9 @@ Android,
 Qt and Podman stay in the weekly prepared environment.
 The complete profile runs in the weekly matrix,
 not on every push.
+This profile is implemented by `.github/workflows/advisory-core.yml` on GitHub-hosted Linux.
+Its results are check runs on the commit and a step summary;
+no required checks and no branch-protection change follow.
 The default-branch run uses the sliding-window limiter currently used by the Scorecard workflow as
 its starting point:
 2 admitted starts per rolling minute,
