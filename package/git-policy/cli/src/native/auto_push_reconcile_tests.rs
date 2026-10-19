@@ -301,6 +301,26 @@ fn a_remote_that_moves_again_is_merged_again() {
     remove(&s.root);
 }
 
+/// Busy sibling worktrees are not a conflict: a remote that moves five times in a row is still merged into and
+/// published, which needs more attempts than a short bound allows.
+#[test]
+fn a_busy_remote_is_merged_into_until_it_settles() {
+    let s = scenario("ar-busy");
+    advance_remote(&s, "a.txt", "remote\n");
+    let counter = advancing_hook(&s, 5);
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let (result, err) = run(&s, &landed);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    assert_eq!(hook_runs(&counter), 6);
+    assert_eq!(text_of(&s.remote, &["show", "main:advance-5.txt"]), "5");
+    assert_eq!(text_of(&s.remote, &["show", "main:b.txt"]), "local");
+    remove(&s.root);
+}
+
 /// A remote that never settles ends after the bound with the reason, and nothing newer than the rejection is pushed.
 #[test]
 fn a_remote_that_never_settles_is_reported_after_the_bound() {

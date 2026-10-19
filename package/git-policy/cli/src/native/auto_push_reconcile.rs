@@ -37,7 +37,7 @@ pub const RECONCILE_LINE_PREFIX: &str = "cli-git: auto-push: ";
 pub const RECONCILE_FAILED_PREFIX: &str = "cli-git: auto-push: not published: ";
 
 /// How many times the remote tip is fetched, merged and pushed before the push is reported as failed.
-pub const MAX_RECONCILE_ATTEMPTS: u32 = 3;
+pub const MAX_RECONCILE_ATTEMPTS: u32 = 10;
 
 /// The marker Git prints for a push the remote refused as stale; the word is not translated.
 const REJECTED_MARKER: &str = "[rejected]";
