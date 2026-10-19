@@ -24,6 +24,8 @@ export type DecisionFallbackMode =
   | 'deny'
   | 'transient'
   | 'transient-deny'
+  | 'unavailable'
+  | 'unavailable-deny'
   | 'unknown'
   | 'low'
   | 'transport'

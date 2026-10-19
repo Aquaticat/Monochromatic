@@ -47,6 +47,8 @@ The transport does not create a replacement deadline or independently restart it
 
 `src/assessment-failure.ts` separates a failed HTTP invocation from preparation and protocol failures.
 A fetch `TypeError` while the original caller remains active receives a local sanitized category.
+An HTTP 503 response receives that category after bounded response consumption and credential checks.
+Other HTTP statuses keep the permanent category.
 The native judgment may use its existing single retry for a bundle containing only that category.
 No upstream message or borrowed cause is retained.
 Cancellation,
@@ -54,6 +56,16 @@ credential failures,
 malformed responses,
 and model uncertainty do not qualify through this category.
 Retry failure still withholds an automatic answer.
+
+The configured content-aligned replay on 2026-10-19 received an HTTP 503 during tool 18.
+The sender classified it as permanent and the host requested confirmation.
+The preserved capture contains 35 HTTP 200 responses and one HTTP 503 response.
+This is an observed assessment-service failure, not evidence that page storage caused the failure.
+[RFC 9110, section 15.6.4](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.6.4)
+defines 503 as temporary overload or maintenance.
+Retry eligibility uses the known response status, never borrowed error text.
+The existing judgment still owns the sole retry, caller cancellation, and physical-call allowance.
+No retry loop or new timer is introduced inside fetch.
 
 ## Alternatives
 
@@ -78,6 +90,8 @@ and leaves retry ownership with the existing judgment.
   covers provider partitions and shared physical-call accounting.
 - `mise run //package/pi-plugin/auto-mode:test:native:decision-fallback`
   includes a failed final HTTP invocation followed by approval or denial.
+  The `unavailable` and `unavailable-deny` modes exercise an actual HTTP 503 response
+  followed by a successful approval or denial response through the maintained sender.
   The approval fixture executes the original group without confirmation;
   the denial fixture executes no member.
 

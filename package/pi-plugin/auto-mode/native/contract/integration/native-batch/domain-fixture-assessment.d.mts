@@ -15,7 +15,7 @@ export type DomainFixtureAssessmentSettings = Readonly<{
   operationDecision?: 'approve' | 'deny' | 'unknown';
   operatingPolicy?: boolean;
   httpTransport?: boolean;
-  transientHttpFailure?: boolean;
+  transientHttpFailure?: 'none' | 'request' | 'unavailable';
   lowConfidenceClause?: boolean;
   nextDecision?: boolean;
   nextInput?: string;

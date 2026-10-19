@@ -112,8 +112,12 @@ const sendAssessment=httpTransport?createAssessmentSender({
     false
   );
   const decisionRequest=JSON.parse(options.body);
-  if(settings.transientHttpFailure && (observations.httpCalls===2))
-    throw new TypeError('Fixture connection reset with private request data');
+  if(observations.httpCalls===2){
+    if(settings.transientHttpFailure==='unavailable')
+      return new Response('Private temporary service failure', {status:503});
+    if(settings.transientHttpFailure==='request')
+      throw new TypeError('Fixture connection reset with private request data');
+  }
   const nativeRequest={
     model:decisionRequest.model,
     state:JSON.parse(decisionRequest.input),
