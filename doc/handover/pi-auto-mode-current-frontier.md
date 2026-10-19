@@ -49,6 +49,18 @@ Independently verifiable work:
 - Document the purpose of every substantial module inside the package.
 
 Do not revive the legacy lint-repair queue for source being replaced.
+The user corrected another delay: the assistant described a fresh rebuild while leaving `src` in place.
+The three uncommitted source edits are now preserved in `3ef7f32d19`.
+`git rm -r -- package/pi-plugin/auto-mode/src` removed the legacy source from `main`;
+`test ! -e package/pi-plugin/auto-mode/src` confirms the directory is absent.
+The package is intentionally between implementations, with no replacement build or test claim.
+The two untracked legacy TypeScript probe configs remain untouched:
+their owner is host UID `524288` and mode is `700`, so the attempted five-file checkpoint failed
+with `git-policy-cli` diagnostic `content-unavailable`, reporting Git's `Permission denied`.
+The subsequent three-source-file checkpoint succeeded.
+Recover the probe configs' ownership and checkpoint their contents before removing them.
+The legacy worker containers are absent from the running-container inspection;
+the remaining shadow, IDE and unrelated container mounts do not include either worker fixture as writable state.
 RPC abort commands were submitted to both legacy workers;
 their controller state files remain at 13:15 while submitted commands remain unconsumed at 13:25.
 Establish whether their processes are still alive before checkpointing their files.
