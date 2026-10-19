@@ -164,6 +164,11 @@ export type RunOxlintFixtureParams = {
    Fixes to write back to the target. When absent the run only lints and leaves the target untouched.
    */
   readonly fix?: OxlintFixMode;
+  /**
+   Variables added to the environment of the oxlint process, such as a fault injection loaded through
+   `NODE_OPTIONS`. Absent variables keep the environment of the test process.
+   */
+  readonly environment?: Readonly<Record<string, string>>;
 };
 
 /**
@@ -402,6 +407,7 @@ export async function runOxlintFixture(
     target,
     threads,
     fix,
+    environment,
   } = params;
   /**
    Captures stdout from oxlint whether diagnostics make the process exit non-zero or not.
@@ -427,7 +433,10 @@ export async function runOxlintFixture(
           fixtureConfig,
           target,
         ],
-        { cwd: OXLINT_PLUGIN_TEST_ROOT, },
+        {
+          cwd: OXLINT_PLUGIN_TEST_ROOT,
+          ...environment === undefined ? {} : { env: environment, },
+        },
       );
       return stdout;
     }
