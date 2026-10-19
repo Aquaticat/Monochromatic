@@ -170,18 +170,20 @@ pub fn rustc_dev_missing_in(sysroot: &Path) -> Option<String> {
 
 /// What:
 ///  Explain a missing `rustc-dev` component in the active compiler,
-///  unless a replacement `cargo` is selected.
+///  unless a replacement `cargo` is in use.
 /// Why:
 ///  The active compiler is the one `rustc --print sysroot` names.
-///  A replacement `cargo` stands for the whole toolchain,
-/// so it is not inspected.
+///  A replacement `cargo` (anything but the bare program name) stands for the whole toolchain,
+/// so it is not inspected;
+///  the decision follows the program the step was given,
+///  not the process environment, so a test that passes a stub is independent of the machine's compiler.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rustcDevMissing(): string | undefined;
+/// function rustcDevMissing(cargo: Path): string | undefined;
 /// ```
-pub fn rustc_dev_missing() -> Option<String> {
-    if std::env::var_os(CARGO_VARIABLE).is_some() {
+pub fn rustc_dev_missing(cargo: &Path) -> Option<String> {
+    if cargo != Path::new("cargo") {
         return None;
     }
     let output = match Command::new("rustc")

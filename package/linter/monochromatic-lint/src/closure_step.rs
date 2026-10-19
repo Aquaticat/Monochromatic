@@ -286,7 +286,7 @@ pub fn run_closure_step_with(
     }
     let machine_gap: Option<String> = match dylint_available(cargo) {
         Some(reason) => Some(reason),
-        None => rustc_dev_missing(),
+        None => rustc_dev_missing(cargo),
     };
     if let Some(reason) = machine_gap {
         outcome.messages.push(skip_message(

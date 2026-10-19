@@ -14,7 +14,7 @@
 
 use super::{
     CARGO_VARIABLE, DYLINT_FLAGS, cargo_program, dependencies_missing, dylint_available,
-    run_dylint, rustc_dev_missing_in,
+    run_dylint, rustc_dev_missing, rustc_dev_missing_in,
 };
 use crate::{closure_probe::PackageSetup, closure_stub_support::scenario, test_fs::Fixture};
 use std::path::{Path, PathBuf};
@@ -215,4 +215,12 @@ fn rustc_dev_is_recognized_by_its_library_files() {
     );
     std::fs::write(library.join("librustc_middle-abcd.rmeta"), "").expect("rustc-dev file");
     assert_eq!(rustc_dev_missing_in(&sysroot), None);
+}
+
+/// A replacement `cargo` stands for the whole toolchain,
+/// so the compiler of the machine is not inspected for it.
+#[test]
+fn a_replacement_cargo_is_not_asked_about_the_machine_compiler() {
+    assert_eq!(rustc_dev_missing(Path::new("/some/stub/cargo")), None);
+    assert_eq!(rustc_dev_missing(Path::new("cargo-nightly")), None);
 }
