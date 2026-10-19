@@ -339,6 +339,15 @@ overrides:
   'fast-xml-parser': '>=5.7.0'
   'jspdf>canvg': '-'
   'jspdf>dompurify': '-'
+  # Drop katex for GHSA-238p-pmpm-9mq7 / CVE-2026-103923: >=0.11.0 <0.18.2 lets
+  # existing prototype pollution bypass its trust restrictions. Its sole consumer is
+  # micromark-extension-math@3.1.0 (via remark-math@6 in
+  # package/translation-repair/document-structure), whose latest release still asks
+  # for `katex: ^0.16.0`, so the fix cannot be reached in range. Only that
+  # package's HTML extension (`lib/html.js`) imports katex; the workspace uses the
+  # syntax extension through remark-math, and no built bundle carries katex. Its
+  # type import of `KatexOptions` resolves through `@types/katex`, which stays.
+  'micromark-extension-math>katex': '-'
   # Patch [ERR_PNPM_TRUST_DOWNGRADE]: nanoid@3.3.14 failed verification with possible package takeover.
   'nanoid': '>=5.1.15'
   # Substitute deprecated node-domexception@1.0.0 with a workspace shim that

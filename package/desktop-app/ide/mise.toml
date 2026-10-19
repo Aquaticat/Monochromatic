@@ -267,7 +267,7 @@ description = "Run the minimap geometry and picture tests in the bounded contain
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap'])
+runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap', '--test', 'minimap_downscale', '--test', 'minimap_picture'])
 """
 
 [tasks."test:native"]

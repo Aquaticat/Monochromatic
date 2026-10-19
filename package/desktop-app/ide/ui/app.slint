@@ -1,4 +1,5 @@
 // Native source-view gate. The model owns positions; this UI never edits source.
+import { Surface } from "surface.slint";
 import { Palette } from "std-widgets.slint";
 import { ProjectTree, TreeEntry } from "tree.slint";
 import { SidebarDivider, SidebarDividerGrip } from "divider.slint";
@@ -26,7 +27,7 @@ export component AppWindow inherits Window {
     preferred-height: 660px;
     min-width: 480px;
     min-height: 320px;
-    background: Palette.background;
+    background: Surface.background;
     default-font-family: "Inter Variable";
     forward-focus: code-focus;
 
@@ -213,20 +214,29 @@ export component AppWindow inherits Window {
     out property <float> viewport-width: root.text-area-width / 1px;
     // The minimap beside the text: CodeGlance Pro's 110 px, narrower in a narrow view (`ide_app::minimap::width_for`).
     out property <length> minimap-width: clamp(round(scroll.width / 6px) * 1px, 15px, 110px);
-    // Native code builds the picture of the whole file; the box and the track follow the scroll live, from the text's
-    // height, the view's height, and the scroll offset alone (`ide_app::minimap::Geometry` holds the same formulas).
+    // Native code builds the picture of the bands near the visible part of the file; the box, the track and the slide of
+    // the picture follow the scroll live, from the text's height, the view's height, and the scroll offset alone
+    // (`ide_app::minimap::Geometry` holds the same formulas).
     in property <image> minimap-image;
+    // The picture's size in physical pixels, which the markup draws it at, and the row of the whole picture its first
+    // row is.
+    in property <float> minimap-picture-width: 0;
+    in property <float> minimap-picture-height: 0;
+    in property <float> minimap-picture-top: 0;
     // Whether the pointer is over the minimap, and whether its left button is down on it.
     out property <bool> minimap-hovered: minimap.hovered;
     out property <bool> minimap-over-box: minimap.over-box;
     out property <bool> minimap-pressed: minimap.pressed;
     private property <length> minimap-content: max(root.content-extent * 1px, 1px);
-    private property <float> minimap-scale: min(4.0 / 24.0, scroll.height / root.minimap-content);
+    private property <float> minimap-scale: 4.0 / 24.0;
     out property <length> minimap-track: min(root.minimap-content * root.minimap-scale, scroll.height);
     out property <length> minimap-box-height: min(root.minimap-track, max(20px, scroll.height * root.minimap-scale));
     private property <length> minimap-range: max(0px, root.minimap-content - scroll.height);
     out property <length> minimap-box-top: root.minimap-range > 0px
         ? max(0px, root.minimap-track - root.minimap-box-height) * clamp(-scroll.content-y / root.minimap-range, 0, 1) : 0px;
+    // How far the picture of a text taller than the track has slid up past it: its overhang by the scroll's share.
+    out property <length> minimap-slide: root.minimap-range > 0px
+        ? max(0px, root.minimap-content * root.minimap-scale - root.minimap-track) * clamp(-scroll.content-y / root.minimap-range, 0, 1) : 0px;
     // A press on the minimap (distance from its top and left edge, Shift, on the box), a drag, a release, a page step
     // from an assistive tool, and the minimap's size.
     callback minimap-press(float, float, bool, bool);
@@ -585,6 +595,10 @@ export component AppWindow inherits Window {
                         width: root.minimap-width;
                         height: scroll.height;
                         picture: root.minimap-image;
+                        picture-width: root.minimap-picture-width;
+                        picture-height: root.minimap-picture-height;
+                        picture-top: root.minimap-picture-top;
+                        slide: root.minimap-slide;
                         track: root.minimap-track;
                         box-height: root.minimap-box-height;
                         box-top: root.minimap-box-top;
