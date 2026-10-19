@@ -121,8 +121,11 @@ Its two attempts are recorded in the ledger.
 ## Current state
 
 The trial allowances are active.
-Two paid native attempts were admitted:
-`dmjf38bcz0` and `r2mxbc40rh`.
+Four paid native attempts were admitted:
+`dmjf38bcz0`,
+`r2mxbc40rh`,
+`xv1dwhq3h4` and
+`130wfntbg4`.
 Each is recorded as 15 native minutes,
 10 USD reserved and about 0.35 USD actual.
 The remaining Startup allowance is far above the observed use.

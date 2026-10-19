@@ -19,10 +19,25 @@ Evidence root:
 - Explicit native dispatch of the current baseline workflow:
   native workflow `current-baseline` is registered and dispatchable by API.
 - Explicit local run of the weekly native matrix:
-  native run `dmjf38bcz0` is the first bounded matrix execution.
+  native runs `dmjf38bcz0`,
+  `r2mxbc40rh`,
+  `xv1dwhq3h4` and
+  `130wfntbg4` are the bounded matrix executions.
+- Weekly matrix fast subset and Android consumer:
+  qualified by runs `dmjf38bcz0` and `r2mxbc40rh`.
+- Weekly matrix static baseline:
+  reproduced the known whole-tree findings rather than passing.
 
 ## Not qualified
 
+- Weekly matrix BuildKit category:
+  rootless Podman cannot create the user namespace in the native sandbox.
+  `PODMAN_USERNS=host` did not fix it.
+  A rootful Podman command is needed before this category is qualified.
+- Weekly matrix VM category:
+  the vmsync path defect is fixed,
+  but the sandbox has no `virsh` or libvirt.
+  The category is incomplete until a libvirt-capable sandbox is admitted.
 - Paused-session SSH,
   `--ssh-after-step`,
   tmate and interactive session strings.

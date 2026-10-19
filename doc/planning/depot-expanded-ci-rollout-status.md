@@ -12,18 +12,17 @@ Baseline register:
 
 ## Answer
 
-No,
-not everything is done.
-The plan and its decision records are accepted.
-The default-branch and pull-request advisory profile is implemented and qualified.
-The remaining work items are admission and fallback,
-the weekly native matrix,
+All nine planned work items now have implementation records.
+The advisory profile,
+admission and fallback,
+weekly native matrix,
 cache admission,
 trust controls,
-the full prepared-environment baseline,
-relative-target measurement,
-and the
-subscription transition.
+native qualification and fast-subset measurement are recorded.
+The complete build and whole-repository unit baseline are still not known-good.
+BuildKit and the VM matrix category remain unqualified for environment-specific reasons.
+The subscription transition remains a user action.
+These residuals are listed at the end of this status.
 
 ## Work item status
 
@@ -144,13 +143,19 @@ Done.
 - Clean re-dispatch `r2mxbc40rh` completed in 14 minutes 39 seconds and reproduced the same
   category outcomes.
   No duplicate execution occurred;
-  both runs are in the ledger.
+  all four runs are in the ledger.
+- Two follow-up runs tested environment fixes.
+  `xv1dwhq3h4` resolved the vmsync path and then missed `qemu-img`.
+  `130wfntbg4` installed `qemu-img` and then missed `virsh` and libvirt.
+  BuildKit still failed on the rootless Podman namespace with `PODMAN_USERNS=host`.
 - Evidence:
   [the weekly matrix evidence](../audit/depot-weekly-native-2026-10-19.evidence.json).
 - Residual capability gaps:
   BuildKit needs a rootful Podman path,
-  and the vmsync test path needs a fix.
-  Neither changes the matrix's category evidence.
+  and the VM category needs a libvirt-capable sandbox.
+  Both are recorded incomplete rather than product failures.
+  The fast subset,
+  Android and static categories carry the matrix result.
 
 ### 5. Cache admission
 
