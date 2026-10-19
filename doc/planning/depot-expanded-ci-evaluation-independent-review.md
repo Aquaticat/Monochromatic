@@ -385,15 +385,19 @@ Closure workstreams:
   [the registration evidence](../audit/depot-registration-control-2026-10-18.evidence.json);
   the primary-source research remains in
   [the registration research](depot-native-registration-research.md).
+- Duplicate execution was observed with the same side-effect-free workflow on both providers:
+  GitHub run `39187939149` and native run `ps_sjdqrdsgtl` for marker commit `3cf4d341f1`,
+  with checks `probe` from `github-actions` and `duplicate-control / probe` from
+  `depot-code-access`.
+  The evidence is in
+  [the duplicate control](../audit/depot-duplicate-control-2026-10-18.evidence.json).
+  The adoption proposal uses explicit dispatch for the weekly matrix to avoid duplicate execution.
 
 ## Open closure items
 
 The following are not satisfied by this review record and remain work:
 
-- native evidence experiments still open:
-  duplicate-publication behavior,
-  check-name mapping,
-  and paused-session qualification;
+- paused-session qualification;
 - no-overage sliding-window admission and the operator cap verification;
 - adoption record and decision-record acceptance;
 - subscription transition from the Startup trial to Developer;

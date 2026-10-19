@@ -98,7 +98,9 @@ and the closure workstream record.
   ([registration evidence](../audit/depot-registration-control-2026-10-18.evidence.json)).
   The weekly matrix still uses explicit dispatch for admission control;
   no automatic push trigger is relied on for the matrix.
-  Duplicate-publication behavior remains a separate control.
+  Duplicate execution of a side-effect-free workflow was observed on 2026-10-19
+  ([evidence](../audit/depot-duplicate-control-2026-10-18.evidence.json));
+  explicit dispatch avoids that duplicate for the weekly matrix.
 - Paused-session SSH,
   `--ssh-after-step`,
   tmate and interactive session strings are excluded from
