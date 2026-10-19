@@ -6,6 +6,124 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Correct the catalog terminology: `test:native:producer-lifetime` runs nine semantic cases,
+  four lifetime cases and five mutation-path cases. Those five cases are not rebuilt source-removal controls.
+  Separate scratch `verify-producer-built-guards.ts` rebuilds five source variants and requires their
+  lifetime/capacity consumers to fail, then restores both consumers. Keep both evidence layers separate.
+- `97197764fa` installs the mixed-language default lint project and explicitly retained `tsconfig.types.json`.
+  Fresh full-package Oxlint at this frozen commit reports 10,835 warnings/136 errors across 892 files,
+  486 rules, 45.5 seconds under two-GiB/two-CPU bounds.
+  Its fresh JS build still hits the known native declaration-closure failure; the native fix is uncommitted.
+  Owned content-page scope reports 46 formatting warnings/zero errors; its private formatter is running.
+- Native content-page consumer regressions pass in candidate `KPNOhL` at `62c3796aca`:
+  changing sequences preserve every digest with 56,296 additional retained bytes;
+  exact code units, surrogate digest collision and foreign-accessor controls pass;
+  1,600 native streaming updates retain 11,033,856 measured bytes;
+  600 distinct source publications preserve 713,092,714 logical receipt bytes.
+  The last retained-heap delta is negative, so do not describe it as a literal storage size.
+  This candidate rebuilt native sources over the pinned initial JS output after the clean JS build blocker,
+  so these are component consumer results, not a freshly combined host qualification.
+- The phase identity negative control replaces only the stored original update with a clone.
+  The actual parallel native consumer fails `updated` after `returned` at `native-phase-assertions.ts:162`.
+  Restoring the private source passes the same consumer. Root sources and publication remain unchanged.
+- `9163ffd584` shares immutable pages of at most 256 chunk references across retained input versions.
+  The isolated red probe retains 24,589,536 bytes for 24 changing versions versus unchanged controls
+  of 1,091,016 and 1,029,504 bytes. The new source probe retains 131,160 bytes versus controls
+  of 75,152 and 18,232 bytes; its additional 56,008 bytes are within the 56,920-byte unchanged spread.
+  Every original digest and version identity passes. This is isolated source evidence, not a configured-host fix claim.
+  Maintained capacity regression is committed and moved to the existing MJS native-consumer harness.
+  Fresh combined build, actual consumers, lint and full-history replay remain required.
+- Fresh `build:js` after `520a947723` fails Rolldown `UNRESOLVED_IMPORT` on generated
+  `native-return-consumer.mjs` and `maintained-policy.mjs`, reached through the new judgment-factory closure.
+  Native MiMo has the exact log and owns this clean-archive build repair alongside the owner split/type fixes.
+- The phase formatter succeeds with zero warnings/errors after private source mounts are writable.
+  Its actual fix changes only indentation of the member/comparison continuation;
+  root retains it in `28c3057995`. The cloned-update negative control is still required.
+- Protected Git reports successful commit `3e3fdd7baa`, then exits 2 with
+  `engine-failure`/`transaction-failed`: missing transaction `index-installed` completion-marker directory.
+  Root verifies its exact two committed paths and does not retry. GitHub issue #1781 records this distinct incident.
+  Source MiMo's later unrelated-image LFS commit failure remains the existing #1770 incident.
+- The private separated-project probe preserves the original TS-only configuration byte-for-byte.
+  Its type-check command catches a deliberately wrong string assignment with `TS2322`;
+  removing that fixture passes the restored full check on the qualified phase artifact.
+  MJS Node assertions resolve while the intentional unsafe member/return findings remain.
+  An initial attempted isolated-declaration control produced no isolated diagnostic and also used a stale artifact;
+  it does not prove declaration-emission behavior. Keep existing compiler options in the types project.
+- Source MiMo's regex-free checkpoint remains staged after #1770, not committed.
+  Root requests a single literal-message predicate and a stable literal for the three supersession diagnostics,
+  replacing the unnecessary ordered-pattern/gap scanner. Its general regex-equivalence claim needs a counterexample check.
+  Preserve all nine actual consumer cases and thrown-value identity checks; root will deliver exact corrected paths if needed.
+- Controlled replay B completes 36 groups, zero tool errors, no approval dialog, normal exit zero/signal null.
+  Three post-GC samples are 271,912,280 to 271,933,368 bytes, reproducing run A's continued warmed growth.
+  Its private heap snapshot is 254,001,162 bytes; bounded analysis succeeds with the positive retained-array control.
+  Redacted strong paths reach large `chunks` backing arrays through SessionManager's constructed-input reader,
+  `retainContent`, and the content store's `contents` Map. This is a concrete retention path, not yet a causal fix.
+  Current request and last-review bodies also retain about 7.4 MB each.
+  Analysis receipt: scratch `retained-heap-analysis-repeat-b-final-latest.json`, output `gyayjW`.
+- A discriminating lint probe separates Node assertions from genuinely unsafe JavaScript.
+  Both default and named Node assertions are error-typed with the current TS-only project;
+  a private default project including JavaScript with `allowJs` removes those findings while preserving
+  the intentional unsafe member/return findings. An equivalent TypeScript file also resolves Node correctly.
+  Passing a separate config through Oxlint's import-resolution `--tsconfig` flag did not fix the program context.
+  The production remedy must retain declaration checks; private probes disabled `isolatedDeclarations` only
+  because TypeScript disallows combining it with JavaScript input. No production config has changed.
+- Native MiMo commits `520a947723`, exactly five paths: generic typed owner, SDK-derived contracts,
+  MJS entry facade, artifact factory types and the existing declaration generator.
+  Its checkpoint reports 21 warnings/46 errors in scope and six type errors, so it is not qualified.
+  Root approved its exact five-path checkpoint commit through RPC using existing commit authorization;
+  automatic review had left this operation unresolved. Record this manual intervention in consumer evidence.
+  The next native assignment fixes types and splits the owner; source retains its test ownership.
+- Candidate `phase-identity-clean` at frozen `f42d8884d0` passes both builds and full types.
+  A mistakenly broad lint invocation ran the whole package instead of the intended three-file scope;
+  its 10,999 warnings/86 errors are a whole-package snapshot, not a scoped phase result.
+  Correct the invocation and retain the original build logs because the matrix summary is overwritten per call.
+- Source MiMo commits `937954199a`: four files, four lifetime cases plus five rebuilt fault controls,
+  nine total, with the actual nine-case consumer passing. Its reported scope has 103 warnings/zero errors.
+  Main rejects its rationale for fifteen new regex suppressions: test error-message matchers are not
+  incoming SDK category validation. A follow-up prompt orders ordinary assertion predicates and removal
+  of those suppressions, with the root guidance unchanged and a package-local explanation.
+  The 29 error-typed Node assertion receivers are a separate unresolved TypeScript program-context question;
+  do not attribute them to the untyped owner without a discriminating probe.
+- Source worker's 32-tool checkpoint post-GC heap is 365,008,352 bytes in all three samples.
+  Native worker's producer-owner/declaration port and source worker's matcher correction remain active.
+- Controlled run A completes normally at 36 groups and about 272.6 MB heap;
+  run B reaches 24 groups at about 227.9 MB, reproducing warmed growth on the same initial history.
+  Its final snapshot is still pending. Keep this investigation separate from the producer-retirement guard.
+- Forty-four documentation files render through Pandoc with no broken local links.
+  The rendered phase-identity document was read; receipt `render-current-docs-receipt.json`, fixture `KYPY1v`.
+  `a834db549c` independently passes both fresh builds and full types;
+  its phase scope leaves only one chain-format warning. The equality operator's final formatting fix
+  still needs the actual scoped receipt, followed by the planned cloned-update negative control.
+- `059a66fd91` removes phase-fixture unsafe event-detail access by retaining the original finite authored updates
+  and matching their opaque identities. Installed native `emitToolExecutionUpdate` forwards the original result;
+  the full native phase catalog confirms the actual native dispatch does too.
+  The execute callback now derives directly from SDK `ToolDefinition`, avoiding a manual nullish union.
+  Candidate `UlR1fr` passes both builds, full types, full phases, both inflight consumers and schema controls.
+  Its three-file lint scope has zero errors and three formatting warnings;
+  the formatting-only follow-up splits those chains and still needs its actual zero-lint receipt.
+  Add a private cloned-authored-update negative control and show the existing update assertions fail.
+- Character/role audit at frozen `fa164036c6` passes Unicode code-point, Unicode-before-comment,
+  wrapping, ambient-declaration and role-reachability controls.
+  Raw source: 885 files, 4,081,015 characters. Runtime-reached roles: 371 files,
+  1,621,116 raw characters and 824,074 non-whitespace characters after Node type erasure and comment removal.
+  There remain 113 nonliteral imports and 65 unresolved local references, not a minimal-runtime proof.
+  Receipt `character-role-audit-final.json`; latest fixture `bounded-native-test-eVyMbo`.
+- Whole footprint traversal/collection ran in two-GiB/two-CPU/512-MiB-heap isolation.
+  Owned directory: 106,478,753 regular-path bytes, 24,213,276 unique regular bytes,
+  29,691,904 allocated owned inode bytes, excluding shared symlink targets.
+  `dist` has 99,115,872 path bytes and 16,850,395 unique bytes through hardlinked releases.
+  Installed `host-required`: 120,136,973 unique bytes across 81 directories;
+  `all-installed`: 255,684,429 across 96. These are live repair snapshots, not deployment closures.
+  Package architecture/footprint docs record exact scopes in `c77f6e4c30`; rendered verification remains required.
+- Controlled configured replay A finishes 36 real reviewed `pwd` groups, zero tool errors, no manual approvals,
+  normal exit zero/signal null, using the original full saved history and a finite synthetic primary stream
+  while Luna decisions and configured extensions are real, with the repository read-only.
+  Post-GC heaps: idle about 96.3 MB, after 12 about 184.9 MB, after 24 about 227.9 MB,
+  after 36 about 272.6 MB. Continued warmed growth is unresolved and separate from the producer-retirement unit fix.
+  Run B repeats unchanged setup and will capture a private final heap after the recorded measurements,
+  with exact PID/executable identity and the retained sampling control checked before inspector use.
+  First hypotheses: retained request snapshots, diagnostic/event retention, then late initialization.
+  Neither the profiler nor the replay result proves the REISUB's cause.
 - `bb0496f82f` ports admission selection to TypeScript using the actual maintained producer collections.
   Candidate `1jnKM6` passes both builds, full types, full phases, source freshness,
   both inflight-input consumers and schema controls. The gate's root-let diagnostic is gone.

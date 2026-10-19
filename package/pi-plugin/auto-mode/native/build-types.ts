@@ -89,6 +89,18 @@ export async function writeNativeDeclarations(output: string): Promise<void> {
     + 'export declare const maintainedPolicyEntry: string;\n'
       + 'export declare const maintainedPackageRoot: string;\n'
   );
+  /**
+   The generic producer owner facade keeps its real factory type and error constructor.
+   */
+  await writeFile(
+    join(
+      output,
+      'contract/collector/request-producer-judgment-consumers/owner.d.mts'
+    ),
+    "import type { NativeRequestProducerFactory } from '../../../policy/native-artifact-types.mjs';\n"
+      + 'export declare const createRequestProducerOwner: NativeRequestProducerFactory;\n'
+      + "export { RequestProducerError } from './owner.ts';\n"
+  );
   l.debug('native fixture declarations written');
 }
 

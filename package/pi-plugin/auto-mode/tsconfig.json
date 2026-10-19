@@ -1,14 +1,19 @@
 {
-  "extends": "@monochromatic-dev/config-typescript/dom",
+  "extends": "./tsconfig.types.json",
   "include": [
     "src/**/*.ts",
+    "src/**/*.mjs",
     "src/**/*.astro",
     "src/**/*.mdx",
     "*.config.ts",
     ".astro/types.d.ts",
-    "native/**/*.ts"
+    "native/**/*.ts",
+    "native/**/*.mjs"
   ],
   "compilerOptions": {
-    "types": ["node"],
+    "allowJs": true,
+    "isolatedDeclarations": false,
+    "composite": false,
+    "incremental": true,
   },
 }

@@ -1,0 +1,14 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.astro",
+    "src/**/*.mdx",
+    "*.config.ts",
+    ".astro/types.d.ts",
+    "native/**/*.ts"
+  ],
+  "compilerOptions": {
+    "types": ["node"],
+  },
+}
