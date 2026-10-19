@@ -772,3 +772,10 @@ named for that subject and listed here.
   read and decided on 2026-10-18.
   Entries:
   TianqiChen66626.
+- [OpenRouter and the corpus passes: 2026-10-19](translation-repair-openrouter-2026-09-03-2026-10-19.md):
+  What was launched,
+  read and decided on 2026-10-19.
+  Entries:
+  zheermao14,
+  CuspariaKLSY16,
+  CuspariaKLSY17.

@@ -108,7 +108,7 @@ fn click(window: &AppWindow, position: LogicalPosition) {
 }
 
 /// Whether the worker has measured the whole text at the current wrap width and nothing is queued.
-fn measured(state: &Rc<RefCell<State>>, scale: f32) -> bool {
+pub(super) fn measured(state: &Rc<RefCell<State>>, scale: f32) -> bool {
     let current = state.borrow();
     let mut posted = None;
     if let Some((key, _)) = current.pass_posted {
