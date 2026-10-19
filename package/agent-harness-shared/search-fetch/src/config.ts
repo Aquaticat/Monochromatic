@@ -18,6 +18,7 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  DEEPSEEK_API_KEY_ENV,
   EXA_API_KEY_ENV,
   LINKUP_API_KEY_ENV,
 } from './config-constants.ts';
@@ -145,6 +146,7 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
   const missingKeys = [
     EXA_API_KEY_ENV,
     LINKUP_API_KEY_ENV,
+    DEEPSEEK_API_KEY_ENV,
   ].filter(function isMissingFromEnv(envKey,) {
     /**
      Local value for value.
@@ -191,6 +193,16 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
       : { storeValue: store.values[LINKUP_API_KEY_ENV], }),
   },);
   /**
+   Local value for deepseekApiKey.
+   */
+  const deepseekApiKey = resolveApiKey({
+    env,
+    envKey: DEEPSEEK_API_KEY_ENV,
+    ...(store.values[DEEPSEEK_API_KEY_ENV] === undefined
+      ? {}
+      : { storeValue: store.values[DEEPSEEK_API_KEY_ENV], }),
+  },);
+  /**
    Source metadata, with optional store facts only when discovery ran.
    */
   const source: LinkupConfigSource = {
@@ -205,8 +217,10 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     `loaded pi-search-fetch config from ${configPath}; present=${String(readResult.loaded,)}${store.path === undefined ? '' : `; store=${store.path}`}${store.error === undefined ? '' : '; store unavailable'}`,
   );
   return {
+    ...(deepseekApiKey.configured ? { deepseekApiKey: deepseekApiKey.value, } : {}),
     ...(exaApiKey.configured ? { exaApiKey: exaApiKey.value, } : {}),
     ...(linkupApiKey.configured ? { linkupApiKey: linkupApiKey.value, } : {}),
+    ...(deepseekApiKey.configured ? { deepseekApiKeyOrigin: deepseekApiKey.origin, } : {}),
     ...(exaApiKey.configured ? { exaApiKeyOrigin: exaApiKey.origin, } : {}),
     ...(linkupApiKey.configured ? { linkupApiKeyOrigin: linkupApiKey.origin, } : {}),
     blocklist,

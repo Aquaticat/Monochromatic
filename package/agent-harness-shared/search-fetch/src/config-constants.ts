@@ -17,6 +17,11 @@ const EXA_API_KEY_ENV = 'EXA_API_KEY';
 const LINKUP_API_KEY_ENV = 'LINKUP_API_KEY';
 
 /**
+ Environment variable that wins over the encrypted store DeepSeek API key.
+ */
+const DEEPSEEK_API_KEY_ENV = 'DEEPSEEK_API_KEY';
+
+/**
  Directory below home that stores global Pi extension config.
  */
 const PI_EXTENSION_CONFIG_DIR: string = join(
@@ -68,6 +73,7 @@ const CONFIG_KEY_SET: ReadonlySet<string> = new Set<string>(CONFIG_KEYS,);
 export {
   CONFIG_JSON_INDENT_SPACES,
   CONFIG_KEY_SET,
+  DEEPSEEK_API_KEY_ENV,
   DEPRECATED_CREDENTIAL_KEYS,
   EXA_API_KEY_ENV,
   FILE_NOT_FOUND_CODE,

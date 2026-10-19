@@ -135,7 +135,7 @@ await describe({
          */
         const warning = textContentAt({ result, index: 0, },);
         expect(warning,).toContain('depth, limit, maxResults',);
-        expect(warning,).toContain('Exa fast search first',);
+        expect(warning,).toContain('DeepSeek search first',);
         expect(mock.searchCalls,).toHaveLength(1,);
         /**
          Local value for searchInput.

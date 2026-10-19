@@ -67,6 +67,7 @@ await describe({
           env: {},
         },);
 
+        expect(config.deepseekApiKey,).toBeUndefined();
         expect(config.exaApiKey,).toBeUndefined();
         expect(config.linkupApiKey,).toBeUndefined();
         expect(config.blocklist,).toEqual([],);
@@ -74,7 +75,7 @@ await describe({
       },
     },),
     it({
-      name: 'lets environment API keys configure both providers',
+      name: 'lets environment API keys configure every provider',
       fn: async () => {
         /**
          Local value for home.
@@ -88,13 +89,16 @@ await describe({
           home,
           cwd: home,
           env: {
+            DEEPSEEK_API_KEY: ENV_API_KEY,
             EXA_API_KEY: ENV_API_KEY,
             LINKUP_API_KEY: ENV_API_KEY,
           },
         },);
 
+        expect(config.deepseekApiKey,).toBe(ENV_API_KEY,);
         expect(config.exaApiKey,).toBe(ENV_API_KEY,);
         expect(config.linkupApiKey,).toBe(ENV_API_KEY,);
+        expect(config.deepseekApiKeyOrigin,).toBe('env',);
         expect(config.exaApiKeyOrigin,).toBe('env',);
         expect(config.linkupApiKeyOrigin,).toBe('env',);
       },

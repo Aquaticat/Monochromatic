@@ -33,6 +33,7 @@ import {
  Synthetic store values.
  */
 const STORE_VALUES = {
+  DEEPSEEK_API_KEY: 'store-deepseek-sentinel',
   EXA_API_KEY: 'store-exa-sentinel',
   LINKUP_API_KEY: 'store-linkup-sentinel',
 } as const;
@@ -71,8 +72,10 @@ await describe({
           env: encrypted.env,
         },);
 
+        expect(config.deepseekApiKey,).toBe(STORE_VALUES.DEEPSEEK_API_KEY,);
         expect(config.exaApiKey,).toBe(STORE_VALUES.EXA_API_KEY,);
         expect(config.linkupApiKey,).toBe(STORE_VALUES.LINKUP_API_KEY,);
+        expect(config.deepseekApiKeyOrigin,).toBe('store',);
         expect(config.exaApiKeyOrigin,).toBe('store',);
         expect(config.linkupApiKeyOrigin,).toBe('store',);
         expect(config.source.storeLoaded,).toBe(true,);
@@ -96,12 +99,14 @@ await describe({
 
         expect(config.exaApiKey,).toBe('env-exa-sentinel',);
         expect(config.exaApiKeyOrigin,).toBe('env',);
+        expect(config.deepseekApiKey,).toBe(STORE_VALUES.DEEPSEEK_API_KEY,);
+        expect(config.deepseekApiKeyOrigin,).toBe('store',);
         expect(config.linkupApiKey,).toBe(STORE_VALUES.LINKUP_API_KEY,);
         expect(config.linkupApiKeyOrigin,).toBe('store',);
       },
     },),
     it({
-      name: 'does not touch the store when both environment keys are set',
+      name: 'does not touch the store when every environment key is set',
       fn: async () => {
         /**
          Local value for config.
@@ -111,11 +116,13 @@ await describe({
           cwd: fixture.root,
           env: {
             ...encrypted.env,
+            DEEPSEEK_API_KEY: 'env-deepseek-sentinel',
             EXA_API_KEY: 'env-exa-sentinel',
             LINKUP_API_KEY: 'env-linkup-sentinel',
           },
         },);
 
+        expect(config.deepseekApiKeyOrigin,).toBe('env',);
         expect(config.exaApiKeyOrigin,).toBe('env',);
         expect(config.linkupApiKeyOrigin,).toBe('env',);
         expect(config.source.storeLoaded,).toBeUndefined();
@@ -132,6 +139,7 @@ await describe({
         await writePlaintextStore({
           root: plaintextRoot.root,
           values: {
+            DEEPSEEK_API_KEY: PLAINTEXT_SENTINEL,
             EXA_API_KEY: PLAINTEXT_SENTINEL,
             LINKUP_API_KEY: PLAINTEXT_SENTINEL,
           },
@@ -149,6 +157,7 @@ await describe({
           },
         },);
 
+        expect(config.deepseekApiKey,).toBeUndefined();
         expect(config.exaApiKey,).toBeUndefined();
         expect(config.linkupApiKey,).toBeUndefined();
         expect(config.source.storeError,).toBeTypeOf('string',);
@@ -170,6 +179,7 @@ await describe({
           },
         },);
 
+        expect(config.deepseekApiKey,).toBeUndefined();
         expect(config.exaApiKey,).toBeUndefined();
         expect(config.source.storeError,).toContain('identity',);
       },
@@ -187,6 +197,7 @@ await describe({
           env: encrypted.env,
         },);
 
+        expect(config.deepseekApiKey,).toBeUndefined();
         expect(config.exaApiKey,).toBeUndefined();
         expect(config.source.storeError,).toContain('env-local-json path',);
       },
@@ -223,6 +234,7 @@ await describe({
           },
         },);
 
+        expect(config.deepseekApiKey,).toBe(STORE_VALUES.DEEPSEEK_API_KEY,);
         expect(config.exaApiKey,).toBe(STORE_VALUES.EXA_API_KEY,);
         expect(config.source.storePath,).toBe(join(repoRoot.root, '.env.local.json',),);
       },

@@ -9,6 +9,10 @@
  */
 type LinkupConfig = {
   /**
+   Optional DeepSeek API key after environment and store precedence are applied.
+   */
+  readonly deepseekApiKey?: string;
+  /**
    Optional Exa API key after environment and store precedence are applied.
    */
   readonly exaApiKey?: string;
@@ -16,6 +20,10 @@ type LinkupConfig = {
    Optional Linkup API key after environment and store precedence are applied.
    */
   readonly linkupApiKey?: string;
+  /**
+   Source of the effective DeepSeek key, when configured.
+   */
+  readonly deepseekApiKeyOrigin?: ApiKeyOrigin;
   /**
    Source of the effective Exa key, when configured.
    */
