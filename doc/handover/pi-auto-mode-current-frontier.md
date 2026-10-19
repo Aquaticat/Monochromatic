@@ -6,6 +6,39 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Resumed after shutdown, 2026-10-19
 
+Fresh combined artifact `resumed-owner-combined-candidate-N8p6OB/dist/native-release-NTWxaG`
+at `3a21255dde` passes JS/native builds and full types.
+The generated-import closure failure is cleared at this source checkpoint.
+It also passes nine producer-lifetime cases, producer retirement, exact input-content controls,
+sequence capacity, streaming capacity, retained context, all phases, both inflight consumers,
+source freshness and tool-schema capacity.
+Scope lint remains 44 warnings/one error across nine files:
+35 test-helper warnings and nine owner warnings plus missing `invocationScope` documentation.
+Ordinary full types does not establish compatibility at untyped production call sites;
+native MiMo must additionally prove actual constructor assignment and wrapper input compatibility.
+
+The five source-removal controls finish with their intended failures in separate candidate
+`resumed-owner-controls-candidate-tZfzTn`.
+Its commit `1387e18e5c` has the same package tree `d85d5ca1782010ef8dde28f0702766f3a2edb056`
+as `3a21255dde`.
+Both baseline consumers and restored consumers pass.
+Removing handler completion retains 51,282,736 measured heap bytes;
+removing the whole-state clear retains 49,776,760 bytes and fails the actual capacity assertion.
+The three other rebuilt variants fail their named semantic cases.
+Receipt: `resumed-owner-controls-results.json`, complete true.
+
+Configured full-history replay `content-pages-memory a` is running on `NTWxaG`,
+using the same closed original `kARc6q` session and finite primary as baseline A/B.
+Its recorded input hashes are `content-pages-memory-inputs.json`;
+new receipts use separate `content-pages-memory-*` and `worker-source-pages-*` names.
+The replay has real configured extensions and Luna, a read-only repository and two-GiB/two-CPU limits.
+Do not substitute a new worker history when comparing warmed retention.
+
+Git read availability incident #1784 is filed and recorded in
+`doc/troubleshooting/cli-git-superseded-index-recovery.md`.
+The observed owner-probe `EPERM` is established; a PID-namespace cause remains a hypothesis.
+Protected reads worked again after the concurrent checkpoint; no transaction was deleted or commit retried.
+
 The user returned and authorized continuing.
 The package's tracked, staged and untracked pending paths survived shutdown;
 unrelated `.serena/project.yml` and `package/dev-script/ci-admission/` changes remain untouched.
