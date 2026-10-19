@@ -11,6 +11,11 @@ Review the model contract, the host integration proposal, each dependency, and t
 Reply with corrections or an explicit approval to implement.
 Discussion of this plan alone does not resume implementation.
 
+The grilling review started on 2026-10-19.
+The decision tree and source corrections in this document are review work, not accepted architecture.
+The first question round concerns per-rule approval meaning and useful adaptive batches.
+No answers to that round have been recorded yet.
+
 ### Assessment before implementation approval
 
 The rule-batching contract now matches the user's stated direction.
@@ -69,8 +74,76 @@ It does not become an agent framework, provider SDK, general policy compiler, or
 
 The current repository `AGENTS.md` contains 213 tagged rules, measured with
 `rg --count '^[A-Z0-9]{3}:' AGENTS.md`.
-That establishes a real hundred-question workload without inventing filler questions.
+That establishes an instruction inventory large enough to examine a hundred-question workload.
+It does not prove that every rule supplies a meaningful question for every operation or adaptive follow-up.
 It does not establish the final complete rule count after session and package instructions are included.
+
+## Grilling review and decision tree
+
+### Per-rule meaning before reduction
+
+The proposed reducer uses "applicable" and "required" without defining how those properties are obtained.
+The answer contract must explain an unrelated rule without introducing a meaning-classification stage.
+For example, a CSS formatting rule neither authorizes nor objects to an explicitly requested test run.
+Whether its answer is `approve` depends on whether approval means independent authorization or clearance from that rule.
+An unsolicited code edit after a review-only request must also have an explicit expected outcome.
+
+Round-one question Q1 proposes clearance under the complete instructions and request,
+including an explicit request-scope check.
+That proposal is awaiting the user's answer.
+Its dependent decisions are precedence examples, reduction, and conflicting reassessments.
+Examples must include an explicit exception to a general confirmation requirement,
+an unrelated rule, missing information, and an operation outside the user's request.
+
+### Adaptive evidence before scheduling
+
+The minimum of 100 meaningful questions per call is settled.
+Counting tagged rules does not resolve a follow-up with only one uncertain result.
+Round-one question Q2 asks whether to reassess a meaningful set of at least 100 rules
+or request manual review when such a follow-up cannot be formed.
+Neither path permits filler questions or treats repetition as independent evidence.
+
+After that answer, define when a newer result supersedes an older one,
+how conflicting results remain unresolved, and what prevents repeated sampling until approval.
+Account for retries, stale snapshots, and nested work within the chosen operation budget.
+
+### Execution semantics before selecting a host hook
+
+Installed Pi `1.3.0` prepares each sequential call immediately before executing it:
+`pi-agent-core/dist/agent-loop.js:374`, `:384`, and `:394`.
+Its parallel path prepares the group before invoking the execution callbacks at `:453`.
+Moving every sequential preparation before the first execution changes extension-hook timing.
+For example, call A writes a file and call B's preparation hook reads that file to revise B's arguments.
+The plan must settle this observable behavior before claiming to preserve host semantics.
+
+Nested calls are created during their parent's execution;
+`pi-coding-agent/dist/core/nested-tool-calls.js:98` creates each child when invoked.
+A child whose arguments depend on a preceding result is not available in the initial prepared group.
+Define the group boundary, parent/child approval relationship, and unsupported cases explicitly.
+The earlier limited evidence in `doc/troubleshooting/pi-nested-tool-context.md`
+does not qualify arbitrary result-dependent nested programs.
+
+These are source-reading findings, not executed replacement tests.
+The private hook remains a candidate until the required execution behavior is settled and exercised.
+
+### Remaining branches and acceptance evidence
+
+- Define which effective context and original authored history inform review after compaction or context edits.
+  The source APIs for those views are different.
+- Resolve shadow delivery and overflow behavior before scheduling:
+  a running shadow cannot both avoid all primary overlap and never delay a newly arriving primary request
+  unless it can be interrupted or abandoned.
+- Select persistent retention and deployment budgets using measured evidence;
+  the character budgets remain design constraints, not forecasts.
+- Define semantic acceptance examples and expected outcomes before evaluating model answers.
+  Payload validity, endpoint capacity, and passing transport fixtures do not establish decision quality.
+- Preserve separate verification for host execution, parser projection, model semantics,
+  manual review, lifecycle cleanup, and footprint.
+  Passing one does not establish the others.
+
+Questions in these branches follow their prerequisite answers and source investigations.
+The review ends with a revised plan and confirmation of shared understanding;
+implementation still requires explicit authorization.
 
 ## Proposed end-to-end flow
 
@@ -83,10 +156,16 @@ It does not establish the final complete rule count after session and package in
 7.  Ask the user if review remains unresolved after the allowed batches or a required input cannot be obtained.
 8.  Execute the reviewed group only after an approval bound to that group, or return a normal blocked result.
 
-An argument or instruction change invalidates the affected review.
+Any decision-bearing snapshot change invalidates the affected review,
+including arguments, instructions, relevant conversation, active branch, or tool definition.
 It cannot inherit approval merely because a tool-call ID is unchanged.
 This needs a snapshot comparison at dispatch, not an object-capability graph spanning the SDK.
 Re-review remains subject to explicit operation-level limits; mutation must not create an unbounded review loop.
+
+For manual review, Allow binds only to the displayed exact group after freshness checks.
+Stop, dismissal, and an absent interactive channel withhold execution.
+An established denial does not become a generic Allow prompt.
+These outcomes retain the existing behavior contract in `doc/confirmation.md` without adopting its implementation.
 
 ## Proposed high-level modules and source budgets
 
@@ -101,7 +180,8 @@ Purpose: intercept complete prepared groups, preserve Pi execution behavior, and
 Interface: one review callback receiving the prepared group and its cancellation signal.
 The callback returns the group disposition; Pi continues to own actual tool execution and tool results.
 
-It owns parallel, sequential, nested-tool, blocked-result, and shutdown integration.
+It owns parallel, sequential, nested-tool, blocked-result, and shutdown integration
+within the execution semantics still requiring review.
 It must prevent partial execution while a group is awaiting review.
 It must retain other extensions' tool hooks and final argument mutations.
 
@@ -124,7 +204,12 @@ Do not silently reintroduce the legacy native framework or broaden the patch to 
 Purpose: produce the complete model-visible snapshot without leaking thinking or raw shell archives.
 Interface: one immutable review input containing authored rule occurrences, visible context, and prepared operations.
 
-It gets effective instructions and the active conversation branch from the host.
+It gets effective instructions and the selected conversation views from the host.
+Pi's `getBranch` returns path entries, not resolved model messages;
+`session-manager.js:1058` directs callers to `buildSessionContext` for the resolved view.
+`sessionEntryToContextMessages` alone does not apply the compaction and context-edit orchestration
+in `buildSessionProjection`.
+The capture contract must also account for later host context transformations.
 It retains source identifiers and precedence context rather than interpreting prose into a meaning taxonomy.
 Tagged rules remain original authored text.
 Untagged instruction handling must preserve substantive instructions rather than silently discarding them.
@@ -339,8 +424,11 @@ Proposed peer dependency plus catalog development dependency for declarations an
 - `ExtensionAPI` and `ExtensionContext`: type-only declarations for the extension and context.
 - `ExtensionAPI.on`: register lifecycle handlers and obtain their unsubscribe functions.
 - `ExtensionContext.getSystemPrompt`: obtain effective instructions.
-- `sessionManager.getBranch` and `sessionEntryToContextMessages`:
-  obtain the active branch and public host context projection.
+- `sessionManager.getBranch`: obtain original active-branch entries where the selected review contract requires them.
+- `sessionManager.buildSessionContext`: candidate for resolved session messages;
+  qualify later host context transformations before claiming parity with effective model input.
+- `sessionEntryToContextMessages`: convert individual entries only if original-entry conversion is required;
+  this is not a substitute for resolved session projection.
 - `sessionManager.getSessionId`: correlate operations without retaining every session object.
 - `ui.select`: present scoped manual choices in supported TUI and RPC modes.
 - `ui.notify` and `ui.setStatus`: report actionable failures and review state.
@@ -371,9 +459,13 @@ These private host functions would be used by the narrow prepared-group integrat
 - `createToolResultMessage` and `emitToolResultMessage`: preserve host result messages and ordering.
 - `shouldTerminateToolBatch`: preserve batch termination semantics.
 - `createErrorToolResult`: represent denied and cancelled calls through ordinary host results.
-- `executeNestedToolCall`: cover nested tool invocation rather than allowing it to bypass review.
+- `runToolCall`: cover individual nested tool invocation as well as the root group path.
+  The host session routes `_executeNestedToolCall` through this exported core function.
+  Complete result-dependent child-group review is not established by intercepting individual calls.
 
-These names are verified in installed source, but the replacement integration is not implemented or qualified.
+The original inventory incorrectly named `executeNestedToolCall` as a core function;
+the 2026-10-19 source review corrects that name and location.
+The replacement integration is not implemented or qualified.
 Private-function coupling is a concrete maintenance cost, not a public SDK guarantee.
 Source-version qualification and real host tests are mandatory if this proposal is approved.
 
@@ -536,7 +628,13 @@ These are source-reading facts, not new runtime qualification results.
   `package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/index.d.ts`
   and `dist/core/extensions/types.d.ts` under that same installed package.
 - Installed Pi agent core `1.3.0`, `dist/agent-loop.js`:
-  `executeToolCalls`, `prepareToolCall`, and `executeNestedToolCall`.
+  `executeToolCalls`, `prepareToolCall`, and `runToolCall`.
+  Resolved installed path:
+  `node_modules/.pnpm/@earendil-works+pi-agent-core@1.3.0_undici@8.12.2/node_modules/@earendil-works/pi-agent-core/dist/agent-loop.js`.
+- Installed Pi coding agent `1.3.0`, `dist/core/agent-session.js:388` and `:401`:
+  `_executeNestedToolCall` routes through core `runToolCall`.
+- Installed Pi coding agent `1.3.0`, `dist/core/session-manager.js:256` and `:1058`:
+  resolved projection differs from reading branch entries.
 - Installed Node declarations, `node_modules/@types/node/module.d.ts`:
   `findPackageJSON` and experimental `registerHooks`.
 
