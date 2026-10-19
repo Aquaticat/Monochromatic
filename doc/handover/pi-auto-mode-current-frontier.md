@@ -27,7 +27,14 @@ parallel dispatch at line 411 prepares members before the execution barrier at l
 Dispatch configuration and per-tool overrides at lines 368 to 372 remain host qualification details.
 Independent review confirms that Q6's old premise conflicted with the settled grouping boundary.
 The proposed `QPM` tightening now requires defining groups before posing timing choices; `AGENTS.md` is unchanged.
-Next action: verify the grouping diagram, form removal, and updated Markdown; reopen the grouping view in Helium.
+Committed the grouping contract in `716e87302d`.
+The grouping diagram passed light/dark rendering, node-text bounds, and full 390-pixel keyboard scrolling.
+The response form contains only Q1 and Q4; Q6 has neither a field nor a serialized answer.
+All eight navigation targets, four examples, six answer options, manual branches, and reply branches passed.
+All 21 controls meet the 48-pixel minimum; page errors and console records are empty.
+The inspected grouping captures contain only PNG image chunks and are retained beside the review.
+Markdown rendered at `auto-mode-rebuild-plan-render-p66Mem` before these verification notes.
+Next action: continue architecture review from Q1 and Q4 answers; built-in contents remain deferred.
 
 ### Complete drawing inventory correction, 2026-10-19
 

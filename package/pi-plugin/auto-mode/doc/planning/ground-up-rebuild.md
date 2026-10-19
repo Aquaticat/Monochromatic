@@ -804,6 +804,16 @@ No implementation proceeds while the user is reviewing this plan.
 
 ## Review artifact verification
 
+The grouping correction replaces Q6 with the settled parallel-batch/individual-call boundary.
+Its flowchart shows one review before parallel dispatch and independent reviews for nonparallel calls.
+The Q6 form field and serialized answer are absent; Q1 and Q4 remain.
+The new diagram passed light/dark text-fit and 390-pixel keyboard-scroll checks without page overflow.
+All eight navigation links, four examples, six remaining answer options, manual examples,
+reply handling, and keyboard activation passed. The 21 controls meet the 48-pixel minimum.
+Page errors and console records are empty.
+Current grouping captures: [light](ground-up-rebuild-review/flowchart-grouping-light.png)
+and [dark](ground-up-rebuild-review/flowchart-grouping-dark.png).
+
 The complete drawing inventory now contains 12 connected SVG charts, including the four worked-example tabs.
 The initial flowchart pass covered only startup, group review, and human decision; its partial coverage was corrected.
 All remaining composition, follow-up, example, routing, autonomy, and timing drawings now use connected paths.
@@ -857,7 +867,7 @@ Current flowchart captures:
   and [dark](ground-up-rebuild-review/flowchart-human-dark.png).
 
 Before the reversibility correction, the staged HTML passed the disposable nested-browser interaction check
-on 2026-10-19. These counts describe that earlier form; the revised form has three open questions.
+on 2026-10-19. These counts describe that earlier form; the revised form has two open questions.
 Every scenario, navigation control, all 18 answer options, and manual Approve/Stop examples with and without reasons ran.
 Reply generation passed for empty input, notes only, choices only, literal markup, text selection, and keyboard activation.
 All 23 interactive controls measured at least 48 pixels in both dimensions.
