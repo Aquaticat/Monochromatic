@@ -3,6 +3,8 @@
 ## Rebuild status
 
 Implementation is stopped while the [ground-up plan](doc/planning/ground-up-rebuild.md) is reviewed.
+The [working understanding](doc/planning/rebuild-understanding.md) records accepted meanings,
+verified behavior, rejected assumptions, and unresolved design boundaries.
 The replacement will be a TypeScript plugin using Pi's public API.
 Maintaining or copying Pi internals, duplicating existing Pi functionality, and private APIs are prohibited.
 Unsupported review behavior must use the least-degrading public fallback,

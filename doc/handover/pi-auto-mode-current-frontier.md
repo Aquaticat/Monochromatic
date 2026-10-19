@@ -3,6 +3,11 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
+The user requires thorough research and durable records of all relied-on understandings, including familiar terms.
+`package/pi-plugin/auto-mode/doc/planning/rebuild-understanding.md` is the current semantic/evidence record.
+`doc/agent/understanding.md` defines the standing practice; `AGENTS.md` tightens existing DCK, QPM, and ODM rules.
+Regenerate managed `CLAUDE.md`, verify the records and affected visual proposals, and obtain independent review
+before asking another design question. Do not stop at another promise or status-only response.
 The latest correction separates whole-batch assessment from per-call execution outcomes.
 Do not enforce atomic batch execution: cleared tests can proceed while a prohibited upload is blocked.
 Public-only probes now pass 20 assertions, including allow-A/block-B and block-A/allow-B without run abort.
