@@ -17,8 +17,14 @@ Approve and Stop each show optional reason, durable model-visible record, and ex
 Keep text readable through keyboard-accessible horizontal scrolling on narrow screens.
 Tighten the existing proposed `VHI` guidance in the plan to require connected control-flow notation;
 the actual `AGENTS.md` is unchanged. No architecture decision or built-in catalogue choice is reopened.
-Next action: inspect rendered geometry, drive diagrams and existing form in light/dark and narrow layouts,
-record evidence, and reopen the active review in Helium.
+Committed the connected flowcharts in `68fe46015b`.
+Independent SVG and screenshot review found no connection or semantic defect.
+All charts passed light/dark rendering and 390-pixel keyboard scrolling to their full 621-pixel horizontal extent.
+No group-node text exceeds its shape bounds, no page overflow, and page error/console records are empty.
+Existing navigation, scenarios, nine options, manual branches, reply handling, and keyboard activation still pass.
+The six inspected desktop captures contain only PNG image chunks and are retained beside the review.
+Markdown rendered at `auto-mode-rebuild-plan-render-VBQElO` before these verification notes.
+Next action: continue architecture review from Q1, Q4, and Q6 answers; built-in contents remain deferred.
 
 ### Terminal verdict correction, 2026-10-19
 

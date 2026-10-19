@@ -783,6 +783,27 @@ No implementation proceeds while the user is reviewing this plan.
 
 ## Review artifact verification
 
+The flowchart correction replaces the startup, group-review, and manual-decision card rows with connected SVG.
+Decision diamonds have labeled outgoing branches; operation rectangles and rounded exits have attached arrows.
+The follow-up return edge reaches the current-batch Luna call only through the unresolved outcome and budget check.
+The manual flow branches into Approve and Stop, each with optional reason, persisted record, and consequence.
+Independent review found no broken connection or changed decision semantics.
+
+Rendered checks covered all flowcharts in light and dark mode and at a 390-pixel viewport.
+All group-node text fits its containing shape; the complete desktop charts fit the capture viewport.
+Each narrow chart scrolls by keyboard to its full horizontal extent without widening the page.
+The existing navigation, scenarios, nine answer options, manual examples, and reply branches still pass.
+Page error and console records are empty. This verifies the review artifact, not the replacement plugin.
+
+Current flowchart captures:
+
+- Startup: [light](ground-up-rebuild-review/flowchart-startup-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-startup-dark.png).
+- Group review: [light](ground-up-rebuild-review/flowchart-group-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-group-dark.png).
+- Human decision: [light](ground-up-rebuild-review/flowchart-human-light.png)
+  and [dark](ground-up-rebuild-review/flowchart-human-dark.png).
+
 Before the reversibility correction, the staged HTML passed the disposable nested-browser interaction check
 on 2026-10-19. These counts describe that earlier form; the revised form has three open questions.
 Every scenario, navigation control, all 18 answer options, and manual Approve/Stop examples with and without reasons ran.
