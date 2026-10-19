@@ -20,32 +20,54 @@ This is finite evidence, not a claim that every Pi host configuration is covered
 
 ### Q7: How should different admitted rule answers combine?
 
-Each rule has already been assessed with the whole operation and instruction context. This question concerns code
-combining those answers, before a group verdict is established. Established group verdicts remain terminal.
+This concerns combining individual rule answers before a group verdict exists.
+An established group verdict remains terminal.
 
-Example: Rule A returns Approve; rule B returns Deny. Or rule A returns Ask while rule B returns Deny. Both answers
-have a unique leading probability.
+A pending parallel batch contains two calls:
+run the logger package's tests using disposable local fixtures,
+and upload `fixtures/customers.json`, containing customer names and email addresses,
+to a public file-sharing service.
+Neither call has started.
+For this example, assume these project rules and admitted Luna answers:
+
+- “Run relevant package tests.” returns Approve because the batch includes the relevant test run.
+- “Never publish raw customer fixtures.” returns Deny because the upload exposes the unredacted fixture publicly.
+- “Ask before any public upload.” returns Ask because this rule requires a human decision for that upload.
+
+These answers can all be correct:
+the tests are useful, the upload is prohibited, and another rule also requires asking.
+The question is what code does with this combination.
 
 #### A: Deny takes precedence (recommended)
 
-Either example produces Deny. Otherwise Ask takes precedence over unresolved answers; unresolved answers prevent
-approval. Approve and not-applicable are the remaining clear answers.
+In this example, deny the entire pending batch.
+Neither the tests nor the upload executes as part of this batch.
+Do not present Approve for the prohibited upload.
+The agent can propose the tests alone as a new group.
 
-- Pro: A permissive answer cannot cancel a separate prohibition. The reducer has a direct, inspectable result.
-- Con: An incorrectly interpreted prohibiting rule can block the group even when other answers are permissive.
+General rule: Deny takes precedence over Ask, Ask over unresolved answers,
+and unresolved answers prevent approval.
+Approve and not-applicable are the remaining clear answers.
+
+- Pro: Useful tests cannot cancel a separate prohibition on exposing customer data.
+- Con: If the prohibition was misinterpreted, this reducer still blocks instead of seeking another interpretation.
 
 #### B: Refine mixed Deny outcomes first
 
-Deny combined with Approve, Ask, or unresolved answers keeps the group unresolved for focused review.
-Deny with only other Deny or not-applicable answers can terminate; exhausted unresolved review goes to the human.
+In this example, keep both calls pending and spend another review batch reconciling the mixed answers,
+even though each has a concrete basis.
+If review remains unresolved when the budget ends, ask the human.
+
+General rule: Deny combined with Approve, Ask, or unresolved answers remains unresolved.
+Deny with only other Deny or not-applicable answers can terminate.
 Selecting B opens a separate conflict-reconciliation decision after this round.
 
-- Pro: Mixed answers get another chance to expose a mistaken rule interpretation before the group is denied.
-- Con: Different rules can correctly return different outcomes. This spends review budget on ordinary combinations
-and delays a valid denial.
+- Pro: A mistaken interpretation of the fixture prohibition gets another opportunity to be corrected.
+- Con: These rules do not actually contradict each other.
+  Extra review delays a valid denial and may escalate an already clear case.
 
-Ranking: A > B, because different rules can impose independent restrictions; their answers need not agree. B remains
-available if avoiding mistaken denials matters more than immediate reduction.
+Ranking: A > B, because permission to run tests does not cancel the separate restriction on publishing customer data.
+B trades immediate reduction for another interpretation attempt.
 
 ### Q8: What if every effective rule returns not-applicable?
 

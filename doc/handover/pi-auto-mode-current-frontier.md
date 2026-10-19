@@ -22,6 +22,18 @@ Startup relevance failure now falls back to all freshly captured rules without a
 Retained captures are the `round2-*` PNGs beside the HTML, with no non-image PNG metadata.
 Next action: hand off the opened, verified Q7 to Q13 review through the question tool, then wait for answers.
 
+### Q7 concrete-example correction, 2026-10-19
+
+The user rejects “Rule A returns Approve; rule B returns Deny” as an example.
+Replace that abstract restatement before continuing the round.
+The new example has a pending parallel test run plus publication of an unredacted customer fixture,
+explicit illustrative project rules, each admitted answer's concrete basis, and each option's execution result.
+Q7 A denies the whole group; tests alone may be proposed as a new group.
+Q7 B keeps both calls pending for interpretation review; exhausted unresolved review reaches the human.
+Neither option has been accepted. Q7 to Q13 remain open; do not infer an answer from this correction.
+Proposed `ODM` tightening: option examples name pending actions, relevant rules, admitted answers,
+and each option's visible result; abstract labels alone are not examples. `AGENTS.md` is unchanged.
+
 ### Later extension mutations accepted as a limitation, 2026-10-19
 
 The user says to pretend later extensions changing arguments after review do not exist.
