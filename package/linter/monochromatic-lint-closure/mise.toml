@@ -51,29 +51,25 @@ for (const name of readdirSync(scratch)) {
 '''
 
 [tasks.run]
-description = "Lint another package: mise run //package/linter/monochromatic-lint-closure:run <package directory>"
-depends = ["build"]
+description = "Lint another package with every target compiled: mise run //package/linter/monochromatic-lint-closure:run <package directory>"
+# --path makes Dylint build this library with the active toolchain and load it, so no staged copy is needed
+# (measured on 2026-10-19 under the shared build-dir setting; the earlier task staged a copy named lib<name>@<toolchain>.so).
+# monochromatic-lint runs the same lint for every package without --all-targets; this task shows what the exemption of
+# tests, examples and benchmarks leaves out.
 # mise appends raw arguments to an inline script's text, so the directory is declared as a usage argument and read from the environment.
 usage = 'arg "<directory>" help="Directory of the package to lint; relative paths resolve against the directory the command was typed in"'
 
 shell = "node --input-type=module-typescript -e"
 run = '''
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 const directory = process.env.usage_directory;
 if (directory === undefined) throw new Error('Pass the directory of the package to lint');
 // mise runs a task in this package's directory, so a relative argument is resolved against the directory it was typed in.
 const manifest = join(resolve(process.env.MISE_ORIGINAL_CWD ?? process.cwd(), directory), 'Cargo.toml');
 if (!existsSync(manifest)) throw new Error('No Cargo.toml at ' + manifest);
-const hostLine = spawnSync('rustc', ['--version', '--verbose'], { encoding: 'utf8' }).stdout.split('\n').find((line) => line.startsWith('host: '));
-const toolchain = process.env.RUSTUP_TOOLCHAIN + '-' + hostLine.slice('host: '.length);
-// cargo dylint finds a library only by the file name lib<name>@<toolchain>.so, and this repository's shared cargo
-// build-dir setting keeps dylint-link's copy of that name away from target/, so stage a copy under the expected name.
-const staged = join(mkdtempSync(join(tmpdir(), 'avoidable-closure-')), 'libmonochromatic_lint_closure@' + toolchain + '.so');
-copyFileSync('target/debug/libmonochromatic_lint_closure.so', staged);
-const result = spawnSync('cargo', ['dylint', '--lib-path', staged, '--manifest-path', manifest, '--', '--all-targets'], { stdio: 'inherit' });
+const result = spawnSync('cargo', ['dylint', '--path', process.cwd(), '--manifest-path', manifest, '--', '--all-targets'], { stdio: 'inherit' });
 if (result.error) throw result.error;
 process.exitCode = result.status ?? 1;
 '''

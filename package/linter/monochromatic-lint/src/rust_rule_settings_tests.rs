@@ -116,7 +116,8 @@ fn language_selection_keeps_schema_failures_visible() {
     }
 }
 
-/// The sidecar test rule is selected by its own id, stays off when absent or off,
+/// The sidecar test rule is selected by its own id,
+/// stays off when absent or off,
 ///  and runs through the syntax dispatcher with the selected severity.
 #[test]
 fn the_sidecar_test_rule_is_selected_by_its_id_and_dispatched() {
@@ -155,4 +156,57 @@ fn a_removed_rule_name_is_reported_as_an_unknown_built_in_rule() {
             "{severity}"
         );
     }
+}
+
+/// The closure check carries its severity and library path,
+/// and is disabled by absence and by off.
+#[test]
+fn the_closure_check_carries_its_library_and_severity() {
+    use super::ClosureLint;
+    let selected: RustRuleSettings = settings(
+        r#"{"rust/avoidable-closure":{"severity":"warn","library":"package/linter/monochromatic-lint-closure"}}"#,
+    );
+    assert_eq!(
+        selected.avoidable_closure,
+        Some(ClosureLint {
+            severity: Severity::Warn,
+            library: String::from("package/linter/monochromatic-lint-closure")
+        })
+    );
+    assert_eq!(
+        settings(r#"{"rust/avoidable-closure":{"severity":"off","library":"lib"}}"#)
+            .avoidable_closure,
+        None
+    );
+    assert_eq!(
+        settings(r#"{"rust/avoidable-closure":{"severity":"off"}}"#).avoidable_closure,
+        None
+    );
+    assert_eq!(settings("{}").avoidable_closure, None);
+}
+
+/// A selected closure check without a library is refused,
+/// and so are empty and non-text libraries.
+#[test]
+fn the_closure_check_needs_a_nonempty_text_library_when_selected() {
+    for source in [
+        r#"{"rust/avoidable-closure":{"severity":"warn"}}"#,
+        r#"{"rust/avoidable-closure":{"severity":"error"}}"#,
+        r#"{"rust/avoidable-closure":{"severity":"warn","library":""}}"#,
+        r#"{"rust/avoidable-closure":{"severity":"warn","library":7}}"#,
+        r#"{"rust/avoidable-closure":{"severity":"warn","library":["a"]}}"#,
+        r#"{"rust/avoidable-closure":{"severity":"warn","library":"lib","max":3}}"#,
+    ] {
+        let value: JsoncValue = parse_jsonc(source).expect("JSONC fixture");
+        assert!(rust_rule_settings(&value).is_err(), "{source} was accepted");
+    }
+}
+
+/// The library option belongs to the closure check only.
+#[test]
+fn other_rules_refuse_the_library_option() {
+    let value: JsoncValue =
+        parse_jsonc(r#"{"rust/max-lines":{"severity":"warn","library":"lib"}}"#)
+            .expect("JSONC fixture");
+    assert!(rust_rule_settings(&value).is_err());
 }

@@ -1,11 +1,16 @@
 # The closure lint in the linter, for every Rust package
 
 Status:
-proposal of 2026-10-19,
-not accepted.
-No source code,
-mise task,
-or lint configuration was changed to produce it.
+proposal of 2026-10-19.
+The owner chose Mechanism A on the same day (see the section "Answers of 2026-10-19 to the proposal" of
+[the decision][decision]),
+and it is implemented on the branch `feat/linter-closure-everywhere`:
+`package/linter/monochromatic-lint/README.md`,
+section "Closure check",
+describes what shipped.
+The text below is the proposal as it was written,
+with the measurements it rests on;
+the figures were taken before the implementation existed.
 It answers the owner requirement recorded in the section "Owner requirement of 2026-10-19" of
 [the decision][decision]:
 the Dylint lint `avoidable_closure` of `package/linter/monochromatic-lint-closure`

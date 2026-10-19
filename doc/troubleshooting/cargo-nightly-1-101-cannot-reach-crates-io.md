@@ -195,6 +195,13 @@ and the `~/.rustup` copy of the `2026-10-17` cargo.
 `cargo +nightly fetch --locked` in the package (floating nightly, same binary as the pinned `nightly-2026-10-18`
 today) or `cargo +stable fetch --locked`, then run the pinned nightly with `CARGO_NET_OFFLINE=true`.
 This is the workaround the IDE task `lint:closures` already uses.
+Note of 2026-10-19:
+the IDE task `lint:closures` was removed.
+`monochromatic-lint` checks the cargo cache offline for every Rust package and,
+on a cold cache,
+skips the package with a note that names `cargo fetch --locked`.
+It never fetches,
+so this workaround is now a step for the person or the host workflow that runs before the linter.
 Tradeoffs: the lockfile check and registry cache come from a different cargo version (use `--locked` so it cannot
 rewrite `Cargo.lock`); every crate a build needs has to be fetched first, including build-script and
 `dylint_driver` dependencies; and the floating `nightly` binary only matches the pinned one until the next

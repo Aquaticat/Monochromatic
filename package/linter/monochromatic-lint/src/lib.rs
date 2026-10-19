@@ -27,6 +27,23 @@ pub mod config_merge;
 /// Accepted command grammar with native path values.
 #[doc(hidden)]
 pub mod cli_options;
+/// The `cargo` processes of the closure check.
+mod closure_cargo;
+/// Mapping of compiler reports to findings with the configured severity.
+mod closure_findings;
+/// The per-package prerequisite manifest of the closure check.
+mod closure_manifest;
+/// Grouping of the files that select the closure check by owning package.
+mod closure_packages;
+/// Machine prerequisite checks of the closure check.
+mod closure_probe;
+/// The prerequisites that prepare a build:
+///  the IDE artifacts and the Android cross-compilation.
+mod closure_probe_platform;
+/// Cargo's JSON records read into closure-check reports.
+mod closure_report;
+/// The closure check as a step of a lint run.
+mod closure_step;
 /// Internal data-shape checks,
 ///  including duplicate decoded keys.
 mod config_data;
@@ -254,6 +271,10 @@ pub mod rust_workspace;
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]
 mod test_fs;
+
+/// Compiles the stub `cargo` that the closure-check tests run instead of the real one.
+#[cfg(test)]
+mod closure_stub_support;
 
 /// Shared orchestration fixtures:
 ///  disposable trees,
