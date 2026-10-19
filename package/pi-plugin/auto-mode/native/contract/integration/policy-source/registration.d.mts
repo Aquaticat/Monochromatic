@@ -16,7 +16,6 @@ export type { InstructionAuthorityRegistration } from './policy-loader-types.ts'
 export function copyAuthorityRegistration(input?: InstructionAuthorityDeclaration): InstructionAuthorityRegistration | undefined;
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
-/* oxlint-disable unicorn/custom-error-definition -- Mirrors the untyped owner's writable dynamic name; see doc/typed-boundary-suppressions.md. */
 /** Authority registration misuse remains distinct from policy resolution. */
 export class InstructionRegistrationError extends Error {
   /**
@@ -31,4 +30,3 @@ export class InstructionRegistrationError extends Error {
    */
   constructor(message: string);
 }
-/* oxlint-enable unicorn/custom-error-definition */

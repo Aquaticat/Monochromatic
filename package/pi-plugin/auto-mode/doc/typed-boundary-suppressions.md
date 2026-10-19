@@ -77,5 +77,6 @@ the constructing subclass name,
 and subsequent reassignment through a consumer.
 The rule-source and rejected configuration-option evidence is recorded in
 [`error-name-contract.md`](./error-name-contract.md).
-The scoped disable encloses only the ambient class,
-with the rule enabled on the line immediately after its declaration.
+Scoped lint reports nothing for this writable-`string` declaration without any disable,
+so no `unicorn/custom-error-definition` suppression remains;
+the earlier scoped disable was removed as unused after a bare-declaration check.
