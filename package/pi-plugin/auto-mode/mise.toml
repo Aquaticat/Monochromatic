@@ -38,6 +38,14 @@ extends = "lint"
 
 [tasks."lint:types"]
 extends = "lint:types"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'tsc-filter', ['--build', 'tsconfig.types.json'])
+"""
+
+[tasks."watch:lint:types"]
+extends = "watch:lint:types"
+run = "tsc --watch --project tsconfig.types.json"
 
 [tasks."test:native:inflight-input"]
 description = "Verify original steer and follow-up receipts while the native provider request is in flight"
