@@ -255,6 +255,52 @@ await describe({
     },),
 
     it({
+      name: 'READS WHAT EACH METER SAID beside the routed view, so a meter that could not be read is told apart '
+        + 'from one that answered wet although both route as spendable',
+      fn: async () => {
+        /** Stub providers with the first one's meter unreachable and the second one's spent. */
+        const { synthetic, hyper, openrouter, } = stubProviders({ quotaThrows: true, balance: 0, },);
+        /** Budget view under test. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+        },);
+
+        expect(await budgets.readStates({ signal: SIGNAL, },),).toEqual({
+          synthetic: 'unreadable',
+          hyper: 'dry',
+          bedrock: 'dry',
+          openrouter: 'wet',
+        },);
+        expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
+          synthetic: false,
+          hyper: true,
+          bedrock: true,
+          openrouter: false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'SHARES ONE METER READ between the states and the view inside a window',
+      fn: async () => {
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
+        /** Budget view under test. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.readStates({ signal: SIGNAL, },);
+        expect(reads.quota,).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'spends one meter read per window rather than one per call',
       fn: async () => {
         /** Stub providers with budget everywhere. */
