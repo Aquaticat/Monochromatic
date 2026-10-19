@@ -39,13 +39,14 @@ const NATIVE_PHASE_MODES: readonly NativePhaseMode[] = [
 
 /**
  Modes whose complete groups stay withheld before execution.
+
+ Steering modes are absent on purpose: measured SDK behavior executes the
+ current group once and delivers the queued steering text on the next request.
  */
 const WITHHELD_MODES: readonly NativePhaseMode[] = [
   'invalid',
   'before-block',
   'deny',
-  'steer-user',
-  'steer-primary',
   'policy-change',
   'policy-primary'
 ];
@@ -56,7 +57,6 @@ const WITHHELD_MODES: readonly NativePhaseMode[] = [
 const ZERO_ATTEMPT_MODES: readonly NativePhaseMode[] = [
   'invalid',
   'before-block',
-  'steer-primary',
   'policy-primary'
 ];
 
@@ -211,6 +211,11 @@ export function readNativePhasePlan({ requestedMode }: Readonly<{ requestedMode:
    */
   const notificationPrimary = mode.startsWith('notification-primary');
   /**
+   Steering modes queue text for the next request instead of cancelling the
+   current group, matching measured SDK delivery behavior.
+   */
+  const steering = (mode === 'steer-user') || (mode === 'steer-primary');
+  /**
    Withheld modes never reach native execution.
    */
   const withheld = modeListIncludes({
@@ -245,6 +250,7 @@ export function readNativePhasePlan({ requestedMode }: Readonly<{ requestedMode:
     mode,
     notification,
     notificationPrimary,
+    steering,
     withheld,
     cancel,
     sequentialExecution,

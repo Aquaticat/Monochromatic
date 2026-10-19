@@ -54,6 +54,7 @@ export type NativePhasePlan = Readonly<{
   mode: NativePhaseMode;
   notification: boolean;
   notificationPrimary: boolean;
+  steering: boolean;
   withheld: boolean;
   cancel: boolean;
   sequentialExecution: boolean;
@@ -96,6 +97,7 @@ export type NativePhaseState = {
   abortTask?: Promise<void>;
   updates: Map<string, NativePhaseUpdateDeferred>;
   sawNotification: boolean;
+  sawSteering: boolean;
   followupProposed: boolean;
 };
 
@@ -160,17 +162,19 @@ export type FixtureBashExecute = (
 ) => Promise<AgentToolResult<FixtureBashDetails>>;
 
 /**
- Installed SDK bash tool definition with only its replaced members declared.
+ Installed SDK bash tool with only its replaced members declared.
+
+ `prepareArguments` keeps the original normalizer's actual `unknown` result: the
+ original returns the unvalidated input when its command member is not text, and
+ the SDK's later schema validation rejects it exactly as before (`invalid` mode
+ relies on that). The SDK `defineTool` registration is the boundary that carries
+ the tool into `customTools`; no claim is made here that unvalidated input is
+ schema-valid. Renderers and every other member keep the original declaration.
  */
 export type FixtureBashTool = Omit<ReturnType<typeof createBashToolDefinition>, 'execute' | 'prepareArguments'> & Readonly<{
   execute: FixtureBashExecute;
   prepareArguments: (input: unknown) => unknown;
 }>;
-
-/**
- Command-bearing input projection read by the normalization boundary.
- */
-export type PhaseCommandInput = Readonly<{ command?: unknown }>;
 
 /**
  Dispose guard reproducing the original execute return accounting.
