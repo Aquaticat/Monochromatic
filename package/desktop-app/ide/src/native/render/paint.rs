@@ -20,15 +20,14 @@ use ide_app::find::{FindRange, FindRanges};
 use ide_app::find_navigation::paint_ranges;
 /// Physical viewport description for shared shaping.
 use ide_app::shaped_text::Viewport;
+/// The rule that gives the tallest tile for a raster width.
+use ide_app::shaped_text::tile_cap as raster_cap;
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
 /// Native palette values retain syntax and selection contrast.
 use ide_app::text_raster::CodeColors;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
-/// The most bytes a raster may hold,
-/// and the height of one code row.
-use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
 /// The window's display scale for the paint inputs.
 use slint::ComponentHandle;
 /// Shared find ranges and syntax styles travel with each stamp and job.
@@ -96,7 +95,7 @@ impl Paint {
 }
 
 /// What:
-///  The tallest tile in logical pixels whose raster stays within [`MAX_RASTER_BYTES`]
+///  The tallest tile in logical pixels whose raster stays within the raster limit
 ///  at wrap width `width` and display `scale`.
 /// Why:
 ///  A tile is one image of the text area's width,
@@ -115,8 +114,7 @@ pub(in crate::native) fn tile_cap(width: f32, scale: f32) -> f32 {
         UNWRAPPED_RASTER_WIDTH
     };
     let columns = ((raster * scale).ceil() as u64).max(1);
-    let rows = MAX_RASTER_BYTES / 4 / columns;
-    return ((rows as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+    return raster_cap(columns, scale);
 }
 
 /// The viewport of a tile at `bounds`:

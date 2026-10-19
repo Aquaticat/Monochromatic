@@ -14,6 +14,17 @@ use ide_app::document::ReadingAffinity;
 use ide_app::row_map::CODE_ROW;
 /// The part of a tall tile's lines its raster holds.
 use ide_app::shaped_text::Clip;
+/// What:
+///  `pub(super) use` brings the clip rule of the library in under its old name here,
+///  for `clip_for` and the sibling tests.
+/// Why:
+///  The shaper guards every frame with the same rule the window chooses a clip with.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { bandClip } from 'ide-app/shaped-text';
+/// ```
+pub(super) use ide_app::shaped_text::band_clip;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// ComponentHandle supplies weak references for callback lifetimes.
@@ -221,9 +232,9 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
     // ```ts
     // const tileStart = Math.max(0, view + height / 2 - (TILE_VIEWS * height) / 2);
     // ```
-    let tile_start = (view + height * 0.5 - height * TILE_VIEWS * 0.5).max(0.0);
+    let tile_start = view + height * 0.5 - height * TILE_VIEWS * 0.5;
     let tile_end = view + height * 0.5 + height * TILE_VIEWS * 0.5;
-    let first = current.row_map.line_at(tile_start);
+    let first = current.row_map.line_at(tile_start.max(0.0));
     let last = current.row_map.line_at(tile_end);
     current.first = first;
     current.count = last.saturating_sub(first) + 1 + TILE_SPARE_LINES;
@@ -266,49 +277,6 @@ fn clip_for(current: &State, band: (f32, f32)) -> Option<Clip> {
         );
     }
     return clip;
-}
-
-/// What:
-///  The clip of lines that span `first_top` to `bottom` (logical pixels from the top of the text) for a view whose
-///  three-height `band` is given,
-/// when a raster may be `cap` pixels tall at most;
-/// nothing while the lines fit.
-///  The edges are whole code rows below `first_top`,
-/// and the clip is never taller than `cap`.
-/// Why:
-///  The rounding to whole code rows adds up to two rows,
-/// and the cap leaves only one,
-/// so the height is cut back to the
-///  rows the cap allows;
-/// a view taller than the cap can never be held by such a tile,
-/// so it is placed again at every
-///  scroll step,
-/// as a window that tall has no better answer.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function bandClip(firstTop: number, bottom: number, band: [number, number], cap: number): Clip | undefined;
-/// ```
-pub(super) fn band_clip(first_top: f32, bottom: f32, band: (f32, f32), cap: f32) -> Option<Clip> {
-    if bottom - first_top <= cap {
-        return None;
-    }
-    let mut from = band.0.max(first_top);
-    let mut to = band.1.min(bottom);
-    if to - from > cap {
-        // A window taller than the limit: the raster is the middle of the band, as far as it reaches.
-        let middle = (from + to) / 2.0;
-        from = middle - cap / 2.0;
-        to = middle + cap / 2.0;
-    }
-    // Whole code rows below the first line's block keep the raster on whole pixels at the usual scales.
-    let top = ((from - first_top) / CODE_ROW).floor().max(0.0) * CODE_ROW;
-    let mut cut = ((to - first_top) / CODE_ROW).ceil() * CODE_ROW;
-    cut = cut.min(bottom - first_top).max(top + CODE_ROW);
-    // The rounding must not take the raster past what the cap allows.
-    let allowed = (cap / CODE_ROW).floor().max(1.0) * CODE_ROW;
-    cut = cut.min(top + allowed);
-    return Some(Clip { top, bottom: cut });
 }
 
 /// What:

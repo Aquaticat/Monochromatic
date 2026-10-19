@@ -201,6 +201,10 @@ mod quiet_read_tests;
 ///  ignored by default.
 #[cfg(test)]
 mod refresh_latency_tests;
+/// A tile the painter refuses never blanks the source,
+///  and a worker job that failed is freed.
+#[cfg(test)]
+mod refused_tile_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
@@ -254,6 +258,16 @@ mod source_font_tests;
 mod start;
 /// The initial reading state of a window.
 mod state;
+/// The minimap of a tall window is a picture of glyphs,
+///  not blocks.
+#[cfg(test)]
+mod tall_window_minimap_tests;
+/// A tall window over wrapped lines no measurement has reached:
+///  the tile is cut to the raster limit,
+///  the text stays on screen,
+///  and no window size or scale makes a raster past it.
+#[cfg(test)]
+mod tall_window_tests;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;

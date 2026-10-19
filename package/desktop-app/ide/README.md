@@ -2256,8 +2256,34 @@ A tile of lines taller than that is clipped instead of refused (`Viewport::clip`
 - A view so tall that it and a quarter of its height on each side pass the cap can never be held,
   so such a tile is placed again at every scroll step;
   a window that tall has no better answer.
+  The raster of a view the cap can hold is centered on the middle of the three view heights asked for,
+  moved inside the lines,
+  so the first and last lines of the text do not move it off the view.
+- The window chooses the clip from the heights its map holds,
+  and a line the background measurement has not reached counts as one row there,
+  while the shaper sizes the raster from the rows it just shaped.
+  `TextShaper::prepare_rows` therefore cuts every frame to the limit itself (`shaped_text::fit_clip`,
+  `src/shaped_text/limit.rs`),
+  around the middle of the lines it was given or of the clip it was asked for,
+  and logs the cut at warn level.
+  The built tile carries the clip it was really painted with (`TileBuilt::bounds`,
+  and its stamp),
+  while `TileBuilt::requested` names the job it answers,
+  so the window shows the cut tile and re-places the view against the heights the tile measured.
+  The window's map takes those heights in `tile::apply`,
+  also when it discards the tile because the view left it,
+  and the offset the map moved the view to is presented to the window on that path too;
+  the next placement chooses its clip from the new heights.
+  A raster ends with the text when the window reaches its last line,
+  so the rounding of the top edge to a whole code row never costs the last row.
+  A view within two code rows of the cap cannot be held by a raster on whole code rows,
+  and is placed again at every scroll step like a taller one.
 - The raster still refuses a tile past the limit with its diagnostic,
-  for a caller that did not clip.
+  which only a raster whose single code row is already past the limit can reach
+  (a text area about 700,000 pixels wide at scale 1).
+  A refused tile never blanks the source:
+  the window thread keeps the picture last painted and names the failure,
+  and the worker's failed job is freed so the next placement asks for the tile again.
 
 The caret stops of a line were found in time that grew with the square of its length:
 `project_line` walked the graphemes through a flat string view,

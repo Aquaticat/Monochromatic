@@ -98,8 +98,13 @@ pub(in crate::native) struct TileJob {
 /// type TileBuilt = { bounds: Bounds; view: ShapedView; pixels: RGBA8[]; stamp: Stamp };
 /// ```
 pub(in crate::native) struct TileBuilt {
-    /// Tile bounds that were built.
+    /// Tile bounds that were built:
+    /// the requested ones,
+    /// with the clip the frame was really cut to when the shaper had to cut it to the raster limit.
     pub(in crate::native) bounds: TileBounds,
+    /// Tile bounds that were asked for,
+    /// which the window matches against the job it is waiting for.
+    pub(in crate::native) requested: TileBounds,
     /// File-open generation the tile was built for.
     pub(in crate::native) file: u64,
     /// Shaped rows,
@@ -123,6 +128,14 @@ pub(in crate::native) struct TileBuilt {
     pub(in crate::native) rows_shaped: u64,
 }
 
+/// Test-only switch:
+/// the next build refuses to paint,
+/// as a raster past the limit would,
+/// so a test can see what the window does when a tile fails.
+#[cfg(test)]
+pub(in crate::native) static FAIL_NEXT_BUILD: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
 /// What:
 ///  `fn` declares a function;
 /// `&mut` lends the shaper and raster for this call only;
@@ -140,9 +153,30 @@ pub(in crate::native) fn build_tile(
     raster: &mut TextRaster,
     job: TileJob,
 ) -> Result<TileBuilt> {
+    #[cfg(test)]
+    if FAIL_NEXT_BUILD.swap(false, std::sync::atomic::Ordering::SeqCst) {
+        anyhow::bail!("Source viewport refused by the test switch");
+    }
     #[cfg(debug_assertions)]
     let before = shaper.shaped_rows();
     let mut view = shaper.prepare_rows(&job.document, job.viewport, &job.styles, &job.map);
+    // What: The shaper cuts a frame to the raster limit when its measured lines are taller than the window's map held;
+    //       the bounds and the stamp then name the clip that was really painted.
+    // Why: The window shows a tile by its bounds, and compares the stamp to the inputs it would paint now.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const bounds = { ...job.bounds, clip: view.viewport.clip };
+    // ```
+    let bounds = TileBounds {
+        clip: view.viewport.clip,
+        ..job.bounds
+    };
+    let stamp = if bounds == job.bounds {
+        job.stamp
+    } else {
+        job.stamp.with_clip(bounds.clip)
+    };
     // The lines this tile shaped know their own heights; the window merges them into its table.
     let mut measured = Vec::new();
     if job.viewport.wrap.is_some() {
@@ -162,11 +196,12 @@ pub(in crate::native) fn build_tile(
         pixels.height,
     );
     return Ok(TileBuilt {
-        bounds: job.bounds,
+        bounds,
+        requested: job.bounds,
         file: job.file,
         view,
         pixels: buffer,
-        stamp: job.stamp,
+        stamp,
         active: job.active,
         key: PassKey {
             file: job.file,

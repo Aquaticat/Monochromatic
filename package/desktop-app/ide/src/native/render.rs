@@ -9,7 +9,7 @@ use ide_app::selection_ink::{legible_ink, luminance};
 /// Native palette values retain syntax and selection contrast.
 use ide_app::text_raster::CodeColors;
 /// Toolkit images and models carry owned source presentation data.
-use slint::{ComponentHandle, Image, SharedString};
+use slint::{ComponentHandle, SharedString};
 /// UI callbacks share state without cross-thread synchronization.
 use std::{cell::RefCell, rc::Rc, time::Instant};
 
@@ -254,7 +254,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                         settled,
                     ));
                 }
-                current.shown = settled;
+                // The shaper may have cut the frame to the raster limit: what is shown, and so what is wanted next,
+                // is the clip it was really painted with.
+                current.shown = built.bounds;
+                current.clip = built.bounds.clip;
                 let mut view = built.view;
                 view.rebase(&current.row_map);
                 current.shaped = Some(view);
@@ -268,10 +271,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                 matches_changed = true;
             }
             Err(error) => {
+                // What: The displayed picture and its rows stay as they are, and the next render builds again.
+                // Why: A refused tile must not blank the source: the reader keeps the text last painted, with the
+                //      failure named beside it.
                 tracing::error!(%error, "source raster failed");
                 current.frame_stamp = None;
                 drop(current);
-                window.set_source_image(Image::default());
                 window.set_error_message(SharedString::from(format!(
                     "Cannot render source: {error}"
                 )));
