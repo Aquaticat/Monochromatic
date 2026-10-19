@@ -22,6 +22,30 @@ Script-value use still requires current original ownership and a returned member
 
 ## Retained boundaries
 
+### Completed producer judgments
+
+Pi retains historical assistant responses as conversation history.
+The producer owner's weak-key response map therefore cannot rely on garbage collection to retire its values.
+Each value contains an original judgment whose source-reader closure retains the original request body.
+Completed group review storage can be released while this separate producer reference remains live.
+
+An actual native-session reproduction completes twelve approved groups,
+retains all 24 historical assistant responses and preserves the latest request/diagnostic.
+Three unchanged runs retain 51,189,592 to 51,582,984 additional post-GC heap bytes.
+A disposable causal experiment releases superseded producer values,
+with observed retained heap of 17,779,424 and 17,789,088 bytes.
+The final original request remains 1,632,936 bytes and every original execution completes.
+That experiment establishes this reproduction's retention path;
+it does not qualify its retirement timing for active/concurrent operations or prove the older worker OOM is resolved.
+
+`test:native:producer-retirement` exercises this actual session/runtime boundary with a 32-MiB retained-heap ceiling.
+Its original-request size,
+historical response count,
+completed executions and latest diagnostic assertions prevent a missing-work or cleared-history false pass.
+The constructor and caller lifetime still need the production correction,
+followed by rebuilt positive controls and all terminal/consumer paths.
+The earlier group-only review-retirement test covers a different owner and cannot establish producer retirement.
+
 The source compiler retains clause, heading, incorporation, authorization, admission,
 and complete-operation fallback semantics.
 Model replies supply estimates; selected readable instructions and observed authorization supply authority.

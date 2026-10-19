@@ -13,8 +13,18 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   frozen at `e601e1043350`. Fresh JavaScript/native builds pass.
   An actual session completes twelve approved tool groups and retains all 24 historical assistant responses.
   Post-GC heap grows by 51,189,592 bytes; the final actual request is 1,632,936 bytes.
-  The matching no-judgment control and causal retirement comparison remain in progress.
-  This measurement alone does not establish the earlier OOM's cause.
+  Unchanged repeats retain 51,189,592 to 51,582,984 additional heap bytes.
+  Two no-judgment controls retain 11,459,160 and 11,462,968 bytes.
+  A separate causal candidate `producer-retention-host-retire-probe-candidate-a4bYII`
+  clears previous producer slot values on subsequent construction;
+  independently logged runs retain 17,779,424 and 17,789,088 bytes with all original executions/history/diagnostics.
+  This establishes the reproduction's owned retention path, not the older worker OOM's complete cause or a qualified fix.
+  The experimental policy can invalidate active concurrent operations and is explicitly unaccepted.
+  A maintained actual-session guard and package task are added before the production correction;
+  its 32-MiB limit must fail the original artifact before qualification.
+  The parent collector initially mistakes a build receipt for a test receipt,
+  and its restart output path collides with the second child's log.
+  Both collector failures are retained; that collided log is excluded and a distinct fourth-run log is collected.
 - Source MiMo `7HN2ZH` delivers the requested read-only checkpoint and now receives
   `source-owner-contract-consolidation-20261019-08`.
   Its unaccepted phase port grows from 432 code lines/126 statements/25 functions
