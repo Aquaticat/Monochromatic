@@ -145,16 +145,16 @@ export const containerBounds = (
     accepted: 'a whole number with the unit k, m, or g, such as 512m or 8g',
   }) ?? `${share.memoryGiB}g`;
   const wholeCpus = Math.max(1, Math.floor(Number(cpus)));
-  const count = (name: string, fallback: number): string => readVariable({
+  const count = ({ name, fallback }: { name: string; fallback: number }): string => readVariable({
     environment,
     name,
     form: wholeNumber,
     accepted: 'a positive whole number',
   }) ?? String(fallback);
-  const pids = count(variableNames.pids, pidsFor(wholeCpus));
-  const openFiles = count(variableNames.openFiles, defaultOpenFiles);
-  const jobs = count(variableNames.jobs, wholeCpus);
-  const testThreads = count(variableNames.testThreads, wholeCpus);
+  const pids = count({ name: variableNames.pids, fallback: pidsFor(wholeCpus) });
+  const openFiles = count({ name: variableNames.openFiles, fallback: defaultOpenFiles });
+  const jobs = count({ name: variableNames.jobs, fallback: wholeCpus });
+  const testThreads = count({ name: variableNames.testThreads, fallback: wholeCpus });
   return {
     cpus,
     memory,

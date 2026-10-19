@@ -15,7 +15,7 @@ import {
 } from './container-bounds.ts';
 
 const gibibyte = 2 ** 30;
-const hostOf = (cpus: number, memoryGiB: number) => ({ cpus, memoryBytes: memoryGiB * gibibyte });
+const hostOf = ({ cpus, memoryGiB }: { cpus: number; memoryGiB: number }) => ({ cpus, memoryBytes: memoryGiB * gibibyte });
 // The host of the owner's decision: 28 CPUs and 61.83 GiB (66,394,247,168 bytes), a "64 GB" machine.
 const ownerHost = { cpus: 28, memoryBytes: 66394247168 };
 
@@ -25,14 +25,14 @@ test('three quarters of a 28 CPU, 64 GB host is 21 CPUs and 46 GiB', () => {
 
 test('a one CPU, 2 GB host keeps one CPU and the 2 GiB floor', () => {
   assert.deepEqual(hostBound({ cpus: 1, memoryBytes: 2e9 }), { cpus: 1, memoryGiB: 2 });
-  assert.deepEqual(hostBound(hostOf(1, 2)), { cpus: 1, memoryGiB: 2 });
+  assert.deepEqual(hostBound(hostOf({ cpus: 1, memoryGiB: 2 })), { cpus: 1, memoryGiB: 2 });
 });
 
 test('the share is rounded down, never up', () => {
-  assert.equal(hostBound(hostOf(3, 8)).cpus, 2);
-  assert.equal(hostBound(hostOf(5, 8)).cpus, 3);
-  assert.equal(hostBound(hostOf(8, 5)).memoryGiB, 3);
-  assert.equal(hostBound(hostOf(8, 6)).memoryGiB, 4);
+  assert.equal(hostBound(hostOf({ cpus: 3, memoryGiB: 8 })).cpus, 2);
+  assert.equal(hostBound(hostOf({ cpus: 5, memoryGiB: 8 })).cpus, 3);
+  assert.equal(hostBound(hostOf({ cpus: 8, memoryGiB: 5 })).memoryGiB, 3);
+  assert.equal(hostBound(hostOf({ cpus: 8, memoryGiB: 6 })).memoryGiB, 4);
 });
 
 test('the process limit keeps a floor of 512 and grows with the CPU count', () => {
@@ -50,7 +50,7 @@ test('with nothing set, every value is computed from the host', () => {
 });
 
 test('a small host yields the conservative bound the repository used before', () => {
-  const bounds = containerBounds({ environment: {}, host: hostOf(2, 2) });
+  const bounds = containerBounds({ environment: {}, host: hostOf({ cpus: 2, memoryGiB: 2 }) });
   assert.deepEqual(bounds.limitArguments, ['--memory=2g', '--cpus=1', '--pids-limit=512', '--ulimit', 'nofile=4096:4096']);
   assert.deepEqual(bounds.environmentArguments, ['--env', 'CARGO_BUILD_JOBS=1', '--env', 'NEXTEST_TEST_THREADS=1']);
 });
