@@ -1004,6 +1004,17 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     strict reading only B has no CPU glyph raster in the window; but Slint text cannot do tab stops, ligature
     control, custom wrap or hanging indent, and the real IDE froze about 1 s under Vello (cause unfound). Owner
     questions are asked via the question tool; the answers are recorded in this bullet's next sibling.
+  - Owner answers of 2026-10-19 to the GPU study: (1) the FemtoVG glyph atlas is accepted for library chrome text, so
+    design C is chosen (Parley layout drawn by Vello into wgpu textures shown as Slint images, Slint on
+    `renderer-femtovg-wgpu`); (2) `unstable-wgpu-30`, `renderer-femtovg-wgpu`, full wgpu limits and the vello
+    lock entries are accepted; (3) native tests must not keep the software renderer: a GPU snapshot harness is built
+    first, before the pipeline is replaced. Open from the study, adopted unless vetoed: `[profile.dev.package."*"]`
+    optimization for dependencies (debug builds are twelve times slower in Slint and Vello; the owner believes the
+    jank shows in debug); the soft 2.5 px minimap is judged against the old bitmap by screenshot at the minimap stage.
+    Stages: 0 GPU snapshot harness (headless wgpu pixel readback replacing `take_snapshot` in the native tests);
+    1 dev-profile groundwork plus the cadence driver kept in the repo; 2 renderer switch; 3 row scene on the GPU;
+    4 selection, find, underlines, hint rows and wrap sign as scene content; 5 minimap as a GPU slice texture;
+    6 delete the CPU pipeline (`text_raster.rs`, `glyph_cache.rs`, tile image path, `swash`, `renderer-software`).
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
