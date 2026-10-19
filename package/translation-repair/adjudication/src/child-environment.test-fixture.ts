@@ -24,12 +24,23 @@
  invented key still reaches what the command does; a case that wants the
  refusal says so through `startedBy`.
 
+ A CHILD LOGS INSIDE THE WORKSPACE. The repository's logger writes beside the
+ nearest ancestor `node_modules` and, where none stands above the working
+ directory (a scratch directory under the system temp directory), falls back
+ to the user's state directory and says so on stderr. Every child is told its
+ log directory instead (`MONOCHROMATIC_LOG_DIRECTORY`, which the logger keeps
+ to and never trades for a fallback): this package's gitignored
+ `node_modules/.monochromatic`, unless the case names another in `extra`. So
+ no test writes into the user's state and no child's stderr carries the
+ logger's notice.
+
  @module
  */
 
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import { join, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 
 import nanoSpawn, { type Result, } from 'nano-spawn';
 
@@ -51,8 +62,17 @@ const SETTING_PREFIX = 'TRANSLATION_REPAIR_';
 const SIGNALLED = -1;
 
 /**
+ Directory every child's logger writes into unless the case names another:
+ this package's gitignored `node_modules/.monochromatic`.
+ */
+const CHILD_LOG_DIRECTORY = fileURLToPath(new URL(
+  '../node_modules/.monochromatic',
+  import.meta.url,
+),);
+
+/**
  Environment for a child: the parent's, with every variable the rule removes
- stated as absent, then the case's own variables.
+ stated as absent, the workspace log directory, then the case's own variables.
 
  @param extra - variables the case sets for its child, which win over the
  removal so a case can hand one setting down by name
@@ -77,6 +97,7 @@ export function environmentWithoutKeys(
   }
   return {
     ...kept,
+    MONOCHROMATIC_LOG_DIRECTORY: CHILD_LOG_DIRECTORY,
     ...extra,
   };
 }
