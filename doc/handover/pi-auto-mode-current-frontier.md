@@ -6,6 +6,20 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Fresh full-package Oxlint at `329df9f855`: 11,047 warnings and 129 errors across 885 files,
+  486 rules, completed in 28.2 seconds under two-GiB/two-CPU bounds.
+  Receipt: scratch `decision-responsibility-split-full-lint.log`.
+  The preceding complete baseline was 11,325 warnings and 157 errors across 882 files at `d58b695428`.
+  Whole-package zero lint remains unfinished.
+- Recovered source worker `wmudZ2` and native worker `z78qJS` have opened the saved histories
+  on `o30Fdb/dist/native-release-fO486Z` and received their scoped work prompts.
+  Their idle explicit post-GC baselines are 96,868,984 to 96,869,592 heap bytes and
+  87,951,928 to 87,952,536 heap bytes respectively, with 608-byte unchanged-input spreads.
+  Source owns the producer-lifetime test responsibility split; native owns the registration suppression warning.
+  Main owns decision modules and actual long-history memory qualification.
+- Decision gate closure now returns its named immutable gate, following the root-let rule's actual
+  helper-function exception. The private shared active review remains owned by that gate across operations.
+  This shape still requires a fresh lint/build/consumer run before claiming the diagnostic resolved.
 - Recovery after the user's October 19 REISUB: the committed package changes and private qualification receipts survive.
   `podman ps --all` lists no live worker containers; cached worker state still says connected and is stale.
   Do not change that interrupted state to a successful shutdown or treat old session IDs as live processes.

@@ -117,6 +117,7 @@ export function createDecisionGate({
    review
  });
  }
- return Object.freeze({createOperationReview});
+ const gate=Object.freeze({createOperationReview});
+ return gate;
 }
 //endregion Original decision ownership
