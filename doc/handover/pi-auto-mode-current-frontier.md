@@ -6,6 +6,23 @@ Work is incomplete. Continue the queue without another readiness handoff.
 
 ### Latest checkpoint
 
+- Source MiMo commits `937954199a`: four files, four lifetime cases plus five rebuilt fault controls,
+  nine total, with the actual nine-case consumer passing. Its reported scope has 103 warnings/zero errors.
+  Main rejects its rationale for fifteen new regex suppressions: test error-message matchers are not
+  incoming SDK category validation. A follow-up prompt orders ordinary assertion predicates and removal
+  of those suppressions, with the root guidance unchanged and a package-local explanation.
+  The 29 error-typed Node assertion receivers are a separate unresolved TypeScript program-context question;
+  do not attribute them to the untyped owner without a discriminating probe.
+- Source worker's 32-tool checkpoint post-GC heap is 365,008,352 bytes in all three samples.
+  Native worker's producer-owner/declaration port and source worker's matcher correction remain active.
+- Controlled run A completes normally at 36 groups and about 272.6 MB heap;
+  run B reaches 24 groups at about 227.9 MB, reproducing warmed growth on the same initial history.
+  Its final snapshot is still pending. Keep this investigation separate from the producer-retirement guard.
+- Forty-four documentation files render through Pandoc with no broken local links.
+  The rendered phase-identity document was read; receipt `render-current-docs-receipt.json`, fixture `KYPY1v`.
+  `a834db549c` independently passes both fresh builds and full types;
+  its phase scope leaves only one chain-format warning. The equality operator's final formatting fix
+  still needs the actual scoped receipt, followed by the planned cloned-update negative control.
 - `059a66fd91` removes phase-fixture unsafe event-detail access by retaining the original finite authored updates
   and matching their opaque identities. Installed native `emitToolExecutionUpdate` forwards the original result;
   the full native phase catalog confirms the actual native dispatch does too.
