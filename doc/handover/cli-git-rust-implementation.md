@@ -10,6 +10,13 @@ The accepted scope is in
 and
 [`unified-linter.md`](../planning/unified-linter.md).
 
+Mutation runs are non-blocking for the rest of the session, per the user's words on 2026-10-18: "I'm making mutation
+tests non-blocking from now on for this session."
+A mutation run starts as a background unit and never holds a release, a close or the next queued item.
+Its result is read when the notification arrives, and survivors are killed or justified then, in a later commit or
+patch release.
+The passing gate (container tests, lint, check) still precedes every release.
+
 ## Handoff 2026-10-05
 
 This session hands off to Claude Opus after the Astra usage limit was reached.
@@ -1670,15 +1677,17 @@ that is verification, not a decision for the user.
   amended or rebased branch (the last recorded push, or the upstream tip, must be an ancestor of the branch tip,
   which keeps the amend invariant of `doc/decision/cli-git-concurrent-commits.md`). The local branch stays behind the
   remote after a reconcile and the note names `git merge --ff-only`. Nine controls pass on the host, the real binary
-  was driven end to end, and the amend guard was shown to fail without it. Queued, in order: (1) read the gate and the
-  scoped mutation run (unit `cli-git-rec1`, tag `rec1`, logs `~/temp/agent/rec1-container.log` and
-  `rec1-mutation.log`) and kill or justify every survivor (the `rec1` run missed nine of nine mutants it had tested before it was stopped: `unpublished`, the `||` chains of
-  `read_destination`, `published_base`, `commit_merge` and the `(Some(true), _)` arm; killed with ten new tests and three
-  redundant checks removed; the run restarted as unit `cli-git-rec2`, tag `rec2`, logs `rec2-container.log` and
-  `rec2-mutation.log`, and its results replace `rec1`); (2) release 0.2.0 (README version lines, `Cargo.toml`,
-  `Cargo.lock`, `cli.fuzz:lock:members`, dry-run publish from a `systemd-run --user` unit, push, verify crates.io
-  and the release, `mise upgrade cargo:monochromatic-git-policy-cli`, `git checkout -- mise.lock`); (3) comment on
-  and close issue 1769 with the release; (4) remove image tag `rec1`. Open design follow-up: advance the local branch
+  was driven end to end, and the amend guard was shown to fail without it.
+  Queued, in order: (1) release 0.2.0 now, because the gate passed 1972 tests at the head `7f8c5a4ce0`
+  (README version lines, `Cargo.toml`, `Cargo.lock`, `cli.fuzz:lock:members`, dry-run publish from a
+  `systemd-run --user` unit, push, verify crates.io and the release, `mise upgrade cargo:monochromatic-git-policy-cli`,
+  `git checkout -- mise.lock`); (2) comment on and close issue 1769 with the release; (3) read the scoped mutation run
+  when it ends and kill or justify every survivor, with a patch release if a source change is needed. The run is unit
+  `cli-git-rec2` (tag `rec2`, logs `~/temp/agent/rec2-container.log` and `rec2-mutation.log`, started 20:30 on
+  2026-10-18, about two hours in total) and replaces `rec1`, which missed nine of the nine mutants it tested before it
+  was stopped (`unpublished`, the `||` chains of `read_destination`, `published_base`, `commit_merge` and the
+  `(Some(true), _)` arm); those were killed with eleven new tests and three redundant checks removed.
+  (4) remove the image tags `rec1` and `rec2` once the results are read. Open design follow-up: advance the local branch
   after a reconcile when the worktree allows it (not done because it takes the index lock and touches files).
   Issue 1713 (handover paths and `mise run //` targets that moved) is queued after the release: a scan of the
   `doc/handover/cli-git*.md` files found 25 backticked paths that no longer resolve in 11 files (the TypeScript
