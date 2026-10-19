@@ -864,7 +864,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     single test. Guard proof (production code broken, restored with `git checkout`): `layout.break_all_lines(None)`
     fails all six on "some lines wrap", `OverflowWrap::Normal` fails the two width 600 tests on "the excuse is
     exercised", and removing `set_line_break_override` fails four on "broke a rule".
-    Measured (this host, load average 10 to 17 from other sessions; times are wall seconds of the mise task): 
+    Measured (this host, load average 10 to 17 from other sessions; times are wall seconds of the mise task):
     old code at the old 2 CPU, 2 GiB bound: `build:debug` (warm) 8 s, `test` 818 s (783 tests), `test:wrap` 840 s (15 and 62
     tests), `test:native` 236 s (197 tests). New code at the computed default (24 CPUs, 46 GiB from a `systemd-run` unit),
     two runs each: `build:debug` 16 and 8 s, `test` 22 and 19 s (788 tests, 783 plus the six minus the one removed),
@@ -893,8 +893,22 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     120 s, terminate after 15 periods), proved in the container by `mise run test:nextest-config`.
     Rules for agents: run only the tests a change can reach, never `test` and `test:wrap` together (the second repeats
     the first), and use the filter (`mise run //package/desktop-app/ide:test 'test(/wrap/)'`).
-    FLAKY_NOTE
-    Gates and guard scripts of this branch: GATES_NOTE
+    Flaky test seen once, not caused by this branch: at the old 2 CPU bound, `test:native` failed
+    `wrap_clip_tests::revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view` ("the last line wraps to 1 rows",
+    `src/native/wrap_clip_tests.rs:294`) after 125 s, and passed in every other measured run of the suite (old code
+    at the old and the raised bound, new code at the default bound three times). Its precondition `settled(&opened)`
+    does not wait for the background measurement to reach the last line, so a slow worker leaves that line at one
+    row. It is a race of the test, found because the 2 CPU run was slow; fixing it (wait for the measurement, or
+    build the map by hand) is open.
+    Gates of this branch, re-run by the coordinator after merging `origin/main` (default bound, each task alone):
+    `test:bin`, `test:nextest-config`, `lint:rustfmt`, `lint:clippy`, `lint:closures` (nightly) and `test:wrap` (15 and
+    67 tests, 8 s) passed. Not re-run, because nothing they exercise changed (the only Rust change is
+    `tests/wrap.rs`): `test` and `test:native` (the agent's final run at the default bound: 788 tests in 13 s and 197
+    tests in 88 s, all passed). Guard scripts: the agent ran the eleven scripts below at the new bound before the merge,
+    every guard accepted and none not accepted (accepted counts: find 105, watch 205, annotation 175, language 92,
+    sidebar 44, language lifecycle 28, ignored 75, theme 13, search 49, language navigation 45, source 300). The other
+    six edited scripts (idle cost, log stall, refresh latency, language reap rate, watch limit, watch scope) are not
+    guard runners and were not run; they carry the same mechanical import and limit-argument change.
   - Queued work from the owner's requests of 2026-10-18 (answers through the question tool):
     the IDE bug "Source viewport 1354x12548 exceeds the 64 MiB raster limit" on a very tall window (screenshot: blank
     text area, line numbers and minimap drawn) is being fixed by an agent on branch `fix/ide-tall-window-tile`
