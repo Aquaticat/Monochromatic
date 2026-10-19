@@ -4,6 +4,19 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Implementation stopped for plan review, 2026-10-19
+
+The user explicitly stops implementation and requests a Markdown plan for review.
+Do not build anything, write replacement source, install dependencies, change package configuration,
+or continue the legacy removal queue while this review is pending.
+The requested artifact is
+[the package ground-up rebuild plan](../../package/pi-plugin/auto-mode/doc/planning/ground-up-rebuild.md).
+It inventories proposed dependency functions and necessity,
+high-level modules, estimated character budgets, deployment budgets, and unresolved integration decisions.
+These budgets are proposals, not measured implementation footprints.
+The current task ends with the rendered, committed plan and a review handoff.
+Discussion of the plan alone is not authorization to resume implementation.
+
 ### Fresh implementation in main, 2026-10-19
 
 The user authorizes starting auto-mode over completely.
