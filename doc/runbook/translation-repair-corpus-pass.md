@@ -337,6 +337,11 @@ TODO | DONE
     so the pipeline digest moved with no family source changed.
     Pass no `PATH`,
     or one with every main-checkout entry removed and the worktree's `node_modules/.bin` first.
+    From `0fa3120174` on,
+    a family build refuses such a bundler itself,
+    and the task stops at its build with
+    `This build is running rolldown <x>, but this checkout installs rolldown <y>.`;
+    a checkout older than that commit still needs the check that follows.
     Before trusting a launch meant to run on a known build,
     read the bundler version off the build lines and the digest off `START`:
 
