@@ -1749,12 +1749,10 @@ that is verification, not a decision for the user.
   and a signer that fails.
   Real-signer check passed 2026-10-19: the reconcile merge `08b8bd1547`, made by the installed 0.2.1 wrapper, shows
   `%G?` of `G` on origin.
-  Running (started 2026-10-19, non-blocking): unit `cli-git-rec4`, script `~/temp/agent/rec4-run.ts`, image tag
-  `rec4`, head `496875c8cf`: the container gate, then mutation over the three auto-push files limited to the functions
-  this work touched; logs `~/temp/agent/rec4-container.log` and `rec4-mutation.log`. Read the final "mutants tested"
-  line, kill every missed mutant with a test (a miss ships in a follow-up release), and remove the `rec4` image and
-  container. If the unit is gone without a result, restart it with `systemd-run --user --unit=cli-git-rec4 --collect
-  --property=MemoryMax=24G node ~/temp/agent/rec4-run.ts`.
+  Done 2026-10-19: the mutation run `cli-git-rec4` over the three auto-push files (head `496875c8cf`, the code that
+  shipped as 0.2.2) tested 55 mutants in 34 minutes: 51 caught, 4 unviable, none missed or timed out; the container
+  gate passed (1995 tests, 5 skipped). The `rec4` images are removed. Nothing is queued for task 50 except the
+  by-nature exceptions named above.
   Released 2026-10-19 as 0.2.2 (commit `63a67d1b5f`) after the container gate passed (1995 tests, 5 skipped): the
   publish workflow succeeded, crates.io lists 0.2.2, both archives exist, the glibc floor on the x86_64 archive is
   still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it
