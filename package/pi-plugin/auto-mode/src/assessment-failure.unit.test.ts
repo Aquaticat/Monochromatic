@@ -43,9 +43,13 @@ await describe({ name: 'assessment failure classification', children: [
   }),
   it({ name: 'requires complete invocation failures and rejects empty, cyclic, mixed, and unknown bundles', fn: async function classifyCompleteBundles() {
     /** The retry category can only come from the built HTTP sender. */
-    const send = assessmentSender({ fetchImpl: async function failHttpInvocation() { throw new TypeError('fixture connection failed'); } });
+    const send = assessmentSender({ fetchImpl: async function failHttpInvocation() {
+      throw new TypeError('fixture connection failed');
+    } });
     /** This retained category contains no borrowed upstream cause. */
-    const failure = await assessmentFailure(async function dispatchOriginalAttempt() { return await send(assessmentInput()); });
+    const failure = await assessmentFailure(async function dispatchOriginalAttempt() {
+      return await send(assessmentInput());
+    });
     expect(
       isRetryableAssessmentFailure(new AggregateError([failure], 'single failed call')),
     ).toBe(true);
@@ -61,7 +65,7 @@ await describe({ name: 'assessment failure classification', children: [
     expect(
       isRetryableAssessmentFailure(new AggregateError([failure, new Error('unqualified')], 'mixed')),
     ).toBe(false);
-    expect(isRetryableAssessmentFailure({ name: 'AssessmentRequestFailure' })).toBe(false);
+    expect(isRetryableAssessmentFailure({ name: 'AssessmentRequestFailureError' })).toBe(false);
     /** An aggregate cycle is not a finite transport-failure explanation. */
     const cyclic = new AggregateError([], 'cyclic');
     cyclic.errors.push(cyclic);

@@ -114,7 +114,10 @@ const sendAssessment=httpTransport?createAssessmentSender({
   const decisionRequest=JSON.parse(options.body);
   if(observations.httpCalls===2){
     if(settings.transientHttpFailure==='unavailable')
-      return new Response('Private temporary service failure', {status:503});
+      return new Response(
+        'Private temporary service failure',
+        {status:503}
+      );
     if(settings.transientHttpFailure==='request')
       throw new TypeError('Fixture connection reset with private request data');
   }

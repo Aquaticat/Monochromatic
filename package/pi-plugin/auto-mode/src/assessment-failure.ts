@@ -17,11 +17,11 @@ export class AssessmentTransportError extends Error {
 /**
  Failed HTTP invocations and temporary HTTP 503 responses permit the original bounded retry.
  */
-export class AssessmentRequestFailure extends AssessmentTransportError {
+export class AssessmentRequestFailureError extends AssessmentTransportError {
   /**
    Distinguish request failures from credential, cancellation, and protocol rejection.
    */
-  override readonly name = 'AssessmentRequestFailure';
+  override readonly name = 'AssessmentRequestFailureError';
 }
 
 /**
@@ -30,6 +30,12 @@ export class AssessmentRequestFailure extends AssessmentTransportError {
  @param error - actual rejection from the original assessment invocation
  
  @returns whether every failed call permits the original bounded retry
+
+ @example
+ ```ts
+ // An ordinary protocol error does not qualify for retry.
+ isRetryableAssessmentFailure(new Error('protocol failure'));
+ ```
  */
 export function isRetryableAssessmentFailure(error: unknown): boolean {
   /**
@@ -47,7 +53,7 @@ export function isRetryableAssessmentFailure(error: unknown): boolean {
   /**
    An empty aggregate is not evidence that an HTTP invocation failed.
    */
-  const failures = new Set<AssessmentRequestFailure>();
+  const failures = new Set<AssessmentRequestFailureError>();
   while (pending.length > 0) {
     /**
      Each original rejection is classified independently of its borrowed message.
@@ -59,7 +65,7 @@ export function isRetryableAssessmentFailure(error: unknown): boolean {
       pending.push(...current.errors);
       continue;
     }
-    if (!(current instanceof AssessmentRequestFailure)) {
+    if (!(current instanceof AssessmentRequestFailureError)) {
       l.debug('assessment failure does not permit transport retry');
       return false;
     }

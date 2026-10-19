@@ -32,7 +32,10 @@ const ADDITIONAL_STORAGE_BUDGET=8_388_608;
 
  @returns {{contents:ReturnType<ReturnType<typeof createInputContentStore>>[],expected:string[],retain:ReturnType<typeof createInputContentStore>}} live store, readers and digests
  */
-function workload({growing,prefix}) {
+function workload({
+  growing,
+  prefix
+}) {
  /**
   Actual manager-local interner owns retained content.
   */
@@ -65,11 +68,20 @@ function workload({growing,prefix}) {
    Only the selected prefix or tail changes; the complete catalog stays unchanged.
    */
   const text=JSON.stringify(prefix?{
-   prefix:Array.from({length:growing?version:0},function prefixEntry(_,index){
+   prefix:Array.from(
+     {length:growing?version:0},
+     function prefixEntry(
+       _,
+       index
+     ){
     return `message-${index}`;
-   }),
+   }
+   ),
    catalog
-  }:{catalog,tail:growing?version:0});
+  }:{
+    catalog,
+    tail:growing?version:0
+  });
   expected.push(createHash('sha256')
     .update(text)
     .digest('hex'));
@@ -92,7 +104,10 @@ function workload({growing,prefix}) {
 
  @returns {{growing:boolean,retainedHeapBytes:number}} measured retained heap and workload identity
  */
-function measure({growing,prefix}) {
+function measure({
+  growing,
+  prefix
+}) {
  globalThis.gc();
  /**
   Collection precedes both baseline and final observations.
@@ -106,7 +121,10 @@ function measure({growing,prefix}) {
    contents,
    expected,
    retain
- }=workload({growing,prefix});
+ }=workload({
+   growing,
+   prefix
+ });
  globalThis.gc();
  /**
   Reading exact content happens after the retained-allocation measurement.
@@ -118,7 +136,13 @@ function measure({growing,prefix}) {
   Calling the live store after collection proves its maps survived the retained-heap observation.
   */
  const first=nonNullishOrThrow(contents[0]);
- assert.equal(retain({text:first.read(),json:true}),first);
+ assert.equal(
+   retain({
+     text:first.read(),
+     json:true
+   }),
+   first
+ );
  for(const [index,content]of contents.entries()){
   assert.equal(
     createHash('sha256')
@@ -143,13 +167,22 @@ function measure({growing,prefix}) {
  @type {readonly [ReturnType<typeof measure>,ReturnType<typeof measure>]}
  */
 const unchanged=[
-  measure({growing:false,prefix:false}),
-  measure({growing:false,prefix:false})
+  measure({
+    growing:false,
+    prefix:false
+  }),
+  measure({
+    growing:false,
+    prefix:false
+  })
 ];
 /**
  Distinct tails expose storage duplicated across otherwise unchanged versions.
  */
-const growing=measure({growing:true,prefix:false});
+const growing=measure({
+  growing:true,
+  prefix:false
+});
 /**
  Additional storage is compared with the larger unchanged-input measurement.
  */
@@ -175,13 +208,22 @@ assert.ok(
  @type {readonly [ReturnType<typeof measure>,ReturnType<typeof measure>]}
  */
 const prefixUnchanged=[
- measure({growing:false,prefix:true}),
- measure({growing:false,prefix:true})
+ measure({
+   growing:false,
+   prefix:true
+ }),
+ measure({
+   growing:false,
+   prefix:true
+ })
 ];
 /**
  Earlier messages shift page alignment while the catalog text stays unchanged.
  */
-const prefixGrowing=measure({growing:true,prefix:true});
+const prefixGrowing=measure({
+  growing:true,
+  prefix:true
+});
 /**
  Additional retained storage excludes the larger unchanged-prefix control.
  */

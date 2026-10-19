@@ -253,7 +253,8 @@ export function createDecisionFallbackWireSender({
     operationDecision: plan.operationDecision,
     operatingPolicy: true,
     httpTransport: true,
-    transientHttpFailure: plan.mode.startsWith('unavailable')
+    transientHttpFailure: plan.mode
+      .startsWith('unavailable')
       ? 'unavailable'
       : plan.transient ? 'request' : 'none'
   };
