@@ -159,6 +159,14 @@ async function safeDestroy(vmName: string,): Promise<void> {
    */
   const VMSYNC = `${MISE} && sudo -E "$(which node)" ${BUNDLE}`;
 
+  // Install the runtime library the mise-managed Node needs before Node starts.
+  await execInVm({
+    vmName: VM,
+    command:
+      'sudo apt-get update -qq && sudo apt-get install -y -qq libatomic1 > /dev/null 2>&1',
+    timeout: EXEC_TIMEOUT_MS,
+  },);
+
   // Install mise, then use mise to install Node (handles arch detection).
   // guest-exec runs without login shell so HOME is unset; export it explicitly.
   await execInVm({
