@@ -970,6 +970,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
+  - Minimap box fill removed (owner request of 2026-10-19): the viewport box is an outline without a fill
+    (`ui/minimap.slint`); hover and drag change its border width and opacity only. The native test is now
+    `the_box_is_an_outline_whose_border_changes_under_the_pointer`. Checked: `lint:slint`, `lint:rustfmt`,
+    `lint:clippy`, `lint:closures`, `test:native` (214 passed) and a screenshot of the real binary in the nested
+    compositor; installed.
   - Minimap redesign (owner request of 2026-10-18, answers through the question tool; branch
     `feat/ide-minimap-downscale`, worktree `.claude/worktrees/ide-minimap`, an agent, started 2026-10-19; landed on
     `main` as `16540bdb9d` on 2026-10-19 and installed). The tall-window blanking, the container bound, the comment directives of `monochromatic-lint` and the
