@@ -1,3 +1,4 @@
+import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import {
   isLinkNode,
   type LinkLabelKind,
@@ -117,11 +118,52 @@ export const NO_MARKUP_RANGES: MarkupRanges = {
 };
 
 /**
+ The stretch of one node.
+
+ @param node - a node of the tree
+
+ @returns The stretch from the start of the node to its end
+
+ @throws {@link ConsistencyInvariantError} when the node has no start or no end offset, since the parser places every node it reads
+ and a stretch left out would leave its markup in the prose
+
+ @example
+ ```ts
+ const row = placeOf({ node: rowNode, },);
+ ```
+ */
+function placeOf({ node, }: { readonly node: TreeNode; },): MarkupRange {
+  /**
+   Offset where the node starts, absent where the parser gave none.
+   */
+  const start = node.position
+    ?.start
+    .offset;
+  /**
+   Offset where the node ends, absent where the parser gave none.
+   */
+  const end = node.position
+    ?.end
+    .offset;
+  if ((start === undefined) || (end === undefined)) {
+    throw new ConsistencyInvariantError({
+      invariant: `the ${node.type} node has no start or no end offset, and the parser places every node it reads`,
+    },);
+  }
+  return {
+    start,
+    end,
+  };
+}
+
+/**
  The stretches of some nodes.
 
  @param nodes - nodes of the tree
 
- @returns The stretches of the nodes the parser gave a position, in the order the nodes were listed
+ @returns The stretches of the nodes, in the order the nodes were listed
+
+ @throws {@link ConsistencyInvariantError} when a node has no start or no end offset
 
  @example
  ```ts
@@ -129,29 +171,9 @@ export const NO_MARKUP_RANGES: MarkupRanges = {
  ```
  */
 function stretchesOfNodes({ nodes, }: { readonly nodes: readonly TreeNode[]; },): readonly MarkupRange[] {
-  return nodes
-    .flatMap(function stretchOfNode({ position, },): readonly MarkupRange[] {
-      /**
-       Offset where the node starts, absent where the parser gave none.
-       */
-      const start = position
-        ?.start
-        .offset;
-      /**
-       Offset where the node ends, absent where the parser gave none.
-       */
-      const end = position
-        ?.end
-        .offset;
-      return ((start === undefined) || (end === undefined))
-        ? []
-        : [
-          {
-            start,
-            end,
-          },
-        ];
-    },);
+  return nodes.map(function stretchOfNode(node,): MarkupRange {
+    return placeOf({ node, },);
+  },);
 }
 
 /**
@@ -161,7 +183,9 @@ function stretchesOfNodes({ nodes, }: { readonly nodes: readonly TreeNode[]; },)
 
  @param types - node types
 
- @returns The stretches of the nodes the parser gave a position, in the order the nodes were listed
+ @returns The stretches of the nodes, in the order the nodes were listed
+
+ @throws {@link ConsistencyInvariantError} when a node has no start or no end offset
 
  @example
  ```ts
@@ -185,14 +209,79 @@ function stretchesOfTypes(
 }
 
 /**
- The stretches of the resources of the links, references and images of a tree: for a link or a reference, from the end of its label
+ The stretch of the resource of a link, a reference or an image: for a link or a reference, from the end of its label
  to its end (the closing bracket, the destination and the title, or the reference), and for an image the whole of it, since an image
- shows a reader a picture and not its alt text. A link whose label has a child the parser gave no position is left out, since where
- its label ends is then unknown.
+ shows a reader a picture and not its alt text.
+
+ @param node - a link, a reference or an image of the tree
+
+ @returns The stretch of the resource
+
+ @throws {@link ConsistencyInvariantError} when the link has no start or no end offset, when its label ends in a child with no end
+ offset, or when its label ends after it does, since the parser places every link and its label inside it, and a resource left
+ out would leave its address in the prose
+
+ @example
+ ```ts
+ const resource = resourceOfLink({ node: linkNode, },);
+ ```
+ */
+function resourceOfLink({ node, }: { readonly node: TreeNode; },): MarkupRange {
+  /**
+   Where the link stands.
+   */
+  const {
+    start,
+    end,
+  } = placeOf({ node, },);
+  if ((node.type === 'image') || (node.type === 'imageReference')) {
+    return {
+      start,
+      end,
+    };
+  }
+  /**
+   The children of the label, none for an empty label.
+   */
+  const children = ('children' in node ? (node.children as readonly TreeNode[]) : []);
+  /**
+   The last child of the label.
+   */
+  const lastChild = children.at(-1,);
+  /**
+   Offset where the label ends, the opening bracket's end for an empty label, absent where the last child has no end offset.
+   */
+  const labelEnd = (lastChild === undefined)
+    ? start + 1
+    : lastChild.position
+      ?.end
+      .offset;
+  if (labelEnd === undefined) {
+    throw new ConsistencyInvariantError({
+      invariant: `the label of a ${node.type} node ends in a child with no end offset, and the parser places every child of a label`,
+    },);
+  }
+  if (labelEnd > end) {
+    throw new ConsistencyInvariantError({
+      invariant: `the label of a ${node.type} node ends at ${String(labelEnd,)}, after the link ends at ${
+        String(end,)
+      }, and a label ends inside its link`,
+    },);
+  }
+  return {
+    start: labelEnd,
+    end,
+  };
+}
+
+/**
+ The stretches of the resources of the links, references and images of a tree.
 
  @param nodes - every node of the tree
 
  @returns The stretches, in the order the nodes were listed
+
+ @throws {@link ConsistencyInvariantError} when a link cannot be placed, as `resourceOfLink` says
 
  @example
  ```ts
@@ -204,53 +293,8 @@ function linkResourcesOf({ nodes, }: { readonly nodes: readonly TreeNode[]; },):
     .filter(function isLink(node,): boolean {
       return isLinkNode({ node, },);
     },)
-    .flatMap(function resourceOfLink(node,): readonly MarkupRange[] {
-      /**
-       Offset where the node starts, absent where the parser gave none.
-       */
-      const start = node.position
-        ?.start
-        .offset;
-      /**
-       Offset where the node ends, absent where the parser gave none.
-       */
-      const end = node.position
-        ?.end
-        .offset;
-      if ((start === undefined) || (end === undefined))
-        return [];
-      if ((node.type === 'image') || (node.type === 'imageReference')) {
-        return [
-          {
-            start,
-            end,
-          },
-        ];
-      }
-      /**
-       The children of the label, none for an empty label.
-       */
-      const children = ('children' in node ? (node.children as readonly TreeNode[]) : []);
-      /**
-       The last child of the label.
-       */
-      const lastChild = children.at(-1,);
-      /**
-       Offset where the label ends, the opening bracket's end for an empty label, absent where the last child has no position.
-       */
-      const labelEnd = (lastChild === undefined)
-        ? start + 1
-        : lastChild.position
-          ?.end
-          .offset;
-      return ((labelEnd === undefined) || (labelEnd > end))
-        ? []
-        : [
-          {
-            start: labelEnd,
-            end,
-          },
-        ];
+    .map(function resourceOf(node,): MarkupRange {
+      return resourceOfLink({ node, },);
     },);
 }
 
@@ -266,13 +310,15 @@ const LABELLED_KINDS: ReadonlySet<LinkLabelKind> = new Set<LinkLabelKind>([
  The links and references of a tree whose label shows letters or digits or marks, with the two stretches of each that show a reader
  nothing: the opening square bracket and the resource (n173). A link whose label shows nothing is read whole as an empty link and one
  whose label shows closing marks alone as a closing link, so neither is listed; an image is hidden whole, so it is not either. A link
- that does not begin with a square bracket (`<https://u>`) is left out, and so is one whose resource cannot be placed.
+ that does not begin with a square bracket (`<https://u>`) is left out.
 
  @param english - the English the tree was read from, which tells a link written with square brackets from an autolink
 
  @param nodes - every node of the tree
 
  @returns The links, in the order the nodes were listed
+
+ @throws {@link ConsistencyInvariantError} when a link cannot be placed, as `resourceOfLink` says
 
  @example
  ```ts
@@ -295,17 +341,13 @@ function labelledLinksOf(
     },)
     .flatMap(function partsOfLink(node,): readonly LabelledLink[] {
       /**
-       Offset where the node starts, absent where the parser gave none.
+       Where the link stands, which the parser gives every link.
        */
-      const start = node.position
-        ?.start
-        .offset;
+      const { start, } = placeOf({ node, },);
       /**
-       The resource of the link, absent where the parser gave no position.
+       The resource of the link.
        */
-      const [resource,] = linkResourcesOf({ nodes: [node,], },);
-      if ((start === undefined) || (resource === undefined))
-        return [];
+      const resource = resourceOfLink({ node, },);
       // A link that does not begin with a square bracket (an autolink) has no opening bracket to hide.
       if (english.charAt(start,) !== '[')
         return [];
@@ -329,7 +371,9 @@ function labelledLinksOf(
 
  @param kind - what the label shows
 
- @returns The stretches of the links the parser gave a position, in the order the nodes were listed
+ @returns The stretches of the links, in the order the nodes were listed
+
+ @throws {@link ConsistencyInvariantError} when a link has no start or no end offset
 
  @example
  ```ts
