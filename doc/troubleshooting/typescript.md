@@ -1,6 +1,6 @@
-# TypeScript aggregator (native tsc 7.0.1-rc through 7.0.2 and classic tsc6 6.0.x): eight failure modes from dprint baseUrl warnings through `using` downlevel helpers
+# TypeScript aggregator (native tsc 7.0.1-rc through 7.0.2 and classic tsc6 6.0.x): nine failure modes from dprint baseUrl warnings through `using` downlevel helpers
 
-This file aggregates eight distinct TypeScript-related failure modes
+This file aggregates nine distinct TypeScript-related failure modes
 encountered across the workspace.
  Each section follows the
 troubleshooting-doc canonical structure (Symptom / Root cause /
@@ -1269,6 +1269,94 @@ panicking).
 - denoland/deno#31423: CSS imports causing the same panic.
 - neovim/nvim-lspconfig#4018: filetype mismatch in LSP.
 ````
+
+## Type check of a test file is only as current as the last build
+
+### Symptom
+
+`mise run //package/<path>:lint:types` reports zero errors while test files in
+that package carry real type errors.
+The same command,
+ run again after `mise run //package/<path>:build` and with no source change in
+between,
+ reports them.
+
+Observed 2026-08-20 in `package/translation-repair`,
+ adding two required fields to `ChunkRepairOutcome`:
+ the type check named the source construction sites,
+ stayed silent about five test files whose fixtures were missing the same
+fields,
+ and named all seven test-file errors on the next run after a build.
+
+### Root cause
+
+Test files in this package import the BUILT bundle,
+ not the source:
+
+```ts
+// package/translation-repair/assembly/src/repair-round-record.unit.test.ts
+import { describeJudgedRound, } from '../dist/final/node/index.mjs';
+```
+
+251 of the package's test files import `../dist/final/node/index.mjs` or
+`../../dist/final/node/index.mjs`.
+TypeScript resolves those imports to `dist/final/node/index.d.mts`,
+ which rolldown emits during `build` and which `lint:types` never regenerates.
+
+So a test file is always checked against the declarations of the last
+successful build.
+Change a type in `src/`,
+ run `lint:types`,
+ and every source file is checked against the change while every test file is
+checked against the shape it had before.
+
+### Verification
+
+A positive control,
+ with the same source state throughout and only the build between the two runs:
+
+```bash
+# One required field added to a widely constructed type, filled in at every
+# source construction site so the source half is clean.
+mise run //package/translation-repair/<package>:lint:types   # 0 errors
+mise run //package/translation-repair/<package>:build
+mise run //package/translation-repair/<package>:lint:types   # 7 errors, 5 test files
+```
+
+### Workaround
+
+Build before type-checking whenever a change could reach a test file:
+
+```bash
+mise run //package/<path>:build && mise run //package/<path>:lint:types
+```
+
+`mise run //package/translation-repair/<package>:buildAndTest` already does this
+for the test half,
+ and its description says so:
+ "Build the node bundle,
+ then run unit tests against the built dist".
+The same ordering is what the type check needs and nothing states it.
+
+### What does not work
+
+Deleting `dist/final/types/tsconfig.tsbuildinfo` does not surface the errors.
+The incremental build info is not involved,
+ and clearing it was the first cause guessed here.
+Verified by clearing it against a stale `index.d.mts`:
+ the test-file errors stayed hidden.
+Only the rebuild changes the answer.
+
+### Why we do not file this upstream
+
+Not a TypeScript defect.
+TypeScript resolves a declaration file that exists on disk and reports what it
+says;
+ the declarations being stale is a property of when this repo runs its own
+build.
+The fix,
+ if the ordering is judged worth enforcing rather than documenting,
+ belongs in the `lint:types` task definition.
 
 ## `using` downlevel helpers: 2381 bytes inlined per emitted file, and a `null` `Symbol.asyncDispose` guard that diverges from the spec
 

@@ -167,3 +167,8 @@
 # re-derive a deferral that was never load-bearing. Evidence:
 # doc/decision/prefer-readonly-member-channel-authority.md.
 /DEFERRED_MEMBER_NAME[S]/
+
+# `truncated-attempt` was renamed to `attempt-retry` when the benchmark's
+# second-attempt trigger broadened beyond truncation; the retired module
+# name must not come back.
+truncated-attempt

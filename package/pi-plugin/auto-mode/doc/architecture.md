@@ -6,6 +6,39 @@ locally parsed operation structure,
 the existing Luna Decisions model,
 and scoped human confirmation when automatic review cannot resolve the operation.
 
+## Source-size checkpoint
+
+The frozen `fa164036c6` character audit contains 885 owned code files and 4,081,015 Unicode characters,
+including comments and types.
+Literal runtime import roles reach 371 files containing 1,621,116 characters.
+After actual Node type erasure and parser-comment removal,
+those runtime roles contain 824,074 non-whitespace characters.
+Shared runtime/verification files remain in that runtime total.
+Verification-only files contain 1,871,193 raw characters;
+build-only files contain 280,321.
+These counts describe source responsibilities,
+not a minimal executable or an accepted size target.
+
+The parser controls cover ambient declarations,
+Unicode code points,
+Unicode before comment offsets,
+wrapping invariance and reachable production assertions.
+The graph still has 113 nonliteral imports and 65 unresolved local references.
+Generated imports come from the separately qualified `bb0496f82f` artifact.
+The private `character-role-audit-final.json` receipt records each source and role.
+Character measurement does not replace max-lines enforcement;
+wrapping remains valid formatting and over-limit modules still need coherent splits.
+
+The independent full-package lint checkpoint at `329df9f855`
+reports 11,047 warnings and 129 errors across 885 files.
+Of those warnings,
+8,498 concern unsafe member access,
+assignment,
+calls,
+arguments or returns.
+Genuine producer types and generated declarations are required work;
+new message-category validation would not repair these missing type contracts.
+
 ## Refactor status
 
 The [compact prepared-group implementation](compact-review-design.md) shares actual native phases,

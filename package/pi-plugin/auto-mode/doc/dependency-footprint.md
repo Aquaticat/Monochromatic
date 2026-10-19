@@ -1,5 +1,43 @@
 # Dependency footprint
 
+## October 19 refresh
+
+The complete traversal and collection run inside a two-GiB/two-CPU container,
+with a 512-MiB Node heap and read-only installed inputs.
+The live repair snapshot spans `2026-10-19T04:57:22.737Z` to `2026-10-19T04:57:24.452Z`;
+it is not a transactional deployment inventory.
+
+The owned package directory contains 13,349 regular-file paths totaling 106,478,753 bytes.
+Deduplicating device/inode pairs gives 24,213,276 unique regular-file bytes
+and 29,474,816 allocated regular-file bytes.
+Including owned directory and symlink allocation gives 29,691,904 bytes.
+Shared dependency symlink targets are excluded from those figures.
+
+`dist` accounts for 99,115,872 apparent regular-file bytes
+but 16,850,395 unique bytes because retained immutable releases share files.
+The native source tree contributes 2,138,485 bytes,
+`src` contributes 2,074,182 bytes,
+the package cache contributes 2,115,857 bytes,
+and owned files under `node_modules` contribute 805,496 bytes.
+Hardlink sharing explains the path/content difference;
+it does not justify retaining every release or establish a minimal runtime.
+No release was deleted during this refresh.
+
+The independent installed dependency scopes now report:
+
+- `all-installed`: 96 package directories and 255,684,429 unique regular-file bytes.
+- `host-required`: 81 directories and 120,136,973 unique regular-file bytes.
+- `dependencies-only`: 28 directories and 35,485,785 unique regular-file bytes.
+  Required host peers remain excluded from this last scope,
+  so it is not runnable deployment evidence.
+
+The receipt owners in the current private scratch are
+`bounded-owned-package-footprint.json`,
+`bounded-footprint-host-required.json`
+and the corresponding named scope receipts.
+Optional TypeScript peers and platform binaries still affect the broad installed scope.
+Fresh measurement does not resolve the deployment dependency footprint.
+
 ## Measurement scope
 
 Package-directory size alone omits shared dependencies behind `node_modules` symlinks.

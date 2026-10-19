@@ -2,6 +2,8 @@ name: advisory-core
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   actions: read
@@ -27,8 +29,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "- admitted by manual dispatch for qualification" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "- admitted pull-request advisory run; push budget not consumed" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           now=$(date +%s)
           runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow advisory-core.yml --limit 100 --json databaseId,createdAt --jq '.' 2>/dev/null || echo '[]')
           counts=$(jq --argjson now "$now" --argjson current "$GITHUB_RUN_ID" '
@@ -86,10 +99,14 @@ jobs:
         run: mise run prepare:pnpm
       - name: Static changed paths
         id: static
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.before }}"
+          base="${{ github.event.pull_request.base.sha }}"
+          if [ -z "$base" ]; then
+            base="${{ github.event.before }}"
+          fi
           if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
             base="HEAD^"
           fi
@@ -106,6 +123,8 @@ jobs:
             mise run lint:monochromatic-lint -- "${files[@]}"
           fi
       - name: Build fast subset
+        id: build
+        continue-on-error: true
         run: |
           mise run //package/module/logger:build
           mise run //package/module/p-map-fork:build
@@ -113,6 +132,7 @@ jobs:
           mise run //package/cli/forbidden-strings:build
           mise run //package/linter/monochromatic-lint:build
       - name: Unit fast subset
+        id: unit
         run: |
           mise run //package/module/logger:test:unit
           mise run //package/module/p-map-fork:test:unit
@@ -129,3 +149,11 @@ jobs:
             echo "- fast subset: module/logger, module/p-map-fork, module/toml-edit, cli/forbidden-strings, linter/monochromatic-lint"
             echo "- results are advisory; no required checks and no branch-protection change"
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce advisory result
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.static.outcome }}" = "failure" ] || [ "${{ steps.build.outcome }}" = "failure" ] || [ "${{ steps.unit.outcome }}" = "failure" ]; then
+            echo "One or more advisory profiles failed; see the step logs."
+            exit 1
+          fi

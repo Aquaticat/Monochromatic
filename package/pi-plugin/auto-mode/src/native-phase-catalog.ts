@@ -107,6 +107,9 @@ export async function runNativePhaseCatalog({
   requestedMode: string;
   emitSummary: (summary: NativePhaseSummary) => void;
 }>): Promise<void> {
+  /**
+   Mode expectations are fixed before any native callback is registered.
+   */
   const plan = readNativePhasePlan({ requestedMode });
   /**
    Event traces retain native call identity without subprocess ordering.
@@ -129,10 +132,14 @@ export async function runNativePhaseCatalog({
    */
   const state: NativePhaseState = {
     updates: new Map(),
+    authoredUpdates: new Set(),
     sawNotification: false,
     sawSteering: false,
     followupProposed: false
   };
+  /**
+   Isolated native construction installs the original authored hooks and policy.
+   */
   const environment = await createEnvironment({
     policyText: PHASE_POLICY_TEXT,
     useNativeProvider: true,
@@ -147,7 +154,8 @@ export async function runNativePhaseCatalog({
   const bashToolModule: unknown = await import(pathToFileURL(join(
     environment.packageRoot,
     'dist/core/tools/bash.js'
-  )).href);
+  ))
+    .href);
   assertBashToolBuilder(bashToolModule);
   /**
    The SDK `defineTool` erasure runs on the valid original definition before the
@@ -158,6 +166,8 @@ export async function runNativePhaseCatalog({
     .cwd));
   /**
    Lazy session reader resolves the original session created below the wrapper.
+
+   @returns original constructed native session
    */
   function readPhaseSession(): AgentSession {
     return session;
@@ -191,11 +201,13 @@ export async function runNativePhaseCatalog({
   session.agent
     .getApiKey = fixtureKey;
   if (plan.sequentialExecution)
-    session.agent.toolExecution = 'sequential';
+    session.agent
+      .toolExecution = 'sequential';
   /**
    Subscription retains its original unsubscribe identity for disposal.
    */
-  const unsubscribe = session.agent.subscribe(createPhaseEventSubscriber({
+  const unsubscribe = session.agent
+    .subscribe(createPhaseEventSubscriber({
     state,
     events
   }));
@@ -212,6 +224,9 @@ export async function runNativePhaseCatalog({
     },
     observations
   });
+  /**
+   Authored transport drives each mode through its actual native provider path.
+   */
   const transport = createNativePhaseTransport({
     plan,
     state,
@@ -222,6 +237,9 @@ export async function runNativePhaseCatalog({
     observations,
     events
   });
+  /**
+   Original runtime installation owns complete-group review through disposal.
+   */
   const runtime = bindNativePolicyRuntime({
     root,
     lifecycle,
@@ -238,6 +256,9 @@ export async function runNativePhaseCatalog({
     sendWire: transport.sendWire,
     terminalFetch: transport.terminalFetch
   });
+  /**
+   Native disposal finishes before hooks detach and diagnostics flush.
+   */
   await using cleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
       await state.abortTask;

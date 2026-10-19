@@ -65,7 +65,6 @@ catalog:
   '@types/sinon': '>=22.0.0'
   '@types/sinon-chai': '>=4.0.0'
   '@types/three': '>=0.182.0'
-  '@types/unist': '>=3.0.3'
   '@valibot/to-json-schema': '>=1.7.1'
   'ajv': '>=8.17.1'
   'ajv-formats': '>=3.0.1'
@@ -134,6 +133,7 @@ catalog:
   # p-waterfall is omitted: package/module/pipe provides sequential async composition.
   'pdfjs-dist': '>=4.0.0'
   'picomatch': '>=4.0.5'
+  'pinyin-pro': '>=3.29.3'
   'postcss': '>=8.5.26'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
@@ -145,6 +145,10 @@ catalog:
   'rehype-stringify': '>=10.0.1'
   'remark-gfm': '>=4.0.1'
   'remark-github-blockquote-alert': '>=2.0.1'
+  # translation-repair mirrors the site it publishes to, whose scripts/mdx.ts
+  # compiles every page with remark-math ^6 (one-among-us/data package.json);
+  # a later major could read `$` differently from the site, so this stays on 6.
+  'remark-math': '^6.0.0'
   'remark-mdx': '>=3.1.1'
   'remark-parse': '>=11.0.0'
   'remark-rehype': '>=11.1.2'

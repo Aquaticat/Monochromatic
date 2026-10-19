@@ -38,6 +38,14 @@ extends = "lint"
 
 [tasks."lint:types"]
 extends = "lint:types"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'tsc-filter', ['--build', 'tsconfig.types.json'])
+"""
+
+[tasks."watch:lint:types"]
+extends = "watch:lint:types"
+run = "tsc --watch --project tsconfig.types.json"
 
 [tasks."test:native:inflight-input"]
 description = "Verify original steer and follow-up receipts while the native provider request is in flight"
@@ -1006,6 +1014,10 @@ run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.m
 [tasks."test:native:input-content"]
 description = "Verify exact shared text and producer-bound source content accessors"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-input-content.test.mjs"
+
+[tasks."test:native:content-sequence-capacity"]
+description = "Verify changing input snapshots share their chunk-reference storage"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-content-sequence-capacity.test.mjs"
 
 [tasks."test:native:session-inputs"]
 description = "Exercise native session actions, opaque controls, persisted content, compaction sets, and shared text"

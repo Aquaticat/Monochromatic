@@ -2863,7 +2863,7 @@
           "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
           "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
           "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
-          "SCCACHE_WEBDAV_PASSWORD": "fixture-explicit-token"
+          "SCCACHE_WEBDAV_PASSWORD": "<same as selectedSyntheticToken>"
         },
         "inheritedCacheTuningRemoved": true
       },
@@ -2880,7 +2880,7 @@
           "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
           "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
           "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
-          "SCCACHE_WEBDAV_PASSWORD": "fixture-saved-token"
+          "SCCACHE_WEBDAV_PASSWORD": "<same as selectedSyntheticToken>"
         },
         "inheritedCacheTuningRemoved": true
       },
@@ -2897,7 +2897,7 @@
           "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
           "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
           "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
-          "SCCACHE_WEBDAV_PASSWORD": "fixture-jit-token"
+          "SCCACHE_WEBDAV_PASSWORD": "<same as selectedSyntheticToken>"
         },
         "inheritedCacheTuningRemoved": true
       },
@@ -2914,7 +2914,7 @@
           "RUSTC_WRAPPER": "[home]/temp/agent/depot-cargo-wrapper-boundary-zCmXni/bin/sccache",
           "SCCACHE_WEBDAV_ENDPOINT": "https://fixture-cache.invalid",
           "SCCACHE_WEBDAV_USERNAME": "fixture-owned-org",
-          "SCCACHE_WEBDAV_PASSWORD": "fixture-job-token"
+          "SCCACHE_WEBDAV_PASSWORD": "<same as selectedSyntheticToken>"
         },
         "inheritedCacheTuningRemoved": true
       },

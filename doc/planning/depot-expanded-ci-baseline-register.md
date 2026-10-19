@@ -204,6 +204,41 @@ It is not a whole-repository baseline and it is not a gate.
 The log is in
 [the fast-subset CI log](../audit/depot-fast-subset-baseline-39199930641-2026-10-18.log.gz).
 
+## Advisory profile
+
+`.github/workflows/advisory-core.yml` implements the default-branch advisory profile.
+It runs on a push to `main`,
+on pull requests to `main`,
+and on dispatch.
+The gate admits 2 starts per rolling minute,
+4 per hour and 8 per day,
+and records the newest skipped tip as pending.
+Pull-request runs do not consume the push budget;
+manual dispatch bypasses it for qualification.
+The core job runs on GitHub-hosted Linux,
+uses the changed-path static selector,
+and runs the five-owner fast subset build and unit tasks.
+Results are advisory;
+no required checks and no branch-protection change follow.
+The first admitted run was `39201617300`.
+Its changed-path static step failed on pre-existing semantic-line-break findings in
+`doc/handover/slint-ide-0x.md`,
+a changed file in the pushed range.
+The old workflow stopped there and skipped build and unit.
+The workflow now lets static and build continue,
+runs unit after a successful build,
+and fails once at the end if any profile failed.
+The first run is therefore an observed changed-file lint failure,
+not a product assertion or a workflow success.
+Manual qualification run `39202293518` completed successfully:
+the gate admitted the dispatch,
+the changed-path static step reported no changed static files,
+the build and unit fast subsets passed,
+and the final enforce step passed.
+That verifies the all-profile execution and the manual qualification path.
+Push admission remains limited to the 2/4/8 window;
+the first admitted push is the lint finding.
+
 ## Build profile
 
 Command:

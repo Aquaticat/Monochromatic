@@ -3,10 +3,12 @@
 
  @module
  */
-import {Buffer} from 'node:buffer';
 import {createHash} from 'node:crypto';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {inputContentChunks} from './input-content-chunks.ts';
+import {
+  createInputContentPieces,
+  type ContentPage
+} from './input-content-pieces.ts';
 
 //region One manager's input ledger shares storage while retaining every original source occurrence
 
@@ -16,14 +18,6 @@ import {inputContentChunks} from './input-content-chunks.ts';
 export type RetainedInputContent = {
  readonly sha256:string;
  readonly read:()=>string;
-};
-
-/**
- Interned chunks own their text instead of slicing a larger serialized input.
- */
-type ContentChunk = {
- readonly ordinal:number;
- readonly text:string;
 };
 
 /**
@@ -39,17 +33,17 @@ const l=tagged({tag:'auto-mode-native-input-content'});
 /**
  Keep the read closure separate from the caller's complete temporary serialization.
 
- @param chunks - detached immutable text pieces preserve the exact UTF-16 sequence
+ @param pages - shared immutable text pages preserve the exact UTF-16 sequence
  
  @param sha256 - original UTF-8 digest retains the existing source contract
  
  @returns content reader without a retained flat serialization
  */
 function retainContentReader({
-  chunks,
+  pages,
   sha256
 }: {
-  readonly chunks:readonly string[];
+  readonly pages:readonly ContentPage[];
   readonly sha256:string
 }): RetainedInputContent {
  /**
@@ -58,7 +52,11 @@ function retainContentReader({
   @returns original code-unit sequence reconstructed from retained pieces
   */
  function read(): string {
-  return chunks.length===1?chunks[0]??'':chunks.join('');
+  return pages.map(function readPage(page){
+   return page.texts
+     .join('');
+  })
+    .join('');
  }
  return Object.freeze({
    sha256,
@@ -90,52 +88,13 @@ export function createInputContentStore(): (input:{
  });
  sl.debug('created manager-owned immutable input content store');
  /**
-  Exact chunk text selects one detached representation within this manager.
+  Shared pages retain chunk arrays once rather than once per complete version.
   */
- const chunks=new Map<string,ContentChunk>();
+ const retainPieces=createInputContentPieces();
  /**
   Complete chunk-identity sequences preserve equality independently of hashing.
   */
  const contents=new Map<string,RetainedInputContent>();
- /**
-  Ordinals identify chunks only inside this store and grant no source authority.
-  */
- const state={next:0};
- /**
-  UTF-16 copying detaches substrings without replacing unpaired surrogate code units.
-
-  @param text - temporary slice must not retain its larger parent serialization
-  
-  @returns manager-owned immutable chunk identity
-  */
- function internChunk(text:string): ContentChunk {
-  /**
-   Existing exact text reuses its manager-owned immutable chunk.
-   */
-  const previous=chunks.get(text);
-  if(previous!==undefined)return previous;
-  /**
-   UTF-16 copying preserves unpaired surrogates while detaching parent storage.
-   */
-  const owned=Buffer.from(
-    text,
-    'utf16le'
-  )
-    .toString('utf16le');
-  /**
-   Text and ordinal are fixed before the chunk enters the equality ledger.
-   */
-  const chunk=Object.freeze({
-    ordinal:state.next,
-    text:owned
-  });
-  state.next++;
-  chunks.set(
-    owned,
-    chunk
-  );
-  return chunk;
- }
  /**
   JSON encodes the complete chunk-identity sequence, avoiding a delimiter relation or digest-only equality.
 
@@ -155,17 +114,13 @@ export function createInputContentStore(): (input:{
   /**
    Token alignment shares growing JSON strings without changing original bytes.
    */
-  const pieces=inputContentChunks({
+  const {
+    key,
+    pages
+  }=retainPieces({
     text,
     json
-  })
-    .map(internChunk);
-  /**
-   JSON encodes the complete identity sequence without ambiguous delimiters.
-   */
-  const key=JSON.stringify(pieces.map(function ordinal(chunk){
-    return chunk.ordinal;
-  }));
+  });
   /**
    Exact sequence reuse preserves distinct source publications outside this store.
    */
@@ -175,7 +130,7 @@ export function createInputContentStore(): (input:{
    The reader captures detached pieces rather than this temporary serialization.
    */
   const content=retainContentReader({
-   chunks:Object.freeze(pieces.map(function ownedText(chunk){return chunk.text;})),
+   pages,
    sha256:createHash('sha256')
      .update(text)
      .digest('hex')

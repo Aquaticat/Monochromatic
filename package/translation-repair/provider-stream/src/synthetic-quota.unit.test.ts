@@ -1,0 +1,325 @@
+/**
+ Tests for quota snapshot parsing.
+ Fixture mirrors the live-verified `/quotas` body shape with altered values.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
+  parseQuotaSnapshot,
+  QuotaShapeError,
+} from '../dist/final/node/index.mjs';
+
+/**
+ Recorded-shaped body with invented numbers;
+ carries the unmodeled blocks too, proving they are tolerated.
+ */
+const RECORDED_SHAPE = JSON.stringify({
+  subscription: {
+    limit: 640,
+    requests: 3,
+    renewsAt: '2026-07-17T03:00:00.000Z',
+  },
+  search: { hourly: { limit: 200, requests: 0, renewsAt: '2026-07-16T23:00:00.000Z', }, },
+  freeToolCalls: { limit: 0, requests: 0, renewsAt: '2026-07-17T22:00:00.000Z', },
+  weeklyTokenLimit: {
+    nextRegenAt: '2026-07-17T00:10:00.000Z',
+    percentRemaining: 87.5,
+    maxCredits: '$32.00',
+    remainingCredits: '$28.00',
+    nextRegenCredits: '$0.64',
+  },
+  rollingFiveHourLimit: {
+    nextTickAt: '2026-07-16T22:55:00.000Z',
+    tickPercent: 0.05,
+    remaining: 613.4,
+    max: 640,
+    limited: false,
+  },
+},);
+
+await describe({
+  name: parseQuotaSnapshot.name,
+  children: [
+    it({
+      name: 'parses the recorded body shape into the typed snapshot',
+      fn: async () => {
+        expect(parseQuotaSnapshot({ bodyText: RECORDED_SHAPE, },),).toEqual({
+          fiveHour: {
+            remaining: 613.4,
+            max: 640,
+            limited: false,
+            nextTickAt: '2026-07-16T22:55:00.000Z',
+          },
+          weekly: {
+            percentRemaining: 87.5,
+            nextRegenAt: '2026-07-17T00:10:00.000Z',
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError on bodies that are not JSON',
+      fn: async () => {
+        /** Value caught from parse of an HTML error page. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText: '<html>maintenance</html>', },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError when the five-hour block is missing',
+      fn: async () => {
+        /** Value caught from parse of a body without the consumed block. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText: '{"weeklyTokenLimit":{}}', },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError when a consumed field is mistyped',
+      fn: async () => {
+        /** Body whose remaining count arrives as a string. */
+        const mistyped = JSON.stringify({
+          rollingFiveHourLimit: {
+            nextTickAt: '2026-07-16T22:55:00.000Z',
+            tickPercent: 0.05,
+            remaining: '613',
+            max: 640,
+            limited: false,
+          },
+          weeklyTokenLimit: {
+            nextRegenAt: '2026-07-17T00:10:00.000Z',
+            percentRemaining: 87.5,
+          },
+        },);
+        /** Value caught from parse of the mistyped body. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText: mistyped, },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+        expect(
+          caught instanceof QuotaShapeError
+            ? caught.message
+            : '',
+        ).toContain('remaining',);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError when a body parses to no JSON object',
+      fn: async () => {
+        /** Value caught from parse of a JSON array where the object goes. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText: '[1,2]', },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+        expect(
+          caught instanceof QuotaShapeError
+            ? caught.message
+            : '',
+        ).toBe('Synthetic /quotas body violated expectations: body is not a JSON object; received array',);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError when the weekly block is not an object',
+      fn: async () => {
+        /** Body whose weekly block arrives as a string. */
+        const bodyText = '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":"nope"}';
+        /** Value caught from parse of the mistyped body. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText, },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+        expect(
+          caught instanceof QuotaShapeError
+            ? caught.message
+            : '',
+        ).toBe('Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received '
+          + 'rollingFiveHourLimit:object, weeklyTokenLimit:string',);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError on each mistyped five-hour field, naming the field it refused',
+      fn: async () => {
+        /**
+         Five-hour fields mistyped one at a time, each naming its own
+         refusal.
+         */
+        const variants: readonly {
+          readonly bodyText: string;
+          readonly message: string;
+        }[] = [
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":"640","limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.max is not a number; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
+          },
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":"false","nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.limited is not a boolean; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
+          },
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":5},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            message: 'Synthetic /quotas body violated expectations: rollingFiveHourLimit.nextTickAt is not a string; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
+          },
+        ];
+        for (const { bodyText, message, } of variants) {
+          /** Value caught from parse of the mistyped body. */
+          let caught: unknown;
+          try {
+            parseQuotaSnapshot({ bodyText, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught instanceof QuotaShapeError,).toBe(true,);
+          expect(
+            caught instanceof QuotaShapeError
+              ? caught.message
+              : '',
+          ).toBe(message,);
+        }
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError on each mistyped weekly field, naming the field it refused',
+      fn: async () => {
+        /**
+         Weekly fields mistyped one at a time, each naming its own
+         refusal.
+         */
+        const variants: readonly {
+          readonly bodyText: string;
+          readonly message: string;
+        }[] = [
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":"87.5","nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.percentRemaining is not a number; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
+          },
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":5}}',
+            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.nextRegenAt is not a string; received '
+              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object',
+          },
+        ];
+        for (const { bodyText, message, } of variants) {
+          /** Value caught from parse of the mistyped body. */
+          let caught: unknown;
+          try {
+            parseQuotaSnapshot({ bodyText, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught instanceof QuotaShapeError,).toBe(true,);
+          expect(
+            caught instanceof QuotaShapeError
+              ? caught.message
+              : '',
+          ).toBe(message,);
+        }
+      },
+    },),
+    it({
+      name: 'NAMES THE TOP-LEVEL KEYS OF A REFUSED BODY AND THE JSON TYPE OF EACH, and for a body that is no object the type of '
+        + 'the value, and never a value',
+      fn: async () => {
+        /**
+         The message a body is refused with, empty when it was accepted.
+         */
+        function refusalOf({ bodyText, }: { readonly bodyText: string; },): string {
+          try {
+            parseQuotaSnapshot({ bodyText, },);
+          }
+          catch (error) {
+            return (error instanceof QuotaShapeError) ? error.message : 'not a shape error';
+          }
+          return '';
+        }
+        expect([
+          refusalOf({ bodyText: '{}', },),
+          refusalOf({ bodyText: '{"rollingFiveHourLimit":"full","weeklyTokenLimit":5,"search":null,"x":[1],"y":true}', },),
+          refusalOf({ bodyText: '[1,2]', },),
+          refusalOf({ bodyText: '{"weeklyTokenLimit":{"percentRemaining":87}}', },),
+          refusalOf({ bodyText: '<html>maintenance</html>', },),
+        ],).toEqual([
+          'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received {}',
+          'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
+          + 'rollingFiveHourLimit:string, weeklyTokenLimit:number, search:null, x:array, y:boolean',
+          'Synthetic /quotas body violated expectations: body is not a JSON object; received array',
+          'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received weeklyTokenLimit:object',
+          'Synthetic /quotas body violated expectations: body is not valid JSON',
+        ],);
+      },
+    },),
+    it({
+      name: 'BOUNDS WHAT A REFUSED BODY CAN PUT IN THE MESSAGE: key names are cut to forty characters of printable ASCII, each other '
+        + 'character shown as a question mark, and more than twenty keys are listed as twenty and a count of the rest',
+      fn: async () => {
+        /**
+         The message a body is refused with.
+         */
+        function refusalOf({ body, }: { readonly body: unknown; },): string {
+          try {
+            parseQuotaSnapshot({ bodyText: JSON.stringify(body,), },);
+          }
+          catch (error) {
+            return (error instanceof QuotaShapeError) ? error.message : 'not a shape error';
+          }
+          return '';
+        }
+        /**
+         A body of twenty-two keys, the first of them longer than the bound and the second written in another script.
+         */
+        const wide: Record<string, unknown> = {
+          ['a'.repeat(45,)]: 1,
+          '\u732B\u0000': 'x',
+        };
+        for (let at = 0; at < 20; at += 1)
+          wide[`k${String(at,)}`] = at;
+        expect(refusalOf({ body: wide, },),).toBe(
+          `Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received ${'a'.repeat(40,)}:number, `
+          + '??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, k7:number, k8:number, k9:number, '
+          + 'k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, k17:number, and 2 more',
+        );
+      },
+    },),
+  ],
+},);

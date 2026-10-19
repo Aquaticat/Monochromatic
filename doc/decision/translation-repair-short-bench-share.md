@@ -1,0 +1,180 @@
+# A deciding bench short of quorum seats a winner by a share of the reachable weight
+
+Decided by the owner on 2026-09-09 ("Share of reachable weight"),
+asked with three options after the second `noname` and the sixth `Mio` ran on Bedrock alone
+(2026-09-09,
+12:22 to 12:33 UTC;
+handover,
+"The thin-bench questions").
+
+## What happened
+
+- Bedrock alone reaches three seats of the wide bench,
+    every one of them also a writer.
+- `MIN_SELECTION_WEIGHT` of 2 in `candidate-select-model.ts` is absolute,
+    so on that bench a winner needed every reachable judge,
+    or two disinterested ones where a producer sat.
+- The second `noname` shipped with its `## 简介` heading unfilled and the sixth `Mio` stopped INCOMPLETE at slice 3.
+
+## The rule
+
+- The seated bench is what `judgeSeatsFor` passes to the stage:
+    a seat no wet provider serves stays on the bench and is lost at call time as `NoProviderForModelError`.
+    The reachable bench is the seated bench less the seats lost that way.
+    Quorum is `rosterQuorumSize` over the seated bench,
+    as in every other stage.
+- At or above quorum nothing changes:
+    plurality wins,
+    a tie declines,
+    and the winner needs `MIN_SELECTION_WEIGHT`.
+- Short of quorum the minimum weight is `MIN_SELECTION_WEIGHT` times reachable over quorum:
+    the share of the bench that 2 is of a quorum bench.
+    The rule scales the existing minimum instead of choosing a new number.
+- Two ballots naming the winner is the floor whatever the weight (`MIN_SELECTION_BALLOTS`):
+    one judge never decides,
+    which is what the absolute 2 was for.
+- The round's findings say `select-short-bench (reachable r of n, minimum m)`,
+    so a page seated this way is told apart in its findings.
+
+## What this is not
+
+- Not the fifteenth class widened:
+    a deciding bench short of quorum keeps deciding,
+    and the writing-bench floor (`translation-repair-writing-bench-floor.md`) still stops an entry with no writer.
+- Not a change on any bench at quorum:
+    the archive-block review's four seats,
+    the fixtures and the full production bench keep the absolute 2 and the three-halves bound
+    `runCollapsedSelection` pins.
+
+## Options rejected
+
+- Stop INCOMPLETE,
+    the fifteenth class widened (ranked first when asked):
+    no thin page ships and it is the shape the owner chose for the empty bench,
+    but on one provider nothing ships,
+    and one provider wet is normal operation by the owner's words.
+- As now:
+    a page three judges made lands in `fixed/` beside one the whole bench made,
+    told apart only by its findings,
+    and ships with insertions unfilled.
+- Widening Bedrock's judge bench with `google.gemma-4-31b`:
+    measured out on 2026-09-07 (6 of 12 against a seated median of 9.5).
+
+## What landed
+
+- `stage-call.ts`:
+    a lost voice says whether the router refused the seat (`unreachable`,
+    true on `NoProviderForModelError`),
+    and `stage-quorum.ts` collects those seats on the gather as `unreachable`.
+- `candidate-select-minimum.ts`:
+    `selectionMinimum` (the weight,
+    reachable count,
+    quorum and whether the bench was short),
+    `MIN_SELECTION_BALLOTS` and `shortBenchFinding`.
+- `candidate-select.ts` applies it after the gather,
+    declines a leader named by one ballot as `winner named by one judge alone`,
+    and carries the finding;
+    its ballot weighing and tally moved to `candidate-select-count.ts` at the line cap.
+- `repair-contract.ts`'s capacity guard is unchanged:
+    it reads the seated bench at stage entry,
+    where every seat is still on it.
+- Guards shown to fail on the build before the change:
+    `candidate-select.unit.test.ts` ("selection on a bench short of quorum":
+    three of eight reachable seats a producer-plus-one agreement at three halves,
+    two of eight declines a lone full ballot,
+    a bench at quorum keeps the absolute 2),
+    `stage-quorum.unit.test.ts` (the gather names the refused seat apart from a transport loss),
+    `candidate-select-minimum.unit.test.ts`.
+
+## Addendum 2026-09-09: the share reaches every stage gather, not only the select round
+
+The owner's answer was built into `candidate-select-minimum.ts` first,
+which sizes the WEIGHT a winner needs.
+The GATHER still sized its quorum on the seats the phase seated,
+and on 2026-09-09 at 20:23 UTC that cost an entry:
+the seat reader read Synthetic wet at 0.04 percent of its rolling week and seated Qwen3.8-27B and Kimi-K3,
+the provider refused at 20:25 UTC,
+the router named those two and the dark `glm-5.3` unreachable,
+and `hulicaijia`'s archive block review needed 6 voices of an 11-seat bench,
+heard 5,
+spent four retry rounds re-asking the three seats no provider served,
+and threw `provider-unavailable` at 382 seconds.
+The entry stopped INCOMPLETE on a bench that had four seats able to answer.
+
+Since `40aba2fdb` the same share sizes every gather (`stage-reachable-quorum.ts`):
+`reachableQuorum({ benchSize, unreachable, })` keeps the bench quorum while the reachable seats can meet it,
+and otherwise needs half the reachable seats rounded up,
+never fewer than `MIN_STAGE_VOICES` of 2.
+A seat the router refused is dropped from the pending list rather than re-asked,
+since nothing changes between rounds for a seat no wet provider serves.
+A short gather warns `<stage>: bench short of quorum, reachable r of n; closing on q voices` and carries
+`stage-short-bench (<stage> reachable r of n, quorum q)` into the artifact whatever the verdict.
+A bench with one reachable seat,
+or none,
+still reads as an outage,
+which is what the two-voice floor is for.
+
+## Addendum 2026-09-27: a refused seat hands its round place on
+
+The rule is unchanged:
+a seat no wet provider serves stays on the seated bench,
+and the quorum and the short-bench findings read it as unreachable.
+What changed is the round it was asked in.
+A window seat the router refused in the same millisecond had spent the round's spare place,
+so the round waited for its slowest reachable voice with no grace or fell through to a retry round:
+TianqiChen66620 closed 269 of 421 rounds a seat short with no grace,
+2,852 s of the 4,575 s its rounds took.
+Since `84a6caa02` a refused window seat hands its place in that round to the next pending seat
+(`runGatherRound`'s `reserve` in `stage-round.ts`),
+and the windowed stages (`stage-windowed-rounds.ts`) no longer re-ask a refused seat in later rounds,
+which the gathers had stopped doing on 2026-09-09.
+The windowed stages still sized their quorum over the seated bench rather than the reachable one
+(audit ledger X8) until the next addendum.
+
+The checker bench is the one bench that does not keep an unserved seat while a served one is available:
+since 2026-09-27 it is the first three of the measured checker order a wet provider serves,
+padded with unserved ranked seats only while fewer than three are served
+(`run-seats.ts`,
+audit ledger L1).
+
+## Addendum 2026-09-27, second: the windowed stages and the naturalness review size on the reachable bench
+
+Taken under the rule itself,
+by the whole-package audit (audit ledger E3 and X8).
+The six stages that read their own rounds (lane contest,
+section and block pairing,
+the consolidation gate,
+the polish gate and the absolute naturalness review)
+sized their quorum on the seated bench.
+Five of them decide on two ballots,
+so for them the bench quorum only set how long rounds chased seats;
+the naturalness review decides on it,
+and 59 of the 4,567 reviews in the 265 stored artifacts closed `quorum-not-met` with 2 to 4 usable seats.
+XingZ624 shows the shape:
+a confirmation asked the 5 seats its discovery asked,
+over a bench of 8,
+and closed 3 of 5 usable against a quorum of 4 with `glm-5.3` and Qwen3.8-27B refused out of budget.
+
+- `runWindowedRounds` takes the bench (`quorumOver`,
+  the seats asked by default)
+    and re-sizes the quorum with `reachableQuorum` before every round,
+    counting out of reach the seats the router refused
+    and the bench seats the stage may not ask at all.
+    It returns the quorum it closed on and that count,
+  and warns when the bench was short.
+- The naturalness review decides on that quorum and records the count as `unreachable` in its review round;
+    the artifact reader recomputes the verdict from it,
+    and reads a round without it,
+  every round stored before this change,
+  as none out of reach,
+    which is exactly the exact-half quorum those rounds were decided by.
+- The other five stages carry `stage-short-bench (<stage> reachable r of n, quorum q)` in their findings,
+    as the gathers do.
+- Counting the seats a confirmation may not ask as out of reach was taken first from the two settled rules
+    (the reachable share sizes every gather;
+  a confirmation asks only the discovery's seats),
+    then put to the owner the same day,
+  who chose "Count as out of reach"
+    over counting only the seats the router refused.
+    With nothing refused the confirmation's quorum is unchanged;
+    it drops to the reachable share only where the seats it may ask cannot meet the bench quorum.

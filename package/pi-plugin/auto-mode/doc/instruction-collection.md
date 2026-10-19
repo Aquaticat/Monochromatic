@@ -57,6 +57,10 @@ The native streaming regression reproduces 331,029,264 retained heap bytes for 1
 
 `input-content.ts` owns a manager-local content store;
 `input-content-chunks.ts` splits generated JSON at string-token boundaries and bounded intervals.
+`input-content-pieces.ts` shares bounded pages of chunk references across complete versions.
+Sharing text alone left complete reference arrays duplicated for every changing snapshot.
+The isolated regression and its current qualification boundary are recorded in
+[shared input content pages](input-content-pages.md).
 Resetting chunk alignment at each string token lets both copies of a growing message share storage,
 even when another preceding string changes its length.
 Escaped quotes remain inside their original token.

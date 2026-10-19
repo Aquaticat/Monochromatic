@@ -7,6 +7,8 @@ import type { createEnvironment } from '../native/contract/integration/native-ba
 import type { createDomainFixtureAssessment } from '../native/contract/integration/native-batch/domain-fixture-assessment.mjs';
 import type { bindNativePolicyRuntime } from '../native/contract/integration/native-batch/runtime.mjs';
 import type { createRootSessionFactory } from '../native/contract/integration/native-batch/session-root.ts';
+import type { createRequestProducerOwner } from '../native/contract/collector/request-producer-judgment-consumers/owner.ts';
+import type { createJudgmentConstructor } from '../native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-constructor.ts';
 
 //region Declaration bundling follows the original owners without emitting fixture implementations.
 
@@ -29,6 +31,16 @@ export type NativeRuntimeFactory = typeof bindNativePolicyRuntime;
  Original session factory preserves generic option inference and SDK result identity.
  */
 export type NativeSessionFactory = typeof createRootSessionFactory;
+
+/**
+ Original request producer owner keeps its generic judgment and SDK stream contracts.
+ */
+export type NativeRequestProducerFactory = typeof createRequestProducerOwner;
+
+/**
+ Genuine production judgment factory result feeds the generic producer owner contract.
+ */
+export type NativeJudgmentFactory = typeof createJudgmentConstructor;
 
 export type {
   DomainFixtureAssessmentSender,
