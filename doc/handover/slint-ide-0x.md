@@ -1881,8 +1881,9 @@ Completed in this fan-out:
   (`~/temp/agent/ide-sidebar-guard-hJqYf7/results.json`).
   Dark,
   light,
-  and 480x320 narrow sessions passed with seat clicks and toolkit-level drags,
-  because the compositor protocol has no held pointer drag;
+  and 480x320 narrow sessions passed with seat clicks and toolkit-level drags
+  (the compositor's `drag`, `move` and `button down|up` commands hold a pointer drag;
+  the claim that it had none was wrong and was corrected on 2026-10-19);
   evidence in `~/temp/agent/ide-sidebar-j/`.
   `inspect:native` now also takes `IDE_NATIVE_SIZE`,
   because the compositor's `resize` command had no effect while the host session was locked
