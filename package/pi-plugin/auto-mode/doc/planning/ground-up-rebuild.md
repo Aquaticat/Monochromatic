@@ -15,8 +15,8 @@ The earlier shortage-of-useful-questions question was also withdrawn;
 unresolved-rule count does not measure the supply of useful follow-ups.
 
 This document records settled requirements separately from proposed semantics.
-Remaining choices concern score admission, the meaning of an admitted `ask`,
-context anchoring, and preparation timing.
+Remaining choices concern score admission, context anchoring, and preparation timing.
+Q2 is withdrawn: an established `ask` is a resolved outcome requiring the human, not model uncertainty.
 The user corrected the approval baseline: assess reversibility, not exact requested-package matching.
 The former Q3 and Q5 alternatives are withdrawn; their remaining engineering details follow that baseline.
 Dependency qualification, shadow scheduling, retention, and size fit remain open engineering work.
@@ -125,7 +125,9 @@ Code can immediately return `approve`, `deny`, or `ask` when a named determinist
 Record the condition, parsed evidence, exact group, and outcome.
 A parser-success flag or apparently read-only command is not by itself proof that the whole group is authorized.
 The deterministic approval catalogue is a review decision, distinct from selecting model questions.
-If no terminal condition applies, continue with every effective rule.
+Each established verdict exits automatic review: approve releases the fresh group, deny blocks it,
+and ask presents the explained human decision. None invokes per-group Luna review.
+Only when deterministic checks cannot establish any of these verdicts does Stage 3 run.
 
 ### Stage 3: every effective rule becomes a Luna question
 
@@ -156,7 +158,9 @@ No averaging of unrelated rules, majority voting, or repeated sampling until app
 An answer needs both a valid label and sufficient numeric evidence under the admission policy still under review.
 Low-confidence or missing evidence is internal unresolved state, not a fifth answer choice.
 
-When unresolved, construct a new set of questions addressing the particular uncertainty.
+Only while the group outcome remains unresolved, construct questions addressing the particular uncertainty.
+An established `ask` goes to the human; do not spend follow-ups reconsidering that verdict.
+An applicable authored rule can require asking even when all relevant facts are known.
 For example, decompose uncertainty about a test command’s reversibility into
 which environment it targets, whether its writes are confined to disposable fixtures,
 and whether any existing state would be lost or externally exposed.
@@ -184,8 +188,9 @@ Before the choices, explain:
 - The exact pending action and affected target, briefly enough to identify the decision.
 - The concrete evidence or conflicting interpretations that triggered escalation,
   tied to the relevant rule and operation detail.
-- What remains unresolved, why automatic review could not resolve it,
-  and the particular judgment or missing fact needed from the human.
+- The confirmation or judgment required from the human and the rule requiring it.
+  If evidence remains unresolved, identify the missing fact and why review could not resolve it.
+  A rule-required ask need not involve uncertainty; do not invent missing evidence.
 - What Approve will permit and what Stop will prevent or abort.
 
 A transcript recap, rule dump, score alone, or generic “approve this tool call?” is not an explanation.
@@ -239,18 +244,17 @@ Ranking: A > B because the split example does not establish a decisive result.
 The 0.6 value is a proposed reuse of a previous threshold, not a calibrated model-quality claim.
 Exact ties, invalid distributions, or missing answers remain unresolved in both options.
 
-### Q2: ask as a verdict versus uncertainty
+### Q2 withdrawn: ask is a resolved verdict
 
-For an admitted `ask`, option A means a human decision is required now.
-Numerically unresolved answers can use follow-up batches; an established ask routes to the human immediately.
-Option B treats every ask as a request for further model questions until the budget is exhausted.
-Example: a rule explicitly requires the human to choose which account to charge and no choice exists.
-A asks immediately; B can spend the remaining batches before asking.
-A avoids repeated questions that cannot supply a human preference; B gives ambiguous asks another chance.
-Ranking: A > B because a confident need for a human decision is already a resolved disposition.
-This choice does not add another answer label.
+Some applicable `AGENTS.md` rules require the human to confirm or decide.
+An established ask follows those rules; it is not an ambiguous answer needing another model check.
+Deterministic approve, deny, and ask all terminate automatic review before per-group Luna calls.
+Luna runs only when deterministic checks establish no verdict.
+After Luna, code aggregates answers; an established group ask routes to the human without further batches.
+Only an unresolved group outcome enters follow-up review. Score admission remains open in Q1.
+The former proposal to spend remaining batches on every ask is withdrawn.
 
-Proposed group reduction, pending Q1 and Q2:
+Proposed group reduction, pending Q1:
 any admitted deny blocks; otherwise an admitted substantive ask routes to the human;
 otherwise unresolved evidence refines; otherwise approve if all required checks approve or are not applicable.
 Approval needs positive evidence for the applicable effects and reversibility checks;
@@ -303,7 +307,8 @@ The patch mechanism remains an engineering qualification, not this user decision
 
 ## Dependency tree after this round
 
-Q1 and Q2 unlock numeric boundaries and final reduction acceptance examples.
+Q1 unlocks numeric boundaries and final reduction acceptance examples.
+The settled terminal ask contract supplies deterministic and model-resolved ask acceptance cases.
 The accepted autonomy baseline guides behavioral examples.
 Catalogue-specific fixtures wait until built-in rule design is resumed; the catalogue is not part of this round.
 Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
@@ -337,7 +342,7 @@ This is a proposal, not an edit to `AGENTS.md`.
 The missing ask explanation also exposes a diagnostic-guidance gap.
 Proposed replacement for the existing `DGT` body:
 “Diagnostics name affected inputs and calls.
-Every ask explains evidence, uncertainty, needed judgment, and each choice’s effect;
+Every ask explains evidence, required judgment, any uncertainty, and each choice’s effect;
 transcript or rule repetition is insufficient. State valid remedies.”
 
 ## Proposed high-level modules and source budgets
@@ -385,7 +390,7 @@ Transport retries and partitioning consume explicit budget slots.
 Actual endpoint capacity must be verified with the selected effective rules and payload sizes.
 
 Subsequent questions address recorded uncertainty; contradictory results cannot be silently replaced.
-Every ask carries an evidence-backed explanation of the unresolved decision and the consequences of each choice.
+Every ask explains the evidence, required human decision, any uncertainty, and consequences of each choice.
 That explanation, the manual decision, and the optional reason persist into model-visible continuation or resume.
 Keep feedback provenance separate from genuine incoming human requests.
 
@@ -393,7 +398,7 @@ Keep feedback provenance separate from genuine incoming human requests.
 
 Purpose: immediate parsed checks, answer admission, and group reduction in ordinary code.
 Interface: named parsed evidence or attributed answer distributions yield a disposition with decisive references.
-Q1 and Q2 determine score admission.
+Q1 determines score admission; established approve, deny, and ask terminate automatic review.
 Deterministic approval must establish actual effects and recovery properties while satisfying other applicable checks;
 it cannot bypass applicable rules once they are defined. No specific built-in catalogue is selected here.
 No parser success, missing field, not-applicable-only set, or unavailable answer implies authorization.
@@ -731,8 +736,12 @@ Use the actual effective ruleset at the expected hundred-rule scale.
 Cover early resolution, adaptive second and third batches, exhausted review, partial call failures,
 missing answers, every admitted label, and the exact probability boundaries accepted in Q1.
 Exercise the five-to-ten-unit window, original human provenance, and approval/decline reasons on resume.
-For every ask-producing branch, assert a concrete evidence-backed explanation, unresolved judgment,
-and action consequences in the actual TUI/RPC payload; a generic prompt must fail the fixture.
+For every ask-producing branch, assert an evidence-backed explanation, required human decision,
+any actual uncertainty, and action consequences in the TUI/RPC payload; a generic prompt must fail the fixture.
+An applicable rule requiring confirmation with all facts known must ask without inventing uncertainty.
+Deterministic approve, deny, and ask must each produce zero per-group Luna calls; count startup separately.
+No deterministic verdict must reach every-rule Luna review.
+A model-resolved group ask must prompt without a follow-up batch intended to reverse that verdict.
 Assert model-visible inclusion and exclusion using actual serialized requests.
 
 ### Connect primary review and shadow
@@ -764,7 +773,8 @@ No cleanup or deletion is performed as part of writing this plan.
 
 ## Decisions still requiring review or qualification
 
-The current semantic frontier is Q1, Q2, Q4, and Q6 in this document and the HTML form.
+The current semantic frontier is Q1, Q4, and Q6 in this document and the HTML form.
+Q2 is withdrawn because established asks already terminate automatic review.
 The package-match gate is rejected; the former Q3 and Q5 options are withdrawn.
 Further dependent work covers follow-up conflicts, startup failures, shadow call accounting and preemption,
 persistent log retention, exact dependency closure, and source/deployment budgets.
@@ -774,7 +784,7 @@ No implementation proceeds while the user is reviewing this plan.
 ## Review artifact verification
 
 Before the reversibility correction, the staged HTML passed the disposable nested-browser interaction check
-on 2026-10-19. These counts describe that earlier form; the revised form has four open questions.
+on 2026-10-19. These counts describe that earlier form; the revised form has three open questions.
 Every scenario, navigation control, all 18 answer options, and manual Approve/Stop examples with and without reasons ran.
 Reply generation passed for empty input, notes only, choices only, literal markup, text selection, and keyboard activation.
 All 23 interactive controls measured at least 48 pixels in both dimensions.

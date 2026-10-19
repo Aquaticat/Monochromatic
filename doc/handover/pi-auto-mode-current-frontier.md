@@ -3,8 +3,23 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
-The reversibility-corrected visual form is open in Helium; Q1, Q2, Q4, and Q6 await the user’s answers.
+The active visual form has open choices Q1, Q4, and Q6; Q2 is withdrawn as already settled.
 After answers, update the decision tree and continue the next unlocked review work.
+
+### Terminal verdict correction, 2026-10-19
+
+The user corrects the invented ambiguous-ask alternative:
+applicable `AGENTS.md` rules can require asking, and Luna only runs after deterministic checks establish no verdict.
+Deterministic approve, deny, and ask each exit automatic review with zero per-group Luna calls.
+Startup relevance remains separate. After Luna, an established group ask prompts the human without another batch.
+Only an unresolved group outcome enters focused follow-up review.
+An ask explanation names the triggering rule, facts, required human decision, and consequences;
+it need not invent uncertainty when the rule requires confirmation with all facts known.
+The plan and HTML remove Q2's alternatives and response field and show the terminal deterministic branches.
+Independent read-only review confirmed the flow and the explanation-contract correction.
+The former Q2 screenshots and historical open-question lists record withdrawn proposals, not current requirements.
+Built-in contents remain deferred. Implementation remains stopped.
+Next action: verify the edited diagram and response form, reopen Helium, then continue from user answers.
 
 ### Built-in contents deferred, 2026-10-19
 
