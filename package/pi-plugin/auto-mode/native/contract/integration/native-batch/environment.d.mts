@@ -45,8 +45,8 @@ export type NativeBatchEnvironmentInput = Readonly<{
 export type NativeBatchEnvironmentOptions = RootSessionOptions & Readonly<{
   cwd: string;
   agentDir: string;
-  modelRuntime: unknown;
-  resourceLoader: unknown;
+  modelRuntime: NonNullable<RootSessionOptions['modelRuntime']>;
+  resourceLoader: NonNullable<RootSessionOptions['resourceLoader']>;
   resourceInputBinding: unknown;
 }>;
 

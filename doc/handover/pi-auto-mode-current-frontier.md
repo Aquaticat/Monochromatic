@@ -110,6 +110,18 @@ Work is incomplete. Continue the independently verifiable queue without a readin
   The installed SDK publishes `defineTool` specifically for this array boundary and returns its argument unchanged.
   The authored correction forwards that exact function through the fixture environment and uses it at registration;
   no renderer or tool wrapper is invented. Fresh verification is pending.
+  The next frozen `sdk-tool-fixture-inference-candidate-J5VZkf` passes builds and the complete phase catalog,
+  but types expose two remaining source-owner declarations:
+  required `modelRuntime: unknown` still permits the SDK's optional undefined value,
+  and the phase wrapper's `prepareArguments` returns unknown instead of validated Bash parameters.
+  Refine present environment owners with the actual non-null SDK types;
+  source MiMo receives the preparation-boundary correction within its existing scope.
+  Scoped generator lint also reports eight errors and 24 warnings.
+  The type-only build entry was named `src/native-fixture-types.ts`
+  (renamed to `src/native-artifact-types.ts` on 2026-10-18):
+  its old name incorrectly classifies an artifact-generating entry as a test-only fixture.
+  The renamed build owner still imports original source types; actual tests keep importing built facades.
+  Generator documentation/formatting and public declaration exports are being corrected without suppression.
   Source MiMo resumes complete saved history in `kARc6q`, immutable corrected runtime `native-release-YGJ1JD`,
   under two GiB/two CPUs/1,536-MiB heap with allocation and payload capture.
   Its bounded write scope reduces the phase callback/mode/transport/assertion/type files;
