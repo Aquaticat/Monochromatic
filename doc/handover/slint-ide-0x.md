@@ -942,6 +942,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     width, replacing the separate pixel-per-column builder of `src/minimap/` (`raster.rs`, `paint.rs`) and the
     picture side of `src/native/minimap_build.rs`. It must be tiled and cached so that a long file stays fast and
     under the raster limit.
+    Owner answers of 2026-10-19 after the first finished build (they supersede the design below where they differ):
+    a long file must not be squeezed whole into the window height (a 50,000-line file became a dim gray strip);
+    the minimap keeps a fixed scale of at most a sixth and slides with the scroll once the file is longer than
+    the track, building only the bands near the view; the huge dark surfaces (editor, minimap, sidebar) become
+    pure OLED black so the picture needs no gain, and the exact area average stays; edits are not rare (the
+    files change under the reader), so a change must re-render only the bands it touches.
     State on 2026-10-19, finished by the agent after a shutdown and a resume (landing stays pending: the coordinator
     lands and installs; nothing is pushed, `origin/main` was merged cleanly at `1c4f9c7a30` and changed nothing in the
     IDE).
