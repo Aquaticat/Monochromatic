@@ -239,3 +239,17 @@ not a memory of having done it.
     and a launch meant to run on a known build is stopped
     unless the log's `rolldown v…` line is the worktree's version
     and its `START` line carries that build's `pipeline=` digest.
+    Since `0fa3120174` a family build enforces the first half itself:
+    `checkoutBundlerPlugin` (`package/config/rolldown/src/checkout-bundler.ts`)
+    refuses a build whose running bundler is not the version the checkout installs,
+    with `This build is running rolldown <x>, but this checkout installs rolldown <y>.`
+10. The install is the one of the commit under test (M280):
+    a worktree checked out to another commit after its install keeps the old commit's packages,
+    and the bundler guard compares against those,
+    so it cannot see the drift.
+    Create a scratch worktree at the commit it tests and install there
+    (`node ~/temp/agent/tr-fan/setup-worktrees.ts <name>=<commit>`,
+    which prints the installed `rolldown` version),
+    or run `mise run prepare:pnpm:install` after every checkout,
+    and read `readlink --canonicalize node_modules/rolldown`
+    against the lockfile's `rolldown@` entry before any gate or build.

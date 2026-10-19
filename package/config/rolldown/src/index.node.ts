@@ -3,11 +3,13 @@ import {
   type OutputOptions,
   type Plugin,
   type RolldownOptions,
+  VERSION,
 } from 'rolldown';
 import { dts, } from 'rolldown-plugin-dts';
 
 import { binShebangPlugin, } from './bin-shebang.ts';
 import { browserslistTargets, } from './browserslist-targets.ts';
+import { checkoutBundlerPlugin, } from './checkout-bundler.ts';
 import { copiedAssetsPlugin, } from './copied-assets.ts';
 import {
   anchoredExternal,
@@ -217,6 +219,9 @@ export function nodeConfig(
  process must load each member from one file; see
  `src/package-family.ts` for why inlining siblings breaks that.
 
+ The build refuses to run under a bundler other than the version this
+ checkout installs; see `src/checkout-bundler.ts`.
+
  @param familyPrefix - package-name prefix every member of the family shares
  
  @param packageDir - directory holding the building package's package.json; defaults to the build cwd
@@ -273,7 +278,16 @@ export async function familyLibraryNodeConfig({
       },
       ...outputOverrides,
     },
-    extraPlugins,
+    // A FAMILY BUILD REFUSES ANOTHER CHECKOUT'S BUNDLER (`checkout-bundler.ts`):
+    // family runners print a pipeline digest over their built files, which names
+    // a reproducible build only when this checkout's own bundler made them. A
+    // family config lists this library build first, and the bundler stops a
+    // list at its first failed build, so the refusal also stops the runner
+    // builds listed after it.
+    extraPlugins: [
+      checkoutBundlerPlugin({ installedVersion: VERSION, },),
+      ...extraPlugins,
+    ],
   },);
 }
 

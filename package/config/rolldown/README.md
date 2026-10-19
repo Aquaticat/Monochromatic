@@ -43,6 +43,14 @@ AP5:
   a shebang already present is a user error and is left untouched.
   A `bin` entry pointing at output a build does not emit is ignored here,
   typo detection is not this plugin's job.
+- A family library build (`familyLibraryNodeConfig`) refuses to run
+  under a bundler other than the version its checkout installs
+  (`checkout-bundler.ts`):
+  the build runs whichever `rolldown` comes first on `PATH`,
+  and another checkout's version emits different bytes,
+  under a pipeline digest that then names a build this checkout cannot reproduce.
+  Family configs list the library build first,
+  so the refusal stops the runner builds listed after it.
 - Targets come from Browserslist through `browserslistTargets`,
   formatted as rolldown engine strings
   (rolldown rejects raw Browserslist queries).

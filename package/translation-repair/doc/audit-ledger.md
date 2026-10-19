@@ -506,7 +506,8 @@ named for that subject and listed here.
   the cache versions,
   the handover,
   the log's two streams,
-  and a launch whose build ran the main checkout's bundler (M278).
+  a launch whose build ran the main checkout's bundler (M278),
+  and a scratch worktree tested on the install of another commit (M280).
 - [Audit ledger: process mistakes, guards and red cases](audit-ledger-process-guards-and-red-cases.md):
   Guards and failing-first cases that could not fail,
   never reached what they guarded,
