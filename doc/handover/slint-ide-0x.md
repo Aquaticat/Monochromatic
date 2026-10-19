@@ -834,6 +834,67 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     bundle 8 cases). Test suites on the branch: `test` 783, `test:native` 197, `test:language` 379, `test:syntax` 64,
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
+  - Container bound and test time (branch `perf/ide-container-bounds`, worktree `.claude/worktrees/ide-container`, an
+    agent, 2026-10-18; landing: pending). The owner asked for a larger container and said not to bake numbers into the
+    repository; the coordinator then fixed the policy: 75 percent of the host, computed at run time, overridable.
+    `bin/container-bounds.ts` is now the one place that computes the bound; `mise.toml` (the shared `[vars] cargo`
+    header and the `image` task) and 17 `bin/inspect-*.mjs` scripts import it. Default: `floor(0.75 * CPUs)` (at least
+    1) and `floor(0.75 * RAM)` in GiB (at least 2), 256 processes per CPU with a floor of 512, 4096 descriptors,
+    `CARGO_BUILD_JOBS` and `NEXTEST_TEST_THREADS` equal to the CPUs. Overrides: `IDE_CONTAINER_CPUS`,
+    `IDE_CONTAINER_MEMORY`, `IDE_CONTAINER_PIDS`, `IDE_CONTAINER_NOFILE`, `IDE_CONTAINER_JOBS`,
+    `IDE_CONTAINER_TEST_THREADS`, each validated (a malformed value stops the task naming the variable and the accepted
+    form); `test:bin` runs 40 node tests of the module. The old fixed bound is `IDE_CONTAINER_CPUS=2
+    IDE_CONTAINER_MEMORY=2g`. A process started from the agent shell sees 28 CPUs (affinity), one started with
+    `systemd-run --user` sees 32, so the default is 21 CPUs or 24 CPUs and 46 GiB depending on how the task is started.
+    The control groups of the containers are children of `user@1000.service`, not of the `systemd-run` unit that starts
+    the task, so the unit's `MemoryMax` neither bounds nor measures the container.
+    Premise corrected: the measured claim that nextest started one test thread per host CPU was wrong for the installed
+    cargo-nextest 0.9.143. `nproc` prints 32 under a 2 CPU quota, but nextest reads the quota through Rust's
+    `available_parallelism` and ran 2 tests at once (a 48-test probe recording start and end times). The variable is
+    explicit and redundant (control: the same 24 without it); see
+    `doc/troubleshooting/container-nproc-ignores-cpu-quota.md`, which also lists the other packages that pass
+    `--cpus=` (unchanged).
+    Slow-test cause: `every_row_of_real_source_fits_its_width` was not slow because of the shaping it proves. Its helper
+    `unexcused_breaks` called `space_advance(scale)` for every source line, and that builds a new `TextShaper`, about
+    18,000 shapers per scale and width pair. The advance depends only on the scale, so it is measured once per pair now.
+    The test is also split into six (`every_row_of_real_source_fits_width_<w>_at_scale_<s>`), so the pairs run in
+    parallel and a failure names its pair; the rows judged and the rule checks are the same. The coverage thresholds
+    (more than 100 wrapped lines, a token wider than a row) hold at width 600 only (width 900 wraps 347 lines and has
+    no wide token, width 1400 wraps 14), so the two width 600 tests assert them, which implies the totals of the
+    single test. Guard proof (production code broken, restored with `git checkout`): `layout.break_all_lines(None)`
+    fails all six on "some lines wrap", `OverflowWrap::Normal` fails the two width 600 tests on "the excuse is
+    exercised", and removing `set_line_break_override` fails four on "broke a rule".
+    Measured (this host, load average 10 to 17 from other sessions; times are wall seconds of the mise task): 
+    old code at the old 2 CPU, 2 GiB bound: `build:debug` (warm) 8 s, `test` 818 s (783 tests), `test:wrap` 840 s (15 and 62
+    tests), `test:native` 236 s (197 tests). New code at the computed default (24 CPUs, 46 GiB from a `systemd-run` unit),
+    two runs each: `build:debug` 16 and 8 s, `test` 22 and 19 s (788 tests, 783 plus the six minus the one removed),
+    `test:wrap` 10 and 10 s (15 and 67 tests), `test:native` 121 and 93 s (197 tests). New code at the old bound: `build:debug`
+    12 s, `test` 103 s (788), `test:wrap` 29 s, `test:native` stopped by a failure at 138 s (see the flaky note). Old code at
+    the raised bound: `build:debug` 11 s, `test` 799 s (783), `test:native` 95 s (197); so the bound alone does not shorten
+    `test` (one test, one thread) and the shaper fix does. Control group peaks at the default (cgroup `memory.peak`, which
+    includes page cache): `test` 4.1 and 0.3 GiB, 18 to 19 CPUs; `test:native` 1.5 to 1.6 GiB, 22 to 24 CPUs;
+    `test:wrap` 0.1 GiB, 11 CPUs; `build:debug` 0.9 to 1.8 GiB, one CPU. The 46 GiB and 24 CPU limits were never reached.
+    Opt-level (measured with environment and `--config` overrides only, `Cargo.toml` untouched): One wrap pair takes 8.9 s unoptimized;
+    `CARGO_PROFILE_TEST_OPT_LEVEL=1` gives 0.65 s (13.7 times; level 3 gives 0.49 s) and
+    `--config 'profile.dev.package."*".opt-level=2'` gives 1.03 s (8.7 times; level 3 gives 1.00 s); dependencies
+    (`parley`, `swash`, `skrifa`) carry the gain. The IDE directory is not in `CARGO_PROFILE_BY_DIR` of
+    `file-enforcer.config.ts`, so its profile entries are not enforced today, and the preset type cannot express
+    `profile.dev.package."*"`. Whole suites, same overrides: `test` 15.3 s becomes 7.2 s (level 1) or 9.0 s (dependencies
+    at 2); `test:native` 101 s becomes 12 s (level 1) or 16 to 19 s (dependencies at 2). Not adopted: with the shaper fix
+    the pair is no longer the critical path, level 1 made two native tests fail
+    (`minimap_tests::scrolling_posts_no_request_and_sets_no_picture`, "a scroll posted a minimap request", left 4, right
+    3; `wrap_tests::rows_above_the_view_changing_height_move_no_visible_pixel`, "the pass changed the extent"), and
+    dependencies at 2 failed one native test in one of two runs and passed 197 in the other. Both are timing races
+    that a faster build exposes. The cost is a cold rebuild of every dependency at 24 CPUs: 58 s for the `test` set and
+    41 s more for the native set (level 1, which also keeps a second artifact set for the test profile), 110 s and 45 s
+    (dependencies at 2). The next critical path is the native test
+    `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid` (83 to 109 s alone, at every bound).
+    `test` gained an optional nextest filter argument and `.config/nextest.toml` (default profile `slow-timeout`
+    120 s, terminate after 15 periods), proved in the container by `mise run test:nextest-config`.
+    Rules for agents: run only the tests a change can reach, never `test` and `test:wrap` together (the second repeats
+    the first), and use the filter (`mise run //package/desktop-app/ide:test 'test(/wrap/)'`).
+    FLAKY_NOTE
+    Gates and guard scripts of this branch: GATES_NOTE
   - Queued work from the owner's requests of 2026-10-18 (answers through the question tool):
     the IDE bug "Source viewport 1354x12548 exceeds the 64 MiB raster limit" on a very tall window (screenshot: blank
     text area, line numbers and minimap drawn) is being fixed by an agent on branch `fix/ide-tall-window-tile`
