@@ -100,7 +100,7 @@ pub(super) fn resize_without_frame(
 /// and the raster holds the view.
 #[test]
 fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure() {
-    for height in [3000.0_f32, 4100.0] {
+    for height in [3000.0_f32, 4100.0, 4100.0] {
         let (_project, opened) = open(&mixed(6000));
         let release = hold_the_pass();
         let window = &opened.window;
