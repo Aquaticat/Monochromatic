@@ -370,8 +370,12 @@ Closure workstreams:
   The probe commit `6523bcaedd` produced GitHub run `39182515195` and no Depot workflow
   registration within two minutes;
   the probe was removed in commit `f8bc2d6c67`.
-  The direct-to-main path therefore did not reproduce automatic registration;
-  a PR merge or disposable-repository test remains open.
+  The current Depot quickstart describes a push and merge of the `.depot` changes as the
+  registration step,
+  so this direct-push observation is not a valid negative for the documented
+  merge path.
+  Primary-source research into the registration model is in progress,
+  and no automatic native trigger is assumed until it reports.
 
 ## Open closure items
 

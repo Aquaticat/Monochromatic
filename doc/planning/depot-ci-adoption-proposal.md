@@ -94,6 +94,10 @@ and the closure workstream record.
   Depot Tests;
   cache and Disk;
   SDK VM profiles.
+- Native automatic trigger registration is under primary-source research.
+  Until that research reports and a positive control passes,
+  native profiles run only by explicit dispatch;
+  the weekly matrix does not rely on an automatic native trigger.
 - Paused-session SSH,
   `--ssh-after-step`,
   tmate and interactive session strings are excluded from
