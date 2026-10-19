@@ -1,6 +1,7 @@
 # Stop hook design alternatives for long autonomous sessions
 
 Status: proposal, 2026-10-19. Nothing here is adopted; the current six-label check stays in place.
+Owner's answer on the same day: no labelled audit for now; keep logging and calibrate from the verdict log (#1772).
 Companion record of the current design: `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
 
 ## Question
