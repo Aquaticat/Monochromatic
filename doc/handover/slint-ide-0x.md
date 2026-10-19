@@ -779,6 +779,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the new `accepted` check in `no_window_size_or_scale_makes_a_raster_past_the_limit`
     (both fail without the fix);
     guard `tall-window-edge`.
+    A window taller than the cap leaves part of the view unpainted at each edge
+    (up to the overshoot plus two code rows),
+    and every scroll step builds a new tile there,
+    as `band_clip` already documents.
     The IDE was reinstalled from `main` at `482a3cf220` on 2026-10-19 (`dist/monochromatic-ide` and the installed binary
     both sha256 `7e6b2f6a8aab…`; the previous binary is `~/.local/bin/monochromatic-ide.previous`, sha256 `f068d238b760…`).
   - Closures named in the IDE (branch `refactor/ide-closures`, worktree `.claude/worktrees/ide-closures`, 2026-10-18;

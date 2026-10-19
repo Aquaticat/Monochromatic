@@ -305,11 +305,6 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
     assert!(holdable_cases > 0, "no case had a view one raster can hold");
 }
 
-/// Longest wait for the measurement pass of a tall window to finish:
-/// a window under 8,000 px settles in under two seconds on an idle host,
-/// and the host can be under heavy load.
-const SETTLE_PATIENCE: std::time::Duration = std::time::Duration::from_secs(30);
-
 /// A window 10,000 px and taller over wrapped text:
 /// the tile the worker builds is cut to the raster limit,
 /// the window accepts it as holding the view,
@@ -324,7 +319,7 @@ fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
         let (_project, opened) = open(&long_text(400));
         resize_without_frame(&opened, 1328.0, height);
         let scale = opened.window.window().scale_factor();
-        let mut waiting = Waiting::within(SETTLE_PATIENCE);
+        let mut waiting = Waiting::slow();
         while !measured(&opened.source, scale) {
             waiting.step(format_args!(
                 "height {height}: the measurement pass did not finish"
