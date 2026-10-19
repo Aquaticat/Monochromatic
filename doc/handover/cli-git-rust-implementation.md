@@ -1727,9 +1727,13 @@ that is verification, not a decision for the user.
   `.cache/cli-git-bin/git` resolves to the 0.2.1 install and `mise.lock` was restored). The signature check against
   the real signer is still open: it happens on the first reconcile this repository performs with 0.2.1 (look for
   `%G?` of `G` on the merge commit).
-  Queued: a non-blocking mutation run over `auto_push_reconcile.rs`, `auto_push_record.rs` and
-  `auto_push_single_flight.rs`. The `signs_commits` branch for a `git config` failure other than exit 1 has no test
-  and is left to that run.
+  Running (started 2026-10-19, non-blocking): unit `cli-git-rec3`, script `~/temp/agent/rec3-run.ts`, image tag `rec3`,
+  head `98c83b72bf` (same source as 0.2.1): the container gate, then mutation over `auto_push_reconcile.rs`,
+  `auto_push_record.rs` and `auto_push_single_flight.rs` limited by `--examine` to the functions this change touched;
+  logs `~/temp/agent/rec3-container.log` and `rec3-mutation.log`. Read the result from the log's final "mutants
+  tested" line and the container's `mutants.out`; kill every missed mutant with a test, then remove the `rec3` image
+  and container. The `signs_commits` branch for a `git config` failure other than exit 1 has no test and is
+  expected to show up there.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
