@@ -965,8 +965,8 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and landed as `8627edeeba`. The coordinator reran the gates for both (`lint:rustfmt`, `lint:clippy`,
     `lint:release`, `lint:closures`, `test`, `test:native`), the `tall-window-edge` guard, and 400 stress runs of the
     flaky test (400 passed), and installed the build after each (the installed binary was not launched).
-    Next: the IDE part of issues #1756 (stage the root `clippy.toml` into the container) and #1757 (the IDE `test`
-    task still runs `cargo test`). The owner authorized deleting the merged IDE branches on origin and 34 were
+    The IDE parts of issues #1756 (root `clippy.toml` in the container, `75b9aee2a3`) and #1757 (nextest, `bd12a2fb62`)
+    were already on `main` from 2026-10-18; the issues stay open for the other packages. The owner authorized deleting the merged IDE branches on origin and 34 were
     deleted (each was an ancestor of `origin/main`; the list is in `~/temp/agent/merged-ide-branches.txt`); the
     unmerged IDE branches (language, live theme, navigation, runtime languages, sidebar resize, source keys,
     prototypes, research) were left.
