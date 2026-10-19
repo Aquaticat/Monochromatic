@@ -167,10 +167,20 @@ Done.
 
 ### 8. Measurement and relative targets
 
-Not started.
+Partial.
 
-- Requires the prepared environment and the full baseline.
-- Relative targets remain placeholders until the first measured comparison.
+- [The measurement record](depot-ci-measurement-targets.md) compares the Depot 8x32 fast-subset
+  run `39199930641` with the GitHub-hosted advisory run `39202293518`.
+- Observed ratios:
+  build plus unit 0.50,
+  install tools 0.40,
+  job wall 0.48.
+- Provisional targets are adopted:
+  0.75 for build plus unit,
+  0.75 for install tools and
+  0.90 for job wall.
+- The complete build and unit profile still needs the prepared environment.
+- A second sample is required before treating the targets as stable.
 
 ### 9. Governance and Q7
 
