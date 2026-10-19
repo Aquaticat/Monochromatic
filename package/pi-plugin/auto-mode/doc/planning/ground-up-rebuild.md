@@ -15,8 +15,9 @@ The earlier shortage-of-useful-questions question was also withdrawn;
 unresolved-rule count does not measure the supply of useful follow-ups.
 
 This document records settled requirements separately from proposed semantics.
-Remaining choices concern score admission, context anchoring, and preparation timing.
+Remaining choices concern score admission and context anchoring.
 Q2 is withdrawn: an established `ask` is a resolved outcome requiring the human, not model uncertainty.
+Q6 is withdrawn: a parallel tool-call batch is one group; each nonparallel call is its own group.
 The user corrected the approval baseline: assess reversibility, not exact requested-package matching.
 The former Q3 and Q5 alternatives are withdrawn; their remaining engineering details follow that baseline.
 Dependency qualification, shadow scheduling, retention, and size fit remain open engineering work.
@@ -108,16 +109,26 @@ Startup failure behavior requires qualification before implementation acceptance
 
 ### Stage 1: capture and parse the entire pending group
 
-Capture every pending tool-call set as a group before any member executes.
-Prepare every member, including permitted argument mutations by other extensions.
+Use the user's explicit grouping boundary:
+
+- When the model calls tools in parallel, the entire parallel batch is one review group.
+  Capture and prepare every member before any member executes.
+- When calls are not parallel, each call is its own review group.
+  Prepare, review, and execute A before preparing and reviewing a later nonparallel call B.
+  Do not combine sequential calls into an artificial multi-call group.
+
+Include permitted argument mutations by other extensions in each prepared group's snapshot.
 Parse every tool call deeply, retaining tool identity, named arguments, resources, and execution structure.
 For shell calls this includes control flow, redirects, expansions, literal values, and nested syntax.
 Parsing alone does not establish expanded runtime values or actual side effects.
 
 Bind all review evidence to one immutable group, instructions, tool catalog, and context snapshot.
 A changed argument, instruction, branch, or tool definition invalidates affected approval.
-Group boundaries follow pending calls; future dynamically created calls are not pretended to exist already.
-The relationship between a parent call and result-dependent nested groups must be qualified at the host boundary.
+Queue adjacency or a shared workflow does not merge distinct nonparallel calls.
+Future dynamically created calls are not pretended to exist already.
+Apply the same parallel-batch versus individual-call boundary to nested calls;
+qualify how the host exposes that boundary rather than treating an individual-call hook as proof of batch coverage.
+Approval, denial, manual feedback, and the review budget bind to this group, not the entire future workflow.
 
 ### Stage 2: deterministic parsed checks
 
@@ -172,6 +183,7 @@ the previous fixed-form selector is not a settled requirement.
 
 At most three sequential review batches and three parallel Luna calls per batch.
 HTTP retries consume those call slots.
+These are model-review limits, not a limit on the number of tool calls in a parallel tool-call group.
 Stop early once the outcome is established; unresolved after the permitted batches routes to `ask`.
 Stage 0 is startup work, outside the per-group review budget.
 Shadow requests are accounted separately only if the proposed shadow policy is accepted.
@@ -286,24 +298,24 @@ B is a literal cap on historical input but can lose the instruction needed to as
 Ranking: A > B because recency alone does not make the original request obsolete.
 Neither API user-role feedback nor compaction entries count as a new human request.
 
-### Q6: preparation timing for sequential groups
+### Q6 withdrawn: parallel batches and individual calls define groups
 
-Installed Pi 1.3.0 prepares and executes A, then prepares and executes B.
-A B-preparation hook can therefore read A's result.
-The required complete prepared group moves B's preparation before A executes.
+The user explicitly settles the group boundary: one parallel batch is one group;
+each nonparallel call is a separate group.
+The former menu incorrectly imposed complete-group preparation on sequential A and B together.
+Its proposed timing change and rejection of ordinary result-dependent sequential calls are withdrawn.
 
-Option A adopts prepare-all-once semantics for guarded groups, then executes the frozen arguments in original order.
-Extensions needing A's result to prepare B must submit a later group or receive an actionable unsupported-case result.
-Option B keeps compatibility by blocking those grouped operations pending an upstream host integration
-that explicitly supports the complete-group contract.
-Example: A writes a file; B's preparation hook uses that file's new content as an argument.
-A requires B in a later group; B declines the incompatible operation without claiming transparent support.
-A enables the group contract but changes sequential preparation timing.
-B makes the compatibility limit explicit but leaves those grouped operations unavailable.
-Ranking: A > B if group preparation is part of auto-mode's public contract,
-because it provides a usable execution model without pretending future results already exist.
-Neither option authorizes silently reviewing unprepared B or executing A before initial group review.
-The patch mechanism remains an engineering qualification, not this user decision.
+For parallel A and B, prepare both, review the complete group, and release both only after group approval.
+For nonparallel A then B, prepare/review A, execute A, then prepare/review B and execute B if approved.
+B's preparation may therefore use A's completed result in the nonparallel sequence.
+This does not authorize partial execution of a parallel group before its review completes.
+
+Installed Pi 1.3.0 source supplies separate dispatch paths in `dist/agent-loop.js`:
+`executeToolCalls` at line 366 selects the mode using configuration and tool execution metadata;
+`executeToolCallsSequential` at line 374 prepares and executes each call in its loop;
+`executeToolCallsParallel` at line 411 prepares calls before its `Promise.all` dispatch at line 453.
+Source inspection supports the distinction, not a claim that the replacement integration already works.
+Verify configured mode overrides, nested boundaries, argument mutation, and cancellation at the real host boundary.
 
 ## Dependency tree after this round
 
@@ -311,7 +323,8 @@ Q1 unlocks numeric boundaries and final reduction acceptance examples.
 The settled terminal ask contract supplies deterministic and model-resolved ask acceptance cases.
 The accepted autonomy baseline guides behavioral examples.
 Catalogue-specific fixtures wait until built-in rule design is resumed; the catalogue is not part of this round.
-Q4 unlocks snapshot boundary fixtures; Q6 unlocks supported host timing fixtures.
+Q4 unlocks snapshot boundary fixtures.
+The settled parallel-batch/individual-call rule determines group-boundary and timing fixtures.
 Then settle conflicting follow-ups, Stage 0 failure handling, shadow delivery/accounting,
 and retention using concrete designs and their measured constraints.
 Source budgets remain proposals pending those designs and exact resolved dependency inventories.
@@ -330,7 +343,8 @@ The built-in correction adds a preservation requirement to the proposed `QPM` ti
   Verify hidden examples too; open in the requested browser.”
 - Tighten `QPM` to:
   “Test questions against settled requirements.
-  A correction to one criterion must preserve the other requirements.
+  Define groups before proposing timing choices.
+  Preserve other requirements when correcting one.
   Measure facts; ask only unresolved choices.”
 
 The scope correction also motivates a proposed tightening of the existing `AUT` guidance:
@@ -354,7 +368,7 @@ Their fit remains unverified.
 
 ### Host integration: 10,000 to 16,000 characters
 
-Purpose: expose the complete prepared group, preserve selected execution semantics, and bind review to dispatch.
+Purpose: expose the complete parallel batch or individual nonparallel call and bind its review to dispatch.
 Interface: a group review callback with cancellation; Pi retains execution, results, and configured extensions.
 Own parallel, sequential, nested, denied, aborted, and shutdown paths.
 A public per-call event alone does not establish final complete-group interception.
@@ -363,7 +377,7 @@ The candidate is a narrow version-qualified Node loading hook in the installed a
 It must not copy or stage Pi, its SDKs, or its dependency tree.
 Installed `registerHooks` declarations mark it experimental; private Pi functions are maintenance coupling.
 A supported source fingerprint and real host qualification are required before adoption.
-Q6 determines the timing contract this seam must implement.
+The settled group boundary preserves separate reviews for nonparallel calls and whole-batch review for parallel calls.
 
 ### Rules and review input capture: 8,000 to 14,000 characters
 
@@ -606,7 +620,9 @@ The proposed hook targets the installed `dist/agent-loop.js`.
 
 These private host functions would be used by the narrow prepared-group integration:
 
-- `executeToolCalls`: insert the group-level preparation and review seam.
+- `executeToolCalls`: identify the host dispatch mode and its actual batch boundary.
+- `executeToolCallsParallel`: review the entire prepared parallel group before any member executes.
+- `executeToolCallsSequential`: review each prepared call as its own group before executing that call.
 - `prepareToolCall`: retain the host's argument preparation, validation, and existing pre-execution hooks.
 - `executePreparedToolCall`: execute exactly the reviewed prepared call.
 - `finalizeExecutedToolCall`: retain post-execution hooks and result handling.
@@ -723,6 +739,10 @@ The shell parser and shared logger are the only proposed production library resp
 
 Qualify the proposed host hook with a minimal actual Pi consumer before expanding the design.
 Cover parallel, sequential, nested, mutated-input, denied, cancellation, and configured-extension behavior.
+Assert one review snapshot contains every member of a parallel batch and no member executes before its verdict.
+Assert nonparallel A and B produce distinct reviews in prepare/review/execute order,
+including B preparation that reads A's completed result.
+Do not infer grouping solely from queue length or assume a per-call interception covers parallel batches.
 Generate the exact resolved production and development dependency inventories and disk accounting.
 Qualify the consumed parser projection against installed `unbash` 6.
 Verify actual hundred-question endpoint capacity without executing proposed operations.
@@ -773,8 +793,9 @@ No cleanup or deletion is performed as part of writing this plan.
 
 ## Decisions still requiring review or qualification
 
-The current semantic frontier is Q1, Q4, and Q6 in this document and the HTML form.
+The current semantic frontier is Q1 and Q4 in this document and the HTML form.
 Q2 is withdrawn because established asks already terminate automatic review.
+Q6 is withdrawn because parallel batches and individual nonparallel calls now define the group boundary.
 The package-match gate is rejected; the former Q3 and Q5 options are withdrawn.
 Further dependent work covers follow-up conflicts, startup failures, shadow call accounting and preemption,
 persistent log retention, exact dependency closure, and source/deployment budgets.
@@ -810,8 +831,9 @@ Additional current flowchart captures:
   and [dark](ground-up-rebuild-review/flowchart-ask-routes-dark.png).
 - Autonomy baseline: [light](ground-up-rebuild-review/flowchart-autonomy-light.png)
   and [dark](ground-up-rebuild-review/flowchart-autonomy-dark.png).
-- Preparation timing: [light](ground-up-rebuild-review/flowchart-timing-light.png)
+- Superseded sequential-group timing proposal: [light](ground-up-rebuild-review/flowchart-timing-light.png)
   and [dark](ground-up-rebuild-review/flowchart-timing-dark.png).
+  These captures predate the explicit parallel-batch/individual-call boundary and withdrawal of Q6.
 
 The flowchart correction replaces the startup, group-review, and manual-decision card rows with connected SVG.
 Decision diamonds have labeled outgoing branches; operation rectangles and rounded exits have attached arrows.

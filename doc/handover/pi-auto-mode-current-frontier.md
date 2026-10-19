@@ -3,8 +3,31 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
-The active visual form has open choices Q1, Q4, and Q6; Q2 is withdrawn as already settled.
+The active visual form has open choices Q1 and Q4; Q2 and Q6 are withdrawn as settled.
 After answers, update the decision tree and continue the next unlocked review work.
+
+### Parallel-batch versus individual-call grouping, 2026-10-19
+
+The user explicitly defines one group as the complete parallel tool-call batch.
+When the model does not call tools in parallel, each call is its own group.
+Do not combine nonparallel A and B into a synthetic group or prepare B before A executes.
+Each separate group receives its own snapshot, verdict, and review budget.
+The three-parallel-request limit concerns Luna review requests, not tool-call membership.
+
+Withdraw Q6's sequential-group timing menu and response selector; only Q1 and Q4 remain open.
+The active SVG now branches by parallel versus nonparallel calls,
+with whole-batch review before parallel dispatch and separate prepare/review/execute stages for nonparallel calls.
+Update Stage 1, host responsibilities, nested-boundary qualification, and acceptance fixtures accordingly.
+The old `flowchart-timing` and `staged-q6` captures are superseded proposals, not the active group contract.
+Built-in contents remain deferred and implementation remains stopped.
+
+Fresh installed Pi agent core 1.3.0 source confirms separate paths in `dist/agent-loop.js`:
+sequential dispatch at line 374 prepares and executes per call;
+parallel dispatch at line 411 prepares members before the execution barrier at line 453.
+Dispatch configuration and per-tool overrides at lines 368 to 372 remain host qualification details.
+Independent review confirms that Q6's old premise conflicted with the settled grouping boundary.
+The proposed `QPM` tightening now requires defining groups before posing timing choices; `AGENTS.md` is unchanged.
+Next action: verify the grouping diagram, form removal, and updated Markdown; reopen the grouping view in Helium.
 
 ### Complete drawing inventory correction, 2026-10-19
 
