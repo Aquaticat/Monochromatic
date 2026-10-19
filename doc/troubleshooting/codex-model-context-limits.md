@@ -58,8 +58,12 @@ codex debug models
 
 The JSON result contained:
 
-- `gpt-6.1-sol`: `context_window = 1000000`, `max_context_window = 1000000`.
-- `gpt-6-astra`: `context_window = 750000`, `max_context_window = 872000`.
+- `gpt-6.1-sol`:
+  `context_window = 1000000`,
+  `max_context_window = 1000000`.
+- `gpt-6-astra`:
+  `context_window = 750000`,
+  `max_context_window = 872000`.
 
 The original cached catalog reported `500000` and `272000` context tokens respectively.
 That baseline distinguishes the new values from an unchanged catalog.
@@ -103,12 +107,19 @@ A tracker search for `model_catalog_json` found existing reports,
 including startup-only catalog reload request `openai/codex#49930`.
 No upstream report was filed or drafted because this task established a documented configuration path.
 
-- Upstream fault: no defect established by this configuration task.
-- Fixability: no upstream patch is required for the verified setup.
-- Supported use: the official reference documents a custom model catalog.
-- Contribution acceptance: not investigated because no contribution is proposed.
-- Maintainer willingness: not assessed because no upstream change is needed.
-- Prototype: not applicable; the consumer configuration was tested directly.
+- Upstream fault:
+  no defect established by this configuration task.
+- Fixability:
+  no upstream patch is required for the verified setup.
+- Supported use:
+  the official reference documents a custom model catalog.
+- Contribution acceptance:
+  not investigated because no contribution is proposed.
+- Maintainer willingness:
+  not assessed because no upstream change is needed.
+- Prototype:
+  not applicable;
+  the consumer configuration was tested directly.
 
 There is no new defect evidence to contribute from this task.
 
