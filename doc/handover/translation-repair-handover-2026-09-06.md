@@ -297,11 +297,56 @@ its "Next" list is still the queue the merge went ahead of.
   approved by the owner,
   read Synthetic `wet` at 86.76% of the week with no five-hour window,
   and issue 1779 was closed with it.
+- On 2026-10-19 the owner chose the readiness rotation over the read set,
+  one entry at a time
+  (`XingZ60`,
+  `hulicaijia`,
+  `mikaela_khara`,
+  `shi_Yumiaoya`,
+  `zheermao101`,
+  `CuspariaKLSY`,
+  `yingying`
+  and `TianqiChen666`;
+  the rule is in `doc/planning/translation-repair-readiness-signal.md`),
+  over all eight at once and over `TianqiChen666` alone.
+  Each page is read before the next entry launches,
+  and a class found is fixed before it.
+  `TianqiChen666` goes last,
+  since it has three reads on near-identical builds,
+  and the others follow the pass's own order:
+  `zheermao101` (run `zheermao14`),
+  `CuspariaKLSY`,
+  `XingZ60`,
+  `yingying`,
+  then `hulicaijia`,
+  `mikaela_khara` and `shi_Yumiaoya`.
+  The checks before it ran at `11f7fbfa01`:
+  gate g116 covers the family code
+  (the later merges of `main` changed only auto-mode and Depot files);
+  the plan over the eight entries into a throwaway runs directory read
+  `PLAN ok ... client=constructed pending=8`,
+  pipeline `sha256-tree-v1:a92725968adf…`;
+  no family source holds a control byte
+  (the search found a scratch file written with one);
+  every launch writes into a fresh runs directory,
+  which holds the slice cache,
+  so no cache version can misread a stored record;
+  the meters at 15:23 UTC read every provider wet.
+  The cap census over `~/temp/agent` flags cuts over one percent for six seats
+  and a rule reading away from the card for Kimi-K3,
+  gpt-oss-120b,
+  minimax-m3 and glm-5.3
+  (`s245/split/cap-census.log`);
+  the runbook keeps those for reading,
+  not for moving a cap before a launch.
 
 #### Next
 
-1.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
-2.  Each `monochromatic-lint` release moves `mise.lock`:
+1.  The readiness rotation in the State list,
+    one entry at a time,
+    each page read by the seven steps and the three checks before the next launch.
+2.  The "Next" list of [the checkpoint of 2026-10-18](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md#next).
+3.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,
     after its unit suite passes with the real program.
 
