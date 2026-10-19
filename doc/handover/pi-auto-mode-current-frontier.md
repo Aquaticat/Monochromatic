@@ -3,7 +3,7 @@
 ## Current work and next actions
 
 Plan review is active and implementation remains stopped.
-The revised visual form is open in Helium; the current round awaits the user’s answers.
+The reversibility-corrected visual form is open in Helium; Q1, Q2, Q4, and Q6 await the user’s answers.
 After answers, update the decision tree and continue the next unlocked review work.
 
 ### Reversibility replaces package matching, 2026-10-19
@@ -24,7 +24,16 @@ It also clarified that former Q3 only concerned skipping Luna, not prohibiting w
 no deterministic shortcut implementation is selected by this correction.
 The old unchanged-retry premise is also withdrawn: repeating a test can gather reproducibility evidence.
 A tightening of existing `AUT` is proposed in the plan, not applied to `AGENTS.md`.
-Next: independent correction review, targeted visual/form checks, screenshot evidence, rendered docs, Helium handoff.
+The correction is committed in `7eee3e5c83`, with independent-review clarifications in `82a720736f`
+and the scoped guidance proposal in `8f920ee572`.
+Verified four scenarios, six navigation targets, all 12 remaining answer options,
+all manual decision/reason branches, form validation, literal text, selection, and keyboard activation.
+All 21 controls meet 48 pixels in both dimensions. Both color schemes and 390-pixel width passed.
+Page errors and console messages are empty. Five inspected `reversibility-` screenshots are retained.
+The Markdown render passed at `auto-mode-rebuild-plan-render-BRQ1p7` before evidence notes were appended.
+The verification browser was closed and nested compositor quit; Helium accepted the updated `#meaning` URL.
+Current next action: use the user’s answers to Q1, Q2, Q4, and Q6 to advance the plan review.
+Implementation remains stopped; the accepted reversibility baseline does not require another confirmation.
 
 ### Every ask explains the decision, 2026-10-19
 

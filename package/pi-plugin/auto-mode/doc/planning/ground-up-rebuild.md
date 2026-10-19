@@ -799,6 +799,23 @@ The updated panel fits a 390-pixel viewport and has no page errors or console me
 The older `staged-manual-dark.png` shows the prior manual example;
 the other screenshots without the `staged-` or `explained-ask-` prefixes document the superseded review.
 
+The reversibility revision passed all four scenarios, six navigation targets,
+all 12 remaining answer options, both manual decisions with and without reasons,
+form validation, literal-text handling, text selection, and keyboard activation.
+All 21 remaining controls measured at least 48 pixels in both dimensions.
+The scenarios passed in light and dark mode; all sections fit a 390-pixel viewport without horizontal overflow.
+Page error and console records were empty.
+The verified review was reopened in Helium at the worked examples.
+
+Current correction evidence:
+[cross-package tests](ground-up-rebuild-review/reversibility-scenario-tests-dark.png),
+[destructive test effects](ground-up-rebuild-review/reversibility-scenario-scope-dark.png),
+[autonomy baseline](ground-up-rebuild-review/reversibility-q3-dark.png),
+[effects and recovery checks](ground-up-rebuild-review/reversibility-q5-dark.png),
+and [focused recovery questions](ground-up-rebuild-review/reversibility-adaptive-light.png).
+The older `staged-q3`, `staged-q5`, and exact-package test screenshots are superseded historical evidence.
+These checks verify the review artifact; no replacement plugin has been implemented or qualified.
+
 ## Inspected sources
 
 These are source-reading facts, not new runtime qualification results.
