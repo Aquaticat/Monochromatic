@@ -16,8 +16,18 @@ containers,
 VMs and test infrastructure;
 the [execution handover][depot-source-1]
 records the accepted scope and remaining work.
-The requested interview is in progress;
-independent whole-report sufficiency review remains pending.
+The requested interview is settled;
+the independent whole-report sufficiency review is now recorded in
+[the review record](depot-expanded-ci-evaluation-independent-review.md).
+
+Correction (2026-10-18):
+the earlier text said the interview was in progress and the
+independent whole-report review remained pending.
+The interview has since settled the
+operating model and the review has run;
+the record is cited above.
+The original sentence is
+preserved in this note.
 
 The evidence supports a selective hybrid rather than a blanket whole-CI speed multiplier.
 Native Depot CI and Depot-managed GitHub Actions are distinct products:
@@ -27,7 +37,21 @@ while the [GitHub runner catalog](https://depot.dev/docs/github-actions/runner-t
 lists Windows and Apple Silicon Mac compute.
 Developer makes Depot Windows available;
 Mac eligibility starts with Startup
-([current eligibility and allowance sources](../audit/depot-included-allowance-2026-10-18.evidence.json)).
+([current eligibility and allowance sources](../audit/depot-included-allowance-2026-10-18.evidence.json);
+[public pricing feature rows](../audit/depot-live-public-pricing-2026-10-18.evidence.json.gz)).
+
+Correction (2026-10-18):
+the earlier citation pointed only to the allowance JSON,
+which
+records Windows rates but no Windows plan-eligibility flag;
+its only eligibility booleans
+are macOS `DeveloperEligible` and `StartupEligible` at lines 163-166.
+The public pricing
+feature rows show Windows Runners for all plans,
+and the execution handover records at
+line 1794 that Developer includes Depot Windows runners.
+The original claim and citation
+are preserved in this note.
 
 The historical native follow-up's price comparison covers native CI usage alone.
 It does not establish that Developer is always cheaper across separate product allowances.
@@ -46,8 +70,26 @@ Selected Linux workflows can qualify for native Depot CI;
 Depot-managed GitHub runners provide an additional Linux AMD64/ARM64 and Windows pool.
 This corrects the former wording that described native Depot as the Linux orchestration pool.
 Neither native Depot nor Depot-managed runners become a blanket replacement for GitHub-hosted execution.
-GitHub scheduling also retains release permissions,
-protected-environment approvals and reusable-workflow references that native compatibility does not cover.
+GitHub scheduling also retains release permissions and the release workflow bindings that native
+compatibility does not cover.
+The repository currently has no protected-environment approval or reusable-workflow boundary.
+
+Correction (2026-10-18):
+the earlier text said GitHub scheduling retains
+protected-environment approvals and reusable-workflow references.
+At the pinned revision,
+no
+workflow uses `environment:`,
+no workflow defines `workflow_call`,
+and the repository has no
+reusable-workflow references;
+the release boundary is push-triggered automatic publishing
+(`npm-release`,
+`pnpr-publish`,
+`cargo-publish`,
+`music-player-release`).
+The original
+sentence is preserved in this note.
 Mac work stays on public GitHub under Developer.
 The exercised ARM owners establish selected portability,
 not every ARM workload
@@ -88,7 +130,19 @@ The current-source tree has 223 package directories:
 13 paused and two archived.
 The initial 227-candidate census included four documentation blobs;
 the corrected directory count does not change task or execution counts.
-It has 2,425 source-owned Mise tasks across 13,860 tracked paths.
+It has 2,425 source-filtered repository Mise tasks across 13,860 tracked files,
+excluding 19 inherited scratch-ancestor tasks.
+
+Correction (2026-10-18):
+the earlier sentence said "2,425 source-owned Mise tasks across
+13,860 tracked paths".
+The manifest records `repositoryTaskCount: 2425`,
+`sourceTreeFiles: 13860` and `excludedAncestorTaskCount: 19`;
+the cited research says
+"2,425 repository Mise tasks and 13,860 tracked files".
+The original sentence is preserved
+in this note;
+the counts are unchanged.
 Its source-language inventory includes JavaScript/TypeScript,
 Kotlin,
 Rust,
@@ -98,8 +152,22 @@ not a reason to install unrelated task systems
 ([source inventory and applicability controls][depot-source-5]).
 The platform source ledger now reconciles all 120 captured deployed documentation pages,
 with source/hash-bound findings and explicit applicability limits.
+The ledger's top-level status remains `Research reopened; no readiness claim`;
+the 120-page reconciliation is a bounded source-review result,
+not a readiness claim.
 This does not mean every public API method or documented example was runtime-exercised
 ([platform source ledger][depot-source-7]).
+
+Correction (2026-10-18):
+the earlier sentence did not record the ledger's top-level status.
+The ledger at line 5 says "Research reopened;
+no readiness claim";
+its nested
+`publicDocumentationReconciliation` status at line 16699 supports the 120-page
+reconciliation.
+The original sentence is preserved in this note;
+the 120-page count is
+unchanged.
 
 The evidence is principally first-party execution data and inspected implementation source.
 Primary receipts bind original ZIP/member hashes,
@@ -112,8 +180,10 @@ capturing a source page does not establish substantive applicability review.
 ### Actual producer and consumer boundaries
 
 The fresh native artifact consumer verified all 1036 declared compiled hashes,
-including the hidden manifest.
-Flattened symlinks still broke its first real import.
+including the hidden manifest,
+and restored 33,802 ZIP members.
+Its first actual domain import failed because `runner.js` did not expose `nativeAssertActive`;
+a separate flattened-artifact failure is retained.
 Restoring source-owned activation and emitted dependency links from the same immutable artifact made
 permission and prohibition pass with zero HTTP/provider requests;
 the remaining `none` case reached the preserved `unresolved` versus `unspecified` assertion.
@@ -121,13 +191,38 @@ The consumer did not rebuild the application or rerun the unit suite
 ([source and retained controls][depot-source-5]).
 An artifact-membership pass alone cannot qualify that runtime boundary.
 
+Correction (2026-10-18):
+the earlier text said "Flattened symlinks still broke its first
+real import."
+The cited research records that the fresh consumer's first actual domain
+import failed because `runner.js` did not expose `nativeAssertActive`;
+the flattened
+artifact failure is a separate retained observation.
+The same research records 33,802 ZIP
+members restored alongside 1,036 declared compiled file hashes.
+The original sentence is
+preserved in this note;
+1,036 is a file-hash count,
+not an artifact-member count.
+
 The packed-install profile activates the actual package manager and imports 25 installed runtime packages.
 It separately compiles a positive and a rejecting TypeScript consumer for the type-only ownership-marker package.
 Its unexpected runtime import of that type-only package is retained as a harness expectation error.
 All five functional consumers pass,
-including the actual mutation CLI's dry-run discovery of two mutants and its tests.
-Discovery does not mean the mutants were executed
+including the actual mutation CLI's dry-run discovery of two mutants and selection of
+`src/value.unit.test.ts`.
+Discovery does not mean the mutants or fixture tests were executed
 ([packed consumer source and original receipts][depot-source-5]).
+
+Correction (2026-10-18):
+the earlier sentence said the dry-run covered two mutants "and
+its tests" and that discovery did not mean the mutants were executed.
+The cited research
+records mutant discovery and test-file selection and says the dry-run executes neither
+mutants nor fixture tests.
+The original sentence is preserved in this note;
+the five
+passing functional controls are unchanged.
 
 The browser profile exercised all eight browser specs in each engine:
 Chromium passed 28 cases,
@@ -148,9 +243,22 @@ compiler-consumer,
 corpus-provenance and privileged-WG evidence remain separate result families in that record.
 The privileged WG replay passed all eleven ignored cases after explicit Node-PID-one and Tini reaping controls;
 the fifteen ordinary cases were filtered from that targeted replay.
-The missing namespace init explains that fixture's six preceding process-identity teardown failures,
+The missing namespace init is the supported explanation for that fixture's six preceding
+process-identity teardown failures,
+after the Node-PID-one and Tini reaping controls,
 without changing frozen product source
 ([Rust execution record][depot-source-6]).
+
+Correction (2026-10-18):
+the earlier sentence said the missing namespace init "explains"
+the six failures.
+The cited research first calls unreaped orphan state an explicit
+hypothesis at lines 820-826;
+the later Tini control and eleven-pass replay at lines 846-848
+support the explanation.
+The original sentence is preserved in this note;
+the six failures
+and unchanged product source are unchanged.
 
 The positive Truepeak search fixture completed the unchanged grid twice,
 selected a winning candidate and emitted matching 24-row feature files of 8704 bytes.
@@ -198,8 +306,22 @@ The recorded binary/case identities and statuses match exactly for public Mac 15
 and public Windows x64 versus Depot Windows x64.
 The same comparator detects changed identities,
 missing cases and changed statuses;
-authored skips remain separate from this executed-case comparison
-([host comparison and controls][depot-source-10]).
+authored skips remain separate from this executed-case comparison.
+The pass/fail split is recorded in the execution handover;
+the comparator evidence records the 1495 and 1494 totals and the exact status equality
+([host comparison and controls][depot-source-10];
+[public OS recovery counts][depot-source-1]).
+
+Correction (2026-10-18):
+the earlier paragraph cited only [host comparison and controls]
+[depot-source-10][] for the 1468/27 and 1493/1 pass/fail counts.
+The comparator evidence
+records 1495/1495 and 1494/1494 recorded cases and empty status-change arrays,
+not
+pass/fail counts.
+The pass/fail split is recorded in the execution handover at lines
+536-540.
+The original citation and counts are preserved in this note.
 These standalone-workspace owners do not exercise IDE,
 terminal or file-manager tests through their Truepeak dependency.
 The shared builds,
@@ -217,7 +339,20 @@ Depot's actual OS build and CPU model were not captured;
 the catalog's Apple M2 is not an observed chip identity.
 These measurements do not establish why the requested and observed Mac resources differ,
 or a fair native-platform performance ratio
-([retained environment observations][depot-source-10]).
+([retained environment observations][depot-source-10];
+[catalog shape in the execution handover][depot-source-1]).
+
+Correction (2026-10-18):
+the earlier paragraph cited only the comparator evidence for the
+eight-CPU/24-GB catalog shape.
+The comparator JSON records `requestedLabel: depot-macos-15`
+and the observed seven-CPU/17-GiB values,
+not the catalog 8/24;
+the catalog shape is
+recorded in the execution handover at line 740.
+The original paragraph and citation are
+preserved in this note;
+the measured values are unchanged.
 
 The corrected public Windows GNU owner runs 1494 distinct binary/case identities:
 1492 pass and two fail,
@@ -358,11 +493,23 @@ the final derived image passed all ten actual service consumers
 
 The built-in Semgrep 1.34.1 scan missed the controlled missing-`USER` case,
 and its `CMD $...VARS` pattern did not match the exercised JSON-form `CMD`.
-The same retained rule bytes executed by Semgrep 1.181.0 detected both,
+A separate Semgrep 1.181.0 control using the exact fixed rule pack detected both,
 while the Hadolint root/non-root controls behaved as expected.
 This qualifies the replacement scan execution;
 it does not establish a repaired Depot built-in scanner
 ([scanner and rule-source evidence][depot-source-12]).
+
+Correction (2026-10-18):
+the earlier text said "The same retained rule bytes executed by
+Semgrep 1.181.0 detected both."
+The cited evidence records old-engine fetched and retained
+rule bytes and a current-engine "exact fixed rule pack";
+it does not bind the 1.181.0 run
+to the identical retained bytes.
+The original sentence is preserved in this note;
+the
+replacement claims the fixed rule pack,
+not byte identity.
 
 Every measured provider allowed the finite seventy-second writer past a sixty-second step deadline.
 Only native Depot's observation proves completion after the executor advanced to its next step;
@@ -382,9 +529,25 @@ by successful setup or successful unrelated siblings
 ([coverage record][depot-source-5],
 [Android receipt][depot-source-9]).
 
-The Linux static campaign ran 465 owning commands,
-with 418 passing and 47 failing;
+The Linux static campaign ran 465 scheduled command invocations,
+including 42 shared prerequisite invocations per shard across 297 owning target tasks
+(109 owning type-check tasks,
+106 owning Oxlint tasks and 82 build entry points),
+with 418 invocations passing and 47 failing;
 these are task outcomes rather than assertion counts.
+
+Correction (2026-10-18):
+the earlier text said "The Linux static campaign ran 465 owning
+commands".
+The 465 total is the scheduled command-invocation count:
+297 owning target
+tasks (109 type-check,
+106 Oxlint,
+82 build entry points) plus 42 shared prerequisite
+invocations per shard across four shards (168).
+The original claim is preserved in this
+note;
+the 465 total and the 418/47 split are unchanged.
 The default Node owner campaign reports 126 passing commands and one failing unused-export owner.
 The bounded property profile reports 64 passing cases and five retained counterexamples.
 The separate mutation profile records eleven killed mutants,
@@ -703,12 +866,21 @@ The finished allocation must choose these mechanisms per owner and retained cons
 It cannot treat a cache hit,
 restored bytes or a shorter compile phase as a measured whole-CI speedup.
 The complete integration review also separates applicable Gradle/Rust mechanisms from unused Bazel,
-Go,
+Go module,
 Maven,
 Moon,
 Nx,
 Pants,
 Turbo and Xcode owners.
+
+Correction (2026-10-18):
+the earlier list said "Go" among unused owners while line 96 says
+there are no Go package owners.
+The repository has a Go-built `toml-test` conformance tool,
+not a Go package owner;
+"Go module" names the mechanism.
+The original list is preserved in
+this note.
 Depot's Actions cache guide explicitly documents no branch isolation;
 the actual six-job probe confirms sibling-branch read reuse on Depot and a sibling miss on GitHub,
 after both same-branch positive controls.
@@ -720,15 +892,29 @@ not every access-mode or fork/PR write scenario
 
 ### Proposed workflow allocation
 
-Use the native Linux pool for admitted Node static/unit/process owners,
-Rust Nextest owners,
-bounded property/conformance/mutation profiles and compatible browser/container consumers.
+Native Depot capability runs in one bounded weekly matrix covering the admitted native capability
+categories:
+static checks,
+Node and Rust test consumers,
+browser and E2E consumers,
+packaged artifacts,
+OS,
+architecture and application consumers,
+container producers,
+Depot Tests,
+cache and Disk,
+and SDK VM profiles.
+Ordinary Node static,
+unit and process validation defaults to GitHub-hosted runners and is not moved by this matrix.
 Build shared producers once and validate their real consumers.
 Keep GitHub permission and approval boundaries on GitHub scheduling,
 with Depot runners available where their tested OS,
 resource shape and plan eligibility fit.
-The final required/advisory split and event cadence remain interview decisions;
-the retained source failures prevent treating every researched owner as a passing required gate
+The advisory-only model and the single bounded weekly matrix are accepted;
+the concrete matrix membership,
+per-profile evidence and weekly bounds remain a pilot work item;
+the retained source failures require per-product dispositions before their results are reported,
+and no result is a required gate
 ([owner results][depot-source-5],
 [Rust execution contexts][depot-source-6]).
 
@@ -880,7 +1066,9 @@ timeout and remote-debug controls separately observable.
 Every paid profile needs finite resource/time admission,
 logical cleanup and a cost record;
 an API terminal state is not a measured billing or deallocation boundary.
-Required/advisory selection and event cadence remain interview decisions across these profiles.
+Every profile result is advisory;
+each native capability category runs in the single bounded weekly matrix;
+per-profile admission evidence and per-product dispositions remain pilot work items.
 
 ### Measured reuse and container producers
 
@@ -966,6 +1154,22 @@ as do absent-owner cache/language recipes and external observability sinks
 
 The semantic owner projection,
 remaining authored source consumers and final allocation/cost normalization are now sealed.
+The coverage manifest still marks `coverageReviewComplete: false` and
+`executionComplete: false`;
+sealing these artifacts is not a complete-coverage or execution-complete claim.
+
+Correction (2026-10-18):
+the earlier text said these artifacts were "now sealed" without
+recording the manifest's false flags.
+The cited manifest retains
+`coverageReviewComplete: false` and `executionComplete: false` at lines 420-421,
+and the
+cited research says the manifest explicitly marks semantic coverage review and execution
+incomplete at lines 374-375.
+The original sentence is preserved in this note;
+"sealed"
+refers to the artifact state,
+not complete coverage.
 The [execution handover][depot-source-1] retains the remaining publication checks and explicit limits.
 The capability-allocation source review and concrete rollout profiles are written;
 the primary IDE/file-manager/terminal case identities and real producer joins are sealed.
@@ -977,50 +1181,98 @@ The corrected attempt verifies the exact admitted tmate binary before its watchd
 this does not establish a tmate failure cause or lack of support
 ([final bounded SSH result](../audit/depot-native-ssh-correction-runtime-2026-10-18.evidence.json)).
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
+The ledger's top-level status remains `Research reopened; no readiness claim`;
+the 120-page reconciliation is a bounded source-review result,
+not a readiness claim.
+
+Correction (2026-10-18):
+the earlier sentence did not record the ledger's top-level status.
+The ledger at line 5 says "Research reopened;
+no readiness claim";
+its nested
+`publicDocumentationReconciliation` status at line 16699 supports the 120-page
+reconciliation.
+The original sentence is preserved in this note;
+the 120-page count is
+unchanged.
 The repeated GitHub and corrected native graph phases,
 case parity and independent failure classifications are sealed;
 their failed full-graph outcomes remain qualified rather than converted into an overall speed claim.
 The desktop,
-packed-install and native automatic BuildKit/registry consumer queues are complete with the qualifications in
-Gate and artifact-consumer results.
-A fresh independent whole-report sufficiency review has not run because the agent service quota is exhausted.
+packed-install and native automatic BuildKit/registry consumer queues are complete for the named results,
+with the qualifications in Gate and artifact-consumer results.
+The coverage manifest still marks `coverageReviewComplete: false` and
+`executionComplete: false`;
+these queue completions are not an execution-complete claim.
+
+Correction (2026-10-18):
+the earlier text said the queues "are complete" without scoping
+the completion to the named results or recording the manifest flags.
+The cited manifest
+retains `coverageReviewComplete: false` and `executionComplete: false` at lines 420-421.
+The original sentence is preserved in this note;
+the named queue results are unchanged.
+A fresh independent whole-report sufficiency review has now run and is recorded in
+[the review record](depot-expanded-ci-evaluation-independent-review.md);
+it found the report sufficient with corrections for a bounded pilot and not sufficient for a
+production rollout.
+
+Correction (2026-10-18):
+the earlier text said the review had not run because the agent
+service quota was exhausted.
+The review has since run;
+the record is cited above.
+The original
+sentence is preserved in this note.
 Source/hash/pointer/arithmetic checks are concrete verification,
 not a substitute for that review.
 Every source branch,
 every promised product feature and the retained failures remain outside any complete-coverage claim.
 
-After the evidence closes,
-the interview can settle the desired required/advisory boundaries,
-event cadence,
-paid-priority allocation and treatment of retained source failures.
+After the evidence closed,
+the current interview settled the advisory-only model,
+the Developer no-overage baseline,
+the single bounded weekly native matrix and the per-product disposition rule.
+The remaining open items are the concrete weekly matrix membership and bounds,
+the measured baselines for the relative success targets,
+the recorded independent review,
+and the Q7 confirmation of the revised rollout plan.
 The first posted round asks about failure enforcement,
 workflow cadence and Linux orchestration order.
-The user accepted a regression ratchet:
-known-good checks and new or changed failures block,
-while only explicitly tracked existing source failures can remain advisory.
-Setup,
-discovery and artifact-integrity failures always block.
-The user selected core PR checks and weekly breadth,
-replacing the proposed nightly schedule.
-The user accepted Depot runners under GitHub orchestration first,
-followed by qualification and promotion of selected Linux workflows to native CI.
+The user accepted baseline-before-advisory discipline:
+existing source failures require exact reproducible baselines,
+and setup,
+discovery and artifact-integrity failures are never converted to passes.
+Under the advisory-only model those failures are reported,
+not blocking.
+The current interview selected advisory-only CI and one bounded weekly native matrix covering every
+admitted native capability category,
+replacing per-push paid execution and the proposed nightly schedule.
+The current interview replaced staged per-workflow native promotion with one bounded weekly native
+matrix covering every admitted native capability category.
 This rollout stays within a permanent hybrid with heavy GitHub-hosted runner use.
 Promotion does not mean progressively draining eligible workloads from GitHub's own compute.
 Production routing follows confirmation of shared understanding of the concrete rollout plan.
-The user also accepted standing bounded authority for recurring overage within the existing planning ceiling
-and one reserved automatic recovery attempt for classified infrastructure failures.
+The user disabled overage on every product and set Developer as the operating baseline;
+the current interview supersedes the standing overage authority of Q4.
+One reserved automatic recovery attempt for classified infrastructure failures remains.
 The original failure remains visible;
 source failures,
-discovery failures and artifact-integrity failures retain their blocking semantics.
+discovery failures and artifact-integrity failures are reported as failures and never converted to
+passes.
 The scope correction stays in CI documents;
 `AUT` remains unchanged.
-The [concrete rollout plan](depot-expanded-ci-rollout.md) consolidates the accepted permanent allocation,
-cadence,
-ratchet,
-spend authority and recovery policy for the final shared-understanding check.
+The [concrete rollout plan](depot-expanded-ci-rollout.md) must be revised to consolidate the
+Developer no-overage baseline,
+the advisory-only model,
+the single bounded weekly native matrix,
+the sliding-window default-branch advisory cadence,
+the trust boundaries and the cache write policy.
+The plan remains a proposal until Q7 is answered and `doc/decision/depot-ci-adoption.md` is
+accepted.
 The recommendation must retain its source cohorts,
 documented plan eligibility,
-exact consumer limits and USD 200 monthly scope.
+exact consumer limits and the USD 200 capacity ceiling with overage disabled.
 
 [depot-source-1]: ../handover/depot-trial-grilling.md
 [depot-source-2]: ../audit/depot-combined-product-pricing-2026-10-18.evidence.json

@@ -25,6 +25,13 @@ The finite factual execution and reconciliation queue is closed with the limits 
 This does not assert complete product-feature or source-branch coverage.
 No fresh independent whole-report review ran after the agent service quota was exhausted.
 
+Correction (2026-10-18):
+the independent whole-report review has now run and is recorded in
+`doc/planning/depot-expanded-ci-evaluation-independent-review.md`.
+The later pending-review
+statements in this handover are historical;
+the record and the review verdict are current.
+
 The first interview round is answered through the question tool:
 
 - Q1 is accepted:
@@ -75,7 +82,26 @@ The complete rendered rollout plan has been read.
 The private renderer now registers the new plan explicitly.
 
 Q7 is posted through the question tool for confirmation of the linked concrete rollout plan.
-No further preference branch is currently open after Q1 through Q6.
+The current interview on 2026-10-18 settled the operating model:
+CI is advisory-only;
+the baseline is Developer with overage disabled on every product;
+native execution runs only in one bounded weekly matrix that covers every admitted native
+capability category;
+untrusted pull-request source stays on public GitHub;
+Node validation defaults to GitHub-hosted runners;
+cache writes come only from `main` and explicit dispatches;
+the default-branch advisory run uses sliding-window rate limiting and a fast static,
+build and unit subset,
+with the complete profile weekly;
+one independent whole-report review is recorded before any paid profile;
+each optional product and cache format receives an explicit disposition;
+and success targets are relative to the public GitHub baseline.
+The blocking-enforcement answer in Q1 and the standing-overage authority in Q4 are superseded
+by the advisory-only and no-overage answers above;
+Q1's baseline discipline remains.
+Q7,
+the confirmation of the revised rollout plan,
+is the only open confirmation question.
 Implementation has not started while the required shared-understanding confirmation is pending.
 The next action is to record Q7.
 If confirmed,
