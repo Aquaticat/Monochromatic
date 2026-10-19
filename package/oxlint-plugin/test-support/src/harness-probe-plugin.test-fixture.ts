@@ -16,7 +16,13 @@ type ProbeFixer = {
   /**
    Inserts text at one offset of the source.
    */
-  readonly insertTextBeforeRange: (range: readonly [number, number,], text: string,) => unknown;
+  readonly insertTextBeforeRange: (
+    range: readonly [
+      number,
+      number,
+    ],
+    text: string,
+  ) => unknown;
 };
 
 /**
@@ -89,7 +95,13 @@ const plugin = {
               node,
               message: 'harness probe fix',
               fix(fixer,): unknown {
-                return fixer.insertTextBeforeRange([0, 0,], PROBE_FIX_MARKER,);
+                return fixer.insertTextBeforeRange(
+                  [
+                    0,
+                    0,
+                  ],
+                  PROBE_FIX_MARKER,
+                );
               },
             },);
           },

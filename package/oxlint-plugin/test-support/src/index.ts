@@ -352,18 +352,16 @@ function parseOxlintOutput(stdout: string,): OxlintOutput {
 /**
  Returns the oxlint flags that write fixes back to the target.
  
- @param fix - requested fix mode, absent for a lint-only run
+ @param fix - requested fix mode
  
- @returns no flags for a lint-only run, otherwise the flags of the mode
+ @returns the flags of the mode
  
  @example
  ```ts
  fixFlags('fixes-and-suggestions');
  ```
  */
-function fixFlags(fix: OxlintFixMode | undefined,): readonly string[] {
-  if (fix === undefined)
-    return [];
+function fixFlags(fix: OxlintFixMode,): readonly string[] {
   if (fix === 'fixes')
     return ['--fix',];
   return [
@@ -426,7 +424,7 @@ export async function runOxlintFixture(
             '--threads',
             String(threads,),
           ],
-          ...fixFlags(fix,),
+          ...fix === undefined ? [] : fixFlags(fix,),
           '--format',
           'json',
           configFlag,
