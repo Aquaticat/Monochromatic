@@ -113,6 +113,18 @@ Work is incomplete. Continue the queue without another readiness handoff.
   Root `TCV`, `CPN`, `RXI` stay unchanged; concrete lessons remain package-local.
   Preserve unrelated work. Logger `0.4.4` is published and installed-consumer verified;
   project-first logs with user-state fallback remain selected. Private pnpr access is pending independently.
+  The next independent lint reduction is a private full-owned-source safe formatter pass,
+  followed by complete TypeScript/JavaScript AST and comment comparison before any adoption.
+  Exclude both active MiMo scopes; never overwrite concurrently changed files.
+  Continue the architecture audit at the authenticated manager-growth comparison,
+  where repeated shape checks may duplicate the collector's actual ownership seam.
+  Combined committed `4f3eb91a8c` builds JavaScript and native output and passes the full phase catalog,
+  both primary/review input cases, source freshness and schema mutation.
+  Its fresh types report only phase-catalog TS2741 (missing initial `sawSteering`)
+  and TS2379 (the still-unerased fixture registration).
+  Source MiMo receives the proven SDK erasure prototype; native MiMo resumes its scoped lint repair.
+  Deliver the additional exact TS2741 evidence at the source worker's next settled boundary.
+  Previous-build negative controller `RSjiZv` exits normally after its audited Stop response.
 
 ## Detailed qualification evidence
 
