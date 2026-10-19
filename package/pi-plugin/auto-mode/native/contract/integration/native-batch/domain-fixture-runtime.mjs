@@ -16,7 +16,8 @@ export function createDomainFixtureRuntime({
   lifecycle,
   code,
   programProfile,
-  approvalHost
+  approvalHost,
+  beforePrimaryResponse
 }){
  const {
    unconfiguredPolicies,
@@ -85,6 +86,7 @@ const runtime=bindNativePolicyRuntime({
    };
    const proposal=(observations.requests===1)||(nextDecision&&(observations.requests===2));
    if(proposal)observations.originalBody=init.body;
+   await beforePrimaryResponse?.({proposal});
    return fixtureResponse({
      proposal,
      code

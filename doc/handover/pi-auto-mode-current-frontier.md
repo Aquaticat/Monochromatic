@@ -14,6 +14,15 @@ Work is incomplete. Continue the queue without another readiness handoff.
   The controlled configured replay compares ordinary output with a steer during the original request,
   using an authored primary response, full saved history, read-only repository and private state.
   Diagnose the rejected origin before changing eligibility rules.
+  The controlled baseline `VjWPeZ` completes its actual reviewed `pwd` with zero errors.
+  The acknowledged-steer-before-response case `eRgzGM` reproduces the same withheld group.
+  Original origin identity checks all pass, but the first added origin is `native-call-input`,
+  which the growth guard's category check excludes.
+  A committed native-session regression now drives real `session.steer`/`followUp` before the provider response;
+  run it on the original build before correcting admission.
+  The scratch orchestrator initially races the controller's non-atomic state write and reads empty JSON;
+  its request/steer/release already occurred. Subsequent state and complete stderr establish the actual host failure.
+  Repair that reader/producer race separately; do not rerun the already-submitted commands or blame the package for it.
 - Producer memory: production candidate `VS53fb` passes all fifteen named build/type/consumer tasks
   and retains 16,688,184 additional heap bytes in the twelve-group, 24-response guard.
   Cleanup candidate `DQrRuL` passes all nine lifetime cases and retains 17,742,936 bytes in that same real-session guard.

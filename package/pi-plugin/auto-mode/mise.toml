@@ -39,6 +39,13 @@ extends = "lint"
 [tasks."lint:types"]
 extends = "lint:types"
 
+[tasks."test:native:inflight-input"]
+description = "Verify original steer and follow-up receipts while the native provider request is in flight"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-inflight-input.test.mjs steer",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-inflight-input.test.mjs followUp",
+]
+
 [tasks."lint:native:syntax"]
 description = "Check every maintained native module with the consuming Node parser"
 shell = "node --input-type=module-typescript -e"
