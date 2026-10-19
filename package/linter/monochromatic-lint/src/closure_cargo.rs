@@ -176,7 +176,8 @@ pub fn rustc_dev_missing_in(sysroot: &Path) -> Option<String> {
 ///  A replacement `cargo` (anything but the bare program name) stands for the whole toolchain,
 /// so it is not inspected;
 ///  the decision follows the program the step was given,
-///  not the process environment, so a test that passes a stub is independent of the machine's compiler.
+///  not the process environment,
+///  so a test that passes a stub is independent of the machine's compiler.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
