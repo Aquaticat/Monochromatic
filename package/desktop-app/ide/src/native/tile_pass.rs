@@ -78,11 +78,16 @@ pub(super) struct PassKey {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PassJob = { key: PassKey; document: Document; styles: Styles; typography: Typography; scale: number; wrap: number; focus: number };
+/// type PassJob = { key: PassKey; generation: number; document: Document; styles: Styles; typography: Typography; scale: number; wrap: number; focus: number };
 /// ```
 pub(super) struct PassJob {
     /// What the measurement is valid for.
     pub(super) key: PassKey,
+    /// Which post of a pass this is;
+    /// the worker numbers each request it is given, and every output repeats its request's number.
+    /// Two passes can have the same key (a new syntax snapshot posts the same text and width again),
+    /// so the key alone cannot tell the output of a replaced pass from the output of the pass that replaced it.
+    pub(super) generation: u64,
     /// Rope snapshot at the revision the key names.
     pub(super) document: Document,
     /// Syntax classifications,
@@ -108,11 +113,13 @@ pub(super) struct PassJob {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PassOutput = { key: PassKey; lines: [number, number][]; done: boolean; shaped: number; rebroken: number };
+/// type PassOutput = { key: PassKey; generation: number; lines: [number, number][]; done: boolean; shaped: number; rebroken: number };
 /// ```
 pub(super) struct PassOutput {
     /// What the measurements are valid for.
     pub(super) key: PassKey,
+    /// The post of the pass that measured them.
+    pub(super) generation: u64,
     /// Visual rows of each measured line.
     pub(super) lines: Vec<(usize, usize)>,
     /// The walk has reached both ends of the text.
@@ -189,7 +196,7 @@ impl PassOutbox {
             return;
         };
         match waiting.as_mut() {
-            Some(held) if held.key == more.key => {
+            Some(held) if held.key == more.key && held.generation == more.generation => {
                 held.lines.extend(more.lines);
                 held.done = more.done;
                 held.shaped += more.shaped;
@@ -223,6 +230,7 @@ impl PassOutbox {
         let rest = held.lines.split_off(limit);
         let taken = PassOutput {
             key: held.key,
+            generation: held.generation,
             lines: std::mem::replace(&mut held.lines, rest),
             done: false,
             shaped: std::mem::take(&mut held.shaped),
@@ -336,6 +344,7 @@ impl PassRun {
         shaper.trim_rows(self.focus);
         return PassOutput {
             key: self.job.key,
+            generation: self.job.generation,
             lines,
             done: self.done(),
             shaped,
