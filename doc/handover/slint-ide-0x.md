@@ -835,7 +835,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
   - Container bound and test time (branch `perf/ide-container-bounds`, worktree `.claude/worktrees/ide-container`, an
-    agent, 2026-10-18; landing: pending). The owner asked for a larger container and said not to bake numbers into the
+    agent, 2026-10-18; landed on main as a0d9cacaed, 2026-10-19). The owner asked for a larger container and said not to bake numbers into the
     repository; the coordinator then fixed the policy: 75 percent of the host, computed at run time, overridable.
     `bin/container-bounds.ts` is now the one place that computes the bound; `mise.toml` (the shared `[vars] cargo`
     header and the `image` task) and 17 `bin/inspect-*.mjs` scripts import it. Default: `floor(0.75 * CPUs)` (at least
