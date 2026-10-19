@@ -229,9 +229,13 @@ QJ1:
  Run measurement yourself before any quantitative claim or adjective ("small",
  "fast",
  "trivial").
-Unbuilt-fix difficulty or duration:
- drop the estimate,
- never label it.
+
+FRC:
+ Completion-time forecasts ("done today",
+ "takes a year") need evidence:
+ a rate measured across the whole task.
+Without it,
+ say you cannot tell and report measured progress.
 
 DVP:
  Target device available:
