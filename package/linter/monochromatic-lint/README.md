@@ -269,15 +269,172 @@ such as a line break inside a paragraph,
 can move a covered finding out of its directive's line;
 the next pass then reports it.
 
-## Closures
+## Closure check
 
-This linter has no closure rule.
+`rust/avoidable-closure` runs the type-aware Dylint lint `avoidable_closure` of
+`package/linter/monochromatic-lint-closure` over each Rust package that has a selected file.
 The syntax-only `rust/no-anonymous-functions` rule was removed on 2026-10-18,
 and a configuration that still names it fails as an unknown built-in rule (status `2`).
-Avoidable closures are reported by the type-aware Dylint lint `avoidable_closure` of
-`package/linter/monochromatic-lint-closure`,
-which a Rust package runs through its own `lint:closures` task.
 The decision and its consequences are recorded in `doc/decision/rust-closure-lint-dylint.md`.
+
+The rule is enabled by naming it in configuration,
+with the directory of the Dylint library in its `library` option,
+relative to the configuration file:
+
+```jsonc
+// monochromatic-lint.config.jsonc
+[
+  {
+    "files": ["**/*.rs"],
+    "rules": {
+      "rust/avoidable-closure": {
+        "severity": "warn",
+        "library": "package/linter/monochromatic-lint-closure"
+      }
+    }
+  },
+  // A later block raises one tree to error, and turns the rule off for tests.
+  {
+    "files": ["package/desktop-app/ide/**/*.rs"],
+    "rules": { "rust/avoidable-closure": { "severity": "error" } }
+  },
+  {
+    "files": ["**/tests/**/*.rs", "**/*_tests.rs"],
+    "rules": { "rust/avoidable-closure": { "severity": "off" } }
+  }
+]
+```
+
+The rule has no comment directive:
+`rust/avoidable-closure` declares itself unsuppressible,
+and `--rules` shows `"suppressible":false`.
+A closure that its callee requires carries rustc's own attribute instead
+(`#[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))]`),
+and an `expect` that suppresses nothing is reported by this rule as well,
+at the file's severity.
+
+### What a run does
+
+After the per-file rules,
+the linter groups the Rust files that select the rule by their owning `Cargo.toml` (the nearest ancestor)
+and checks each package once:
+
+1. It skips the package,
+   with a message on standard error,
+   when a prerequisite is missing (see "Prerequisite manifest").
+2. It runs `cargo dylint --path <library> --manifest-path <Cargo.toml> -- --locked --message-format json`
+   with `CARGO_NET_OFFLINE=true` and `DYLINT_RUSTFLAGS` set to request `avoidable_closure` and
+   `unfulfilled_lint_expectations` as warnings.
+   Dylint builds the library with the active toolchain.
+3. It reads cargo's JSON records,
+   keeps the two lint codes,
+   and reports each as a finding of `rust/avoidable-closure`
+   in the file,
+   with the severity that the file's own configuration selects.
+   A report in a file whose rule is off,
+   or in a file that the run was not asked to lint,
+   is dropped.
+   Positions use the Rust convention of this linter,
+   byte columns,
+   recomputed from the file.
+
+Only the library and the binaries are compiled (no `--all-targets`),
+so `#[cfg(test)]` modules,
+`tests/`,
+examples and benchmarks are not checked.
+Directories ending in `.fuzz` or `.bench` are skipped by name whatever the configuration says.
+A package that fails to build,
+a cargo failure without any diagnostic,
+a missing library directory,
+and an invalid
+prerequisite manifest are `core/processing-failure` findings (status `2`),
+because the result would be incomplete.
+The step does not run under `--fix` or `--stdin`.
+Closures in generated code (for example `slint::include_modules!` output below the build directory) are skipped by
+the lint itself.
+
+### Machine requirements and skips
+
+The check needs the shared nightly toolchain with `rustc-dev`,
+`cargo-dylint` and `dylint-link`.
+Without them,
+or without `cargo` itself,
+every package is skipped with one message:
+
+```text
+monochromatic-lint: rust/avoidable-closure skipped all 24 package(s): ...
+```
+
+The linter never fetches.
+Dylint resolves the dependencies of every platform in a lockfile,
+so a package whose cargo cache is cold is skipped with the command that fills it:
+`cargo fetch --locked` in the package directory.
+A skip is not a finding:
+the exit status is unaffected,
+`--silent` keeps the message,
+and `--max-warnings` does not count it.
+
+The `cargo` program is `cargo` on `PATH`,
+or the program named by the environment variable `MONOCHROMATIC_LINT_CARGO`.
+The variable belongs to the machine,
+never to repository configuration.
+The tests use it to run the whole step against a stub program.
+While it is set,
+the linter does not look for the compiler's `rustc-dev` component.
+
+### Prerequisite manifest
+
+A package that needs something before `cargo check` can compile it has a file
+`monochromatic-lint.prerequisites.jsonc` beside its `Cargo.toml`.
+It is a JSONC object whose keys are kinds from a fixed list that this program implements.
+A key that is not in the list is an error that names the list;
+the file never holds a command,
+so repository JSONC cannot choose an executable to run.
+Names are plain names (letters,
+digits,
+`.`,
+`_`,
+`+`,
+`-`,
+no separator,
+no leading dash).
+
+```jsonc
+// package/desktop-app/file-manager/monochromatic-lint.prerequisites.jsonc
+{
+  "pkg-config": ["gtk4"]
+}
+```
+
+The kinds:
+
+- `pkg-config`:
+  a list of module names;
+  each must satisfy `pkg-config --exists`.
+- `executables`:
+  a list of program names;
+  each must be found on `PATH` (looked up,
+  never run).
+- `qmake`:
+  `true`;
+  a Qt 6 `qmake6` or `qmake` must be on `PATH` or `QMAKE` must name an existing file,
+  and `QMAKE` is set for the build.
+- `ide-runtime-artifacts`:
+  `true`;
+  `target/debug/runtime/manifest.json` and `target/crate-licenses.json` must exist.
+  The linter builds in `target/dylint` and links both artifacts into it,
+  because the IDE's `build.rs` finds them relative to the build directory.
+- `android-ndk`:
+  `true`;
+  `cargo ndk-env --target arm64-v8a` must print the NDK variables,
+  which are set for the build,
+  and the check compiles for `aarch64-linux-android`.
+
+A missing prerequisite skips the package with a message that names it.
+There is no kind that runs a `mise` task:
+preparing a package can need containers and network,
+which a linter does not start,
+so a missing artifact names the task that makes it.
 
 ## Rust test sidecars
 
@@ -459,6 +616,19 @@ and cargo-mutants 27.1.0 exits with its timeout status whenever any mutant times
 `+=` replaced by `-=`,
 and `-=` replaced by `+=`,
 still test every counter.
+
+The closure check is tested in the same container against a stub `cargo`,
+a Rust program that the tests compile from `src/closure_stub_cargo.rs` and point `MONOCHROMATIC_LINT_CARGO` at:
+the unit tests cover the manifest grammar,
+the prerequisite probes,
+the report parsing and the mapping to findings,
+and `src/closure_binary_tests.rs` drives the built executable for the skip,
+failure and severity cases.
+`mise run //package/linter/monochromatic-lint:test:host` runs the one test that needs the real tools
+(`cargo-dylint`,
+the `rustc-dev` nightly and a warm cargo cache) over `package/cli/wg-quicker-exempt`,
+and compares it with an `--all-targets` run of the same library so that the absence of test findings is shown by a
+probe that could have found them.
 
 The fuzz sidecar includes counted Markdown/MDX fixtures,
 raw source,
