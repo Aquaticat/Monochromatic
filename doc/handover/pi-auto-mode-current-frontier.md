@@ -4,6 +4,213 @@
 
 Work is incomplete. Continue the queue without another readiness handoff.
 
+### Verified retry and current proof gaps, 2026-10-19
+
+The user replaces the unconditional action-score floor with an exact uncertainty-dependent rule:
+`unknown < 0.2` selects the uniquely highest-scored supported action;
+`unknown >= 0.2` requires that action to score `>= 0.6`, otherwise ask.
+Ties and unresolved winning labels still ask.
+The shared categorical admission function implements this rule in `c5fe88ee50`,
+with independent exact-boundary tests; `008066f50e` adds native incident and denial counterparts.
+Frozen `uncertainty-policy` passes both builds, full types, built policy tests and the full native fallback catalog.
+The exact `0.56/0.38/0.06` mode executes both calls with zero selections;
+the reversed denial executes none with zero selections.
+Scoped lint still reports findings and rebuilt negative controls remain required.
+The broader native semantic task fails its `none` assertion (`unresolved` versus `unspecified`)
+on both the new build and the previously frozen SDK combined baseline.
+This failure predates the uncertainty change; inspect the final fallback semantics before updating that assertion.
+
+The user requests a bounded trial of `https://openrouter.ai/respan/span-02`
+using scoped `AUTO_MODE_OPENROUTER_API_KEY`.
+Current anonymous endpoint metadata advertises `respan/span-02-20261015`, 131,072 context tokens
+and prompt pricing of USD 0.01 per million tokens.
+Fetches are retained as `span-02-endpoints.json`, `span-02-page.html` and `openrouter-decisions-current.md`.
+Next: call the documented Decisions endpoint with the original captured state string and mapped criteria,
+preserving original instruction text and distributions; compare recorded requests and an explicit prohibition control.
+This authorizes a trial, not changing the production provider.
+The trial completes as `span02-trial-gXoI7U`: all eight HTTP calls route as authored.
+The recorded escalation's three Span 02 repeats approve at `0.982006` to `0.98549366`;
+both explicit prohibition controls deny.
+Its original state SHA-256 matches the Luna incident exactly.
+See the [Span 02 package trial](../../package/pi-plugin/auto-mode/doc/span-02-trial.md).
+Keep provider adoption separate from the completed trial.
+
+The per-message fixed-prefix audit counts 636,425 complete input-budget validations,
+797,221 readable-policy freshness checks and 158,257 native finalizations across 58 prepared batches.
+The call amplification needs a source/runtime causal probe, rather than a logger-level workaround.
+Root accidentally searched the whole scratch tree on the host and interrupted it with SIGINT;
+the process audit confirms no matching `rg --files --glob` remains.
+Further scratch traversal must remain narrowly scoped or wholly container-bounded.
+
+Source MiMo's `b86bc331cd` restores real semantic case receipts and failure propagation:
+the prior fixture `verify()` swallowed assertions, so prior exit-zero producer results alone were insufficient.
+Source subsequently reports all nine real cases passing and is fixing the authored values helper's lint.
+Root allows Native's private wrapper mutation in dialog `091c826d-82db-4d89-b05c-42f77dbf7678`;
+the backend advances to 74 completed tools, so the UI response was actually consumed.
+
+The user corrected root's claim that omitting `APG` establishes a concrete authorization gap.
+That claim is retracted.
+`APG` states that auto-push is enabled; it does not authorize or prohibit the operation.
+Captured requests include `PX3`, which addresses local work and current-repository GitHub mutations.
+The measured absence of `APG` proves neither lost permission evidence nor the cause of the low operation score.
+The command's actual effects and its authorization remain separate questions.
+Do not broaden policy material or change the admission cutoff on the basis of that unsupported inference.
+Continue investigating the actual supplied permission evidence and unchanged-request variation.
+
+Unchanged request `assessment-request-72.json` is replayed three times through the built HTTP sender
+and maintained response decoder, without executing any proposed operation.
+All three replies are HTTP 200 and return `approve: 0.84`, `deny: 0.05`, `unknown: 0.11`.
+The observed cache headers are absent, which does not prove caching is absent.
+The subsequent correlation matches request 72 to a different original operation that also returned `0.84`.
+Receipt: `unchanged-decision-repeat-K6yOaJ/home/results.json`.
+The replay is sequential inside two-GiB/two-CPU bounds, with a ninety-second signal per call.
+
+Correlation `native-review-correlated-da1cYH/summary.json` identifies request 70 as the actual escalation:
+operation `60b75ac8dcf40ec043f41af2f37f28996ad0ebcd021e4b7db18c20e1d26694d7`,
+state `9f7fc7d610e6b2b3a7511b1ff5f1914d5e3f68308c36542d9229096a9dcbf44c`.
+Three unchanged replays of that exact request all reproduce HTTP 200 and
+`approve: 0.56`, `deny: 0.38`, `unknown: 0.06`.
+Receipt: `unchanged-decision-repeat-OVeEzC/home/results.json`.
+There is no observed variation in these repetitions; absent cache headers do not establish fresh inference.
+Request 74 belongs to another operation with an original `0.89` approval score.
+Do not describe differences between requests 70, 72 and 74 as unchanged-input variability.
+
+Frozen combined `sdk-fixture-combined-candidate-TBuHtp` at `ed094e76f2` passes fresh JS/native builds,
+full types, assessment transport units, the complete decision-fallback catalog and producer lifetime/retirement.
+Its twenty-file scope reports 111 warnings and fifteen errors.
+The HTTP fixture owns 81 warnings; the producer values, fixture and mutation own all other findings.
+Root and Native owner files have zero findings in this scope, which is not a full-package lint result.
+Receipt: `sdk-fixture-combined-results.json`.
+
+Fixed-prefix log audit `native-log-volume-GMtZqz/summary.json` parses 6,695,322 records
+from 1,044,769,605 bytes.
+Receipt-budget tags contribute 2,545,700 records/419,404,075 bytes;
+operation-currentness contributes 955,570 records/161,012,833 bytes.
+Native-host and readable-policy binding contribute another 263,320,014 bytes.
+Assessment-evidence tags contribute 14,009,349 bytes across 188 records.
+Most measured volume therefore comes from repeated short records.
+Trace actual call amplification before changing logger behavior or claiming a queue leak.
+The receipt-budget implementation validates internal counters, not incoming SDK message categories.
+Its policy-loader caller also serializes retained receipts repeatedly; measure its invocation boundary.
+
+Source checkpoints `7f482cf7af` and `ed094e76f2` port the authored fixture values to real SDK types
+and correct contextual widening of the mutable model input array.
+Source MiMo is verifying full types and the nine semantic cases, then completing its owned scope.
+Native MiMo is still proving private wrapper controls and owned lint.
+Its report of 99 other fixture compiler errors is not a green whole-package compiler result;
+require an explicitly isolated, zero-error compiler baseline before claiming those controls pass.
+Next assigned native repair after those controls: the HTTP fixture's 81 scoped warnings,
+using actual maintained protocol types and preserving real outbound-request assertions.
+
+Root checkpoints `73c798fd8b`, `8b77ad7bf4` and `23088d1d4a` preserve formatting,
+correct the wrapper type-check direction and keep aggregate members unknown during classification.
+Frozen combined `post-style-combined-candidate-ZwhD7d` at `8b77ad7bf4` passes both builds,
+full types, assessment transport units, all decision-fallback cases and producer lifetime/retirement.
+The first lifetime invocation failed in the scratch task allow-list before running a consumer;
+the registered follow-up actually passes both producer consumers.
+The first scope task attempted to rebuild the shared Oxlint config on a read-only mount.
+Giving only that config's generated `dist` a disposable writable mount makes the real task run.
+It reports 84 warnings/zero errors on sixteen files and 486 rules.
+Eighty-one warnings remain in the HTTP fixture; the other three are fixed in `23088d1d4a`
+and need fresh compilation/scope on a new frozen candidate.
+The handover and package documents render: 49 documents, zero broken local links.
+
+Decoded native decision records establish why the valid scoped commit escalated:
+review `0a9d99e3-941a-456a-8361-708b3a64f23d` receives an operation-decision estimate
+`approve: 0.56`, `deny: 0.38`, `unknown: 0.06` from `openai/gpt-6-luna-decisions`.
+The adopted 0.6 cutoff routes that estimate to manual review.
+This explains routing, not why the model doubts the authorized operation.
+Inspect the original supplied policy/conversation and unchanged-request variation before changing policy.
+Receipt `native-review-trace-NxM2p6/summary.json` scans 2,374 events with zero skipped records.
+The logger stores JSONL envelopes whose `message` contains the tagged decision JSON;
+looking for unescaped JSON in raw lines misses the evidence.
+The first 128-MiB and 512-MiB bounded scans hit their explicit byte limits and establish no absence.
+The completed scan reads 1,077,602,982 bytes within two-GiB/two-CPU bounds.
+Its two substantial private worker logs measure 569,531,445 and 475,233,446 bytes at inventory time.
+Measure emitting tags and duplication; disk volume is an open investigation, not proof of a logger queue leak.
+
+Source MiMo then escalates an ordinary explicit five-path `git add`, again on the older pinned artifact.
+Root inspects its whole prepared group and sends Allow for dialog
+`669aba43-edae-4f6d-97d7-0d4eec72d28b` to continue the already authorized work.
+The deleted MJS path was already staged; inspect the real tool result before prescribing repeat staging.
+No general claim of freedom from false escalations is supported.
+
+The bounded heap analyzer accepts the repeat snapshot and finds the actual 2,097,168-byte control backing store.
+Its largest request-body strings are 7,405,880 and 7,405,328 bytes,
+reachable respectively through observation `currentScope` and runtime `lastReview`.
+Other paths expose retained source-contribution/context copies and the chunk interner.
+Receipt `retained-heap-analysis-anchored-repeat-dvCipA/heap-summary.json` records the graph.
+These are strong graph paths, not dominator sizes or proof of the remaining growth cause.
+
+`cff20750f2` fixes temporary HTTP 503 classification within the existing bounded retry allowance.
+Separate candidate `unavailable-http-green-candidate-LTnUVp` passes fresh JS/native builds,
+full types, assessment transport units and the complete native decision-fallback catalog.
+Both unavailable approval and denial require three physical attempts, two successful assessments
+and zero selections; approval executes two calls while denial executes none.
+The rebuilt guard experiment removes only 503 classification, rebuilds JS/native,
+and fails the intended unit classification and native three-attempt assertion.
+Restoring and rebuilding makes both pass.
+Receipt `http-unavailable-built-guard-results.json` is complete with eight rows.
+
+The native worker's valid scoped commit still reaches manual approval on its older qualified artifact.
+Its capture inspection `replay-failure-ACHCyt/summary.json` finds 87 HTTP 200 responses and no other statuses.
+This is a separate unresolved escalation, not evidence that the HTTP 503 fix addresses it.
+The capture preloader saves request bodies and response statuses, not response bodies.
+Trace correlated decision diagnostics before assigning its cause.
+The root-pinned native artifact remains unchanged.
+
+The independent unchanged content-aligned repeat in `8MVcK9` completes 36 tools and exits zero/signal null.
+Heap samples after 12, 24 and 36 tools are respectively
+151,188,176/151,157,456/151,157,456 bytes,
+157,287,888/157,281,160/157,281,160 bytes and
+165,338,400/163,369,656/163,364,264 bytes.
+Its final heap snapshot is 104,143,256 bytes, collected within the same two-GiB/two-CPU container
+with the 262,144-element positive control visible to the inspector.
+Receipt: `anchored-pages-repeat-memory-b.log`.
+The preceding `Bi7rJj` repeat also completes 36 tools with zero tool errors/dialogs,
+ending at 163,341,560/163,334,896/163,336,232 bytes.
+These repeats still grow by about six MB per warmed twelve-call stage.
+Inspect the final snapshot against the fixed-page snapshot before claiming the remaining cause.
+
+Source checkpoint `20c90b6b18` adds SDK-authored fixture values with private correlation maps.
+Its MJS JSDoc is outside the maintained TypeScript include set.
+Source MiMo is now proving actual SDK assignment, preferably with a typed values helper,
+including mutable SDK content arrays and removal of undeclared `startedAt` fixture data.
+Native checkpoint `a60ea72be1` replaces the runtime-valued compatibility consumer with type-only assertions.
+Its wrapper assignment direction and optional factory argument require correction and private compiler controls.
+The worker briefly changed the shared wrapper to require `kind` as a negative control;
+root stopped that approach and confirmed the shared owner-types diff was restored.
+Run all negative mutations in disposable archives only.
+
+The source worker's invalid stage command named nonexistent `auto-life` and hid failure behind an OR fallback.
+Root stopped it; the eventual four-path checkpoint is preserved.
+One root RPC reply initially used a synthetic ID and extra `responseId`, so the backend ignored it.
+The installed RPC declaration requires `id` itself to equal the pending dialog ID.
+The corrected reply produces a real aborted tool result.
+Scratch `mimo-rpc-command.ts` now rejects mismatched IDs and `responseId` before submission.
+Do not trust a controller's locally cleared dialog state without backend progress.
+
+Actual bounded formatter/scope execution on eleven root-owned files reports 87 warnings and one error.
+Eighty-one warnings belong to `domain-fixture-assessment.mjs`.
+The remaining findings concern the retry error name/example, compact unit statements,
+nullable signal comparison and sanitized-message documentation.
+Root adopts the four formatter-modified files only after matching each saved original against main.
+Current source edits retain wrapping, rename the owned error with the required `Error` suffix,
+make optional cancellation explicit and document the sanitized message.
+Fresh combined build/types/scope and semantic verification are still required after checkpointing.
+The green HTTP candidate was formatted after the guard experiment and is no longer pristine `cff20750f2` source.
+The active causal memory artifact was not changed.
+
+Next queue: qualify both worker checkpoints; trace the valid scoped-commit escalation;
+inspect retained heap; reproduce and fix cancellation lifecycle stderr;
+probe genuine SDK option/stream compatibility; broaden adversarial page boundaries;
+continue full-package lint, architecture and character-size audits.
+SDK class/options and frozen-stream concerns are hypotheses requiring actual consumer probes,
+not established defects or permission to add incoming category gates.
+Root accidentally ran recursive capture-name discovery across the scratch archive on the host.
+It emitted 3,144 lines before truncation; do not repeat it.
+Known-file reads and bounded container traversal must cover log collection as well as child verification.
+
 ### Resumed after shutdown, 2026-10-19
 
 `1896dbce7b` extends the maintained sequence-capacity regression to unique catalog text,

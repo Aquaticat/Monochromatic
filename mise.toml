@@ -953,8 +953,9 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 # Step 1 fans out (via the JS cross-package fanout, not the native glob) to every
 # package's own `lint`, whose intra-package fanout already runs that package's
 # lint:oxlint, lint:types, lint:detekt, lint:clippy, lint:tofu. Step 2 runs only
-# the repo-wide linters that have NO per-package task: dprint, and
-# monochromatic-lint for Rust, Markdown and MDX. lint:detekt is deliberately
+# the repo-wide linters that have NO per-package task: dprint,
+# monochromatic-lint for Rust, Markdown and MDX, and lint:skills for SKILL.md
+# frontmatter. lint:detekt is deliberately
 # absent from step 2: every package carrying it also has a `lint` reached by
 # step 1, so listing it here too would invoke each package's lint:detekt twice.
 [tasks."lint"]
@@ -962,7 +963,7 @@ description = "Lint"
 shell = "node --input-type=module-typescript -e"
 run = [
   "{{vars.fanout_packages}}",
-  { tasks = ["lint:dprint", "lint:monochromatic-lint"] },
+  { tasks = ["lint:dprint", "lint:monochromatic-lint", "lint:skills"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -988,6 +989,102 @@ description = "Lint Rust, Markdown and MDX with monochromatic-lint, optionally r
 # No usage spec: mise appends post-`--` args to the command as a real argv vector
 # (preserving spaces). The linter walks `.` when no paths are given.
 run = "monochromatic-lint"
+
+# Validates SKILL.md frontmatter in the canonical .agents/skills root: every block
+# must strict-YAML parse with the `yaml` package Pi's skill loader parses with, and
+# carry the Agent Skills spec fields that loader enforces (kebab-case name matching
+# the directory, non-empty description of at most 1024 characters). The strict parse
+# guards the multiline implicit-key shape that made Pi skip skills whole
+# (doc/troubleshooting/yaml-multiline-implicit-key.md). Post-`--` paths select other
+# skill roots, e.g. `mise run lint:skills -- ~/.agents/skills`. Exits 1 on problems;
+# unknown frontmatter keys only warn, because other skill consumers legitimately
+# carry their own keys.
+[tasks."lint:skills"]
+description = "Validate SKILL.md frontmatter: strict-YAML parse plus Agent Skills spec fields"
+usage = 'arg "[roots]" var=#true help="Skill roots to check (default .agents/skills)"'
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.parse_usage_args}}
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { parse } from 'yaml';
+
+const ALLOWED_KEYS = new Set([
+  'name',
+  'description',
+  'license',
+  'compatibility',
+  'metadata',
+  'allowed-tools',
+  'owner',
+  'tags',
+  'disable-model-invocation',
+]);
+const NAME_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/u;
+
+const passedRoots = parseUsageArgs(process.env.usage_roots ?? '');
+const roots = passedRoots.length > 0 ? passedRoots : ['.agents/skills'];
+const problems = [];
+const warnings = [];
+let checked = 0;
+
+for (const root of roots) {
+  const rootDir = resolve(root);
+  if (!existsSync(rootDir)) {
+    problems.push(`${root}: no such skill root`);
+    continue;
+  }
+  for (const entry of readdirSync(rootDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const file = join(rootDir, entry.name, 'SKILL.md');
+    if (!existsSync(file)) continue;
+    checked += 1;
+    const text = readFileSync(file, 'utf8');
+    const block = /^---\r?\n([\s\S]*?)\r?\n---/u.exec(text);
+    if (block === null) {
+      problems.push(`${file}: no closed --- frontmatter block`);
+      continue;
+    }
+    let data;
+    try {
+      data = parse(block[1]);
+    } catch (error) {
+      problems.push(`${file}: ${error.code ?? error.name}: ${String(error.message).split('\n')[0]}`);
+      continue;
+    }
+    if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+      problems.push(`${file}: frontmatter is not a mapping`);
+      continue;
+    }
+    const name = data.name;
+    const description = data.description;
+    if (typeof name !== 'string' || name.length === 0) {
+      problems.push(`${file}: missing name`);
+    } else {
+      if (!NAME_PATTERN.test(name)) problems.push(`${file}: name ${name} is not kebab-case`);
+      if (name.length > 64) problems.push(`${file}: name is ${name.length} characters (max 64)`);
+      if (name !== entry.name) {
+        problems.push(`${file}: name ${name} does not match directory ${entry.name}`);
+      }
+    }
+    if (typeof description !== 'string' || description.length === 0) {
+      problems.push(`${file}: missing description`);
+    } else if (description.length > 1024) {
+      problems.push(`${file}: description is ${description.length} characters (max 1024)`);
+    }
+    for (const key of Object.keys(data)) {
+      if (!ALLOWED_KEYS.has(key)) warnings.push(`${file}: unknown frontmatter key ${key}`);
+    }
+  }
+}
+
+for (const problem of problems) console.error(problem);
+for (const warning of warnings) console.error(`warning: ${warning}`);
+console.log(
+  `lint:skills: ${checked} SKILL.md files checked, ${problems.length} problems, ${warnings.length} warnings`,
+);
+if (problems.length > 0) process.exitCode = 1;
+'''
 
 [tasks."lint:detekt"]
 description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-linter), fanned out per package"
@@ -1393,6 +1490,7 @@ _.path = [
   "package/desktop-app/electron-infra/node_modules/.bin",
   "package/desktop-app/file-manager-electron/node_modules/.bin",
   "package/dev-script/deps-update/node_modules/.bin",
+  "package/dev-script/file-enforcer/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
   "package/mcp/mvm/node_modules/.bin",
   "package/module/conf-fork.fuzz/node_modules/.bin",
@@ -1419,6 +1517,7 @@ _.path = [
   "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
+  "package/stub/throwing/node_modules/.bin",
   "package/translation-repair/document-structure/node_modules/.bin",
   "package/translation-repair/insertion/node_modules/.bin",
   "package/translation-repair/slice-reading/node_modules/.bin",

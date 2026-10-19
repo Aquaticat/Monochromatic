@@ -7,7 +7,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { assessmentHttpFailure, } from './assessment-http-failure.ts';
 import {
   AssessmentTransportError,
-  AssessmentRequestFailure
+  AssessmentRequestFailureError
 } from './assessment-failure.ts';
 
 export { AssessmentTransportError } from './assessment-failure.ts';
@@ -169,7 +169,7 @@ export function createAssessmentHttpSender({
    
    @returns original complete HTTP response
    
-   @throws AssessmentRequestFailure for active fetch TypeError or temporary HTTP 503 response
+   @throws AssessmentRequestFailureError for active fetch TypeError or temporary HTTP 503 response
    
    @throws original error for cancellation or a nontransport failure
    */
@@ -195,9 +195,10 @@ export function createAssessmentHttpSender({
     }
     catch (error) {
       dl.debug('assessment HTTP invocation failed');
-      if ((!options.signal
-        ?.aborted) && (error instanceof TypeError))
-        throw new AssessmentRequestFailure('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
+      if ((options.signal
+        ?.aborted
+        !== true) && (error instanceof TypeError))
+        throw new AssessmentRequestFailureError('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
       throw error;
     }
   }
@@ -267,12 +268,15 @@ export function createAssessmentHttpSender({
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
     if (response.status !== limits.successfulStatus) {
+      /**
+       Only sanitized HTTP evidence crosses the owned failure boundary.
+       */
       const message = assessmentHttpFailure({
           raw,
           status: response.status,
       },);
       if (response.status === limits.unavailableStatus)
-        throw new AssessmentRequestFailure(message);
+        throw new AssessmentRequestFailureError(message);
       throw new AssessmentTransportError(message);
     }
       signal.throwIfAborted();

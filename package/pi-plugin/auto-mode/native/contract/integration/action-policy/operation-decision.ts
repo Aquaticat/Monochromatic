@@ -16,7 +16,12 @@ import type { QuestionEvidence } from '../../lifecycle/claim-evidence-batch-sele
 /**
  Malformed original evidence cannot become an execution decision.
  */
-export class OperationDecisionEvidenceError extends Error {}
+export class OperationDecisionEvidenceError extends Error {
+  /**
+   Diagnostic identity distinguishes rejected evidence from unresolved model estimates.
+   */
+  override readonly name = 'OperationDecisionEvidenceError';
+}
 
 /**
  Decision logs contain choices and lifecycle events, never original command or policy text.
@@ -26,7 +31,7 @@ const l = tagged({ tag: 'auto-mode-operation-decision' });
 //region One distinct fallback question shares the existing judgment's lifetime and transport allowance.
 
 /**
- Authenticate the fallback estimate before applying the already adopted categorical operating cutoff.
+ Authenticate the fallback estimate before applying the user's uncertainty-dependent action rule.
 
  @param record - evidence authenticated by the original judgment
 
@@ -70,7 +75,7 @@ function resolveOperationDecision(record: QuestionEvidence): GuardOutcome {
     value: answer.value,
     labels: operationDecisionLabels
   })) {
-    rl.debug('whole-operation decision remains uncertain under the adopted cutoff');
+    rl.debug('whole-operation decision remains uncertain under the action selection rule');
     return Object.freeze({
       state: 'unresolved',
       reason: 'The decision model could not resolve the complete operation with the current instructions and user authorization'
@@ -100,6 +105,11 @@ function resolveOperationDecision(record: QuestionEvidence): GuardOutcome {
  @returns decision and retained original evidence for currentness and audit checks
 
  @throws OperationDecisionEvidenceError for an incomplete or foreign evidence set
+
+ @example
+ ```ts
+ const decision = await reviewOperationDecision(judgment);
+ ```
  */
 export async function reviewOperationDecision(judgment: Pick<JudgmentPublicAPI,
   'claimOperationDecision' | 'issue' | 'assess' | 'captureBatchEvidence' | 'assertBatchEvidence'
@@ -138,11 +148,11 @@ export async function reviewOperationDecision(judgment: Pick<JudgmentPublicAPI,
   /**
    Array length is checked independently of the retained original member.
    */
-  const record = evidence[0];
+  const [record] = evidence;
   if (record === undefined)
     throw new OperationDecisionEvidenceError('Whole-operation decision evidence is absent');
   /**
-   The log retains the cutoff result alongside the original distribution.
+   The log retains the action-selection result alongside the original distribution.
    */
   const outcome = resolveOperationDecision(record);
   recordDecision({

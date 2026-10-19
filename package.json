@@ -46,7 +46,8 @@
     "oxlint-tsgolint": "catalog:",
     "rolldown": "catalog:",
     "showify": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "yaml": "catalog:"
   },
   "license": "LGPL-3.0-or-later AND CC-BY-SA-4.0",
   "private": true,

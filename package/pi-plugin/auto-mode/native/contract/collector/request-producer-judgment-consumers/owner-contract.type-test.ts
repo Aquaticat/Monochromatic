@@ -18,7 +18,7 @@ type AssertAssignable<
 /**
  Owner factory options carry the genuine judgment constructor slot.
  */
-type OwnerFactoryOptions = Parameters<typeof createRequestProducerOwner>[0];
+type OwnerFactoryOptions = NonNullable<Parameters<typeof createRequestProducerOwner>[0]>;
 
 /**
  Owner judgment constructor slot accepts the configured judgment builders.
@@ -42,14 +42,14 @@ export type GenuineJudgmentBinding = AssertAssignable<
  Kind-free public invocations must fit the main-agent wrapper entry.
  */
 export type MainAgentWrapperInput = AssertAssignable<
-  Omit<ProducerIssuance, 'kind'>,
-  Parameters<OwnerSurface['fromAgentLoop']>[0]
+  Parameters<OwnerSurface['fromAgentLoop']>[0],
+  Omit<ProducerIssuance, 'kind'>
 >;
 
 /**
  Kind-free public invocations must fit the auxiliary-summary wrapper entry.
  */
 export type AuxiliaryWrapperInput = AssertAssignable<
-  Omit<ProducerIssuance, 'kind'>,
-  Parameters<OwnerSurface['fromAuxiliarySummary']>[0]
+  Parameters<OwnerSurface['fromAuxiliarySummary']>[0],
+  Omit<ProducerIssuance, 'kind'>
 >;

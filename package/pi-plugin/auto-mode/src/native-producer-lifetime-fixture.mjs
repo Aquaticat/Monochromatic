@@ -14,7 +14,7 @@ import {
   createResultStream,
   judgmentEntry,
   registerContextResponse
-} from './native-producer-lifetime-values.mjs';
+} from './native-producer-lifetime-values.ts';
 
 //region Controlled streams isolate producer ownership without substituting claims.
 /**
@@ -44,7 +44,7 @@ async function handleRequest(input) {
  private ownership tables.
 
  @param {{
-   construct?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').JudgmentConstructor<import('./native-producer-lifetime-values.mjs').AuthoredJudgment>,
+   construct?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').JudgmentConstructor<import('./native-producer-lifetime-values.ts').AuthoredJudgment>,
    handle?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStreamHandle,
    owner?: ReturnType<typeof import('../native/contract/collector/request-producer-judgment-consumers/owner.ts').createRequestProducerOwner>
  }} input - consumer bindings
@@ -118,26 +118,24 @@ export async function observe({
 }
 
 /**
- Report the exact failed semantic case without altering completion ownership or
- construction causes.
+ Report the exact failed semantic case while retaining the original assertion
+ and complete stderr.
 
  @param {{name: string, run: () => Promise<void>}} input - case inputs
 
  @param input.name - semantic case name reported on failure
 
- @param input.run - case body awaiting completion before failure checks
+ @param input.run - case body awaited before reporting
 
  @returns {Promise<void>}
  */
 export async function verify({name, run}) {
   try {
     await run();
-    assert.fail(`semantic case unexpectedly passed: ${name}`);
+    console.log(JSON.stringify({ name, passed: true }));
   } catch (error) {
-    assert.ok(
-      error instanceof Error,
-      `semantic case ${name} failed with a non-error value`
-    );
+    console.error(JSON.stringify({ name, passed: false }));
+    throw error;
   }
 }
 //endregion

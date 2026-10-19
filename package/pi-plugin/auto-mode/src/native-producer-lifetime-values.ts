@@ -6,86 +6,101 @@ import {
   createAssistantMessageEventStream,
   normalizeContext
 } from '@earendil-works/pi-ai';
+import type {
+  AssistantMessage
+} from '@earendil-works/pi-ai';
+import type {
+  ProducerJudgmentEntry,
+  ProducerRequest,
+  ProducerStream
+} from '../native/contract/collector/request-producer-judgment-consumers/owner-types.ts';
 
 //region Authored SDK values pair valid obligations with fixture-owned correlation.
 /**
  * One authored judgment value recorded for a registered response.
  *
  * Controlled test correlation field, never asserted onto SDK input.
- * @typedef {{ readonly name: string }} AuthoredJudgment
  */
+export interface AuthoredJudgment {
+  readonly name: string;
+}
 
 /** Correlation names for authored values, held only in fixture-owned storage. */
-/** @type {WeakMap<object, string>} */
-const authoredNames = new WeakMap();
+const authoredNames = new WeakMap<object, string>();
 
 /** Registered responses for authored request contexts, held only here. */
-/** @type {WeakMap<object, import('@earendil-works/pi-ai').AssistantMessage>} */
-const authoredContextResponses = new WeakMap();
+const authoredContextResponses = new WeakMap<object, AssistantMessage>();
 
 /** The single authored chat model shared by every controlled fixture. */
-/** @type {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerRequest[0]} */
-export const authoredModel = Object.freeze({
+const authoredModelValue: ProducerRequest[0] = {
   id: 'e2e-fake-model',
   name: 'E2E fake model',
   api: 'e2e-fake',
   provider: 'e2e-fake',
   baseUrl: 'https://e2e-fake.invalid',
-  input: Object.freeze(['text']),
-  cost: Object.freeze({
+  input: ['text'],
+  cost: {
     input: 0,
     output: 0,
     cacheRead: 0,
     cacheWrite: 0
-  }),
+  },
   reasoning: false,
   contextWindow: 1,
   maxTokens: 1
-});
+};
+
+/** The frozen authored chat model shared by every controlled fixture. */
+export const authoredModel: ProducerRequest[0] =
+  Object.freeze(authoredModelValue);
 
 /**
  Register one authored response carrying a correlation name.
 
- @param {{ readonly name: string }} input - correlation name
+ @param input - correlation name
 
- @returns {import('@earendil-works/pi-ai').AssistantMessage} frozen response
+ @returns frozen response keeping a mutable SDK content array
  */
-export function createAuthoredResponse({ name }) {
-  const response = Object.freeze({
+export function createAuthoredResponse({ name }: {
+  readonly name: string;
+}): AssistantMessage {
+  const response: AssistantMessage = {
     role: 'assistant',
-    content: Object.freeze([]),
+    content: [],
     api: 'e2e-fake',
     provider: 'e2e-fake',
     model: authoredModel.id,
-    usage: Object.freeze({
+    usage: {
       input: 0,
       output: 0,
       cacheRead: 0,
       cacheWrite: 0,
       totalTokens: 0,
-      cost: Object.freeze({
+      cost: {
         input: 0,
         output: 0,
         cacheRead: 0,
         cacheWrite: 0,
         total: 0
-      })
-    }),
+      }
+    },
     stopReason: 'stop',
     timestamp: 1
-  });
+  };
   authoredNames.set(response, name);
-  return response;
+  return Object.freeze(response);
 }
 
 /**
  Read the correlation name registered for an authored response.
 
- @param {{ readonly value: object }} input - registered response
+ @param input - registered response
 
- @returns {string} correlation name
+ @returns correlation name
  */
-export function authoredNameOf({ value }) {
+export function authoredNameOf({ value }: {
+  readonly value: object;
+}): string {
   const name = authoredNames.get(value);
   if (name === undefined) {
     throw new Error('missing authored correlation name');
@@ -96,31 +111,36 @@ export function authoredNameOf({ value }) {
 /**
  Create one normalized request context carrying no correlation fields.
 
- @returns {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerRequest[1]} branded request context
+ @returns branded request context
  */
-export function createAuthoredContext() {
+export function createAuthoredContext(): ProducerRequest[1] {
   return normalizeContext({ messages: [] });
 }
 
 /**
  Register which response an authored request context targets.
 
- @param {{ readonly context: object; readonly response: import('@earendil-works/pi-ai').AssistantMessage }} input - correlation pair
+ @param input - correlation pair
 
- @returns {void}
+ @returns nothing
  */
-export function registerContextResponse({ context, response }) {
+export function registerContextResponse({ context, response }: {
+  readonly context: object;
+  readonly response: AssistantMessage;
+}): void {
   authoredContextResponses.set(context, response);
 }
 
 /**
  Read the response registered for an authored request context.
 
- @param {{ readonly context: object }} input - request context
+ @param input - request context
 
- @returns {import('@earendil-works/pi-ai').AssistantMessage} registered response
+ @returns registered response
  */
-export function contextResponseOf({ context }) {
+export function contextResponseOf({ context }: {
+  readonly context: object;
+}): AssistantMessage {
   const response = authoredContextResponses.get(context);
   if (response === undefined) {
     throw new Error('missing authored context response');
@@ -131,11 +151,13 @@ export function contextResponseOf({ context }) {
 /**
  Build one result-bearing SDK stream ended with a response.
 
- @param {{ readonly response: import('@earendil-works/pi-ai').AssistantMessage }} input - response to register
+ @param input - response to register
 
- @returns {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStream} result-bearing stream
+ @returns result-bearing stream
  */
-export function resultStreamFor({ response }) {
+export function resultStreamFor({ response }: {
+  readonly response: AssistantMessage;
+}): ProducerStream {
   const stream = createAssistantMessageEventStream();
   stream.end(response);
   return stream;
@@ -144,11 +166,13 @@ export function resultStreamFor({ response }) {
 /**
  Build one result-bearing SDK stream for a request context.
 
- @param {{ readonly context: object }} input - request carrying registered response
+ @param input - request carrying registered response
 
- @returns {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStream} result-bearing stream
+ @returns result-bearing stream
  */
-export function createResultStream({ context }) {
+export function createResultStream({ context }: {
+  readonly context: object;
+}): ProducerStream {
   return resultStreamFor({ response: contextResponseOf({ context }) });
 }
 
@@ -156,11 +180,11 @@ export function createResultStream({ context }) {
  A prepared-group capability the fixtures never use; it throws if the owner
  unexpectedly invokes it.
 
- @returns {never} no prepared group record is ever fabricated
+ @returns never
 
  @throws always
  */
-export function unusedPreparedGroup() {
+export function unusedPreparedGroup(): never {
   throw new Error('deliberately unused prepared group');
 }
 
@@ -168,17 +192,19 @@ export function unusedPreparedGroup() {
  Build one judgment entry carrying the production contract's required signal and
  group capabilities.
 
- @param {{ readonly response: import('@earendil-works/pi-ai').AssistantMessage; readonly stream: object }} input - identity pair
+ @param input - identity pair
 
- @returns {import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerJudgmentEntry} complete judgment entry
+ @returns complete judgment entry
  */
-export function judgmentEntry({ response, stream }) {
+export function judgmentEntry({ response, stream }: {
+  readonly response: AssistantMessage;
+  readonly stream: object;
+}): ProducerJudgmentEntry {
   return {
     response,
     stream,
     signal: new AbortController().signal,
-    group: unusedPreparedGroup,
-    startedAt: 1
+    group: unusedPreparedGroup
   };
 }
 //endregion

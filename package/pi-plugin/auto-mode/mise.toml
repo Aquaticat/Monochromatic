@@ -163,6 +163,7 @@ run = [
 [tasks."test:semantic-operating-policy"]
 description = "Verify adopted native categorical admission through the built package"
 run = [
+  "node src/semantic-operating-choice.unit.test.ts",
   "node src/semantic-operating-policy.unit.test.ts",
   "node src/semantic-admission-scope.unit.test.ts",
 ]
@@ -976,6 +977,8 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs unknown",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low-unknown-approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low-unknown-deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transport",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs malformed",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs initial-failure",

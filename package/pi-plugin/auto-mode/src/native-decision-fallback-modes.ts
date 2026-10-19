@@ -26,6 +26,8 @@ const DECISION_FALLBACK_MODES: readonly DecisionFallbackMode[] = [
   'unavailable-deny',
   'unknown',
   'low',
+  'low-unknown-approve',
+  'low-unknown-deny',
   'transport',
   'malformed',
   'initial-failure',
@@ -46,6 +48,7 @@ const DECISION_FALLBACK_MODES: readonly DecisionFallbackMode[] = [
  */
 const AUTO_APPROVE_MODES: readonly DecisionFallbackMode[] = [
   'approve',
+  'low-unknown-approve',
   'transient',
   'unavailable',
   'initial-failure',
@@ -59,6 +62,7 @@ const AUTO_APPROVE_MODES: readonly DecisionFallbackMode[] = [
  */
 const AUTO_DENY_MODES: readonly DecisionFallbackMode[] = [
   'deny',
+  'low-unknown-deny',
   'transient-deny',
   'unavailable-deny',
   'prohibition'
@@ -69,6 +73,7 @@ const AUTO_DENY_MODES: readonly DecisionFallbackMode[] = [
  */
 const ALLOWED_EXECUTION_MODES: readonly DecisionFallbackMode[] = [
   'approve',
+  'low-unknown-approve',
   'transient',
   'unavailable',
   'unknown',
