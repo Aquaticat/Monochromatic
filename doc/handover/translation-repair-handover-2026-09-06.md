@@ -265,6 +265,16 @@ its "Next" list is still the queue the merge went ahead of.
   a corrective commit comment names `2e191861cc` as the fix.
 - The scratch worktrees `w198` to `w200` were removed;
   `w198` held a superseded merge attempt (`19f6aa50ec`, never pushed) whose parents are both in `main`.
+- After a shutdown the branch's handover commit `e75f4f48d5` met a `main` that had moved again,
+  so `main` pinned at `b1df6cfa0e` was merged in as `ddcd9992eb`
+  (changes exactly the 7 paths `main` changed, each identical to `main`'s version)
+  and pushed to `main` and `translation-repair-rebased`.
+  A busy `main` can move between two reads of `origin/main`:
+  pin the commit once and use it for the merge-tree check, the path list and the merge.
+- Issues 527, 541 and 542, which their status comments kept open until the branch reached `main`,
+  were closed on 2026-10-19 with comments naming the merges and the commits on `main`.
+- The raised process limit is in effect: after the restart `ulimit -u` reads 32768
+  (`/etc/security/limits.d/99-user-nproc.conf`).
 - The main checkout's local `main` was left at `7bbdd00225` (behind `origin/main`),
   because another session has uncommitted auto-mode work there; it needs a pull before that session pushes.
 
@@ -274,7 +284,6 @@ its "Next" list is still the queue the merge went ahead of.
 2.  Each `monochromatic-lint` release moves `mise.lock`:
     write `PINNED_LINT_BINARY_VERSION` against the new release in the same change,
     after its unit suite passes with the real program.
-3.  The owner's raised user task limit (32768) applies after a logout and login.
 
 ## Repository state
 
