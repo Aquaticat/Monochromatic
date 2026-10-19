@@ -542,6 +542,10 @@ before the other queued work.
     into named invariant throws, test first;
     one gate; land; post a corrective comment on the landed copy of `77823411c4`,
     whose body says six guards for the nine mutations it pins.
+    All of it is done: gate g105 on `2445ccc7b0` was green (145 steps exit 0, suite 2532 pass and 0 fail),
+    the round landed as far as `5c1d1aef1b` with the tree identical to the gated one,
+    the corpus check found no page that reaches the new throws (184 texts), and the correction is
+    commit comment 205562500 on `5a0fe85281`.
     In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
     external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
     and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
