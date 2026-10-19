@@ -34,14 +34,18 @@ fn the_finish_of_a_replaced_pass_leaves_the_newer_pass_open() {
     worker.pass_generation = 2;
     worker.pass_open = true;
     worker.shared.outbox.push(finished(1, true));
-    let taken = worker.take_pass(usize::MAX).expect("the stale finish is taken");
+    let taken = worker
+        .take_pass(usize::MAX)
+        .expect("the stale finish is taken");
     assert!(taken.done && taken.generation == 1);
     assert!(
         worker.is_busy(),
         "the finish of the replaced pass closed the newer pass, so the window would stop polling for it"
     );
     worker.shared.outbox.push(finished(2, true));
-    worker.take_pass(usize::MAX).expect("the real finish is taken");
+    worker
+        .take_pass(usize::MAX)
+        .expect("the real finish is taken");
     assert!(
         !worker.is_busy(),
         "the finish of the newest pass left the pass open"

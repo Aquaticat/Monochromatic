@@ -917,13 +917,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     120 s, terminate after 15 periods), proved in the container by `mise run test:nextest-config`.
     Rules for agents: run only the tests a change can reach, never `test` and `test:wrap` together (the second repeats
     the first), and use the filter (`mise run //package/desktop-app/ide:test 'test(/wrap/)'`).
-    Flaky test seen once, not caused by this branch: at the old 2 CPU bound, `test:native` failed
-    `wrap_clip_tests::revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view` ("the last line wraps to 1 rows",
-    `src/native/wrap_clip_tests.rs:294`) after 125 s, and passed in every other measured run of the suite (old code
-    at the old and the raised bound, new code at the default bound three times). Its precondition `settled(&opened)`
-    does not wait for the background measurement to reach the last line, so a slow worker leaves that line at one
-    row. It is a race of the test, found because the 2 CPU run was slow; fixing it (wait for the measurement, or
-    build the map by hand) is open.
+    The flaky `wrap_clip_tests::revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view` is fixed on
+    `fix/ide-wrap-clip-flake`: `TileWorker::take_pass` closed the pass on the finishing output of a replaced pass, so
+    the window stopped polling for the newer one (about 1 failure in 100 runs at one CPU before, 0 in 1500 after).
     Gates of this branch, re-run by the coordinator after merging `origin/main` (default bound, each task alone):
     `test:bin`, `test:nextest-config`, `lint:rustfmt`, `lint:clippy`, `lint:closures` (nightly) and `test:wrap` (15 and
     67 tests, 8 s) passed. Not re-run, because nothing they exercise changed (the only Rust change is
