@@ -400,3 +400,30 @@ and 28 rows fail with the `because=` clause removed.
 The throws for an unwritable record have 3 tests that fail with the throws replaced by returns.
 A reason that the record never held is outside what it can see,
 and no scan finds another log line that reports nothing done without a reason.
+
+## Provider names in failures
+
+What happened:
+every provider's HTTP refusal was built as `SyntheticHttpError` and printed as Synthetic's,
+and the credential line's remedy named no provider (ledger B692);
+the request-size refusal,
+named for Synthetic and measured on Synthetic's gateway alone,
+was raised for a reply from any provider whose failures pass through the shared helper (ledger B693).
+
+The rule:
+a failure carries the provider that served the call,
+passed by the client at the construct site,
+with no default.
+A class,
+constant or message named for one provider,
+or measured on one provider,
+is gated on that provider where the decision is made,
+not only in its name.
+When a helper becomes shared across providers,
+every provider-named class it builds is read for that gate.
+
+What enforces it:
+`ProviderHttpError` requires `provider`,
+so a construct site without one does not type-check.
+`request-size-refusal.unit.test.ts` fails when a Charm Hyper reply with every size signal is read as Synthetic's cap.
+No scan finds another provider-named class built from a shared helper.
