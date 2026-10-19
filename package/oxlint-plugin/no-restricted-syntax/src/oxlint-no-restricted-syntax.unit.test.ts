@@ -15,14 +15,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
 import {
   fixtureConfigPath,
   fixturePackageRoot,
   fixtureSourceRoot,
   type OxlintRuleDiagnostic as OxlintDiagnostic,
-  OXLINT_PLUGIN_TEST_ROOT as ROOT,
   resolveFixtureTarget,
   runOxlintFixture,
   uniqueRuleCodes as uniqueRules,
@@ -207,31 +205,13 @@ async function fixGeneratedSource(
     fileName: 'prefer-error-is-error.fix.ts',
     source,
   },);
-  /**
-   Fix flags passed to oxlint.
-   */
-  const fixFlags = fixSuggestions ? [
-    '--fix',
-    '--fix-suggestions',
-  ] : ['--fix',];
-  try {
-    await spawn(
-      'oxlint',
-      [
-        ...fixFlags,
-        '--format',
-        'json',
-        '-c',
-        FIXTURE_CONFIG,
-        fixture.filePath,
-      ],
-      { cwd: ROOT, },
-    );
-  }
-  catch (error: unknown) {
-    if ((!((typeof error) === 'object')) || (error === null) || (!('stdout' in error)))
-      throw error;
-  }
+  await runOxlintFixture({
+    codePrefix: 'no-restricted-syntax(',
+    configFlag: '-c',
+    fixtureConfig: FIXTURE_CONFIG,
+    target: fixture.filePath,
+    fix: fixSuggestions ? 'fixes-and-suggestions' : 'fixes',
+  },);
   return readFileSync(
     fixture.filePath,
     'utf8',

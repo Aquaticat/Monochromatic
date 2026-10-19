@@ -20,11 +20,9 @@ import {
   fixtureConfigPath,
   fixtureSourceRoot,
   type OxlintRuleDiagnostic,
-  OXLINT_PLUGIN_TEST_ROOT as ROOT,
   resolveFixtureTarget,
   runOxlintFixture,
 } from '@monochromatic-dev/oxlint-plugin-test-support/ts';
-import spawn from 'nano-spawn';
 
 //region Helpers
 
@@ -220,6 +218,7 @@ function scratchSource(
 
 /**
  Runs `oxlint --fix` with one rule on scratch source and returns the fixed text.
+ A plugin that crashes during the run fails it, so the text is never an untouched file read back after a crash.
 
  @example
  ```ts
@@ -243,27 +242,14 @@ async function fixedSource(
     source,
     typed,
   },);
-  try {
-    await spawn(
-      'oxlint',
-      [
-        '--fix',
-        '--format',
-        'json',
-        '-c',
-        ruleConfig(rule,),
-        scratch.filePath,
-      ],
-      {
-        cwd: ROOT,
-        env: refuseSpawn ? { NODE_OPTIONS: `--import=${REFUSE_NATIVE_SPAWN}`, } : {},
-      },
-    );
-  }
-  catch (error: unknown) {
-    if ((!((typeof error) === 'object')) || (error === null) || (!('stdout' in error)))
-      throw error;
-  }
+  await runOxlintFixture({
+    codePrefix: 'no-restricted-syntax(',
+    configFlag: '-c',
+    fixtureConfig: ruleConfig(rule,),
+    target: scratch.filePath,
+    fix: 'fixes',
+    ...refuseSpawn ? { environment: { NODE_OPTIONS: `--import=${REFUSE_NATIVE_SPAWN}`, }, } : {},
+  },);
   return readFileSync(
     scratch.filePath,
     'utf8',
