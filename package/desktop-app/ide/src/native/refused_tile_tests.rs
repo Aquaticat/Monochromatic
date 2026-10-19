@@ -1,7 +1,8 @@
 //! A tile the painter refuses never blanks the source:
 //!  the window thread keeps the picture last painted and names the failure,
 //!  and a job the worker failed is freed so the next placement asks for the tile again;
-//!  and a worker tile the window discards still moves the window with the heights it measured.
+//!  and a worker tile the window discards still moves the window with the heights it measured,
+//!  and a tile the shaper had to cut carries a stamp that names the clip it was cut to.
 //! Nothing here waits on the window thread:
 //! every wait advances timers and lets the workers answer.
 
@@ -12,9 +13,11 @@
 use super::{
     AppWindow,
     overscan_tile_tests::scroll_to,
+    render::{Paint, job, stamp_for},
     tall_window_tests::{hold_the_pass, mixed, resize_without_frame, settled_tile},
     theme_tests::switch,
-    tile_build::{BUILD_GATE, FAIL_NEXT_BUILD},
+    tile::TileBounds,
+    tile_build::{BUILD_GATE, FAIL_NEXT_BUILD, build_tile},
     wrap_tests::{long_text, open, settled, shown},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
@@ -161,6 +164,44 @@ fn a_discarded_worker_tile_still_moves_the_window_with_the_heights_it_measured()
         "no tile was discarded: the test did not reach the branch it guards"
     );
     drop(current);
+    drop(release);
+    window.hide().expect("close wrap window");
+}
+
+/// A tile the shaper cuts to the raster limit is stamped with the clip it was cut to:
+/// the window compares that stamp to the inputs it would paint with now,
+/// and a stamp of the clip that was asked for would discard every cut tile, however fresh.
+#[test]
+fn a_tile_cut_by_the_shaper_is_stamped_with_the_clip_it_was_cut_to() {
+    let (_project, opened) = open(&mixed(6000));
+    let release = hold_the_pass();
+    let window = &opened.window;
+    resize_without_frame(&opened, 1330.0, 3000.0);
+    settled_tile(&opened);
+    {
+        let mut current = opened.source.borrow_mut();
+        let paint = Paint::new(window, &current);
+        let asked = TileBounds {
+            first: 0,
+            count: 2000,
+            clip: None,
+            ..current.shown
+        };
+        let queued = job(&current, asked, &paint);
+        let built = {
+            let super::State { shaper, raster, .. } = &mut *current;
+            build_tile(shaper, raster, queued).expect("the cut tile is painted")
+        };
+        assert_eq!(built.requested, asked, "the tile names the job it answers");
+        assert!(
+            built.bounds.clip.is_some(),
+            "the shaper did not cut a tile of two thousand wrapped lines"
+        );
+        assert!(
+            stamp_for(&current, built.bounds, &paint) == built.stamp,
+            "the stamp of a cut tile does not name the clip it was cut to"
+        );
+    }
     drop(release);
     window.hide().expect("close wrap window");
 }
