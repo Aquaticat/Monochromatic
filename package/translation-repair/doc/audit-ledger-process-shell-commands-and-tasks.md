@@ -831,7 +831,7 @@ in the question that asked the owner to approve one meter reading with the keys 
 
 The question named `run:meter-report` as the task that takes one reading of every provider's meter.
 That description belongs to `run:budget-sample`,
-the entry before it in `run/mise.toml`;
+declared as `[tasks."budget-sample"]` in `run/mise.toml`;
 `meter-report` reads readings back out of run logs and calls no provider.
 The lead found the error before running anything,
 when the task's description was read,
