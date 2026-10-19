@@ -14,7 +14,7 @@ import {
   createResultStream,
   judgmentEntry,
   registerContextResponse
-} from './native-producer-lifetime-values.mjs';
+} from './native-producer-lifetime-values.ts';
 
 //region Controlled streams isolate producer ownership without substituting claims.
 /**
@@ -44,7 +44,7 @@ async function handleRequest(input) {
  private ownership tables.
 
  @param {{
-   construct?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').JudgmentConstructor<import('./native-producer-lifetime-values.mjs').AuthoredJudgment>,
+   construct?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').JudgmentConstructor<import('./native-producer-lifetime-values.ts').AuthoredJudgment>,
    handle?: import('../native/contract/collector/request-producer-judgment-consumers/owner-types.ts').ProducerStreamHandle,
    owner?: ReturnType<typeof import('../native/contract/collector/request-producer-judgment-consumers/owner.ts').createRequestProducerOwner>
  }} input - consumer bindings

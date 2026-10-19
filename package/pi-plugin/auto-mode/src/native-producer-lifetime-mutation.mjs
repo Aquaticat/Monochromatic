@@ -17,7 +17,7 @@ import {
   createAuthoredResponse,
   createResultStream,
   resultStreamFor
-} from './native-producer-lifetime-values.mjs';
+} from './native-producer-lifetime-values.ts';
 
 //region Fault controls retain their original assertions and exact names.
 

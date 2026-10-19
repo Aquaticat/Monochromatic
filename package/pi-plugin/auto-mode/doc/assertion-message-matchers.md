@@ -21,7 +21,7 @@ That class of message-category validation stays forbidden in these catalogs.
 
 ## Fixture values
 
-`src/native-producer-lifetime-values.mjs` authors the model, context, response,
+`src/native-producer-lifetime-values.ts` authors the model, context, response,
 and stream fixtures as valid SDK values using `normalizeContext` and
 `createAssistantMessageEventStream`.
 Test-only response correlation names live in fixture-owned weak tables,
