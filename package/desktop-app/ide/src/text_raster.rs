@@ -118,7 +118,37 @@ impl TextRaster {
                 view.height
             );
         }
-        let mut bytes = vec![0; length as usize];
+        return self.paint_onto(view, colors, horizontal, vec![0; length as usize]);
+    }
+
+    /// What:
+    ///  Paint the viewport over `bytes`,
+    ///  premultiplied pixels the size of the raster that already hold what lies behind the glyphs.
+    /// Why:
+    ///  The minimap's bands draw the markup's selection and match fills first,
+    ///  so a band holds what the window shows;
+    ///  the tile itself starts from nothing.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// paintOnto(view: ShapedView, colors: CodeColors, horizontal: number, bytes: Uint8Array): SourcePixels;
+    /// ```
+    pub fn paint_onto(
+        &mut self,
+        view: &ShapedView,
+        colors: CodeColors,
+        horizontal: f32,
+        mut bytes: Vec<u8>,
+    ) -> Result<SourcePixels> {
+        let length = u64::from(view.width) * u64::from(view.height) * 4;
+        if length > MAX_RASTER_BYTES || bytes.len() as u64 != length {
+            bail!(
+                "Source viewport {}x{} cannot be painted over {} bytes within the 64 MiB raster limit",
+                view.width,
+                view.height,
+                bytes.len()
+            );
+        }
         let factor = view.viewport.scale;
         for row in &view.rows {
             // Rows are placed by the frame's vertical mapping, relative to the top of the tile.

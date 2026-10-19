@@ -1,4 +1,5 @@
 // Transient combined search. Native code owns query generations and native-path result identities.
+import { Surface } from "surface.slint";
 import { ScrollView, Palette } from "std-widgets.slint";
 import { QueryInput } from "query-input.slint";
 
@@ -21,7 +22,7 @@ export component ProjectSearch inherits Rectangle {
     callback edited(string);
     callback choose(int);
     callback dismiss;
-    background: Palette.background;
+    background: Surface.background;
     border-width: 1px;
     border-color: Palette.foreground;
     accessible-role: search;

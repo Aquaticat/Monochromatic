@@ -1,4 +1,5 @@
 // Transient in-file find. Native code owns match positions and identity; this markup only edits the find text.
+import { Surface } from "surface.slint";
 import { Palette } from "std-widgets.slint";
 import { QueryInput } from "query-input.slint";
 
@@ -28,7 +29,7 @@ export component FindBar inherits Rectangle {
         input.select-all();
     }
     private property <length> row-height: 56px;
-    background: Palette.background;
+    background: Surface.background;
     clip: true;
     accessible-role: search;
     accessible-label: "Find in file";

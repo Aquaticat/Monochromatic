@@ -33,7 +33,7 @@ pub(super) use state::MinimapState;
 mod pace;
 /// The pure decision and its periods are held against every kind of change by the tests.
 #[cfg(test)]
-pub(super) use pace::{DEBOUNCE, Plan, THROTTLE, plan};
+pub(super) use pace::{DEBOUNCE, Plan, SLIDE, THROTTLE, plan};
 
 /// Posting a request to the worker when what the picture is valid for changes.
 mod request;

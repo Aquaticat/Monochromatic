@@ -68,7 +68,7 @@ pub(in crate::native) struct MinimapState {
     pub(super) next_id: u64,
     /// Number of the request whose picture is on screen.
     pub(in crate::native) shown_id: u64,
-    /// Number of the request whose final picture is awaited,
+    /// Number of the request whose picture is awaited,
     /// or zero.
     pub(super) awaited: u64,
     /// The drag in progress.
