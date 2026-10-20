@@ -284,3 +284,27 @@ fn an_amend_that_loses_the_compare_and_swap_is_not_replayable() {
     );
     remove(&fixture);
 }
+
+/// A completion step that fails after the branch advanced says that the commit landed, so a consumer that reads the
+///  failure never retries work that is already committed (issue 1781).
+#[test]
+fn a_completion_step_failing_after_the_branch_advanced_says_the_commit_landed() {
+    let fixture: Fixture = fixture("landing-completion-fails");
+    let world: World = World::build(&fixture);
+    let marker_directory: PathBuf = markers(&world);
+    let signal: String = format!("ref-updated:pause:{}", marker_directory.display());
+    let mut child: Child = spawn_child(&world, signal.as_str());
+    await_marker(marker_directory.join("ref-updated.reached").as_path(), &mut child);
+    // The name of the completion marker is taken by a directory, so writing the marker fails after the index installed.
+    std::fs::create_dir(world.directory.join("index-installed")).expect("occupy the completion marker's name");
+    std::fs::write(marker_directory.join("ref-updated.release"), b"").expect("release");
+    let status: ExitStatus = finish(child);
+    assert!(status.success(), "the child failed; see child.log");
+    let result: String = std::fs::read_to_string(world.root.join("child-result.txt")).expect("the child's result");
+    assert!(result.starts_with("error "), "{result}");
+    assert!(result.contains(world.prepared.as_str()), "the failure names the landed commit: {result}");
+    assert!(result.contains("landed"), "the failure says the commit landed: {result}");
+    assert!(result.contains("do not retry"), "the failure says not to retry: {result}");
+    assert_eq!(git_text(&fixture, world.repo.as_path(), &["rev-parse", "refs/heads/main"]), world.prepared);
+    remove(&fixture);
+}
