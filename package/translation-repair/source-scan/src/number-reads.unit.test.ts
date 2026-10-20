@@ -260,6 +260,18 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: WHOLE_NUMBER,
   },
+  'provider/neuralwatt-ledger-config.ts#neuralWattDailyWhFrom: Number': {
+    calls: 1,
+    why: PLAIN_DECIMAL,
+  },
+  'provider/neuralwatt-ledger.ts#utcDayOf: new Date': {
+    calls: 1,
+    why: 'reads a date, no text, or an entry stamp neuralWattEntryOf took through isIsoStampText: what toISOString writes',
+  },
+  'provider/neuralwatt-quota.ts#describePlanSpend: Number': {
+    calls: 1,
+    why: 'reads the text toFixed has just written from a finite number, a plain decimal; no spelling else is possible',
+  },
   'provider/request-pace.ts#hyperRequestsPerHour: Number': {
     calls: 1,
     why: PLAIN_DECIMAL,

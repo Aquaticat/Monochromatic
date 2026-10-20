@@ -595,6 +595,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'a real wait the case crosses, after which it asserts only that the reading has not gone back, which '
       + 'load cannot break',
   },
+  'provider/neuralwatt-routing.unit.test.ts#<module>: freshForMs: 0': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
   'provider/openrouter-abandoned-spend.unit.test.ts#<module>: firstByteMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'stage/overlapped-map.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
   'provider/provider-budget.unit.test.ts#<module>: cooldownMs: 10_000': { count: 7, bound: 'read back', reason: SCRIPTED_CLOCK, },

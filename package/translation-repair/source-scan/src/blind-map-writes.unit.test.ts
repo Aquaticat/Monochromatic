@@ -639,6 +639,11 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
     'a later reading of a picture supersedes the retained one on purpose, since it was read with the earlier as evidence',
   ],
   [
+    'run/corpus-run/run-end-report.ts#registerRunEndReport: registered.set(key,...)',
+    'a report registered again under its key replaces the earlier one on purpose, so a run that builds its client twice '
+    + 'reports once, from the client that is current',
+  ],
+  [
     'glossary/corpus-run/prose-ranges.ts#inlineCodeSpans: spans.set(bodyOffset+nonNullishOrThrow(node.position?.star,...)',
     'two nodes of one tree never open at one offset',
   ],

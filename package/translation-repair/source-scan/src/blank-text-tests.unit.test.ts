@@ -1228,7 +1228,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: SCANNER,
   },
   'run/corpus-run/budget-sample-keys.ts#readProviderKeys': {
-    tests: 8,
+    tests: 10,
     why: SETTING,
   },
   'slice-cache/corpus-run/cache-account-commits.ts#sourceCommitOf': {
@@ -1529,7 +1529,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: SETTING,
   },
   'run/corpus-run/run-providers.ts#configureProviders': {
-    tests: 9,
+    tests: 11,
     why: SETTING,
   },
   'run/corpus-run/run-timing-parse.ts#countIn': {
@@ -1913,6 +1913,22 @@ const HELD_TESTS: Readonly<Record<string, {
   'typography/nested-single-quotes.ts#singleShape': {
     tests: 1,
     why: SCANNER,
+  },
+  'provider/neuralwatt-comments.ts#commentsOfLine': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'provider/neuralwatt-ledger-config.ts#neuralWattDailyWhFrom': {
+    tests: 1,
+    why: SETTING,
+  },
+  'provider/neuralwatt-ledger-config.ts#neuralWattLedgerPathFrom': {
+    tests: 1,
+    why: SETTING,
+  },
+  'provider/neuralwatt-ledger.ts#toEntry': {
+    tests: 1,
+    why: RECORD,
   },
   'provider/openrouter-endpoint.ts#nameOf': {
     tests: 1,
