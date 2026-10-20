@@ -275,6 +275,23 @@ await describe({
           },
         },),
         it({
+          name: 'KEEPS the carriage return of a CRLF line a note ends, so the text keeps one kind of line end',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${JSX_NOTE}\r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `> The cat slept. ${JSX_NOTE}\r\n> It purred.\r\n`, },),).toBe(
+              '> The cat slept.\r\n> It purred.\r\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${JSX_NOTE}  \r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING} ${JSX_NOTE}\r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+          },
+        },),
+        it({
           name: 'CUTS two notes on the last line of a text without a trailing line break, quoted or not, with the spaces before them',
           fn: async () => {
             expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING} ${JSX_NOTE}`, },),).toBe('The cat slept.',);
