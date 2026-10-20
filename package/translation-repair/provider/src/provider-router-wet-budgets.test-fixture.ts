@@ -24,6 +24,7 @@ import type { BudgetView, } from '../dist/final/node/index.mjs';
  */
 function readWetBudgets(): Promise<BudgetView> {
   return Promise.resolve({
+    neuralwatt: false,
     synthetic: true,
     hyper: false,
     bedrock: false,
@@ -55,6 +56,7 @@ function markNothingRefused(): Promise<void> {
  */
 function holdNothing(): ProviderRecord<number> {
   return {
+    neuralwatt: 0,
     synthetic: 0,
     hyper: 0,
     bedrock: 0,

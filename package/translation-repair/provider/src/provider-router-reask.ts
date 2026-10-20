@@ -14,6 +14,7 @@ import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-
 import { reaskElsewhereNudged, } from './nudged-reask.ts';
 import {
   isBudgetRefusal,
+  isCallSizedRefusal,
   isPaymentRefusal,
   statedWaitMsOf,
 } from './provider-budget-refusal.ts';
@@ -224,12 +225,14 @@ async function replyOrBudgetRefusal(
     if (!isBudgetRefusal({ error, },))
       throw error;
 
-    await budgets.markRefused({
-      provider,
-      signal: request.signal,
-      statedWaitMs: statedWaitMsOf({ error, },),
-      paymentRequired: isPaymentRefusal({ error, },),
-    },);
+    if (!isCallSizedRefusal({ error, },)) {
+      await budgets.markRefused({
+        provider,
+        signal: request.signal,
+        statedWaitMs: statedWaitMsOf({ error, },),
+        paymentRequired: isPaymentRefusal({ error, },),
+      },);
+    }
     rl.warn(`${request.modelId}: ${provider} refused the re-ask; keeping the first answer`,);
     return { kind: 'budget-refused', };
   }

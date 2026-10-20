@@ -75,6 +75,7 @@ await describe({
         },);
 
         expect(said,).toStrictEqual([
+          'refused by ProviderHttpError from neuralwatt with HTTP 401',
           'refused by ProviderHttpError from synthetic with HTTP 401',
           'refused by ProviderHttpError from bedrock with HTTP 401',
           'refused by ProviderHttpError from hyper with HTTP 401',

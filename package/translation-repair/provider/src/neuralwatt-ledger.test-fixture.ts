@@ -1,3 +1,5 @@
+import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+
 //region NeuralWatt ledger test support
 // A CLOCK A CASE MOVES BY HAND AND THE LEDGER LINES IT WRITES, for the cases
 // about the NeuralWatt energy ledger and the client that spends against it.
@@ -51,6 +53,89 @@ export function handClock(
  */
 export function lineOf(entry: Readonly<Record<string, unknown>>,): string {
   return `${JSON.stringify(entry,)}\n`;
+}
+
+/**
+ One JSON object read from text, for cases that look inside a ledger line or a
+ request body.
+
+ @param text - JSON text
+
+ @returns The object
+
+ @throws {@link Error} when the text is not a JSON object
+
+ @example
+ ```ts
+ const entry = jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },);
+ ```
+ */
+export function jsonRecordOf({ text, }: { readonly text: string; },): Readonly<Record<string, unknown>> {
+  /**
+   Parsed text, unknown until checked.
+   */
+  const parsed: unknown = JSON.parse(text,);
+  if (!isJsonRecord(parsed,))
+    throw new Error('the fixture text is not a JSON object',);
+  return parsed;
+}
+
+/**
+ Lines written to the console's info and warn channels while a body runs,
+ restored when it ends however it ends.
+
+ @param run - body to run
+
+ @returns The lines, in order
+
+ @example
+ ```ts
+ const lines = await consoleLinesDuring({ run: async () => { await ask({ client, },); }, },);
+ ```
+ */
+export async function consoleLinesDuring({ run, }: { readonly run: () => Promise<void>; },): Promise<readonly string[]> {
+  /**
+   Lines received.
+   */
+  const lines: string[] = [];
+
+  /**
+   The info channel as it was.
+   */
+  const informed = console.info;
+
+  /**
+   The warn channel as it was.
+   */
+  const warned = console.warn;
+
+  /**
+   Keeps what a channel is handed first, which is the whole line the tagged
+   logger writes.
+
+   @param line - what was logged
+   */
+  function keep(line: unknown,): void {
+    lines.push(String(line,),);
+  }
+
+  /**
+   Puts both channels back.
+   */
+  function putBack(): void {
+    console.info = informed;
+    console.warn = warned;
+  }
+  console.info = keep;
+  console.warn = keep;
+
+  /**
+   Restores the channels when this function ends however it ends.
+   */
+  using restore = { [Symbol.dispose]: putBack, };
+  void restore;
+  await run();
+  return lines;
 }
 
 //endregion NeuralWatt ledger test support

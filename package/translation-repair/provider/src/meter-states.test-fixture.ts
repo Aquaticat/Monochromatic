@@ -18,6 +18,7 @@ import type { MeterState, } from '../dist/final/node/index.mjs';
  */
 export function metersAllWet(): Promise<ProviderRecord<MeterState>> {
   return Promise.resolve({
+    neuralwatt: 'wet',
     synthetic: 'wet',
     bedrock: 'wet',
     hyper: 'wet',

@@ -15,6 +15,11 @@ import {
 import type { ModelClient, } from './chat-contract.ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { HyperClient, } from './hyper-client.ts';
+import type { NeuralWattClient, } from './neuralwatt-client.ts';
+import {
+  neuralWattIsDry,
+  neuralWattMeterLevel,
+} from './neuralwatt-meter.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
 import type {
   ProviderName,
@@ -23,8 +28,8 @@ import type {
 
 //region Provider meters
 // WHAT EACH PROVIDER'S METER SAID, read once for everyone: the three states a
-// reading can be in, the record one answers with, and the read of all four
-// meters together. Split out of `provider-budget.ts` on 2026-09-07 when the
+// reading can be in, the record one answers with, and the read of every
+// meter together. Split out of `provider-budget.ts` on 2026-09-07 when the
 // fourth provider put that file over the line budget; the budget layer keeps
 // the cache, the holds and the routing view, and asks this file for the
 // numbers.
@@ -215,13 +220,15 @@ export const UNCONFIGURED_METER: MeterRecord = {
  does not serialise behind another, and names a provider that was never
  configured as dry with nothing to report.
 
- @param synthetic - first provider's quota reader, absent when unconfigured
+ @param neuralwatt - first provider's energy reader, absent when unconfigured
 
- @param hyper - second provider's balance reader, absent when unconfigured
+ @param synthetic - second provider's quota reader, absent when unconfigured
 
- @param bedrock - fourth provider's ledger reader, absent when unconfigured
+ @param hyper - third provider's balance reader, absent when unconfigured
 
- @param openrouter - third provider's credits reader, absent when unconfigured
+ @param bedrock - fourth-added provider's ledger reader, absent when unconfigured
+
+ @param openrouter - fourth provider's credits reader, absent when unconfigured
 
  @param signal - abort signal of whichever call started this reading
 
@@ -229,17 +236,19 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @example
  ```ts
- const meters = await readEveryMeter({ synthetic, hyper, bedrock, openrouter, signal, },);
+ const meters = await readEveryMeter({ neuralwatt, synthetic, hyper, bedrock, openrouter, signal, },);
  ```
  */
 export async function readEveryMeter(
   {
+    neuralwatt,
     synthetic,
     hyper,
     bedrock,
     openrouter,
     signal,
   }: {
+    readonly neuralwatt?: Pick<NeuralWattClient, 'energy'>;
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
@@ -251,7 +260,24 @@ export async function readEveryMeter(
    Every meter, read together so one slow endpoint does not serialise
    behind another.
    */
-  const [syntheticMeter, hyperMeter, bedrockMeter, openrouterMeter,] = await Promise.all([
+  const [neuralwattMeter, syntheticMeter, hyperMeter, bedrockMeter, openrouterMeter,] = await Promise.all([
+    (neuralwatt === undefined)
+      ? Promise.resolve(UNCONFIGURED_METER,)
+      : meterRecordOf({
+        name: 'neuralwatt',
+        signal,
+        readLevel: async function readEnergy(): Promise<MeterLevel> {
+          /**
+           Ledger reading the verdict and the numbers are both drawn from.
+           */
+          const energy = await neuralwatt.energy({ signal, },);
+
+          return {
+            dry: neuralWattIsDry({ energy, },),
+            fields: neuralWattMeterLevel({ energy, },),
+          };
+        },
+      },),
     (synthetic === undefined)
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
@@ -323,6 +349,7 @@ export async function readEveryMeter(
   ],);
 
   return {
+    neuralwatt: neuralwattMeter,
     synthetic: syntheticMeter,
     hyper: hyperMeter,
     bedrock: bedrockMeter,

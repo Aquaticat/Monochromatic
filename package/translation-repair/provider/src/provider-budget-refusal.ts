@@ -1,4 +1,5 @@
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { NeuralWattAllowanceError, } from './neuralwatt-energy.ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
 
 /**
@@ -85,11 +86,43 @@ export function isUpstreamModelRefusal(
 export function isBudgetRefusal(
   { error, }: { readonly error: unknown; },
 ): boolean {
+  // NEURALWATT'S OWN LEDGER REFUSING BEFORE A REQUEST LEAVES (2026-10-20): the
+  // day's free energy cannot take the call, so the next provider is asked. NOT
+  // A PAYMENT REFUSAL: nothing is owed, and the energy returns at 00:00 UTC.
+  if (error instanceof NeuralWattAllowanceError)
+    return true;
   if (!(error instanceof ProviderHttpError))
     return false;
   if (isUpstreamModelRefusal({ error, },))
     return false;
   return BUDGET_REFUSAL_STATUSES.has(error.status,);
+}
+
+/**
+ Whether thrown failure is a refusal about this one call and not about the
+ provider, so no hold on the provider should follow it.
+
+ NEURALWATT'S LEDGER REFUSES A CALL WHOSE ESTIMATE DOES NOT FIT BEFORE ANY
+ REQUEST LEAVES (2026-10-20). A large prompt can be refused on a day that
+ still has room for a hundred small ones; holding the whole provider out for
+ the backoff would send those small calls to the providers behind it while the
+ free energy sits unspent, which the owner ruled against ("Use the neuralwatt
+ free energy front and center."). The ledger's own meter already reads the
+ provider dry when it is, so nothing is lost by holding nothing.
+
+ @param error - whatever call threw
+
+ @returns Whether the call alone was refused
+
+ @example
+ ```ts
+ if (!isCallSizedRefusal({ error, },)) await budgets.markRefused({ provider, signal, },);
+ ```
+ */
+export function isCallSizedRefusal(
+  { error, }: { readonly error: unknown; },
+): boolean {
+  return error instanceof NeuralWattAllowanceError;
 }
 
 /**

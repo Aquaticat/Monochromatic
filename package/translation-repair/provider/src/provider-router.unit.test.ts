@@ -100,6 +100,7 @@ const CONCURRENT_SYNTHETIC_CALLS = 12;
  One Synthetic slot per model, no ceiling elsewhere.
  */
 const ONE_SYNTHETIC_SLOT = {
+  neuralwatt: Number.POSITIVE_INFINITY,
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
@@ -111,6 +112,7 @@ const ONE_SYNTHETIC_SLOT = {
  providers it scripts.
  */
 type PerProvider<ValueT,> = {
+  readonly neuralwatt?: ValueT;
   readonly synthetic?: ValueT;
   readonly hyper?: ValueT;
   readonly bedrock?: ValueT;
@@ -158,6 +160,7 @@ function stubProviders(
    Answers each provider gives, distinguishable by default.
    */
   const answers: ProviderRecord<string> = {
+    neuralwatt: text.neuralwatt ?? '{"spot":"warm lap"}',
     synthetic: text.synthetic ?? '{"spot":"windowsill"}',
     hyper: text.hyper ?? '{"spot":"radiator"}',
     bedrock: text.bedrock ?? '{"spot":"cat tree"}',
@@ -168,6 +171,7 @@ function stubProviders(
    How many more calls each provider refuses before answering.
    */
   const refusalsLeft: Record<ProviderName, number> = {
+    neuralwatt: refusals.neuralwatt ?? (((status.neuralwatt ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     synthetic: refusals.synthetic ?? (((status.synthetic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     hyper: refusals.hyper ?? (((status.hyper ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     bedrock: refusals.bedrock ?? (((status.bedrock ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
@@ -201,6 +205,7 @@ function stubProviders(
   return {
     called,
     callers: {
+      neuralwatt: callerFor('neuralwatt',),
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
@@ -229,6 +234,7 @@ function stubBudgets(
   {
     dry = {},
     holdsMs = {
+      neuralwatt: 0,
       synthetic: 0,
       hyper: 0,
       bedrock: 0,
@@ -255,6 +261,10 @@ function stubBudgets(
    View as the meters read it, which a refusal then overrides.
    */
   const view: Record<ProviderName, boolean> = {
+    // DRY UNLESS A CASE SAYS OTHERWISE, like Bedrock: these cases pin the order
+    // of the four older providers, and NeuralWatt has its own cases
+    // (`neuralwatt-routing.unit.test.ts`).
+    neuralwatt: dry.neuralwatt ?? true,
     synthetic: dry.synthetic ?? false,
     hyper: dry.hyper ?? false,
     // DRY UNLESS A CASE SAYS OTHERWISE: the fourth provider serves none of the
@@ -565,12 +575,14 @@ await describe({
         const { callers, called, } = stubProviders({},);
         const stub = stubBudgets({
           dry: {
+            neuralwatt: true,
             synthetic: true,
             hyper: true,
             bedrock: true,
             openrouter: true,
           },
           holdsMs: {
+            neuralwatt: 0,
             synthetic: 5,
             hyper: 20,
             bedrock: 0,
@@ -608,6 +620,7 @@ await describe({
             openrouter: true,
           },
           holdsMs: {
+            neuralwatt: 0,
             synthetic: 5,
             hyper: 0,
             bedrock: 0,
@@ -687,6 +700,7 @@ await describe({
         },),).toEqual({ text: '{"spot":"windowsill"}', },);
         expect(called,).toEqual(['synthetic', 'synthetic',],);
         expect(budgets.holds(),).toEqual({
+          neuralwatt: 0,
           synthetic: 0,
           bedrock: 0,
           hyper: 0,
@@ -702,6 +716,7 @@ await describe({
         const { callers, called, } = stubProviders({},);
         const { budgets, holdReads, } = stubBudgets({
           dry: {
+            neuralwatt: true,
             synthetic: true,
             hyper: true,
             bedrock: true,
@@ -719,13 +734,14 @@ await describe({
           throw new Error('every provider reading dry must end the call with a refusal',);
         expect(outcome.thrown,).toBeInstanceOf(EveryProviderDryError,);
         expect(String(outcome.thrown,),).toBe(
-          'EveryProviderDryError: Every provider is out of budget at once: Synthetic has no weekly credit left (or no '
-            + 'five-hour request left, on a reply that still carries that window), Charm Hyper has no balance left, '
-            + 'Amazon Bedrock has no credit left short of the owner\'s card, and OpenRouter has no credit left. '
-            + 'Nothing further can be bought, so this run ends. Synthetic regenerates '
-            + 'on its own schedule; Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
-            + 'Measured at the decision: meters read synthetic dry, bedrock dry, hyper dry, openrouter dry; '
-            + 'holds synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
+          'EveryProviderDryError: Every provider is out of budget at once: NeuralWatt has no free daily energy left (or '
+            + 'billed a request today), Synthetic has no weekly credit left (or no five-hour request left, on a reply '
+            + 'that still carries that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left '
+            + 'short of the owner\'s card, and OpenRouter has no credit left. Nothing further can be bought, so this '
+            + 'run ends. NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; '
+            + 'Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
+            + 'Measured at the decision: meters read neuralwatt dry, synthetic dry, bedrock dry, hyper dry, openrouter dry; '
+            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
         );
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);

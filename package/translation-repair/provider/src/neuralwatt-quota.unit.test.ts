@@ -27,7 +27,7 @@ import {
 /**
  The documentation's example response, whole.
  */
-const DOCUMENTED_BODY = JSON.stringify({
+const DOCUMENTED = {
   snapshot_at: '2026-04-16T18:30:00Z',
   balance: {
     credits_remaining_usd: 32.6774,
@@ -47,13 +47,18 @@ const DOCUMENTED_BODY = JSON.stringify({
     current_period_start: '2026-04-11T05:05:25Z',
     current_period_end: '2026-05-11T05:05:25Z',
     auto_renew: true,
-    kwh_included: 20.0,
+    kwh_included: 20,
     kwh_used: 13.9023,
     kwh_remaining: 6.0977,
     in_overage: false,
   },
   key: { name: 'my-production-key', allowance: null, },
-},);
+};
+
+/**
+ The documentation's example response as the text a reply carries.
+ */
+const DOCUMENTED_BODY = JSON.stringify(DOCUMENTED,);
 
 /**
  The documented body with its subscription fields replaced.
@@ -68,14 +73,10 @@ const DOCUMENTED_BODY = JSON.stringify({
  ```
  */
 function withSubscription(subscription: Readonly<Record<string, unknown>>,): string {
-  /**
-   Documented body as an object.
-   */
-  const body: { subscription: Record<string, unknown>; } = JSON.parse(DOCUMENTED_BODY,);
   return JSON.stringify({
-    ...body,
+    ...DOCUMENTED,
     subscription: {
-      ...body.subscription,
+      ...DOCUMENTED.subscription,
       ...subscription,
     },
   },);
@@ -109,7 +110,6 @@ await describe({
           bodyText: JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: null, },),
         },),).toEqual({
           snapshotAt: '2026-10-20T20:00:00Z',
-          subscription: undefined,
         },);
       },
     },),
@@ -121,11 +121,8 @@ await describe({
           bodyText: withSubscription({ kwh_used: null, in_overage: null, current_period_start: null, },),
         },).subscription,).toEqual({
           plan: 'standard',
-          periodStart: undefined,
           kwhIncluded: 20,
-          kwhUsed: undefined,
           kwhRemaining: 6.0977,
-          inOverage: undefined,
         },);
       },
     },),

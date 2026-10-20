@@ -37,8 +37,13 @@ import {
   NeuralWattAllowanceError,
   NeuralWattModelNotServedError,
   promptTokensOfBody,
+  SCHEMA_BLOCK_HEADING,
 } from '../dist/final/node/index.mjs';
-import { handClock, } from './neuralwatt-ledger.test-fixture.ts';
+import {
+  consoleLinesDuring,
+  handClock,
+  jsonRecordOf,
+} from './neuralwatt-ledger.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -63,6 +68,11 @@ const SIGNAL = new AbortController().signal;
  The energy comment the page prints: 0.000015 kWh, which is 0.015 Wh.
  */
 const ENERGY_COMMENT = ': energy {"energy_kwh": 0.000015, "energy_joules": 54.0, "attribution_ratio": 0.25}\n\n';
+
+/**
+ An energy comment small enough to leave room for a second call: 0.0000005 kWh, which is 0.0005 Wh.
+ */
+const SMALL_ENERGY_COMMENT = ': energy {"energy_kwh": 0.0000005}\n\n';
 
 /**
  The cost comment of a free request.
@@ -261,43 +271,6 @@ async function ask(
   },);
 }
 
-/**
- Lines written to the console's info and warn channels while a body runs.
-
- @param run - body to run
-
- @returns The lines
-
- @example
- ```ts
- const lines = await consoleLinesDuring({ run: async () => { await ask({ client, },); }, },);
- ```
- */
-async function consoleLinesDuring({ run, }: { readonly run: () => Promise<void>; },): Promise<readonly string[]> {
-  /**
-   Lines received.
-   */
-  const lines: string[] = [];
-  /**
-   Channels as they were, put back when the body ends.
-   */
-  const informed = console.info;
-  const warned = console.warn;
-  console.info = (...parts: readonly unknown[]) => {
-    lines.push(parts.map(String,)
-      .join(' ',),);
-  };
-  console.warn = console.info;
-  try {
-    await run();
-  }
-  finally {
-    console.info = informed;
-    console.warn = warned;
-  }
-  return lines;
-}
-
 await describe({
   name: createNeuralWattClient.name,
   concurrency: 1,
@@ -337,7 +310,7 @@ await describe({
         /**
          Body as sent.
          */
-        const body = JSON.parse(post?.bodyJson ?? '{}',) as Record<string, unknown>;
+        const body = jsonRecordOf({ text: post?.bodyJson ?? '{}', },);
         expect(body.model,).toBe('glm-5.3-flash',);
         expect(body.stream,).toBe(true,);
         expect(body.stream_options,).toEqual({ include_usage: true, },);
@@ -345,7 +318,8 @@ await describe({
         expect(body.response_format,).toMatchObject({ type: 'json_schema', },);
         for (const absent of ['temperature', 'reasoning', 'reasoning_effort', 'thinking', 'store', 'provider',])
           expect(Object.hasOwn(body, absent,),).toBe(false,);
-        expect(JSON.stringify(body.messages,),).toContain('"spot"',);
+        expect(JSON.stringify(body.messages,),).toContain(SCHEMA_BLOCK_HEADING,);
+        expect(JSON.stringify(body.messages,),).toContain('spot',);
 
         const [ask2,] = [await client.chatText({
           modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -353,7 +327,7 @@ await describe({
           signal: SIGNAL,
         },),];
         expect(ask2.text,).toBe('{"spot":"sunbeam"}',);
-        expect(JSON.parse(chatExchangesOf({ exchanges, },)[1]?.bodyJson ?? '{}',).model,).toBe('deepseek-v4.1-flash',);
+        expect(jsonRecordOf({ text: chatExchangesOf({ exchanges, },)[1]?.bodyJson ?? '{}', },).model,).toBe('deepseek-v4.1-flash',);
       },
     },),
 
@@ -395,8 +369,9 @@ await describe({
           return line.includes('SPEND provider=neuralwatt model=deepseek-v4.1-flash prompt=90 completion=10 cost=0',);
         },),).toBe(true,);
         expect(runSpendUsd({ provider: 'neuralwatt', },),).toBe(before,);
-        expect(await ledger.read(),).toMatchObject({ spentWh: 0.015, reservedWh: 0, reckonedWh: 0, calls: 1, billedToday: false, },);
-        expect(JSON.parse((await readFile(ledger.path, 'utf8',)).trim(),).estimated,).toBeUndefined();
+        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, reckonedWh: 0, calls: 1, billedToday: false, },);
+        expect((await ledger.read()).spentWh,).toBeCloseTo(0.015, 12,);
+        expect(jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },).estimated,).toBeUndefined();
       },
     },),
 
@@ -423,7 +398,7 @@ await describe({
         /**
          Line the call wrote.
          */
-        const line = JSON.parse((await readFile(ledger.path, 'utf8',)).trim(),) as Record<string, unknown>;
+        const line = jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },);
         expect(line.wh,).toBeCloseTo(estimateWh, 12,);
         expect(line.estimated,).toBe('unreported-estimate',);
         expect(line.promptTokens,).toBe(promptTokens,);
@@ -454,9 +429,9 @@ await describe({
           },
         },);
         expect(lines.some(function says(line,): boolean {
-          return line.includes('billed',) && line.includes('00:00 UTC',) && line.includes('deepseek-v4.1-flash',);
+          return line.includes('BILLED',) && line.includes('00:00 UTC',) && line.includes('deepseek-v4.1-flash',);
         },),).toBe(true,);
-        expect(JSON.parse((await readFile(ledger.path, 'utf8',)).trim(),).billedUsd,).toBe(0.00001,);
+        expect(jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },).billedUsd,).toBe(0.00001,);
         expect((await client.energy({ signal: SIGNAL, },)).billedToday,).toBe(true,);
 
         /**
@@ -506,7 +481,7 @@ await describe({
         /**
          Watt-hours the probe's one line holds, which is the estimate of that prompt.
          */
-        const estimateWh = JSON.parse((await readFile(probe.ledger.path, 'utf8',)).trim(),).wh as number;
+        const estimateWh = Number(jsonRecordOf({ text: (await readFile(probe.ledger.path, 'utf8',)).trim(), },).wh,);
 
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         /**
@@ -523,12 +498,15 @@ await describe({
         const { client, exchanges, } = scripted({
           dir: scratch.path,
           dailyWh: estimateWh * 1.5,
-          chat: async function hold(): Promise<TransportReply> {
-            arrived.resolve();
-            await new Promise<void>(function waitFor(resolve,): void {
-              gate.open = resolve;
-            },);
-            return { status: 200, bodyText: streamOf({ comments: ENERGY_COMMENT, }), };
+          chat: async function hold(_exchange, index,): Promise<TransportReply> {
+            // ONLY THE FIRST CALL WAITS: the third, sent after the gate opened, must not.
+            if (index === 0) {
+              arrived.resolve();
+              await new Promise<void>(function waitFor(resolve,): void {
+                gate.open = resolve;
+              },);
+            }
+            return { status: 200, bodyText: streamOf({ comments: SMALL_ENERGY_COMMENT, }), };
           },
         },);
         const first = ask({ client, },);
@@ -542,11 +520,8 @@ await describe({
         gate.open();
         await first;
         expect((await client.energy({ signal: SIGNAL, },)).reservedWh,).toBe(0,);
-        // The first call settled at 0.015 Wh, so what was left fits another.
-        const third = ask({ client, },);
-        await arrival;
-        gate.open();
-        await third;
+        // The first call settled at 0.0005 Wh, so what was left fits another.
+        await ask({ client, },);
         expect(chatExchangesOf({ exchanges, },).length,).toBe(2,);
       },
     },),
@@ -566,7 +541,7 @@ await describe({
         /**
          Line the abandoned attempt left.
          */
-        const line = JSON.parse((await readFile(ledger.path, 'utf8',)).trim(),) as Record<string, unknown>;
+        const line = jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },);
         expect(line.estimated,).toBe('abandoned-estimate',);
         expect(line.wh,).toBeGreaterThan(0,);
         expect(await ledger.read(),).toMatchObject({ reservedWh: 0, calls: 1, },);
@@ -690,9 +665,9 @@ await describe({
         expect(await client.energy({ signal: SIGNAL, },),).toMatchObject({
           day: '2026-10-20',
           dailyWh: 550,
-          spentWh: 0.015,
           reservedWh: 0,
         },);
+        expect((await client.energy({ signal: SIGNAL, },)).spentWh,).toBeCloseTo(0.015, 12,);
         expect(await rejectionOf(async function aborted(): Promise<void> {
           await client.energy({ signal: AbortSignal.abort(new Error('stopped',),), },);
         },),).toBeInstanceOf(Error,);

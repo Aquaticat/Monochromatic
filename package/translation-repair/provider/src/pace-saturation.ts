@@ -22,6 +22,11 @@ import type { RequestPace, } from './request-pace.ts';
  */
 export type ProviderPaces = {
   /**
+   NeuralWatt's window, when it paces; it does not today.
+   */
+  readonly neuralwatt?: Pick<RequestPace, 'waitMs'>;
+
+  /**
    Synthetic's window, when it paces.
    */
   readonly synthetic?: Pick<RequestPace, 'waitMs'>;
@@ -89,6 +94,7 @@ export function paceWaitsOf(
     return (pace === undefined) ? 0 : pace.waitMs();
   }
   return {
+    neuralwatt: waitOf('neuralwatt',),
     synthetic: waitOf('synthetic',),
     hyper: waitOf('hyper',),
     bedrock: waitOf('bedrock',),
@@ -121,6 +127,7 @@ export function withFullWindows(
   },
 ): ProviderRecord<boolean> {
   return {
+    neuralwatt: saturated.neuralwatt || (waits.neuralwatt > 0),
     synthetic: saturated.synthetic || (waits.synthetic > 0),
     hyper: saturated.hyper || (waits.hyper > 0),
     bedrock: saturated.bedrock || (waits.bedrock > 0),

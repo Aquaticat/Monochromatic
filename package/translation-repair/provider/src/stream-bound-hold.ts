@@ -81,6 +81,7 @@ export function createStreamBoundHolds(
    When each held pair's hold ends, by provider then model.
    */
   const until: Record<ProviderName, Map<string, number>> = {
+    neuralwatt: new Map<string, number>(),
     synthetic: new Map<string, number>(),
     hyper: new Map<string, number>(),
     bedrock: new Map<string, number>(),
@@ -194,6 +195,7 @@ export function reachPastBoundHolds(
 
   return {
     reach: {
+      neuralwatt: open('neuralwatt',),
       synthetic: open('synthetic',),
       hyper: open('hyper',),
       bedrock: open('bedrock',),

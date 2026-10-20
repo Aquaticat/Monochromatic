@@ -1,0 +1,79 @@
+//region NeuralWatt public index
+// The names the NeuralWatt provider gives its siblings and its own tests, each
+// from the module that declares it; split out of `index.ts` when the fifth
+// provider put that file over the line budget.
+
+export {
+  NEURALWATT_AUTH_HEADER,
+  NEURALWATT_BASE_URL,
+  NEURALWATT_MODELS,
+  neuralWattChatUrlFor,
+  type NeuralWattModelInfo,
+  neuralWattQuotaUrlFor,
+} from './neuralwatt-catalog.ts';
+export {
+  createNeuralWattClient,
+  NEURALWATT_PER_MODEL_CONCURRENCY,
+  type NeuralWattClient,
+  NeuralWattModelNotServedError,
+} from './neuralwatt-client.ts';
+export {
+  type NeuralWattComments,
+  readNeuralWattComments,
+} from './neuralwatt-comments.ts';
+export {
+  NeuralWattAllowanceError,
+  type NeuralWattEnergy,
+} from './neuralwatt-energy.ts';
+export {
+  estimateNeuralWattWh,
+  NEURALWATT_ENERGY_MARGIN,
+  NEURALWATT_ENERGY_MATRIX_DATE,
+  NEURALWATT_SMALLEST_ESTIMATE_WH,
+  type NeuralWattEstimate,
+  promptTokensOfBody,
+} from './neuralwatt-estimate.ts';
+export {
+  createNeuralWattLedger,
+  type NeuralWattLedger,
+  neuralWattLedgerFromEnv,
+  type NeuralWattReservation,
+  NeuralWattReservationSettledError,
+  type NeuralWattReserveOutcome,
+  type NeuralWattSettlement,
+} from './neuralwatt-ledger.ts';
+export {
+  defaultNeuralWattLedgerPath,
+  NEURALWATT_DAILY_WH,
+  NEURALWATT_DAILY_WH_VAR,
+  NEURALWATT_LEDGER_PATH_VAR,
+  NeuralWattAllowanceOverrideError,
+  neuralWattDailyWhFrom,
+  NeuralWattLedgerShapeError,
+  neuralWattLedgerPathFrom,
+} from './neuralwatt-ledger-config.ts';
+export {
+  NEURALWATT_RECKONINGS,
+  type NeuralWattLedgerEntry,
+  type NeuralWattReckoning,
+} from './neuralwatt-ledger-entry.ts';
+export {
+  neuralWattIsDry,
+  neuralWattMeterLevel,
+} from './neuralwatt-meter.ts';
+export {
+  describePlanSpend,
+  type NeuralWattPlanSpend,
+  type NeuralWattQuota,
+  NeuralWattQuotaShapeError,
+  type NeuralWattSubscription,
+  parseNeuralWattQuota,
+  planSpendBetween,
+} from './neuralwatt-quota.ts';
+export {
+  neuralWattIdFor,
+  type NeuralWattSpelling,
+  neuralWattShowsPictures,
+} from './neuralwatt-reach.ts';
+
+//endregion NeuralWatt public index

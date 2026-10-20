@@ -1,0 +1,492 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import {
+  contextRoot,
+  wordForCount,
+} from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  completionCapFor,
+  type NeuralWattServedId,
+  perModelLimiter,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
+import {
+  formatUsageNote,
+  type ModelTransport,
+  type TransportReply,
+} from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { armCallDeadline, } from './call-deadline.ts';
+import type {
+  ChatTextReply,
+  ChatTextRequest,
+  ModelCaller,
+} from './chat-contract.ts';
+import { chatJsonThrough, } from './chat-json-through.ts';
+import {
+  NEURALWATT_AUTH_HEADER,
+  NEURALWATT_BASE_URL,
+  neuralWattChatUrlFor,
+} from './neuralwatt-catalog.ts';
+import {
+  NeuralWattAllowanceError,
+  type NeuralWattEnergy,
+} from './neuralwatt-energy.ts';
+import {
+  estimateNeuralWattWh,
+  promptTokensOfBody,
+} from './neuralwatt-estimate.ts';
+import type { NeuralWattLedger, } from './neuralwatt-ledger.ts';
+import type { NeuralWattPlanSpend, } from './neuralwatt-quota.ts';
+import { createNeuralWattQuotaSession, } from './neuralwatt-quota-session.ts';
+import { settleNeuralWattCall, } from './neuralwatt-settlement.ts';
+import { failureForReply, } from './request-size-refusal.ts';
+import { neuralWattIdFor, } from './neuralwatt-reach.ts';
+import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
+import {
+  extractStreamedCompletion,
+  requireStreamTerminator,
+} from './stream-completion.ts';
+import {
+  DEFAULT_RETRY_POLICY,
+  exchangeWithRetry,
+  type RetryPolicy,
+} from './transient-retry.ts';
+
+//region NeuralWatt client
+// First provider's client, over the same transport seam as the other four.
+//
+// THE OWNER, 2026-10-20: "Use the neuralwatt free energy front and center."
+// The provider catalog (`neuralwatt-catalog.ts`) has the rest of the owner's
+// words and the facts about the API.
+//
+// IT SPEAKS THE OPENAI-COMPATIBLE PROTOCOL the Bedrock and OpenRouter clients
+// speak: chat completions with `stream` and `stream_options.include_usage`, a
+// json_schema `response_format` and the schema stated in the system prompt,
+// `max_tokens` at the measured ceiling, and NO reasoning parameter ever (the
+// owner's standing instruction of 2026-08-25).
+//
+// WHAT THIS CLIENT ADDS IS THE METER'S SIDE OF EVERY CALL, because overage
+// "eats into my normal plan which I use for other stuff":
+//
+//   1. BEFORE ANY REQUEST, the call reserves its estimated energy in the
+//      ledger (`neuralwatt-ledger.ts`). When the estimate does not fit in what
+//      is left of the UTC day, or a request was already billed today, nothing
+//      is sent and a `NeuralWattAllowanceError` is thrown, which the router
+//      reads as a budget refusal and moves on from.
+//   2. AFTER THE STREAM, the `: energy` comment's figure replaces the estimate
+//      in the ledger. With no such comment the estimate stands, marked.
+//   3. A `: cost` COMMENT WITH `request_cost_usd` ABOVE ZERO means the
+//      request was billed, which free energy does not do. The ledger marks the
+//      UTC day billed, the provider reads dry until 00:00 UTC, and the log
+//      says so plainly. This is the backstop under every estimate.
+//   4. A QUOTA READING BEFORE THE FIRST CALL AND ONE AT THE END OF THE RUN
+//      (`neuralwatt-quota-session.ts`) is the only signal of plan energy
+//      spent, since the free energy is reported nowhere.
+//
+// IT THROWS THE SAME FAILURE CLASS AS THE OTHER PROVIDERS for non-success
+// replies (`ProviderHttpError`, provider `'neuralwatt'`), which the router and
+// the benchmark branch on.
+//
+// NO PER-MODEL CEILING BY DEFAULT: NeuralWatt publishes none that was found
+// (`https://docs.neuralwatt.com`, read 2026-10-20), and the in-flight hold is
+// what bounds how much is risked at once. A width past what a pass drives is
+// unmeasured, which is why the limiter seam stays injectable.
+
+/**
+ Local representation of this provider's absence of a per-model ceiling.
+
+ @example
+ ```ts
+ const width = NEURALWATT_PER_MODEL_CONCURRENCY;
+ ```
+ */
+export const NEURALWATT_PER_MODEL_CONCURRENCY: number = Number.POSITIVE_INFINITY;
+
+/**
+ Logger root for this package's model-facing shell.
+ */
+const l = contextRoot({ tag: 'translation-repair', },);
+
+/**
+ Refusal raised when a roster model has no spelling on this provider.
+
+ A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our
+ own code and not a thing a model did.
+
+ @example
+ ```ts
+ throw new NeuralWattModelNotServedError({ modelId, },);
+ ```
+ */
+export class NeuralWattModelNotServedError extends Error {
+  /**
+   Declares this message safe to forward: it names a model.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds failure naming the model this provider has no spelling for.
+
+   @param modelId - roster model that was addressed here
+
+   @example
+   ```ts
+   new NeuralWattModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
+   ```
+   */
+  public constructor({ modelId, }: { readonly modelId: string; },) {
+    super(`NeuralWatt does not serve ${modelId}; route it to another provider or pick another model`,);
+    this.name = 'NeuralWattModelNotServedError';
+  }
+}
+
+/**
+ Client surface for the free-daily-energy provider.
+
+ @example
+ ```ts
+ const client: NeuralWattClient = createNeuralWattClient({ apiKey, ledger, transport, },);
+ ```
+ */
+export type NeuralWattClient = ModelCaller & {
+  /**
+   The UTC day's energy off the ledger, which is this provider's whole
+   budget signal.
+   */
+  readonly energy: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattEnergy>;
+
+  /**
+   Reads the quota again and reports the plan energy spent since the first
+   call of the run; call once, at the run's end.
+   */
+  readonly planSpend: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattPlanSpend>;
+};
+
+/**
+ Refuses a success reply whose stream never reached its terminator, so the
+ retry ladder retries the attempt as the transport failure it is.
+
+ @param reply - one attempt's reply, read before the ladder returns it
+
+ @throws {@link MalformedCompletionError}
+ when the stream stops before `[DONE]`
+
+ @example
+ ```ts
+ requireWholeStream(reply,);
+ ```
+ */
+function requireWholeStream(reply: TransportReply,): void {
+  if (isSuccessStatus({ status: reply.status, },))
+    requireStreamTerminator({ bodyText: reply.bodyText, },);
+}
+
+/**
+ Spells one roster model the way this provider names it.
+
+ @param modelId - roster model the caller addressed
+
+ @returns Wire identifier for the request body
+
+ @throws {@link NeuralWattModelNotServedError} when this provider serves no such model
+
+ @example
+ ```ts
+ const served = servedIdFor({ modelId, },);
+ ```
+ */
+function servedIdFor({ modelId, }: { readonly modelId: RosterModelId; },): NeuralWattServedId {
+  /**
+   Spelling this provider uses, or that it serves no such model.
+   */
+  const spelling = neuralWattIdFor({ modelId, },);
+  if (!spelling.served)
+    throw new NeuralWattModelNotServedError({ modelId, },);
+  return spelling.id;
+}
+
+/**
+ Builds one client over injected transport, speaking chat completions.
+
+ @param apiKey - bearer token; never logged
+
+ @param ledger - durable energy record the meter reads and every call
+ reserves against and settles into
+
+ @param transport - HTTP the client calls over: `fetchTransport` in a run, a
+ recorded one in a test. REQUIRED, since a test that left it out would reach
+ the provider (ledger M43, X24)
+
+ @param baseUrl - API base address, overridable for tests
+
+ @param perModelConcurrency - optional local test or caller bound; normal
+ operation is unbounded
+
+ @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
+
+ @returns Client surface with chatText, chatJson, energy and planSpend
+
+ @example
+ ```ts
+ const client = createNeuralWattClient({ apiKey: process.env['TRANSLATION_REPAIR_NEURALWATT_API_KEY'] ?? '', ledger, transport: fetchTransport, },);
+ ```
+ */
+export function createNeuralWattClient(
+  {
+    apiKey,
+    ledger,
+    transport,
+    baseUrl = NEURALWATT_BASE_URL,
+    perModelConcurrency = NEURALWATT_PER_MODEL_CONCURRENCY,
+    retryPolicy = DEFAULT_RETRY_POLICY,
+  }: {
+    readonly apiKey: string;
+    readonly ledger: NeuralWattLedger;
+    readonly transport: ModelTransport;
+    readonly baseUrl?: string;
+    readonly perModelConcurrency?: number;
+    readonly retryPolicy?: RetryPolicy;
+  },
+): NeuralWattClient {
+  /**
+   Per-model limiter, created lazily for each model (`per-model-limiter.ts`).
+   */
+  const limiterFor = perModelLimiter({ perModelConcurrency, },);
+
+  /**
+   Headers shared by every exchange, auth included.
+   */
+  const headers: Readonly<Record<string, string>> = {
+    [NEURALWATT_AUTH_HEADER]: `Bearer ${apiKey}`,
+    'content-type': 'application/json',
+  };
+
+  /**
+   The two quota readings of this client's run.
+   */
+  const quota = createNeuralWattQuotaSession({
+    headers,
+    baseUrl,
+    transport,
+    retryPolicy,
+  },);
+
+  /**
+   Free-text chat exchange; reserved against the day's energy first.
+
+   @param request - exchange to perform
+
+   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
+
+   @returns Content text and usage when reported
+
+   @throws {@link NeuralWattModelNotServedError} when this provider serves no such model
+
+   @throws {@link NeuralWattAllowanceError} when the day cannot take the call
+
+   @throws {@link ProviderHttpError} on non-success status
+
+   @throws {@link MalformedCompletionError} on a stream that never ended
+
+   @example
+   ```ts
+   const reply = await client.chatText({ modelId, messages, signal, },);
+   ```
+   */
+  async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
+    /**
+     Logger pre-tagged with this function's name.
+     */
+    const rl = tagged({
+      tag: chatText.name,
+      l,
+    },);
+
+    /**
+     Wire spelling, resolved BEFORE the slot is taken so a misrouted call
+     fails at once instead of queueing behind live ones.
+     */
+    const servedId = servedIdFor({ modelId: request.modelId, },);
+
+    return await limiterFor(request.modelId,)(async function performExchange() {
+      rl.debug(`-> ${servedId}: ${String(request.messages
+        .length,)} ${
+        wordForCount({
+          count: request.messages
+            .length,
+          one: 'message',
+          many: 'messages',
+        },)
+      }`,);
+
+      /**
+       Messages as they go on the wire, carrying this call's own response
+       schema inside the system prompt, as on the Synthetic path.
+       */
+      const asked = withSchemaInSystemPrompt({
+        messages: request.messages,
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...(request.responseFormat === undefined ? {} : { responseFormat: request.responseFormat, }),
+      },);
+
+      /**
+       Exactly what goes on the wire, hoisted so its size can be measured.
+
+       NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT, EVER,
+       the owner's standing instruction of 2026-08-25, recorded in full at the
+       Synthetic body. Both models reason by default, and the energy that costs
+       is in the matrix the estimate is drawn from.
+       */
+      const bodyJson = JSON.stringify({
+        model: servedId,
+        messages: asked,
+        stream: true,
+        stream_options: { include_usage: true, },
+        // THE MEASURED CEILING ON EVERY CALL since 2026-09-09
+        // (`completion-cap.ts`): a runaway reply spends the day's energy.
+        max_tokens: completionCapFor({
+          modelId: request.modelId,
+          // Conditional spread keeps the knob absent instead of undefined.
+          ...(request.maxTokens === undefined ? {} : { requested: request.maxTokens, }),
+        },),
+        // Conditional spread keeps the optional knob absent instead of undefined.
+        ...(request.responseFormat === undefined ? {} : { response_format: request.responseFormat, }),
+      },);
+
+      /**
+       Prompt tokens the body stands for, and the energy held for them.
+       */
+      const promptTokens = promptTokensOfBody({ bodyBytes: Buffer.byteLength(bodyJson,), },);
+
+      /**
+       Energy this call holds while it is in flight.
+       */
+      const { estimateWh, } = estimateNeuralWattWh({
+        servedId,
+        promptTokens,
+      },);
+
+      /**
+       Whether the day can take this call; THE HOLD IS TAKEN BEFORE ANYTHING IS
+       SENT, the quota baseline included.
+       */
+      const outcome = await ledger.reserve({
+        model: servedId,
+        promptTokens,
+        estimateWh,
+      },);
+      if (!outcome.granted)
+        throw new NeuralWattAllowanceError({
+          model: servedId,
+          estimateWh,
+          energy: outcome.energy,
+        },);
+
+      /**
+       The hold this call took, given back when the call ends however it ends.
+       */
+      using held = outcome.reservation;
+      await quota.ensureBaseline({ signal: request.signal, },);
+
+      /**
+       Per-exchange deadline armed inside the slot so local queue wait behind
+       concurrent same-model calls never counts against it; absent when the
+       caller set no deadline.
+       */
+      using deadline = request.exchangeTimeoutMs === undefined
+        ? undefined
+        : armCallDeadline({
+          signal: request.signal,
+          timeoutMs: request.exchangeTimeoutMs,
+          label: servedId,
+        },);
+
+      /**
+       Raw reply from the transport seam, retried on transient statuses; every
+       attempt NeuralWatt accepted and this pipeline did not finish is noted in
+       the ledger at its estimate as it fails.
+       */
+      const reply = await exchangeWithRetry({
+        provider: 'neuralwatt',
+        onAbandonedAttempt: held.noteAbandoned,
+        transport,
+        exchange: {
+          url: neuralWattChatUrlFor({ baseUrl, },),
+          label: servedId,
+          method: 'POST',
+          headers,
+          bodyJson,
+          signal: (deadline === undefined) ? request.signal : deadline.callSignal,
+          // Conditional spread keeps the knob absent instead of undefined.
+          ...(request.maxAnswerChars === undefined ? {} : { maxAnswerChars: request.maxAnswerChars, }),
+        },
+        policy: retryPolicy,
+        // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
+        // so the ladder reads it inside its own try and retries the attempt.
+        verify: requireWholeStream,
+      },);
+      if (!isSuccessStatus({ status: reply.status, },)) {
+        rl.warn(`<- ${servedId}: HTTP ${String(reply.status,)}`,);
+
+        // BYTES RATHER THAN CHARACTERS: this corpus is Chinese.
+        throw failureForReply({
+          provider: 'neuralwatt',
+          status: reply.status,
+          bodyText: reply.bodyText,
+          requestBodyBytes: Buffer.byteLength(bodyJson,),
+        },);
+      }
+
+      /**
+       Content and usage reassembled from the drained event stream.
+       */
+      const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
+      rl.debug(`<- ${servedId}: ${String(extracted.text
+        .length,)} chars${formatUsageNote({ extracted, },)}`,);
+      await settleNeuralWattCall({
+        reservation: held,
+        servedId,
+        extracted,
+        bodyText: reply.bodyText,
+        estimateWh,
+        promptTokens,
+      },);
+      return extracted;
+    },);
+  }
+
+  /**
+   JSON exchange over this client's `chatText` (`chat-json-through.ts`).
+   */
+  const chatJson = chatJsonThrough({ chatText, },);
+
+  /**
+   Reads the day's energy off the ledger.
+
+   @param signal - abort signal honored before the read
+
+   @returns The day's reading, holds in flight included
+
+   @throws {@link import('./neuralwatt-ledger-config.ts').NeuralWattLedgerShapeError} on a ledger line that will not read
+
+   @example
+   ```ts
+   const { remainingWh, } = await client.energy({ signal, },);
+   ```
+   */
+  async function energy({ signal, }: { readonly signal: AbortSignal; },): Promise<NeuralWattEnergy> {
+    signal.throwIfAborted();
+    return await ledger.read();
+  }
+
+  return {
+    chatText,
+    chatJson,
+    energy,
+    planSpend: quota.planSpend,
+  };
+}
+
+//endregion NeuralWatt client

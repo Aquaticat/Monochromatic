@@ -47,10 +47,10 @@ const CLOSING = 'data: {"id":"chatcmpl-whiskers","choices":[{"index":0,"delta":{
 
  @example
  ```ts
- const bodyText = bodyOf(CLOSING, ENERGY_LINE,);
+ const bodyText = bodyOf([CLOSING, ENERGY_LINE,],);
  ```
  */
-function bodyOf(...lines: readonly string[]): string {
+function bodyOf(lines: readonly string[],): string {
   return `${lines.join('\n\n',)}\n\ndata: [DONE]\n\n`;
 }
 
@@ -64,7 +64,7 @@ await describe({
         /**
          What the two documented lines say.
          */
-        const read = readNeuralWattComments({ bodyText: bodyOf(CLOSING, ENERGY_LINE, COST_LINE,), },);
+        const read = readNeuralWattComments({ bodyText: bodyOf([CLOSING, ENERGY_LINE, COST_LINE,],), },);
         expect(read.energyWh,).toBeCloseTo(0.015, 12,);
         expect(read.requestCostUsd,).toBe(0.00001,);
       },
@@ -73,7 +73,7 @@ await describe({
     it({
       name: 'READS A FREE REQUEST\'S COST AS ZERO, which is a statement that nothing was billed and not an absence',
       fn: async () => {
-        expect(readNeuralWattComments({ bodyText: bodyOf(CLOSING, ENERGY_LINE, FREE_COST_LINE,), },).requestCostUsd,)
+        expect(readNeuralWattComments({ bodyText: bodyOf([CLOSING, ENERGY_LINE, FREE_COST_LINE,],), },).requestCostUsd,)
           .toBe(0,);
       },
     },),
@@ -85,7 +85,7 @@ await describe({
         /**
          Reading of a stream with only a cost comment.
          */
-        const read = readNeuralWattComments({ bodyText: bodyOf(CLOSING, FREE_COST_LINE,), },);
+        const read = readNeuralWattComments({ bodyText: bodyOf([CLOSING, FREE_COST_LINE,],), },);
         expect(read.energyWh,).toBeUndefined();
         expect(read.requestCostUsd,).toBe(0,);
       },
@@ -97,7 +97,7 @@ await describe({
         /**
          Reading of a stream with no comments at all.
          */
-        const read = readNeuralWattComments({ bodyText: bodyOf(CLOSING,), },);
+        const read = readNeuralWattComments({ bodyText: bodyOf([CLOSING,],), },);
         expect(read.energyWh,).toBeUndefined();
         expect(read.requestCostUsd,).toBeUndefined();
       },
@@ -107,7 +107,7 @@ await describe({
       name: 'READS A STREAM WHOSE LINES END IN CARRIAGE RETURNS',
       fn: async () => {
         expect(readNeuralWattComments({
-          bodyText: bodyOf(CLOSING, ENERGY_LINE, COST_LINE,)
+          bodyText: bodyOf([CLOSING, ENERGY_LINE, COST_LINE,],)
             .replaceAll('\n', '\r\n',),
         },).energyWh,).toBeCloseTo(0.015, 12,);
       },
@@ -117,10 +117,9 @@ await describe({
       name: 'TAKES THE LAST OF A REPEATED COMMENT, the way the last usage block of a stream wins',
       fn: async () => {
         expect(readNeuralWattComments({
-          bodyText: bodyOf(
+          bodyText: bodyOf([
             ': energy {"energy_kwh": 0.000001}',
-            ': energy {"energy_kwh": 0.000002}',
-          ),
+            ': energy {"energy_kwh": 0.000002}',],),
         },).energyWh,).toBeCloseTo(0.002, 12,);
       },
     },),
@@ -142,7 +141,7 @@ await describe({
             ': energy {"energy_kwh": 1e999}',
           ]
         )
-          expect(readNeuralWattComments({ bodyText: bodyOf(CLOSING, line,), },).energyWh,).toBeUndefined();
+          expect(readNeuralWattComments({ bodyText: bodyOf([CLOSING, line,],), },).energyWh,).toBeUndefined();
         for (
           const line of [
             ': cost {"request_cost_usd": -1}',
@@ -151,7 +150,7 @@ await describe({
             ': cost nope',
           ]
         )
-          expect(readNeuralWattComments({ bodyText: bodyOf(CLOSING, line,), },).requestCostUsd,).toBeUndefined();
+          expect(readNeuralWattComments({ bodyText: bodyOf([CLOSING, line,],), },).requestCostUsd,).toBeUndefined();
       },
     },),
 
@@ -161,8 +160,8 @@ await describe({
         /**
          A content chunk whose text imitates the energy comment.
          */
-        const quoting = 'data: {"choices":[{"index":0,"delta":{"content":": energy {\\"energy_kwh\\": 9}"}}]}';
-        expect(readNeuralWattComments({ bodyText: bodyOf(quoting,), },).energyWh,).toBeUndefined();
+        const quoting = String.raw`data: {"choices":[{"index":0,"delta":{"content":": energy {\"energy_kwh\": 9}"}}]}`;
+        expect(readNeuralWattComments({ bodyText: bodyOf([quoting,],), },).energyWh,).toBeUndefined();
       },
     },),
   ],

@@ -75,6 +75,7 @@ function budgetsReading({ openrouterDry, }: { readonly openrouterDry: boolean; }
     budgets: {
       read: async function read(): Promise<BudgetView> {
         return {
+          neuralwatt: true,
           synthetic: false,
           hyper: false,
           bedrock: true,
@@ -100,6 +101,7 @@ function budgetsReading({ openrouterDry, }: { readonly openrouterDry: boolean; }
       },
       holds: function holds() {
         return {
+          neuralwatt: 0,
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
@@ -130,6 +132,7 @@ function routerWith(
 ) {
   return createRoutingClient({
     callers: {
+      neuralwatt: UNUSED_CALLER,
       synthetic: UNUSED_CALLER,
       hyper: UNUSED_CALLER,
       bedrock: UNUSED_CALLER,

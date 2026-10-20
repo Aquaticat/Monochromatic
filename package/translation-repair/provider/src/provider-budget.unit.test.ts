@@ -141,6 +141,7 @@ const SIGNAL = new AbortController().signal;
  Nobody dry.
  */
 const ALL_WET = {
+  neuralwatt: true,
   synthetic: false,
   hyper: false,
   bedrock: true,
@@ -179,18 +180,21 @@ await describe({
         const openRouterOnly = createProviderBudgets({ openrouter, },);
 
         expect(await syntheticOnly.read({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: true,
           synthetic: false,
           hyper: true,
           bedrock: true,
           openrouter: true,
         },);
         expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: true,
           synthetic: true,
           hyper: false,
           bedrock: true,
           openrouter: true,
         },);
         expect(await openRouterOnly.read({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: true,
           synthetic: true,
           hyper: true,
           bedrock: true,
@@ -265,6 +269,7 @@ await describe({
         },);
 
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: true,
           synthetic: false,
           hyper: true,
           bedrock: true,
@@ -307,12 +312,14 @@ await describe({
         },);
 
         expect(await budgets.readStates({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: 'dry',
           synthetic: 'unreadable',
           hyper: 'dry',
           bedrock: 'dry',
           openrouter: 'wet',
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: true,
           synthetic: false,
           hyper: true,
           bedrock: true,
@@ -395,6 +402,7 @@ await describe({
         // The refusal forced a second read inside the freshness window.
         expect(reads.credits,).toBe(2,);
         expect(budgets.holds(),).toEqual({
+          neuralwatt: 0,
           synthetic: 0,
           hyper: 300,
           bedrock: 0,
@@ -409,6 +417,7 @@ await describe({
 
         clock += 300;
         expect(budgets.holds(),).toEqual({
+          neuralwatt: 0,
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
@@ -567,6 +576,7 @@ await describe({
         },);
         expect(reads.quota,).toBe(2,);
         expect(budgets.holds(),).toEqual({
+          neuralwatt: 0,
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
@@ -574,6 +584,7 @@ await describe({
         },);
         // The refuser is still spendable at once; only the dry providers are out.
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
+          neuralwatt: true,
           synthetic: false,
           hyper: true,
           bedrock: true,
@@ -603,6 +614,7 @@ await describe({
           signal: SIGNAL,
         },);
         expect(budgets.holds(),).toEqual({
+          neuralwatt: 0,
           synthetic: 300,
           hyper: 0,
           bedrock: 0,
@@ -808,6 +820,7 @@ await describe({
           openrouter: 2,
         },);
         expect(budgets.holds(),).toEqual({
+          neuralwatt: 0,
           synthetic: 50,
           hyper: 50,
           bedrock: 0,

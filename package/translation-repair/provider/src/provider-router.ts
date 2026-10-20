@@ -31,6 +31,7 @@ import {
 } from './chat-contract.ts';
 import {
   isBudgetRefusal,
+  isCallSizedRefusal,
   isPaymentRefusal,
   isUpstreamModelRefusal,
   statedWaitMsOf,
@@ -48,6 +49,8 @@ import {
   routedTextElsewhere,
 } from './provider-router-reask.ts';
 import type { RoutedReply, } from './provider-router-reply.ts';
+import { NEURALWATT_PER_MODEL_CONCURRENCY, } from './neuralwatt-client.ts';
+import type { ProviderCallers, } from './provider-callers.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
 import {
@@ -115,6 +118,9 @@ const l = contextRoot({ tag: 'translation-repair', },);
  the router's count and the client's limiter cannot drift apart.
  */
 const DEFAULT_SLOT_LIMITS: SlotLimits = {
+  // NeuralWatt publishes no per-model ceiling that was found (2026-10-20); the
+  // energy ledger's in-flight hold is what bounds what is risked at once.
+  neuralwatt: NEURALWATT_PER_MODEL_CONCURRENCY,
   synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
@@ -141,37 +147,6 @@ function reachFor(
     return visionReachOf({ modelId: request.modelId, },);
   return reachOf({ modelId: request.modelId, },);
 }
-
-/**
- Each configured provider's text call. A provider with no key has none: its
- meter reads dry (`UNCONFIGURED_METER`), so no route names it.
-
- @example
- ```ts
- const callers: ProviderCallers = { synthetic, hyper, };
- ```
- */
-export type ProviderCallers = {
-  /**
-   First provider's text call, when its key is set.
-   */
-  readonly synthetic?: Pick<ModelCaller, 'chatText'>;
-
-  /**
-   Second provider's text call, when its key is set.
-   */
-  readonly hyper?: Pick<ModelCaller, 'chatText'>;
-
-  /**
-   Fourth provider's text call, when its key is set.
-   */
-  readonly bedrock?: Pick<ModelCaller, 'chatText'>;
-
-  /**
-   Third provider's text call, when its key is set.
-   */
-  readonly openrouter?: Pick<ModelCaller, 'chatText'>;
-};
 
 /**
  Builds the client that routes each call to whichever provider can serve it.
@@ -511,10 +486,22 @@ export function createRoutingClient(
       },)
       .length;
 
-    // ONE ATTEMPT PER PROVIDER AT MOST. The loop cannot be a `map`: each
+    // ONE ATTEMPT PER SERVING PROVIDER AT MOST. The loop cannot be a `map`: each
     // decision depends on the refusal before it, and the last refusal is the
-    // answer.
-    for (const attempt of PROVIDER_ORDER.keys()) {
+    // answer. BOUNDED BY THE PROVIDERS THAT SERVE THE CALL, NOT BY THE ORDER
+    // (2026-10-20): with a fifth provider in the order, a model four providers
+    // serve got a fifth decision after its fourth attempt, and that decision
+    // named a budget where the attempts had been cut at a stream bound. At least
+    // one pass runs, so a model nobody serves still gets the decision that says so.
+    /**
+     Attempt budget: one per serving provider, and at least one.
+     */
+    const attempts = Math.max(
+      serving,
+      1,
+    );
+    for (const attempt of Array.from({ length: attempts, },)
+      .keys()) {
       /* oxlint-disable no-await-in-loop -- each choice depends on the refusal before it */
       /**
        Provider the policy picked on what is known before this attempt.
@@ -559,13 +546,15 @@ export function createRoutingClient(
         if (!isBudgetRefusal({ error, },))
           throw error;
 
-        // oxlint-disable-next-line no-await-in-loop -- the hold must start before the next decision reads the budgets
-        await budgets.markRefused({
-          provider,
-          signal: request.signal,
-          statedWaitMs: statedWaitMsOf({ error, },),
-          paymentRequired: isPaymentRefusal({ error, },),
-        },);
+        if (!isCallSizedRefusal({ error, },)) {
+          // oxlint-disable-next-line no-await-in-loop -- the hold must start before the next decision reads the budgets
+          await budgets.markRefused({
+            provider,
+            signal: request.signal,
+            statedWaitMs: statedWaitMsOf({ error, },),
+            paymentRequired: isPaymentRefusal({ error, },),
+          },);
+        }
         if (attempt >= (serving - 1))
           throw error;
         rl.warn(`${request.modelId}: ${provider} refused us, asking the next provider`,);
@@ -576,9 +565,10 @@ export function createRoutingClient(
     // THE ONE WAY OUT OF THE LOOP WITHOUT A REPLY OR A RETHROWN REFUSAL is a call
     // cut at its stream bound on the last attempt the loop has: the cut
     // `continue`s, and the next decision, which would read the holds and name
-    // them, is one the loop has no attempt left for. That takes a model all
-    // four providers serve. The holds are read here in that decision's place,
-    // so four providers cut in turn end with the reason three would.
+    // them, is one the loop has no attempt left for. That takes any model, on
+    // its last serving provider. The holds are read here in that decision's
+    // place, so every serving provider cut in turn ends with the reason one
+    // fewer would.
     reachPastBoundHoldsOrRefusal({ request, },);
 
     // NOT EVERY ONE WAS CUT, then: a provider before the last refused the call

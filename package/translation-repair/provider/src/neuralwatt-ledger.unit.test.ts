@@ -14,6 +14,7 @@
 
 import {
   appendFile,
+  chmod,
   readFile,
   writeFile,
 } from 'node:fs/promises';
@@ -39,6 +40,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import {
   handClock,
+  jsonRecordOf,
   lineOf,
 } from './neuralwatt-ledger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
@@ -234,7 +236,9 @@ await describe({
               billedToday: false,
               calls: 1,
             },);
-            expect(JSON.parse((await readFile(path, 'utf8',)).trim(),),).toEqual({
+            expect(
+              jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },),
+            ).toEqual({
               at: '2026-10-20T12:00:00.000Z',
               model: MODEL,
               wh: 0.015,
@@ -255,7 +259,9 @@ await describe({
             if (!outcome.granted)
               throw new Error('the call fits and should have been granted',);
             await outcome.reservation.settle({},);
-            expect(JSON.parse((await readFile(path, 'utf8',)).trim(),),).toEqual({
+            expect(
+              jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },),
+            ).toEqual({
               at: '2026-10-20T12:00:00.000Z',
               model: MODEL,
               wh: 0.5,
@@ -278,7 +284,9 @@ await describe({
             if (!outcome.granted)
               throw new Error('the call fits and should have been granted',);
             await outcome.reservation.noteAbandoned();
-            expect(JSON.parse((await readFile(path, 'utf8',)).trim(),),).toEqual({
+            expect(
+              jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },),
+            ).toEqual({
               at: '2026-10-20T12:00:00.000Z',
               model: MODEL,
               wh: 0.25,
@@ -314,11 +322,12 @@ await describe({
           name: 'RELEASES THE HOLD WHEN THE LINE CANNOT BE WRITTEN, so a failed write leaves no phantom spend in flight',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-', },);
-            // A FILE STANDS WHERE THE LEDGER'S DIRECTORY SHOULD BE, so the write cannot succeed.
-            const blocker = join(scratch.path, 'blocker',);
-            await writeFile(blocker, 'a file, not a directory', 'utf8',);
+            // THE FILE READS BUT CANNOT BE APPENDED TO: read-only, so the write fails after the reservation was granted.
+            const path = join(scratch.path, 'e.jsonl',);
+            await writeFile(path, '', 'utf8',);
+            await chmod(path, 0o444,);
             const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
-            const ledger = createNeuralWattLedger({ path: join(blocker, 'e.jsonl',), dailyWh: 550, now, },);
+            const ledger = createNeuralWattLedger({ path, dailyWh: 550, now, },);
             const outcome = await ledger.reserve({ model: MODEL, promptTokens: 1, estimateWh: 0.1, },);
             if (!outcome.granted)
               throw new Error('the call fits and should have been granted',);
@@ -347,7 +356,9 @@ await describe({
               throw new Error('the call fits and should have been granted',);
             await outcome.reservation.settle({ measuredWh: 0.05, billedUsd: 0.00001, },);
             expect((await ledger.read()).billedToday,).toBe(true,);
-            expect(JSON.parse((await readFile(path, 'utf8',)).trim(),),).toMatchObject({ billedUsd: 0.00001, wh: 0.05, },);
+            expect(
+              jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },),
+            ).toMatchObject({ billedUsd: 0.00001, wh: 0.05, },);
 
             // A fresh ledger over the same file, as the next run builds.
             const nextRun = createNeuralWattLedger({ path, dailyWh: 550, now, },);
@@ -369,7 +380,7 @@ await describe({
               throw new Error('the call fits and should have been granted',);
             await outcome.reservation.settle({ measuredWh: 0.05, billedUsd: 0, },);
             expect((await ledger.read()).billedToday,).toBe(false,);
-            expect(JSON.parse((await readFile(path, 'utf8',)).trim(),).billedUsd,).toBeUndefined();
+            expect(jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },).billedUsd,).toBeUndefined();
           },
         },),
 
@@ -416,16 +427,22 @@ await describe({
               ['estimated is not a reckoning this package writes', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, estimated: 'guess', },),],
               ['billedUsd is not a positive number', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, billedUsd: 0, },),],
             ];
-            for (const [index, [detail, bad,],] of cases.entries()) {
+            /**
+             What reading each bad file throws, with the detail it should name.
+             */
+            const outcomes = await Promise.all(cases.map(async function readBadFile([detail, bad,], index,) {
               const path = join(scratch.path, `bad-${String(index,)}.jsonl`,);
               await writeFile(path, good, 'utf8',);
               await appendFile(path, bad, 'utf8',);
-              /**
-               What reading the file throws.
-               */
-              const refusal = await rejectionOf(async function read(): Promise<void> {
-                await createNeuralWattLedger({ path, dailyWh: 550, now, },).read();
-              },);
+              return {
+                path,
+                detail,
+                refusal: await rejectionOf(async function read(): Promise<void> {
+                  await createNeuralWattLedger({ path, dailyWh: 550, now, },).read();
+                },),
+              };
+            },),);
+            for (const { path, detail, refusal, } of outcomes) {
               expect(refusal,).toBeInstanceOf(NeuralWattLedgerShapeError,);
               expect(String(refusal,),).toContain(path,);
               expect(String(refusal,),).toContain('line 2',);
@@ -442,8 +459,8 @@ await describe({
             const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
             await writeFile(
               path,
-              `\n${lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, },)}\n\n`
-                + lineOf({ at: '2026-10-20T02:00:00.000Z', model: 'glm-5.3-flash', wh: 2, promptTokens: 1, },),
+              `\n${lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, },)}\n\n${
+                 lineOf({ at: '2026-10-20T02:00:00.000Z', model: 'glm-5.3-flash', wh: 2, promptTokens: 1, },)}`,
               'utf8',
             );
             expect(await createNeuralWattLedger({ path, dailyWh: 550, now, },).read(),).toMatchObject({

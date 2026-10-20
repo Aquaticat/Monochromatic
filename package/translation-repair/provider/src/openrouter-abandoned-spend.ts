@@ -74,7 +74,7 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
  sheet text at one; the prompt half of an abandoned call is the smaller half
  and this is labelled an estimate.
  */
-const PROMPT_BYTES_PER_TOKEN = 4;
+export const PROMPT_BYTES_PER_TOKEN = 4;
 
 /**
  Tokens in one million, the unit the listing prices in.

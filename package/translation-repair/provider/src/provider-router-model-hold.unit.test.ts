@@ -123,6 +123,7 @@ function stubProviders(): {
   return {
     asked,
     callers: {
+      neuralwatt: callerFor('neuralwatt',),
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
@@ -159,6 +160,9 @@ function stubBudgets(): {
     budgets: {
       read: async function read(): Promise<BudgetView> {
         return {
+          // NeuralWatt reads dry here: these cases pin the older four providers' order,
+          // and its own cases are in `neuralwatt-routing.unit.test.ts`.
+          neuralwatt: true,
           synthetic: false,
           hyper: false,
           bedrock: false,
@@ -170,6 +174,7 @@ function stubBudgets(): {
       },
       holds: function holds(): ProviderRecord<number> {
         return {
+          neuralwatt: 0,
           synthetic: 0,
           hyper: 0,
           bedrock: 0,

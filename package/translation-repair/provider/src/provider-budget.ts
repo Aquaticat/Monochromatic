@@ -4,6 +4,7 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { BedrockClient, } from './bedrock-client.ts';
 import type { HyperClient, } from './hyper-client.ts';
+import type { NeuralWattClient, } from './neuralwatt-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
 import {
   otherProviders,
@@ -285,11 +286,13 @@ function unreadBeforeReading(): MeterState {
 /**
  Builds the cached budget view every provider is routed by.
 
- @param synthetic - first provider's quota meter, which is all this reads
+ @param neuralwatt - first provider's energy meter, which is all this reads
 
- @param hyper - second provider's balance meter, which is all this reads
+ @param synthetic - second provider's quota meter, which is all this reads
 
- @param openrouter - third provider's credits meter, which is all this reads
+ @param hyper - third provider's balance meter, which is all this reads
+
+ @param openrouter - fourth provider's credits meter, which is all this reads
 
  @param freshForMs - how long one reading is trusted
 
@@ -306,11 +309,12 @@ function unreadBeforeReading(): MeterState {
 
  @example
  ```ts
- const budgets = createProviderBudgets({ synthetic, hyper, bedrock, openrouter, },);
+ const budgets = createProviderBudgets({ neuralwatt, synthetic, hyper, bedrock, openrouter, },);
  ```
  */
 export function createProviderBudgets(
   {
+    neuralwatt,
     synthetic,
     hyper,
     bedrock,
@@ -320,6 +324,7 @@ export function createProviderBudgets(
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
     now = monotonicMs,
   }: {
+    readonly neuralwatt?: Pick<NeuralWattClient, 'energy'>;
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
@@ -394,6 +399,7 @@ export function createProviderBudgets(
      Every meter's record, keyed by provider, read together.
      */
     const meters = await readEveryMeter({
+      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
       ...((synthetic === undefined) ? {} : { synthetic, }),
       ...((hyper === undefined) ? {} : { hyper, }),
       ...((bedrock === undefined) ? {} : { bedrock, }),
@@ -536,6 +542,7 @@ export function createProviderBudgets(
    Until when each provider is held out by a refusal, zero for never.
    */
   const heldUntil: Record<ProviderName, number> = {
+    neuralwatt: 0,
     synthetic: 0,
     hyper: 0,
     bedrock: 0,

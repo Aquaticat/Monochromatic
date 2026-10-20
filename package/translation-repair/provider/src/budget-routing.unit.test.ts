@@ -66,6 +66,7 @@ const weeklyOnlyQuota = {
  serves the whole roster.
  */
 const everyReach = {
+  neuralwatt: false,
   synthetic: true,
   hyper: true,
   bedrock: true,
@@ -76,6 +77,7 @@ const everyReach = {
  Nobody dry.
  */
 const allWet = {
+  neuralwatt: false,
   synthetic: false,
   hyper: false,
   bedrock: false,
@@ -244,6 +246,7 @@ await describe({
             expect(providerServing({
               reach: everyReach,
               dry: {
+                neuralwatt: true,
                 synthetic: true,
                 hyper: true,
                 bedrock: true,
@@ -327,6 +330,7 @@ await describe({
             expect(routeProviderFor({
               reach: everyReach,
               dry: {
+                neuralwatt: false,
                 synthetic: true,
                 hyper: true,
                 bedrock: true,
@@ -344,6 +348,7 @@ await describe({
             expect(routeProviderFor({
               reach: everyReach,
               dry: {
+                neuralwatt: false,
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
@@ -364,6 +369,7 @@ await describe({
             expect(routeProviderFor({
               reach: everyReach,
               dry: {
+                neuralwatt: false,
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
@@ -384,6 +390,7 @@ await describe({
               routeProviderFor({
                 reach: everyReach,
                 dry: {
+                  neuralwatt: true,
                   synthetic: true,
                   hyper: true,
                   bedrock: true,
@@ -402,12 +409,14 @@ await describe({
             expect(() => {
               routeProviderFor({
                 reach: {
+                  neuralwatt: false,
                   synthetic: false,
                   hyper: false,
                   bedrock: false,
                   openrouter: false,
                 },
                 dry: {
+                  neuralwatt: true,
                   synthetic: true,
                   hyper: true,
                   bedrock: true,
@@ -425,6 +434,7 @@ await describe({
           fn: async () => {
             expect(routeProviderFor({
               reach: {
+                neuralwatt: false,
                 synthetic: true,
                 hyper: false,
                 bedrock: false,
@@ -445,6 +455,7 @@ await describe({
           fn: async () => {
             expect(routeProviderFor({
               reach: {
+                neuralwatt: false,
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
@@ -455,6 +466,7 @@ await describe({
             },),).toEqual({ kind: 'bedrock', },);
             expect(routeProviderFor({
               reach: {
+                neuralwatt: false,
                 synthetic: false,
                 hyper: true,
                 bedrock: false,
@@ -472,6 +484,7 @@ await describe({
           fn: async () => {
             expect(routeProviderFor({
               reach: {
+                neuralwatt: false,
                 synthetic: true,
                 hyper: false,
                 bedrock: false,
@@ -492,6 +505,7 @@ await describe({
           fn: async () => {
             expect(routeProviderFor({
               reach: {
+                neuralwatt: false,
                 synthetic: false,
                 hyper: false,
                 bedrock: false,
@@ -506,6 +520,7 @@ await describe({
 
             expect(routeProviderFor({
               reach: {
+                neuralwatt: false,
                 synthetic: true,
                 hyper: false,
                 bedrock: false,
@@ -627,18 +642,21 @@ await describe({
               try {
                 routeProviderFor({
                   reach: {
+                    neuralwatt: false,
                     synthetic: true,
                     hyper: true,
                     bedrock: true,
                     openrouter: true,
                   },
                   dry: {
+                    neuralwatt: true,
                     synthetic: true,
                     hyper: true,
                     bedrock: true,
                     openrouter: true,
                   },
                   saturated: {
+                    neuralwatt: false,
                     synthetic: false,
                     hyper: false,
                     bedrock: false,

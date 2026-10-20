@@ -266,6 +266,7 @@ await describe({
             + 'cross-provider re-ask possible at all',
           fn: async () => {
             expect(reachOf({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toEqual({
+              neuralwatt: false,
               synthetic: true,
               hyper: true,
               bedrock: true,
@@ -283,6 +284,7 @@ await describe({
             // serves the whole roster since 2026-09-03. Since 2026-09-24 that seat
             // is withheld from Synthetic on latency (class one hundred eighteen).
             expect(reachOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
+              neuralwatt: true,
               synthetic: false,
               hyper: true,
               bedrock: false,
@@ -290,6 +292,7 @@ await describe({
             },);
 
             expect(reachOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, },),).toEqual({
+              neuralwatt: false,
               synthetic: false,
               hyper: true,
               bedrock: true,
@@ -334,6 +337,7 @@ await describe({
             expect(syntheticServes(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(true,);
 
             expect(visionReachOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
+              neuralwatt: true,
               synthetic: false,
               hyper: true,
               bedrock: false,
@@ -341,6 +345,7 @@ await describe({
             },);
 
             expect(reachOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
+              neuralwatt: true,
               synthetic: false,
               hyper: true,
               bedrock: false,
@@ -354,6 +359,7 @@ await describe({
             + 'too and is withheld there on cost (owner, 2026-09-03; the reach honours it since 2026-09-09)',
           fn: async () => {
             expect(visionReachOf({ modelId: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toEqual({
+              neuralwatt: false,
               synthetic: true,
               hyper: true,
               bedrock: false,
@@ -367,6 +373,7 @@ await describe({
             + 'is the case a wrongly computed union would turn into a wasted call',
           fn: async () => {
             expect(visionReachOf({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toEqual({
+              neuralwatt: false,
               synthetic: false,
               hyper: false,
               bedrock: false,
@@ -380,12 +387,14 @@ await describe({
             + 'and not through OpenRouter, whose listing field alone cannot widen the reader roster',
           fn: async () => {
             expect(visionReachOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, },),).toEqual({
+              neuralwatt: false,
               synthetic: false,
               hyper: false,
               bedrock: true,
               openrouter: false,
             },);
             expect(visionReachOf({ modelId: SEAT_BEDROCK_ONLY_TEXT, },),).toEqual({
+              neuralwatt: false,
               synthetic: false,
               hyper: false,
               bedrock: false,

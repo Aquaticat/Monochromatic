@@ -33,6 +33,7 @@ import {
   routeProviderFor,
   visionReachOf,
 } from '../dist/final/node/index.mjs';
+import { consoleLinesDuring, } from './neuralwatt-ledger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -199,29 +200,19 @@ await describe({
     it({
       name: 'FEEDS THE BUDGET VIEW AND THE METERS LINE: dry when spent, wet when energy is left, its fields on the line',
       fn: async () => {
-        /**
-         Lines the budgets log.
-         */
-        const lines: string[] = [];
-        const informed = console.info;
-        console.info = (...parts: readonly unknown[]) => {
-          lines.push(parts.map(String,)
-            .join(' ',),);
-        };
-        try {
-          /**
-           Budgets over a wet NeuralWatt meter alone.
-           */
-          const budgets = createProviderBudgets({
-            neuralwatt: { energy: async () => energyOf({ remainingWh: 250, }), },
-          },);
-          const view = await budgets.read({ signal: SIGNAL, },);
-          expect(view.neuralwatt,).toBe(false,);
-          expect(view.synthetic,).toBe(true,);
-        }
-        finally {
-          console.info = informed;
-        }
+        const lines = await consoleLinesDuring({
+          run: async function readOnce(): Promise<void> {
+            /**
+             Budgets over a wet NeuralWatt meter alone.
+             */
+            const budgets = createProviderBudgets({
+              neuralwatt: { energy: async () => energyOf({ remainingWh: 250, }), },
+            },);
+            const view = await budgets.read({ signal: SIGNAL, },);
+            expect(view.neuralwatt,).toBe(false,);
+            expect(view.synthetic,).toBe(true,);
+          },
+        },);
         expect(lines.some(function isMeters(line,): boolean {
           return line.includes('METERS neuralwatt=wet',) && line.includes('neuralwattWh=250.000',);
         },),).toBe(true,);
@@ -243,7 +234,7 @@ await describe({
            */
           const covered = (modelId === SEAT_HYPER_OPENROUTER_UNMEASURED)
             || (modelId === SEAT_HYPER_OPENROUTER_VISION_EDITOR);
-          expect(reachOf({ modelId, },).neuralwatt, `${modelId} reach`,).toBe(covered,);
+          expect(reachOf({ modelId, },).neuralwatt,).toBe(covered,);
         }
       },
     },),
@@ -374,6 +365,52 @@ await describe({
         },);
         expect(called,).toEqual(['neuralwatt', 'hyper',],);
         expect(reply.text,).toBe('hyper',);
+      },
+    },),
+
+    it({
+      name: 'HOLDS NEURALWATT OUT FOR NOTHING WHEN IT REFUSES ONE LARGE CALL, so the small calls behind it still spend '
+        + 'the free energy: the refused call goes to Hyper, and the next call goes to NeuralWatt again',
+      fn: async () => {
+        /**
+         Providers asked, in order.
+         */
+        const called: ProviderName[] = [];
+        /**
+         Calls NeuralWatt has taken, the first of which it refuses as too large.
+         */
+        const taken = { count: 0, };
+        const client = createRoutingClient({
+          callers: {
+            neuralwatt: {
+              chatText: async () => {
+                called.push('neuralwatt',);
+                taken.count += 1;
+                if (taken.count === 1)
+                  throw new NeuralWattAllowanceError({
+                    model: 'deepseek-v4.1-flash',
+                    estimateWh: 120,
+                    energy: energyOf({ remainingWh: 100, }),
+                  },);
+                return { text: 'neuralwatt', };
+              },
+            },
+            hyper: {
+              chatText: async () => {
+                called.push('hyper',);
+                return { text: 'hyper', };
+              },
+            },
+          },
+          budgets: createProviderBudgets({
+            neuralwatt: { energy: async () => energyOf({ remainingWh: 100, }), },
+            hyper: { credits: async () => ({ balance: 10, }), },
+          },),
+        },);
+        const messages = [{ role: 'user' as const, content: 'Where does the cat sleep?', },];
+        await client.chatText({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, messages, signal: SIGNAL, },);
+        await client.chatText({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, messages, signal: SIGNAL, },);
+        expect(called,).toEqual(['neuralwatt', 'hyper', 'neuralwatt',],);
       },
     },),
 

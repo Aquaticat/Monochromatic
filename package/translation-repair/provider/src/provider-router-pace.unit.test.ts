@@ -88,6 +88,7 @@ function stubProviders(): {
   return {
     asked,
     callers: {
+      neuralwatt: callerFor('neuralwatt',),
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),

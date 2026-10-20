@@ -108,6 +108,7 @@ function scriptedBudgets(
  Every provider reading dry.
  */
 const ALL_DRY: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   hyper: true,
   bedrock: true,
@@ -118,6 +119,7 @@ const ALL_DRY: BudgetView = {
  The first provider back, the others still dry.
  */
 const SYNTHETIC_BACK: BudgetView = {
+  neuralwatt: true,
   synthetic: false,
   hyper: true,
   bedrock: true,
@@ -128,6 +130,7 @@ const SYNTHETIC_BACK: BudgetView = {
  Nobody held.
  */
 const NO_HOLDS: ProviderRecord<number> = {
+  neuralwatt: 0,
   synthetic: 0,
   hyper: 0,
   bedrock: 0,
@@ -147,6 +150,7 @@ await describe({
           fn: async () => {
             expect(shortestHold({
               holds: {
+                neuralwatt: 0,
                 synthetic: 0,
                 hyper: 4_000,
                 bedrock: 0,
@@ -155,6 +159,7 @@ await describe({
             },),).toBe(4_000,);
             expect(shortestHold({
               holds: {
+                neuralwatt: 0,
                 synthetic: 300,
                 hyper: 4_000,
                 bedrock: 0,
@@ -221,6 +226,7 @@ await describe({
           fn: async () => {
             const { budgets, reads, holdAsks, } = scriptedBudgets({
               views: [{
+                neuralwatt: true,
                 synthetic: false,
                 hyper: false,
                 bedrock: false,
@@ -235,6 +241,7 @@ await describe({
               refused: 'synthetic',
               pollMs: 1,
             },),).toEqual({
+              neuralwatt: true,
               synthetic: true,
               hyper: false,
               bedrock: false,
@@ -252,6 +259,7 @@ await describe({
             const { budgets, reads, holdAsks, } = scriptedBudgets({
               views: [ALL_DRY, SYNTHETIC_BACK,],
               holds: {
+                neuralwatt: 0,
                 synthetic: 5,
                 hyper: 20,
                 bedrock: 0,
@@ -281,12 +289,14 @@ await describe({
              */
             const { budgets, reads, holdAsks, } = scriptedBudgets({
               views: [{
+                neuralwatt: true,
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
                 openrouter: true,
               },],
               holds: {
+                neuralwatt: 0,
                 synthetic: 5,
                 hyper: 0,
                 bedrock: 0,
@@ -300,6 +310,7 @@ await describe({
               refused: 'synthetic',
               pollMs: 1,
             },),).toEqual({
+              neuralwatt: true,
               synthetic: false,
               hyper: true,
               bedrock: true,
@@ -319,6 +330,7 @@ await describe({
              The refuser wet by meter and unheld, the others dry by meter.
              */
             const refuserBack: BudgetView = {
+              neuralwatt: true,
               synthetic: false,
               hyper: true,
               bedrock: true,
@@ -351,6 +363,7 @@ await describe({
             const outcomes = await Promise.all(([
               [NO_HOLDS, 1,],
               [{
+                neuralwatt: 0,
                 synthetic: 5,
                 hyper: 20,
                 bedrock: 0,
@@ -392,7 +405,7 @@ await describe({
               // The message states what was measured, so a reader can tell
               // exhaustion from refusal holds.
               expect((outcome.thrown as Error).message,)
-                .toContain('meters read synthetic dry, bedrock dry, hyper dry, openrouter dry; holds synthetic',);
+                .toContain('meters read neuralwatt dry, synthetic dry, bedrock dry, hyper dry, openrouter dry; holds neuralwatt',);
             }
             /**
              The waited case names the wait it made.

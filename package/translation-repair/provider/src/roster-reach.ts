@@ -7,6 +7,10 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { BEDROCK_MODELS, } from './bedrock-catalog.ts';
+import {
+  neuralWattIdFor,
+  neuralWattShowsPictures,
+} from './neuralwatt-reach.ts';
 import type { ModelReach, } from './budget-routing.ts';
 import {
   OPENROUTER_DROPPED_SEATS,
@@ -322,6 +326,10 @@ export function reachOf(
   const bedrock = bedrockIdFor({ modelId, },);
 
   return {
+    // SERVED, with no withholding: the free energy is not a purchase, and the
+    // cards' own holds decide which roles a model fills (`neuralwatt-reach.ts`).
+    neuralwatt: neuralWattIdFor({ modelId, },)
+      .served,
     // SERVED AND ROUTED. A seat withheld from Synthetic on measured latency
     // (class one hundred eighteen, 2026-09-24) is one this provider does not
     // serve as far as the router is concerned (`SYNTHETIC_WITHHELD`).
@@ -483,6 +491,7 @@ export function visionReachOf(
   { modelId, }: { readonly modelId: RosterModelId; },
 ): ModelReach {
   return {
+    neuralwatt: neuralWattShowsPictures({ modelId, },),
     synthetic: syntheticShowsPictures({ modelId, },),
     hyper: hyperShowsPictures({ modelId, },),
     bedrock: bedrockShowsPictures({ modelId, },),
