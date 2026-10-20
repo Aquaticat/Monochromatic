@@ -484,9 +484,11 @@ await describe({
             },);
             expect({
               decision: carries[0]?.decision,
+              // SORTED, since the scene assigns a choice by the order the asks arrive, which the bench's rotation by the sheet text
+              // sets, while the record lists the ballots in roster order; the split under test is the same four choices either way.
               first: carries[0]?.ballots.map(function choiceOf({ choice, },): string {
                 return choice;
-              },),
+              },).toSorted(),
               runOffFinalists: carries[0]?.runOff?.finalists,
               edited: edits.length > 0,
             },).toEqual({

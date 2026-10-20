@@ -998,6 +998,9 @@ await describe({
           stage: 'panel',
           l,
           graceMs: HANG_STOP_MS,
+          // The case names the two seats that never answer, so every seat is asked: a window of three, rotated by the prompt, leaves
+          // one of them unasked when it holds both healthy seats, and an unasked seat is not a lost one.
+          fanOut: 'whole-bench',
         },);
         // 2 of 4 is exactly half. The superseded "strictly more than half"
         // rule would have called this short and burned every retry round;
