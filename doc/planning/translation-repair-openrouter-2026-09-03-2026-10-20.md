@@ -544,3 +544,104 @@ and its 111 left at 16:03 UTC covers less than the `zheermao101` and `CuspariaKL
 on this build (79 and 39),
 so the balance is kept for the runs that count.
 The rotation restarts at `zheermao101` on the build that carries the fix for the `zheermao16` class.
+
+## zheermao17 read, 2026-10-20, 20:30 UTC: SETTLED in 37.3 min of pass; no class, and the first read that counts on its build
+
+`zheermao17` ran as the unit `corpus-pass-corpus-pass-zheermao17`
+on tip `5ae2173d23…` and pipeline `sha256-tree-v1:ee83b531c14f…`,
+and its `START` line matched the frozen digest.
+A first launch at 18:58 UTC stopped before `START` on a package the branch worktree had not installed,
+with no provider called (ledger M285);
+the relaunch began at 19:16 UTC.
+The `DONE` line reads `elapsed=2237935ms`,
+which is 37.3 min:
+`TALLY zheermao101 status=SETTLED slices=15 repairStatus=repaired repairIssues=35 repairAccepted=20 repairResolved=20
+... repairChanged=9 translateStatus=complete translateChanged=9 documentsDiffer=7 pageChanged=10 pageSilent=0
+alignmentFindings=14 selection=contested`.
+`DESTINATIONS zheermao101 source=2 page=3 dropped=0`,
+and the publish wrote 15 slices into a page of 5977 characters.
+The log holds 226 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+
+### Seats and meters
+
+The three Gemma seats on Bedrock were dark on HTTP 401 again and withheld after 4 asks each;
+the run ended with `SEATS DARK: 3 of 12 seats asked produced nothing usable`.
+Every other seat answered:
+`deepseek-v4.1-flash` 119 of 119,
+`minimax-m3` 115,
+`hf:moonshotai/Kimi-K3` 109,
+`inception/mercury-2.5` 94 of 95,
+`glm-5.3` 63,
+`hf:zai-org/GLM-5.3-Flash` 50,
+`hf:Qwen/Qwen3.8-27B` 34,
+`xiaomi/mimo-v2.6-flash` and `typesafe/jev-1.13` 23 each.
+Synthetic's weekly meter read 2% at 19:16 UTC and went dry at 19:38 UTC.
+Hyper's balance went from 110 to 45,
+OpenRouter from 15.31 USD to 15.23 USD,
+and Bedrock stayed at 5.02 USD.
+
+### The page
+
+The lead read the shipped page (`fixed/people/zheermao101/page.en.md` of the run) beside the original (`page.md`),
+the archive (`page.en.md`) and the three photos,
+line by line,
+and found no class.
+
+- The quote that opens the page now offers milk tea (奶茶) where the archive gave "some beverages",
+  and its second line asks Zheermao by name which flavour she likes,
+  as 折耳猫喜欢什么口味的呀 does.
+- The game is "Mystery Lover 2:
+  Forgotten Truth".
+  Two critics filed the subtitle as owed,
+  one citing the indienova database.
+  The lead checked it:
+  Steam lists 恋爱绮谭 不存在的真相 under its Chinese name only,
+  while the Nintendo eShop sells it under that English title
+  (developer Never Knows Best,
+  released 2025-05-29),
+  so the title is the published one.
+- Arts's letter,
+  read against the two photos,
+  now carries what the archive had wrong:
+  Zheermao had blocked searches by QQ number (禁止通过QQ号查找),
+  Arts is "a cat" (一只猫猫),
+  and MtF is "a trans woman".
+  It still says "the same hopes and dreams as you" and "for themselves",
+  where the photo says 和我们 and 为了我们的未来 (us,
+  our future);
+  the wording is the archive's.
+- The email,
+  read against the third photo,
+  now renders the sentence the note between translators is about,
+  "you can dodge the edge of the darkness and take shelter in the bright places",
+  and the closing 顺颂春祉 as "Respectfully,
+  with the blessings of spring."
+  Its salutation 玖月折耳猫： is left out,
+  as in the archive.
+- The note is kept once,
+  as a paragraph of its own after the email's blockquote,
+  where `zheermao16`'s page had it too,
+  so B709's account of where the carry puts a note a writer dropped holds.
+  It still says the sentence could not be translated,
+  and the owner's rule of 2026-10-20 keeps the notes as written.
+
+The front matter `desc` keeps the archive's "Treat you to some beverages.",
+while the quote it comes from now reads milk tea;
+`doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand,
+so this is recorded and not counted as a class,
+as on `zheermao16`'s page.
+
+### What follows
+
+`CuspariaKLSY` was not launched.
+Hyper's 45 left is less than this run spent,
+and the NeuralWatt provider the owner added at about 19:45 UTC on 2026-10-20
+serves `deepseek-v4.1-flash` and the GLM-5.3-Flash seat on 550 Wh a day of free energy.
+Adding it changes the build,
+so a read on `5ae2173d23` would stop counting once it lands.
+The rotation restarts at `zheermao101` on the build that carries NeuralWatt.

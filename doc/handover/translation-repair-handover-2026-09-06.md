@@ -638,8 +638,14 @@ its "Next" list is still the queue the merge went ahead of.
       Its first launch at 18:58 UTC stopped before `START`,
       the branch worktree uninstalled since `a5dc23c5bb` (M285);
       no provider was called.
-      Read the page when the waiter on `^DONE processed=` fires,
-      then go on with CuspariaKLSY,
+      It settled with no class
+      (read at 20:30 UTC;
+      the pass log of 2026-10-20),
+      and spent 65 of Hyper's 110.
+      `CuspariaKLSY` waits:
+      the NeuralWatt build changes the digest,
+      so the rotation restarts at `zheermao101` once it lands,
+      then CuspariaKLSY,
       XingZ60,
       yingying,
       hulicaijia,
@@ -669,7 +675,14 @@ its "Next" list is still the queue the merge went ahead of.
       Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
       standard lane only;
       first in the provider order,
-      by the rule that expiring money is spent first.
+      by the rule that expiring money is spent first
+      and by the owner's ruling of 2026-10-20:
+      "Use the neuralwatt free energy front and center."
+      Every seat of the two models goes to NeuralWatt first in every role it already holds;
+      no new roles,
+      and the owner's 2026-09-02 unseating of GLM-5.3-Flash as a judge stands.
+      The meter's margin is kept as small as can be justified,
+      so free energy is not left unspent.
       The encrypted store `.env.local.json` went to the branch worktree on 2026-10-20 (main's copy,
       a strict superset of the old one by key names);
       the scratch gate worktrees stay keyless.
