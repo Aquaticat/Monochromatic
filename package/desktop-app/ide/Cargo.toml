@@ -96,6 +96,15 @@ shadow_unrelated = "deny"
 [profile.dev]
 debug = 0
 
+# Every dependency (Slint, Parley, Swash, tree-house, and the GPU stack that will follow) is built optimized in the
+# dev profile. The application crate itself stays unoptimized, so an edit to it rebuilds as fast as before.
+# Slint is about twelve times slower unoptimized, which hides the real frame cadence of a scroll or a minimap drag
+# in a debug build. Measured with the inspect:cadence task; numbers are in README.md, section "Dependencies
+# optimized in the dev profile". This applies to this package only: it declares its own [workspace], so no sibling
+# package shares the profile.
+[profile.dev.package."*"]
+opt-level = 2
+
 [workspace]
 
 # Declares the cfg name of `#[cfg_attr(dylint_lib = ..)]` suppressions, enforced by file-enforcer.
