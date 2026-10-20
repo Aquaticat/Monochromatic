@@ -76,7 +76,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     },
     // NEURALWATT, 2026-10-20: the standard lane of `glm-5.3-flash`, which the
     // owner's free daily energy covers (`neuralwatt-card-sides.ts`). No hold
-    // changes with this side; the holds below were all recorded before
+    // changes with this side; the holds on this card were all recorded before
     // NeuralWatt joined and stay as they were.
     neuralwatt: GLM_5_3_FLASH_ON_NEURALWATT,
     // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter
@@ -381,7 +381,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     },
     // NEURALWATT, 2026-10-20: the standard lane of `deepseek-v4.1-flash`,
     // which the owner's free daily energy covers (`neuralwatt-card-sides.ts`).
-    // The hold below was recorded before NeuralWatt joined and stays: no
+    // The hold on this card was recorded before NeuralWatt joined and stays: no
     // transcription of a picture has been measured on any stack of this model.
     neuralwatt: DEEPSEEK_V4_1_FLASH_ON_NEURALWATT,
     // HYPER'S 99TH PERCENTILE IS THE CAP ITSELF (ledger P10, 2026-09-28).
