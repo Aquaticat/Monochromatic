@@ -11,7 +11,8 @@
 //!  and nextest runs each test in its own process;
 //!  plain `cargo test` would run several tests in one process and the second install would fail.
 //!  No CPU rasterizer is used:
-//!  an adapter of the CPU kind (lavapipe, llvmpipe) is refused with a message naming every adapter that was seen.
+//!  an adapter of the CPU kind (lavapipe,
+//!  llvmpipe) is refused with a message naming every adapter that was seen.
 
 /// What:
 ///  `FemtoVGWGPURenderer` is Slint's FemtoVG renderer that draws into a `wgpu` texture,
@@ -21,7 +22,8 @@
 /// Why:
 ///  The harness is a custom platform whose windows render on the GPU;
 ///  Slint's own testing backend can only be built with its software or Skia renderers
-///  (`i-slint-backend-testing-1.18.1/testing_backend.rs`, `create_headless_renderer`).
+///  (`i-slint-backend-testing-1.18.1/testing_backend.rs`,
+///  `create_headless_renderer`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -82,7 +84,8 @@ fn hardware_rank(kind: wgpu::DeviceType) -> Option<u32> {
 ///  `Vec` is a growable array.
 /// Why:
 ///  The device must be a hardware Vulkan one with full limits
-///  (`wgpu::Limits::default()`, the limits the application's GPU text design needs).
+///  (`wgpu::Limits::default()`,
+///  the limits the application's GPU text design needs).
 ///  Only the Vulkan backend is asked for.
 ///  A machine with no hardware adapter fails with the list of adapters it has,
 ///  instead of falling back to a CPU one.
@@ -190,18 +193,28 @@ fn open_hardware_device() -> Result<(wgpu::Instance, wgpu::Device, wgpu::Queue, 
 struct GpuWindow {
     /// The handle the component and the tests use.
     window: Window,
-    /// Draws the scene into a wgpu texture; its snapshot reads that texture back.
+    /// Draws the scene into a wgpu texture;
+    ///  its snapshot reads that texture back.
     renderer: FemtoVGWGPURenderer,
-    /// Physical size; zero width means no size was set yet.
+    /// Physical size;
+    ///  zero width means no size was set yet.
     size: Cell<PhysicalSize>,
 }
 
+/// The window adapter contract:
+///  the handle,
+///  the size,
+///  the renderer,
+///  and the first layout.
 impl WindowAdapter for GpuWindow {
+    /// The handle the component and the tests use.
     fn window(&self) -> &Window {
         return &self.window;
     }
 
-    /// Size before the component states one: the default, as in Slint's testing backend.
+    /// Size before the component states one:
+    ///  the default,
+    ///  as in Slint's testing backend.
     fn size(&self) -> PhysicalSize {
         if self.size.get().width == 0 {
             return PhysicalSize::new(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -219,6 +232,7 @@ impl WindowAdapter for GpuWindow {
         self.size.set(size.to_physical(1.0));
     }
 
+    /// The GPU renderer that draws and reads back this window.
     fn renderer(&self) -> &dyn slint::platform::Renderer {
         return &self.renderer;
     }
@@ -279,7 +293,10 @@ struct GpuPlatform {
     gpu: &'static GpuDevice,
 }
 
+/// The platform contract:
+///  every window is a `GpuWindow` on the shared device.
 impl Platform for GpuPlatform {
+    /// A new window with its own FemtoVG renderer on the shared GPU device.
     fn create_window_adapter(&self) -> Result<Rc<dyn WindowAdapter>, PlatformError> {
         let renderer = FemtoVGWGPURenderer::new(
             self.gpu.instance.clone(),
