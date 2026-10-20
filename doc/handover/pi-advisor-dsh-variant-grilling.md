@@ -292,6 +292,19 @@ disjoint write scopes):
   stale-dist artifacts,
   `translation-repair/source-scan` and `translation-repair/test-fixture`
   ship no `dist` by design).
+  `bd3dc9b4` DONE 2026-10-20: all 39 packages pass `lint:types` after the
+  rebuild,
+  zero source drift,
+  zero commits.
+  Green validated with positive controls (deliberate TS2322 probes that
+  made `lint:types` fail,
+  then removed).
+  Count correction: 35 `translation-repair` packages were red at sweep
+  time (38 build-class total with the three `module/*`),
+  not 36;
+  `translation-repair/test-fixture` was green even then.
+  `source-scan`'s red was missing dependency dists (TS2307 on
+  `@monochromatic-dev/translation-repair-markup` and siblings).
 - design subagent `1d3fe543`: `doc/planning/pi-advisor-dsh-variant.md` only,
   the DSH plugin blueprint probed from the host inspect manifests;
   implementation of `package/dsh-plugin/advisor` waits for the extraction.
