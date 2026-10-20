@@ -19,7 +19,7 @@ use super::annotation_paint_tests::{fixture_reader, frame};
 /// and the position of the text.
 use super::annotation_tests::{FIXTURE, annotate};
 /// The reader fixture and the keys.
-use super::find_tests::{Reader, chord, key, settle, type_text};
+use super::find_tests::{Reader, chord, settle, type_text};
 /// The geometry of the text now shown.
 use super::render::render;
 /// The window's metrics.
@@ -365,11 +365,15 @@ fn the_minimap_of_find_matches_is_the_average_of_the_windows_pixels() {
         let shown = pictures(&reader);
         chord(&reader.window, Key::Control, "f");
         type_text(&reader.window, "value");
-        key(&reader.window, "\n");
+        // Typing selects the first match by itself once the worker's reply for the whole query arrives, and the
+        // selection spells the query only then (a reply for a shorter prefix selects the prefix). An Enter pressed
+        // after that reply steps on to the second match and one pressed before it does not, so the test presses
+        // none and waits for the first match of the whole query.
         {
             let mut waiting = Waiting::eventually();
             while !(reader.window.get_selection_is_match()
-                && reader.window.get_find_status().starts_with("1/"))
+                && reader.window.get_find_status().starts_with("1/")
+                && reader.window.get_selected_text().to_lowercase() == "value")
             {
                 waiting.step("the find did not reach its first match");
             }
