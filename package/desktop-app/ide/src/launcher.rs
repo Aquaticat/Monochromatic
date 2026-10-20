@@ -25,6 +25,10 @@
 //!  The application has no OpenGL renderer and no software renderer;
 //!  a host without a hardware Vulkan adapter stops with a message instead of drawing some other way.
 
+/// The device the window is drawn on:
+///  a hardware Vulkan adapter,
+///  never a CPU one.
+use crate::gpu_device::open_hardware_device;
 /// What:
 ///  The trait that adds `with_name` (the Wayland app id) to winit window attributes;
 ///  `use`
@@ -46,10 +50,6 @@ use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 /// import type { WindowAttributes } from 'winit';
 /// ```
 use i_slint_backend_winit::winit::window::WindowAttributes;
-/// The device the window is drawn on:
-///  a hardware Vulkan adapter,
-///  never a CPU one.
-use crate::gpu_device::open_hardware_device;
 /// What:
 ///  `BackendSelector` installs a Slint backend from requirements,
 ///  and `WGPUConfiguration::Manual` hands it a wgpu instance,

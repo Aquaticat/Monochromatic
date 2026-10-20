@@ -15,6 +15,10 @@
 //!  an adapter of the CPU kind (lavapipe,
 //!  llvmpipe) is refused with a message naming every adapter that was seen.
 
+/// The device the application itself opens:
+///  a hardware Vulkan adapter with full limits,
+///  and never a CPU one.
+use crate::gpu_device::open_hardware_device;
 /// What:
 ///  `FemtoVGWGPURenderer` is Slint's FemtoVG renderer that draws into a `wgpu` texture,
 ///  `Platform` is the trait a custom Slint platform implements,
@@ -37,10 +41,6 @@ use slint::platform::{
 /// The `wgpu` crate as Slint re-exports it,
 ///  so the harness uses exactly the wgpu release (30) that Slint's renderer was built against.
 use slint::wgpu_30::wgpu;
-/// The device the application itself opens:
-///  a hardware Vulkan adapter with full limits,
-///  and never a CPU one.
-use crate::gpu_device::open_hardware_device;
 /// Window sizes,
 ///  the pixel type of a snapshot,
 ///  and the window handle.

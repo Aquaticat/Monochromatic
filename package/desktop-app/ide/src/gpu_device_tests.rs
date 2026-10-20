@@ -17,7 +17,11 @@ fn adapter(name: &str, device_type: DeviceType, driver: &str) -> AdapterSummary 
 
 #[test]
 fn a_machine_that_lists_only_a_cpu_adapter_gets_no_device() {
-    let listed = [adapter("llvmpipe (LLVM 19.1.7)", DeviceType::Cpu, "llvmpipe")];
+    let listed = [adapter(
+        "llvmpipe (LLVM 19.1.7)",
+        DeviceType::Cpu,
+        "llvmpipe",
+    )];
     assert!(
         rank_hardware(&listed).is_empty(),
         "a CPU adapter must never be ranked"
@@ -56,7 +60,11 @@ fn discrete_gpus_come_before_integrated_ones_and_equal_kinds_keep_their_order() 
 
 #[test]
 fn the_message_without_a_hardware_adapter_names_the_adapters_seen_and_every_remedy() {
-    let listed = [adapter("llvmpipe (LLVM 19.1.7)", DeviceType::Cpu, "llvmpipe")];
+    let listed = [adapter(
+        "llvmpipe (LLVM 19.1.7)",
+        DeviceType::Cpu,
+        "llvmpipe",
+    )];
     let mut seen: Vec<String> = Vec::new();
     for summary in &listed {
         seen.push(summary.to_string());
@@ -90,7 +98,11 @@ fn the_message_of_a_refused_device_names_each_adapter_and_its_reason() {
         ],
     }
     .to_string();
-    for needle in ["Adapter A: limit", "Adapter B: out of memory", "Update the Vulkan driver"] {
+    for needle in [
+        "Adapter A: limit",
+        "Adapter B: out of memory",
+        "Update the Vulkan driver",
+    ] {
         assert!(
             message.to_lowercase().contains(&needle.to_lowercase()),
             "missing {needle:?} in: {message}"
