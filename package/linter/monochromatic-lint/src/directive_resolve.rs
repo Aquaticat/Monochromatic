@@ -113,7 +113,14 @@ impl Directive {
         match &self.targets {
             Targets::All => return Some(0),
             Targets::Listed(listed) => {
-                return listed.iter().position(|target| return target.rule == code);
+                // A plain walk returns the slot without the `position` closure,
+                //  which would borrow `code` for a callee that keeps nothing.
+                for (slot, target) in listed.iter().enumerate() {
+                    if target.rule == code {
+                        return Some(slot);
+                    }
+                }
+                return None;
             }
         }
     }

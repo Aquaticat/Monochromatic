@@ -22,7 +22,7 @@ use crate::{
     directive_parse::{DIRECTIVE_PREFIX, DirectiveKind},
     directive_resolve::{Directive, Targets, resolve_directives},
     directive_scan::{ScannedComments, scan_comments},
-    run_modes::{RULES, rule_info},
+    run_modes::{RULES, RuleInfo, rule_info},
     run_paths::Language,
 };
 /// Import ordered containers for the line index and the replayed disabled set.
@@ -118,11 +118,15 @@ fn suppressing(
             }
         }
     }
-    let reached: usize = index
-        .ranges
-        .partition_point(|position| return directives[*position].site.start <= offset);
-    for position in index.ranges[..reached].iter().rev() {
+    // `ranges` keeps its positions in document order,
+    // so the directives that start after the finding form one unbroken stretch at this reversed walk's start;
+    // `continue` steps over that stretch exactly as the boundary slice left it out,
+    // without a closure borrowing `directives` and `offset`.
+    for position in index.ranges.iter().rev() {
         let directive: &Directive = &directives[*position];
+        if directive.site.start > offset {
+            continue;
+        }
         if let Some(slot) = directive.slot_for(code) {
             if directive.kind == DirectiveKind::Disable {
                 return Some((*position, slot));
@@ -131,6 +135,20 @@ fn suppressing(
         }
     }
     return None;
+}
+
+/// What:
+///  Whether the registry lets one rule's findings be suppressed at all.
+/// Why:
+///  `is_some_and` takes a plain function path,
+///  so the suppressibility test stays a named predicate instead of a capture-free closure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isSuppressibleRule(rule: RuleInfo): boolean;
+/// ```
+fn is_suppressible_rule(rule: &RuleInfo) -> bool {
+    return rule.suppressible;
 }
 
 /// What:
@@ -148,7 +166,7 @@ fn is_suppressible(finding: &Diagnostic) -> bool {
     if finding.processing_failure || finding.labels.is_empty() {
         return false;
     }
-    return rule_info(finding.code.as_str()).is_some_and(|rule| return rule.suppressible);
+    return rule_info(finding.code.as_str()).is_some_and(is_suppressible_rule);
 }
 
 /// What:
@@ -233,6 +251,20 @@ fn unused_findings(
 }
 
 /// What:
+///  Whether one finding marks a rule run that never finished.
+/// Why:
+///  `any` takes a plain function path,
+///  so the completeness test stays a named predicate instead of a capture-free closure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isProcessingFailure(finding: Diagnostic): boolean;
+/// ```
+fn is_processing_failure(finding: &Diagnostic) -> bool {
+    return finding.processing_failure;
+}
+
+/// What:
 ///  Suppress the findings that directives cover,
 ///  and add the findings about the directives themselves.
 /// Why:
@@ -269,9 +301,7 @@ pub fn apply_directives(
     for directive in &directives {
         used.push(vec![false; directive.slot_count()]);
     }
-    let incomplete: bool = findings
-        .iter()
-        .any(|finding| return finding.processing_failure);
+    let incomplete: bool = findings.iter().any(is_processing_failure);
     let mut kept: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for finding in findings {
         if !is_suppressible(&finding) {

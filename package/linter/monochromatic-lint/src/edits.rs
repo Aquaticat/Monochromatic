@@ -141,11 +141,28 @@ fn conflicts_after(edit: &Edit, accepted: &BTreeMap<usize, &Edit>) -> bool {
 /// function orderedEditIndexes(source: string, fix: Fix): number[];
 /// ```
 fn ordered_edit_indexes(source: &str, fix: &Fix) -> Result<Vec<usize>, FixError> {
-    let mut ordered: Vec<usize> = (0..fix.edits.len()).collect();
-    ordered.sort_by_key(|index| {
-        let edit = &fix.edits[*index];
-        return (edit.start, edit.end);
-    });
+    // What: `bounds` is a growable list of triples,
+    //  one per edit: its start offset,
+    //  its end offset and its position in `fix.edits`.
+    // Why: sorting the triples orders the edits by source bounds with no closure borrowing `fix`,
+    //  and the trailing position keeps equal bounds in their original order,
+    //  exactly as the earlier stable sort by `(start, end)` did.
+    let mut bounds: Vec<(usize, usize, usize)> = Vec::new();
+    for (index, edit) in fix.edits.iter().enumerate() {
+        // What: `(edit.start, edit.end, index)` is one triple of the sort.
+        bounds.push((edit.start, edit.end, index));
+    }
+    // What: `sort()` orders the triples lexicographically,
+    //  so start first,
+    //  then end,
+    //  then position.
+    bounds.sort();
+    // What: `ordered` keeps just the third element of every triple:
+    //  the edit indexes in source order.
+    let mut ordered: Vec<usize> = Vec::new();
+    for entry in bounds {
+        ordered.push(entry.2);
+    }
     for edit in &fix.edits {
         if edit.start > edit.end
             || edit.end > source.len()
