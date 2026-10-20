@@ -4730,8 +4730,11 @@ at a load average near 11 on 24 processors,
 the shipped build handled 573 keys with a longest pause of 81 ms,
 and its picture changed in 143 of 144 photographs with a longest still time of 263 ms;
 the control mapped no window in 120 s and handled no key,
-because the log it writes before its first frame (about 80 KB with every application record on) already fills the
-64 KiB pipe buffer, so the control stalls in startup and the picture check sees no window rather than a frozen one
+because it blocked right after its first tile was built:
+its last record before a gap that ends only when the script drains the FIFO two minutes later is 222 lines,
+about 51,000 characters, or an estimated 65,600 bytes with the colour codes (their average over the whole log),
+which is the size of the 64 KiB pipe buffer.
+The control therefore stalls before it maps a window, and the picture check sees no window rather than a frozen one
 (`~/temp/agent/ide-log-stall-jyzKKf/results.json`).
 The picture probe itself was checked on a release build that was stopped with `SIGSTOP` and continued with `SIGCONT`
 while the same key presses ran:
