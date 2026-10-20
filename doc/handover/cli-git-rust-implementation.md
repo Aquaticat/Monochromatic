@@ -1810,7 +1810,14 @@ that is verification, not a decision for the user.
   `dead_owner_lock_is_retired_and_taken` on the host. `~/temp/agent/check-anchors.mjs` confirms all 78 anchors match
   exactly once. Unit `cli-git-nc6` (image tag `nc6`) reruns the gate and the 78 controls; after it ends remove the
   `nc6` images, then run the cli.fuzz checks. Lesson: edits to a guarded line in `src/native` must update the table.
-  Issue triage still queued (task 53): 1768 already carries a triage decision (the launcher owns the check, no wrapper
+  Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
+  the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
+  Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
+  `binary_support.rs`), `fixture`, `repository` and the unit `git` message are shared; the fuzz generators use
+  `path_bytes::os_from_path_bytes`; gate 2044 passed, `cli.fuzz:build` passed). Filed 1787: `native:format` runs
+  bare `cargo fmt`, which rewrites about 200 files against the committed style; never run it (revert with
+  `git checkout -- package/git-policy`). Still queued: 630, 492, 574, 1770.
+  Earlier queue note (task 53): 1768 already carries a triage decision (the launcher owns the check, no wrapper
   change); 480 (tag push `EAGAIN` in the retired TypeScript `final-newline` plugin) needs a throwaway-repository tag
   push through the native wrapper, then a closing comment; 492 (post-push stage) is a feature with open design points;
   629 and 630 are refactors that touch `src/native` and wait for nc6 to end.
