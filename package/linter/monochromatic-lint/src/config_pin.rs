@@ -159,20 +159,16 @@ fn pinned_tool_version(lock_text: &str) -> Option<String> {
 /// function versionValue(line: string): string | undefined;
 /// ```
 fn version_value(trimmed: &str) -> Option<String> {
-    let Some((key, value)) = trimmed.split_once('=') else {
-        return None;
-    };
+    let (key, value) = trimmed.split_once('=')?;
     if key.trim() != "version" {
         return None;
     }
     let quoted: &str = value.trim();
-    let Some(inner) = quoted.strip_prefix('"').and_then(|text| text.strip_suffix('"')) else {
-        return None;
-    };
+    let inner = quoted.strip_prefix('"')?.strip_suffix('"')?;
     let plain: bool = !inner.is_empty()
         && inner
             .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || b".+-_".contains(&byte));
+            .all(|byte| return byte.is_ascii_alphanumeric() || b".+-_".contains(&byte));
     if !plain {
         return None;
     }
@@ -233,7 +229,7 @@ fn numeric_triple(version: &str) -> Option<(u64, u64, u64)> {
 /// function decimal(text: string): number | undefined;
 /// ```
 fn decimal(text: &str) -> Option<u64> {
-    if text.is_empty() || !text.bytes().all(|byte| byte.is_ascii_digit()) {
+    if text.is_empty() || !text.bytes().all(|byte| return byte.is_ascii_digit()) {
         return None;
     }
     return text.parse::<u64>().ok();

@@ -45,7 +45,10 @@ fn the_unknown_rule_rejection_names_the_rule_and_the_running_binary() {
         )
         .as_str()
     );
-    assert_eq!(error.unknown_rule, Some(String::from("rust/no-anonymous-functions")));
+    assert_eq!(
+        error.unknown_rule,
+        Some(String::from("rust/no-anonymous-functions"))
+    );
 }
 
 /// A wrapper around an already-identified diagnostic keeps its text verbatim,
@@ -67,5 +70,8 @@ fn composition_reuses_the_identity_suffix_already_in_the_message() {
         .as_str()
     );
     assert_eq!(wrapped.message.matches('(').count(), 1);
-    assert_eq!(wrapped.unknown_rule, Some(String::from("rust/avoidable-closure")));
+    assert_eq!(
+        wrapped.unknown_rule,
+        Some(String::from("rust/avoidable-closure"))
+    );
 }

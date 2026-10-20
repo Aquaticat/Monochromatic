@@ -54,9 +54,8 @@ fn reader(entries: &[(&Path, &str)]) -> Box<dyn Fn(&Path) -> Option<String>> {
 /// Only a plain version key inside this tool's exact lockfile table reads as a pin.
 #[test]
 fn the_pin_comes_only_from_the_tools_own_table() {
-    let measured: String = format!(
-        "{REAL_HEADER}\nversion = \"0.3.0\"\nbackend = \"cargo:monochromatic-lint\"\n"
-    );
+    let measured: String =
+        format!("{REAL_HEADER}\nversion = \"0.3.0\"\nbackend = \"cargo:monochromatic-lint\"\n");
     assert_eq!(
         pinned_tool_version(measured.as_str()),
         Some(String::from("0.3.0"))
@@ -122,8 +121,7 @@ fn the_hint_names_a_measured_newer_pin_and_nothing_else() {
 #[test]
 fn unmeasured_pins_and_farther_lockfiles_produce_no_hint() {
     assert_ne!(
-        VERSION,
-        "0.0.0",
+        VERSION, "0.0.0",
         "the older-pin control needs a strictly older pin"
     );
     let root: &Path = Path::new("/repo");
@@ -145,10 +143,7 @@ fn unmeasured_pins_and_farther_lockfiles_produce_no_hint() {
     );
     let not_this_tool: String = String::from("[[tools.\"cargo:fd-find\"]]\nversion = \"9.9.9\"\n");
     assert_eq!(
-        stale_binary_hint_with(
-            root,
-            &reader(&[(lock.as_path(), not_this_tool.as_str())])
-        ),
+        stale_binary_hint_with(root, &reader(&[(lock.as_path(), not_this_tool.as_str())])),
         None
     );
     // Positive control: the same probe hints when the nearest lockfile pins a newer version.
@@ -167,5 +162,8 @@ fn unmeasured_pins_and_farther_lockfiles_produce_no_hint() {
         ),
         None
     );
-    assert_eq!(stale_binary_hint_with(&root.join("src"), &reader(&[])), None);
+    assert_eq!(
+        stale_binary_hint_with(&root.join("src"), &reader(&[])),
+        None
+    );
 }

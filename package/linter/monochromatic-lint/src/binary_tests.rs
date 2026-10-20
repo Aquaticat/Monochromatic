@@ -610,7 +610,11 @@ fn configuration_rejection_diagnostics_identify_the_running_binary() {
         "{}",
         unknown.stderr
     );
-    assert!(unknown.stderr.contains(identity.as_str()), "{}", unknown.stderr);
+    assert!(
+        unknown.stderr.contains(identity.as_str()),
+        "{}",
+        unknown.stderr
+    );
     assert!(
         !unknown.stderr.contains("may be stale"),
         "{}",
@@ -627,7 +631,11 @@ fn configuration_rejection_diagnostics_identify_the_running_binary() {
         "{}",
         severity.stderr
     );
-    assert!(severity.stderr.contains(identity.as_str()), "{}", severity.stderr);
+    assert!(
+        severity.stderr.contains(identity.as_str()),
+        "{}",
+        severity.stderr
+    );
     fixture.write(CONFIG, "[{");
     let malformed: Run = run(&fixture.path, &[], b"");
     assert_eq!((malformed.status, malformed.stdout.as_str()), (2, ""));
@@ -636,7 +644,11 @@ fn configuration_rejection_diagnostics_identify_the_running_binary() {
         "{}",
         malformed.stderr
     );
-    assert!(malformed.stderr.contains(identity.as_str()), "{}", malformed.stderr);
+    assert!(
+        malformed.stderr.contains(identity.as_str()),
+        "{}",
+        malformed.stderr
+    );
 }
 
 /// The unknown-rule error names a stale resolved binary only when the repository's lockfile
