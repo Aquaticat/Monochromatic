@@ -1,3 +1,5 @@
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+
 //region Roster configuration
 // Whether a lane was configured with anybody to ask, checked before it spends
 // an hour discovering it was not.
@@ -82,10 +84,10 @@ export function assertRostersConfigured(
    Roles configured with nobody in them, in the order they were given.
    */
   const empty = Object.entries(roles,)
-    .filter(function hasNobody([, models,],): boolean {
+    .filter(function hasNobody([, models,]: ReadonlyEntry<string, readonly string[]>,): boolean {
       return models.length === 0;
     },)
-    .map(function toName([name,],): string {
+    .map(function toName([name,]: ReadonlyEntry<string, readonly string[]>,): string {
       return name;
     },);
   if (empty.length === 0)

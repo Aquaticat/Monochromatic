@@ -1,5 +1,6 @@
 import type {
   AdjudicationStatus,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { AttributionEntry, } from './attribution-report.ts';
@@ -408,7 +409,7 @@ export function statusBreakdown(
     );
   }
   return [...byStatus,]
-    .map(function toPair([status, count,],): string {
+    .map(function toPair([status, count,]: ReadonlyEntry<string, number>,): string {
       return `${status}=${String(count,)}`;
     },)
     .join(' ',);

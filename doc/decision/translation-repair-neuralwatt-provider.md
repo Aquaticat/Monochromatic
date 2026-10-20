@@ -54,11 +54,17 @@ All read on 2026-10-20.
 - **The daily free energy is 550 Wh.**
   `https://docs.neuralwatt.com/billing/daily-free-energy`:
   500 Wh from the Max plan and 50 Wh for the email address,
-  reset at 00:00 UTC,
+  reset at 00:00 UTC
+  (superseded 2026-10-20 by the account's own anchor,
+  19:15 UTC;
+  see "The day boundary and the account-wide count",
+  in this record),
   unused energy does not carry over,
   it covers the standard and Flex tiers and not Speed,
   and it is used before anything else.
-  The page says no API reports what is left of it.
+  The page says no API reports what is left of it;
+  `GET /v1/usage/by-model` reports what the whole account used,
+  which the design missed until 2026-10-20.
 - **Per-request energy is on the stream.**
   `https://docs.neuralwatt.com/energy-methodology.md`:
   before `data: [DONE]` the stream carries a comment line `: energy {"energy_kwh": ...}`
@@ -106,7 +112,8 @@ because nothing reports it and overage is the owner's plan.
 
 - **A durable ledger,
   one line per call,
-  by UTC day.**
+  by UTC day**
+  (by the NeuralWatt day once the fix in "The day boundary and the account-wide count" lands).
   `~/.local/state/translation-repair/neuralwatt-energy.jsonl` unless `TRANSLATION_REPAIR_NEURALWATT_LEDGER` names another place.
   The day's allowance is 550 Wh unless `TRANSLATION_REPAIR_NEURALWATT_DAILY_WH` says otherwise
   (a non-negative number;
@@ -291,7 +298,9 @@ DeepSeek V4.1 Flash at 22:23 UTC with 2,954 prompt tokens by the byte estimate
 (2,634 by the reply's usage),
 measured 0.0167 Wh against an estimate of 0.0466 Wh,
 and its cost comment reported `request_cost_usd` 0.000107.
-The billed stop then read NeuralWatt dry,
+The billed stop never weighed the energy:
+it read any cost above zero as proof that the free energy was spent and the plan was being charged,
+so after one call of 0.0167 Wh out of 550 Wh it marked NeuralWatt out of energy until 00:00 UTC,
 and the run went on with Hyper and OpenRouter
 until it was stopped at 22:30 UTC after 21 Hyper calls,
 so that free energy would not stand idle while prepaid credit was spent.
@@ -323,6 +332,46 @@ The one call also shows the estimate running high:
 2.8 times the measured figure in the 1,024 to 4,095 bucket.
 One call is no mean;
 the margin stays until a run's settled lines give per-bucket figures.
+
+## The day boundary and the account-wide count
+
+The owner,
+2026-10-20 at about 23:15 UTC:
+`The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`.
+Two read-only calls the same minute
+(no inference;
+raw output in `/var/home/user/temp/agent/x15-fix/neuralwatt/usage-probe.out` and `quota-shape.out`)
+settled both points.
+
+- **The day starts at 19:15 UTC.**
+  The owner's zone is America/New_York,
+  so 15:15 EDT there was 19:15 UTC on 2026-10-20,
+  and `GET /v1/quota` reports `subscription.current_period_start` as `2026-10-20T19:15:08Z`
+  (`kwh_reset_date` `2026-11-19T19:15:12Z`).
+  The documentation's 00:00 UTC does not describe this account.
+  The pipeline takes the anchor's UTC time of day from that field,
+  never a local clock,
+  so a daylight-saving change does not move it.
+- **The account's whole use is readable.**
+  `GET /v1/usage/by-model` with a timestamp window
+  (a date-only window of one day came back empty)
+  returned,
+  for 00:00 to 23:15 UTC,
+  `glm-5.3-flash` 9 requests and 0.002811 kWh
+  and `deepseek-v4.1-flash` 8 requests and 0.001284 kWh:
+  4.095 Wh,
+  against the ledger's 17 lines summing 4.094 Wh at the same moment.
+  The figure is current to the request and counts every key on the account.
+  The same window carried 3.83 kWh on `mimo-v2.6-pro`,
+  which the free energy does not cover and the stop must not count.
+
+So the stop counts every covered request on the account since the anchor,
+never less than the ledger's own settled lines,
+plus the calls in flight;
+the meter's blind spot for the owner's other use,
+in "What the meter cannot see",
+closes when that lands.
+Ledger P17 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md` records the miss.
 
 ## Not verifiable without a key
 

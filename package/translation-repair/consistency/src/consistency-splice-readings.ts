@@ -5,6 +5,8 @@ import {
   holdsEdgeMark,
   isCountedSingleMark,
 } from './consistency-loose-marks.ts';
+import type { MarkReading, } from './consistency-proven-apostrophes.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consistency splice readings
 // WHAT A SPLICE MUST LEAVE AS IT FOUND IT, besides the words and the loose marks inside the
@@ -306,7 +308,7 @@ export function readingsChangeOutside(
   const outsideBefore = [...markReadingsInEnglish({
     english,
     definitions,
-  },),].filter(function standsOutside([at,],): boolean {
+  },),].filter(function standsOutside([at,]: ReadonlyEntry<number, MarkReading>,): boolean {
     return (at < start) || (at >= end);
   },);
   /**
@@ -315,13 +317,13 @@ export function readingsChangeOutside(
   const outsideAfter = [...markReadingsInEnglish({
     english: spliced,
     definitions,
-  },),].filter(function standsOutside([at,],): boolean {
+  },),].filter(function standsOutside([at,]: ReadonlyEntry<number, MarkReading>,): boolean {
     return (at < start) || (at >= (start + written.length));
   },);
   if (outsideBefore.length !== outsideAfter.length)
     return true;
   return outsideBefore.some(function readsOtherwise(
-    [at, reading,],
+    [at, reading,]: ReadonlyEntry<number, MarkReading>,
     order,
   ): boolean {
     /**

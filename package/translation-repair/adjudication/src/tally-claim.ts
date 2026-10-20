@@ -4,6 +4,7 @@ import type {
   PanelBallot,
   PanelClaimBallot,
   PanelVoteState,
+  ReadonlyEntry,
   VoteTally,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
@@ -106,7 +107,7 @@ function voteWeight(
     .reduce(
       function addBallot(
         mass: number,
-        [panelistId, ballot,],
+        [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
       ): number {
         if (castVote({
           claimId,
@@ -221,7 +222,7 @@ export function panelReadingForClaim(
   return {
     ballots: Object
       .entries(ballots,)
-      .map(function toBallot([panelistId, ballot,],): PanelClaimBallot {
+      .map(function toBallot([panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,): PanelClaimBallot {
         /**
          Reason this panelist gave for this claim, absent where it gave none.
          */

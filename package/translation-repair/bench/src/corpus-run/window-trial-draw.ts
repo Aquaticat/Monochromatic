@@ -1,4 +1,5 @@
 import type { DocumentDisplacement, } from '@monochromatic-dev/translation-repair-artifact/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Window trial draw
 // Which slices the window trial buys, and under what label.
@@ -140,7 +141,7 @@ export function flaggedSlices(
   }
 
   return [...assigned,]
-    .map(function toSlice([sliceIndex, sliceClass,],): TrialSlice {
+    .map(function toSlice([sliceIndex, sliceClass,]: ReadonlyEntry<number, string>,): TrialSlice {
       return {
         entryId,
         sliceIndex,

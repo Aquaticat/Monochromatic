@@ -708,3 +708,37 @@ settled by measured energy.
 Record:
 `doc/decision/translation-repair-neuralwatt-provider.md`,
 section "The first keyed call".
+
+### P17: the NeuralWatt stop counted only the pipeline's own calls, by the wrong day
+
+Status:
+found 2026-10-20 at about 23:15 UTC by the owner
+(`The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`);
+the fix is being built in w247,
+and this entry gains its commits when it lands.
+Two defects in one meter.
+The ledger counted only the calls this pipeline sent,
+although the free energy is the account's,
+and the design record listed the owner's other use as something "the ledger does not know",
+when `GET /v1/usage/by-model` reports every covered request on the account,
+current to the request
+(4.095 Wh on the account against the ledger's 4.094 Wh in the same minute).
+And the day ran 00:00 to 00:00 UTC on the documentation's word,
+while the account's day starts at its subscription anchor,
+`current_period_start` `2026-10-20T19:15:08Z` in `GET /v1/quota`,
+15:15 EDT in the owner's zone.
+At 00:00 UTC the meter would have handed back a full day
+that NeuralWatt was still counting down.
+
+The cause is a family with P16:
+the design read the documentation and stopped there.
+The usage endpoints sat in the same documentation index as the pages it cited,
+and the quota reply it already parsed carried the anchor.
+The rule for next time:
+a provider meter is checked against the provider's own account-wide figure,
+read through every usage endpoint the provider lists,
+before it is called blind;
+a "the meter cannot see" limit names the endpoints read and what each lacked.
+Record:
+`doc/decision/translation-repair-neuralwatt-provider.md`,
+section "The day boundary and the account-wide count".

@@ -1,4 +1,7 @@
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  AdjudicatedIssue,
+  ReadonlyEntry,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { RepairRegion, } from './repair-region.ts';
 import {
@@ -723,7 +726,7 @@ export function screenIntroducedDefects(
       .filter(function castNothingHere([
         ,
         checks,
-      ],): boolean {
+      ]: ReadonlyEntry<string, readonly IntroducedDefectCheckWire[]>,): boolean {
         return !checks.some(function isThisRegion(check,): boolean {
           return check.region === (index + 1);
         },);
