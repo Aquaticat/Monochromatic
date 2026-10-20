@@ -12,6 +12,7 @@
 import { createHash } from 'node:crypto';
 import {
   mkdir,
+  readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
@@ -65,34 +66,17 @@ export async function copyNextest({ context }) {
     cache,
     { recursive: true },
   );
+  const archiveName = `cargo-nextest-${nextestVersion}-musl.tar.gz`;
   const archive = join(
     cache,
-    `cargo-nextest-${nextestVersion}-musl.tar.gz`,
+    archiveName,
   );
-  /** @type {Buffer | undefined} */
-  let bytes;
-  try {
-    bytes = await readFile(archive);
-  }
-  catch {
-    // No cached copy yet; the download below fills it.
-    bytes = undefined;
-  }
-  if ((bytes === undefined) || (sha256Of(bytes) !== nextestSha256)) {
-    const response = await fetch(nextestUrl);
-    if (!response.ok)
-      throw new NativeVerificationError(`Downloading ${nextestUrl} failed with status ${String(response.status)}.`);
-    bytes = Buffer.from(await response.arrayBuffer());
-    const actual = sha256Of(bytes);
-    if (actual !== nextestSha256)
-      throw new NativeVerificationError(
-        `The cargo-nextest ${nextestVersion} archive has SHA-256 ${actual}, not the pinned ${nextestSha256}; nothing was extracted.`,
-      );
-    await writeFile(
-      archive,
-      bytes,
-    );
-  }
+  // No cached copy yet when the name is absent; the download below fills it. Any read failure of a present copy is real.
+  const cached = (await readdir(cache)).includes(archiveName)
+    ? await readFile(archive)
+    : undefined;
+  if ((cached === undefined) || (sha256Of(cached) !== nextestSha256))
+    await downloadArchive(archive);
   await runCommand({
     command: 'tar',
     args: [
@@ -104,6 +88,28 @@ export async function copyNextest({ context }) {
     ],
     capture: true,
   });
+}
+
+/**
+ Download the pinned archive into the cache after checking its checksum.
+
+ @param {string} archive - cache path to write
+ @throws {NativeVerificationError} when the download fails or its checksum differs from the pinned one
+ */
+async function downloadArchive(archive) {
+  const response = await fetch(nextestUrl);
+  if (!response.ok)
+    throw new NativeVerificationError(`Downloading ${nextestUrl} failed with status ${String(response.status)}.`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const actual = sha256Of(bytes);
+  if (actual !== nextestSha256)
+    throw new NativeVerificationError(
+      `The cargo-nextest ${nextestVersion} archive has SHA-256 ${actual}, not the pinned ${nextestSha256}; nothing was extracted.`,
+    );
+  await writeFile(
+    archive,
+    bytes,
+  );
 }
 
 /**
