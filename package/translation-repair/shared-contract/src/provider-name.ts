@@ -6,7 +6,8 @@
 // these names, and any of them importing another for the sake of a union
 // would be a cycle waiting to happen.
 //
-// THE ORDER IS THE POLICY. Synthetic is a flat subscription and costs nothing
+// THE ORDER IS THE POLICY. NeuralWatt's free daily energy is spent first
+// (below); Synthetic is a flat subscription and costs nothing
 // at the margin; Charm Hyper is a prepaid balance the owner will not top up
 // again (2026-09-03: Charm Hyper ended its bundle subsidization, so Hyper will
 // not be recharged from the usual subscription, as
@@ -26,6 +27,20 @@
 // ahead"): the two seats both serve had gone to Hyper the moment Synthetic
 // dried, spending the balance the Hyper-only seats run on, while the expiring
 // money answered nothing.
+//
+// NEURALWATT JOINED ON 2026-10-20, FIRST IN THE ORDER. The owner's key there
+// includes 550 Wh of free energy a day on DeepSeek V4.1 Flash and GLM 5.3
+// Flash (500 Wh on the Max plan and 50 Wh for subscribing to product news),
+// which resets at 00:00 UTC and "doesn't carry over"
+// (`https://docs.neuralwatt.com/billing/daily-free-energy`, fetched
+// 2026-10-20). Money that expires at the end of the day is the most expiring
+// money there is, so by the rule above it is spent before everything else,
+// and the owner said where it goes: "Use the neuralwatt free energy front and
+// center." (2026-10-20). Past the 550 Wh a call bills the owner's normal plan,
+// which the owner uses for other things ("overage eats into my normal
+// plan"), so the provider reads dry the moment its own meter says the day's
+// energy is spent (`neuralwatt-ledger.ts`) and the walk down this order goes
+// on to Synthetic. Record: `doc/decision/translation-repair-neuralwatt-provider.md`.
 
 /**
  Every provider, in the order the owner prefers to spend on them.
@@ -39,6 +54,7 @@
  ```
  */
 export const PROVIDER_ORDER = [
+  'neuralwatt',
   'synthetic',
   'bedrock',
   'hyper',
@@ -58,13 +74,13 @@ export type ProviderName = typeof PROVIDER_ORDER[number];
 /**
  One value per provider, keyed by name.
 
- A RECORD RATHER THAN THREE FIELDS, so adding a provider is one union member
+ A RECORD RATHER THAN A FIELD PER PROVIDER, so adding a provider is one union member
  and one order entry, and every site that reads all providers fails to
  compile until it reads the new one too.
 
  @example
  ```ts
- const dry: ProviderRecord<boolean> = { synthetic: false, hyper: true, bedrock: false, openrouter: false, };
+ const dry: ProviderRecord<boolean> = { neuralwatt: false, synthetic: false, hyper: true, bedrock: false, openrouter: false, };
  ```
  */
 export type ProviderRecord<ValueT,> = Readonly<Record<ProviderName, ValueT>>;
@@ -85,6 +101,7 @@ export function providerRecord<ValueT,>(
   { of, }: { readonly of: (provider: ProviderName,) => ValueT; },
 ): ProviderRecord<ValueT> {
   return {
+    neuralwatt: of('neuralwatt',),
     synthetic: of('synthetic',),
     bedrock: of('bedrock',),
     hyper: of('hyper',),
@@ -102,9 +119,9 @@ export function providerRecord<ValueT,>(
  @example
  ```ts
  otherProviders({ provider: 'hyper', },);
- // => ['synthetic', 'bedrock', 'openrouter',]
+ // => ['neuralwatt', 'synthetic', 'bedrock', 'openrouter',]
  otherProviders({ provider: 'synthetic', },);
- // => ['bedrock', 'hyper', 'openrouter',]
+ // => ['neuralwatt', 'bedrock', 'hyper', 'openrouter',]
  ```
  */
 export function otherProviders(

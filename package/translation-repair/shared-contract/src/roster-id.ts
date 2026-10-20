@@ -173,6 +173,40 @@ export const BEDROCK_SERVED_IDS = [
 export type BedrockServedId = typeof BEDROCK_SERVED_IDS[number];
 
 /**
+ Spellings NeuralWatt serves for this pipeline: the two standard ids the
+ owner's free daily energy covers (`GET https://api.neuralwatt.com/v1/models`,
+ public, fetched 2026-10-20).
+
+ THE STANDARD LANE ONLY. `deepseek-v4.1-flash-flex` and `glm-5.3-flash-flex`
+ are billed at 0.65 of the standard price and "may be held under load";
+ `deepseek-v4.1-flash-speed` is not covered by the free energy; `nw-flash` is
+ an alias that names no model. The free energy covers a covered model's
+ standard and flex lanes and not its speed lane
+ (`https://docs.neuralwatt.com/billing/daily-free-energy`), and the flex lane
+ is held server-side during peak, which a pipeline waiting on a round window
+ cannot use.
+
+ @example
+ ```ts
+ const everyone = NEURALWATT_SERVED_IDS;
+ ```
+ */
+export const NEURALWATT_SERVED_IDS = [
+  'deepseek-v4.1-flash',
+  'glm-5.3-flash',
+] as const;
+
+/**
+ Model identifier NeuralWatt accepts on the wire.
+
+ @example
+ ```ts
+ const modelId: NeuralWattServedId = 'glm-5.3-flash';
+ ```
+ */
+export type NeuralWattServedId = typeof NEURALWATT_SERVED_IDS[number];
+
+/**
  Roster identities introduced through Charm Hyper without a Synthetic
  spelling: by the naming rule, the roster ids that are Hyper spellings.
  The historical bucket name is not exclusive reach: OpenRouter serves

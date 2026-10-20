@@ -2,6 +2,7 @@ import type {
   BedrockCard,
   DecisionsCard,
   ModelCard,
+  NeuralWattCard,
   OpenRouterCard,
   SeatHold,
   ServedCard,
@@ -12,6 +13,7 @@ import {
   BEDROCK_SERVED_IDS,
   HYPER_SERVED_IDS,
   type HyperServedId,
+  NEURALWATT_SERVED_IDS,
   OPENROUTER_SERVED_IDS,
   ROSTER_MODEL_IDS,
   type RosterModelId,
@@ -29,7 +31,7 @@ import {
 
  @example
  ```ts
- CARD_PROVIDERS.join('|',); // 'synthetic|hyper|openrouter|bedrock'
+ CARD_PROVIDERS.join('|',); // 'synthetic|hyper|openrouter|bedrock|neuralwatt'
  ```
  */
 export const CARD_PROVIDERS = [
@@ -37,6 +39,7 @@ export const CARD_PROVIDERS = [
   'hyper',
   'openrouter',
   'bedrock',
+  'neuralwatt',
 ] as const;
 
 /**
@@ -117,6 +120,9 @@ const SIDE_OF: SideReaders = {
   bedrock: function bedrockSide(card,): BedrockCard {
     return card.bedrock;
   },
+  neuralwatt: function neuralWattSide(card,): NeuralWattCard {
+    return card.neuralwatt;
+  },
 };
 
 /**
@@ -127,6 +133,7 @@ const SERVED_IDS: ServedIdLists = {
   hyper: HYPER_SERVED_IDS,
   openrouter: OPENROUTER_SERVED_IDS,
   bedrock: BEDROCK_SERVED_IDS,
+  neuralwatt: NEURALWATT_SERVED_IDS,
 };
 
 /**

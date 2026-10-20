@@ -28,6 +28,7 @@ const KIMI = SEAT_SYNTHETIC_VISION_WITHHELD;
  One Synthetic slot per model, no ceiling elsewhere.
  */
 const ONE_SYNTHETIC_SLOT = {
+  neuralwatt: Number.POSITIVE_INFINITY,
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
@@ -45,6 +46,7 @@ await describe({
          */
         const ledger = createSlotLedger({ limits: ONE_SYNTHETIC_SLOT, },);
         expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
+          neuralwatt: false,
           synthetic: false,
           hyper: false,
           bedrock: false,
@@ -63,6 +65,7 @@ await describe({
           modelId: KIMI,
         },);
         expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
+          neuralwatt: false,
           synthetic: true,
           hyper: false,
           bedrock: false,

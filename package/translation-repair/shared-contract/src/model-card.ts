@@ -1,6 +1,7 @@
 import type {
   BedrockServedId,
   HyperServedId,
+  NeuralWattServedId,
   OpenRouterDecisionId,
   OpenRouterServedId,
   SyntheticServedId,
@@ -269,6 +270,22 @@ export type BedrockCard = ServedCard<BedrockServedId> & {
 };
 
 /**
+ NeuralWatt's side of a card.
+
+ @example
+ ```ts
+ const card: NeuralWattCard = { id: 'deepseek-v4.1-flash', readsImages: true, contextLength: 1_048_560, maxOutputLength: 393_216, };
+ ```
+ */
+export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
+  /**
+   Context window in tokens, as `GET /v1/models` lists it. The energy
+   meter's prompt buckets end at this window.
+   */
+  readonly contextLength: number;
+};
+
+/**
  The decisions endpoint's side of a card: a typed-decision model reached
  through OpenRouter's `/api/alpha/decisions`, which answers a choice, a
  yes-probability or a score and never a completion. A card carrying this
@@ -333,6 +350,11 @@ export type ModelCard = {
    Amazon Bedrock's entry, where it serves the model.
    */
   readonly bedrock?: BedrockCard;
+
+  /**
+   NeuralWatt's entry, where it serves the model on the standard lane.
+   */
+  readonly neuralwatt?: NeuralWattCard;
 
   /**
    OpenRouter's decisions endpoint's entry, where it serves the model as a
