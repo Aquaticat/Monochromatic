@@ -12,7 +12,7 @@
 /// The readings and the argument builder.
 use super::{
     Discard, abort_discard, checkout_discard, force_discard, read_tree_discard, restore_discard,
-    switch_discard,
+    restores_index_only, switch_discard,
 };
 use crate::command_test_support::{fixture, git_status, os_arguments, remove, repository};
 use std::path::Path;
@@ -215,4 +215,27 @@ fn real_git_accepts_the_shortest_abbreviations() {
         assert!(stderr.contains(mark), "{values:?}: {stderr}");
     }
     remove(root.as_path());
+}
+
+/// Only a restore that names the index and not the worktree leaves the files alone.
+#[test]
+fn staged_alone_restores_the_index_only() {
+    for (values, expected) in [
+        (vec!["a.txt"], false),
+        (vec!["--staged", "a.txt"], true),
+        (vec!["-S", "a.txt"], true),
+        (vec!["--st", "a.txt"], true),
+        (vec!["--source=HEAD", "--staged", "a.txt"], true),
+        (vec!["--staged", "--worktree", "a.txt"], false),
+        (vec!["-SW", "a.txt"], false),
+        (vec!["--staged", "--w", "a.txt"], false),
+        (vec!["--worktree", "a.txt"], false),
+        (vec!["--", "--staged"], false),
+    ] {
+        assert_eq!(
+            restores_index_only(os_arguments(values.as_slice()).as_slice()),
+            expected,
+            "{values:?}"
+        );
+    }
 }

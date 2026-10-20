@@ -194,3 +194,100 @@ fn reading_forms_are_never_rejected() {
     }
     remove(&fixture);
 }
+
+/// Run one wrapped command in the main worktree and require that it succeeded.
+fn runs(fixture: &Fixture, repo: &std::path::Path, arguments: &[&str]) -> Observed {
+    let observed: Observed = run_wrapped(fixture, repo, arguments);
+    assert_eq!(observed.code, Some(0), "{arguments:?}: {}", stderr_of(&observed));
+    return observed;
+}
+
+/// Every alternative a rejection text names runs in the main worktree, so no normal workflow lacks a way forward.
+#[test]
+fn every_named_alternative_runs_in_the_main_worktree() {
+    let fixture: Fixture = fixture("discard-alternatives");
+    let repo: PathBuf = dirty_repository(&fixture);
+    // Looking instead of reverting.
+    assert_eq!(
+        runs(&fixture, repo.as_path(), &["show", "HEAD:tracked.txt"]).stdout,
+        b"one\n"
+    );
+    let patch: Observed = runs(&fixture, repo.as_path(), &["diff", "--", "tracked.txt"]);
+    assert!(String::from_utf8_lossy(&patch.stdout).contains("+two"));
+    runs(&fixture, repo.as_path(), &["diff", "--cached", "--name-only"]);
+    runs(&fixture, repo.as_path(), &["stash", "list"]);
+    runs(&fixture, repo.as_path(), &["clean", "-n"]);
+    // Moving the branch pointer without touching files.
+    runs(&fixture, repo.as_path(), &["reset", "--soft", "HEAD"]);
+    // Copies of staged files elsewhere, instead of overwriting the worktree.
+    git(&fixture, repo.as_path(), &["add", "--", "tracked.txt"]);
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["checkout-index", "--prefix=copy/", "--all"],
+    );
+    assert_eq!(
+        std::fs::read(repo.join("copy/tracked.txt")).expect("copied staged file"),
+        b"two\n"
+    );
+    // Stopping an operation while keeping the work: these have no operation to stop, and none is rejected.
+    for arguments in [
+        vec!["merge", "--quit"],
+        vec!["rebase", "--quit"],
+        vec!["cherry-pick", "--quit"],
+        vec!["revert", "--quit"],
+        vec!["am", "--quit"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert!(!rejected_by_policy(&observed), "{arguments:?}: {}", stderr_of(&observed));
+    }
+    std::fs::remove_dir_all(repo.join("copy")).expect("remove the copied files");
+    // Unstage-by-commit: only the named path lands, the other staged entry stays staged.
+    std::fs::write(repo.join("other.txt"), b"other\n").expect("other file");
+    git(&fixture, repo.as_path(), &["add", "--", "other.txt"]);
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=only tracked", "--", "tracked.txt"],
+    );
+    assert_eq!(porcelain(&fixture, repo.as_path()), "A  other.txt\n");
+    // A clean linked worktree for anything else.
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["worktree", "add", "--quiet", "-b", "wip", "../wip"],
+    );
+    // Stop tracking a file and keep it on disk.
+    runs(&fixture, repo.as_path(), &["rm", "--cached", "--quiet", "other.txt"]);
+    assert!(repo.join("other.txt").exists());
+    remove(&fixture);
+}
+
+/// Saving a patch and then using the hatch reverts a file, and the patch brings the edits back.
+#[test]
+fn a_saved_patch_makes_the_hatch_revert_reversible() {
+    let fixture: Fixture = fixture("discard-patch");
+    let repo: PathBuf = dirty_repository(&fixture);
+    let patch: Observed = runs(&fixture, repo.as_path(), &["diff", "--", "tracked.txt"]);
+    let patch_file: PathBuf = fixture.root.join("backup.patch");
+    std::fs::write(patch_file.as_path(), patch.stdout.as_slice()).expect("backup patch");
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["restore", "--no-enforce-worktree", "--", "tracked.txt"],
+    );
+    assert_eq!(
+        std::fs::read(repo.join("tracked.txt")).expect("tracked file"),
+        b"one\n"
+    );
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["apply", patch_file.to_str().expect("utf-8 path")],
+    );
+    assert_eq!(
+        std::fs::read(repo.join("tracked.txt")).expect("tracked file"),
+        b"two\n"
+    );
+    remove(&fixture);
+}

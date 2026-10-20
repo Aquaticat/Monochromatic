@@ -233,7 +233,7 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
         (
             one(
                 "linked-worktree-required",
-                &main_worktree_message(GuardedCommand::Reset)
+                &main_worktree_message(GuardedCommand::ResetHard)
             ),
             location_only()
         )
@@ -306,7 +306,7 @@ fn linked_worktree_exempts_an_allowed_tool_cache() {
         guarded.check(PolicyId::LinkedWorktreeOnly, Trigger::PreForward),
         one(
             "linked-worktree-required",
-            &main_worktree_message(GuardedCommand::Reset)
+            &main_worktree_message(GuardedCommand::ResetHard)
         )
     );
     remove(root.as_path());
@@ -485,12 +485,12 @@ fn content_policies_follow_the_lifecycle_content() {
 #[test]
 fn overwriting_forms_are_rejected_in_main_always_and_in_linked_when_dirty() {
     for (values, command, scope) in [
-        (vec!["restore", "--staged", "a.txt"], GuardedCommand::Restore, "Tracked"),
-        (vec!["checkout", "--", "a.txt"], GuardedCommand::Checkout, "Tracked"),
-        (vec!["switch", "--discard-changes", "topic"], GuardedCommand::Switch, "Tracked"),
-        (vec!["reset"], GuardedCommand::Reset, "Tracked"),
+        (vec!["restore", "--staged", "a.txt"], GuardedCommand::RestoreStaged, "Tracked"),
+        (vec!["checkout", "--", "a.txt"], GuardedCommand::CheckoutPaths, "Tracked"),
+        (vec!["switch", "--discard-changes", "topic"], GuardedCommand::SwitchForce, "Tracked"),
+        (vec!["reset"], GuardedCommand::ResetMixed, "Tracked"),
         (vec!["rm", "-rf", "dir"], GuardedCommand::Remove, "Tracked"),
-        (vec!["merge", "--abort"], GuardedCommand::Abort, "Tracked"),
+        (vec!["merge", "--abort"], GuardedCommand::AbortMerge, "Tracked"),
         (vec!["clean", "-fd"], GuardedCommand::Clean, "TrackedAndUntracked"),
         (vec!["stash", "push"], GuardedCommand::Stash, "Tracked"),
     ] {
@@ -543,9 +543,9 @@ fn overwriting_forms_are_rejected_in_main_always_and_in_linked_when_dirty() {
 fn head_moves_are_rejected_only_while_dirty() {
     for values in [vec!["checkout", "topic"], vec!["switch", "topic"]] {
         let command: GuardedCommand = if values[0] == "checkout" {
-            GuardedCommand::Checkout
+            GuardedCommand::CheckoutMove
         } else {
-            GuardedCommand::Switch
+            GuardedCommand::SwitchMove
         };
         for location in [main_worktree("/r", ""), linked_worktree("/r", "/w")] {
             assert_eq!(

@@ -17,9 +17,8 @@ Read-only commands,
 
 - Rules before forwarding.
   `require-root` demands the repository top level as the working directory.
-  `linked-worktree-only` keeps destructive commands such as `git stash`,
-   `git clean` and `git reset` out of the main
-  worktree.
+  `linked-worktree-only` keeps every command form that can discard uncommitted work out of the main worktree,
+   and out of a linked worktree while it holds uncommitted work (see "Discarding commands").
   `branch-worktree-only` sends branch creation through `git worktree add`.
   `add-explicit` rejects bulk staging patterns such as `git add .`.
 - Commits as transactions.
@@ -157,12 +156,95 @@ A wrapper-only option is removed before Git sees the arguments and applies to th
 - `--no-enforce-<policy id>` skips one policy,
    for example `--no-enforce-final-newline` or
   `--no-enforce-security/forbidden-strings`.
-- `--no-enforce-worktree` skips `linked-worktree-only` for `git stash`,
-   `git clean` and `git reset`.
+- `--no-enforce-worktree` skips `linked-worktree-only` for the forms listed in "Discarding commands".
+  Write it directly after the subcommand,
+   for example `git restore --no-enforce-worktree -- <path>`.
 - `--no-enforce-worktree-branch` skips `branch-worktree-only`.
 - `--no-enforce-bulk-add` skips `add-explicit`.
 - `--no-worktree-copy` skips the ignored-state copy into a new linked worktree.
 - `--cli-git-keep-going` reports every finding of the command in one run instead of stopping at the first blocking one.
+
+### Discarding commands
+
+`linked-worktree-only` rejects a command form that can overwrite or delete uncommitted work by itself.
+The rule is:
+
+- In the main worktree such a form is always rejected,
+   clean or not.
+- In a linked worktree it is rejected while the worktree holds uncommitted tracked changes
+   (for `git clean`, also untracked files),
+   and runs when the worktree is clean.
+- A form that only moves `HEAD` (`git checkout <branch>`, `git switch <branch>`) is rejected in any worktree
+   only while it holds uncommitted tracked changes.
+- A status Git cannot read stops the command instead of reading as clean.
+- Repositories under an allowlisted tool cache are exempt.
+
+Every rejection names the form,
+ what it would destroy,
+ the alternative that fits the most likely intent,
+ and the deliberate way to discard anyway.
+The deliberate way is always the same:
+ save a copy (`git diff > backup.patch`) and pass `--no-enforce-worktree` directly after the subcommand.
+`git apply backup.patch` brings the edits back.
+
+The forms and their alternatives follow.
+Each alternative is run through the built executable by `src/native/binary_discard_tests.rs`.
+
+- `git stash` (every form except `list`, `show` and `create`):
+   commit work in progress with explicit paths on a topic branch in its own linked worktree
+   (`git worktree add -b <branch> <path>`).
+- `git clean` without `--dry-run`:
+   `git clean -n` lists what would go,
+   delete specific files with `rm`,
+   or use the project's own clean task.
+- `git reset --hard`, `--merge`, `--keep`:
+   `git reset --soft <commit>` undoes a commit and keeps its changes,
+   `git diff <commit>` compares,
+   `git worktree add <path> <commit>` gives a clean copy.
+- `git reset` in the default or `--mixed` mode:
+   `git commit --message <message> -- <paths>` commits only the named paths and ignores other staged entries,
+   `git diff --cached --name-only` lists what is staged.
+- `git restore --staged` (unstaging):
+   the same two commands as `git reset`.
+- `git restore` and `git checkout` with paths,
+   `--force`,
+   `--patch`,
+   `--ours` or `--theirs` (reverting files):
+   `git diff -- <path>` and `git show HEAD:<path>` compare,
+   `git worktree add <path> <branch>` opens another branch,
+   or save a patch and use the hatch.
+- `git checkout <branch>` and `git switch <branch>` while the worktree is dirty,
+   and `git switch --force`:
+   commit with explicit paths first,
+   or open the branch with `git worktree add <path> <branch>`.
+- `git rm --force`:
+   `git rm <path>` refuses a modified file,
+   and `git rm --cached <path>` stops tracking and keeps the file.
+- `git mv --force`:
+   pick a destination that does not exist,
+   or `git rm <destination>` first.
+- `git checkout-index --force`:
+   `git checkout-index --prefix=<directory>/ --all` writes copies elsewhere.
+- `git read-tree --reset`:
+   `git read-tree -m` merges,
+   or reset in a clean linked worktree.
+- `git merge --abort`,
+   `git rebase --abort`,
+   `git cherry-pick --abort`,
+   `git revert --abort`,
+   `git am --abort`:
+   the same command with `--quit` stops the operation and keeps the index and files,
+   `--continue` finishes it after resolving conflicts,
+   and `--skip` drops the current commit or patch.
+
+The forms are read with Git's own option grammar,
+ so abbreviations,
+ clustered short flags (`-rf`) and a path after `--` are handled as Git handles them.
+Commands without a table of their own (`rm`,
+ `mv`,
+ `checkout-index`,
+ `read-tree`,
+ `restore` and the `--abort` commands) take the hatch directly after the subcommand.
 
 ### Output and exit status
 

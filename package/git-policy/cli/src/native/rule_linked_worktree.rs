@@ -37,7 +37,7 @@
 use super::command_clean::{CleanRegion, clean_changes_worktree, parse_clean_region};
 use super::command_discard::{
     Discard, abort_discard, checkout_discard, force_discard, read_tree_discard, restore_discard,
-    switch_discard,
+    restores_index_only, switch_discard,
 };
 use super::command_options::OptionError;
 use super::command_reset::{ResetMode, ResetRegion, parse_reset_region};
@@ -77,17 +77,19 @@ use std::ffi::OsString;
 pub const LINKED_WORKTREE_REQUIRED_CODE: &str = "linked-worktree-required";
 
 /// What:
-///  The commands the policy guards.
+///  The forms the policy guards.
 ///  An `enum` is a closed set of named alternatives.
 ///       `#[derive(...)]` asks the compiler to generate copying,
 ///  debug printing and `==`.
 /// Why:
-///   Each has its own rejection text; a variant names the forms of its subcommand that discard.
+///   Each form has its own rejection text, because the same subcommand serves different intents:
+///  `restore --staged` unstages while `restore <path>` reverts a file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type GuardedCommand = 'stash' | 'clean' | 'reset' | 'restore' | 'checkout' | 'switch' | 'rm' | 'mv'
-///   | 'checkout-index' | 'read-tree' | 'abort';
+/// type GuardedCommand = 'stash' | 'clean' | 'reset-hard' | 'reset-mixed' | 'restore-staged' | 'restore-worktree'
+///   | 'checkout-paths' | 'checkout-move' | 'switch-force' | 'switch-move' | 'rm' | 'mv' | 'checkout-index'
+///   | 'read-tree' | 'abort-merge' | 'abort-rebase' | 'abort-pick' | 'abort-am';
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum GuardedCommand {
@@ -95,14 +97,23 @@ pub enum GuardedCommand {
     Stash,
     /// A `git clean` that is not a dry run.
     Clean,
-    /// A `git reset` in any mode but `--soft`.
-    Reset,
-    /// Every `git restore` form.
-    Restore,
-    /// A `git checkout` with paths, `--force`, `--patch`, `--ours` or `--theirs`, or one that moves `HEAD`.
-    Checkout,
-    /// A `git switch` with `--force` or `--discard-changes`, or one that moves `HEAD`.
-    Switch,
+    /// A `git reset` with `--hard`,
+    ///  `--merge` or `--keep`.
+    ResetHard,
+    /// A `git reset` in the default or `--mixed` mode.
+    ResetMixed,
+    /// A `git restore` that names the index and not the worktree.
+    RestoreStaged,
+    /// A `git restore` that writes worktree files.
+    RestoreWorktree,
+    /// A `git checkout` with paths, `--force`, `--patch`, `--ours` or `--theirs`.
+    CheckoutPaths,
+    /// A `git checkout` that moves `HEAD`.
+    CheckoutMove,
+    /// A `git switch` with `--force` or `--discard-changes`.
+    SwitchForce,
+    /// A `git switch` that moves `HEAD`.
+    SwitchMove,
     /// A `git rm` with `--force`.
     Remove,
     /// A `git mv` with `--force`.
@@ -111,8 +122,14 @@ pub enum GuardedCommand {
     CheckoutIndex,
     /// A `git read-tree` with `--reset`.
     ReadTree,
-    /// `--abort` of `merge`, `rebase`, `cherry-pick`, `revert` or `am`.
-    Abort,
+    /// `git merge --abort`.
+    AbortMerge,
+    /// `git rebase --abort`.
+    AbortRebase,
+    /// `git cherry-pick --abort` or `git revert --abort`.
+    AbortPick,
+    /// `git am --abort`.
+    AbortAm,
 }
 
 /// What:
@@ -211,19 +228,35 @@ fn guarded_decision(
     if word == b"reset" {
         let facts: ResetRegion = parse_reset_region(region, &[])?;
         // Every mode but `--soft` replaces the index, and with it the staged entries.
-        if facts.mode != Some(ResetMode::Soft) {
-            return Ok(LinkedWorktreeDecision::NeedsEffectiveTarget(GuardedCommand::Reset));
-        }
-        return Ok(LinkedWorktreeDecision::Pass);
+        return Ok(match facts.mode {
+            Some(ResetMode::Soft) => LinkedWorktreeDecision::Pass,
+            Some(ResetMode::Hard | ResetMode::Merge | ResetMode::Keep) => {
+                LinkedWorktreeDecision::NeedsEffectiveTarget(GuardedCommand::ResetHard)
+            }
+            Some(ResetMode::Mixed) | None => {
+                LinkedWorktreeDecision::NeedsEffectiveTarget(GuardedCommand::ResetMixed)
+            }
+        });
     }
     if word == b"checkout" {
-        return Ok(decided(GuardedCommand::Checkout, checkout_discard(region)?));
+        return Ok(match checkout_discard(region)? {
+            Discard::Overwrites => decided(GuardedCommand::CheckoutPaths, Discard::Overwrites),
+            reading => decided(GuardedCommand::CheckoutMove, reading),
+        });
     }
     if word == b"switch" {
-        return Ok(decided(GuardedCommand::Switch, switch_discard(region)?));
+        return Ok(match switch_discard(region)? {
+            Discard::Overwrites => decided(GuardedCommand::SwitchForce, Discard::Overwrites),
+            reading => decided(GuardedCommand::SwitchMove, reading),
+        });
     }
     if word == b"restore" {
-        return Ok(decided(GuardedCommand::Restore, restore_discard(region)));
+        let command: GuardedCommand = if restores_index_only(region) {
+            GuardedCommand::RestoreStaged
+        } else {
+            GuardedCommand::RestoreWorktree
+        };
+        return Ok(decided(command, restore_discard(region)));
     }
     if word == b"rm" {
         return Ok(decided(GuardedCommand::Remove, force_discard(region)));
@@ -237,9 +270,15 @@ fn guarded_decision(
     if word == b"read-tree" {
         return Ok(decided(GuardedCommand::ReadTree, read_tree_discard(region)));
     }
-    for aborting in [&b"merge"[..], b"rebase", b"cherry-pick", b"revert", b"am"] {
+    for (aborting, command) in [
+        (&b"merge"[..], GuardedCommand::AbortMerge),
+        (b"rebase", GuardedCommand::AbortRebase),
+        (b"cherry-pick", GuardedCommand::AbortPick),
+        (b"revert", GuardedCommand::AbortPick),
+        (b"am", GuardedCommand::AbortAm),
+    ] {
         if word == aborting {
-            return Ok(decided(GuardedCommand::Abort, abort_discard(region)));
+            return Ok(decided(command, abort_discard(region)));
         }
     }
     return Ok(LinkedWorktreeDecision::Pass);
