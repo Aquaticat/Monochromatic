@@ -356,9 +356,8 @@ fn the_selection_and_the_matches_are_marks_under_the_glyphs() {
     fixture.select(start, end);
     let selected = whole(&fixture).0;
     let fills = drawn_fills(&selected);
-    let mut tops: Vec<i64> = fills.iter().map(|mark| return mark.top as i64).collect();
-    tops.dedup();
-    assert_eq!(tops.len(), 2, "marks on each of the two lines the selection crosses: {fills:?}");
+    // The first line's mark and the cell its line break takes touch, and are drawn as one so no seam shows.
+    assert_eq!(fills.len(), 2, "one mark for each of the two lines the selection crosses: {fills:?}");
     for mark in &fills {
         assert_eq!(mark.ink, FILLS.selection);
         assert!(mark.right > mark.left && mark.bottom > mark.top);

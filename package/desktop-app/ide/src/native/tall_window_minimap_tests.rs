@@ -211,9 +211,16 @@ fn resized_to(opened: &Reader, height: f32, track: f32) {
         loop {
             {
                 let current = opened.source.borrow();
+                // The picture is for the minimap's size as it now stands, not for the size before the resize.
+                let size = current.minimap.size;
+                let sized = match current.minimap.shown {
+                    Some(shown) => shown.size == (size.0.to_bits(), size.1.to_bits()),
+                    None => false,
+                };
                 if current.minimap.images_set > images
                     && current.minimap.posted == current.minimap.shown
                     && window.get_minimap_track() > track
+                    && sized
                 {
                     break;
                 }

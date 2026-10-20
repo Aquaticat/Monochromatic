@@ -152,7 +152,7 @@ pub fn drawn_strokes(items: &[Item]) -> Vec<DrawnStroke> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type DrawnFill = { left: number; top: number; right: number; bottom: number; ink: Rgba };
+/// type DrawnFill = { left: number; top: number; right: number; bottom: number; inset: number; ink: Rgba };
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DrawnFill {
@@ -164,6 +164,8 @@ pub struct DrawnFill {
     pub right: f32,
     /// Bottom edge in physical pixels.
     pub bottom: f32,
+    /// Thickness of the frame drawn, or zero for the whole rectangle.
+    pub inset: f32,
     /// Straight RGBA ink.
     pub ink: [u8; 4],
 }
@@ -177,6 +179,7 @@ pub fn drawn_fills(items: &[Item]) -> Vec<DrawnFill> {
             top,
             right,
             bottom,
+            inset,
             ink,
         } = item
         {
@@ -185,6 +188,7 @@ pub fn drawn_fills(items: &[Item]) -> Vec<DrawnFill> {
                 top: *top,
                 right: *right,
                 bottom: *bottom,
+                inset: *inset,
                 ink: *ink,
             });
         }

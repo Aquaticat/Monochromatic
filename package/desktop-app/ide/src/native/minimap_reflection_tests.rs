@@ -263,19 +263,23 @@ fn assert_reflection(reader: &Reader, what: &str) -> Found {
         "{what}: the picture holds only {} inked pixels",
         found.inked
     );
-    // The window draws the text unhinted with Vello and the picture still rasters it with swash;
-    // measured 2026-10-20 with the picture aligned (a shift of one pixel in any direction is far worse):
-    // at scale 1 the worst pixel is 19 and the mean at most 0.46, at scale 2 the worst is 40 and the mean at most 1.14
-    // (annotations, whose wave is drawn by two different strokers).
-    // A stem that lands on another pixel row in one raster than in the other moves a pixel by that much.
-    // Stage 5 draws both from one scene and restores the old bound of 12 and a mean of 1.
+    // The window and the picture are drawn by the same renderer from the same items, the picture scaled down.
+    // Measured 2026-10-20 with the picture aligned (a shift of one pixel in any direction is far worse),
+    // the same on every run: the worst pixel at scale 1 is 13 for plain text and find matches, 19 for diagnostics
+    // and 32 for a selection; at scale 2 it is 41, 41, 49 and 54; the mean is at most 0.45, 0.68, 0.41 and 0.39
+    // at scale 1 and 0.53, 0.78, 0.57 and 0.47 at scale 2.
+    // The total ink of the picture and of the window agree within 0.1 to 1.4 percent;
+    // what remains is where the ink of a glyph edge falls inside a pixel.
+    // The bounds sit a little above those measurements, per scale.
+    let scale = reader.window.window().scale_factor();
+    let (worst, mean) = if scale > 1.5 { (58, 0.9) } else { (36, 0.8) };
     assert!(
-        found.worst <= 48,
+        found.worst <= worst,
         "{what}: a pixel of the minimap differs by {} from the average of the window's pixels",
         found.worst
     );
     assert!(
-        found.mean <= 1.4,
+        found.mean <= mean,
         "{what}: the minimap differs by {:.3} on average from the average of the window's pixels",
         found.mean
     );

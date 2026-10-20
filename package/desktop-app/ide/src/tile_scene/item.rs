@@ -100,6 +100,7 @@ pub enum Item {
         StrokeItem,
     ),
     /// Fill a rectangle in one ink,
+    /// or only a frame of the given thickness along its edges,
     /// for the minimap's selection and match marks.
     Fill {
         /// Left edge in physical pixels.
@@ -112,6 +113,10 @@ pub enum Item {
         /// Bottom edge in physical pixels,
         /// not inside.
         bottom: f32,
+        /// Thickness of the frame to draw along the edges inside them,
+        /// or zero for the whole rectangle.
+        /// A frame is one path, so its four sides leave no seam where they meet.
+        inset: f32,
         /// Straight RGBA ink.
         ink: [u8; 4],
     },

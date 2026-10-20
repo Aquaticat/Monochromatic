@@ -224,3 +224,37 @@ fn one_render_of_four_dense_chunks_comes_out_blank() {
         "one render of {height} rows drew {together} inked pixels where four renders drew {apart}"
     );
 }
+
+/// A frame scaled down to a sixth of its height keeps the coverage of its edges:
+/// one pixel of a 178-alpha frame is a sixth of 178 on the minimap row that holds it, and the inside stays clear.
+/// Drawn with the even-odd rule the same frame came out at half the alpha, because the renderer folds
+/// the sum of the two rectangles' partial areas in one pixel and that is not the area between them.
+#[test]
+fn a_frame_scaled_down_keeps_the_coverage_of_its_edges() {
+    use ide_app::tile_scene::{Item, encode};
+    let items = vec![Item::Fill {
+        left: 12.0,
+        top: 25.0,
+        right: 90.0,
+        bottom: 47.0,
+        inset: 1.0,
+        ink: [0, 0, 0, 178],
+    }];
+    let mut scene = vello::Scene::new();
+    scene.append(
+        &encode(&items, 100.0),
+        Some(vello::kurbo::Affine::scale_non_uniform(0.2, 1.0 / 6.0)),
+    );
+    let pixels = render_scene(&TileScene {
+        scene,
+        width: 20,
+        height: 10,
+    });
+    let alpha = |row: usize| return i32::from(pixels.as_slice()[row * 20 + 6].a);
+    // The top edge covers y 25 to 26 of the row that stands for y 24 to 30, and the bottom edge y 46 to 47 of 42 to 48.
+    assert!((alpha(4) - 30).abs() <= 2, "top edge alpha {}", alpha(4));
+    assert!((alpha(7) - 30).abs() <= 2, "bottom edge alpha {}", alpha(7));
+    assert_eq!(alpha(5), 0, "the inside of the frame is clear");
+    assert_eq!(alpha(6), 0, "the inside of the frame is clear");
+    assert_eq!(alpha(3), 0, "nothing above the frame");
+}

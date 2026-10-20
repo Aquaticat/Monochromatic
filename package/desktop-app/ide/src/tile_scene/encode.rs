@@ -8,7 +8,7 @@ use super::Item;
 /// and brushes.
 use vello::{
     Scene,
-    kurbo::{Affine, Cap, Join, Rect, Stroke},
+    kurbo::{Affine, BezPath, Cap, Join, Rect, Stroke},
     peniko::{Color, Fill},
 };
 
@@ -69,20 +69,43 @@ pub fn encode(items: &[Item], height: f32) -> Scene {
                 top,
                 right,
                 bottom,
+                inset,
                 ink,
             } => {
-                scene.fill(
-                    Fill::NonZero,
-                    Affine::IDENTITY,
-                    brush(*ink),
-                    None,
-                    &Rect::new(
-                        f64::from(*left),
-                        f64::from(*top),
-                        f64::from(*right),
-                        f64::from(*bottom),
-                    ),
+                let outer = Rect::new(
+                    f64::from(*left),
+                    f64::from(*top),
+                    f64::from(*right),
+                    f64::from(*bottom),
                 );
+                let thick = f64::from(*inset);
+                // A frame too thin to have an inside is the whole rectangle.
+                if thick > 0.0 && outer.width() > 2.0 * thick && outer.height() > 2.0 * thick {
+                    let inner = Rect::new(
+                        outer.x0 + thick,
+                        outer.y0 + thick,
+                        outer.x1 - thick,
+                        outer.y1 - thick,
+                    );
+                    // The inner rectangle runs the other way round, so the winding number is zero inside it.
+                    // Even-odd filling would read a pixel that holds both rectangles' edges wrongly:
+                    // the renderer folds the sum of the two partial areas,
+                    // which is not the area between them.
+                    let mut frame = BezPath::new();
+                    frame.move_to((outer.x0, outer.y0));
+                    frame.line_to((outer.x1, outer.y0));
+                    frame.line_to((outer.x1, outer.y1));
+                    frame.line_to((outer.x0, outer.y1));
+                    frame.close_path();
+                    frame.move_to((inner.x0, inner.y0));
+                    frame.line_to((inner.x0, inner.y1));
+                    frame.line_to((inner.x1, inner.y1));
+                    frame.line_to((inner.x1, inner.y0));
+                    frame.close_path();
+                    scene.fill(Fill::NonZero, Affine::IDENTITY, brush(*ink), None, &frame);
+                } else {
+                    scene.fill(Fill::NonZero, Affine::IDENTITY, brush(*ink), None, &outer);
+                }
             }
             Item::Stroke(line) => {
                 let mut style = Stroke::new(f64::from(line.width));
