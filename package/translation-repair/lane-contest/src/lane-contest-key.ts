@@ -233,6 +233,12 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 12 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ Rides inside 12 too: the cut of the notes between translators from the sheets of the other judges (12e147ae40, 5498ee860b,
+ 89df3896d4, eaab1b1ed9, fcd6d13fa3, ebac709b03, 7ee1755b24) and the label rule of the candidate selection slate, which this
+ lane's sheet does not use, since it labels its own blocks (`lane-contest-wire.ts`). Its sheet is what it was, so the number
+ stays, as the page title version stays: the lexicon sheet shows source and Chinese titles only. The guard that renders every sheet with a planted note (88b5187179, c655a96182) and the restoration judge that
+ only the repair benchmark runs (36c5b02884) change no sheet this lane asks.
  */
 export const LANE_CONTEST_CACHE_VERSION = 12;
 
