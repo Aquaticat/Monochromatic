@@ -119,6 +119,8 @@ Every later head differs from that one in test files only, which can add failing
 and the lane's source files are byte-identical; so the per-file runs use
 `bin/mutate-native-container-noplanted.mjs`, a copy of the campaign script with phase 1 removed
 (each repeat of phase 1 costs about four and a half hours of container runs).
+  (Note 2026-10-20: the script `bin/mutate-native-container-noplanted.mjs` was removed; `bin/mutate-native-container.mjs`
+  with `NATIVE_MUTATION_SKIP_PLANTED=1` does the same.)
 Rerun the unmodified script instead if a source file changes.
 
 Counts are from the final run of each file.
