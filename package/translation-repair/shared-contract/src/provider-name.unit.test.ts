@@ -28,12 +28,14 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'SPENDS ON SYNTHETIC, THEN BEDROCK, THEN HYPER, THEN OPENROUTER, which is the owner\'s '
-            + 'order of 2026-09-03 with the 2026-09-07 insertion: the subscription first, the expiring '
-            + 'credits that will never be topped up next, the balance that will not be topped up after, '
-            + 'and the per-token provider last',
+          name: 'SPENDS ON NEURALWATT, THEN SYNTHETIC, THEN BEDROCK, THEN HYPER, THEN OPENROUTER, which is the '
+            + 'owner\'s order of 2026-09-03 with the 2026-09-07 insertion and the 2026-10-20 one: the free '
+            + 'daily energy that does not carry over first ("Use the neuralwatt free energy front and '
+            + 'center."), the subscription next, the expiring credits that will never be topped up after '
+            + 'it, the balance that will not be topped up after those, and the per-token provider last',
           fn: async () => {
             expect(PROVIDER_ORDER,).toEqual([
+              'neuralwatt',
               'synthetic',
               'bedrock',
               'hyper',
@@ -62,10 +64,11 @@ await describe({
                 return asked.length;
               },
             },),).toEqual({
-              synthetic: 1,
-              bedrock: 2,
-              hyper: 3,
-              openrouter: 4,
+              neuralwatt: 1,
+              synthetic: 2,
+              bedrock: 3,
+              hyper: 4,
+              openrouter: 5,
             },);
             expect(asked,).toEqual(PROVIDER_ORDER,);
           },
@@ -80,10 +83,11 @@ await describe({
         it({
           name: 'NAMES the others in spending order, whichever one is left out',
           fn: async () => {
-            expect(otherProviders({ provider: 'hyper', },),).toEqual(['synthetic', 'bedrock', 'openrouter',],);
-            expect(otherProviders({ provider: 'synthetic', },),).toEqual(['bedrock', 'hyper', 'openrouter',],);
-            expect(otherProviders({ provider: 'bedrock', },),).toEqual(['synthetic', 'hyper', 'openrouter',],);
-            expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'bedrock', 'hyper',],);
+            expect(otherProviders({ provider: 'hyper', },),).toEqual(['neuralwatt', 'synthetic', 'bedrock', 'openrouter',],);
+            expect(otherProviders({ provider: 'synthetic', },),).toEqual(['neuralwatt', 'bedrock', 'hyper', 'openrouter',],);
+            expect(otherProviders({ provider: 'bedrock', },),).toEqual(['neuralwatt', 'synthetic', 'hyper', 'openrouter',],);
+            expect(otherProviders({ provider: 'openrouter', },),).toEqual(['neuralwatt', 'synthetic', 'bedrock', 'hyper',],);
+            expect(otherProviders({ provider: 'neuralwatt', },),).toEqual(['synthetic', 'bedrock', 'hyper', 'openrouter',],);
           },
         },),
       ],
@@ -94,11 +98,12 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ADMITS the four names and nothing else, since a flag value reaches this unchecked',
+          name: 'ADMITS the five names and nothing else, since a flag value reaches this unchecked',
           fn: async () => {
             expect(PROVIDER_ORDER.every(function admitted(provider,): boolean {
               return isProviderName(provider,);
             },),).toBe(true,);
+            expect(isProviderName('neuralwatt',),).toBe(true,);
             expect(isProviderName('anthropic',),).toBe(false,);
             expect(isProviderName('',),).toBe(false,);
           },
