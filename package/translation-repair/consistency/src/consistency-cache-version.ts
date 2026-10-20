@@ -106,7 +106,7 @@
  Rides inside 6 too: the three judging sheets (the repeated wording, the run-off and the choice among a block's carry candidates)
  cut the notes between translators from the English they show (`document-structure/src/translators-note.ts`, `7ee1755b24`). The
  key digests the exact sheet, so each judge asks anew under a key of its own and an answer stored under the old sheet is never
- found, which is the rule above for a change to a sheet's wording; what the ballots must contain and what makes one usable
+ found, which is the rule that a change to a sheet's wording moves the key and not the number; what a ballot must contain and what makes one usable
  are what they were, so no number moves. The counting still reads the quotes against the stored English. Runs zheermao16 and
  CuspariaKLSY19 started on `a5dc23c5bb`, which holds 6 (set in `28f4b8fc7`), and their records stand under keys no cut
  sheet can make. Of the 92 pinned English archives 10 hold a note their original lacks (34 notes in all), so a sheet changes for

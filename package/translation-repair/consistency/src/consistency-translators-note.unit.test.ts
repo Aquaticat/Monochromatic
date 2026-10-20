@@ -18,6 +18,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { userText, } from '@monochromatic-dev/translation-repair-provider/ts/chat-message-reading.test-fixture.ts';
 import {
   buildCarryChoiceMessages,
   buildConsistencyMessages,
@@ -97,26 +98,6 @@ const CHOICE_SUBJECT: CarryChoiceSubject = {
   ],
 };
 
-/**
- Both messages of an exchange, joined.
-
- @param messages - the exchange
-
- @returns Their text, system first
-
- @example
- ```ts
- const text = joined({ messages, },);
- ```
- */
-function joined({ messages, }: { readonly messages: readonly { readonly content: string; }[]; },): string {
-  return messages
-    .map(function contentOf(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
-
 await describe({
   name: 'a note between translators stays out of the consistency judges',
   children: [
@@ -129,7 +110,7 @@ await describe({
             /**
              What a judge of the repeated wording reads.
              */
-            const sheet = joined({ messages: buildConsistencyMessages({ subject: SUBJECT, },), },);
+            const sheet = userText({ messages: buildConsistencyMessages({ subject: SUBJECT, },), },);
             expect(sheet,).not.toContain(NOTE_WORDS,);
             expect(sheet,).toContain('chubby little treasure',);
             expect(sheet,).toContain('lulled the kitten to sleep',);
@@ -146,7 +127,7 @@ await describe({
             /**
              What a judge settling the split reads.
              */
-            const sheet = joined({
+            const sheet = userText({
               messages: buildConsistencyRunOffMessages({
                 subject: SUBJECT,
                 finalists: ['OCCURRENCE 1', 'OCCURRENCE 2',],
@@ -170,7 +151,7 @@ await describe({
               /**
                What a judge choosing among the candidates reads.
                */
-              const sheet = joined({ messages: buildCarryChoiceMessages({ subject: CHOICE_SUBJECT, runOff, },), },);
+              const sheet = userText({ messages: buildCarryChoiceMessages({ subject: CHOICE_SUBJECT, runOff, },), },);
               expect(sheet,).not.toContain(NOTE_WORDS,);
               expect(sheet,).toContain('chubby little treasure',);
               expect(sheet,).toContain('CANDIDATE 3',);
