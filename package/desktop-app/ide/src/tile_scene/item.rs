@@ -21,7 +21,7 @@ use vello::{Glyph, Scene, kurbo::BezPath};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type GlyphItem = { font: Font; size: number; coords: number[]; origin: [number, number]; ink: Rgba; glyphs: Glyph[] };
+/// type GlyphItem = { font: Font; size: number; coords: number[]; origin: [number, number]; ink: Rgba; glyphs: Glyph[]; reach: [number, number] };
 /// ```
 #[derive(Clone)]
 pub struct GlyphItem {
@@ -37,6 +37,10 @@ pub struct GlyphItem {
     pub ink: [u8; 4],
     /// Glyph ids and positions relative to `origin`.
     pub glyphs: Vec<Glyph>,
+    /// Physical x of the left edge of the first glyph's box and of the right edge of the last glyph's box,
+    ///  in the tile's pixels:
+    ///  the part of a row where the run can have ink.
+    pub reach: (f32, f32),
 }
 
 /// What:

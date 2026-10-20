@@ -73,8 +73,36 @@ fn merged(intervals: &[(f32, f32)]) -> Vec<(f32, f32)> {
 }
 
 /// What:
-///  Emit `draw` once in `ordinary` ink outside `intervals` and once in `selected` ink inside them.
-///  Every clip spans `extent` in x and `band` in y.
+///  Where a drawing lies in a tile and where a clip around it may reach,
+///  in physical pixels.
+/// Why:
+///  `split` clips a drawing to parts of its row,
+///  and the parts it clips to are cut by all three.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Place = { extent: [number, number]; band: [number, number]; reach: [number, number] };
+/// ```
+pub struct Place {
+    /// The x range that the clips of a drawing together stay within:
+    ///  the tile's width and the margin that keeps the glyphs of its edges.
+    pub extent: (f32, f32),
+    /// The y range of every clip:
+    ///  the row the drawing lies on.
+    pub band: (f32, f32),
+    /// The x range where the drawing can have ink.
+    pub reach: (f32, f32),
+}
+
+/// Whether the part of a row from `from` to `to` meets the x range `reach` of a drawing's ink.
+fn meets(reach: (f32, f32), from: f32, to: f32) -> bool {
+    return to > reach.0 && from < reach.1;
+}
+
+/// What:
+///  Emit `draw` once in `ordinary` ink outside `intervals` and once in `selected` ink inside them,
+///  for each part of the row that the drawing's ink can reach.
+///  Every clip spans `place.extent` at most in x and `place.band` in y.
 ///  With no interval,
 /// or the same ink on both sides,
 /// `draw` runs once and unclipped.
@@ -85,22 +113,29 @@ fn merged(intervals: &[(f32, f32)]) -> Vec<(f32, f32)> {
 ///  The band is the row the drawing lies on:
 ///  the renderer's cost of a clip is the area it covers,
 ///  so a clip as tall as the tile costs the tile's area for every selected row.
+///  A part of the row beyond the drawing's ink gets no copy,
+///  because every copy is flattened again and the renderer keeps the lines of all of them in a buffer of fixed size:
+///  a row selected from its first glyph to its last then costs one copy of each run and not three.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function split<T>(items: Item[], intervals: [number, number][], inks: [Rgba, Rgba], extent: [number, number],
-///   band: [number, number], context: T, draw: (items: Item[], context: T, ink: Rgba) => void): void;
+/// function split<T>(items: Item[], intervals: [number, number][], inks: [Rgba, Rgba], place: Place, context: T,
+///   draw: (items: Item[], context: T, ink: Rgba) => void): void;
 /// ```
 pub fn split<T>(
     items: &mut Vec<Item>,
     intervals: &[(f32, f32)],
     inks: ([u8; 4], [u8; 4]),
-    extent: (f32, f32),
-    band: (f32, f32),
+    place: Place,
     context: &T,
     draw: fn(&mut Vec<Item>, &T, [u8; 4]),
 ) {
     let (ordinary, selected) = inks;
+    let Place {
+        extent,
+        band,
+        reach,
+    } = place;
     let joined = merged(intervals);
     if joined.is_empty() || ordinary == selected {
         draw(items, context, ordinary);
@@ -109,7 +144,7 @@ pub fn split<T>(
     // The ordinary ink fills the gaps, including the two open ends of the row.
     let mut cursor = extent.0;
     for (start, end) in &joined {
-        if *start > cursor {
+        if *start > cursor && meets(reach, cursor, *start) {
             items.push(Item::Clip {
                 left: cursor,
                 right: *start,
@@ -119,17 +154,20 @@ pub fn split<T>(
             draw(items, context, ordinary);
             items.push(Item::Unclip);
         }
-        items.push(Item::Clip {
-            left: start.max(extent.0),
-            right: end.min(extent.1),
-            top: band.0,
-            bottom: band.1,
-        });
-        draw(items, context, selected);
-        items.push(Item::Unclip);
+        let (left, right) = (start.max(extent.0), end.min(extent.1));
+        if meets(reach, left, right) {
+            items.push(Item::Clip {
+                left,
+                right,
+                top: band.0,
+                bottom: band.1,
+            });
+            draw(items, context, selected);
+            items.push(Item::Unclip);
+        }
         cursor = cursor.max(*end);
     }
-    if cursor < extent.1 {
+    if cursor < extent.1 && meets(reach, cursor, extent.1) {
         items.push(Item::Clip {
             left: cursor,
             right: extent.1,

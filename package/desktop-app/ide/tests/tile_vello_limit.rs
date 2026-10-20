@@ -1,0 +1,105 @@
+//! The byte rule of a tile's texture and the floor of Vello's per-tile command list.
+//!
+//! Vello 0.11 gives every 16 by 16 pixel tile of the picture 64 `u32` of its command list (`ptcl`) before it stores
+//!  any command (`vello_shaders-0.11.0/shader/shared/ptcl.wgsl:6`),
+//!  and the list has a fixed size of 8,388,608 elements (`vello_encoding-0.11.0/src/config.rs:406`).
+//! That is 131,072 tiles,
+//!  33.5 million pixels,
+//!  128 MiB of `Rgba8Unorm`.
+//! A texture past it renders wrong with no failure bit set:
+//!  a 1113 by 16384 picture on a list of 4,194,304 elements differed from the reference by up to 184 levels in 290,992
+//!  bytes while the renderer reported `failed = 0`
+//!  (`doc/planning/ide-vello-buffer-sizes.md`, section "A silent corruption the failure bits do not cover").
+//! The 64 MiB rule of `MAX_RASTER_BYTES` keeps every tile of the application below that floor,
+//!  and these tests keep the rule and the floor in step:
+//!  raising the rule,
+//!  or shrinking Vello's list,
+//!  needs a list size computed from the target.
+//! No window is opened.
+
+/// The rule and the texture side limit under test.
+use ide_app::{
+    shaped_text::{set_texture_dimension, texture_fits},
+    text_raster::MAX_RASTER_BYTES,
+};
+
+/// Elements of Vello 0.11's command list at its default size.
+const VELLO_PTCL_ELEMENTS: u64 = 1 << 23;
+/// Elements of the command list every tile uses before any command.
+const PTCL_FLOOR_PER_TILE: u64 = 64;
+/// Pixels on a side of one tile.
+const TILE_SIDE: u64 = 16;
+/// Bytes of one texel of the tile texture (`Rgba8Unorm`).
+const TEXEL_BYTES: u64 = 4;
+
+/// The number of tiles Vello lays over a picture `columns` by `rows` pixels.
+fn tiles(columns: u64, rows: u64) -> u64 {
+    return columns.div_ceil(TILE_SIDE) * rows.div_ceil(TILE_SIDE);
+}
+
+/// The tallest texture `columns` wide that the code accepts,
+/// or nothing when none is.
+fn tallest(columns: u64) -> Option<u64> {
+    if !texture_fits(columns, 1) {
+        return None;
+    }
+    let mut low: u64 = 1;
+    let mut high: u64 = 1 << 20;
+    while low < high {
+        let middle = (low + high).div_ceil(2);
+        if texture_fits(columns, middle) {
+            low = middle;
+        } else {
+            high = middle - 1;
+        }
+    }
+    return Some(low);
+}
+
+/// The byte rule is at most half of the texture the command list's floor can serve,
+/// so a texture twice as large as the rule allows is the first that corrupts at Vello's default list size.
+#[test]
+fn the_byte_rule_is_at_most_half_of_what_the_command_list_floor_serves() {
+    let floor_tiles = VELLO_PTCL_ELEMENTS / PTCL_FLOOR_PER_TILE;
+    let floor_bytes = floor_tiles * TILE_SIDE * TILE_SIDE * TEXEL_BYTES;
+    assert_eq!(floor_bytes, 128 * 1024 * 1024);
+    assert!(
+        MAX_RASTER_BYTES * 2 <= floor_bytes,
+        "a rule of {MAX_RASTER_BYTES} bytes against a floor of {floor_bytes}"
+    );
+}
+
+/// No texture the code accepts,
+/// at any width,
+/// on a device with any of the texture side limits in use or plausible,
+/// takes more than three quarters of the command list for its per-tile floor,
+/// counting the tiles that a size which is not a multiple of 16 rounds up to.
+#[test]
+fn no_accepted_tile_uses_more_than_three_quarters_of_the_command_list_floor() {
+    let allowed = VELLO_PTCL_ELEMENTS / PTCL_FLOOR_PER_TILE * 3 / 4;
+    let mut largest: u64 = 0;
+    for side in [8192_u32, 16_384, 32_768] {
+        set_texture_dimension(side);
+        let mut columns: u64 = 1;
+        while columns <= u64::from(side) {
+            let rows = tallest(columns).expect("a one pixel tall texture fits any width up to the side");
+            assert!(texture_fits(columns, rows));
+            assert!(!texture_fits(columns, rows + 1));
+            let used = tiles(columns, rows);
+            largest = largest.max(used);
+            assert!(
+                used <= allowed,
+                "side {side}: a texture {columns} by {rows} has {used} tiles against {allowed} allowed"
+            );
+            // Step through widths densely at the small end and by a growing stride after it.
+            columns += columns.div_ceil(40).max(1);
+        }
+    }
+    // Positive control: the sweep reaches the rule's own size (65,536 tiles, 64 MiB), so it does not skip the tall ones.
+    assert!(
+        largest >= MAX_RASTER_BYTES / TEXEL_BYTES / (TILE_SIDE * TILE_SIDE),
+        "the sweep reached {largest} tiles"
+    );
+    // Positive control: a texture twice the rule's size would not be allowed.
+    assert!(tiles(1024, 16_384 * 2) > allowed);
+}

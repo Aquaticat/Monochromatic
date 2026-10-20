@@ -45,8 +45,9 @@ pub use item::{GlyphItem, Item, StrokeItem, TileScene};
 /// A selection edge on whole pixels,
 /// and the change of ink at the edges of a selection.
 pub use split::snapped;
-/// The change of ink at the edges of a selection.
-use split::split;
+/// The change of ink at the edges of a selection,
+///  and where a drawing lies.
+use split::{Place, split};
 /// The geometry of one underline run.
 use underline::underline_items;
 
@@ -111,11 +112,13 @@ fn run_items(
         };
         let run = glyph_run.run();
         let mut glyphs: Vec<Glyph> = Vec::new();
+        let mut reach = (f32::MAX, f32::MIN);
         for glyph in glyph_run.positioned_glyphs() {
             let x = glyph.x + origin.0;
             if x + glyph.advance < -CULL_MARGIN || x > width + CULL_MARGIN {
                 continue;
             }
+            reach = (reach.0.min(x), reach.1.max(x + glyph.advance));
             glyphs.push(Glyph {
                 id: glyph.id,
                 x: glyph.x,
@@ -134,6 +137,7 @@ fn run_items(
                 origin,
                 ink: [0; 4],
                 glyphs,
+                reach,
             },
         ));
     }
@@ -222,12 +226,20 @@ fn layout_items(
                 Some(fixed) => (fixed, fixed),
                 None => (ink(role, inking.colors), inking.colors.selected),
             };
+            // A glyph's ink can overhang its box a little on either side, and ink outside the texture is never seen.
+            let overhang = run.size / 2.0;
             split(
                 items,
                 intervals,
                 (ordinary, selected),
-                (-CULL_MARGIN, size.0 + CULL_MARGIN),
-                band,
+                Place {
+                    extent: (-CULL_MARGIN, size.0 + CULL_MARGIN),
+                    band,
+                    reach: (
+                        (run.reach.0 - overhang).max(0.0),
+                        (run.reach.1 + overhang).min(size.0),
+                    ),
+                },
                 &run,
                 push_run,
             );
@@ -316,11 +328,18 @@ fn underline_frame(
             items,
             &intervals,
             (severity_ink, colors.selected),
-            (-CULL_MARGIN, width + CULL_MARGIN),
-            row_band(
-                geometry.line - CODE_ROW * scale / 2.0,
-                geometry.line + CODE_ROW * scale / 2.0,
-            ),
+            Place {
+                extent: (-CULL_MARGIN, width + CULL_MARGIN),
+                band: row_band(
+                    geometry.line - CODE_ROW * scale / 2.0,
+                    geometry.line + CODE_ROW * scale / 2.0,
+                ),
+                // The wave's slopes and the dashes' ends reach a little past the span; ink outside the texture is never seen.
+                reach: (
+                    (geometry.span.0 - crate::annotation_paint::PERIOD * scale).max(0.0),
+                    (geometry.span.1 + crate::annotation_paint::PERIOD * scale).min(width),
+                ),
+            },
             &geometry,
             underline_items,
         );
@@ -399,6 +418,9 @@ pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
 pub fn paint_tile(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Result<TileScene> {
     // The window never asks for a view past the limit, because the shaper cuts a tile of a very tall line to a clip;
     // this guards a caller that did not, since the GPU would reject a texture past its size with a validation error.
+    // The 64 MiB byte rule is also what keeps Vello's command list large enough: its default size serves 131,072 tiles
+    // of 16 by 16 pixels, 128 MiB of texture, and a render past that is wrong with no failure reported.
+    // `tests/tile_vello_limit.rs` holds the rule to half of that floor.
     if !texture_fits(u64::from(view.width), u64::from(view.height)) {
         bail!(
             "Source viewport {}x{} exceeds the tile texture limit ({} px on a side and 64 MiB); reduce the window size or scale",
