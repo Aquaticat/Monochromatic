@@ -457,6 +457,17 @@ fn opening_fifty_thousand_lines_never_blocks_the_window_thread() {
 #[test]
 fn a_resize_breaks_kept_rows_again_without_shaping() {
     let (_project, opened) = open(&long_text(1500));
+    // The syntax reply installs new styles and makes the worker forget its kept rows (`apply_syntax`); one that
+    // arrived between the first pass and the resize made the resize shape the whole file again, exactly 1501 lines
+    // more (2874 against 1373), so the test lets it arrive before the passes it counts.
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().syntax_revision
+            == Some(opened.source.borrow().document.revision()))
+        {
+            waiting.step("the syntax reply did not arrive");
+        }
+    }
     settled(&opened);
     let window = &opened.window;
     let scale = window.window().scale_factor();
