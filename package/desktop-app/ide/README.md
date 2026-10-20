@@ -4852,7 +4852,7 @@ Slint is about twelve times slower unoptimized (the GPU text study,
 `doc/planning/ide-vello-text.md`),
 which made a debug build show frozen frames that the optimized build does not have.
 
-Measured on 2026-10-20 in the bounded container (21 CPUs,
+Measured on 2026-10-19 and 2026-10-20 in the bounded container (21 CPUs,
 46 GiB) on a 28-CPU host,
 with `bin/inspect-cadence.mjs` for the cadence (see [Frame cadence check](#frame-cadence-check)).
 Other sessions shared the host,
