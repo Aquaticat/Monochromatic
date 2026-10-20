@@ -242,6 +242,10 @@ Authoritative task state,
   (`~/.pi/agent/extensions/pi-advisor.json`,
   value `opencode-go/kimi-k3`),
   never a schema default.
+- 2026-10-20 user decision (flagged adoption approved):
+  `defaultReviewerModel` selects the initial reviewer of a default call
+  and keeps the serial fallback/overlap recovery semantics;
+  only an explicit `model` argument or `<slug>` is exact.
 
 ### Pre-existing failures: measured, swept, fixed
 
@@ -305,9 +309,25 @@ disjoint write scopes):
   `translation-repair/test-fixture` was green even then.
   `source-scan`'s red was missing dependency dists (TS2307 on
   `@monochromatic-dev/translation-repair-markup` and siblings).
-- design subagent `1d3fe543`: `doc/planning/pi-advisor-dsh-variant.md` only,
-  the DSH plugin blueprint probed from the host inspect manifests;
-  implementation of `package/dsh-plugin/advisor` waits for the extraction.
+- design subagent `1d3fe543`: DONE 2026-10-20,
+  commit `f382400eab`: `doc/planning/pi-advisor-dsh-variant.md`
+  (probed host API signatures,
+  capability gaps each with a designed fallback).
+  Probe corrections to the briefing:
+  `LlmModelInfo` carries no `contextWindow`
+  (only `LlmResolvedModelInfo.context.contextWindow` and
+  `LlmDiscoveredModel.contextWindow?` do),
+  and `package/dsh-plugin/search-fetch` is a configuration-only bundle;
+  the in-process `apply(ctx)` precedent is `@deepseek-ai/dsh-tool-cordis`.
+  Two shared-core prerequisites it specifies
+  (queued as follow-up below,
+  because running subagents cannot be steered in this harness:
+  `send_message` rejects subagent ids with `active teammate not found`):
+  optional `defaultReviewerModel` in `AdvisorConfigFileSchema`/`AdvisorConfig`
+  with no schema default,
+  and a ranking seam in `selectAdvisorModel`
+  (pi expected cost versus DSH largest `contextWindow` then `name`,
+  both supplied externally).
 - docs subagent `94e9414e`: DONE,
   commit `601c69399e`:
   `doc/troubleshooting/deps-update-api-drift.md` (new class doc,
@@ -365,11 +385,19 @@ Implementation,
    (`94e9414e`);
    fix the 38 build-class reds
    (`25c55b61`).
-4. Build `package/dsh-plugin/advisor` (in-process plugin,
+4. Fold the two design prerequisites into the extracted core
+   (optional `defaultReviewerModel` field,
+   `selectAdvisorModel` ranking seam),
+   then build `package/dsh-plugin/advisor` (in-process plugin,
    tool plus `/advisor` command, unified config,
-   `ctx.llm` backend, Q12 selection rule).
+   `ctx.llm` backend, Q12 selection rule,
+   `doc/planning/pi-advisor-dsh-variant.md` as the blueprint).
 5. Tests, lint, and `mise` tasks for every new and moved package;
-   behavior picks recorded per Q5 and Q6.
+   behavior picks recorded per Q5 and Q6
+   plus the 2026-10-20 reviewer-fallback decision
+   (initial reviewer,
+   serial fallback kept,
+   explicit is exact).
 6. Fixture-profile verification, then the Q10 live install.
 7. READMEs, planning doc, GitHub issue (`needs-triage`),
    and this handover's completion record.
