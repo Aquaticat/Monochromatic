@@ -1,5 +1,6 @@
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { foldedLatinWords, } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Assembly content survival
 // THE DAMAGE EVERY OTHER INSTRUMENT HERE MISSES.
@@ -100,10 +101,10 @@ export function distinctiveWords(
     );
 
   return [...uses,]
-    .filter(function isDistinctive([word, count,],): boolean {
+    .filter(function isDistinctive([word, count,]: ReadonlyEntry<string, number>,): boolean {
       return (word.length >= MIN_DISTINCTIVE_LETTERS) && (count <= MAX_ARCHIVE_USES);
     },)
-    .map(function toWord([word,],): string {
+    .map(function toWord([word,]: ReadonlyEntry<string, number>,): string {
       return word;
     },);
 }
