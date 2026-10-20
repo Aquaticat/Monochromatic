@@ -3,9 +3,9 @@
 Purpose: record the design interview that gives `package/pi-plugin/advisor` a DSH variant
 on a shared package,
 and the decisions settled so far.
-Status: interview in progress,
-the DSH plugin API probe gates the remaining questions.
-Do not implement until the frontier is empty and the user confirms shared understanding.
+Status: interview complete.
+Shared understanding confirmed on 2026-10-20 (Q13);
+implementation is authorized.
 
 ## Request
 
@@ -94,7 +94,7 @@ and use a shared package.
   (list returned 204 entries),
   so an end-of-work install is executable from the agent side.
 
-## Settled later this interview
+## Settled decisions, later rounds
 
 - Q9 `package/pi-shared/model-selection` moves and renames to
   `package/agent-harness-shared/model-selection`
@@ -109,19 +109,53 @@ and use a shared package.
   with `plugin_manager install_bundle`,
   reversible with `remove_bundle`,
   reported together with the behavior-pick list.
+- Q11 Config convention collision resolved for the unified JSON file:
+  the DSH plugin reads the same `~/.pi/agent/extensions/pi-advisor.json`
+  and `.pi/extensions/pi-advisor.json` through the shared loader,
+  its Cordis `Config` holds only structural fields,
+  and its README records the deliberate deviation
+  from the DSH "tunables in `cordis.patch.yml`" practice.
+  Rejected: Cordis-config tunables (second source of truth),
+  split across `dsh-settings` and files.
+- Q12 Default reviewer choice without cost metadata:
+  a `defaultReviewerModel` key in the unified config wins when set,
+  otherwise the DSH variant ranks by largest `contextWindow` then name.
+  The pi variant keeps its highest-expected-cost ranking when the key is unset.
+  When the key is set it wins in both variants.
+  Rejected: the pi-ai catalog cost side-table (the recommended option),
+  fail-loudly without a model.
+- Q13 Shared understanding confirmed by the user on 2026-10-20.
 
-## Open, gated on the DSH plugin API probe
+## DSH API probe findings (forced adoptions)
 
-- In-process Cordis plugin versus MCP-bundle form for `package/dsh-plugin/advisor`.
-  Command parity (Q4) likely forces in-process;
-  the probe decides.
-- Model-call backend for the DSH variant:
-  `@earendil-works/pi-ai` as a library versus DSH model services.
-  May move `advisor-client` and `advisor-completion` across the Q7 boundary.
-- `/advisor` subcommand mapping onto DSH command surfaces.
-- Tool result rendering channels in DSH (text, markdown, progress).
-- Whether DSH offers a native plugin config mechanism that the Q8
-  unified-file answer must document as deliberately ignored.
+- Form: in-process Cordis plugin.
+  `ctx.tools.register(defineTool(...))` and `ctx.commands.register(...)`
+  both exist;
+  the MCP-bundle form cannot express commands at all.
+- Model calls: `ctx.llm.stream` plus `listProviders()`,
+  the only supported path into provider adapters
+  (dsh-llm README).
+  Direct pi-ai import is rejected as a bypass
+  of routes, credentials, retry, and session-log vocabulary.
+- Command mapping: one `/advisor` handler parses its unstructured raw input
+  (bare, `<slug>`, `status`, `off`, `on`);
+  toggling maps to `ctx.tools.restrict`.
+- Rendering: tool `output.render` produces `text` ContentBlocks
+  with markdown riding inside text;
+  no progress channel exists, so a tool call settles once
+  and live progress text is a documented deliberate gap (Q4 clause).
+- Transcript source for the DSH port: derived session message history
+  through the session surface and `SessionProjection` state.
+  Fallback if binding proves insufficient: the tool `question` parameter
+  carries the content.
+- Verification: fixture profile via `dsh --profile <fixture>`
+  (`DSH_PROFILE`, `DSH_PROFILE_DIR`),
+  checked with `cordis_inspect_query`;
+  then the Q10 live install.
+- Cost metadata: the LLM seam exposes none for text
+  (`LlmModelInfo` is id, name, description, modalities);
+  pi-ai catalogs do carry `cost: ModelCost`,
+  which Q12 declined to use.
 
 ## Rejections on record
 
@@ -131,11 +165,24 @@ and use a shared package.
   rejected in favor of default-to-richer with an after-report.
 - Dsh variant consuming pi package build output (Q1),
   rejected as harness coupling.
+- pi-ai catalog cost side-table (Q12 recommendation),
+  rejected in favor of `defaultReviewerModel` plus context heuristic.
 
 ## Next action
 
-When the DSH plugin API probe reports:
-recompute the frontier,
-ask the probe-gated questions as the final round,
-then request the user's confirmation of shared understanding
-before any implementation commit.
+Implementation, in this order:
+
+1. Move `package/pi-shared/model-selection` to
+   `package/agent-harness-shared/model-selection`
+   (dir plus name plus consumers: advisor, goal).
+2. Extract the shared core `package/agent-harness-shared/advisor`
+   (middle depth per Q7)
+   and rewire `package/pi-plugin/advisor` onto it in the same series.
+3. Build `package/dsh-plugin/advisor` (in-process plugin,
+   tool plus `/advisor` command, unified config,
+   `ctx.llm` backend, Q12 selection rule).
+4. Tests, lint, and `mise` tasks for every new and moved package;
+   behavior picks recorded per Q5 and Q6.
+5. Fixture-profile verification, then the Q10 live install.
+6. READMEs, planning doc, GitHub issue (`needs-triage`),
+   and this handover's completion record.
