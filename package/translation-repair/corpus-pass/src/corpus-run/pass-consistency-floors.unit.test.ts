@@ -50,12 +50,14 @@ function floorsWith(
     currentText = CURRENT,
     candidateText,
     declaredNames = [],
+    declaredSubjectForms,
     disputedWordings = [],
   }: {
     readonly sourceText?: string;
     readonly currentText?: string;
     readonly candidateText: string;
     readonly declaredNames?: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly disputedWordings?: readonly DisputedWording[];
   },
 ): ConsistencyFloorVerdict {
@@ -67,6 +69,7 @@ function floorsWith(
     lineStructured: false,
     declared: [],
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     disputedWordings,
   },);
 }
@@ -134,6 +137,29 @@ await describe({
               currentText: '## One\n\nMittens put the kitten to sleep.',
               candidateText: '## One\n\nThe sunlit window put the kitten to sleep.',
               declaredNames: ['Mittens',],
+            },),).toEqual({
+              kind: 'refused',
+              findings: [
+                'translate-refused-declared-name (slice 4: archive text carries "Mittens" and the replacement does not; '
+                + 'keeping the archive text)',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'PASSES A REPLACEMENT THAT NAMES THE PERSON BY ANOTHER DECLARED FORM of hers, and refuses the same '
+            + 'wording when the floor is given no subject identity to read the two forms by',
+          fn: async () => {
+            expect(floorsWith({
+              currentText: '## One\n\nMittens put the kitten to sleep.',
+              candidateText: '## One\n\nWhiskers put the kitten to sleep.',
+              declaredNames: ['Mittens', 'Whiskers',],
+              declaredSubjectForms: ['Mittens', 'Whiskers',],
+            },),).toEqual({ kind: 'passes', },);
+            expect(floorsWith({
+              currentText: '## One\n\nMittens put the kitten to sleep.',
+              candidateText: '## One\n\nWhiskers put the kitten to sleep.',
+              declaredNames: ['Mittens', 'Whiskers',],
             },),).toEqual({
               kind: 'refused',
               findings: [

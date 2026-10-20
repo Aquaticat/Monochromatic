@@ -299,6 +299,133 @@ await describe({
     },),
 
     describe({
+      name: `${findDroppedDeclaredNames.name} with a subject identity`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a swap between two declared forms of the subject, since the person is still named '
+            + 'where the base named them',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Blossom naps on the sill.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS THE SHAPE OF XingZ60 SLICE 80: the archive names the subject by the display name, '
+            + 'which holds the alias `Z60` across a word edge, and the replacement names her by another '
+            + 'alias, so one lost name is met by one new name and the nested alias is not a second loss',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'MittensZ60', 'Blossom', 'Z60', ],
+              subjectForms: [ 'MittensZ60', 'Blossom', 'Z60', ],
+              baseText: 'From this we learn that MittensZ60 is actually quite indifferent to life and death.',
+              candidateText: 'From this I learned that Blossom had actually grown quite at peace with life and death.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'KEEPS REFUSING A PLAIN LOSS, the measured case the survival guard exists for: '
+            + '`Mittens (Blossom)` becoming `Mittens` loses `Blossom` with nothing in its place',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens (Blossom) is a calico cat.',
+              candidateText: 'Mittens is a calico cat.',
+            },),).toEqual([ 'Blossom', ],);
+          },
+        },),
+        it({
+          name: 'KEEPS REFUSING WHEN NO SUBJECT IDENTITY IS SUPPLIED, so a caller that cannot say which forms '
+            + 'name one person gets the plain rule',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Blossom naps on the sill.',
+            },),).toEqual([ 'Mittens', ],);
+          },
+        },),
+        it({
+          name: 'COUNTS FOR COUNT: two declared forms lost against one new form leaves one person '
+            + 'named where the base named them twice over, which is refused with both forms named',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', 'Patch', ],
+              subjectForms: [ 'Mittens', 'Blossom', 'Patch', ],
+              baseText: 'Mittens (Blossom) naps on the sill.',
+              candidateText: 'Patch naps on the sill.',
+            },),).toEqual([ 'Mittens', 'Blossom', ],);
+          },
+        },),
+        it({
+          name: 'DOES NOT COUNT A FORM THE BASE CARRIED AS A SUBSTITUTE: `Mittens (Blossom)` becoming '
+            + '`Blossom` loses `Mittens`, and `Blossom` was already there',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens (Blossom) naps on the sill.',
+              candidateText: 'Blossom naps on the sill.',
+            },),).toEqual([ 'Mittens', ],);
+          },
+        },),
+        it({
+          name: 'COUNTS A NEW FORM AND THE SHORTER FORM RUNNING ON INSIDE IT ONCE, so one new name '
+            + 'cannot stand in for two lost ones',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Gizmo', 'Blossom Patch', 'Patch', ],
+              subjectForms: [ 'Mittens', 'Gizmo', 'Blossom Patch', 'Patch', ],
+              baseText: 'Mittens and Gizmo nap on the sill.',
+              candidateText: 'Blossom Patch naps on the sill.',
+            },),).toEqual([ 'Mittens', 'Gizmo', ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A CONTRIBUTOR NAME REPLACED BY A SUBJECT NAME, because the contributor is another '
+            + 'person and goes unnamed',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', 'Patch', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Patch watched Mittens nap on the sill.',
+              candidateText: 'Blossom watched Mittens nap on the sill.',
+            },),).toEqual([ 'Patch', ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A SUBJECT NAME REPLACED BY A CONTRIBUTOR NAME, because a contributor is not '
+            + 'another form of the subject',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', 'Patch', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Patch naps on the sill.',
+            },),).toEqual([ 'Mittens', ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A NEW FORM THAT THE CANDIDATE HOLDS ONLY ACROSS A WORD EDGE, since `Ann` inside '
+            + '`cannot` names nobody',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Ann', ],
+              subjectForms: [ 'Mittens', 'Ann', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'The cat cannot nap on the sill.',
+            },),).toEqual([ 'Mittens', ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: declaredNameRefusalReport.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
