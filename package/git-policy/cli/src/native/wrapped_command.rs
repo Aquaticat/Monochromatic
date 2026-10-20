@@ -46,6 +46,7 @@ use super::command_commit::{CommitRegion, parse_commit_region};
 use super::commit_command::{CommitCommand, run_commit_command};
 use super::config_schema::{CliGitConfig, PolicyConfig};
 use super::diagnostics::EngineFailureCode;
+use super::discard_audit::{AuditOutcome, record_audit};
 use super::global_arguments::GlobalOutcome;
 use super::invocation_config::{config_invalid_event, load_identity_config};
 use super::manual_push_lifecycle::manual_push_scope;
@@ -59,6 +60,7 @@ use super::policy_events::{PolicyEvent, render_policy_events};
 use super::policy_pass::{PassResult, policies_of_kind, run_policy_pass};
 use super::policy_registry::PolicyId;
 use super::policy_trigger::Trigger;
+use super::rule_linked_worktree::{LinkedWorktreeDecision, decide_linked_worktree};
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 /// Startup recovery as a command step.
@@ -67,6 +69,7 @@ use super::transaction_gate::{Gate, recover_for_command};
 use super::transaction_lease::has_valid_preparation_lease;
 use super::unported::{Unported, unported_from_unavailable, unported_notice};
 use super::worktree_identity::worktree_root;
+use super::wrapper_controls::is_escaped;
 use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
 /// What:
 ///  `OsString` is owned operating-system text of raw bytes.
@@ -361,6 +364,30 @@ fn run_commit_if_real<F: RepositoryFacts>(
 }
 
 /// What:
+///  Record a guarded command form that runs because the invocation carries the escape for the linked-worktree-only
+///  policy.
+/// Why:
+///   The policy never runs under its escape, so nothing else would say that a discarding form was deliberately let
+///  through; a later loss must be attributable to the escape.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// recordEscapeUse(stripped, checks);
+/// ```
+fn record_escape_use<F: RepositoryFacts>(stripped: &StrippedInvocation, checks: &mut ShippedChecks<F>) {
+    if !is_escaped(&stripped.controls, PolicyId::LinkedWorktreeOnly) {
+        return;
+    }
+    let command = match decide_linked_worktree(stripped.arguments.as_slice()) {
+        LinkedWorktreeDecision::Pass => return,
+        LinkedWorktreeDecision::NeedsEffectiveTarget(command) | LinkedWorktreeDecision::WhenDirty(command) => command,
+    };
+    if let Ok(location) = checks.facts.location() {
+        record_audit(&location.identity, command, AuditOutcome::Hatch, stripped.arguments.as_slice(), None);
+    }
+}
+
+/// What:
 ///  Recover before a read-only command that already asked Git for the repository location;
 ///       a live transaction does not stop it,
 ///  a legacy directory or a recovery failure does.
@@ -448,6 +475,7 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
         Some(config) => config.policies,
         None => PolicyConfig::defaults(),
     };
+    record_escape_use(stripped, checks);
     let request: StageRequest = StageRequest {
         trigger: Trigger::PreForward,
         config: policies,

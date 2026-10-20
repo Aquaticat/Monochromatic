@@ -34,6 +34,7 @@
 /// import { decideRequireRoot, resolveRequireRoot } from './rule_require_root.ts';
 /// ```
 use super::diagnostics::EngineFailureCode;
+use super::discard_audit::{AuditOutcome, record_audit};
 /// Which worktree a command targets,
 ///  for the linked-worktree rule.
 use super::effective_target::{EffectiveTarget, classify_effective_target};
@@ -332,14 +333,22 @@ fn check_linked_worktree(
             return clean();
         }
     } else if let Some(message) = resolve_linked_worktree(command, target) {
+        record_audit(&location.identity, command, AuditOutcome::Rejected, arguments, None);
         return rejected(LINKED_WORKTREE_REQUIRED_CODE, message);
     }
     if target == EffectiveTarget::Allowlisted {
+        record_audit(&location.identity, command, AuditOutcome::Exempt, arguments, None);
         return clean();
     }
     match facts.worktree_dirty(dirty_scope(command)) {
-        Ok(true) => return rejected(LINKED_WORKTREE_REQUIRED_CODE, dirty_worktree_message(command)),
-        Ok(false) => return clean(),
+        Ok(true) => {
+            record_audit(&location.identity, command, AuditOutcome::Rejected, arguments, Some(true));
+            return rejected(LINKED_WORKTREE_REQUIRED_CODE, dirty_worktree_message(command));
+        }
+        Ok(false) => {
+            record_audit(&location.identity, command, AuditOutcome::Allowed, arguments, Some(false));
+            return clean();
+        }
         Err(message) => return fact_unavailable(message),
     }
 }

@@ -56,7 +56,7 @@ fn the_line_states_who_ran_what_where_and_what_was_decided() {
     assert_eq!(value["outcome"], "rejected");
     assert_eq!(value["dirty"], true);
     assert_eq!(value["cwd"], "/r/sub");
-    assert_eq!(value["arguments"], serde_json::json!(["-C", "/r", "restore", "--", "a.txt"]));
+    assert_eq!(value["arguments"], serde_json::Value::from(vec!["-C", "/r", "restore", "--", "a.txt"]));
     let unasked: String = audit_line(&AuditRecord {
         time_millis: 1,
         process: 1,
@@ -68,9 +68,9 @@ fn the_line_states_who_ran_what_where_and_what_was_decided() {
         arguments: &[],
         dirty: None,
     });
-    let value: serde_json::Value = serde_json::from_str(unasked.trim_end()).expect("JSON");
-    assert_eq!(value["dirty"], serde_json::Value::Null);
-    assert_eq!(value["outcome"], "hatch");
+    let unasked_value: serde_json::Value = serde_json::from_str(unasked.trim_end()).expect("JSON");
+    assert_eq!(unasked_value["dirty"], serde_json::Value::Null);
+    assert_eq!(unasked_value["outcome"], "hatch");
 }
 
 /// The four outcomes have four distinct words.

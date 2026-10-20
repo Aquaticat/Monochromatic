@@ -12,6 +12,7 @@
 //! ```
 
 use super::diagnostic_log::debug;
+use super::json_record::{quote, string_array};
 use super::rule_linked_worktree::GuardedCommand;
 use super::worktree_identity::WorktreeIdentity;
 use std::ffi::OsString;
@@ -131,19 +132,23 @@ pub fn audit_line(record: &AuditRecord) -> String {
         .iter()
         .map(|argument| { return argument.to_string_lossy().into_owned(); })
         .collect();
-    let value = serde_json::json!({
-        "schemaVersion": 1,
-        "timeMillis": record.time_millis.to_string(),
-        "pid": record.process,
-        "parentPid": record.parent,
-        "worktree": record.place.1,
-        "form": format!("{:?}", record.form),
-        "outcome": record.outcome.word(),
-        "dirty": record.dirty,
-        "cwd": record.directory.to_string_lossy(),
-        "arguments": rendered,
-    });
-    return format!("{value}\n");
+    let dirty: &str = match record.dirty {
+        Some(true) => "true",
+        Some(false) => "false",
+        None => "null",
+    };
+    return format!(
+        "{{\"schemaVersion\":1,\"timeMillis\":{},\"pid\":{},\"parentPid\":{},\"worktree\":{},\"form\":{},\
+         \"outcome\":{},\"dirty\":{dirty},\"cwd\":{},\"arguments\":{}}}\n",
+        quote(&record.time_millis.to_string()),
+        record.process,
+        record.parent,
+        quote(record.place.1),
+        quote(&format!("{:?}", record.form)),
+        quote(record.outcome.word()),
+        quote(&record.directory.to_string_lossy()),
+        string_array(&rendered),
+    );
 }
 
 /// The process that started this one, or zero where the platform does not say.

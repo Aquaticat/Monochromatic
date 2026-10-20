@@ -291,3 +291,46 @@ fn a_saved_patch_makes_the_hatch_revert_reversible() {
     );
     remove(&fixture);
 }
+
+/// Every decision about a discarding form leaves one line in the audit file of the common Git directory: the
+///  rejection in the main worktree, the run in a clean linked worktree, and the run under the hatch.
+#[test]
+fn each_decision_leaves_one_line_in_the_audit_file() {
+    let fixture: Fixture = fixture("discard-audit");
+    let repo: PathBuf = dirty_repository(&fixture);
+    let audit: PathBuf = repo.join(".git/cli-git-audit.jsonl");
+    let rejected: Observed = run_wrapped(&fixture, repo.as_path(), &["restore", "--", "tracked.txt"]);
+    assert!(rejected_by_policy(&rejected), "{}", stderr_of(&rejected));
+    let text: String = std::fs::read_to_string(&audit).expect("audit file after a rejection");
+    assert_eq!(text.lines().count(), 1, "{text}");
+    for field in [
+        "\"worktree\":\"main\"",
+        "\"form\":\"RestoreWorktree\"",
+        "\"outcome\":\"rejected\"",
+        "\"arguments\":[\"restore\",\"--\",\"tracked.txt\"]",
+    ] {
+        assert!(text.contains(field), "{field} missing from {text}");
+    }
+    let hatch: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &["stash", "--no-enforce-worktree", "--include-untracked"],
+    );
+    assert_eq!(hatch.code, Some(0), "{}", stderr_of(&hatch));
+    let text: String = std::fs::read_to_string(&audit).expect("audit file after the hatch");
+    assert_eq!(text.lines().count(), 2, "{text}");
+    assert!(text.lines().nth(1).is_some_and(|line| line.contains("\"outcome\":\"hatch\"")), "{text}");
+    let linked: PathBuf = fixture.root.join("linked");
+    git(&fixture, repo.as_path(), &["worktree", "add", "--quiet", "-b", "side", "../linked"]);
+    let allowed: Observed = run_wrapped(&fixture, linked.as_path(), &["switch", "topic"]);
+    assert_eq!(allowed.code, Some(0), "{}", stderr_of(&allowed));
+    let text: String = std::fs::read_to_string(&audit).expect("audit file after a clean run");
+    let last: &str = text.lines().last().expect("a last line");
+    for field in ["\"worktree\":\"linked\"", "\"form\":\"SwitchMove\"", "\"outcome\":\"allowed\"", "\"dirty\":false"] {
+        assert!(last.contains(field), "{field} missing from {last}");
+    }
+    let read_only: Observed = run_wrapped(&fixture, repo.as_path(), &["status", "--short"]);
+    assert_eq!(read_only.code, Some(0), "{}", stderr_of(&read_only));
+    assert_eq!(std::fs::read_to_string(&audit).expect("audit file").lines().count(), text.lines().count());
+    remove(&fixture);
+}
