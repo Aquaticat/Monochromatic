@@ -190,6 +190,41 @@ fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
 }
 
 /// What:
+///  Whether two bands differ by at most one level in any channel of any pixel.
+/// Why:
+///  The viewport's bottom edge is a clip edge,
+///  and the GPU renderer multiplies the pixels of a clipped row by a float mask that is not exactly one there.
+///  Measured on 2026-10-20 over 1256 one-row scrolls of this test:
+///  the last window row differed from the same content one row higher in 123 scrolls,
+///  334 pixels in all,
+///  by one level at most;
+///  every row between the viewport's two edges matched exactly in every scroll.
+///  Shifted content that moved one row is therefore compared exactly except in that last row.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function withinOneLevel(left: Pixel[], right: Pixel[]): boolean;
+/// ```
+fn within_one_level(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> bool {
+    if left.len() != right.len() {
+        return false;
+    }
+    for (first, second) in left.iter().zip(right.iter()) {
+        for (one, other) in [
+            (first.r, second.r),
+            (first.g, second.g),
+            (first.b, second.b),
+            (first.a, second.a),
+        ] {
+            if one.abs_diff(other) > 1 {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/// What:
 ///  Pixels of a band left of line `line`'s number,
 ///  where its severity letter stands,
 ///  in files of fewer than
@@ -695,8 +730,16 @@ fn scrolling_across_annotated_lines_is_rigid() {
         let current = frame(window);
         let mut y = TEXT_TOP + 1.0;
         while y < height - 1.0 {
+            // The previous frame's last row is the viewport's clip edge; its pixels may be a level off (see
+            // `within_one_level`). Every other row is the previous frame's row shifted by one, exactly.
+            let shifted = band(&previous, y + 1.0);
+            let moved = if y + 2.0 < height {
+                band(&current, y) == shifted
+            } else {
+                within_one_level(band(&current, y), shifted)
+            };
             assert!(
-                band(&current, y) == band(&previous, y + 1.0),
+                moved,
                 "the frame at offset {offset} is not the previous one shifted by one row (window row {y})"
             );
             y += 1.0;
