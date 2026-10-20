@@ -654,6 +654,9 @@ so the small calls behind a refused large one still reach the free energy.
 The guard was shown to fail by mutation:
 without the `isCallSizedRefusal` check,
 "HOLDS NEURALWATT OUT FOR NOTHING WHEN IT REFUSES ONE LARGE CALL" fails.
-The matching check in `provider-router-reask.ts` was not mutated on its own.
+The matching check in `provider-router-reask.ts` had no case of its own when the branch was handed back;
+`bd92100fa1` adds "HOLDS NEURALWATT OUT FOR NOTHING WHEN IT REFUSES ONE LARGE RE-ASK",
+and with the check replaced by `if (true)` that case alone fails
+(`['neuralwatt','hyper']` where `['neuralwatt','neuralwatt']` was expected).
 No cache moves:
 no cache key names a provider or reads the router's attempt count.
