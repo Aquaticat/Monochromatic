@@ -8,12 +8,12 @@ import {
 import {
   activeFootnoteMarkers,
   footnoteMarkerLabels,
+  type ReadonlyEntry,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   normalizeFootnoteIdentifier,
   relabelsFootnote,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 
 //region Archive footnote relabel closure

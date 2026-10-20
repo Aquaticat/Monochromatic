@@ -28,7 +28,7 @@ import type {
   SettledReferences,
 } from './rendering-audit-settled-subject.ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Settled audit buying
 // What the settled rendering audit buys, in what order, what it prints before

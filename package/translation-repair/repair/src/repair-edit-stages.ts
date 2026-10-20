@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type {
   AdjudicatedIssue,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -28,7 +29,6 @@ import {
   gatherStageVoices,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Checker stage
 // The proving stage of one chunk's repair: checker models judge whether each

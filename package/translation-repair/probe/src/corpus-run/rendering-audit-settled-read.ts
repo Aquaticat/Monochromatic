@@ -1,6 +1,6 @@
 import type { ScreenedFinding, } from '@monochromatic-dev/translation-repair-rendering-audit/ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Settled audit reading
 // Turns persisted audit rows into the three readings the settled audit owes, and nothing

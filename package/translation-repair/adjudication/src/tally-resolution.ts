@@ -8,7 +8,7 @@ import {
   type ResolutionReportWire,
   type ResolutionVerdict,
 } from './resolution-wire.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Resolution tally
 // Checker replies resolve through the prompt plan exactly like panel

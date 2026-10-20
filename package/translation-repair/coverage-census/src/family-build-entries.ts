@@ -4,7 +4,7 @@ import { nodeEntries as probeEntries, } from '@monochromatic-dev/translation-rep
 import { nodeEntries as runEntries, } from '@monochromatic-dev/translation-repair-run/ts';
 import { nodeEntries as sliceCacheEntries, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 import { nodeEntries as ownEntries, } from './build-entries.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Family build entries
 // The census tells a runner's command-line main from library source by the

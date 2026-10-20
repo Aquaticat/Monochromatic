@@ -8,7 +8,7 @@ import type {
   BundleScript,
   CoverageRange,
 } from './coverage-file.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Coverage tally
 // LEDGER T8: WHICH BUNDLE CODE NO TEST PROCESS RAN, over every file

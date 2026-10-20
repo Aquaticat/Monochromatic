@@ -3,7 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { isIndexPairingWire, } from './index-pair-list.ts';
 import { selectFence, } from './prompt-fence.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Block pairing wire
 // PAIRING IS THE ONE JOB HERE THAT SCORING CANNOT DO.

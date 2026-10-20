@@ -3,7 +3,7 @@ import {
   rendersAsNothing,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Task runner guard
 // A BUILT COMMAND OF THIS PACKAGE REFUSES TO RUN IN A PROCESS THAT HOLDS

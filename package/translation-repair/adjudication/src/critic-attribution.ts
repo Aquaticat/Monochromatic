@@ -1,6 +1,8 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Critic attribution
 // Which critic raised which claim, kept OUTSIDE the claim because adjudication

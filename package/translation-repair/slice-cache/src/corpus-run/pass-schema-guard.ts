@@ -19,7 +19,7 @@ import {
   type SchemaCensusRow,
   type SchemaClassification,
 } from './pass-schema-census.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Pass schema guard
 // Refuses to resume an accumulation into a directory whose settled artifacts do

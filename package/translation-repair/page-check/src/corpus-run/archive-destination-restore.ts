@@ -7,7 +7,7 @@ import {
   rewriteEverySlice,
   type TextRewrite,
 } from './page-slice-rewrite.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Archive destination restore
 // LEDGER A4 (owner, 2026-09-27, "Archive's English"). shihai4h2 linked PTSD

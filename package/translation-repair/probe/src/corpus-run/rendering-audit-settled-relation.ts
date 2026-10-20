@@ -7,7 +7,7 @@ import type {
   WouldShipReading,
   WouldShipSilence,
 } from '@monochromatic-dev/translation-repair-page-check/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Page relation
 // Says whether the wording one audit subject carries is the wording a document

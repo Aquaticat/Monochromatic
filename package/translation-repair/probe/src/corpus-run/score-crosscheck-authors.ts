@@ -1,7 +1,7 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { CrosscheckItem, } from './judge-crosscheck.ts';
 import { MIN_JUDGED_CLAIMS, } from './judge-independence.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Score crosscheck authors
 // The author table `score-crosscheck` prints: each critic's share of the

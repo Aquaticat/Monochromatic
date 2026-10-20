@@ -8,6 +8,7 @@ import {
 } from 'node:path';
 
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { fixtureGit, } from '../hermetic-git-run.test-fixture.ts';
 import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
@@ -49,15 +50,6 @@ export type BenchPages = {
    */
   readonly english: string;
 };
-
-/**
- One key and its value as a deeply readonly pair, which a callback reading an entry of `Object.entries` needs for its
- destructured parameter. Declared here because a test fixture imports the package's shipped entry, not its source.
- */
-type ReadonlyEntry<Key, Value,> = readonly [
-  Key,
-  Value,
-];
 
 /**
  The places a built command reads, with the environment naming them.

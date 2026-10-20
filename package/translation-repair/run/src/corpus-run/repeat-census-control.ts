@@ -1,4 +1,4 @@
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Repeat census control
 // The positive control of the census: the entry and the source lines the design

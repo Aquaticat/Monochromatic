@@ -1,4 +1,4 @@
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Roster configuration
 // Whether a lane was configured with anybody to ask, checked before it spends

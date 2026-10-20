@@ -12,7 +12,7 @@ import {
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { referencePageTexts, } from '@monochromatic-dev/translation-repair-reference/ts';
 import { wordStarts, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Archive block evidence
 

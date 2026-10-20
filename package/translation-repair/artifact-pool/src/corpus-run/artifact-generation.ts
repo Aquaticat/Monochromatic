@@ -9,7 +9,7 @@ import {
 } from './artifact-file-name.ts';
 import { readPlacement, } from './artifact-placement.ts';
 import { resolveGit, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Artifact generation
 // Which PIPELINE VERSION produced each settled artifact, and which ones a draw

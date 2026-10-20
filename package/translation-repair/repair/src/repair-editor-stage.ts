@@ -5,6 +5,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type {
   AdjudicatedIssue,
   EditableEnvelope,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
@@ -46,7 +47,6 @@ import {
   gatherStageVoices,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal

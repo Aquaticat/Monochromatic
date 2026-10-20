@@ -14,7 +14,7 @@ import {
   decodedViewsOf,
   type TextView,
 } from './credential-views.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Credential mask
 // Replaces every copy of a credential a request carried inside the text a

@@ -4,9 +4,9 @@ import type {
   PanelBallot,
   PanelClaimBallot,
   PanelVoteState,
+  ReadonlyEntry,
   VoteTally,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Tally claim
 // One claim's arithmetic, split out of `tally-votes.ts` so the reading that

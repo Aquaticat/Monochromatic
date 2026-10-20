@@ -1,5 +1,5 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Attribution report
 // Reads what critic attribution recorded and turns it into rates. Built

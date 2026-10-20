@@ -6,7 +6,7 @@ import {
   isCountedSingleMark,
 } from './consistency-loose-marks.ts';
 import type { MarkReading, } from './consistency-proven-apostrophes.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consistency splice readings
 // WHAT A SPLICE MUST LEAVE AS IT FOUND IT, besides the words and the loose marks inside the

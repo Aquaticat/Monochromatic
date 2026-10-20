@@ -3,7 +3,7 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import type { GradedItem, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { VerifyManifestItem, } from './score-verify-manifest.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Score verify tally
 // Joins the graded items to the manifest rows by position, counts the grades

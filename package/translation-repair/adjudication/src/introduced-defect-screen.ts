@@ -1,4 +1,7 @@
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  AdjudicatedIssue,
+  ReadonlyEntry,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { RepairRegion, } from './repair-region.ts';
 import {
@@ -10,7 +13,6 @@ import {
   rendersAsNothing,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { flattenSpace, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Introduced-defect screening
 // The deterministic half of the probe. A prober claiming the edit introduced a

@@ -8,7 +8,7 @@ import {
 import { CONFIG_FILE_NAME, } from '@monochromatic-dev/translation-repair-typography/ts/semantic-wrap-binary-constants.ts';
 
 import { nodeEntries, } from './src/build-entries.ts';
-import type { ReadonlyEntry, } from './src/readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 /**
  Semantic-wrap config of the typography package, which the runner bundles inline and read beside themselves.

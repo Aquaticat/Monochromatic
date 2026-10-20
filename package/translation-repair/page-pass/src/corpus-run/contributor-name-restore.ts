@@ -19,7 +19,7 @@ import {
   nameAuthorities,
 } from './contributor-name-authorities.ts';
 import { carriesRendering, } from './handle-reading.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Contributor name restore
 // CLASS SIXTY-SEVEN (XingZ616, 2026-09-19). A contributor's name in a section

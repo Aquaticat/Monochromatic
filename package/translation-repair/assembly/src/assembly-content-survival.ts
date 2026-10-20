@@ -1,6 +1,6 @@
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { foldedLatinWords, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Assembly content survival
 // THE DAMAGE EVERY OTHER INSTRUMENT HERE MISSES.

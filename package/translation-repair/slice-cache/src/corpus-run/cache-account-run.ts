@@ -35,7 +35,7 @@ import {
   type CommandLineOf,
   taskPathOf,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Cache account run
 // THE PRE-LAUNCH CACHE VERSION CHECK (ledger M28), read-only: git log, git

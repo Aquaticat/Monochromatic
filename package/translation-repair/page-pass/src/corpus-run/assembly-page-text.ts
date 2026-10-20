@@ -1,6 +1,6 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Assembly page text
 // WHAT THE PAGE CARRIES PER SLICE, read the same way by every page-assembly

@@ -15,7 +15,7 @@ import {
   pastQuoteMarkers,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { withoutHtmlComments, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Line structure guard
 // WHY THIS IS NOT IN `translate-validate.ts`, where it was first written and

@@ -10,7 +10,7 @@ import {
 } from './page-headings.ts';
 import { pairedPageNames, } from './page-name-glossary.ts';
 import { visibleText, } from './page-visible-text.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Page title spans
 // LEDGER H16 (2026-09-28). Each slice is written and judged alone, and where

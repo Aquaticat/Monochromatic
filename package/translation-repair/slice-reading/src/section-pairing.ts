@@ -1,5 +1,5 @@
 import type { BlockPair, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Section pairing
 // Which original block renders which translation block, filed under the aligned

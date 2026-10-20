@@ -1,10 +1,10 @@
 import type {
   AdjudicationStatus,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { AttributionEntry, } from './attribution-report.ts';
 import { seatJudges, } from './judge-independence.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Judge crosscheck census
 // Which claims a disinterested judge may re-examine, and what the reading is

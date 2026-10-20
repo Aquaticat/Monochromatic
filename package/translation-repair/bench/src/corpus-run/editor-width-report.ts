@@ -1,14 +1,16 @@
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   summarizeWidths,
   type WidthDraw,
   type WidthRow,
 } from './editor-width-model.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Editor width report
 // What the draw is allowed to say, written where the run's other artifacts go.

@@ -4,7 +4,7 @@ import {
   describeAtom,
   mergeAtoms,
 } from './translate-atom-floor.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Rewritten renderings
 // WHERE THE PAGE RENDERS A REFERENCE ANOTHER WAY, a candidate owes one

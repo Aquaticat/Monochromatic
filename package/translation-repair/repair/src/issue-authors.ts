@@ -1,4 +1,3 @@
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 /**
  Reads which models wrote the text a checker stage is about to judge, out of
@@ -16,6 +15,7 @@ import {
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type {
   EditableEnvelope,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { EditorStageResult, } from './repair-editor-stage.ts';

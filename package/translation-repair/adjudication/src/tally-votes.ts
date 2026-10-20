@@ -7,6 +7,7 @@ import {
   DEFAULT_ADJUDICATION_CONFIG,
   type IssueSeverity,
   type PanelBallot,
+  type ReadonlyEntry,
   type VoteTally,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { panelReadingForClaim, } from './tally-claim.ts';
@@ -16,7 +17,6 @@ import {
   partitionGradedMembers,
   severityUpperMedian,
 } from './tally-issue.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Vote tally
 // Pure aggregation of panel ballots into adjudicated issues. Decision rules,

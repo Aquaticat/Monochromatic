@@ -13,8 +13,10 @@ import {
 } from './candidate-select-wire.ts';
 import { countCandidateWeights, } from './candidate-weights.ts';
 import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Ballot counting
 // The weighing and tallying half of the select stage, apart from

@@ -1,7 +1,7 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { RepairTranslationResult, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import { cappedFailureText, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Sentinel probe line
 // What one PROBE line says about one probed entry, as text and nothing else.

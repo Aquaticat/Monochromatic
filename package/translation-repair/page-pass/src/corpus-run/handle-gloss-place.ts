@@ -11,7 +11,7 @@ import {
 import { nameAuthorities, } from './contributor-name-authorities.ts';
 import { continuesLatinWord, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Handle gloss place
 // CLASS EIGHTY-EIGHT (XingZ624, 2026-09-23). The house rule (class

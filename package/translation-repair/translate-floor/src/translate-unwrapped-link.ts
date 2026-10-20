@@ -13,7 +13,7 @@ import {
   readSliceSkeleton,
   walkAtoms,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Unwrapped link floor
 // THE ONE HUNDRED FIFTEENTH CLASS (yingying10, 2026-09-24). A translate

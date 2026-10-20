@@ -1,6 +1,6 @@
 import type { RepairAttemptRecord, } from './repair-benchmark.ts';
 import type { SeedDetectionVerdict, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Repair scorecard
 // Aggregation of graded repair attempts, split out of the benchmark runner

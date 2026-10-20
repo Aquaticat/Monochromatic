@@ -1,6 +1,7 @@
 import type {
   AdjudicatedIssue,
   EditableEnvelope,
+  ReadonlyEntry,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { applyPatchOperations, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
@@ -13,7 +14,6 @@ import {
 } from './repair-chunk-proof.ts';
 import type { EditorStageResult, } from './repair-editor-stage.ts';
 import type { IssueResolutionTally, } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Worse-voted strip
 // LEDGER L3, the owner's ruling of 2026-09-28 ("Revert worse-voted,

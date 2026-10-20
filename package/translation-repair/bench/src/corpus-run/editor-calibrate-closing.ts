@@ -1,8 +1,10 @@
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
 import { roundWasJudged, } from './editor-calibrate-standing.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Editor calibrate closing
 // THE TWO CLOSING PARAGRAPHS of the editor calibration's report, after both

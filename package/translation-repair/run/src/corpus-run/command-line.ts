@@ -12,7 +12,7 @@ import type {
   CommandLineSpec,
   FlagValue,
 } from './command-line-types.ts';
-import type { ReadonlyEntry, } from '../readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Command line
 // THE ONE READER OF THE WHOLE COMMAND LINE every runner takes (ledger B75).

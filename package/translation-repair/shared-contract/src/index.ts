@@ -137,6 +137,7 @@ export {
   type ClaimPanelReading,
   type PanelClaimBallot,
 } from './panel-reading.ts';
+export { type ReadonlyEntry, } from './readonly-entry.ts';
 export {
   isCommentFinding,
   parseBodyTolerant,

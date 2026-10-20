@@ -1,6 +1,7 @@
 import {
   type DocumentChunk,
   isInsertionChunk,
+  type ReadonlyEntry,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   rendersAsNothing,
@@ -22,7 +23,6 @@ import {
   type SpliceEdit,
   type Write,
 } from './splice-slice-places.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Slice splicing
 // Rebuilding a whole translation from per-slice results.

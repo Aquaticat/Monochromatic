@@ -14,7 +14,7 @@ import {
   type ProvenApostrophes,
   provenApostrophesOf,
 } from './consistency-proven-apostrophes.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consistency fold apostrophes
 // THE SPAN OF A QUOTE'S WORDS TAKES IN THE PROVEN APOSTROPHE BESIDE THEM. The

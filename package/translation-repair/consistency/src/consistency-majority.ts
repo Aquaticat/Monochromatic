@@ -13,7 +13,7 @@ import {
   type ConsistencyQuoteWire,
   isUsableConsistencyBallot,
 } from './consistency-wire.ts';
-import type { ReadonlyEntry, } from './readonly-entry.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consistency majority
 // What a strict majority of a group's usable ballots agree on: a quote, a
