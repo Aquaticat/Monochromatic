@@ -1475,7 +1475,7 @@ const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no
  console.log(CARGO_DYLINT_DIRS.includes('package/desktop-app/ide'));
  ```
  */
-const CARGO_DYLINT_DIRS: readonly string[] = ['package/desktop-app/ide',];
+const CARGO_DYLINT_DIRS: readonly string[] = ['package/desktop-app/ide', 'package/linter/monochromatic-lint',];
 
 /**
  `check-cfg` list that declares the `dylint_lib` cfg name with any value, written inside an existing
