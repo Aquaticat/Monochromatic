@@ -358,7 +358,10 @@ export type ConsolidationSettlement = {
  "Majority flawed yes"); the standing still ships where the run-off ends
  undecided. The same flag forfeits that standing past an undecided gate, so
  the gate ships the slate's choice (owner answers 2026-09-27, "Slate's choice",
- and 2026-10-11, "Majority, like the run-off")
+ and 2026-10-11, "Majority, like the run-off"). The same flag lets a proposal
+ that at least two ballots named beat that standing under the weight minimum
+ in the challenge round, which the run-off cannot do where every cast ballot
+ fell on that one proposal (one entry's slice 45, 2026-10-19)
 
  @param signal - cancellation for the whole settlement
 
@@ -657,6 +660,7 @@ export async function settleConsolidation(
     evidence,
     lineStructured,
     challenged,
+    standingFlawedByMajority: runoffOverStanding,
     signal,
     perCallTimeoutMs,
     l: sl,
