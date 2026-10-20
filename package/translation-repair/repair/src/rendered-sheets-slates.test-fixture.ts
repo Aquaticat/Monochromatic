@@ -49,6 +49,7 @@ import {
   ARCHIVE_QUOTE,
   VERSE_SOURCE,
   TENSE_REGION,
+  TRANSLATORS_NOTE,
   joined,
 } from './rendered-sheets-texts.test-fixture.ts';
 
@@ -209,7 +210,7 @@ export function slateSheets(): readonly RenderedSheet[] {
             slate: [
               {
                 index: 1,
-                text: 'The kitten fell asleep. It dreamed of fish.',
+                text: `The kitten fell asleep. It dreamed of fish. ${TRANSLATORS_NOTE}`,
                 hash: 'slate/1',
                 origin: 'fresh',
                 producer: {
@@ -219,7 +220,7 @@ export function slateSheets(): readonly RenderedSheet[] {
               },
               {
                 index: 2,
-                text: 'The kitten fell asleep.<br/>It dreamed of fish.',
+                text: `The kitten fell asleep.<br/>It dreamed of fish. ${TRANSLATORS_NOTE}`,
                 hash: 'slate/2',
                 origin: 'fresh',
                 producer: {
@@ -231,8 +232,8 @@ export function slateSheets(): readonly RenderedSheet[] {
           },),
           evidence: translatedEvidence({ sourceText: VERSE_SOURCE, },),
           rendered: [
-            'The kitten fell asleep. It dreamed of fish.',
-            'The kitten fell asleep.<br/>It dreamed of fish.',
+            `The kitten fell asleep. It dreamed of fish. ${TRANSLATORS_NOTE}`,
+            `The kitten fell asleep.<br/>It dreamed of fish. ${TRANSLATORS_NOTE}`,
           ],
           declineConsequence: LEAVES_PASSAGE_UNTRANSLATED,
           sourceText: VERSE_SOURCE,

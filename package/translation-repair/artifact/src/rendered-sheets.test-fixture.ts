@@ -34,6 +34,8 @@ import {
   IDENTITY,
   REFERENCES,
   TENSE_ISSUE,
+  ARCHIVE_PARAGRAPH_ENVELOPE,
+  TENSE_ENVELOPE,
   joined,
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 import { evidenceSheets, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-preparation.test-fixture.ts';
@@ -76,8 +78,10 @@ export function renderedSheets(): readonly RenderedSheet[] {
   const editorPlan = buildEditorMessages({
     sourceText: SOURCE,
     targetText: ARCHIVE,
-    envelopes: [],
-    issues: [],
+    // The span a critic quoted, which stops before the note that ends the
+    // archive rendering.
+    envelopes: [TENSE_ENVELOPE,],
+    issues: [TENSE_ISSUE,],
     // What `repair-editor-stage.ts` passes it (ledger S14).
     identityContext: IDENTITY,
     referenceContext: REFERENCES,
@@ -87,7 +91,9 @@ export function renderedSheets(): readonly RenderedSheet[] {
    */
   const refinePlan = buildRefineMessages({
     sourceText: SOURCE,
-    envelopes: [],
+    // The whole paragraph, note included, as `deriveRefinableEnvelopes` hands
+    // it over.
+    envelopes: [ARCHIVE_PARAGRAPH_ENVELOPE,],
     identityContext: IDENTITY,
     referenceContext: REFERENCES,
   },);

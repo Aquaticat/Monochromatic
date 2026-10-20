@@ -11,7 +11,10 @@
 import { messageText, } from '@monochromatic-dev/translation-repair-provider';
 import type { RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  AdjudicatedIssue,
+  EditableEnvelope,
+} from '@monochromatic-dev/translation-repair-shared-contract';
 import type { JudgeReference, } from '../dist/final/node/index.mjs';
 
 
@@ -38,14 +41,25 @@ export type RenderedSheet = {
 export const SOURCE = '那晚小猫咪在窗台上睡着了。她说：「我明天还来。」';
 
 /**
- Invented archive rendering, told in the present.
+ Invented note between translators: a closed comment in Han that the invented
+ original does not carry, which the archive's translators left each other and
+ no reader sees. Every English text the sheets render ends with it, so a guard
+ reading the rendered sheets can tell which sheet shows it
+ (`artifact/src/sheet-translators-notes.unit.test.ts`).
  */
-export const ARCHIVE = 'That night the kitten falls asleep on the windowsill. She says, "I will come again tomorrow."';
+export const TRANSLATORS_NOTE = '<!-- 大家看一下 -->';
 
 /**
- Invented repair of the archive rendering, told in the past.
+ Invented archive rendering, told in the present, ending with a note between
+ translators.
  */
-export const REPAIR = 'That night the kitten fell asleep on the windowsill. She said, "I will come again tomorrow."';
+export const ARCHIVE = `That night the kitten falls asleep on the windowsill. She says, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
+
+/**
+ Invented repair of the archive rendering, told in the past, ending with the
+ same note.
+ */
+export const REPAIR = `That night the kitten fell asleep on the windowsill. She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
 
 /**
  Invented identity context carrying one declared name.
@@ -110,12 +124,12 @@ export const TENSE_ISSUE: AdjudicatedIssue = {
 /**
  Invented archive block the original does not claim.
  */
-export const ASIDE = 'The kitten was the favourite of the whole street.';
+export const ASIDE = `The kitten was the favourite of the whole street. ${TRANSLATORS_NOTE}`;
 
 /**
  Invented revision of that block, which a reviewer proposes.
  */
-export const ASIDE_REVISED = 'The kitten was a favourite of the neighbours.';
+export const ASIDE_REVISED = `The kitten was a favourite of the neighbours. ${TRANSLATORS_NOTE}`;
 
 /**
  Invented original with an explicit line break and no archive rendering, so
@@ -139,6 +153,33 @@ export const TENSE_REGION: RepairRegion = {
   issueIds: ['issue/tense',],
   before: ARCHIVE_QUOTE,
   editorAfter: 'That night the kitten fell asleep on the windowsill.',
+};
+
+/**
+ Invented envelope over the sentence the invented claim quotes: the span an
+ editor is asked to repair, which stops before the note that ends the archive
+ rendering because a critic quotes words and the note is never among them.
+ */
+export const TENSE_ENVELOPE: EditableEnvelope = {
+  envelopeId: 'envelope/tense',
+  startOffset: 0,
+  endOffset: ARCHIVE_QUOTE.length,
+  baseText: ARCHIVE_QUOTE,
+  baseHash: hashContent({ content: ARCHIVE_QUOTE, },),
+  issueIds: ['issue/tense',],
+};
+
+/**
+ Invented envelope over the whole archive rendering, note included: the
+ paragraph a refiner is asked to rewrite.
+ */
+export const ARCHIVE_PARAGRAPH_ENVELOPE: EditableEnvelope = {
+  envelopeId: 'envelope/paragraph',
+  startOffset: 0,
+  endOffset: ARCHIVE.length,
+  baseText: ARCHIVE,
+  baseHash: hashContent({ content: ARCHIVE, },),
+  issueIds: [],
 };
 
 /**
