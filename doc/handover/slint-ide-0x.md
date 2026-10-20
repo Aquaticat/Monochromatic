@@ -1023,6 +1023,22 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     a CPU Vulkan driver such as lavapipe is an open owner question, not adopted) and stage 1 agent
     `a54a3dbd127b14fbf` (dev-profile optimization with build-time numbers, `inspect:cadence` task with a positive
     control). I verify each report myself before landing.
+    Stage 0 report received (agent `a90c692a544c2aecc`, branch `worktree-agent-a90c692a544c2aecc`, worktree
+    `.claude/worktrees/agent-a90c692a544c2aecc`, eight commits up to `1e4f35b0e2`, not pushed, not yet landed):
+    `src/native/gpu_snapshot.rs` is a test-only `Platform` + `WindowAdapter` around `FemtoVGWGPURenderer` on a
+    hardware Vulkan device (RADV in the container through `--device /dev/dri`, `VK_DRIVER_FILES` naming only
+    `radeon_icd.x86_64.json`, so lavapipe is not listed; the harness refuses CPU adapters and panics instead of
+    falling back); `source_font_tests.rs` is migrated; renders were deterministic and a compositor screenshot matched
+    the harness in 0 of 60,000 pixels for one component. The agent's full-suite experiment (every test calling
+    `install_gpu_platform()`) passed 209 of 214; two failures were the missing clipboard (fixed) and three remain
+    undiagnosed (dark-scheme selection ink in `query_input_tests` and `query_input_paint_tests`, and
+    `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid`). My answers to its open questions, adopted
+    unless the owner vetoes: lavapipe is never accepted (CPU rasterization); `test:native` keeps requiring
+    `/dev/dri` (the owner's rule makes every native test a GPU test; CI does not run the IDE tests: no workflow
+    mentions `test:native` or `desktop-app/ide`); render-node passthrough is accepted; full wgpu limits and discrete
+    over integrated are accepted. Known limit: the `VK_DRIVER_FILES` path is AMD-only, so an Intel or NVIDIA host
+    needs another ICD file (follow-up: choose the file by detected vendor). Next: migrate the other 13 `take_snapshot`
+    files, diagnose the three failures, then drop `renderer-software` and the testing backend.
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
