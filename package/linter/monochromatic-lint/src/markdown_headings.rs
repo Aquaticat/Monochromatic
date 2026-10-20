@@ -83,6 +83,20 @@ const SENTENCE_PUNCTUATION: &[char] = &[
     '.', ',', ';', ':', '!', '?', '。', '，', '；', '：', '！', '？',
 ];
 
+/// What:
+///  Whether one character is the sentence-ending punctuation the policy keeps.
+/// Why:
+///  `is_some_and` takes a plain function path,
+///  so the ending test stays a named predicate instead of a capture-free closure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isSentencePunctuation(character: string): boolean;
+/// ```
+fn is_sentence_punctuation(character: char) -> bool {
+    return SENTENCE_PUNCTUATION.contains(&character);
+}
+
 /// Report emphasis-only paragraphs that are not sentences or list labels.
 pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
     let mut findings = Vec::new();
@@ -128,7 +142,7 @@ pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> V
             }
         };
         let last = text.chars().last();
-        if last.is_some_and(|character| return SENTENCE_PUNCTUATION.contains(&character)) {
+        if last.is_some_and(is_sentence_punctuation) {
             continue;
         }
         findings.push(finding(

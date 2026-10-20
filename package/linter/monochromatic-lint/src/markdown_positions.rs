@@ -50,6 +50,64 @@ pub(crate) struct MarkdownPositions {
 }
 
 /// What:
+///  The original byte offset immediately after one width change,
+///  the key `binary_search_by_key` compares the searched boundary against.
+/// Why:
+///  A named key function replaces the closure that would borrow the searched boundary.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function widthEnd(entry: WidthChange): number;
+/// ```
+fn width_end(entry: &WidthChange) -> usize {
+    return entry.end;
+}
+
+/// What:
+///  How many width changes end at or before a byte boundary.
+/// Why:
+///  A named search over the sparse width index keeps `extra_at` free of a closure borrowing `offset`.
+///  `binary_search_by_key` reports `Ok(found)` for the entry ending exactly at the boundary,
+///  so that entry and everything before it count,
+///  while `Err(insertion)` is already the count of earlier entries;
+///  the ends are distinct because each one closes a different character.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function widthsEndedAtOrBefore(widths: readonly WidthChange[], offset: number): number;
+/// ```
+fn widths_ended_at_or_before(widths: &[WidthChange], offset: usize) -> usize {
+    return match widths.binary_search_by_key(&offset, width_end) {
+        // What: `Ok(found)` means one line of widths ends exactly at `offset`:
+        //  that entry and every earlier one count.
+        Ok(found) => found + 1,
+        // What: `Err(insertion)` is already how many entries end earlier.
+        Err(insertion) => insertion,
+    };
+}
+
+/// What:
+///  How many line starts lie at or before a byte boundary.
+/// Why:
+///  A named search over the sorted line starts keeps `span` free of a closure borrowing `offset`.
+///  The fold of `binary_search` counts an exact line start itself,
+///  and the starts are distinct positions by construction.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function startsAtOrBefore(starts: readonly number[], offset: number): number;
+/// ```
+fn starts_at_or_before(starts: &[usize], offset: usize) -> usize {
+    return match starts.binary_search(&offset) {
+        // What: `Ok(found)` means one line starts exactly at `offset`:
+        //  that start and every earlier one count.
+        Ok(found) => found + 1,
+        // What: `Err(insertion)` is already how many starts lie earlier.
+        Err(insertion) => insertion,
+    };
+}
+
+/// What:
 ///  Construct and query Markdown positions.
 /// Why:
 ///  A leading BOM is excluded from columns but retained in original-source byte offsets.
@@ -90,9 +148,9 @@ impl MarkdownPositions {
 
     /// Read cumulative width adjustment through this byte boundary.
     fn extra_at(&self, offset: usize) -> usize {
-        let count = self
-            .widths
-            .partition_point(|entry| return entry.end <= offset);
+        // What: `count` is how many width changes end at or before `offset`;
+        //  `as_slice` lends the owned list to the named search.
+        let count = widths_ended_at_or_before(self.widths.as_slice(), offset);
         if count == 0 {
             return 0;
         }
@@ -102,7 +160,8 @@ impl MarkdownPositions {
     /// Resolve a range without converting its byte length into character units.
     pub(crate) fn span(&self, requested_offset: usize, length: usize) -> Span {
         let offset: usize = requested_offset.min(self.length);
-        let count = self.starts.partition_point(|start| return *start <= offset);
+        // What: `count` is how many line starts lie at or before `offset`.
+        let count = starts_at_or_before(self.starts.as_slice(), offset);
         let index = count.saturating_sub(1);
         let start = self.starts[index];
         let byte_column = offset.saturating_sub(start);
