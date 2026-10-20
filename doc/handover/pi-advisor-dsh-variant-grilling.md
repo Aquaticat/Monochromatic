@@ -335,14 +335,33 @@ disjoint write scopes):
   symptoms reproduced from a pre-fix worktree at `b710410e81`)
   plus two pi-1.3.0 sections in
   `doc/troubleshooting/pi-0-87-extension-api-breakage.md`.
-- build-fixes subagent `63d2bd1d`: three pre-existing build failures
-  found by the workspace build
+- build-fixes subagent `63d2bd1d`: DONE 2026-10-20,
+  three pre-existing build failures fixed
   (separate incidents,
-  fixed and committed separately):
-  `pi-plugin/auto-mode` (rolldown UNRESOLVED_ENTRY `./src/index.ts`),
-  `webapp-productivity/doodle-widget` (jspdf `canvg` resolve error),
-  `desktop-app/terminal` (staging assumes a prior `libghostty-vt` release
-  build).
+  separate commits):
+  `ba5bd66c30` `pi-plugin/auto-mode` placeholder `src/index.ts`
+  (a ground-up rebuild commit `7ac15b19b4` deleted sources
+  but left the entry and `./ts` export pointing at it),
+  `ef4a659b18` `config/rolldown` canvg alias path
+  (`src/stubs/` versus the real `src/stub/`;
+  no canvg install needed,
+  the app rasterizes to PNG and never uses jspdf's SVG path),
+  `d21582c951` `doodle-widget` `src/build.ts` asset path
+  (stale plural `src/assets/` after singularization),
+  `1eee51ee2f` `desktop-app/terminal` libghostty-vt staging
+  (root cause is output discovery,
+  not build ordering:
+  machine `~/.cargo/config.toml` relocates `[build] build-dir`,
+  so `cargo metadata` `build_directory` must be searched
+  alongside `target/`,
+  in both dir layouts).
+- follow-up subagent `9f07ca3d` (2026-10-20):
+  correct the wrong diagnosis in
+  `doc/troubleshooting/mise-dependency-freshness.md`
+  (it called the staging failure build-order),
+  and verify then repoint the stale plural
+  `ZIG_GLOBAL_CACHE_DIR` in root `.cargo/config.toml`.
+  Separate commits per incident.
 
 The lead holds `doc/handover/` edits and cross-agent integration.
 
