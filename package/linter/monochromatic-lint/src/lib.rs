@@ -56,6 +56,8 @@ pub mod config_lookup;
 /// Internal compiled file-pattern matching and effective rule settings.
 #[doc(hidden)]
 pub mod config_match;
+/// Internal measurement of the repository-pinned tool version behind the stale-binary hint.
+mod config_pin;
 /// Internal ordered JSONC configuration parser.
 #[doc(hidden)]
 pub mod configuration;
