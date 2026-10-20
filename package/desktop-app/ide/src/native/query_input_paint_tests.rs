@@ -298,8 +298,8 @@ fn search_box_selection_uses_the_ink_chosen_from_the_fill_in_both_schemes() {
     chord(window, Key::Control, "a");
     // Columns inside the first selected characters, away from the caret at the end of the text. The rows are those
     // wholly inside the selection rectangle: it is about 14.5 px tall at a fractional offset, so the GPU renderer
-    // anti-aliases its first and last pixel rows (measured on 2026-10-20 as the box background blended with 24
-    // percent of the fill, lightness 0.165 in the dark scheme), and a blend of fill and background is not ink.
+    // anti-aliases its first and last pixel rows (measured on 2026-10-20 as the box background blended with about
+    // a quarter of the fill, lightness 0.165 in the dark scheme), and a blend of fill and background is not ink.
     // Rows BOX_TOP + 17 through BOX_TOP + 30 hold every glyph pixel and nothing of the two edge rows.
     let glyphs = [BOX_LEFT + 14, BOX_LEFT + 44, BOX_TOP + 17, BOX_TOP + 31];
     for scheme in [ColorScheme::Dark, ColorScheme::Light] {
