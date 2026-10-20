@@ -279,9 +279,9 @@ async function judgeSingleRoundOverStanding(
 
  @param standingFlawedByMajority - whether a strict majority of the contest
  ballots called the archive flawed; over an eligible standing, a leader that
- at least two ballots named then wins in either round although it drew less
- than the minimum weight and no run-off could narrow the question, because
- every cast ballot fell on it (one entry's slice 45, 2026-10-19)
+ at least two ballots named then wins the challenge round although it drew
+ less than the minimum weight and no run-off could narrow the question,
+ because every cast ballot fell on it (one entry's slice 45, 2026-10-19)
 
  @param signal - cancellation for the whole round
 

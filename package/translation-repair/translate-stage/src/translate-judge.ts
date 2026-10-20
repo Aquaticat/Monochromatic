@@ -104,7 +104,9 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  called the incumbent flawed, so a leader that at least two ballots named
  wins under the weight minimum although no run-off narrowed the question; the
  consolidation sets it over an eligible standing (one entry's slice 45,
- 2026-10-19)
+ 2026-10-19). Read by the challenge round alone: the first round still
+ declines under the minimum, so a tie that backed two candidates is still run
+ off over them (slice 34) and not decided on the first plurality
 
  @param withheldStanding - whether an absent incumbent stands for wording
  that exists and cannot ship (a standing the deterministic rule refused, an
@@ -430,7 +432,12 @@ export async function judgeTranslateSlate(
     },),
     task,
     runoff,
-    fallbackCondemned,
+    // THE CHALLENGE ROUND ALONE. The first round declining under the minimum
+    // is what lets a tie across two candidates be narrowed to a run-off, a
+    // narrower question than the first plurality answered (slice 34 of the
+    // same entry); only a round that is already the second ask has nothing
+    // narrower left to give.
+    fallbackCondemned: fallbackCondemned && (responsibility === 'decline-challenge'),
     criteria: translatedSlateCriteria({
       sourceText,
       archiveText: incumbentText,

@@ -360,8 +360,8 @@ export type ConsolidationSettlement = {
  the gate ships the slate's choice (owner answers 2026-09-27, "Slate's choice",
  and 2026-10-11, "Majority, like the run-off"). The same flag lets a proposal
  that at least two ballots named beat that standing under the weight minimum
- in either round, which the run-off cannot do where every cast ballot fell on
- that one proposal (one entry's slice 45, 2026-10-19)
+ in the challenge round, which the run-off cannot do where every cast ballot
+ fell on that one proposal (one entry's slice 45, 2026-10-19)
 
  @param signal - cancellation for the whole settlement
 

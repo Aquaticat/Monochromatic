@@ -1298,6 +1298,14 @@ await describe({
         expect(flawed.settled.terminal,).toBe('consolidated',);
         expect(flawed.settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
         expect(flawed.settled.findings,).toContain('select-condemned-fallback-under-minimum',);
+        // The first round still declines under the minimum, so a tie across two candidates keeps its
+        // run-off; it is the challenge round, asking the whole slate again, that the ballots decide.
+        expect(flawed.judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes('A prior panel declined this exact slate',);
+        },),).toBe(true,);
+        expect(flawed.judgeSheets.some(function firstAsk(sheet,): boolean {
+          return !sheet.includes('A prior panel declined this exact slate',);
+        },),).toBe(true,);
 
         const endorsed = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
