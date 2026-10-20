@@ -411,10 +411,12 @@ await describe({
         // judges, and seats a challenge proposal two ballots named over a
         // condemned fallback, which moved this literal.
         // Version 27 (2026-10-20) cuts a translators' note alone on a quoted
-        // line with its line, which moved this literal to the value this
-        // expectation names.
+        // line with its line, which moved this literal.
+        // Version 28 (2026-10-20) cuts the notes between translators from the
+        // sheet of the absolute naturalness review, which moved this literal to
+        // the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '344d96da8587bdf11d393a3be6d45b48ffc16c666219dbf579d91e9335e082b0',
+          'aba7f22d909359dfa408bafe16bd6ba4a34e049eb7fdef522c82a62784f7ab55',
         );
       },
     },),

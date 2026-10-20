@@ -43,6 +43,18 @@ await describe({
       },
     },),
     it({
+      name: 'WRITES the line ending the text uses, so a CRLF text gains no bare line feed',
+      fn: async () => {
+        expect(appendedNotes({ text: 'The cat napped.\r\nIt purred.\r\n', notes: [NOTE, SECOND_NOTE,], },),).toBe(
+          `The cat napped.\r\nIt purred.\r\n\r\n${NOTE}\r\n\r\n${SECOND_NOTE}\r\n`,
+        );
+        expect(appendedNotes({ text: '\r\n', notes: [NOTE, SECOND_NOTE,], },),).toBe(`${NOTE}\r\n\r\n${SECOND_NOTE}`,);
+        expect(appendedNotes({ text: 'The cat napped.', notes: [NOTE, SECOND_NOTE,], },),).toBe(
+          `The cat napped.\n\n${NOTE}\n\n${SECOND_NOTE}`,
+        );
+      },
+    },),
+    it({
       name: 'STANDS the notes alone where the text shows a reader nothing',
       fn: async () => {
         expect(appendedNotes({ text: '', notes: [NOTE, SECOND_NOTE,], },),).toBe(`${NOTE}\n\n${SECOND_NOTE}`,);

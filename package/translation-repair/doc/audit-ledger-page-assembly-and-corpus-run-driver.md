@@ -740,3 +740,33 @@ A rule stated for every judging sheet is checked against the list of sheets the 
 (`artifact/src/rendered-sheets.test-fixture.ts`) renders,
 and a rule that carries text across a step is checked against every step that replaces text,
 splices included.
+
+## B706: notes put back into a CRLF text were joined with bare line feeds
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `a6a7707956`,
+fix `259fc4200a`,
+gated with the fixes of B704 and B705 as g125
+(2565 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `eaa250287d`.
+No cache version moved:
+the notes are put back after the judging.
+
+`appendedNotes` (`page-check/src/corpus-run/archive-note-carry.ts`),
+the placement rule shared by the page assembly's note carry and the archive block review's splice,
+joined the text and each note with `\n\n` whatever the text used,
+so a CRLF text gained bare line feeds among its CRLF breaks.
+It now writes the text's own line ending (`documentLineEnding` of corpus-source),
+as the slice splice does.
+Found by the agent that investigated B705,
+with a probe of the carry over CRLF fixtures.
+No pinned page is affected:
+the corpus read folds every CRLF to LF (`corpus-source.ts`),
+and the line-ending fold of page-check folds each lane replacement before any page pass reads it.
+
+Recurrence:
+of B703,
+whose cut took the carriage return of a CRLF line.
+A helper that writes line breaks into a text reads the text's line ending first.

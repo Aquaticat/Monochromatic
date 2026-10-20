@@ -374,8 +374,21 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 27 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ 28 covers the sheet of the absolute naturalness review (`archive/src/absolute-naturalness-review-wire.ts`), which the
+ account of 26, "judges no longer see a note between translators", did not reach: the review the final polish asks of its
+ would-ship slice showed the candidate and each paragraph with every note, so a judge could raise a Chinese comment in an
+ English text as a naturalness finding, and it cuts them now against the original, as the gates before it do. A paragraph
+ of nothing but notes is left off that sheet with its number unused. The review's seats, verdicts and findings are part of
+ the settlement this key addresses (`polish.review`), and the key hashes the version, the run shape and the texts, not the
+ sheet, so a record written for a slice whose text holds a note under the old sheet would be served under the new. Run
+ zheermao16 is live on build a5dc23c5bb and writes records at 27, so the change cannot ride inside it and the number
+ moves. Over the 92 pinned English archives 10 hold a note their original lacks (34 notes in all), and 28 stretches of
+ them between blank lines hold one, so a sheet changes for at most those 10 entries; no other entry's sheet moves. The
+ archive block review has no cache version of its own, the block it reviews stands whatever it finds, and the other
+ versions stay, since none of their sheets is this one. No record has been written at 28, which this change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 27;
+export const CONSOLIDATE_CACHE_VERSION = 28;
 
 /**
  What a line-structured slice appends to its key material.
