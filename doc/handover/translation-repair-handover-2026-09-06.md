@@ -793,7 +793,12 @@ its "Next" list is still the queue the merge went ahead of.
       w246 meanwhile folds 21 copies of `ReadonlyEntry` into one in `shared-contract`
       (`d390fd0f86`,
       digest unchanged;
-      gate g133 running).
+      gate g133 green at 2631 pass and 0 fail,
+      landed as `506972d0e4`).
+      Four of its commit bodies claimed more than ran;
+      corrective comments 205886719,
+      205886729,
+      205886731 and 205886736 say what did.
       `zheermao19` settled at 23:35 UTC in 35.6 min
       (`TALLY zheermao101 status=SETTLED ... repairAccepted=13 ... pageChanged=9`);
       the page read is being drafted at `/var/home/user/temp/agent/x15-fix/reads/zheermao19-read.md`
@@ -819,8 +824,7 @@ its "Next" list is still the queue the merge went ahead of.
       The rotation waits for the combined build,
       since a run now would lose those seats again and spend OpenRouter credit on a build about to change.
       Next:
-      gate and land w246,
-      w247,
+      gate and land w247,
       w248 and w249,
       rebuild,
       set `FROZEN`,
