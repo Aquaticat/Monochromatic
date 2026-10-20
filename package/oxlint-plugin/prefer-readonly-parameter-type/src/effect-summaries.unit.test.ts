@@ -2884,13 +2884,13 @@ await describe({
             throw new Error(`Expected an effect summary for ${functionName}.`,);
           return [...summary.referentMutatedParameterIndexes,];
         }
-        /* This is the guarantee `prefer-readonly-parameter-type.unit.test.ts` gave up when
-         * the opacity reports on this fixture went silent. A tuple the receiver holds is
-         * caller-owned state whatever its positions are, because the tuple itself is
-         * writable, so `pair[0] = 'rewritten'` reached through `rows.values()` writes
-         * `rows`. While these two read `[0]` no read-only offer can be made for a
-         * parameter either of them rewrites, which is what makes the silence over there
-         * correct rather than merely quiet. */
+        /* This is the guarantee `prefer-readonly-parameter-type.unit.test.ts` holds its
+         * writer-silence assertions to. A tuple the receiver holds is caller-owned state
+         * whatever its positions are, because the tuple itself is writable, so
+         * `pair[0] = 'rewritten'` reached through `rows.values()` writes `rows`. While
+         * these two read `[0]` no read-only offer can pass the gate for a parameter
+         * either of them rewrites, so the one offer the fixture permits (the read-only
+         * control) stays the only one, rather than merely quiet. */
         expect(writtenIndexes('rewriteMutableStoredPair',),).toEqual([0,],);
         expect(writtenIndexes('rewriteStoredPair',),).toEqual([0,],);
         /* The control, and the reason a change making all three silent has answered the
