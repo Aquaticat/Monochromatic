@@ -22,6 +22,7 @@ import {
   type SpliceEdit,
   type Write,
 } from './splice-slice-places.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Slice splicing
 // Rebuilding a whole translation from per-slice results.
@@ -175,7 +176,7 @@ function plannedEdits(
   /**
    One edit per boundary, carrying its fragments in document order.
    */
-  const intoPlaces = [...byBoundary,].map(function toInsertionEdit(entry,): SpliceEdit {
+  const intoPlaces = [...byBoundary,].map(function toInsertionEdit(entry: ReadonlyEntry<number, readonly PlacedReplacement[]>,): SpliceEdit {
     /**
      Boundary and the replacements anchored there.
      */

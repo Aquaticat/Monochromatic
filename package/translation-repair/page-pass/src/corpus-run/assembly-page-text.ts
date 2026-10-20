@@ -1,5 +1,6 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Assembly page text
 // WHAT THE PAGE CARRIES PER SLICE, read the same way by every page-assembly
@@ -250,13 +251,13 @@ export function withRewrittenText(
    Replacements for slices the archive alone carried until now.
    */
   const added = [...rewritten.entries(),]
-    .filter(function uncovered([sliceIndex,],): boolean {
+    .filter(function uncovered([sliceIndex,]: ReadonlyEntry<number, string>,): boolean {
       return !covered.has(sliceIndex,);
     },)
     .map(function toReplacement([
       sliceIndex,
       replacementText,
-    ],): SliceReplacement {
+    ]: ReadonlyEntry<number, string>,): SliceReplacement {
       return {
         sliceIndex,
         replacementText,
@@ -270,7 +271,7 @@ export function withRewrittenText(
     restored: [...rewritten.entries(),].map(function toRow([
       sliceIndex,
       replacementText,
-    ],): SliceReplacement {
+    ]: ReadonlyEntry<number, string>,): SliceReplacement {
       return {
         sliceIndex,
         replacementText,

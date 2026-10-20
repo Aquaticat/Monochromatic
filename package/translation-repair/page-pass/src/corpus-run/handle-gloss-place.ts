@@ -11,6 +11,7 @@ import {
 import { nameAuthorities, } from './contributor-name-authorities.ts';
 import { continuesLatinWord, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Handle gloss place
 // CLASS EIGHTY-EIGHT (XingZ624, 2026-09-23). The house rule (class
@@ -447,7 +448,7 @@ export function placeHandleGlosses(
    Slices whose text the pass changed.
    */
   const rewritten = new Map<number, string>([...texts.entries(),]
-    .filter(function changed([sliceIndex, text,],): boolean {
+    .filter(function changed([sliceIndex, text,]: ReadonlyEntry<number, string>,): boolean {
       return text !== pageTextOf({
         pageText,
         sliceIndex,
