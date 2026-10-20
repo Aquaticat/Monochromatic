@@ -1062,11 +1062,36 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     an interior row (cause unfound), `write_wait_tests` once, two `watch_tests` once (400 ms budgets). The commit
     message of `415bc345ed` says 22 sites where it is 18 constructors in 15 files; a corrective commit comment was
     posted (GCA).
-    Stage 2 (renderer switch of the application to `renderer-femtovg-wgpu`, wgpu 30 Vulkan, full limits, no CPU
-    adapter, Skia excluded) is running: agent `a1b70500a2a370d0d`, started 2026-10-20. Open owner questions so far:
-    the `slint/mcp` builds still link the software renderer (`mcp`, `inspect:native`, idle-cost and log-stall
-    scripts); whether the OpenGL FemtoVG renderer may stay as a fallback for a host with no Vulkan adapter (the
-    owner accepted excluding downlevel adapters, so the default is wgpu only with a clear error).
+    Stage 2 landed (agent `a1b70500a2a370d0d`, merged into `main`, pushed as `fcfaec56e6`, verified by me): the
+    application runs on FemtoVG over wgpu 30 (Vulkan). `Cargo.toml` lists `renderer-femtovg-wgpu`,
+    `unstable-wgpu-30` and `unstable-winit-030` (the public `BackendSelector` app-id hook, no new package) and no
+    longer `renderer-femtovg` (OpenGL). `src/gpu_device.rs` (7 tests) lists Vulkan adapters, keeps only discrete and
+    integrated GPUs, requests the device with the adapter's resolution limits and retries the next adapter; on failure
+    it names the adapters seen and every remedy. The launcher installs the backend with `WGPUConfiguration::Manual`
+    because wgpu-core filters CPU adapters only on request and Slint's own check is bypassed by `SLINT_WGPU_CPU`
+    (guard proof: accepting `Cpu` fails 3 of 7 device tests; a lavapipe run with the guard removed started on
+    llvmpipe). `SLINT_MCP_PORT` no longer returns early in the launcher. Debug builds aborted at window close
+    (wgpu-core's debug-only thread-local lock trace); the launcher now leaks one handle of each wgpu object.
+    Agent's measurements: adapter `AMD Radeon RX 7600 (RADV NAVI33)` in every run with 8 storage buffers and a 16384 px
+    texture limit; baseline and new screenshots differ in 28 of 726,000 pixels by at most one level; first frame 328 ms
+    to 350 ms; idle RSS 155 MiB to 136 MiB; release binary 83.0 MB to 90.1 MB; cold release build 49 s to 55 s.
+    My verification on the merged `main`: `lint`, `test:bin`, `build`, `inspect:software-renderer` pass;
+    `test:native` 224 of 224 twice (about 24 s each); `inspect:cadence` release, interleaved baseline and new, 2 runs
+    each, 1100x660: scroll 117/119 and 117/119 against 117/119 and 115/119, drag 117/118 and 117/118 against 117/118
+    and 116/118, longest identical run 1 to 2 in every cell, so no difference; I viewed the dark find screenshot and
+    the light hover screenshot. The agent saw one failure of
+    `minimap_tests::an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches` in 9 runs ("rendered
+    4 of 4 bands"), passing alone and in 8 later full runs; I did not see it in 3 of my runs. It is a CPU minimap
+    picture test of the code stage 5 deletes.
+    The IDE was reinstalled from this build: `~/.local/bin/monochromatic-ide` sha256 prefix `e8944c22f708ac4a`
+    (equal to the release build), previous binary kept as `monochromatic-ide.previous` (`85d38e6a32faee9a`).
+    Not exercised: any GPU other than this AMD host, the integrated-GPU path, the device-refused retry outside a
+    unit test, resize, scale other than 1, 50,000-line files, surface loss and suspend.
+    Decisions I took (veto-open): keep `unstable-winit-030` over a direct `i-slint-core` dependency (public API, no
+    new package); virtual GPUs stay refused with CPU and unknown kinds; discrete GPU is preferred over integrated, the
+    choice is not checked against the window surface, and `WGPU_POWER_PREF` and `WGPU_ADAPTER_NAME` are no longer read.
+    Open owner questions: whether losing hosts with OpenGL but no Vulkan hardware driver is accepted (the OpenGL
+    renderer is gone), and the `slint/mcp` inspection builds, which still link the software renderer.
     Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
     `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
     about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the
