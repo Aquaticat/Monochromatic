@@ -586,7 +586,10 @@ The parallel full runs after the corrections gave this:
   `scroll_wanted false`,
   `worker_tiles 0`),
   so a late tile is not the usual state;
-  a 400 ms pause between the annotation injection and the loop did not fail the test either.
+  a 400 ms pause between the annotation injection and the loop,
+  and a 300 ms stall inside the first iteration (between the scroll and the timers),
+  did not fail the test either,
+  which makes a quiet-period of the row rules (200 ms of stillness) an unlikely cause.
   The cause is not found.
   Two guesses,
   neither proven:
