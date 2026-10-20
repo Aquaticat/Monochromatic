@@ -22,6 +22,7 @@ import {
   maxContextCharsForAdvisorModel,
   truncateContext,
 } from '../dist/final/node/index.mjs';
+import { testAdvisorTranscriptSerialization, } from './transcript-test-fixture.ts';
 
 //region Fixtures
 
@@ -137,6 +138,7 @@ await describe({
             priorAdvisorMessage,
             otherCustomMessage,
           ],
+          transcript: testAdvisorTranscriptSerialization,
           config: omitPriorAdvisorConfig,
           advisorSystemPrompt: 'review carefully',
         },);
@@ -149,11 +151,13 @@ await describe({
       fn: async () => {
         const contextWithoutQuestion = buildAdvisorContext({
           branch: [otherCustomMessage,],
+          transcript: testAdvisorTranscriptSerialization,
           config: omitPriorAdvisorConfig,
           advisorSystemPrompt: 'review carefully',
         },);
         const contextWithQuestion = buildAdvisorContext({
           branch: [otherCustomMessage,],
+          transcript: testAdvisorTranscriptSerialization,
           config: omitPriorAdvisorConfig,
           advisorSystemPrompt: 'review carefully',
           question: FOCUS_QUESTION,
@@ -192,11 +196,13 @@ await describe({
       name: 'derives a larger budget for a larger model context window',
       fn: async () => {
         const smallBudget = maxContextCharsForAdvisorModel({
+          transcript: testAdvisorTranscriptSerialization,
           config: dynamicBudgetConfig,
           model: fixtureModel(SMALL_CONTEXT_WINDOW,),
           advisorSystemPrompt: 'review carefully',
         },);
         const largeBudget = maxContextCharsForAdvisorModel({
+          transcript: testAdvisorTranscriptSerialization,
           config: dynamicBudgetConfig,
           model: fixtureModel(LARGE_CONTEXT_WINDOW,),
           advisorSystemPrompt: 'review carefully',
@@ -208,6 +214,7 @@ await describe({
       name: 'honors configured context cap below model-derived budget',
       fn: async () => {
         const budget = maxContextCharsForAdvisorModel({
+          transcript: testAdvisorTranscriptSerialization,
           config: cappedBudgetConfig,
           model: fixtureModel(LARGE_CONTEXT_WINDOW,),
           advisorSystemPrompt: 'review carefully',
@@ -219,11 +226,13 @@ await describe({
       name: 'reserves context budget for focused question',
       fn: async () => {
         const budgetWithoutQuestion = maxContextCharsForAdvisorModel({
+          transcript: testAdvisorTranscriptSerialization,
           config: dynamicBudgetConfig,
           model: fixtureModel(LARGE_CONTEXT_WINDOW,),
           advisorSystemPrompt: 'review carefully',
         },);
         const budgetWithQuestion = maxContextCharsForAdvisorModel({
+          transcript: testAdvisorTranscriptSerialization,
           config: dynamicBudgetConfig,
           model: fixtureModel(LARGE_CONTEXT_WINDOW,),
           advisorSystemPrompt: 'review carefully',

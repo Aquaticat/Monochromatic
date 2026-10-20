@@ -1,8 +1,8 @@
 /** Built Advisor dispatch, scope, and exact-model integration through real faux providers. @module */
 import { fauxAssistantMessage, fauxProvider, } from '@earendil-works/pi-ai';
-import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { AdvisorOperationError, DEFAULT_CONFIG, runAdvisor, } from '../dist/final/node/index.mjs';
+import { AdvisorOperationError, type AdvisorRunContext, DEFAULT_CONFIG, runAdvisor, } from '../dist/final/node/index.mjs';
+import { testAdvisorTranscriptSerialization, } from './transcript-test-fixture.ts';
 
 /** Runtime config does not read the user's real home. */
 const config = { ...DEFAULT_CONFIG, timeoutMs: 1_000, maxAdvisorOutputTokens: 100,
@@ -21,7 +21,7 @@ function hostFixture() {
   const state = { live: all as unknown, auth: (): void => {}, branchReads: 0, };
   const ctx = {
     cwd: '/fixture', getScopedModels: (): unknown => state.live,
-    sessionManager: { buildContextEntries: () => { state.branchReads += 1;
+    transcript: { ...testAdvisorTranscriptSerialization, buildContextEntries: () => { state.branchReads += 1;
     return []; }, },
     modelRegistry: {
       getAvailable: () => all,
@@ -30,7 +30,7 @@ function hostFixture() {
       return { ok: true, apiKey: 'fixture', }; },
       find: (provider: string, id: string) => all.find(model => (model.provider === provider) && (model.id === id)),
     },
-  } as unknown as ExtensionContext;
+  } as unknown as AdvisorRunContext;
   return { first, other, state, ctx, };
 }
 

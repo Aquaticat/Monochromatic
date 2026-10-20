@@ -8,7 +8,6 @@ import type {
   Api,
   Model,
 } from '@earendil-works/pi-ai';
-import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -17,10 +16,12 @@ import {
 
 import {
   type AdvisorConfig,
+  type AdvisorModelResolution,
   type EffectiveModelScope,
   selectAdvisorModel,
   selectAdvisorRunContext,
 } from '../dist/final/node/index.mjs';
+import { testAdvisorTranscriptSerialization, } from './transcript-test-fixture.ts';
 
 //region Fixtures
 
@@ -184,7 +185,7 @@ const scope: EffectiveModelScope = {
   ],
 };
 
-/** Model registry fixture exposing scoped plus out-of-scope models. */
+/** Model-resolution port fixture exposing scoped plus out-of-scope models. */
 const modelRegistry = {
   getAll() {
     return [
@@ -194,7 +195,7 @@ const modelRegistry = {
       insufficientOutputModel,
     ];
   },
-} as ModelRegistry;
+} as unknown as AdvisorModelResolution;
 
 /**
  Capture a synchronous error from a selection action.
@@ -485,6 +486,7 @@ await describe({
       fn: async function testRunContextAvoidsCurrentMainModel() {
         const result = selectAdvisorRunContext({
           branch: [],
+          transcript: testAdvisorTranscriptSerialization,
           config: advisorConfig,
           advisorSystemPrompt: 'review carefully',
           scope,
@@ -513,6 +515,7 @@ await describe({
         };
         const result = selectAdvisorRunContext({
           branch: [],
+          transcript: testAdvisorTranscriptSerialization,
           config: advisorConfig,
           advisorSystemPrompt: 'review carefully',
           scope: mixedCapacityScope,

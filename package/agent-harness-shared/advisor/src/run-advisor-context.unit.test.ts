@@ -10,10 +10,7 @@ import {
   getCurrentSystemPrompt,
   type Context,
 } from '@earendil-works/pi-ai';
-import type {
-  ExtensionContext,
-  SessionEntry,
-} from '@earendil-works/pi-coding-agent';
+import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -21,9 +18,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   type AdvisorConfig,
+  type AdvisorRunContext,
   DEFAULT_CONFIG,
   runAdvisor,
 } from '../dist/final/node/index.mjs';
+import { testAdvisorTranscriptSerialization, } from './transcript-test-fixture.ts';
 
 //region Fixtures
 
@@ -141,7 +140,7 @@ await describe({
         providerFixture.setResponses([
           fauxAssistantMessage('unexpected advisor answer',),
         ],);
-        /** Extension context whose only scoped model lacks required output capacity. */
+        /** Host run context whose only scoped model lacks required output capacity. */
         const ctx = {
           cwd: '/repo',
           scopedModels: [providerFixture.getModel(),],
@@ -156,12 +155,13 @@ await describe({
               return providerFixture.provider;
             },
           },
-          sessionManager: {
+          transcript: {
+            ...testAdvisorTranscriptSerialization,
             buildContextEntries() {
               return [];
             },
           },
-        } as unknown as ExtensionContext;
+        } as unknown as AdvisorRunContext;
         /** Eligibility error returned before provider invocation. */
         const caught = await captureAsyncError(
           async function runIneligibleAdvisor() {
@@ -202,7 +202,7 @@ await describe({
         providerFixture.setResponses([
           fauxAssistantMessage('unexpected advisor answer',),
         ],);
-        /** Extension context exposing both endpoints through live scope. */
+        /** Host run context exposing both endpoints through live scope. */
         const ctx = {
           cwd: '/repo',
           scopedModels: providerFixture.models,
@@ -220,12 +220,13 @@ await describe({
               return providerFixture.provider;
             },
           },
-          sessionManager: {
+          transcript: {
+            ...testAdvisorTranscriptSerialization,
             buildContextEntries() {
               return [];
             },
           },
-        } as unknown as ExtensionContext;
+        } as unknown as AdvisorRunContext;
         /** Explicit eligibility error returned before provider invocation. */
         const caught = await captureAsyncError(
           async function runExplicitIneligibleAdvisor() {
@@ -272,7 +273,7 @@ await describe({
         const contextCalls: string[] = [];
         /** Full-branch method calls, which must remain empty. */
         const branchCalls: string[] = [];
-        /** Extension context exposing both session methods. */
+        /** Host run context exposing both session methods. */
         const ctx = {
           cwd: '/repo',
           scopedModels: [providerFixture.getModel(),],
@@ -290,7 +291,8 @@ await describe({
               return providerFixture.provider;
             },
           },
-          sessionManager: {
+          transcript: {
+            ...testAdvisorTranscriptSerialization,
             buildContextEntries() {
               contextCalls.push('buildContextEntries',);
               return [retainedEntry,];
@@ -300,7 +302,7 @@ await describe({
               return [staleEntry, retainedEntry,];
             },
           },
-        } as unknown as ExtensionContext;
+        } as unknown as AdvisorRunContext;
 
         await runAdvisor({
           ctx,

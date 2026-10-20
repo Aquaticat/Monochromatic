@@ -15,7 +15,6 @@ import {
   type ThinkingLevel,
   type Usage,
 } from '@earendil-works/pi-ai';
-import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -24,6 +23,7 @@ import {
 import {
   type AdvisorConfig,
   type AdvisorContext,
+  type AdvisorModelResolution,
   completeAdvisor,
   type CompleteAdvisorModel,
   DEFAULT_CONFIG,
@@ -218,17 +218,15 @@ const emptyAssistantMessage: AssistantMessage = {
   content: [],
 };
 
-/** Fixture extension context with auth lookup. */
-const extensionContext: ExtensionContext = {
-  modelRegistry: {
-    async getApiKeyAndHeaders() {
-      return {
-        ok: true,
-        apiKey: 'test-key',
-      };
-    },
+/** Fixture model-resolution port with auth lookup. */
+const modelResolution = {
+  async getApiKeyAndHeaders() {
+    return {
+      ok: true,
+      apiKey: 'test-key',
+    };
   },
-} as unknown as ExtensionContext;
+} as unknown as AdvisorModelResolution;
 
 //endregion Fixtures
 
@@ -354,7 +352,7 @@ await describe({
         const caught = await captureAsyncError(
           async function dispatchIneligibleModel() {
             return await completeAdvisor({
-              ctx: extensionContext,
+              ctx: modelResolution,
               model: ineligibleModel,
               config: advisorConfig,
               advisorContext,
@@ -406,24 +404,22 @@ await describe({
         ],);
         /** Custom provider model selected for Advisor. */
         const customModel = customProvider.getModel();
-        /** Extension context exposing registered custom provider. */
-        const customExtensionContext = {
-          modelRegistry: {
-            async getApiKeyAndHeaders() {
-              return {
-                ok: true,
-                apiKey: 'test-key',
-              };
-            },
-            getProvider(providerId: string,) {
-              expect(providerId,).toBe('advisor-custom-provider',);
-              return customProvider.provider;
-            },
+        /** Model-resolution port exposing registered custom provider. */
+        const customModelResolution = {
+          async getApiKeyAndHeaders() {
+            return {
+              ok: true,
+              apiKey: 'test-key',
+            };
           },
-        } as unknown as ExtensionContext;
+          getProvider(providerId: string,) {
+            expect(providerId,).toBe('advisor-custom-provider',);
+            return customProvider.provider;
+          },
+        } as unknown as AdvisorModelResolution;
 
         await completeAdvisor({
-          ctx: customExtensionContext,
+          ctx: customModelResolution,
           model: customModel,
           config: advisorConfig,
           advisorContext,
@@ -449,7 +445,7 @@ await describe({
           },);
 
           await completeAdvisor({
-            ctx: extensionContext,
+            ctx: modelResolution,
             model: reasoningCase.model,
             config: advisorConfig,
             advisorContext,
@@ -474,7 +470,7 @@ await describe({
         const completeModel = createCapturingCompleteModel({ contexts, });
 
         await completeAdvisor({
-          ctx: extensionContext,
+          ctx: modelResolution,
           model: fixtureModel,
           config: advisorConfig,
           advisorContext,
@@ -518,7 +514,7 @@ await describe({
         },);
 
         const result = await completeAdvisor({
-          ctx: extensionContext,
+          ctx: modelResolution,
           model: fixtureModel,
           config: advisorConfig,
           advisorContext,

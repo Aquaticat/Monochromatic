@@ -12,7 +12,6 @@ import type {
   StopReason,
   Usage,
 } from '@earendil-works/pi-ai';
-import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -21,6 +20,7 @@ import {
 import {
   type AdvisorConfig,
   type AdvisorContext,
+  type AdvisorModelResolution,
   completeAdvisor,
   type CompleteAdvisorModel,
   DEFAULT_CONFIG,
@@ -90,17 +90,15 @@ const advisorContext: AdvisorContext = {
   estimatedInputTokens: 10,
 };
 
-/** Extension context fixture with successful auth. */
-const extensionContext = {
-  modelRegistry: {
-    async getApiKeyAndHeaders() {
-      return {
-        ok: true,
-        apiKey: 'test-key',
-      };
-    },
+/** Model-resolution port fixture with successful auth. */
+const modelResolution = {
+  async getApiKeyAndHeaders() {
+    return {
+      ok: true,
+      apiKey: 'test-key',
+    };
   },
-} as unknown as ExtensionContext;
+} as unknown as AdvisorModelResolution;
 
 /**
  Build Advisor config with selected timeout.
@@ -210,7 +208,7 @@ async function completeFixture(
   },
 ): Promise<AssistantMessage> {
   return await completeAdvisor({
-    ctx: extensionContext,
+    ctx: modelResolution,
     model: fixtureModel,
     config: advisorConfig(timeoutMs,),
     advisorContext,
