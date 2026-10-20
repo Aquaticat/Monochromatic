@@ -293,10 +293,12 @@ impl Platform for GpuPlatform {
         // ```ts
         // const adapter = new GpuWindow(); adapter.window = new Window(weakRef(adapter));
         // ```
-        let adapter: Rc<GpuWindow> = Rc::new_cyclic(|weak| GpuWindow {
-            window: Window::new(weak.clone() as _),
-            renderer,
-            size: Cell::new(PhysicalSize::new(0, 0)),
+        let adapter: Rc<GpuWindow> = Rc::new_cyclic(|weak| {
+            return GpuWindow {
+                window: Window::new(weak.clone() as _),
+                renderer,
+                size: Cell::new(PhysicalSize::new(0, 0)),
+            };
         });
         return Ok(adapter);
     }
