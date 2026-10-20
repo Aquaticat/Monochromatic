@@ -816,9 +816,17 @@ archive's GitHub build-provenance attestation,
  materializes the committed baseline plus
 shared appendix and optional repository secret,
  then invokes the scanner binary directly.
-Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
- pushes to
-`main` scan files changed across the push event's before and after commits.
+Pull-request and merge-queue jobs scan changed files relative to `origin/main`.
+ Pushes to `main` scan the tree-to-tree
+delta from the newest commit whose tree a previous successful run of the workflow validated.
+ The
+`validated-tree-watermark-v1` marker names the workflow revisions whose push runs prove their
+head tree that way.
+ Only successful runs establish such a baseline, so a canceled, failed, or
+timed-out run rescans everything it left unvalidated on the next push.
+ With no suitable baseline
+(the first marked run, a rewritten `main`, or an unavailable run list) the workflow scans the
+current tree instead.
  The same precedence applies locally and in CI:
 `--rules` > `FORBIDDEN_STRINGS_RULES` > `./forbidden-strings.local.txt`.
 
