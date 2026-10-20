@@ -28,10 +28,17 @@ and against the same component
 drawn by `winit-femtovg-wgpu` on the host's newer Mesa),
 and a screenshot of that component from the nested compositor differed from the harness in none of 60,000 pixels.
 Run unchanged on the GPU platform,
-209 of the 214 native tests pass;
+209 of the 214 native tests passed;
 a missing in-memory clipboard explained 2 of the
-5 failures (fixed in the harness) and three tests need real adaptation or diagnosis (listed under "What blocks the other
-files").
+5 failures (fixed in the harness) and three tests needed real adaptation or diagnosis.
+Stage 0b (section "Stage 0b") then moved every test that creates a window onto the platform,
+diagnosed those three as differences between the software renderer's pixels and the GPU's
+(edge rows of a fractional rectangle,
+and the one-level deviation of the clip edge rows),
+corrected the tests with a measured reason each,
+and removed the software renderer from the application and test builds.
+All 214 native tests passed on the GPU platform in two consecutive runs on the final head,
+though a few load-dependent failures appeared in other parallel runs (section "Failures that came and went").
 
 ## How Slint renders without a window system
 
@@ -383,82 +390,350 @@ with the repository tasks:
   full run,
   so it is a load-dependent flake that this branch did not cause (not investigated further).
 
-## What blocks the other files
+## Stage 0b: the other test files, the three failures, and the software renderer
 
-Experiment,
-not committed:
-a scratch copy of the package where every `#[test]` under `src/native` (216 tests in 57 files)
-calls `install_gpu_platform()` first,
-run as `cargo nextest run --features slint/mcp --bin monochromatic-ide --no-fail-fast`
-with `--device /dev/dri` (12 test threads,
-174.5 s;
-the software baseline above used 21 threads).
+Done on 2026-10-20 on the branch of this document,
+by repository tasks in the IDE image on the same host as stage 0.
+It answers the section that used to stand here ("What blocks the other files"),
+whose experiment is kept in the numbers it quoted:
+209 of 214 tests passed unchanged,
+and three failed for reasons left open.
+Those reasons are below.
 
-- 209 of 214 passed with no other change.
-- 5 failed.
-  Two of them (`find_box_keeps_the_toolkit_editing_keys`,
-  `find_box_context_menu_runs_each_entry`) failed because the
-  platform had no clipboard (`"ca"` against `"caca"`);
-  the harness now keeps one and both pass.
-- 3 still fail and need adaptation or a look:
-  - `query_input_tests::find_box_selection_uses_the_ink_chosen_from_the_fill` and
-    `query_input_paint_tests::search_box_selection_uses_the_ink_chosen_from_the_fill_in_both_schemes`:
-    the dark scheme's selected text range reports `darkest 0.165, lightest 1`,
-    and the tests assert `darkest > 0.3`.
-    Likely the glyph edges or the selection rectangle edge differ from the software renderer's;
-    not diagnosed.
-  - `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid`:
-    the frame at offset 115 is not the previous
-    frame shifted by one row (window row 658),
-    at the point where the overscan tile is re-centered.
-    Either the tile image is sampled differently at the seam or the test's exact-shift premise does not hold on the GPU;
-    this one deserves a diagnosis before the tile path is replaced,
-    because the same premise guards the new row scene.
+### Where the platform is installed
 
-Which files hold the 13 other `take_snapshot` readers (counted by `grep`):
-`annotation_paint_tests` (3 tests),
-`find_tests` (3),
-`font_tests` (1),
-`minimap_tests` (16),
-`search_pointer_tests` (1),
-`search_tests` (3),
-`sidebar_paint_tests` (2),
-`sidebar_tests` (3),
-`theme_tests` (2),
-`tree_pointer_tests` (1),
-`tree_scroll_tests` (1),
-`wrap_resize_tests` (13) and `language/test_support.rs` (a fixture).
-Most only call `take_snapshot` to force a layout and never read the pixels
-(`search_pointer_tests`,
-`tree_scroll_tests`,
-`tree_pointer_tests`,
-`find_tests`,
-`search_tests`,
-`sidebar_tests`,
-`language/test_support.rs`);
-the pixel readers are `annotation_paint_tests`,
+Slint keeps one platform per thread and creates it at the first window,
+timer or animation call of the thread.
+The old task set `SLINT_BACKEND=headless`,
+so that first call built the testing backend with the software renderer.
+The tests share no single entry:
+22 places in 15 files call `AppWindow::new()` (one calls the `FontProbe` component of `font_tests.rs`),
+most of them inside a fixture that other test files reuse.
+The smallest correct mechanism is one `install_gpu_platform();` statement before each of those constructors,
+with one import per file.
+The call is idempotent per thread,
+so a fixture that builds several windows needs it once.
+The files and the number of constructors that now follow an install:
+
+- `font_tests.rs` (1),
+  `tests.rs` (1),
+  `tree_scroll_tests.rs` (1),
+  `tree_pointer_tests.rs` (1)
+- `find_tests.rs` (1,
+  the `reader` fixture),
+  `search_tests.rs` (1,
+  its `reader` fixture),
+  `search_pointer_tests.rs` (1),
+  `sidebar_tests.rs` (1,
+  the `fixture`),
+  `sidebar_keyboard_tests.rs` (1),
+  `overscan_tile_tests.rs` (1,
+  the `open` helper)
+- `watch_tests.rs` (1,
+  `open`),
+  `refresh_latency_tests.rs` (1)
+- `navigation_tests.rs` (2),
+  `navigation_reveal_tests.rs` (3)
+- `language/test_support.rs` (1)
+
+`annotation_paint_tests`,
+`minimap_tests`,
 `sidebar_paint_tests`,
-`theme_tests`,
-`minimap_tests` and `wrap_resize_tests`.
+`theme_tests` and `wrap_resize_tests`
+have no constructor of their own;
+they reach a window through the fixtures above and so through an install.
+`source_font_tests.rs` was migrated in stage 0 and is unchanged.
+Each test keeps its assertions;
+the only edits in these 15 files are the import and the call.
 
-Estimate by reading,
-not measured:
-because plain `take_snapshot` works once the platform is installed,
-a migration is an
-import plus one `install_gpu_platform()` call in the fixture or the test,
-two to six changed lines per file;
-files with several tests and no shared fixture (`minimap_tests`,
-`wrap_resize_tests`) take one call per test unless a
-fixture is introduced.
-Pixel readers may add a few lines of tolerance where the GPU differs from the software renderer by a pixel at an edge.
-Dropping `renderer-software` entirely also needs the 46 test files under `src/native` that do not take snapshots to
-stop using the
-headless testing backend,
-and `slint/mcp` (which pulls the software renderer through `i-slint-backend-testing`) to go
-or to be accepted as test scaffolding;
-the experiment shows the whole suite already runs on the GPU platform,
-so that
-step is mechanical.
+The task `test:native` no longer sets `SLINT_BACKEND` or `SLINT_MCP_PORT` and no longer builds with `slint/mcp`.
+A window created without the install now asks Slint's selector for its winit backend,
+which in a container without a display stops with an error and never draws on the CPU.
+Positive control (2026-10-20):
+with the install in `tree_scroll_tests.rs` replaced by an unused reference,
+the test failed with `Could not initialize backend`,
+from the winit backend,
+`neither WAYLAND_DISPLAY nor WAYLAND_SOCKET nor DISPLAY is set`.
+Tests that only use timers (no window) pass without an install.
+The likely reason is that Slint's winit backend is created without a display until a window needs one
+(not checked in its source),
+and nothing is painted by such a test.
+
+The container arguments for the render nodes moved to `bin/gpu-arguments.ts`,
+read by `mise.toml` and by the eleven guard inspection scripts
+(`bin/inspect-*-guards.mjs`,
+`inspect-watch-scope.mjs`,
+`inspect-refresh-latency.mjs`)
+that start their own containers around native tests.
+Those scripts lost `SLINT_BACKEND=headless`,
+`SLINT_MCP_PORT=0` and `--features slint/mcp`,
+as `test:native` did.
+`test:annotations-native` takes the device too.
+Of these scripts,
+none was run (each runs a test twice with a guard removed,
+for minutes per guard);
+the change in them is the argument list only.
+
+### The three failures
+
+Each was reproduced alone on the GPU platform with a temporary dump of pixels
+(removed before the commit).
+
+#### The selection ink tests
+
+`query_input_tests::find_box_selection_uses_the_ink_chosen_from_the_fill` and
+`query_input_paint_tests::search_box_selection_uses_the_ink_chosen_from_the_fill_in_both_schemes`
+measured `darkest 0.165, lightest 1` in the dark scheme against `darkest > 0.3`.
+The per-row dump of the sampled region (30 by 20 pixels in the search box,
+38 by 20 in the find box) shows why.
+The selection rectangle is about 14.5 pixels tall at a fractional offset.
+Its first and last pixel rows are blends of the box background and the fill:
+`102f46` or `102f47` against the background `151515` and the fill `0078d4`,
+which is about a quarter of the fill,
+lightness 0.165.
+The full rows between them are exactly `0078d4` (lightness 0.397),
+and the glyph pixels reach 1.000.
+The software renderer snaps a rectangle to whole pixels,
+so no blend row existed;
+the test's rows `top + 14` to `top + 34` happened to include the two edge rows,
+and a blend of fill and background is not ink.
+The application is not at fault:
+the geometry is the toolkit's selection rectangle,
+only its edge rasterization differs.
+
+The correction narrows the rows to `top + 17` through `top + 31` (exclusive),
+the rows wholly inside the rectangle,
+which still hold every glyph pixel (glyph rows 19 to 29 of the box in the find test,
+19 to 27 in the search test).
+Guard run (GFP) with the tests committed:
+`selection-foreground-color` in `ui/query-input.slint` replaced by `#000000` made both tests fail with
+`darkest 0, lightest 0.39658982`,
+and restoring it made them pass.
+
+#### The rigid scroll test
+
+`annotation_stability_tests::scrolling_across_annotated_lines_is_rigid` failed at offset 115,
+window row 658.
+That is not a tile seam:
+the first offset is 115 because the range starts at 114,
+and in 223 of the 1256 offsets the tile was no longer the first one,
+without any seam failing.
+A temporary per-row tally of all offsets (rows 32 to 658,
+1256 scrolls) found:
+
+- Rows 33 to 657 matched the previous frame shifted by one row exactly in every scroll,
+  across the annotated blocks and the tile re-centers.
+- Row 658,
+  the comparison with the previous frame's last window row,
+  differed in 123 scrolls,
+  334 pixels in all,
+  by one level in one channel value at most
+  (226 against 227,
+  29 against 30,
+  30 against 31).
+- Row 32,
+  the first row of the viewport (not compared by the test),
+  differed in 5 scrolls,
+  6 pixels,
+  by one level.
+
+So the deviation sits at the two clip edges of the scroll view and nowhere else.
+The likely cause is the clip:
+FemtoVG's fragment shader multiplies a clipped pixel by a float scissor mask
+(`scissorMask` in `femtovg-0.27.0`,
+both the GL and the wgpu shader),
+and the software renderer clips on whole pixels.
+That mechanism was read,
+not isolated.
+The application is not at fault.
+
+The correction compares the last window row within one level per channel
+and every other row exactly (`within_one_level` in the test file).
+Guard run (GFP):
+`set_image_y(origin)` in `src/native/render/present.rs` replaced by `origin + 1.0` for a newly set tile
+made the test fail at offset 622 (the first re-center),
+window row 33,
+with `365 rows differ exactly, the first Some(33) and the last Some(657)`.
+That failure is in the exact rows;
+the relaxed row is covered only indirectly,
+because any real one-row error also breaks the rows above it.
+
+#### Failures that came and went
+
+The default invocation of `test:native` runs 21 test processes at once on one GPU.
+The invocation with a filter adds `--no-capture`,
+which makes nextest run one test at a time
+(the 20 filtered full runs below took 410.3 s to 427.3 s,
+and their per-test durations sum to the wall time,
+411.2 s in the one summed).
+No test failed in those 20 serial runs,
+so what follows needs the parallel run.
+The parallel full runs after the corrections gave this:
+
+- The rigid scroll test failed once,
+  in the first run on `bbdfbc5402`
+  (its code there differs from the final head only in the failure message and in comments):
+  `the frame at offset 115 is not the previous one shifted by one row (window row 255)`,
+  after 1.9 s,
+  as the third test to finish.
+  Row 255 is an interior row at the first offset of the loop,
+  so this is not the clip-edge difference.
+  It did not return in the 19 parallel runs on the final head,
+  in three runs of the test alone,
+  or in 20 serial full runs.
+  In 13 of the serial full runs a temporary print before the loop showed the tile job and the pending scroll absent
+  (`tile_job false`,
+  `scroll_wanted false`,
+  `worker_tiles 0`),
+  so a late tile is not the usual state;
+  a 400 ms pause between the annotation injection and the loop did not fail the test either.
+  The cause is not found.
+  Two guesses,
+  neither proven:
+  a late asynchronous change of the page between the first two frames,
+  or a stale readback of the GPU texture under the contention of 21 processes starting at once.
+  The failure message now names how many rows differ and the first and last of them (`unshifted_rows`),
+  so the next failure says whether it is a lone row or content that changed from some row on.
+- `write_wait_tests::native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes` failed once
+  in the 19 parallel runs on the final head (`a rewrite in progress was shown`,
+  the text list was
+  `["I am a big cat\n", "", "I was a big cat, but now I am a human!\n"]`).
+- `watch_tests::native_source_follows_atomic_replace_and_delete_then_recreate` and
+  `watch_tests::native_tree_follows_changes_in_one_of_several_expanded_folders` failed together once in the same 19
+  (`the reset text did not appear within 400ms`,
+  `a file moved out of the folder did not appear within 400ms`).
+
+The last two tests wait on wall-clock budgets (a write wait,
+a 400 ms bound) while 21 processes share the machine,
+and the host also ran other sessions' test runs at times,
+so a load-dependent timing flake is the likely reading;
+no run of the software path under the same load was made to compare,
+and stage 0 recorded one such flake (`minimap_tests`) on the earlier path.
+The 17 other parallel runs on the final head passed.
+
+### Removing the software renderer
+
+Removing `renderer-software` from the `slint` feature list changed nothing,
+and `cargo tree --invert i-slint-renderer-software` showed why:
+Slint's `default` feature set contains `renderer-software`,
+and the dependency used default features.
+The inverted tree then listed `i-slint-backend-winit` and `slint` as the paths.
+Both `slint` entries (dependency and dev-dependency) now set `default-features = false`,
+and the first lists the rest of the default set:
+`std`,
+`backend-default`,
+`accessibility`,
+`compat-1-2` and `system-tray`,
+with the previous `backend-winit` and `renderer-femtovg`.
+`Cargo.lock` lost eight dependency lines
+(`bytemuck`,
+`imgref`,
+`rgb` and the software renderer from the winit and linuxkms backends,
+`i-slint-backend-testing` from the selector),
+written by the `fetch` task.
+The `launcher.rs` comments no longer name `winit-software`;
+the code never spelled it,
+it forwards whatever follows `winit-`.
+
+Evidence (task `inspect:software-renderer`,
+which runs
+`cargo tree --frozen --edges normal,dev,no-proc-macro --target x86_64-unknown-linux-gnu`
+with `--invert i-slint-renderer-software`
+in the container and fails when it prints anything):
+
+- Application and test builds:
+  nothing prints (`warning: nothing to print`),
+  the task passes.
+- With `--features slint/mcp` added (positive control;
+  the task failed with
+  `Slint software renderer is linked:` and the tree):
+  `i-slint-renderer-software` is reached through `i-slint-backend-testing` (selector feature `mcp`) and through
+  `i-slint-backend-winit`.
+- `mise run //package/desktop-app/ide:linked-crates`:
+  367 crates (371 before).
+- `i-slint-backend-testing` stays as a dev-dependency for the element handles of the accessible tests,
+  with no features:
+  no software renderer and no Skia,
+  and its `headless` backend is not selectable
+  (the selector feature `backend-testing` is off).
+- `cargo check --frozen --features slint/mcp --bin monochromatic-ide` still compiles.
+
+What remains linked,
+and why:
+
+- The opt-in inspection builds that pass `--features slint/mcp` (`mcp`,
+  `inspect:native`,
+  `bin/inspect-idle-cost.mjs`,
+  `bin/inspect-log-stall.mjs`) link the software renderer again,
+  because Slint's MCP server takes its screenshots with it and the selector feature `mcp` turns it on.
+  `mise run mcp` also defaults to `SLINT_BACKEND=headless`,
+  which draws the application on the CPU in that run.
+  These are developer inspection runs of the debug binary,
+  not tests,
+  and not the release binary.
+  They were left as they are;
+  whether to keep them is an owner question below.
+
+### Gates of stage 0b
+
+Run on the final head of the branch:
+
+- `mise run //package/desktop-app/ide:lint:clippy` (`cargo clippy --all-targets -- --deny warnings`):
+  passes (`Finished dev profile ... in 4.40s`).
+- `mise run //package/desktop-app/ide:lint:rustfmt`:
+  passes,
+  no output.
+- `mise run //package/desktop-app/ide:lint:slint`:
+  passes.
+- `mise run //package/desktop-app/ide:lint` exits 1 at `monochromatic-lint` with three `markdown/semantic-line-breaks`
+  errors,
+  all in files this branch does not touch:
+  `src/native/tile_build/pass_tests.rs` (lines 11 and 29) and `src/native/tile_pass.rs` (line 87).
+  (The stage 0 text calls the first file `src/native/pass_tests.rs`.)
+  The branch's own finding,
+  in a doc comment of `annotation_stability_tests.rs`,
+  was fixed in `bbdfbc5402`.
+  The task stops at that command,
+  so its last command,
+  `lint:slint`,
+  was run alone (above).
+- `mise run //package/desktop-app/ide:inspect:software-renderer`:
+  `Slint software renderer is not linked into the application or the test builds`.
+- `mise run //package/desktop-app/ide:test:native`,
+  twice in a row on `361756fd92`:
+  `Summary [ 162.073s] 214 tests run: 214 passed (1 slow), 5 skipped` and
+  `Summary [ 142.410s] 214 tests run: 214 passed (1 slow), 5 skipped`.
+  Later runs of the same head that failed are under "Failures that came and went".
+- `mise run //package/desktop-app/ide:build` (release binary):
+  `Finished release profile [optimized] target(s) in 49.00s`;
+  the binary `target/release/monochromatic-ide` (82,956,968 bytes) contains no `i-slint-renderer-software` path
+  string,
+  and contains `i-slint-renderer-femtovg` six times.
+
+### Run time
+
+The full native suite,
+default invocation (21 test processes),
+took 141.1 s (nextest summary,
+one run)
+with the headless backend on 2026-10-20 before the change.
+On the GPU platform the 17 passing parallel runs on the final head took 141.4 s to 162.1 s
+(median 142.4 s);
+the two gate runs took 162.1 s and 142.4 s.
+The sum of the 214 per-test durations is 655.3 s on the GPU platform (one gate run)
+and 704.2 s with the headless backend,
+so the suite did not get slower.
+The longest test,
+`tall_window_tests::no_window_size_or_scale_makes_a_raster_past_the_limit`,
+sets the wall time in both (about 125 s to 132 s).
+The invocation with a filter runs one test at a time and took 410.3 s to 427.3 s (20 runs),
+560.1 s once
+while the host was busy with other sessions;
+that is not comparable to the default invocation.
+My first reading of these numbers,
+a threefold slowdown from 21 devices opened at once,
+was wrong:
+the filtered runs were serial.
 
 ## Open owner questions
 
@@ -479,18 +754,38 @@ step is mechanical.
   Hashes were compared across two Mesa versions on the discrete GPU and a compositor image drawn on the integrated one,
   for one simple component;
   pixel equality across GPU vendors is not known.
+- The debug inspection builds that pass `--features slint/mcp` (`mcp`,
+  `inspect:native`,
+  idle cost and log stall
+  scripts) link the software renderer again,
+  because Slint's MCP server screenshots through it,
+  and `mise run mcp` draws the application on the CPU by default (`SLINT_BACKEND=headless`).
+  Under the rule that nothing in the IDE paints on the CPU,
+  should those tasks go,
+  change to a renderer-free inspection,
+  or stay as developer-only tools?
+- The eleven guard inspection scripts now need `/dev/dri` too,
+  like `test:native`.
+  They were edited but not run.
 
 ## Not proven
 
 - Only one component was compared with the nested compositor;
   the full IDE window was not.
-- Run-to-run spread was measured for one component on one device (21 renders,
-  two processes),
-  not for the suite.
-- The full-suite experiment ran once;
-  test flakiness under the GPU platform was not assessed.
-- The three remaining failures are not diagnosed.
-- A production-code removal for the guard test was not run (see "Guard evidence").
+- Run-to-run spread of one component was measured on one device (21 renders,
+  two processes);
+  for the suite,
+  only wall times (19 parallel runs) and pass or fail were recorded,
+  not pixel hashes.
+- The cause of the one interior-row failure of the rigid scroll test is not found,
+  and the flake rate of the parallel run was not compared with the software path under the same load
+  (see "Failures that came and went").
+- The clip-edge mechanism behind the one-level difference was read in FemtoVG's shader,
+  not isolated,
+  and the relaxed last row is covered by the guard run only indirectly.
+- The eleven guard inspection scripts were edited and not run.
+- In the guard run of the selection ink tests the loop stopped at the dark scheme,
+  so a failure of the light scheme under dark ink was not observed.
 - The integrated GPU was not used as the harness device.
 - Nothing about Skia,
   or about other GPU vendors or drivers,
