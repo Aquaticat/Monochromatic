@@ -8,6 +8,7 @@ import type {
   BundleScript,
   CoverageRange,
 } from './coverage-file.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Coverage tally
 // LEDGER T8: WHICH BUNDLE CODE NO TEST PROCESS RAN, over every file
@@ -669,10 +670,10 @@ export function createCoverageTally(): CoverageTally {
     uncalledFunctions: function uncalledFunctions(): readonly UncalledFunction[] {
       return markNested({
         sites: [...sites,]
-          .filter(function uncalled([key,],): boolean {
+          .filter(function uncalled([key,]: ReadonlyEntry<string, FunctionSite>,): boolean {
             return calls.get(key,) === 0;
           },)
-          .map(function siteOf([, site,],): FunctionSite {
+          .map(function siteOf([, site,]: ReadonlyEntry<string, FunctionSite>,): FunctionSite {
             return site;
           },)
           .toSorted(function enclosingFirst(
