@@ -439,7 +439,9 @@ function noteStretchesOf(
  comment alone past its line's quote markers (`>   > {/* 注 *\/}`) takes the
  line the same way, since the markers it would leave behind are a blank line
  of the quote that splits the quoted paragraph; a comment ending its line
- takes the spaces before it; a comment between words takes one of the two
+ takes the spaces before it and after it, but not the carriage return of a
+ CRLF break, which would leave a bare line feed among CRLF ones; a comment
+ between words takes one of the two
  spaces around it. Notes with only whitespace on their line between them are
  the one comment these rules speak of (`noteStretchesOf`), and the line is judged from the
  original text.
@@ -509,10 +511,18 @@ function cutAround(
    What stands before the stretch, without the spaces and tabs that end it.
    */
   const words = before.trimEnd();
+  /**
+   What stands after the stretch on its line, without the carriage return
+   that ends it in a CRLF text, which the cut leaves to its line feed.
+   */
+  const trailing = after.endsWith('\r',) ? after.slice(
+    0,
+    -1,
+  ) : after;
   if (after.trim() === '')
     return {
       from: stretch.from - (before.length - words.length),
-      to: stretch.to + after.length,
+      to: stretch.to + trailing.length,
     };
   if (before.endsWith(' ',) && after.startsWith(' ',))
     return {
