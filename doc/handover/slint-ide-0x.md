@@ -1095,7 +1095,8 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     rebuild those checks without it, our nested compositor supports GPU."
     Stages 3 and 4 are merged into one task (the tile bakes in selection, underlines and the wrap sign, so they
     cannot be split cleanly): agent `a8ec6e5d0b8981d42`, started 2026-10-20 (code view on the GPU, CPU pipeline
-    deleted except what the minimap still needs). A second agent removes the MCP builds in parallel (below).
+    deleted except what the minimap still needs). A second agent, `a3b41470505ef8920`, removes the MCP builds in parallel and rebuilds their checks on the nested
+    compositor (started 2026-10-20).
     Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
     `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
     about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the
