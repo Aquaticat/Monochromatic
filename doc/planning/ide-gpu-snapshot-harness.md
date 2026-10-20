@@ -407,7 +407,7 @@ timer or animation call of the thread.
 The old task set `SLINT_BACKEND=headless`,
 so that first call built the testing backend with the software renderer.
 The tests share no single entry:
-22 places in 15 files call `AppWindow::new()` (one calls the `FontProbe` component of `font_tests.rs`),
+18 places in 15 files call `AppWindow::new()` (one calls the `FontProbe` component of `font_tests.rs`),
 most of them inside a fixture that other test files reuse.
 The smallest correct mechanism is one `install_gpu_platform();` statement before each of those constructors,
 with one import per file.
@@ -730,10 +730,8 @@ The invocation with a filter runs one test at a time and took 410.3 s to 427.3 s
 560.1 s once
 while the host was busy with other sessions;
 that is not comparable to the default invocation.
-My first reading of these numbers,
-a threefold slowdown from 21 devices opened at once,
-was wrong:
-the filtered runs were serial.
+An earlier reading of the filtered runs as a threefold slowdown from 21 devices opened at once was wrong:
+those runs were serial.
 
 ## Open owner questions
 
