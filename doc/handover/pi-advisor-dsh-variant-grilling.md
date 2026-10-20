@@ -124,6 +124,29 @@ and use a shared package.
   When the key is set it wins in both variants.
   Rejected: the pi-ai catalog cost side-table (the recommended option),
   fail-loudly without a model.
+- Q12 amendment (user, 2026-10-20):
+  `defaultReviewerModel` is set in the user's own global config
+  `~/.pi/agent/extensions/pi-advisor.json` to `opencode-go/kimi-k3`
+  (provider `opencode-go`, model `kimi-k3`, "Kimi K3",
+  verified in `~/.pi/agent/models-store.json`),
+  because the DSH LLM seam exposes no model cost metadata.
+  Correction: an earlier draft of this record claimed the key
+  ships as a schema default value;
+  that claim is retracted.
+  The schema key is optional with no baked-in default.
+  Selection order: explicit tool `model` parameter,
+  then `defaultReviewerModel` when resolvable in the current scope,
+  then the variant fallback (pi highest expected cost,
+  dsh largest `contextWindow` then name).
+  Explicitly clearing the key, or naming a model absent from the scope,
+  falls through to the variant fallback.
+  Untouched by this request: pi `settings.json` `defaultProvider`
+  and `defaultModel`, and any DSH profile default model.
+  The config write is safe before the schema change lands:
+  valibot `v.object` strips unknown keys,
+  probed on the installed valibot where a parse of
+  `{ a: 1, defaultReviewerModel: ... }` through `v.object({ a: v.number() })`
+  succeeds and drops the extra key.
 - Q13 Shared understanding confirmed by the user on 2026-10-20.
 
 ## DSH API probe findings (forced adoptions)
