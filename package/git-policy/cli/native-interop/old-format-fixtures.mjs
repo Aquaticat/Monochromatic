@@ -56,15 +56,33 @@ const STORED_GIT_NAME = 'dot-git';
 
 /** Phases whose records hold no identity of a file that a copy cannot reproduce, with whether the commit had landed. */
 const RESTORABLE_PHASES = [
-  ['capture-locked', false],
-  ['preparation-done', false],
+  [
+    'capture-locked',
+    false
+  ],
+  [
+    'preparation-done',
+    false
+  ],
 ];
 /** Phases whose records name device and inode numbers of files the incumbent created. */
 const IDENTITY_BOUND_PHASES = [
-  ['landing-locked', false],
-  ['objects-migrated', false],
-  ['ref-updated', true],
-  ['index-installed', true],
+  [
+    'landing-locked',
+    false
+  ],
+  [
+    'objects-migrated',
+    false
+  ],
+  [
+    'ref-updated',
+    true
+  ],
+  [
+    'index-installed',
+    true
+  ],
 ];
 /** Words that would mean the native wrapper could not read a stored record. */
 const UNREADABLE_RECORD = /malformed|unsupported|unexpected|not valid|cannot parse|failed to parse/iu;
@@ -165,9 +183,11 @@ async function restoreFixture(name) {
   for (const line of (await readFile(
     manifest,
     'utf8',
-  ).catch(function noLinks() {
+  )
+    .catch(function noLinks() {
     return '';
-  })).split('\n').filter(Boolean)) {
+  })).split('\n')
+    .filter(Boolean)) {
     const [path, target] = line.split('\t');
     await symlink(
       String(target),
@@ -224,16 +244,26 @@ for (const [phase] of IDENTITY_BOUND_PHASES) {
   const fixture = await restoreFixture(name);
   const base = await realGit(
     fixture,
-    ['rev-parse', 'HEAD'],
+    [
+      'rev-parse',
+      'HEAD'
+    ],
   );
   const status = await runThrough({
     wrapper: 'native',
     fixture,
-    args: ['status', '--porcelain'],
+    args: [
+      'status',
+      '--porcelain'
+    ],
   });
   matrix.check({
-    condition: status.status === 0 || /identity changed/u.test(status.stderr + status.stdout),
-    message: `${name}: native git status read the stored records and recovered or refused on identity (status ${String(status.status)}; ${(status.stderr + status.stdout).trim().slice(0, 300)})`,
+    condition: (status.status === 0) || /identity changed/u.test(status.stderr + status.stdout),
+    message: `${name}: native git status read the stored records and recovered or refused on identity (status ${String(status.status)}; ${(status.stderr + status.stdout).trim()
+      .slice(
+        0,
+        300
+      )})`,
   });
   matrix.check({
     condition: !UNREADABLE_RECORD.test(status.stderr + status.stdout),
@@ -241,35 +271,54 @@ for (const [phase] of IDENTITY_BOUND_PHASES) {
   });
   const head = await realGit(
     fixture,
-    ['rev-parse', 'HEAD'],
+    [
+      'rev-parse',
+      'HEAD'
+    ],
   );
   const subjects = (await realGit(
     fixture,
-    ['log', '--format=%s', `${base}..HEAD`],
-  )).split('\n').filter(Boolean);
+    [
+      'log',
+      '--format=%s',
+      `${base}..HEAD`
+    ],
+  )).split('\n')
+    .filter(Boolean);
   matrix.check({
-    condition: head === base || subjects.join('|') === `change at ${phase}`,
+    condition: (head === base) || (subjects.join('|') === `change at ${phase}`),
     message: `${name}: HEAD is at the base or at the incumbent's landed commit (${subjects.join('|') || 'base'})`,
   });
   const fsck = await run({
     command: REAL_GIT,
-    args: ['fsck', '--no-dangling'],
+    args: [
+      'fsck',
+      '--no-dangling'
+    ],
     cwd: fixture.repository,
     env: runEnvironment({ home: fixture.home }),
   });
   matrix.check({
     condition: fsck.status === 0,
-    message: `${name}: git fsck is clean (${fsck.stderr.trim().slice(0, 300)})`,
+    message: `${name}: git fsck is clean (${fsck.stderr
+      .trim()
+      .slice(
+        0,
+        300
+      )})`,
   });
 }
 
 for (const [phase, landed] of RESTORABLE_PHASES) {
   const name = `phase-${phase}`;
   const fixture = await restoreFixture(name);
-  const tag = `${name}`;
+  const tag = name;
   const base = await realGit(
     fixture,
-    ['rev-parse', 'HEAD'],
+    [
+      'rev-parse',
+      'HEAD'
+    ],
   );
   const dead = (await namesIn(join(
     fixture.repository,
@@ -284,23 +333,42 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
   const status = await runThrough({
     wrapper: 'native',
     fixture,
-    args: ['status', '--porcelain'],
+    args: [
+      'status',
+      '--porcelain'
+    ],
   });
   matrix.check({
     condition: status.status === 0,
-    message: `${tag}: native git status recovered the stored transaction (status ${String(status.status)}; ${status.stderr.trim().slice(0, 400)})`,
+    message: `${tag}: native git status recovered the stored transaction (status ${String(status.status)}; ${status.stderr
+      .trim()
+      .slice(
+        0,
+        400
+      )})`,
   });
   const subjects = (await realGit(
     fixture,
-    ['log', '--format=%s', `${base}..HEAD`],
-  )).split('\n').filter(Boolean);
+    [
+      'log',
+      '--format=%s',
+      `${base}..HEAD`
+    ],
+  )).split('\n')
+    .filter(Boolean);
   matrix.check({
     condition: subjects.includes(`change at ${phase}`) === landed,
     message: `${tag}: the commit ${landed ? 'landed whole' : 'did not land'}`,
   });
   const cached = await run({
     command: REAL_GIT,
-    args: ['diff', '--cached', '--quiet', '--', 'a.txt'],
+    args: [
+      'diff',
+      '--cached',
+      '--quiet',
+      '--',
+      'a.txt'
+    ],
     cwd: fixture.repository,
     env: runEnvironment({ home: fixture.home }),
   });
@@ -320,13 +388,21 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
   });
   const fsck = await run({
     command: REAL_GIT,
-    args: ['fsck', '--no-dangling'],
+    args: [
+      'fsck',
+      '--no-dangling'
+    ],
     cwd: fixture.repository,
     env: runEnvironment({ home: fixture.home }),
   });
   matrix.check({
     condition: fsck.status === 0,
-    message: `${tag}: git fsck is clean (${fsck.stderr.trim().slice(0, 300)})`,
+    message: `${tag}: git fsck is clean (${fsck.stderr
+      .trim()
+      .slice(
+        0,
+        300
+      )})`,
   });
   const left = await leftovers(
     fixture,
@@ -355,11 +431,20 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
     ],
   });
   matrix.check({
-    condition: follow.status === 0 && (await realGit(
+    condition: (follow.status === 0) && ((await realGit(
       fixture,
-      ['log', '-1', '--format=%s'],
-    )) === 'native follow-up',
-    message: `${tag}: a native commit then landed (status ${String(follow.status)}; ${follow.stderr.trim().slice(0, 400)})`,
+      [
+        'log',
+        '-1',
+        '--format=%s'
+      ],
+    )) === 'native follow-up'),
+    message: `${tag}: a native commit then landed (status ${String(follow.status)}; ${follow.stderr
+      .trim()
+      .slice(
+        0,
+        400
+      )})`,
   });
 }
 
@@ -395,7 +480,12 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
   });
   matrix.check({
     condition: commit.status === 0,
-    message: `${tag}: a native commit landed over the incumbent's capture store (status ${String(commit.status)}; ${commit.stderr.trim().slice(0, 400)})`,
+    message: `${tag}: a native commit landed over the incumbent's capture store (status ${String(commit.status)}; ${commit.stderr
+      .trim()
+      .slice(
+        0,
+        400
+      )})`,
   });
   const after = await captureSequence(fixture);
   matrix.check({
@@ -405,7 +495,10 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
   matrix.check({
     condition: (await realGit(
       fixture,
-      ['show', 'HEAD:a.txt'],
+      [
+        'show',
+        'HEAD:a.txt'
+      ],
     )) === 'native after the incumbent',
     message: `${tag}: the native commit holds the edit`,
   });
@@ -434,7 +527,9 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
   const startsBefore = (await readFile(
     log,
     'utf8',
-  )).split('\n').filter(Boolean).length;
+  )).split('\n')
+    .filter(Boolean)
+    .length;
   const commit = await runThrough({
     wrapper: 'native',
     fixture,
@@ -448,15 +543,24 @@ for (const [phase, landed] of RESTORABLE_PHASES) {
   });
   matrix.check({
     condition: commit.status === 0,
-    message: `${tag}: a native commit retired the dead lock and landed (status ${String(commit.status)}; ${commit.stderr.trim().slice(0, 400)})`,
+    message: `${tag}: a native commit retired the dead lock and landed (status ${String(commit.status)}; ${commit.stderr
+      .trim()
+      .slice(
+        0,
+        400
+      )})`,
   });
   const lines = (await readFile(
     log,
     'utf8',
-  )).split('\n').filter(Boolean);
+  )).split('\n')
+    .filter(Boolean);
   matrix.check({
-    condition: lines.slice(startsBefore).join(',') === 'start,end',
-    message: `${tag}: the hook ran once to the end (${lines.slice(startsBefore).join(',')})`,
+    condition: lines.slice(startsBefore)
+      .join(',')
+      === 'start,end',
+    message: `${tag}: the hook ran once to the end (${lines.slice(startsBefore)
+      .join(',')})`,
   });
   const left = await leftovers(fixture);
   matrix.check({

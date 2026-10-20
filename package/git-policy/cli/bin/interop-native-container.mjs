@@ -133,8 +133,9 @@ async function copySnapshot({ context }) {
 
 /** Build the image once per call, then run the named driver in it under the gate's bounds without a PID cap. */
 async function main() {
-  const [driver, ...driverArguments] = process.argv.slice(2);
-  if (driver === undefined || !/^[a-z0-9-]+$/u.test(driver))
+  const [driver, ...driverArguments] = process.argv
+    .slice(2);
+  if ((driver === undefined) || (!/^[a-z0-9-]+$/u.test(driver)))
     throw new NativeVerificationError('Name one driver under native-interop/ in lowercase words and dashes.');
   await using context = await mkdtempDisposable(join(
     tmpdir(),
@@ -154,7 +155,9 @@ async function main() {
   const nativeCrateVersion = /^version = "(?<version>[^"]+)"$/mu.exec(await readFile(
     resolve('Cargo.toml'),
     'utf8',
-  ))?.groups?.version;
+  ))
+    ?.groups
+    ?.version;
   await writeFile(
     join(
       context.path,
@@ -267,8 +270,10 @@ async function main() {
     ),
     run.stderr,
   );
-  process.stdout.write(run.stdout);
-  process.stderr.write(run.stderr);
+  process.stdout
+    .write(run.stdout);
+  process.stderr
+    .write(run.stderr);
   if (run.status !== 0)
     throw new NativeVerificationError(`Driver ${driver} exited with ${String(run.status)} (signal ${String(run.signal)}).`);
 }

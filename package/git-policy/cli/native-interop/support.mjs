@@ -87,13 +87,15 @@ export async function run({
   const out = [];
   /** @type {Buffer[]} */
   const err = [];
-  child.stdout.on(
+  child.stdout
+    .on(
     'data',
     function collectStdout(chunk) {
       out.push(chunk);
     },
   );
-  child.stderr.on(
+  child.stderr
+    .on(
     'data',
     function collectStderr(chunk) {
       err.push(chunk);
@@ -101,11 +103,13 @@ export async function run({
   );
   // A command that never reads its input (or replaced its process) closes the pipe early;
   // the resulting EPIPE says nothing about the command and must not end the driver.
-  child.stdin.on(
+  child.stdin
+    .on(
     'error',
     function ignoreClosedInput() {},
   );
-  child.stdin.end(input ?? '');
+  child.stdin
+    .end(input ?? '');
   const [status, signal] = await once(
     child,
     'close',
@@ -142,7 +146,10 @@ export function runThrough({
     env: runEnvironment({
       home: fixture.home,
       wrapperBin: NATIVE_BIN,
-      extra: { MONOCHROMATIC_WARN: 'false', ...extra },
+      extra: {
+        MONOCHROMATIC_WARN: 'false',
+        ...extra
+      },
     }),
   });
 }
@@ -154,7 +161,10 @@ export function runThrough({
  @param {readonly string[]} args - Git arguments
  @returns {Promise<string>} trimmed standard output
  */
-export async function realGit(fixture, args) {
+export async function realGit(
+  fixture,
+  args
+) {
   const outcome = await run({
     command: REAL_GIT,
     args,
@@ -166,7 +176,8 @@ export async function realGit(fixture, args) {
       `${REAL_GIT} ${args.join(' ')} exited ${String(outcome.status)} (${String(outcome.signal)}):\n`
         + `${outcome.stdout}${outcome.stderr}`,
     );
-  return outcome.stdout.trim();
+  return outcome.stdout
+    .trim();
 }
 
 /**
@@ -180,7 +191,8 @@ export async function namesIn(directory) {
     return await readdir(directory);
   }
   catch (error) {
-    if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT'))
+    if ((Error.isError(error,)) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return [];
     throw error;
   }
@@ -198,7 +210,8 @@ export async function pathExists(path) {
     return true;
   }
   catch (error) {
-    if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT'))
+    if ((Error.isError(error,)) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return false;
     throw error;
   }
@@ -215,7 +228,10 @@ export async function pathExists(path) {
  @param {{ staleLocks?: boolean }} [options] - whether lock directories count as leftovers
  @returns {Promise<string[]>} descriptions of each leftover, none when the repository is quiescent
  */
-export async function leftovers(fixture, { staleLocks = false } = {}) {
+export async function leftovers(
+  fixture,
+  { staleLocks = false } = {}
+) {
   const gitDir = join(
     fixture.repository,
     '.git',
@@ -246,7 +262,7 @@ export async function leftovers(fixture, { staleLocks = false } = {}) {
     if (name.endsWith('.keep'))
       found.push(`objects/pack/${name}`);
   }
-  if (!staleLocks && await pathExists(join(
+  if ((!staleLocks) && await pathExists(join(
     gitDir,
     'cli-git-captures',
     'capture.lock',
