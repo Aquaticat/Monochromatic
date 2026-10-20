@@ -100,6 +100,12 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  finalists the prior round backed, which the ballot floor then decides under
  the weight minimum (class seventy-three)
 
+ @param fallbackCondemned - whether a strict majority of the contest's ballots
+ called the incumbent flawed, so a leader that at least two ballots named
+ wins under the weight minimum although no run-off narrowed the question; the
+ consolidation sets it over an eligible standing (one entry's slice 45,
+ 2026-10-19)
+
  @param withheldStanding - whether an absent incumbent stands for wording
  that exists and cannot ship (a standing the deterministic rule refused, an
  archive rendering the floor refused or the adjudicators disputed) rather
@@ -157,6 +163,7 @@ export async function judgeTranslateSlate(
     lineStructured,
     responsibility = 'initial-selection',
     runoff = false,
+    fallbackCondemned = false,
     withheldStanding = false,
     shipPastDecline = withheldStanding,
     signal,
@@ -201,6 +208,7 @@ export async function judgeTranslateSlate(
     readonly lineStructured: boolean;
     readonly responsibility?: TranslateJudgeResponsibility;
     readonly runoff?: boolean;
+    readonly fallbackCondemned?: boolean;
     readonly withheldStanding?: boolean;
     readonly shipPastDecline?: boolean;
     readonly signal: AbortSignal;
@@ -422,6 +430,7 @@ export async function judgeTranslateSlate(
     },),
     task,
     runoff,
+    fallbackCondemned,
     criteria: translatedSlateCriteria({
       sourceText,
       archiveText: incumbentText,

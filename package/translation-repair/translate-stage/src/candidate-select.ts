@@ -7,6 +7,12 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { selectionFanOut, } from './candidate-select-fanout.ts';
 import {
+  assertDistinctJudges,
+  stakesByIndexOf,
+} from './candidate-select-roster.ts';
+import {
+  CONDEMNED_FALLBACK_UNDER_MINIMUM_FINDING,
+  condemnedFallbackLoses,
   MIN_SELECTION_BALLOTS,
   RUNOFF_UNDER_MINIMUM_FINDING,
   selectionMinimum,
@@ -23,13 +29,11 @@ import {
 import {
   type Candidate,
   describeProducer,
-  producerModelIds,
   type SelectionOutcome,
   type SelectionTally,
   SELF_VOTE_WEIGHT,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { ProducerRosterError, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import {
   type FanOutMode,
   gatherStageVoices,
@@ -103,6 +107,12 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  wins on the ballot floor under the weight minimum, since abstentions on a
  question between valid finalists answer neither (class seventy-three)
 
+ @param fallbackCondemned - whether the contest majority called the fallback
+ this round would keep flawed; a leader that at least two ballots named then
+ wins under the weight minimum, when it is not the fallback itself, even
+ where every cast ballot fell on it and no run-off could narrow the question
+ (one entry's slice 45, 2026-10-19)
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -133,6 +143,7 @@ export async function decideBestCandidate<ValueT,>(
     fanOut,
     sourceText,
     runoff = false,
+    fallbackCondemned = false,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -148,6 +159,7 @@ export async function decideBestCandidate<ValueT,>(
     readonly fanOut?: FanOutMode;
     readonly sourceText?: string;
     readonly runoff?: boolean;
+    readonly fallbackCondemned?: boolean;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<SelectionOutcome<ValueT>> {
@@ -196,55 +208,16 @@ export async function decideBestCandidate<ValueT,>(
     };
   }
 
-  /**
-   Judges keyed for repeat detection.
-
-   A repeated id is one model given two exchanges and two ballots, which is
-   enough to reach the minimum weight alone: exactly the single-model
-   control the ensemble exists to prevent, arriving as a roster typo rather
-   than as a policy change.
-
-   Refused HERE as well as in `assertJudgeableProducerRoster`, because that
-   guard runs at STAGE entry while `selectPerEnvelope` and `selectChunkPatch`
-   are exported and reachable without one. Thrown rather than deduplicated,
-   since a caller that passed a repeat believes it has more judges than it
-   has, and silently collapsing the roster answers a question it did not ask.
-
-   Before the fan-out rather than at the count, so a roster fault costs no
-   model calls.
-   */
-  const distinctJudges = new Set(judges,);
-  if (distinctJudges.size !== judges.length) {
-    throw new ProducerRosterError({
-      producerModelIds: candidates.flatMap(function toStakeholders(
-        candidate,
-      ): readonly RosterModelId[] {
-        return producerModelIds(candidate.producer,);
-      },),
-      judgeModelIds: judges,
-      role: 'producer',
-      fault: 'a judge is listed more than once, which would let one model reach the minimum weight alone',
-    },);
-  }
+  assertDistinctJudges({
+    judges,
+    candidates,
+  },);
 
   /**
    Models with a stake in each one-based candidate index, for telling a
    self-vote from an ordinary one.
    */
-  const stakesByIndex = new Map(
-    candidates.map(function toStake(
-      candidate,
-      index,
-    ): readonly [
-      number,
-      ReadonlySet<RosterModelId>,
-    ] {
-      return [
-        index + 1,
-        new Set(producerModelIds(candidate.producer,),),
-      ];
-    },),
-  );
+  const stakesByIndex = stakesByIndexOf({ candidates, },);
 
   /**
    Ballots from the judges that answered.
@@ -431,7 +404,33 @@ export async function decideBestCandidate<ValueT,>(
   const runoffDecides = runoff
     && underMinimum
     && (leaderBallots >= MIN_SELECTION_BALLOTS);
-  if (underMinimum && (!runoffDecides)) {
+
+  /**
+   Winning candidate, indexed back from the one-based ballot. ALWAYS FOUND:
+   `countBallots` ranks only a `best` from 1 to the candidate count, the
+   length of `candidates`.
+   */
+  const winner = nonNullishOrThrow(candidates[leader[0] - 1],);
+
+  /**
+   Whether the ballots decide because the fallback was called flawed, which
+   the run-off, deciding on the same floor, already covers.
+   */
+  const condemnedDecides = (!runoffDecides)
+    && condemnedFallbackLoses({
+      condemned: fallbackCondemned,
+      underMinimum,
+      leaderIsFallback: winner.producer
+        .kind
+        === 'incumbent',
+      leaderBallots,
+    },);
+
+  /**
+   Whether the ballot floor, not the weight minimum, decides this round.
+   */
+  const floorDecides = runoffDecides || condemnedDecides;
+  if (underMinimum && (!floorDecides)) {
     // A plurality of one is not agreement. Lost voices and abstentions can
     // leave a single judge as the only one who named anything, and letting
     // that judge decide would put one model back in control of the stage.
@@ -470,16 +469,17 @@ export async function decideBestCandidate<ValueT,>(
     };
   }
 
-  /**
-   Winning candidate, indexed back from the one-based ballot. ALWAYS FOUND:
-   `countBallots` ranks only a `best` from 1 to the candidate count, the
-   length of `candidates`.
-   */
-  const winner = nonNullishOrThrow(candidates[leader[0] - 1],);
   if (runoffDecides) {
     sl.info(
       `run-off: candidate ${String(leader[0],)} (ballots naming it: ${String(leaderBallots,)}) at weight `
         + `${String(leader[1],)} under the minimum of ${minimumLabel}; the finalists were valid, so the ballots decide`,
+    );
+  }
+  if (condemnedDecides) {
+    sl.info(
+      `condemned fallback: candidate ${String(leader[0],)} (ballots naming it: ${String(leaderBallots,)}) at weight `
+        + `${String(leader[1],)} under the minimum of ${minimumLabel}; the contest majority called the fallback `
+        + 'flawed, so the ballots decide',
     );
   }
   sl.info(
@@ -497,6 +497,11 @@ export async function decideBestCandidate<ValueT,>(
       ? [
         ...roundFindings,
         RUNOFF_UNDER_MINIMUM_FINDING,
+      ]
+      : condemnedDecides
+      ? [
+        ...roundFindings,
+        CONDEMNED_FALLBACK_UNDER_MINIMUM_FINDING,
       ]
       : roundFindings,
     ballots,

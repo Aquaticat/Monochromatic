@@ -39,6 +39,68 @@ export const MIN_SELECTION_BALLOTS = 2;
 export const RUNOFF_UNDER_MINIMUM_FINDING = 'select-runoff-under-minimum';
 
 /**
+ Finding a round carries when its leader won under the weight minimum
+ because the fallback it would have kept was called flawed by a strict
+ majority of the contest's ballots (one entry's slice 45, 2026-10-19): the
+ leader drew two ballots and no run-off could narrow a question that every
+ cast ballot had already answered the same way.
+ */
+export const CONDEMNED_FALLBACK_UNDER_MINIMUM_FINDING = 'select-condemned-fallback-under-minimum';
+
+/**
+ Whether a leader under the weight minimum wins because the fallback was
+ called flawed, on the ballot floor alone.
+
+ A FALLBACK THE CONTEST MAJORITY CONDEMNED IS NO ENDORSEMENT TO KEEP, which is
+ the reason a decline is safe at all (the owner's answers of 2026-10-11,
+ "Majority, like the run-off" and "Run off the tied finalists"). Without this
+ the one shape no run-off can reach kept it: every cast ballot on one
+ candidate leaves fewer than two backed, so `runoffFinalists` returns the
+ whole slate and the challenge round faces the same minimum. Slice 45 drew 1.5
+ from two ballots, a third judge declined, and the archive wording two judges
+ had called ineligible shipped.
+
+ THE FLOORS THAT PROTECT THE OWNER'S RULES STAY. Two ballots, because one
+ judge alone never decides (2026-09-09). A leader other than the fallback,
+ because a condemned fallback seated by ballots would read as endorsed; it
+ keeps the archive as a decline does. A tie never reaches here, since the
+ caller returns it as indecision before the minimum is read.
+
+ @param condemned - whether the contest majority called the fallback flawed
+
+ @param underMinimum - whether the leader drew less than the minimum weight
+
+ @param leaderIsFallback - whether the leader is the fallback itself
+
+ @param leaderBallots - ballots naming the leader, self-votes included
+
+ @returns Whether the ballots decide
+
+ @example
+ ```ts
+ condemnedFallbackLoses({ condemned: true, underMinimum: true, leaderIsFallback: false, leaderBallots: 2, },); // true
+ ```
+ */
+export function condemnedFallbackLoses(
+  {
+    condemned,
+    underMinimum,
+    leaderIsFallback,
+    leaderBallots,
+  }: {
+    readonly condemned: boolean;
+    readonly underMinimum: boolean;
+    readonly leaderIsFallback: boolean;
+    readonly leaderBallots: number;
+  },
+): boolean {
+  return condemned
+    && underMinimum
+    && (!leaderIsFallback)
+    && (leaderBallots >= MIN_SELECTION_BALLOTS);
+}
+
+/**
  What a selection round must see before its leader wins, sized to the bench
  that could answer.
 

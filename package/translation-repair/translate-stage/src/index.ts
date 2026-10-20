@@ -4,6 +4,12 @@
 
 export { selectionFanOut, } from './candidate-select-fanout.ts';
 export {
+  assertDistinctJudges,
+  stakesByIndexOf,
+} from './candidate-select-roster.ts';
+export {
+  CONDEMNED_FALLBACK_UNDER_MINIMUM_FINDING,
+  condemnedFallbackLoses,
   MIN_SELECTION_BALLOTS,
   type SelectionMinimum,
   selectionMinimum,
