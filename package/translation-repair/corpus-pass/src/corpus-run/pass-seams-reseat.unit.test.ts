@@ -59,6 +59,7 @@ import { insertionRow, } from '@monochromatic-dev/translation-repair-artifact-po
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
+import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 
 /**
  Logger the seams write to, whose lines are not under test.
@@ -189,13 +190,7 @@ function viewChangingClient(
       counter.reads += 1;
       return (counter.reads === 1) ? ALL_WET : later;
     },
-    providerMeterStates: async () => ({
-      neuralwatt: 'wet',
-      synthetic: 'wet',
-      bedrock: 'wet',
-      hyper: 'wet',
-      openrouter: 'wet',
-    } as const),
+    providerMeterStates: metersAllWet,
     providerHolds: () => ({
       neuralwatt: 0,
       synthetic: held ? HOLD_MS : 0,

@@ -41,6 +41,7 @@ import {
   SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 
 /**
  The zheermao7 view at 23:15:27 UTC: Synthetic's window spent, Hyper dry,
@@ -126,13 +127,7 @@ function viewClient(
         counter.reads += 1;
         return view;
       },
-      providerMeterStates: async () => ({
-        neuralwatt: 'wet',
-        synthetic: 'wet',
-        bedrock: 'wet',
-        hyper: 'wet',
-        openrouter: 'wet',
-      } as const),
+      providerMeterStates: metersAllWet,
       providerHolds: () => ({ ...holds, }),
     },
   };

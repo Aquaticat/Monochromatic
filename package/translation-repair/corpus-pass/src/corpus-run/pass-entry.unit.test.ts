@@ -62,6 +62,7 @@ import {
   PASS_FALLBACK_OVERLAP,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts/corpus-run/slice-overlap-dial.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
+import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 
 /**
  Built pipeline these fixtures claim to have run under.
@@ -840,13 +841,7 @@ function entryClient(
   },
 ): RunClient {
   return {
-    providerMeterStates: async () => ({
-      neuralwatt: 'wet',
-      synthetic: 'wet',
-      bedrock: 'wet',
-      hyper: 'wet',
-      openrouter: 'wet',
-    } as const),
+    providerMeterStates: metersAllWet,
     providerHolds: () => ({
       neuralwatt: 0,
       synthetic: 0,
