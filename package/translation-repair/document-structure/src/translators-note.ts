@@ -293,12 +293,46 @@ type Cut = {
 };
 
 /**
+ Whether what stands before a note on its line is nothing but Markdown quote
+ markers and the space between them, as `>   > ` is.
+
+ A LINE OF MARKERS ALONE IS A BLANK LINE OF THE QUOTE, the way an empty line
+ is of the page, so a note that is the only content of a quoted line must be
+ told from one that shares the line with words. The test is on the characters
+ before the note and never on the note's own words, so a `>` inside a note
+ changes nothing. `provider-stream/src/quote-line.ts` reads the same head
+ (`carriesContent`); it is not imported because that package depends on this
+ one.
+
+ @param head - what stands between the line's start and the note
+
+ @returns Whether the head holds a quote marker and nothing else but
+ whitespace; an empty or blank head holds no marker and is not one
+
+ @example
+ ```ts
+ isQuoteHead({ head: '>   > ', },); // true
+ isQuoteHead({ head: '1 > ', },); // false
+ ```
+ */
+function isQuoteHead({ head, }: { readonly head: string; },): boolean {
+  return head.includes('>',)
+    && Array.from(head,)
+      .every(function isMarkerOrSpace(character,): boolean {
+        return (character === '>') || isWhitespace({ character, },);
+      },);
+}
+
+/**
  Offset a removal of the comment at `note` starts from, and the one it ends at.
 
  A COMMENT ALONE ON ITS LINES TAKES THE LINES WITH IT, so the removal leaves
  neither an empty line that would split a paragraph nor the line's break; a
- comment ending its line takes the spaces before it; a comment between words
- takes one of the two spaces around it.
+ comment alone past its line's quote markers (`>   > {/* 注 *\/}`) takes the
+ line the same way, since the markers it would leave behind are a blank line
+ of the quote that splits the quoted paragraph; a comment ending its line
+ takes the spaces before it; a comment between words takes one of the two
+ spaces around it.
 
  @param text - text the note stands in
 
@@ -360,7 +394,7 @@ function cutAround(
     note.endOffset,
     breakAt,
   );
-  if ((before.trim() === '') && (after.trim() === ''))
+  if (((before.trim() === '') || isQuoteHead({ head: before, },)) && (after.trim() === ''))
     return {
       from: lineStart,
       to: Math.min(
