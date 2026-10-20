@@ -4,7 +4,6 @@
  @module
  */
 
-import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { selectDefaultModel, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
@@ -13,20 +12,13 @@ import {
   assertAdvisorEndpointOutputCapacity,
   requireAdvisorScopeWithOutputCapacity,
 } from './output-eligibility.ts';
+import type { AdvisorModelResolution, } from './ports.ts';
 import type {
   AdvisorConfig,
   AdvisorModelSelection,
+  CurrentMainModelIdentity,
   EffectiveModelScope,
 } from './types.ts';
-
-//region Types
-
-/**
- Current primary model identity used to keep Advisor independent by default.
- */
-export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['model'], 'provider' | 'id'>;
-
-//endregion Types
 
 //region Public API
 
@@ -41,7 +33,7 @@ export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['m
  
  @param estimatedInputTokens - estimated Advisor input tokens
  
- @param modelRegistry - pi model registry
+ @param modelRegistry - global model registry for explicit slug validation
  
  @param currentMainModel - active primary model to avoid for default selection when possible
  
@@ -66,7 +58,7 @@ export function selectAdvisorModel(
     requestedSlug?: string;
     config: AdvisorConfig;
     estimatedInputTokens: number;
-    modelRegistry: ModelRegistry;
+    modelRegistry: AdvisorModelResolution;
     currentMainModel?: CurrentMainModelIdentity;
   }>>,
 ): AdvisorModelSelection {

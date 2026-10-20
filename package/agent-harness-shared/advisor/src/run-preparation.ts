@@ -73,8 +73,10 @@ export async function prepareAdvisorRun(options: ForeignHostCapability<AdvisorRu
    */
   const initial = selectAdvisorRunContext({
     branch: options.ctx
-      .sessionManager
+      .transcript
       .buildContextEntries(),
+    transcript: options.ctx
+      .transcript,
     config: options.config,
     advisorSystemPrompt,
     scope,

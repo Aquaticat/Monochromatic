@@ -1,6 +1,9 @@
 /**
- Shared type definitions for the pi Advisor extension.
- 
+ Host-neutral Advisor core type definitions.
+
+ Host-specific surface lives behind the ports in `ports.ts`; harness
+ adapters translate their own tool and run shapes onto these types.
+
  @module
  */
 
@@ -8,15 +11,13 @@ import type {
   StopReason,
   Usage,
 } from '@earendil-works/pi-ai';
-import type {
-  AgentToolResult,
-  ExtensionContext,
-  ToolDefinition,
-} from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { AdvisorOperationSnapshot, } from './operation-types.ts';
 import type {
-  ForeignBorrowed,
+  AdvisorModelResolution,
+  AdvisorTranscript,
+} from './ports.ts';
+import type {
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
@@ -169,6 +170,11 @@ export type AdvisorModelSelection = {
   readonly defaultSelection?: DefaultModelSelection;
 };
 
+/**
+ Identity of the primary model, used to avoid self-review in default selection.
+ */
+export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['model'], 'provider' | 'id'>;
+
 //endregion Selection
 
 //region Context
@@ -310,13 +316,57 @@ export type AdvisorRunResult = {
 };
 
 /**
+ Host run context: the three Advisor ports plus host facts selection reads.
+
+ Harness adapters assemble this from their own runtime objects; the core
+ never reaches past these members. The model-resolution port keeps the
+ `modelRegistry` member name so it also satisfies the shared
+ model-selection scope resolver directly.
+
+ @example
+ ```typescript
+ const ctx: AdvisorRunContext = {
+   modelRegistry,
+   transcript,
+   cwd,
+ };
+ ```
+ */
+export type AdvisorRunContext = {
+  /**
+   Model-resolution port backed by the host model registry.
+   */
+  readonly modelRegistry: AdvisorModelResolution;
+  /**
+   Transcript port backed by the host session manager and serializer.
+   */
+  readonly transcript: AdvisorTranscript;
+  /**
+   Host working directory for project-scope resolution.
+   */
+  readonly cwd: string;
+  /**
+   Active primary model to avoid for default selection, when the host has one.
+   */
+  readonly model?: CurrentMainModelIdentity;
+  /**
+   Live scoped-model getter from the host runtime, when exposed.
+   */
+  readonly getScopedModels?: () => unknown;
+  /**
+   Live scoped-model snapshot from the host runtime, when exposed.
+   */
+  readonly scopedModels?: unknown;
+};
+
+/**
  Arguments for executing Advisor.
  */
 export type AdvisorRunOptions = ForeignHostCapability<{
   /**
-   Pi extension context.
+   Host run context carrying the three Advisor ports.
    */
-  readonly ctx: ForeignHostCapability<ExtensionContext>;
+  readonly ctx: ForeignHostCapability<AdvisorRunContext>;
   /**
    Runtime config.
    */
@@ -351,20 +401,6 @@ export type AdvisorRunOptions = ForeignHostCapability<{
  Metadata-only progress discriminator; provider diagnostics and review text never cross this update boundary.
  */
 export type AdvisorProgressDetails = { readonly kind: 'advisor-progress'; };
-
-/**
- Advisor tool definition type with concrete parameters and details.
- */
-export type AdvisorToolDefinition<TParameters extends TSchema = TSchema,> =
-  ToolDefinition<
-    TParameters,
-    AdvisorDetails | AdvisorProgressDetails
-  >;
-
-/**
- Tool result shape returned by Advisor execution.
- */
-export type AdvisorToolResult = AgentToolResult<AdvisorDetails>;
 
 /**
  Extracted static parameter type for typebox schemas.

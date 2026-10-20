@@ -9,11 +9,6 @@ import type {
   AssistantMessage,
   Model,
 } from '@earendil-works/pi-ai';
-import {
-  convertToLlm,
-  serializeConversation,
-  type SessionEntry,
-} from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   ADVISOR_MESSAGE_TYPE,
@@ -27,7 +22,11 @@ import {
   NO_USER_PROMPT,
 } from './context-user.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
-import { estimateAdvisorInputTokens, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
+import type {
+  AdvisorAgentMessage,
+  AdvisorSessionEntry,
+  AdvisorTranscriptSerialization,
+} from './ports.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -35,11 +34,6 @@ import type {
 } from './types.ts';
 
 //region Public API
-
-/**
- Agent message type accepted by {@link convertToLlm}, pi's LLM conversion helper.
- */
-type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
 
 /**
  Sentinel returned by {@link entryToMessage} / {@link filterMessage} when a session
@@ -54,9 +48,13 @@ const MESSAGE_EXCLUDED: unique symbol = Symbol('advisor/current message excluded
  */
 export type BuildAdvisorContextOptions = {
   /**
-   Session branch entries from pi.
+   Session branch entries from the host transcript port.
    */
-  readonly branch: readonly ForeignBorrowed<SessionEntry>[];
+  readonly branch: readonly ForeignBorrowed<AdvisorSessionEntry>[];
+  /**
+   Transcript serialization seam used for LLM conversion and token estimates.
+   */
+  readonly transcript: AdvisorTranscriptSerialization;
   /**
    Runtime Advisor configuration.
    */
@@ -83,6 +81,10 @@ export type BuildAdvisorContextOptions = {
  Options for deriving context budget from selected Advisor model.
  */
 export type MaxContextCharsForAdvisorModelOptions = {
+  /**
+   Transcript serialization seam used for token reserve estimates.
+   */
+  readonly transcript: AdvisorTranscriptSerialization;
   /**
    Runtime Advisor configuration.
    */
@@ -138,9 +140,11 @@ export function buildAdvisorContext(
   }
 
   /**
-   Serialized conversation produced by pi's compaction utility.
+   Serialized conversation produced by the host transcript seam.
    */
-  const serialized = serializeConversation(convertToLlm(messages,),);
+  const serialized = options
+    .transcript
+    .serializeConversation(options.transcript.convertToLlm(messages,),);
   /**
    Effective truncation budget supplied by model-aware caller or config cap.
    */
@@ -167,7 +171,7 @@ export function buildAdvisorContext(
   /**
    Estimated request input tokens.
    */
-  const estimatedInputTokens = estimateAdvisorInputTokens({
+  const estimatedInputTokens = options.transcript.estimateInputTokens({
     systemPrompt: options.advisorSystemPrompt,
     contextText: advisorUserMessageText,
   },);
@@ -215,7 +219,7 @@ export function maxContextCharsForAdvisorModel(
   /**
    Input tokens consumed before serialized conversation content.
    */
-  const reservedInputTokens = estimateAdvisorInputTokens({
+  const reservedInputTokens = options.transcript.estimateInputTokens({
     systemPrompt: options.advisorSystemPrompt,
     contextText: reservedUserMessageText,
   },)
@@ -336,7 +340,7 @@ function entryToMessage(
     includePriorAdvisorResults,
     currentToolCallId,
   }: {
-    readonly entry: ForeignBorrowed<SessionEntry>;
+    readonly entry: ForeignBorrowed<AdvisorSessionEntry>;
     readonly includePriorAdvisorResults: boolean;
     readonly currentToolCallId?: string;
   },

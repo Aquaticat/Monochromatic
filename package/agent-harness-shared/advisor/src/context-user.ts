@@ -5,10 +5,10 @@
  */
 
 import type { UserMessage, } from '@earendil-works/pi-ai';
-import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
+import type { AdvisorSessionEntry, } from './ports.ts';
 
 //region Public API
 
@@ -31,7 +31,7 @@ export const NO_USER_PROMPT: unique symbol = Symbol('advisor/no-user-prompt',);
  ```
  */
 export function latestUserPromptExcerpt(
-  branch: readonly ForeignBorrowed<SessionEntry>[],
+  branch: readonly ForeignBorrowed<AdvisorSessionEntry>[],
 ): string | typeof NO_USER_PROMPT {
   for (let index = branch.length - 1; index >= 0; index -= 1) {
     /**
@@ -95,8 +95,8 @@ function userMessageText(
  @returns whether entry contains a user message
  */
 function isUserMessageEntry(
-  entry: ForeignBorrowed<SessionEntry>,
-): entry is ForeignBorrowed<SessionEntry & {
+  entry: ForeignBorrowed<AdvisorSessionEntry>,
+): entry is ForeignBorrowed<AdvisorSessionEntry & {
   readonly type: 'message';
   readonly message: UserMessage;
 }> {

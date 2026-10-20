@@ -2,7 +2,7 @@
  Runtime-validated operation summaries for restored tool and slash-command results. @module
  */
 import * as v from 'valibot';
-import type { Theme, } from '@earendil-works/pi-coding-agent';
+import type { AdvisorTheme, } from './ports.ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { firstAdvisoryLine, } from './rendering-summary.ts';
 
@@ -56,7 +56,7 @@ export function renderAdvisorOperationSummary({
   readonly details: unknown;
   readonly text: string;
   readonly expanded: boolean;
-  readonly theme: ForeignHostCapability<Theme>;
+  readonly theme: ForeignHostCapability<AdvisorTheme>;
 },): string | typeof NO_ADVISOR_OPERATION_SUMMARY {
   /**
    Parsing projects unknown session data before any nested access.

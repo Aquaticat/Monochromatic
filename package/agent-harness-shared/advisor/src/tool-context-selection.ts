@@ -4,10 +4,6 @@
  @module
  */
 
-import type {
-  ModelRegistry,
-  SessionEntry,
-} from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
@@ -16,15 +12,20 @@ import {
 } from './context.ts';
 import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import {
-  type CurrentMainModelIdentity,
   scopeAvoidingCurrentMainModel,
   selectAdvisorModel,
 } from './advisor-selection.ts';
 import { requireAdvisorScopeWithOutputCapacity, } from './output-eligibility.ts';
 import type {
+  AdvisorModelResolution,
+  AdvisorSessionEntry,
+  AdvisorTranscriptSerialization,
+} from './ports.ts';
+import type {
   AdvisorConfig,
   AdvisorContext,
   AdvisorModelSelection,
+  CurrentMainModelIdentity,
   EffectiveModelScope,
   ScopedAdvisorModel,
 } from './types.ts';
@@ -54,9 +55,13 @@ export type AdvisorSelectionContext = {
  */
 export type SelectAdvisorRunContextOptions = ForeignBorrowed<{
   /**
-   Session branch entries from pi.
+   Session branch entries from the host transcript port.
    */
-  readonly branch: readonly ForeignBorrowed<SessionEntry>[];
+  readonly branch: readonly ForeignBorrowed<AdvisorSessionEntry>[];
+  /**
+   Transcript serialization seam used for LLM conversion and token estimates.
+   */
+  readonly transcript: AdvisorTranscriptSerialization;
   /**
    Runtime Advisor configuration.
    */
@@ -72,7 +77,7 @@ export type SelectAdvisorRunContextOptions = ForeignBorrowed<{
   /**
    Global model registry for explicit slug validation.
    */
-  readonly modelRegistry: ModelRegistry;
+  readonly modelRegistry: AdvisorModelResolution;
   /**
    Active primary model to avoid for default selection when possible.
    */
@@ -96,9 +101,13 @@ export type SelectAdvisorRunContextOptions = ForeignBorrowed<{
  */
 type BuildContextForScopedModelOptions = ForeignBorrowed<Readonly<{
   /**
-   Session branch entries from pi.
+   Session branch entries from the host transcript port.
    */
-  readonly branch: readonly SessionEntry[];
+  readonly branch: readonly AdvisorSessionEntry[];
+  /**
+   Transcript serialization seam used for LLM conversion and token estimates.
+   */
+  readonly transcript: AdvisorTranscriptSerialization;
   /**
    Runtime Advisor configuration.
    */
@@ -213,6 +222,7 @@ export function selectAdvisorRunContext(
       selection,
       advisorContext: buildContextForScopedModel({
         branch: options.branch,
+        transcript: options.transcript,
         config: options.config,
         advisorSystemPrompt: options.advisorSystemPrompt,
         scopedModel: selection.selected,
@@ -249,6 +259,7 @@ export function selectAdvisorRunContext(
       scopedModel,
       advisorContext: buildContextForScopedModel({
         branch: options.branch,
+        transcript: options.transcript,
         config: options.config,
         advisorSystemPrompt: options.advisorSystemPrompt,
         scopedModel,
@@ -322,6 +333,7 @@ function buildContextForScopedModel(
    Effective serialized-context character budget for selected model.
    */
   const maxContextChars = maxContextCharsForAdvisorModel({
+    transcript: options.transcript,
     config: options.config,
     model: options.scopedModel
       .model,
@@ -330,6 +342,7 @@ function buildContextForScopedModel(
   },);
   return buildAdvisorContext({
     branch: options.branch,
+    transcript: options.transcript,
     config: options.config,
     advisorSystemPrompt: options.advisorSystemPrompt,
     maxContextChars,
