@@ -10,7 +10,6 @@ import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
 } from './context.ts';
-import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import {
   applyConfiguredInitialReviewer,
   resolveConfiguredDefaultReviewer,
@@ -18,6 +17,7 @@ import {
   scopeIncludingConfiguredReviewer,
   selectAdvisorModel,
 } from './advisor-selection.ts';
+import { rankDefaultAdvisorCandidates, } from './default-ranking.ts';
 import { requireAdvisorScopeWithOutputCapacity, } from './output-eligibility.ts';
 import type {
   AdvisorModelResolution,
@@ -30,6 +30,7 @@ import type {
   AdvisorModelSelection,
   CurrentMainModelIdentity,
   EffectiveModelScope,
+  RankAdvisorDefaultCandidates,
   ScopedAdvisorModel,
 } from './types.ts';
 
@@ -97,6 +98,10 @@ export type SelectAdvisorRunContextOptions = ForeignBorrowed<{
    Current Advisor tool call id to omit.
    */
   readonly toolCallId?: string;
+  /**
+   External default-ranking policy; absent keeps expected-cost ranking (pi behavior).
+   */
+  readonly rankDefaultCandidates?: RankAdvisorDefaultCandidates;
 }>;
 
 /**
@@ -306,11 +311,13 @@ export function selectAdvisorRunContext(
   /**
    Default Advisor model selection using each candidate's own estimate.
    */
-  const defaultSelection = selectDefaultModelFromContextEstimates({
+  const defaultSelection = rankDefaultAdvisorCandidates({
     scope: rankingScope,
     estimatedInputTokensBySlug,
     maxOutputTokens: options.config
       .maxAdvisorOutputTokens,
+    ...(options.rankDefaultCandidates
+      === undefined ? {} : { rankDefaultCandidates: options.rankDefaultCandidates, }),
   },);
   /**
    Default selection led by the configured initial reviewer when one resolves.

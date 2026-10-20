@@ -16,11 +16,15 @@ import {
 
 import {
   type AdvisorConfig,
+  type AdvisorDefaultRanking,
   type AdvisorModelResolution,
+  type AdvisorRankingCandidate,
   type DefaultModelSelection,
   type EffectiveModelScope,
+  type RankAdvisorDefaultCandidates,
   type ScopedAdvisorModel,
   applyConfiguredInitialReviewer,
+  rankDefaultAdvisorCandidates,
   resolveConfiguredDefaultReviewer,
   scopeIncludingConfiguredReviewer,
   selectAdvisorModel,
@@ -205,6 +209,46 @@ function costScore(
     inputCost: 1,
     outputCost: 2,
     contextWindow: CONTEXT_WINDOW,
+  };
+}
+
+/**
+ External ranking policy fixture ordering candidates by cheapest input price.
+ 
+ @param options - eligible candidates and requested output budget
+ 
+ @returns reversed-from-cost ranking decision
+ 
+ @example
+ ```typescript
+ cheapestFirstPolicy({ candidates: [], maxOutputTokens: 32 });
+ ```
+ */
+function cheapestFirstPolicy(
+  {
+    candidates,
+    maxOutputTokens,
+  }: {
+    readonly candidates: readonly AdvisorRankingCandidate[];
+    readonly maxOutputTokens: number;
+  },
+): AdvisorDefaultRanking {
+  return {
+    ranked: candidates
+      .map(function scopedModel(candidate: AdvisorRankingCandidate,): ScopedAdvisorModel {
+        return candidate.scopedModel;
+      },)
+      .toSorted(function byCheaperInputFirst(
+        left: ScopedAdvisorModel,
+        right: ScopedAdvisorModel,
+      ): number {
+        return left.model
+          .cost
+          .input - right.model
+            .cost
+            .input;
+      },),
+    reason: `cheapest input price first for ${String(maxOutputTokens,)} output tokens`,
   };
 }
 
@@ -657,6 +701,33 @@ await describe({
           ?.reason,).toContain('did not resolve among output-eligible scoped models',);
       },
     },),
+    it({
+      name: 'ranks default candidates with the supplied policy instead of cost ranking',
+      fn: async function testPolicyRanksDefaultCandidates() {
+        const result = selectAdvisorModel({
+          scope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+          rankDefaultCandidates: cheapestFirstPolicy,
+        },);
+        expect(result.selected
+          .canonicalSlug,).toBe('cheap/reviewer',);
+        expect(
+          result.defaultSelection
+            ?.ranking
+            .map(function mapSlug(score,) {
+              return score.slug;
+            },),
+        )
+          .toEqual([
+            'cheap/reviewer',
+            'expensive/reviewer',
+          ],);
+        expect(result.defaultSelection
+          ?.reason,).toContain('cheapest input price first',);
+      },
+    },),
   ],
 },);
 
@@ -724,7 +795,257 @@ await describe({
           ],);
       },
     },),
+    it({
+      name: 'leads the fallback order with the supplied policy ranking',
+      fn: async function testRunContextPolicyOrder() {
+        const result = selectAdvisorRunContext({
+          branch: [],
+          transcript: testAdvisorTranscriptSerialization,
+          config: advisorConfig,
+          advisorSystemPrompt: 'review carefully',
+          scope,
+          modelRegistry,
+          rankDefaultCandidates: cheapestFirstPolicy,
+        },);
+        expect(result.selection.selected
+          .canonicalSlug,).toBe('cheap/reviewer',);
+        expect(
+          result.candidates
+            ?.map(function mapCandidate(candidate,) {
+              return candidate.scopedModel
+                .canonicalSlug;
+            },),
+        )
+          .toEqual([
+            'cheap/reviewer',
+            'expensive/reviewer',
+          ],);
+      },
+    },),
+    it({
+      name: 'promotes the configured reviewer above the policy ranking',
+      fn: async function testRunContextConfiguredReviewerOverPolicy() {
+        const result = selectAdvisorRunContext({
+          branch: [],
+          transcript: testAdvisorTranscriptSerialization,
+          config: {
+            ...advisorConfig,
+            defaultReviewerModel: 'expensive/reviewer',
+          },
+          advisorSystemPrompt: 'review carefully',
+          scope,
+          modelRegistry,
+          rankDefaultCandidates: cheapestFirstPolicy,
+        },);
+        expect(result.selection.selected
+          .canonicalSlug,).toBe('expensive/reviewer',);
+        expect(
+          result.candidates
+            ?.map(function mapCandidate(candidate,) {
+              return candidate.scopedModel
+                .canonicalSlug;
+            },),
+        )
+          .toEqual([
+            'expensive/reviewer',
+            'cheap/reviewer',
+          ],);
+        expect(result.selection.defaultSelection
+          ?.reason,).toContain('cheapest input price first',);
+        expect(result.selection.defaultSelection
+          ?.reason,).toContain('defaultReviewerModel "expensive/reviewer"',);
+      },
+    },),
   ],
 },);
 
 //endregion Selection integration
+
+//region rankDefaultAdvisorCandidates
+
+/** Input token estimates keyed by canonical slug for ranking seam tests. */
+const rankingEstimates = new Map<string, number>([
+  [
+    'cheap/reviewer',
+    ADVISOR_INPUT_TOKENS,
+  ],
+  [
+    'expensive/reviewer',
+    ADVISOR_INPUT_TOKENS,
+  ],
+],);
+
+await describe({
+  name: rankDefaultAdvisorCandidates.name,
+  children: [
+    it({
+      name: 'keeps the expected-cost ranking when no policy is supplied',
+      fn: async function testCostRankingWithoutPolicy() {
+        const selection = rankDefaultAdvisorCandidates({
+          scope,
+          estimatedInputTokensBySlug: rankingEstimates,
+          maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+        },);
+        expect(selection.selected
+          .canonicalSlug,).toBe('expensive/reviewer',);
+        expect(
+          selection.ranking
+            .map(function mapSlug(score,) {
+              return score.slug;
+            },),
+        )
+          .toEqual([
+            'expensive/reviewer',
+            'cheap/reviewer',
+          ],);
+        expect(selection.reason,).toContain('highest expected cost',);
+      },
+    },),
+    it({
+      name: 'uses the policy order and forwards candidates plus output budget',
+      fn: async function testPolicyOrderAndInputs() {
+        const selection = rankDefaultAdvisorCandidates({
+          scope,
+          estimatedInputTokensBySlug: rankingEstimates,
+          maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+          rankDefaultCandidates: function observingPolicy({
+            candidates,
+            maxOutputTokens,
+          }: Parameters<RankAdvisorDefaultCandidates>[0],): AdvisorDefaultRanking {
+            /**
+             Policy reason recording every forwarded candidate, estimate, and budget.
+             */
+            const observed = candidates
+              .map(function mapObservedCandidate(candidate: AdvisorRankingCandidate,): string {
+                return `${candidate.scopedModel
+                  .canonicalSlug}=${String(candidate.estimatedInputTokens,)}`;
+              },)
+              .join(' ',);
+            return {
+              ranked: cheapestFirstPolicy({
+                candidates,
+                maxOutputTokens,
+              },)
+                .ranked,
+              reason: `observed ${observed} budget ${String(maxOutputTokens,)}`,
+            };
+          },
+        },);
+        expect(selection.reason,).toContain(
+          'observed cheap/reviewer=16 expensive/reviewer=16',
+        );
+        expect(selection.reason,).toContain('budget 32',);
+        expect(selection.selected
+          .canonicalSlug,).toBe('cheap/reviewer',);
+      },
+    },),
+    it({
+      name: 'throws when the policy drops a candidate',
+      fn: async function testThrowsWhenPolicyDropsCandidate() {
+        const caught = captureError(function dropCandidate() {
+          return rankDefaultAdvisorCandidates({
+            scope,
+            estimatedInputTokensBySlug: rankingEstimates,
+            maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+            rankDefaultCandidates: function droppingPolicy(): AdvisorDefaultRanking {
+              return {
+                ranked: [scope.entries[0] as ScopedAdvisorModel,],
+                reason: 'drops the other candidate',
+              };
+            },
+          },);
+        },);
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'returned 1 ranked candidates for 2 eligible candidates',
+        );
+      },
+    },),
+    it({
+      name: 'throws when the policy duplicates a candidate',
+      fn: async function testThrowsWhenPolicyDuplicatesCandidate() {
+        const firstEntry = scope.entries[0] as ScopedAdvisorModel;
+        const caught = captureError(function duplicateCandidate() {
+          return rankDefaultAdvisorCandidates({
+            scope,
+            estimatedInputTokensBySlug: rankingEstimates,
+            maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+            rankDefaultCandidates: function duplicatingPolicy(): AdvisorDefaultRanking {
+              return {
+                ranked: [
+                  firstEntry,
+                  firstEntry,
+                ],
+                reason: 'duplicates the first candidate',
+              };
+            },
+          },);
+        },);
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'must return each eligible candidate exactly once; missing or duplicated: cheap/reviewer',
+        );
+      },
+    },),
+    it({
+      name: 'throws when the policy returns an unknown candidate',
+      fn: async function testThrowsWhenPolicyReturnsUnknownCandidate() {
+        /**
+         Scoped entry the policy invented, absent from the eligible scope.
+         */
+        const inventedEntry: ScopedAdvisorModel = {
+          model: cheapModel,
+          canonicalSlug: 'invented/reviewer',
+        };
+        const caught = captureError(function inventCandidate() {
+          return rankDefaultAdvisorCandidates({
+            scope,
+            estimatedInputTokensBySlug: rankingEstimates,
+            maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+            rankDefaultCandidates: function inventingPolicy(): AdvisorDefaultRanking {
+              return {
+                ranked: [
+                  scope.entries[0] as ScopedAdvisorModel,
+                  inventedEntry,
+                ],
+                reason: 'invents a candidate',
+              };
+            },
+          },);
+        },);
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'must return each eligible candidate exactly once; missing or duplicated: expensive/reviewer',
+        );
+      },
+    },),
+    it({
+      name: 'throws when the policy returns nothing for an empty scope',
+      fn: async function testThrowsWhenPolicyReturnsNothing() {
+        const emptyScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [],
+        };
+        const caught = captureError(function emptyRanking() {
+          return rankDefaultAdvisorCandidates({
+            scope: emptyScope,
+            estimatedInputTokensBySlug: new Map<string, number>(),
+            maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+            rankDefaultCandidates: function emptyPolicy(): AdvisorDefaultRanking {
+              return {
+                ranked: [],
+                reason: 'no candidates',
+              };
+            },
+          },);
+        },);
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'default ranking policy returned no candidates',
+        );
+      },
+    },),
+  ],
+},);
+
+//endregion rankDefaultAdvisorCandidates

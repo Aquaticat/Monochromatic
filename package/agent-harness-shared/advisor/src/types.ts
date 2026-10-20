@@ -161,6 +161,85 @@ export type ModelCostScore = SharedModelCostScore;
 export type DefaultModelSelection = SharedDefaultModelSelection;
 
 /**
+ Ranking evidence recorded for one default-selection candidate.
+
+ Entries carry at least the canonical slug; the built-in expected-cost ranking
+ stores full cost scores here, and external ranking policies store their order.
+ */
+export type AdvisorRankingScore = {
+  /**
+   Canonical slug of the ranked model.
+   */
+  readonly slug: string;
+};
+
+/**
+ Eligible candidate handed to a default-ranking policy.
+ */
+export type AdvisorRankingCandidate = {
+  /**
+   Scoped model under consideration.
+   */
+  readonly scopedModel: ScopedAdvisorModel;
+  /**
+   Estimated Advisor input tokens for this candidate's serialized context.
+   */
+  readonly estimatedInputTokens: number;
+};
+
+/**
+ Ranking decision produced by an external default-ranking policy.
+ */
+export type AdvisorDefaultRanking = {
+  /**
+   Input scoped candidates reordered best-first; a permutation of the inputs.
+   */
+  readonly ranked: readonly ScopedAdvisorModel[];
+  /**
+   Human-readable ranking reason surfaced as the default-selection reason.
+   */
+  readonly reason: string;
+};
+
+/**
+ External ranking policy for default (non-explicit) selection.
+
+ Harness adapters compute their own ordering outside the core (the core never
+ reads host model metadata) and hand the result back pre-ranked. When no policy
+ is supplied, selection ranks by expected call cost (pi behavior).
+ */
+export type RankAdvisorDefaultCandidates = (
+  options: {
+    /**
+     Eligible candidates after output-capacity filtering and current-main avoidance.
+     */
+    readonly candidates: readonly AdvisorRankingCandidate[];
+    /**
+     Requested output token budget for the default request.
+     */
+    readonly maxOutputTokens: number;
+  },
+) => AdvisorDefaultRanking;
+
+/**
+ Default-selection decision for empty params.
+ */
+export type AdvisorDefaultSelection = {
+  /**
+   Scoped model chosen as the initial reviewer.
+   */
+  readonly selected: ScopedAdvisorModel;
+  /**
+   Ranked candidates, best first; the initial reviewer leads after composition.
+   */
+  readonly ranking: readonly AdvisorRankingScore[];
+  /**
+   Human-readable reason for the initial pick and the fallback order.
+   */
+  readonly reason: string;
+};
+
+/**
  Explicit or default selection result for a tool call.
  */
 export type AdvisorModelSelection = {
@@ -175,7 +254,7 @@ export type AdvisorModelSelection = {
   /**
    Default-selection metadata, present for empty params.
    */
-  readonly defaultSelection?: DefaultModelSelection;
+  readonly defaultSelection?: AdvisorDefaultSelection;
 };
 
 /**
@@ -304,9 +383,9 @@ export type AdvisorDetails = {
    */
   readonly usage?: ReadonlyDeep<Usage>;
   /**
-   Default ranking scores, best first, for status and diagnostics.
+   Default ranking evidence, best first, for status and diagnostics.
    */
-  readonly costRanking?: readonly ModelCostScore[];
+  readonly costRanking?: readonly AdvisorRankingScore[];
 };
 
 /**
@@ -395,6 +474,10 @@ export type AdvisorRunOptions = ForeignHostCapability<{
    Current advisor tool call id, used to omit placeholder context.
    */
   readonly toolCallId?: string;
+  /**
+   External default-ranking policy; absent keeps expected-cost ranking (pi behavior).
+   */
+  readonly rankDefaultCandidates?: RankAdvisorDefaultCandidates;
   /**
    Bounded ledger-derived progress callback.
    */

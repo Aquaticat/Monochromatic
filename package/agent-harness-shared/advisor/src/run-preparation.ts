@@ -89,6 +89,8 @@ export async function prepareAdvisorRun(options: ForeignHostCapability<AdvisorRu
     ...(options.requestedSlug === undefined ? {} : { requestedSlug: options.requestedSlug, }),
     ...(options.question === undefined ? {} : { question: options.question, }),
     ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+    ...(options.rankDefaultCandidates
+      === undefined ? {} : { rankDefaultCandidates: options.rankDefaultCandidates, }),
   },);
   return {
     scope: filterAdvisorScopeByOutputCapacity({

@@ -233,12 +233,40 @@ clears the key even when another scope sets one.
 3. Variant fallback ranking:
    expected call cost (pi behavior,
    unchanged and
-   bit-identical when the key is unset).
+   bit-identical when the key is unset),
+   or the external
+   ranking policy a harness adapter supplies.
 
 `resolveConfiguredDefaultReviewer` reports the lookup as a
 `ConfiguredReviewerResolution` (`keyText` with optional `entry`),
 so callers can print
 resolution state without treating a miss as an error.
+
+## Ranking seam
+
+Default (non-explicit) ranking goes through
+`rankDefaultAdvisorCandidates` (`src/default-ranking.ts`).
+Callers may pass a `RankAdvisorDefaultCandidates`
+policy (`src/types.ts`) via `AdvisorRunOptions.rankDefaultCandidates`;
+it receives the eligible
+candidates with their input-token estimates and the requested output budget,
+and returns pre-ranked
+candidates plus a human-readable ranking reason.
+The policy is a comparator or
+pre-ordering computed inside the harness adapter,
+so no harness types enter the core.
+The core verifies the policy returned a
+permutation of its inputs and throws otherwise.
+
+Without a policy,
+the built-in expected-cost ranking runs unchanged,
+keeping full cost
+scores in `AdvisorDefaultSelection.ranking` and the details `costRanking`.
+With a
+policy,
+ranking entries carry canonical slugs and the policy's reason replaces the
+cost reason, so serial fallback and `defaultReviewerModel` composition keep
+working on either ranking.
 
 ## Behavior picks (Q5 and Q6)
 

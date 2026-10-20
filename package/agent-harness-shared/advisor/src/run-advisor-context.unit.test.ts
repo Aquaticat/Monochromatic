@@ -18,8 +18,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   type AdvisorConfig,
+  type AdvisorDefaultRanking,
   type AdvisorRunContext,
   DEFAULT_CONFIG,
+  type RankAdvisorDefaultCandidates,
   runAdvisor,
 } from '../dist/final/node/index.mjs';
 import { testAdvisorTranscriptSerialization, } from './transcript-test-fixture.ts';
@@ -321,6 +323,108 @@ await describe({
         expect(requestText,).not.toContain('stale pre-compaction evidence',);
         expect(getCurrentSystemPrompt(providerContext.messages,),).toContain('/repo/AGENTS.md',);
         expect(getCurrentSystemPrompt(providerContext.messages,),).toContain('PX3: Act on authorized repository work.',);
+      },
+    },),
+    it({
+      name: 'dispatches the policy-ranked model for default calls',
+      fn: async function testPolicyRankedDispatch() {
+        /** First scoped provider and model. */
+        const firstProviderFixture = fauxProvider({
+          api: 'faux',
+          provider: 'first-provider',
+          models: [{
+            id: 'reviewer',
+            reasoning: false,
+            maxTokens: advisorConfig.maxAdvisorOutputTokens,
+          },],
+        },);
+        /** Second scoped provider and model, ranked first by the policy. */
+        const secondProviderFixture = fauxProvider({
+          api: 'faux',
+          provider: 'second-provider',
+          models: [{
+            id: 'reviewer',
+            reasoning: false,
+            maxTokens: advisorConfig.maxAdvisorOutputTokens,
+          },],
+        },);
+        secondProviderFixture.setResponses([
+          function secondProviderResponse() {
+            return fauxAssistantMessage('advisor answer',);
+          },
+        ],);
+        firstProviderFixture.setResponses([
+          function firstProviderResponse() {
+            return fauxAssistantMessage('advisor answer',);
+          },
+        ],);
+        /** Host run context exposing both scoped models. */
+        const ctx = {
+          cwd: '/repo',
+          scopedModels: [
+            firstProviderFixture.getModel(),
+            secondProviderFixture.getModel(),
+          ],
+          modelRegistry: {
+            getAll() {
+              return [
+                ...firstProviderFixture.models,
+                ...secondProviderFixture.models,
+              ];
+            },
+            async getApiKeyAndHeaders() {
+              return {
+                ok: true,
+                apiKey: 'test-key',
+              };
+            },
+            getProvider(provider: string,) {
+              return provider === 'first-provider'
+                ? firstProviderFixture.provider
+                : secondProviderFixture.provider;
+            },
+          },
+          transcript: {
+            ...testAdvisorTranscriptSerialization,
+            buildContextEntries() {
+              return [retainedEntry,];
+            },
+          },
+        } as unknown as AdvisorRunContext;
+        /**
+         External ranking policy reversing the scope order.
+         
+         @param options - eligible candidates and requested output budget
+         
+         @returns policy ranking with the scope order reversed
+         
+         @example
+         ```typescript
+         reversedPolicy({ candidates: [], maxOutputTokens: 32 });
+         ```
+         */
+        function reversedPolicy(
+          {
+            candidates,
+            maxOutputTokens,
+          }: Parameters<RankAdvisorDefaultCandidates>[0],
+        ): AdvisorDefaultRanking {
+          return {
+            ranked: candidates
+              .map(function mapScopedModel(candidate,) {
+                return candidate.scopedModel;
+              },)
+              .toReversed(),
+            reason: `reversed scope order for ${String(maxOutputTokens,)} output tokens`,
+          };
+        }
+        const result = await runAdvisor({
+          ctx,
+          config: advisorConfig,
+          rankDefaultCandidates: reversedPolicy,
+        },);
+        expect(result.details
+          .selectedSlug,).toBe('second-provider/reviewer',);
       },
     },),
   ],

@@ -8,8 +8,8 @@ import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { selectDefaultModel, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
+import { rankDefaultAdvisorCandidates, } from './default-ranking.ts';
 import {
   assertAdvisorEndpointOutputCapacity,
   requireAdvisorScopeWithOutputCapacity,
@@ -17,10 +17,11 @@ import {
 import type { AdvisorModelResolution, } from './ports.ts';
 import type {
   AdvisorConfig,
+  AdvisorDefaultSelection,
   AdvisorModelSelection,
   CurrentMainModelIdentity,
-  DefaultModelSelection,
   EffectiveModelScope,
+  RankAdvisorDefaultCandidates,
   ScopedAdvisorModel,
 } from './types.ts';
 
@@ -190,10 +191,10 @@ export function applyConfiguredInitialReviewer(
     defaultSelection,
     resolution,
   }: ForeignBorrowed<Readonly<{
-    readonly defaultSelection: DefaultModelSelection;
+    readonly defaultSelection: AdvisorDefaultSelection;
     readonly resolution: ConfiguredReviewerResolution;
   }>>,
-): DefaultModelSelection {
+): AdvisorDefaultSelection {
   /**
    Configured reviewer match and configured key text from the lookup outcome.
    */
@@ -259,8 +260,9 @@ export function applyConfiguredInitialReviewer(
  
  Selection order: an explicit slug is exact; otherwise `defaultReviewerModel`
  picks the initial reviewer when it resolves in the output-eligible scope;
- otherwise the expected-cost ranking picks one. Only explicit requests disable
- fallback and overlap.
+ otherwise the ranking policy (or the built-in expected-cost ranking when no
+ policy is supplied) picks one. Only explicit requests disable fallback and
+ overlap.
  
  @param scope - effective scoped model set
  
@@ -273,6 +275,8 @@ export function applyConfiguredInitialReviewer(
  @param modelRegistry - global model registry for explicit slug validation
  
  @param currentMainModel - active primary model to avoid for default selection when possible
+ 
+ @param rankDefaultCandidates - optional external default-ranking policy
  
  @returns selected Advisor model
  
@@ -290,6 +294,7 @@ export function selectAdvisorModel(
     estimatedInputTokens,
     modelRegistry,
     currentMainModel,
+    rankDefaultCandidates,
   }: ForeignBorrowed<Readonly<{
     scope: ReadonlyDeep<EffectiveModelScope>;
     requestedSlug?: string;
@@ -297,6 +302,7 @@ export function selectAdvisorModel(
     estimatedInputTokens: number;
     modelRegistry: AdvisorModelResolution;
     currentMainModel?: CurrentMainModelIdentity;
+    rankDefaultCandidates?: RankAdvisorDefaultCandidates;
   }>>,
 ): AdvisorModelSelection {
   if ((requestedSlug !== undefined) && (requestedSlug.trim()
@@ -354,12 +360,24 @@ export function selectAdvisorModel(
         .entry, }),
   },);
   /**
+   Input token estimates keyed by canonical scoped model slug.
+   */
+  const estimatedInputTokensBySlug = new Map<string, number>();
+  for (const entry of rankingScope.entries) {
+    estimatedInputTokensBySlug.set(
+      entry.canonicalSlug,
+      estimatedInputTokens,
+    );
+  }
+  /**
    Default model selection for empty params.
    */
-  const defaultSelection = selectDefaultModel({
+  const defaultSelection = rankDefaultAdvisorCandidates({
     scope: rankingScope,
-    estimatedInputTokens,
+    estimatedInputTokensBySlug,
     maxOutputTokens: config.maxAdvisorOutputTokens,
+    ...(rankDefaultCandidates
+      === undefined ? {} : { rankDefaultCandidates, }),
   },);
   /**
    Default selection led by the configured initial reviewer when one resolves.
