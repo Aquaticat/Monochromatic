@@ -1093,6 +1093,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Owner answers of 2026-10-20: Vulkan only is accepted (no OpenGL fallback; "Yes, Vulkan only"); the `slint/mcp`
     inspection builds are to be dropped and their checks rebuilt without Slint's MCP server: "Drop the MCP builds and
     rebuild those checks without it, our nested compositor supports GPU."
+    Owner correction of 2026-10-20: preferring a discrete GPU over an integrated one "is going to anger users on
+    laptops with both GPUs"; my veto-open decision above is retracted. Mesa documents (docs.mesa3d.org/envvars.html)
+    that without `DRI_PRIME` the default GPU is the one the display server uses, and that `DRI_PRIME` or
+    `MESA_VK_DEVICE_SELECT` put the chosen GPU first in the Vulkan list; desktops set these per application through
+    switcheroo-control. New policy (agent `GPU-PICK` below): follow the loader's order among hardware adapters, honor
+    `WGPU_ADAPTER_NAME` and `WGPU_POWER_PREF` again, keep refusing CPU and unknown kinds. Not testable here (one
+    AMD desktop): a hybrid laptop, NVIDIA proprietary ordering.
     Stages 3 and 4 are merged into one task (the tile bakes in selection, underlines and the wrap sign, so they
     cannot be split cleanly): agent `a8ec6e5d0b8981d42`, started 2026-10-20 (code view on the GPU, CPU pipeline
     deleted except what the minimap still needs). A second agent, `a3b41470505ef8920`, removes the MCP builds in parallel and rebuilds their checks on the nested
