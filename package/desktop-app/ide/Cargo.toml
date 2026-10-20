@@ -68,7 +68,14 @@ tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "proc
 # paints on the CPU, tests included (owner decision of 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md). Slint's
 # `default` feature set contains `renderer-software`, so default features are off and the rest of that set is listed:
 # `std`, `backend-default` (winit), `accessibility`, `compat-1-2`, and `system-tray`.
-slint = { version = "1.18.1", default-features = false, features = ["std", "backend-default", "backend-winit", "renderer-femtovg", "accessibility", "compat-1-2", "system-tray"] }
+# The renderer is FemtoVG over wgpu 30 (`renderer-femtovg-wgpu`, owner-accepted 2026-10-19/20 with `unstable-wgpu-30`,
+# doc/planning/ide-vello-text.md design C). It is declared here once, for the application, its tests, and the GPU
+# snapshot harness (`src/native/gpu_snapshot.rs`). There is no `renderer-femtovg`: that is the OpenGL variant, and the
+# application has no OpenGL path (doc/planning/ide-gpu-snapshot-harness.md, section "Stage 2").
+# `unstable-wgpu-30` exposes `WGPUConfiguration` and the wgpu 30 types for the one device the launcher opens.
+# `unstable-winit-030` is the `BackendSelector` hook that stamps the Wayland app id while that device is handed over
+# (`src/launcher.rs`). Both flags are semver-exempt and add no package.
+slint = { version = "1.18.1", default-features = false, features = ["std", "backend-default", "backend-winit", "renderer-femtovg-wgpu", "unstable-wgpu-30", "unstable-winit-030", "accessibility", "compat-1-2", "system-tray"] }
 tracing = "0.1"
 # The `log` facade helix-lsp writes through and its conversion to `tracing` events, used to re-label
 # helix-lsp records (`src/logging/relabel.rs`). tracing-subscriber already builds this exact crate with
@@ -78,12 +85,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [dev-dependencies]
 tempfile = "3"
-# The GPU snapshot harness of the native tests (`src/native/gpu_snapshot.rs`) renders Slint's FemtoVG renderer into a
-# wgpu texture: `renderer-femtovg-wgpu` is that renderer and `unstable-wgpu-30` exposes `FemtoVGWGPURenderer` and the
-# wgpu 30 types (owner-accepted 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md). These features reach only test
-# builds (resolver 3 keeps dev-dependency features out of the application build); the same dependency, so no new package
-# of Slint, but Cargo.lock gains the wgpu and FemtoVG entries.
-slint = { version = "1.18.1", default-features = false, features = ["renderer-femtovg-wgpu", "unstable-wgpu-30"] }
 # Slint's element handles let the native tests read roles, labels, values, and states and invoke
 # accessible actions, as an assistive tool would. The crate is internal to Slint and has no semver
 # guarantee; its README requires an exact `=` version equal to the resolved `slint` version (1.18.1).
