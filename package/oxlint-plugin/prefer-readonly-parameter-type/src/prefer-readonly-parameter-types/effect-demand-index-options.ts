@@ -4,8 +4,8 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
+import type { SourceFile, } from 'typescript/ast';
+import type { Project, } from 'typescript/sync';
 
 import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';

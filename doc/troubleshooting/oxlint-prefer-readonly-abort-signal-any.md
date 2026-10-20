@@ -1,4 +1,4 @@
-# TypeScript 7.0.2 anonymous constructor typing hides `AbortSignal.any` and `timeout` effects from exact Oxlint matching
+# TypeScript 7 anonymous constructor typing hides `AbortSignal.any` and `timeout` effects from exact Oxlint matching
 
 ## Symptom
 
@@ -111,7 +111,10 @@ The external sources under test are:
 
 - TypeScript commit `168e7015edf98244febc8f4ae450b673b5d195d7`;
 - WHATWG DOM Standard commit `5796f716c857f0a563d11d32e0ca6b49232191be`;
-- TypeScript package `7.0.2` through `typescript/unstable/sync`.
+- TypeScript package `7.0.2` (2026-era evidence) through `typescript/unstable/sync`
+  (path renamed to `typescript/sync` in 7.1.0-beta,
+  2026-10-20,
+  the entry point this rule imports today).
 
 Run the focused checks:
 

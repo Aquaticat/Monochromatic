@@ -1,5 +1,5 @@
-import type { ParameterDeclaration, } from 'typescript/unstable/ast';
-import { isIdentifier, } from 'typescript/unstable/ast/is';
+import type { ParameterDeclaration, } from 'typescript/ast';
+import { isIdentifier, } from 'typescript/ast/is';
 
 import type { ParameterIndex, } from './effect-slot-identity.ts';
 

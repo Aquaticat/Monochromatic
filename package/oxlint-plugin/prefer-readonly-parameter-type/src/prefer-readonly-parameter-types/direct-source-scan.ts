@@ -7,8 +7,8 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
+import type { SourceFile, } from 'typescript/ast';
+import type { Project, } from 'typescript/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
 import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';

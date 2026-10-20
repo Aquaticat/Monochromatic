@@ -4,7 +4,7 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
+import type { SourceFile, } from 'typescript/ast';
 
 /**
  Tests whether a program file can change what a source sees without that source importing it.

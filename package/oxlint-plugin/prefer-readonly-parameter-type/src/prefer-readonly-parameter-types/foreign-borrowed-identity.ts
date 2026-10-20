@@ -7,7 +7,7 @@
 import type {
   Project,
   Type,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 /**
  Detects exact project-owned foreign ownership marker.

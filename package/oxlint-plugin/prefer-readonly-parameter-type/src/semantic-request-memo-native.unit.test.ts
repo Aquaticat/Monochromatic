@@ -11,7 +11,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { API, } from 'typescript/unstable/sync';
+import { API, } from 'typescript/sync';
 
 import {
   findNodeAtOffset,
@@ -158,8 +158,8 @@ await describe({
       name: 'sends a repeated checker query to the native server once',
       fn: async () => {
         using opened = openMemoizedProject();
-        const snapshot = opened.api.updateSnapshot({ openProjects: [opened.configPath,], },);
-        const project = snapshot.getProject(opened.configPath,);
+        const snapshot = opened.api.createSnapshot({ openProjects: [opened.configPath,], ensurePrograms: true, },);
+        const project = snapshot.getConfiguredProject(opened.configPath,);
         const sourceFile = project?.program.getSourceFile(opened.sourcePath,);
         if ((project === undefined) || (sourceFile === undefined))
           throw new Error('Expected the disposable project and its source.',);
@@ -181,8 +181,8 @@ await describe({
       name: 'sends each request added to the allow-list to the native server once and replays its answer',
       fn: async () => {
         using opened = openMemoizedProject({ source: ADDED_SOURCE, },);
-        const snapshot = opened.api.updateSnapshot({ openProjects: [opened.configPath,], },);
-        const project = snapshot.getProject(opened.configPath,);
+        const snapshot = opened.api.createSnapshot({ openProjects: [opened.configPath,], ensurePrograms: true, },);
+        const project = snapshot.getConfiguredProject(opened.configPath,);
         const sourceFile = project?.program.getSourceFile(opened.sourcePath,);
         if ((project === undefined) || (sourceFile === undefined))
           throw new Error('Expected the disposable project and its source.',);
@@ -237,8 +237,8 @@ await describe({
       name: 'sends the same checker query on a new snapshot to the native server again',
       fn: async () => {
         using opened = openMemoizedProject();
-        const first = opened.api.updateSnapshot({ openProjects: [opened.configPath,], },);
-        const firstProject = first.getProject(opened.configPath,);
+        const first = opened.api.createSnapshot({ openProjects: [opened.configPath,], ensurePrograms: true, },);
+        const firstProject = first.getConfiguredProject(opened.configPath,);
         const firstFile = firstProject?.program.getSourceFile(opened.sourcePath,);
         if ((firstProject === undefined) || (firstFile === undefined))
           throw new Error('Expected the first snapshot to hold the source.',);
@@ -250,8 +250,8 @@ await describe({
         /** Same parameter, retyped, so the second snapshot differs from the first. */
         const changedSource = PROJECT_SOURCE.replace('number,): number', 'string,): string',);
         writeFileSync(opened.sourcePath, changedSource,);
-        const second = opened.api.updateSnapshot({ fileChanges: { changed: [opened.sourcePath,], }, },);
-        const secondProject = second.getProject(opened.configPath,);
+        const second = first.update({ fileNotifications: { changed: [opened.sourcePath,], }, ensurePrograms: true, },);
+        const secondProject = second.getConfiguredProject(opened.configPath,);
         const secondFile = secondProject?.program.getSourceFile(opened.sourcePath,);
         if ((secondProject === undefined) || (secondFile === undefined))
           throw new Error('Expected the second snapshot to hold the source.',);
@@ -271,8 +271,8 @@ await describe({
       name: 'stops answering a released snapshot from memory',
       fn: async () => {
         using opened = openMemoizedProject();
-        const snapshot = opened.api.updateSnapshot({ openProjects: [opened.configPath,], },);
-        const project = snapshot.getProject(opened.configPath,);
+        const snapshot = opened.api.createSnapshot({ openProjects: [opened.configPath,], ensurePrograms: true, },);
+        const project = snapshot.getConfiguredProject(opened.configPath,);
         const sourceFile = project?.program.getSourceFile(opened.sourcePath,);
         if ((project === undefined) || (sourceFile === undefined))
           throw new Error('Expected the disposable project and its source.',);

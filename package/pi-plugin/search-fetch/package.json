@@ -47,6 +47,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
-    "typebox": "catalog:"
+    "typebox": "catalog:",
+    "typescript": "catalog:"
   }
 }

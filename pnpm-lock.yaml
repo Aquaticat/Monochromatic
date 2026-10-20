@@ -325,8 +325,8 @@ catalogs:
       specifier: '>=1.3.16'
       version: 1.4.2
     typescript:
-      specifier: '>=7.0.2'
-      version: 7.0.2
+      specifier: 7.1.0-beta
+      version: 7.1.0-beta
     uint8array-extras:
       specifier: '>=1.5.0'
       version: 1.6.0
@@ -514,7 +514,7 @@ importers:
         version: 0.2.8
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
       yaml:
         specifier: 'catalog:'
         version: 3.0.0-2
@@ -535,7 +535,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/search-fetch:
     dependencies:
@@ -565,7 +565,7 @@ importers:
         version: 1.4.2
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -584,7 +584,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/session-discovery:
     dependencies:
@@ -612,7 +612,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/shell-command-analyzer:
     dependencies:
@@ -640,7 +640,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/terminal-title:
     dependencies:
@@ -665,7 +665,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/text-scan:
     devDependencies:
@@ -683,7 +683,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/truncate:
     devDependencies:
@@ -704,7 +704,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/agent-harness-shared/usage-projection:
     devDependencies:
@@ -722,7 +722,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/build-tool/css:
     dependencies:
@@ -914,7 +914,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/claude-code-plugin/stop-reminder:
     devDependencies:
@@ -1058,7 +1058,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/cli/mutation-test:
     dependencies:
@@ -1333,7 +1333,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/cli/wg-quicker:
     dependencies:
@@ -1367,7 +1367,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/cloudflare-worker/rand:
     dependencies:
@@ -1392,7 +1392,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/config/cosign: {}
 
@@ -1423,7 +1423,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/config/oxlint:
     dependencies:
@@ -1447,7 +1447,7 @@ importers:
         version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -1497,7 +1497,7 @@ importers:
         version: 1.2.14
       rolldown-plugin-dts:
         specifier: 'catalog:'
-        version: 0.28.8(rolldown@1.2.14)(typescript@7.0.2)
+        version: 0.28.8(rolldown@1.2.14)(typescript@7.1.0-beta)
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -1510,7 +1510,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/config/tofu:
     dependencies:
@@ -1556,7 +1556,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/desktop-app/electron-infra:
     dependencies:
@@ -1584,7 +1584,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/desktop-app/file-manager-electron:
     dependencies:
@@ -1618,7 +1618,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/desktop-daemon/hall-monitor:
     dependencies:
@@ -2029,7 +2029,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/figma/to-penpot:
     dependencies:
@@ -2103,7 +2103,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/intellij-plugin/islands-black:
     dependencies:
@@ -2159,7 +2159,7 @@ importers:
         version: link:../../module/caught-value
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2179,6 +2179,9 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
 
   package/mcp/search-fetch:
     dependencies:
@@ -2199,7 +2202,7 @@ importers:
         version: 1.4.2
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2218,7 +2221,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/mcp/stdio:
     dependencies:
@@ -2227,10 +2230,10 @@ importers:
         version: link:../../module/caught-value
       '@valibot/to-json-schema':
         specifier: 'catalog:'
-        version: 1.8.0(valibot@1.5.0(typescript@7.0.2))
+        version: 1.8.0(valibot@1.5.0(typescript@7.1.0-beta))
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2249,7 +2252,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/array-at:
     devDependencies:
@@ -2267,7 +2270,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/async-iter:
     devDependencies:
@@ -2285,7 +2288,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/async-time:
     devDependencies:
@@ -2306,7 +2309,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/caught-value:
     devDependencies:
@@ -2321,7 +2324,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/conf-fork:
     dependencies:
@@ -2367,7 +2370,7 @@ importers:
         version: 7.8.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/conf-fork.fuzz:
     devDependencies:
@@ -2412,7 +2415,7 @@ importers:
         version: 7.8.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
       uint8array-extras:
         specifier: 'catalog:'
         version: 1.6.0
@@ -2433,7 +2436,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/css-edit:
     dependencies:
@@ -2464,7 +2467,7 @@ importers:
         version: 5.10.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/css-edit.bench:
     devDependencies:
@@ -2491,7 +2494,7 @@ importers:
         version: 8.5.30
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/css-edit.conformance:
     devDependencies:
@@ -2512,7 +2515,7 @@ importers:
         version: 4.10.2
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/css-edit.fuzz:
     devDependencies:
@@ -2539,7 +2542,7 @@ importers:
         version: 8.5.30
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/deepmerge-ts.fuzz:
     devDependencies:
@@ -2560,7 +2563,7 @@ importers:
         version: 4.10.2
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/dom:
     dependencies:
@@ -2576,7 +2579,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/env-local-json:
     dependencies:
@@ -2610,7 +2613,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/fs-id:
     dependencies:
@@ -2641,7 +2644,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/fs-path:
     devDependencies:
@@ -2665,7 +2668,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/function-arity:
     devDependencies:
@@ -2683,7 +2686,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/hyperscript:
     devDependencies:
@@ -2704,7 +2707,7 @@ importers:
         version: 3.2.3
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/i18n-compose:
     dependencies:
@@ -2726,7 +2729,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/image-diff:
     dependencies:
@@ -2766,7 +2769,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/jsonc-edit:
     dependencies:
@@ -2794,7 +2797,7 @@ importers:
         version: 5.10.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/jsonc-edit.bench:
     devDependencies:
@@ -2815,7 +2818,7 @@ importers:
         version: 3.3.1
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/jsonc-edit.conformance:
     devDependencies:
@@ -2836,7 +2839,7 @@ importers:
         version: 5.10.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/jsonc-edit.fuzz:
     devDependencies:
@@ -2857,7 +2860,7 @@ importers:
         version: 4.10.2
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/kv-store:
     dependencies:
@@ -2888,7 +2891,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/llm-type:
     devDependencies:
@@ -2906,7 +2909,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/logger:
     devDependencies:
@@ -2930,7 +2933,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/logger.fuzz:
     devDependencies:
@@ -2960,7 +2963,7 @@ importers:
         version: 4.10.2
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/make-asynchronous-fork:
     devDependencies:
@@ -2978,7 +2981,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/make-asynchronous-fork.fuzz:
     devDependencies:
@@ -3005,7 +3008,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/matcher-fork:
     devDependencies:
@@ -3023,7 +3026,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/matcher-fork.fuzz:
     devDependencies:
@@ -3047,7 +3050,7 @@ importers:
         version: 7.0.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/matrix:
     dependencies:
@@ -3075,7 +3078,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/memoize:
     dependencies:
@@ -3097,7 +3100,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/numeric-format:
     dependencies:
@@ -3122,7 +3125,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/observable:
     devDependencies:
@@ -3140,7 +3143,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/or-throw:
     devDependencies:
@@ -3158,7 +3161,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/p-limit-fork:
     devDependencies:
@@ -3179,7 +3182,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/p-limit-fork.fuzz:
     devDependencies:
@@ -3209,7 +3212,7 @@ importers:
         version: 7.3.3
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/p-map-fork:
     dependencies:
@@ -3240,7 +3243,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/p-map-fork.fuzz:
     devDependencies:
@@ -3276,7 +3279,7 @@ importers:
         version: 7.1.1
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/p-memoize-fork:
     devDependencies:
@@ -3297,7 +3300,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/p-memoize-fork.fuzz:
     devDependencies:
@@ -3327,7 +3330,7 @@ importers:
         version: 9.0.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/pify-fork:
     devDependencies:
@@ -3345,7 +3348,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/pify-fork.fuzz:
     devDependencies:
@@ -3372,7 +3375,7 @@ importers:
         version: 6.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/pipe:
     dependencies:
@@ -3394,7 +3397,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/pnpm-workspace-catalog:
     dependencies:
@@ -3425,7 +3428,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/quick-lru-fork:
     devDependencies:
@@ -3443,7 +3446,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/quick-lru-fork.fuzz:
     devDependencies:
@@ -3470,7 +3473,7 @@ importers:
         version: 7.3.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/test:
     dependencies:
@@ -3537,7 +3540,7 @@ importers:
         version: 4.0.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/test-diagnostic:
     dependencies:
@@ -3565,7 +3568,7 @@ importers:
         version: 4.10.2
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/test-expect:
     dependencies:
@@ -3614,7 +3617,7 @@ importers:
         version: 4.0.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/test-sandbox:
     dependencies:
@@ -3642,7 +3645,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/throws:
     dependencies:
@@ -3664,7 +3667,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/token-count:
     dependencies:
@@ -3701,7 +3704,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/toml-edit:
     dependencies:
@@ -3738,7 +3741,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/toml-edit.fuzz:
     devDependencies:
@@ -3768,7 +3771,7 @@ importers:
         version: 1.0.3
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/wg-allowedips:
     dependencies:
@@ -3793,7 +3796,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/module/zip-writer:
     dependencies:
@@ -3818,7 +3821,7 @@ importers:
         version: 2.1.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/music-player/desktop-e2e:
     dependencies:
@@ -3849,7 +3852,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/ownership-marker/foreign-borrowed:
     devDependencies:
@@ -3864,7 +3867,7 @@ importers:
         version: 1.88.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -3904,7 +3907,7 @@ importers:
         version: 1.88.0
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -3941,7 +3944,7 @@ importers:
         version: 1.2.14
       rolldown-plugin-dts:
         specifier: 'catalog:'
-        version: 0.28.8(rolldown@1.2.14)(typescript@7.0.2)
+        version: 0.28.8(rolldown@1.2.14)(typescript@7.1.0-beta)
 
   package/oxlint-plugin/shared:
     devDependencies:
@@ -4098,7 +4101,7 @@ importers:
         version: 5.10.0
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
@@ -4124,6 +4127,9 @@ importers:
       typebox:
         specifier: 'catalog:'
         version: 1.4.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
 
   package/pi-plugin/agent-settled-notification:
     dependencies:
@@ -4469,7 +4475,7 @@ importers:
         version: link:../../module/logger
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
@@ -4492,6 +4498,9 @@ importers:
       typebox:
         specifier: 'catalog:'
         version: 1.4.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
 
   package/pi-plugin/spawn:
     dependencies:
@@ -4652,7 +4661,7 @@ importers:
         version: 5.10.0
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
       zeptomatch:
         specifier: 'catalog:'
         version: 2.1.0
@@ -4675,6 +4684,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.5
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
 
   package/rolldown-plugin/import-attributes:
     dependencies:
@@ -4721,7 +4733,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/shim/proper-lockfile:
     devDependencies:
@@ -4730,7 +4742,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/shim/readable-stream:
     devDependencies:
@@ -4739,7 +4751,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/shim/ungap-structured-clone:
     devDependencies:
@@ -4748,7 +4760,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/ssg/aquati.cat:
     dependencies:
@@ -4811,7 +4823,7 @@ importers:
         version: 5.10.0
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
       wawoff2:
         specifier: 'catalog:'
         version: 2.0.1
@@ -4866,7 +4878,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/stub/silent:
     devDependencies:
@@ -4875,7 +4887,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/stub/throwing:
     devDependencies:
@@ -4884,7 +4896,7 @@ importers:
         version: link:../../config/typescript
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/test-fixture/css-imported: {}
 
@@ -5032,7 +5044,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/archive:
     dependencies:
@@ -5126,7 +5138,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/artifact:
     dependencies:
@@ -5241,7 +5253,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/artifact-pool:
     dependencies:
@@ -5299,7 +5311,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/assembly:
     dependencies:
@@ -5357,7 +5369,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/bench:
     dependencies:
@@ -5472,7 +5484,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/consistency:
     dependencies:
@@ -5551,7 +5563,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/consolidate:
     dependencies:
@@ -5642,7 +5654,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/corpus-pass:
     dependencies:
@@ -5778,7 +5790,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/corpus-source:
     dependencies:
@@ -5842,7 +5854,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/coverage-census:
     dependencies:
@@ -5942,7 +5954,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/document-structure:
     dependencies:
@@ -6000,7 +6012,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/glossary:
     dependencies:
@@ -6049,7 +6061,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/house-rule:
     dependencies:
@@ -6098,7 +6110,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/insertion:
     dependencies:
@@ -6174,7 +6186,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/lane-contest:
     dependencies:
@@ -6259,7 +6271,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/markup:
     dependencies:
@@ -6296,7 +6308,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/page-check:
     dependencies:
@@ -6402,7 +6414,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/page-pass:
     dependencies:
@@ -6463,7 +6475,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/probe:
     dependencies:
@@ -6572,7 +6584,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/provider:
     dependencies:
@@ -6633,7 +6645,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/provider-stream:
     dependencies:
@@ -6691,7 +6703,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/reference:
     dependencies:
@@ -6758,7 +6770,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/rendering-audit:
     dependencies:
@@ -6825,7 +6837,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/repair:
     dependencies:
@@ -6925,7 +6937,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/run:
     dependencies:
@@ -7031,7 +7043,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/shared-contract:
     dependencies:
@@ -7071,7 +7083,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/slice-cache:
     dependencies:
@@ -7180,7 +7192,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/slice-reading:
     dependencies:
@@ -7247,7 +7259,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/source-scan:
     devDependencies:
@@ -7286,7 +7298,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/stage:
     dependencies:
@@ -7353,7 +7365,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/test-fixture:
     devDependencies:
@@ -7371,7 +7383,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
       unified:
         specifier: 'catalog:'
         version: 11.0.5
@@ -7453,7 +7465,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/translate-lane:
     dependencies:
@@ -7553,7 +7565,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/translate-stage:
     dependencies:
@@ -7626,7 +7638,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/translation-repair/typography:
     dependencies:
@@ -7672,7 +7684,7 @@ importers:
         version: 1.2.14
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/typeface/aquaticat:
     devDependencies:
@@ -7727,7 +7739,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/webapp-productivity/done-postcss:
     dependencies:
@@ -7770,7 +7782,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/webapp-productivity/doodle-widget:
     dependencies:
@@ -7834,7 +7846,7 @@ importers:
         version: 5.10.0
       valibot:
         specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
+        version: 1.5.0(typescript@7.1.0-beta)
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -7844,7 +7856,7 @@ importers:
         version: 26.6.5
       typescript:
         specifier: 'catalog:'
-        version: 7.0.2
+        version: 7.1.0-beta
 
   package/webapp-productivity/syllable-break-demo:
     dependencies:
@@ -8907,122 +8919,128 @@ packages:
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==, tarball: https://registry.npmjs.org/@types/unist/-/unist-3.0.3.tgz}
 
-  '@typescript/typescript-aix-ppc64@7.0.2':
-    resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==, tarball: https://registry.npmjs.org/@typescript/typescript-aix-ppc64/-/typescript-aix-ppc64-7.0.2.tgz}
+  '@typescript/typescript-aix-ppc64@7.1.0-beta':
+    resolution: {integrity: sha512-DXDG+jIWxBHGdoO70tcHON33rCnSzsEZj9P13oyf/r/KEGIo6awsdSNVNjAw0uMwEpqRu75IrgCcW58YcVkZHg==, tarball: https://registry.npmjs.org/@typescript/typescript-aix-ppc64/-/typescript-aix-ppc64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [ppc64]
     os: [aix]
 
-  '@typescript/typescript-darwin-arm64@7.0.2':
-    resolution: {integrity: sha512-gowzar9MwS/aRWp6f3a4KUqzRjAZjOsmGNCM6LcTgXum+dBfgsBVMN+AgvOCCbguXyick6LJhpBszxMebJ8syA==, tarball: https://registry.npmjs.org/@typescript/typescript-darwin-arm64/-/typescript-darwin-arm64-7.0.2.tgz}
+  '@typescript/typescript-android-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-UZx6PxoQavuvaVTrSf3aw0Oy/J/uJpRylipA0kzc038jMvZXh0UtE8vnQp20FqtdgD5bhXZ0aJrRJyoTSUO58Q==, tarball: https://registry.npmjs.org/@typescript/typescript-android-arm64/-/typescript-android-arm64-7.1.0-beta.tgz}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [android]
+
+  '@typescript/typescript-darwin-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-q7mxblcyX0E7hXsY4k+Q6KWKK5mGmfVq+BDesdTgRVgjodk27aIxER77Zyj9+TgSTlCje8F7+JM6f6hl2BuNdw==, tarball: https://registry.npmjs.org/@typescript/typescript-darwin-arm64/-/typescript-darwin-arm64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [darwin]
 
-  '@typescript/typescript-darwin-x64@7.0.2':
-    resolution: {integrity: sha512-SZ9xZInqApNlNGc9s0W1VSsktYSOe9cFqNOIqmN1Gs8SmkjKZYFt017G4VwPxASInODuAdbTW7sXiFUf893RgA==, tarball: https://registry.npmjs.org/@typescript/typescript-darwin-x64/-/typescript-darwin-x64-7.0.2.tgz}
+  '@typescript/typescript-darwin-x64@7.1.0-beta':
+    resolution: {integrity: sha512-D5EYqG5Wm/guw9+0j8+Mn1Jbr/gfS/VtFTuoH8PJtFbcqeDaQGMulc7SW8q51QG6Y3wGOGX3nbsTOw6fIKWWAA==, tarball: https://registry.npmjs.org/@typescript/typescript-darwin-x64/-/typescript-darwin-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [darwin]
 
-  '@typescript/typescript-freebsd-arm64@7.0.2':
-    resolution: {integrity: sha512-W5NH4y/J0plIIS5b2xvTEkU7JFxyqdMAOgf+Ilhl0vHQXKO5dZoxd+C/jEtq56c4F3wk71RB4BMRQ2XdI+bwYQ==, tarball: https://registry.npmjs.org/@typescript/typescript-freebsd-arm64/-/typescript-freebsd-arm64-7.0.2.tgz}
+  '@typescript/typescript-freebsd-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-9A0XX0tcnH9qPdolSKKzSjTb93dlB0UEcAJbHYEsrFX2fkFNSum9+dvkQQJ9vLc+7vxHetDPujq9Qe6wx+Xhow==, tarball: https://registry.npmjs.org/@typescript/typescript-freebsd-arm64/-/typescript-freebsd-arm64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [freebsd]
 
-  '@typescript/typescript-freebsd-x64@7.0.2':
-    resolution: {integrity: sha512-UMGDx5sTpzNw3WiPebH7l90IWfJggEd+egHt/q6p7/Cm3zqoV7VxkGXt+3DxPIw8CcmvAB0j3sVVfbhX+M4Tpw==, tarball: https://registry.npmjs.org/@typescript/typescript-freebsd-x64/-/typescript-freebsd-x64-7.0.2.tgz}
+  '@typescript/typescript-freebsd-x64@7.1.0-beta':
+    resolution: {integrity: sha512-EDf/dBHfY0TxX3NmUTek0hbffeyZlh3+ls6WQW3ICB8vYxwYLFnzg7wkgEUvl9eRlpiJ/nmc2S8arPMzINJ7rg==, tarball: https://registry.npmjs.org/@typescript/typescript-freebsd-x64/-/typescript-freebsd-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [freebsd]
 
-  '@typescript/typescript-linux-arm64@7.0.2':
-    resolution: {integrity: sha512-Qh4eU4/y3yDjnfjjyPYihMj5/ODIlmt+Bzu17OI+fiSRDW57QmU5SiN63exPRNJPKUzcc1INa1NXdrJ+MqHjUQ==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-arm64/-/typescript-linux-arm64-7.0.2.tgz}
+  '@typescript/typescript-linux-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-hNqQBgQ5b5oGqN76QqbAU6CwYhJZ6iOcWc2kPTUs2OentgpxZktETziH6KIyRFJPaiBncognwn2ZLu3DNhHiWw==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-arm64/-/typescript-linux-arm64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [linux]
 
-  '@typescript/typescript-linux-arm@7.0.2':
-    resolution: {integrity: sha512-gffT3xPz9sR7j/YJExkyPntrI0P2EP9XbOyWzth2/Gs0RstK+90RBcO0ncXoXy/beYll1SXw846Nf2zdnEz0QQ==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-arm/-/typescript-linux-arm-7.0.2.tgz}
+  '@typescript/typescript-linux-arm@7.1.0-beta':
+    resolution: {integrity: sha512-AvN9HmzOQh46G4312ooSgMHhbB7DtnLwg8D9mo324X49B7weMwtJrBG1MxT9IyI8kzDd7YRtW+1hWGun7WG7Qw==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-arm/-/typescript-linux-arm-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm]
     os: [linux]
 
-  '@typescript/typescript-linux-loong64@7.0.2':
-    resolution: {integrity: sha512-uEHck9i8hoAzXPiYRib1O7miOnz23SxIeVl6F4LXox+qov1K35jHcEW6VHKvZI+pyvl7fZEP4MCU5LYvIq1GuQ==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-loong64/-/typescript-linux-loong64-7.0.2.tgz}
+  '@typescript/typescript-linux-loong64@7.1.0-beta':
+    resolution: {integrity: sha512-xbUustlBrFflt2pNEyG5ye+d4WGPc/rfr2xK29MXeobPSw297JqwuKRrvbKM5o3fE/eUM/c+urVm6jQ3IaMVTw==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-loong64/-/typescript-linux-loong64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [loong64]
     os: [linux]
 
-  '@typescript/typescript-linux-mips64el@7.0.2':
-    resolution: {integrity: sha512-R4KvAMnE43W5Qeqb0Ly56O3mWMWIAgsMyz36DCaycd5nbg/9kzm0liw3JocfRqyJY0KPmzFjbswozXyW0DnIYA==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-mips64el/-/typescript-linux-mips64el-7.0.2.tgz}
+  '@typescript/typescript-linux-mips64el@7.1.0-beta':
+    resolution: {integrity: sha512-fS4/G7/0bXZ3NSq3nBMAXyg65I3tO4S7j08VNQ2g1aNC/qq79gE7Qne1BNjVsjMFfHBVBFjQYoTQCjmVU2iFlg==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-mips64el/-/typescript-linux-mips64el-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [mips64el]
     os: [linux]
 
-  '@typescript/typescript-linux-ppc64@7.0.2':
-    resolution: {integrity: sha512-DORx5b3sd/4S7eayxm4FQv+A7CrkUIGRaHiwI8oiHTAI1fAPWhF4J0vAlkC8biAlHSVVwxMQ3tjZ2/DVbnQiiA==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-ppc64/-/typescript-linux-ppc64-7.0.2.tgz}
+  '@typescript/typescript-linux-ppc64@7.1.0-beta':
+    resolution: {integrity: sha512-0upCCxYPX8X6gOwkvfv+Ee7/ufyy7k97mTrGE0e5BxLlnUEa+w+rtgnv2dsKcxFdwdeZYVlZKCqgN/xCBV08+A==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-ppc64/-/typescript-linux-ppc64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [ppc64]
     os: [linux]
 
-  '@typescript/typescript-linux-riscv64@7.0.2':
-    resolution: {integrity: sha512-wf0jqEDOjrPRnKwYRyyJDRo11KMbvMFrU+q4zqKyChODBzvlkbhNQfKvLxQCcwTpdDaXSHZTVuh0JoCrKCUMHQ==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-riscv64/-/typescript-linux-riscv64-7.0.2.tgz}
+  '@typescript/typescript-linux-riscv64@7.1.0-beta':
+    resolution: {integrity: sha512-0jKU9YRgOPRgiy5V/UWv37kB53PaTpIbwGCbbOMUPPAkrjVRNOIAJaz7Wa7s3H7mdDebX1LopUEPEJR+7Xa7zg==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-riscv64/-/typescript-linux-riscv64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [riscv64]
     os: [linux]
 
-  '@typescript/typescript-linux-s390x@7.0.2':
-    resolution: {integrity: sha512-IkwJc3L7yhytWd/ewjyxNDfOmswCm9GWMJT/ue/dU4aZNbwZeYAetq42VyLmsmSjvoX7z74X6ZaYCtzAr0EuGw==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-s390x/-/typescript-linux-s390x-7.0.2.tgz}
+  '@typescript/typescript-linux-s390x@7.1.0-beta':
+    resolution: {integrity: sha512-j+d04s2kxaPQh6DLPb01sknAQfzsrdSZy15jBRHyLEZoaaQ19dVjbFRlkNVvYwUG7ZdP8+y5b/7RmPxdtHUKdQ==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-s390x/-/typescript-linux-s390x-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [s390x]
     os: [linux]
 
-  '@typescript/typescript-linux-x64@7.0.2':
-    resolution: {integrity: sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.0.2.tgz}
+  '@typescript/typescript-linux-x64@7.1.0-beta':
+    resolution: {integrity: sha512-kcD51ihf+pnI5KT4uQQYG04OpwznaZYBlIQhDhl8fflFd27NktxXsUeguxZyvUMyWfum7IF2bBS6Jv7ox0AgFQ==, tarball: https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [linux]
 
-  '@typescript/typescript-netbsd-arm64@7.0.2':
-    resolution: {integrity: sha512-+polYF4MF04aPpO5FTkHran9yUQDSXqy5GiSDKpsll5jy3l3+g9QLhpf39T+ePtefhXLOGrLl0QIjkQP6VnelA==, tarball: https://registry.npmjs.org/@typescript/typescript-netbsd-arm64/-/typescript-netbsd-arm64-7.0.2.tgz}
+  '@typescript/typescript-netbsd-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-8W85YyoGK+rgGoSU9jJQUpELbrKcZcbdJk2jPNQ6UKDKI7ryPlPFTrV2jCE5RQuv4Tt96hMDTc33s4YfRrLFBA==, tarball: https://registry.npmjs.org/@typescript/typescript-netbsd-arm64/-/typescript-netbsd-arm64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [netbsd]
 
-  '@typescript/typescript-netbsd-x64@7.0.2':
-    resolution: {integrity: sha512-8YIT0EHM/3dq10ZOVF/A7pc/YSMtbcecct4rWtexrnSCHOPcpC2KTLXfTCR6vDpnSiY12heNb1GiN/wu+T/FyA==, tarball: https://registry.npmjs.org/@typescript/typescript-netbsd-x64/-/typescript-netbsd-x64-7.0.2.tgz}
+  '@typescript/typescript-netbsd-x64@7.1.0-beta':
+    resolution: {integrity: sha512-iGsTE0ve2PG0AcyZinwAR0LnGEZhu/y4dceS0hZsYCaKdYETvQtvtlNWlmYKempsBr6C7Il7dMXHVk+VFm9u0g==, tarball: https://registry.npmjs.org/@typescript/typescript-netbsd-x64/-/typescript-netbsd-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [netbsd]
 
-  '@typescript/typescript-openbsd-arm64@7.0.2':
-    resolution: {integrity: sha512-APT8+ClYnuYm1u9+kgGXoMj2VzWzcymwh2gNSQVySHfkRDGOTVkoWLjCmOQSaO+PoqQ57B0flRp9SA+7GnnkzQ==, tarball: https://registry.npmjs.org/@typescript/typescript-openbsd-arm64/-/typescript-openbsd-arm64-7.0.2.tgz}
+  '@typescript/typescript-openbsd-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-Z2FERdHB9fAKI+KGqdWn04O7uNlnB+VYiEm6INE1aZuzzLNd3KBqQ6IpKUJF2ny4GigGU6nVu75XD9tAUODPng==, tarball: https://registry.npmjs.org/@typescript/typescript-openbsd-arm64/-/typescript-openbsd-arm64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [openbsd]
 
-  '@typescript/typescript-openbsd-x64@7.0.2':
-    resolution: {integrity: sha512-yX7s+Q0Dln0Dt9tEzZsAjXXR/+ytBM7AlglaqyeMPxQszJ1JhlJdZ6jLA+IzldHtflX81em7lDao1xXu+aRRkg==, tarball: https://registry.npmjs.org/@typescript/typescript-openbsd-x64/-/typescript-openbsd-x64-7.0.2.tgz}
+  '@typescript/typescript-openbsd-x64@7.1.0-beta':
+    resolution: {integrity: sha512-NVG3qeyCq/rJEOhaRjR3LsWgjrjo5vJW25omVLeHAVnpKIG4pE4cenwwKGR06DiJ1s0QTOymcJeKXMEpsiNBVg==, tarball: https://registry.npmjs.org/@typescript/typescript-openbsd-x64/-/typescript-openbsd-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [openbsd]
 
-  '@typescript/typescript-sunos-x64@7.0.2':
-    resolution: {integrity: sha512-dLJDGaLZ1D4HPQn62u1n8mBDkJREwMsAkCdkwd4Ieqw+x3TUyTsqY0YiBCtE6H6OzzgGk3iuZ3vFWRS+E8/d1g==, tarball: https://registry.npmjs.org/@typescript/typescript-sunos-x64/-/typescript-sunos-x64-7.0.2.tgz}
+  '@typescript/typescript-sunos-x64@7.1.0-beta':
+    resolution: {integrity: sha512-ovAdoWXEn2B5/fyWG69pLU3FWmQwPWOjQV5TFbcxtpnOv+R3g8ySGHl1NYRq7Lb/GYdFDvaGcZ+SiU7iKuiMsA==, tarball: https://registry.npmjs.org/@typescript/typescript-sunos-x64/-/typescript-sunos-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [sunos]
 
-  '@typescript/typescript-win32-arm64@7.0.2':
-    resolution: {integrity: sha512-Gyl1Vy6OsWesLzmq+EP0Fb7b4Nid5232AvcA2SFcdYreldpNtYFFofPjnt62y9hQy7VTaZp65ICJjuAQRaVcIQ==, tarball: https://registry.npmjs.org/@typescript/typescript-win32-arm64/-/typescript-win32-arm64-7.0.2.tgz}
+  '@typescript/typescript-win32-arm64@7.1.0-beta':
+    resolution: {integrity: sha512-lJbo71IEOfL7ZZIZnArRaOLqjn9BAfoSzyUQn0aSjfSpDZL4ru0afUsdBfo6PQEjD6ssdmi0n/RwaPADX6bsvQ==, tarball: https://registry.npmjs.org/@typescript/typescript-win32-arm64/-/typescript-win32-arm64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [arm64]
     os: [win32]
 
-  '@typescript/typescript-win32-x64@7.0.2':
-    resolution: {integrity: sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g==, tarball: https://registry.npmjs.org/@typescript/typescript-win32-x64/-/typescript-win32-x64-7.0.2.tgz}
+  '@typescript/typescript-win32-x64@7.1.0-beta':
+    resolution: {integrity: sha512-UKcHvbybY2tDTvFW2b1vwiAvDlIRooo69lh8CXWVhOQejcvpM5+IgbiFW9EIwR5Wi5X/v+BdN7gdWbigBuJ3rw==, tarball: https://registry.npmjs.org/@typescript/typescript-win32-x64/-/typescript-win32-x64-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
@@ -10398,8 +10416,8 @@ packages:
   typebox@1.4.2:
     resolution: {integrity: sha512-eSoZzgSIyOKDtTH9MI7XMAxMaiXq7UiSFWarysN1ka66baTLDxAVdQ6WkWn6qDqsJFVrcjzvuP+CqHo9yrlQpg==, tarball: https://registry.npmjs.org/typebox/-/typebox-1.4.2.tgz}
 
-  typescript@7.0.2:
-    resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==, tarball: https://registry.npmjs.org/typescript/-/typescript-7.0.2.tgz}
+  typescript@7.1.0-beta:
+    resolution: {integrity: sha512-cjWjZAJDsmZzsNC5GwHNlW0YPM65jZa5oR0KyQcYX3KSVIfTvtBq//vewISyatKk4OLi5grZjHhIVE9fdrw1UQ==, tarball: https://registry.npmjs.org/typescript/-/typescript-7.1.0-beta.tgz}
     engines: {node: '>=16.20.0'}
     hasBin: true
 
@@ -11664,69 +11682,72 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
-  '@typescript/typescript-aix-ppc64@7.0.2':
+  '@typescript/typescript-aix-ppc64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-darwin-arm64@7.0.2':
+  '@typescript/typescript-android-arm64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-darwin-x64@7.0.2':
+  '@typescript/typescript-darwin-arm64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-freebsd-arm64@7.0.2':
+  '@typescript/typescript-darwin-x64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-freebsd-x64@7.0.2':
+  '@typescript/typescript-freebsd-arm64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-arm64@7.0.2':
+  '@typescript/typescript-freebsd-x64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-arm@7.0.2':
+  '@typescript/typescript-linux-arm64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-loong64@7.0.2':
+  '@typescript/typescript-linux-arm@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-mips64el@7.0.2':
+  '@typescript/typescript-linux-loong64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-ppc64@7.0.2':
+  '@typescript/typescript-linux-mips64el@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-riscv64@7.0.2':
+  '@typescript/typescript-linux-ppc64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-s390x@7.0.2':
+  '@typescript/typescript-linux-riscv64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-linux-x64@7.0.2':
+  '@typescript/typescript-linux-s390x@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-netbsd-arm64@7.0.2':
+  '@typescript/typescript-linux-x64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-netbsd-x64@7.0.2':
+  '@typescript/typescript-netbsd-arm64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-openbsd-arm64@7.0.2':
+  '@typescript/typescript-netbsd-x64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-openbsd-x64@7.0.2':
+  '@typescript/typescript-openbsd-arm64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-sunos-x64@7.0.2':
+  '@typescript/typescript-openbsd-x64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-win32-arm64@7.0.2':
+  '@typescript/typescript-sunos-x64@7.1.0-beta':
     optional: true
 
-  '@typescript/typescript-win32-x64@7.0.2':
+  '@typescript/typescript-win32-arm64@7.1.0-beta':
     optional: true
 
-  '@valibot/to-json-schema@1.8.0(valibot@1.5.0(typescript@7.0.2))':
+  '@typescript/typescript-win32-x64@7.1.0-beta':
+    optional: true
+
+  '@valibot/to-json-schema@1.8.0(valibot@1.5.0(typescript@7.1.0-beta))':
     dependencies:
-      valibot: 1.5.0(typescript@7.0.2)
+      valibot: 1.5.0(typescript@7.1.0-beta)
 
   '@xmldom/xmldom@0.9.12': {}
 
@@ -13153,7 +13174,7 @@ snapshots:
 
   retry@0.12.0: {}
 
-  rolldown-plugin-dts@0.28.8(rolldown@1.2.14)(typescript@7.0.2):
+  rolldown-plugin-dts@0.28.8(rolldown@1.2.14)(typescript@7.1.0-beta):
     dependencies:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.6
@@ -13163,7 +13184,7 @@ snapshots:
       yuku-codegen: 0.19.0
       yuku-parser: 0.19.0
     optionalDependencies:
-      typescript: 7.0.2
+      typescript: 7.1.0-beta
     transitivePeerDependencies:
       - oxc-resolver
 
@@ -13363,28 +13384,29 @@ snapshots:
 
   typebox@1.4.2: {}
 
-  typescript@7.0.2:
+  typescript@7.1.0-beta:
     optionalDependencies:
-      '@typescript/typescript-aix-ppc64': 7.0.2
-      '@typescript/typescript-darwin-arm64': 7.0.2
-      '@typescript/typescript-darwin-x64': 7.0.2
-      '@typescript/typescript-freebsd-arm64': 7.0.2
-      '@typescript/typescript-freebsd-x64': 7.0.2
-      '@typescript/typescript-linux-arm': 7.0.2
-      '@typescript/typescript-linux-arm64': 7.0.2
-      '@typescript/typescript-linux-loong64': 7.0.2
-      '@typescript/typescript-linux-mips64el': 7.0.2
-      '@typescript/typescript-linux-ppc64': 7.0.2
-      '@typescript/typescript-linux-riscv64': 7.0.2
-      '@typescript/typescript-linux-s390x': 7.0.2
-      '@typescript/typescript-linux-x64': 7.0.2
-      '@typescript/typescript-netbsd-arm64': 7.0.2
-      '@typescript/typescript-netbsd-x64': 7.0.2
-      '@typescript/typescript-openbsd-arm64': 7.0.2
-      '@typescript/typescript-openbsd-x64': 7.0.2
-      '@typescript/typescript-sunos-x64': 7.0.2
-      '@typescript/typescript-win32-arm64': 7.0.2
-      '@typescript/typescript-win32-x64': 7.0.2
+      '@typescript/typescript-aix-ppc64': 7.1.0-beta
+      '@typescript/typescript-android-arm64': 7.1.0-beta
+      '@typescript/typescript-darwin-arm64': 7.1.0-beta
+      '@typescript/typescript-darwin-x64': 7.1.0-beta
+      '@typescript/typescript-freebsd-arm64': 7.1.0-beta
+      '@typescript/typescript-freebsd-x64': 7.1.0-beta
+      '@typescript/typescript-linux-arm': 7.1.0-beta
+      '@typescript/typescript-linux-arm64': 7.1.0-beta
+      '@typescript/typescript-linux-loong64': 7.1.0-beta
+      '@typescript/typescript-linux-mips64el': 7.1.0-beta
+      '@typescript/typescript-linux-ppc64': 7.1.0-beta
+      '@typescript/typescript-linux-riscv64': 7.1.0-beta
+      '@typescript/typescript-linux-s390x': 7.1.0-beta
+      '@typescript/typescript-linux-x64': 7.1.0-beta
+      '@typescript/typescript-netbsd-arm64': 7.1.0-beta
+      '@typescript/typescript-netbsd-x64': 7.1.0-beta
+      '@typescript/typescript-openbsd-arm64': 7.1.0-beta
+      '@typescript/typescript-openbsd-x64': 7.1.0-beta
+      '@typescript/typescript-sunos-x64': 7.1.0-beta
+      '@typescript/typescript-win32-arm64': 7.1.0-beta
+      '@typescript/typescript-win32-x64': 7.1.0-beta
 
   uint8array-extras@1.6.0: {}
 
@@ -13471,9 +13493,9 @@ snapshots:
       base64-arraybuffer: 1.0.2
     optional: true
 
-  valibot@1.5.0(typescript@7.0.2):
+  valibot@1.5.0(typescript@7.1.0-beta):
     optionalDependencies:
-      typescript: 7.0.2
+      typescript: 7.1.0-beta
 
   verkit@0.3.2: {}
 

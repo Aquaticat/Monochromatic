@@ -13,7 +13,7 @@
 ///  path and process types used by the fixtures.
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
-use std::process::{Child, ChildStdin, Command, Output, Stdio};
+use std::process::{Command, Output};
 
 /// The real Git 2.56.0 executable installed in the verification image.
 pub(crate) const REAL_GIT: &str = "/usr/bin/git";
@@ -37,17 +37,23 @@ pub(crate) fn arm_watchdog() {
     });
 }
 
-/// Create one empty fixture directory owned by this test process and test name.
-pub(crate) fn fixture(name: &str) -> PathBuf {
+/// Create one empty fixture directory owned by this test process and test name,
+///  under a prefix that keeps the fixtures of different support modules apart.
+pub(crate) fn fixture_with_prefix(prefix: &str, name: &str) -> PathBuf {
     arm_watchdog();
     let root: PathBuf =
-        std::env::temp_dir().join(format!("native-unit-{}-{name}", std::process::id()));
+        std::env::temp_dir().join(format!("{prefix}-{}-{name}", std::process::id()));
     if root.exists() {
         std::fs::remove_dir_all(&root).expect("remove stale fixture");
     }
     std::fs::create_dir(&root).expect("fresh fixture");
     // Canonical form so comparisons with Git's canonical output are exact.
     return std::fs::canonicalize(&root).expect("canonical fixture");
+}
+
+/// Create one empty fixture directory owned by this test process and test name.
+pub(crate) fn fixture(name: &str) -> PathBuf {
+    return fixture_with_prefix("native-unit", name);
 }
 
 /// Remove only the fixture directory a test created.
@@ -77,7 +83,8 @@ pub(crate) fn git<S: AsRef<OsStr>>(directory: &Path, arguments: &[S]) -> Output 
     let output: Output = git_output(directory, arguments);
     assert!(
         output.status.success(),
-        "git failed: {}",
+        "git {:?} failed: {}",
+        arguments.iter().map(AsRef::as_ref).collect::<Vec<&OsStr>>(),
         String::from_utf8_lossy(&output.stderr)
     );
     return output;
@@ -98,49 +105,13 @@ pub(crate) fn repository(parent: &Path, name: &str) -> PathBuf {
     return root;
 }
 
-/// What:
-///  Write an executable file,
-///  as a PATH candidate fixture,
-///  through a child `tee` process.
-/// Why:
-///   Tests run on several threads.
-///  If this process opened the file for writing,
-///  a
-///       child forked by another test at that moment would inherit the open file until it
-///       starts its own program,
-///  and running the fixture in that window fails with
-///       "Text file busy".
-///  A file only ever opened for writing by `tee` cannot be
-///       inherited by any other child of this process.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// spawnSync('tee', [path], { input: content }); chmodSync(path, 0o755);
-/// ```
+/// The one writer of executable fixture files, shared with the binary-level controls.
 #[cfg(unix)]
-pub(crate) fn executable(path: &Path, content: &[u8]) {
-    use std::io::Write;
-    use std::os::unix::fs::PermissionsExt;
-    // `Stdio::piped()` connects this process to `tee`'s input; its copy to standard output is discarded.
-    let mut writer: Child = Command::new("tee")
-        .arg(path)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::null())
-        .spawn()
-        .expect("start fixture writer");
-    // `.take()` moves the pipe out of the child record so it can be closed below.
-    let mut input: ChildStdin = writer.stdin.take().expect("fixture writer input");
-    input.write_all(content).expect("write candidate");
-    // `drop` closes the pipe now, which is how `tee` learns the content is complete.
-    drop(input);
-    assert!(
-        writer.wait().expect("fixture writer exit").success(),
-        "fixture writer failed for {path:?}"
-    );
-    // Changing the mode names the file by path and never opens it.
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755))
-        .expect("mark candidate executable");
-}
+#[path = "fixture_executable.rs"]
+mod fixture_executable;
+
+#[cfg(unix)]
+pub(crate) use fixture_executable::executable;
 
 /// What:
 ///  Variables that isolate a Git child started through the production runners from the

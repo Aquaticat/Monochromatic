@@ -1810,7 +1810,18 @@ that is verification, not a decision for the user.
   `dead_owner_lock_is_retired_and_taken` on the host. `~/temp/agent/check-anchors.mjs` confirms all 78 anchors match
   exactly once. Unit `cli-git-nc6` (image tag `nc6`) reruns the gate and the 78 controls; after it ends remove the
   `nc6` images, then run the cli.fuzz checks. Lesson: edits to a guarded line in `src/native` must update the table.
-  Issue triage still queued (task 53): 1768 already carries a triage decision (the launcher owns the check, no wrapper
+  Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
+  the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
+  Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
+  `binary_support.rs`), `fixture`, `repository` and the unit `git` message are shared; the fuzz generators use
+  `path_bytes::os_from_path_bytes`; gate 2044 passed, `cli.fuzz:build` passed). Filed 1787: `native:format` runs
+  bare `cargo fmt`, which rewrites about 200 files against the committed style; never run it (revert with
+  `git checkout -- package/git-policy`). 630 rechecked and left open: its rename-order disagreement is behaviour-neutral (set semantics),
+  and the rest is a 61-file e2e refactor that needs the e2e base image (not on this machine) to verify; first slices
+  when it exists are the seeding helper owning the `random.fork` label and the one `[token]` matcher. 492 (post-push
+  stage, open design points), 574 (not this package's code) and 1770 (awaiting the consumer) stay open. No release is
+  due: everything since 0.2.4 is tests, scripts and the fuzz crate.
+  Earlier queue note (task 53): 1768 already carries a triage decision (the launcher owns the check, no wrapper
   change); 480 (tag push `EAGAIN` in the retired TypeScript `final-newline` plugin) needs a throwaway-repository tag
   push through the native wrapper, then a closing comment; 492 (post-push stage) is a feature with open design points;
   629 and 630 are refactors that touch `src/native` and wait for nc6 to end.
@@ -1904,9 +1915,11 @@ that is verification, not a decision for the user.
   (which now takes `cwd` and `env`); `bin/planted-controls.mjs` reads nextest lines without regexes, its table is
   `planted-table.mjs` (29 plants, equal to the old table). `cli.fuzz/mise.toml` gained `lint:oxlint`,
   `lint:oxlint:paths`, `format:oxlint` and `format:oxlint:paths`; the whole package is lint-clean. The commit says
-  "Closes #728, #729, #730"; if the checks below fail, reopen them. Checks still to run once nc5 ends:
-  `mise run //package/git-policy/cli.fuzz:build` (a heavy podman build), `:test:planted` and one `:smoke` target
-  (for example `node bin/container.mjs --targets=owner_records --seconds-per-target=5` from the package directory).
+  "Closes #728, #729, #730". End-to-end result 2026-10-20: `build` first failed because the fuzz crate's generators
+  lacked the `owner_pid_namespace` field that 0.2.4 added (fixed in `src/owners.rs`, which now also generates the
+  field for both record kinds); then `build` passed, `:test:planted` noticed all 29 plants, and `:smoke` ran all 12
+  targets with exit 0. nc6 proved the refactored cli scripts: gate 2044 passed, 5 skipped, all 78 planted controls
+  noticed, 8 of 8 mutants caught. Both oxlint gates report zero. 728, 729, 730 and 1338 stay closed or close.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with

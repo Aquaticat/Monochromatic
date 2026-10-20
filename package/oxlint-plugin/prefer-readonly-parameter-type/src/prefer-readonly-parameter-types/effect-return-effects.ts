@@ -14,11 +14,11 @@
  @module
  */
 
-import type { Node, } from 'typescript/unstable/ast';
+import type { Node, } from 'typescript/ast';
 import type {
   Checker,
   Project,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { expressionOrigins, } from './effect-binding-origins.ts';
 import { expressionElementOrigins, } from './effect-element-origin.ts';

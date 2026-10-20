@@ -4,7 +4,7 @@
  @module
  */
 
-import { isIdentifierText, } from 'typescript/unstable/ast/scanner';
+import { isIdentifierText, } from 'typescript/ast/scanner';
 
 /**
  Source ownership of one writable declaration.

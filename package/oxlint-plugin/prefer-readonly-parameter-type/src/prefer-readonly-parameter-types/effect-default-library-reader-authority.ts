@@ -32,7 +32,7 @@ import type {
   CallExpression,
   Expression,
   Node,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isGetAccessorDeclaration,
   isIdentifier,
@@ -40,12 +40,12 @@ import {
   isMethodDeclaration,
   isMethodSignatureDeclaration,
   isSetAccessorDeclaration,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 import type {
   Checker,
   Project,
   Type,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 /**
  Reader whose result is built from the operand's own values, so it carries them.

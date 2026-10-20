@@ -25,7 +25,7 @@ import {
   openSemanticFile,
   type SemanticFileSession,
 } from '@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
-import type { Node, } from 'typescript/unstable/ast';
+import type { Node, } from 'typescript/ast';
 
 import {
   bridgeStartFailure,

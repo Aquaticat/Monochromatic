@@ -8,11 +8,11 @@ import type {
   CallExpression,
   Expression,
   Node,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import type {
   Checker,
   Project,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import {
   COLLECTION_STRUCTURE_MUTATED,
