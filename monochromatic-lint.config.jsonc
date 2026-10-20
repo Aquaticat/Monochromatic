@@ -53,6 +53,22 @@
       },
     },
   },
+  // The linter package has no finding left, so it holds the line at error severity.
+  {
+    "name": "closure-check-monochromatic-lint",
+    "files": [
+      "package/linter/monochromatic-lint/**/*.rs",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.mdx/**",
+    ],
+    "rules": {
+      "rust/avoidable-closure": {
+        "severity": "error",
+      },
+    },
+  },
   // Sidecar crates hold their smoke tests in `src`, and the troubleshooting probe is a recorded reproduction,
   // not package source; the other rules stay selected for both.
   {

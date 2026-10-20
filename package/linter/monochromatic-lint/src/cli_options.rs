@@ -9,6 +9,14 @@
 //! // Declare typed command options; execution consumes native paths without lossy string conversion.
 //! ```
 
+#![cfg_attr(
+    dylint_lib = "monochromatic_lint_closure",
+    expect(
+        avoidable_closure,
+        reason = "clap's derive generates the parser closures in its FromArgMatches implementation with the field type as their span, so no author-written closure exists to refactor"
+    )
+)]
+
 /// Import the unused-directive settings the two reporting options resolve to.
 use crate::directive_options::{DirectiveOptions, UnusedDirectiveSeverity};
 /// Import the incumbent CLI parser's trait and declaration macro.
