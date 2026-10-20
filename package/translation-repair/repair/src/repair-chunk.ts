@@ -211,9 +211,11 @@ export async function repairChunk(
     claims: critic.claims,
     attested: attestedDetails,
     targetText,
-    // The attested quotes were placed in the archive as its sheet showed it, cut against the entry's original:
-    // the chunk's own originals plus the entry's source evidence, so a comment of the original that sits in
-    // another chunk stays in view here as it did there.
+    // The attested quotes were placed in the archive as its sheet showed it, cut against the whole source page
+    // (`attestPassReferences` is given the page's source). `documentSourceText` is that page
+    // (`prepared.sourceText` in `repair-slice-settle.ts`), so a comment of the original that sits in another
+    // chunk stays in view here as it did there; the chunk's own originals are added for a caller that gives none,
+    // and only then does this cut differ from the attestation's.
     original: [
       criticOriginalsOf({
         sourceText,
