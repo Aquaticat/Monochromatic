@@ -5223,6 +5223,35 @@ for example
 with the device's storage-buffer and texture limits.
 The reason is either the loader's position of the adapter or the variable that decided.
 
+Measured on 2026-10-20 on a desktop with an RX 7600 (discrete),
+the Ryzen 9 7950X's Raphael graphics (integrated),
+and lavapipe,
+with the IDE hosted in the nested compositor
+(`DRI_PRIME` and `MESA_VK_DEVICE_SELECT` set for the IDE only,
+not for the compositor):
+
+- Nothing set:
+  the loader lists the RX 7600 first,
+  and the IDE draws on it.
+- `DRI_PRIME=1` or `MESA_VK_DEVICE_SELECT=1002:164e`:
+  the loader lists Raphael first,
+  and the IDE draws on it.
+- `WGPU_POWER_PREF=low`:
+  Raphael,
+  whatever the loader lists first;
+  the window and the code view draw.
+- `WGPU_POWER_PREF=high` with `DRI_PRIME=1`:
+  the RX 7600,
+  which the variable moves in front of the loader's first.
+- `WGPU_ADAPTER_NAME="RADV NAVI33"`:
+  the RX 7600 only.
+- `VK_DRIVER_FILES` naming the lavapipe driver file:
+  no hardware adapter,
+  exit status 1 with the message of the section "When no GPU can be used".
+
+A hybrid laptop and NVIDIA's proprietary driver were not available,
+so their loader order is not measured here.
+
 #### When no GPU can be used
 
 A host with no hardware Vulkan adapter stops at startup with a message that names the adapters it saw,
