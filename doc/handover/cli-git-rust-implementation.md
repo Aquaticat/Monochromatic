@@ -1772,6 +1772,22 @@ that is verification, not a decision for the user.
   `systemd-run --user --unit=cli-git-nc1 --collect --property=MemoryMax=24G node ~/temp/agent/nc-run.ts` (edit the
   file list to skip finished files). Afterwards remove the `nc1` images and containers. Hooks plumbing has no
   recorded campaign yet and is the next file group to check. No finish time can be given: no rate is measured.
+  User instructions 2026-10-19: "Fix even pre-existing issues of the pkgs you own" and "check gh issues about your
+  package; you are authorized to resolve or reframe (modify) the issues as you see fit". Owned: `git-policy/cli`,
+  `git-policy/cli.fuzz`, `monochromatic-lint`. Started: `lint:oxlint` of the package had 234 findings (206 warnings,
+  28 errors) in eight `.mjs` scripts; the linter autofix removed 148 (commit `675d70b203`), 86 remain (log
+  `~/temp/agent/lint-gp-after-fix.log`): `no-regex` (9), `no-await-in-loop` (about 25, `old-format-fixtures.mjs`),
+  `no-function-root-let` (5), `max-lines` (4), `no-magic-numbers`, unsafe `any` in `support.mjs`, `no-sync`,
+  `no-try-finally`, `no-promise-catch`, `catch-binding`, `require-destructured-params`, `no-empty-function`.
+  Constraint: unit `cli-git-nc1` runs `bin/mutate-native-container.mjs` and rebuilds its image from `src/native`
+  for each file, so edits to `src/native/**`, `bin/mutate-native-container*.mjs`, `bin/native-planted-controls.mjs`
+  and `bin/native-nextest-snapshot.mjs` wait until it finishes; the other scripts can change now.
+  Issue triage (open issues naming the package, 2026-10-19): fix after nc1 in `src/native`: 1781 (landed scoped
+  commit exits 2 with `index-installed` missing), 1784 (`EPERM` from the owner probe fails a read), 1346 (retry by
+  error text), 1347 (quadratic `union_paths`); lint-related, fix now or after nc1 by file: 1338, 901, 1343, 1340,
+  1342; other: 1341 (`process-fixture` crash), 1339 (fuzz manifest), 1757 (my packages verified done, only
+  `wg-quicker-exempt` is left), 1032 (GH006 diagnostic, investigate), and the audit duplicate-cluster and docs
+  issues (612 to 680, 1698, 1713, 1740, 1741), which are judged one by one in the same pass.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
