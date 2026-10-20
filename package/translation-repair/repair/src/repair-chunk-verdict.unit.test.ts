@@ -80,6 +80,18 @@ const KEEPS_EVERY_NAME =
 const DROPS_THE_ALIAS = 'Meowmeow kept the windowsill warm all that winter.';
 
 /**
+ Archive wording that names the person by the display name alone, where the
+ original names her by her alias (XingZ60 slice 80).
+ */
+const NAME_ONLY_INCUMBENT_TEXT = 'Meowmeow kept the windowsill warm through that whole winter.';
+
+/**
+ Repair that names her by the alias instead, so it carries a declared form the
+ archive did not and loses the one it did.
+ */
+const SWAPS_THE_NAME_FOR_THE_ALIAS = 'Dumpling kept the windowsill warm all that winter.';
+
+/**
  Measurements of a patch that beat the archive.
 
  ONE RESOLVED ISSUE AND NOTHING WORSE is the smallest shape that wins
@@ -115,6 +127,10 @@ const LOSING_MEASUREMENTS = {
 
  @param measurements - what the checks made of that patch
 
+ @param incumbentText - archive wording of the slice, the fixture's own when absent
+
+ @param declaredSubjectForms - the declared forms that name the subject, absent when preparation named none
+
  @returns Verdict the lane settled on
 
  @example
@@ -127,18 +143,23 @@ function settleWith(
     patchedText,
     declaredNames,
     measurements = WINNING_MEASUREMENTS,
+    incumbentText = INCUMBENT_TEXT,
+    declaredSubjectForms,
   }: {
     readonly patchedText: string;
     readonly declaredNames: readonly string[];
     readonly measurements?: typeof WINNING_MEASUREMENTS;
+    readonly incumbentText?: string;
+    readonly declaredSubjectForms?: readonly string[];
   },
 ): ChunkVerdict {
   return settleChunkVerdict({
     sliceIndex: CHUNK_INDEX,
-    incumbentText: INCUMBENT_TEXT,
+    incumbentText,
     patchedText,
     measurements,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
   },);
 }
 
@@ -199,6 +220,36 @@ await describe({
             },);
             expect(verdict.repairedText,).toBe(DROPS_THE_ALIAS,);
             expect(verdict.changed,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'ACCEPTS a winning patch that names the person by another declared form of hers, the shape of '
+            + 'XingZ60 slice 80 where the patch won and was refused for dropping the display name the '
+            + 'archive wrote where the original wrote the alias',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: SWAPS_THE_NAME_FOR_THE_ALIAS,
+              declaredNames: DECLARED_NAMES,
+              incumbentText: NAME_ONLY_INCUMBENT_TEXT,
+              declaredSubjectForms: DECLARED_NAMES,
+            },);
+            expect(verdict.repairedText,).toBe(SWAPS_THE_NAME_FOR_THE_ALIAS,);
+            expect(verdict.changed,).toBe(true,);
+            expect(verdict.droppedDeclaredNames,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REFUSES that same swap when preparation named no subject identity, so the acceptance '
+            + 'of that swap is attributable to the identity and to nothing else about that wording',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: SWAPS_THE_NAME_FOR_THE_ALIAS,
+              declaredNames: DECLARED_NAMES,
+              incumbentText: NAME_ONLY_INCUMBENT_TEXT,
+            },);
+            expect(verdict.repairedText,).toBe(NAME_ONLY_INCUMBENT_TEXT,);
+            expect(verdict.changed,).toBe(false,);
+            expect(verdict.droppedDeclaredNames,).toEqual([DECLARED_NAME,],);
           },
         },),
         it({

@@ -36,6 +36,12 @@ export type ConsolidationPolishConfig = {
   readonly declaredNames: readonly string[];
 
   /**
+   The declared forms among them that name the subject, which a rewrite may
+   swap for one another; absent when preparation named none.
+   */
+  readonly declaredSubjectForms?: readonly string[];
+
+  /**
    Name pairs the front matter declares, read by the publication rule a
    polish is validated under (class one hundred fourteen).
    */

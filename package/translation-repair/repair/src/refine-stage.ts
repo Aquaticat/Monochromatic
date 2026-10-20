@@ -138,6 +138,8 @@ export type RefineStageResult = {
  @param declaredNames - same declarations as strings to compare, since a
  rewrite for naturalness is exactly the edit that drops one
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param mode - comparative improvement or mandatory absolute-quality correction
 
  @param sliceIndex - slice being refined, which a refusal names
@@ -174,6 +176,7 @@ export async function runRefineStage(
     identityContext,
     referenceContext,
     declaredNames,
+    declaredSubjectForms,
     mode,
     sliceIndex,
     signal,
@@ -191,6 +194,7 @@ export async function runRefineStage(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly mode: RefineStageMode;
     readonly sliceIndex: number;
     readonly signal: AbortSignal;
@@ -474,6 +478,7 @@ export async function runRefineStage(
    */
   const droppedDeclaredNames = findDroppedDeclaredNames({
     forms: declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { subjectForms: declaredSubjectForms, }),
     baseText: repairedText,
     candidateText: outcome.value,
   },);

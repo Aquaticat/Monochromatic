@@ -1894,7 +1894,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'house-rule/name-projection.ts#carriesName': {
+  'house-rule/name-projection.ts#nameOccurrences': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },

@@ -307,6 +307,7 @@ export async function runConsolidationPolishRound(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     declaredNames: config.declaredNames,
+    ...((config.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: config.declaredSubjectForms, }),
     mode,
     sliceIndex,
     signal,

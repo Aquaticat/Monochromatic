@@ -138,6 +138,8 @@ function settlementState(
  @param declaredNames - name forms the archive's front matter declares, which
  the patch may not drop
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @returns Returned wording plus every verdict
 
  @throws {@link Error} when the slate cannot be formed, which cannot happen
@@ -155,12 +157,14 @@ export function settleChunkVerdict(
     patchedText,
     measurements,
     declaredNames,
+    declaredSubjectForms,
   }: {
     readonly sliceIndex: number;
     readonly incumbentText: string;
     readonly patchedText: string;
     readonly measurements: CandidateMeasurements;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
   },
 ): ChunkVerdict {
   /**
@@ -203,6 +207,7 @@ export function settleChunkVerdict(
   const droppedDeclaredNames = patchSelected
     ? findDroppedDeclaredNames({
       forms: declaredNames,
+      ...((declaredSubjectForms === undefined) ? {} : { subjectForms: declaredSubjectForms, }),
       baseText: incumbentText,
       candidateText: selection.winner
         .text,
@@ -271,6 +276,8 @@ export type SettledChunk = ChunkVerdict & {
 
  @param declaredNames - name forms the patch may not drop
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @returns Every verdict plus the resolved ids
 
  @throws {@link Error} when the slate cannot be formed, which cannot happen
@@ -292,6 +299,7 @@ export function settleChunkFromChecks(
     envelopes,
     targetDocument,
     declaredNames,
+    declaredSubjectForms,
   }: {
     readonly sliceIndex: number;
     readonly incumbentText: string;
@@ -302,6 +310,7 @@ export function settleChunkFromChecks(
     readonly envelopes: readonly EditableEnvelope[];
     readonly targetDocument: RepairDocument;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
   },
 ): SettledChunk {
   /**
@@ -321,6 +330,7 @@ export function settleChunkFromChecks(
     ...settleChunkVerdict({
       sliceIndex,
       declaredNames,
+      ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
       incumbentText,
       patchedText,
       measurements: measurePatchedCandidate({

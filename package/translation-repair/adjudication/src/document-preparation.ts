@@ -231,16 +231,23 @@ export function prepareDocumentPair(
   },);
 
   /**
+   Forms the translation's front matter declares for its subject, the display
+   name and the aliases, which are one person: a guard may read one of them
+   standing in for another, and may not do so for a contributor handle.
+   */
+  const declaredSubjectForms = declaredNameForms({
+    identity: extractDeclaredIdentity({
+      data: targetDocument.frontMatter
+        ?.data,
+    },),
+  },);
+
+  /**
    Target-authoritative identity forms guards preserve wherever archive body
    already carries them.
    */
   const declaredNames = [
-    ...declaredNameForms({
-      identity: extractDeclaredIdentity({
-        data: targetDocument.frontMatter
-          ?.data,
-      },),
-    },),
+    ...declaredSubjectForms,
     ...contributorNames,
   ]
     .filter(function firstOccurrence(
@@ -566,6 +573,10 @@ export function prepareDocumentPair(
     // Omitted when nothing was attested, for the same reason.
     ...((attestedDetails.length === 0) ? {} : { attestedDetails, }),
     declaredNames,
+    // OMITTED WHEN THE FRONT MATTER DECLARES NO FORM, so a pair built before the
+    // identity was named, or by a caller with no front matter, reads as naming
+    // nobody and every guard keeps the plain rule.
+    ...((declaredSubjectForms.length === 0) ? {} : { declaredSubjectForms, }),
     ...((declaredPairs.length === 0) ? {} : { declaredNamePairs: declaredPairs, }),
     alignmentFindings: [
       ...sectionFindings,

@@ -115,6 +115,27 @@ const DROPS_THE_ALIAS =
   'Meowmeow is the youngest cat here, and she naps on the windowsill from dawn to dusk.';
 
 /**
+ Translation in the archive that names the person by the display name alone,
+ where the original names her by her alias (XingZ60 slice 80: the original
+ writes the alias and the archive writes the display name).
+ */
+const NAME_ONLY_INCUMBENT_TEXT = 'Meowmeow is the smallest cat in the house, and she sleeps on the windowsill all day.';
+
+/**
+ Fresh rendering that names her by the alias the original writes, and so
+ carries a declared form the archive did not and loses the one it did.
+ */
+const SWAPS_THE_NAME_FOR_THE_ALIAS =
+  'Dumpling is the youngest cat here, and she naps on the windowsill from dawn to dusk.';
+
+/**
+ Fresh rendering that fuses an undeclared word onto the alias, the shape of
+ XingZ60 slice 80's `Xing Lili`, a name nobody declared.
+ */
+const FUSES_A_WORD_ONTO_THE_ALIAS =
+  'Wooly Dumpling is the youngest cat here, and she naps on the windowsill from dawn to dusk.';
+
+/**
  Forms the archive declares for this person.
  */
 const DECLARED_NAMES: readonly string[] = [
@@ -141,24 +162,35 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
- Slice pair the lane settles.
+ Builds the slice pair the lane settles over one archive wording.
+
+ @param incumbentText - wording the archive carries for the slice
+
+ @returns Slice pair over the fixture's original
+
+ @example
+ ```ts
+ const slice = sliceCarrying({ incumbentText: INCUMBENT_TEXT, },);
+ ```
  */
-const SLICE: ChunkPair = {
-  source: {
-    sliceIndex: 1,
-    nodes: [],
-    startOffset: 0,
-    endOffset: SOURCE_TEXT.length,
-    text: SOURCE_TEXT,
-  },
-  target: {
-    sliceIndex: 1,
-    nodes: [],
-    startOffset: 0,
-    endOffset: INCUMBENT_TEXT.length,
-    text: INCUMBENT_TEXT,
-  },
-};
+function sliceCarrying({ incumbentText, }: { readonly incumbentText: string; },): ChunkPair {
+  return {
+    source: {
+      sliceIndex: 1,
+      nodes: [],
+      startOffset: 0,
+      endOffset: SOURCE_TEXT.length,
+      text: SOURCE_TEXT,
+    },
+    target: {
+      sliceIndex: 1,
+      nodes: [],
+      startOffset: 0,
+      endOffset: incumbentText.length,
+      text: incumbentText,
+    },
+  };
+}
 
 /**
  Finds where a run of digits ends.
@@ -318,6 +350,12 @@ function judgingClient({ rendering, }: { readonly rendering: string; },): ModelC
 
  @param declaredNames - forms preparation found in the front matter
 
+ @param incumbentText - wording the archive carries for the slice, the
+ archive's own wording when absent
+
+ @param declaredSubjectForms - the forms among them that name the subject,
+ absent when preparation named none
+
  @returns Record the lane settled on
 
  @example
@@ -326,20 +364,33 @@ function judgingClient({ rendering, }: { readonly rendering: string; },): ModelC
  ```
  */
 async function settleWith(
-  { rendering, declaredNames, }: {
+  {
+    rendering,
+    declaredNames,
+    incumbentText = INCUMBENT_TEXT,
+    declaredSubjectForms,
+  }: {
     readonly rendering: string;
     readonly declaredNames: readonly string[];
+    readonly incumbentText?: string;
+    readonly declaredSubjectForms?: readonly string[];
   },
 ): Promise<TranslateSliceRecord> {
+  /**
+   Slice pair over the archive wording under test.
+   */
+  const slice = sliceCarrying({ incumbentText, },);
+
   /**
    Preparation the slice belongs to.
    */
   const prepared: PreparedDocumentPair = {
     sourceText: SOURCE_TEXT,
-    targetText: INCUMBENT_TEXT,
-    slices: [SLICE,],
+    targetText: incumbentText,
+    slices: [slice,],
     lineStructuredSliceIndices: new Set<number>(),
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     alignmentFindings: [],
     unclaimedTargetBlocks: [],
     alignmentPairCount: 1,
@@ -347,7 +398,7 @@ async function settleWith(
 
   return await settleTranslateSlice({
     client: judgingClient({ rendering, },),
-    slice: SLICE,
+    slice,
     prepared,
     models: {
       translatorModelIds: TRANSLATORS,
@@ -403,6 +454,55 @@ await describe({
         },);
         expect(record.disposition,).toBe('stage-result',);
         expect(record.outputText,).toBe(DROPS_THE_ALIAS,);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a replacement that names the person by another declared form of hers, the shape of '
+        + 'XingZ60 slice 80: the archive writes the display name where the original writes the alias, '
+        + 'and the replacement writes the alias, so the person is named and the archive text is not kept',
+      fn: async () => {
+        const record = await settleWith({
+          rendering: SWAPS_THE_NAME_FOR_THE_ALIAS,
+          declaredNames: DECLARED_NAMES,
+          incumbentText: NAME_ONLY_INCUMBENT_TEXT,
+          declaredSubjectForms: DECLARED_NAMES,
+        },);
+        expect(record.disposition,).toBe('stage-result',);
+        expect(record.outputText,).toBe(SWAPS_THE_NAME_FOR_THE_ALIAS,);
+        expect(record.changed,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES A SWAP THAT FUSES AN UNDECLARED WORD ONTO THE ALIAS, since `Wooly Dumpling` is a renamed '
+        + 'person and not another declared form of hers',
+      fn: async () => {
+        const record = await settleWith({
+          rendering: FUSES_A_WORD_ONTO_THE_ALIAS,
+          declaredNames: DECLARED_NAMES,
+          incumbentText: NAME_ONLY_INCUMBENT_TEXT,
+          declaredSubjectForms: DECLARED_NAMES,
+        },);
+        expect(record.disposition,).toBe('refused-declared-name',);
+        expect(record.outputText,).toBe(NAME_ONLY_INCUMBENT_TEXT,);
+        expect((record.disposition === 'refused-declared-name') ? record.droppedDeclaredNames : undefined,).toEqual([
+          DECLARED_NAME,
+        ],);
+      },
+    },),
+    it({
+      name: 'REFUSES that same swap when preparation named no subject identity, so the acceptance of that swap '
+        + 'is attributable to the identity and to nothing else about that wording',
+      fn: async () => {
+        const record = await settleWith({
+          rendering: SWAPS_THE_NAME_FOR_THE_ALIAS,
+          declaredNames: DECLARED_NAMES,
+          incumbentText: NAME_ONLY_INCUMBENT_TEXT,
+        },);
+        expect(record.disposition,).toBe('refused-declared-name',);
+        expect(record.outputText,).toBe(NAME_ONLY_INCUMBENT_TEXT,);
+        expect((record.disposition === 'refused-declared-name') ? record.droppedDeclaredNames : undefined,).toEqual([
+          DECLARED_NAME,
+        ],);
       },
     },),
   ],
