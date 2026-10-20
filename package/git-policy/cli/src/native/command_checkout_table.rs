@@ -58,6 +58,12 @@ pub const STAGE: u16 = 8;
 /// `checkout --overlay`,
 ///  `--no-overlay`.
 pub const OVERLAY: u16 = 9;
+/// `-f`/`--force`: throw away local changes.
+pub const FORCE: u16 = 10;
+/// `switch --discard-changes`: throw away local changes.
+pub const DISCARD_CHANGES: u16 = 11;
+/// `--pathspec-from-file`: the paths come from a file, so the command is the path form.
+pub const PATHSPEC_FROM_FILE: u16 = 12;
 
 /// What:
 ///  `git checkout`:
@@ -95,7 +101,7 @@ pub const CHECKOUT_TABLE: &[OptionSpec] = &[
     row(UNREAD, None, Some("conflict"), Arity::Required, true),
     row(DETACH, Some(b'd'), Some("detach"), Arity::None, true),
     row(TRACK, Some(b't'), Some("track"), Arity::Optional, true),
-    row(UNREAD, Some(b'f'), Some("force"), Arity::None, true),
+    row(FORCE, Some(b'f'), Some("force"), Arity::None, true),
     row(ORPHAN, None, Some("orphan"), Arity::Required, true),
     row(UNREAD, None, Some("overwrite-ignore"), Arity::None, true),
     row(
@@ -124,7 +130,7 @@ pub const CHECKOUT_TABLE: &[OptionSpec] = &[
         true,
     ),
     row(
-        UNREAD,
+        PATHSPEC_FROM_FILE,
         None,
         Some("pathspec-from-file"),
         Arity::Required,
@@ -161,7 +167,7 @@ pub const SWITCH_TABLE: &[OptionSpec] = &[
         true,
     ),
     row(GUESS, None, Some("guess"), Arity::None, true),
-    row(UNREAD, None, Some("discard-changes"), Arity::None, true),
+    row(DISCARD_CHANGES, None, Some("discard-changes"), Arity::None, true),
     row(UNREAD, Some(b'q'), Some("quiet"), Arity::None, true),
     row(
         UNREAD,
@@ -175,7 +181,7 @@ pub const SWITCH_TABLE: &[OptionSpec] = &[
     row(UNREAD, None, Some("conflict"), Arity::Required, true),
     row(DETACH, Some(b'd'), Some("detach"), Arity::None, true),
     row(TRACK, Some(b't'), Some("track"), Arity::Optional, true),
-    row(UNREAD, Some(b'f'), Some("force"), Arity::None, true),
+    row(FORCE, Some(b'f'), Some("force"), Arity::None, true),
     row(ORPHAN, None, Some("orphan"), Arity::Required, true),
     row(UNREAD, None, Some("overwrite-ignore"), Arity::None, true),
     row(

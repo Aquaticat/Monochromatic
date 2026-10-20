@@ -24,6 +24,7 @@ use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 use super::rule_commit_index::IndexVsHead;
 use super::rule_commit_sequencer::SequencerState;
+use super::rule_worktree_dirty::DirtyScope;
 /// The image's real Git,
 ///  which prepares candidates for scripted facts.
 use super::test_support::REAL_GIT;
@@ -43,6 +44,8 @@ pub(crate) struct ScriptedFacts {
     pub(crate) index: Result<IndexVsHead, String>,
     /// The answer to `sequencer_state`.
     pub(crate) sequencer: Result<SequencerState, String>,
+    /// The answer to `worktree_dirty`, whatever the scope.
+    pub(crate) dirty: Result<bool, String>,
     /// The answer to `remote_guess_creates_branch`.
     pub(crate) remote_guess: Result<bool, String>,
     /// Every fact asked for,
@@ -70,6 +73,11 @@ impl RepositoryFacts for ScriptedFacts {
     fn index_vs_head(&mut self) -> Result<IndexVsHead, String> {
         self.asked.push(String::from("index"));
         return self.index.clone();
+    }
+
+    fn worktree_dirty(&mut self, scope: DirtyScope) -> Result<bool, String> {
+        self.asked.push(format!("dirty:{scope:?}"));
+        return self.dirty.clone();
     }
 
     fn sequencer_state(&mut self) -> Result<SequencerState, String> {
@@ -168,6 +176,7 @@ pub(crate) fn scripted_facts() -> ScriptedFacts {
         location: Ok(main_worktree("/r", "")),
         index: Ok(IndexVsHead::Matches),
         sequencer: Ok(SequencerState::NotInProgress),
+        dirty: Ok(false),
         remote_guess: Ok(false),
         asked: Vec::<String>::new(),
         candidates_repository: None,

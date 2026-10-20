@@ -1810,6 +1810,28 @@ that is verification, not a decision for the user.
   `dead_owner_lock_is_retired_and_taken` on the host. `~/temp/agent/check-anchors.mjs` confirms all 78 anchors match
   exactly once. Unit `cli-git-nc6` (image tag `nc6`) reruns the gate and the 78 controls; after it ends remove the
   `nc6` images, then run the cli.fuzz checks. Lesson: edits to a guarded line in `src/native` must update the table.
+  Issue 1791 (uncommitted work vanished 2026-10-20 17:52 to 17:53), triaged with `~/temp/agent/repro-1791.mjs`:
+  Defect 2 (landing `git reset`) NOT reproduced: it resets only committed paths on a private index copy; concurrent
+  landings and a moved-remote landing preserved 53 staged renames plus 12 unstaged edits. Defect 1 CONFIRMED:
+  `git restore --source=HEAD --staged --worktree -- .` wiped everything with no rejection. UX 1 confirmed (`stash
+  list` rejected). User decision (AskUserQuestion): reject ALL discarding forms of checkout, restore and switch in the
+  main worktree including `restore --staged` and HEAD-moving checkout/switch while tracked changes exist. Queue, in
+  order (tasks 55 to 58): read-only stash forms allowed; the guard (new parsers plus a local-changes fact on
+  `RepositoryFacts`, three implementors: `GitFacts`, `ScriptedFacts`, `commit_facts.rs`); audit log of guarded and
+  allowed discarding operations plus a landing-invariant violation log; auto-push fast-forward on a dirty worktree
+  when the incoming tree touches no modified path. Also fix: an explicit-path commit with no index file yet fails
+  with "copying the index failed: No such file or directory". Not decided, ask before doing: guarding `reset`
+  (mixed) and `git mv`-state loss through it. Then mutation scopes, container gate, release 0.2.5.
+  SUPERSEDED the same hour by the user (mid-turn message): "Reject every discarding form of everything in every
+  worktree when things are dirty. Reject every discarding form of everything in main worktree even when things are
+  not dirty." Reading adopted: a form that can overwrite or delete uncommitted state by itself (restore, checkout
+  with paths or -f/-p/--ours/--theirs, switch -f/--discard-changes, reset anything but --soft, clean, stash that
+  changes state, rm -f, mv -f, checkout-index -f, read-tree --reset, and --abort of merge/rebase/cherry-pick/revert/
+  am) is rejected in the main worktree always, and in a linked worktree when it is dirty (clean: tracked changes or
+  untracked files; others: tracked changes). HEAD-moving checkout/switch is rejected in any worktree only when dirty.
+  Changes behavior: stash, clean and reset --hard are no longer free in a dirty linked worktree. Escape hatch stays
+  `--no-enforce-worktree` (directly after the subcommand for commands without a table). The 'GFP' restore routine
+  (`git checkout -- file`) now needs a linked worktree or the hatch.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and

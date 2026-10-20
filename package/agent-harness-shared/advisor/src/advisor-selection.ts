@@ -6,6 +6,8 @@
 
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { selectDefaultModel, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
 import {
@@ -17,13 +19,248 @@ import type {
   AdvisorConfig,
   AdvisorModelSelection,
   CurrentMainModelIdentity,
+  DefaultModelSelection,
   EffectiveModelScope,
+  ScopedAdvisorModel,
 } from './types.ts';
+
+/**
+ Selection-module logger root.
+ */
+const l = tagged({ tag: 'advisor/advisor-selection', },);
+
+//region Configured initial reviewer
+
+/**
+ Outcome of looking up the configured default reviewer.
+
+ `entry` is absent when the key is blank, absent, or unresolvable;
+ `keyText` is absent when no key is configured at all.
+ */
+export type ConfiguredReviewerResolution = {
+  /**
+   Matching scoped model, present only when the configured key resolves.
+   */
+  readonly entry?: ScopedAdvisorModel;
+  /**
+   Trimmed configured key text, present whenever a key is configured.
+   */
+  readonly keyText?: string;
+};
+
+/**
+ Resolve the configured default reviewer inside the supplied scope.
+
+ Uses the accepted explicit-model forms (`provider/modelId`, unique bare
+ `model.id`, unique `model.name`), but never marks the result as an exact
+ request: `defaultReviewerModel` only picks the initial reviewer of a default
+ call, so serial fallback and overlap recovery still cover it.
+
+ @param config - runtime Advisor config
+
+ @param scope - scope the default selection may use
+
+ @param modelRegistry - model registry for explicit-slug validation
+
+ @returns resolution outcome naming the configured key and its scoped match
+
+ @example
+ ```typescript
+ resolveConfiguredDefaultReviewer({ config, scope, modelRegistry });
+ ```
+ */
+export function resolveConfiguredDefaultReviewer(
+  {
+    config,
+    scope,
+    modelRegistry,
+  }: ForeignBorrowed<Readonly<{
+    readonly config: AdvisorConfig;
+    readonly scope: EffectiveModelScope;
+    readonly modelRegistry: AdvisorModelResolution;
+  }>>,
+): ConfiguredReviewerResolution {
+  /**
+   Trimmed configured reviewer key; blank counts as explicitly cleared.
+   */
+  const keyText = config.defaultReviewerModel
+    ?.trim();
+  if ((keyText === undefined) || (keyText
+    === ''))
+    return {};
+  /**
+   Function-boundary logger for fall-through evidence.
+   */
+  const innerL = tagged({
+    tag: resolveConfiguredDefaultReviewer.name,
+    l,
+  },);
+  try {
+    /**
+     Scope match for the configured key under explicit-model accepted forms.
+     */
+    const resolution = resolveAdvisorRequestedModel({
+      scope,
+      requestedSlug: keyText,
+      modelRegistry,
+    },);
+    innerL.debug(`defaultReviewerModel "${keyText}" resolves as ${resolution.selected
+      .canonicalSlug}`,);
+    return {
+      keyText,
+      entry: resolution.selected,
+    };
+  }
+  catch (error) {
+    innerL.debug(`defaultReviewerModel "${keyText}" falls through to the default ranking: ${
+      caughtValueText(error,)
+    }`,);
+    return { keyText, };
+  }
+}
+
+/**
+ Return scope entries with the configured initial reviewer appended when missing.
+
+ The configured reviewer can sit outside current-main avoidance
+ (`scopeAvoidingCurrentMainModel`), but it must still rank and dispatch as the
+ initial reviewer.
+
+ @param scope - default-selection scope after current-main avoidance
+
+ @param configuredReviewer - resolved configured initial reviewer
+
+ @returns original scope, or the same scope with the configured reviewer appended
+
+ @example
+ ```typescript
+ scopeIncludingConfiguredReviewer({ scope, configuredReviewer });
+ ```
+ */
+export function scopeIncludingConfiguredReviewer(
+  {
+    scope,
+    configuredReviewer,
+  }: ForeignBorrowed<Readonly<{
+    readonly scope: EffectiveModelScope;
+    readonly configuredReviewer?: ScopedAdvisorModel;
+  }>>,
+): EffectiveModelScope {
+  if (configuredReviewer
+    === undefined)
+    return scope;
+  for (const entry of scope.entries) {
+    if (entry.canonicalSlug
+      === configuredReviewer
+        .canonicalSlug)
+      return scope;
+  }
+  return {
+    ...scope,
+    entries: [
+      ...scope.entries,
+      configuredReviewer,
+    ],
+  };
+}
+
+/**
+ Compose the default-selection result with the configured initial reviewer.
+
+ The configured reviewer leads the ranking (initial dispatch plus fallback
+ order); remaining candidates keep their ranking order, so serial fallback and
+ overlap recovery are unchanged. An unresolvable configured key is reported in
+ the reason and falls through to the ranking without error.
+
+ @param defaultSelection - ranking result before configured-reviewer composition
+
+ @param resolution - configured default reviewer lookup outcome
+
+ @returns default selection led by the configured initial reviewer
+
+ @throws when the configured reviewer's ranking entry disappeared
+
+ @example
+ ```typescript
+ applyConfiguredInitialReviewer({ defaultSelection, resolution });
+ ```
+ */
+export function applyConfiguredInitialReviewer(
+  {
+    defaultSelection,
+    resolution,
+  }: ForeignBorrowed<Readonly<{
+    readonly defaultSelection: DefaultModelSelection;
+    readonly resolution: ConfiguredReviewerResolution;
+  }>>,
+): DefaultModelSelection {
+  /**
+   Configured reviewer match and configured key text from the lookup outcome.
+   */
+  const {
+    entry,
+    keyText,
+  } = resolution;
+  if (entry
+    === undefined) {
+    if (keyText
+      === undefined)
+      return defaultSelection;
+    return {
+      ...defaultSelection,
+      reason: `${defaultSelection.reason}; defaultReviewerModel "${keyText}" did not resolve among output-eligible scoped models, so the default ranking applies`,
+    };
+  }
+  /**
+   Configured key label named in the composed reason.
+   */
+  const keyLabel = keyText ?? entry
+    .canonicalSlug;
+  /**
+   Canonical slug of the configured initial reviewer.
+   */
+  const configuredSlug = entry
+    .canonicalSlug;
+  /**
+   Ranking entry computed for the configured initial reviewer.
+   */
+  const headScore = defaultSelection
+    .ranking
+    .find(function matchesConfiguredSlug(score,): boolean {
+      return score.slug
+        === configuredSlug;
+    },);
+  if (headScore
+    === undefined)
+    throw new Error(
+      `advisor: configured defaultReviewerModel "${keyLabel}" selection ${configuredSlug} disappeared from the default ranking`,
+    );
+  return {
+    selected: entry,
+    ranking: [
+      headScore,
+      ...defaultSelection
+        .ranking
+        .filter(function keepsOtherScores(score,): boolean {
+          return score.slug
+            !== configuredSlug;
+        },),
+    ],
+    reason: `configured defaultReviewerModel "${keyLabel}" selects ${configuredSlug} as initial reviewer; untried candidates keep the default ranking (${defaultSelection.reason})`,
+  };
+}
+
+//endregion Configured initial reviewer
 
 //region Public API
 
 /**
- Select explicit model or default highest expected-cost non-current model.
+ Select explicit model, configured initial reviewer, or default highest expected-cost non-current model.
+ 
+ Selection order: an explicit slug is exact; otherwise `defaultReviewerModel`
+ picks the initial reviewer when it resolves in the output-eligible scope;
+ otherwise the expected-cost ranking picks one. Only explicit requests disable
+ fallback and overlap.
  
  @param scope - effective scoped model set
  
@@ -91,6 +328,14 @@ export function selectAdvisorModel(
     maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
   },);
   /**
+   Configured initial reviewer lookup, resolved before the variant ranking runs.
+   */
+  const configuredReviewerResolution = resolveConfiguredDefaultReviewer({
+    config,
+    scope: eligibleScope,
+    modelRegistry,
+  },);
+  /**
    Default-selection scope with current main model removed when alternatives exist.
    */
   const defaultScope = scopeAvoidingCurrentMainModel({
@@ -99,16 +344,33 @@ export function selectAdvisorModel(
       === undefined ? {} : { currentMainModel, }),
   },);
   /**
+   Ranking scope keeping the configured initial reviewer even when current-main avoidance dropped it.
+   */
+  const rankingScope = scopeIncludingConfiguredReviewer({
+    scope: defaultScope,
+    ...(configuredReviewerResolution
+      .entry
+      === undefined ? {} : { configuredReviewer: configuredReviewerResolution
+        .entry, }),
+  },);
+  /**
    Default model selection for empty params.
    */
   const defaultSelection = selectDefaultModel({
-    scope: defaultScope,
+    scope: rankingScope,
     estimatedInputTokens,
     maxOutputTokens: config.maxAdvisorOutputTokens,
   },);
-  return {
-    selected: defaultSelection.selected,
+  /**
+   Default selection led by the configured initial reviewer when one resolves.
+   */
+  const composedSelection = applyConfiguredInitialReviewer({
     defaultSelection,
+    resolution: configuredReviewerResolution,
+  },);
+  return {
+    selected: composedSelection.selected,
+    defaultSelection: composedSelection,
   };
 }
 

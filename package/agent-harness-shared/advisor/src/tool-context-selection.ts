@@ -12,7 +12,10 @@ import {
 } from './context.ts';
 import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import {
+  applyConfiguredInitialReviewer,
+  resolveConfiguredDefaultReviewer,
   scopeAvoidingCurrentMainModel,
+  scopeIncludingConfiguredReviewer,
   selectAdvisorModel,
 } from './advisor-selection.ts';
 import { requireAdvisorScopeWithOutputCapacity, } from './output-eligibility.ts';
@@ -243,6 +246,14 @@ export function selectAdvisorRunContext(
       .maxAdvisorOutputTokens,
   },);
   /**
+   Configured initial reviewer lookup, resolved before the variant ranking runs.
+   */
+  const configuredReviewerResolution = resolveConfiguredDefaultReviewer({
+    config: options.config,
+    scope: eligibleScope,
+    modelRegistry: options.modelRegistry,
+  },);
+  /**
    Default-selection scope with current main model removed when alternatives exist.
    */
   const defaultScope = scopeAvoidingCurrentMainModel({
@@ -251,10 +262,20 @@ export function selectAdvisorRunContext(
       === undefined ? {} : { currentMainModel: options.currentMainModel, }),
   },);
   /**
+   Ranking scope keeping the configured initial reviewer even when current-main avoidance dropped it.
+   */
+  const rankingScope = scopeIncludingConfiguredReviewer({
+    scope: defaultScope,
+    ...(configuredReviewerResolution
+      .entry
+      === undefined ? {} : { configuredReviewer: configuredReviewerResolution
+        .entry, }),
+  },);
+  /**
    Context candidates using each scoped model's effective context budget.
    */
   const candidates: AdvisorContextCandidate[] = [];
-  for (const scopedModel of defaultScope.entries) {
+  for (const scopedModel of rankingScope.entries) {
     candidates.push({
       scopedModel,
       advisorContext: buildContextForScopedModel({
@@ -286,26 +307,33 @@ export function selectAdvisorRunContext(
    Default Advisor model selection using each candidate's own estimate.
    */
   const defaultSelection = selectDefaultModelFromContextEstimates({
-    scope: defaultScope,
+    scope: rankingScope,
     estimatedInputTokensBySlug,
     maxOutputTokens: options.config
       .maxAdvisorOutputTokens,
   },);
   /**
-   Context candidate matching selected default model.
+   Default selection led by the configured initial reviewer when one resolves.
+   */
+  const composedSelection = applyConfiguredInitialReviewer({
+    defaultSelection,
+    resolution: configuredReviewerResolution,
+  },);
+  /**
+   Context candidate matching the initial default model.
    */
   const selectedCandidate = selectedContextCandidate({
     candidates,
-    selectedSlug: defaultSelection.selected
+    selectedSlug: composedSelection.selected
       .canonicalSlug,
   },);
   return {
     selection: {
-      selected: defaultSelection.selected,
-      defaultSelection,
+      selected: composedSelection.selected,
+      defaultSelection: composedSelection,
     },
     advisorContext: selectedCandidate.advisorContext,
-    candidates: defaultSelection.ranking
+    candidates: composedSelection.ranking
       .map(function rankedCandidate(score): AdvisorContextCandidate {
       return selectedContextCandidate({
         candidates,

@@ -3,7 +3,7 @@
 //!  commands that can discard
 //!       worktree state run only in a linked worktree.
 //! Why:
-//!  `git stash`,
+//!  `git stash` that changes state,
 //!  a deleting `git clean` and a `git reset` that rewrites files can throw
 //!      away work in the primary checkout.
 //!  The policy confines them to linked worktrees.
@@ -34,6 +34,7 @@
 use super::command_clean::{CleanRegion, clean_changes_worktree, parse_clean_region};
 use super::command_options::OptionError;
 use super::command_reset::{ResetRegion, parse_reset_region, reset_changes_worktree};
+use super::command_stash::{parse_stash_region, stash_changes_state};
 use super::effective_target::EffectiveTarget;
 use super::global_arguments::command_tokens;
 /// What:
@@ -78,7 +79,7 @@ pub const LINKED_WORKTREE_REQUIRED_CODE: &str = "linked-worktree-required";
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum GuardedCommand {
-    /// Every `git stash` form.
+    /// Every `git stash` form that can change the worktree, the index or the stash list.
     Stash,
     /// A `git clean` that is not a dry run.
     Clean,
@@ -133,6 +134,12 @@ fn guarded_command(
     region: &[OsString],
 ) -> Result<Option<GuardedCommand>, OptionError> {
     if word == b"stash" {
+        // A region the stash parser refuses stays guarded, as every stash form was before the read-only forms.
+        let reads_only: bool = parse_stash_region(region, &[])
+            .is_ok_and(|facts| { return !stash_changes_state(facts.subcommand); });
+        if reads_only {
+            return Ok(None);
+        }
         // `Ok(Some(x))` is success carrying a present value.
         return Ok(Some(GuardedCommand::Stash));
     }

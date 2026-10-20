@@ -67,13 +67,14 @@ An attempt to reproduce it on 2026-10-20 failed for tool reasons, not because th
   scrolled to the bottom, left 3 s, scrolled back to the top.
 - Result: the viewport screenshot call returned an all-black PNG every time on this setup,
   so the blank-photo state could not be read.
-  Full-page captures were readable but repaint everything, and the session that found the bug reported that full-page
-  passes drew the photo.
-  No pass or fail was recorded for Technology Preview 252.
+- One full-page capture after the scroll back (clipped version) drew the photo and the frame, in 1 of 1 trial.
+  A full-page capture repaints everything, and the session that found the bug reported that full-page passes drew
+  the photo too, so this is not evidence that the on-screen viewport was drawn.
+  The bug was neither reproduced nor ruled out on Technology Preview 252.
 
 A future attempt needs a way to read the on-screen pixels of the scrolled-back viewport,
 for example a screen-recording or window-capture path, plus 20 or more trials per cell.
-Without that, treat the trial counts above as the only evidence.
+Without that, treat the trial counts in "Symptom" as the only evidence.
 
 ## Verified workarounds
 

@@ -25,6 +25,8 @@ try {
   await mkdir(join(context, 'cargo-config'), { recursive: true })
   await writeFile(join(context, 'cargo-config/config.toml'), config)
   await cp(resolve(source, '../../../clippy.toml'), join(context, 'clippy.toml'))
+  // The registry guard test validates the repository's own configuration, so the snapshot carries it.
+  await cp(resolve(source, '../../../monochromatic-lint.config.jsonc'), join(context, 'monochromatic-lint.config.jsonc'))
   await cp(join(source, 'test.Containerfile'), join(context, 'Containerfile'))
   await copyNextest({ context })
   const build = spawnSync('podman', ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', testImage, context], { stdio: 'inherit' })

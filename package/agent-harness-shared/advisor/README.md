@@ -111,9 +111,34 @@ delegation case.
 ## Config policy
 
 `defaultReviewerModel` stays user config only, settable in the global config file at
-`~/.pi/agent/extensions/pi-advisor.json`. It never becomes a schema default: shipped
-defaults must not pick a reviewer model on the user's behalf, and the field is optional
-in `AdvisorConfigFileSchema` and `AdvisorConfig`.
+`~/.pi/agent/extensions/pi-advisor.json` and overridable per project in
+`.pi/extensions/pi-advisor.json`. It never becomes a schema default: shipped defaults
+must not pick a reviewer model on the user's behalf, and the field is optional with no
+default in `AdvisorConfigFileSchema` (`src/config-schemas.ts`) and `AdvisorConfig`
+(`src/types.ts`). A non-string value fails schema validation; an empty or blank value
+clears the key even when another scope sets one.
+
+## Model selection order
+
+`selectAdvisorModel` (`src/advisor-selection.ts`) and `selectAdvisorRunContext`
+(`src/tool-context-selection.ts`) pick the initial reviewer in this order:
+
+1. Explicit `model` tool argument or `/advisor <slug>`: exact request, no cross-model
+   fallback, no overlap.
+2. `defaultReviewerModel`, when it resolves inside the output-eligible scope under the
+   accepted explicit forms (canonical `provider/modelId`, unique bare `model.id`, unique
+   `model.name`). It selects the initial reviewer of a default call and leads the
+   fallback candidate order; the configured pick is exact only in position, so serial
+   fallback and overlap recovery still cover it. It wins even when it is the current
+   main model that default ranking would avoid. An absent, blank, unresolvable, or
+   capacity-ineligible key falls through to the default ranking without error, and the
+   selection reason records the fall-through.
+3. Variant fallback ranking: expected call cost (pi behavior, unchanged and
+   bit-identical when the key is unset).
+
+`resolveConfiguredDefaultReviewer` reports the lookup as a
+`ConfiguredReviewerResolution` (`keyText` with optional `entry`), so callers can print
+resolution state without treating a miss as an error.
 
 ## Behavior picks (Q5 and Q6)
 

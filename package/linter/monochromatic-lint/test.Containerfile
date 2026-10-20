@@ -4,6 +4,8 @@ FROM 84f24e75017a7d8afa1c69e51c52f37e7d8d644cd2597a01f4732ad0b386dc20
 COPY vendor /work/vendor
 COPY cargo-config /work/.cargo
 COPY clippy.toml /work/clippy.toml
+# The registry guard test reads the repository configuration beside the work root.
+COPY monochromatic-lint.config.jsonc /work/monochromatic-lint.config.jsonc
 COPY jsonc-edit /work/package/rust-module/jsonc-edit
 COPY monochromatic-lint /work/package/linter/monochromatic-lint
 WORKDIR /work/package/linter/monochromatic-lint

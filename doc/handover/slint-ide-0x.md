@@ -1176,7 +1176,24 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Running (started 2026-10-20): stages 5 and 6 merged (GPU minimap on the shared Vello renderer, delete the rest of
     the CPU pipeline and `swash`), agent `a0880539282a3162b`; and a read-only study of Vello 0.11's fixed scratch
     buffers (262 MiB VRAM for any scene), agent `aefec5d0492ba3cab`, which writes only
-    `doc/planning/ide-vello-buffer-sizes.md`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15
+    `doc/planning/ide-vello-buffer-sizes.md`.
+    The study is in (`doc/planning/ide-vello-buffer-sizes.md`, pushed as `8e63ab3ef7`, no strays found, worktree and
+    branches removed). Findings: Vello 0.11's seven bump buffers are fixed literals (165 MiB); no public option
+    shrinks them; on overflow the frame is silently blank and `render_to_texture` still returns `Ok`; the other 97 MiB
+    are wgpu allocator slack from the default `MemoryHints::Performance` (128 to 256 MiB blocks, a bare device holds
+    193.6 MiB). Lead finding, a shipped correctness bug: `src/tile_scene/split.rs` and `encode.rs` clip each selected
+    row with rectangles as tall as the whole texture, about 36,700 tiles per row, so a selection of 58 or more rows
+    overflows the default tiles buffer and blanks the frame (56 rows rendered, 58 did not, in a probe; a 2000 px
+    window shows about 83 rows). Also: a texture above about 128 MiB corrupts silently at the default ptcl size, so the
+    64 MiB tile byte rule must stay; minimap slices must stay under about 1,600 rows at one sixth scale (sent to the
+    stage 5 and 6 agent). Options ranked by the study: e1 `MemoryHints::MemoryUsage` (one field, saves 224 MiB in the
+    app and 260 MiB per test process, 21 parallel test processes 9.4 GiB to 4.0 GiB) > b a `[patch]` of
+    `vello_encoding` with sized buffers (another 40 to 72 MiB, needs the clip fix, a computed ptcl, failure detection
+    and a lockfile regeneration) > c upstream (PR 1861 open and conflicting) > a leave > d other version > e2
+    `use_cpu`. Decisions I took (veto-open): do e1 now, measured in the app; defer b (value after e1 is small against a
+    carried vendored fork); no upstream comment. Agent `ae0713008b220a655` (started 2026-10-20) reproduces the
+    selection blank in the real app, fixes the clip structure with a failing test first, applies e1 and measures VRAM,
+    RSS, first frame and cadence with `matrix-load.mjs`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15
     full `test:native` runs, under whatever load exists.
     Found and fixed while adding the `BGL` rule (pushed as `1c3ec09299`): `package/desktop-app/ide/Cargo.toml` is
     managed by file-enforcer (WC2) and `file-enforcer.config.ts` owned `slint` fleet-wide as

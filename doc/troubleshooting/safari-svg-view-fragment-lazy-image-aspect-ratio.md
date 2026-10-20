@@ -43,8 +43,12 @@ The first report said Safari "ignores the `#view` fragment when the URL is in a 
 "draws the whole SVG canvas".
 Measured in Technology Preview 252, both halves are wrong:
 
-- The view is applied when drawing, in `<picture>` and in plain `<img>` alike.
+- The view is applied when drawing, in `<picture>` and in plain `<img>` alike, eager or lazy.
   The drawn picture is the view, letterboxed into a box whose aspect ratio came from somewhere else.
+  For the lazy case this was checked on the synthetic fixture in "Verification":
+  box 400 by 200, and a full-page capture (taken after the box was read, box unchanged afterwards) showed one red
+  square 200 by 200 CSS pixels centered in the box and no blue frame, so the fragment was applied.
+  With the real Tales artwork the two readings differ by under 10 px, so it cannot settle this by eye.
 - `<picture>` makes no difference in any measured case.
   The variable that flips the result is `loading="lazy"` on the `<img>`.
   The Home pictures had it; the case-study heroes (`menume.html:140-146`) did not, and also set an explicit
@@ -108,12 +112,26 @@ else if (auto viewBoxSize = viewBox().size(); !viewBoxSize.isEmpty())
 
 `SVGSVGElement::naturalDimensions()` reads `viewBox()`, the root's authored attribute,
 not `currentViewBoxRect()` (which honors an active view, `SVGSVGElement.cpp:714`).
+Applying a `<view>` does not change `viewBox()`:
+`inheritViewAttributes` writes the view's box into the separate view spec object and sets `m_useCurrentView`:
+
+```cpp
+// Source/WebCore/svg/SVGSVGElement.cpp:986
+void SVGSVGElement::inheritViewAttributes(const SVGViewElement& viewElement)
+{
+    Ref view = currentView();
+    m_useCurrentView = true;
+
+    if (viewElement.hasValidViewBox())
+        view->setViewBox(viewElement.viewBox());
+```
+
 Reading only this, an SVG with a `<view>` always reports the whole canvas's ratio, which is the lazy result
 (277 by 150 is the whole canvas of the Tales artwork).
 It does not explain the eager result, where the box follows the view.
 One unverified reading is that an eager image is drawn, and so has the fragment applied, before layout reads its
 ratio, while a lazy image is laid out first;
-a second is that the shared state noted in the next paragraph decides it.
+a second is that the shared state described under "The fragment is applied at draw time" decides it.
 
 `SVGImage.cpp:241` carries this comment:
 `// FIXME: webkit.org/b/322833 - the resource document holds one container's parameters at a time`.
@@ -184,7 +202,7 @@ Measured with several images of the same file on one page, Technology Preview 25
   Chromium 149 gave 216 for that one.
 
 Not measured: Safari 17.5, release Safari 27, iOS Safari, Firefox,
-and a lazy image placed below the fold (every case above had the image in the first viewport).
+and a lazy image placed below the fold (every case in this section had the image in the first viewport).
 Viewport screenshots from `safari-mcp-stp` came back as an all-black PNG in this setup;
 only full-page captures were readable, so drawing was checked with full-page captures and box sizes.
 
@@ -198,7 +216,7 @@ Tradeoff: one extra file per view, and the two files must be kept in step when t
 The portfolio's post-change Safari checks showed boxes as tall at 1920 px as at 1440 px (323 against 221 before).
 
 An explicit `aspect-ratio` equal to the view's ratio on the `<img>`.
-Measured above: the lazy image became 316 tall with the artwork filling the box (Technology Preview 252).
+Measured in the real-artwork list: the lazy image became 316 tall with the artwork filling the box (Technology Preview 252).
 This is what the case-study heroes already do.
 Tradeoff: the ratio is duplicated in CSS and must be edited with the view;
 the browser no longer reads it from the file.
@@ -251,7 +269,7 @@ The six constraints:
    `SVGSVGElement::naturalDimensions()` reads the authored `viewBox()` where `currentViewBoxRect()` exists,
    but whether changing that fixes the failing path is untested.
 3. Do they support the use case?
-   The fragment path in `SVGImage` and the open reports above show a stated interest in fragments on SVG images.
+   The fragment path in `SVGImage` and the related reports listed here show a stated interest in fragments on SVG images.
 4. Would the repo welcome the contribution?
    `webkit.org/reporting-bugs/` asks for the latest build, a Bugzilla account, a duplicate search,
    and sends Safari-only bugs to Feedback Assistant.
