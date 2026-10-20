@@ -276,17 +276,26 @@ function formatHeader(
 }
 
 /**
+ Cutoff below which a duration renders with one decimal place. Matches
+ `@monochromatic-dev/module-numeric-format` (Q5 default-to-richer pick);
+ above it, decimals add noise without adding signal.
+ */
+const DECIMAL_BELOW_MS = 10;
+
+/**
  Format elapsed milliseconds.
  
  @param durationMs - elapsed milliseconds
  
- @returns human-readable duration
+ @returns human-readable duration with unit suffix
  */
 function formatDuration(
   durationMs: number,
 ): string {
+  if (durationMs < DECIMAL_BELOW_MS)
+    return `${durationMs.toFixed(1,)}ms`;
   return durationMs < MILLISECONDS_PER_SECOND
-    ? `${durationMs}ms`
+    ? `${durationMs.toFixed(0,)}ms`
     : `${(durationMs / MILLISECONDS_PER_SECOND).toFixed(1,)}s`;
 }
 
