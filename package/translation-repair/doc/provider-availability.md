@@ -182,7 +182,8 @@ so they can never describe different instants.
 
 They also separate causes that route identically.
 Synthetic goes dry when its weekly budget empties,
-or, where a reply still carries the five-hour window,
+or,
+where a reply still carries the five-hour window,
 when that window empties
 or when the account is actively throttled;
 those are one bit at the router and up to three different problems to a reader.

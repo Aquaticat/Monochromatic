@@ -241,7 +241,8 @@ and a `SEATS DARK:` line naming every seat that was asked and never once produce
 `asked` counts calls that settled.
 `abandoned` counts calls the caller left before they settled,
 chiefly the replies a round cut at its straggler deadline after quorum;
-they are in no other column, so a seat with a large `abandoned` was waited on less often than `asked` says
+they are in no other column,
+so a seat with a large `abandoned` was waited on less often than `asked` says
 and is neither withheld nor named dark for them.
 A dark seat is a provider that cannot serve it,
 a key that was never injected,
@@ -255,7 +256,8 @@ the provider that refused it,
 the provider's own words and how many usable answers the seat had given.
 The line offers both ways forward:
 renew that provider's credential before the next run,
-or leave it, and the run withholds the seat after its failed asks and goes on with the other seats.
+or leave it,
+and the run withholds the seat after its failed asks and goes on with the other seats.
 A credential does not renew during a run,
 so asks to that seat are expected to keep failing until the run withholds it.
 
