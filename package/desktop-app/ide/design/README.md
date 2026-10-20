@@ -640,8 +640,10 @@ so the variable has no effect and a repeat of a command leaves it out.
   because the control protocol had no plain pointer move.
   Its `wheel` command with zero notches moved the seat pointer,
   but the divider did not show hover afterwards in a control run.
-  As of 2026-10-20 the control protocol has `move X Y`, a pointer move with no button,
-  and hover is made with it: a `move` over a tree row of the disposable project showed the row's hover fill.
+  As of 2026-10-20 the control protocol has `move X Y`,
+  a pointer move with no button,
+  and hover is made with it:
+  a `move` over a tree row of the disposable project showed the row's hover fill.
 - A frame is the compositor's `screenshot`,
   saved once two screenshots 250 ms apart are byte-identical.
 - Frames with a focused text input are picked from 12 samples taken 120 ms apart:

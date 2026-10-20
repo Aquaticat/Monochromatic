@@ -4711,7 +4711,8 @@ runs the IDE in the nested compositor with every application record on
 and its standard output on a FIFO that is never read,
 moves the caret with key presses for 30 s,
 and reads from the IDE's own records the longest pause between two keys the window handled.
-It also photographs the compositor every 200 ms (`screenshot`, which composites the latest frame the IDE committed)
+It also photographs the compositor every 200 ms (`screenshot`,
+which composites the latest frame the IDE committed)
 and counts how often the picture changed and for how long it stood still:
 a moving or blinking caret redraws the window on its event loop,
 so a blocked event loop leaves the picture still.
@@ -4732,9 +4733,11 @@ and its picture changed in 143 of 144 photographs with a longest still time of 2
 the control mapped no window in 120 s and handled no key,
 because it blocked right after its first tile was built:
 its last record before a gap that ends only when the script drains the FIFO two minutes later is 222 lines,
-about 51,000 characters, or an estimated 65,600 bytes with the colour codes (their average over the whole log),
+about 51,000 characters,
+or an estimated 65,600 bytes with the colour codes (their average over the whole log),
 which is the size of the 64 KiB pipe buffer.
-The control therefore stalls before it maps a window, and the picture check sees no window rather than a frozen one
+The control therefore stalls before it maps a window,
+and the picture check sees no window rather than a frozen one
 (`~/temp/agent/ide-log-stall-jyzKKf/results.json`).
 The picture probe itself was checked on a release build that was stopped with `SIGSTOP` and continued with `SIGCONT`
 while the same key presses ran:
@@ -5239,40 +5242,70 @@ section "Stage 2").
 
 ### Inspecting the running window
 
-No build of the IDE contains Slint's MCP server (`--features slint/mcp`, removed on 2026-10-20 on the owner's answer).
+No build of the IDE contains Slint's MCP server (`--features slint/mcp`,
+removed on 2026-10-20 on the owner's answer).
 Its screenshot tool draws with Slint's software renderer,
 so any build that carried it linked the CPU renderer that this package forbids.
 Every check that looks at the window now does so through the repository's nested compositor
 (`package/cli/nested-wayland-session`),
-which composites the IDE's frames on the GPU and gives the checks pictures, input, an element tree, and the log:
+which composites the IDE's frames on the GPU and gives the checks pictures,
+input,
+an element tree,
+and the log:
 
 Pictures come from the control command `screenshot PATH` (a PNG of the latest committed frame)
-and `record DIR FPS bmp` (a steady 60 Hz sequence, as `inspect:cadence` uses).
+and `record DIR FPS bmp` (a steady 60 Hz sequence,
+as `inspect:cadence` uses).
 
-Input comes from `click`, `move` (a pointer move with no button, which gives the window enter, motion,
+Input comes from `click`,
+`move` (a pointer move with no button,
+which gives the window enter,
+motion,
 and leave events and so its hover state),
-`button down|up`, `drag`, `scroll`, `wheel`, `key`, and `type`.
+`button down|up`,
+`drag`,
+`scroll`,
+`wheel`,
+`key`,
+and `type`.
 The MCP tool `move_pointer` is `move`.
 
 The element tree comes from the command `a11y`,
 which prints one record per accessible element of the window
-(`depth`, `role`, `name`, `states`, screen `bounds`),
+(`depth`,
+`role`,
+`name`,
+`states`,
+screen `bounds`),
 read over AT-SPI from the tree Slint's `accessibility` feature publishes through AccessKit.
 The compositor serves that bus only when started with `--accessibility`,
 which `inspect:native` does;
 the measuring tasks leave it off so they time the application as shipped.
 On 2026-10-20 it returned 40 elements for a project with five tree rows:
-the application, the frame, the `Project files` landmark, the tree and each row by file name with its `selected`
-and `focused` states and bounds, the `Sidebar width` slider, the file path label, and the `Source code` entry.
-After a click on a row, a second `a11y` showed that row as `selected` and the screenshot showed its file.
+the application,
+the frame,
+the `Project files` landmark,
+the tree and each row by file name with its `selected`
+and `focused` states and bounds,
+the `Sidebar width` slider,
+the file path label,
+and the `Source code` entry.
+After a click on a row,
+a second `a11y` showed that row as `selected` and the screenshot showed its file.
 
 State the window does not draw comes from the IDE's own log (`RUST_LOG=ide_app=debug,monochromatic_ide=debug`),
-which `inspect:idle-cost`, `inspect:watch-limit`, `inspect:log-stall`, and the bundle checks read.
+which `inspect:idle-cost`,
+`inspect:watch-limit`,
+`inspect:log-stall`,
+and the bundle checks read.
 
 What the server gave that these do not:
 reading any property of any Slint element by its element id,
 and invoking any callback by id.
-`a11y` shows only what the toolkit publishes as accessible (role, name, states, bounds),
+`a11y` shows only what the toolkit publishes as accessible (role,
+name,
+states,
+bounds),
 and the compositor has no command that invokes an element's default action.
 No script in this package used those two tools;
 the native tests that need them use `ElementHandle` of `i-slint-backend-testing` in the test process.
