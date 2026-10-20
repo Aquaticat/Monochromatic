@@ -271,6 +271,13 @@ this section is the readiness reading of it.
   under "Make decisions yourself and don't block on me",
   since a restart for each such fix would keep the rotation from finishing:
   a read takes about 50 min of pass.
+- `zheermao16` shipped SETTLED with one class
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)):
+  the consolidation re-romanized and glossed the handle 寒涟漪,
+  which the archive renders "Han Lianyi",
+  so the rotation on `a5dc23c5bb` ended with no read that counts.
+  `CuspariaKLSY19` runs on that build to find more classes and does not count;
+  the rotation restarts at `zheermao101` on the build that carries the fix.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

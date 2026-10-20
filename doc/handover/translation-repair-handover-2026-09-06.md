@@ -507,6 +507,22 @@ its "Next" list is still the queue the merge went ahead of.
   launched at 14:58 UTC on 2026-10-20,
   `START` digest `sha256-tree-v1:16f46cb79c96…` matching the frozen one.
   It is the first run of the note fix on a page that holds a note.
+- `zheermao16` settled with one class in 43.2 min of pass
+  ([the pass log of 2026-10-20](../planning/translation-repair-openrouter-2026-09-03-2026-10-20.md)):
+  the note between translators is kept once as its own paragraph,
+  and the consolidation shipped the handle 寒涟漪 as "Han Lian Yi (Cold Ripples)",
+  where the archive renders "Han Lianyi" and the house rule glosses only a handle with no archive rendering.
+  The rotation on `a5dc23c5bb` ended with no read that counts.
+  `CuspariaKLSY19` was launched at 15:47 UTC on 2026-10-20 on that build to find more classes,
+  unit `corpus-pass-corpus-pass-CuspariaKLSY19`,
+  and its read does not count.
+- The naturalness sheet (B704),
+  the footnote reorder (B705)
+  and the CRLF note carry (B706) are fixed on `091dbacf36`,
+  gated as g125;
+  none changes a shipped pinned page,
+  so the branch worktree stays at `a5dc23c5bb`
+  ([the readiness signal](../planning/translation-repair-readiness-signal.md)).
 - Open:
   the guard of B701,
   whose two shapes (a rotation sweep task,
@@ -589,19 +605,23 @@ its "Next" list is still the queue the merge went ahead of.
     so the typography and page-check suites run after any change to `mise.lock`.
 5.  The next action,
     in order:
-    - Read `zheermao16` at its `DONE processed=` line against the original,
-      the archive and the three photos,
-      and check that the page keeps the note `{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`
-      once,
-      where the kept note is placed (a paragraph after the email's blockquote,
-      since the archive holds it on a quoted line of its own),
-      and that no unclaimed block or bare quote line appears there.
-    - Then launch `CuspariaKLSY19` on the same frozen build,
-      and go on through the rotation one read at a time.
-    - Queued and not started:
-      the footnote reorder can move an indented note line under a neighbouring definition;
-      the naturalness review still shows notes to its judges (it only produces findings);
-      and the class of the `zheermao15` read has no ledger id yet.
+    - Read `CuspariaKLSY19` at its `DONE processed=` line against the original and the archive,
+      as a hunt for classes on `a5dc23c5bb`;
+      it does not count toward readiness.
+    - Take the fix for the `zheermao16` class:
+      an agent works in the worktree `w235` from the brief `x15-fix/archive-handle-brief.md` under the agent scratch
+      directory,
+      on which sheets lack the archive's rendering of a Han name and which guard should keep it.
+      Gate it,
+      write its ledger entry,
+      land it,
+      move the branch worktree to the build that carries it,
+      and restart the rotation at `zheermao101`.
+    - The census of which model-facing sheets show the notes between translators runs in the worktree `w233`;
+      review,
+      gate and ledger it when it reports.
+    - Land `091dbacf36` (B704 to B706) when gate g125 is green.
+    - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
       or a test-only override seam in `stage`.

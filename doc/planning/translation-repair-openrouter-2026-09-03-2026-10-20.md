@@ -390,3 +390,94 @@ so the rotation restarts at its first entry:
 and its `START` line matched the frozen digest.
 It is also the first run of the note fix on a page that holds a note,
 since `CuspariaKLSY`'s archive holds none.
+
+## zheermao16 read, 2026-10-20, 15:50 UTC: SETTLED in 43.2 min of pass; one class, and the rotation on this build ends
+
+`zheermao16` ran as the unit `corpus-pass-corpus-pass-zheermao16`
+on tip `a5dc23c5bb…` and pipeline `sha256-tree-v1:16f46cb79c96…`,
+and its `START` line matched the frozen digest.
+The `DONE` line reads `elapsed=2592966ms`,
+which is 43.2 min:
+`TALLY zheermao101 status=SETTLED slices=15 repairStatus=repaired repairIssues=34 repairAccepted=28 repairResolved=28
+... repairChanged=9 translateStatus=complete translateChanged=10 documentsDiffer=10 pageChanged=11 pageSilent=0
+alignmentFindings=14 selection=contested`.
+`DESTINATIONS zheermao101 source=2 page=3 dropped=0`,
+and the publish wrote 15 slices into a page of 5973 characters.
+The log holds 278 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+
+### Seats and meters
+
+Three Gemma seats were dark on `SEAT CREDENTIAL REFUSED ... on bedrock` with HTTP 401
+("The security token included in the request has expired"):
+`gemma-4-26b-a4b-it`,
+`google.gemma-4-e2b` and `google.gemma-4-31b` threw on all 4 asks each and were withheld after them.
+`inception/mercury-2.5` threw on 2 of its 118 asks,
+and `hf:Qwen/Qwen3.8-27B` had 4 asks abandoned.
+The run ended with `SEATS DARK: 3 of 12 seats asked produced nothing usable`.
+Synthetic's weekly meter read 2.03% at 14:58 UTC and went dry at 15:22 UTC.
+Hyper's balance went from 229 to 150,
+OpenRouter from 15.47 USD to 15.36 USD,
+and Bedrock stayed at 5.02 USD.
+At this run's draw,
+Hyper's balance covers about two more runs of this size,
+and Hyper will not be recharged.
+
+### The page
+
+The lead read the shipped page (`fixed/people/zheermao101/page.en.md` of the run) beside the original (`page.md`),
+the archive (`page.en.md`) and the three photos,
+line by line.
+The note between translators is kept once,
+as a paragraph of its own after the email's blockquote
+(`{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`),
+with no unclaimed block and no bare quote line,
+so the note fix holds on the page it was made for.
+The email now renders the sentence that note is about,
+"where you can steer clear of the darkness’s sharp edge and take shelter somewhere bright",
+and every line of the photo of the email,
+the closing 顺颂春祉 ("Wishing you well this spring") among them,
+which the archive left out.
+Arts's letter now carries 比比皆是 ("Such people are everywhere"),
+and its "cat-like person" is "kitty" (猫猫).
+The `>   >` line inside the reply keeps a trailing space,
+which the archive's line carries too.
+
+One class:
+the handle 寒涟漪 ships as "Han Lian Yi (Cold Ripples)",
+where the archive renders it "Han Lianyi",
+which the link `https://t.me/Lianyi520/565` also spells.
+The house rule
+(`package/translation-repair/house-rule/src/house-policy.ts`,
+line 104)
+romanizes and glosses only "A person's handle with no declared,
+archive or corpus rendering",
+and its own grouping for three syllables gives "Hanlian Yi",
+so the shipped form matches neither the archive nor the rule.
+In slice 13 a repair-lane critic filed the gloss and the grouping as owed and the panel accepted both;
+the lane contest then chose the translate lane's "Han Lianyi" on all four ballots,
+naming the archive's established rendering;
+the consolidation's select round chose "Han Lian Yi (Cold Ripples)" on three ballots,
+one of them saying the handle has "no declared or archive rendering";
+and the polish gate shipped it on three of five ballots.
+The investigation of which sheets lack the archive's rendering,
+and of which guard should keep it,
+was started at about 15:49 UTC on 2026-10-20 as its own piece of work.
+
+Separately,
+the front matter `desc` keeps the archive's "Treat you to some beverages.",
+while the quote it comes from now reads "milk tea" (奶茶).
+`doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand,
+so this is recorded and not counted as a class.
+
+### What follows
+
+The class ends the rotation on `a5dc23c5bb` with no read that counts,
+and its fix will change this page,
+so the rotation restarts at `zheermao101` on the build that carries the fix.
+`CuspariaKLSY19` was launched at 15:47 UTC on 2026-10-20 on the same frozen build to find more classes meanwhile,
+and its read does not count toward readiness.
