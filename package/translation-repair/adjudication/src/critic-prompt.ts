@@ -17,6 +17,7 @@ import {
   FOREIGN_PHRASE_NAME_TITLE_SCOPE,
   OBLIGATORY_DIFFERENCES,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import {
@@ -115,6 +116,44 @@ Reply with ONLY a JSON object of shape {"issues": [...]}. No prose, no code fenc
 An empty issues array is a valid answer when the translation is faithful.`;
 
 /**
+ The texts whose comments are the original's own on a critic's sheet: the
+ original, and the original next door.
+
+ THE ONE DEFINITION BOTH SIDES OF THE SHEET READ. The sheet cuts the notes
+ between translators from the translation against these texts
+ (`buildCriticMessages`), and the quotes the critic copies out of it are
+ resolved against the same ones (`resolveCriticIssue`); two spellings of the
+ list could disagree about which comment is the original's and read two
+ different texts.
+
+ @param sourceText - original document
+
+ @param neighbouringSourceText - original next door, absent when the slice
+ stands alone
+
+ @returns The texts joined by line feeds, for `withoutTranslatorsNotes`
+
+ @example
+ ```ts
+ const original = criticOriginalsOf({ sourceText, },);
+ ```
+ */
+export function criticOriginalsOf(
+  {
+    sourceText,
+    neighbouringSourceText,
+  }: {
+    readonly sourceText: string;
+    readonly neighbouringSourceText?: string;
+  },
+): string {
+  return [
+    sourceText,
+    neighbouringSourceText ?? '',
+  ].join('\n',);
+}
+
+/**
  Builds the message list for one critic call.
 
  @param sourceText - original document, front matter included
@@ -152,17 +191,55 @@ export function buildCriticMessages(
     readonly neighbouringSourceText?: string;
   },
 ): readonly ChatMessage[] {
+  // THE CRITIC IS SHOWN THE TRANSLATION WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER, as every other judging sheet is
+  // (`withoutTranslatorsNotes`): no reader sees one, the page keeps each one
+  // whatever a judge says, and a critic told to report the original's language
+  // left in the translation (`accuracy/untranslated`) would report a Chinese
+  // comment, which an accepted issue turns into an envelope for an editor to
+  // render, and the carry then puts the note back beside the rendering. Only
+  // what is SHOWN is cut. A quote the critic gives is located in the text as
+  // shown and carried back to the stored one (`resolveCriticIssue` with the
+  // same originals, `criticOriginalsOf`), so a quote across a place a note was
+  // cut from anchors in the stretches of words either side of the note and no
+  // anchor holds it. The original's own comments stay in view, and so do the
+  // notes of the original next door.
   /**
-   Fence no enclosed text can reproduce, chosen against every text the sheet encloses.
+   Texts whose comments are the original's own.
+   */
+  const originals = criticOriginalsOf({
+    sourceText,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+  },);
+  /**
+   The translation as the critic reads it.
+   */
+  const targetShown = withoutTranslatorsNotes({
+    text: targetText,
+    original: originals,
+  },);
+  /**
+   The existing translation next door as the critic reads it.
+   */
+  const incumbentShown = withoutTranslatorsNotes({
+    text: neighbouringIncumbentText ?? '',
+    original: originals,
+  },);
+
+  /**
+   Fence no enclosed text can reproduce, chosen against every text the sheet
+   encloses, each text as written and as shown.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       targetText,
+      targetShown,
       identityContext ?? '',
       referenceContext ?? '',
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      incumbentShown,
     ],
   },);
 
@@ -206,13 +283,12 @@ export function buildCriticMessages(
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
+      && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}
 ${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
-${neighbouringIncumbentText ?? ''}
+${incumbentShown}
 ${fence} ${NEARBY_RULE} ${fence}
 `;
 
@@ -226,7 +302,7 @@ ${fence} ${NEARBY_RULE} ${fence}
       content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} TRANSLATION ${fence}
-${targetText}
+${targetShown}
 ${referenceBlock}${nearbyBlock}${fence} END ${fence}`,
     },
   ];

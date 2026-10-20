@@ -30,7 +30,10 @@ import {
   REFERENCES,
   TENSE_ISSUE,
   JUDGE_REFERENCE,
+  NEIGHBOUR_ARCHIVE,
+  NEIGHBOUR_SOURCE,
   TENSE_REGION,
+  TRANSLATORS_NOTE,
   joined,
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 
@@ -62,6 +65,8 @@ export function judgeSheets(): readonly RenderedSheet[] {
             position: 0,
             members: TENSE_ISSUE.claims,
           },],
+          neighbouringSourceText: NEIGHBOUR_SOURCE,
+          neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
           identityContext: IDENTITY,
           referenceContext: REFERENCES,
         },)
@@ -97,6 +102,8 @@ export function judgeSheets(): readonly RenderedSheet[] {
           baselineText: ARCHIVE,
           regions: [TENSE_REGION,],
           issues: [TENSE_ISSUE,],
+          neighbouringSourceText: NEIGHBOUR_SOURCE,
+          neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
           identityContext: IDENTITY,
         },)
           .messages,
@@ -119,7 +126,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 markEnd: 12,
                 english: {
                   kind: 'present',
-                  text: 'The sunny window put the kitten to sleep.',
+                  text: `The sunny window put the kitten to sleep. ${TRANSLATORS_NOTE}`,
                 },
               },
               {
@@ -129,7 +136,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 markEnd: 18,
                 english: {
                   kind: 'present',
-                  text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+                  text: `In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
                 },
               },
             ],
@@ -158,7 +165,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 slotSource: '胖胖',
                 english: {
                   kind: 'present',
-                  text: 'So this cat must be a chubby little treasure.',
+                  text: `So this cat must be a chubby little treasure. ${TRANSLATORS_NOTE}`,
                 },
               },
               {
@@ -169,7 +176,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 slotSource: '懒懒',
                 english: {
                   kind: 'present',
-                  text: 'So this cat is surely a lazy little treasure.',
+                  text: `So this cat is surely a lazy little treasure. ${TRANSLATORS_NOTE}`,
                 },
               },
             ],
@@ -200,7 +207,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 markEnd: 12,
                 english: {
                   kind: 'present',
-                  text: 'Mittens is asleep in the sunny window.',
+                  text: `Mittens is asleep in the sunny window. ${TRANSLATORS_NOTE}`,
                 },
               },
               {
@@ -210,7 +217,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 markEnd: 18,
                 english: {
                   kind: 'present',
-                  text: 'In the evening, the sunlight on the sill lulled Mittens to sleep, and the fish snacks smiled too.',
+                  text: `In the evening, the sunlight on the sill lulled Mittens to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
                 },
               },
             ],
@@ -241,7 +248,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 slotSource: '胖胖',
                 english: {
                   kind: 'present',
-                  text: 'So Mittens is a chubby little treasure.',
+                  text: `So Mittens is a chubby little treasure. ${TRANSLATORS_NOTE}`,
                 },
               },
               {
@@ -252,7 +259,7 @@ export function judgeSheets(): readonly RenderedSheet[] {
                 slotSource: '懒懒',
                 english: {
                   kind: 'present',
-                  text: 'So Mittens surely was a lazy little treasure.',
+                  text: `So Mittens surely was a lazy little treasure. ${TRANSLATORS_NOTE}`,
                 },
               },
             ],

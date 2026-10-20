@@ -35,6 +35,7 @@ The groups that follow name the main ones.
   its wire format and the record of which critic raised which claim.
   Names:
   `buildCriticMessages`,
+  `criticOriginalsOf`,
   `CRITIC_RESPONSE_FORMAT`,
   `resolveCriticIssue`,
   `buildSliceCriticRecords`,
@@ -64,9 +65,11 @@ The groups that follow name the main ones.
   `buildIntroducedDefectMessages`,
   `INTRODUCED_DEFECT_VERDICTS`,
   `screenEvidence`,
+  `proberOriginalOf`,
   `resolveProberChecks`.
   Declared in `introduced-defect-probe.ts`,
   `introduced-defect-screen.ts`,
+  `introduced-defect-shown.ts`,
   and `introduced-defect-wire.ts`.
 - Resolution checks:
   ask checkers whether each issue is resolved and tally their sheets.

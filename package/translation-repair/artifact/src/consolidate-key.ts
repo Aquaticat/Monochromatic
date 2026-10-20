@@ -387,6 +387,30 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  them between blank lines hold one, so a sheet changes for at most those 10 entries; no other entry's sheet moves. The
  archive block review has no cache version of its own, the block it reviews stands whatever it finds, and the other
  versions stay, since none of their sheets is this one. No record has been written at 28, which this change sets first.
+
+ Rides inside 28 too: the publication rule the consolidation, its standing verdict and its polish round meet refuses a
+ candidate that writes the letters of the archive's spelling of a Han name written inside a sentence under another spelling
+ (`translate-floor/src/translate-prose-name.ts`), and the identity lines the gates read carry those spellings
+ (`rendering-audit/src/page-name-glossary.ts`; zheermao101, run zheermao16, 2026-10-20). The key does not hash the floors, so a
+ record written under the old rule would be served under the new, if one had been written at 28. None has: 28 was set in
+ `6a28f54be`, at 11:24 UTC-4 on 2026-10-20, and the two runs begun since, zheermao16 and CuspariaKLSY19, both log
+ `START tip=a5dc23c5bb`, which does not hold that commit and sets 27. Both read and write at 27, so neither can have stored
+ an answer at 28. The lane-contest and translate slice versions move for the same rule (13 and 22).
+
+ Rides inside 28 too: the sheets of the settlement's other judges cut the notes between translators as well
+ (`document-structure/src/translators-note.ts`): the introduced-defect prober and the resolution checker that look over a
+ polish (12e147ae40, 5498ee860b), the candidate selection slate of the objection correction, whose current English and
+ objections were shown whole because a search of the whole label took them for the original (12e147ae40), and the coverage
+ sheet (89df3896d4). The key hashes the version, the run shape and the texts, not the sheet. Of the 12 run logs in the agent
+ directory, none started on a tip that holds `6a28f54be`, where 28 was set: the newest tip, `a5dc23c5bb` of zheermao16 and
+ CuspariaKLSY19, does not, and the others started on earlier ones, so none could write a record at 28. That is the evidence of
+ the logs' `START tip=` lines and `git merge-base --is-ancestor`, and not a search of any slice-cache directory.
+
+ Rides inside 28 too: a quote the introduced-defect prober copied from its sheet across the place a note between translators was
+ cut from now anchors in the stored words on each side of the note (`adjudication/src/introduced-defect-screen.ts`,
+ `typography/src/locate-quote.ts`), so the damage claims over a polish can differ for a slice holding such a note. The key
+ hashes the version, the run shape and the texts, not the sheet. The same 12 logs, read the same way, show none that started on
+ a tip that holds `6a28f54beb`, where 28 was set, so none could write a record at 28, and the number does not move.
  */
 export const CONSOLIDATE_CACHE_VERSION = 28;
 

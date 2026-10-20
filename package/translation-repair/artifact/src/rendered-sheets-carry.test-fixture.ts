@@ -30,6 +30,7 @@ import {
   joined,
   REFERENCES,
   type RenderedSheet,
+  TRANSLATORS_NOTE,
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 
 //region Carry sheets
@@ -170,7 +171,7 @@ export function carrySheets(): readonly RenderedSheet[] {
             chosen: {
               view: FIRST_VIEW,
               span: 'The sunny window put the kitten to sleep',
-              paragraph: 'The sunny window put the kitten to sleep.',
+              paragraph: `The sunny window put the kitten to sleep. ${TRANSLATORS_NOTE}`,
             },
             receiving: [
               {
@@ -178,7 +179,7 @@ export function carrySheets(): readonly RenderedSheet[] {
                 span: 'the sunlight on the sill lulled the kitten to sleep',
               },
             ],
-            paragraph: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+            paragraph: `In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
             keeping: [],
             before: '傍晚的阳光很暖。',
             after: '小鱼干也笑了。',
@@ -198,7 +199,7 @@ export function carrySheets(): readonly RenderedSheet[] {
             chosen: {
               view: FIRST_VIEW,
               span: 'The sunny window put the kitten to sleep',
-              paragraph: 'The sunny window put the kitten to sleep.',
+              paragraph: `The sunny window put the kitten to sleep. ${TRANSLATORS_NOTE}`,
             },
             receiving: [
               {
@@ -206,7 +207,7 @@ export function carrySheets(): readonly RenderedSheet[] {
                 span: 'the sunlight on the sill lulled the kitten to sleep',
               },
             ],
-            paragraph: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+            paragraph: `In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
             keeping: [],
             lineStructured: true,
             identityContext: IDENTITY,
@@ -235,12 +236,12 @@ export function carrySheets(): readonly RenderedSheet[] {
               {
                 label: 'CANDIDATE 1',
                 current: true,
-                text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+                text: `In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
               },
               {
                 label: 'CANDIDATE 2',
                 current: false,
-                text: 'In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too.',
+                text: `In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
               },
             ],
             identityContext: IDENTITY,
@@ -270,12 +271,12 @@ export function carrySheets(): readonly RenderedSheet[] {
               {
                 label: 'CANDIDATE 1',
                 current: true,
-                text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+                text: `In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
               },
               {
                 label: 'CANDIDATE 2',
                 current: false,
-                text: 'In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too.',
+                text: `In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
               },
             ],
             identityContext: IDENTITY,
@@ -302,12 +303,12 @@ export function carrySheets(): readonly RenderedSheet[] {
               {
                 label: 'CANDIDATE 1',
                 current: true,
-                text: 'In the evening, the sunlight on the sill lulled Mittens to sleep, and the fish snacks smiled too.',
+                text: `In the evening, the sunlight on the sill lulled Mittens to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
               },
               {
                 label: 'CANDIDATE 2',
                 current: false,
-                text: 'In the evening, the sunny window put Mittens to sleep, and the fish snacks smiled too.',
+                text: `In the evening, the sunny window put Mittens to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
               },
             ],
             identityContext: IDENTITY,

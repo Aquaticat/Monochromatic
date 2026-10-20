@@ -272,6 +272,9 @@ await describe({
               paragraph: '窗台上的阳光让小猫睡着了。所以这只猫一定是胖胖的小宝贝。',
               markStart: 0,
               markEnd: 12,
+              // The whole original of the slice, so the sheets keep its comments in the English.
+              sliceSource: nonNullishOrThrow(first,).slice
+                .sourceText,
               english: {
                 kind: 'present',
                 text: '## One\n\nThe sunny window put the kitten to sleep. So this cat must be a chubby little treasure.',

@@ -799,6 +799,49 @@ await describe({
           },
         },),
         it({
+          name: 'NEVER LOCATES A CORE HOLDING A NOTE BETWEEN TRANSLATORS: a quote copied across the place a note was cut '
+            + 'from leaves its place unlocated, and a quote either side of the note locates as it did',
+          fn: async () => {
+            // The count reads the stored English (`consistency-count.ts`), where the note stands. A core is copied to
+            // other places and ends at `start + core.length`, so a core spanning the note would carry the note
+            // into them; a place the quote cannot be found in is left as it stands instead.
+            /**
+             English whose first sentence ends with a note.
+             */
+            const noted = 'The sunny window put the kitten to sleep.{/* 这句不太对劲 */}\nSo this cat must be a chubby little treasure.';
+            /**
+             The count of the first place when every ballot quotes it as given.
+             */
+            const renderingOf = (quote: string,): unknown => countOver({
+              voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote, },], }, },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: noted, }, },
+                PLACES[1] as { readonly label: string; readonly english: ConsistencyEnglish; },
+              ],
+            },).renderings[0];
+
+            expect([
+              renderingOf('put the kitten to sleep.\nSo this cat',),
+              renderingOf('The sunny window put the kitten to sleep',),
+              renderingOf('So this cat must be a chubby little treasure',),
+            ],).toEqual([
+              { kind: 'unlocated', reason: 'not-found', },
+              {
+                kind: 'located',
+                quote: 'The sunny window put the kitten to sleep',
+                core: 'The sunny window put the kitten to sleep',
+                start: 0,
+              },
+              {
+                kind: 'located',
+                quote: 'So this cat must be a chubby little treasure',
+                core: 'So this cat must be a chubby little treasure',
+                start: noted.indexOf('So this cat',),
+              },
+            ],);
+          },
+        },),
+        it({
           name: 'REFUSES A QUOTE THAT STANDS MORE THAN ONCE in the English, overlapping stands included, as an ambiguous one',
           fn: async () => {
             const twice = countOver({

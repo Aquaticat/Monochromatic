@@ -381,6 +381,11 @@ export function occurrenceViewOf(
           place.slotEndOffset,
         ),
       }),
+    // THE SLICE'S WHOLE ORIGINAL goes with the place, so the sheets cut the notes
+    // between translators from the slice's English and keep the comments this
+    // original holds (`consistency-shown-notes.ts`).
+    sliceSource: place.slice
+      .sourceText,
     english: place.slice
       .current,
   };

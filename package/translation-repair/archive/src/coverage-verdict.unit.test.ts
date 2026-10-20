@@ -251,6 +251,38 @@ await describe({
         },),
 
         it({
+          name: 'anchors a quote copied across the place a note between translators was cut from, since the '
+            + 'coverage sheet shows the translation without its notes and a quote of it is found there and '
+            + 'nowhere in the stored text; the evidence it records is still text the document holds',
+          fn: async () => {
+            /** Translation whose first line ends with a note the archive\'s translators left each other. */
+            const noteText = 'The cat naps on its cushion.{/* 这句不太对劲 */}\nShe wakes at noon.\n';
+            const verdict = judgeCoverage({
+              voices: [
+                voiceOf({
+                  modelId: 'hf:cat/Cat-A' as RosterModelId,
+                  coverage: 'full',
+                  quote: 'The cat naps on its cushion.\nShe wakes at noon.',
+                },),
+              ],
+              document: {
+                text: noteText,
+                nodes: parseDocument({ text: noteText, },).nodes,
+              },
+              asked: 1,
+              quorumMet: true,
+              original: '猫在垫子上打盹，中午醒来。',
+            },);
+            expect(verdict.anchoredFull,).toBe(1,);
+            expect(verdict.kind,).toBe('carried',);
+            // THE EVIDENCE IS THE DOCUMENT'S OWN SLICE from the first anchor to the last, so it holds the note
+            // between them: a reader of the stored text (`anchorRegion`) must find it there word for word.
+            expect(verdict.evidence
+              .at(0,),).toBe(noteText.trimEnd(),);
+          },
+        },),
+
+        it({
           name: 'records the DOCUMENT\'S text as evidence rather than the quote it was sent, since a quote '
             + 'anchored across a soft wrap is by definition text the document does not hold literally, and '
             + 'evidence a reader cannot find is not evidence',

@@ -175,6 +175,8 @@ export async function runCoverageStage(
       ...((foreignRegions === undefined) ? {} : { foreignRegions, }),
       asked: reachableAsked,
       quorumMet: gather.quorumMet,
+      // The quotes were copied out of the translation as the sheet showed it, cut against this passage.
+      original: sourcePassage,
     },),
     findings: gather.findings,
   };

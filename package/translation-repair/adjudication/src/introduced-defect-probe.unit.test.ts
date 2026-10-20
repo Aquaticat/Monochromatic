@@ -250,6 +250,47 @@ await describe({
     },),
 
     it({
+      name: 'corroborates a quote the probers copied across a note between translators in the replacement, '
+        + 'because the sheet shows the replacement without the note and the screen reads the quote there',
+      fn: async () => {
+        /** Region whose replacement keeps a note that ends its first line. */
+        const noted: RepairRegion = {
+          envelopeId: 'envelope/nap',
+          issueIds: ['adjudicated/nap',],
+          before: 'The cat slept.\nShe woke at dusk.',
+          editorAfter: 'The cat sleeps.{/* 这句不太对劲 */}\nShe wakes at noon.',
+        };
+        /** Sheets the stage sent. */
+        const prompts: string[] = [];
+
+        const report = await runIntroducedDefectProbe({
+          client: catClient({
+            verdict: 'introduced-defect',
+            evidence: 'The cat sleeps.\nShe wakes at noon.',
+            prompts,
+          },),
+          proberModelIds: PROBERS,
+          sourceText: '猫睡了。她黄昏醒来。',
+          baselineText: noted.before,
+          regions: [noted,],
+          issues: [],
+          identityContext: '',
+          signal: new AbortController().signal,
+          perCallTimeoutMs: HANG_STOP_MS,
+          l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(prompts.some(function showsNote(prompt,): boolean {
+          return prompt.includes('这句不太对劲',);
+        },),).toBe(false,);
+        expect(report.regions[0]
+          ?.corroborated,).toBe(PROBERS.length,);
+        expect(report.regions[0]
+          ?.unanchored,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'sends no pre-existing defect list at all by default, which is what '
         + 'stopped the stage answering the same way whether or not damage was '
         + 'present, while still sending both texts the prober has to compare',

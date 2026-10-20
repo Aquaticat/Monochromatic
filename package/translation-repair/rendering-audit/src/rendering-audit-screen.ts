@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { wholeOpening, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
   type AnchoredSpan,
@@ -397,9 +398,11 @@ function screenFinding(
 
  @param report - reply as the wire guard accepted it
 
- @param sourceText - original
+ @param sourceText - original, whose own comments stay in the candidate as the
+ sheet showed it
 
- @param candidateText - rendering under audit
+ @param candidateText - rendering under audit as stored, read as the sheet
+ showed it: without the notes between translators
 
  @returns Findings that proved themselves, and why the rest fell
 
@@ -419,6 +422,18 @@ export function screenRenderingAudit(
     readonly candidateText: string;
   },
 ): ScreenedReport {
+  // THE AUDITOR'S LOCATORS ARE READ IN THE CANDIDATE AS THE SHEET SHOWED IT, without the notes between
+  // translators, cut against the original as `buildRenderingAuditMessages` cuts it: a locator across the place
+  // a note was cut from stands in no stored candidate. The spans found are offsets of that shown text, and
+  // corroboration compares them with each other only, all in the one text.
+  /**
+   The candidate as the auditor read it.
+   */
+  const candidateShown = withoutTranslatorsNotes({
+    text: candidateText,
+    original: sourceText,
+  },);
+
   /**
    Every claim, screened.
    */
@@ -427,7 +442,7 @@ export function screenRenderingAudit(
       return screenFinding({
         finding,
         sourceText,
-        candidateText,
+        candidateText: candidateShown,
       },);
     },);
 

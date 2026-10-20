@@ -110,7 +110,10 @@ await describe({
         // happened and translators' notes were cut from the judges.
         // Version 12 (2026-10-20) re-keys every ballot cast before a note
         // between translators alone on a quoted line was cut with its line.
-        expect(key,).toBe('8b5f5fe8d70c1d1abcb04c1ced90fea7116fc3596780790656a8a6abd7eafef2',);
+        // Version 13 (2026-10-20) re-keys every ballot cast before a candidate
+        // that respells a Han name the archive spells inside a sentence was
+        // refused.
+        expect(key,).toBe('a41ed7cdb778c31f07042bec533bf67080ba13386dcf8d2d7416f3bb1cf6205b',);
       },
     },),
     it({

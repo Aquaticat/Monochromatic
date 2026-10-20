@@ -5,6 +5,7 @@ import { MEASUREMENT_POLICY_BLOCK, } from '@monochromatic-dev/translation-repair
 import {
   isJsonArray,
   isJsonRecord,
+  withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 
@@ -166,13 +167,28 @@ export function buildRestorationJudgeMessages(
     return `REFERENCE ${index + 1}: ${reference.deletedText}`;
   },);
 
+  // THE JUDGE IS SHOWN THE REPAIRED TRANSLATION WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER (`withoutTranslatorsNotes`): no reader sees one,
+  // so a note may not stand as restored wording. Judgments resolve through the
+  // reference numbers, never through a quote, and the original's own comments
+  // stay in view.
   /**
-   Fence no enclosed text can reproduce.
+   The repaired translation as the judge reads it.
+   */
+  const repairedShown = withoutTranslatorsNotes({
+    text: repairedText,
+    original: sourceText,
+  },);
+
+  /**
+   Fence no enclosed text can reproduce, the repaired translation as written
+   and as shown.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       repairedText,
+      repairedShown,
       ...blocks,
     ],
   },);
@@ -188,7 +204,7 @@ export function buildRestorationJudgeMessages(
         content: `${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} REPAIRED TRANSLATION ${fence}
-${repairedText}
+${repairedShown}
 ${fence} REFERENCES ${fence}
 ${blocks.join('\n',)}
 ${fence} END ${fence}`,

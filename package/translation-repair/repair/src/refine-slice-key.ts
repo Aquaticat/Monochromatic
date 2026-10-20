@@ -280,8 +280,32 @@ import type {
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 10 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ Version 11 covers the refinement lane's judges no longer seeing a note between translators
+ (`document-structure/src/translators-note.ts`): the introduced-defect prober and the resolution checker that look over a
+ rewrite cut the notes from the archive's text against the original (12e147ae40, 5498ee860b), and the candidate selection slate of
+ the objection correction named its block of the current English "the CURRENT English translation, ... the ORIGINAL supports"
+ and its block of objections "claims to check against the ORIGINAL", which a search of the whole label took for the original, so
+ both were shown whole and every note in them counted as the original's own; the label's name decides now, the words before
+ its first comma, and both blocks are cut (12e147ae40). The key hashes the version, the shape of the run and the texts, not the
+ sheet, so a record written under the old sheets would be served under the new. Runs zheermao16 and CuspariaKLSY19 started on
+ `a5dc23c5bb`, which holds 10 (set in `aa0ab6ff0`), so a record may stand at 10 and the check that would let the change ride
+ inside it, no slice-cache record written after it shown beside a control that finds records, was not made, so the number
+ moves, as the repair slice and translate versions move for the same sheets. Over the 92 pinned English archives 10 hold a note
+ their original lacks (34 notes in all), so a sheet changes for at most those 10 entries. The consolidate version rides
+ inside 28 and the consistency, pairing and page title versions stay; their accounts stand beside them. No record has been
+ written at 11, which this change sets first.
+
+ Rides inside 11 too: a quote the introduced-defect prober copied from its sheet across the place a note between translators
+ was cut from used to stand in no stored text and was `unanchored`, and now anchors in the stored words on each side of the note
+ (`adjudication/src/introduced-defect-screen.ts`, `typography/src/locate-quote.ts`), so the damage claim that rolls a rewrite
+ back can stand where it could not. The key hashes the version, the shape of the run and the texts, not the sheet, so a record
+ written before would be served after. Of the 12 run logs in the agent directory, none started on a tip that holds `43e735f7da`,
+ where 11 was set, so none could write a record at 11 (the evidence of the logs' `START tip=` lines and
+ `git merge-base --is-ancestor`, as the repair slice version gives it), and the number does not move. Over the 92 pinned English
+ archives 10 hold a note their original lacks, so a record changes for at most those 10 entries.
  */
-export const REFINE_CACHE_VERSION = 10;
+export const REFINE_CACHE_VERSION = 11;
 
 /**
  Everything about this run that changes what the voices are ASKED.

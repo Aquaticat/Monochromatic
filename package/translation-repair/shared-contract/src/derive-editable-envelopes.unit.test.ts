@@ -131,5 +131,85 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'KEEPS A NOTE BETWEEN TRANSLATORS OUT OF EVERY ENVELOPE when the two spans of a quote across it stand either '
+        + 'side of the note, so an editor is never handed the note to rewrite or drop',
+      fn: async () => {
+        /**
+         Translation whose first line ends with a note, and the quote the critic copied across it.
+         */
+        const noted = 'The cat likes the sun.{/* 这句不太对劲 */}\nThen it naps on the cushion.\n';
+        /**
+         Where the note stands.
+         */
+        const noteStart = noted.indexOf('{/*',);
+        /**
+         Where the note ends.
+         */
+        const noteEnd = noted.indexOf('*/}',) + '*/}'.length;
+        /**
+         Where the second line's words start.
+         */
+        const laterStart = noted.indexOf('Then',);
+        /**
+         Where they end.
+         */
+        const laterEnd = noted.indexOf('.\n', laterStart,) + 1;
+        /**
+         One accepted issue whose claim holds the two stretches the quote came back as.
+         */
+        const crossing: AdjudicatedIssue = {
+          issueId: 'adjudicated/crossing',
+          status: 'accepted',
+          severity: 'minor',
+          claims: [
+            {
+              claimId: 'issue/crossing',
+              claim: {
+                category: 'accuracy/mistranslation',
+                severity: 'minor',
+                summary: 'The two lines drift from the original.',
+                spans: [
+                  {
+                    side: 'target',
+                    nodeId: 'block/1',
+                    nodeHash: hashContent({ content: noted, },),
+                    startOffset: 0,
+                    endOffset: noteStart,
+                    quotedText: noted.slice(
+                      0,
+                      noteStart,
+                    ),
+                  },
+                  {
+                    side: 'target',
+                    nodeId: 'block/1',
+                    nodeHash: hashContent({ content: noted, },),
+                    startOffset: laterStart,
+                    endOffset: laterEnd,
+                    quotedText: noted.slice(
+                      laterStart,
+                      laterEnd,
+                    ),
+                  },
+                ],
+              },
+            },
+          ],
+          tallies: {},
+        };
+        const { envelopes, } = deriveEditableEnvelopes({
+          issues: [crossing,],
+          targetText: noted,
+        },);
+
+        expect(envelopeSpansOf(envelopes,).map(function baseOf(span,): string {
+          return span.baseText;
+        },),).toEqual(['The cat likes the sun.', 'Then it naps on the cushion.',],);
+        expect(envelopeSpansOf(envelopes,).some(function holdsNote(span,): boolean {
+          return (span.startOffset < noteEnd) && (span.endOffset > noteStart);
+        },),).toBe(false,);
+      },
+    },),
   ],
 },);

@@ -6801,6 +6801,9 @@ importers:
       '@monochromatic-dev/translation-repair-typography':
         specifier: workspace:*
         version: link:../typography
+      pinyin-pro:
+        specifier: 'catalog:'
+        version: 3.29.5
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*

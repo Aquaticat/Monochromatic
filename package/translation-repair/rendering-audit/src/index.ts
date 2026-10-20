@@ -24,6 +24,11 @@ export {
   pairedPageNames,
 } from './page-name-glossary.ts';
 export { renderedLinks, } from './page-name-link-rendering.ts';
+export { type ProseNamePair, } from './prose-name-han.ts';
+export {
+  proseNamePairs,
+  respelledRendering,
+} from './prose-name-pairs.ts';
 export {
   type RepeatedTitleSpan,
   repeatedTitleSpans,

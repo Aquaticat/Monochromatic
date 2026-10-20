@@ -424,7 +424,11 @@ named for that subject and listed here.
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
   the cut of the translators' notes that left a bare quote line,
   joined two lines and dropped a carriage return (B703),
-  and the absolute naturalness review that showed its reviewers the notes (B704).
+  the absolute naturalness review that showed its reviewers the notes (B704),
+  a Han name the archive spells inside its sentence that no sheet or floor carried (B707),
+  and the judges,
+  critics,
+  auditors and pairers that saw the notes between translators (B708).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
@@ -480,7 +484,8 @@ named for that subject and listed here.
   Offsets,
   headings and slices of one text applied to another that does not line up with it,
   a leading byte order mark among the causes,
-  and a heading series that lost the original's numbers where the archive heads it by name alone (B695).
+  a heading series that lost the original's numbers where the archive heads it by name alone (B695),
+  and a quote copied from a sheet that cut the notes between translators searched in the stored text (B709).
 - [Audit ledger: repeated wording and ids on a page](audit-ledger-repeated-wording-and-ids-within-one-text.md):
   Titles,
   links,

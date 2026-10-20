@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
@@ -378,6 +379,17 @@ export async function attestCitedReferences(
    */
   const heard = gather.voices
     .length;
+  // THE QUOTES ARE CHECKED IN THE ARCHIVE AS THE SHEET SHOWED IT, without the notes between translators, cut
+  // against the same original (`buildReferenceAttestMessages`): a quote copied across the place a note was cut
+  // from is in the text the voice read and in no stored text. Positions placed in it are used only to group
+  // overlapping quotes of this one text, so no stored offset is taken from it.
+  /**
+   The archive as the voices read it.
+   */
+  const archiveShown = withoutTranslatorsNotes({
+    text: archiveText,
+    original: sourceText,
+  },);
   /**
    What the check made of every item, from every voice (ledger B25).
    */
@@ -387,7 +399,7 @@ export async function attestCitedReferences(
         modelId: voice.modelId,
         items: voice.value
           .attested,
-        archiveText,
+        archiveText: archiveShown,
         referenceContext,
       },);
     },);
@@ -424,7 +436,7 @@ export async function attestCitedReferences(
    */
   const extracted = mergedAttestations({
     verified,
-    archiveText,
+    archiveText: archiveShown,
     heard,
     needed,
   },);
@@ -434,7 +446,7 @@ export async function attestCitedReferences(
    */
   const candidates = mergedAttestations({
     verified,
-    archiveText,
+    archiveText: archiveShown,
     heard,
     needed: 1,
   },);

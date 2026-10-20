@@ -227,6 +227,11 @@ export {
 } from './consistency-sheet.ts';
 export { cutsShownWord, } from './consistency-shown-edge.ts';
 export {
+  englishWithoutNotes,
+  originalOfViews,
+  viewsWithoutNotes,
+} from './consistency-shown-notes.ts';
+export {
   BOUNDARY_TAG_NAMES,
   unitKindsOf,
 } from './consistency-shown-kinds.ts';

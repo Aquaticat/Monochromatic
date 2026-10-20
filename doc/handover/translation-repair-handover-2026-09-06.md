@@ -612,18 +612,32 @@ its "Next" list is still the queue the merge went ahead of.
     so the typography and page-check suites run after any change to `mise.lock`.
 5.  The next action,
     in order:
-    - Take the fix for the `zheermao16` class:
-      an agent works in the worktree `w235` from the brief `x15-fix/archive-handle-brief.md` under the agent scratch
-      directory,
-      on which sheets lack the archive's rendering of a Han name and which guard should keep it.
-      Gate it,
-      write its ledger entry,
-      land it,
-      move the branch worktree to the build that carries it,
-      and restart the rotation at `zheermao101`.
-    - The census of which model-facing sheets show the notes between translators runs in the worktree `w233`;
-      review,
-      gate and ledger it when it reports.
+    - The fix for the `zheermao16` class landed in `e429659e0b` after gate g126b
+      (2578 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B707):
+      the identity lines list each Han name the archive spells in a sentence,
+      and a floor refuses a candidate that respells one.
+    - The census of which model-facing sheets show the notes between translators merged as `1e955f206e`
+      after gate g127
+      (145 steps exited 0,
+      2605 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B708).
+    - A quote copied from a sheet that cut the notes is read in the shown text and mapped back to the stored text,
+      merged as `1851eab22e` after gate g128
+      (145 steps exited 0,
+      2608 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B709).
+      The census's commit `43e735f7da` carries the comment its message needed.
+    - Then move the branch worktree to the build that carries all three,
+      set the launch script's frozen digest to `sha256-tree-v1:ee83b531c14ff55286558920e0b21a0d5c43fda1325ffc4ede74c1bec7d6e2ef`
+      (printed from the gated build in `w241` by `x15-read/digest-build.ts` under the agent scratch directory,
+      the script that reproduced the digest of `a5dc23c5bb` from `w226`),
+      and restart the rotation at `zheermao101` with the run `zheermao17`.
+    - Post comments on `64d40cb4ff` and `768b081ee5`,
+      whose subjects name the wrong commit type (B709).
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

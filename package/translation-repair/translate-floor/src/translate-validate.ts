@@ -26,6 +26,7 @@ import { readMarkdownGround, } from './translate-floor-ground.ts';
 import { sourceCarryFindings, } from './translate-source-carry.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedOrResidueFindings, } from './translate-han-residue.ts';
+import { proseNameFindings, } from './translate-prose-name.ts';
 import { signerHandleFindings, } from './translate-signer-handle.ts';
 
 //region Translate validation
@@ -148,6 +149,12 @@ function grammarFreeVerdict(
       pageText,
     },),
     ...signerHandleFindings({
+      sourceText,
+      candidateText,
+      pageText,
+      declared,
+    },),
+    ...proseNameFindings({
       sourceText,
       candidateText,
       pageText,
@@ -483,6 +490,12 @@ export function validateTranslatedSlice(
     },),
     // LEDGER A17: a Han signer left in Han or romanized with no meaning.
     ...signerHandleFindings({
+      sourceText,
+      candidateText,
+      pageText,
+      declared,
+    },),
+    ...proseNameFindings({
       sourceText,
       candidateText,
       pageText,

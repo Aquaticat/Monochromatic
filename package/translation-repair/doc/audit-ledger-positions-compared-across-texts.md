@@ -467,3 +467,106 @@ none of an earlier entry.
 A rule that takes the archive's form as the page's is asked first of an archive that has no such form;
 the three red cases of this entry hold the bare,
 the mixed and the unheaded archive.
+
+## B709: a quote copied from a sheet that cut the notes between translators was searched in the stored text
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `074fd701f1`,
+fix `a9ed3d4ec3` (document-structure),
+`fe8c5c15a7` (typography)
+and `768b081ee5` (the callers),
+pins `0d4a78bca0`,
+cache accounts `64d40cb4ff` and `bb7052ce9d`,
+source scan fix `53f8f409cf`,
+merged onto main as `1851eab22e`,
+gated as g128
+(145 steps exited 0,
+2608 `[PASS]` lines,
+no `[FAIL]` line,
+49 source scans pass)
+and landed with this entry.
+
+The cut of B708 shows each judge,
+critic and auditor the English with the notes between translators taken out,
+for display only.
+Six places read a model's quote back against the text:
+the critic's issues (`resolveCriticIssue` through `locateQuote`),
+the coverage voices (`weighVoice`),
+the introduced-defect prober (`screenEvidence`),
+the rendering audit (`screenFinding`),
+the reference attestation and its screen of attested additions,
+and the consistency pass (`locatedRendering`).
+Each searched the stored text,
+so a quote that spans a place where a note was cut matched nothing there,
+and the claim was dropped,
+counted unanchored or left unlocated.
+Over the 92 pinned English archives 3 of the 34 notes stand where a quote can cross:
+zheermao101,
+XingZ60 and shihai4h,
+the first two in the readiness rotation.
+
+`shownTranslation` and `storedStretchesOf` (`document-structure/src/translators-note-view.ts`) map a span of the shown text
+back to the stored text as one stretch for each run of kept words it reaches,
+with whitespace trimmed at the edge a cut touches.
+`locateQuote` takes the original the sheet was cut against,
+searches the quote in the text as shown,
+judges ambiguity there,
+and binds each stretch to its blocks,
+so no anchor holds a note.
+Without the original nothing changes.
+One span covering the note was measured and refused:
+a replacement over it deleted the note at all three sites,
+and the carry (`archive-note-carry.ts`) puts a lost note back only after the slice's last block,
+outside the nested quote at zheermao101 and after an unrelated heading at XingZ60.
+With the stretches each replaced alone the note stays in place at all three,
+and `deriveEditableEnvelopes` keeps separate stretches as separate envelopes (pinned in `shared-contract`).
+
+The consistency pass is left as it was:
+it counts a place's end as its start plus the core's length and copies the core between places,
+so a core mapped across a note would carry it.
+A test pins that a crossing quote leaves its place unlocated,
+so the place is left alone,
+and that quotes either side of the note still locate.
+A quote that drops the `>   > ` marker across a quoted soft break fails in the shown text too,
+and stays out of scope.
+
+Over the pinned archives,
+built windows of 10,
+40 and 120 characters either side of each cut and whole lines,
+trimmed as a model would give them:
+245 cross a cut in 8 entries,
+0 resolved before and 245 resolve now,
+none anchors on a note or on characters other than the stored text's
+(zheermao101 10 of 10,
+XingZ60 9 of 9,
+shihai4h 10 of 10).
+Untrimmed,
+1 window resolved before and not now,
+one that ends in a lone line feed before a paragraph break,
+which the shown text reads as a hard break.
+These are built windows,
+not quotes models gave.
+
+No cache number moves.
+`SLICE_CACHE_VERSION` 40,
+`REFINE_CACHE_VERSION` 11,
+`TRANSLATE_SLICE_CACHE_VERSION` 22,
+`LANE_CONTEST_CACHE_VERSION` 13 and `CONSOLIDATE_CACHE_VERSION` 28 each carry this change inside them:
+none of the 12 run logs starts on a tip that holds the commit that set any of them
+(`git merge-base --is-ancestor` against each `START tip=` line,
+with a control that holds),
+so no record stands at those numbers.
+The rendering audit opens no cache,
+and the consistency cache holds ballots only.
+
+Two commit subjects name the wrong type,
+and each carries a comment that says so:
+`64d40cb4ff` has a `docs(*)` subject over lines that read `fix(...)` for TSDoc-only changes,
+and `768b081ee5` lists `fix(translation-repair-insertion)` for a change to a comment only.
+
+Recurrence:
+of B708.
+A text cut for display keeps a map back to the text it was cut from,
+and every reader of a model's reply that cites the shown text reads through that map,
+tested on a quote that crosses the cut.

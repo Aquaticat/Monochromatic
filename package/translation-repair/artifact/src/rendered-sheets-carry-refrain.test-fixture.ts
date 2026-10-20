@@ -23,6 +23,7 @@ import {
   joined,
   REFERENCES,
   type RenderedSheet,
+  TRANSLATORS_NOTE,
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 
 //region Refrain carry sheets
@@ -83,11 +84,11 @@ const CHOSEN_PLACE: CarryChosenPlace = {
     slotSource: '懒洋洋',
     english: {
       kind: 'present',
-      text: 'So this cat must be a lazy little treasure.',
+      text: `So this cat must be a lazy little treasure. ${TRANSLATORS_NOTE}`,
     },
   },
   span: 'So this cat must be a lazy little treasure',
-  paragraph: 'So this cat must be a lazy little treasure.',
+  paragraph: `So this cat must be a lazy little treasure. ${TRANSLATORS_NOTE}`,
   slot: 'lazy',
 };
 
@@ -160,7 +161,7 @@ export function refrainCarrySheets(): readonly RenderedSheet[] {
               {
                 label: 'CANDIDATE 2',
                 current: false,
-                text: 'So this cat must be a lazy little treasure, and so this cat must be a lazy little treasure.',
+                text: `So this cat must be a lazy little treasure, and so this cat must be a lazy little treasure. ${TRANSLATORS_NOTE}`,
               },
             ],
             identityContext: IDENTITY,

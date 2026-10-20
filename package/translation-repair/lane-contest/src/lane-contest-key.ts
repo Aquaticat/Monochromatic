@@ -233,8 +233,35 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 12 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ 13 covers the archive's spelling of a Han name written inside a sentence (zheermao101, run zheermao16, 2026-10-20): the
+ publication rule that decides which candidates the contest seats now refuses a candidate that writes the letters of the
+ archive's spelling under another spelling (`translate-floor/src/translate-prose-name.ts`), so a candidate seated under 12 may be
+ one the rule refuses, and the identity lines carry the archive's spellings (`rendering-audit/src/page-name-glossary.ts`). The
+ identity lines are part of the key, so an entry whose lines change asks a new question; the floor is not, so a record written
+ under the old rule for an entry whose lines do not change would be served under the new. Runs zheermao16 and CuspariaKLSY19 start
+ at `a5dc23c5bb`, which holds the commit that set 12 (`aa0ab6ff0`), so records at 12 are written there and the change cannot ride
+ inside it; the number moves, as the translate slice version moves with it. Over the 92 pinned English archives no archive is
+ refused as a candidate against itself, and one of the ten shipped pages under the agent runs is refused (zheermao16). The
+ consolidate version rides inside 28, the repair slice, refine, consistency, page title and pairing versions stay (their
+ sheets and floors are not this rule's, and the consistency floors run live). No record has been written at 13, which this
+ change sets first.
+
+ Rides inside 13 too: the cut of the notes between translators from the sheets of the other judges (12e147ae40, 5498ee860b,
+ 89df3896d4, eaab1b1ed9, fcd6d13fa3, ebac709b03, 7ee1755b24) and the label rule of the candidate selection slate, which this
+ lane's sheet does not use, since it labels its own blocks (`lane-contest-wire.ts`). Its sheet is what it was, so the cut moves no
+ number, as the page title version stays: the lexicon sheet shows source and Chinese titles only. The guard that renders every sheet with a planted note (88b5187179, c655a96182) and the restoration judge that
+ only the repair benchmark runs (36c5b02884) change no sheet this lane asks.
+
+ Rides inside 13 too: a quote the introduced-defect prober copied across the place a note between translators was cut from now
+ anchors in the stored words on each side of the note (`typography/src/locate-quote.ts`), so the corroborated damage claims of
+ the repair lane can differ for an entry holding such a note. The damage claims shown to the judges are part of this key
+ (`damage`, in `laneContestSliceKey`), so a slice whose claims change asks a new question, and this lane's sheet is what it was. The
+ coverage verdict is read by insertion admission and not by this lane, and is accounted beside the translate version. Of the 12 run logs in the agent directory, none started on a tip that holds `89ff91202e`, where 13 was set, so none could
+ write a record at 13 (the evidence of the logs' `START tip=` lines and `git merge-base --is-ancestor`, as the repair slice
+ version gives it), and the number does not move.
  */
-export const LANE_CONTEST_CACHE_VERSION = 12;
+export const LANE_CONTEST_CACHE_VERSION = 13;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into
