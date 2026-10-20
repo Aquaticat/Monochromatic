@@ -270,7 +270,7 @@ const HELD_READS: Readonly<Record<string, {
   },
   'provider/neuralwatt-quota.ts#describePlanSpend: Number': {
     calls: 1,
-    why: 'reads the text toFixed has just written from a finite number, a plain decimal; no spelling else is possible',
+    why: 'reads the text toFixed has just written from a number, a plain decimal; no other spelling is possible',
   },
   'provider/request-pace.ts#hyperRequestsPerHour: Number': {
     calls: 1,

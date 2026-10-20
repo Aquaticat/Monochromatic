@@ -572,8 +572,8 @@ const ALLOWLIST: readonly string[] = [
   'assembly/assembly-contract-fault.ts',
   'assembly/assembly-regressions.ts',
   'provider/bedrock-bound-ledger.ts',
-  // NeuralWatt's provider code was split into sibling modules to stay under the line limit. The cases for these
-  // seven sit in the tests of the modules that call them (`neuralwatt-ledger`, `neuralwatt-client`, `neuralwatt-quota`
+  // Sibling modules of NeuralWatt's ledger, client and quota code. Like the modules this list already holds, their
+  // cases sit in the tests of the modules that call them (`neuralwatt-ledger`, `neuralwatt-client`, `neuralwatt-quota`
   // and `neuralwatt-routing`), which reach them through the built package.
   'provider/neuralwatt-energy.ts',
   'provider/neuralwatt-ledger-config.ts',
