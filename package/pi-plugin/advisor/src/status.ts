@@ -7,11 +7,14 @@
 import type { ExtensionCommandContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
-import { maxContextCharsForAdvisorModel, } from './context.ts';
+import {
+  buildAdvisorSystemPrompt,
+  filterAdvisorScopeByOutputCapacity,
+  maxContextCharsForAdvisorModel,
+  selectAdvisorModel,
+} from '@monochromatic-dev/agent-harness-shared-advisor/ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
-import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
-import { selectAdvisorModel, } from './advisor-selection.ts';
+import { piAdvisorTranscriptSerialization, } from './run-context.ts';
 import type { AdvisorConfig, } from './types.ts';
 
 /**
@@ -83,6 +86,7 @@ export async function buildAdvisorStatus(
   const defaultContextBudget = defaultSelection === undefined
     ? undefined
     : maxContextCharsForAdvisorModel({
+      transcript: piAdvisorTranscriptSerialization,
       config,
       model: defaultSelection.selected
         .model,

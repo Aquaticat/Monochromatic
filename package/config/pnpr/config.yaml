@@ -27,6 +27,7 @@ auth:
               workflow_ref: 'Aquaticats/Monochromatic/.github/workflows/pnpr-publish.yml@refs/heads/main'
           registry: monochromatic-dev
           packages:
+            - '@monochromatic-dev/agent-harness-shared-advisor'
             - '@monochromatic-dev/agent-harness-shared-current-time-context'
             - '@monochromatic-dev/agent-harness-shared-model-selection'
             - '@monochromatic-dev/agent-harness-shared-search-fetch'

@@ -30,6 +30,7 @@
     "typebox": "*"
   },
   "dependencies": {
+    "@monochromatic-dev/agent-harness-shared-advisor": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
