@@ -3,12 +3,13 @@
  `其一` to `其十` reached the page in seven ordinal styles ("One:", none,
  "IV:", "The Fifth:", "Part Six:", "IX:", "Ten:") because slices are judged
  one at a time and a parallel series has no one style. The page renders a
- numbered heading series in the style most of its headings took, the
- earliest style on a tie, and drops the ordinals where most headings
- dropped them. Class eighty-nine (XingZ624, 2026-09-23): where the archive
- renders the series itself, the page takes the archive's style, so the
- style no longer moves run to run on the slices' plurality. Cat-themed
- invention throughout; no corpus content appears here.
+ numbered heading series in one style. Class eighty-nine (XingZ624,
+ 2026-09-23) took the archive's style wherever the archive headed the series,
+ and XingZ6015 (2026-10-20) showed that dropped nine numbers the original
+ gives: a bare archive numbers nothing. The style is now the archive's where
+ the archive numbers the series in one style, else the house style "Part
+ One:", whatever the lanes wrote. Cat-themed invention throughout; no corpus
+ content appears here.
 
  @module
  */
@@ -185,11 +186,39 @@ function headingsOf(
   },);
 }
 
+/**
+ Headings the bare archive's series ships for one set of lane renderings.
+
+ @param headings - rendered heading per slice, in slice order
+
+ @returns First line of each shipped replacement
+
+ @example
+ ```ts
+ const shipped = shippedFor({ headings: ['### Ginger', '### Sooty', '### Snowy',], },);
+ ```
+ */
+function shippedFor({ headings, }: { readonly headings: readonly string[]; },): readonly string[] {
+  return headingsOf({ replacements: unifyHeadingSeries({
+    slices: ARCHIVED,
+    replacements: headings.map(function row(
+      heading,
+      sliceIndex,
+    ) {
+      return rendered({
+        sliceIndex,
+        heading,
+      },);
+    },),
+  },).replacements, },);
+}
+
 await describe({
   name: 'a numbered heading series takes one ordinal style (class sixty-eight, XingZ616)',
   children: [
     it({
-      name: 'RENDERS every heading in the earliest style when the styles tie',
+      name: 'RENDERS every heading in the house style where the archive never headed the series, whatever '
+        + 'style the renderings tied or leaned to',
       fn: async () => {
         const unified = unifyHeadingSeries({
           slices: SLICES,
@@ -209,38 +238,11 @@ await describe({
           ],
         },);
         expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
-          '### One: Ginger',
-          '### Two: Sooty',
-          '### Three: Snowy',
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
         ],);
-        expect(unified.findings.length,).toBe(2,);
-      },
-    },),
-    it({
-      name: 'DROPS the ordinals where most headings dropped them, the archive\'s convention',
-      fn: async () => {
-        const unified = unifyHeadingSeries({
-          slices: SLICES,
-          replacements: [
-            rendered({
-              sliceIndex: 0,
-              heading: '### Ginger',
-            },),
-            rendered({
-              sliceIndex: 1,
-              heading: '### Sooty',
-            },),
-            rendered({
-              sliceIndex: 2,
-              heading: '### Part 3: Snowy',
-            },),
-          ],
-        },);
-        expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
-          '### Ginger',
-          '### Sooty',
-          '### Snowy',
-        ],);
+        expect(unified.findings.length,).toBe(3,);
       },
     },),
     it({
@@ -266,15 +268,15 @@ await describe({
         expect(unified.replacements
           .find(function second(replacement,): boolean {
             return replacement.sliceIndex === 1;
-          },)?.replacementText,).toBe('### The Second: Sooty\n\nCat.',);
+          },)?.replacementText,).toBe('### Part Two: Sooty\n\nCat.',);
       },
     },),
     it({
-      name: 'TAKES THE ARCHIVE\'S STYLE where the archive renders the series (class eighty-nine, XingZ624, '
-        + '2026-09-23): an archive without ordinals drops them from every heading whatever the renderings\' '
-        + 'plurality, and an archive with "Part" and a cardinal writes that on every heading',
+      name: 'TAKES THE ARCHIVE\'S STYLE where the archive numbers the series (class eighty-nine, XingZ624, '
+        + '2026-09-23): an archive with "Part" and a cardinal writes that on every heading, and an archive '
+        + 'without ordinals numbers nothing, so the house style stands (XingZ6015, 2026-10-20)',
       fn: async () => {
-        const dropped = unifyHeadingSeries({
+        const bare = unifyHeadingSeries({
           slices: ARCHIVED,
           replacements: [
             rendered({
@@ -291,12 +293,12 @@ await describe({
             },),
           ],
         },);
-        expect(headingsOf({ replacements: dropped.replacements, },),).toEqual([
-          '### Ginger',
-          '### Sooty',
-          '### Snowy',
+        expect(headingsOf({ replacements: bare.replacements, },),).toEqual([
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
         ],);
-        expect(dropped.findings[0],).toContain('the archive\'s own style',);
+        expect(bare.findings[0],).toContain('the house style',);
         const parted = unifyHeadingSeries({
           slices: PARTED,
           replacements: [
@@ -319,12 +321,15 @@ await describe({
           '### Part Two: Sooty',
           '### Part Three: Snowy',
         ],);
+        expect(parted.findings.length,).toBe(3,);
+        expect(parted.findings[0],).toContain('the archive\'s own style',);
       },
     },),
     it({
       name: 'READS A LEADER WORD THE TABLE NEVER LISTED (class ninety, XingZ625, 2026-09-23): "Poem Ten:" '
         + 'escaped the series and shipped beside nine bare headings; any word before a number word is its '
-        + 'leader, so the archive\'s bare style drops it and a plurality of "Song" writes it on every heading',
+        + 'leader, so the house style replaces it and an archive that numbers with "Song" writes it on every '
+        + 'heading',
       fn: async () => {
         const dropped = unifyHeadingSeries({
           slices: ARCHIVED,
@@ -344,13 +349,29 @@ await describe({
           ],
         },);
         expect(headingsOf({ replacements: dropped.replacements, },),).toEqual([
-          '### Ginger (Orange Cat)',
-          '### Sooty',
-          '### Snowy',
+          '### Part One: Ginger (Orange Cat)',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
         ],);
-        expect(dropped.findings.length,).toBe(1,);
+        expect(dropped.findings.length,).toBe(3,);
         const sung = unifyHeadingSeries({
-          slices: SLICES,
+          slices: [
+            section({
+              sliceIndex: 0,
+              source: '### 其一：橘猫',
+              target: '### Song One: Ginger',
+            },),
+            section({
+              sliceIndex: 1,
+              source: '### 其二：黑猫',
+              target: '### Song Two: Sooty',
+            },),
+            section({
+              sliceIndex: 2,
+              source: '### 其三：白猫',
+              target: '### Song Three: Snowy',
+            },),
+          ],
           replacements: [
             rendered({
               sliceIndex: 0,
@@ -394,11 +415,11 @@ await describe({
           ],
         },);
         expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
-          '### One: Ginger',
-          '### Two: Sooty：the black one',
-          '### Three: Snowy',
+          '### Part One: Ginger',
+          '### Part Two: Sooty：the black one',
+          '### Part Three: Snowy',
         ],);
-        expect(unified.findings,).toEqual([],);
+        expect(unified.findings.length,).toBe(3,);
       },
     },),
     it({
@@ -492,8 +513,8 @@ await describe({
       },
     },),
     it({
-      name: 'LETS THE RENDERINGS DECIDE WHERE THE ARCHIVE HEADS THE SERIES IN TWO STYLES, and counts a rendered '
-        + 'prefix that is no ordinal as no number at all (T8, twentieth batch)',
+      name: 'TAKES THE HOUSE STYLE WHERE THE ARCHIVE HEADS THE SERIES IN TWO STYLES, and counts a rendered '
+        + 'prefix that is no ordinal as no number at all, so its words stay in the title (T8, twentieth batch)',
       fn: async () => {
         const unified = unifyHeadingSeries({
           slices: [
@@ -521,11 +542,11 @@ await describe({
           ],
         },);
         expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
-          '### Kitten: Ginger',
-          '### Sooty',
-          '### Snowy',
+          '### Part One: Kitten: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
         ],);
-        expect(unified.findings[0],).toContain('most renderings\' style',);
+        expect(unified.findings[0],).toContain('the house style',);
       },
     },),
     it({
@@ -617,23 +638,6 @@ await describe({
         + 'sets of renderings (all bare, a "Roman" majority, a "Part" majority), one shipped series',
       fn: async () => {
         /**
-         Headings shipped for one set of renderings.
-         */
-        const shipped = function shipped(headings: readonly string[],): readonly string[] {
-          return headingsOf({ replacements: unifyHeadingSeries({
-            slices: ARCHIVED,
-            replacements: headings.map(function row(
-              heading,
-              sliceIndex,
-            ) {
-              return rendered({
-                sliceIndex,
-                heading,
-              },);
-            },),
-          },).replacements, },);
-        };
-        /**
          The series every run must ship.
          */
         const expected = [
@@ -641,9 +645,10 @@ await describe({
           '### Part Two: Sooty',
           '### Part Three: Snowy',
         ];
-        expect(shipped(['### Ginger', '### Sooty', '### Snowy',],),).toEqual(expected,);
-        expect(shipped(['### I: Ginger', '### II: Sooty', '### Snowy',],),).toEqual(expected,);
-        expect(shipped(['### Part One: Ginger', '### Part Two: Sooty', '### Part Three: Snowy',],),).toEqual(expected,);
+        expect(shippedFor({ headings: ['### Ginger', '### Sooty', '### Snowy',], },),).toEqual(expected,);
+        expect(shippedFor({ headings: ['### I: Ginger', '### II: Sooty', '### Snowy',], },),).toEqual(expected,);
+        expect(shippedFor({ headings: ['### Part One: Ginger', '### Part Two: Sooty', '### Part Three: Snowy',], },),)
+          .toEqual(expected,);
       },
     },),
     it({
