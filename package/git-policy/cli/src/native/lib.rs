@@ -296,6 +296,9 @@ pub mod repository_facts;
 /// Pure decision of the linked-worktree-only policy.
 pub mod rule_linked_worktree;
 
+/// The rejection texts of the linked-worktree-only policy.
+pub mod rule_linked_worktree_messages;
+
 /// Pure decision of the branch-worktree-only policy and its one-query remote guess.
 pub mod rule_branch_worktree;
 

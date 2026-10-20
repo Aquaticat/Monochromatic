@@ -1,17 +1,20 @@
 //! What:
 //!  Pure decision of the linked-worktree-only policy:
-//!  commands that can discard
-//!       worktree state run only in a linked worktree.
+//!  commands that can discard uncommitted state never run in the main worktree, and run in a linked worktree
+//!      only while it is clean.
 //! Why:
 //!  `git stash` that changes state,
-//!  a deleting `git clean` and a `git reset` that rewrites files can throw
-//!      away work in the primary checkout.
-//!  The policy confines them to linked worktrees.
-//!      This file decides from the arguments alone whether the command is guarded,
-//!  and
-//!      from the worktree kind the caller measured whether to reject it.
-//!  It starts no
-//!      process.
+//!  a deleting `git clean`,
+//!  a `git reset` that is not `--soft`,
+//!  `git restore`,
+//!  `git checkout` and `git switch` forms that overwrite files,
+//!  a forced `rm`,
+//!  `mv`,
+//!  or `checkout-index`,
+//!  `read-tree --reset` and an `--abort` can throw away work, and the loss leaves no record.
+//!  This file decides from the arguments alone whether the command is guarded and when,
+//!  and from the worktree kind and dirtiness the caller measured whether to reject it.
+//!  It starts no process.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -32,11 +35,19 @@
 /// import { cleanChangesWorktree, parseCleanRegion } from './command_clean.ts';
 /// ```
 use super::command_clean::{CleanRegion, clean_changes_worktree, parse_clean_region};
+use super::command_discard::{
+    Discard, abort_discard, checkout_discard, force_discard, read_tree_discard, restore_discard,
+    switch_discard,
+};
 use super::command_options::OptionError;
-use super::command_reset::{ResetRegion, parse_reset_region, reset_changes_worktree};
+use super::command_reset::{ResetMode, ResetRegion, parse_reset_region};
 use super::command_stash::{parse_stash_region, stash_changes_state};
 use super::effective_target::EffectiveTarget;
 use super::global_arguments::command_tokens;
+use super::rule_worktree_dirty::DirtyScope;
+pub use super::rule_linked_worktree_messages::{
+    dirty_worktree_message, main_worktree_message, outside_worktree_message,
+};
 /// What:
 ///  `OsString` is owned operating-system text of raw bytes.
 ///  Sibling the reader might
@@ -71,21 +82,37 @@ pub const LINKED_WORKTREE_REQUIRED_CODE: &str = "linked-worktree-required";
 ///       `#[derive(...)]` asks the compiler to generate copying,
 ///  debug printing and `==`.
 /// Why:
-///   Each has its own rejection text.
+///   Each has its own rejection text; a variant names the forms of its subcommand that discard.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type GuardedCommand = 'stash' | 'clean' | 'reset';
+/// type GuardedCommand = 'stash' | 'clean' | 'reset' | 'restore' | 'checkout' | 'switch' | 'rm' | 'mv'
+///   | 'checkout-index' | 'read-tree' | 'abort';
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum GuardedCommand {
-    /// Every `git stash` form that can change the worktree, the index or the stash list.
+    /// Every `git stash` form that changes state.
     Stash,
     /// A `git clean` that is not a dry run.
     Clean,
-    /// A `git reset` with `--hard`,
-    ///  `--merge` or `--keep`.
+    /// A `git reset` in any mode but `--soft`.
     Reset,
+    /// Every `git restore` form.
+    Restore,
+    /// A `git checkout` with paths, `--force`, `--patch`, `--ours` or `--theirs`, or one that moves `HEAD`.
+    Checkout,
+    /// A `git switch` with `--force` or `--discard-changes`, or one that moves `HEAD`.
+    Switch,
+    /// A `git rm` with `--force`.
+    Remove,
+    /// A `git mv` with `--force`.
+    Move,
+    /// A `git checkout-index` with `--force`.
+    CheckoutIndex,
+    /// A `git read-tree` with `--reset`.
+    ReadTree,
+    /// `--abort` of `merge`, `rebase`, `cherry-pick`, `revert` or `am`.
+    Abort,
 }
 
 /// What:
@@ -95,7 +122,8 @@ pub enum GuardedCommand {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type LinkedWorktreeDecision = { kind: 'pass' } | { kind: 'needs-effective-target'; command: GuardedCommand };
+/// type LinkedWorktreeDecision = { kind: 'pass' } | { kind: 'needs-effective-target'; command: GuardedCommand }
+///   | { kind: 'when-dirty'; command: GuardedCommand };
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinkedWorktreeDecision {
@@ -103,62 +131,118 @@ pub enum LinkedWorktreeDecision {
     ///  a harmless form,
     ///  or a region Git refuses.
     Pass,
-    /// The caller classifies the worktree the command targets,
-    ///  then calls
-    /// `resolve_linked_worktree`.
+    /// The form overwrites or deletes by itself:
+    ///  the caller classifies the worktree the command targets,
+    ///  then calls `resolve_linked_worktree`;
+    ///  a linked worktree is still judged by whether it is dirty.
     NeedsEffectiveTarget(GuardedCommand),
+    /// The form moves `HEAD` and loses nothing unless local changes exist:
+    ///  it is rejected in any worktree, the main one included, only while the worktree is dirty.
+    WhenDirty(GuardedCommand),
 }
 
 /// What:
-///  Whether a guarded region can change worktree files.
-///  `&[u8]` borrows the
-///       subcommand word;
-///  `Option<T>` is "a value or nothing":
-///  nothing for another command.
-///       `Result<A, B>` is "either success `A` or failure `B`".
+///  The files that count as uncommitted state for a guarded command.
 /// Why:
-///   `stash` is guarded in every form,
-///  as the incumbent guards it;
-///  `clean` and `reset`
-///       only in the forms Git lets touch files.
-/// Gotcha:
-///  A trailing `?` returns Git's refusal to our caller,
-///  or unwraps the facts.
+///   A `clean` deletes untracked files, so they count for it; every other form loses tracked changes only.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function guardedCommand(word: string, region: string[]): GuardedCommand | undefined; // throws OptionError
+/// function dirtyScope(command: GuardedCommand): DirtyScope;
 /// ```
-fn guarded_command(
+pub fn dirty_scope(command: GuardedCommand) -> DirtyScope {
+    if command == GuardedCommand::Clean {
+        return DirtyScope::TrackedAndUntracked;
+    }
+    return DirtyScope::Tracked;
+}
+
+/// What:
+///  Turn one classifier reading into a decision.
+/// Why:
+///   Every command shares this step: an overwrite needs the worktree kind, a `HEAD` move needs the dirtiness,
+///  and a harmless region needs nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function decided(command: GuardedCommand, reading: Discard): LinkedWorktreeDecision;
+/// ```
+fn decided(command: GuardedCommand, reading: Discard) -> LinkedWorktreeDecision {
+    match reading {
+        Discard::Harmless => return LinkedWorktreeDecision::Pass,
+        Discard::MovesHead => return LinkedWorktreeDecision::WhenDirty(command),
+        Discard::Overwrites => return LinkedWorktreeDecision::NeedsEffectiveTarget(command),
+    }
+}
+
+/// What:
+///  Whether a guarded subcommand word and its region can discard, and in which way.
+///  `&[u8]` borrows the subcommand word;
+///  `Result<A, B>` is "either success `A` or failure `B`".
+/// Why:
+///   Each subcommand is read with its own Git grammar, so `rm -- -f` is a path and `rm -rf` is a force.
+///  A region Git refuses is the refusal, and Git then discards nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function guardedDecision(word: string, region: string[]): LinkedWorktreeDecision; // throws OptionError
+/// ```
+fn guarded_decision(
     word: &[u8],
     region: &[OsString],
-) -> Result<Option<GuardedCommand>, OptionError> {
+) -> Result<LinkedWorktreeDecision, OptionError> {
     if word == b"stash" {
         // A region the stash parser refuses stays guarded, as every stash form was before the read-only forms.
         let reads_only: bool = parse_stash_region(region, &[])
             .is_ok_and(|facts| { return !stash_changes_state(facts.subcommand); });
         if reads_only {
-            return Ok(None);
+            return Ok(LinkedWorktreeDecision::Pass);
         }
-        // `Ok(Some(x))` is success carrying a present value.
-        return Ok(Some(GuardedCommand::Stash));
+        return Ok(LinkedWorktreeDecision::NeedsEffectiveTarget(GuardedCommand::Stash));
     }
     if word == b"clean" {
         // `&[]` is an empty flag list: wrapper controls were removed before this point.
         let facts: CleanRegion = parse_clean_region(region, &[])?;
-        // `&facts` lends the facts read-only.
         if clean_changes_worktree(&facts) {
-            return Ok(Some(GuardedCommand::Clean));
+            return Ok(LinkedWorktreeDecision::NeedsEffectiveTarget(GuardedCommand::Clean));
         }
+        return Ok(LinkedWorktreeDecision::Pass);
     }
     if word == b"reset" {
         let facts: ResetRegion = parse_reset_region(region, &[])?;
-        if reset_changes_worktree(&facts) {
-            return Ok(Some(GuardedCommand::Reset));
+        // Every mode but `--soft` replaces the index, and with it the staged entries.
+        if facts.mode != Some(ResetMode::Soft) {
+            return Ok(LinkedWorktreeDecision::NeedsEffectiveTarget(GuardedCommand::Reset));
+        }
+        return Ok(LinkedWorktreeDecision::Pass);
+    }
+    if word == b"checkout" {
+        return Ok(decided(GuardedCommand::Checkout, checkout_discard(region)?));
+    }
+    if word == b"switch" {
+        return Ok(decided(GuardedCommand::Switch, switch_discard(region)?));
+    }
+    if word == b"restore" {
+        return Ok(decided(GuardedCommand::Restore, restore_discard(region)));
+    }
+    if word == b"rm" {
+        return Ok(decided(GuardedCommand::Remove, force_discard(region)));
+    }
+    if word == b"mv" {
+        return Ok(decided(GuardedCommand::Move, force_discard(region)));
+    }
+    if word == b"checkout-index" {
+        return Ok(decided(GuardedCommand::CheckoutIndex, force_discard(region)));
+    }
+    if word == b"read-tree" {
+        return Ok(decided(GuardedCommand::ReadTree, read_tree_discard(region)));
+    }
+    for aborting in [&b"merge"[..], b"rebase", b"cherry-pick", b"revert", b"am"] {
+        if word == aborting {
+            return Ok(decided(GuardedCommand::Abort, abort_discard(region)));
         }
     }
-    // `Ok(None)` is success carrying "not guarded".
-    return Ok(None);
+    return Ok(LinkedWorktreeDecision::Pass);
 }
 
 /// What:
@@ -182,93 +266,23 @@ pub fn decide_linked_worktree(arguments: &[OsString]) -> LinkedWorktreeDecision 
         return LinkedWorktreeDecision::Pass;
     };
     // `.as_encoded_bytes()` lends the raw bytes of the subcommand word.
-    let guarded: Result<Option<GuardedCommand>, OptionError> =
-        guarded_command(word.as_encoded_bytes(), region);
-    // `if let Ok(Some(command)) = ...` runs only for an accepted, guarded region.
-    if let Ok(Some(command)) = guarded {
-        return LinkedWorktreeDecision::NeedsEffectiveTarget(command);
-    }
-    return LinkedWorktreeDecision::Pass;
-}
-
-/// What:
-///  The rejection text for a command run where there is no worktree.
-///  `&'static str`
-///       is text baked into the program.
-/// Why:
-///   The text says what the command could destroy and how to run it safely.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function outsideWorktreeMessage({ command }): string;
-/// ```
-pub fn outside_worktree_message(command: GuardedCommand) -> &'static str {
-    // `match` picks one arm per variant; the compiler refuses a forgotten variant.
-    match command {
-        GuardedCommand::Stash => {
-            return "cli-git: git stash requires the effective working directory to be inside a linked git worktree. \
-                    Refusing to run from outside a worktree because git stash can revert filesystem state outside what the caller expected. \
-                    cd to a linked worktree root or pass -C <linked-worktree-root> before stash.";
-        }
-        GuardedCommand::Clean => {
-            return "cli-git: state-changing git clean requires the effective working directory to be inside a linked git worktree. \
-                    Refusing to run from outside a worktree because git clean can delete filesystem state outside what the caller expected. \
-                    cd to a linked worktree root or pass -C <linked-worktree-root> before clean, or use --dry-run to inspect.";
-        }
-        GuardedCommand::Reset => {
-            return "cli-git: destructive git reset modes require the effective working directory to be inside a linked git worktree. \
-                    Refusing to run from outside a worktree because git reset --hard, --merge, and --keep can rewrite tracked files outside what the caller expected. \
-                    cd to a linked worktree root or pass -C <linked-worktree-root> before reset.";
-        }
-    }
-}
-
-/// What:
-///  The rejection text for a command run in the main worktree.
-/// Why:
-///   The text says what the command could destroy and where to run it instead.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function mainWorktreeMessage({ command }): string;
-/// ```
-pub fn main_worktree_message(command: GuardedCommand) -> &'static str {
-    match command {
-        GuardedCommand::Stash => {
-            return "cli-git: git stash is rejected in the main git worktree. \
-                    Refusing to run because git stash can revert primary checkout filesystem state outside what the caller expected. \
-                    Use a linked worktree for stash operations.";
-        }
-        GuardedCommand::Clean => {
-            return "cli-git: state-changing git clean is rejected in the main git worktree. \
-                    Refusing to run because git clean can delete primary checkout filesystem state outside what the caller expected. \
-                    Use a linked worktree for state-changing clean operations, or use --dry-run to inspect.";
-        }
-        GuardedCommand::Reset => {
-            return "cli-git: destructive git reset modes are rejected in the main git worktree. \
-                    Refusing to run because git reset --hard, --merge, and --keep can rewrite primary checkout files outside what the caller expected. \
-                    Use a linked worktree for destructive reset operations.";
-        }
-    }
+    return guarded_decision(word.as_encoded_bytes(), region).unwrap_or(LinkedWorktreeDecision::Pass);
 }
 
 /// What:
 ///  Decide from the measured worktree kind:
 ///  the rejection text,
-///  or nothing to let the
-///       command through.
+///  or nothing to let the command through for now.
 /// Why:
-///   A linked worktree and an allowlisted tool cache are the two places where these
-///       commands may run.
+///   The main worktree and a place without a worktree reject at once;
+///  a linked worktree and an allowlisted tool cache pass this step,
+///  and a linked worktree is then judged by its dirtiness.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function resolveLinkedWorktree(command: GuardedCommand, target: EffectiveTarget): string | undefined;
 /// ```
-pub fn resolve_linked_worktree(
-    command: GuardedCommand,
-    target: EffectiveTarget,
-) -> Option<&'static str> {
+pub fn resolve_linked_worktree(command: GuardedCommand, target: EffectiveTarget) -> Option<String> {
     match target {
         // `Some(x)` is the "present" case of `Option`; `None` is the "absent" case.
         EffectiveTarget::OutsideWorktree => return Some(outside_worktree_message(command)),

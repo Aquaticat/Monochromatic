@@ -619,7 +619,10 @@ fn worktree_policies_read_the_location() {
             located(linked_worktree("/r", "/w")),
             &[]
         ),
-        (forwards(&["reset", "--hard"]), location_only())
+        (
+            forwards(&["reset", "--hard"]),
+            vec![String::from("location"), String::from("dirty:Tracked")]
+        )
     );
     assert_eq!(
         run(
