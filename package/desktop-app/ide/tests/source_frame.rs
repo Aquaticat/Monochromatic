@@ -2,12 +2,12 @@
 
 /// Consumer APIs use the same stamp as the native rendering boundary.
 use ide_app::{
+    code_colors::CodeColors,
     document::{Document, ReadingPosition},
     find::{FindRange, FindRanges},
     shaped_text::Viewport,
     source_frame::FrameStamp,
     source_style::{SourceStyles, StyleSpan},
-    code_colors::CodeColors,
 };
 
 /// Source-image fixture with explicit physical geometry and system colors.

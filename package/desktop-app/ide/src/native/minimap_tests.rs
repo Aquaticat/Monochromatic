@@ -798,7 +798,8 @@ fn a_new_wrap_width_rebuilds_the_picture() {
                 let size = current.minimap.size;
                 let followed = match current.minimap.shown {
                     Some(shown) => {
-                        shown.rows != before.rows && shown.size == (size.0.to_bits(), size.1.to_bits())
+                        shown.rows != before.rows
+                            && shown.size == (size.0.to_bits(), size.1.to_bits())
                     }
                     None => false,
                 };
@@ -1181,7 +1182,14 @@ fn each_kind_of_change_has_its_own_pace() {
     // A picture keyed before the rows were laid out has no mapping to move, so wait for the one that has.
     {
         let mut waiting = Waiting::slow();
-        while opened.source.borrow().minimap.shown.and_then(|shown| return shown.rows).is_none() {
+        while opened
+            .source
+            .borrow()
+            .minimap
+            .shown
+            .and_then(|shown| return shown.rows)
+            .is_none()
+        {
             waiting.step("no picture was made for a laid out mapping");
         }
     }

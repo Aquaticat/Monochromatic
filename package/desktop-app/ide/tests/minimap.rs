@@ -283,7 +283,10 @@ fn the_bands_to_keep_surround_the_part_of_the_picture_in_view() {
     // A short text is one window of all its bands.
     let short = Geometry::new(10.0 * CODE_ROW, 600.0);
     assert_eq!(short.bands_for(0.0, step, usize::MAX), 0..1);
-    assert_eq!(Geometry::new(0.0, 600.0).bands_for(0.0, step, usize::MAX), 0..0);
+    assert_eq!(
+        Geometry::new(0.0, 600.0).bands_for(0.0, step, usize::MAX),
+        0..0
+    );
 }
 
 /// A texture holds only so many bands:
@@ -301,7 +304,11 @@ fn a_cap_on_the_bands_keeps_those_from_the_top_of_the_track() {
     assert!(free.len() > 20, "the free window is {} bands", free.len());
     for cap in [1_usize, 8, 16, 64] {
         let capped = geometry.bands_for(offset, step, cap);
-        assert!(capped.len() <= cap, "{} bands past the cap {cap}", capped.len());
+        assert!(
+            capped.len() <= cap,
+            "{} bands past the cap {cap}",
+            capped.len()
+        );
         assert!(capped.start >= free.start && capped.end <= free.end);
         if cap < free.len() {
             let shown_from = geometry.slide(offset) / geometry.scale();

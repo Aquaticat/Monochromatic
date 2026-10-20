@@ -266,7 +266,10 @@ fn a_picture_taller_than_the_device_limit_is_cut_to_the_limit() {
     // The window is 12,000 px tall at scale 1: its track is 12,000 px, past the harness device's 8192.
     resized_to(&opened, 12_000.0, 9_000.0);
     let limit = texture_dimension();
-    assert_eq!(limit, 8192, "the native tests run on a device capped to 8192 px");
+    assert_eq!(
+        limit, 8192,
+        "the native tests run on a device capped to 8192 px"
+    );
     let track = window.get_minimap_track() * window.window().scale_factor();
     assert!(track > limit as f32, "the track is {track} px");
     let image = minimap_pixels(window, &opened.source).expect("a texture");
@@ -311,7 +314,10 @@ fn a_picture_taller_than_the_device_limit_is_cut_to_the_limit() {
     for chunk in 0..wanted as usize {
         let first = chunk * ide_app::minimap::CHUNK_ROWS as usize * width;
         let last = ((chunk + 1) * ide_app::minimap::CHUNK_ROWS as usize * width).min(pixels.len());
-        let inked = pixels[first..last].iter().filter(|pixel| return pixel.a > 0).count();
+        let inked = pixels[first..last]
+            .iter()
+            .filter(|pixel| return pixel.a > 0)
+            .count();
         assert!(inked > 0, "chunk {chunk} of the slice is blank");
     }
     window.hide().expect("close minimap window");

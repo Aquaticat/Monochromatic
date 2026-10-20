@@ -14,9 +14,7 @@ use ide_app::{
     document::{Document, ReadingAffinity, ReadingPosition},
     find::FindRange,
     line_rows::LineRows,
-    minimap::{
-        CHUNK_ROWS, Cancel, Fills, Input, LineCache, Source, build,
-    },
+    minimap::{CHUNK_ROWS, Cancel, Fills, Input, LineCache, Source, build},
     row_map::RowMap,
     shaped_text::TextShaper,
     source_style::StyleSpan,
@@ -58,7 +56,8 @@ impl Cancel for Never {
 
 /// The glyphs with the most outline in the code font:
 /// wide letters, digits and symbols made of many curves.
-const DENSE: &str = "W@%&#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%";
+const DENSE: &str =
+    "W@%&#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%";
 
 /// A text of `lines` lines that fill every visual row to the wrap width with [`DENSE`].
 fn dense_text(lines: usize) -> String {
@@ -102,7 +101,9 @@ fn chunks_of(lines: usize, bands: usize, crowded: bool) -> Vec<TileScene> {
     let mut rows = LineRows::plain(document.text().len_lines());
     let mut measured = Vec::new();
     for line in 0..document.text().len_lines() {
-        let count = shaper.wrapped_row(&document, line, 1.0, 730.0).visual_rows();
+        let count = shaper
+            .wrapped_row(&document, line, 1.0, 730.0)
+            .visual_rows();
         measured.push((line, count));
     }
     rows.apply(measured);
@@ -187,7 +188,10 @@ fn together_and_apart(chunks: &[TileScene], count: usize) -> (usize, usize, u32)
     let mut scene = vello::Scene::new();
     let mut row = 0.0;
     for chunk in kept {
-        scene.append(&chunk.scene, Some(vello::kurbo::Affine::translate((0.0, row))));
+        scene.append(
+            &chunk.scene,
+            Some(vello::kurbo::Affine::translate((0.0, row))),
+        );
         row += f64::from(chunk.height);
     }
     let together = inked(&TileScene {

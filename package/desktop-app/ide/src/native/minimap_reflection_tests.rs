@@ -230,7 +230,10 @@ fn compare_at(reader: &Reader, shift: (i64, i64)) -> Found {
             for channel in 0..3 {
                 let difference = (shown[channel] - sums[channel]).abs();
                 if difference > 25.0 {
-                    eprintln!("WORSTPX row {row} col {column} ch {channel} shown {:.1} avg {:.1} alpha {} bg {}", shown[channel], sums[channel], picture.a, background.r);
+                    eprintln!(
+                        "WORSTPX row {row} col {column} ch {channel} shown {:.1} avg {:.1} alpha {} bg {}",
+                        shown[channel], sums[channel], picture.a, background.r
+                    );
                 }
                 found.worst = found.worst.max(difference.round() as u8);
                 total += difference;

@@ -14,10 +14,10 @@
 use super::{Inner, Outcome, Picture, Placement, Target};
 /// The scene of a chunk and the size of its region.
 use ide_app::tile_scene::TileScene;
-/// Slint's own wgpu types.
-use slint::wgpu_30::wgpu;
 /// The image import.
 use slint::Image;
+/// Slint's own wgpu types.
+use slint::wgpu_30::wgpu;
 
 /// The scratch textures kept at most;
 /// the chunks of a slice are all one size but the last.
@@ -113,7 +113,13 @@ impl Inner {
         let limit = device.limits().max_texture_dimension_2d;
         let ragged = chunks.iter().any(|chunk| return chunk.width != width);
         if ragged || width == 0 || height == 0 || width > limit || height > limit {
-            tracing::error!(width, height, limit, ragged, "a minimap slice does not fit a texture of this device");
+            tracing::error!(
+                width,
+                height,
+                limit,
+                ragged,
+                "a minimap slice does not fit a texture of this device"
+            );
             outcome.errors.push(format!(
                 "Cannot draw source: a {width}x{height} minimap does not fit a texture of this device \
                  (at most {limit} on a side)"

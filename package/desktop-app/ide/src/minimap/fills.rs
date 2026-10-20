@@ -197,7 +197,12 @@ pub fn fill_items(view: &ShapedView, fills: Fills) -> Vec<Item> {
         let cell = cell_of(rectangle, view.origin, scale, (1.0, 1.0, -1.0));
         fill(&mut items, cell, 0, faded(fills.foreground, MATCH_FILL));
         let width = (MATCH_BOUNDARY_WIDTH * scale).round() as i64;
-        fill(&mut items, cell, width.max(1), faded(fills.foreground, MATCH_BOUNDARY));
+        fill(
+            &mut items,
+            cell,
+            width.max(1),
+            faded(fills.foreground, MATCH_BOUNDARY),
+        );
     }
     return items;
 }

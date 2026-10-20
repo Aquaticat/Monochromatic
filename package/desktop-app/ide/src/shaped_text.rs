@@ -84,8 +84,8 @@ mod limit;
 /// export { RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, bandClip, fitClip, fitViewport, rasterFits, rasterWidth, tileCap } from './limit';
 /// ```
 pub use limit::{
-    DEFAULT_TEXTURE_DIMENSION, MAX_RASTER_BYTES, RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, band_clip, fit_clip,
-    fit_viewport, raster_fits, raster_width, set_texture_dimension, texture_dimension,
+    DEFAULT_TEXTURE_DIMENSION, MAX_RASTER_BYTES, RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, band_clip,
+    fit_clip, fit_viewport, raster_fits, raster_width, set_texture_dimension, texture_dimension,
     texture_fits, tile_cap,
 };
 
@@ -348,7 +348,14 @@ impl TextShaper {
         let last = document.text().len_lines().saturating_sub(1);
         let baseline = self.baseline(scale);
         self.shaped_rows += 1;
-        return self.shape_row(document, (row.min(last), 0.0), scale, styles, baseline, wrap);
+        return self.shape_row(
+            document,
+            (row.min(last), 0.0),
+            scale,
+            styles,
+            baseline,
+            wrap,
+        );
     }
 
     /// Prepare a visible viewport of a text without virtual rows:

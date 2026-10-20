@@ -12,6 +12,8 @@ use anyhow::{Context, Result, bail};
 use ide_app::annotation::Mark;
 /// The annotation inks.
 use ide_app::annotation_layout::AnnotationColors;
+/// The palette whose inks the picture uses.
+use ide_app::code_colors::CodeColors;
 /// Canonical source,
 /// cloned as a rope snapshot.
 use ide_app::document::Document;
@@ -31,12 +33,10 @@ use ide_app::shaped_text::TextShaper;
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
-/// The palette whose inks the picture uses.
-use ide_app::code_colors::CodeColors;
-/// Blocks of virtual rows.
-use ide_app::virtual_row::Block;
 /// The scene and the size of the texture it is drawn into.
 use ide_app::tile_scene::TileScene;
+/// Blocks of virtual rows.
+use ide_app::virtual_row::Block;
 /// Owned snapshots and the newest-request flag are shared between the window thread and the worker.
 use std::{
     panic::{AssertUnwindSafe, catch_unwind},

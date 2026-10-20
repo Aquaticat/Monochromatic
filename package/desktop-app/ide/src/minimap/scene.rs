@@ -21,8 +21,6 @@
 
 /// The paint items cut into the chunks.
 use super::chunks::cut;
-/// Shaped lines kept by what shaped them.
-use super::line_cache::{LineCache, line_key};
 /// The marks drawn under the glyphs.
 use super::fills::{Fills, fill_items};
 /// The geometry of the picture:
@@ -30,6 +28,8 @@ use super::fills::{Fills, fill_items};
 use super::geometry::Geometry;
 /// The width of the text the picture covers.
 use super::horizontal::text_span;
+/// Shaped lines kept by what shaped them.
+use super::line_cache::{LineCache, line_key};
 /// The rows of the picture a slice holds.
 use super::plan::{MIN_SCALE, chunk_rows, slice_rows};
 /// Diagnostic marks.
@@ -48,19 +48,17 @@ use crate::find_paint::rectangles;
 /// The vertical mapping the lines are placed by.
 use crate::row_map::{CODE_ROW, RowMap};
 /// Shaping, and the frame it prepares.
-use crate::shaped_text::{
-    ShapedRow, ShapedView, TextShaper, Viewport, line_work, raster_width,
-};
+use crate::shaped_text::{ShapedRow, ShapedView, TextShaper, Viewport, line_work, raster_width};
 /// Syntax classes by character offset.
 use crate::source_style::StyleSpan;
 /// The paint items of a shaped view, and the scene they encode to.
 use crate::tile_scene::{Item, TileScene, encode, tile_items};
 /// Blocks of virtual rows.
 use crate::virtual_row::Block;
-/// Vello's scene and transforms.
-use vello::{Scene, kurbo::Affine};
 /// Blocks are shared between the window and the worker; a window of bands is a range of numbers.
 use std::{ops::Range, sync::Arc};
+/// Vello's scene and transforms.
+use vello::{Scene, kurbo::Affine};
 
 /// What:
 ///  Work,
@@ -282,7 +280,12 @@ fn shape_lines(
                 let cost = line_work(source.document, line);
                 if cost > left {
                     stats.skipped += 1;
-                    tracing::warn!(line, cost, left, "a minimap line was left blank: the work budget cannot pay for it");
+                    tracing::warn!(
+                        line,
+                        cost,
+                        left,
+                        "a minimap line was left blank: the work budget cannot pay for it"
+                    );
                     let template = blank.get_or_insert_with(|| {
                         let empty = Document::new("\n");
                         return shaper.shape_line(&empty, 0, source.scale, &[], source.wrap);
@@ -292,8 +295,13 @@ fn shape_lines(
                     left -= cost;
                     stats.work += cost;
                     stats.shaped += 1;
-                    let shaped =
-                        shaper.shape_line(source.document, line, source.scale, source.styles, source.wrap);
+                    let shaped = shaper.shape_line(
+                        source.document,
+                        line,
+                        source.scale,
+                        source.styles,
+                        source.wrap,
+                    );
                     cache.put(key, shaped.clone());
                     shaped
                 }
@@ -458,7 +466,9 @@ pub fn slice_items(
     let mut items = fill_items(&view, source.fills);
     match tile_items(&view, source.colors, 0.0) {
         Ok(drawn) => items.extend(drawn),
-        Err(error) => tracing::error!(%error, "the minimap's lines could not be turned into paint items"),
+        Err(error) => {
+            tracing::error!(%error, "the minimap's lines could not be turned into paint items")
+        }
     }
     stats.items = items.len();
     return Some((items, rows, stats));
@@ -498,7 +508,12 @@ pub fn build(
     // The text rows each chunk reaches: a glyph's ink reaches a code row or two past its layout box.
     let reaches: Vec<(f32, f32)> = spans
         .iter()
-        .map(|span| return ((span.start as f64 / ratio) as f32, (span.end as f64 / ratio) as f32))
+        .map(|span| {
+            return (
+                (span.start as f64 / ratio) as f32,
+                (span.end as f64 / ratio) as f32,
+            );
+        })
         .collect();
     let cuts = cut(&items, &reaches, 2.0 * CODE_ROW * scale);
     // A clip item clips to the text's whole height, so a tall text never cuts a glyph run short.

@@ -24,8 +24,8 @@ use ide_app::language::diagnostics::Severity;
 use ide_app::line_rows::LineRows;
 /// The picture, its plan, and its parts.
 use ide_app::minimap::{
-    BAND, BUILD_WORK, CHUNK_ROWS, Cancel, Fills, Geometry, Input, LineCache, Source, Stats, band_count,
-    build, chunk_rows, cut, most_bands, picture_rows, slice_items, slice_rows,
+    BAND, BUILD_WORK, CHUNK_ROWS, Cancel, Fills, Geometry, Input, LineCache, Source, Stats,
+    band_count, build, chunk_rows, cut, most_bands, picture_rows, slice_items, slice_rows,
 };
 /// The vertical mapping.
 use ide_app::row_map::RowMap;
@@ -273,8 +273,14 @@ fn consecutive_slices_meet_and_cover_the_picture() {
         let first = slice_rows(&(0..3), height, scale, ratio);
         let second = slice_rows(&(3..count), height, scale, ratio);
         assert_eq!(first.start, 0);
-        assert_eq!(first.end, second.start, "the slices share an edge at scale {scale}");
-        assert_eq!(second.end, total, "the last slice ends at the picture's end");
+        assert_eq!(
+            first.end, second.start,
+            "the slices share an edge at scale {scale}"
+        );
+        assert_eq!(
+            second.end, total,
+            "the last slice ends at the picture's end"
+        );
         assert_eq!(
             slice_rows(&(0..count), height, scale, ratio),
             0..total,
@@ -357,7 +363,11 @@ fn the_selection_and_the_matches_are_marks_under_the_glyphs() {
     let selected = whole(&fixture).0;
     let fills = drawn_fills(&selected);
     // The first line's mark and the cell its line break takes touch, and are drawn as one so no seam shows.
-    assert_eq!(fills.len(), 2, "one mark for each of the two lines the selection crosses: {fills:?}");
+    assert_eq!(
+        fills.len(),
+        2,
+        "one mark for each of the two lines the selection crosses: {fills:?}"
+    );
     for mark in &fills {
         assert_eq!(mark.ink, FILLS.selection);
         assert!(mark.right > mark.left && mark.bottom > mark.top);
@@ -473,7 +483,12 @@ fn an_edit_shapes_only_the_lines_it_changes() {
     let before = fixture(600, 730.0, 1.0);
     let mut shaper = TextShaper::new();
     let mut cache = LineCache::default();
-    let (_, _, cold) = items_of(&before, 0..band_count(before.map.height(), BAND), &mut shaper, &mut cache);
+    let (_, _, cold) = items_of(
+        &before,
+        0..band_count(before.map.height(), BAND),
+        &mut shaper,
+        &mut cache,
+    );
     assert_eq!(cold.shaped, cold.lines);
     // One word of line 20 changes to another of the same length.
     let same_length = edited(&before, 20, "value_20 =", "valoe_20 =");
@@ -482,7 +497,12 @@ fn an_edit_shapes_only_the_lines_it_changes() {
     assert_eq!(one.shaped, 1, "one line was edited");
     assert_eq!(one.reused, one.lines - 1);
     // A line is inserted before line 20: all the lines after it move to another number.
-    let inserted = edited(&before, 20, "let value_20 =", "let inserted = 1;\nlet value_20 =");
+    let inserted = edited(
+        &before,
+        20,
+        "let value_20 =",
+        "let inserted = 1;\nlet value_20 =",
+    );
     let after_insert = 0..band_count(inserted.map.height(), BAND);
     let (_, _, moved) = items_of(&inserted, after_insert, &mut shaper, &mut cache);
     assert!(
@@ -495,11 +515,17 @@ fn an_edit_shapes_only_the_lines_it_changes() {
     let narrower = fixture_of(&before.document.text().to_string(), 500.0, 1.0);
     let narrow_window = 0..band_count(narrower.map.height(), BAND);
     let (_, _, wider) = items_of(&narrower, narrow_window, &mut shaper, &mut cache);
-    assert_eq!(wider.shaped, wider.lines, "another wrap width shapes every line again");
+    assert_eq!(
+        wider.shaped, wider.lines,
+        "another wrap width shapes every line again"
+    );
     let sharper = fixture_of(&before.document.text().to_string(), 500.0, 2.0);
     let sharp_window = 0..band_count(sharper.map.height(), BAND);
     let (_, _, scaled) = items_of(&sharper, sharp_window, &mut shaper, &mut cache);
-    assert_eq!(scaled.shaped, scaled.lines, "another scale shapes every line again");
+    assert_eq!(
+        scaled.shaped, scaled.lines,
+        "another scale shapes every line again"
+    );
 }
 
 /// New syntax classes shape only the lines they reach.
@@ -612,13 +638,23 @@ fn a_long_text_shapes_only_the_lines_near_its_window() {
 fn the_cut_keeps_every_item_and_a_line_on_a_seam_in_both_chunks() {
     let scale = 1.5_f32;
     let fixture = fixture(400, 730.0, scale);
-    let (items, rows, _) = items_of(&fixture, 0..6, &mut TextShaper::new(), &mut LineCache::default());
+    let (items, rows, _) = items_of(
+        &fixture,
+        0..6,
+        &mut TextShaper::new(),
+        &mut LineCache::default(),
+    );
     let ratio = f64::from(Geometry::new(fixture.map.height(), 660.0).scale());
     let spans = chunk_rows(&rows);
     assert!(spans.len() >= 2, "{} chunks", spans.len());
     let reaches: Vec<(f32, f32)> = spans
         .iter()
-        .map(|span| return ((span.start as f64 / ratio) as f32, (span.end as f64 / ratio) as f32))
+        .map(|span| {
+            return (
+                (span.start as f64 / ratio) as f32,
+                (span.end as f64 / ratio) as f32,
+            );
+        })
         .collect();
     let cuts = cut(&items, &reaches, 2.0 * 24.0 * scale);
     let runs = drawn_runs(&items);
@@ -632,7 +668,10 @@ fn the_cut_keeps_every_item_and_a_line_on_a_seam_in_both_chunks() {
         }
         assert!(count > 0, "a chunk of the dense text kept no glyph run");
     }
-    assert!(seen.iter().all(|times| return *times >= 1), "an item was dropped by the cut");
+    assert!(
+        seen.iter().all(|times| return *times >= 1),
+        "an item was dropped by the cut"
+    );
     let twice = seen.iter().filter(|times| return **times >= 2).count();
     assert!(twice > 0, "no line on a seam was kept in both chunks");
     assert!(
@@ -648,7 +687,10 @@ fn the_cut_keeps_every_item_and_a_line_on_a_seam_in_both_chunks() {
 fn size_of(built: &ide_app::minimap::Built) -> (u32, u32) {
     let width = built.chunks.first().map_or(0, |chunk| return chunk.width);
     assert!(built.chunks.iter().all(|chunk| return chunk.width == width));
-    return (width, built.chunks.iter().map(|chunk| return chunk.height).sum());
+    return (
+        width,
+        built.chunks.iter().map(|chunk| return chunk.height).sum(),
+    );
 }
 
 /// A slice taller than a render holds is cut into chunks of at most `CHUNK_ROWS` rows,
@@ -666,7 +708,11 @@ fn a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows() {
         &Never,
     )
     .expect("a picture");
-    let heights: Vec<u32> = built.chunks.iter().map(|chunk| return chunk.height).collect();
+    let heights: Vec<u32> = built
+        .chunks
+        .iter()
+        .map(|chunk| return chunk.height)
+        .collect();
     assert_eq!(heights, vec![CHUNK_ROWS; 5]);
     assert_eq!(size_of(&built), (110, 2560));
     assert_eq!(
